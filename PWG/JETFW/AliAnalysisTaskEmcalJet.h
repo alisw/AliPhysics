@@ -79,14 +79,14 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Int_t                       GetNJets(Int_t i=0)                                                      const;
   Double_t                    GetRhoVal(Int_t i=0)                                                     const;
 
-  TString                     fRhoName;                    // rho name
-  TString                     fLocalRhoName;               // name for local rho
-  TObjArray                   fJetCollArray;               // jet collection array
+  TString                     fRhoName;                    /// rho name
+  TString                     fLocalRhoName;               /// name for local rho
+  TObjArray                   fJetCollArray;               /// jet collection array
 
-  TClonesArray               *fJets;                       //!jets
-  AliRhoParameter            *fRho;                        //!event rho
-  AliLocalRhoParameter       *fLocalRho;                   //!local event rho
-  Double_t                    fRhoVal;                     //!event rho value, same for local rho
+  TClonesArray               *fJets;                       //!<!jets
+  AliRhoParameter            *fRho;                        //!<!event rho
+  AliLocalRhoParameter       *fLocalRho;                   //!<!local event rho
+  Double_t                    fRhoVal;                     //!<!event rho value, same for local rho
 
  private:
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented

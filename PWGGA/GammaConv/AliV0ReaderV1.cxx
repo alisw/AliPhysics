@@ -1,7 +1,9 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Svein Lindal, Daniel Lohner                                   *
+ * Developers: Friederike Bock                                            *
+ * Original Authors: Svein Lindal, Daniel Lohner                          *
+ *                                                                        *
  * Version 1.0                                                            *
  *                                                                        *
  *                                                                        *
@@ -357,7 +359,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     fHistoRdiff->SetXTitle("R_conv - R_cluster conflict (cm)");
     fImpactParamHistograms->Add(fHistoRdiff);
 
-    fHistoImpactParameterStudy = new TH1F("fHistoImpactParameterStudy","",7,0,7);
+    fHistoImpactParameterStudy = new TH1F("fHistoImpactParameterStudy","",7,-0.5,6.5);
     fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(1,"# V0s");
     fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(2,"two TPC-only tracks");
     fHistoImpactParameterStudy->GetXaxis()->SetBinLabel(3,"Z cut not passed");
@@ -496,9 +498,17 @@ Bool_t AliV0ReaderV1::Notify()
         }
       }
     }
-  }
-  if (fPeriodName.CompareTo("LHC15a3a") == 0  || fPeriodName.CompareTo("LHC15a3a_plus") == 0   || fPeriodName.CompareTo("LHC15a3b") == 0   ||
-    fPeriodName.CompareTo("LHC15g1a") == 0    || fPeriodName.CompareTo("LHC15g1b") == 0    ){
+    if (fPeriodName.CompareTo("") != 0 && fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){ 
+      fEventCuts->SetPeriodEnum (fPeriodName);
+    }  
+  } else {
+    if(fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      fEventCuts->SetPeriodEnum (fPeriodName);
+    }  
+  }  
+  if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus   || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b   ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c){
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     if(man) {
       AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -522,7 +532,7 @@ Bool_t AliV0ReaderV1::Notify()
 
   if(!fEventCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
   if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-    fEventCuts->GetCorrectEtaShiftFromPeriod(fPeriodName);
+    fEventCuts->GetCorrectEtaShiftFromPeriod();
     fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
     return kTRUE;
   } else {
@@ -896,7 +906,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
   // wc[2] = (u[0]*z[1]) - (u[1]*z[0]);
 
   // Double_t PhiV = TMath::ACos((w[0]*wc[0]) + (w[1]*wc[1]) + (w[2]*wc[2]));
-  //return abs(PhiV);
+  //return fabs(PhiV);
 
 
   // TVector3 pPlus(pt.Px(),pt.Py(),pt.Pz());
@@ -1207,10 +1217,10 @@ void AliV0ReaderV1::CountTracks(){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
-      if(abs(curTrack->Eta())>0.8) continue;
+      if(fabs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.15) continue;
       //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),NULL,fInputEvent))) continue;
-      //if(abs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
+      //if(fabs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
       fNumberOfPrimaryTracks++;
     }
   }
@@ -1225,7 +1235,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 
   if (particle->GetPdgCode() == 22){
     // check whether particle is within eta range
-    if( abs(particle->Eta()) > etaMax ) return kFALSE;
+    if( fabs(particle->Eta()) > etaMax ) return kFALSE;
     // check if particle doesn't have a photon as mother
     if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE; // no photon as mothers!
@@ -1249,28 +1259,28 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
       return kFALSE;
     }
     // check if electrons are in correct eta window
-    if( abs(ePos->Eta()) > etaMax ||
-      abs(eNeg->Eta()) > etaMax )
+    if( fabs(ePos->Eta()) > etaMax ||
+      fabs(eNeg->Eta()) > etaMax )
       return kFALSE;
 
     // check if photons have converted in reconstructable range
     if(ePos->R() > rMax){
       return kFALSE; // cuts on distance from collision point
     }
-    if(abs(ePos->Vz()) > zMax){
+    if(fabs(ePos->Vz()) > zMax){
       return kFALSE;  // outside material
     }
-    if(abs(eNeg->Vz()) > zMax){
+    if(fabs(eNeg->Vz()) > zMax){
       return kFALSE;  // outside material
     }
 
 
     Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
     Double_t lineCutZValue = 7.;
-    if( ePos->R() <= ((abs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( ePos->R() <= ((fabs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
     }
-    if( eNeg->R() <= ((abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( eNeg->R() <= ((fabs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
     }
     if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){
@@ -1397,14 +1407,14 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   Double_t convRrecalc = fCurrentMotherKF->GetConversionRadius();
 
   //count V0s
-  fHistoImpactParameterStudy->AddBinContent(1);
+  fHistoImpactParameterStudy->Fill(0);
 
   //count V0s with two TPC-only tracks
   AliESDtrack* positiveTrack = (AliESDtrack*) pTrack;
   AliESDtrack* negativeTrack = (AliESDtrack*) nTrack;
   Bool_t TPConly = kFALSE;
   if (!positiveTrack->IsOn(AliESDtrack::kITSin) && !negativeTrack->IsOn(AliESDtrack::kITSin)){
-    fHistoImpactParameterStudy->AddBinContent(2);
+    fHistoImpactParameterStudy->Fill(1);
     TPConly = kTRUE;
   }
 
@@ -1415,13 +1425,13 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   if(TPConly){
     //not passed z cut:    pos.tr.     or           neg.tr. 
     if(((TMath::Abs(positiveTrack->GetZ()))>fZmax) || ((TMath::Abs(negativeTrack->GetZ()))>fZmax)){
-      fHistoImpactParameterStudy->AddBinContent(3);
+      fHistoImpactParameterStudy->Fill(2);
       RemovedByZcut=kTRUE;  
     }
 
     //not passed y cut:     pos.tr.     or           neg.tr.  
     if(((TMath::Abs(positiveTrack->GetY()))>fYmax) || ((TMath::Abs(negativeTrack->GetY()))>fYmax)){
-      fHistoImpactParameterStudy->AddBinContent(4);
+      fHistoImpactParameterStudy->Fill(3);
       RemovedByYcut=kTRUE;  
     }
   }
@@ -1463,7 +1473,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
     fHistoRviaAlphaRecalc->Fill(xsV0_r);
 
   if (convR > 80) {  // conversion within TPC <-> TPC-only tracks
-    fHistoImpactParameterStudy->AddBinContent(5);
+    fHistoImpactParameterStudy->Fill(4);
 
     for (Int_t it=2;it--;) {
       Int_t trId = fCurrentV0->GetIndex(it);
@@ -1477,7 +1487,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
           fHistoRdiff->Fill(xsV0-rTPC[ic]);
         }
         if (nConflict>kMaxTPCV0Conflicts) {
-          fHistoImpactParameterStudy->AddBinContent(6);
+          fHistoImpactParameterStudy->Fill(5);
           RemovedByCausality=kTRUE;
           break;
         }
@@ -1488,7 +1498,7 @@ void AliV0ReaderV1::FillImpactParamHistograms( AliVTrack* pTrack, AliVTrack* nTr
   //not passed y or z o causality cut:
  Bool_t RemovedByAnyCut=kFALSE;
   if(RemovedByZcut||RemovedByYcut||RemovedByCausality){
-      fHistoImpactParameterStudy->AddBinContent(7);
+      fHistoImpactParameterStudy->Fill(6);
       RemovedByAnyCut=kTRUE;
   }
 

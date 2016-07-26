@@ -31,6 +31,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     virtual void   Terminate(const Option_t*);
     void InitBack();
 
+    void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;    
     }
@@ -52,8 +53,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
-        void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
+    void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
     void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
+
+    void SetInOutTimingCluster(Double_t min, Double_t max){
+      fDoInOutTimingCluster = kTRUE; fMinTimingCluster = min; fMaxTimingCluster = max;
+      return;
+    }
     
       // Setting the cut lists for the conversion photons
     void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -92,6 +98,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
+    TString               fV0ReaderName;
     AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion 
     AliVEvent*            fInputEvent;                                          // current event
     AliMCEvent*           fMCEvent;                                             // corresponding MC event
@@ -300,12 +307,15 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fDoTHnSparse;                                         // flag for using THnSparses for background estimation
     Bool_t                fSetPlotHistsExtQA;                                   // flag for extended QA hists
     Double_t              fWeightJetJetMC;                                      // weight for Jet-Jet MC
+    Bool_t                fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
+    Double_t              fMinTimingCluster;                                    // corresponding ranges, min
+    Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 16);
+    ClassDef(AliAnalysisTaskGammaCalo, 18);
 };
 
 #endif

@@ -10,14 +10,17 @@
 // PHOS_pp_pi0
 #pragma link C++ class AliCaloPhoton+;
 #pragma link C++ class AliAnalysisTaskPi0+;
+#pragma link C++ class AliAnalysisTaskPi0Conversion+;
 #pragma link C++ class AliAnalysisTaskPi0PP+;
 
 //PHOS_PbPb
 #pragma link C++ class AliAnalysisTaskPi0Flow+;
 #pragma link C++ class AliAnalysisTaskGammaFlow+;
 #pragma link C++ class AliAnalysisTaskgg+;
+#pragma link C++ class AliAnalysisTaskggMC+;
 #pragma link C++ class AliAnalysisTaskPHOSPCMgg+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMC+;
+#pragma link C++ class AliAnalysisTaskEtaPhigg+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCAOD+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCHijing+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCParamWeights+;

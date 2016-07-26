@@ -114,7 +114,7 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   Bool_t             doComments;             // summary (debugging comments)
   Bool_t             fUseALLrecalcPatches;   // use all/ just max recalulated (offline) patches
   TString	     fJetTriggeredEventname; // name of jet that triggered event collection
-  TString            fCaloClustersName; // name of Calo Cluster collection
+  TString            fCaloClustersName;      // name of Calo Cluster collection
 
   AliEMCALTriggerPatchInfo      *fMaxPatch;//!                           main patch
   MainPatchType                 fMainPatchType;//!                       method to select main patch
@@ -182,11 +182,11 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   TH2F     *fHistdPhidEtaPatchJetCluster[16];  //!
 
   TClonesArray               *fJetTriggeredEvent;                    //!jets
-  TClonesArray               *fRecalcTriggerPatches;                    //!recalculated patches
+  TClonesArray               *fRecalcTriggerPatches;                 //!recalculated patches
 
   THnSparse                  *fhnPatchMaxClus;//!                    // patch-maxclus distributions sparse matrix
   THnSparse                  *fhnPatchMatch;//!                      // QA before matching patch sparse matrix
-  THnSparse                  *fhnPatchMatch2;//!                      // QA after matching patch sparse matrix
+  THnSparse                  *fhnPatchMatch2;//!                     // QA after matching patch sparse matrix
   THnSparse                  *fhnPatchMatchJetLeadClus;//!           // patch matching sparse matrix
 
   AliAnalysisTaskEmcalTriggerPatchJetMatch(const AliAnalysisTaskEmcalTriggerPatchJetMatch&);            // not implemented

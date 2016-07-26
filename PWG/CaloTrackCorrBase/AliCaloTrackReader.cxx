@@ -84,6 +84,7 @@ fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
+fSmearingFunction(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
@@ -1768,8 +1769,14 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if( fSmearShowerShape  && clus->GetNCells() > 2)
   {
     AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
-//    clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
-    if(iclus%3 == 0 && clus->GetM02() > 0.1) clus->SetM02( clus->GetM02() + fRandom.Landau(0.05, fSmearShowerShapeWidth) );     //fSmearShowerShapeWidth = 0.035
+    if(fSmearingFunction == kSmearingLandau)
+    {
+      clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
+    }
+    else if(fSmearingFunction == kSmearingLandauShift)
+    {
+      if(iclus%3 == 0 && clus->GetM02() > 0.1) clus->SetM02( clus->GetM02() + fRandom.Landau(0.05, fSmearShowerShapeWidth) );     //fSmearShowerShapeWidth = 0.035
+    }
     //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
     AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
   }

@@ -62,8 +62,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fPatchADC(NULL),
   fLevel0TimeMap(NULL),
   fITrigger(0),
-  fRejectOffAcceptancePatches(kFALSE),
   fDoQA(kFALSE),
+  fRejectOffAcceptancePatches(kFALSE),
   fQAHistos(NULL),
   fDebugLevel(0)
 {
@@ -96,8 +96,8 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fPatchADC(NULL),
   fLevel0TimeMap(NULL),
   fITrigger(0),
-  fRejectOffAcceptancePatches(kFALSE),
   fDoQA(doQA),
+  fRejectOffAcceptancePatches(kFALSE),
   fQAHistos(NULL),
   fDebugLevel(0)
 {
@@ -498,7 +498,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
       (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))) ||
       (type == kTMEMCalRecalcJet && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) ||
-      (type == kTMEMCalRecalcGamma && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) )
+      (type == kTMEMCalRecalcGamma && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit())))==0) )
     return 0;
 
   // save primary vertex in vector

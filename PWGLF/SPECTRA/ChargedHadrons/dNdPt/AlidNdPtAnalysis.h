@@ -67,12 +67,6 @@ public :
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
-  // Set binning for Histograms (if not set default binning is used)
-//   void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(nbins+1,edges); }
-//   void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(nbins+1,edges); }
-//   void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins+1,edges); }
-//   void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(nbins+1,edges); }
-//   void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = CloneArray(nbins+1,edges); }
 
     // Set binning for Histograms (if not set default binning is used)
   void SetBinsMult(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); } }
@@ -81,10 +75,10 @@ public :
   void SetBinsEta(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); } }
   void SetBinsZv(Int_t nbins, Double_t* edges) { if (CanChangeBins()) {  fZvNbins = nbins; fBinsZv = CloneArray(fZvNedges = nbins+1,edges); } }
   
-  
 
   void SetTRDTriggerHQU(const Bool_t require = kFALSE) { fTRDTriggerRequiredHQU = require;}
   void SetTRDTriggerHJT(const Bool_t require = kFALSE) { fTRDTriggerRequiredHJT = require;}
+  void SetTRDTriggerHSE(const Bool_t require = kFALSE) { fTRDTriggerRequiredHSE = require;}
   
   
   // Fill histograms
@@ -342,6 +336,7 @@ private:
   
   Bool_t fTRDTriggerRequiredHQU;
   Bool_t fTRDTriggerRequiredHJT;
+  Bool_t fTRDTriggerRequiredHSE;
   Bool_t triggerResult;
   
   // generic function to change binning

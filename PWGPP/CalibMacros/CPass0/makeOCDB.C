@@ -105,30 +105,64 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
   Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf);
 
-  // TPC part
+  // ===========================================================================
+  // ===| TPC part |============================================================
+  //
   AliTPCPreprocessorOffline *procesTPC = 0;
   if (detStr.Contains("TPC") && TPC_qf){
     Printf("\n******* Calibrating TPC *******");
+
+    // ===| set up residual storage |===========================================
+    TString targetStorageResidual="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+
+    // --- check for overwrites
+    const TString targetStorageResidualEnv(gSystem->Getenv("targetStorageResidual"));
+    if (!targetStorageResidualEnv.IsNull())  targetStorageResidual=targetStorageResidualEnv;
+    AliCDBStorage *residualStorage = AliCDBManager::Instance()->GetStorage(targetStorageResidual.Data());
+
+    // ===| set up TPC calibration object |=====================================
     procesTPC = new AliTPCPreprocessorOffline;
-    // switch on parameter validation
+
+    // ---| set up gain calibratin type |---------------------------------------
+    //
+    // default is Full Calibration in CPass0
+    // will be overwritte by mergeMakeOCDB.byComponent.perStage.sh
+    // NOTE: This must be consistent to the settings in runCPass*.sh (runCalibTrain.C)
+    //
+    procesTPC->SetGainCalibrationType(AliTPCPreprocessorOffline::kFullGainCalib);
+
+    // --- check for overwrites from environment variable
+    //
+    const TString sGainTypeFromEnv(gSystem->Getenv("TPC_CPass0_GainCalibType"));
+    if (!sGainTypeFromEnv.IsNull()) {
+      if (!procesTPC->SetGainCalibrationType(sGainTypeFromEnv)) {
+        ::Fatal("makeOCDB","Could not set up gain calibration type from environment variable TPC_CPass0_GainCalibType: %s",sGainTypeFromEnv.Data());
+      }
+
+      ::Info("makeOCDB","Setting gain calibration type from environment variable TPC_CPass0_GainCalibType: %d", Int_t(procesTPC->GetGainCalibrationType()));
+    }
+
+    // ---| switch on parameter validation |------------------------------------
     procesTPC->SetTimeGainRange(0.5,5.0);
     procesTPC->SetMaxVDriftCorr(0.2); 
     //procesTPC->SetMinTracksVdrift(100000);
     procesTPC->SwitchOnValidation();
 
-    // Make timegain calibration
-    //proces.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
-    if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber,runNumber,targetStorage);
-    
-    // Make vdrift calibration
-    //proces.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),targetOCDBstorage);
+    // ===| Run calibration |===================================================
+    //
+    // ---| Make time gain calibration |----------------------------------------
+    if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber, runNumber, targetStorage, residualStorage);
+
+    // ---| Make vdrift calibration |-------------------------------------------
     procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,runNumber,targetStorage);
   }
   else {
     Printf("\n******* NOT Calibrating TPC: detStr = %s, TPC_qf = %d *******", detStr.Data(), (Int_t)TPC_qf);
   }
 
-  // TOF part
+  // ===========================================================================
+  // ===| TOF part |============================================================
+  //
   AliTOFAnalysisTaskCalibPass0 *procesTOF=0;
   if (detStr.Contains("TOF") && detStr.Contains("TPC") && TOF_qf){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;

@@ -66,6 +66,7 @@ ClassImp(AliAnalysisTaskGammaConvFlow)
 //________________________________________________________________________
 AliAnalysisTaskGammaConvFlow::AliAnalysisTaskGammaConvFlow(): AliAnalysisTaskSE(),
 fV0Reader(NULL),
+fV0ReaderName("V0ReaderV1"),
 fBGHandler(NULL),
 fBGHandlerRP(NULL),
 fInputEvent(NULL),
@@ -169,6 +170,7 @@ fMCStack(NULL)
 AliAnalysisTaskGammaConvFlow::AliAnalysisTaskGammaConvFlow(const char *name):
 AliAnalysisTaskSE(name),
 fV0Reader(NULL),
+fV0ReaderName("V0ReaderV1"),
 fBGHandler(NULL),
 fBGHandlerRP(NULL),
 fInputEvent(NULL),
@@ -438,10 +440,10 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		hInvMassPair[iCut]= new TH2F("InvMassPair_Pt","Gamma invariant mass vs Pt",200,0,0.2,250,0,25);	
 		fESDList[iCut]->Add(hInvMassPair[iCut]);
 		
-		hKappaTPC[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt",200,0,10,250,0,25);
+		hKappaTPC[iCut]= new TH2F("KappaTPC_Pt","Gamma KappaTPC vs Pt",200,-20,20,250,0,25);
 		fESDList[iCut]->Add(hKappaTPC[iCut]);
     
-    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt_after","Gamma KappaTPC vs Pt after cuts",200,0,10,250,0,25);
+    hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt_after","Gamma KappaTPC vs Pt after cuts",200,-20,20,250,0,25);
     fESDList[iCut]->Add(hKappaTPC_after[iCut]);
     
     //2d histogram filling the cut and value - control check for selections
@@ -524,7 +526,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	
 
 	
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+    fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 	
 	if(fV0Reader)
@@ -570,12 +572,18 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskGammaConvFlow::Notify()
 {
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
+        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }  
+        
 		if(!((AliConvEventCuts*)fEventCutArray->At(iCut))->GetDoEtaShift()){
 			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
 			continue; // No Eta Shift requested, continue
 		}
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod(fV0Reader->GetPeriodName());
+			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCorrectEtaShiftFromPeriod();
 			hEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
 			((AliConvEventCuts*)fEventCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
 			continue;

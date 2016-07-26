@@ -46,7 +46,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   fhEtaPart(0),
   fhPhiPart(0),
   fhTreeEntriesUsed(0),
-  fNTreeEntries(0)
+  fNTreeEntries(0),
+  fOldCutOnDetPt(0)
   
 {
   // Default constructor.
@@ -85,7 +86,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   fhEtaPart(0),
   fhPhiPart(0),
   fhTreeEntriesUsed(0),
-  fNTreeEntries(0)
+  fNTreeEntries(0),
+  fOldCutOnDetPt(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -151,7 +153,7 @@ void AliJetEmbeddingTask::UserCreateOutputObjects(){
    PostData(2, fInput);
    
    const Int_t ndim = 4;
-   Int_t nbins = 60, mind = -30, maxd = 30, minm = 0, maxm = 40, minpt = 0, maxpt = 120;
+   Int_t nbins = 80, mind = -30, maxd = 30, minm = 0, maxm = 80, minpt = 0, maxpt = 120;
    const Int_t nbinshnsp[ndim] = {nbins, nbins, nbins, nbins};  
    const Double_t minhnsp[ndim] = {(Double_t)mind, (Double_t)mind, (Double_t)minm, (Double_t)minpt};
    const Double_t maxhnsp[ndim] = {(Double_t)maxd, (Double_t)maxd, (Double_t)maxm, (Double_t)maxpt};
@@ -208,19 +210,20 @@ void AliJetEmbeddingTask::Run()
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJParName.Data(), &jetPar);
        	  
-       	  Double_t pTemb = -1;
+       	  Double_t pTemb = -1, pTpar = -1;
        	  if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;
        	     AliWarning("Starting from first entry again");
        	     fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  }
-       	  pTemb = jetDet->Pt();
        	  
+       	  pTpar = jetPar->Pt(); //cut on the particle level pT
+       	  if(fOldCutOnDetPt) pTpar = jetDet->Pt(); //cut on the detector level pT (as it was before, keeping the functionality)
        	  // selected pT range 
        	  if((fPtMin != 0 && fPtMax != 0) && !fRandomEntry) {
        	     Int_t countWhile = 0;
-       	     while(!(pTemb > fPtMin && pTemb < fPtMax) && countWhile < fNTreeEntries){
+       	     while(!(pTpar > fPtMin && pTpar < fPtMax) && countWhile < fNTreeEntries){
        	     	fCurrentEntry++;
        	     	if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	else {
@@ -228,7 +231,8 @@ void AliJetEmbeddingTask::Run()
        	     	   AliWarning("Starting from first entry again");
        	     	   fTreeJet4Vect->GetEntry(fCurrentEntry);
        	     	}
-       	     	pTemb = jetDet->Pt();
+       	     	pTpar = jetPar->Pt();  //cut on the particle level pT
+       	     	if(fOldCutOnDetPt) pTpar = jetDet->Pt(); //cut on the detector level pT (as it was before, keeping the functionality)
        	     	countWhile++;
        	     }
        	  }
@@ -378,27 +382,7 @@ void AliJetEmbeddingTask::SetRejection(Float_t* rej) {
    return;
 }
 
-//________________________________________________________________________
 
-void AliJetEmbeddingTask::SetPtRangesEmb(Float_t* ptlims) {
-   
-   if(fNBins == 0){
-      AliError("Set number of bins first! SetNBinsEmbedding(nbins);");
-      return;
-   }
-   Printf("Creating array of pt limits with size %d", fNBins);
-   fPtRanges = new Float_t[fNBins];
-   for(Int_t i = 0; i<fNBins; i++){
-      fPtRanges[i] = ptlims[i];
-      if(fPtRanges[i] < fMinPtEmb){
-      	 fPtRanges[i] = fMinPtEmb;
-      	 AliError(Form("Minimum pT set to %.2f", fMinPtEmb));
-      }
-      Printf("Bin %d -> PtRange = %e", i, fPtRanges[i]);
-   }
-   return;
- }
- 
 void AliJetEmbeddingTask::Terminate(){
    Printf("fGoBack = %d", fGoBack);
 }

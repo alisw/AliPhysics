@@ -1,6 +1,8 @@
 // $Id$
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
+  Bool_t      Input_Gamma_Or_Pi0 = 0,           //gamma analysis=0, pi0 analyis=1
+  Bool_t      Input_SameEventAnalysis = 1,      //same event=1 mixed event =0
   const char *ntracks            = "Tracks",
   const char *nclusters          = "CaloClusters",
   const char *ncells             = "EMCALCells",
@@ -43,7 +45,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
     name += nclusters;
   }
 
-  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron();
+  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(Input_Gamma_Or_Pi0,Input_SameEventAnalysis);
 
   //perform some settings
   AnalysisTask->SetCaloCellsName(ncells);

@@ -686,7 +686,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (aodv0->GetNProngs() > 2) continue;
       if (aodv0->GetCharge() != 0) continue;
       if (aodv0->ChargeProng(0) == aodv0->ChargeProng(1)) continue;
-      if (aodv0->CosPointingAngle(fV1) < 0.998) continue;
+      if (aodv0->CosPointingAngle(fV1) < 0.98) continue;
 
       AliAODTrack *daughterTrackPos = (AliAODTrack *)aodv0->GetDaughter(0),   // getting positive daughter track
                   *daughterTrackNeg = (AliAODTrack *)aodv0->GetDaughter(1);   // getting negative daughter track

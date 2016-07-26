@@ -93,6 +93,7 @@ struct TrainSetup
     fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
     fOptions.Add("cent-oadb","PERIOD","Alternative OADB for centrality","");
     fOptions.Add("no-link","Do not make symlink to output",              false);
+    fOptions.Add("old-cent","Add old centrality task to train",          false);
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -560,7 +561,7 @@ protected:
       TObjArray* afr = fr.Tokenize(",+:");
       TObject*   ofr = 0;
       TIter      nfr(afr);
-      while (ofr = nfr()) input->AddFriend(const_cast<char*>(ofr->GetName()));
+      while ((ofr = nfr())) input->AddFriend(const_cast<char*>(ofr->GetName()));
       afr->Delete();
       ret = input;
     }
@@ -778,9 +779,10 @@ protected:
 			"AOD:header,vertices,AliAODTZERO,AliAODVZERO,"
 			"AliAODZDC,AliAODAD");
     }
-    return;
-
-    // Ignore the rest - just kept for historical reasons 
+    if (!fOptions.Has("old-cent")) return;
+    
+    
+    // Check if input is AOD 
     Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
     if (isAOD) return;
     
@@ -1003,7 +1005,7 @@ protected:
 			      m.Data()));
     void* ptr = reinterpret_cast<void*>(ret);
     Info("AddTenderSupply", "Adding supply %s (an %s object): %p",
-	 n.Data(), cls.Data(), ret);
+	 n.Data(), cls.Data(), ptr);
     return ptr;
   }
   /** 
@@ -1110,8 +1112,7 @@ protected:
 		 const char* what,
 		 UInt_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%u)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%u", val));
   }    
   /** 
    * Set a integer parameter on the task 
@@ -1124,8 +1125,7 @@ protected:
 		 const char* what,
 		 Int_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%d", val));
   }    
   /** 
    * Set a integer parameter on the task 
@@ -1138,8 +1138,7 @@ protected:
 		 const char* what,
 		 Long64_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lld)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%lld", val));
   }    
   /** 
    * Set a real parameter on the task 
@@ -1152,8 +1151,7 @@ protected:
 		 const char* what,
 		 Double_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%lg)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%lg", val));
   }    
   /** 
    * Set a boolean parameter on the task 
@@ -1166,8 +1164,7 @@ protected:
 		 const char* what,
 		 Bool_t val)
   {
-    const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%d)",cls,task,what,val));
+    SetOnTaskGeneric(task, what, Form("%d", val));
   }    
   /** 
    * Set a string parameter on the task 
@@ -1180,8 +1177,21 @@ protected:
 		 const char* what,
 		 const char* val)
   {
+    SetOnTaskGeneric(task, what, Form("\"%s\"", val));
+  }
+  /** 
+   * Set a generic parameter on the task 
+   * 
+   * @param task Task 
+   * @param what What to set 
+   * @param val  Value 
+   */
+  void SetOnTaskGeneric(AliAnalysisTaskSE* task,
+			const char* what,
+			const char* val)
+  {
     const char* cls = task->ClassName();
-    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(\"%s\")",cls,task,what,val));
+    gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%s)",cls,task,what,val));
   }
   /* @} */
   //------------------------------------------------------------------
@@ -1300,7 +1310,7 @@ protected:
   virtual void AddMonitor(const TString& name)
   {
     if (fRailway->Mode() != Railway::kProof) return;
-    Warning("CreateMonitors", "Monitoring not supported yet");
+    Warning("CreateMonitors", "Monitoring not supported yet (%s)", name.Data());
   }
   //__________________________________________________________________
   /** 

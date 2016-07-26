@@ -1,18 +1,15 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <utility>
 #include <cmath>
 
 #include <Rtypes.h>
 #include <TMath.h>
 #include <TMathBase.h>
 #include <TClonesArray.h>
+#include <TArray.h>
+#include <TArrayI.h>
+
 #include <TAxis.h>
 #include <TH1.h>
 #include <TH1D.h>
-#include <TH2D.h>
 #include <TProfile.h>
 #include <TSeqCollection.h>
 #include <TCollection.h>
@@ -27,19 +24,19 @@
 #include <AliVTrack.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
-#include "AliRhoParameter.h"
-#include "AliLog.h"
-#include "AliJetContainer.h"
-#include "AliParticleContainer.h"
-#include "AliClusterContainer.h"
-#include "AliPicoTrack.h"
-#include "AliVEvent.h"
-#include "AliVParticle.h"
-#include "AliLog.h"
+#include <AliRhoParameter.h>
+#include <AliLog.h>
+#include <AliJetContainer.h>
+#include <AliParticleContainer.h>
+#include <AliClusterContainer.h>
+#include <AliVEvent.h>
+#include <AliVParticle.h>
+#include <AliLog.h>
 
 #include "AliAnalysisTaskEmcalJetCDF.h"
 
-//using namespace std;
+using std::cout;
+using std::endl;
 
 /// \cond CLASSIMP
 ClassImp ( AliAnalysisTaskEmcalJetCDF );
@@ -359,8 +356,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
   std::vector< int > jet_sorted_idxvec ;
 
   fJetsCont->ResetCurrentID();
-  jet = fJetsCont->GetNextAcceptJet ();
-  while ( jet )
+  while ( (jet = fJetsCont->GetNextAcceptJet()) )
     {
     Int_t track_idx = -999; // index variable for tracks
 
@@ -420,6 +416,14 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
       fH8_all->Fill   ( jet->GetZ  ( track ) );  // Momentum distribution for jets (FF)
       fH8xi_all->Fill ( jet->GetXi ( track ) );  // Momentum distribution for jets (FF) xi
+
+      Double_t z_p = Z_ptot(jet,track);
+      fH8_all_p->Fill   ( z_p );  // Momentum distribution for jets (FF)
+      fH8xi_all_p->Fill ( Xi (z_p)  );  // Momentum distribution for jets (FF) xi
+
+      Double_t z_pt = Z_pt(jet,track);
+      fH8_all_pt->Fill   ( z_pt );  // Momentum distribution for jets (FF)
+      fH8xi_all_pt->Fill ( Xi (z_pt) );  // Momentum distribution for jets (FF) xi
 
       fH20all->Fill ( dpart );                   // Distribution of R in leading jet
 
@@ -654,6 +658,14 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
         fH8->Fill   ( jet1->GetZ  ( track ) );  // Momentum distribution for leading jet (FF)
         fH8xi->Fill ( jet1->GetXi ( track ) );  // Momentum distribution for leading jet (FF) xi
 
+        Double_t z_p = Z_ptot(jet1, track);
+        fH8_p->Fill   ( z_p );  // Momentum distribution for jets (FF)
+        fH8xi_p->Fill ( Xi (z_p)  );  // Momentum distribution for jets (FF) xi
+
+        Double_t z_pt = Z_pt(jet1, track);
+        fH8_pt->Fill   ( z_pt );  // Momentum distribution for jets (FF)
+        fH8xi_pt->Fill ( Xi (z_pt) );  // Momentum distribution for jets (FF) xi
+
         fH20->Fill ( dpart );                    // Distribution of R in leading jet
         fH15->Fill ( dpart, track_pt );          // <p_{T}> track vs the Distance R from Jet1
         fH15_bin->Fill ( dpart, track_pt );      // p_{T} sum track vs the Distance R from Jet1
@@ -873,14 +885,16 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH7all->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH7all );
 
-  //____________________________________________________________________________________
+//__________________________________________________________________________________________________
   Int_t h8_nbin = 101;
   Double_t h8_binwidth = 0.01;
   Double_t h8_low = 0;
   Double_t h8_high = h8_low + h8_binwidth * h8_nbin;
+//########################################################
+  // Standard implementation of Z
   fH8 = new TH1D ( "histo8", "Momentum distribution for jet1 (FF)", h8_nbin, h8_low, h8_high );
   fH8->SetStats ( kTRUE );
-  fH8->GetXaxis()->SetTitle ( "z = p_{T,track}/p_{T,jet1}" );
+  fH8->GetXaxis()->SetTitle ( "z" );
   fH8->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets1} dN/dz" );
   fH8->GetXaxis()->SetTitleColor ( 1 );
   fH8->SetMarkerStyle ( kFullCircle );
@@ -888,16 +902,54 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
 
   fH8_all = new TH1D ( "histo8_all", "Momentum distribution for jets (FF)", h8_nbin, h8_low, h8_high );
   fH8_all->SetStats ( kTRUE );
-  fH8_all->GetXaxis()->SetTitle ( "z = p_{T,track}/p_{T,jet1}" );
-  fH8_all->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets1} dN/dz" );
+  fH8_all->GetXaxis()->SetTitle ( "z" );
+  fH8_all->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets} dN/dz" );
   fH8_all->GetXaxis()->SetTitleColor ( 1 );
   fH8_all->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH8_all );
+//########################################################
+  // P_tot implementation of Z
+  fH8_p = new TH1D ( "histo8_p", "Momentum distribution for jet1 (FF) - P_tot", h8_nbin, h8_low, h8_high );
+  fH8_p->SetStats ( kTRUE );
+  fH8_p->GetXaxis()->SetTitle ( "z = p_{track}/p_{jet1}" );
+  fH8_p->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets1} dN/dz" );
+  fH8_p->GetXaxis()->SetTitleColor ( 1 );
+  fH8_p->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8_p );
 
+  fH8_all_p = new TH1D ( "histo8_all_p", "Momentum distribution for jets (FF) - P_tot", h8_nbin, h8_low, h8_high );
+  fH8_all_p->SetStats ( kTRUE );
+  fH8_all_p->GetXaxis()->SetTitle ( "z = p_{track}/p_{jet}" );
+  fH8_all_p->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets1} dN/dz" );
+  fH8_all_p->GetXaxis()->SetTitleColor ( 1 );
+  fH8_all_p->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8_all_p );
+//########################################################
+  // Pt implementation of Z
+  fH8_pt = new TH1D ( "histo8_pt", "Momentum distribution for jet1 (FF) - Pt", h8_nbin, h8_low, h8_high );
+  fH8_pt->SetStats ( kTRUE );
+  fH8_pt->GetXaxis()->SetTitle ( "z = p_{T,track}/p_{T,jet1}" );
+  fH8_pt->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets1} dN/dz" );
+  fH8_pt->GetXaxis()->SetTitleColor ( 1 );
+  fH8_pt->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8_pt );
+
+  fH8_all_pt = new TH1D ( "histo8_all_pt", "Momentum distribution for jets (FF) - Pt", h8_nbin, h8_low, h8_high );
+  fH8_all_pt->SetStats ( kTRUE );
+  fH8_all_pt->GetXaxis()->SetTitle ( "z = p_{T,track}/p_{T,jet1}" );
+  fH8_all_pt->GetYaxis()->SetTitle ( "F(Z) = 1/N_{jets} dN/dz" );
+  fH8_all_pt->GetXaxis()->SetTitleColor ( 1 );
+  fH8_all_pt->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8_all_pt );
+//########################################################
+
+//__________________________________________________________________________________________________
   Int_t h8xi_nbin = 300;
   Double_t h8xi_binwidth = 0.05;
   Double_t h8xi_low = 0;
   Double_t h8xi_high = h8xi_low + h8xi_binwidth * h8xi_nbin;
+
+//########################################################
   fH8xi = new TH1D ( "histo8xi", "Momentum distribution for jet1 (FF)", h8xi_nbin, h8xi_low, h8xi_high );
   fH8xi->SetStats ( kTRUE );
   fH8xi->GetXaxis()->SetTitle ( "#xi = ln(1/z)" );
@@ -914,7 +966,41 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
   fH8xi_all->SetMarkerStyle ( kFullCircle );
   fOutput->Add ( fH8xi_all );
 
-  //____________________________________________________________________________________
+//########################################################
+  fH8xi_p = new TH1D ( "histo8xi_p", "Momentum distribution for jet1 (FF) - P_tot", h8xi_nbin, h8xi_low, h8xi_high );
+  fH8xi_p->SetStats ( kTRUE );
+  fH8xi_p->GetXaxis()->SetTitle ( "#xi = ln(1/z)" );
+  fH8xi_p->GetYaxis()->SetTitle ( "D(#xi) = 1/N_{jets1} dN/d#xi" );
+  fH8xi_p->GetXaxis()->SetTitleColor ( 1 );
+  fH8xi_p->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8xi_p );
+
+  fH8xi_all_p = new TH1D ( "histo8xi_all_p", "Momentum distribution for all jets (FF) - P_tot", h8xi_nbin, h8xi_low, h8xi_high );
+  fH8xi_all_p->SetStats ( kTRUE );
+  fH8xi_all_p->GetXaxis()->SetTitle ( "#xi = ln(1/z)" );
+  fH8xi_all_p->GetYaxis()->SetTitle ( "D(#xi) = 1/N_{jets} dN/d#xi" );
+  fH8xi_all_p->GetXaxis()->SetTitleColor ( 1 );
+  fH8xi_all_p->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8xi_all_p );
+
+//########################################################
+  fH8xi_pt = new TH1D ( "histo8xi_pt", "Momentum distribution for jet1 (FF) - Pt", h8xi_nbin, h8xi_low, h8xi_high );
+  fH8xi_pt->SetStats ( kTRUE );
+  fH8xi_pt->GetXaxis()->SetTitle ( "#xi = ln(1/z)" );
+  fH8xi_pt->GetYaxis()->SetTitle ( "D(#xi) = 1/N_{jets1} dN/d#xi" );
+  fH8xi_pt->GetXaxis()->SetTitleColor ( 1 );
+  fH8xi_pt->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8xi_pt );
+
+  fH8xi_all_pt = new TH1D ( "histo8xi_all_pt", "Momentum distribution for all jets (FF) - Pt", h8xi_nbin, h8xi_low, h8xi_high );
+  fH8xi_all_pt->SetStats ( kTRUE );
+  fH8xi_all_pt->GetXaxis()->SetTitle ( "#xi = ln(1/z)" );
+  fH8xi_all_pt->GetYaxis()->SetTitle ( "D(#xi) = 1/N_{jets} dN/d#xi" );
+  fH8xi_all_pt->GetXaxis()->SetTitleColor ( 1 );
+  fH8xi_all_pt->SetMarkerStyle ( kFullCircle );
+  fOutput->Add ( fH8xi_all_pt );
+
+//____________________________________________________________________________________
   Int_t h15_nbin = 100;
   Double_t h15_binwidth = 0.01;
   Double_t h15_xlow = 0.;
@@ -1790,31 +1876,23 @@ std::vector<Int_t> AliAnalysisTaskEmcalJetCDF::SortTracksPt ( AliParticleContain
   //___________________________________________
   // Sorting by p_T (decreasing) event tracks
   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  Int_t entries = trackscont->GetNAcceptedParticles();
-
   // Create vector for Pt sorting
   std::vector<ptidx_pair> pair_list;
-  pair_list.reserve ( entries );
 
   trackscont->ResetCurrentID();
-  for ( Int_t i_entry = 0; i_entry < entries; i_entry++ )
-      {
-      AliVParticle *track = trackscont->GetNextAcceptParticle ();
-
-      if ( !track )
-          {
-          AliError ( Form ( "Unable to find accepted track %d in collection %s", i_entry, trackscont->GetName() ) );
-          continue;
-          }
-
-      pair_list.push_back ( std::make_pair ( track->Pt(), i_entry ) );
-      }
+  AliVTrack *track = NULL;
+  UInt_t i_entry = 0;
+  while( (track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()) ))
+    {
+    i_entry++;
+    pair_list.push_back ( std::make_pair ( track->Pt(), i_entry ) );
+    }
 
   std::stable_sort ( pair_list.begin(), pair_list.end(), sort_descend() );
 
   // return an vector of indexes of constituents (sorted descending by pt)
   std::vector<Int_t> index_sorted_list;
-  index_sorted_list.reserve ( entries );
+  index_sorted_list.reserve ( i_entry );
 
   for ( std::vector< std::pair <Double_t, Int_t> >::iterator it = pair_list.begin(); it != pair_list.end(); ++it )
       {
@@ -1827,7 +1905,7 @@ std::vector<Int_t> AliAnalysisTaskEmcalJetCDF::SortTracksPt ( AliParticleContain
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetCDF::IdxInArray ( Int_t index, TArrayI &array )
   {
-  for ( Size_t i = 0; i < array.GetSize(); i++ )
+  for ( Int_t i = 0; i < array.GetSize(); i++ )
       {
       if ( index == array[i] ) { return kTRUE; }
       }
@@ -1840,11 +1918,9 @@ void AliAnalysisTaskEmcalJetCDF::ExecOnce()
   {
   AliAnalysisTaskEmcalJet::ExecOnce();
 
-  if ( fJetsCont ) { delete fJetsCont ; fJetsCont = 0; }
-
-  if ( fTracksCont ) { delete fTracksCont ; fTracksCont = 0; }
-
-  if ( fCaloClustersCont ) { delete fCaloClustersCont ; fCaloClustersCont = 0; }
+  if ( fJetsCont )          { delete fJetsCont ; fJetsCont = 0; }
+  if ( fTracksCont )        { delete fTracksCont ; fTracksCont = 0; }
+  if ( fCaloClustersCont )  { delete fCaloClustersCont ; fCaloClustersCont = 0; }
   }
 
 //________________________________________________________________________
@@ -1854,5 +1930,19 @@ void AliAnalysisTaskEmcalJetCDF::Terminate ( Option_t * )
   // Update pointers reading them from the output slot
   fOutput = dynamic_cast<TList *> ( GetOutputData (0) );
   }
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetCDF::Z_ptot( const AliEmcalJet* jet, const AliVParticle* trk)  const
+{
+  if (trk->P() < 1e-6) return 0.;
+  return (trk != 0) ? trk->P()/ jet->P() : 0.;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetCDF::Z_pt( const AliEmcalJet* jet, const AliVParticle* trk)  const
+{
+  if (trk->P() < 1e-6) return 0.;
+  return (trk != 0) ? trk->Pt() / jet->Pt() : 0.;
+}
 
 // kate: indent-mode none; indent-width 2; replace-tabs on;

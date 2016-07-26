@@ -36,6 +36,7 @@ Bool_t useReflectedPlots = kTRUE;
 TString outputpath="";
 TString strAverage;
 Bool_t v2systOn=kFALSE;
+Bool_t plotv2Separated=kFALSE;
 Double_t v2D=0.,v2had=0.;
 void SetV2values(Bool_t usev2=kTRUE,Double_t v2Dmes=0.1,Double_t v2hadrons=0.1, Bool_t plotseparate=kFALSE){
   v2systOn=usev2;
@@ -386,6 +387,7 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,3);
     }
+    else if(strTemplRootName.Contains("EPOS3"))mcCase="EPOS3";
     else {
       Printf("MC case not foreseen");
       return;
@@ -505,6 +507,7 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,3);
     }
+    else if(strTemplRootName.Contains("EPOS3"))mcCase="EPOS3";
     else {
       Printf("MC case not foreseen");
       return;
@@ -621,6 +624,7 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
       mcCase="POWHEG";
       strTemplRootName.Remove(0,3);
     }
+    else if(strTemplRootName.Contains("EPOS3"))mcCase="EPOS3";
     else {
       Printf("MC case not foreseen");
       return;

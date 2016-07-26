@@ -181,6 +181,10 @@ public:
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
  void SetQVecList(TList* const kList) {this->fQVecList = kList;};
  TList* GetQVecList() const {return this->fQVecList;};
+  void SetZDCESEList(TList* const kList) {this->fZDCESEList = kList;};
+  TList* GetZDCESEList() const {return this->fZDCESEList;};
+  void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
+  TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
  void SetnCenBin(Int_t const n) {this->fnCenBin = n;};
  Int_t GetnCenBin() const {return this->fnCenBin;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
@@ -195,6 +199,8 @@ public:
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
  void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
  TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
+  void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
+  TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
  void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
  Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
  void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
@@ -283,14 +289,17 @@ private:
  TString fDataSet;
  TString fCorrWeight;
  TList *fQVecList;       // list with weights
+ TList *fCRCZDCCalibList; // ZDC calibration
+ TList *fZDCESEList;       // list with weights
  TH1D* fCenWeightsHist;
  TH1D* fPtWeightsHist[10];
  TH1D* fEtaWeightsHist[10][21][2];
+ TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
  Bool_t fQAZDCCuts;
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 2);
+ ClassDef(AliAnalysisTaskCRC, 3);
 };
 
 //================================================================================================================

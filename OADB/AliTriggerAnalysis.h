@@ -10,9 +10,11 @@
 
 //-------------------------------------------------------------------------
 //                      Implementation of   Class AliTriggerAnalysis
-//   This class provides function to check if events have been triggered based on the data in the ESD
-//   The trigger bits, trigger class inputs and only the data (offline trigger) can be used
-//   Origin: Jan Fiete Grosse-Oetringhaus, CERN
+// This class provides function to check if events have been triggered based 
+// on the data in ESD and AODs. The trigger bits, trigger class inputs and 
+// only the data (offline trigger) can be used
+// Origin: Jan Fiete Grosse-Oetringhaus, CERN
+// Current support and development: Evgeny Kryshen, PNPI
 //-------------------------------------------------------------------------
 
 class AliVEvent;
@@ -28,8 +30,8 @@ public:
   enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
     kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kZNA, kZNC, kZNABG, kZNCBG, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
     kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
-    kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kEMCAL, kTPCHVdip,
-    kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE,
+    kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kTPCHVdip,
+    kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
     kADA, kADC, kADABG, kADCBG,
@@ -45,42 +47,37 @@ public:
   void EnableHistograms(Bool_t isLowFlux = kFALSE);
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
   
-  Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
-  Int_t EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigger);
-  Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, Trigger trigger) const; // obsolete
-  Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t tclass) const;
-  Bool_t IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
+  Bool_t IsTriggerFired(const AliVEvent* event, Trigger trigger);
+  Int_t EvaluateTrigger(const AliVEvent* event, Trigger trigger);
+  Bool_t IsTriggerBitFired(const AliVEvent* event, ULong64_t tclass) const;
+  Bool_t IsOfflineTriggerFired(const AliVEvent* event, Trigger trigger);
   
   // some "raw" trigger functions
-  ADDecision ADTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
-  V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
-  T0Decision T0Trigger(const AliESDEvent* aEsd, Bool_t online, Bool_t fillHists = kFALSE);
-  Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) { return SPDFiredChips(aEsd, origin) >= fSPDGFOThreshold; }
-  Bool_t ZDCTrigger   (const AliESDEvent* aEsd, AliceSide side) const;
-  Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
-  Bool_t ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists=kFALSE) const;
-  Bool_t ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide side) const;
-  Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
-  Bool_t TRDTrigger(const AliESDEvent* esd, Trigger trigger);
-  Bool_t EMCALCellsTrigger(const AliESDEvent *aEsd);
+  ADDecision ADTrigger(const AliVEvent* event, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
+  V0Decision V0Trigger(const AliVEvent* event, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
+  T0Decision T0Trigger(const AliVEvent* event, Bool_t online, Bool_t fillHists = kFALSE);
+  Bool_t SPDGFOTrigger(const AliVEvent* event, Int_t origin) { return SPDFiredChips(event, origin) >= fSPDGFOThreshold; }
+  Bool_t ZDCTrigger   (const AliVEvent* event, AliceSide side) const;
+  Bool_t ZDCTDCTrigger(const AliVEvent* event, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
+  Bool_t ZDCTimeTrigger(const AliVEvent* event, Bool_t fillHists=kFALSE) const;
+  Bool_t ZDCTimeBGTrigger(const AliVEvent* event, AliceSide side) const;
+  Bool_t FMDTrigger(const AliVEvent* event, AliceSide side);
+  Bool_t TRDTrigger(const AliVEvent* event, Trigger trigger);
+  Bool_t EMCALCellsTrigger(const AliVEvent* event);
   Bool_t EMCALTrigger(const AliVEvent* event, Trigger trigger);
 
-  Int_t SSDClusters(const AliVEvent* event);
-  Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
+  Int_t SPDFiredChips(const AliVEvent* event, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
   Bool_t IsSPDClusterVsTrackletBG(const AliVEvent* event, Bool_t fillHists = kFALSE);
-  Bool_t IsLaserWarmUpTPCEvent(const AliESDEvent* esd);
-  Bool_t IsHVdipTPCEvent(const AliESDEvent* esd);
-  Bool_t IsIncompleteEvent(const AliESDEvent* esd);
+  Bool_t IsLaserWarmUpTPCEvent(const AliVEvent* event);
+  Bool_t IsHVdipTPCEvent(const AliVEvent* event);
+  Bool_t IsIncompleteEvent(const AliVEvent* event);
   
-  void FillHistograms(const AliESDEvent* aEsd);
-  void FillTriggerClasses(const AliESDEvent* aEsd);
+  void FillHistograms(const AliVEvent* event);
+  void FillTriggerClasses(const AliVEvent* event);
   
   void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
   void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
   void SetSPDClustersVsTrackletsParameters(Float_t a, Float_t b) { fASPDCvsTCut = a; fBSPDCvsTCut =b;}
-  void SetV0TimeOffset(Float_t offset) { fV0TimeOffset = offset; }
-  void SetV0AdcThr(Float_t thr) { fV0AdcThr = thr; }
-  void SetV0HwPars(Float_t thr, Float_t winLow, Float_t winHigh) { fV0HwAdcThr = thr; fV0HwWinLow = winLow; fV0HwWinHigh = winHigh; }
   void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
   void SetZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSum = refSum; fZDCCutRefDelta = refDelta; fZDCCutSigmaSum = sigmaSum; fZDCCutSigmaDelta = sigmaDelta; }
@@ -98,8 +95,6 @@ public:
   }
   
   Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
-  Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
-  Float_t GetV0AdcThr()     const { return fV0AdcThr; }
   Float_t GetFMDLowThreshold() const { return fFMDLowCut; }
   Float_t GetFMDHitThreshold() const { return fFMDHitCut; }
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
@@ -109,25 +104,12 @@ public:
   void SaveHistograms() const;
   
   void PrintTriggerClasses() const;
-  void SetESDTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts;}
-  AliESDtrackCuts* GetESDTrackCuts() const  {return fEsdTrackCuts;}
-  
-  void SetTPCOnly(Bool_t bTPCOnly) {fTPCOnly = bTPCOnly;}
-  Bool_t GetTPCOnly() const {return fTPCOnly;}
   
 protected:
-  Float_t V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc, Int_t runNumber) const;
-  Float_t V0LeadingTimeWeight(Float_t adc) const;
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
   
   Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
-  TH1F* fSPDGFOEfficiency;         // SPD FASTOR efficiency - is applied in SPDFiredChips. Histogram contains efficiency as function of chip number (bin 1..400: first layer; 401..1200: second layer)
-  
-  Float_t fV0TimeOffset;          // time offset applied to the times read from the V0 (in ns)
-  Float_t fV0AdcThr;              // thresholds applied on V0 ADC data
-  Float_t fV0HwAdcThr;            // online V0 trigger - thresholds applied on ADC data 
-  Float_t fV0HwWinLow;            // online V0 trigger - lower edge of time window
-  Float_t fV0HwWinHigh;           // online V0 trigger - upper edge of time window
+  TH1F* fSPDGFOEfficiency;        // SPD FASTOR efficiency - is applied in SPDFiredChips. Histogram contains efficiency as function of chip number (bin 1..400: first layer; 401..1200: second layer)
   
   Float_t fZDCCutRefSum;          // ZDC time cut configuration
   Float_t fZDCCutRefDelta;        // ZDC time cut configuration
@@ -183,11 +165,8 @@ protected:
   TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
   
   Bool_t fMC;              // flag if MC is analyzed
-  AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
   
-  Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
-  
-  ClassDef(AliTriggerAnalysis, 24)
+  ClassDef(AliTriggerAnalysis, 25)
   
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);

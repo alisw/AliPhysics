@@ -16,10 +16,7 @@
  */
 #ifndef ALIFORWARDCREATERESPONSEMATRICES_H
 #define ALIFORWARDCREATERESPONSEMATRICES_H
-  
-#include "AliBaseAODTask.h"
-
-class TH2D;
+#include "AliBaseMultTask.h"
 
 /**
  * Task to make the reponse matrices used by the multiplicity
@@ -27,9 +24,8 @@ class TH2D;
  * 
  * @ingroup pwglf_forward Tasks
  * @ingroup pwglf_forward_multdist
- * @todo Should not inherit from AliBasedNdetaTask 
  */
-class AliForwardCreateResponseMatrices : public AliBaseAODTask
+class AliForwardCreateResponseMatrices : public AliBaseMultTask
 {
 public:
   /** 
@@ -37,12 +33,14 @@ public:
    * Default Constructor 
    * 
    */
-  AliForwardCreateResponseMatrices();
+  AliForwardCreateResponseMatrices() : AliBaseMultTask() {}
   /**
    *  Constructor
    *
    */
-  AliForwardCreateResponseMatrices(const char* name);
+  AliForwardCreateResponseMatrices(const char* name)
+    : AliBaseMultTask(name)
+  {}
   /** 
    * 
    * Destructor
@@ -52,24 +50,30 @@ public:
   /**
    *  Embedded Class begins here
    */
-  struct Bin : public TNamed
+  struct Bin : public AliBaseMultTask::Bin
   {
     /**
      * Default Constructor
      */
-    Bin();
+    Bin() : AliBaseMultTask::Bin(), fResponseMatrix(0)  {}
     /**
      * Constructor
      */
-    Bin(Double_t etaLow, Double_t etaHigh);
+    Bin(Double_t etaLow, Double_t etaHigh)
+      : AliBaseMultTask::Bin(etaLow, etaHigh),
+	fResponseMatrix(0)
+    {}
     /**
      * Copy Constructor
      */ 
-    Bin(const Bin&){;}
+    Bin(const Bin& o)
+      : AliBaseMultTask::Bin(o),
+	fResponseMatrix(0)
+    {}
     /**
      * Assignment Operator
      */
-    Bin&operator=(const Bin&){return*this;}
+    Bin& operator=(const Bin&) { return *this; }
     /**
      * Destructor
      */
@@ -77,76 +81,57 @@ public:
     /**
      * Define outputs of a single eta bin
      */
-    virtual void CreateOutputObjectss(TList* cont,  Int_t max);
-    /**
+    virtual void CreateOutputObjects(TList* cont,  Int_t max);
+    /** 
      * Process a single eta bin
-     */    
-    virtual void Process(TH1D* dndetaForward, TH1D* dndetaCentral, TH1D* normForward,   TH1D* normCentral, TH1D* dndetaMC, Double_t VtxZ, Bool_t selectedTrigger,  Bool_t isMCNSDm, Bool_t isESDNSD, const AliAODEvent& aodevent);
-    Double_t fEtaLow;                  // low eta limit 
-    Double_t fEtaHigh;                 // high eta limit 
-    TH1D*    fHist;                    // multiplicity histogram 
-    TH1D*    fHistMC;                  // multiplicity histogram MC truth primaries
-    TH2D*    fAcceptance;              // histogram showing the 'holes' in acceptance. BinContent of 1 shows a hole, and BinContent of 10 shows data coverage
-    TH2D*    fVtxZvsNdataBins;         // VtxZ vs. number of data acceptance bins (normalised to the eta range) 
-    TH2D*    fResponseMatrix;          //Response matrix (MC truth vs. analysed multiplicity)
-    TH2D*    fResponseMatrixPlus05;    //Response matrix with analysed multiplicity scaled up by 5%
-    TH2D*    fResponseMatrixPlus075;   //Response matrix  with analysed multiplicity scaled up by 7.5%
-    TH2D*    fResponseMatrixPlus10;    //Response matrix with analysed multiplicity scaled up by 10%
-    TH2D*    fResponseMatrixMinus05;   //Response matrix with analysed multiplicity scaled down by 5%
-    TH2D*    fResponseMatrixMinus075;  //Response matrix with analysed multiplicity scaled down by 7.55%
-    TH2D*    fResponseMatrixMinus10;   //Response matrix with analysed multiplicity scaled down by 10%
-    TH2D*    fResponseMatrixMinusSys;  //Response matrix with analysed multiplicity scaled up by event mult uncertainty
-    TH2D*    fResponseMatrixPlusSys;   //Response matrix with analysed multiplicity scaled down by event mult uncertainty
-    TH1D*    fESDNSD;                  //number of events found as NSD by the analysis vs. multiplicity
-    TH1D*    fMCNSD;                   //number of events found as NSD by the MC truth vs. multiplicity
-    TH1D*    fMCESDNSD;                //number of events found as NSD by both analysis and MC truth vs. multiplicity
-    TH1D*    fTriggerBias;             // histogram for trigger vertex bias correction
-   ClassDef(Bin,2); // Manager of data 
+     * 
+     * @param dndetaForward   Forward observations 
+     * @param dndetaCentral   Central observations 
+     * @param normForward     Acceptance 
+     * @param normCentral     Acceptance 
+     * @param mc              Primary "observations"
+     * @param ipZ             Interaction point 
+     * @param pileup          True if flagged as pile-up
+     * @param selectedTrigger Is event selected
+     * @param isMCNSDm        Is event MC NSD 
+     * @param isESDNSD        Is event real NSD 
+     * @param aodevent        Full event 
+     */
+    virtual void Process(TH1D*              dndetaForward,
+			 TH1D*              dndetaCentral,
+			 TH1D*              normForward,
+			 TH1D*              normCentral,
+			 TH1D*              mc,
+			 Double_t           ipZ,
+			 Bool_t             pileup,
+			 Bool_t             selectedTrigger,
+			 Bool_t             isMCNSDm,
+			 Bool_t             isESDNSD,
+			 const AliAODEvent& aodevent,
+			 Double_t           minIPz,
+			 Double_t           maxIPz);
+    TH2D* fResponseMatrix;//! Response matrix (MC truth vs. ana multiplicity)
+    ClassDef(Bin,3); // Manager of data 
   };
-  /**
-   * Create Output Objects
-   */
-  Bool_t Book();
-  /**
-   * Create Output Objects
-   */
-  Bool_t PreEven() { fIsSelected = false; return true; }
-  /**
-   * User Exec
-   */
-  Bool_t Event(AliAODEvent& aod);
-  /**
-   * Terminate
-   */
-  Bool_t Finalize() { return true; }
   /** 
-   * Add another eta bin to the task
+   * Create a bin
    */
-  void AddBin(Double_t etaLow, Double_t etaHigh){fBins.Add(new Bin(etaLow, etaHigh)); }
+  AliBaseMultTask::Bin* MakeBin(Double_t etaLow, Double_t etaHigh);
 protected:
   /**
    * Copy Constructor
    *
    */
-  AliForwardCreateResponseMatrices(const AliForwardCreateResponseMatrices& o);
+  AliForwardCreateResponseMatrices(const AliForwardCreateResponseMatrices& o)
+    : AliBaseMultTask(o)
+  {}
   /**
    * Assignment operator
    *
    */
   AliForwardCreateResponseMatrices& 
-  operator=(const AliForwardCreateResponseMatrices&);
-  /** 
-   * Check the event
-   * 
-   * @param fwd Forwarddata 
-   * 
-   * @return true on success
-   */
-  Bool_t CheckEvent(const AliAODForwardMult& fwd);
-
-  TList  fBins;    // List of eta bins
-  Bool_t fIsSelected;  // Did event pass the (analysis) cuts
-  ClassDef(AliForwardCreateResponseMatrices, 4); 
+  operator=(const AliForwardCreateResponseMatrices&) { return *this; }
+  ClassDef(AliForwardCreateResponseMatrices, 5); 
 };
 
 #endif

@@ -1,6 +1,6 @@
 #ifndef ALIANALYSISTASKPARTICLERANDOMIZER_H
 #define ALIANALYSISTASKPARTICLERANDOMIZER_H
-/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
@@ -24,6 +24,7 @@ public:
   // ###### Configuration setters
   void          SetRandomizeInPhi(Bool_t val)               {fRandomizeInPhi = val;}
   void          SetRandomizeInEta(Bool_t val)               {fRandomizeInEta = val;}
+  void          SetRandomizeInTheta(Bool_t val)             {fRandomizeInTheta = val;}
   void          SetRandomizeInPt(Bool_t val)                {fRandomizeInPt = val;}
 
   void          SetPhiMin(Double_t val)                     {fMinPhi = val;}
@@ -32,6 +33,7 @@ public:
   void          SetEtaMax(Double_t val)                     {fMaxEta = val;}
   void          SetPtMin(Double_t val)                      {fMinPt = val;}
   void          SetPtMax(Double_t val)                      {fMaxPt = val;}
+  void          ActivateJetRemoval(const char* arrName, Double_t threshold, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalPtThreshold = threshold; fJetRemovalRhoObj = rhoObj;}
 
   void          SetInputArrayName(const char* name)         {fInputArrayName = name;}
   void          SetOutputArrayName(const char* name)        {fOutputArrayName = name;}
@@ -41,6 +43,7 @@ private:
   Bool_t              fInitialized;               // internal state when ExecOnce has been executed
   Bool_t              fRandomizeInPhi;            // randomize the particle's position in azimuth
   Bool_t              fRandomizeInEta;            // randomize the particle's position in pseudorap
+  Bool_t              fRandomizeInTheta;          // randomize the particle's position in theta
   Bool_t              fRandomizeInPt;             // randomize the particle's position in Pt
 
   Double_t            fMinPhi;                    // range for phi for randomization
@@ -56,9 +59,17 @@ private:
   TClonesArray*       fInputArray;                //! TClonesArray that will be loaded
   TClonesArray*       fOutputArray;               //! Destination TClonesArray
 
+  TString             fJetRemovalRhoObj;          // Name of array to rho object
+  TString             fJetRemovalArrayName;       // Name of the TClonesArray containing jets for removal that will be loaded
+  TClonesArray*       fJetRemovalArray;           //! TClonesArray containing jets
+  Double_t            fJetRemovalPtThreshold;     // threshold at which jets given in fInputJetArray will be removed
+
   TRandom3*           fRandom;                    //! random number generator
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 1);
+  Bool_t              IsParticleInJet(Int_t part);
+  Double_t            GetExternalRho();
+
+  ClassDef(AliAnalysisTaskParticleRandomizer, 3);
 };
 
 #endif

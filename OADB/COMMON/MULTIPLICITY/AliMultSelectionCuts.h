@@ -17,7 +17,9 @@ public:
         kRejPileupInMultBins                = 203,
         kRejConsistencySPDandTrackVertices  = 204,
         kRejTrackletsVsClusters             = 205,
-        kRejNonZeroNContribs                = 206
+        kRejNonZeroNContribs                = 206,
+	kRejAsymmetricInVZERO               = 207,
+	kRejIncompleteDAQ                   = 208
     } CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
     
     AliMultSelectionCuts();
@@ -32,7 +34,9 @@ public:
         fEvSel_TrackletsVsClusters(o.fEvSel_TrackletsVsClusters),
         fEvSel_RejectPileupInMultBins(o.fEvSel_RejectPileupInMultBins),
         fEvSel_CheckConsistencySPDandTrackVertices(o.fEvSel_CheckConsistencySPDandTrackVertices),
-        fEvSel_NonZeroNContribs(o.fEvSel_NonZeroNContribs)
+        fEvSel_NonZeroNContribs(o.fEvSel_NonZeroNContribs),
+	fEvSel_IsNotAsymmetricInVZERO(o.fEvSel_IsNotAsymmetricInVZERO),
+	fEvSel_IsNotIncompleteDAQ(o.fEvSel_IsNotIncompleteDAQ)
     {}
     AliMultSelectionCuts& operator=(const AliMultSelectionCuts& o);
     ~AliMultSelectionCuts();
@@ -55,7 +59,11 @@ public:
     void   SetVertexConsistencyCut(Bool_t lSetting)         { fEvSel_CheckConsistencySPDandTrackVertices = lSetting; }
     Bool_t GetNonZeroNContribs()                        { return fEvSel_NonZeroNContribs; }
     void   SetNonZeroNContribs(Bool_t lSetting)         { fEvSel_NonZeroNContribs = lSetting; }
-    
+    Bool_t GetIsNotAsymmetricInVZERO()                        { return fEvSel_IsNotAsymmetricInVZERO; }
+    void   SetIsNotAsymmetricInVZERO(Bool_t lSetting)         { fEvSel_IsNotAsymmetricInVZERO = lSetting; }
+    Bool_t GetIsNotIncompleteDAQ()                        { return fEvSel_IsNotIncompleteDAQ; }
+    void   SetIsNotIncompleteDAQ(Bool_t lSetting)         { fEvSel_IsNotIncompleteDAQ = lSetting; }
+ 
     void SetErrorCode(Int_t lCode)   { fErrorCode = lCode; }
     Int_t GetErrorCode() const   { return fErrorCode; }
     
@@ -75,9 +83,12 @@ private:
     Bool_t fEvSel_RejectPileupInMultBins; // Reject IsPileupFromSPDInMultBins()
     Bool_t fEvSel_CheckConsistencySPDandTrackVertices; //Check consistency
     Bool_t fEvSel_NonZeroNContribs; //at least one contributor to PV
+    Bool_t fEvSel_IsNotAsymmetricInVZERO; //asymmetic in vzero
+    Bool_t fEvSel_IsNotIncompleteDAQ; //asymmetic in vzero
     
-    ClassDef(AliMultSelectionCuts, 2)
+    ClassDef(AliMultSelectionCuts, 3)
     //1 - original implementation 
     //2 - added NonZeroNContribs
+    //3 - added IsNotAsymmetricInVZERO, IsNotIncompleteDAQ
 };
 #endif

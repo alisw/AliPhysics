@@ -1,25 +1,9 @@
-// $Id$
-
 AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   const char *triggersOutName     = "EmcalTriggers",
-  const char *cellsName           = 0,
-  const char *triggersName        = 0,
-  const char *taskName            = "AliEmcalTriggerMaker",
-  int jetpatchsize                = 16,
-  int jetLowA                     = 0,
-  int jetLowB                     = 0,
-  int jetLowC                     = 0,
-  int jetHighA                    = 0,
-  int jetHighB                    = 0,
-  int jetHighC                    = 0,
-  int gammaLowA                  = 0,
-  int gammaLowB                  = 0,
-  int gammaLowC                  = 0,
-  int gammaHighA                  = 0,
-  int gammaHighB                  = 0,
-  int gammaHighC                  = 0,
-  bool useOldBitConfig            = kFALSE,
-  bool doQA                       = kFALSE
+  const char *cellsName           = "",
+  const char *triggersName        = "",
+  bool doQA                       = kFALSE,
+  const char* suffix              = ""
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -28,7 +12,7 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   if (!mgr)
   {
     ::Error("AddTaskEmcalTriggerMaker", "No analysis manager to connect to.");
-    return NULL;
+    return 0;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
@@ -36,12 +20,17 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   AliVEventHandler *evhand = mgr->GetInputEventHandler();
   if (!evhand) {
     ::Error("AddTaskEmcalTriggerMaker", "This task requires an input event handler");
-    return NULL;
+    return 0;
+  }
+
+  TString taskName("AliEmcalTriggerMakerTask");
+  if (!TString(suffix).IsNull()) {
+    taskName += TString::Format("_%s", suffix);
   }
 
   // Check if the task already exists, if yes only return the pointer
-  AliEmcalTriggerMakerTask *eTask(NULL);
-  if((eTask = dynamic_cast<AliEmcalTriggerMakerTask *>(mgr->GetTask(taskName)))) return eTask;
+  AliEmcalTriggerMakerTask* eTask = 0;
+  if ((eTask = dynamic_cast<AliEmcalTriggerMakerTask *>(mgr->GetTask(taskName)))) return eTask;
 
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
@@ -87,12 +76,6 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   eTask->SetCaloTriggersOutName(triggersOutName);
   eTask->SetCaloCellsName(strCellsName.Data());
   eTask->SetV0InName(v0Name);
-  eTask->SetJetPatchsize(jetpatchsize);
-  eTask->SetTriggerThresholdJetLow( jetLowA, jetLowB, jetLowC );
-  eTask->SetTriggerThresholdJetHigh( jetHighA, jetHighB, jetHighC );
-  eTask->SetTriggerThresholdGammaLow( gammaLowA, gammaLowB, gammaLowC );
-  eTask->SetTriggerThresholdGammaHigh( gammaHighA, gammaHighB, gammaHighC );
-  if (useOldBitConfig) eTask->SetUseTriggerBitConfig(AliEmcalTriggerMakerTask::kOldConfig);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

@@ -25,7 +25,7 @@
 //						   Author S.Bjelogrlic
 //                         Utrecht University 
 //                      sandro.bjelogrlic@cern.ch
-//
+//                        
 //-----------------------------------------------------------------------
 
 /* $Id: AliHFCorrelator.h 63605 2013-07-19 13:08:41Z arossi $ */
@@ -85,9 +85,10 @@ class AliHFCorrelator : public TNamed
 	{fD0cand = d; fhypD0 = D0hyp;}
 	
 	void SetUseReco(Bool_t useReco) {fUseReco = useReco;}
-	
-	
-	
+	void SetNMultBins(Int_t nMultBins){fnMultBins=nMultBins;}
+	void SetMultBins(Int_t nMultBinLimits,Double_t *MultBinLimits);
+	void SetMinMultCandidate(Double_t multCand=-1.) {fMinMultCand=multCand; return;}
+	void SetMaxMultCandidate(Double_t multCand=1000.) {fMaxMultCand=multCand; return;}
         Bool_t DefineEventPool(); // Definition of the Event pool parameters
 	Bool_t Initialize(); // function that initlize everything for the analysis	
 	Bool_t ProcessEventPool(); // processes the event pool
@@ -113,9 +114,11 @@ class AliHFCorrelator : public TNamed
     Double_t GetCentrality(){return fMultCentr;} // centrality or multiplicity
 	
 	Double_t GetAssociatedKZeroInvariantmass(){return fk0InvMass;}
-	
-	
-	
+	Double_t *GetMultBinLimits() const {return fMultBinLimits;}
+	 Int_t   GetNMultBins() const {return fnMultBins;}
+	 Double_t GetMinMultCandidate() const {return fMinMultCand;}
+	 Double_t GetMaxMultCandidate() const {return fMaxMultCand;} 
+	 Int_t MultBin(Double_t Mult) const;
 	// methods to reduce the tracks to correlate with track selection cuts applied here
 	TObjArray*  AcceptAndReduceTracks(AliAODEvent* inputEvent); // selecting hadrons and kaons
 	TObjArray*  AcceptAndReduceKZero(AliAODEvent* inputEvent); // selecting kzeros
@@ -164,8 +167,12 @@ class AliHFCorrelator : public TNamed
 	Double_t fDeltaEta; // delta eta between D meson and associated track
 	
 	Double_t fk0InvMass; // KZero invariant mass
-	
-	
+	 Int_t fnMultBins;  // number of Mult bins (add)
+	 Int_t fnMultBinLimits; // "number of limits", that is fnMultBins+1 (add)
+	 Double_t* fMultBinLimits; //[fnMultBinLimits]  Mult bins (add)
+	 Double_t fMinMultCand; /// minimum mult of the candidate
+	 Double_t fMaxMultCand; /// minimum mult of the candidate
+
 	ClassDef(AliHFCorrelator,4); // class for HF correlations
 };
 

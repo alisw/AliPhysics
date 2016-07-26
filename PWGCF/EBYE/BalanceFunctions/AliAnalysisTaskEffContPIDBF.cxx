@@ -28,8 +28,8 @@
 // Task for calculating the efficiency of the Balance Function 
 // for single particles and pairs
 // 
-// Modified By Noor Alam(VECC ,Kolkata)
- //[ Special thanks to Michael Weber]
+// Modified By Noor Alam (VECC ,Kolkata) sk.noor.alam@cern.ch
+//[ Special thanks to Michael Weber ]
 // ---------------------------------------------------------------------
 
 ClassImp(AliAnalysisTaskEffContPIDBF)
@@ -69,6 +69,42 @@ AliAnalysisTaskEffContPIDBF::AliAnalysisTaskEffContPIDBF(const char *name)
     HistMCTruthPtProton(0),
     HistMCTruthEtaProton(0),
     HistMCTruthPhiProton(0),
+    HistPionContaminationInPt(0),
+    HistPionPlusContaminationInPt(0),
+    HistPionMinusContaminationInPt(0),
+    Hist3dPionContamination(0),
+    Hist3dPionPlusContamination(0),
+    Hist3dPionMinusContamination(0),
+    HistKaonContaminationInPt(0),
+    HistKaonPlusContaminationInPt(0),
+    HistKaonMinusContaminationInPt(0),
+    Hist3dKaonContamination(0),
+    Hist3dKaonPlusContamination(0),
+    Hist3dKaonMinusContamination(0),
+    HistProtonContaminationInPt(0),
+    HistProtonPlusContaminationInPt(0),
+    HistProtonMinusContaminationInPt(0),
+    Hist3dProtonContamination(0),
+    Hist3dProtonPlusContamination(0),
+    Hist3dProtonMinusContamination(0), 
+    HistPionPurityInPt(0),
+    HistPionPlusPurityInPt(0),
+    HistPionMinusPurityInPt(0),
+    Hist3dPionPurity(0),
+    Hist3dPionPlusPurity(0),
+    Hist3dPionMinusPurity(0),
+    HistKaonPurityInPt(0),
+    HistKaonPlusPurityInPt(0),
+    HistKaonMinusPurityInPt(0),
+    Hist3dKaonPurity(0),
+    Hist3dKaonPlusPurity(0),
+    Hist3dKaonMinusPurity(0),
+    HistProtonPurityInPt(0),
+    HistProtonPlusPurityInPt(0),
+    HistProtonMinusPurityInPt(0),
+    Hist3dProtonPurity(0),
+    Hist3dProtonPlusPurity(0),
+    Hist3dProtonMinusPurity(0),
     fHistSigmaTPCVsTOFPionForPionAfterCut(0),
     fHistSigmaTPCVsTOFProtonForPionAfterCut(0),
     fHistSigmaTPCVsTOFKaonForPionAfterCut(0),
@@ -144,6 +180,8 @@ AliAnalysisTaskEffContPIDBF::AliAnalysisTaskEffContPIDBF(const char *name)
 for(Int_t ipart=0;ipart<3;ipart++)
     for(Int_t ipid=0;ipid<3;ipid++)
       fnsigmas[ipart][ipid]=999.;
+
+
   
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -178,12 +216,12 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
   fQAList->Add(fHistEventStats);
 
   //====================================================//
-  Int_t ptBin = 35;
-  Int_t etaBin = 16;
+  Int_t ptBin = 40;
+  Int_t etaBin = 32;
   Int_t phiBin = 100;
 
-  Double_t nArrayPt[36]={0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0};
-  Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}; 
+  Double_t nArrayPt[41]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5,1.55,1.6,1.65,1.7,1.75,1.8,1.85,1.9,1.95,2.0,2.05,2.1,2.15,2.2};
+  Double_t nArrayEta[33]={-0.8,-0.75,-0.7,-0.65,-0.6,-0.55,-0.5,-0.45,-0.4,-0.35,-0.3,-0.25,-0.2,-0.15,-0.1,-0.05,0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8}; 
 
   Double_t nArrayPhi[phiBin+1];
   for(Int_t iBin = 0; iBin <= phiBin; iBin++) 
@@ -236,7 +274,7 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
   fOutputList->Add(HistMCTruthEtaProton);
   fOutputList->Add(HistMCTruthPhiProton);
 
-  //Contamination for Secondaries 
+  //Contamination and efficiency 
   fHistTruthPionPlus = new TH3D("fHistTruthPionPlus","TruthPionPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthPionPlus);
 
@@ -263,6 +301,93 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
 
   fHistTruthProton = new TH3D("fHistTruthProton","TruthProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthProton);
+
+ 
+  //Contamination and Purity Histogram
+ 
+   HistPionContaminationInPt=new TH1F("HistPionContaminationInPt","Pt Distribution of conatmination in Pion", ptBin,nArrayPt);
+   HistPionPlusContaminationInPt=new TH1F("HistPionPlusContaminationInPt","Pt Distribution of conatmination in Positive Pion", ptBin,nArrayPt);
+   HistPionMinusContaminationInPt=new TH1F("HistPionMinusContaminationInPt","Pt Distribution of conatmination in Negative Pion", ptBin,nArrayPt);
+   Hist3dPionContamination =new TH3D("Hist3dPionContamination","Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionPlusContamination =new TH3D("Hist3dPionPlusContamination","Positive Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionMinusContamination =new TH3D("Hist3dPionMinusContamination","Negative Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+
+   HistKaonContaminationInPt=new TH1F("HistKaonContaminationInPt","Pt Distribution of conatmination in Kaon", ptBin,nArrayPt);
+   HistKaonPlusContaminationInPt=new TH1F("HistKaonPlusContaminationInPt","Pt Distribution of conatmination in Positive Kaon", ptBin,nArrayPt);
+   HistKaonMinusContaminationInPt=new TH1F("HistKaonMinusContaminationInPt","Pt Distribution of conatmination in Negative Kaon", ptBin,nArrayPt);
+   Hist3dKaonContamination =new TH3D("Hist3dKaonContamination","Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonPlusContamination =new TH3D("Hist3dKaonPlusContamination","Positive Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonMinusContamination =new TH3D("Hist3dKaonMinusContamination","Negative Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+
+
+   HistProtonContaminationInPt=new TH1F("HistProtonContaminationInPt","Pt Distribution of conatmination in Proton", ptBin,nArrayPt);
+   HistProtonPlusContaminationInPt=new TH1F("HistProtonPlusContaminationInPt","Pt Distribution of conatmination in Positive Proton", ptBin,nArrayPt);
+   HistProtonMinusContaminationInPt=new TH1F("HistProtonMinusContaminationInPt","Pt Distribution of conatmination in Negative Proton", ptBin,nArrayPt);
+   Hist3dProtonContamination =new TH3D("Hist3dProtonContamination","Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonPlusContamination =new TH3D("Hist3dProtonPlusContamination","Positive Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonMinusContamination =new TH3D("Hist3dProtonMinusContamination","Negative Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+
+
+   HistPionPurityInPt=new TH1F("HistPionPurityInPt","Pt Distribution of Purity in Pion", ptBin,nArrayPt);
+   HistPionPlusPurityInPt=new TH1F("HistPionPlusPurityInPt","Pt Distribution of Purity in Positive Pion", ptBin,nArrayPt);
+   HistPionMinusPurityInPt=new TH1F("HistPionMinusPurityInPt","Pt Distribution of Purity in Negative Pion", ptBin,nArrayPt);
+   Hist3dPionPurity =new TH3D("Hist3dPionPurity","Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionPlusPurity =new TH3D("Hist3dPionPlusPurity","Positive Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionMinusPurity =new TH3D("Hist3dPionMinusPurity","Negative Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+
+   HistKaonPurityInPt=new TH1F("HistKaonPurityInPt","Pt Distribution of Purity in Kaon", ptBin,nArrayPt);
+   HistKaonPlusPurityInPt=new TH1F("HistKaonPlusPurityInPt","Pt Distribution of Purity in Positive Kaon", ptBin,nArrayPt);
+   HistKaonMinusPurityInPt=new TH1F("HistKaonMinusPurityInPt","Pt Distribution of Purity in Negative Kaon", ptBin,nArrayPt);
+   Hist3dKaonPurity =new TH3D("Hist3dKaonPurity","Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonPlusPurity =new TH3D("Hist3dKaonPlusPurity","Positive Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonMinusPurity =new TH3D("Hist3dKaonMinusPurity","Negative Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+
+
+   HistProtonPurityInPt=new TH1F("HistProtonPurityInPt","Pt Distribution of Purity in Proton", ptBin,nArrayPt);
+   HistProtonPlusPurityInPt=new TH1F("HistProtonPlusPurityInPt","Pt Distribution of Purity in Positive Proton", ptBin,nArrayPt);
+   HistProtonMinusPurityInPt=new TH1F("HistProtonMinusPurityInPt","Pt Distribution of Purity in Negative Proton", ptBin,nArrayPt);
+   Hist3dProtonPurity =new TH3D("Hist3dProtonPurity","Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonPlusPurity =new TH3D("Hist3dProtonPlusPurity","Positive Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonMinusPurity =new TH3D("Hist3dProtonMinusPurity","Negative Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+
+ fOutputList->Add(HistPionContaminationInPt);
+ fOutputList->Add(HistPionPlusContaminationInPt);
+ fOutputList->Add(HistPionMinusContaminationInPt);
+ fOutputList->Add(Hist3dPionContamination);
+ fOutputList->Add(Hist3dPionPlusContamination);
+ fOutputList->Add(Hist3dPionMinusContamination);
+ fOutputList->Add(HistKaonContaminationInPt);
+ fOutputList->Add(HistKaonPlusContaminationInPt);
+ fOutputList->Add(HistKaonMinusContaminationInPt);
+ fOutputList->Add(Hist3dKaonContamination);
+ fOutputList->Add(Hist3dKaonPlusContamination);
+ fOutputList->Add(Hist3dKaonMinusContamination);
+ fOutputList->Add(HistProtonContaminationInPt);
+ fOutputList->Add(HistProtonPlusContaminationInPt);
+ fOutputList->Add(HistProtonMinusContaminationInPt);
+ fOutputList->Add(Hist3dProtonContamination);
+ fOutputList->Add(Hist3dProtonPlusContamination);
+ fOutputList->Add(Hist3dProtonMinusContamination); 
+ fOutputList->Add(HistPionPurityInPt);
+ fOutputList->Add(HistPionPlusPurityInPt);
+ fOutputList->Add(HistPionMinusPurityInPt);
+ fOutputList->Add(Hist3dPionPurity);
+ fOutputList->Add(Hist3dPionPlusPurity);
+ fOutputList->Add(Hist3dPionMinusPurity);
+ fOutputList->Add(HistKaonPurityInPt);
+ fOutputList->Add(HistKaonPlusPurityInPt);
+ fOutputList->Add(HistKaonMinusPurityInPt);
+ fOutputList->Add(Hist3dKaonPurity);
+ fOutputList->Add(Hist3dKaonPlusPurity);
+ fOutputList->Add(Hist3dKaonMinusPurity);
+ fOutputList->Add(HistProtonPurityInPt);
+ fOutputList->Add(HistProtonPlusPurityInPt);
+ fOutputList->Add(HistProtonMinusPurityInPt);
+ fOutputList->Add(Hist3dProtonPurity);
+ fOutputList->Add(Hist3dProtonPlusPurity);
+ fOutputList->Add(Hist3dProtonMinusPurity);
+
+// Contamination and Purity  Histogram 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -330,6 +455,7 @@ fHistBetaTOF = new TH2F(Form("fHistBetaTOF"), ";p_{T} (GeV/c);v/c",200, 0.0, fMa
  fHistSigmaTPCVsTOFKaonForProtonAfterCut=new TH2F("KaonForProtonAfterCut","Sigma plot for Proton   as a Kaon TPC Vs TOF After cut",500,-100,100,500,-100,100);
 
 
+ fOutputList->Add(fHistSigmaTPCVsTOFPionForPionAfterCut);
  fOutputList->Add(fHistSigmaTPCVsTOFProtonForPionAfterCut);
  fOutputList->Add(fHistSigmaTPCVsTOFKaonForPionAfterCut);
  fOutputList->Add(fHistSigmaTPCVsTOFPionForKaonAfterCut);
@@ -492,7 +618,19 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 
           if (fInjectedSignals && currentAODMCParticle->GetLabel() >= skipParticlesAbove) continue;
 
+
+// PDG Code  from Track label of MC particle 
+
+
+/*    AliAODMCParticle* pidCodeMC = (AliAODMCParticle*)fArrayMC->At(TMath::Abs(currentAODMCParticle->GetLabel()));
+    Int_t pdgCodeMC = pidCodeMC->GetPdgCode();*/
+
+// PDG Code from Track label of MC particle
+
+
+
             Int_t pdgCode=((AliAODMCParticle*)currentAODMCParticle)->GetPdgCode();
+//cout<<" PDG CODE MC from label matching is "<<pdgCodeMC<<'\t'<<" PDG Code of MC without label matchiing is "<<pdgCode<<endl; 
             
              if (TMath::Abs(pdgCode)==11) continue;
 	
@@ -658,6 +796,7 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 		  
                Int_t pdgCodeReco = ((AliAODMCParticle*)recoMC)->GetPdgCode();
 
+             if (TMath::Abs(pdgCodeReco)==11) continue;
 
 // PID selection start ================================================================================================================================================
 
@@ -680,6 +819,7 @@ if(particleMCReco == kSpUndefined ) continue;
 
 Double_t nsigmaPionTOF,nsigmaKaonTOF,nsigmaProtonTOF;
 Double_t nsigmaPionTPC,nsigmaKaonTPC,nsigmaProtonTPC;
+Double_t nsigmaPionTPCTOF,nsigmaKaonTPCTOF,nsigmaProtonTPCTOF;
 
 nsigmaPionTOF= fnsigmas[kSpPion][kNSigmaTOF];
 nsigmaKaonTOF= fnsigmas[kSpKaon][kNSigmaTOF];
@@ -690,11 +830,24 @@ nsigmaPionTPC= fnsigmas[kSpPion][kNSigmaTPC];
 nsigmaKaonTPC= fnsigmas[kSpKaon][kNSigmaTPC];
 nsigmaProtonTPC= fnsigmas[kSpProton][kNSigmaTPC];
 
+nsigmaPionTPCTOF = fnsigmas[kSpPion][kNSigmaTPCTOF];
+nsigmaKaonTPCTOF = fnsigmas[kSpKaon][kNSigmaTPCTOF];
+nsigmaProtonTPCTOF = fnsigmas[kSpProton][kNSigmaTPCTOF];
+
+
+
+//cout<<" NSigma TOF Pion "<<nsigmaPionTOF<<'\t'<<"NSigma TOF Kaon "<<nsigmaKaonTOF<<'\t'<<"Nsigma TOF Proton "<<nsigmaProtonTOF<<endl;
+
+
 //Pion
 
 if(TMath::Abs(pdgCodeReco) == 211) {
 if(particleMCReco==kSpPion) {
+if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaPionTOF!=999 && nsigmaPionTPCTOF<3.0){
 fHistSigmaTPCVsTOFPionForPionAfterCut->Fill(nsigmaPionTOF, nsigmaPionTPC);
+//cout<<"NSigma Pion TOF is "<<nsigmaPionTOF<<endl;
+}
+
 h1PionAfterCut->Fill(trackAOD->Pt());
 fHistMCRecoPion->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
 if(gCharge>0) fHistMCRecoPionPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
@@ -725,7 +878,10 @@ h1PionAsNonPion->Fill(trackAOD->Pt());
 
 if(TMath::Abs(pdgCodeReco) == 321) {
 if(particleMCReco==kSpKaon) {
+if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaKaonTOF!=999 && nsigmaKaonTPCTOF<3.0){
 fHistSigmaTPCVsTOFKaonForKaonAfterCut->Fill(nsigmaKaonTOF, nsigmaKaonTPC);
+//cout<<"NSigma Kaon TOF is "<<nsigmaKaonTOF<<endl;
+}
 h1KaonAfterCut->Fill(trackAOD->Pt());
 fHistMCRecoKaon->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
 if(gCharge>0) fHistMCRecoKaonPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
@@ -757,7 +913,11 @@ h1KaonAsNonKaon->Fill(trackAOD->Pt());
 
 if(TMath::Abs(pdgCodeReco) == 2212) {
 if(particleMCReco==kSpProton) {
+if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaProtonTOF!=999 && nsigmaProtonTPCTOF<3.0){
 fHistSigmaTPCVsTOFProtonForProtonAfterCut->Fill(nsigmaProtonTOF, nsigmaProtonTPC);
+//cout<<"NSigma Proton TOF is "<<nsigmaProtonTOF<<endl;
+}
+
 h1ProtonAfterCut->Fill(trackAOD->Pt());
 fHistMCRecoProton->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
 if(gCharge>0) fHistMCRecoProtonPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
@@ -784,6 +944,57 @@ h1ProtonAsNonProton->Fill(trackAOD->Pt());
 }
 
 }
+
+// Fill the Histograms for Contamination
+if(TMath::Abs(pdgCodeReco) !=211 && particleMCReco == kSpPion) {
+HistPionContaminationInPt->Fill(trackAOD->Pt());
+Hist3dPionContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+if(gCharge>0) {
+Hist3dPionPlusContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+HistPionPlusContaminationInPt->Fill(trackAOD->Pt());
+}
+
+if(gCharge<0){
+ Hist3dPionMinusContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+ HistPionMinusContaminationInPt->Fill(trackAOD->Pt());
+}
+
+}
+
+if(TMath::Abs(pdgCodeReco)!=321 && particleMCReco == kSpKaon) {
+HistKaonContaminationInPt->Fill(trackAOD->Pt());
+Hist3dKaonContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+if(gCharge>0) {
+Hist3dKaonPlusContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+HistKaonPlusContaminationInPt->Fill(trackAOD->Pt());
+}
+
+if(gCharge<0){
+ Hist3dKaonMinusContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+ HistKaonMinusContaminationInPt->Fill(trackAOD->Pt());
+}
+
+}
+
+if(TMath::Abs(pdgCodeReco)!=2212 && particleMCReco == kSpProton) {
+HistProtonContaminationInPt->Fill(trackAOD->Pt());
+Hist3dProtonContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+if(gCharge>0) {
+Hist3dProtonPlusContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+HistProtonPlusContaminationInPt->Fill(trackAOD->Pt());
+}
+
+if(gCharge<0){
+ Hist3dProtonMinusContamination->Fill(trackAOD->Eta(),trackAOD->Pt(),trackAOD->Phi());
+ HistProtonMinusContaminationInPt->Fill(trackAOD->Pt());
+}
+
+}
+// Fill the Histograms for Contamination
+
+
+
+
 // PID selection end ================================================================================================================================================
 
 		
@@ -878,12 +1089,15 @@ if(trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt && (!IsTOFPID(trk))) return kSpUndefi
     nsigmaProton  =  TMath::Abs(fnsigmas[kSpProton][kNSigmaTPC]);
     nsigmaKaon    =  TMath::Abs(fnsigmas[kSpKaon][kNSigmaTPC])  ;
     nsigmaPion    =  TMath::Abs(fnsigmas[kSpPion][kNSigmaTPC])  ;
+
+   //cout<<" I am using TPC detector "<<endl;
     break;
 
   case kNSigmaTPCTOF://In case of no TOF matching the combined nsigma is the TPC one
     nsigmaProton  =  TMath::Abs(fnsigmas[kSpProton][kNSigmaTPCTOF]);
     nsigmaKaon    =  TMath::Abs(fnsigmas[kSpKaon][kNSigmaTPCTOF])  ;
     nsigmaPion    =  TMath::Abs(fnsigmas[kSpPion][kNSigmaTPCTOF])  ;
+   //cout<<" I am using TPCTOF detector "<<endl;
     break;
 
   case kNSigmaTOF:
@@ -891,6 +1105,7 @@ if(trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt && (!IsTOFPID(trk))) return kSpUndefi
     nsigmaProton  =  TMath::Abs(fnsigmas[kSpProton][kNSigmaTOF]);
     nsigmaKaon    =  TMath::Abs(fnsigmas[kSpKaon][kNSigmaTOF])  ;
     nsigmaPion    =  TMath::Abs(fnsigmas[kSpPion][kNSigmaTOF])  ;
+   //cout<<" I am using TOF detector "<<endl;
     break;
 
 
@@ -898,9 +1113,18 @@ if(trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt && (!IsTOFPID(trk))) return kSpUndefi
 }
 
 if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) return kSpUndefined;
+
+//Kaon
+
 if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKaon   < fNSigmaPID)) return kSpKaon;
 
+
+//Pion
+
  if( ( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fNSigmaPID))  return kSpPion;
+
+
+//Proton
 
  if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fNSigmaPID))  return kSpProton;
 

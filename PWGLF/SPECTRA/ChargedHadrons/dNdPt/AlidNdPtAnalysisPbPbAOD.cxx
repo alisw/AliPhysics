@@ -139,6 +139,9 @@ fCutPtMin(0.15),
 fCutPtMax(200.),
 fCutEtaMin(-0.8),
 fCutEtaMax(0.8),
+// anchor point
+fAnchorPointCorrectionFactor(1),
+fDoAnchorPointSystStudy(kFALSE),
 // track quality cut variables
 fFilterBit(AliAODTrack::kTrkGlobal),
 fHybridTracking(kFALSE),
@@ -1236,6 +1239,11 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if( (bIsEventSelectedCentral)  && (dCentrality > 10) ) return;
   //   if( (bIsEventSelectedSemi) && ((dCentrality < 20) || (dCentrality > 50))) return;
   if( (bIsEventSelectedSemi) &&  (dCentrality > 50) ) return;
+  
+  if(DoAnchorPointSystStudy() && GetAnchorPointCorrectionFactor()>0)
+  {
+    dCentrality = dCentrality/GetAnchorPointCorrectionFactor(); // division of centrality value is same as moving bins upwards
+  }
   
   fEventStatistics->Fill("after centrality selection",1);
   

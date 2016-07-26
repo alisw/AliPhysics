@@ -70,19 +70,19 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   
   // Set binning for Histograms (if not set default binning is used)
-  void SetBinsMult(Int_t nbins, Double_t* edges)        { Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
-  void SetBinsMultFine(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Fine Mult Bins"); fMultFineNbins = nbins; fBinsMultFine = GetArrayClone(nbins,edges); }
-  void SetBinsPt(Int_t nbins, Double_t* edges)          { Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
-  void SetBinsPtCorr(Int_t nbins, Double_t* edges)      { Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
-  void SetBinsPtCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcheck Bins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
-  void SetBinsEta(Int_t nbins, Double_t* edges)         { Printf("[I] Setting Eta Bins"); fEtaNbins = nbins; fBinsEta = GetArrayClone(nbins,edges); }
-  void SetBinsEtaCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting EtaCheck Bins"); fEtaCheckNbins = nbins; fBinsEtaCheck = GetArrayClone(nbins,edges); }
-  void SetBinsZv(Int_t nbins, Double_t* edges)          { Printf("[I] Setting Zv Bins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
-  void SetBinsCentrality(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting Cent Bins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
-  void SetBinsPhi(Int_t nbins, Double_t* edges)         { Printf("[I] Setting Phi Bins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
-  void SetBinsPhiCorr(Int_t nbins, Double_t* edges)     { Printf("[I] Setting PhiCorr Bins"); fPhiCorrNbins = nbins; fBinsPhiCorr = GetArrayClone(nbins,edges); }
-  void SetBinsDeltaphi(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Deltaphi Bins"); fDeltaphiNbins = nbins; fBinsDeltaphi = GetArrayClone(nbins,edges); }
-  void SetBinsRunNumber(Int_t nbins, Double_t* edges) 	{ Printf("[I] Setting RunNumber Bins"); fRunNumberNbins = nbins; fBinsRunNumber = GetArrayClone(nbins,edges); }
+  void SetBinsMult(Int_t nbins, Double_t* edges)      { Printf("[Set] MultBins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
+  void SetBinsMultFine(Int_t nbins, Double_t* edges) 	{ Printf("[Set] FineMultBins"); fMultFineNbins = nbins; fBinsMultFine = GetArrayClone(nbins,edges); }
+  void SetBinsPt(Int_t nbins, Double_t* edges)        { Printf("[Set] pTBins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges)    { Printf("[Set] pTcorrBins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
+  void SetBinsPtCheck(Int_t nbins, Double_t* edges) 	{ Printf("[Set] pTcheckBins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
+  void SetBinsEta(Int_t nbins, Double_t* edges)       { Printf("[Set] EtaBins"); fEtaNbins = nbins; fBinsEta = GetArrayClone(nbins,edges); }
+  void SetBinsEtaCheck(Int_t nbins, Double_t* edges) 	{ Printf("[Set] EtaCheckBins"); fEtaCheckNbins = nbins; fBinsEtaCheck = GetArrayClone(nbins,edges); }
+  void SetBinsZv(Int_t nbins, Double_t* edges)        { Printf("[Set] ZvBins"); fZvNbins = nbins; fBinsZv= GetArrayClone(nbins,edges); }
+  void SetBinsCentrality(Int_t nbins, Double_t* edges){ Printf("[Set] CentBins"); fCentralityNbins = nbins; fBinsCentrality = GetArrayClone(nbins,edges); }
+  void SetBinsPhi(Int_t nbins, Double_t* edges)       { Printf("[Set] PhiBins"); fPhiNbins = nbins; fBinsPhi = GetArrayClone(nbins,edges); }
+  void SetBinsPhiCorr(Int_t nbins, Double_t* edges)   { Printf("[Set] PhiCorrBins"); fPhiCorrNbins = nbins; fBinsPhiCorr = GetArrayClone(nbins,edges); }
+  void SetBinsDeltaphi(Int_t nbins, Double_t* edges) 	{ Printf("[Set] DeltaphiBins"); fDeltaphiNbins = nbins; fBinsDeltaphi = GetArrayClone(nbins,edges); }
+  void SetBinsRunNumber(Int_t nbins, Double_t* edges) { Printf("[Set] RunNumberBins"); fRunNumberNbins = nbins; fBinsRunNumber = GetArrayClone(nbins,edges); }
   
   // set event cut variables
   void SetCutMaxZVertex( Double_t d)					    { fCutMaxZVertex = d; }
@@ -201,6 +201,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
   
   void DisableOnlineTriggerStrings(char *c) { fDisabledTriggerString = c; }
   TString GetDisabledOnlineTrigger() { return fDisabledTriggerString; }
+  
+  void SetAnchorPointSystematicFactor(Double_t d) { fAnchorPointCorrectionFactor = d; fDoAnchorPointSystStudy = kTRUE; }
+  Bool_t DoAnchorPointSystStudy() { return fDoAnchorPointSystStudy; }
+  Double_t GetAnchorPointCorrectionFactor() { return fAnchorPointCorrectionFactor; }
   
   private :
   
@@ -328,6 +332,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
   Double_t fCutPtMax;
   Double_t fCutEtaMin;
   Double_t fCutEtaMax;
+  
+  Double_t fAnchorPointCorrectionFactor; // factor to check for systematic effect of systematic uncertainty of setting of anchor point
+  Bool_t fDoAnchorPointSystStudy; // do systematic study on anchor point
   
   // track quality cut variables
   Int_t	    fFilterBit;

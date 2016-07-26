@@ -555,7 +555,7 @@ Int_t AliHFAssociatedTrackCuts::GetPoolBin(Double_t multorcent, Double_t zVtx) c
         }
     }
 
-    poolbin = centbin  + zvtxbin*fNzVtxBins;
+    poolbin = centbin  + zvtxbin*fNCentBins;
     
     return poolbin;
 }

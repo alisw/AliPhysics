@@ -3,12 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <THashList.h>
+#include <TIterator.h>
 #include <TNamed.h>
+#include <iterator>
 
 class TArrayD;
 class TAxis;
 class TList;
-class THashList;
 class TH1;
 class TH2;
 class TH3;
@@ -18,6 +20,7 @@ class TProfile;
 /**
  * \class THistManager
  * \brief Container class for histograms for the high-\f$ p_{t} \f$ charged particle analysis
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  *
  * Container class for histogram objects. Currently can handle
  *   TH1
@@ -32,6 +35,55 @@ class TProfile;
  */
 class THistManager : public TNamed {
 public:
+  /**
+   * \class iterator
+   * \brief stl-iterator for the histogram manager
+   *
+   * stl-type iterator for the histogram manager. Iterating
+   * over primary content of the histogram manager. In case
+   * histograms are organized in groups, the primary content
+   * will be histogram groups, with the data structure
+   * THashList. The iterator is implemented as bidirectional
+   * iterator, providing forward and backward iteration.
+   */
+  class iterator :  public std::iterator<std::bidirectional_iterator_tag,
+                                                 TObject, std::ptrdiff_t,
+                                                 TObject **, TObject *&>{
+  public:
+    /**
+     * \enum THMIDirection_t
+     * \brief Direction for the iteration
+     *
+     * Switch for the firection of the iteration.
+     * Currently the iterator is implemented as
+     * bi-directional iterator, providing only
+     * forward and backward iteration.
+     */
+    enum THMIDirection_t {
+      kTHMIforward = 0,//!< Forward iteration
+      kTHMIbackward = 1//!< Backward iteration
+    };
+    iterator(const THistManager *hmgr, Int_t currentpos, THMIDirection_t dir = kTHMIforward);
+    iterator(const iterator &ref);
+    ~iterator() { }
+
+    iterator              &operator=(const iterator &rhs);
+    Bool_t                operator!=(const iterator &aIter) const;
+    iterator              &operator++();
+    iterator              operator++(int);
+    iterator              &operator--();
+    iterator              operator--(int);
+    TObject               *operator*() const;
+
+  private:
+    const THistManager          *fkArray;
+    Int_t                       fCurrentPos;
+    Int_t                       fNext;
+    THMIDirection_t             fDirection;
+
+    iterator();
+  };
+
 	THistManager();
 	THistManager(const char *name);
 	~THistManager();
@@ -63,11 +115,16 @@ public:
 	void FillTHnSparse(const char *name, const double *x, double weight = 1.);
   void FillProfile(const char *name, double x, double y, double weight = 1.);
 
+  iterator begin() const;
+  iterator end() const;
+  iterator rbegin() const;
+  iterator rend() const;
+
   /**
    * Get the list of histograms
    * \return The list of histograms
    */
-	THashList *GetListOfHistograms() { return fHistos; }
+	THashList *GetListOfHistograms() const { return fHistos; }
 	TObject *FindObject(const char *name) const;
 	virtual TObject *FindObject(const TObject *obj) const;
 
@@ -86,5 +143,4 @@ private:
 	ClassDef(THistManager, 1);  // Container for histograms
   /// \endcond
 };
-
 #endif

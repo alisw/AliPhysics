@@ -12,6 +12,14 @@
 //configIndex = 9 ---> TPC PID: -0.5 to 3.0
 //configIndex = 10 ---> V0A -> other
 //configIndex = 11 ---> Associated hadron with SPD::kAny cut
+//Configurations for the hadron cut
+//configIndex = 20 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
+//configIndex = 21 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
+//configIndex = 22 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
+//configIndex = 23 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
+
+//To change the electron the test electron binning: just sum +100 to the configuration you are working. For example: config 1 with alternative binning-> 101
+
 ///*******************************************************
 
 AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
@@ -32,6 +40,12 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     hfecuts->CreateStandardCuts();
     
     //TPC Cuts
+    Bool_t SetFinepTBinning;
+    if(configIndex>99)
+    {
+        SetFinepTBinning = kTRUE;
+        configIndex = configIndex - 100;
+    }
     
     hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
     if(configIndex==1) 	hfecuts->SetMinNClustersTPC(100);			                //Minimum number of clusters on TPC = 100
@@ -85,6 +99,8 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     task->SetEventMixing(kTRUE);
     if(ispp)
         task->SetPPanalysis(kTRUE);
+    if(SetFinepTBinning)
+        task->SetUseAlternativeBinning();
     
     task->SetAssHadronPtRange(0.5,2.0);
     
@@ -120,6 +136,33 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     if(centralityIndex==2) task->SetCentrality(60,100);
     if(centralityIndex==3) task->SetCentrality(0,10);
     if(centralityIndex==4) task->SetCentrality(10,20);
+    
+    //Configuring the DCA Hadrons cuts
+    //configIndex = 20 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
+    //configIndex = 21 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
+    //configIndex = 22 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
+    //configIndex = 23 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
+    if(configIndex == 20)
+    {
+        task->SetUseDCACutHadron();
+        task->SetDCACutHadron(0.25, 1);
+    }
+    
+    if(configIndex == 21)
+    {
+        task->SetUseDCACutHadron();
+        task->SetDCACutHadron(0.1, 1);
+    }
+    if(configIndex == 22)
+    {
+        task->SetUseDCACutHadron();
+        task->SetDCACutHadron(0.5, 1);
+    }
+    if(configIndex == 23)
+    {
+        task->SetUseDCACutHadron();
+        task->SetDCACutHadron(1, 1);
+    }
     ///_______________________________________________________________________________________________________________
     
     ///_______________________________________________________________________________________________________________

@@ -153,6 +153,56 @@ AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, Ali
 
 
 //__________________________________________________________________________________________________
+AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const char *name, AliRsnCutTrackQuality *rsnTrackQualityCut, AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutSetID, AliPID::EParticleType pid, Float_t nSigmaFastTPC = -1.0, Float_t nSigmaFastTOF = -1.0) :
+  AliRsnCutSet(name, AliRsnTarget::kDaughter),
+  fPID(pid),
+  fAppliedCutSetID(cutSetID),
+  fNsigmaTPC(nSigmaFastTPC),
+  fNsigmaTOF(nSigmaFastTOF),
+  fCutQuality(rsnTrackQualityCut),
+  fAODTrkCutFilterBit(0),
+  fCheckOnlyFilterBit(kFALSE),
+  fUseCustomQualityCuts(kFALSE),
+  fIsUse2011stdQualityCuts(kFALSE),  
+  fIsUse2011stdQualityCutsHighPt(kFALSE)
+{
+  //
+  // Constructor: uses externally-defined track-quality cut object
+  //
+  if (!rsnTrackQualityCut) {
+    //if external track quality cut object not defined,
+    //sets default track quality to be initialised (with cut on TPC crossed rows) +
+    //sets here pt and eta cuts
+    InitStdQualityCuts(kTRUE);
+    SetPtRange(0.15, 20.0);
+    SetEtaRange(-0.8, 0.8);
+  } else {
+    //checks validity of passed quality-cut object
+    //if Ok, inherits all cuts including Pt and Eta cut
+    fCheckOnlyFilterBit=kFALSE;
+    fUseCustomQualityCuts = kTRUE;
+    SetPtRange(rsnTrackQualityCut->GetPtRange(0), rsnTrackQualityCut->GetPtRange(1));
+    SetEtaRange(rsnTrackQualityCut->GetEtaRange(0),rsnTrackQualityCut->GetEtaRange(1));
+    AliInfo("Custom quality cuts applied");
+    rsnTrackQualityCut->Print();
+  } 
+  
+  //if nsigma not specified, sets "no-PID" cuts
+  if (nSigmaFastTPC<=0){
+    fNsigmaTPC=1e20;
+    AliWarning("Requested fast n-sigma TPC PID with negative value for n. --> Setting n = 1E20");
+  }
+  if (nSigmaFastTOF<=0){
+    fNsigmaTOF=1e20;
+    AliWarning("Requested fast n-sigma TOF PID with negative value for n. --> Setting n = 1E20");
+  }
+  
+  //initialize PID cuts
+  Init(); 
+}
+
+
+//__________________________________________________________________________________________________
 AliRsnCutSetDaughterParticle::AliRsnCutSetDaughterParticle(const AliRsnCutSetDaughterParticle &copy) :
   AliRsnCutSet(copy),
   fPID(copy.fPID),
@@ -687,6 +737,56 @@ void AliRsnCutSetDaughterParticle::Init()
 
       //      SetCutScheme( Form("%s&(!%s)&((%s&%s)|(%s))",fCutQuality->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
       break;
+
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015:
+
+      if(fNsigmaTOF<10.){
+	iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+	iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+	AddCut(fCutQuality);
+	iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+
+	AddCut(iCutTPCNSigma);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTOFNSigma);
+
+	// scheme:
+	// quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
+	SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+
+      }else{
+	iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+	iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+	AddCut(fCutQuality);
+	iCutTOFNSigma->SinglePIDRange(fNsigmaTOF-10.);
+
+	AddCut(iCutTPCNSigma);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTOFNSigma);
+
+
+	iCutTPCTOFNSigma->AddPIDRange(fNsigmaTPC,0.7,1.8);
+	AddCut(iCutTPCTOFNSigma);
+
+	// scheme:
+	// quality & [ (TPCTOF & TOF) | {!TPCTOF && [(TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma)]} ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&((%s&(!%s))|(%s&%s))))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+      }
+
+       break;
+
+    case AliRsnCutSetDaughterParticle::kTPCpidphipp2015:
+
+      iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
+      iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+      AddCut(fCutQuality);
+      AddCut(iCutTPCNSigma);
+      SetCutScheme( Form("%s&%s",fCutQuality->GetName(), iCutTPCNSigma->GetName()) );
+      break;
+
     default :
       break;
     }

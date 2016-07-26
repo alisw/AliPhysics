@@ -68,6 +68,7 @@ protected:
     else if (t.BeginsWith("dpmjet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("phojet"))          g=Dpmjet(b1, b2);
     else if (t.BeginsWith("hydjet"))          g=Hydjet(b1, b2);
+    else if (t.BeginsWith("epos-lhc"))        g=EposLHC(b1, b2);
     else if (t.BeginsWith("epos"))            g=Epos(b1, b2);
     else if (t.BeginsWith("therminator"))     g=Therminator(b1, b2);
     else if (t.BeginsWith("lego"))            g=Lego(rt);
@@ -509,6 +510,30 @@ protected:
     genHi->SetTitle(tit);
     return genHi;
   }
+  /** 
+   * Make an Epos=LHC generator for p-p, A-A, p-A, or A-p
+   * 
+   * @return Generator 
+   */
+  AliGenerator* EposLHC(Float_t minB, Float_t maxB)
+  {
+    LoadEposLHC();
+    AliGenEposLHC* gen = new AliGenEposLHC(-1);
+    gen->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
+    gen->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
+    // We should set the beam momenta instead of the CM energy 
+    //  gen->SetEnergyCMS(grp->energy);
+    // Note, one of the beams should have negative momentum 
+    gen->SetPTarget    (-grp->BeamMomentum(1));
+    gen->SetPProjectile(+grp->BeamMomentum(2));
+    gen->SetImpactParameterRange(minB, maxB);
+    TString tit(Form("EPOS-LHC %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
+		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
+		     Int_t(grp->energy), minB, maxB));
+    gen->SetTitle(tit);
+    return gen;
+  }    
   /** 
    * Make an Epos generator for p-p (A-A, or p-A possible?)
    * 

@@ -49,6 +49,22 @@ if [ $# -eq 5 ]; then
     triggerAlias=${5//\"/}
 fi
 
+# ===| TPC default values |===================================================
+# can be overwritten by JDL below
+# JDL will overwrite the config file
+#
+# ---| gain calibration |-----------------------------------------------------
+# default in CPass0 is full calibration,
+#    for number convention see AliTPCPreprocessorOffline::EGainCalibType
+#
+export TPC_CPass0_GainCalibType=1
+
+# ===| TPC JDL overwrites |===================================================
+#
+export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPass0_GainCalibType-$TPC_CPass0_GainCalibType}
+
+echo "TPC_CPass0_GainCalibType=${TPC_CPass0_GainCalibType}" | tee -a calib.log
+
 if [ -f Run0_999999999_v3_s0.root ]; then
     mkdir -p TPC/Calib/Correction
     mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
@@ -124,7 +140,7 @@ fi
 
 echo "* Running AliRoot to make calibration..."
 echo executing aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
-time aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &> calib.log
+time aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &>> calib.log
 exitcode=$?
 
 echo "*! Exit code of runCalibTrain.C: $exitcode"

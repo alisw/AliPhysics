@@ -26,11 +26,11 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fDoPropagation(kFALSE),
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
+  fKeepInvMassTag(kFALSE),
   fDist(440),
   fTrackEfficiency(0),
   fTracksIn(0),
-  fTracksOut(0),
-  fKeepInvMassTag(kFALSE)
+  fTracksOut(0)
 {
   // Constructor.
 
@@ -50,11 +50,11 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fDoPropagation(kFALSE),
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
+  fKeepInvMassTag(kFALSE),
   fDist(440),
   fTrackEfficiency(0),
   fTracksIn(0),
-  fTracksOut(0),
-  fKeepInvMassTag(kFALSE)
+  fTracksOut(0)
 {
   // Constructor.
 

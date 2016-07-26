@@ -68,6 +68,8 @@ public:
     static Bool_t IsNotPileupSPD                       (AliVEvent *event);
     static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);
     static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
+    static Bool_t IsNotAsymmetricInVZERO               (AliVEvent *event);
+    static Bool_t IsNotIncompleteDAQ                   (AliVEvent *event);
     
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
@@ -211,6 +213,8 @@ private:
     Bool_t fEvSel_INELgtZERO;               //! //done with SPD tracklets
     Bool_t fEvSel_HasNoInconsistentVertices;//!
     Bool_t fEvSel_PassesTrackletVsCluster;  //!
+    Bool_t fEvSel_IsNotAsymmetricInVZERO;   //!
+    Bool_t fEvSel_IsNotIncompleteDAQ;       //!
     
     //Other Selections: more dedicated filtering to be studied!
 
@@ -246,6 +250,7 @@ private:
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
+    TH2D *fHistEventSelections; //! For keeping track of 
     
     //Simple QA histograms
     TH1D *fHistQA_V0M; 
@@ -269,7 +274,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 1);
+    ClassDef(AliMultSelectionTask, 2);
 };
 
 #endif

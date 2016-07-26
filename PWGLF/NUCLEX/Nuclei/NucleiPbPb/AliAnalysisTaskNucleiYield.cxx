@@ -298,11 +298,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
     fATOFphiSignal = new TH3F("fATOFphiSignal",
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              64,0.,TMath::TwoPi(),28,0.2,3.,
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     fMTOFphiSignal = new TH3F("fMTOFphiSignal",
                               ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-                              64,0.,TMath::TwoPi(),36,0.2,2.,
+                              64,0.,TMath::TwoPi(),28,0.2,3.,
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     if (fRequireMinEnergyLoss > 0.) {
       fList->Add(fMTOFphiSignal);
@@ -479,17 +479,17 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fATPCphiCounts->Fill(track->Phi(),pT);
         fATPCcounts->Fill(centrality, pT);
       }
-      if (beta < 0) continue;
+      if (beta < 1.e-10) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
-      const float m = track->GetTPCmomentum() * (TMath::Sqrt(1.f - beta * beta) / beta);
+      const float m = track->GetTPCmomentum() * track->GetTPCmomentum() * (1.f / (beta * beta) - 1.f);
       if (track->Charge() > 0) {
         fMDCAxyTOF->Fill(centrality, pT, dca[0]);
         fMDCAzTOF->Fill(centrality, pT, dca[1]);
-        fMTOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
-        fMTOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
+        fMTOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
+        fMTOFphiSignal->Fill(track->Phi(),pT,m - fPDGMassOverZ * fPDGMassOverZ);
       } else {
-        fATOFsignal->Fill(centrality, pT, m * m - fPDGMassOverZ * fPDGMassOverZ);
-        fATOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
+        fATOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
+        fATOFphiSignal->Fill(track->Phi(),pT,m - fPDGMassOverZ * fPDGMassOverZ);
       }
     }
 
@@ -582,10 +582,10 @@ Float_t AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track) {
   if (tim < len / LIGHT_SPEED) return -1.;
   else {
     const float beta = len / (tim * LIGHT_SPEED);
-    if (beta < EPS || beta > (1. - EPS))
-      return -1.f;
-    else
-      return beta;
+    //if (beta < EPS || beta > (1. - EPS))
+    //  return -1.f;
+    //else
+    return beta;
   }
 }
 

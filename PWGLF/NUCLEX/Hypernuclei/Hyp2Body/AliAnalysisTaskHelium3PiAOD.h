@@ -7,159 +7,167 @@
 //                 AliAnalysisTaskHelium3Pion class
 //-----------------------------------------------------------------
 
+#include <AliPIDResponse.h>
+#include "TString.h"
+#include "AliAnalysisTaskSE.h"
+
 class TList;
 class TH1F;
 class TH2F;
 class TH3F;
 class TTree;
 class AliESDtrackCuts;
-
-#include <AliPIDResponse.h>
-
-#include "TString.h"
-
-#include "AliAnalysisTaskSE.h"
+class AliAODTrack;
 
 class AliAnalysisTaskHelium3PiAOD : public AliAnalysisTaskSE {
  public:
+
+  AliAnalysisTaskHelium3PiAOD(TString name);
   AliAnalysisTaskHelium3PiAOD();
-  AliAnalysisTaskHelium3PiAOD(const char *name);
   virtual ~AliAnalysisTaskHelium3PiAOD();
+  
+  Double_t BetheBloch(Double_t betaGamma,Double_t charge,Bool_t isPbPb);
+  Bool_t  Flatten(Float_t cent);
+  Bool_t  AcceptTrack(AliAODTrack *t);
+  
+  void SetCollidingSystems(Short_t collidingSystems = 1){fCollidingSystems = collidingSystems;}; 
+  void SetAnalysisType(TString analysisType = "ESD"){fAnalysisType= analysisType;};
+  void SetDataType(TString dataType = "PbPb"){fDataType = dataType;};
+  void SetYear(Int_t year  = 2011){fYear= year;};
+  void SetVzMax(Float_t Vzmax = 10){fVzmax= Vzmax;};
+  void SetApplyFlatten(Bool_t  applyFlatten = kFALSE){fApplyFlatten= applyFlatten;};
+  void SetFill3Htree(Bool_t  fill3hetree = kFALSE){fFill3Hetree= fill3hetree;};
+  void ComputeFlow(Bool_t  doFlow = kFALSE){fDoFlow= doFlow;};
   
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
+ 
+ private:
   
-  void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
-  void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
-  void SetDataType    (const char* dataType = "REAL") {fDataType = dataType;}
+  AliAODEvent *fAODevent;            // 
+  AliVEvent   *fevent;               // 
+ 
+  TString fAnalysisType;	     // "ESD" or "AOD" analysis type	
+  Short_t fCollidingSystems;	     // 0 = pp collisions or 1 = AA collisions
+  TString fDataType;	             // pp, pPb or PbPb
+  Int_t   fYear;                     // 2010, 2011, 2015
+  Float_t fVzmax;                    // Vz max
+  Bool_t  fApplyFlatten;             // Apply flatter
+  Bool_t  fFill3Hetree ;             // Store the 3He tree
+  Bool_t  fDoFlow;                   // Compute flow-related (SP) variables
   
-  Double_t BetheBloch(Double_t bg,Double_t Charge,Bool_t isPbPb);
-
-  //  Bool_t IsTrackAccepted(AliVTrack *track);
   
-  private:
+  TList	*fListHist;	             // List of  histograms
   
-  TString fAnalysisType;	     //! "ESD" or "AOD" analysis type	
-  
-
-  Short_t fCollidingSystems;	     //! 0 = pp collisions or 1 = AA collisions
-  
-  AliESDtrackCuts *fESDtrackCuts; 
-
-  TString fDataType;		     //! "REAL" or "SIM" data type	
-
-  TList	*fListHist;	             //! List of  histograms
-
   TH1F *fHistEventMultiplicity;
+  
   TH2F *fHistTrackMultiplicity;
   TH2F *fHistTrackMultiplicityCent;
   TH2F *fHistTrackMultiplicitySemiCent;
   TH2F *fHistTrackMultiplicityMB;
+  TH2F *fHistTrackMultiplicityINT7;
   TH2F *fHistTrackMultiplicityPVCent;
   TH2F *fHistTrackMultiplicityPVSemiCent;
   TH2F *fHistTrackMultiplicityPVMB;
+  TH2F *fHistTrackMultiplicityPVINT7;
+
   TH2F *fhBB;
   TH2F *fhTOF;
   TH1F *fhMassTOF;
   TH2F *fhBBPions;
   TH2F *fhBBHe;
-  TH2F *fhNaPos;
-  TH2F *fhNaNeg;
-  TH2F *fBetavsTPCsignalPos;
-  TH2F *fBetavsTPCsignalNeg;
-   
-  TTree *fNtuple1;                  //! Tree Pairs Pi/Proton "standard"
+
+  // For SP resolution
+  TH2F *hQVzAQVzCvsCentrality;
+
+  // Controll Histograms
+
+  TH2F *hqEPCvsCentrality; 
+  TH2F *hqEPAvsCentrality;
+  TH2F *hqEPvsCentrality;
+
+  TTree *fNtuple1;                  // Tree Pairs Pi/Proton "standard"
   
-  Float_t trunNumber;
-  Float_t tbunchcross;
-  Float_t torbit;
-  Float_t tperiod;
-  Float_t teventtype;
-  Float_t tTrackNumber;
-  Float_t tpercentile;
-  Float_t txPrimaryVertex;
-  Float_t tyPrimaryVertex;
-  Float_t tzPrimaryVertex;
-  Float_t txSecondaryVertex;
-  Float_t tySecondaryVertex;
-  Float_t tzSecondaryVertex;
-  Float_t tdcaTracks;
-  Float_t tCosPointingAngle;
+  Float_t teventtype           ;
+  Float_t tTrackNumber         ;
+  Float_t tpercentile          ;
+  Float_t txPrimaryVertex      ;
+  Float_t tyPrimaryVertex      ;
+  Float_t tzPrimaryVertex      ;
+  Float_t txSecondaryVertex    ;
+  Float_t tySecondaryVertex    ;
+  Float_t tzSecondaryVertex    ;
+  Float_t tdcaTracks           ;
+  Float_t tCosPointingAngle    ;
   Float_t tDCAV0toPrimaryVertex;
-  Float_t tHeSign;
-  Float_t tHepInTPC;
-  Float_t tHeTPCsignal;
-  Float_t tDcaHeToPrimVertex;
-  Float_t tHeEta;
-  Float_t tmomHex;
-  Float_t tmomHey;
-  Float_t tmomHez;
-  Float_t tmomHeAtSVx;
-  Float_t tmomHeAtSVy;
-  Float_t tmomHeAtSVz;
-  Float_t tHeTPCNcls;
-  Float_t tHeimpactXY;
-  Float_t tHeimpactZ;
-  Float_t tHeITSClusterMap;
-  Float_t tIsHeITSRefit;
-  Float_t tPionSign;
-  Float_t tPionpInTPC;
-  Float_t tPionTPCsignal;
-  Float_t tDcaPionToPrimVertex;
-  Float_t tPionEta;
-  Float_t tmomPionx;
-  Float_t tmomPiony;
-  Float_t tmomPionz;
-  Float_t tmomNegPionAtSVx;
-  Float_t tmomNegPionAtSVy;
-  Float_t tmomNegPionAtSVz;
-  Float_t tPionTPCNcls;
-  Float_t tPionimpactXY;
-  Float_t tPionimpactZ;
-  Float_t tPionITSClusterMap;
-  Float_t tIsPiITSRefit;
-  Float_t txn;
-  Float_t txp;
-  Float_t tchi2He;
-  Float_t tchi2Pi;
+  Float_t tHeSign              ;
+  Float_t tHepInTPC            ;
+  Float_t tHeTPCsignal         ;
+  Float_t tDcaHeToPrimVertex   ;
+  Float_t tHeEta               ;
+  Float_t tmomHex              ;
+  Float_t tmomHey              ;
+  Float_t tmomHez              ;
+  Float_t tmomHeAtSVx          ;
+  Float_t tmomHeAtSVy          ;
+  Float_t tmomHeAtSVz          ;
+  Float_t tHeTPCNcls           ;
+  Float_t tHeimpactXY          ;
+  Float_t tHeimpactZ           ;
+  Float_t tHeITSClusterMap     ;
+  Float_t tIsHeITSRefit        ;
+  Float_t tPionSign            ;
+  Float_t tPionpInTPC          ;
+  Float_t tPionTPCsignal       ;
+  Float_t tDcaPionToPrimVertex ;
+  Float_t tPionEta             ;
+  Float_t tmomPionx            ;
+  Float_t tmomPiony            ;
+  Float_t tmomPionz            ;
+  Float_t tmomNegPionAtSVx     ;
+  Float_t tmomNegPionAtSVy     ;
+  Float_t tmomNegPionAtSVz     ;
+  Float_t tPionTPCNcls         ;
+  Float_t tPionimpactXY        ;
+  Float_t tPionimpactZ         ;
+  Float_t tPionITSClusterMap   ;
+  Float_t tIsPiITSRefit        ;
+  Float_t txn                  ;
+  Float_t txp                  ;
+  Float_t tuqV0A               ;
+  Float_t tuqV0C               ;
   
-  TTree *fNtuple4;                  //! Tree He 
+  TTree *fNtuple4;                  // Tree He 
 
-  Float_t tHelrunNumber;
-  Float_t tHelBCNumber;
-  Float_t tHelOrbitNumber;
-  Float_t tHelPeriodNumber;
-  Float_t tHeleventtype;
-  Float_t tHelisHeITSrefit;
-  Float_t tHelpercentile;
-  Float_t tHelSign;
-  Float_t tHelpinTPC;
-  Float_t tHelGetTPCsignal;
-  Float_t tHelPx;
-  Float_t tHelPy;
-  Float_t tHelPz;
-  Float_t tHelEta;
-  Float_t tHelisTOF;
-  Float_t tHelpoutTPC;
-  Float_t tHeltimeTOF;
-  Float_t tHeltrackLenghtTOF;
-  Float_t tHelimpactXY;
-  Float_t tHelimpactZ;
-  Float_t tHelmapITS;
-  Float_t tHelTPCNcls;
-  Float_t tHelTRDsignal;
-  Float_t tHelxPrimaryVertex;
-  Float_t tHelyPrimaryVertex;
-  Float_t tHelzPrimaryVertex;
-  Float_t tHelchi2PerClusterTPC;
-  
-  AliPIDResponse *fPIDResponse;     //! pointer to PID response
+  Float_t  tHeleventtype   ;
+  Float_t  tHelpercentile  ;
+  Float_t  tHelSign	   ;
+  Float_t  tHelpinTPC	   ;
+  Float_t  tHelGetTPCsignal;
+  Float_t  tHelPx	   ;
+  Float_t  tHelPy	   ;
+  Float_t  tHelPz	   ;
+  Float_t  tHelEta	   ;
+  Float_t  tHelisTOF	   ;
+  Float_t  tHelTOFpull	   ;
+  Float_t  tHeMass         ;
+  Float_t  tHelimpactXY	   ;
+  Float_t  tHelimpactZ	   ;
+  Float_t  tHelmapITS      ;
+  Float_t  tHelBetaTOF     ;
+  Float_t  tHelIsITSrefit  ;
+ 
+  //---------------------------------------------------------------------------
+  AliESDtrackCuts *fESDtrackCuts; 
+  AliPIDResponse  *fPIDResponse;      // pointer to PID response
+  //_______________________________________________________________________
 
-  AliAnalysisTaskHelium3PiAOD(const AliAnalysisTaskHelium3PiAOD&);            // not implemented
+
+  AliAnalysisTaskHelium3PiAOD(const AliAnalysisTaskHelium3PiAOD&); // not implemented
   AliAnalysisTaskHelium3PiAOD& operator=(const AliAnalysisTaskHelium3PiAOD&); // not implemented
-  
-  ClassDef(AliAnalysisTaskHelium3PiAOD, 0);
+
+  ClassDef(AliAnalysisTaskHelium3PiAOD, 1);
 };
 
 #endif

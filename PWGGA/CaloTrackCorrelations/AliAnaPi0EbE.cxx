@@ -3576,6 +3576,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     }
     
     Float_t l0 = calo->GetM02();
+    Float_t l1 = calo->GetM20();
     Float_t e1 = fMomentum1.Energy();
     Float_t e2 = fMomentum2.Energy();
     fMomentum12 = fMomentum1+fMomentum2;
@@ -3836,6 +3837,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     aodpi0.SetIdentifiedParticleType(idPartType);
     
     aodpi0.SetM02(l0);
+    aodpi0.SetM20(l1);
     aodpi0.SetNLM(nMaxima);
     aodpi0.SetTime(tofcluster);
     aodpi0.SetNCells(calo->GetNCells());

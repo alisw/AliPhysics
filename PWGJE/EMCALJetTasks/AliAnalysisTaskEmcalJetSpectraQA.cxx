@@ -29,35 +29,85 @@
 
 #include "AliAnalysisTaskEmcalJetSpectraQA.h"
 
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA)
+// Definitions of class AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo
 
-//________________________________________________________________________
+/// Default constructor
+AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo() :
+  AliTLorentzVector(),
+  fArea(0),
+  fMCPt(0),
+  fNConstituents(0),
+  fNEF(0),
+  fCent(0),
+  fEP(0),
+  fCorrPt(0),
+  fZ(0),
+  fLeadingPt(0)
+{
+}
+
+/// Constructor that uses information from an AliEmcalJet object
+///
+/// \param jet A const reference to an AliEmcalJet object
+AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo(const AliEmcalJet& jet) :
+  AliTLorentzVector(),
+  fArea(jet.Area()),
+  fMCPt(jet.MCPt()),
+  fNConstituents(jet.GetNumberOfConstituents()),
+  fNEF(jet.NEF()),
+  fCent(0),
+  fEP(0),
+  fCorrPt(0),
+  fZ(0),
+  fLeadingPt(0)
+{
+  jet.GetMomentum(*this);
+}
+
+// Definitions of class AliAnalysisTaskEmcalJetSpectraQA
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJetSpectraQA)
+/// \endcond
+
+/// Default constractor for ROOT I/O purposes
 AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSpectraQA", kTRUE),
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
-  fHistManager("AliAnalysisTaskEmcalJetQA")
+  fAreaAxis(kTRUE),
+  fHistManager()
 
 {
-  // Default constructor.
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
-//________________________________________________________________________
+/// Standard named constructor
+///
+/// \param name Name of the task
 AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
-  fHistManager("AliAnalysisTaskEmcalJetQA")
+  fAreaAxis(kTRUE),
+  fHistManager(name)
 {
-  // Standard constructor.
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(AliJetContainer* jets)
+/// This method is not implemented. It can be overloaded in derived classes to have a tree output.
+///
+/// \param jets Valid pointer to an AliJetContainer object
+void AliAnalysisTaskEmcalJetSpectraQA::AllocateTTree(const AliJetContainer* jets)
+{
+  AliError("Tree output not implemented. Falling back to THnSparse output");
+  AllocateTHnSparse(jets);
+}
+
+/// Allocate output THnSparse for a jet container
+///
+/// \param jets Valid pointer to an AliJetContainer object
+void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* jets)
 {
   Double_t jetRadius = jets->GetJetRadius();
 
@@ -117,13 +167,15 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(AliJetContainer* jets)
     dim++;
   }
 
-  // area resolution is about 0.01 (w/ ghost area 0.005)
-  // for fNbins = 250 use bin width 0.01
-  title[dim] = "#it{A}_{jet}";
-  nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
-  min[dim] = 0;
-  max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
-  dim++;
+  if (fAreaAxis) {
+    // area resolution is about 0.01 (w/ ghost area 0.005)
+    // for fNbins = 250 use bin width 0.01
+    title[dim] = "#it{A}_{jet}";
+    nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
+    min[dim] = 0;
+    max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
+    dim++;
+  }
 
   if (fClusterCollArray.GetEntriesFast() > 0 && fParticleCollArray.GetEntriesFast() > 0) {
     title[dim] = "NEF";
@@ -167,10 +219,11 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(AliJetContainer* jets)
   }
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX(AliJetContainer* jets)
+/// Allocate output TH1/TH2/TH3 for a jet container
+///
+/// \param jets Valid pointer to an AliJetContainer object
+void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX(const AliJetContainer* jets)
 {
-
   TString histname;
   TString title;
 
@@ -243,11 +296,9 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX(AliJetContainer* jets)
   }
 }
 
-//________________________________________________________________________
+/// Overloads base class method. Creates output objects
 void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 {
-  // Create user output.
-
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Int_t constituentsNbins = 250;
@@ -266,11 +317,16 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     fHistManager.CreateHistoGroup(jets->GetArrayName());
 
-    if (fHistoType == 0) {
+    switch (fHistoType) {
+    case kTH2:
       AllocateTHX(jets);
-    }
-    else {
+      break;
+    case kTHnSparse:
       AllocateTHnSparse(jets);
+      break;
+    case kTTree:
+      AllocateTTree(jets);
+      break;
     }
 
     TString histname;
@@ -317,16 +373,17 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
     }
   }
 
-  fOutput->Add(fHistManager.GetListOfHistograms());
-
+  TIter nextElement(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = nextElement())) fOutput->Add(obj);
   PostData(1, fOutput);
 }
 
-//________________________________________________________________________
+/// Overloads base class method. Fills the output histograms
+///
+/// \return kTRUE if successful
 Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
 {
-  // Fill histograms.
-
   TString histname;
 
   AliJetContainer* jets = 0;
@@ -341,9 +398,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
     jets->ResetCurrentID();
     while ((jet = jets->GetNextJet())) {
 
-      if (!jets->AcceptJet(jet)) {
+      UInt_t rejectionReason = 0;
+      if (!jets->AcceptJet(jet, rejectionReason)) {
         histname = TString::Format("%s/fHistRejectionReason_%d", jets->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(), jet->Pt());
+        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
         continue;
       }
 
@@ -426,134 +484,140 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
   return kTRUE;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalJetSpectraQA::FillJetHisto(const AliEmcalJetInfo& jet, AliJetContainer* jets)
+/// Fill histograms with jet
+///
+/// \param jet  Jet containing the information to be sent to the tree/histograms
+/// \param jets Jet container
+void AliAnalysisTaskEmcalJetSpectraQA::FillTHX(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
 {
   TString histname;
 
-  if (fHistoType == kTH2) {
-    histname = TString::Format("%s/fHistJetPtEtaPhi_%d", jets->GetArrayName().Data(), fCentBin);
-    fHistManager.FillTH3(histname.Data(), jet.Eta(), jet.Phi_0_2pi(), jet.Pt());
+  histname = TString::Format("%s/fHistJetPtEtaPhi_%d", jets->GetArrayName().Data(), fCentBin);
+  fHistManager.FillTH3(histname.Data(), jet.Eta(), jet.Phi_0_2pi(), jet.Pt());
 
-    histname = TString::Format("%s/fHistJetPtArea_%d", jets->GetArrayName().Data(), fCentBin);
-    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fArea);
+  histname = TString::Format("%s/fHistJetPtArea_%d", jets->GetArrayName().Data(), fCentBin);
+  fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fArea);
 
-    histname = TString::Format("%s/fHistJetPtEP_%d", jets->GetArrayName().Data(), fCentBin);
-    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fEP);
+  histname = TString::Format("%s/fHistJetPtEP_%d", jets->GetArrayName().Data(), fCentBin);
+  fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fEP);
 
-    histname = TString::Format("%s/fHistJetPtNEF_%d", jets->GetArrayName().Data(), fCentBin);
-    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fNEF);
+  histname = TString::Format("%s/fHistJetPtNEF_%d", jets->GetArrayName().Data(), fCentBin);
+  fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fNEF);
 
-    histname = TString::Format("%s/fHistJetPtZ_%d", jets->GetArrayName().Data(), fCentBin);
-    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fZ);
+  histname = TString::Format("%s/fHistJetPtZ_%d", jets->GetArrayName().Data(), fCentBin);
+  fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fZ);
 
-    histname = TString::Format("%s/fHistJetPtLeadingPartPt_%d", jets->GetArrayName().Data(), fCentBin);
-    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fLeadingPt);
+  histname = TString::Format("%s/fHistJetPtLeadingPartPt_%d", jets->GetArrayName().Data(), fCentBin);
+  fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fLeadingPt);
+
+  if (fIsEmbedded) {
+    histname = TString::Format("%s/fHistJetPtMCPt_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fMCPt);
+  }
+
+  if (!jets->GetRhoName().IsNull()) {
+    histname = TString::Format("%s/fHistJetCorrPtEtaPhi_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH3(histname.Data(), jet.Eta(), jet.Phi_0_2pi(), jet.fCorrPt);
+
+    histname = TString::Format("%s/fHistJetCorrPtArea_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fArea);
+
+    histname = TString::Format("%s/fHistJetCorrPtEP_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fEP);
+
+    histname = TString::Format("%s/fHistJetCorrPtNEF_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fNEF);
+
+    histname = TString::Format("%s/fHistJetCorrPtZ_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fZ);
+
+    histname = TString::Format("%s/fHistJetCorrPtLeadingPartPt_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fLeadingPt);
+
+    histname = TString::Format("%s/fHistJetPtCorrPt_%d", jets->GetArrayName().Data(), fCentBin);
+    fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fCorrPt);
 
     if (fIsEmbedded) {
-      histname = TString::Format("%s/fHistJetPtMCPt_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fMCPt);
+      histname = TString::Format("%s/fHistJetMCPtCorrPt_%d", jets->GetArrayName().Data(), fCentBin);
+      fHistManager.FillTH2(histname.Data(), jet.fMCPt, jet.fCorrPt);
     }
-
-    if (!jets->GetRhoName().IsNull()) {
-      histname = TString::Format("%s/fHistJetCorrPtEtaPhi_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH3(histname.Data(), jet.Eta(), jet.Phi_0_2pi(), jet.fCorrPt);
-
-      histname = TString::Format("%s/fHistJetCorrPtArea_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fArea);
-
-      histname = TString::Format("%s/fHistJetCorrPtEP_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fEP);
-
-      histname = TString::Format("%s/fHistJetCorrPtNEF_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fNEF);
-
-      histname = TString::Format("%s/fHistJetCorrPtZ_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fZ);
-
-      histname = TString::Format("%s/fHistJetCorrPtLeadingPartPt_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.fCorrPt, jet.fLeadingPt);
-
-      histname = TString::Format("%s/fHistJetPtCorrPt_%d", jets->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname.Data(), jet.Pt(), jet.fCorrPt);
-
-      if (fIsEmbedded) {
-        histname = TString::Format("%s/fHistJetMCPtCorrPt_%d", jets->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname.Data(), jet.fMCPt, jet.fCorrPt);
-      }
-    }
-
-  }
-  else {
-
-    Double_t contents[30]={0};
-
-    histname = TString::Format("%s/fHistJetObservables", jets->GetArrayName().Data());
-    THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
-
-    if (!histJetObservables) return;
-
-    for (Int_t i = 0; i < histJetObservables->GetNdimensions(); i++) {
-      TString title(histJetObservables->GetAxis(i)->GetTitle());
-      if (title=="Centrality (%)")
-        contents[i] = jet.fCent;
-      else if (title=="#phi_{jet} - #psi_{EP}")
-        contents[i] = jet.fEP;
-      else if (title=="#eta_{jet}")
-        contents[i] = jet.Eta();
-      else if (title=="#phi_{jet} (rad)")
-        contents[i] = jet.Phi_0_2pi();
-      else if (title=="#it{p}_{T} (GeV/#it{c})")
-        contents[i] = jet.Pt();
-      else if (title=="#it{p}_{T}^{MC} (GeV/#it{c})")
-        contents[i] = jet.fMCPt;
-      else if (title=="#it{p}_{T}^{corr} (GeV/#it{c})")
-        contents[i] = jet.fCorrPt;
-      else if (title=="#it{A}_{jet}")
-        contents[i] = jet.fArea;
-      else if (title=="NEF")
-        contents[i] = jet.fNEF;
-      else if (title=="#it{z}_{leading}")
-        contents[i] = jet.fZ;
-      else if (title=="No. of constituents")
-        contents[i] = jet.fNConstituents;
-      else if (title=="#it{p}_{T,particle}^{leading} (GeV/#it{c})")
-        contents[i] = jet.fLeadingPt;
-      else 
-        AliWarning(Form("Unable to fill dimension %s!",title.Data()));
-    }
-
-    histJetObservables->Fill(contents);
   }
 }
 
-//________________________________________________________________________
-AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo() :
-  AliTLorentzVector(),
-  fArea(0),
-  fMCPt(0),
-  fNConstituents(0),
-  fNEF(0),
-  fCent(0),
-  fEP(0),
-  fCorrPt(0),
-  fZ(0),
-  fLeadingPt(0)
+/// This method is not implemented. It can be overloaded in derived classes to have a tree output.
+///
+/// \param jet  Jet containing the information to be sent to the tree/histograms
+/// \param jets Jet container
+void AliAnalysisTaskEmcalJetSpectraQA::FillTTree(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
 {
+  AliError("Tree output not implemented. Falling back to THnSparse output");
+  FillTHnSparse(jet, jets);
 }
 
-//________________________________________________________________________
-AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo(const AliEmcalJet& jet) :
-  AliTLorentzVector(),
-  fArea(jet.Area()),
-  fMCPt(jet.MCPt()),
-  fNConstituents(jet.GetNumberOfConstituents()),
-  fNEF(jet.NEF()),
-  fCent(0),
-  fEP(0),
-  fCorrPt(0),
-  fZ(0),
-  fLeadingPt(0)
+/// Fill THnSparse histogram with jet
+///
+/// \param jet  Jet containing the information to be sent to the tree/histograms
+/// \param jets Jet container
+void AliAnalysisTaskEmcalJetSpectraQA::FillTHnSparse(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
 {
-  jet.GetMomentum(*this);
+  TString histname;
+  Double_t contents[30]={0};
+
+  histname = TString::Format("%s/fHistJetObservables", jets->GetArrayName().Data());
+  THnSparse* histJetObservables = static_cast<THnSparse*>(fHistManager.FindObject(histname));
+
+  if (!histJetObservables) return;
+
+  for (Int_t i = 0; i < histJetObservables->GetNdimensions(); i++) {
+    TString title(histJetObservables->GetAxis(i)->GetTitle());
+    if (title=="Centrality (%)")
+      contents[i] = jet.fCent;
+    else if (title=="#phi_{jet} - #psi_{EP}")
+      contents[i] = jet.fEP;
+    else if (title=="#eta_{jet}")
+      contents[i] = jet.Eta();
+    else if (title=="#phi_{jet} (rad)")
+      contents[i] = jet.Phi_0_2pi();
+    else if (title=="#it{p}_{T} (GeV/#it{c})")
+      contents[i] = jet.Pt();
+    else if (title=="#it{p}_{T}^{MC} (GeV/#it{c})")
+      contents[i] = jet.fMCPt;
+    else if (title=="#it{p}_{T}^{corr} (GeV/#it{c})")
+      contents[i] = jet.fCorrPt;
+    else if (title=="#it{A}_{jet}")
+      contents[i] = jet.fArea;
+    else if (title=="NEF")
+      contents[i] = jet.fNEF;
+    else if (title=="#it{z}_{leading}")
+      contents[i] = jet.fZ;
+    else if (title=="No. of constituents")
+      contents[i] = jet.fNConstituents;
+    else if (title=="#it{p}_{T,particle}^{leading} (GeV/#it{c})")
+      contents[i] = jet.fLeadingPt;
+    else
+      AliWarning(Form("Unable to fill dimension %s!",title.Data()));
+  }
+
+  histJetObservables->Fill(contents);
+}
+
+/// Fill histogram with jet
+///
+/// \param jet  Jet containing the information to be sent to the tree/histograms
+/// \param jets Jet container
+void AliAnalysisTaskEmcalJetSpectraQA::FillJetHisto(const AliEmcalJetInfo& jet, const AliJetContainer* jets)
+{
+  switch (fHistoType) {
+  case kTH2:
+    FillTHX(jet, jets);
+    break;
+
+  case kTHnSparse:
+    FillTHnSparse(jet, jets);
+    break;
+
+  case kTTree:
+    FillTTree(jet, jets);
+    break;
+  }
 }

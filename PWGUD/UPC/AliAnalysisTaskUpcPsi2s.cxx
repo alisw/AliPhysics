@@ -948,8 +948,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
   
-  fADAdecision = fADdata->GetADADecision();
-  fADCdecision = fADdata->GetADCDecision();
+  if(fADdata){
+  	fADAdecision = fADdata->GetADADecision();
+  	fADCdecision = fADdata->GetADCDecision();
+  }
   
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
@@ -974,6 +976,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       }
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
+      
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
       fNLooseTracks++;
       }  
@@ -1636,8 +1639,10 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
-  fADAdecision = fADdata->GetADADecision();
-  fADCdecision = fADdata->GetADCDecision();
+  if(fADdata){
+  	fADAdecision = fADdata->GetADADecision();
+  	fADCdecision = fADdata->GetADCDecision();
+	}
   fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
   fZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
   fZPAenergy = fZDCdata->GetZPATowerEnergy()[0];

@@ -619,9 +619,11 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
 	TString str=tl->GetTitle();
 	if(str.Contains("scale")){
 	  str.ReplaceAll("uncertainty","uncertainty (pp)");
+	  str.ReplaceAll("+","#plus");
+	  str.ReplaceAll("-","#minus");
 	  tl->SetTitle(str.Data());
 	  tl->SetY(0.68);//y+0.05);
-	  tl->SetX(0.23);
+	  tl->SetX(0.183);// was 0.23
 	  tlscalepp[binass+3*(binD)]=(TLatex*)((TLatex*)tl)->Clone();
 	}
 	else if(binD!=0){
@@ -700,10 +702,12 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
 	}
 	else if(str.Contains("scale")){
 	  Double_t y=tl->GetY();
+	  str.ReplaceAll("+","#plus");
+	  str.ReplaceAll("-","#minus");
 	  str.ReplaceAll("uncertainty","uncertainty (p-Pb)");
 	  tl->SetTitle(str.Data());
 	  tl->SetY(0.58);
-	  tl->SetX(0.23);
+	  tl->SetX(0.183);// was 0.23
 	  tltemp=tl;
 	}
       }
@@ -730,7 +734,7 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
       grpp[padorderingPP[jD*3+jass]-1]->Draw("p2");
       Printf("grpp added");
       if(jD==0){
-	tlscalepp[padorderingPP[jD*3+jass]-1]->SetX(0.32);
+	tlscalepp[padorderingPP[jD*3+jass]-1]->SetX(0.33);// was 0.32
 	if(jass==0){
 	  tlscalepp[padorderingPP[jD*3+jass]-1]->SetY(0.25);
 	  TLatex *tlALICE=new TLatex(0.8,0.84,"ALICE");
@@ -744,14 +748,14 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
 	  tlAvD->SetTextSize(22);
 	  tlAvD->Draw();
 	  TLegend *leg=new TLegend(0.255,0.56,0.4,0.8);
-	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}}=7 TeV, |#it{y}^{D}|<0.5","p");
-	  leg->AddEntry(hpPb[0],"p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV,","p");//"p-Pb, #sqrt{s_{NN}}=5.02 TeV,-0.96<y^{D}_{cms}<0.04","p");
-	  leg->AddEntry((TObject*)0,"-0.96<#it{y}^{D}_{cms}<0.04","");
+	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}} = 7 TeV, |#it{y}^{D}| < 0.5","p");
+	  leg->AddEntry(hpPb[0],"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV,","p");//"p-Pb, #sqrt{s_{NN}}=5.02 TeV,-0.96<y^{D}_{cms}<0.04","p");
+	  leg->AddEntry((TObject*)0,"-0.96 < #it{y}^{D}_{cms} < 0.04","");
 	  leg->SetFillStyle(0);
 	  leg->SetTextFont(43);
 	  leg->SetTextSize(20);
 	  leg->Draw();
-	  TLatex *tlDEta=new TLatex(0.27,0.51,"|#Delta#eta|<1");//(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin(),0.34,"|#Delta#eta|<1");
+	  TLatex *tlDEta=new TLatex(0.27,0.51,"|#Delta#eta| < 1");//(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin(),0.34,"|#Delta#eta|<1");
 	  tlDEta->SetNDC();
 	  tlDEta->SetTextAlign(12);
 	  tlDEta->SetTextFont(43);
@@ -763,18 +767,27 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
       tlptD[padorderingPP[jD*3+jass]-1]->SetTextFont(63);// do not why with 43 it appears in bold
       tlptD[padorderingPP[jD*3+jass]-1]->SetTextSize(19);
       tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.86);      
-      tlptD[padorderingPP[jD*3+jass]-1]->SetX(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin());   
+      tlptD[padorderingPP[jD*3+jass]-1]->SetX(0.5*(1-gPad->GetLeftMargin()-gPad->GetRightMargin())+gPad->GetLeftMargin());   
       //->SetX(0.5+gPad->GetLeftMargin());      
       tlptD[padorderingPP[jD*3+jass]-1]->SetTextAlign(22);
       tlptD[padorderingPP[jD*3+jass]-1]->Draw();
+      TString strtitle=tlptD[padorderingPP[jD*3+jass]-1]->GetTitle();
+      strtitle->ReplaceAll("<"," < ");
+      strtitle->ReplaceAll(">"," > ");
+      tlptD[padorderingPP[jD*3+jass]-1]->SetTitle(strtitle.Data());
 
       tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTextFont(63);
       tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTextSize(19);
       tlptAssoc[padorderingPP[jD*3+jass]-1]->SetNDC();
       tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.78);
-      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetX(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin());   
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetX(0.5*(1-gPad->GetLeftMargin()-gPad->GetRightMargin())+gPad->GetLeftMargin());   
       tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTextAlign(22);   
       tlptAssoc[padorderingPP[jD*3+jass]-1]->Draw();
+      strtitle=tlptAssoc[padorderingPP[jD*3+jass]-1]->GetTitle();
+      strtitle->ReplaceAll("<"," < ");
+      strtitle->ReplaceAll(">"," > ");
+      strtitle->ReplaceAll("1.0","1");
+      tlptAssoc[padorderingPP[jD*3+jass]-1]->SetTitle(strtitle.Data());
       if(jD==0&&jass==0){
 	//	tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.51);
 	//	tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.43);

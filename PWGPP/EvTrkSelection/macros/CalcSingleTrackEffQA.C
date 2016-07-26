@@ -325,7 +325,7 @@ void LatexName(const Double_t xvalue, TString fWhichVar="", Int_t runNumber, Int
     Tl.SetTextAlign(12);
     Tl.SetTextSize(0.035);
     Tl.DrawLatex(xvalue,0.49, Form("Configurations"));
-    Tl.DrawLatex(xvalue,0.48, "___________________");
+    Tl.DrawLatex(xvalue,0.48, ""); //new commit 21March 2016
     Tl.DrawLatex(xvalue,0.42, Form("1. runNumber: %d", runNumber));
     Tl.DrawLatex(xvalue,0.36, Form("2. Filterbit: %d", fbit));
     Tl.DrawLatex(xvalue,0.30, Form("3. Particle: %s ", fPartype));

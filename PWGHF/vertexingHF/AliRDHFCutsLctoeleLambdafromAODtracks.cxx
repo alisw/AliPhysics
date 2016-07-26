@@ -27,6 +27,7 @@
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -57,6 +58,7 @@ AliRDHFCuts(name),
   fPidObjProton(0),
   fPidObjPion(0),
   fUseOnTheFlyV0(kFALSE),
+  fUseV0Topology(0),
   fBzkG(0),
   fProdTrackTPCNclsPIDMin(0),
   fProdTrackTPCNclsRatioMin(0.0),
@@ -145,6 +147,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fPidObjProton(source.fPidObjProton),
   fPidObjPion(source.fPidObjPion),
   fUseOnTheFlyV0(source.fUseOnTheFlyV0),
+  fUseV0Topology(source.fUseV0Topology),
   fBzkG(source.fBzkG),
   fProdTrackTPCNclsPIDMin(source.fProdTrackTPCNclsPIDMin),
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
@@ -214,6 +217,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fPidObjProton = source.fPidObjProton;
   fPidObjPion = source.fPidObjPion;
   fUseOnTheFlyV0 = source.fUseOnTheFlyV0;
+  fUseV0Topology = source.fUseV0Topology;
   fBzkG = source.fBzkG;
   fProdTrackTPCNclsPIDMin = source.fProdTrackTPCNclsPIDMin;
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
@@ -711,17 +715,18 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 
   Bool_t onFlyV0 = v0->GetOnFlyStatus(); // on-the-flight V0s
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return kFALSE;
+  if ( !onFlyV0 && fUseOnTheFlyV0 ) return kFALSE;
 	if(!v0) return kFALSE;
 	if(!(v0->GetSecondaryVtx())) return kFALSE;
 
   AliAODTrack *cptrack =  (AliAODTrack*)(v0->GetDaughter(0));
   AliAODTrack *cntrack =  (AliAODTrack*)(v0->GetDaughter(1));
   if(!cptrack || !cntrack) return kFALSE;
-	if(cptrack->Charge()<0 && cntrack->Charge()>0){
-		//In case sign is wrong
-		cptrack =  (AliAODTrack*)(v0->GetDaughter(1));
-		cntrack =  (AliAODTrack*)(v0->GetDaughter(0));
-	}
+//	if(cptrack->Charge()<0 && cntrack->Charge()>0){
+//		//In case sign is wrong
+//		cptrack =  (AliAODTrack*)(v0->GetDaughter(1));
+//		cntrack =  (AliAODTrack*)(v0->GetDaughter(0));
+//	}
 
   if ( cptrack->Charge() == cntrack->Charge() ) return kFALSE;
   if(!(cptrack->GetStatus() & AliESDtrack::kTPCrefit) ||
@@ -854,6 +859,24 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
         (sharedMap2.CountBits() >= 1))
     {
       return kFALSE;
+    }
+  }
+
+  if(fUseV0Topology>0){
+    Double_t dphiprlam = 0.;
+    if(isparticle){
+      TVector3 v3v0pr(v0->MomPosX(),v0->MomPosY(),v0->MomPosZ());
+      TVector3 v3lam(v0->Px(),v0->Py(),v0->Pz());
+      dphiprlam = v3v0pr.DeltaPhi(v3lam);
+    }else{
+      TVector3 v3v0pr(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
+      TVector3 v3lam(v0->Px(),v0->Py(),v0->Pz());
+      dphiprlam = -1.*v3v0pr.DeltaPhi(v3lam);
+    }
+    if(fUseV0Topology==1){
+      if(dphiprlam>0) return kFALSE;
+    }else if(fUseV0Topology==2){
+      if(dphiprlam<0) return kFALSE;
     }
   }
 
@@ -1106,6 +1129,80 @@ void AliRDHFCutsLctoeleLambdafromAODtracks::SetSftPosR125(AliAODTrack *track,Dou
 }
 
 //________________________________________________________________________
+void AliRDHFCutsLctoeleLambdafromAODtracks::SetSftPosR(AliAODTrack *track,Double_t bfield,Double_t R, Double_t priVtx[3],Double_t *XSftR)
+{
+  //
+  // Sets the spatial position of the track at the radius R in the shifted coordinate system
+  //
+  
+  // Initialize the array to something indicating there was no propagation
+  XSftR[0]=-9999.;
+  XSftR[1]=-9999.;
+  XSftR[2]=-9999.;
+  if(R<3.5) return;
+
+   // Make a copy of the track to not change parameters of the track
+  AliExternalTrackParam etp;
+  etp.CopyFromVTrack(track);
+  
+  // The global position of the the track
+  Double_t xyz[3]={-9999.,-9999.,-9999.};  
+
+  // The radius we want to propagate to, squared
+  const Float_t RSquaredWanted(R*R);
+
+
+  // Propagation is done in local x of the track
+  for (Float_t x = 2.;x<247.;x+=1.){
+    // Starts at 83 / Sqrt(2) and goes outwards. 85/Sqrt(2) is the smallest local x
+    // for global radius 85 cm. x = 245 is the outer radial limit of the TPC when
+    // the track is straight, i.e. has inifinite pt and doesn't get bent. 
+    // If the track's momentum is smaller than infinite, it will develop a y-component,
+    // which adds to the global radius
+    // We don't change the propagation steps to not mess up things!
+
+    // Stop if the propagation was not succesful. This can happen for low pt tracks
+    // that don't reach outer radii
+    if(!etp.PropagateTo(x,(Float_t)bfield))break;
+    etp.GetXYZ(xyz); // GetXYZ returns global coordinates
+
+    // Calculate the shifted radius we are at, squared. 
+    // Compare squared radii for faster code
+    Float_t shiftedRadiusSquared = (xyz[0]-priVtx[0])*(xyz[0]-priVtx[0])
+                                 + (xyz[1]-priVtx[1])*(xyz[1]-priVtx[1]);
+
+    // Roughly reached the radius we want
+    if(shiftedRadiusSquared > RSquaredWanted){
+      
+      // Bigger loop has bad precision, we're nearly one centimeter too far, 
+      // go back in small steps.
+      while (shiftedRadiusSquared>RSquaredWanted){
+	// Propagate a mm inwards
+	x-=.1;
+	if(!etp.PropagateTo(x,bfield)){
+	  // Propagation failed but we're already with a
+	  // cm precision at R=1.25m so we only break the 
+	  // inner loop
+	  break;
+	}
+	// Get the global position
+	etp.GetXYZ(xyz);
+	// Calculate shifted radius, squared
+	shiftedRadiusSquared = (xyz[0]-priVtx[0])*(xyz[0]-priVtx[0])
+	                     + (xyz[1]-priVtx[1])*(xyz[1]-priVtx[1]);
+      }
+      // We reached R=1.25m with a precission of a cm to a mm,
+      // set the spatial position
+      XSftR[0]=xyz[0]-priVtx[0];
+      XSftR[1]=xyz[1]-priVtx[1];
+      XSftR[2]=xyz[2]-priVtx[2];
+      // Done
+      return;
+    } // End of if roughly reached radius
+  } // End of coarse propagation loop
+}
+
+//________________________________________________________________________
 Double_t AliRDHFCutsLctoeleLambdafromAODtracks::dEtaSR125(Double_t *postrack1,Double_t *postrack2)
 {
   //
@@ -1347,4 +1444,29 @@ Double_t AliRDHFCutsLctoeleLambdafromAODtracks::CalculatePhotonMass(AliAODTrack*
 //  cout<<endl;
 
   return mass;
+}
+
+//________________________________________________________________________
+Double_t AliRDHFCutsLctoeleLambdafromAODtracks::DeltaPhi(AliAODv0 *v0, AliAODTrack *trk)
+{
+  //
+  // Calculate Delta phi
+  //
+  Double_t phiv = v0->Phi();
+  Double_t phie = trk->Phi();
+  Double_t dphi = phiv - phie;
+  if(dphi<-M_PI) dphi += 2 *M_PI;
+  if(dphi> M_PI) dphi -= 2 *M_PI;
+  return dphi;
+}
+//________________________________________________________________________
+Double_t AliRDHFCutsLctoeleLambdafromAODtracks::DeltaEta(AliAODv0 *v0, AliAODTrack *trk)
+{
+  //
+  // Calculate Delta Eta
+  //
+  Double_t etav = v0->Eta();
+  Double_t etae = trk->Eta();
+  Double_t deta = etav - etae;
+  return deta;
 }

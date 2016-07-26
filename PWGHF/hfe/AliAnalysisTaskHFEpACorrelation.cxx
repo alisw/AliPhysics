@@ -164,6 +164,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fCentralityMin(0)
 ,fCentralityMax(100)
 ,fHasCentralitySelection(kFALSE)
+,fUseDCACutforHadrons(kFALSE)
+,fUseAlternativeBinnig(kFALSE)
 ,fCentralityHist(0)
 ,fCentralityHistPass(0)
 ,fZvtx(0)
@@ -521,12 +523,22 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fpTReco_vs_MC(0)
 ,fpTShifHadronsMC(0)
 ,fpTShiftHadronsReco(0)
-,fpTEffHadronsMC(0)
-,fpTEffHadronsReco(0)
+,fpTEtaEffHadronsReco(0)
+,fpTPhiEffHadronsReco(0)
+,fpTEtaEffHadronsMC(0)
+,fpTPhiEffHadronsMC(0)
 ,fCEtaPhi_DataHFE_with_onlyPhysPriHadron(0)
-
+,fDCAcutrHadron(999)
+,fDCAcutzHadron(999)
+,fpTPhiHadron(0)
+,fpTEtaHadron(0)
+,fpTPhiSecPartNoLabel(0)
+,fpTEtaSecPartNoLabel(0)
+,fpTPhiSecPartPhysPri(0)
+,fpTEtaSecPartPhysPri(0)
+,fpTPhiSecPartNonPhysPri(0)
+,fpTEtaSecPartNonPhysPri(0)
 //,fEMCALRecoUtils(0)//exotic
-
 {
     //Named constructor
     // Define input and output slots here
@@ -583,6 +595,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fCentralityMin(0)
 ,fCentralityMax(100)
 ,fHasCentralitySelection(kFALSE)
+,fUseDCACutforHadrons(kFALSE)
+,fUseAlternativeBinnig(kFALSE)
 ,fCentralityHist(0)
 ,fCentralityHistPass(0)
 ,fZvtx(0)
@@ -936,10 +950,21 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fpTReco_vs_MC(0)
 ,fpTShifHadronsMC(0)
 ,fpTShiftHadronsReco(0)
-,fpTEffHadronsMC(0)
-,fpTEffHadronsReco(0)
+,fpTEtaEffHadronsReco(0)
+,fpTPhiEffHadronsReco(0)
+,fpTEtaEffHadronsMC(0)
+,fpTPhiEffHadronsMC(0)
 ,fCEtaPhi_DataHFE_with_onlyPhysPriHadron(0)
-
+,fDCAcutrHadron(999)
+,fDCAcutzHadron(999)
+,fpTPhiHadron(0)
+,fpTEtaHadron(0)
+,fpTPhiSecPartNoLabel(0)
+,fpTEtaSecPartNoLabel(0)
+,fpTPhiSecPartPhysPri(0)
+,fpTEtaSecPartPhysPri(0)
+,fpTPhiSecPartNonPhysPri(0)
+,fpTEtaSecPartNonPhysPri(0)
 //,fEMCALRecoUtils(0)//exotic
 {
     // Constructor
@@ -1050,14 +1075,46 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fOutputList->Add(fpTShifHadronsMC);
         fpTShiftHadronsReco = new TH1F("fpTShiftHadronsReco","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
         fOutputList->Add(fpTShiftHadronsReco);
-    
+        
         //Efficiency of Hadrons
-        fpTEffHadronsMC = new TH1F("fpTEffHadronsMC","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
-        fOutputList->Add(fpTEffHadronsMC);
-        fpTEffHadronsReco = new TH1F("fpTEffHadronsReco","Hadrons generated pT; p_{T} (GeV/c); Count",300,0,30);
-        fOutputList->Add(fpTEffHadronsReco);
+        fpTEtaEffHadronsMC = new TH2F("fpTEtaEffHadronsMC ","Hadrons generated pT; p_{T} (GeV/c);  #eta ; Count",300,0,30,200,-1,1);
+        fOutputList->Add(fpTEtaEffHadronsMC);
+        
+        fpTPhiEffHadronsMC = new TH2F("fpTPhiEffHadronsMC","Hadrons generated pT; p_{T} (GeV/c); #varphi; Count",300,0,30,200,0,2*TMath::Pi());
+        fOutputList->Add(fpTPhiEffHadronsMC);
+        
+        
+        fpTEtaEffHadronsReco = new TH2F("fpTEtaEffHadronsReco","Hadrons generated pT; p_{T} (GeV/c); #eta; Count",300,0,30,200,-1,1);
+        fOutputList->Add(fpTEtaEffHadronsReco);
+        
+        fpTPhiEffHadronsReco = new TH2F("fpTPhiEffHadronsReco","Hadrons generated pT; p_{T} (GeV/c); #varphi; Count",300,0,30,200,0,2*TMath::Pi());
+        fOutputList->Add(fpTPhiEffHadronsReco);
         
         //Secundary particles
+        fpTPhiHadron = new TH2F("fpTPhiHadron","All hadrons pT; p_{T} (GeV/c); #varphi; Count",300,0,30,200,0,2*TMath::Pi());
+        fOutputList->Add(fpTPhiHadron);
+
+        fpTEtaHadron = new TH2F("fpTEtaHadron","All hadrons pT; p_{T} (GeV/c); #eta; Count",300,0,30,200,-1,1);
+        fOutputList->Add(fpTEtaHadron);
+
+        fpTPhiSecPartNoLabel = new TH2F("fpTPhiSecPartNoLabel","No Label Hadrons pT; p_{T} (GeV/c); #varphi; Count",300,0,30,200,0,2*TMath::Pi());
+        fOutputList->Add(fpTPhiSecPartNoLabel);
+        //parei aqui
+        fpTEtaSecPartNoLabel = new TH2F("fpTEtaSecPartNoLabel","No Label pT; p_{T} (GeV/c); #eta; Count",300,0,30,200,-1,1);
+        fOutputList->Add(fpTEtaSecPartNoLabel);
+
+        fpTPhiSecPartPhysPri = new TH2F("fpTPhiSecPartPhysPri","Phys Pri hadrons pT; p_{T} (GeV/c); #varphi; Count",300,0,30,200,0,2*TMath::Pi());
+        fOutputList->Add(fpTPhiSecPartPhysPri);
+
+        fpTEtaSecPartPhysPri = new TH2F("fpTEtaSecPartPhysPri","Phys Pri pT; p_{T} (GeV/c); #eta; Count",300,0,30,200,-1,1);
+        fOutputList->Add(fpTEtaSecPartPhysPri);
+
+        fpTPhiSecPartNonPhysPri = new TH2F("fpTPhiSecPartNonPhysPri","Non Phys Pri hadrons pT; p_{T} (GeV/c); #varphi; Count",300,0,30,200,0,2*TMath::Pi());
+        fOutputList->Add(fpTPhiSecPartNonPhysPri);
+
+        fpTEtaSecPartNonPhysPri = new TH2F("fpTEtaSecPartNonPhysPri","Non Phys Pri pT; p_{T} (GeV/c); #eta; Count",300,0,30,200,-1,1);
+        fOutputList->Add(fpTEtaSecPartNonPhysPri);
+
         
         fCEtaPhi_DataHFE_with_onlyPhysPriHadron = new TH2F *[6];
         
@@ -1073,19 +1130,42 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         
         fCetaPhi_MC_HFE_RECO_MC_PhyPrimH = new TH2F *[6];
         fCetaPhi_Data_Data_RECO_MC_PhyPrimH = new TH2F *[6];
-        Int_t fPtBin[7] = {1,2,4,6,8,10,15};
+        
+        Double_t fPtBin[7];
+        if(fUseAlternativeBinnig)
+        {
+            fPtBin[0] = 0.5;
+            fPtBin[1] = 1.0;
+            fPtBin[2] = 1.5;
+            fPtBin[3] = 2.0;
+            fPtBin[4] = 3.0;
+            fPtBin[5] = 4.0;
+            fPtBin[6] = 6.0;
+        }
+        else
+        {
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 2.0;
+            fPtBin[2] = 4.0;
+            fPtBin[3] = 6.0;
+            fPtBin[4] = 8.0;
+            fPtBin[5] = 10.0;
+            fPtBin[6] = 15.0;
+        }
+        
+        
         for(Int_t i = 0; i < 6; i++)
         {
-            fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i] = new TH2F(Form("fCEtaPhi_DataHFE_with_onlyPhysPriHadron%d",i),Form("Full MC WITH PT Reco: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i] = new TH2F(Form("fCEtaPhi_DataHFE_with_onlyPhysPriHadron%d",i),Form("Full MC WITH PT Reco: (reco) HFE-h %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             fOutputList->Add(fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i]);
-
-            fCetaPhi_MC_HFE_pTofReco[i] = new TH2F(Form("fCetaPhi_MC_HFE_pTofReco%d",i),Form("Full MC WITH PT Reco: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            
+            fCetaPhi_MC_HFE_pTofReco[i] = new TH2F(Form("fCetaPhi_MC_HFE_pTofReco%d",i),Form("Full MC WITH PT Reco: (reco) HFE-h %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             fOutputList->Add(fCetaPhi_MC_HFE_pTofReco[i]);
             
-            fCetaPhi_Reco_with_MChadrons[i] = new TH2F(Form("fCetaPhi_Reco_with_MChadrons%d",i),Form("HFE(reco)-h(MC) %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCetaPhi_Reco_with_MChadrons[i] = new TH2F(Form("fCetaPhi_Reco_with_MChadrons%d",i),Form("HFE(reco)-h(MC) %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             fOutputList->Add(fCetaPhi_Reco_with_MChadrons[i]);
-            fCetaPhi_MC_HFE_RECO_MC_PhyPrimH[i] = new TH2F(Form("fCetaPhi_MC_HFE_RECO_MC_PhyPrimH%d",i),Form("Full MC: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i] = new TH2F(Form("CetaPhi_Data_Data_RECO_MC_PhyPrimH%d",i),Form("Full Data: (reco) HFE-h %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCetaPhi_MC_HFE_RECO_MC_PhyPrimH[i] = new TH2F(Form("fCetaPhi_MC_HFE_RECO_MC_PhyPrimH%d",i),Form("Full MC: (reco) HFE-h %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i] = new TH2F(Form("CetaPhi_Data_Data_RECO_MC_PhyPrimH%d",i),Form("Full Data: (reco) HFE-h %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             
             fOutputList->Add(fCetaPhi_MC_HFE_RECO_MC_PhyPrimH[i]);
             fOutputList->Add(fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]);
@@ -1579,10 +1659,28 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     }
     
     //pt bin
-    Int_t fPtBin[7] = {1,2,4,6,8,10,15};
     
-    
-    
+    Double_t fPtBin[7];
+    if(fUseAlternativeBinnig)
+    {
+        fPtBin[0] = 0.5;
+        fPtBin[1] = 1.0;
+        fPtBin[2] = 1.5;
+        fPtBin[3] = 2.0;
+        fPtBin[4] = 3.0;
+        fPtBin[5] = 4.0;
+        fPtBin[6] = 6.0;
+    }
+    else
+    {
+        fPtBin[0] = 1.0;
+        fPtBin[1] = 2.0;
+        fPtBin[2] = 4.0;
+        fPtBin[3] = 6.0;
+        fPtBin[4] = 8.0;
+        fPtBin[5] = 10.0;
+        fPtBin[6] = 15.0;
+    }
     
     fEoverP_tpc = new TH2F *[6];
     fTPC_pt = new TH1F *[6];
@@ -1712,7 +1810,7 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     //new histo for trigger data
     if (fUseTrigger)
     {
-        Int_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
+        Double_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
         fEoverP_tpc_p_trigger = new TH2F *[10];
         fEoverP_tpc_pt_trigger = new TH2F *[10];
         fInvMass_pT = new TH1F *[10];
@@ -1720,12 +1818,12 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         
         for(Int_t i = 0; i < 10; i++)
         {
-            fEoverP_tpc_pt_trigger[i] = new TH2F(Form("fEoverP_tpc_pt_trigger%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
-            fEoverP_tpc_p_trigger[i] = new TH2F(Form("fEoverP_tpc_p_trigger%d",i),Form("%d < p < %d GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+            fEoverP_tpc_pt_trigger[i] = new TH2F(Form("fEoverP_tpc_pt_trigger%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
+            fEoverP_tpc_p_trigger[i] = new TH2F(Form("fEoverP_tpc_p_trigger%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma; E/p ",fPtBin_trigger[i],fPtBin_trigger[i+1]),1000,-15,15,100,0,2);
             
             
-            fInvMass_pT[i] = new TH1F(Form("fInvMass_pT%d",i),Form("%d < p_{t} < %d GeV/c; Mass ; Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
-            fInvMassBack_pT[i] = new TH1F(Form("fInvMassBack_pT%d",i),Form("%d < p_{t} < %d GeV/c;Mass;Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
+            fInvMass_pT[i] = new TH1F(Form("fInvMass_pT%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c; Mass ; Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
+            fInvMassBack_pT[i] = new TH1F(Form("fInvMassBack_pT%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;Mass;Counts",fPtBin_trigger[i],fPtBin_trigger[i+1]),5000,0,5);
             
             fOutputList->Add(fEoverP_tpc_pt_trigger[i]);
             fOutputList->Add(fEoverP_tpc_p_trigger[i]);
@@ -1738,25 +1836,25 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     
     for(Int_t i = 0; i < 6; i++)
     {
-        fEoverP_tpc[i] = new TH2F(Form("fEoverP_tpc%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;E / p ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,0,2);
-        fTPC_pt[i] = new TH1F(Form("fTPC_pt%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,20,200);
-        fTPCnsigma_pt[i] = new TH1F(Form("fTPCnsigma_pt%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,-15,10);
+        fEoverP_tpc[i] = new TH2F(Form("fEoverP_tpc%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma;E / p ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,0,2);
+        fTPC_pt[i] = new TH1F(Form("fTPC_pt%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,20,200);
+        fTPCnsigma_pt[i] = new TH1F(Form("fTPCnsigma_pt%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma;Count",fPtBin[i],fPtBin[i+1]),200,-15,10);
         
-        fEta[i]=new TH1F(Form("fEta%d",i), Form("%d < p_{t} < %d GeV/c;#eta; counts",fPtBin[i],fPtBin[i+1]),100, -0.1,0.1);
-        fPhi[i]=new TH1F(Form("fPhi%d",i),Form("%d < p_{t} < %d GeV/c;#phi; counts )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
-        fR[i]=new TH1F(Form("fR%d",i),Form("%d < p_{t} < %d GeV/c;R;counts )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
-        fR_EoverP[i]=new TH2F(Form("fR_EoverP%d",i),Form("%d < p_{t} < %d GeV/c;R;E / p ",fPtBin[i],fPtBin[i+1]),100, 0,0.1,1000,0,10);
-        fNcells[i]=new TH1F(Form("fNcells%d",i), Form("%d < p_{t} < %d GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
-        fNcells_electrons[i]=new TH1F(Form("fNcells_electrons%d",i), Form("%d < p_{t} < %d GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
-        fNcells_hadrons[i]=new TH1F(Form("fNcells_hadrons%d",i), Form("%d < p_{t} < %d GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
-        fNcells_EoverP[i]=new TH2F(Form("fNcells_EoverP%d",i),Form("%d < p_{t} < %d GeV/c; E/p; Ncells ",fPtBin[i],fPtBin[i+1]),1000, 0,10,30,0,30);
-        fM02_EoverP[i]= new TH2F(Form("fM02_EoverP%d",i),Form("%d < p_{t} < %d GeV/c; M02; E / p ",fPtBin[i],fPtBin[i+1]),1000,0,100,100,0,2);
-        fM20_EoverP[i]= new TH2F(Form("fM20_EoverP%d",i),Form("%d < p_{t} < %d GeV/c; M20; E / p ",fPtBin[i],fPtBin[i+1]),1000,0,100,100,0,2);
-        fEoverP_ptbins[i] = new TH1F(Form("fEoverP_ptbins%d",i),Form("%d < p_{t} < %d GeV/c;E / p ",fPtBin[i],fPtBin[i+1]),500,0,2);
-        fECluster_ptbins[i]= new TH1F(Form("fECluster_ptbins%d",i), Form("%d < p_{t} < %d GeV/c;ECluster; Counts ",fPtBin[i],fPtBin[i+1]),2000, 0,100);
-        fEoverP_wSSCut[i]=new TH1F(Form("fEoverP_wSSCut%d",i),Form("%d < p_{t} < %d GeV/c;E / p ; Counts",fPtBin[i],fPtBin[i+1]),500,0,2);
-        fTPCnsigma_eta_electrons[i]=new TH2F(Form("fTPCnsigma_eta_electrons%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Eta ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
-        fTPCnsigma_eta_hadrons[i]=new TH2F(Form("fTPCnsigma_eta_hadrons%d",i),Form("%d < p_{t} < %d GeV/c;TPC Electron N#sigma;Eta ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
+        fEta[i]=new TH1F(Form("fEta%d",i), Form("%1.1f < p_{t} < %1.1f GeV/c;#eta; counts",fPtBin[i],fPtBin[i+1]),100, -0.1,0.1);
+        fPhi[i]=new TH1F(Form("fPhi%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#phi; counts )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
+        fR[i]=new TH1F(Form("fR%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;R;counts )",fPtBin[i],fPtBin[i+1]), 100, -0.1,0.1);
+        fR_EoverP[i]=new TH2F(Form("fR_EoverP%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;R;E / p ",fPtBin[i],fPtBin[i+1]),100, 0,0.1,1000,0,10);
+        fNcells[i]=new TH1F(Form("fNcells%d",i), Form("%1.1f < p_{t} < %1.1f GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
+        fNcells_electrons[i]=new TH1F(Form("fNcells_electrons%d",i), Form("%1.1f < p_{t} < %1.1f GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
+        fNcells_hadrons[i]=new TH1F(Form("fNcells_hadrons%d",i), Form("%1.1f < p_{t} < %1.1f GeV/c;ncells;counts ",fPtBin[i],fPtBin[i+1]),100, 0, 30);
+        fNcells_EoverP[i]=new TH2F(Form("fNcells_EoverP%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c; E/p; Ncells ",fPtBin[i],fPtBin[i+1]),1000, 0,10,30,0,30);
+        fM02_EoverP[i]= new TH2F(Form("fM02_EoverP%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c; M02; E / p ",fPtBin[i],fPtBin[i+1]),1000,0,100,100,0,2);
+        fM20_EoverP[i]= new TH2F(Form("fM20_EoverP%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c; M20; E / p ",fPtBin[i],fPtBin[i+1]),1000,0,100,100,0,2);
+        fEoverP_ptbins[i] = new TH1F(Form("fEoverP_ptbins%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;E / p ",fPtBin[i],fPtBin[i+1]),500,0,2);
+        fECluster_ptbins[i]= new TH1F(Form("fECluster_ptbins%d",i), Form("%1.1f < p_{t} < %1.1f GeV/c;ECluster; Counts ",fPtBin[i],fPtBin[i+1]),2000, 0,100);
+        fEoverP_wSSCut[i]=new TH1F(Form("fEoverP_wSSCut%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;E / p ; Counts",fPtBin[i],fPtBin[i+1]),500,0,2);
+        fTPCnsigma_eta_electrons[i]=new TH2F(Form("fTPCnsigma_eta_electrons%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma;Eta ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
+        fTPCnsigma_eta_hadrons[i]=new TH2F(Form("fTPCnsigma_eta_hadrons%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;TPC Electron N#sigma;Eta ",fPtBin[i],fPtBin[i+1]),1000,-15,15,100,-1,1);
         
         fOutputList->Add(fEoverP_tpc[i]);
         fOutputList->Add(fTPC_pt[i]);
@@ -1785,10 +1883,10 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
             //new Histograms 15-09
             if (fIsMC)
             {
-                fCetaPhi_MC_with_partner_greater[i] = new TH2F(Form("fCetaPhi_MC_with_partner_greater%d",i),Form("MC with part greather than min %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCetaPhi_MC_with_partner_below[i] = new TH2F(Form("fCetaPhi_MC_with_partner_below%d",i),Form("MC with part below than min %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCetaPhi_MC_with_partner_greater[i] = new TH2F(Form("fCetaPhi_MC_with_partner_greater%d",i),Form("MC with part greather than min %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCetaPhi_MC_with_partner_below[i] = new TH2F(Form("fCetaPhi_MC_with_partner_below%d",i),Form("MC with part below than min %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
                 
-                fCetaPhi_MC_NHFE_1partner_reco[i] = new TH2F(Form("fCetaPhi_MC_NHFE_1partner_reco%d",i),Form("MC with part below than min %d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCetaPhi_MC_NHFE_1partner_reco[i] = new TH2F(Form("fCetaPhi_MC_NHFE_1partner_reco%d",i),Form("MC with part below than min %1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
                 
                 fOutputList->Add(fCetaPhi_MC_with_partner_greater[i]);
                 fOutputList->Add(fCetaPhi_MC_with_partner_below[i]);
@@ -1796,26 +1894,26 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
                 
                 //end new histograms
             }
-            fCEtaPhi_Inc[i] = new TH2F(Form("fCEtaPhi_Inc%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_Inc_DiHadron[i] = new TH2F(Form("fCEtaPhi_Inc_DiHadron%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_Inc[i] = new TH2F(Form("fCEtaPhi_Inc%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_Inc_DiHadron[i] = new TH2F(Form("fCEtaPhi_Inc_DiHadron%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             
-            fCEtaPhi_ULS[i] = new TH2F(Form("fCEtaPhi_ULS%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_LS[i] = new TH2F(Form("fCEtaPhi_LS%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_ULS_NoP[i] = new TH2F(Form("fCEtaPhi_ULS_NoP%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_LS_NoP[i] = new TH2F(Form("fCEtaPhi_LS_NoP%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_ULS[i] = new TH2F(Form("fCEtaPhi_ULS%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_LS[i] = new TH2F(Form("fCEtaPhi_LS%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_ULS_NoP[i] = new TH2F(Form("fCEtaPhi_ULS_NoP%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_LS_NoP[i] = new TH2F(Form("fCEtaPhi_LS_NoP%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             
-            fCEtaPhi_ULS_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_LS_Weight[i] = new TH2F(Form("fCEtaPhi_LS_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_ULS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-            fCEtaPhi_LS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_ULS_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_Weight%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_LS_Weight[i] = new TH2F(Form("fCEtaPhi_LS_Weight%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_ULS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+            fCEtaPhi_LS_NoP_Weight[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
             
             if(fIsMC)
             {
-                fCEtaPhi_Inc_PH[i] = new TH2F(Form("fCEtaPhi_Inc_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCEtaPhi_ULS_Weight_PH[i] = new TH2F(Form("fCEtaPhi_ULS_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCEtaPhi_LS_Weight_PH[i] = new TH2F(Form("fCEtaPhi_LS_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCEtaPhi_ULS_NoP_Weight_PH[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCEtaPhi_LS_NoP_Weight_PH[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight_PH%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_Inc_PH[i] = new TH2F(Form("fCEtaPhi_Inc_PH%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_ULS_Weight_PH[i] = new TH2F(Form("fCEtaPhi_ULS_Weight_PH%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_LS_Weight_PH[i] = new TH2F(Form("fCEtaPhi_LS_Weight_PH%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_ULS_NoP_Weight_PH[i] = new TH2F(Form("fCEtaPhi_ULS_NoP_Weight_PH%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_LS_NoP_Weight_PH[i] = new TH2F(Form("fCEtaPhi_LS_NoP_Weight_PH%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
                 fOutputList->Add(fCEtaPhi_Inc_PH[i]);
                 fOutputList->Add(fCEtaPhi_ULS_Weight_PH[i]);
                 fOutputList->Add(fCEtaPhi_LS_Weight_PH[i]);
@@ -1842,13 +1940,13 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
             
             if(fEventMixingFlag)
             {
-                fCEtaPhi_Inc_EM[i] = new TH2F(Form("fCEtaPhi_Inc_EM%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_Inc_EM[i] = new TH2F(Form("fCEtaPhi_Inc_EM%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
                 
-                fCEtaPhi_ULS_EM[i] = new TH2F(Form("fCEtaPhi_ULS_EM%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCEtaPhi_LS_EM[i] = new TH2F(Form("fCEtaPhi_LS_EM%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_ULS_EM[i] = new TH2F(Form("fCEtaPhi_ULS_EM%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_LS_EM[i] = new TH2F(Form("fCEtaPhi_LS_EM%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
                 
-                fCEtaPhi_ULS_Weight_EM[i] = new TH2F(Form("fCEtaPhi_ULS_Weight_EM%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
-                fCEtaPhi_LS_Weight_EM[i] = new TH2F(Form("fCEtaPhi_LS_Weight_EM%d",i),Form("%d < p_{t} < %d GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_ULS_Weight_EM[i] = new TH2F(Form("fCEtaPhi_ULS_Weight_EM%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
+                fCEtaPhi_LS_Weight_EM[i] = new TH2F(Form("fCEtaPhi_LS_Weight_EM%d",i),Form("%1.1f < p_{t} < %1.1f GeV/c;#DeltaPhi (rad);#Delta#eta",fPtBin[i],fPtBin[i+1]),200,-0.5*TMath::Pi(),1.5*TMath::Pi(),200,-2,2);
                 
                 fOutputList->Add(fCEtaPhi_Inc_EM[i]);
                 
@@ -2951,7 +3049,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
     
     if (fIsMC)
     {
-        
+        //Loop on the MC tracks to find the reco efficiency
         for(Int_t iTracksMC = 0; iTracksMC < fMCarray->GetEntries(); iTracksMC++)
         {
             //first we check if the MC particle is charged and is at the acceptance
@@ -2964,7 +3062,8 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
             if (!fMCparticle->IsPhysicalPrimary()) continue; //Physical primary
             
             //Save the pT of all Charged hadrons in the acceptance (This is the denominator of the efficiency)
-            fpTEffHadronsMC->Fill(fMCparticle->Pt());
+            fpTPhiEffHadronsMC->Fill(fMCparticle->Pt(),fMCparticle->Phi());
+            fpTEtaEffHadronsMC->Fill(fMCparticle->Pt(),fMCparticle->Eta());
             
             //Now loop over the tracks
             for(Int_t iTracks = 0; iTracks < NTracks; iTracks++)
@@ -2976,7 +3075,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                 AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
                 
                 AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
-
+                
                 //Them we check if it has a matching AliVTrack
                 
                 if (track->GetLabel() == iTracksMC)
@@ -2984,18 +3083,91 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                     //Now we check if the track has requisited bits, the eta range and the minimun number of TPC clusters
                     if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax && atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly) && atrack->GetStatus()&AliESDtrack::kITSrefit && atrack->GetStatus()&AliESDtrack::kTPCrefit && atrack->GetTPCNcls() >= 80)
                     {
+                        //Last check: DCA cut
+                        //DCA cut for hadrons
+                        if(fIsAOD && fUseDCACutforHadrons)
+                        {
+                            Double_t d0z0[2], cov[3];
+                            AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+                            track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+                            Double_t DCAxy = d0z0[0];
+                            Double_t DCAz = d0z0[1];
+                            if(TMath::Abs(DCAxy) >= fDCAcutrHadron || TMath::Abs(DCAz)>=fDCAcutzHadron) continue;
+                        }
+                        
+                        
                         //If positive, the particle is a reconstructed particle and should be saved in the pT spectrum (This is the numerator of the efficiency)
                         
-                        fpTEffHadronsReco->Fill(track->Pt());
+                        fpTPhiEffHadronsReco->Fill(fMCparticle->Pt(),fMCparticle->Phi());
+                        fpTEtaEffHadronsReco->Fill(fMCparticle->Pt(),fMCparticle->Eta());
+                        
+                        
                     }
                 }
             }
             
         }
+        
+        //Loop on the real tracks to find the contamination from secoundary particles (and check consistency with correlation)
+        for(Int_t iTracks = 0; iTracks < NTracks; iTracks++)
+        {
+            AliVParticle* Vtrack = 0x0;
+            Vtrack  = fVevent->GetTrack(iTracks);
+            AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+            AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+            
+            if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax && atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly) && atrack->GetStatus()&AliESDtrack::kITSrefit && atrack->GetStatus()&AliESDtrack::kTPCrefit && atrack->GetTPCNcls() >= 80)
+            {
+                //Last check: DCA cut
+                //DCA cut for hadrons
+                if(fIsAOD && fUseDCACutforHadrons)
+                {
+                    Double_t d0z0[2], cov[3];
+                    AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+                    track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+                    Double_t DCAxy = d0z0[0];
+                    Double_t DCAz = d0z0[1];
+                    if(TMath::Abs(DCAxy) >= fDCAcutrHadron || TMath::Abs(DCAz)>=fDCAcutzHadron) continue;
+                }
+                
+                //This track is an associeated particle for the analysis, we do it's pT spectrum
+                
+                fpTPhiHadron->Fill(track->Pt(),track->Phi());
+                fpTEtaHadron->Fill(track->Pt(),track->Eta());
+                
+                if (track->GetLabel()<0)
+                {
+                    fpTPhiSecPartNoLabel->Fill(track->Pt(),track->Phi());
+                    fpTEtaSecPartNoLabel->Fill(track->Pt(),track->Eta());
+                }
+                else
+                {
+                    AliAODMCParticle *hadron_MonteCarlo = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+                    if (hadron_MonteCarlo->IsPhysicalPrimary())
+                    {
+                        fpTPhiSecPartPhysPri->Fill(track->Pt(),track->Phi());
+                        fpTEtaSecPartPhysPri->Fill(track->Pt(),track->Eta());
+                    }
+
+                    else
+                    {
+                        fpTPhiSecPartNonPhysPri->Fill(track->Pt(),track->Phi());
+                        fpTEtaSecPartNonPhysPri->Fill(track->Pt(),track->Eta());
+                    }
+                }
+                
+                
+                
+                
+            }
+            
+            
+            
+        }
     }
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    
     
     
     ///_____________________________________________________________________
@@ -3015,7 +3187,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         //AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
         //printf("\n\n Track label of track %d is %d  - from Vevent \n\n", iTracks, track->GetLabel());
         
-
+        
         /*
          if(fIsMC  && track->GetLabel()>=0)
          {
@@ -3058,10 +3230,10 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                 {
                     fpTShifHadronsMC->Fill(fMCparticle->Pt());
                     fpTShiftHadronsReco->Fill(track->Pt());
-
+                    
                 }
                 
-
+                
                 
                 Int_t pdg = fMCparticle->GetPdgCode();
                 if (TMath::Abs(pdg) == 11 && fMCparticle->Eta()>fEtaCutMin && fMCparticle->Eta()<fEtaCutMax)
@@ -3565,7 +3737,28 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         fTPC_p[1]->Fill(fPt,fTPCsignal);
         fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
-        Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+        Double_t fPtBin[7];
+        if(fUseAlternativeBinnig)
+        {
+            fPtBin[0] = 0.5;
+            fPtBin[1] = 1.0;
+            fPtBin[2] = 1.5;
+            fPtBin[3] = 2.0;
+            fPtBin[4] = 3.0;
+            fPtBin[5] = 4.0;
+            fPtBin[6] = 6.0;
+        }
+        else
+        {
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 2.0;
+            fPtBin[2] = 4.0;
+            fPtBin[3] = 6.0;
+            fPtBin[4] = 8.0;
+            fPtBin[5] = 10.0;
+            fPtBin[6] = 15.0;
+        }
+        
         Double_t fPtBin_trigger[11] = {1,2,4,6,8,10,12,14,16,18,20};
         
         TPCNcls = track->GetTPCNcls();
@@ -5523,7 +5716,29 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                             if (delta_phi_MC < -pi/2)  delta_phi_MC= delta_phi_MC + 2*pi;
                             
                             
-                            Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+                            Double_t fPtBin[7];
+                            if(fUseAlternativeBinnig)
+                            {
+                                fPtBin[0] = 0.5;
+                                fPtBin[1] = 1.0;
+                                fPtBin[2] = 1.5;
+                                fPtBin[3] = 2.0;
+                                fPtBin[4] = 3.0;
+                                fPtBin[5] = 4.0;
+                                fPtBin[6] = 6.0;
+                            }
+                            else
+                            {
+                                fPtBin[0] = 1.0;
+                                fPtBin[1] = 2.0;
+                                fPtBin[2] = 4.0;
+                                fPtBin[3] = 6.0;
+                                fPtBin[4] = 8.0;
+                                fPtBin[5] = 10.0;
+                                fPtBin[6] = 15.0;
+                            }
+                            
+                            
                             
                             for(Int_t i = 0; i < 6; i++)
                             {
@@ -5567,7 +5782,29 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                         if (delta_phi_MC < -pi/2)  delta_phi_MC= delta_phi_MC + 2*pi;
                         
                         
-                        Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+                        Double_t fPtBin[7];
+                        if(fUseAlternativeBinnig)
+                        {
+                            fPtBin[0] = 0.5;
+                            fPtBin[1] = 1.0;
+                            fPtBin[2] = 1.5;
+                            fPtBin[3] = 2.0;
+                            fPtBin[4] = 3.0;
+                            fPtBin[5] = 4.0;
+                            fPtBin[6] = 6.0;
+                        }
+                        else
+                        {
+                            fPtBin[0] = 1.0;
+                            fPtBin[1] = 2.0;
+                            fPtBin[2] = 4.0;
+                            fPtBin[3] = 6.0;
+                            fPtBin[4] = 8.0;
+                            fPtBin[5] = 10.0;
+                            fPtBin[6] = 15.0;
+                        }
+                        
+                        
                         
                         for(Int_t i = 0; i < 6; i++)
                         {
@@ -5587,9 +5824,9 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                             }
                         }
                     }
-
                     
-                
+                    
+                    
                     
                     //now I correlate the Reco HFE with the MC phys primary hadrons
                     
@@ -5616,7 +5853,29 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                         if (delta_phi_MC < -pi/2)  delta_phi_MC= delta_phi_MC + 2*pi;
                         
                         
-                        Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+                        Double_t fPtBin[7];
+                        if(fUseAlternativeBinnig)
+                        {
+                            fPtBin[0] = 0.5;
+                            fPtBin[1] = 1.0;
+                            fPtBin[2] = 1.5;
+                            fPtBin[3] = 2.0;
+                            fPtBin[4] = 3.0;
+                            fPtBin[5] = 4.0;
+                            fPtBin[6] = 6.0;
+                        }
+                        else
+                        {
+                            fPtBin[0] = 1.0;
+                            fPtBin[1] = 2.0;
+                            fPtBin[2] = 4.0;
+                            fPtBin[3] = 6.0;
+                            fPtBin[4] = 8.0;
+                            fPtBin[5] = 10.0;
+                            fPtBin[6] = 15.0;
+                        }
+                        
+                        
                         
                         for(Int_t i = 0; i < 6; i++)
                         {
@@ -5786,7 +6045,29 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 if (delta_phi_MC < -pi/2)  delta_phi_MC= delta_phi_MC + 2*pi;
                 
                 
-                Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+                Double_t fPtBin[7];
+                if(fUseAlternativeBinnig)
+                {
+                    fPtBin[0] = 0.5;
+                    fPtBin[1] = 1.0;
+                    fPtBin[2] = 1.5;
+                    fPtBin[3] = 2.0;
+                    fPtBin[4] = 3.0;
+                    fPtBin[5] = 4.0;
+                    fPtBin[6] = 6.0;
+                }
+                else
+                {
+                    fPtBin[0] = 1.0;
+                    fPtBin[1] = 2.0;
+                    fPtBin[2] = 4.0;
+                    fPtBin[3] = 6.0;
+                    fPtBin[4] = 8.0;
+                    fPtBin[5] = 10.0;
+                    fPtBin[6] = 15.0;
+                }
+                
+                
                 
                 for(Int_t i = 0; i < 6; i++)
                 {
@@ -5868,7 +6149,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
             fpT_Data_HFE_RECO_Data->Fill(fPtE);
         }
     }
-
+    
     if(fEventMixingFlag)
     {
         //hadling pp in the same task
@@ -5910,7 +6191,29 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     
                     fDeta = fEtaE - fEtaH;
                     
-                    Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+                    Double_t fPtBin[7];
+                    if(fUseAlternativeBinnig)
+                    {
+                        fPtBin[0] = 0.5;
+                        fPtBin[1] = 1.0;
+                        fPtBin[2] = 1.5;
+                        fPtBin[3] = 2.0;
+                        fPtBin[4] = 3.0;
+                        fPtBin[5] = 4.0;
+                        fPtBin[6] = 6.0;
+                    }
+                    else
+                    {
+                        fPtBin[0] = 1.0;
+                        fPtBin[1] = 2.0;
+                        fPtBin[2] = 4.0;
+                        fPtBin[3] = 6.0;
+                        fPtBin[4] = 8.0;
+                        fPtBin[5] = 10.0;
+                        fPtBin[6] = 15.0;
+                    }
+                    
+                    
                     
                     for(Int_t i = 0; i < 6; i++)
                     {
@@ -5929,7 +6232,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     }
                     
                     
-
+                    
                     
                     // TODO your code: do event mixing with current event and bgTracks
                     // note that usually the content filled now is weighted by 1 / pool->GetCurrentNEvents()
@@ -5971,6 +6274,19 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
             if(!fPartnerCuts->AcceptTrack(etrack2)) continue;
         }
         
+        //DCA cut for hadrons
+        if(fIsAOD && fUseDCACutforHadrons)
+        {
+            Double_t d0z0[2], cov[3];
+            AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+            track2->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+            Double_t DCAxy = d0z0[0];
+            Double_t DCAz = d0z0[1];
+            if(TMath::Abs(DCAxy) >= fDCAcutrHadron || TMath::Abs(DCAz)>=fDCAcutzHadron) continue;
+        }
+        
+        
+        
         //Systematics: test of seconday particle contamination
         Bool_t IsPhyPrimaryHadron;
         
@@ -6005,7 +6321,28 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         
         fDeta = fEtaE - fEtaH;
         
-        Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+        Double_t fPtBin[7];
+        if(fUseAlternativeBinnig)
+        {
+            fPtBin[0] = 0.5;
+            fPtBin[1] = 1.0;
+            fPtBin[2] = 1.5;
+            fPtBin[3] = 2.0;
+            fPtBin[4] = 3.0;
+            fPtBin[5] = 4.0;
+            fPtBin[6] = 6.0;
+        }
+        else
+        {
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 2.0;
+            fPtBin[2] = 4.0;
+            fPtBin[3] = 6.0;
+            fPtBin[4] = 8.0;
+            fPtBin[5] = 10.0;
+            fPtBin[6] = 15.0;
+        }
+        
         
         //______________________________________________________________
         //Check if this track is a Non-HFE partner
@@ -6052,14 +6389,14 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 
                 if (fIsMC)
                 {
-                        if (fIsHFE1)
-                        {
-                            fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]->Fill(fDphi,fDeta);
-                            if(IsPhyPrimaryHadron)
-                                fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i]->Fill(fDphi,fDeta);
-                                
-        
-                        }
+                    if (fIsHFE1)
+                    {
+                        fCetaPhi_Data_Data_RECO_MC_PhyPrimH[i]->Fill(fDphi,fDeta);
+                        if(IsPhyPrimaryHadron)
+                            fCEtaPhi_DataHFE_with_onlyPhysPriHadron[i]->Fill(fDphi,fDeta);
+                        
+                        
+                    }
                     
                 }
                 
@@ -6103,6 +6440,17 @@ TObjArray* AliAnalysisTaskHFEpACorrelation::SelectedHadrons()
         {
             AliESDtrack *etrack2 = dynamic_cast<AliESDtrack*>(Vtrack2);
             if(!fPartnerCuts->AcceptTrack(etrack2)) continue;
+        }
+        
+        //DCA cut for hadrons
+        if(fIsAOD && fUseDCACutforHadrons)
+        {
+            Double_t d0z0[2], cov[3];
+            AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+            track2->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+            Double_t DCAxy = d0z0[0];
+            Double_t DCAz = d0z0[1];
+            if(TMath::Abs(DCAxy) >= fDCAcutrHadron || TMath::Abs(DCAz)>=fDCAcutzHadron) continue;
         }
         
         fTracksClone->Add(new AliHFEHCParticle(track2->Eta(), track2->Phi(), track2->Pt()));
@@ -6174,6 +6522,18 @@ void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_
             if(!fPartnerCuts->AcceptTrack(etrack2)) continue;
         }
         
+        //DCA cut for hadrons
+        if(fIsAOD && fUseDCACutforHadrons)
+        {
+            Double_t d0z0[2], cov[3];
+            AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+            track2->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+            Double_t DCAxy = d0z0[0];
+            Double_t DCAz = d0z0[1];
+            if(TMath::Abs(DCAxy) >= fDCAcutrHadron || TMath::Abs(DCAz)>=fDCAcutzHadron) continue;
+        }
+        
+        
         fPhiH = track2->Phi();
         fEtaH = track2->Eta();
         fPtH = track2->Pt();
@@ -6187,7 +6547,29 @@ void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_
         
         fDeta = fEtaE - fEtaH;
         
-        Double_t fPtBin[7] = {1,2,4,6,8,10,15};
+        Double_t fPtBin[7];
+        if(fUseAlternativeBinnig)
+        {
+            fPtBin[0] = 0.5;
+            fPtBin[1] = 1.0;
+            fPtBin[2] = 1.5;
+            fPtBin[3] = 2.0;
+            fPtBin[4] = 3.0;
+            fPtBin[5] = 4.0;
+            fPtBin[6] = 6.0;
+        }
+        else
+        {
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 2.0;
+            fPtBin[2] = 4.0;
+            fPtBin[3] = 6.0;
+            fPtBin[4] = 8.0;
+            fPtBin[5] = 10.0;
+            fPtBin[6] = 15.0;
+        }
+        
+        
         
         for(Int_t i = 0; i < 6; i++)
         {

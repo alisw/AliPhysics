@@ -27,6 +27,7 @@
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -57,6 +58,7 @@ AliRDHFCuts(name),
   fUseCascadePID(kFALSE),
   fPidObjCascPi(0),
   fPidObjCascPr(0),
+  fUseV0Topology(0),
   fBzkG(0),
   fProdTrackTPCNclsPIDMin(0),
   fProdTrackTPCNclsRatioMin(0.0),
@@ -146,6 +148,7 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fUseCascadePID(source.fUseCascadePID),
   fPidObjCascPi(source.fPidObjCascPi),
   fPidObjCascPr(source.fPidObjCascPr),
+  fUseV0Topology(source.fUseV0Topology),
   fBzkG(source.fBzkG),
   fProdTrackTPCNclsPIDMin(source.fProdTrackTPCNclsPIDMin),
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
@@ -216,6 +219,7 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fUseCascadePID = source.fUseCascadePID;
   fPidObjCascPi = source.fPidObjCascPi;
   fPidObjCascPr = source.fPidObjCascPr;
+  fUseV0Topology = source.fUseV0Topology;
   fBzkG = source.fBzkG;
   fProdTrackTPCNclsPIDMin = source.fProdTrackTPCNclsPIDMin;
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
@@ -849,6 +853,23 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
     }
   }
 
+  if(fUseV0Topology>0){
+    Double_t dphiprlam = 0.;
+    if(isparticle){
+      TVector3 v3v0pr(casc->MomPosX(),casc->MomPosY(),casc->MomPosZ());
+      TVector3 v3lam(casc->Px(),casc->Py(),casc->Pz());
+      dphiprlam = v3v0pr.DeltaPhi(v3lam);
+    }else{
+      TVector3 v3v0pr(casc->MomNegX(),casc->MomNegY(),casc->MomNegZ());
+      TVector3 v3lam(casc->Px(),casc->Py(),casc->Pz());
+      dphiprlam = -1.*v3v0pr.DeltaPhi(v3lam);
+    }
+    if(fUseV0Topology==1){
+      if(dphiprlam>0) return kFALSE;
+    }else if(fUseV0Topology==2){
+      if(dphiprlam<0) return kFALSE;
+    }
+  }
   
   return kTRUE;
 }
@@ -1259,4 +1280,33 @@ Int_t AliRDHFCutsXictoeleXifromAODtracks::IsSelected(TLorentzVector* vtrk, TLore
   if(returnvalueCuts==1 && returnvaluePID==1) returnvalue=1;
   
   return returnvalue;
+}
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::DeltaPhi(AliAODcascade *casc, AliAODTrack *trk)
+{
+  //
+  // Calculate Delta phi
+  //
+  Double_t phiv = atan2(casc->MomXiY(),casc->MomXiX());
+  if(phiv<-M_PI) phiv += 2 *M_PI;
+  if(phiv> M_PI) phiv -= 2 *M_PI;
+  Double_t phie = trk->Phi();
+  if(phie<-M_PI) phie += 2 *M_PI;
+  if(phie> M_PI) phie -= 2 *M_PI;
+  Double_t dphi = phiv - phie;
+  if(dphi<-M_PI) dphi += 2 *M_PI;
+  if(dphi> M_PI) dphi -= 2 *M_PI;
+  return dphi;
+}
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::DeltaEta(AliAODcascade *casc, AliAODTrack *trk)
+{
+  //
+  // Calculate Delta Eta
+  //
+  Double_t ptotxi = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)+pow(casc->MomXiZ(),2));
+	Double_t etav = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
+  Double_t etae = trk->Eta();
+  Double_t deta = etav - etae;
+  return deta;
 }

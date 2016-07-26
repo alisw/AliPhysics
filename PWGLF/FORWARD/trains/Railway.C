@@ -190,7 +190,7 @@ struct Railway
    * 
    * @param use Whether to use pars or not.  On return contains old value 
    */
-  virtual void UsePar(Bool_t& use) {}
+  virtual void UsePar(Bool_t&) {}
   /** 
    * Add an include path
    * 

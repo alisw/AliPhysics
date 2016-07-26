@@ -112,8 +112,11 @@ set(SRCS
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
     Tracks/AliAnalysisTaskParticleInJet.cxx
     Tracks/AliAnalysisTaskTrackDensity.cxx
+    Tracks/AliAnalysisTaskTrackDensityData.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
+    UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
+    UserTasks/AliAnalysisTaskChargedJetsHadronToy.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
     UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
@@ -144,6 +147,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
     UserTasks/AliAnalysisTaskFakeJets.cxx
+    UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerPatchJetMatch.cxx
     UserTasks/AliAnalysisTaskSubJetFraction.cxx
@@ -165,9 +169,9 @@ set(SRCS
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
-    UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
-    UserTasks/AliAnalysisTaskGammaHadron.cxx   
-    UserTasks/AliAnalysisTaskPi0Hadron.cxx)
+    UserTasks/AliEmcalPicoTrackFromJetMaker.cxx  
+    UserTasks/AliAnalysisTaskPi0Hadron.cxx
+    UserTasks/AliAnalysisTaskEmcalJetTree.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
@@ -178,10 +182,8 @@ if(FASTJET_FOUND)
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
-	AliJetEmbeddingFromPYTHIATask.cxx
+	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
-        UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
-        UserTasks/AliAnalysisTaskEmcalJetExtractor.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullpAJets_Eli_Mod.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx

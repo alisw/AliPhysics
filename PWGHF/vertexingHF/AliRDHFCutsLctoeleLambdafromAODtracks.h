@@ -49,6 +49,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 
   void SetUseOnTheFlyV0(Bool_t a) { fUseOnTheFlyV0=a; }
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
+  void SetUseV0Topology(Int_t a) { fUseV0Topology=a; }
+  Int_t GetUseV0Topology() { return fUseV0Topology; }
 
   Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
   Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *vert);
@@ -152,10 +154,13 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Bool_t IsSideBand(AliAODv0 *c);
 	Bool_t IsSideBand(TLorentzVector *c);
   void SetSftPosR125(AliAODTrack *track,Double_t bfield,Double_t priVtx[3], Double_t *XSftR125);
+  void SetSftPosR(AliAODTrack *track,Double_t bfield,Double_t R, Double_t priVtx[3], Double_t *XSftR);
   Double_t dEtaSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t dPhiSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en);
   Double_t CalculatePhotonMass(AliAODTrack *track1, AliAODTrack *track2);
+  Double_t DeltaPhi(AliAODv0 *v0, AliAODTrack *trk);
+  Double_t DeltaEta(AliAODv0 *v0, AliAODTrack *trk);
 
  protected:
 	
@@ -167,6 +172,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF *fPidObjProton;         /// PID object for proton from Lc
   AliAODPidHF *fPidObjPion;         /// PID object for proton from Lc
   Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
+  Int_t   fUseV0Topology;          /// 0: Cowboy+Sailor 1: Cowboy 2:Sailor
   Double_t fBzkG; ///B field
   Double_t fPrimVert[3]; ///Primary vertex
   
@@ -217,7 +223,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fConversionMassMax; /// Conversion mass
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,8);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,9);
   /// \endcond
 };
 

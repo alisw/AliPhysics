@@ -44,6 +44,8 @@ class AliAODv0;
 #include "AliCascadeVertexer.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliAODEvent.h"
 #include "AliInputEventHandler.h"
@@ -53,6 +55,7 @@ class AliAODv0;
 #include "AliESDtrackCuts.h"
 #include "AliCentrality.h"
 #include <TRandom3.h>
+#include "AliMultSelection.h"
 
 ClassImp(AliAnalysisTaskNucleiv2SP)
 
@@ -63,16 +66,24 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP() 
   : AliAnalysisTaskSE(),
+    fESDevent(0),                         //! 
+    fAODevent(0),                         //! 
+    fevent(0),   
+    fAnalysisType("ESD"),
     fisPrimCut(kFALSE),
     fptc(1),     
     fVzmax(10),
     fCentrality("V0M"),
+    fApplyFlatten(kTRUE),
+    fYear(2011),
+    fHarmonic(2),
     fListHist(0), 
     fHistEventMultiplicity(0), 
     fHistTrackMultiplicity(0),
     fHistTrackMultiplicityCentral(0),    
     fHistTrackMultiplicitySemiCentral(0),
     fHistTrackMultiplicityMB(0),
+    fHistTrackMultiplicityINT7(0),
     fhBB(0),
     fhBBDeu(0),
     fhTOF(0),
@@ -142,17 +153,25 @@ AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP()
 
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2SP::AliAnalysisTaskNucleiv2SP(const char *name) 
-  : AliAnalysisTaskSE(name), 
+  : AliAnalysisTaskSE(name),   
+    fESDevent(0),                         //! 
+    fAODevent(0),                           //! 
+    fevent(0),   
+    fAnalysisType("ESD"),
     fisPrimCut(kFALSE),
     fptc(1),     
     fVzmax(10),
     fCentrality("V0M"),
+    fApplyFlatten(kTRUE),
+    fYear(2011),
+    fHarmonic(2),
     fListHist(0), 
     fHistEventMultiplicity(0), 
     fHistTrackMultiplicity(0),
     fHistTrackMultiplicityCentral(0),    
     fHistTrackMultiplicitySemiCentral(0),
     fHistTrackMultiplicityMB(0),
+    fHistTrackMultiplicityINT7(0),
     fhBB(0),
     fhBBDeu(0),
     fhTOF(0),
@@ -243,12 +262,11 @@ void AliAnalysisTaskNucleiv2SP::Initialize()
   fESDtrackCuts->SetEtaRange(-0.8,0.8);
   
   fESDtrackCutsEP = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
-
-  // this->SetCentralityEstimator(fCentrality);
+  
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskNucleiv2SP::GetEventPlaneForCandidate(AliESDtrack* track0, const TVector2* q,AliEventplane *pl){
+Float_t AliAnalysisTaskNucleiv2SP::GetEventPlaneForCandidate(AliVTrack* track0, const TVector2* q,AliEventplane *pl){
   
   // remove autocorrelations 
   
@@ -270,6 +288,7 @@ Float_t AliAnalysisTaskNucleiv2SP::GetEventPlaneForCandidate(AliESDtrack* track0
   return qcopy.Phi()/2.;
   
 }
+
 //________________________________________________________________________
 Float_t AliAnalysisTaskNucleiv2SP::GetPhi0Pi(Float_t phi){
   // Sets the phi angle in the range 0-pi
@@ -309,16 +328,16 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   
   if(! fHistEventMultiplicity ){
 
-    fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 12 , -0.5,11.5);
+    fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 12 , 0.5,12.5);
 
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(1,"All Events");
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(2,"Events w/PV");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(2,"Events w/PV & wo pileup");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(3,"Events w/|Vz|<10cm");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(4,"Central Events");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(5,"Semi-Central Events");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(6,"MB Events");
+    fHistEventMultiplicity->GetXaxis()->SetBinLabel(7,"INT7 Events");
     //from HF
-    fHistEventMultiplicity->GetXaxis()->SetBinLabel(7,"nEventsAnal");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(8,"nEvSelected");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(9,"nCandidatesSelected");
     fHistEventMultiplicity->GetXaxis()->SetBinLabel(10,"out of pt bounds");
@@ -351,6 +370,12 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
     fHistTrackMultiplicityMB->GetXaxis()->SetTitle("Number of tracks");
     fHistTrackMultiplicityMB->GetYaxis()->SetTitle("Percentile");
     fListHist->Add(fHistTrackMultiplicityMB);
+  } 
+  if(! fHistTrackMultiplicityINT7 ){
+    fHistTrackMultiplicityINT7  = new TH2F( "fHistTrackMultiplicityINT7", "Nb of Tracks INT7 Events |Vz| < 10", 250,0, 25000,105,0,105);
+    fHistTrackMultiplicityINT7->GetXaxis()->SetTitle("Number of tracks");
+    fHistTrackMultiplicityINT7->GetYaxis()->SetTitle("Percentile");
+    fListHist->Add(fHistTrackMultiplicityINT7);
   } 
  
   if(! fhBB ){
@@ -424,16 +449,30 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hCos2DeltaVzMTPCnvsCentrality); 
   fListHist->Add(hCos2DeltaTPCpTPCnvsCentrality);
 
- 
-  hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,0,105);
+  if(fHarmonic < 3)
+    hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-5,5,105,0,105);
+  else
+    hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",5000,-1000,1000,105,0,105);
   fListHist->Add(hQVzAQVzCvsCentrality);
+
+  if(fHarmonic < 3){
+    hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-5,5,105,0,105);
+    hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-5,5,105,0,105);
+    hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,0,105);
+    hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,0,105);
+    hQxVzMvsCentrality = new TH2F("hQxVzMvsCentrality","hQxVzMvsCentrality",100,-5,5,105,0,105);
+    hQyVzMvsCentrality = new TH2F("hQyVzMvsCentrality","hQyVzMvsCentrality",100,-5,5,105,0,105);
+  }
+  
+  else{
+    hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",2000,-500,500,105,0,105);
+    hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",2000,-500,500,105,0,105);
+    hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",2000,-500,500,105,0,105);
+    hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",2000,-500,500,105,0,105);
+    hQxVzMvsCentrality = new TH2F("hQxVzMvsCentrality","hQxVzMvsCentrality",2000,-500,500,105,0,105);
+    hQyVzMvsCentrality = new TH2F("hQyVzMvsCentrality","hQyVzMvsCentrality",2000,-500,500,105,0,105);
  
-  hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-5,5,105,0,105);
-  hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-5,5,105,0,105);
-  hQxVzCvsCentrality = new TH2F("hQxVzCvsCentrality","hQxVzCvsCentrality",100,-5,5,105,0,105);
-  hQyVzCvsCentrality = new TH2F("hQyVzCvsCentrality","hQyVzCvsCentrality",100,-5,5,105,0,105);
-  hQxVzMvsCentrality = new TH2F("hQxVzMvsCentrality","hQxVzMvsCentrality",100,-5,5,105,0,105);
-  hQyVzMvsCentrality = new TH2F("hQyVzMvsCentrality","hQyVzMvsCentrality",100,-5,5,105,0,105);
+  }
 
   fListHist->Add(hQxVzAvsCentrality);
   fListHist->Add(hQyVzAvsCentrality);
@@ -442,10 +481,17 @@ void AliAnalysisTaskNucleiv2SP::UserCreateOutputObjects()
   fListHist->Add(hQxVzMvsCentrality);
   fListHist->Add(hQyVzMvsCentrality);
 
-  hqEPCvsCentrality   = new TH2F("hqEPCvsCentrality","hqEPCvsCentrality",100,-5,5,105,0,105);
-  hqEPAvsCentrality   = new TH2F("hqEPAvsCentrality","hqEPAvsCentrality",100,-5,5,105,0,105);
-  hqEPvsCentrality    = new TH2F("hqEPvsCentrality" ,"hqEPvsCentrality" ,100,-5,5,105,0,105);
-
+  if(fHarmonic < 3){
+    hqEPCvsCentrality   = new TH2F("hqEPCvsCentrality","hqEPCvsCentrality",100,0,5,105,0,105);
+    hqEPAvsCentrality   = new TH2F("hqEPAvsCentrality","hqEPAvsCentrality",100,0,5,105,0,105);
+    hqEPvsCentrality    = new TH2F("hqEPvsCentrality" ,"hqEPvsCentrality" ,100,0,5,105,0,105);
+  }
+  else{
+    hqEPCvsCentrality   = new TH2F("hqEPCvsCentrality","hqEPCvsCentrality",500,0,200,105,0,105);
+    hqEPAvsCentrality   = new TH2F("hqEPAvsCentrality","hqEPAvsCentrality",500,0,200,105,0,105);
+    hqEPvsCentrality    = new TH2F("hqEPvsCentrality" ,"hqEPvsCentrality" ,500,0,200,105,0,105);
+  }
+  
   fListHist->Add(hqEPCvsCentrality);  
   fListHist->Add(hqEPAvsCentrality);  
   fListHist->Add(hqEPvsCentrality );  
@@ -491,24 +537,42 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   
   AliVEvent *event = InputEvent();
   if (!event) { Printf("ERROR: Could not retrieve event"); return; }
+
+  if(fAnalysisType == "ESD"){
+    fESDevent = dynamic_cast<AliESDEvent*>(event);
+    if (!fESDevent) {
+      AliError("Cannot get the ESD event");
+      return;
+    }  
+    
+    fevent = fESDevent;
+  }
+
+  else if(fAnalysisType == "AOD"){
+    fAODevent = dynamic_cast<AliAODEvent*>(event);
+    if (!fAODevent) {
+      AliError("Cannot get the AOD event");
+      return;
+    }  
+    fevent = fAODevent;
+  }
   
- 
-  AliESDEvent* lESDevent = dynamic_cast<AliESDEvent*>(event);
-  if (!lESDevent) {
-    AliError("Cannot get the ESD event");
+  else{
+    AliError("Cannot get any event");
     return;
-  }  
-  
+  }
+
   fHistEventMultiplicity->Fill(1);
-  fHistEventMultiplicity->Fill(7);
   
- //______________________________________________________
+  //______________________________________________________
   // PID
   
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse=inputHandler->GetPIDResponse(); 
-  
+
+  Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
+  AliCentrality* centrality = 0x0;
   //=================================================================
   
   Float_t  impactXY=-999., impactZ=-999.;
@@ -518,42 +582,77 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
  
   Double_t pmax  = 10.;
   Double_t ptmax = 6.2;
+
   // Primary vertex cut
-  
-  const AliESDVertex *vtx = lESDevent->GetPrimaryVertexTracks();
+
+  const AliVVertex* vertexmain = fevent->GetPrimaryVertex();
+  if (!vertexmain){
+    AliWarning("No prim. vertex in ESD... return!");
     
-  if(vtx->GetNContributors()<1) {
-    
-    // SPD vertex cut
-    vtx = lESDevent->GetPrimaryVertexSPD();
-    
-    if(vtx->GetNContributors()<1) {
-      Info("AliAnalysisTaskHelium3Pi","No good vertex, skip event");
-      return; // NO GOOD VERTEX, SKIP EVENT 
-    }
+    PostData(1, fListHist);
+    PostData(2, ftree);
+    return;
   }
   
-  fHistEventMultiplicity->Fill(2); // analyzed events with PV
+  vertexmain->GetXYZ( lBestPrimaryVtxPos );
+
+  Bool_t isPileUpSpd=kFALSE;
+  if(fAnalysisType == "ESD"){
+    isPileUpSpd=fESDevent->IsPileupFromSPD();
+  }
+  else if(fAnalysisType == "AOD"){
+    isPileUpSpd=fAODevent->IsPileupFromSPD();
+  }
+  if(isPileUpSpd){  
+    PostData(1, fListHist);
+    PostData(2, ftree);
+    return;
+  }
   
-  if(TMath::Abs(vtx->GetZ())>fVzmax) return;
+
+  fHistEventMultiplicity->Fill(2); // analyzed events with PV w/o pile up
+  
+  if((TMath::Abs(lBestPrimaryVtxPos[2])) > fVzmax) return;
+  
   fHistEventMultiplicity->Fill(3);
 
   Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
   Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
   Bool_t isSelectedMB          = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-
+  Bool_t isSelectedINT7        = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+  
   //_____________________________________________________
-  //   Centrality  
-  
-  AliCentrality *centrality = lESDevent->GetCentrality();
-  Float_t percentile=centrality->GetCentralityPercentile(fCentrality);
-  if(isSelectedCentral == kTRUE){
-    if(Flatten(percentile))return;
+  //   Centrality 
+
+  Float_t percentile = -999;
+  AliMultSelection *fMultSelection = 0x0; 
+
+  if(fYear < 2015){
+    centrality = fevent->GetCentrality();
+    percentile=centrality->GetCentralityPercentile(fCentrality);
+    if(isSelectedCentral == kTRUE){
+      if(fApplyFlatten == kTRUE){
+	if(Flatten(percentile))return;
+      }
+    }
   }
+
+  else{
+    fMultSelection = (AliMultSelection * ) fevent->FindListObject("MultSelection");
+    if(!fMultSelection){
+      AliWarning("AliMultSelection object not found!");
+      PostData(1, fListHist);
+      PostData(2, ftree);
+      return;
+    }
+    else{
+      percentile = fMultSelection->GetMultiplicityPercentile("V0M");
+    } 
+  }
+
+  Int_t TrackNumber = fevent->GetNumberOfTracks();
   
-  Int_t TrackNumber = lESDevent->GetNumberOfTracks();
   fHistTrackMultiplicity->Fill(TrackNumber,percentile); //tracce per evento
-  
   
     
   Int_t eventtype = -999;
@@ -579,28 +678,42 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
     fHistTrackMultiplicityMB->Fill(TrackNumber,percentile); 
     eventtype =3;
   }
+ 
+  if(isSelectedINT7){
+    if(percentile<0)return;
+    if(percentile>=80)return;
+    fHistEventMultiplicity->Fill(7);
+    fHistTrackMultiplicityINT7->Fill(TrackNumber,percentile); 
+    eventtype =4;
+  }
   
   //    cout<<"ET 2: "<<eventtype<<endl;
   
-  if(eventtype!=1 && eventtype!=2 && eventtype!=3 )return;
+  if(eventtype!=1 && eventtype!=2 && eventtype!=3 && eventtype!=4)return;
   
-  AliEventplane *pl=lESDevent->GetEventplane();
-  
+  AliEventplane *pl = fevent->GetEventplane();
   
   if(!pl ){
     AliError("AliAnalysisTaskSENucleiv2SP::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
     fHistEventMultiplicity->Fill(12);
   }
-    
+  
   //Event plane from FLOW
   
   Double_t qxEPa = 0, qyEPa = 0;
   Double_t qxEPc = 0, qyEPc = 0;
-  Double_t qxEP =  0 , qyEP = 0;
+  Double_t qxEP =  0, qyEP  = 0;
   
-  Double_t evPlAngV0A = pl->CalculateVZEROEventPlane(lESDevent, 8, 2, qxEPa, qyEPa);
-  Double_t evPlAngV0C = pl->CalculateVZEROEventPlane(lESDevent, 9, 2, qxEPc, qyEPc);
-  Double_t evPlAngV0  = pl->CalculateVZEROEventPlane(lESDevent,10, 2, qxEP,  qyEP);
+  Double_t evPlAngV0A = pl->CalculateVZEROEventPlane(fevent, 8, fHarmonic, qxEPa, qyEPa);
+  Double_t evPlAngV0C = pl->CalculateVZEROEventPlane(fevent, 9, fHarmonic, qxEPc, qyEPc);
+  Double_t evPlAngV0  = pl->CalculateVZEROEventPlane(fevent,10, fHarmonic, qxEP,  qyEP);
+  
+  cout<<"evPlAngV0A :"<<   evPlAngV0A <<endl;
+  cout<<"evPlAngV0C :"<<   evPlAngV0C <<endl;
+  cout<<"evPlAngV0  :"<<   evPlAngV0  <<endl;
+  cout<< qxEPa<<" "<< qyEPa<<endl;
+  cout<< qxEPc<<" "<< qyEPc<<endl;
+  cout<< qxEP <<" "<<  qyEP<<endl;
 
   hqEPCvsCentrality  ->Fill(TMath::Sqrt(qxEPa*qxEPa+qyEPa*qyEPa) , percentile); 
   hqEPAvsCentrality  ->Fill(TMath::Sqrt(qxEPc*qxEPc+qyEPc*qyEPc) , percentile); 
@@ -609,38 +722,47 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Double_t Qx2  = 0, Qy2  = 0;
   Double_t Qx2p = 0, Qy2p = 0;
   Double_t Qx2n = 0, Qy2n = 0;
- 
+  //  AliVTrack *track= 0;
+  
   for (Int_t iT = 0; iT < TrackNumber; iT++){
     
-    AliESDtrack* track = lESDevent->GetTrack(iT);
-    
+    AliVTrack* track = (AliVTrack*) fevent->GetTrack(iT);
     if (!track)
       continue;
     
+    Bool_t trkFlag = 0;
+    if(fAnalysisType == "ESD"){
+      trkFlag = fESDtrackCutsEP->AcceptTrack((AliESDtrack*)track);
+    }
+    else if(fAnalysisType == "AOD"){
+      trkFlag = ((AliAODTrack*)track)->TestFilterBit(128);
+    }
+    
+    if(!trkFlag)continue;
+
     if ((TMath::Abs(track->Eta()) > 0.8) || (track->Pt() < 0.2) || (track->GetTPCNcls() < 70) || (track->Pt() >= 20.0))
       continue;
-    if(!fESDtrackCutsEP->AcceptTrack(track))
-      continue;
+    
     if(track->Eta()>0 && track->Eta()<0.8){
-      
-      Qx2p += TMath::Cos(2*track->Phi());
-      Qy2p += TMath::Sin(2*track->Phi());
+	
+	Qx2p += TMath::Cos(fHarmonic*track->Phi());
+	Qy2p += TMath::Sin(fHarmonic*track->Phi());
     }
     if(track->Eta()<0 && track->Eta()> -0.8){
       
-      Qx2n += TMath::Cos(2*track->Phi());
-      Qy2n += TMath::Sin(2*track->Phi());
+      Qx2n += TMath::Cos(fHarmonic*track->Phi());
+      Qy2n += TMath::Sin(fHarmonic*track->Phi());
     }
-
+    
     if(track->Eta()>0 && track->Eta()<0.8){ //half TPC
-      Qx2 += TMath::Cos(2*track->Phi());
-      Qy2 += TMath::Sin(2*track->Phi());
+      Qx2 += TMath::Cos(fHarmonic*track->Phi());
+      Qy2 += TMath::Sin(fHarmonic*track->Phi());
     }
   }
   
-  Double_t evPlAngTPC  = TMath::ATan2(Qy2,  Qx2) /2.;
-  Double_t evPlAngTPCn = TMath::ATan2(Qy2n, Qx2n)/2.;
-  Double_t evPlAngTPCp = TMath::ATan2(Qy2p, Qx2p)/2.;
+  Double_t evPlAngTPC  = TMath::ATan2(Qy2,  Qx2) /fHarmonic;
+  Double_t evPlAngTPCn = TMath::ATan2(Qy2n, Qx2n)/fHarmonic;
+  Double_t evPlAngTPCp = TMath::ATan2(Qy2p, Qx2p)/fHarmonic;
 
   EPVzAvsCentrality  ->Fill(evPlAngV0A  , percentile); 
   EPVzCvsCentrality  ->Fill(evPlAngV0C  , percentile); 
@@ -666,17 +788,17 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
 
   // For TPC, V0M, V0c and V0A resolution 
 
-  hCos2DeltaTPCVzAvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngTPC - evPlAngV0A)) , percentile);
-  hCos2DeltaTPCVzCvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngTPC - evPlAngV0C)) , percentile);
-  hCos2DeltaVzAVzCvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngV0A - evPlAngV0C)) , percentile);
-  hCos2DeltaVzMVzAvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngV0  - evPlAngV0A)) , percentile);
-  hCos2DeltaVzMVzCvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngV0  - evPlAngV0C)) , percentile);
-  hCos2DeltaVzATPCvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngV0A - evPlAngTPC)) , percentile);
-  hCos2DeltaVzCTPCvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngV0C - evPlAngTPC)) , percentile);
-  hCos2DeltaVzCVzAvsCentrality  ->Fill(TMath::Cos(2.*(evPlAngV0C - evPlAngV0A)) , percentile);
-  hCos2DeltaVzMTPCpvsCentrality ->Fill(TMath::Cos(2.*(evPlAngV0  - evPlAngTPCp)), percentile);
-  hCos2DeltaVzMTPCnvsCentrality ->Fill(TMath::Cos(2.*(evPlAngV0  - evPlAngTPCn)), percentile);
-  hCos2DeltaTPCpTPCnvsCentrality->Fill(TMath::Cos(2.*(evPlAngTPCp- evPlAngTPCn)), percentile);
+  hCos2DeltaTPCVzAvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngTPC - evPlAngV0A)) , percentile);
+  hCos2DeltaTPCVzCvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngTPC - evPlAngV0C)) , percentile);
+  hCos2DeltaVzAVzCvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngV0A - evPlAngV0C)) , percentile);
+  hCos2DeltaVzMVzAvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngV0  - evPlAngV0A)) , percentile);
+  hCos2DeltaVzMVzCvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngV0  - evPlAngV0C)) , percentile);
+  hCos2DeltaVzATPCvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngV0A - evPlAngTPC)) , percentile);
+  hCos2DeltaVzCTPCvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngV0C - evPlAngTPC)) , percentile);
+  hCos2DeltaVzCVzAvsCentrality  ->Fill(TMath::Cos(fHarmonic*(evPlAngV0C - evPlAngV0A)) , percentile);
+  hCos2DeltaVzMTPCpvsCentrality ->Fill(TMath::Cos(fHarmonic*(evPlAngV0  - evPlAngTPCp)), percentile);
+  hCos2DeltaVzMTPCnvsCentrality ->Fill(TMath::Cos(fHarmonic*(evPlAngV0  - evPlAngTPCn)), percentile);
+  hCos2DeltaTPCpTPCnvsCentrality->Fill(TMath::Cos(fHarmonic*(evPlAngTPCp- evPlAngTPCn)), percentile);
 
   //Scalar Product
   
@@ -714,86 +836,108 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   Float_t  uqV0A = -999;
   Float_t  uqV0C = -999; 
 
+  // AliVTrack *atrack= 0;
+  
   for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
-      
-    AliESDtrack *esdtrack=lESDevent->GetTrack(j);
-    if (!fESDtrackCuts->AcceptTrack(esdtrack)) continue;
+  
+    AliVTrack* atrack = (AliVTrack*) fevent->GetTrack(j);
+    if (!atrack)
+      continue;
     
-    status  = (ULong_t)esdtrack->GetStatus();
-   
-    Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
+    Bool_t trkFlag = 0;
+    if(fAnalysisType == "ESD"){
+      trkFlag = fESDtrackCuts->AcceptTrack((AliESDtrack*)atrack);
+    }
+    else if(fAnalysisType == "AOD"){
+      trkFlag = ((AliAODTrack*)atrack)->TestFilterBit(4);
+    }
+    
+    if(!trkFlag)continue;
+
+    status  = (ULong_t)atrack->GetStatus();
+    
+    Bool_t hasTOFout  = status&AliVTrack::kTOFout; 
     Bool_t hasTOF     = kFALSE;
     if (hasTOFout) hasTOF = kTRUE;
-    Float_t length = esdtrack->GetIntegratedLength(); 
+    Float_t length = atrack->GetIntegratedLength(); 
     if (length < 350.) hasTOF = kFALSE;
     
-    TPCSignal=esdtrack->GetTPCsignal(); 
-      
+    TPCSignal=atrack->GetTPCsignal(); 
+    
     if(TPCSignal<10)continue;
     if(TPCSignal>1000)continue;
-    if(!esdtrack->GetInnerParam()) continue;
-    
-    Double_t ptot = esdtrack->GetInnerParam()->GetP(); // momentum for dEdx determination
-    Double_t pt  = esdtrack->Pt();
- 
-    //   if(ptot<0.2)continue;
+                     
+    Double_t ptot = atrack->GetTPCmomentum(); // momentum for dEdx determination
+    Double_t pt  = atrack->Pt();
+   
     if(ptot<0.60)continue;
     if(pt<0.60)continue;
+    
+    fhBB->Fill(ptot*atrack->Charge(),TPCSignal);
 
-    fhBB->Fill(ptot*esdtrack->GetSign(),TPCSignal);
-    esdtrack->GetImpactParameters(impactXY, impactZ);
-              
+    if(fAnalysisType == "ESD"){
+      AliESDtrack *aesdtrack = static_cast<AliESDtrack *>(atrack);
+      aesdtrack->GetImpactParameters(impactXY, impactZ);
+    }
+    else if(fAnalysisType == "AOD"){
+      Double_t d[2], covd[3];
+      AliAODTrack* track_clone=(AliAODTrack*)atrack->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
+      Bool_t isDCA = track_clone->PropagateToDCA(fevent->GetPrimaryVertex(),fevent->GetMagneticField(),9999.,d,covd);
+      delete track_clone;
+      if(!isDCA)d[0]=-999.;
+      impactXY = d[0];
+      impactZ  = d[1];
+    }
+    
     ptcExp = -999;
     /*
-    if(fptc==1)
+      if(fptc==1)
       ptcExp  = AliExternalTrackParam::BetheBlochAleph(ptot/(0.938*2),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
-    if(fptc==2)
+      if(fptc==2)
       ptcExp  = AliExternalTrackParam::BetheBlochAleph(ptot/(0.938*3),1.45802,27.4992,4.00313e-15,2.48485,8.31768);
-    if(fptc==3)
+      if(fptc==3)
       ptcExp  = 4*AliExternalTrackParam::BetheBlochAleph(2*ptot/(0.938*3),1.74962,27.4992,4.00313e-15,2.42485,8.31768);
       
       pullTPC  = (TPCSignal - ptcExp)/(0.07*ptcExp);
     */
     //crosscheck with PIDresponse
-
+    
     if(fptc==1)
-      pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType)5)));;
+      pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5)));;
     if(fptc==2)
-      pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType)6)));;
+      pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6)));;
     if(fptc==3)
-      pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(esdtrack,(AliPID::EParticleType)7)));;
-
-    Double_t p    = esdtrack->P();
-    Double_t tof  = esdtrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
-    Double_t tPhi = esdtrack->Phi();
-
+      pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)7)));;
+    
+    Double_t p    = atrack->P();
+    Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
+    Double_t tPhi = atrack->Phi();
+    
     Float_t  beta = 0;
     Float_t  gamma = 0;
     Float_t  mass  = -99;
-   
+    
     if(fptc==1)
       expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
     if(fptc==2)
       expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
     if(fptc==3)
       expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
-     
-
+        
     if(fptc==3)
       pt = 2*pt;
-
+    
     if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax && TMath::Abs(pullTPC) <= 3){
-      //      if(TMath::Abs(pullTPC) <= 3)
-      
       //
       // Process TOF information
       //
       // if(!hasTOF)continue;
+      
       if (hasTOF) {
 	beta = length / (2.99792457999999984e-02 * tof);
 	gamma = 1/TMath::Sqrt(1 - beta*beta);
 	mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
-  
+	
 	//   cout<<expbeta<<" "<<beta<<" "<<(beta - expbeta)/(0.008*expbeta)<<endl;
 	pullTOF  = (beta - expbeta)/(0.007*expbeta);
 
@@ -804,7 +948,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
 	// 	if( beta>1)continue;
 	//	if(TMath::Abs(pullTOF) > 3)continue;
 
-	// if(TMath::Sqrt(esdtrack->GetTOFsignalDz()*esdtrack->GetTOFsignalDz() + esdtrack->GetTOFsignalDx()*esdtrack->GetTOFsignalDx()) > 5.)continue; 
+	// if(TMath::Sqrt(atrack->GetTOFsignalDz()*atrack->GetTOFsignalDz() + atrack->GetTOFsignalDx()*atrack->GetTOFsignalDx()) > 5.)continue; 
 
 	if(fptc==1){
 	  if(TMath::Abs(mass) > 2.65)continue;
@@ -821,23 +965,23 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
 	fhMassTOF->Fill(mass);
       }
 
-      fhTOF->Fill(ptot*esdtrack->GetSign(),beta);
-      fhBBDeu->Fill(ptot*esdtrack->GetSign(),TPCSignal);
+      fhTOF->Fill(ptot*atrack->Charge(),beta);
+      fhBBDeu->Fill(ptot*atrack->Charge(),TPCSignal);
       
       // Event Plane
       // Remove AutoCorrelation
       
-      evPlAngTPC = GetEventPlaneForCandidate(esdtrack,q,pl);
+      //evPlAngTPC = GetEventPlaneForCandidate(atrack,q,pl);
       
-      deltaphiTPC=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngTPC));
-      deltaphiV0 =TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0 ));
-      deltaphiV0A=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0A));
-      deltaphiV0C=TMath::Cos(2*GetPhi0Pi(tPhi-evPlAngV0C));
+      deltaphiTPC=TMath::Cos(fHarmonic*GetPhi0Pi(tPhi-evPlAngTPC));
+      deltaphiV0 =TMath::Cos(fHarmonic*GetPhi0Pi(tPhi-evPlAngV0 ));
+      deltaphiV0A=TMath::Cos(fHarmonic*GetPhi0Pi(tPhi-evPlAngV0A));
+      deltaphiV0C=TMath::Cos(fHarmonic*GetPhi0Pi(tPhi-evPlAngV0C));
       
       // Scalar Product
       
-      uqV0A = TMath::Cos(2*tPhi)*qxEPa+TMath::Sin(2*tPhi)*qyEPa;
-      uqV0C = TMath::Cos(2*tPhi)*qxEPc+TMath::Sin(2*tPhi)*qyEPc;
+      uqV0A = TMath::Cos(fHarmonic*tPhi)*qxEPa+TMath::Sin(fHarmonic*tPhi)*qyEPa;
+      uqV0C = TMath::Cos(fHarmonic*tPhi)*qxEPc+TMath::Sin(fHarmonic*tPhi)*qyEPc;
 
       tCentrality      = percentile;
       tType            = eventtype;
@@ -846,7 +990,7 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
       tMassTOF         = mass;
       tuqV0A           = uqV0A;
       tuqV0C           = uqV0C;
-      tCharge          = esdtrack->GetSign();
+      tCharge          = atrack->Charge();
       tCosdeltaphiTPC  = deltaphiTPC;
       tCosdeltaphiV0M  = deltaphiV0;
       tCosdeltaphiV0A  = deltaphiV0A;

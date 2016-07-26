@@ -32,6 +32,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     virtual void   Terminate                ( Option_t * );
 
     void SetV0Reader                        ( AliV0ReaderV1 *v0Reader )                   { fV0Reader=v0Reader                  ; }
+    void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetConversionCuts                  ( AliConversionPhotonCuts* conversionCuts, 
                                               Bool_t IsHeavyIon )                         {
                                                                                             fConversionCuts=conversionCuts      ;
@@ -70,6 +71,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     void SetLogBinningXTH2          ( TH2* histoRebin );
         
     AliV0ReaderV1*              fV0Reader;                  //
+    TString                     fV0ReaderName;
     TClonesArray*               fConversionGammas;          //
     AliConversionPhotonCuts*    fConversionCuts;            // Cuts used by the V0Reader
     AliConvEventCuts*           fEventCuts;                 // Cuts used by the V0Reader
@@ -135,7 +137,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 5);
+    ClassDef(AliAnalysisTaskConversionQA, 6);
 };
 
 #endif

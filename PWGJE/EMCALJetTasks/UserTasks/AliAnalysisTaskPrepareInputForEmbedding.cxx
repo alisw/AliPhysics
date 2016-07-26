@@ -152,7 +152,8 @@ Bool_t AliAnalysisTaskPrepareInputForEmbedding::FillHistograms(){
    jetCont->ResetCurrentID();
    
    while((jet = jetCont->GetNextJet())) {
-      Bool_t acc = jetCont->AcceptJet(jet);
+      UInt_t rejectionReason = 0;
+      Bool_t acc = jetCont->AcceptJet(jet, rejectionReason);
       if(!acc) {
       	 continue;
       }

@@ -1,0 +1,110 @@
+From b71edb05148733264fb2ab588b6ef11fc63e319a Mon Sep 17 00:00:00 2001
+From: msong <msong@cern.ch>
+Date: Thu, 7 Apr 2016 16:57:47 +0900
+Subject: [PATCH] event cut condition added : cut on outliers
+
+---
+ .../JCORRAN/Base/AliJFFlucAnalysis.cxx             |  4 ---
+ PWGCF/Correlations/JCORRAN/Base/AliJFFlucTask.cxx  | 35 ++++++++++++++++++----
+ 2 files changed, 29 insertions(+), 10 deletions(-)
+
+diff --git a/PWGCF/Correlations/JCORRAN/Base/AliJFFlucAnalysis.cxx b/PWGCF/Correlations/JCORRAN/Base/AliJFFlucAnalysis.cxx
+index 3e0cb75..a0fa449 100644
+--- a/PWGCF/Correlations/JCORRAN/Base/AliJFFlucAnalysis.cxx
++++ b/PWGCF/Correlations/JCORRAN/Base/AliJFFlucAnalysis.cxx
+@@ -123,7 +123,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
+ 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
+ 	fNCent = NCent;
+ 	fDebugLevel = 0;
+-	AnaEntry = 0;
+ 	fCent = -1;
+ 	fCBin = -1;
+ 	fEffMode = 0;
+@@ -214,7 +213,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
+ 	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
+ 	// Create histograms
+ 	// Called once
+-	AnaEntry = 0;
+ 	// need to fill to book a histo
+ 	fHMG = new AliJHistManager("AliJFFlucHistManager","test");
+ 	// set AliJBin here // 
+@@ -339,7 +337,6 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
+ //________________________________________________________________________
+ void AliJFFlucAnalysis::UserExec(Option_t *) {
+ 	// Main loop
+-	if (AnaEntry==0){ cout<< "start event loop " << endl; } ;
+ 	// find Centrality
+ 	double inputCent = fCent;
+ 	fCBin = -1;
+@@ -604,7 +601,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
+ 	} // QC method done.
+ 
+ 	//1 evt is done...
+-	AnaEntry++;
+ }
+ 
+ //________________________________________________________________________
+diff --git a/PWGCF/Correlations/JCORRAN/Base/AliJFFlucTask.cxx b/PWGCF/Correlations/JCORRAN/Base/AliJFFlucTask.cxx
+index 971d261..56d76ff 100644
+--- a/PWGCF/Correlations/JCORRAN/Base/AliJFFlucTask.cxx
++++ b/PWGCF/Correlations/JCORRAN/Base/AliJFFlucTask.cxx
+@@ -374,7 +374,6 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
+ 
+ 	//event selection here!
+ 	Bool_t Event_status = kFALSE;
+-
+ 	// check vertex 
+ 	AliVVertex *vtx = event->GetPrimaryVertex();
+ 	if(vtx){
+@@ -383,7 +382,6 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
+ 			if( zVert > -1 * fzvtxCut && zVert < fzvtxCut ) Event_status = kTRUE;
+ 		}
+ 	}
+-
+ 	// event cent flatting  --- do it only when IsCentFlat is true
+ 	if( Event_status== kTRUE && IsCentFlat == kTRUE ){
+ 		float centrality = ReadAODCentrality( event, "V0M");
+@@ -392,11 +390,36 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
+ 			//	cout << "this event is excluded with random pro" << endl;
+ 			Event_status = kFALSE;
+ 		}
+-
+ 	}
+-	//test in local mode // 
+-	//if(IsMC == kTRUE) Event_status = kTRUE;
+-	//
++	// cut on outliers //-- 2010aod data only
++	if( IsKineOnly == kFALSE){
++			if (Event_status == kFALSE) return Event_status; 
++			Float_t multTPC(0.); 
++			Float_t multGlob(0.);	
++			Int_t nTracks = event->GetNumberOfTracks(); 
++			for(int it =0; it < nTracks; it++){
++				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
++				//AliAODTrack* trackAOD = event->GetTrack(itracks);
++				if (! trackAOD ) continue;
++				if (!(trackAOD->TestFilterBit(1) )) continue;
++				if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal()<10.0) || (trackAOD->Chi2perNDF() < 0.2) ) continue;
++				multTPC++;
++			}
++			for(int it=0; it< nTracks; it++){
++				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
++				if (!trackAOD) continue;
++				if (!(trackAOD->TestFilterBit(16))) continue;
++				if ((trackAOD->Pt() < 0.2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > 0.8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal()<10.0) || (trackAOD->Chi2perNDF() < 0.1) ) continue;
++				Double_t b[2] = {-99. , -99.};
++				Double_t bCov[3] = {-99, -99, -99};
++				if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) )) continue;
++				//cout << b[0] << b[1] << endl;
++				if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) ) continue;
++				multGlob++; 	
++			}
++			//cout <<  Form("Multi TPC : %.2f, Multi Glob : %.2f", multTPC, multGlob) << endl;
++			if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) Event_status = kFALSE;
++	}
+ 
+ 	return Event_status;
+ 	/*
+-- 
+2.6.4 (Apple Git-63)
+

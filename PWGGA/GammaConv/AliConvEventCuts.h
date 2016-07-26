@@ -2,7 +2,7 @@
 #define ALICONVEVENTCUTS_H
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Svein Lindal, Daniel Lohner                                    *
+// Authors: Friederike Bock, Daniel Muehlheim
 
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
@@ -55,6 +55,115 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kG2       = 4,
         kL0       = 5,
       };
+      
+      enum PeriodVar {
+        // data periods
+        kNoPeriod=0,
+        // 2010
+        kLHC10bg,         // pp 7 TeV (LHC10c incl 900 GeV)
+        kLHC10h,          // PbPb 2.76TeV
+        // MC's corresponding to 2010 data
+        kLHC10d1,         // anchored LHC10b pass 2
+        kLHC10d2,         // anchored LHC10b pass 2
+        kLHC10d4a,        // anchored LHC10c pass 2
+        kLHC10d4,         // anchored LHC10c pass 2
+        kLHC10e12,        // anchored LHC10c pass 2
+        kLHC10e13,        // anchored LHC10c pass 2
+        kLHC10f6a,        // anchored LHC10d pass 2
+        kLHC10f6,         // anchored LHC10d pass 2
+        kLHC10e20,        // anchored LHC10e pass 2
+        kLHC10e21,        // anchored LHC10e pass 2
+        kLHC14j4,         // anchored LHC10[b-g] pass 4
+        kLHC13d2,         // anchored LHC10h pass 2
+        kLHC13d2b,        // anchored LHC10h pass 2
+        kLHC12a11a,       // anchored LHC10h pass 2
+        kLHC12a11b,       // anchored LHC10h pass 2
+        kLHC12a11c,       // anchored LHC10h pass 2
+        kLHC12a11d,       // anchored LHC10h pass 2
+        kLHC12a11e,       // anchored LHC10h pass 2
+        kLHC12a11f,       // anchored LHC10h pass 2
+        
+        // 2011
+        kLHC11a,          // pp 2.76TeV (part 7TeV)
+        kLHC11b,          // pp 7TeV
+        kLHC11cg,         // pp 7TeV
+        kLHC11h,          // PbPb 2.76TeV
+        // MC's corresponding to 2011 data
+        kLHC12a15c,       // anchored LHC11a pass 2 - JJ
+        kLHC12f1a,        // anchored LHC11a pass 4
+        kLHC12f1b,        // anchored LHC11a pass 4
+        kLHC12i3,         // anchored LHC11a pass 4
+        kLHC15g1a,        // anchored LHC11a pass 4 - JJ
+        kLHC15g1b,        // anchored LHC11a pass 4 - JJ
+        kLHC13e4,         // anchored LHC11c pass 1 - GJ
+        kLHC13e5,         // anchored LHC11c pass 1 - JJ
+        kLHC14k1a,        // anchored LHC11[c-d] pass 1 - JJ
+        kLHC14k1b,        // anchored LHC11[c-d] pass 1 - JJ
+        kLHC12a15f,       // anchored LHC11d pass 1 - JJ
+        kLHC12a15g,       // anchored LHC11d pass 1 - GJ
+        kLHC12f2a,        // anchored LHC11d pass 1 - JJ
+        kLHC14a1a,        // anchored LHC11h pass 2
+        kLHC14a1b,        // anchored LHC11h pass 2
+        kLHC14a1c,        // anchored LHC11h pass 2
+        
+        // 2012
+        kLHC12,           // pp 8TeV
+        // MC's corresponding to 2012 data
+        kLHC14e2a,        // anchored LHC12[a-h] pass 1
+        kLHC14e2b,        // anchored LHC12[a-h] pass 1
+        kLHC14e2c,        // anchored LHC12[a-h] pass 1
+        kLHC15h1,         // anchored LHC12[a-h] pass 2
+        kLHC15h2,         // anchored LHC12[a-h] pass 2
+        kLHC16c2,         // anchored LHC12[a-h] pass 2 - JJ
+        
+        // 2013
+        kLHC13bc,         // pPb 5.023TeV
+        kLHC13de,         // pPb 5.023TeV
+        kLHC13f,          // Pbp 5.023TeV
+        kLHC13g,          // pp 2.76TeV
+        // MC's corresponding to 2013 data
+        kLHC13b2_efix,    // anchored LHC13[b-c] pass 2
+        kLHC13e7,         // anchored LHC13[b-c] pass 2
+        kLHC14b2,         // anchored LHC13[b-c] pass 2
+        kLHC13b4_fix,     // anchored LHC13[b-c] pass 2 - JJ
+        kLHC13b4_plus,    // anchored LHC13[b-c] pass 2 - JJ
+        kLHC16c3a,        // anchored LHC13[d-e] pass 2 - JJ
+        kLHC16c3b,        // anchored LHC13[d-e] pass 2 - JJ
+        kLHC16c3c,        // anchored LHC13[d-e] pass 2 - GJ 
+        kLHC15g2,         // anchored LHC13g pass 1
+        kLHC15a3a,        // anchored LHC13g pass 1 - JJ
+        kLHC15a3a_plus,   // anchored LHC13g pass 1 - JJ
+        kLHC15a3b,        // anchored LHC13g pass 1 - JJ
+        kLHC15d3a,        // anchored LHC13g pass 1
+        kLHC15d3b,        // anchored LHC13g pass 1
+        
+        // 2015
+        kLHC15fm,         // pp 13 TeV
+        kLHC15n,          // pp 5 TeV
+        kLHC15o,          // PbPb 5 TeV
+        // MC's corresponding to 2015 data
+        kLHC15g3a3,       // anchored LHC15f pass 1
+        kLHC15g3a,        // anchored LHC15f pass 1
+        kLHC15g3c2,       // anchored LHC15f pass 1
+        kLHC15g3c3,       // anchored LHC15f pass 1
+        kLHC15g3,         // anchored LHC15f pass 1
+        kLHC16a2a,        // anchored LHC15h pass 1
+        kLHC16a2b,        // anchored LHC15h pass 1
+        kLHC16a2c,        // anchored LHC15h pass 1
+        kLHC15l1a2,       // anchored LHC15n pass 1
+        kLHC15l1b2,       // anchored LHC15n pass 1
+        kLHC15k1,         // PbPb 5 no anchor
+        kLHC15k1a,        // PbPb 5 no anchor
+        kLHC15k1_plus,    // PbPb 5 no anchor
+        kLHC15k1b,        // PbPb 5 no anchor
+        
+        // MC upgrade
+        kLHC13d19,        // upgrade 5.5TeV PbPb
+        
+        // 
+        kUnknownPeriod
+      };
+
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
@@ -81,12 +190,15 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
+      void    SetPeriodEnum (TString periodName);
+      void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
       void    SetTriggerMimicking(Bool_t value)                                     { fMimicTrigger = value                                     ; 
                                                                                       if(value)AliInfo("enabled trigger mimicking")             ; }
       void    SetTriggerOverlapRejecion (Bool_t value)                              { fRejectTriggerOverlap = value                             ; 
                                                                                       if(value)AliInfo("enabled trigger overlap rejection")     ; }
 
       void    SetV0ReaderName (TString name)                                        { fV0ReaderName = name                                      ; }
+      
       void    SetAddedSignalPDGCode (Int_t addedSignalPDGcode)                      { fAddedSignalPDGCode = addedSignalPDGcode                  ; }
       void    SetPreSelectionCutFlag (Bool_t preSelFlag)                            { fPreSelCut = preSelFlag                                   ; }   
       void    SetCaloTriggerPatchInfoName(const char *n)                            { fCaloTriggerPatchInfoName = n                             ; }
@@ -182,10 +294,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       ULong_t   GetTriggerList();
       Float_t   GetWeightForCentralityFlattening(AliVEvent *InputEvent = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
-      Float_t   GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
+      Float_t   GetWeightForMeson( Int_t index, AliStack *MCStack, AliVEvent *InputEvent = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
-      Bool_t    GetUseNewMultiplicityFramework(TString period); 
-      void      GetCorrectEtaShiftFromPeriod(TString periodName);
+      Bool_t    GetUseNewMultiplicityFramework(); 
+      void      GetCorrectEtaShiftFromPeriod();
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent); 
       TClonesArray*     GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
       
@@ -202,6 +314,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         
                                                                                     }   
 
+      PeriodVar GetPeriodEnum ()                                                    { return fPeriodEnum                                        ; }                                                                                    
       virtual   Bool_t IsSelected(TObject* /*obj*/)                                 { return kTRUE                                              ; }
       virtual   Bool_t IsSelected(TList* /*list*/)                                  { return kTRUE                                              ; }
 
@@ -297,6 +410,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t*                      fNotRejectedStart;                      //[fnHeaders]
       Int_t*                      fNotRejectedEnd;                        //[fnHeaders]
       TString*                    fGeneratorNames;                        //[fnHeaders]
+      PeriodVar                   fPeriodEnum;                            // period selector
       TObjString*                 fCutString;                             // cut number used for analysis
       AliAnalysisUtils*           fUtils;
       Double_t                    fEtaShift;
@@ -366,7 +480,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,18)
+      ClassDef(AliConvEventCuts,19)
 };
 
 

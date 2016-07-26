@@ -521,6 +521,7 @@ cout<<"Trigger"<<endl;
     if( ! triggeredEventMB ) return;
     if( ! goodRecVertex ) return;
     int nTrks   = GetJTracks()->GetEntriesFast();
+    bool bCheck  = true; // related to histo filling when isolation is considered
     for(Int_t it = 0; it < nTrks; it++) {
         AliJTrack * track = GetJTrack(it);
         if( !track ) continue;
@@ -551,27 +552,7 @@ cout<<"Trigger"<<endl;
         //== Skip tracks with out of Eta
 	// NOTE: Sami changed && to || on 5th August 2015!
         if( fabs(eta) > etaCut || fabs(etaTPC)>etaCut || fabs(etaGCG)>etaCut) continue;
-
-        // ====== check isolation
-	if( fisIsolated ){
-	  // Isolated tracks must fullfill fiducial acceptance cut
-	  if( fabs(eta) > etaCut - fisolCone ) continue;
-	  double isolThreshold;
-	  if( fisRelative ) isolThreshold = fisolParam * ptRec;
-	    else isolThreshold = fisolParam;
-
-	    double isolSum = 0.0;
-	    for(int ia = 0; ia < nTrks; ia++){
-	      if ( ia == it ) continue;
-	      AliJTrack * assTrack = GetJTrack( ia );
-	      if( !assTrack ) continue;
-	      double assEta = assTrack->Eta();
-	      if( fabs(assEta) > etaCut ) continue;
-	      if( track->DeltaR(*assTrack) < fisolCone ) isolSum += assTrack->Pt();
-	    }
-	    if ( isolSum > isolThreshold ) continue;
-	}
-
+	
         //== Find MC Info
         for( int imc=0;imc<nMCTrks;imc++ ){
             AliJMCTrack * mcTrack = GetJMCTrack(imc);
@@ -583,13 +564,38 @@ cout<<"Trigger"<<endl;
             }
         }
 
-
         //== FILL HIST
         for( int icut=0;icut<nTrkCut;icut++ ){
-            if( IsSelected( track ,icut) ){
-                if( fabs(eta) < etaCut ){
-                    fh2DChargedPtAll[iVtx][iCent][icut]->Fill(ptRec, eta);
-                    fh2DChargedPtRec[iVtx][iCent][icut]->Fill(ptMC, eta);
+
+	  if( IsSelected( track ,icut) ){
+
+		// ====== check isolation
+		if( fisIsolated ){
+		  // Isolated tracks must fullfill fiducial acceptance cut
+		  if( fabs(eta) > etaCut - fisolCone ) continue;
+		  double isolThreshold;
+		  if( fisRelative ) isolThreshold = fisolParam * ptRec;
+		    else isolThreshold = fisolParam;
+
+		  double isolSum = 0.0;
+		  for(int ia = 0; ia < nTrks; ia++){
+		    if ( ia == it ) continue;
+	    	    AliJTrack * assTrack = GetJTrack( ia );
+	    	    if( !assTrack ) continue;
+		    if( !IsSelected(assTrack,icut) ) continue;
+		    double assEta = assTrack->Eta();
+	    	    if( fabs(assEta) > etaCut ) continue;
+	    	    if( track->DeltaR(*assTrack) < fisolCone ) isolSum += assTrack->Pt();
+	  	  }
+	  	  if ( isolSum > isolThreshold ){
+			bCheck = false; 
+			continue;
+		  }
+	  	}
+                
+		if( fabs(eta) < etaCut ){
+                    fh2DChargedPtAll[iVtx][iCent][icut]->Fill(ptRec, eta); // IS THIS OK? Compare next line!
+                    fh2DChargedPtRec[iVtx][iCent][icut]->Fill(ptMC, eta);  // IS THIS OK? Compare next line!
                     fhChargedPtMCRecoCentVtx[iVtx][iCent][icut][iPrimary][kJGlobal]->Fill( ptRec );
                     if( iPrimary == kJPhysicsPrimary ) nGenMultPri[icut]++;
                     nGenMultAll[icut]++;
@@ -607,8 +613,10 @@ cout<<"Trigger"<<endl;
     }
 
     for( int icut=0;icut<nTrkCut;icut++ ){
-        fh2MultGenRawPrimary[icut]->Fill( nRawMultPri, nGenMultPri[icut] );
-        fh2MultGenRawAll[icut]->Fill( nRawMultPri, nGenMultAll[icut] );
+	if(bCheck){ // note: coded such that this is true always when isolation is not checked
+          fh2MultGenRawPrimary[icut]->Fill( nRawMultPri, nGenMultPri[icut] );
+          fh2MultGenRawAll[icut]->Fill( nRawMultPri, nGenMultAll[icut] );
+    	}
     }
     //cout<<"DEBUG END AliJEfficiencyScanner::UserExec"<<endl;
 }

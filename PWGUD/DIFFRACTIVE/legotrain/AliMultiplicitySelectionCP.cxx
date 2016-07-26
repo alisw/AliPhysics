@@ -201,7 +201,7 @@ Int_t AliMultiplicitySelectionCP::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArr
 
   indices.Set(NtracksSel);
 
-  printf("NtracksSelN = %d   NtracksSelP = %d   ***************\n",NtracksSelN,NtracksSelP);
+//  printf("NtracksSelN = %d   NtracksSelP = %d   ***************\n",NtracksSelN,NtracksSelP);
 
 
   fIndicesN.Set(NtracksSelN);
@@ -297,7 +297,7 @@ Bool_t AliMultiplicitySelectionCP::TestFiredChips(AliESDEvent *esd, TArrayI indi
   for(Int_t iT = 0; iT< Ntracks; iT++)
     {
 
-      printf("AliMultiplicitySelectionCP::TestFiredChips:  indices.At(%d) = %d \n", iT, indices.At(iT));
+//      printf("AliMultiplicitySelectionCP::TestFiredChips:  indices.At(%d) = %d \n", iT, indices.At(iT));
 
       Int_t statusLay;
       Int_t idet = -1;

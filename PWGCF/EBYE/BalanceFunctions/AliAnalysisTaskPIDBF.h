@@ -1,8 +1,11 @@
 #ifndef ALIANALYSISTASKPIDBF_H
 #define ALIANALYSISTASKPIDBF_H
 
-// Analysis task for the BF vs Psi code
-// Authors: Panos Cristakoglou@cern.ch
+// Analysis task for the PID BF code:
+// Base Class : AliBalancePsi.cxx
+// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch
+//[Special thanks to Michael Weber(m.weber@cern.ch) and Panos Christakoglou(panos.christakoglou@cern.ch)] 
+
 
 class TList;
 class TH1F;
@@ -108,7 +111,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
   void ExcludeWeakDecaysInMC() {fExcludeWeakDecaysInMC = kTRUE;}
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
-  void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
+  void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}   // This is for Exclude electron when MC data use
   void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
   void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
 
@@ -201,12 +204,12 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
     }
 
     void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
- // TOF ant TPC Pt settings
+ // TOF ant TPC Pt for PID 
     
-    void SetTOFPtMinMax(Double_t ptmin, Double_t ptmax){
+    void SetTOFPtMinMax(Double_t ptmin, Double_t ptmax){           
        fPtTOFMin = ptmin;
        fPtTOFMax = ptmax;
-      }
+      }        
        
     void SetTPCPtMinMax(Double_t ptmin, Double_t ptmax){
      fPtTPCMin = ptmin;
@@ -236,8 +239,9 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Double_t GetEqualizationFactor(Int_t run, const char *side);
 
 // Add By N.Alam on 13/12/2015
-   void IsTOF(AliAODTrack *track);
-   void IsTPC(AliAODTrack *track);  // For TPC Track Pt .2 to .6 
+   void IsTOF(AliAODTrack *track); // Here we use TOF Track Pt .6 to 2.0 GeV
+   void IsTPC(AliAODTrack *track);  // For TPC Track Pt .2 to .6 GeV
+   Double_t Beta(AliAODTrack *track); // Particle v/c=Beta calculation
 
 
  
@@ -267,9 +271,9 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
   TH2F *fHistVz; //z coordinate of the primary vertex
-  TH1F *HistEtaTest;
-  TH1F *HistNSigmaBeforeCut;
-  TH1F *HistNSigmaAfterCut;
+  TH1F *HistEtaTest; // For Eta Distribution 
+  TH1F *HistNSigmaBeforeCut; // NSigma before cut
+  TH1F *HistNSigmaAfterCut;  // NSigma after Cut
 
 
 
@@ -320,13 +324,19 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)
   TH3D *fHistNSigmaTPCTOFPafterPID; //++++++++++++++++++
 
+  // Beta and dEdX plot ------------
+  TH2F *fHistdEdxTPC;
+  TH2F *fHistBetaTOF;
+
+   
+
   TH2D *fHistdEdxVsPTPCbeforePIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //!
   TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //!
   
-  TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction
-  TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction
+  TH3D *fHistCorrectionPlus[kCENTRALITY]; //====correction  Changed it from TH3F to TH3D
+  TH3D *fHistCorrectionMinus[kCENTRALITY]; //===correction  Changed it from TH3F to TH3D
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
 

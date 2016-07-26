@@ -259,7 +259,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fAreaEmc(jet.fAreaEmc),
   fAxisInEmcal(jet.fAxisInEmcal),
   fFlavourTagging(jet.fFlavourTagging),
-  fFlavourTracks(new TObjArray(*(jet.fFlavourTracks))),
+  fFlavourTracks((jet.fFlavourTracks) ? new TObjArray(*(jet.fFlavourTracks)) : 0),
   fMaxCPt(jet.fMaxCPt),
   fMaxNPt(jet.fMaxNPt),
   fMCPt(jet.fMCPt),
@@ -338,7 +338,7 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     fAreaEmc            = jet.fAreaEmc;
     fAxisInEmcal        = jet.fAxisInEmcal;
     fFlavourTagging     = jet.fFlavourTagging;
-    fFlavourTracks      = new TObjArray(*(jet.fFlavourTracks));
+    fFlavourTracks      = (jet.fFlavourTracks) ? new TObjArray(*(jet.fFlavourTracks)) : 0;
     fMaxCPt             = jet.fMaxCPt;
     fMaxNPt             = jet.fMaxNPt;
     fMCPt               = jet.fMCPt;
@@ -615,11 +615,43 @@ Int_t AliEmcalJet::ContainsCluster(Int_t ic) const
   return -1;
 }
 
-//________________________________________________________________________
+/**
+ * Create string representation of the Jet. The string respresentation contains
+ * - \f$ p_{t} \f$ of the jet
+ * - \f$ \eta \f$ of the jet
+ * - \f$ \phi \f$ of the jet
+ * - \f$ p_{t} \f$ of the maximum charged and neutral particle
+ * - Number of constituent tracks
+ * - Number of constituent clusters
+ * - Jet area
+ * - Neutral energy fraction
+ * @return String representation of the jet
+ */
+TString AliEmcalJet::toString() const {
+  return TString::Format("Jet pT = %.2f, eta = %.2f, phi = %.2f, max charged pT = %.2f, max neutral pT = %.2f, N tracks = %d, N clusters = %d, Area = %.2f, NEF = %.2f",
+         Pt(), Eta(), Phi(), MaxChargedPt(), MaxNeutralPt(), GetNumberOfTracks(), GetNumberOfClusters(), Area(), NEF());
+}
+
+/**
+ * Print basic jet information using the string representation provided by
+ * AliEmcalJet::toString
+ *
+ * @param unused
+ */
 void AliEmcalJet::Print(Option_t* /*opt*/) const
 {
-  Printf("Jet pT = %.2f, eta = %.2f, phi = %.2f, max charged pT = %.2f, max neutral pT = %.2f, N tracks = %d, N clusters = %d, Area = %.2f, NEF = %.2f",
-         Pt(), Eta(), Phi(), MaxChargedPt(), MaxNeutralPt(), GetNumberOfTracks(), GetNumberOfClusters(), Area(), NEF());
+  Printf("%s\n", toString().Data());
+}
+
+/**
+ * Print basic jet information on an output stream using the string representation provided by
+ * AliEmcalJet::toString. Used by operator<<
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream &AliEmcalJet::Print(std::ostream &in) const {
+  in << toString().Data();
+  return in;
 }
 
 //________________________________________________________________________
@@ -650,4 +682,16 @@ Double_t AliEmcalJet::GetFlavourTrackZ(Int_t i)  const
   if (P() < 1e-6) return 0.;
   AliVParticle* hftrack = GetFlavourTrack(i);
   return hftrack != 0 ? hftrack->P() / P() : 0.;
+}
+
+/**
+ * Implementation of the output stream operator for AliEmcalJet. Printing
+ * basic jet information provided by function toString
+ * @param in output stream
+ * @param myjet Jet which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream &operator<<(std::ostream &in, const AliEmcalJet &myjet) {
+  std::ostream &result = myjet.Print(in);
+  return result;
 }

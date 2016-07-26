@@ -192,7 +192,7 @@ struct OutputUtilities
 	      port, name.Data(), dir.Data());
     Info("StartXrootd", "Starting XRootD to serve %s on port %d",
 	 dir.Data(), port);
-    Info("StartXrootd", exec.Data());
+    Info("StartXrootd", "%s", exec.Data());
     int ret = gSystem->Exec(exec);
     if (ret != 0) {
       Warning("StartXrootd", "Failed to start XRootd server");

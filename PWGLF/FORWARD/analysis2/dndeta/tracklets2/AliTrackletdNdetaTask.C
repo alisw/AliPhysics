@@ -15,7 +15,12 @@
 #include <AliESDInputHandlerRP.h>
 #include <AliMultSelection.h>
 #include <AliITSMultRecBg.h>
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
+#include <AliCDBPath.h>
+#include <AliCDBId.h>
 #include <AliGeomManager.h>
+#include <TGeoManager.h>
 #else
 class AliVEvent;
 class AliVVertex;
@@ -24,7 +29,9 @@ class AliAnalysisDataContainer;
 class AliITSMultRecBg;          
 class AliMultSelection;         // Auto-load
 class TGeoGlobalMagField;       // Auto-load
+class TGeoManager;              // Auto-load 
 class AliGeomManager;           // Auto-load
+class AliCDBManager;            // Auto-load 
 #endif
 
 namespace {
@@ -44,10 +51,9 @@ public:
    * Flags for what to reconstruct 
    */
   enum {
-    kESD       = 0x1,
-    kNormal    = 0x2,
-    kInjection = 0x4,
-    kRotation  = 0x8
+    kNormal    = 0x1,
+    kInjection = 0x2,
+    kRotation  = 0x4
   };
   enum {
     kAll=1,          // Count all events
@@ -395,7 +401,6 @@ public:
 	fMin(0),
 	fMax(0),
 	fHistoSets(0),
-	fESDSet(0),
 	fDataSet(0),
 	fInjSet(0),
 	fRotSet(0),
@@ -409,7 +414,6 @@ public:
 	fMin(o.fMin),
 	fMax(o.fMax),
 	fHistoSets(0),
-	fESDSet(0),
 	fDataSet(0),
 	fInjSet(0),
 	fRotSet(0),
@@ -431,7 +435,6 @@ public:
     Float_t    fMin;          // Least value 
     Float_t    fMax;          // Largest value
     TList*     fHistoSets;    // List of histogram sets
-    HistoSet*  fESDSet;       // Directly from ESD histograms 
     HistoSet*  fDataSet;      // Normal reconstruction histograms 
     HistoSet*  fInjSet;       // Injected histograms 
     HistoSet*  fRotSet;       // Rotation histograms
@@ -779,13 +782,34 @@ protected:
    * @param existing If null, also create new sub-sets.  If non-null,
    * read sub-sets from the container passed (using in Terminate).
    */
-virtual void InitCentBins(Container* existing);
+  virtual void InitCentBins(Container* existing);
+  /** 
+   * Make sure CDB is initialized 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t InitCDB();
   /** 
    * Check that we have an initialized geometry if needed
    * 
    * @return true if all is good 
    */
   virtual Bool_t InitGeometry();
+  /** 
+   * Get the CDB reference run number 
+   * 
+   * @return A run from LHC10h
+   */
+  virtual Int_t GetCDBReferenceRun() const { return 137161; }
+  /** 
+   * Get the CDB reference URL 
+   * 
+   * @return A fixed string pointing to 2010 
+   */
+  virtual const char* GetCDBReferenceURL() const
+  {
+    return "alien://Folder=/alice/data/2010/OCDB";
+  }
   /** 
    * @{ 
    * @name Interface 
@@ -1040,16 +1064,16 @@ void AliTrackletdNdetaTask::HistoSet::WorkerInit(Container&     parent,
   Container* c = fContainer;
       
   fEtaVsIPz      = Make2D(*c, "etaVsIPz",
-			  Form("\\eta\\hbox{ vs }IP_{z}\\hbox{ %s}",Name()),
+			  Form("#eta vs IP_{#it{z}} %s",Name()),
 			  fColor,fStyle, etaAxis, ipzAxis);
   fEtaVsDelta    = Make2D(*c, "etaVsDelta","",fColor,fStyle,etaAxis,deltaAxis);
   fDPhiVsdTheta  = Make2D(*c, "dphiVsdtheta","",fColor,fStyle,
 			  dPhiAxis,dThetaAxis);	
   fDPhiVsdThetaX = Make2D(*c, "dphiVsdthetaX","",fColor,fStyle,
 			  dPhiAxis,dThetaAxis);
-  fDPhiVsdThetaX->SetXTitle("\\Delta\\phi-\\delta\\phi");
-  fDPhiVsdThetaX->SetYTitle("\\Delta\\theta/\\sin^2(\\theta)");      
-  fDelta         = Make1D(*c, "delta", Form("\\Delta\\hbox{ %s}", Name()),
+  fDPhiVsdThetaX->SetXTitle("#Delta#phi-#delta#phi");
+  fDPhiVsdThetaX->SetYTitle("#Delta#theta/sin^{2}(#theta)");      
+  fDelta         = Make1D(*c, "delta", Form("#Delta %s", Name()),
 			  fColor, fStyle,deltaAxis);
 }
 //____________________________________________________________________
@@ -1080,10 +1104,10 @@ AliTrackletdNdetaTask::HistoSet::MasterFinalize(Container* parent,
 
   // Normalize delta distribution to integral over 5 to 25 
   TH1* delta = static_cast<TH1*>(CloneAndAdd(result, fDelta));
-  Double_t eintg;
-  Double_t intg = Integrate(delta, tailDelta, fDelta->GetXaxis()->GetXmax(),
-			    eintg);
   delta->Scale(1./nEvents);
+  Double_t maxDelta = fDelta->GetXaxis()->GetXmax();
+  Double_t eintg;
+  Double_t intg = Integrate(delta, tailDelta, maxDelta,  eintg);
       
   result->Add(new TParameter<double>("deltaTailIntg", intg));
   result->Add(new TParameter<double>("deltaTailIntE", eintg));
@@ -1095,9 +1119,21 @@ AliTrackletdNdetaTask::HistoSet::MasterFinalize(Container* parent,
   dPhiVsdThetaX->Scale(1./nEvents);
   dPhiVsdTheta ->Scale(1./nEvents);
   
+  TH1* deltaIntg = etaVsDelta->ProjectionX("deltaTailInt");
+  deltaIntg->SetDirectory(0);
+  deltaIntg->Reset();
+  deltaIntg->SetYTitle(Form("#int_{%3.1f}^{%4.1f}d#Delta",
+			    tailDelta, maxDelta));
+  for (Int_t i = 1; i <= deltaIntg->GetNbinsX(); i++) {
+    TH1* tmp = etaVsDelta->ProjectionY("tmp",i,i);
+    intg     = Integrate(tmp, tailDelta, maxDelta, eintg);
+    deltaIntg->SetBinContent(i, intg);
+    deltaIntg->SetBinError  (i, eintg);
+    delete tmp;
+  }
+  result->Add(deltaIntg);
 
-
-    return result;
+  return result;
 }
 //____________________________________________________________________
 void AliTrackletdNdetaTask::HistoSet::Fill(Double_t ipZ,
@@ -1109,8 +1145,8 @@ void AliTrackletdNdetaTask::HistoSet::Fill(Double_t ipZ,
 					   Double_t delta,
 					   Double_t weight)
 {
-  fEtaVsDelta               ->Fill(eta,   delta,   weight);
   if (delta > fEtaVsDelta->GetYaxis()->GetXmax())   return;
+  fEtaVsDelta               ->Fill(eta,   delta,   weight);
   fDPhiVsdThetaX            ->Fill(dphis, dthetax, weight);
   fDPhiVsdTheta             ->Fill(dphi,  dtheta,  weight);
   fDelta                    ->Fill(delta,          weight);
@@ -1129,7 +1165,6 @@ AliTrackletdNdetaTask::CentBin::CentBin(Float_t  cmin,
     fMax(cmax),
     fIPz(0),
     fHistoSets(0),
-    fESDSet(0),
     fDataSet(0),
     fInjSet(0),
     fRotSet(0)
@@ -1137,8 +1172,6 @@ AliTrackletdNdetaTask::CentBin::CentBin(Float_t  cmin,
   fHistoSets = new TList;
   fHistoSets->SetOwner(true);
 
-  fESDSet  = new HistoSet("esd",        kGray+colOff, 20+styOff);
-  fHistoSets->Add(fESDSet);
   fDataSet = new HistoSet("data",       kRed+colOff, 20+styOff);
   fHistoSets->Add(fDataSet);
   if (recFlags & kInjection) {
@@ -1223,25 +1256,18 @@ AliTrackletdNdetaTask::CentBin::EstimateBackground(Container* dataCon,
   TH1* deltaScaled = CopyH1(bgCon, "delta", "deltaScaled");
   bgCon->Add(deltaScaled);
   deltaScaled->SetLineStyle(7);
-  deltaScaled->SetTitle(Form("%s\\times%6.3f", bgDelta->GetTitle(), scale));
+  deltaScaled->SetTitle(Form("%s#times%6.3f", bgDelta->GetTitle(), scale));
   if (dataDelta) deltaScaled->SetMarkerStyle(dataDelta->GetMarkerStyle());
   else           deltaScaled->SetMarkerStyle(20);
 
   if (lDebug > 2)
     AliInfoF("Scaling %s Delta dist by %f +/- %f",
 	     bgCon->GetName(), scale, scaleE);
-
-  for (Int_t bin = 1; bin <= deltaScaled->GetNbinsX(); bin++) {
-    Double_t c = deltaScaled->GetBinContent(bin);
-    Double_t e = deltaScaled->GetBinError  (bin);
-    deltaScaled->SetBinContent(bin,scale*c);
-    deltaScaled->SetBinError  (bin,TMath::Sqrt(c*c*scaleE*scaleE+
-					       e*e*scale*scale));
-  }
+  Scale(deltaScaled, scale, scaleE);
 
   TH2* backgroundEst = CopyH2(bgCon,  "etaVsIPz", "backgroundEst");
   backgroundEst->SetTitle("Background");
-  if (!isComb) backgroundEst->Scale(scale);
+  if (!isComb) Scale(backgroundEst, scale, scaleE); // ->Scale(scale);
   // else         Info("EstimateBackground", "Combinators, no scaling of BG");
   bgCon->Add(backgroundEst);
 
@@ -1260,13 +1286,13 @@ AliTrackletdNdetaTask::CentBin::EstimateBackground(Container* dataCon,
 
   TH2* measured  = GetH2(dataCon, "etaVsIPz");
   TH2* beta      = static_cast<TH2*>(backgroundEst->Clone("beta"));
-  beta->SetTitle("\\beta");
+  beta->SetTitle("#beta");
   beta->SetDirectory(0);
   beta->Divide(measured);
   bgCon->Add(beta);
     
   TH2* bg1MBeta   = static_cast<TH2*>(beta->Clone("oneMinusBeta"));
-  bg1MBeta->SetTitle("1-\\beta");
+  bg1MBeta->SetTitle("1-#beta");
   bg1MBeta->SetDirectory(0);
   bg1MBeta->Reset();
   bgCon->Add(bg1MBeta);  
@@ -1300,10 +1326,6 @@ AliTrackletdNdetaTask::CentBin::MasterFinalize(Container* parent,
   TIter      next(fHistoSets);
   HistoSet*  set = 0;
   while ((set = static_cast<HistoSet*>(next()))) {
-    if (set == fESDSet) {
-      set->MasterFinalize(result, fIPz, deltaCut, deltaTail);
-      continue;
-    }
     if (set == fDataSet) {
       dataRes = set->MasterFinalize(result, fIPz, deltaCut, deltaTail);
       continue;
@@ -1329,8 +1351,7 @@ Bool_t AliTrackletdNdetaTask::CentBin::FillSet(UShort_t set,
 					       Double_t weight)
 {
   HistoSet* hset = 0;
-  if      (set == kESD)       hset = fESDSet;
-  else if (set == kNormal)    hset = fDataSet;
+  if      (set == kNormal)    hset = fDataSet;
   else if (set == kInjection) hset = fInjSet;
   else if (set == kRotation)  hset = fRotSet;
 
@@ -1377,9 +1398,9 @@ AliTrackletdNdetaTask::AliTrackletdNdetaTask(const char* name)
     fPhiRotation(TMath::Pi())
 {
   FixAxis(fCentAxis, "Centrality [%]");
-  FixAxis(fIPzAxis,  "\\mathrm{IP}_{z}\\hbox{ [cm]}");
-  FixAxis(fEtaAxis,  "\\eta");
-  FixAxis(fPhiAxis,  "\\varphi");
+  FixAxis(fIPzAxis,  "IP_{#it{z}} [cm]");
+  FixAxis(fEtaAxis,  "#eta");
+  FixAxis(fPhiAxis,  "#phi");
 
   // Set branches we want to look for 
   fBranchNames = 
@@ -1489,11 +1510,15 @@ Bool_t AliTrackletdNdetaTask::Connect(const char* sumFile,
 //____________________________________________________________________
 void AliTrackletdNdetaTask::Print(Option_t*) const
 {
+  Double_t shiftedDPhiCut = fShiftedDPhiCut;
+  if (shiftedDPhiCut < 0)
+    shiftedDPhiCut = TMath::Sqrt(fDeltaCut)*fDPhiWindow;
+  
   Printf("%s: %s", ClassName(), GetName());
   Printf(" %22s: 0x%x", "Reconstruction mode",     fRecMode);
   Printf(" %22s: %d",   "Scale by sin^2(theta)",   fScaleDTheta);
   Printf(" %22s: %f",   "Delta phi shift",	   fDPhiShift);
-  Printf(" %22s: %f",   "Shifted Delta phi cut",   fShiftedDPhiCut);
+  Printf(" %22s: %f",   "Shifted Delta phi cut",   shiftedDPhiCut);
   Printf(" %22s: %f",   "Scaled Delta Theta cut",  fScaledDThetaCut);
   Printf(" %22s: %f",   "Delta cut",	           fDeltaCut);
   Printf(" %22s: %f",   "max Delta",	           fMaxDelta);
@@ -1522,11 +1547,11 @@ void AliTrackletdNdetaTask::InitCentBins(Container* existing)
   TAxis    dThetaAxis(100,               -maxdTheta,+maxdTheta);
   TAxis    dPhiAxis  (100,               -maxdPhi,  +maxdPhi);
   FixAxis(deltaAxis,
-	  Form("\\Delta=[(\\Delta\\phi-\\delta\\phi)/\\sigma_{\\phi}]^2+"
-	       "[\\Delta\\theta%s/\\sigma_{\\theta}]^2",
-	       fScaleDTheta ? "\\sin^{-2}(\\theta)" : ""));
-  FixAxis(dThetaAxis, "\\Delta\\theta");
-  FixAxis(dPhiAxis,   "\\Delta\\phi");
+	  Form("#Delta=[(#Delta#phi-#delta#phi)/#sigma_{#phi}]^{2}+"
+	       "[#Delta#theta%s/#sigma_{#theta}]^{2}",
+	       fScaleDTheta ? "sin^{-2}(#theta)" : ""));
+  FixAxis(dThetaAxis, "#Delta#theta");
+  FixAxis(dPhiAxis,   "#Delta#phi");
 
   // Add min-bias bin 
   CentBin* bin  = MakeCentBin(0, 100, fRecMode);
@@ -1552,6 +1577,62 @@ void AliTrackletdNdetaTask::InitCentBins(Container* existing)
   }
 }
 //____________________________________________________________________
+Bool_t AliTrackletdNdetaTask::InitCDB()
+{
+  Printf("Now initialising CDB");
+  AliAnalysisManager* anaMgr = AliAnalysisManager::GetAnalysisManager();
+  if (!anaMgr) {
+    AliError("No manager defined!");
+    return false;
+  }
+  // Check if we have the CDB connect task, and if so, do nothing as
+  // we rely on that task set up things properly.
+  const char*  cdbNames[] = {"CDBconnect", "cdb", 0 };
+  const char** ptr        = cdbNames;
+  while (*ptr) { 
+    AliAnalysisTask* cdbConnect = anaMgr->GetTask(*ptr);
+    if (cdbConnect && cdbConnect->IsA()->InheritsFrom("AliTaskCDBconnect")) {
+      AliInfoF("CDB-connect task (%s: %s) present, do nothing",
+	       cdbConnect->ClassName(), *ptr);
+      return true;
+    }
+    ptr++;
+  }
+  // Otherwise, we need to do stuff ourselves
+  Printf("Get the CDB manager");
+  AliCDBManager* cdbMgr = AliCDBManager::Instance();
+  if (!cdbMgr) {
+    AliError("Failed to get instance of CDB manager");
+    return false;
+  }
+  Int_t   refRun = GetCDBReferenceRun();
+  TString refUrl = GetCDBReferenceURL();
+  AliWarningF("Using reference CDB storage \"%s\" and run \"%d\"",
+	      refUrl.Data(), refRun);
+  // Set a very particular default storage. Perhaps we can do this
+  // with specific storages instead!  Depends on whether the
+  // reconstruction also uses CDB - probably does - in which case we
+  // need specific storages for that too.
+  cdbMgr->SetDefaultStorage(refUrl);
+  // Now load our geometry - from a LHC10h run 
+  Printf("Get Geometry entry");
+  AliCDBEntry* cdbEnt = cdbMgr->Get("GRP/Geometry/Data", refRun);
+  if (!cdbEnt) {
+    AliErrorF("No geometry found from %d", refRun);
+    return false;
+  }
+  // Initialize the geometry manager
+  Printf("Set Geometry");
+  AliGeomManager::SetGeometry(static_cast<TGeoManager*>(cdbEnt->GetObject()));
+  // Now perform mis-alignment - again based on an LHC10h run!
+  Printf("Misalign geometry");
+  if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",refRun,-1,-1)) {
+    AliErrorF("Failed to misalign geometry from %d", refRun);
+    return false;
+  }
+  return true;
+}
+//____________________________________________________________________
 Bool_t AliTrackletdNdetaTask::InitGeometry()
 {
   if (fRecMode == 0) return true;
@@ -1566,6 +1647,12 @@ Bool_t AliTrackletdNdetaTask::InitGeometry()
 //____________________________________________________________________
 void AliTrackletdNdetaTask::WorkerInit()
 {
+  if (!InitCDB()) {
+    // Argh! - make us a a zombie
+    SetZombie(true);
+    return;
+  }
+  
   if (fShiftedDPhiCut < 0)
     fShiftedDPhiCut = TMath::Sqrt(fDeltaCut)*fDPhiWindow;
     
@@ -1579,9 +1666,9 @@ void AliTrackletdNdetaTask::WorkerInit()
   fIPz   ->SetFillStyle(0);
   fCent  ->SetFillStyle(0);
 
-  TAxis zAxis(64,-16,16);     FixAxis(zAxis, "\\mathit{z}\\hbox{ [cm]}");
-  TAxis phiAxis(80, 0,TMath::TwoPi()); FixAxis(phiAxis,"\\phi");
-  TAxis ph2Axis(160,0,TMath::TwoPi()); FixAxis(ph2Axis,"\\phi");
+  TAxis zAxis(64,-16,16);     FixAxis(zAxis, "#it{z} [cm]");
+  TAxis phiAxis(80, 0,TMath::TwoPi()); FixAxis(phiAxis,"#phi");
+  TAxis ph2Axis(160,0,TMath::TwoPi()); FixAxis(ph2Axis,"#phi");
 
   fUsedClusters0 = Make2D(*fContainer, "usedClusters0",
 			  "Used clusters on layer 0",
@@ -1797,7 +1884,7 @@ Bool_t AliTrackletdNdetaTask::ProcessTracklets(TList&            toRun,
   // This can probably be optimized by using the reco object
   // directly. For now, we leave as is and accept the extra
   // processing time it implies.
-  if      (!reco && fRecMode == 0)    FillClusters(mult, ipZ);
+  if      (!reco)                     FillClusters(mult, ipZ);
   else if (FindMode(reco) == kNormal) FillClusters(reco);
 
   // Now loop over all tracklets.  Since this method is only called
@@ -1824,14 +1911,12 @@ Bool_t AliTrackletdNdetaTask::ProcessTracklets(TList&            toRun,
 	TMath::Abs(dThetaX) > fScaledDThetaCut) continue;
     // If not within the bins we're looking at, continue 
     if (eta < fEtaAxis.GetXmin() || eta > fEtaAxis.GetXmax())  continue;
-    if (phi < fPhiAxis.GetXmin() || phi > fPhiAxis.GetXmax())  continue;
+    // if (phi < fPhiAxis.GetXmin() || phi > fPhiAxis.GetXmax())  continue;
 
     // Assume a signal 
     Bool_t   isSignal = true;
     if (delta >  fDeltaCut)       isSignal = false;
     if (dPhiS >= fShiftedDPhiCut) isSignal = false;
-    // Redundant check?
-    if (delta >  fMaxDelta)       isSignal = false;
 
     // Now fill all found centrality bins 
     FillBins(toRun, reco, mult, trackletNumber, isSignal, ipZ,
@@ -1845,7 +1930,7 @@ Bool_t AliTrackletdNdetaTask::ProcessTracklets(TList&            toRun,
 //____________________________________________________________________
 UShort_t AliTrackletdNdetaTask::FindMode(AliITSMultRecBg* reco) const
 {
-  if (!reco) return kESD;
+  if (!reco) return kNormal;
   switch (reco->GetRecType()) {
   case AliITSMultRecBg::kData:  return kNormal;
   case AliITSMultRecBg::kBgInj: return kInjection;
@@ -2022,10 +2107,14 @@ Bool_t AliTrackletdNdetaTask::CheckEvent(Double_t&          cent,
     return false;
   }
   fStatus->Fill(kEvent);
-    
+
   // Check for geometry
-  if (!InitGeometry()) return false;
-    
+  if (!InitGeometry()) {
+    // Argh! - make us a a zombie
+    SetZombie(true);
+    return false;
+  }
+
   // Check magnetic field 
   if (!TGeoGlobalMagField::Instance()->GetField() &&
       !event->InitMagneticField()) {
@@ -2089,16 +2178,12 @@ void AliTrackletdNdetaTask::ProcessEvent(Double_t          cent,
   // If we have no centrality bins  to fill, we return immediately 
   if (nAcc <= 0) return;
 
-#if 0
   if (!(fRecMode & (kNormal | kInjection))) {
     // In case we do not do normal reconstruction nor injection, we
     // should fill our data histograms from the read (ESD)
     // multiplicity.
     ProcessTracklets(toRun, 0, cent, ip->GetZ(), mult);
   }
-#endif
-  // Always fill ESD histograms 
-  ProcessTracklets(toRun, 0, cent, ip->GetZ(), mult);
   if ((fRecMode & kNormal) && !(fRecMode & kInjection)) {
     // Only do explicit normal reconstruction if we're not
     // injecting.  In case of injection, we will also run the normal
@@ -2429,6 +2514,15 @@ protected:
     kMCCompleted
   };
   /** 
+   * Get the CDB reference URL 
+   * 
+   * @return A fixed string pointing to 2008
+   */
+  virtual const char* GetCDBReferenceURL() const
+  {
+    return "alien://Folder=/alice/simulation/2008/v4-15-Release/Residual";
+  }
+  /** 
    * Initialize histograms.  Called on worker 
    * 
    */
@@ -2640,13 +2734,13 @@ void AliTrackletdNdetaMCTask::CentBin::WorkerInit(Container&       parent,
   Container* c        = fContainer;
   TAxis& pdg          = *MakePdgAxis();
   fEtaVsIPzMC         = Make2D(*c, "etaVsIPzMC",
-			       "\\eta\\hbox{ vs }IP_{z}\\hbox{ signal}",
+			       "#eta vs IP_{#it{z}} signal",
 			       kCyan+2,24, etaAxis, ipzAxis);
-  fEtaVsIPzMC->SetYTitle("\\mathrm{IP}_{z,\\mathrm{gen}}");
+  fEtaVsIPzMC->SetYTitle("IP_{#it{z},gen}");
   fEtaVsIPzMCSel      = Make2D(*c, "etaVsIPzMCSel",
-			       "\\eta\\hbox{ vs }IP_{z}\\hbox{ signal}",
+			       "#eta vs IP_{#it{z}} selected signal",
 			       kMagenta+2,24, etaAxis, ipzAxis);
-  fEtaVsIPzMCSel->SetYTitle("\\mathrm{IP}_{z,\\mathrm{rec}}");
+  fEtaVsIPzMCSel->SetYTitle("IP_{#it{z},rec}");
   fPdgMC              = Make1D(*c, "pdgMC", "Particle types",
 			       kRed+2,20, pdg);
   fPdgMC->GetXaxis()->LabelsOption("v");
@@ -2666,12 +2760,12 @@ void AliTrackletdNdetaMCTask::CentBin::WorkerInit(Container&       parent,
   fSecondaryParentPdg->GetXaxis()->LabelsOption("v");
   TAxis dIPz(ipzAxis);
   ScaleAxis(dIPz, .1);
-  dIPz.SetTitle("\\mathrm{IP}_{z} - \\mathrm{IP}_{z,\\mathrm{gen}}");      
-  fIPzVsMC            = Make2D(*c,"ipzVsGenIPz", "Resolution vs IP_{z}",
+  dIPz.SetTitle("IP_{#it{z}} - IP_{#it{z},gen}");      
+  fIPzVsMC            = Make2D(*c,"ipzVsGenIPz", "Resolution vs IP_{#it{z}}",
 			       kCyan+2, 24, ipzAxis, dIPz);
   fIPzGen             = Make1D(*c,"ipzGen", "Generated IP_{z}",
 			       kCyan+2, 25, ipzAxis);
-  fIPzSel             = Make1D(*c,"ipzSel", "Selected, generated IP_{z}",
+  fIPzSel             = Make1D(*c,"ipzSel", "Selected, generated IP_{#it{z}}",
 			       kCyan+2, 21, ipzAxis);
   fIPzGen->SetMarkerSize(1.2*fIPzGen->GetMarkerSize());
   fIPz->SetMarkerStyle(24);
@@ -2812,7 +2906,7 @@ AliTrackletdNdetaMCTask::CentBin::MakePdgProj(const char* name,
   }
   Int_t first = 1;
   Int_t last  = (cut < 0 ?
-		 orig->GetYaxis()->GetXmax() :
+		 orig->GetYaxis()->GetNbins() :
 		 orig->GetYaxis()->FindBin(cut-1e-6));
   Double_t intg = orig->Integral();
   TH1*     proj = orig->ProjectionX(name,first,last,"e");
@@ -2863,7 +2957,7 @@ AliTrackletdNdetaMCTask::CentBin::MasterFinalize(Container* parent,
   fIPzVsMC       = GetH2(fContainer, "ipzVsGenIPz");
 
   TProfile* ipzVsMC =  fIPzVsMC->ProfileX(fIPzVsMC->GetName());
-  ipzVsMC->SetYTitle(Form("\\langle(%s)\\rangle",
+  ipzVsMC->SetYTitle(Form("#LT%s#GT",
 			  fIPzVsMC->GetYaxis()->GetTitle()));
   result->Add(ipzVsMC);
   result->Add(fEtaVsIPzMC);
@@ -2874,8 +2968,8 @@ AliTrackletdNdetaMCTask::CentBin::MasterFinalize(Container* parent,
   dNdetaAll->SetMarkerSize(1.4*dNdetaAll->GetMarkerSize());
   dNdetaAll->SetTitle("All events");
   dNdetaSel->SetTitle("Selected events");
-  dNdetaAll->SetYTitle("\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta");
-  dNdetaSel->SetYTitle("\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta");
+  dNdetaAll->SetYTitle("d#it{N}_{ch}/d#eta");
+  dNdetaSel->SetYTitle("d#it{N}_{ch}/d#eta");
   result->Add(dNdetaAll);
   result->Add(dNdetaSel);
   
@@ -2928,9 +3022,9 @@ AliTrackletdNdetaMCTask::CentBin::MasterFinalize(Container* parent,
       AliWarningF("Container %s not found in %s", *ptr, result->GetName());
       ptr++;
     }
-    TH2* a1 = MakeAlpha("alpha", "\\alpha\\hbox{ all MC events}",
+    TH2* a1 = MakeAlpha("alpha", "#alpha all MC events",
 			sub, fEtaVsIPzMC);
-    TH2* a2 = MakeAlpha("alphaSel","\\alpha\\hbox{ selected MC events}",sub,
+    TH2* a2 = MakeAlpha("alphaSel","#alpha selected MC events",sub,
 			fEtaVsIPzMCSel);
     TH2* am = MakeAlphaMask(a1, a2);
     sub->Add(am);

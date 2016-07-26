@@ -240,25 +240,25 @@ void AliHFJetsContainerVertex::FillStepJetVtxSim(CFSteps                step,
       if (nSVtx > ivtx) point[22] += invMasses[idxLxy[ivtx]];
     }
     
-    delete idxLxy;
-    delete nTrkV0;
+    delete[] idxLxy;
+    delete[] nTrkV0;
     
-    delete decLenXY;
-    delete invMasses;
-    delete errdecLenXY;
-    delete sigdecLenXY;
-    delete nRealVtx;
-    delete nFromBVtx;
-    delete nFromPromptDVtx;
-    delete sigmavertex;
+    delete[] decLenXY;
+    delete[] invMasses;
+    delete[] errdecLenXY;
+    delete[] sigdecLenXY;
+    delete[] nRealVtx;
+    delete[] nFromBVtx;
+    delete[] nFromPromptDVtx;
+    delete[] sigmavertex;
     
-    delete ipR1;
-    delete ipR2;
-    delete ipR3;
+    delete[] ipR1;
+    delete[] ipR2;
+    delete[] ipR3;
     
-    delete sigipR1;
-    delete sigipR2;
-    delete sigipR3;
+    delete[] sigipR1;
+    delete[] sigipR2;
+    delete[] sigipR3;
     
   } // end if (vertices && primVtx)
   
@@ -426,25 +426,25 @@ void AliHFJetsContainerVertex::FillStepJetVtxData(CFSteps               step,
     //      if (nSVtx > ivtx) point[22] += invMasses[idxLxy[ivtx]];
     //    }
     
-    delete idxLxy;
-    delete nTrkV0;
+    delete[] idxLxy;
+    delete[] nTrkV0;
     
-    delete decLenXY;
-    delete invMasses;
-    delete errdecLenXY;
-    delete sigdecLenXY;
-    delete sigmavertex;
+    delete[] decLenXY;
+    delete[] invMasses;
+    delete[] errdecLenXY;
+    delete[] sigdecLenXY;
+    delete[] sigmavertex;
     
-    delete ipR1;
-    delete ipR2;
-    delete ipR3;
+    delete[] ipR1;
+    delete[] ipR2;
+    delete[] ipR3;
     
-    delete sigipR1;
-    delete sigipR2;
-    delete sigipR3;
+    delete[] sigipR1;
+    delete[] sigipR2;
+    delete[] sigipR3;
     
-    delete sumOfSqs;
-    delete sigsumOfSqs;
+    delete[] sumOfSqs;
+    delete[] sigsumOfSqs;
     
   } // end if (vertices && primVtx)
   
@@ -557,12 +557,12 @@ void AliHFJetsContainerVertex::FillStepQaVtx(CFSteps                    step,
     FillStep(step, apointVtxProp, wght);
   }
   
-  delete indexLxy;
-  delete decLengthXY;
-  delete invMasses;
-  delete nRealVtx;
-  delete nFromBVtx;
-  delete nFromPromptDVtx;
+  delete[] indexLxy;
+  delete[] decLengthXY;
+  delete[] invMasses;
+  delete[] nRealVtx;
+  delete[] nFromBVtx;
+  delete[] nFromPromptDVtx;
   
   return;
 }

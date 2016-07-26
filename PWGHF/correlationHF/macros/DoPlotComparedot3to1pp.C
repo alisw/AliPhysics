@@ -162,9 +162,9 @@ void DoPlotSingle1Canvas(TString TrackpTthr ="dot5",TString system = "pp"){
       tlTitle0->SetTextSize(0.033);
       tlTitle0->Draw();
       
-      if(kTemp==1)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{3 < #it{p}_{T}^{D^{}} < 5 GeV/c}, #bf{|#it{y}^{D}|<0.5}");
-      if(kTemp==2)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{5 < #it{p}_{T}^{D^{}} < 8 GeV/c}, #bf{|#it{y}^{D}|<0.5}");
-      if(kTemp==3)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{8 < #it{p}_{T}^{D^{}} < 16 GeV/c}, #bf{|#it{y}^{D}|<0.5}");
+      if(kTemp==1)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{3 < #it{p}_{T}^{D^{}} < 5 GeV/c}, #bf{|#it{y}^{D}| < 0.5}");
+      if(kTemp==2)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{5 < #it{p}_{T}^{D^{}} < 8 GeV/c}, #bf{|#it{y}^{D}| < 0.5}");
+      if(kTemp==3)TLatex *tlTitle00=new TLatex(0.18,0.75,"#bf{8 < #it{p}_{T}^{D^{}} < 16 GeV/c}, #bf{|#it{y}^{D}| < 0.5}");
       
       tlTitle00->SetNDC();
       //tlTitle0->SetTextColor(kRed);
@@ -207,9 +207,9 @@ void DoPlotSingle1Canvas(TString TrackpTthr ="dot5",TString system = "pp"){
 	  if(str.Contains("assoc")){
 	    TString strTitle5=tl->GetTitle();
 	    Printf("\n%s <-- Default txt(4)",strTitle5.Data());
-	    if(kTemp==1)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}}, #bf{|#Delta#eta|<1.0}");
-	    if(kTemp==2)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}}, #bf{|#Delta#eta|<1.0}");
-	    if(kTemp==3)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}}, #bf{|#Delta#eta|<1.0}");
+	    if(kTemp==1)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}}, #bf{|#Delta#eta| < 1.0}");
+	    if(kTemp==2)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}}, #bf{|#Delta#eta| < 1.0}");
+	    if(kTemp==3)strTitle5.ReplaceAll(strTitle5.Data(),"#bf{0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}}, #bf{|#Delta#eta| < 1.0}");
 	    
 	    Printf("%s <-- Replaced with txt(4)",strTitle5.Data());
 	    tl->SetTitle(strTitle5.Data()); 

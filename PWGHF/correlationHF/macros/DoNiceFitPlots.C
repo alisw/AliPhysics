@@ -6,6 +6,8 @@
 
 TString inputdirectory = "";
 
+//gStyle->SetLineStyleString(9,"80 20");
+
 void SetInputDirectory(TString strdir){
   inputdirectory=strdir;
 }
@@ -70,7 +72,7 @@ c->ls();
   TF1 *fun = (TF1*)c->FindObject("fGausASper");
   fun->SetLineWidth(4);
   fun->SetLineColor(kGreen+3);
-  fun->SetLineStyle(10);
+  fun->SetLineStyle(5);
 
   TF1 *fun2 = (TF1*)c->FindObject("fGausNSper");
   fun2->SetLineWidth(4);
@@ -83,13 +85,13 @@ c->ls();
   TH1D *h = (TH1D*)c->FindObject("fHist");
   h->GetYaxis()->SetTitleOffset(h->GetYaxis()->GetTitleOffset()+0.3);
   h->GetYaxis()->CenterTitle(kTRUE);
-  h->GetYaxis()->SetTitleSize(0.045);
+  h->GetYaxis()->SetTitleSize(0.046);
   h->GetYaxis()->SetLabelSize(0.04);
   h->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
   h->GetYaxis()->SetTitleOffset(1.5);
   h->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   h->GetXaxis()->CenterTitle(kTRUE);
-  h->GetXaxis()->SetTitleSize(0.045);
+  h->GetXaxis()->SetTitleSize(0.046);
   h->GetXaxis()->SetLabelSize(0.04);
   h->GetXaxis()->SetTitleOffset(1.12);
   if(system==1) {
@@ -114,6 +116,19 @@ c->ls();
   Int_t entries=lc->GetEntries();
   Int_t syst=1;
   Int_t nextMeson=0;
+
+  TLegend * legend = new TLegend(0.42,0.43,0.85,0.65);
+  legend->SetFillColor(0);
+  legend->SetMargin(0.33);
+  legend->SetTextSize(0.04);
+  legend->SetBorderSize(0);
+  if(system==0) legend->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
+  else legend->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
+  legend->AddEntry(funfit,"Total fit","l");
+  legend->AddEntry(fun,"Near-side","l");
+  legend->AddEntry(fun2,"Away-side","l");
+  legend->AddEntry(fun3,"Baseline","l");
+  legend->Draw("same");
 
   for(Int_t jl=0;jl<entries;jl++){
     TObject *obj=(TObject*)lc->At(jl);
@@ -158,49 +173,46 @@ c->ls();
 
   pad->cd();
 
-  TLatex *tl1=new TLatex(0.215,0.79,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+  TLatex *tl1=new TLatex(0.215,0.87,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
   tl1->SetNDC();
-  tl1->SetTextSize(0.045);
+  tl1->SetTextSize(0.042);
   tl1->Draw("same");
 
-  if(system==0) {
-    TLatex *tl2=new TLatex(0.215,0.875,Form("#bf{pp, #sqrt{#it{s}}=7 TeV}"));
-    tl2->SetNDC();
-    tl2->SetTextSize(0.045);
-    tl2->Draw("same");
-  } else {
-    TLatex *tl2=new TLatex(0.215,0.875,Form("#bf{p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV}"));
-    tl2->SetNDC();
-    tl2->SetTextSize(0.045);
-    tl2->Draw("same");
-  }
+  TLegend * legend2 = new TLegend(0.20,0.795,0.7,0.85);
+  legend2->SetFillColor(0);
+  legend2->SetMargin(0.3);
+  legend2->SetTextSize(0.042);
+  legend2->SetBorderSize(0);
+  if(system==0) legend2->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
+  else legend2->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
+  legend2->Draw("same");
 
-  TLatex *tl2b=new TLatex(0.79,0.875,Form("#bf{ALICE}"));
+  TLatex *tl2b=new TLatex(0.79,0.87,Form("#bf{ALICE}"));
   tl2b->SetNDC();
-  tl2b->SetTextSize(0.045);
+  tl2b->SetTextSize(0.042);
   tl2b->Draw("same");
 
   if(system==0) {
-    TLatex *tl3=new TLatex(0.215,0.70,Form("#bf{|#it{y}^{D}|<0.5, |#Delta#eta|<1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.75,Form("#bf{|#it{y}^{D}| < 0.5, |#Delta#eta| < 1.0}"));
     tl3->SetNDC();
-    tl3->SetTextSize(0.045);
+    tl3->SetTextSize(0.042);
     tl3->Draw("same");
   } else {
-    TLatex *tl3=new TLatex(0.215,0.70,Form("#bf{-0.96<#it{y}^{D}_{cms}<0.04, |#Delta#eta|<1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.75,Form("#bf{-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1.0}"));
     tl3->SetNDC();
-    tl3->SetTextSize(0.045);
+    tl3->SetTextSize(0.042);
     tl3->Draw("same");
   }
 
   if(system==0) {
-    TLatex *tl4=new TLatex(0.215,0.61,Form("#bf{5<#it{p}_{T}^{D}<8 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.69,Form("#bf{5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}}"));
     tl4->SetNDC();
-    tl4->SetTextSize(0.045);
+    tl4->SetTextSize(0.042);
     tl4->Draw("same");
   } else {
-    TLatex *tl4=new TLatex(0.215,0.61,Form("#bf{8<#it{p}_{T}^{D}<16 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.69,Form("#bf{8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}}"));
     tl4->SetNDC();
-    tl4->SetTextSize(0.045);
+    tl4->SetTextSize(0.042);
     tl4->Draw("same");
   }
 /*
@@ -210,14 +222,14 @@ c->ls();
   tlAlice->SetTextSize(0.038);
 */
   if(system==0) {
-    TLatex *tlUnc=new TLatex(0.35,0.50,Form("#bf{{}^{+13%}_{-10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.35,0.21,Form("#bf{{}^{#plus13%}_{#minus10%} scale uncertainty}"));
     tlUnc->SetNDC();
-    tlUnc->SetTextSize(0.045);
+    tlUnc->SetTextSize(0.042);
     tlUnc->Draw("same");
   } else {
-    TLatex *tlUnc=new TLatex(0.35,0.50,Form("#bf{{}^{+10%}_{-10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.35,0.21,Form("#bf{{}^{#plus10%}_{#minus10%} scale uncertainty}"));
     tlUnc->SetNDC();
-    tlUnc->SetTextSize(0.045);
+    tlUnc->SetTextSize(0.042);
     tlUnc->Draw("same");
   }
 

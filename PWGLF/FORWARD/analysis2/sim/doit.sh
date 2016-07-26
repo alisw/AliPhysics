@@ -8,6 +8,9 @@ upload=0
 jobs=2
 events=1
 aliroot="v5-04-Rev-20"
+aliroot="v5-08-03a-5"
+aliroot="v5-08-00-1"
+AliPhysics="rel,normal,last"
 root=""
 geant=""
 minmerge=30
@@ -346,6 +349,7 @@ push()
     local bin=$1 
     local data=$2 
     local out=$3
+    local epos=$4
     local tmpdir=`mktemp -d` 
 
     rm cp.log
@@ -356,9 +360,9 @@ push()
 	sed -e "s|@out@|${out}|"		\
 	    -e "s|@data@|${data}|"		\
 	    -e "s|@bin@|${bin}|"		\
-	    -e "s|@aliroot@|${aliroot}|"	\
-	    -e "s|@root@|${root}|"		\
-	    -e "s|@geant@|${geant}|"		\
+	    -e "s|@aliphysics@|${AliPhysics}|"	\
+	    -e "s|@root@|${ROOT}|"		\
+	    -e "s|@geant@|${GEANT3}|"		\
 	    < ${i}.in > ${tmpdir}/${i}
 	log_end "" $? 
     done
@@ -393,48 +397,107 @@ push()
 	AODConfig.C		\
 	${tmpdir}/Run.jdl	\
 	${tmpdir}/Merge.jdl	\
-	${tmpdir}/Final.jdl	\
-	fmd_corrections.root"
-    
+	${tmpdir}/Final.jdl"
+    if test $epos -gt 0 ; then
+	files="$files $HOME/foo/EPOSLHC.tar.gz"
+    fi 
     for i in $files ; do 
 	copy $i ${data}
     done 
 }
 
+# --- Make list of availabl packages ---------------------------------
+getAvailable()
+{
+    wget -q http://alimonitor.cern.ch/packages/ -O - | \
+	sed -n -e '/<tr/,/<\/tr>/ p' | \
+	sed -n -e "/<a.*VO_ALICE@[-a-zA-Z0-9]\+::[-a-zA-Z0-9_]\+.*/,/^[[:space:]]*\(VO_ALICE@.*\|\)$/ p" | \
+	grep VO_ALICE | \
+	sed -e 's/^[[:space:]]\+<a.*VO_ALICE@/- VO_ALICE@/' -e 's/<\/a>//' | \
+	tr '\n' ' ' | \
+	sed 's/- /\n- /g' > .list
+}
+
+# --- Get package version --------------------------------------------
+getVersion()
+{
+    local pack=$1
+    local sel=$2 
+    log_msg "" "Checking for version of $pack ($sel)"
+
+    if test ! -f .list ; then 
+	getAvailable
+    fi
+    filt1=p
+    case $sel in
+	an*)  filt1='s/vAN-\([^[:space:]]\+\)/vAN-\1/p' ;;
+	rel*) filt1='s/v\([0-9]-[0-9]\{2\}-\)\(Rev\|[0-9]\{2\}[a-z]\?\)\([-_]TEST[a-zA-Z]*\|\)\([-0-9]*\)$/v\1\2\3\4/p' ;;
+	all*) ;;
+    esac
+    filt2=p
+    case $sel in
+	*,normal*) filt2='/[^[:space:]]\+[-_]TEST[^[:space:]]*/d;p' ;;
+	*,test*)   filt2='s/\([^[:space:]]\+[-_]TEST[^[:space:]]*\)/\1/p';;
+    esac
+    filt3=
+    filt4=cat
+    case x$sel in
+	x*list*|x*help*) filt3=cat ;;
+	x*,last*)   filt3="tail -n 1" ;;
+	x*v*)       v=`echo $sel | sed 's/.*\(v[-a-zA-Z0-9_]\+\).*/\1/'`
+		    filt3="grep $v"
+		    filt4="tail -n 1"
+		    ;;	
+    esac
+    if test "X$filt3" = "X" ; then
+	log_end "" 1
+	log_err "Get version of $pack: bad query $sel"
+	exit 1
+    fi 
+    v=`cat .list | sed -n -e "s/^- VO_ALICE@${pack}::\([^[:space:]]\+\)[[:space:]]\+.*/\1/p" | sed -n $filt1 | sed -n $filt2 | $filt3 | $filt4`
+    log_end "" $? " ($v)"
+    eval `echo $pack=$v`
+}
+# --- Get package depdendencies --------------------------------------
+getDependencies()
+{
+    local pack=$1
+    local vers=$2
+    local dd=`cat .list | sed -n -e "s/^- VO_ALICE@${pack}::${vers}[[:space:]]\+//p"| tr ',' ' '`
+    local d=$dd
+    for i in $d ; do
+	local p=`echo $i | sed -e 's/.*@//' -e 's/::.*//'`
+	local v=`echo $i | sed -e 's/.*:://'`
+	getDependencies $p $v
+	local ep=`echo ${p} | tr '-' '_'`
+	local ed=`echo ${ep}_d`
+	eval pd=\$${ed}
+	for j in $pd ; do
+	    if ! grep -q "$j"<<<${dd} ; then
+		dd="$dd $j"
+	    fi
+	done 
+	# echo "$p version $v $pd" 
+	# dd="$dd $pd"
+    done
+    local escp=`echo ${pack} |tr '-' '_'`
+    # echo "Escaped: $escp - $dd"
+    eval ${escp}_d=\"$dd\"
+}
+
+
 # --- Get package versions -------------------------------------------
 getVersions()
 {
-    local ali=$1
-    local roo=$2
-    local gean=$3
-
-    log_msg "" "Checking software packages"
-    if test "x$ali" = "x" ; then 
-	log_end "" 1
-	log_err "Check versions" "No AliROOT Release specified"
-	exit 1
-    fi
-    if test "x$roo" != "x" && test "x$gean" = "x" ; then 
-	log_msg "" "\e[33mAliROOT=$ali ROOT=$roo GEANT=$gean"
-	log_end "" 0
-	return
-    fi
-	
-    l=`wget -q http://alimonitor.cern.ch/packages/ -O - | \
-	sed -n -e '/<tr/,/<\/tr>/ p' | \
-	sed -n "/<a.*VO_ALICE@AliRoot::${aliroot}/,/VO_ALICE@ROOT::/ p" | \
-	sed -n -e 's/.*VO_ALICE@\(GEAN\|ROO\)T3*::\(v[-0-9a-zA-Z]*\).*/\L\1=\2/gp'|\
-	tr '\n' ' '` 
-    eval $l
-    if test "X$roo" = "X" || test "X$gean" = "X" ; then 
-	log_end "" 1 
-	log_err "Check versions", "Failed to extract ROOT/GEANT3 versions"
-	exit 1
-    fi
-    root=$roo
-    geant=$gean
-    log_msg "" "\e[33mAliROOT=$ali ROOT=$root GEANT=$geant"
-    log_end "" 0
+    getVersion AliPhysics "$1"
+    getDependencies AliPhysics $AliPhysics
+    echo "Version of AliPhysics: $AliPhysics"
+    echo "Dependencies"
+    for i in $AliPhysics_d ; do
+	local p=`echo $i | sed -e 's/.*@//' -e 's/::.*//'`
+	local v=`echo $i | sed -e 's/.*:://'`
+	printf "  %30s: %s\n" $p $v
+    done 
 }
 
 # --- Create an arcive for upload ------------------------------------
@@ -462,8 +525,7 @@ archive()
 	simrun.sh	\
 	Simulate.C	\
 	Tag.C		\
-	merge.sh	\
-	fmd_corrections.root"
+	merge.sh"
 
     for i in $files ; do 
 	cp $i ${name}/$i 
@@ -508,15 +570,28 @@ while test $# -gt 0 ; do
 	*) log_err "Unknown option" "$1" ;  exit 1  ;;
     esac
     shift 
-done 
+done
+
 abin=$adir
 
+opt=0
+extra=""
+if test $# -gt 0 ; then 
+    opt="$1"
+    shift 
+fi
+epos=0
+if [[ $opt =~ "process:epos-lhc" ]] ; then
+    echo "We have EPOS-LHC"
+    extra=",\"LF:${adir}/EPOSLHC.tar.gz\""
+    epos=1
+fi 
 
 
 # --- May upload only ------------------------------------------------
 if test $upload -gt 0 ; then 
-    getVersions "$aliroot" "$root" "$geant"
-    push ${abin} ${adir} ${aout}
+    getVersions "$AliPhysics"
+    push ${abin} ${adir} ${aout} ${epos}
     if test $stage -lt 0 ; then 
 	exit 0
     fi 
@@ -566,18 +641,16 @@ if test $stage -le 0 ; then
 	alien_rmdir ${aout}/${id}/${run} > /dev/null 2>&1 
 	ret=$?
     fi 
-    log_end "" $ret
+    log_end "" $ret " (ignore errors)"
 
-    log_msg "" "Submitting \e[33mRun.jdl\e[0m for \e[34m$id run\e[0m (\e[34m$jobs\e[0m jobs w/\e[34m$events)"
+    log_msg "" "Submitting \e[33mRun.jdl\e[0m for \e[34m$id $run\e[0m (\e[34m$jobs\e[0m jobs w/\e[34m$events\e[0m) additional options \e[34m$opt\e[0m and extras \e[34m$extra\e[0m\n"
     if test $noact -lt 1 ; then 
-	# echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} $@"
-	if test $# -gt 0 ; then 
-	    opt=$1 
-	else 
-	    opt=0
-	fi
-	alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} "$opt"
+	alien_submit alien:${adir}/Run.jdl \
+		     ${run} ${jobs} ${events} ${id} "$opt" "$extra"
+	
 	ret=$?
+    else
+	echo "alien_submit alien:${adir}/Run.jdl ${run} ${jobs} ${events} ${id} \"$opt\" \"$extra\""
     fi 
     log_end "" $ret
     exit $ret

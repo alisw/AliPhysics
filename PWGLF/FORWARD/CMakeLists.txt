@@ -98,6 +98,8 @@ set(SRCS_analysis2
   analysis2/AliForwardMultiplicityBase.cxx
   analysis2/AliForwardMultiplicityTask.cxx
   analysis2/AliForwardQATask.cxx
+  analysis2/AliBaseMultTask.cxx
+  analysis2/AliForwardTriggerBiasCorrection.cxx
   analysis2/AliForwardCreateResponseMatrices.cxx
   analysis2/AliForwardMultiplicityDistribution.cxx
   analysis2/AliForwardMultDists.cxx
@@ -269,6 +271,9 @@ install ( FILES analysis2/AddTaskdNdeta.C
                 analysis2/AddTaskForwardMultDists.C
                 analysis2/AddTaskForwardQA.C
 		analysis2/AddTaskMCParticleFilter.C
+		analysis2/AddTaskMultDistributions.C
+		analysis2/AddTaskCreateRespMatr.C
+		analysis2/AddTaskTriggerCorrection.C 
 		analysis2/DrawdNdeta.C
 		analysis2/DrawdNdetaSummary.C
 		analysis2/DrawMCCorrSummary.C

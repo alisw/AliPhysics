@@ -1337,88 +1337,108 @@ void AliJHistos::CreateXtHistos() {
 }
 
 //______________________________________________________________________________
-//void AliJHistos::ReadInclusiveHistos(TFile *inFile){
 void AliJHistos::ReadInclusiveHistos(const char *inclusFileName){
-	// read inclusive histos
-	fHMG->cd();
-
-	TPMERegexp sep("::");
-	int ncol = sep.Split( inclusFileName );
-    TString filename = sep[0];
-
-	if (TString(inclusFileName).BeginsWith("alien:"))  TGrid::Connect("alien:");
-	TFile *inclusFile = TFile::Open(filename);
-    TDirectory * dir =  (TDirectory*) inclusFile;
-    if( ncol > 1 ) dir = (TDirectory*)( inclusFile->Get(sep[1]));
-    if( !dir ) {
-		cout << " ReadInclusiveHistos wrong file name or dirname !!!!" << endl;
-        return;
-	}
-
-     cout<<inclusFileName<<"\t"<<filename<<"\t";
-     if( ncol > 1 ) cout<<sep[1];
-	 cout<<endl;
-	 dir->Print();
-
-	 //dir->cd();    // Not needed in new implementation of AliJHistManager
+  // read inclusive histos
+  fHMG->cd();
   
-   fHmgInclusive = new AliJHistManager("hst",sep[1]);
-   fHmgInclusive->LoadConfig();
-
-	 fhIetaTriggFromFile = fHmgInclusive->GetTH1D("hIetaTrigg");
-	 fhIetaTriggFromFile.Print();
-	 fhIetaTriggFromFile[0][0]->Print();
-
-	 fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg"); // TODO
-	 fhIphiTriggFromFile.Print();
-	 fhIetaAssocFromFile = fHmgInclusive->GetTH1D("hIetaAssoc");
-	 fhIetaAssocFromFile.Print();
-	 fhIphiAssocFromFile = fHmgInclusive->GetTH1D("fhIphiAssoc");
-	 fhIphiAssocFromFile.Print();
-
-	 int numCent = fCard->GetNoOfBins(kCentrType);
-	 int numPtt  = fCard->GetNoOfBins(kTriggType);
-	 int numPta  = fCard->GetNoOfBins(kAssocType);
-	 int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
-	 int numZvtx = fCard->GetNoOfBins(kZVertType);
-
-	 //------------ R e a d   mixed  D a t a ------------    
-	 const int zFirstBin = 0 ;
-	 const int etaGapFirstBin = 0 ;
-	 AliJTH1D hDEtaNearTmp = fHmgInclusive->GetTH1D("hDEtaNear");
-	 for (int hic = 0;hic < numCent; hic++) {
-		 for (int hit = 0; hit < numPtt;hit++){
-			 for (int hia = 0; hia < numPta; hia++){
-				 fhDEtaNearMixFromFile[hic][hit][hia]= hDEtaNearTmp[hic][zFirstBin][etaGapFirstBin][hit][hia]; 
-				 for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices 
-					 for (int hiz = 0; hiz < numZvtx; hiz++) {
-						 if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
-						 TH1D *hid = hDEtaNearTmp[hic][hiz][iEtaGap][hit][hia];
-							 fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
-					 }
-				 }
-				 //normalize to traingle
-				 double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
-				 double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
-				 int rebin = 4;
-				 if(counts<5000) rebin=8;
-				 if(counts<3000) rebin=10;
-				 if(counts<1000) rebin=16;
-				 fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
-				 if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
-				 //if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
-				 //cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl; 
-
-			 }   
-		 }   
-	 }   
-
-
-	 //for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
-	 //   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
-	 //      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
-	 //         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
-	 //      }
-	 //   }
-	 //}
+  TPMERegexp sep("::");
+  int ncol = sep.Split( inclusFileName );
+  TString filename = sep[0];
+  
+  if (TString(inclusFileName).BeginsWith("alien:"))  TGrid::Connect("alien:");
+  TFile *inclusFile = TFile::Open(filename);
+  TDirectory * dir =  (TDirectory*) inclusFile;
+  if( ncol > 1 ) dir = (TDirectory*)( inclusFile->Get(sep[1]));
+  if( !dir ) {
+    cout << " ReadInclusiveHistos wrong file name or dirname !!!!" << endl;
+    return;
+  }
+  
+  cout<<inclusFileName<<"\t"<<filename<<"\t";
+  if( ncol > 1 ) cout<<sep[1];
+  cout<<endl;
+  dir->Print();
+  
+  //dir->cd();    // Not needed in new implementation of AliJHistManager
+  
+  fHmgInclusive = new AliJHistManager("hst",sep[1]);
+  fHmgInclusive->LoadConfig();
+  
+  fhIetaTriggFromFile = fHmgInclusive->GetTH1D("hIetaTrigg");
+  fhIetaTriggFromFile.Print();
+  fhIetaTriggFromFile[0][0]->Print();
+  
+  fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg"); // TODO
+  fhIphiTriggFromFile.Print();
+  fhIetaAssocFromFile = fHmgInclusive->GetTH1D("hIetaAssoc");
+  fhIetaAssocFromFile.Print();
+  fhIphiAssocFromFile = fHmgInclusive->GetTH1D("fhIphiAssoc");
+  fhIphiAssocFromFile.Print();
+  
+  int numCent = fCard->GetNoOfBins(kCentrType);
+  int numPtt  = fCard->GetNoOfBins(kTriggType);
+  int numPta  = fCard->GetNoOfBins(kAssocType);
+  int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
+  int numZvtx = fCard->GetNoOfBins(kZVertType);
+  int numXlong = fCard->GetNoOfBins(kXeType);
+  
+  //------------ R e a d   mixed  D a t a ------------
+  const int zFirstBin = 0 ;
+  const int etaGapFirstBin = 0 ;
+  AliJTH1D hDEtaNearTmp = fHmgInclusive->GetTH1D("hDEtaNear");
+  AliJTH1D hDEta3DNearTmp = fHmgInclusive->GetTH1D("hDEtaNearXEbin");
+  for (int hic = 0;hic < numCent; hic++) {
+    for (int hit = 0; hit < numPtt;hit++){
+      for (int hia = 0; hia < numPta; hia++){
+        fhDEtaNearMixFromFile[hic][hit][hia]= hDEtaNearTmp[hic][zFirstBin][etaGapFirstBin][hit][hia];
+        for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices
+          for (int hiz = 0; hiz < numZvtx; hiz++) {
+            if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
+            TH1D *hid = hDEtaNearTmp[hic][hiz][iEtaGap][hit][hia];
+            fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
+          }
+        }
+        //normalize to triangle
+        double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
+        double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
+        int rebin = 4;
+        if(counts<5000) rebin=8;
+        if(counts<3000) rebin=10;
+        if(counts<1000) rebin=16;
+        fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
+        if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
+        //if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
+        //cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl;
+        
+      }
+      for(int iXlong = 0; iXlong < numXlong; iXlong++){
+        fhDEta3DNearMixFromFile[hic][hit][iXlong] = hDEta3DNearTmp[hic][zFirstBin][etaGapFirstBin][hit][iXlong];
+        for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices
+          for (int hiz = 0; hiz < numZvtx; hiz++) {
+            if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
+            TH1D *hid = hDEta3DNearTmp[hic][hiz][iEtaGap][hit][iXlong];
+            fhDEta3DNearMixFromFile[hic][hit][iXlong]->Add(hid);
+          }
+        }
+        //normalize to triangle
+        double counts  = fhDEta3DNearMixFromFile[hic][hit][iXlong]->Integral();
+        double bw      = fhDEta3DNearMixFromFile[hic][hit][iXlong]->GetBinWidth(1);
+        int rebin = 4;
+        if(counts<5000) rebin=8;
+        if(counts<3000) rebin=10;
+        if(counts<1000) rebin=16;
+        fhDEta3DNearMixFromFile[hic][hit][iXlong]->Rebin(rebin);
+        if(counts>0)  fhDEta3DNearMixFromFile[hic][hit][iXlong]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
+      }
+    }
+  }
+  
+  
+  //for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
+  //   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
+  //      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
+  //         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
+  //      }
+  //   }
+  //}
 }

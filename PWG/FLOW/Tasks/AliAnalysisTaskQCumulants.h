@@ -43,6 +43,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};  
   void SetFillMultipleControlHistograms(Bool_t const fmch) {this->fFillMultipleControlHistograms = fmch;};
   Bool_t GetFillMultipleControlHistograms() const {return this->fFillMultipleControlHistograms;}; 
+  void SetMaxCommonResultsHistogram(Int_t const mcrh) {this->fMaxCommonResultsHistogram = mcrh;};
+  Int_t GetMaxCommonResultsHistogram() const {return this->fMaxCommonResultsHistogram;};
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
@@ -141,6 +143,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   // Common:
   Bool_t fBookOnlyBasicCCH;              // book only basis common control histrograms (by default book them all) 
   Bool_t fFillMultipleControlHistograms; // fill separately control histos for events with >= 2, 4, 6 and 8 particles
+  Int_t fMaxCommonResultsHistogram;      // can be [2468], e.g. if set to 2, AliFlowCommonHistResults[468]thOrderQC won't be booked
   Int_t fHarmonic;                       // harmonic  
   Bool_t fApplyCorrectionForNUA;         // apply correction for non-uniform acceptance 
   Bool_t fApplyCorrectionForNUAVsM;      // apply correction for non-uniform acceptance versus M    

@@ -119,11 +119,15 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
 
   AliEMCALRecParam * params = clusterize->GetRecParam();
 
+  //
   // Position and SS weight parameter
+  //
   params->SetW0(4.5);
 
+  //
   // Time cuts
-  
+  // Be careful using time cuts, best thing is to leave them open.
+  //
   if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
   else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
   
@@ -158,11 +162,15 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     }
   }
 
+  //
   // Energy cuts
+  //
   params->SetClusteringThreshold(minEseed/1.e3);
   params->SetMinECut            (minEcell/1.e3); 
 
+  //
   // Clusterizer type
+  //
   if(name.Contains("V2")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
   if(name.Contains("V1")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   if(name.Contains("NxN"))
@@ -235,13 +243,15 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   if(bMC)
   {
     printf("Recalculate MC labels\n");
-    clusterize->SwitchOnUseClusterMCLabelForCell(0) ; // Take the cell MC label as basis (only possible in recent productions)
+    clusterize->SwitchOnUseClusterMCLabelForCell(0) ; // Take the cell MC label as basis (only possible in recent productions, from 2012?)
     clusterize->SwitchOnRemapMCLabelForAODs()  ;      // Only in case 0, and for productions where the re-mapping of cell label in AODs was not done (productions before March 2013?)
 
     //clusterize->SwitchOnUseClusterMCLabelForCell(1) ; // Assign to each cell the same MC label as the original cluster to which it belonged
     //clusterize->SwitchOnUseClusterMCLabelForCell(2) ; // Find the original clusters that have the same cells as the new cluster,
                                                         // assign the labels of the original clusters to the new cluster.
                                                         // only interesting if output is V1
+    
+    // clusterize->SwitchOnUseMCEdepFracLabelForCell(); // For Run2 MC, switch all the above off
   
   }
   

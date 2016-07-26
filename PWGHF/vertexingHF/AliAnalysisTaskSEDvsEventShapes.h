@@ -12,6 +12,8 @@
 // Authors: Renu Bala, Manoj Bhanudas Jadhav
 //*************************************************************************
 
+//Offline Class
+
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TH1F.h>
@@ -104,7 +106,6 @@ public:
     }
     
     void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
-    Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
     
     // Flag to use the zvtx correction from ( 0= none, 1= usual d2h, 2=AliESDUtils for VZERO multiplicity)
     void SetUseVZEROParameterizedVertexCorr(Int_t flag) { fDoVZER0ParamVertexCorr=flag; }
@@ -122,6 +123,11 @@ public:
     void SetMCPrimariesEstimator(Int_t value){ fMCPrimariesEstimator=value; }
     Int_t GetMCPrimariesEstimator(){ return fMCPrimariesEstimator; }
     
+    void SetUseQuarkLevel(Bool_t opt){fUseQuarkTag=opt;}
+    void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
+    void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
+    Bool_t CheckGenAcc(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau);
+    
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void Init();
@@ -137,42 +143,44 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
-    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Int_t countMult,Double_t nchWeight);
+    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity);
+    void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity);
     
     TList  *fOutput; //! list send on output slot 1
-    TList  *fListCuts; //list of cuts
+    TList  *fListCuts; //! list of cuts
     TList  *fOutputCounters; //! list send on output slot 3
-    TList  *fListProfiles; //list of profile histos for z-vtx correction
+    TList  *fListProfiles; //! list of profile histos for z-vtx correction
+    TList  *fOutputEffCorr; //! list send on output slot 5
     
-    TH1F *fHistNEvents;     //!hist. for No. of events
+    TH1F *fHistNEvents;     //! hist. for No. of events
     
-    TH2F* fHistNtrEta16vsNtrEta1EvSel; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
-    TH2F* fHistNtrEta05vsNtrEta1EvSel; //!hist. for Ntracklets in eta<0.5 vs. eta<1.
-    TH2F* fHistNtrEta03vsNtrEta1EvSel; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
-    TH2F* fHistNtrEtaV0AvsNtrEta1EvSel; //!hist. for Ntracklets in eta-V0A vs. eta<1.
-    TH2F* fHistNtrEtaV0MvsNtrEta1EvSel; //!hist. for Ntracklets in eta-V0M vs. eta<1.
-    TH2F* fHistNtrEtaV0AvsV0AEqEvSel;   //!hist. for V0A raw mult vs V0A equalized multiplicity
-    TH2F* fHistNtrEtaV0MvsV0MEqEvSel;   //!hist. for V0M raw mult vs V0M equalized multiplicity
-    TH2F* fHistNtrCorrEta1vsNtrRawEta1EvSel; //!hist. for Ntracklets in eta<1 with and w/o corrections
-    TH2F* fHistMultCorrvsMultRawEvSel;       //!hist. for multiplicity with and w/o corrections
-    TH2F* fHistNtrEta16vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate
-    TH2F* fHistNtrEta05vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate
-    TH2F* fHistNtrEta03vsNtrEta1EvWithCand; //!hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate
-    TH2F* fHistNtrEtaV0AvsNtrEta1EvWithCand; //!hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate
-    TH2F* fHistNtrEtaV0MvsNtrEta1EvWithCand; //!hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate
-    TH2F* fHistNtrEtaV0AvsV0AEqEvWithCand;     //!hist. for V0A raw mult vs V0A equalized multiplicity for events with a candidate
-    TH2F* fHistNtrEtaV0MvsV0MEqEvWithCand;     //!hist. for V0M raw mult vs V0M equalized multiplicity for events with a candidate
-    TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithCand; //!hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate
-    TH2F* fHistMultCorrvsMultRawEvWithCand;       //!hist. for multiplicity with and w/o corrections for events with a candidate
-    TH2F* fHistNtrEta16vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate in D mass peak
-    TH2F* fHistNtrEta05vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate in D mass peak
-    TH2F* fHistNtrEta03vsNtrEta1EvWithD; //!hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate in D mass peak
-    TH2F* fHistNtrEtaV0AvsNtrEta1EvWithD; //!hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate in D mass peak
-    TH2F* fHistNtrEtaV0MvsNtrEta1EvWithD; //!hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate in D mass peak
-    TH2F* fHistNtrEtaV0AvsV0AEqEvWithD;   //!hist. for V0A raw mult vs V0A equalized multiplicity with a candidate in D mass peak
-    TH2F* fHistNtrEtaV0MvsV0MEqEvWithD;   //!hist. for V0M raw mult vs V0M equalized multiplicity with a candidate in D mass peak
-    TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithD; //!hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate in D mass peak
-    TH2F* fHistMultCorrvsMultRawEvWithD;       //!hist. for multiplicity with and w/o corrections for events with a candidate in D mass peak
+    TH2F* fHistNtrEta16vsNtrEta1EvSel; //! hist. for Ntracklets in eta<1.6 vs. eta<1.
+    TH2F* fHistNtrEta05vsNtrEta1EvSel; //! hist. for Ntracklets in eta<0.5 vs. eta<1.
+    TH2F* fHistNtrEta03vsNtrEta1EvSel; //! hist. for Ntracklets in eta<0.3 vs. eta<1.
+    TH2F* fHistNtrEtaV0AvsNtrEta1EvSel; //! hist. for Ntracklets in eta-V0A vs. eta<1.
+    TH2F* fHistNtrEtaV0MvsNtrEta1EvSel; //! hist. for Ntracklets in eta-V0M vs. eta<1.
+    TH2F* fHistNtrEtaV0AvsV0AEqEvSel;   //! hist. for V0A raw mult vs V0A equalized multiplicity
+    TH2F* fHistNtrEtaV0MvsV0MEqEvSel;   //! hist. for V0M raw mult vs V0M equalized multiplicity
+    TH2F* fHistNtrCorrEta1vsNtrRawEta1EvSel; //! hist. for Ntracklets in eta<1 with and w/o corrections
+    TH2F* fHistMultCorrvsMultRawEvSel;       //! hist. for multiplicity with and w/o corrections
+    TH2F* fHistNtrEta16vsNtrEta1EvWithCand; //! hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate
+    TH2F* fHistNtrEta05vsNtrEta1EvWithCand; //! hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate
+    TH2F* fHistNtrEta03vsNtrEta1EvWithCand; //! hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate
+    TH2F* fHistNtrEtaV0AvsNtrEta1EvWithCand; //! hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate
+    TH2F* fHistNtrEtaV0MvsNtrEta1EvWithCand; //! hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate
+    TH2F* fHistNtrEtaV0AvsV0AEqEvWithCand;     //! hist. for V0A raw mult vs V0A equalized multiplicity for events with a candidate
+    TH2F* fHistNtrEtaV0MvsV0MEqEvWithCand;     //! hist. for V0M raw mult vs V0M equalized multiplicity for events with a candidate
+    TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithCand; //! hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate
+    TH2F* fHistMultCorrvsMultRawEvWithCand;       //! hist. for multiplicity with and w/o corrections for events with a candidate
+    TH2F* fHistNtrEta16vsNtrEta1EvWithD; //! hist. for Ntracklets in eta<1.6 vs. eta<1. for events with a candidate in D mass peak
+    TH2F* fHistNtrEta05vsNtrEta1EvWithD; //! hist. for Ntracklets in eta<0.5 vs. eta<1. for events with a candidate in D mass peak
+    TH2F* fHistNtrEta03vsNtrEta1EvWithD; //! hist. for Ntracklets in eta<0.3 vs. eta<1. for events with a candidate in D mass peak
+    TH2F* fHistNtrEtaV0AvsNtrEta1EvWithD; //! hist. for Ntracklets in eta-V0A vs. eta<1. for events with a candidate in D mass peak
+    TH2F* fHistNtrEtaV0MvsNtrEta1EvWithD; //! hist. for Ntracklets in eta-V0M vs. eta<1. for events with a candidate in D mass peak
+    TH2F* fHistNtrEtaV0AvsV0AEqEvWithD;   //! hist. for V0A raw mult vs V0A equalized multiplicity with a candidate in D mass peak
+    TH2F* fHistNtrEtaV0MvsV0MEqEvWithD;   //! hist. for V0M raw mult vs V0M equalized multiplicity with a candidate in D mass peak
+    TH2F* fHistNtrCorrEta1vsNtrRawEta1EvWithD; //! hist. for Ntracklets in eta<1 with and w/o corrections for events with a candidate in D mass peak
+    TH2F* fHistMultCorrvsMultRawEvWithD;       //! hist. for multiplicity with and w/o corrections for events with a candidate in D mass peak
     
     TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
     TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
@@ -185,7 +193,7 @@ private:
     TH2F* fHistNtrCorrVsNchMCPrimary; //!  hist of ntracklets vs Nch (Primary)
     TH2F* fHistNtrVsNchMCPhysicalPrimary; //!  hist of ntracklets vs Nch (Physical Primary)
     TH2F* fHistNtrCorrVsNchMCPhysicalPrimary; //!  hist of ntracklets vs Nch (Physical Primary)
-    TH1F* fHistGenPrimaryParticlesInelGt0; //!hist. of geenrated multiplcity
+    TH1F* fHistGenPrimaryParticlesInelGt0; //! hist. of geenrated multiplcity
     TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary)
     
     TH1F* fHistNtrUnCorrPSSel; //! hist. of ntracklets for physics selection only selected events
@@ -202,10 +210,16 @@ private:
     TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
     TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
-    TH3F *fPtVsMassVsMultMC;  //! hist. of Pt vs Mult vs. mass (MC true candidates before reconstruction)
+    TH3F* fPtVsMassVsMultMC;  //! hist. of Pt vs Mult vs. mass (MC true candidates before reconstruction)
     
     THnSparseD *fSparseSpherocity;//! THnSparse histograms for Spherocity studies
     THnSparseD *fSparseSpherocitywithNoPid;//! THnSparse histograms for Spherocity studies
+    
+    THnSparseD *fMCAccGenPrompt; //! histo for StepMCGenAcc for D meson prompt
+    THnSparseD *fMCAccGenFeeddown; //! histo for StepMCGenAcc for D meson feeddown
+    THnSparseD *fMCRecoPrompt; //! histo for StepMCReco for D meson feeddown
+    THnSparseD *fMCRecoFeeddown; //! histo for StepMCReco for D meson feeddown
+    THnSparseD *fMCRecoBothPromptFD; //! histo for StepMCReco for D meson Both Prompt Feeddown
     
     THnSparseF *fHistMassPtImpPar[5];//! histograms for impact paramter studies
     
@@ -214,11 +228,10 @@ private:
     Int_t   fNMassBins;    // nbins for invariant mass histos
     
     AliRDHFCuts *fRDCutsAnalysis; // Cuts for Analysis
-    AliNormalizationCounter *fCounterC;           //!Counter for normalization, corrected multiplicity
-    AliNormalizationCounter *fCounterU;           //!Counter for normalization, uncorrected multiplicity
+    AliNormalizationCounter *fCounterC;           //! Counter for normalization, corrected multiplicity
+    AliNormalizationCounter *fCounterU;           //! Counter for normalization, uncorrected multiplicity
     
-    AliNormalizationCounter *fCounterCandidates;  //!Counter for normalization, corrected multiplicity for candidates
-    
+    AliNormalizationCounter *fCounterCandidates;  //! Counter for normalization, corrected multiplicity for candidates
     
     Bool_t fDoImpPar;  //swicth for D impact parameter THnSparse
     Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
@@ -246,6 +259,11 @@ private:
     Int_t fDoVZER0ParamVertexCorr; // Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
     
     Int_t fFillSoSparseChecks; // Flag to fill THnSparse with MultUncorr and NoPid cases ( 0 = only Mult, 1 = Mult and multUncorr, 2 = NoPid and 3 is All)
+    
+    Bool_t fUseQuarkTag; /// flag for quark/hadron level identification of prompt and feeddown
+    Double_t fEtaAccCut; /// eta limits for acceptance step
+    Double_t fPtAccCut; /// pt limits for acceptance step
+    
     Double_t fetaMin;
     Double_t fetaMax;
     Double_t fptMin;
@@ -255,7 +273,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,1); // event shape task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,2); // D vs. mult task
 };
 
 #endif

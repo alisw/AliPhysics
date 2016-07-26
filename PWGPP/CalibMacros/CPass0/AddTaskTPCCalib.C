@@ -176,7 +176,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   // setup calibration component
   //
 
-  Bool_t useQmax = (grpData->GetBeamType()).Contains("Pb-Pb");
+  Bool_t useQmax = (grpData->GetBeamType()).Contains("Pb-Pb") || (grpData->GetBeamType()).Contains("A-A");
 
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
   AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain(name,"calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 10*60);
@@ -419,15 +419,43 @@ int ConfigOCDB(){
   // 0 - Low Flux (pp), 1- High Flux (Pb-Pb)
   Int_t fluxType=0;
   if (beamType.Contains("p-p")) {fluxType=0;}
-  if (beamType.Contains("A-A")) {fluxType=1;}
+  if (beamType.Contains("Pb-Pb") || beamType.Contains("A-A")) {fluxType=1;}
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
   ::Info("AddTaskTPCCalib", "AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   if (print_info) tpcRecoParam->Print();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
-  tpcRecoParam->SetUseGainCorrectionTime(0);
-  tpcRecoParam->SetUseRPHICorrection(kFALSE); 
-  tpcRecoParam->SetUseTOFCorrection(kFALSE);
+
+  // ===| set up gain calibration type |========================================
+  //
+  // default is Full Calibration in CPass0
+  // will be overwritte by recCPass0.sh
+  // NOTE: This must be consistent to the settings in mergeMakeOCDB.byComponent.perStage.sh (makeOCDB.C)
+  //
+  AliTPCPreprocessorOffline::EGainCalibType tpcGainCalibType=AliTPCPreprocessorOffline::kFullGainCalib;
+
+  // --- check for overwrites from environment variable
+  //
+  const TString sGainTypeFromEnv(gSystem->Getenv("TPC_CPass0_GainCalibType"));
+  if (!sGainTypeFromEnv.IsNull()) {
+    const AliTPCPreprocessorOffline::EGainCalibType tpcGainCalibTypeEnv=AliTPCPreprocessorOffline::GetGainCalibrationTypeFromString(sGainTypeFromEnv);
+    if (tpcGainCalibTypeEnv==AliTPCPreprocessorOffline::kNGainCalibTypes) {
+      ::Fatal("AddTaskTPCCalib","Could not set up gain calibration type from environment variable TPC_CPass0_GainCalibType: %s",sGainTypeFromEnv.Data());
+    }
+
+    ::Info("AddTaskTPCCalib","Setting gain calibration type from environment variable TPC_CPass0_GainCalibType: %d", tpcGainCalibTypeEnv);
+    tpcGainCalibType=tpcGainCalibTypeEnv;
+  }
+
+  if (tpcGainCalibType==AliTPCPreprocessorOffline::kFullGainCalib) {
+    tpcRecoParam->SetUseGainCorrectionTime(0);
+    tpcRecoParam->SetUseRPHICorrection(kFALSE);
+    tpcRecoParam->SetUseTOFCorrection(kFALSE);
+    tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
+    tpcRecoParam->SetCorrectionHVandPTMode(1);
+  }
+
+  // ===| Further specific overwrites for CPass0 |==============================
   //
   tpcRecoParam->SetUseDriftCorrectionTime(0);
   tpcRecoParam->SetUseDriftCorrectionGY(0);
@@ -439,11 +467,8 @@ int ConfigOCDB(){
   tpcRecoParam->SetUseFieldCorrection(kFALSE);
   tpcRecoParam->SetUseExBCorrection(kFALSE);
   //
-  tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
   tpcRecoParam->SetUseAlignmentTime(kFALSE);
   tpcRecoParam->SetUseComposedCorrection(kTRUE);
-  //
-  tpcRecoParam->SetCorrectionHVandPTMode(1);
   
   return(0);
 }

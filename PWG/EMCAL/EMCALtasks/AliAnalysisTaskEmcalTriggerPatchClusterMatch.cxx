@@ -380,11 +380,13 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExtractMainPatch() {
     double fMaxPatchPhiGeo = fMaxPatch->GetPhiGeo();
     double fMaxPatchEtaCM = fMaxPatch->GetEtaCM();
     double fMaxPatchEtaGeo = fMaxPatch->GetEtaGeo();
+    /*
     double fMaxPatchPhiMin = fMaxPatch->GetPhiMin();
     double fMaxPatchPhiMax = fMaxPatch->GetPhiMax();
     double fMaxPatchEtaMin = fMaxPatch->GetEtaMin();
     double fMaxPatchEtaMax = fMaxPatch->GetEtaMax();
     Int_t nTrigBit = fMaxPatch->GetTriggerBits();
+     */
 
     // positional variables
     double dEtaGeo = 1.0*TMath::Abs(leadclusEta - fMaxPatchEtaGeo);
@@ -867,8 +869,8 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
 
         // get offline/online Energy and ADC count
         double kAmplitudeOnline = fMaxPatch->GetADCAmp();
-        double kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
-        double kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
+        //double kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
+        //double kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
         double kEnergyOffline = fMaxPatch->GetPatchE();
 
         // get patch variables
@@ -928,8 +930,8 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
 
             // get offline/online Energy and ADC count
             double kAmplitudeOnline = patch->GetADCAmp();
-            double kAmplitudeOffline = patch->GetADCOfflineAmp();
-            double kEnergyOnline = patch->GetADCAmpGeVRough();
+            //double kAmplitudeOffline = patch->GetADCOfflineAmp();
+            //double kEnergyOnline = patch->GetADCAmpGeVRough();
             double kEnergyOffline = patch->GetPatchE();
 
             // get patch variables
@@ -978,7 +980,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchClusterMatch::FillHistograms() {
   } // if cluster container exist
 
   //Get VZERO amplitude
-  Float_t VZEROAmp = InputEvent()->GetVZEROData()->GetTriggerChargeA() + InputEvent()->GetVZEROData()->GetTriggerChargeC();
+  // Float_t VZEROAmp = InputEvent()->GetVZEROData()->GetTriggerChargeA() + InputEvent()->GetVZEROData()->GetTriggerChargeC();
 
   //Cells - some QA plots
   if(fCaloCells) {

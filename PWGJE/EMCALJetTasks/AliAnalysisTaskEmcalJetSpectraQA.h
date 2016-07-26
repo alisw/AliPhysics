@@ -29,7 +29,14 @@
 class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
  public:
 
-  struct AliEmcalJetInfo : public AliTLorentzVector {
+  /**
+   * \class AliEmcalJetInfo
+   * \brief Class that encapsulates jets
+   *
+   * Implementation of a class that encapsulates jets.
+   */
+  class AliEmcalJetInfo : public AliTLorentzVector {
+  public:
     AliEmcalJetInfo();
     AliEmcalJetInfo(const AliEmcalJet& jet);
 
@@ -46,7 +53,8 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
 
   enum EHistoType_t {
     kTH2,
-    kTHnSparse
+    kTHnSparse,
+    kTTree
   };
 
   AliAnalysisTaskEmcalJetSpectraQA();
@@ -57,25 +65,31 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
 
   void                        SetHistoType(EHistoType_t t)        { fHistoType             = t; }
   void                        SetJetEPaxis(Bool_t b)              { fJetEPaxis             = b; }
+  void                        SetAreaAxis(Bool_t b)               { fAreaAxis              = b; }
 
  protected:
-  void                        AllocateTHX(AliJetContainer* jets);
-  void                        AllocateTHnSparse(AliJetContainer* jets);
+  virtual void                AllocateTHX(const AliJetContainer* jets);
+  virtual void                AllocateTHnSparse(const AliJetContainer* jets);
+  virtual void                AllocateTTree(const AliJetContainer* jets);
+
+  virtual void                FillTHX(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets);
+  virtual void                FillTHnSparse(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets);
+  virtual void                FillTTree(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets);
 
   Bool_t                      FillHistograms();
-  void                        FillJetHisto(const AliEmcalJetInfo& jetInfo, AliJetContainer* jets);
+  void                        FillJetHisto(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets);
 
   EHistoType_t                fHistoType;                   ///< histogram type
   Bool_t                      fJetEPaxis;                   ///< whether a EP-jet axis should be included in the THnSparse
-
-  THistManager                fHistManager;                 //!< Histogram manager
+  Bool_t                      fAreaAxis;                    ///< whether the area axis should be included
+  THistManager                fHistManager;                 ///< Histogram manager
 
  private:
   AliAnalysisTaskEmcalJetSpectraQA(const AliAnalysisTaskEmcalJetSpectraQA&);            // not implemented
   AliAnalysisTaskEmcalJetSpectraQA &operator=(const AliAnalysisTaskEmcalJetSpectraQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 1)
+  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 4)
   /// \endcond
 };
 #endif

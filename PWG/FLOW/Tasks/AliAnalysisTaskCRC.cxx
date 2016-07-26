@@ -111,6 +111,8 @@ fCenBinWidth(10.),
 fDataSet(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
+fCRCZDCCalibList(NULL),
+fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -162,6 +164,11 @@ fMaxDevZN(5.)
       for(Int_t k=0; k<2; k++) {
         fEtaWeightsHist[c][b][k] = NULL;
       }
+    }
+  }
+  for(Int_t c=0; c<2; c++) {
+    for(Int_t k=0; k<2; k++) {
+      fNvsCenCut[c][k] = NULL;
     }
   }
  
@@ -235,6 +242,8 @@ fCenBinWidth(10.),
 fDataSet(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
+fCRCZDCCalibList(NULL),
+fZDCESEList(NULL),
 fCenWeightsHist(NULL),
 fQAZDCCuts(kFALSE),
 fMinMulZN(1),
@@ -275,6 +284,11 @@ fMaxDevZN(5.)
       for(Int_t k=0; k<2; k++) {
         fEtaWeightsHist[c][b][k] = NULL;
       }
+    }
+  }
+  for(Int_t c=0; c<2; c++) {
+    for(Int_t k=0; k<2; k++) {
+      fNvsCenCut[c][k] = NULL;
     }
   }
  
@@ -320,6 +334,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
  fQC->SetCalculateFlowQC(fCalculateFlow);
  fQC->SetCalculateFlowZDC(fCalculateFlow);
+ fQC->SetCalculateFlowVZ(fCalculateFlow);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);
@@ -360,9 +375,15 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
  }
  // Q Vector weights:
- if(fUseCRCRecenter || fRecenterZDC) {
+ if(fUseCRCRecenter) {
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
+  if (fRecenterZDC) {
+    if(fCRCZDCCalibList) fQC->SetCRCZDCCalibList(fCRCZDCCalibList);
+  }
+  if (fQAZDCCuts) {
+    if(fZDCESEList) fQC->SetZDCESEList(fZDCESEList);
+  }
   if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
   if(fUsePtWeights){
     for(Int_t c=0; c<10; c++) {
@@ -375,6 +396,13 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
         for(Int_t c=0; c<2; c++) {
           if(fEtaWeightsHist[h][b][c]) fQC->SetEtaWeightsHist(fEtaWeightsHist[h][b][c],h,b,c);
         }
+      }
+    }
+  }
+  if(fMinMulZN>1){
+    for(Int_t c=0; c<2; c++) {
+      for(Int_t k=0; k<2; k++) {
+        if(fNvsCenCut[c][k]) fQC->SetNvsCenCut(fNvsCenCut[c][k],c,k);
       }
     }
   }

@@ -15,9 +15,9 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const char*            nclusters                 = "EmcalClusters",
                                                                  const UInt_t           pSel                      = AliVEvent::kEMC7,
                                                                  const TString          dType                     = "ESD",
-                                                                 const Bool_t		    bHisto		              = kTRUE,
-                                                                 const Int_t	      	iOutput		              = 0,
-                                                                 const Bool_t	        bIsMC	                  = kFALSE,
+                                                                 const Bool_t		        bHisto  		              = kTRUE,
+                                                                 const Int_t	      	  iOutput	  	              = 0,
+                                                                 const Bool_t	          bIsMC  	                  = kFALSE,
                                                                  const Bool_t           bMCNormalization          = kFALSE,
                                                                  const Bool_t           bNLMCut                   = kFALSE,
                                                                  const Int_t            NLMCut                    = 0,
@@ -30,11 +30,12 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Double_t         TMdeta                    = 0.02,
                                                                  const Double_t         TMdphi                    = 0.03,
                                                                  const Bool_t           bTMClusterRejection       = kTRUE,
-                                                                 const Bool_t           bTMClusterRejectionInCone = kTRUE
+                                                                 const Bool_t           bTMClusterRejectionInCone = kTRUE,
+                                                                 const Float_t          iIsoConeRadius            = 0.4
                                                                  )
 {
 
-  printf("Preparing neutral cluster analysis\n");
+  Printf("Preparing neutral cluster analysis\n");
   /*  // #### Detect the demanded trigger with its readable name
    TString triggerName(Form("Trigger_%i", trigger));
    if (trigger == AliVEvent::kAnyINT)
@@ -117,7 +118,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     TString strTrackCuts(trackCutsAna);
     strTrackCuts.ToLower();
 
-
     TString runPeriod(period.Data());
     runPeriod.ToLower();
 
@@ -180,16 +180,18 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   else
     myContName = Form("Analysis_Neutrals");
 
+  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut));
+  
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
 
     // #### Task preferences
   task->SetOutputFormat(iOutput);
   task->SetLCAnalysis(kFALSE);
-  task->SetIsoConeRadius(0.4);
-  task->SetEtIsoThreshold(2.); // after should be replace by EtIso
-  task->SetCTMdeltaEta(0.02); // after should be replaced by TMdeta
-  task->SetCTMdeltaPhi(0.03); // after should be replaced by TMdphi
+  task->SetIsoConeRadius(iIsoConeRadius);
+  task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
+  task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
+  task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
   task->SetQA(kTRUE);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
@@ -204,12 +206,15 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
  TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
  cout<<"name des containers  "<<name.Data()<<endl;
-    AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
+ AliTrackContainer *trackCont  = task->AddTrackContainer(ntracks);
  //  AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
  // if (clusterCont) clusterCont->SetClusPtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
+//  task->GetTrackContainer(0)->SetClassName("AliAODTrack");
+//  task->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
+  
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
     // #### Add analysis task
   manager->AddTask(task);

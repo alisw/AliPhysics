@@ -71,6 +71,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   if(partCont) {
       partCont->SetName("Tracks");
       partCont->SetParticlePtCut(trackptcut);
+      partCont->SetClassName("AliAODTrack");
   }
   TString tmp(nclusters);
   AliClusterContainer* clusterCont = 0x0;

@@ -41,7 +41,6 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   void           SetTreeBranchName(TString brDet = "fJetDet.") {fBranchJDetName = brDet; }
   void           SetTreeBranchPartName(TString brPar = "fJetPart.") {fBranchJParName = brPar; }
   void           SetTreeFromFile(TString filenameM, TString treename);
-  void           SetMinEmbpT(Double_t minpt)     {fMinPtEmb = minpt;}
   void           SetUseRandomEntry(Bool_t isrdm = kTRUE)       {fRandomEntry = isrdm; }
   void           SetNBinsEmbedding(Int_t n)      { fNBins = n; }
   void           SetRejection(Float_t* rej);
@@ -73,7 +72,6 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TTree*         fTreeJet4Vect;           //!<! tree containing the jet 4-vectors (input for embed.)
   Int_t          fCurrentEntry;           ///< Current TTree entry
   TList          *fInput;                 //!<! Input histograms saved in this list
-  Double_t       fMinPtEmb;               ///< minimum reconstructed pT allowed for embedded tracks
   Bool_t         fRandomEntry;            ///< draw random number to extract the entry number in the tree
   Int_t          fNBins;                  ///< pT ranges considered for embedding
   /// factor to exclude randomly entries from the embedding
@@ -88,12 +86,14 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TH1F           *fhEtaPart;              //!<! Eta particle corresponding to embedded from tree
   TH1F           *fhPhiPart;              //!<! Phi particle corresponding to embedded from tree
   TH1F           *fhTreeEntriesUsed;      //!<! Entries of the TTree used
-  Long64_t        fNTreeEntries;           ///< Tree entry number
+  Long64_t        fNTreeEntries;          ///< Tree entry number
+  Bool_t          fOldCutOnDetPt;         ///< Apply cut on the embedded track at detector level (this was default before, not we apply the cut at particle level) 
+  
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 12) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 13) /// Jet embedding task
   /// \endcond
 };
 #endif

@@ -495,7 +495,10 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
-      if(primStack->Energy() == TMath::Abs(primStack->Pz()))  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
+          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
       //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
       //       prim->GetName(), prim->GetPdgCode());
@@ -517,11 +520,14 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
-      if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
       
       // Photon kinematics
       fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
-
+      
       photonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
 
@@ -3196,11 +3202,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     Int_t largeTimeInCellCluster = kFALSE;
     FillShowerShapeHistograms(calo,tag,maxCellFraction,largeTimeInCellCluster);
-    aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container
+    aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
     //if(largeTimeInCellCluster > 1) printf("Set n cells large time %d, pt %2.2f\n",aodph.GetFiducialArea(),aodph.Pt());
     
     aodph.SetM02(calo->GetM02());
-    //aodph.SetM20(calo->GetM20());
+    aodph.SetM20(calo->GetM20());
     aodph.SetNLM(nMaxima);
     
     Float_t time = calo->GetTOF()*1e9;
@@ -3443,13 +3449,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             if ( fFillSSHistograms )
             {
               Float_t m02 = ph->GetM02();
-              Float_t m20 = 0;//ph->GetM20();
+              Float_t m20 = ph->GetM20();
               
-              // Change when possible
-              Int_t iclus = -1;
-              AliVCluster *cluster = FindCluster(GetEMCALClusters(),ph->GetCaloLabel(0),iclus);
-              if(cluster) m20 = cluster->GetM20();
-
               Int_t convR = -1;
               if      ( prodR < 75.  ) convR = 0;
               else if ( prodR < 275. ) convR = 1;

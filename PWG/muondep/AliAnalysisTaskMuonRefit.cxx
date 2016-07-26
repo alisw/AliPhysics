@@ -84,7 +84,11 @@ fSigmaCut(-1.),
 fSigmaCutForTrigger(-1.),
 fReAlign(kFALSE),
 fOldAlignStorage(""),
+fOldAlignVersion(-1),
+fOldAlignSubVersion(-1),
 fNewAlignStorage(""),
+fNewAlignVersion(-1),
+fNewAlignSubVersion(-1),
 fOldGeoTransformer(NULL),
 fNewGeoTransformer(NULL),
 fField(""),
@@ -110,7 +114,11 @@ fSigmaCut(-1.),
 fSigmaCutForTrigger(-1.),
 fReAlign(kFALSE),
 fOldAlignStorage(""),
+fOldAlignVersion(-1),
+fOldAlignSubVersion(-1),
 fNewAlignStorage(""),
+fNewAlignVersion(-1),
+fNewAlignSubVersion(-1),
 fOldGeoTransformer(NULL),
 fNewGeoTransformer(NULL),
 fField(""),
@@ -361,11 +369,7 @@ void AliAnalysisTaskMuonRefit::NotifyRun()
   // set OCDB location
   AliCDBManager* cdbm = AliCDBManager::Instance();
   if (cdbm->IsDefaultStorageSet()) printf("MuonRefit: CDB default storage already set!\n");
-  else {
-    cdbm->SetDefaultStorage(fDefaultStorage.Data());
-    if (fOldAlignStorage != "none" && !fOldAlignStorage.IsNull())
-      cdbm->SetSpecificStorage("MUON/Align/Data",fOldAlignStorage.Data());
-  }
+  else cdbm->SetDefaultStorage(fDefaultStorage.Data());
   if (cdbm->GetRun() > -1) printf("MuonRefit: run number already set!\n");
   else cdbm->SetRun(fCurrentRunNumber);
   
@@ -402,37 +406,36 @@ void AliAnalysisTaskMuonRefit::NotifyRun()
   // load geometry for track extrapolation to vertex and mono-cathod cluster finding
   if (!AliGeomManager::GetGeometry()) {
     
+    // recover default storage full name (raw:// cannot be used to set specific storage)
+    TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
+    if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
+    else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
+    
     if (fReAlign) {
       
       // get original geometry transformer
       AliGeomManager::LoadGeometry();
       if (!AliGeomManager::GetGeometry()) return;
-      if (fOldAlignStorage != "none" && !AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return;
+      if (fOldAlignStorage != "none") {
+        cdbm->SetSpecificStorage("MUON/Align/Data", fOldAlignStorage.IsNull() ? defaultStorage.Data() : fOldAlignStorage.Data(), fOldAlignVersion, fOldAlignSubVersion);
+        if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return;
+      }
       fOldGeoTransformer = new AliMUONGeometryTransformer();
       fOldGeoTransformer->LoadGeometryData();
       
-      // load the new geometry
+      // reset geometry/alignment
       if (cdbm->GetEntryCache()->Contains("GRP/Geometry/Data")) cdbm->UnloadFromCache("GRP/Geometry/Data");
-      AliGeomManager::GetGeometry()->UnlockGeometry();
-      AliGeomManager::LoadGeometry();
-      if (!AliGeomManager::GetGeometry()) return;
       if (cdbm->GetEntryCache()->Contains("MUON/Align/Data")) cdbm->UnloadFromCache("MUON/Align/Data");
-      if (!fNewAlignStorage.IsNull()) cdbm->SetSpecificStorage("MUON/Align/Data",fNewAlignStorage.Data());
-      else {
-	// recover default storage full name (raw:// cannot be used to set specific storage)
-	TString defaultStorage(cdbm->GetDefaultStorage()->GetType());
-	if (defaultStorage == "alien") defaultStorage += Form("://folder=%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-	else defaultStorage += Form("://%s", cdbm->GetDefaultStorage()->GetBaseFolder().Data());
-	cdbm->SetSpecificStorage("MUON/Align/Data",defaultStorage.Data());
-      }
+      if (AliGeomManager::GetGeometry()) AliGeomManager::GetGeometry()->UnlockGeometry();
+      
+    }
+    
+    // load original or realigned geometry
+    AliGeomManager::LoadGeometry();
+    if (!AliGeomManager::GetGeometry()) return;
+    if (fNewAlignStorage != "none") {
+      cdbm->SetSpecificStorage("MUON/Align/Data", fNewAlignStorage.IsNull() ? defaultStorage.Data() : fNewAlignStorage.Data(), fNewAlignVersion, fNewAlignSubVersion);
       if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return;
-      
-    } else {
-      
-      AliGeomManager::LoadGeometry();
-      if (!AliGeomManager::GetGeometry()) return;
-      if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return;
-      
     }
     
   } else fReAlign = kFALSE; // disable the realignment if the geometry was already loaded

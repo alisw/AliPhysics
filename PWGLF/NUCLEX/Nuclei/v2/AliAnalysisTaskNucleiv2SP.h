@@ -25,7 +25,8 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   AliAnalysisTaskNucleiv2SP();
   virtual ~AliAnalysisTaskNucleiv2SP() {}
       
-  Float_t GetEventPlaneForCandidate(AliESDtrack* track0, const TVector2* q,AliEventplane *pl);
+  Float_t GetEventPlaneForCandidate(AliVTrack* track0, const TVector2* q,AliEventplane *pl);
+  // Float_t GetEventPlaneForCandidate(AliAODtrack* track0, const TVector2* q,AliEventplane *pl);
   Float_t GetPhi0Pi(Float_t phi);
   Bool_t  Flatten(Float_t cent);
     
@@ -38,26 +39,39 @@ class AliAnalysisTaskNucleiv2SP : public AliAnalysisTaskSE {
   void SetParticle(Int_t ptc)                    {fptc         = ptc;       };
   void SetVzMax(Float_t Vzmax)                   {fVzmax       = Vzmax;     };
   void SetCentralityEstimator( TString centEst)  {fCentrality  = centEst;   };
-
- private:
+  void SetAnalysisType (const char* analysisType = "ESD")   { fAnalysisType = analysisType; }
+  void SetApplyFlatten(Bool_t  applyFlatten)    {fApplyFlatten  = applyFlatten; }
+  void SetYear(Int_t  year)    {fYear  = year; }
+  void SetHarmonic(Int_t  harmonic)    {fHarmonic  = harmonic; }
   
+ private:
+
+  AliESDEvent *fESDevent;                         // 
+  AliAODEvent *fAODevent;                         // 
+  AliVEvent   *fevent;                            // 
+ 
+  TString        fAnalysisType;                  //
   Bool_t         fisPrimCut;                     // Boolean : kTRUE = isprimarycut 
   Int_t          fptc;                           // Selected ptc 1 = d; 2 = t; 3 =3He 
   Float_t        fVzmax;                         // Selected vz max
   TString        fCentrality;                    //
-  
-  TList	*fListHist;	           //! List of  histograms
+  Bool_t         fApplyFlatten;                  //
+  Int_t          fYear;                          // Year of data tacking
+  Int_t          fHarmonic;                      // Flow Harmonic
+     
+  TList	*fListHist;	           // List of  histograms
  
-  TH1F  *fHistEventMultiplicity;           //! event multiplicity
-  TH2F  *fHistTrackMultiplicity;           //! track multiplicity
-  TH2F  *fHistTrackMultiplicityCentral;    //! track multiplicity
-  TH2F  *fHistTrackMultiplicitySemiCentral;//! track multiplicity
-  TH2F  *fHistTrackMultiplicityMB;         //! track multiplicity
+  TH1F  *fHistEventMultiplicity;           // event multiplicity
+  TH2F  *fHistTrackMultiplicity;           // track multiplicity
+  TH2F  *fHistTrackMultiplicityCentral;    // track multiplicity
+  TH2F  *fHistTrackMultiplicitySemiCentral;// track multiplicity
+  TH2F  *fHistTrackMultiplicityMB;         // track multiplicity
+  TH2F  *fHistTrackMultiplicityINT7;       // track multiplicity
 
-  TH2F  *fhBB;                             //! ScatterPlot Total
-  TH2F  *fhBBDeu;                          //! ScatterPlot Total
-  TH2F  *fhTOF;                            //! ScatterPlot Total TOF
-  TH1F  *fhMassTOF;                        //! Mass Distribution TOF
+  TH2F  *fhBB;                             // ScatterPlot Total
+  TH2F  *fhBBDeu;                          // ScatterPlot Total
+  TH2F  *fhTOF;                            // ScatterPlot Total TOF
+  TH1F  *fhMassTOF;                        // Mass Distribution TOF
   
   // Event Plane vs Centrality
 

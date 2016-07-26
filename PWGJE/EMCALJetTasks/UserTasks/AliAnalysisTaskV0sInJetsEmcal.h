@@ -177,7 +177,7 @@ private:
   Double_t fdCutDCADaughtersMax; // (1.) [sigma of TPC tracking] max DCA between daughters
   Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
-  Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut
+  Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut in Pb-Pb
   // V0 candidate
   Bool_t fbOnFly; // (0) on-the-fly (yes) or offline (no) reconstructed
   Double_t fdCutCPAKMin; // (0.998) min cosine of the pointing angle, K0S
@@ -189,7 +189,7 @@ private:
   Double_t fdCutNTauKMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, K0S
   Double_t fdCutNTauLMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Lambda
   Bool_t fbCutArmPod; // (yes) Armenteros-Podolanski for K0S
-  Bool_t fbCutCross; // (no) cross contamination
+  Bool_t fbCutCross; // (no) cross-contamination
 
   // Jet selection
   Bool_t fbJetSelection; // (yes) switch for the analysis of V0s in jets
@@ -239,7 +239,7 @@ private:
   TH1D* fh1DistanceV0JetsLambda[fgkiNBinsCent]; //! distance in eta-phi between V0 and the closest jet
   TH1D* fh1DistanceV0JetsALambda[fgkiNBinsCent]; //! distance in eta-phi between V0 and the closest jet
 
-  static const Int_t fgkiNCategV0 = 17; // number of V0 selection steps
+  static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
   // QA histograms
   static const Int_t fgkiNQAIndeces = 2; // 0 - before cuts, 1 - after cuts

@@ -601,7 +601,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 
 	TF1* funcWeight = 0x0;
 	if (task->GetUseWeight()) {
-		funcWeight = (TF1*)cutFile->Get("funcWeight");
+		funcWeight = (TF1*)fileCuts->Get("funcWeight");
 		if (funcWeight == 0x0){
 			Printf("FONLL Weights will be used");
 		}

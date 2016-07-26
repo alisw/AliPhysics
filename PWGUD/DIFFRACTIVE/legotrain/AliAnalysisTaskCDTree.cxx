@@ -51,6 +51,7 @@
 #include "AliCDBPath.h"
 #include "AliGeomManager.h"
 #include "TGeoManager.h"
+#include "AliPID.h"
 #include "AliPIDCombined.h"
 
 #include "AliMultiplicitySelectionCP.h"
@@ -76,7 +77,6 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	, fTree(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
-	, fCheckSixPion(0)
 	, fCheckV0FMD(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fIsMC(0)
@@ -96,6 +96,8 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	, fRunVsDG_wFMD(0x0)
 	, fRunVs2t(0x0)
 	, fRunVs2t_ITSSA(0x0)
+	, fRunVs4t(0x0)
+	, fRunVs4t_ITSSA(0x0)
 	, fMultNG(0x0)
 	, fMultNG_MS(0x0)
 	, fMultDG(0x0)
@@ -105,26 +107,67 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree(const char* name):
 	, fMassNG_MS(0x0)
 	, fMassDG(0x0)
 	, fMassDG_st2t(0x0)
+	, fMassDG_MS(0x0)
 	, fTrackCutsInfo(0x0)
 	, fSPDTrkvsCls_bf(0x0)
 	, fSPDTrkvsCls_af(0x0)
 	, fPrimaries(0x0)
+	, fRunNumber(0)
+	, fPeriod(0)
 {
 	//
 	// standard constructor (the one which should be used)
 	//
 	// slot in TaskSE must start from 1
+
+	for (Int_t i = 0; i < 3; i++) {
+		fVertex[i] = 0.;
+	}
 	
-	for (Int_t i=0; i< 25; i++) {
-		for (Int_t j = 0; j < 2; j++) {
-			fTwoPionTrackV0[j][i]=0.;
-			fTwoPionTrackV0_ITSSA[j][i]=0.;
+	// Two-track
+	for (Int_t i = 0; i < 2; i++) {
+		fTwoPionMask_TPC[i] = 0;
+		fTwoPionMask_TOF[i] = 0;
+		fTwoPionMask_ITS[i] = 0;
+		fTwoPionMask_TRD[i] = 0;
+		fTwoPionMask_tot[i] = 0;
+		fTwoPionDetMask_tot[i] = 0;
+		for (Int_t j = 0; j < 9; j++) {
+			fTwoPionTrack[i][j] = 0.;
+			fTwoPionTPCSigma[i][j] = 0.;
+			fTwoPionTOFSigma[i][j] = 0.;
+			fTwoPionITSSigma[i][j] = 0.;
+			fTwoPionTrack_ITSSA[i][j] = 0.;
+			if (j < 5) {
+				fTwoPionBayesProb_TPC[i][j] = 0.;
+				fTwoPionBayesProb_TOF[i][j] = 0.;
+				fTwoPionBayesProb_ITS[i][j] = 0.;
+				fTwoPionBayesProb_TRD[i][j] = 0.;
+				fTwoPionBayesProb_tot[i][j] = 0.;
+			}
 		}
-		for (Int_t j = 0; j < 4; j++) {
-			fFourPionTrackV0[j][i]=0.;
-		}
-		for (Int_t j = 0; j < 6; j++) {
-			fSixPionTrackV0[j][i]=0.;
+	}
+	// Four-track
+	for (Int_t i = 0; i < 4; i++) {
+		fFourPionMask_TPC[i] = 0;
+		fFourPionMask_TOF[i] = 0;
+		fFourPionMask_ITS[i] = 0;
+		fFourPionMask_TRD[i] = 0;
+		fFourPionMask_tot[i] = 0;
+		fFourPionDetMask_tot[i] = 0;
+		for (Int_t j = 0; j < 9; j++) {
+			fFourPionTrack[i][j] = 0.;
+			fFourPionTPCSigma[i][j] = 0.;
+			fFourPionTOFSigma[i][j] = 0.;
+			fFourPionITSSigma[i][j] = 0.;
+			fFourPionTrack_ITSSA[i][j] = 0.;
+			if (j < 5) {
+				fFourPionBayesProb_TPC[i][j] = 0.;
+				fFourPionBayesProb_TOF[i][j] = 0.;
+				fFourPionBayesProb_ITS[i][j] = 0.;
+				fFourPionBayesProb_TRD[i][j] = 0.;
+				fFourPionBayesProb_tot[i][j] = 0.;
+			}
 		}
 	}
 
@@ -157,7 +200,6 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fTree(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
-	, fCheckSixPion(0)
 	, fCheckV0FMD(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fIsMC(0)
@@ -177,6 +219,8 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fRunVsDG_wFMD(0x0)
 	, fRunVs2t(0x0)
 	, fRunVs2t_ITSSA(0x0)
+	, fRunVs4t(0x0)
+	, fRunVs4t_ITSSA(0x0)
 	, fMultNG(0x0)
 	, fMultNG_MS(0x0)
 	, fMultDG(0x0)
@@ -186,21 +230,61 @@ AliAnalysisTaskCDTree::AliAnalysisTaskCDTree():
 	, fMassNG_MS(0x0)
 	, fMassDG(0x0)
 	, fMassDG_st2t(0x0)
+	, fMassDG_MS(0x0)
 	, fTrackCutsInfo(0x0)
 	, fSPDTrkvsCls_bf(0x0)
 	, fSPDTrkvsCls_af(0x0)
 	, fPrimaries(0x0)
+	, fRunNumber(0)
+	, fPeriod(0)
 {
-	for (Int_t i=0; i< 25; i++) {
-		for (Int_t j = 0; j < 2; j++) {
-			fTwoPionTrackV0[j][i]=0.;
-			fTwoPionTrackV0_ITSSA[j][i]=0.;
+	for (Int_t i = 0; i < 3; i++) {
+		fVertex[i] = 0.;
+	}
+	// Two-track
+	for (Int_t i = 0; i < 2; i++) {
+		fTwoPionMask_TPC[i] = 0;
+		fTwoPionMask_TOF[i] = 0;
+		fTwoPionMask_ITS[i] = 0;
+		fTwoPionMask_TRD[i] = 0;
+		fTwoPionMask_tot[i] = 0;
+		fTwoPionDetMask_tot[i] = 0;
+		for (Int_t j = 0; j < 9; j++) {
+			fTwoPionTrack[i][j] = 0.;
+			fTwoPionTPCSigma[i][j] = 0.;
+			fTwoPionTOFSigma[i][j] = 0.;
+			fTwoPionITSSigma[i][j] = 0.;
+			fTwoPionTrack_ITSSA[i][j] = 0.;
+			if (j < 5) {
+				fTwoPionBayesProb_TPC[i][j] = 0.;
+				fTwoPionBayesProb_TOF[i][j] = 0.;
+				fTwoPionBayesProb_ITS[i][j] = 0.;
+				fTwoPionBayesProb_TRD[i][j] = 0.;
+				fTwoPionBayesProb_tot[i][j] = 0.;
+			}
 		}
-		for (Int_t j = 0; j < 4; j++) {
-			fFourPionTrackV0[j][i]=0.;
-		}
-		for (Int_t j = 0; j < 6; j++) {
-			fSixPionTrackV0[j][i]=0.;
+	}
+	// Four-track
+	for (Int_t i = 0; i < 4; i++) {
+		fFourPionMask_TPC[i] = 0;
+		fFourPionMask_TOF[i] = 0;
+		fFourPionMask_ITS[i] = 0;
+		fFourPionMask_TRD[i] = 0;
+		fFourPionMask_tot[i] = 0;
+		fFourPionDetMask_tot[i] = 0;
+		for (Int_t j = 0; j < 9; j++) {
+			fFourPionTrack[i][j] = 0.;
+			fFourPionTPCSigma[i][j] = 0.;
+			fFourPionTOFSigma[i][j] = 0.;
+			fFourPionITSSigma[i][j] = 0.;
+			fFourPionTrack_ITSSA[i][j] = 0.;
+			if (j < 5) {
+				fFourPionBayesProb_TPC[i][j] = 0.;
+				fFourPionBayesProb_TOF[i][j] = 0.;
+				fFourPionBayesProb_ITS[i][j] = 0.;
+				fFourPionBayesProb_TRD[i][j] = 0.;
+				fFourPionBayesProb_tot[i][j] = 0.;
+			}
 		}
 	}
 	for (Int_t i=0; i< 5; i++) {
@@ -250,6 +334,8 @@ AliAnalysisTaskCDTree::~AliAnalysisTaskCDTree()
 	if (fRunVsDG_wFMD) delete fRunVsDG_wFMD;
 	if (fRunVs2t) delete fRunVs2t;
 	if (fRunVs2t_ITSSA) delete fRunVs2t_ITSSA;
+	if (fRunVs4t) delete fRunVs4t;
+	if (fRunVs4t_ITSSA) delete fRunVs4t_ITSSA;
 	if (fMultNG) delete fMultNG;
 	if (fMultNG_MS) delete fMultNG_MS;
 	if (fMultDG) delete fMultDG;
@@ -259,6 +345,7 @@ AliAnalysisTaskCDTree::~AliAnalysisTaskCDTree()
 	if (fMassNG_MS) delete fMassNG_MS;
 	if (fMassDG) delete fMassDG;
 	if (fMassDG_st2t) delete fMassDG_st2t;
+	if (fMassDG_MS) delete fMassDG_MS;
 	if (fTrackCutsInfo) delete fTrackCutsInfo;
 	if (fSPDTrkvsCls_bf) delete fSPDTrkvsCls_bf;
 	if (fSPDTrkvsCls_af) delete fSPDTrkvsCls_af;
@@ -273,23 +360,58 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 	//For Data + Rec
 	fTree->Branch("CheckTwoPion",&fCheckTwoPion);
 	fTree->Branch("CheckFourPion",&fCheckFourPion);
-	fTree->Branch("CheckSixPion",&fCheckSixPion);
 	fTree->Branch("CheckV0FMD",&fCheckV0FMD);
 	fTree->Branch("CheckTwoPion_ITSSA",&fCheckTwoPion_ITSSA);
-	for (Int_t i = 0 ; i < 25; i++) {
-		for (Int_t j = 0; j < 2; j++) {
-			fTree->Branch(Form("TwoPionTrackV0_%d_%d",j,i),&fTwoPionTrackV0[j][i]);
-			fTree->Branch(Form("TwoPionTrackV0_ITSSA_%d_%d",j,i),&fTwoPionTrackV0_ITSSA[j][i]);
-			fTree->Branch(Form("MCGenProtonTrack%d_%d",j,i),&fMCGenProtonTrack[j][i]);
-			fTree->Branch(Form("MCGenPionTrack%d_%d",j,i),&fMCGenPionTrack[j][i]);
-		}
-		for (Int_t j = 0; j < 4; j++) {
-			fTree->Branch(Form("FourPionTrackV0_%d_%d",j,i),&fFourPionTrackV0[j][i]);
-		}
-		for (Int_t j = 0; j < 6; j++) {
-			fTree->Branch(Form("SixPionTrackV0_%d_%d",j,i),&fSixPionTrackV0[j][i]);
+	for (Int_t i = 0; i < 3; i++) {
+		fTree->Branch(Form("Vertex_%d",i),&fVertex[i]);
+	}
+	//2 track
+	for (Int_t i = 0; i < 2; i++) {
+		fTree->Branch(Form("TwoPionMask_TPC_%d",i),&fTwoPionMask_TPC[i]);
+		fTree->Branch(Form("TwoPionMask_TOF_%d",i),&fTwoPionMask_TOF[i]);
+		fTree->Branch(Form("TwoPionMask_ITS_%d",i),&fTwoPionMask_ITS[i]);
+		fTree->Branch(Form("TwoPionMask_TRD_%d",i),&fTwoPionMask_TRD[i]);
+		fTree->Branch(Form("TwoPionMask_tot_%d",i),&fTwoPionMask_tot[i]);
+		fTree->Branch(Form("TwoPionDetMask_tot_%d",i),&fTwoPionDetMask_tot[i]);
+		for (Int_t j = 0; j < 9; j++) {
+			fTree->Branch(Form("TwoPionTrack_%d_%d",i,j),&fTwoPionTrack[i][j]);
+			fTree->Branch(Form("TwoPionTPCSigma_%d_%d",i,j),&fTwoPionTPCSigma[i][j]);
+			fTree->Branch(Form("TwoPionTOFSigma_%d_%d",i,j),&fTwoPionTOFSigma[i][j]);
+			fTree->Branch(Form("TwoPionITSSigma_%d_%d",i,j),&fTwoPionITSSigma[i][j]);
+			fTree->Branch(Form("TwoPionTrack_ITSSA_%d_%d",i,j),&fTwoPionTrack_ITSSA[i][j]);
+			if (j < 5) {
+				fTree->Branch(Form("TwoPionBayesProb_TPC_%d_%d",i,j),&fTwoPionBayesProb_TPC[i][j]);
+				fTree->Branch(Form("TwoPionBayesProb_TOF_%d_%d",i,j),&fTwoPionBayesProb_TOF[i][j]);
+				fTree->Branch(Form("TwoPionBayesProb_ITS_%d_%d",i,j),&fTwoPionBayesProb_ITS[i][j]);
+				fTree->Branch(Form("TwoPionBayesProb_TRD_%d_%d",i,j),&fTwoPionBayesProb_TRD[i][j]);
+				fTree->Branch(Form("TwoPionBayesProb_tot_%d_%d",i,j),&fTwoPionBayesProb_tot[i][j]);
+			}
 		}
 	}
+	//2 track
+	for (Int_t i = 0; i < 4; i++) {
+		fTree->Branch(Form("FourPionMask_TPC_%d",i),&fFourPionMask_TPC[i]);
+		fTree->Branch(Form("FourPionMask_TOF_%d",i),&fFourPionMask_TOF[i]);
+		fTree->Branch(Form("FourPionMask_ITS_%d",i),&fFourPionMask_ITS[i]);
+		fTree->Branch(Form("FourPionMask_TRD_%d",i),&fFourPionMask_TRD[i]);
+		fTree->Branch(Form("FourPionMask_tot_%d",i),&fFourPionMask_tot[i]);
+		fTree->Branch(Form("FourPionDetMask_tot_%d",i),&fFourPionDetMask_tot[i]);
+		for (Int_t j = 0; j < 9; j++) {
+			fTree->Branch(Form("FourPionTrack_%d_%d",i,j),&fFourPionTrack[i][j]);
+			fTree->Branch(Form("FourPionTPCSigma_%d_%d",i,j),&fFourPionTPCSigma[i][j]);
+			fTree->Branch(Form("FourPionTOFSigma_%d_%d",i,j),&fFourPionTOFSigma[i][j]);
+			fTree->Branch(Form("FourPionITSSigma_%d_%d",i,j),&fFourPionITSSigma[i][j]);
+			fTree->Branch(Form("FourPionTrack_ITSSA_%d_%d",i,j),&fFourPionTrack_ITSSA[i][j]);
+			if (j < 5) {
+				fTree->Branch(Form("FourPionBayesProb_TPC_%d_%d",i,j),&fFourPionBayesProb_TPC[i][j]);
+				fTree->Branch(Form("FourPionBayesProb_TOF_%d_%d",i,j),&fFourPionBayesProb_TOF[i][j]);
+				fTree->Branch(Form("FourPionBayesProb_ITS_%d_%d",i,j),&fFourPionBayesProb_ITS[i][j]);
+				fTree->Branch(Form("FourPionBayesProb_TRD_%d_%d",i,j),&fFourPionBayesProb_TRD[i][j]);
+				fTree->Branch(Form("FourPionBayesProb_tot_%d_%d",i,j),&fFourPionBayesProb_tot[i][j]);
+			}
+		}
+	}
+
 	//For MC
 	for (Int_t i = 0; i < 5; i++) {
 		for (Int_t j = 0; j < 2; j++) {
@@ -297,6 +419,8 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 			fTree->Branch(Form("MCGenPionTrack_%d_%d",j,i),&fMCGenPionTrack[j][i]);
 		}
 	}
+	fTree->Branch("RunNumber",&fRunNumber);
+	fTree->Branch("Period",&fPeriod);
 	//-------------------------------------------------------------------------
 
 	// TList-------------------------------------------------------------------
@@ -307,9 +431,10 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 		fHistEvent = new TH1D("fHistEvent","Number of Events for each selection",kAll,0,kAll);
 		fHistEvent->GetXaxis()->SetBinLabel(kInput+1,"InputEvent");
 		fHistEvent->GetXaxis()->SetBinLabel(kMCCheck+1,"MCEvent");
-		fHistEvent->GetXaxis()->SetBinLabel(kClusterCut+1,"ClusterCut");
+		fHistEvent->GetXaxis()->SetBinLabel(kOfflineCut+1,"OfflineCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kVtxCut+1,"VertexCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kPileUpCut+1,"PileupCut");
+		fHistEvent->GetXaxis()->SetBinLabel(kClusterCut+1,"ClusterCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kMBOR+1,"MBOR");
 		fHistEvent->GetXaxis()->SetBinLabel(kMBAND+1,"MBAND");
 		fHistEvent->GetXaxis()->SetBinLabel(kNG+1,"NoGap");
@@ -365,7 +490,7 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 		fList->Add(fHistSPDFiredChips);
 	}
 	Int_t firstRun = 114500;
-	Int_t lastRun = 131000;
+	Int_t lastRun = 178035;
 	Int_t totalRun = lastRun-firstRun;
 
 	if (!fRunVsMBOR) {
@@ -391,6 +516,14 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 	if (!fRunVs2t_ITSSA) {
 		fRunVs2t_ITSSA = new TH1D("fRunVs2t_ITSSA","",totalRun,firstRun,lastRun);
 		fList->Add(fRunVs2t_ITSSA);
+	}
+	if (!fRunVs4t) {
+		fRunVs4t = new TH1D("fRunVs4t","",totalRun,firstRun,lastRun);
+		fList->Add(fRunVs4t);
+	}
+	if (!fRunVs4t_ITSSA) {
+		fRunVs4t_ITSSA = new TH1D("fRunVs4t_ITSSA","",totalRun,firstRun,lastRun);
+		fList->Add(fRunVs4t_ITSSA);
 	}
 	if (!fMultNG) {
 		fMultNG = new TH1D("fMultNG","",100,0,100);
@@ -428,6 +561,10 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 		fMassDG_st2t = new TH1D("fMassDG_st2t","",50,0,2);
 		fList->Add(fMassDG_st2t);
 	}
+	if (!fMassDG_MS) {
+		fMassDG_MS = new TH1D("fMassDG_MS","",50,0,2);
+		fList->Add(fMassDG_MS);
+	}
 	if (!fTrackCutsInfo) {
 		fTrackCutsInfo = new TH1D("fTrackCutsInfo","",20,-10,10);
 		fList->Add(fTrackCutsInfo);
@@ -454,6 +591,11 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 	{
 		fTrackCuts_ITSSA->GetStandardITSSATrackCuts2010(1,0);//0 for no-PID mode
 	}
+	//PID Combined
+	fPIDCombined = new AliPIDCombined;
+	fPIDCombined->SetDefaultTPCPriors();//Need more update..
+	fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);//This is default
+	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);//Do we need??
 
 	PostOutputs();
 	//-------------------------------------------------------------------------
@@ -462,16 +604,52 @@ void AliAnalysisTaskCDTree::UserCreateOutputObjects()
 void AliAnalysisTaskCDTree::UserExec(Option_t *)
 {
 	// Initialize all tree varialbles------------------------------------------
-	for (Int_t i = 0; i < 25; i++) {
-		for (Int_t j = 0; j < 2; j++) {
-			fTwoPionTrackV0[j][i]=0.;
-			fTwoPionTrackV0_ITSSA[j][i]=0.;
+	for (Int_t i = 0; i < 3; i++) {
+		fVertex[i] = -999.;
+	}
+	for (Int_t i = 0; i < 2; i++) {
+		fTwoPionMask_TPC[i] = 0;
+		fTwoPionMask_TOF[i] = 0;
+		fTwoPionMask_ITS[i] = 0;
+		fTwoPionMask_TRD[i] = 0;
+		fTwoPionMask_tot[i] = 0;
+		fTwoPionDetMask_tot[i] = 0;
+		for (Int_t j = 0; j < 9; j++) {
+			fTwoPionTrack[i][j] = 0.;
+			fTwoPionTPCSigma[i][j] = 0.;
+			fTwoPionTOFSigma[i][j] = 0.;
+			fTwoPionITSSigma[i][j] = 0.;
+			fTwoPionTrack_ITSSA[i][j] = 0.;
+			if (j < 5) {
+				fTwoPionBayesProb_TPC[i][j] = 0.;
+				fTwoPionBayesProb_TOF[i][j] = 0.;
+				fTwoPionBayesProb_ITS[i][j] = 0.;
+				fTwoPionBayesProb_TRD[i][j] = 0.;
+				fTwoPionBayesProb_tot[i][j] = 0.;
+			}
 		}
-		for (Int_t j = 0; j < 4; j++) {
-			fFourPionTrackV0[j][i]=0.;
-		}
-		for (Int_t j = 0; j < 6; j++) {
-			fSixPionTrackV0[j][i]=0.;
+	}
+	// Four-track
+	for (Int_t i = 0; i < 4; i++) {
+		fFourPionMask_TPC[i] = 0;
+		fFourPionMask_TOF[i] = 0;
+		fFourPionMask_ITS[i] = 0;
+		fFourPionMask_TRD[i] = 0;
+		fFourPionMask_tot[i] = 0;
+		fFourPionDetMask_tot[i] = 0;
+		for (Int_t j = 0; j < 9; j++) {
+			fFourPionTrack[i][j] = 0.;
+			fFourPionTPCSigma[i][j] = 0.;
+			fFourPionTOFSigma[i][j] = 0.;
+			fFourPionITSSigma[i][j] = 0.;
+			fFourPionTrack_ITSSA[i][j] = 0.;
+			if (j < 5) {
+				fFourPionBayesProb_TPC[i][j] = 0.;
+				fFourPionBayesProb_TOF[i][j] = 0.;
+				fFourPionBayesProb_ITS[i][j] = 0.;
+				fFourPionBayesProb_TRD[i][j] = 0.;
+				fFourPionBayesProb_tot[i][j] = 0.;
+			}
 		}
 	}
 	for (Int_t i = 0; i < 5; i++) {
@@ -482,11 +660,12 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 	}
 	fCheckTwoPion = kFALSE;
 	fCheckFourPion = kFALSE;
-	fCheckSixPion = kFALSE;
 	fCheckV0FMD = kFALSE;
 	fCheckTwoPion_ITSSA = kFALSE;
 	fIsMC = kFALSE;
 	fGapInformation = 0;
+	fRunNumber = -999;
+	fPeriod = -999;
 	//-------------------------------------------------------------------------
 
 	//Check Input event is available-------------------------------------------
@@ -525,17 +704,17 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 		return;
 	}
 	if (!inputHandler->IsEventSelected()) {
-		printf("This event is not selected by AliVEvent::kMB");
+//		printf("This event is not selected by AliVEvent::kMB");
 		PostOutputs();
 		return;
 	}
-	//fHistEvent->Fill(kInput);
+	fHistEvent->Fill(kOfflineCut);
 	//-------------------------------------------------------------------------
 
 	// EVENT SELECTION---------------------------------------------------------
 	Int_t kfo = 0;
 	Int_t ninnerp=-999, nouterp=-999;
-	Bool_t eventIsValid = CutEvent(fESDEvent, fHistSPDFiredChips,0x0,fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ, fSPDTrkvsCls_bf, fSPDTrkvsCls_af, fHistEvent);
+	Bool_t eventIsValid = CutEvent(fESDEvent, fHistSPDFiredChips,0x0,fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ, fVertex);
 	if (!eventIsValid) {
 		PostOutputs();
 		return;
@@ -552,6 +731,28 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 		return;
 	}
 	fHistEvent->Fill(kPileUpCut); // After pile up
+	fRunNumber = (Int_t)fESDEvent->GetRunNumber();
+	if (fRunNumber < 117224) fPeriod = 1;//10b
+	else if (fRunNumber < 121041) fPeriod = 2;//10c
+	else if (fRunNumber < 126438) fPeriod = 3;//10d
+	else if (fRunNumber < 130851) fPeriod = 4;//10e
+	else if (fRunNumber < 135032) fPeriod = 5;//10f
+	else fPeriod = 6;//12b (8 TeV)
+	//-------------------------------------------------------------------------
+
+	//Cluster Cut--------------------------------------------------------------
+	const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
+	fSPDTrkvsCls_bf->Fill(mult->GetNumberOfTracklets(),fESDEvent->GetNumberOfITSClusters(0)+fESDEvent->GetNumberOfITSClusters(1));
+	Double_t cut_slope = 4.;
+	Double_t cut_offset = 65.;
+	Bool_t IsClusterCut = kFALSE;
+	if (fESDEvent->GetNumberOfITSClusters(0) + fESDEvent->GetNumberOfITSClusters(1) <= (cut_offset+cut_slope*mult->GetNumberOfTracklets())) IsClusterCut=kTRUE;
+	if (IsClusterCut) fSPDTrkvsCls_af->Fill(mult->GetNumberOfTracklets(),fESDEvent->GetNumberOfITSClusters(0)+fESDEvent->GetNumberOfITSClusters(1));
+	if (!IsClusterCut) {
+		PostOutputs();
+		return;
+	}
+	fHistEvent->Fill(kClusterCut);
 	//-------------------------------------------------------------------------
 
 	// TRIGGER ANALYSIS -------------------------------------------------------
@@ -586,7 +787,7 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 	else if (fGapInformation==kBinGC) fHistEvent->Fill(kGC);
 	else if (fGapInformation==kBinDG) {fHistEvent->Fill(kDG); fRunVsDG->Fill(fESDEvent->GetRunNumber());}
 	else {
-		printf("== This events doesn't have gap info! ==\n");
+		//		printf("== This events doesn't have gap info! ==\n");
 		PostOutputs();
 		return;
 	}
@@ -671,8 +872,22 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 		if (Nsel == 2) {
 			fHistEvent->Fill(k2Tracks);
 			fRunVs2t->Fill(fESDEvent->GetRunNumber());
+			for (Int_t iTrack = 0; iTrack < 2; iTrack++) {
+				AliESDtrack *track1 = fESDEvent->GetTrack(indices.At(iTrack));
+				for (Int_t jTrack = iTrack+1; jTrack < 2; jTrack++) {
+					AliESDtrack *track2 = fESDEvent->GetTrack(indices.At(1));
+					if(!track1 || !track2) continue;
+					if (track1->GetSign()>0 && track2->GetSign()>0) continue;
+					if (track1->GetSign()<0 && track2->GetSign()<0) continue;
+
+					lv_track1.SetXYZM(track1->Px(),track1->Py(),track1->Pz(),pionmass);
+					lv_track2.SetXYZM(track2->Px(),track2->Py(),track2->Pz(),pionmass);
+					lv_sum = lv_track1 + lv_track2;
+					fMassDG_MS->Fill(lv_sum.M());
+				}
+			}
 		}
-		else if (Nsel == 4) fHistEvent->Fill(k4Tracks);
+		else if (Nsel == 4) {fHistEvent->Fill(k4Tracks); fRunVs4t->Fill(fESDEvent->GetRunNumber());}
 		else if (Nsel == 6) fHistEvent->Fill(k6Tracks);
 		for (Int_t iTrack = 0; iTrack < fESDEvent->GetNumberOfTracks(); iTrack++) {
 			AliESDtrack *track1 = fESDEvent->GetTrack(iTrack);
@@ -723,7 +938,7 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 
 	delete selec;
 
-	// ITSSA track
+	// TODO::ITSSA track should be updated!!!
 	Int_t tmp_Ntrk = fESDEvent->GetNumberOfTracks();
 	Int_t Ntrk_ITSSA = 0;
 	for (Int_t i = 0; i < tmp_Ntrk; i++) {
@@ -733,165 +948,162 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 		Ntrk_ITSSA++;
 	}
 	Bool_t fCheck2tracks_ITSSA = (Ntrk_ITSSA==2) ? kTRUE : kFALSE;
+	Bool_t fCheck4tracks_ITSSA = (Ntrk_ITSSA==4) ? kTRUE : kFALSE;
 	if (fCheck2tracks_ITSSA && fGapInformation == kBinDG) fRunVs2t_ITSSA->Fill(fESDEvent->GetRunNumber());
+	if (fCheck4tracks_ITSSA && fGapInformation == kBinDG) fRunVs4t_ITSSA->Fill(fESDEvent->GetRunNumber());
 
 	// TAESOO PWA TREE INFO ---------------------------------------------------
 	if (fGapInformation != kBinDG) {
-		printf("== This events are not double gap! ==\n");
+//		printf("== This events are not double gap! ==\n");
 		PostOutputs();
 		return;
 	}
 	fHistEvent->Fill(kCheckDG);
 	fTrackCutsInfo->Fill(Nsel);
 
-//	if (!CheckV0Hit(fESDEvent,fHitV0A, fHitV0C)) {
-//		printf("== Should be no hit on V0!! ==\n");
-//		PostOutputs();
-//		return;
-//	}
+	//	if (!CheckV0Hit(fESDEvent,fHitV0A, fHitV0C)) {
+	//		printf("== Should be no hit on V0!! ==\n");
+	//		PostOutputs();
+	//		return;
+	//	}
 	fHistEvent->Fill(kCheckV0Hit);
 
 	fCheck2tracks = (Nsel == 2) ? kTRUE : kFALSE;
 	fCheck4tracks = (Nsel == 4) ? kTRUE : kFALSE;
 	fCheck6tracks = (Nsel == 6) ? kTRUE : kFALSE;
 
-	Double_t probTPC[AliPID::kSPECIES]={0.};
-	Double_t probTOF[AliPID::kSPECIES]={0.};
-	Double_t probTPCTOF[AliPID::kSPECIES]={0.};
-
 	if (fCheck2tracks) {
-//		fHistEvent->Fill(10); //For 2 tracks
-		for (Int_t j = 0; j < 25; j++) {
-			for (Int_t i = 0; i < 2; i++) {
-				fTwoPionTrackV0[i][j] = 0;
-			}
-		}
 		for (Int_t i = 0; i < 2; i++) {
 			AliESDtrack *track = fESDEvent->GetTrack(indices.At(i));
 			if(!track) {
 				PostOutputs();
 				return;
 			}
-			fTwoPionTrackV0[i][0] = track->Px();
-			fTwoPionTrackV0[i][1] = track->Py();
-			fTwoPionTrackV0[i][2] = track->Pz();
-			fTwoPionTrackV0[i][3] = track->E();
-			fTwoPionTrackV0[i][4] = track->GetSign();
-			fTwoPionTrackV0[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
-			fTwoPionTrackV0[i][6] = track->GetTPCsignal();
-			fTwoPionTrackV0[i][7] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
-			fTwoPionTrackV0[i][8] = track->GetTOFsignal();
-			fTwoPionTrackV0[i][9] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
-
-			//TPC
+			fTwoPionTrack[i][0] = track->Px();
+			fTwoPionTrack[i][1] = track->Py();
+			fTwoPionTrack[i][2] = track->Pz();
+			fTwoPionTrack[i][3] = track->E();
+			fTwoPionTrack[i][4] = track->GetSign();
+			//TPC (by L.Goerlich)
+			fTwoPionTPCSigma[i][0] = track->GetTPCsignal();
+			fTwoPionTPCSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTPCSigma[i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fTwoPionTPCSigma[i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fTwoPionTPCSigma[i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fTwoPionTPCSigma[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			//TOF (by L.Goerlich)
+			fTwoPionTOFSigma[i][0] = track->GetTOFsignal();
+			fTwoPionTOFSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTOFSigma[i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fTwoPionTOFSigma[i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fTwoPionTOFSigma[i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			//ITS (by L.Goerlich)
+			fTwoPionITSSigma[i][0] = track->GetITSsignal();
+			fTwoPionITSSigma[i][1] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fTwoPionITSSigma[i][2] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fTwoPionITSSigma[i][3] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fTwoPionITSSigma[i][4] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fTwoPionITSSigma[i][5] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			fTwoPionITSSigma[i][6] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fTwoPionITSSigma[i][7] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fTwoPionITSSigma[i][8] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			//Bayesian,combined(UInt_t)
+			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-			UInt_t detUsed = fPIDCombined->ComputeProbabilities(track,fPIDResponse,probTPC);
-			if (detUsed != 0) {
-				for (Int_t ispec = 0; ispec<AliPID::kSPECIES; ++ispec) {
-					fTwoPionTrackV0[i][ispec+10] = probTPC[ispec];
-				}
-			}
+			fTwoPionMask_TPC[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TPC[i]);
 			//TOF
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-			detUsed = fPIDCombined->ComputeProbabilities(track,fPIDResponse,probTOF);
-			if (detUsed != 0) {
-				for (Int_t ispec = 0; ispec<AliPID::kSPECIES; ++ispec) {
-					fTwoPionTrackV0[i][ispec+15] = probTOF[ispec];
-				}
-			}
-			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-			detUsed = fPIDCombined->ComputeProbabilities(track,fPIDResponse,probTPCTOF);
-			if (detUsed != 0) {
-				for (Int_t ispec = 0; ispec<AliPID::kSPECIES; ++ispec) {
-					fTwoPionTrackV0[i][ispec+20] = probTPCTOF[ispec];
-				}
-			}
-
+			fTwoPionMask_TOF[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TOF[i]);
+			//ITS
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
+			fTwoPionMask_ITS[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_ITS[i]);
+			//TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
+			fTwoPionMask_TRD[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TRD[i]);
+			//TPC|TOF|ITS|TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
+					AliPIDResponse::kDetTOF |
+					AliPIDResponse::kDetITS |
+					AliPIDResponse::kDetTRD);
+			fTwoPionMask_tot[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_tot[i]);
+			fTwoPionDetMask_tot[i] = (UInt_t)fPIDCombined->GetDetectorMask();
 		}
-
 		fCheckTwoPion = kTRUE;
 	}
 
 	if (fCheck4tracks) {
-//		fHistEvent->Fill(11); //For 4 tracks
-		for (Int_t j = 0; j < 10; j++) {
-			for (Int_t i = 0; i < 4; i++) {
-				fFourPionTrackV0[i][j] = 0;
-			}
-		}
 		for (Int_t i = 0; i < 4; i++) {
 			AliESDtrack *track = fESDEvent->GetTrack(indices.At(i));
 			if(!track) {
 				PostOutputs();
 				return;
 			}
-			fFourPionTrackV0[i][0] = track->Px();
-			fFourPionTrackV0[i][1] = track->Py();
-			fFourPionTrackV0[i][2] = track->Pz();
-			fFourPionTrackV0[i][3] = track->E();
-			fFourPionTrackV0[i][4] = track->GetSign();
-			fFourPionTrackV0[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
-			fFourPionTrackV0[i][6] = track->GetTPCsignal();
-			fFourPionTrackV0[i][7] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
-			fFourPionTrackV0[i][8] = track->GetTOFsignal();
-			fFourPionTrackV0[i][9] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fFourPionTrack[i][0] = track->Px();
+			fFourPionTrack[i][1] = track->Py();
+			fFourPionTrack[i][2] = track->Pz();
+			fFourPionTrack[i][3] = track->E();
+			fFourPionTrack[i][4] = track->GetSign();
+			//TPC (by L.Goerlich)
+			fFourPionTPCSigma[i][0] = track->GetTPCsignal();
+			fFourPionTPCSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTPCSigma[i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fFourPionTPCSigma[i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fFourPionTPCSigma[i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fFourPionTPCSigma[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			//TOF (by L.Goerlich)
+			fFourPionTOFSigma[i][0] = track->GetTOFsignal();
+			fFourPionTOFSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTOFSigma[i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fFourPionTOFSigma[i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fFourPionTOFSigma[i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			//ITS (by L.Goerlich)
+			fFourPionITSSigma[i][0] = track->GetITSsignal();
+			fFourPionITSSigma[i][1] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fFourPionITSSigma[i][2] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fFourPionITSSigma[i][3] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fFourPionITSSigma[i][4] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fFourPionITSSigma[i][5] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			fFourPionITSSigma[i][6] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fFourPionITSSigma[i][7] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fFourPionITSSigma[i][8] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			//Bayesian,combined(UInt_t)
+			//TPC 
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+			fFourPionMask_TPC[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TPC[i]);
+			//TOF
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+			fFourPionMask_TOF[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TOF[i]);
+			//ITS
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
+			fFourPionMask_ITS[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_ITS[i]);
+			//TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
+			fFourPionMask_TRD[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TRD[i]);
+			//TPC|TOF|ITS|TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
+					AliPIDResponse::kDetTOF |
+					AliPIDResponse::kDetITS |
+					AliPIDResponse::kDetTRD);
+			fFourPionMask_tot[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_tot[i]);
+			fFourPionDetMask_tot[i] = (UInt_t)fPIDCombined->GetDetectorMask();
+
 		}
 		fCheckFourPion = kTRUE;
+
 	}
 
-	if (fCheck6tracks) {
-//		fHistEvent->Fill(12); //For 6 tracks
-		for (Int_t j = 0; j < 10; j++) {
-			for (Int_t i = 0; i < 6; i++) {
-				fSixPionTrackV0[i][j] = 0;
-			}
-		}
-		for (Int_t i = 0; i < 6; i++) {
-			AliESDtrack *track = fESDEvent->GetTrack(indices.At(i));
-			if(!track) {
-				PostOutputs();
-				return;
-			}
-			fSixPionTrackV0[i][0] = track->Px();
-			fSixPionTrackV0[i][1] = track->Py();
-			fSixPionTrackV0[i][2] = track->Pz();
-			fSixPionTrackV0[i][3] = track->E();
-			fSixPionTrackV0[i][4] = track->GetSign();
-			fSixPionTrackV0[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
-			fSixPionTrackV0[i][6] = track->GetTPCsignal();
-			fSixPionTrackV0[i][7] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
-			fSixPionTrackV0[i][8] = track->GetTOFsignal();
-			fSixPionTrackV0[i][9] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
-		}
-		fCheckSixPion = kTRUE;
-	}
 	//-------------------------------------------------------------------------
+
+	// TODO :: ITSSA part
 	if (fCheck2tracks_ITSSA) {
-		for (Int_t j = 0; j < 10; j++) {
-			for (Int_t i = 0; i < 2; i++) {
-				fTwoPionTrackV0_ITSSA[i][j] = 0.;
-			}
-		}
-
-		Int_t tmp_i = 0;
-
-		for (Int_t i = 0; i < tmp_Ntrk; i++) {
-			AliESDtrack *track = fESDEvent->GetTrack(i);
-			if(!track) continue;
-			if(!fTrackCuts_ITSSA->AcceptTrack(track)) continue;
-			fTwoPionTrackV0_ITSSA[tmp_i][0] = track->Px();
-			fTwoPionTrackV0_ITSSA[tmp_i][1] = track->Py();
-			fTwoPionTrackV0_ITSSA[tmp_i][2] = track->Pz();
-			fTwoPionTrackV0_ITSSA[tmp_i][3] = track->E();
-			fTwoPionTrackV0_ITSSA[tmp_i][4] = track->GetSign();
-			tmp_i++;
-		}
 		fCheckTwoPion_ITSSA = kTRUE;
 	}
 	
 	indices = 0x0;
 
-	if (!fIsMC) fTree->Fill();
+	if (!fIsMC) {
+		if (fCheck2tracks || fCheck4tracks) fTree->Fill();
+	}
 	PostOutputs();
 	return;
 }
@@ -906,20 +1118,8 @@ void AliAnalysisTaskCDTree::PostOutputs()
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskCDTree::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 		TH1* hfochans, 
-		TH1 *hpriVtxX, TH1 *hpriVtxY, TH1 *hpriVtxZ, 
-		TH2D *hSPDTrkvsCls_bf, TH2D *hSPDTrkvsCls_af, TH1D *hEvent)
+		TH1 *hpriVtxX, TH1 *hpriVtxY, TH1 *hpriVtxZ, Double_t *hVertex)
 {
-	//Cluster Cut
-	const AliMultiplicity *mult = ESDEvent->GetMultiplicity();
-	hSPDTrkvsCls_bf->Fill(mult->GetNumberOfTracklets(),ESDEvent->GetNumberOfITSClusters(0)+ESDEvent->GetNumberOfITSClusters(1));
-	Double_t cut_slope = 4.;
-	Double_t cut_offset = 65.;
-	Bool_t IsClusterCut = kFALSE;
-	if (ESDEvent->GetNumberOfITSClusters(0) + ESDEvent->GetNumberOfITSClusters(1) <= (cut_offset+cut_slope*mult->GetNumberOfTracklets())) IsClusterCut=kTRUE;
-	if (IsClusterCut) hSPDTrkvsCls_af->Fill(mult->GetNumberOfTracklets(),ESDEvent->GetNumberOfITSClusters(0)+ESDEvent->GetNumberOfITSClusters(1));
-	if (!IsClusterCut) return kFALSE;
-	hEvent->Fill(kClusterCut);
-
 	AliTriggerAnalysis triggerAnalysis;
 
 	// SPD FastOR check-------------------------------------------------------
@@ -952,6 +1152,10 @@ Bool_t AliAnalysisTaskCDTree::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 	const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < 10.);
 	if(!kpriv) return kFALSE;
 
+	hVertex[0] = vertex->GetX();
+	hVertex[1] = vertex->GetY();
+	hVertex[2] = vertex->GetZ();
+
 	if(hpriVtxX) hpriVtxX->Fill(vertex->GetX());
 	if(hpriVtxY) hpriVtxY->Fill(vertex->GetY());
 	if(hpriVtxZ) hpriVtxZ->Fill(vertex->GetZ());
@@ -964,35 +1168,32 @@ Bool_t AliAnalysisTaskCDTree::CheckInput()
 {
 	//General protection------------------------------------------------------
 	if (const AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler)) {
-	  fESDEvent = (AliESDEvent*)esdH->GetEvent();
+		fESDEvent = (AliESDEvent*)esdH->GetEvent();
 	}
 
 	if(!fESDEvent){
-		printf("AliAnalysisTaskCDTree No valid event\n");
+//		printf("AliAnalysisTaskCDTest No valid event\n");
 		return kFALSE;
 	}
 
 	fPIDResponse = (AliPIDResponse*)fInputHandler->GetPIDResponse();
 	if(!fPIDResponse) {
-		printf("PIDResponse is not working!!\n");
+//		printf("PIDResponse is not working!!\n");
 		return kFALSE;
 	}
-	fPIDCombined = new AliPIDCombined;
-	fPIDCombined->SetDefaultTPCPriors();
-	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
 	//-------------------------------------------------------------------------
 
 	//Check Magnetic Field-----------------------------------------------------
 	if(TMath::Abs(fESDEvent->GetMagneticField()) < 1) {
-		printf("AliAnalysisTaskCDTree strange Bfield! %f\n", fESDEvent->GetMagneticField());
+//		printf("AliAnalysisTaskCDTree strange Bfield! %f\n", fESDEvent->GetMagneticField());
 		return kFALSE;
 	}
 	//-------------------------------------------------------------------------
 	
 	//Get MC event-------------------------------------------------------------
 	fMCEvent = MCEvent();
-	if (fMCEvent)
-		printf("This is MC Event");
+//	if (fMCEvent)
+//		printf("This is MC Event");
 	//-------------------------------------------------------------------------
 
 	return kTRUE;
@@ -1008,7 +1209,7 @@ Bool_t AliAnalysisTaskCDTree::SPDLoc2Glo(const Int_t id, const Double_t *loc,
 	static TGeoHMatrix mat;
 	Int_t vid = AliITSAlignMille2Module::GetVolumeIDFromIndex(id);
 	if (vid<0) {
-		printf("AliCDMesonUtils Did not find module with such ID %d\n",id);
+//		printf("AliCDMesonUtils Did not find module with such ID %d\n",id);
 		return kFALSE;
 	}
 	AliITSAlignMille2Module::SensVolMatrix(vid,&mat);

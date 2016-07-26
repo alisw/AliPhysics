@@ -46,7 +46,6 @@ InputFile = {
 	"LF:@data@/BaseConfig.C",
 	"LF:@data@/DetConfig.C",
 	"LF:@data@/GRP.C",
-	"LF:@data@/fmd_corrections.root",
 	"LF:@out@/$3/$1/$4_Stage_$2.xml"
 };
 OutputDir = "@out@/$3/$1";

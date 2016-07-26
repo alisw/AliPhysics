@@ -374,8 +374,6 @@ TH2F* hV0AvsSPDTrackletsMBPuCut2 = new TH2F("hV0AvsSPDTrackletsMBPuCut2"," V0A a
   Int_t nZNCentBin = 110;
   Float_t zNCentMin = 0, zNCentMax = 110;
 
-  printf("test zNCentMin = %f zNCentMax= %f\n",zNCentMin,zNCentMax);
-
   TH1F* hZNMultMB = new TH1F("hZNMultMB"," ZN mutliplicity for CINT7 trigger",nZNbin,zNMin,zNMax);
   fListZN->AddAtAndExpand(hZNMultMB, kZNMB);
   TH1F* hZNMultMUL = new TH1F("hZNMultMUL"," ZN mutliplicity for CMUL7 trigger",nZNbin,zNMin,zNMax);
@@ -612,8 +610,10 @@ void AliAnalysisTaskNorm::FillHistoPileUpVertices(const AliVEvent *event, const 
   
   for ( Int_t itrig = 0; itrig < trigClass->GetEntries(); itrig++ ) {
     TString sTrigClassName = ((TObjString*)trigClass->At(itrig))->GetString();
-    if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD") ) isMB = kTRUE;
-    if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") ||  sTrigClassName.Contains("CMUL7-B-NOPF-ALLNOTRD") ) isMUL = kTRUE; 
+    if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD") || sTrigClassName.Contains("CINT7-B-NOPF-MUFAST") ) 
+      isMB = kTRUE;
+    if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") || sTrigClassName.Contains("CMUL7-B-NOPF-ALLNOTRD") || sTrigClassName.Contains("CMUL7-B-NOPF-MUFAST") ) 
+      isMUL = kTRUE; 
   }
 
   // fill histo related to pileup vertices
@@ -693,8 +693,10 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
   
   for ( Int_t itrig = 0; itrig < trigClass->GetEntries(); itrig++ ) {
     TString sTrigClassName = ((TObjString*)trigClass->At(itrig))->GetString();
-    if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD") ) isMB = kTRUE;
-    if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") || sTrigClassName.Contains("CMUL7-B-NOPF-ALLNOTRD") ) isMUL = kTRUE;
+    if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD") ||  sTrigClassName.Contains("CINT7-B-NOPF-MUFAST") ) 
+      isMB = kTRUE;
+    if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") || sTrigClassName.Contains("CMUL7-B-NOPF-ALLNOTRD") || sTrigClassName.Contains("CMUL7-B-NOPF-MUFAST") ) 
+      isMUL = kTRUE;
   }
 
   // fill histo related to V0A multiplicity
@@ -768,17 +770,19 @@ void AliAnalysisTaskNorm::FillHistoMult(const AliVEvent *event, const TObjArray 
   Bool_t   znaFired = kFALSE;
   Bool_t   zncFired = kFALSE;
 
-
-
   if (fIsESD) {
     AliESDZDC *esdZDC = esd->GetESDZDC();
     if (esdZDC) {
+
+      Int_t detChZNA  = esdZDC->GetZNATDCChannel(); //should be 12 for Run1 and 18 for Run2
+      Int_t detChZNC  = esdZDC->GetZNCTDCChannel(); //should be 10 for Run1 and 16 for Run2
+
       for (Int_t j = 0; j < 4; ++j) 
-	if (esdZDC->GetZDCTDCData(12,j) != 0) 
+	if (esdZDC->GetZDCTDCData(detChZNA,j) != 0) 
 	  znaFired = kTRUE;
       
       for (Int_t j = 0; j < 4; ++j) 
-	if (esdZDC->GetZDCTDCData(10,j) != 0) 
+	if (esdZDC->GetZDCTDCData(detChZNC,j) != 0) 
 	  zncFired = kTRUE;   
 
       const Double_t *ZNAtower = esdZDC->GetZN2TowerEnergy(); 
@@ -1202,12 +1206,18 @@ TList* AliAnalysisTaskNorm::BuildListOfNormFactor(const TObjArray *trig ) {
     
     for ( Int_t itrig=0; itrig< trig->GetEntries(); itrig++ ) {
       TString sTrigClassName = ((TObjString*) trig->At(itrig))->GetString();
-      if (sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD")) isMB = kTRUE;
-      if (sTrigClassName.Contains("CMUL7-B-NOPF-MUON")) isMUL = kTRUE;
-      if (sTrigClassName.Contains("CMSL7-B-NOPF-MUON")) isMSL = kTRUE;
-      if (sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD&0MSL")) isMSLInMB = kTRUE;
-      if (sTrigClassName.Contains("CMSL7-B-NOPF-MUON&0MUL")) isMULInMSL = kTRUE;
-      if (sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD&0MUL")) isMULInMB = kTRUE;
+      if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD") || sTrigClassName.Contains("CINT7-B-NOPF-MUFAST")) 
+	isMB = kTRUE;
+      if ( sTrigClassName.Contains("CMUL7-B-NOPF-MUON") || sTrigClassName.Contains("CMUL7-B-NOPF-MUFAST") ) 
+	isMUL = kTRUE;
+      if ( sTrigClassName.Contains("CMSL7-B-NOPF-MUON") || sTrigClassName.Contains("CMSL7-B-NOPF-MUFAST") ) 
+	isMSL = kTRUE;
+      if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD&0MSL") || sTrigClassName.Contains("CINT7-B-NOPF-MUFAST&0MSL") ) 
+	isMSLInMB = kTRUE;
+      if ( sTrigClassName.Contains("CMSL7-B-NOPF-MUON&0MUL") ||  sTrigClassName.Contains("CMSL7-B-NOPF-MUFAST&0MUL") ) 
+	isMULInMSL = kTRUE;
+      if ( sTrigClassName.Contains("CINT7-B-NOPF-ALLNOTRD&0MUL") || sTrigClassName.Contains("CINT7-B-NOPF-MUFAST&0MUL") ) 
+	isMULInMB = kTRUE;
     }
     
     if (isMB){

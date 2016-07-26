@@ -64,7 +64,7 @@ AliHFEpidITS::AliHFEpidITS(const Char_t *name):
 
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const AliHFEpidITS &ref):
-  AliHFEpidBase("")
+    AliHFEpidBase("")
   , fNsigmaITS(ref.fNsigmaITS)
   , fMeanShift(ref.fMeanShift)
 {

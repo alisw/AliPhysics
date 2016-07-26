@@ -206,6 +206,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   
   // fill out background histogram
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, fgkErrorZero);
     Float_t pp = fHistDataPP->GetBinContent(ibin);
     Float_t mm = fHistDataMM->GetBinContent(ibin);
 
@@ -215,7 +216,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
       //Arithmetic mean instead of geometric
       background=(pp+mm);
       ebackground=TMath::Sqrt(pp+mm);
-      if (TMath::Abs(ebackground)<1e-30) ebackground=1;
+      if (TMath::Abs(ebackground)<1e-30) ebackground=fgkErrorZero;
     }
 
     fHistBackground->SetBinContent(ibin, background);
@@ -269,7 +270,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
         //Arithmetic mean instead of geometric
         background=(pp+mm);
         ebackground=TMath::Sqrt(ppe*ppe+mme*mme);
-        if (TMath::Abs(ebackground)<1e-30) ebackground=1;
+        if (TMath::Abs(ebackground)<1e-30) ebackground=fgkErrorZero;
       }
       
       Float_t rcon = 1.0;
@@ -358,6 +359,9 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
     fHistDataME->Rebin(fRebin);
     fHistBackground->Rebin(fRebin);
   }
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, 1.);
+  }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
@@ -411,6 +415,9 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
     fHistDataPM->Rebin(fRebin);
     fHistBackground->Rebin(fRebin);
   }
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, 1.);
+  } 
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor

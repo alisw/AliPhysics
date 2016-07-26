@@ -466,10 +466,15 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     }
   }
 
+
+
   if (fUseMC) {
     // fill matrix
     ((TH2F *)fHistosCustom->UncheckedAt(kHEffMatrix))->Fill(totalNch, totalNtr);
   }
+
+
+
 
   //
   // MC Generator info
@@ -593,8 +598,8 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
   Double_t v0c3   = vzero->GetMRingV0C(3);
 
-  //fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
-  //fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
+  fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
+  fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
   if(fIsSelected) hstat->Fill(kEvAfterAsymCut);
   /*
     if (!fUseMC) {
@@ -720,6 +725,10 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   fVtxOK &= (fESDVtx[2] >= fZVertexMin && fESDVtx[2] <= fZVertexMax);
   //
   //  if (!fVtxOK || !fIsSelected) return;
+
+if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
+//((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
+
 
   if (fUseMC) {
     FillMCPrimaries();
@@ -1107,6 +1116,20 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   int nEtaBinsS = TMath::Nint((fEtaMax-fEtaMin)/fEtaBin);
   if (nEtaBinsS<1) nEtaBinsS = 1;
   //
+
+  char mybuffn[100],mybufft[500];
+  for (int ib1=0;ib1<fNCentBins;ib1++) {
+    sprintf(mybuffn,"b%d_corrMatrix",ib1);
+    sprintf(mybufft,"bin%d Correlation Matrix",ib1);
+    TH2F* hcorr3 = new  TH2F(mybuffn,mybufft, kMaxMlt, 0, kMaxMlt, kMaxMlt, 0, kMaxMlt);
+    hcorr3->GetXaxis()->SetTitle("n_{ch}");
+    hcorr3->GetYaxis()->SetTitle("n_{tracklets}");
+    AddHisto(histos,hcorr3,kHCorrMatrix+ib1);
+    //
+  }
+
+
+
   if (fUseMC) {
     // Z vertex vs Eta distribution for primaries
     char buffn[100],bufft[500];
@@ -1374,6 +1397,7 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
     //---------------------------------------- CHECK ------------------------------<<<
     //
     double theta  = mlt->GetTheta(itr);
+    double phi  = mlt->GetPhi(itr);
     double eta    = -TMath::Log(TMath::Tan(theta/2));
     //
     double dtheta = mlt->GetDeltaTheta(itr);
@@ -1382,6 +1406,8 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
       double sint   =  TMath::Sin(theta);
       dThetaX /= (sint*sint);
     }
+
+    if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
     if (fCutOnDThetaX && TMath::Abs(dThetaX)>fDThetaWindow) continue;
     //
     //    double phi    = mlt->GetPhi(itr);

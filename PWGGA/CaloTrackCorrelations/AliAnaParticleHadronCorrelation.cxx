@@ -191,7 +191,8 @@ fhEventBin(0),                  fhEventMixBin(0),               fhEventMBBin(0),
 fhMassPtTrigger(0),             fhMCMassPtTrigger(),
 fhPtLeadInConeBin(),            fhPtSumInConeBin(),
 fhPtLeadConeBinDecay(),         fhSumPtConeBinDecay(),
-fhPtLeadConeBinMC(),            fhSumPtConeBinMC()
+fhPtLeadConeBinMC(),            fhSumPtConeBinMC(),
+fhTrackResolution(0),           fhTrackResolutionUE(0)
 {
   InitParameters();
   
@@ -1507,6 +1508,21 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   Bool_t isoCase = OnlyIsolated() && (GetIsolationCut()->GetParticleTypeInCone() != AliIsolationCut::kOnlyCharged);
   Bool_t neutralMix = fFillNeutralEventMixPool || isoCase ;
   
+  if( GetReader()->GetDataType() == AliCaloTrackReader::kESD )
+  {
+    fhTrackResolution  = new TH2F ("hTrackResolution","Track resolution: #sigma_{#it{p}_{T}} vs #it{p}_{T}, away side, ESDs", 
+                                   nptbins,ptmin,ptmax,600,0,0.3);
+    fhTrackResolution->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhTrackResolution->SetYTitle("#sigma_{#it{p}_{T}} / #it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhTrackResolution);
+
+    fhTrackResolutionUE  = new TH2F ("hTrackResolutionUE","Track resolution: #sigma_{#it{p}_{T}} vs #it{p}_{T}, UE, ESDs", 
+                                   nptbins,ptmin,ptmax,600,0,0.3);
+    fhTrackResolutionUE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhTrackResolutionUE->SetYTitle("#sigma_{#it{p}_{T}} / #it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhTrackResolutionUE);
+  }
+  
   fhPtTriggerInput  = new TH1F("hPtTriggerInput","Input trigger #it{p}_{T}", nptbins,ptmin,ptmax);
   fhPtTriggerInput->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
   outputContainer->Add(fhPtTriggerInput);
@@ -2551,7 +2567,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       outputContainer->Add(fhZTVZ[z]);
     }
   }
-  
   
   if(fPi0Trigger)
   {
@@ -4120,18 +4135,38 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     // Imbalance zT/xE/pOut histograms
     //
     
+    AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
+    
     //
     // Delta phi cut for momentum imbalance correlation
     //
     if  ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
+    {
+      // Check track resolution
+      if ( esdTrack )
+      {
+        fhTrackResolution->Fill(pt, TMath::Sqrt(esdTrack->GetCovariance()[14])*pt, 
+                                GetEventWeight());
+      }
+
       FillChargedMomentumImbalanceHistograms(ptTrig, pt, deltaPhi, cenbin, track->Charge(),
                                              assocBin, decayTag, outTOF, mcTag);
+    }
     
     //
     // Underlying event, right side, default case
     //
     if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
+    {
+      // Check track resolution
+      if ( esdTrack )
+      {
+        fhTrackResolutionUE->Fill(pt, TMath::Sqrt(esdTrack->GetCovariance()[14])*pt, 
+                                  GetEventWeight());
+      }
+      
       FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, cenbin, outTOF,mcTag);
+    }
     
     //
     // Several UE calculation,  in different perpendicular regions, up to 6:

@@ -209,7 +209,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
-        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { return AcceptTrack(track, 0); }
+        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { UInt_t rejectionReason = 0; return GetParticleContainer(0)->AcceptParticle(track, rejectionReason); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { 
             if(jet->MaxTrackPt() > fExcludeJetsWithTrackPt) return kFALSE;
             return AcceptJet(jet, 0); 
@@ -388,6 +388,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistRhoVsCent;         //! rho veruss centrality
         TH2F*                   fHistRhoAVsMult;        //! rho * A vs multiplicity for all jets
         TH2F*                   fHistRhoAVsCent;        //! rho * A vs centrality for all jets
+        TH2F*                   fHistRhoEtaBC[10];      //! rho vs eta before cuts
         // delta pt distributions
         TH2F*                   fHistRCPhiEta[10];              //! random cone eta and phi
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
@@ -402,8 +403,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         // jet histograms (after kinematic cuts)
         TH1F*                   fHistJetPtRaw[10];              //! jet pt - no background subtraction
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
+        TH1F*                   fHistJetPtBC[10];               //! jet pt before area cut
         TH2F*                   fHistJetEtaPhi[10];             //! eta and phi correlation
+        TH2F*                   fHistJetEtaPhiBC[10];           //! eta and phi correlation before cuts
         TH2F*                   fHistJetPtArea[10];             //! jet pt versus area
+        TH2F*                   fHistJetPtAreaBC[10];           //! jet pt versus area before cuts
         TH2F*                   fHistJetPtEta[10];              //! jet pt versus eta (temp control)
         TH2F*                   fHistJetPtConstituents[10];     //! jet pt versus number of constituents
         TH2F*                   fHistJetEtaRho[10];             //! jet eta versus rho
@@ -430,12 +434,23 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TArrayD*                fSigma3C;                       // chi vs cent for vzero C ep_3
         EPweightType            fWeightForVZERO;                // use chi weight for vzero
         TFile*                  fOADB;                          //! fOADB
-
+        TH2F*                   fHistQxV0aBC;                   //! qx v0a before cuts
+        TH2F*                   fHistQyV0aBC;                   //! qx v0a before cuts
+        TH2F*                   fHistQxV0cBC;                   //! qx v0a before cuts
+        TH2F*                   fHistQyV0cBC;                   //! qx v0a before cuts
+        TH2F*                   fHistQxV0a;                     //! qx v0a before cuts
+        TH2F*                   fHistQyV0a;                     //! qx v0a before cuts
+        TH2F*                   fHistQxV0c;                     //! qx v0a before cuts
+        TH2F*                   fHistQyV0c;                     //! qx v0a before cuts
+        TH2F*                   fHistMultVsCellBC;              //! fHistMultVsCellBC
+        TH1F*                   fHistEPBC;                      //! fHistEPBC
+        TH1F*                   fHistEP;                        //! fHistEP
+        TH2F*                   fHistMultVsCell;                //! fHistMultVsCell
 
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 6);
+        ClassDef(AliAnalysisTaskJetV2, 8);
 };
 
 #endif

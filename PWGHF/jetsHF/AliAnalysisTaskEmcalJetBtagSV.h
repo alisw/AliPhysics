@@ -135,9 +135,9 @@ protected:
   
   // temporary
   Bool_t    GetArrays();
-  Bool_t    FillMapWithAODtracks(map_AliAODTrk *fAODgTrkMap);
-  Bool_t    FillV0trks(std::vector<Int_t> &TrkIDs);
-  Bool_t    IsV0(Int_t trkId, std::vector<Int_t> &vTrks);
+  Bool_t    FillMapOfV0gTrkIDs();
+  Bool_t    FillVecOfV0gTrkIDs(std::vector<Int_t> &vctrTrkIDs);
+  Bool_t    IsAODtrkBelongToV0(std::vector<Int_t> &vctrTrkIDs, Int_t trkID);
   
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   
@@ -203,7 +203,7 @@ private:
   
   TClonesArray               *fHFvertexing;      //! Array of reconstructed secondary vertex (b-tagged jets)
   
-  map_AliAODTrk              *fAODgTrkMap;
+  map_int_bool               *fV0gTrkMap;
   
   AliLog::EType_t             fDebug;
   

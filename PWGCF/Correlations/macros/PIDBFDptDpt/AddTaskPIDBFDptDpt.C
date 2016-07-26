@@ -1,24 +1,24 @@
 //  Macro designed for use with the AliAnalysisTaskPIDBFDptDpt task.
 //  Author: Jinjin(Au-Au) Pan, Claude Pruneau & Prabhat Pujahari, Wayne State University
 //
-//   PbPb 10h AOD160 2.76TeV:           centralityMethod=4 (V0),   trigger=kFALSE (AliVEvent::kMB).
-//   pPb  13b_pass3 13c_pass2 5.02TeV:  centralityMethod=7 (V0A),  trigger=kTRUE (AliVEvent::kINT7).     
-//   pp   201?:                         centralityMethod=???       trigger=??? (AliVEvent::???)
+//   PbPb 10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
+//   pPb  13:     centralityMethod = 7 (V0A),       trigger = kTRUE (AliVEvent::kINT7).     
+//   pp   10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
 /////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
 (
- TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- int    CentralityGroup         = 1, // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
- int    singlesOnly             = 1, // 0: full correlations    1: singles only
- int    useWeights              = 0, // 0: no                   1: yes 
- int    centralityMethod        = 4, // 3: track count  4: V0 centrality  7: V0A centrality for pPb
- int    chargeSet               = 1, // 0: ++    1: +-    2: -+    3: --
- double zMin                    = -6., // |zMin| should = zMax due to the design of the code
- double zMax                    =  6., // set vertexZ cut   
- double vZwidth                 = 0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
- int    trackFilterBit          = 1, // PbPb2010(Global=1;TPConly=128;Hybrid=272); pPb2013(Global=?;TPConly=?;Hybrid=768); pp(Global=?;TPConly=?; Hybrid=?)
- int    nClusterMin             = 80,
+ TString AnalysisDataType       = "MCAODreco", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ TString System                 = "PbPb",     // "PbPb", "pPb", "pp"
+ int    CentralityGroup         =  1,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    singlesOnly             =  1,   // 0: full correlations    1: singles only
+ int    useWeights              =  0,   // 0: no                   1: yes  
+ int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
+ double zMin                    = -6.,  // |zMin| should = zMax due to the design of the code
+ double zMax                    =  6.,  // set vertexZ cut   
+ double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
+ int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
+ int    nClusterMin             =  70,
  double ptMin                   =  0.2,
  double ptMax                   =  2.0,
  double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
@@ -31,15 +31,14 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  1,
- Bool_t trigger                 = kFALSE,
- int particleID                 = 1, // Pion=0, Kaon=1, Proton=2
- double nSigmaCut               = 3.0,
- int pidType                    = 2, // kNSigmaTPC=0, kNSigmaTOF=1, kNSigmaTPCTOF=2
- Bool_t requestTOFPID           = 1,
- double ptTOFPID                = 0.5,
- Bool_t isMC                    = 0,
+ int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
+ double nSigmaCut               =  3.0,
+ int pidType                    =  2,   // kNSigmaTPC=0, kNSigmaTOF=1, kNSigmaTPCTOF=2
+ Bool_t requestTOFPID           =  1,
+ double ptTOFPID                =  0.5,
+ Bool_t isMC                    =  1,
  const char* taskname           = "ChPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/Global_160_6vZ24_08y_Kaon_Cent8_Pos_S1S2/Global_160_6vZ24_08y_Kaon_Cent8_Pos_S1S2.root" )
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/G86_6vZ24_08y16_Kaon_Cent8_Pos_45runs_S1S2/G86_6vZ24_08y16_Kaon_Cent8_Pos_45runs_S1S2.root" )
 
 {
   // Set Default Configuration of this analysis
@@ -51,7 +50,14 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
-    
+  int    centralityMethod       = 4; 
+  Bool_t trigger                = kFALSE;
+  
+  if      ( System == "PbPb" )    { centralityMethod = 4; trigger = kFALSE; }
+  else if ( System == "pPb" )     { centralityMethod = 7; trigger = kTRUE;  }
+  else if ( System == "pp" )      { centralityMethod = 3; trigger = kFALSE; }
+  else    return 0;
+  
   double minCentrality[10];
   double maxCentrality[10];
 
@@ -95,7 +101,11 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     { minCentrality[0] = 20.;     maxCentrality[0]  = 40.; }
   else if ( CentralityGroup == 12 )
     { minCentrality[0] = 60.;     maxCentrality[0]  = 80.; }
-  else { return 0; }
+  else if ( CentralityGroup == 13 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 100.; }
+  else if ( CentralityGroup == 14 )
+    { minCentrality[0] = 0;       maxCentrality[0]  = 80.; }
+  else    return 0;
   
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
@@ -139,7 +149,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
     
   for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     {
-      switch (chargeSet)
+      switch ( chargeSet )
         {
 	case 0: part1Name = "P_"; part2Name = "P_"; requestedCharge1 =  1; requestedCharge2 =  1; sameFilter = 1;   break;
 	case 1: part1Name = "P_"; part2Name = "M_"; requestedCharge1 =  1; requestedCharge2 = -1; sameFilter = 0;   break;
@@ -193,7 +203,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
       TH3F   * weight_2   = 0;
-      if (useWeights)
+      if ( useWeights )
         {
 	  TGrid::Connect("alien:");
 	  inputFile = TFile::Open(inputHistogramFileName,"OLD");
@@ -259,18 +269,18 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetVertexZMax(          zMax            );
       task->SetVertexZWidth(        vZwidth         );
       task->SetEtaWidth(        etaBinWidth         );
-      task->SetVertexXYMin(         -1.            );
-      task->SetVertexXYMax(          1.            );
+      task->SetVertexXYMin(         -1.             );
+      task->SetVertexXYMax(          1.             );
       task->SetCentralityMethod(    centralityMethod);
       task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
       task->SetPtMin1(              ptMin           );
       task->SetPtMax1(              ptMax           );
-      task->SetEtaMin1(             eta1Min          ); // SetYMin1 acturally
-      task->SetEtaMax1(             eta1Max          ); // SetYMax1 acturally
+      task->SetEtaMin1(             eta1Min         ); // SetYMin1 acturally
+      task->SetEtaMax1(             eta1Max         ); // SetYMax1 acturally
       task->SetPtMin2(              ptMin           );
       task->SetPtMax2(              ptMax           );
-      task->SetEtaMin2(             eta2Min          ); // SetYMin2 acturally
-      task->SetEtaMax2(             eta2Max          ); // SetYMax2 acturally
+      task->SetEtaMin2(             eta2Min         ); // SetYMin2 acturally
+      task->SetEtaMax2(             eta2Max         ); // SetYMax2 acturally
       task->SetDcaZMin(             dcaZMin         );
       task->SetDcaZMax(             dcaZMax         );
       task->SetDcaXYMin(            dcaXYMin        );
@@ -283,8 +293,9 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetRequestedCharge_2(   requestedCharge2);
       task->SetWeigth_1(            weight_1        );
       task->SetWeigth_2(            weight_2        );
-      task->SetParticleSpecies(       particleID    );
-      task->SetAnalysisType(      AnalysisDataType  );
+      task->SetParticleSpecies(     particleID      );
+      task->SetAnalysisType(        AnalysisDataType);
+      task->SetSystemType(          System          );
       task->SetResonancesCut(       NoResonances    );
       task->SetElectronCut(         NoElectron      );
         
@@ -299,7 +310,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetHelperPID( helperpid );
   
       if(trigger) task -> SelectCollisionCandidates(AliVEvent::kINT7); //pPb
-      else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb
+      else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb & pp
         
       cout << "Creating task output container" << endl;
         

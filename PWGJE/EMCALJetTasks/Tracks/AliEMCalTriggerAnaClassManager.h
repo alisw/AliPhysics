@@ -46,7 +46,7 @@ public:
    * Return error message
    * \return The error message
    */
-  const char *what() throw () { return "Trigger manager does not contain any trigger class"; }
+  virtual const char *what() const throw() { return "Trigger manager does not contain any trigger class"; }
 
 };
 

@@ -671,7 +671,9 @@ struct OptionList
   const TString& AsTString(const TString& name, const TString& def="") const
   {
     Option* o = Find(name);
-    if (!o) return def;
+    static TString ddef;
+    ddef = def;
+    if (!o) return ddef;
     return o->Get();
   }
   /** 

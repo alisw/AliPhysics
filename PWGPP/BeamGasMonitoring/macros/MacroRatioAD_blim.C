@@ -1,6 +1,6 @@
 // this is macro to get "efficiency", "purity" and "rejection efficiency".
 
-Int_t bunchinputarray[7] = {001,101,200,201,202,211,221}; // this array contains our interesting output 2015.08.18. (blim)
+Int_t bunchinputarray[7] = {201, 999, 999, 999, 999, 999, 999}; // this array contains our interesting output 2015.08.18. (blim)
 
 void MacroRatioAD_blim(){
     for (Int_t irun=1; irun<2 ; irun++ ) {
@@ -22,11 +22,12 @@ GetRatio(Int_t split=-1){
     TDirectoryFile *dir = (TDirectoryFile*)filein->Get("BeamGasMon");
     
     TList *list = (TList*)dir->Get("cOutputH_MB");
-    
-    
-    TH2F *hTotalTrkVsClsSPID = (TH2F*)list->FindObject("hTotalTrkVsClsSPID");    hTotalTrkVsClsSPID->GetXaxis()->SetTitle("Tracklet");
+    TList *list2 = (TList*)dir->Get("cOutputH_HM"); //add for HM data
+    /*
+    TH2F *hTotalTrkVsClsSPID = (TH2F*)list->FindObject("hTotalTrkVsClsSPID");
+    hTotalTrkVsClsSPID->GetXaxis()->SetTitle("Tracklet");
     hTotalTrkVsClsSPID->GetYaxis()->SetTitle("Cluster (fspdC1)");
-    
+    */
     TH2F *hTotalV0 = (TH2F*)list->FindObject("hTotalV0");
     hTotalV0->GetXaxis()->SetTitle("V0A-V0C");
     hTotalV0->GetYaxis()->SetTitle("V0A+V0C");
@@ -55,7 +56,44 @@ GetRatio(Int_t split=-1){
     TH2F *hADNumTrkVsClsSPD[3][3][3];
     TH2F *hNumAD[3][3][3];
     TH2F *hDenomAD[3][3][3];
+
+    TH1F *hNumEffPurityBC_HM[3][3][3];
+    TH1F *hDenomEffBC_HM[3][3][3];
+    TH1F *hDenomPurityBC_HM[3][3][3];
+    TH1F *hDenomRejecEffBC_HM[3][3][3];
+    TH1F *hNumRejecEffBC_HM[3][3][3];
+    TH1F *hSPDNumBC_HM[3][3][3];
+    TH1F *hSPDDenomBC_HM[3][3][3];
     
+    TH2F *hNumTrkVsClsSPID_HM[3][3][3];
+    TH2F *hDenomTrkVsClsSPID_HM[3][3][3];
+    TH2F *hNumV0_HM[3][3][3];
+    TH2F *hDenomV0_HM[3][3][3];
+    
+    
+    TH1F *hADNumEffPurityBC_HM[3][3][3];
+    TH1F *hADDenomPurityBC_HM[3][3][3];
+    TH1F *hADNumRejecEffBC_HM[3][3][3];
+    TH2F *hADNumTrkVsClsSPD_HM[3][3][3];
+    TH2F *hNumAD_HM[3][3][3];
+    TH2F *hDenomAD_HM[3][3][3];
+    
+    
+     TH2F *hTrkVsClsSPIDSlopeM = (TH2F*)list->FindObject("hTrkVsClsSPIDSlopeM");
+     hTrkVsClsSPIDSlopeM->GetXaxis()->SetTitle("Tracklet");
+     hTrkVsClsSPIDSlopeM->GetYaxis()->SetTitle("Cluster (fspdC1+fsdpC2)");
+    TH2F *hTrkVsClsSPIDSlopeM2 = (TH2F*)list->FindObject("hTrkVsClsSPIDSlopeM2");
+    hTrkVsClsSPIDSlopeM2->GetXaxis()->SetTitle("Tracklet");
+    hTrkVsClsSPIDSlopeM2->GetYaxis()->SetTitle("Cluster (fspdC1+fsdpC2)");
+    
+    TH2F *hTrkVsClsSPIDSlopeM_HM = (TH2F*)list2->FindObject("hTrkVsClsSPIDSlopeM_HM");
+    hTrkVsClsSPIDSlopeM_HM->GetXaxis()->SetTitle("Tracklet");
+    hTrkVsClsSPIDSlopeM_HM->GetYaxis()->SetTitle("Cluster (fspdC1+fsdpC2)");
+    TH2F *hTrkVsClsSPIDSlopeM_HM2 = (TH2F*)list2->FindObject("hTrkVsClsSPIDSlopeM_HM2");
+    hTrkVsClsSPIDSlopeM_HM2->GetXaxis()->SetTitle("Tracklet");
+    hTrkVsClsSPIDSlopeM_HM2->GetYaxis()->SetTitle("Cluster (fspdC1+fsdpC2)");
+//    hTrkVsClsSPIDSlopeM->SaveAs("./Fig/hTrkVsClsSPIDSlopeM.pdf");
+    //addd
     
     for(int i=0; i<3; i++){
         for(int j=0; j<3; j++){
@@ -92,6 +130,41 @@ GetRatio(Int_t split=-1){
         }
     } // read histogram from output
 
+    for(int i=0; i<3; i++){
+        for(int j=0; j<3; j++){
+            for(int k=0; k<3; k++){
+                //________ we want to make histograms which we use really. 2015.08.18. (blim)
+                Int_t check000 = i*100+j*10+k;
+                for ( int l=0; l<8;l++){
+                    if(check000==bunchinputarray[l]){
+                        //________
+                        
+                        hNumEffPurityBC_HM[i][j][k] =(TH1F*)list2->FindObject(Form("hNumEffPurityBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        hDenomEffBC_HM[i][j][k]=(TH1F*)list2->FindObject(Form("hDenomEffBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        hDenomPurityBC_HM[i][j][k]=(TH1F*)list2->FindObject(Form("hDenomPurityBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        hDenomRejecEffBC_HM[i][j][k]=(TH1F*)list2->FindObject(Form("hDenomRejecEffBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        hNumRejecEffBC_HM[i][j][k]=(TH1F*)list2->FindObject(Form("hNumRejecEffBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        hSPDNumBC_HM[i][j][k]=(TH1F*)list2->FindObject(Form("hSPDNumBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        hSPDDenomBC_HM[i][j][k]=(TH1F*)list2->FindObject(Form("hSPDDenomBC_HM%d_V0%01d_Flag%d",i,j,k));
+                        
+                        hNumTrkVsClsSPID_HM[i][j][k] = (TH2F*)list2->FindObject(Form("hNumTrkVsClsSPID_HM%d_V0%d_Flag%d",i,j,k));
+                        hDenomTrkVsClsSPID_HM[i][j][k]=(TH2F*)list2->FindObject(Form("hDenomTrkVsClsSPID_HM%d_V0%d_Flag%d",i,j,k));
+                        hNumV0_HM[i][j][k] = (TH2F*)list2->FindObject(Form("hNumV0_HM%d_V0%d_Flag%d",i,j,k));
+                        hDenomV0_HM[i][j][k] = (TH2F*)list2->FindObject(Form("hDenomV0_HM%d_V0%d_Flag%d",i,j,k));
+                        
+                        hADNumEffPurityBC_HM[i][j][k] =(TH1F*)list2->FindObject(Form("hADNumEffPurityBC_HM%d_AD%01d_Flag%d",i,j,k));
+                        hADDenomPurityBC_HM[i][j][k] =(TH1F*)list2->FindObject(Form("hADDenomPurityBC_HM%d_AD%01d_Flag%d",i,j,k));
+                        hADNumRejecEffBC_HM[i][j][k] =(TH1F*)list2->FindObject(Form("hADNumRejecEffBC_HM%d_AD%01d_Flag%d",i,j,k));
+                        hADNumTrkVsClsSPD_HM[i][j][k] = (TH2F*)list2->FindObject(Form("hADNumTrkVsClsSPD_HM%d_AD%d_Flag%d",i,j,k));
+                        hNumAD_HM[i][j][k] = (TH2F*)list2->FindObject(Form("hNumAD_HM%d_AD%d_Flag%d",i,j,k));
+                        hDenomAD_HM[i][j][k] = (TH2F*)list2->FindObject(Form("hDenomAD_HM%d_AD%d_Flag%d",i,j,k));
+                    }
+                }
+                
+            }
+        }
+    } // read histogram from output
+    
     
     TH1F *hPurityBC[3][3][3];
     TH1F *hEfficiencyBC[3][3][3];
@@ -244,6 +317,132 @@ GetRatio(Int_t split=-1){
     
     
     cOutCanvas_output->SaveAs("./Fig/cOutCanvas_output.pdf");
+    
+    //____________________________
+    
+    
+    TH1F *hPurityBC_HM[3][3][3];
+    TH1F *hEfficiencyBC_HM[3][3][3];
+    TH1F *hRejectEfficiencyBC_HM[3][3][3];
+    TH1F *hSPDEfficiencyBC_HM[3][3][3];
+    TH2F *h2DSPDEfficiency_HM[3][3][3];
+    TH2F *h2DV0Efficiency_HM[3][3][3];
+    
+    
+    TH1F *hADPurityBC_HM[3][3][3];
+    TH1F *hADEfficiencyBC_HM[3][3][3];
+    TH1F *hADRejectEfficiencyBC_HM[3][3][3];
+    TH2F *h2DADEfficiency_HM[3][3][3];
+    
+    double denomeff_HM = hDenomEffBC_HM[2][0][1]->GetBinContent(10);
+    double denomrejeceff_HM = hDenomRejecEffBC_HM[2][0][1]->GetBinContent(10);
+    
+    for(int i=0; i<3; i++){
+        for(int j=0; j<3; j++){
+            for(int k=0; k<3; k++){
+                Int_t check000 = i*100+j*10+k;
+                for ( int l=0; l<8;l++){
+                    if(check000==bunchinputarray[l]){
+                        hPurityBC_HM[i][j][k] = new TH1F(Form("hPurityBC_HM%d_V0%d_Flag%d",i,j,k),"; #V0flags in PF", 35, 0, 35);
+                        hPurityBC_HM[i][j][k]->SetTitle("Purity");
+                        hEfficiencyBC_HM[i][j][k] = new TH1F(Form("hEfficiencyBC_HM%d_V0%d_Flag%d",i,j,k),"; #V0flags in PF", 35, 0, 35);
+                        hEfficiencyBC_HM[i][j][k]->SetTitle("Efficiency");
+                        
+                        hRejectEfficiencyBC_HM[i][j][k] = new TH1F(Form("hRejectEfficiencyBC_HM%d_V0%d_Flag%d",i,j,k),"; #V0flags in PF", 35, 0, 35);
+                        hRejectEfficiencyBC_HM[i][j][k]->SetTitle("Rejection-Efficiency");
+                        
+                        
+                        hSPDEfficiencyBC_HM[i][j][k] = new TH1F(Form("hSPDEfficiencyBC_HM%d_V0%d_Flag%d",i,j,k),"; Spd tracklet", 200, 0, 200);
+                        
+                        h2DSPDEfficiency_HM[i][j][k] = new TH2F(Form("h2DSPDEfficiency_HM%d_V0%d_Flag%d",i,j,k),"; Spd Cluster vs tracklet",140,0,140,500,0,500);
+                        h2DSPDEfficiency_HM[i][j][k]->GetXaxis()->SetTitle("Tracklet");
+                        h2DSPDEfficiency_HM[i][j][k]->GetYaxis()->SetTitle("Cluster (fspdC1)");
+                        
+                        h2DV0Efficiency_HM[i][j][k] = new TH2F(Form("h2DV0Efficiency_HM%d_V0%d_Flag%d",i,j,k),"; V0 timing information", 600,-300,300,2000,-1000,1000);
+                        h2DV0Efficiency_HM[i][j][k]->GetXaxis()->SetTitle("V0A-V0C");
+                        h2DV0Efficiency_HM[i][j][k]->GetYaxis()->SetTitle("V0A+V0C");
+                        
+                        
+                        
+                        hADPurityBC_HM[i][j][k] = new TH1F(Form("hADPurityBC_HM%d_V0%d_Flag%d",i,j,k),"; #ADflags in PF", 10, 0, 10);
+                        hADPurityBC_HM[i][j][k]->SetTitle("AD : Purity");
+                        hADEfficiencyBC_HM[i][j][k] = new TH1F(Form("hADEfficiencyBC_HM%d_V0%d_Flag%d",i,j,k),"; #ADflags in PF", 10, 0, 10);
+                        hADEfficiencyBC_HM[i][j][k]->SetTitle("AD : Efficiency");
+                        hADRejectEfficiencyBC_HM[i][j][k] = new TH1F(Form("hADRejectEfficiencyBC_HM%d_V0%d_Flag%d",i,j,k),"; #ADflags in PF", 10, 0, 10);
+                        hADRejectEfficiencyBC_HM[i][j][k]->SetTitle("AD : Rejection-Efficiency");
+                        
+                        
+                        
+                        
+                        
+                        
+                        hPurityBC_HM[i][j][k]->Divide(hNumEffPurityBC_HM[i][j][k], hDenomPurityBC_HM[i][j][k], 1, 1, "B");
+                        hPurityBC_HM[i][j][k]->GetYaxis()->SetRangeUser(0,1.0);
+                        
+                        hEfficiencyBC_HM[i][j][k]->Divide(hNumEffPurityBC_HM[i][j][k], hDenomEffBC_HM[i][j][k], 1, 1, "B");
+                        hEfficiencyBC_HM[i][j][k]->GetYaxis()->SetRangeUser(0,1.0);
+                        
+                        hRejectEfficiencyBC_HM[i][j][k]->Divide(hNumRejecEffBC_HM[i][j][k], hDenomRejecEffBC_HM[i][j][k], 1, 1, "B");
+                        hRejectEfficiencyBC_HM[i][j][k]->GetYaxis()->SetRangeUser(0,1.0);
+                        
+                        hSPDEfficiencyBC_HM[i][j][k]->Divide(hSPDNumBC_HM[i][j][k], hSPDDenomBC_HM[i][j][k], 1, 1, "B");
+                        hSPDEfficiencyBC_HM[i][j][k]->GetYaxis()->SetRangeUser(0,1.1);
+                        
+                        h2DSPDEfficiency_HM[i][j][k]->Divide(hNumTrkVsClsSPID_HM[i][j][k], hDenomTrkVsClsSPID_HM[i][j][k], 1, 1, "B");
+                        h2DV0Efficiency_HM[i][j][k]->Divide(hNumV0_HM[i][j][k], hDenomV0_HM[i][j][k], 1, 1, "B");
+                        
+                        hADPurityBC_HM[i][j][k]->Divide(hADNumEffPurityBC_HM[i][j][k], hADDenomPurityBC_HM[i][j][k], 1, 1, "B");
+                        
+                        for(int iad=0; iad<10; iad++){
+                            hADEfficiencyBC_HM[i][j][k]->SetBinContent(iad, (hADNumEffPurityBC_HM[i][j][k]->GetBinContent(iad))/denomeff_HM);
+                            hADRejectEfficiencyBC_HM[i][j][k]->SetBinContent(iad, (hADNumRejecEffBC_HM[i][j][k]->GetBinContent(iad))/denomrejeceff_HM);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    //______Add some typical plot for HM (blim) 2015.11.09
+    cOutCanvas_output_HM= new TCanvas("cOutCanvas_output_HM","cOutCanvas_output_HM",1000,500);
+    cOutCanvas_output_HM->Divide(4,1);
+    cOutCanvas_output_HM->cd(1);
+    hPurityBC_HM[2][0][1]->Draw("same");
+    //    hADPurityBC[2][0][1]->SetLineColor(2);
+    //    hADPurityBC[2][0][1]->Draw("same");
+    texbc3->Draw("same");
+    texv01->Draw("same");
+    texf2->Draw("same");
+    
+    cOutCanvas_output_HM->cd(2);
+    hEfficiencyBC_HM[2][0][1]->Draw("same");
+    //    hADEfficiencyBC[2][0][1]->SetLineColor(2);
+    //    hADEfficiencyBC[2][0][1]->Draw("same");
+    texbc3->Draw("same");
+    texv01->Draw("same");
+    texf2->Draw("same");
+    //    texNum->Draw("same");
+    
+    cOutCanvas_output_HM->cd(3);
+    hRejectEfficiencyBC_HM[2][0][1]->Draw("same");
+    //    hADRejectEfficiencyBC[2][0][1]->SetLineColor(2);
+    //    hADRejectEfficiencyBC[2][0][1]->Draw("same");
+    texbc3->Draw("same");
+    texv01->Draw("same");
+    texf2->Draw("same");
+    //    texNum->Draw("same");
+    
+    cOutCanvas_output_HM->cd(4);
+    hSPDEfficiencyBC_HM[2][0][1]->Draw("same");
+    texbc3->Draw("same");
+    texv01->Draw("same");
+    texf2->Draw("same");
+    //    texNum->Draw("same");
+    
+    
+    cOutCanvas_output_HM->SaveAs("./Fig/cOutCanvas_output_HM.pdf");
+    
     //______
 
     /* I think that we don't need this part, now. 2015.08.18.(blim)
@@ -435,10 +634,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasBC->cd(1);
     hPurityBC[2][0][1]->SetLineColor(1);
     hPurityBC[2][0][1]->Draw("same");
-    hPurityBC[1][0][1]->SetLineColor(2);
-    hPurityBC[1][0][1]->Draw("same");
-    hPurityBC[0][0][1]->SetLineColor(4);
-    hPurityBC[0][0][1]->Draw("same");
+    //hPurityBC[1][0][1]->SetLineColor(2);
+    //hPurityBC[1][0][1]->Draw("same");
+    //hPurityBC[0][0][1]->SetLineColor(4);
+    //hPurityBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -447,10 +646,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasBC->cd(2);
     hEfficiencyBC[2][0][1]->SetLineColor(1);
     hEfficiencyBC[2][0][1]->Draw("same");
-    hEfficiencyBC[1][0][1]->SetLineColor(2);
-    hEfficiencyBC[1][0][1]->Draw("same");
-    hEfficiencyBC[0][0][1]->SetLineColor(4);
-    hEfficiencyBC[0][0][1]->Draw("same");
+    //hEfficiencyBC[1][0][1]->SetLineColor(2);
+    //hEfficiencyBC[1][0][1]->Draw("same");
+    //hEfficiencyBC[0][0][1]->SetLineColor(4);
+    //hEfficiencyBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -459,10 +658,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasBC->cd(3);
     hRejectEfficiencyBC[2][0][1]->SetLineColor(1);
     hRejectEfficiencyBC[2][0][1]->Draw("same");
-    hRejectEfficiencyBC[1][0][1]->SetLineColor(2);
-    hRejectEfficiencyBC[1][0][1]->Draw("same");
-    hRejectEfficiencyBC[0][0][1]->SetLineColor(4);
-    hRejectEfficiencyBC[0][0][1]->Draw("same");
+    //hRejectEfficiencyBC[1][0][1]->SetLineColor(2);
+    //hRejectEfficiencyBC[1][0][1]->Draw("same");
+    //hRejectEfficiencyBC[0][0][1]->SetLineColor(4);
+    //hRejectEfficiencyBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -471,10 +670,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasBC->cd(4);
     hSPDEfficiencyBC[2][0][1]->SetLineColor(1);
     hSPDEfficiencyBC[2][0][1]->Draw("same");
-    hSPDEfficiencyBC[1][0][1]->SetLineColor(2);
-    hSPDEfficiencyBC[1][0][1]->Draw("same");
-    hSPDEfficiencyBC[0][0][1]->SetLineColor(4);
-    hSPDEfficiencyBC[0][0][1]->Draw("same");
+    //hSPDEfficiencyBC[1][0][1]->SetLineColor(2);
+    //hSPDEfficiencyBC[1][0][1]->Draw("same");
+    //hSPDEfficiencyBC[0][0][1]->SetLineColor(4);
+    //hSPDEfficiencyBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -502,10 +701,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasFlag->cd(1);
     hPurityBC[2][0][1]->SetLineColor(1);
     hPurityBC[2][0][1]->Draw("same");
-    hPurityBC[2][0][0]->SetLineColor(2);
-    hPurityBC[2][0][0]->Draw("same");
-    hPurityBC[2][0][2]->SetLineColor(4);
-    hPurityBC[2][0][2]->Draw("same");
+    //hPurityBC[2][0][0]->SetLineColor(2);
+    //hPurityBC[2][0][0]->Draw("same");
+    //hPurityBC[2][0][2]->SetLineColor(4);
+    //hPurityBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -514,10 +713,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasFlag->cd(2);
     hEfficiencyBC[2][0][1]->SetLineColor(1);
     hEfficiencyBC[2][0][1]->Draw("same");
-    hEfficiencyBC[2][0][0]->SetLineColor(2);
-    hEfficiencyBC[2][0][0]->Draw("same");
-    hEfficiencyBC[2][0][2]->SetLineColor(4);
-    hEfficiencyBC[2][0][2]->Draw("same");
+    //hEfficiencyBC[2][0][0]->SetLineColor(2);
+    //hEfficiencyBC[2][0][0]->Draw("same");
+    //hEfficiencyBC[2][0][2]->SetLineColor(4);
+    //hEfficiencyBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -526,10 +725,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasFlag->cd(3);
     hRejectEfficiencyBC[2][0][1]->SetLineColor(1);
     hRejectEfficiencyBC[2][0][1]->Draw("same");
-    hRejectEfficiencyBC[2][0][0]->SetLineColor(2);
-    hRejectEfficiencyBC[2][0][0]->Draw("same");
-    hRejectEfficiencyBC[2][0][2]->SetLineColor(4);
-    hRejectEfficiencyBC[2][0][2]->Draw("same");
+    //hRejectEfficiencyBC[2][0][0]->SetLineColor(2);
+    //hRejectEfficiencyBC[2][0][0]->Draw("same");
+    //hRejectEfficiencyBC[2][0][2]->SetLineColor(4);
+    //hRejectEfficiencyBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -538,10 +737,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasFlag->cd(4);
     hSPDEfficiencyBC[2][0][1]->SetLineColor(1);
     hSPDEfficiencyBC[2][0][1]->Draw("same");
-    hSPDEfficiencyBC[2][0][0]->SetLineColor(2);
-    hSPDEfficiencyBC[2][0][0]->Draw("same");
-    hSPDEfficiencyBC[2][0][2]->SetLineColor(4);
-    hSPDEfficiencyBC[2][0][2]->Draw("same");
+    //hSPDEfficiencyBC[2][0][0]->SetLineColor(2);
+    //hSPDEfficiencyBC[2][0][0]->Draw("same");
+    //hSPDEfficiencyBC[2][0][2]->SetLineColor(4);
+    //hSPDEfficiencyBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -570,10 +769,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasV0->cd(1);
     hPurityBC[2][0][1]->SetLineColor(1);
     hPurityBC[2][0][1]->Draw("same");
-    hPurityBC[2][1][1]->SetLineColor(2);
-    hPurityBC[2][1][1]->Draw("same");
-    hPurityBC[2][2][1]->SetLineColor(4);
-    hPurityBC[2][2][1]->Draw("same");
+    //hPurityBC[2][1][1]->SetLineColor(2);
+    //hPurityBC[2][1][1]->Draw("same");
+    //hPurityBC[2][2][1]->SetLineColor(4);
+    //hPurityBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     texv013->Draw("same");
@@ -582,10 +781,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasV0->cd(2);
     hEfficiencyBC[2][0][1]->SetLineColor(1);
     hEfficiencyBC[2][0][1]->Draw("same");
-    hEfficiencyBC[2][1][1]->SetLineColor(2);
-    hEfficiencyBC[2][1][1]->Draw("same");
-    hEfficiencyBC[2][2][1]->SetLineColor(4);
-    hEfficiencyBC[2][2][1]->Draw("same");
+    //hEfficiencyBC[2][1][1]->SetLineColor(2);
+    //hEfficiencyBC[2][1][1]->Draw("same");
+    //hEfficiencyBC[2][2][1]->SetLineColor(4);
+    //hEfficiencyBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     texv013->Draw("same");
@@ -593,10 +792,10 @@ GetRatio(Int_t split=-1){
     texv033->Draw("same");    cOutCanvasV0->cd(3);
     hRejectEfficiencyBC[2][0][1]->SetLineColor(1);
     hRejectEfficiencyBC[2][0][1]->Draw("same");
-    hRejectEfficiencyBC[2][1][1]->SetLineColor(2);
-    hRejectEfficiencyBC[2][1][1]->Draw("same");
-    hRejectEfficiencyBC[2][2][1]->SetLineColor(4);
-    hRejectEfficiencyBC[2][2][1]->Draw("same");
+    //hRejectEfficiencyBC[2][1][1]->SetLineColor(2);
+    //hRejectEfficiencyBC[2][1][1]->Draw("same");
+    //hRejectEfficiencyBC[2][2][1]->SetLineColor(4);
+    //hRejectEfficiencyBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     texv013->Draw("same");
@@ -605,10 +804,10 @@ GetRatio(Int_t split=-1){
     cOutCanvasV0->cd(4);
     hSPDEfficiencyBC[2][0][1]->SetLineColor(1);
     hSPDEfficiencyBC[2][0][1]->Draw("same");
-    hSPDEfficiencyBC[2][1][1]->SetLineColor(2);
-    hSPDEfficiencyBC[2][1][1]->Draw("same");
-    hSPDEfficiencyBC[2][2][1]->SetLineColor(4);
-    hSPDEfficiencyBC[2][2][1]->Draw("same");
+    //hSPDEfficiencyBC[2][1][1]->SetLineColor(2);
+    //hSPDEfficiencyBC[2][1][1]->Draw("same");
+    //hSPDEfficiencyBC[2][2][1]->SetLineColor(4);
+    //hSPDEfficiencyBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     texv013->Draw("same");
@@ -630,10 +829,10 @@ GetRatio(Int_t split=-1){
     hADPurityBC[2][0][1]->SetMaximum(1.);
 
     hADPurityBC[2][0][1]->Draw("same");
-    hADPurityBC[1][0][1]->SetLineColor(2);
-    hADPurityBC[1][0][1]->Draw("same");
-    hADPurityBC[0][0][1]->SetLineColor(4);
-    hADPurityBC[0][0][1]->Draw("same");
+    //hADPurityBC[1][0][1]->SetLineColor(2);
+    //hADPurityBC[1][0][1]->Draw("same");
+    //hADPurityBC[0][0][1]->SetLineColor(4);
+    //hADPurityBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -644,10 +843,10 @@ GetRatio(Int_t split=-1){
     hADEfficiencyBC[2][0][1]->SetMaximum(1.);
 
     hADEfficiencyBC[2][0][1]->Draw("same");
-    hADEfficiencyBC[1][0][1]->SetLineColor(2);
-    hADEfficiencyBC[1][0][1]->Draw("same");
-    hADEfficiencyBC[0][0][1]->SetLineColor(4);
-    hADEfficiencyBC[0][0][1]->Draw("same");
+    //hADEfficiencyBC[1][0][1]->SetLineColor(2);
+    //hADEfficiencyBC[1][0][1]->Draw("same");
+    //hADEfficiencyBC[0][0][1]->SetLineColor(4);
+    //hADEfficiencyBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -658,10 +857,10 @@ GetRatio(Int_t split=-1){
     hADRejectEfficiencyBC[2][0][1]->SetMaximum(1.);
 
     hADRejectEfficiencyBC[2][0][1]->Draw("same");
-    hADRejectEfficiencyBC[1][0][1]->SetLineColor(2);
-    hADRejectEfficiencyBC[1][0][1]->Draw("same");
-    hADRejectEfficiencyBC[0][0][1]->SetLineColor(4);
-    hADRejectEfficiencyBC[0][0][1]->Draw("same");
+    //hADRejectEfficiencyBC[1][0][1]->SetLineColor(2);
+    //hADRejectEfficiencyBC[1][0][1]->Draw("same");
+    //hADRejectEfficiencyBC[0][0][1]->SetLineColor(4);
+    //hADRejectEfficiencyBC[0][0][1]->Draw("same");
     texbc11->Draw("same");
     texbc21->Draw("same");
     texbc31->Draw("same");
@@ -680,10 +879,10 @@ GetRatio(Int_t split=-1){
     hADPurityBC[2][0][1]->SetLineColor(1);
     hADPurityBC[2][0][1]->SetMaximum(1.);
     hADPurityBC[2][0][1]->Draw("same");
-    hADPurityBC[2][0][0]->SetLineColor(2);
-    hADPurityBC[2][0][0]->Draw("same");
-    hADPurityBC[2][0][2]->SetLineColor(4);
-    hADPurityBC[2][0][2]->Draw("same");
+    //hADPurityBC[2][0][0]->SetLineColor(2);
+    //hADPurityBC[2][0][0]->Draw("same");
+    //hADPurityBC[2][0][2]->SetLineColor(4);
+    //hADPurityBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -694,10 +893,10 @@ GetRatio(Int_t split=-1){
     hADEfficiencyBC[2][0][1]->SetMaximum(1.);
 
     hADEfficiencyBC[2][0][1]->Draw("same");
-    hADEfficiencyBC[2][0][0]->SetLineColor(2);
-    hADEfficiencyBC[2][0][0]->Draw("same");
-    hADEfficiencyBC[2][0][2]->SetLineColor(4);
-    hADEfficiencyBC[2][0][2]->Draw("same");
+    //hADEfficiencyBC[2][0][0]->SetLineColor(2);
+    //hADEfficiencyBC[2][0][0]->Draw("same");
+    //hADEfficiencyBC[2][0][2]->SetLineColor(4);
+    //hADEfficiencyBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -708,10 +907,10 @@ GetRatio(Int_t split=-1){
     hADRejectEfficiencyBC[2][0][1]->SetMaximum(1.);
 
     hADRejectEfficiencyBC[2][0][1]->Draw("same");
-    hADRejectEfficiencyBC[2][0][0]->SetLineColor(2);
-    hADRejectEfficiencyBC[2][0][0]->Draw("same");
-    hADRejectEfficiencyBC[2][0][2]->SetLineColor(4);
-    hADRejectEfficiencyBC[2][0][2]->Draw("same");
+    //hADRejectEfficiencyBC[2][0][0]->SetLineColor(2);
+    //hADRejectEfficiencyBC[2][0][0]->Draw("same");
+    //hADRejectEfficiencyBC[2][0][2]->SetLineColor(4);
+    //hADRejectEfficiencyBC[2][0][2]->Draw("same");
     texbc32->Draw("same");
     texf22->Draw("same");
     texf12->Draw("same");
@@ -737,10 +936,10 @@ GetRatio(Int_t split=-1){
     hADPurityBC[2][0][1]->SetMaximum(1.);
 
     hADPurityBC[2][0][1]->Draw("same");
-    hADPurityBC[2][1][1]->SetLineColor(2);
-    hADPurityBC[2][1][1]->Draw("same");
-    hADPurityBC[2][2][1]->SetLineColor(4);
-    hADPurityBC[2][2][1]->Draw("same");
+    //hADPurityBC[2][1][1]->SetLineColor(2);
+    //hADPurityBC[2][1][1]->Draw("same");
+    //hADPurityBC[2][2][1]->SetLineColor(4);
+    //hADPurityBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     ADtexv013->Draw("same");
@@ -751,10 +950,10 @@ GetRatio(Int_t split=-1){
     hADEfficiencyBC[2][0][1]->SetMaximum(1.);
 
     hADEfficiencyBC[2][0][1]->Draw("same");
-    hADEfficiencyBC[2][1][1]->SetLineColor(2);
-    hADEfficiencyBC[2][1][1]->Draw("same");
-    hADEfficiencyBC[2][2][1]->SetLineColor(4);
-    hADEfficiencyBC[2][2][1]->Draw("same");
+    //hADEfficiencyBC[2][1][1]->SetLineColor(2);
+    //hADEfficiencyBC[2][1][1]->Draw("same");
+    //hADEfficiencyBC[2][2][1]->SetLineColor(4);
+    //hADEfficiencyBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     ADtexv013->Draw("same");
@@ -764,16 +963,36 @@ GetRatio(Int_t split=-1){
     hADRejectEfficiencyBC[2][0][1]->SetLineColor(1);
     hADRejectEfficiencyBC[2][0][1]->SetMaximum(1.);
     hADRejectEfficiencyBC[2][0][1]->Draw("same");
-    hADRejectEfficiencyBC[2][1][1]->SetLineColor(2);
-    hADRejectEfficiencyBC[2][1][1]->Draw("same");
-    hADRejectEfficiencyBC[2][2][1]->SetLineColor(4);
-    hADRejectEfficiencyBC[2][2][1]->Draw("same");
+    //hADRejectEfficiencyBC[2][1][1]->SetLineColor(2);
+    //hADRejectEfficiencyBC[2][1][1]->Draw("same");
+    //hADRejectEfficiencyBC[2][2][1]->SetLineColor(4);
+    //hADRejectEfficiencyBC[2][2][1]->Draw("same");
     texbc33->Draw("same");
     texf23->Draw("same");
     ADtexv013->Draw("same");
     ADtexv023->Draw("same");
     ADtexv033->Draw("same");
     cout << "end" << endl;
+
+    hTrkVsClsSPID_Slope_MB01= new TCanvas("hTrkVsClsSPID_Slope_MB01","hTrkVsClsSPID_Slope_MB01",800,500);
+    hTrkVsClsSPIDSlopeM->Draw("colz");
+    hTrkVsClsSPID_Slope_MB01->SetLogz();
+    hTrkVsClsSPID_Slope_MB01->SaveAs("./Fig/hTrkVsClsSPID_Slope_MB01.pdf");
+
+    hTrkVsClsSPID_Slope_MB02= new TCanvas("hTrkVsClsSPID_Slope_MB02","hTrkVsClsSPID_Slope_MB02",800,500);
+    hTrkVsClsSPIDSlopeM2->Draw("colz");
+    hTrkVsClsSPID_Slope_MB02->SetLogz();
+    hTrkVsClsSPID_Slope_MB02->SaveAs("./Fig/hTrkVsClsSPID_Slope_MB02.pdf");
+    
+    hTrkVsClsSPID_Slope_HM01= new TCanvas("hTrkVsClsSPID_Slope_HM01","hTrkVsClsSPID_Slope_HM01",800,500);
+    hTrkVsClsSPIDSlopeM_HM->Draw("colz");
+    hTrkVsClsSPID_Slope_HM01->SetLogz();
+    hTrkVsClsSPID_Slope_HM01->SaveAs("./Fig/hTrkVsClsSPID_Slope_HM01.pdf");
+    
+    hTrkVsClsSPID_Slope_HM02= new TCanvas("hTrkVsClsSPID_Slope_HM02","hTrkVsClsSPID_Slope_HM02",800,500);
+    hTrkVsClsSPIDSlopeM_HM2->Draw("colz");
+    hTrkVsClsSPID_Slope_HM02->SetLogz();
+    hTrkVsClsSPID_Slope_HM02->SaveAs("./Fig/hTrkVsClsSPID_Slope_HM02.pdf");
     
     TFile *fileout = TFile::Open(ss+"/BGMonitorHisto.root","RECREATE");
     cOutCanvasBC->Write("cOutCanvasBC");
@@ -782,15 +1001,17 @@ GetRatio(Int_t split=-1){
     cADOutCanvasBC->Write("cADOutCanvasBC");
     cADOutCanvasFlag->Write("cADOutCanvasFlag");
     cADOutCanvasV0->Write("cADOutCanvasV0");
-    
+//    hTotalTrkVsClsSPID->Write("hTotalTrkVsClsSPID");
+//    hTotalTrkVsClsSPID->SaveAs("./Fig/hTotalTrkVsClsSPID.pdf");
     //---------------------
+    /*
     cOutCanvasBC->SaveAs("./Fig/cOutCanvasBC.pdf");
     cOutCanvasFlag->SaveAs("./Fig/cOutCanvasFlag.pdf");
     cOutCanvasV0->SaveAs("./Fig/cOutCanvasV0.pdf");
     cADOutCanvasBC->SaveAs("./Fig/cADOutCanvasBC.pdf");
     cADOutCanvasFlag->SaveAs("./Fig/cADOutCanvasFlag.pdf");
     cADOutCanvasV0->SaveAs("./Fig/cADOutCanvasV0.pdf");
-    
+    */
 //    cOutCanvas_output->SaveAs("./Fig/cOutCanvas_output.pdf");  // it is on upper part
     //---------------------save output 2015.08.18.(blim)
     

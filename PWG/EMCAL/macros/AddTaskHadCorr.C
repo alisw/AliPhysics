@@ -86,11 +86,15 @@ AliHadCorrTask* AddTaskHadCorr(
   hcor->SetEexcl(Eexcl);
   hcor->SetTrackClus(trackClus);
 
-  AliTrackContainer* trackCont = hcor->AddTrackContainer(trackName);
-  if (trackCont) {
-    if (trackName == "Tracks" || trackName == "tracks") trackCont->SetFilterHybridTracks(kTRUE);
-    trackCont->SetParticlePtCut(minPt);
+  AliParticleContainer* trackCont = 0;
+  if (trackName == "Tracks" || trackName == "tracks") {
+    trackCont = hcor->AddTrackContainer(trackName);
   }
+  else {
+    trackCont = hcor->AddParticleContainer(trackName);
+  }
+  trackCont->SetParticlePtCut(minPt);
+
   AliClusterContainer *clusCont = hcor->AddClusterContainer(clusName);
   if (clusCont) clusCont->SetClusNonLinCorrEnergyCut(minPt);
 

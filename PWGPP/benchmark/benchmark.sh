@@ -321,24 +321,24 @@ goCPass()
   # Those files are locally found. They should be copied to the current working
   # directory (which is $runpath).
   case $cpass in
-    0) filesCPass=( "${batchWorkingDirectory}/runCPass0.sh"
-                    "${batchWorkingDirectory}/recCPass0.C"
-                    "${batchWorkingDirectory}/runCalibTrain.C"
-                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${batchWorkingDirectory}/OCDB.root"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
+    0) filesCPassCustom=( "${batchWorkingDirectory}/runCPass0.sh"
+                          "${batchWorkingDirectory}/recCPass0.C"
+                          "${batchWorkingDirectory}/runCalibTrain.C"
+                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                          "${batchWorkingDirectory}/OCDB.root" )
+       filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" ) ;;
 
-    1) filesCPass=( "${batchWorkingDirectory}/runCPass1.sh"
-                    "${batchWorkingDirectory}/recCPass1.C"
-                    "${batchWorkingDirectory}/recCPass1_OuterDet.C"
-                    "${batchWorkingDirectory}/runCalibTrain.C"
-                    "${batchWorkingDirectory}/QAtrain_duo.C"
-                    "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${batchWorkingDirectory}/${configFile}"
-                    "${batchWorkingDirectory}/OCDB.root"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
+    1) filesCPassCustom=( "${batchWorkingDirectory}/runCPass1.sh"
+                          "${batchWorkingDirectory}/recCPass1.C"
+                          "${batchWorkingDirectory}/recCPass1_OuterDet.C"
+                          "${batchWorkingDirectory}/runCalibTrain.C"
+                          "${batchWorkingDirectory}/QAtrain_duo.C"
+                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                          "${batchWorkingDirectory}/${configFile}"
+                          "${batchWorkingDirectory}/OCDB.root" )
+       filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C"
@@ -346,13 +346,13 @@ goCPass()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                     "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz" ) ;;
 
-    2) filesCPass=( "${batchWorkingDirectory}/OCDB.root"
-                    "$ALICE_ROOT/test/QA/tag.C"
-                    "${batchWorkingDirectory}/AODtrain.C"
-                    "${batchWorkingDirectory}/rec.C"
-                    "${batchWorkingDirectory}/raw2clust.C"
-                    "${batchWorkingDirectory}/runPPass_pp.sh"
-                    "${batchWorkingDirectory}/runPPass_pbpb.sh"
+    2) filesCPassCustom=( "${batchWorkingDirectory}/OCDB.root"
+                          "${batchWorkingDirectory}/AODtrain.C"
+                          "${batchWorkingDirectory}/rec.C"
+                          "${batchWorkingDirectory}/raw2clust.C"
+                          "${batchWorkingDirectory}/runPPass_pp.sh"
+                          "${batchWorkingDirectory}/runPPass_pbpb.sh" )
+       filesCPass=( "$ALICE_ROOT/test/QA/tag.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/AODtrain.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/rec.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/PPass/raw2clust.C"
@@ -363,6 +363,15 @@ goCPass()
                     "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz" ) ;;
   esac
 
+  #first check if we have any custom scripts
+  # -c: check if local source exists; -C: do not copy if local dest exists already
+  # -f: copy all in the same dest dir (flat copy)
+  xCopy -f -c -C -d . "${filesCPassCustom[@]}"
+  for file in ${filesCPassCustom[*]}; do
+    [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
+  done
+
+  #then download any missing ones from the default location
   # -c: check if local source exists; -C: do not copy if local dest exists already
   # -f: copy all in the same dest dir (flat copy)
   xCopy -f -c -C -d . "${filesCPass[@]}"
@@ -710,7 +719,7 @@ goMergeCPass()
   fi
   echo "$0 $*"
 
-  mergingScript="mergeMakeOCDB.byComponent.sh"
+  mergingScript="mergeMakeOCDB.byComponent.perStage.sh"
 
   if [[ $cpass -ge 1 ]]; then
     qaMergedOutputFileName="QAresults_merged.root"
@@ -731,28 +740,28 @@ goMergeCPass()
     0) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${syslogsRecToMerge}"
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                         "${batchWorkingDirectory}/${mergingScript}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.sh" ) ;;
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C" ) ;;
 
     1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${qaFilesToMerge}"
                          "${batchWorkingDirectory}/${filteredFilesToMerge}"
                          "${batchWorkingDirectory}/${syslogsRecToMerge}"
                          "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                         "${batchWorkingDirectory}/${mergingScript}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                          "${batchWorkingDirectory}/QAtrain_duo.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                          "${trustedQAtrainMacro}" ) ;;
@@ -878,6 +887,8 @@ goMergeCPass()
         done
       else
         printExec aliroot -b -q "QAtrain_duo.C(\"\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
+        #QAtrain_duo default output is called QAresults.root, move to the expected name
+        mv QAresults.root ${qaMergedOutputFileName}
       fi
     ;;
   esac
@@ -1443,8 +1454,8 @@ goMakeLocalOCDBaccessConfig()
   echo "localOCDBaccessConfig()"                               >  localOCDBaccessConfig.C
   echo "{"                                                     >> localOCDBaccessConfig.C
   echo "  AliCDBManager* man = AliCDBManager::Instance();"     >> localOCDBaccessConfig.C
-  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   [[ -f "${tempLocalOCDB}" ]] && cat ${tempLocalOCDB}              >> localOCDBaccessConfig.C
+  spitOutLocalOCDBaccessConfig ${localOCDBpathCPass0}|sort|uniq  >> localOCDBaccessConfig.C
   echo "}"                                                     >> localOCDBaccessConfig.C
 
   [[ -f "${tempLocalOCDB}" ]] && rm -f ${tempLocalOCDB}
@@ -1875,6 +1886,7 @@ goSubmitBatch()
       #copy the scripts
       filesMergeCPass0=(
                         "${configPath}/OCDB.root"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
                         "${configPath}/mergeMakeOCDB.byComponent.sh"
                         "${configPath}/mergeMakeOCDB.sh"
                         "${configPath}/localOCDBaccessConfig.C"
@@ -2001,6 +2013,7 @@ goSubmitBatch()
       filesMergeCPass1=(
                         "${configPath}/OCDB.root"
                         "${configPath}/localOCDBaccessConfig.C"
+                        "${configPath}/mergeMakeOCDB.byComponent.perStage.sh"
                         "${configPath}/mergeMakeOCDB.byComponent.sh"
                         "${configPath}/mergeByComponent.C"
                         "${configPath}/makeOCDB.C"
@@ -2528,6 +2541,8 @@ goSummarizeMetaFiles()
       pass=tmparr[0]
       match($2,/run([0-9]*)/,tmparr)
       runNumber=tmparr[1]
+      runs[runNumber]=1;
+      passes[pass]=1;
     }
 
     #logfiles
@@ -2536,19 +2551,21 @@ goSummarizeMetaFiles()
       sub(/^.*\//,"",logFile)
 
       if (donefile ~ /merge\./) {
-        mergeLogs[runNumber][pass][logFile]++
-        if ($0 ~ /OK/) mergeLogsOK[runNumber][pass][logFile]++
+        mergeLogsFiles[logFile]=1
+        mergeLogs[runNumber,pass,logFile]++
+        if ($0 ~ /OK/) mergeLogsOK[runNumber,pass,logFile]++
         else if ($0 ~ /BAD/) {
-          mergeLogsBAD[runNumber][pass][logFile]++
+          mergeLogsBAD[runNumber,pass,logFile]++
           listOfBadLogs[nBadLogs++]=$1
         }
       }
       
-      if (donefile ~ /\.job/) {
-        jobLogs[runNumber][pass][logFile]++
-        if ($0 ~ /OK/) jobLogsOK[runNumber][pass][logFile]++
+      else if (donefile ~ /\.job/) {
+        jobLogsFiles[logFile]=1
+        jobLogs[runNumber,pass,logFile]++
+        if ($0 ~ /OK/) jobLogsOK[runNumber,pass,logFile]++
         else if ($0 ~ /BAD/) {
-          jobLogsBAD[runNumber][pass][logFile]++
+          jobLogsBAD[runNumber,pass,logFile]++
           listOfBadLogs[nBadLogs++]=$1
         }
       }
@@ -2561,36 +2578,38 @@ goSummarizeMetaFiles()
       fileType=$1
       file=$2
       if (donefile ~ /merge\./) {
-        outputFilesMerge[runNumber][pass][fileType]++
+        mergeFileTypes[fileType]=1
+        outputFilesMerge[runNumber,pass,fileType]++
       }
-      if (donefile ~ /\.job/) {
-        outputFilesJobs[runNumber][pass][fileType]++
+      else if (donefile ~ /\.job/) {
+        jobFileTypes[fileType]=1
+        outputFilesJobs[runNumber,pass,fileType]++
       }
       if (fileType == "core") coreFiles[nCoreFiles++]=file
     }
 
     END {
       print "===== error summary: ================================================================="
-      for (run in jobLogs ) {
-        for (pass in jobLogs[run] ) {
+      for (run in runs ) {
+        for (pass in passes ) {
           
-          for (logFile in jobLogs[run][pass]) {
-            if (jobLogsBAD[run][pass][logFile]>0) {
-              print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run][pass][logFile]" failures )"
+          for (logFile in jobLogsFiles) {
+            if (jobLogsBAD[run,pass,logFile]>0) {
+              print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run,pass,logFile]" failures )"
             }
           }
           
-          for (logFile in mergeLogs[run][pass]) {
-            if (mergeLogsBAD[run][pass][logFile]>0) {
-              print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run][pass][logFile]" failures )"
+          for (logFile in mergeLogsFiles) {
+            if (mergeLogsBAD[run,pass,logFile]>0) {
+              print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run,pass,logFile]" failures )"
             }
           }
 
-          if (outputFilesJobs[run][pass]["core"]>0) {
-            print "CORE       : run "run" "pass" ( "outputFilesJobs[run][pass]["core"]" core files! )"
+          if (outputFilesJobs[run,pass,"core"]>0) {
+            print "CORE       : run "run" "pass" ( "outputFilesJobs[run,pass,"core"]" core files! )"
           }
-          if (outputFilesMerge[run][pass]["core"]>0) {
-            print "CORE       : run "run" merge "pass" ( "outputFilesMerge[run][pass]["core"]" core files! )"
+          if (outputFilesMerge[run,pass,"core"]>0) {
+            print "CORE       : run "run" merge "pass" ( "outputFilesMerge[run,pass,"core"]" core files! )"
           }
 
         }
@@ -2598,11 +2617,11 @@ goSummarizeMetaFiles()
 
       print ""
       print "===== detailed summary: ================================================================="
-      for (run in jobLogs ) {
+      for (run in runs ) {
         print"________________________________________"
         print "run "run
 
-        for (pass in jobLogs[run] ) {
+        for (pass in passes ) {
           print "  "pass
 
           filesToPrint["esd"]=0
@@ -2611,22 +2630,22 @@ goSummarizeMetaFiles()
           filesToPrint["aod"]=0
           filesToPrint["core"]=0
           for (outputFile in filesToPrint) {
-            if (outputFilesJobs[run][pass][outputFile])  print "      "outputFilesJobs[run][pass][outputFile]" X "outputFile
+            if (outputFilesJobs[run,pass,outputFile])  print "      "outputFilesJobs[run,pass,outputFile]" X "outputFile
           }
           print "    merge:"
           for (outputFile in filesToPrint) {
-            if (outputFilesMerge[run][pass][outputFile])  print "      "outputFilesMerge[run][pass][outputFile]" X "outputFile
+            if (outputFilesMerge[run,pass,outputFile])  print "      "outputFilesMerge[run,pass,outputFile]" X "outputFile
           }
 
-          for (logFile in jobLogs[run][pass]) {
-            if (jobLogsBAD[run][pass][logFile]>0) {
-              print "    ERROR: "logFile" OK:"jobLogsOK[run][pass][logFile]" BAD:"jobLogsBAD[run][pass][logFile]
+          for (logFile in jobLogsFiles) {
+            if (jobLogsBAD[run,pass,logFile]>0) {
+              print "    ERROR: "logFile" OK:"jobLogsOK[run,pass,logFile]" BAD:"jobLogsBAD[run,pass,logFile]
             }
           }
           
-          for (logFile in mergeLogs[run][pass]) {
-            if (mergeLogsBAD[run][pass][logFile]>0) {
-              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run][pass][logFile]" BAD:"mergeLogsBAD[run][pass][logFile]
+          for (logFile in mergeLogsFiles) {
+            if (mergeLogsBAD[run,pass,logFile]>0) {
+              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run,pass,logFile]" BAD:"mergeLogsBAD[run,pass,logFile]
             }
           }
 

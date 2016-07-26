@@ -186,40 +186,43 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     TString cutsname = "coutputCuts";
     TString normname = "coutputNorm";
     TString profname = "coutputProf";
+    TString effname = "coutputEffCorr";
     
     inname += Name.Data();
     outname += Name.Data();
     cutsname += Name.Data();
     normname += Name.Data();
     profname += Name.Data();
+    effname += Name.Data();
     inname += finDirname.Data();
     outname += finDirname.Data();
     cutsname += finDirname.Data();
     normname += finDirname.Data();
     profname += finDirname.Data();
+    effname += finDirname.Data();
     
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     
     TString outputfile = AliAnalysisManager::GetCommonFileName();
     if(CalculateSphericity){ outputfile += ":PWG3_D2H_DSpheri_";}
     else{ outputfile += ":PWG3_D2H_DSphero_";}
-    outputfile += Name.Data(); 
-    outputfile += finDirname.Data(); 
+    outputfile += Name.Data();
+    outputfile += finDirname.Data();
     
     AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    if(readMC) AliAnalysisDataContainer *coutputEffCorr = mgr->CreateContainer(effname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    
     
     mgr->ConnectInput(dMultTask,0,mgr->GetCommonInputContainer());
     
     mgr->ConnectOutput(dMultTask,1,coutput);
-    
     mgr->ConnectOutput(dMultTask,2,coutputCuts);
-    
-    mgr->ConnectOutput(dMultTask,3,coutputNorm);  
-    
+    mgr->ConnectOutput(dMultTask,3,coutputNorm);
     mgr->ConnectOutput(dMultTask,4,coutputProf);
+    if(readMC) mgr->ConnectOutput(dMultTask,5,coutputEffCorr);
     
     return dMultTask;
 }

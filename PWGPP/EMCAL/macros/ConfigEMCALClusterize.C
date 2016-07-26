@@ -20,16 +20,22 @@ AliAnalysisTaskEMCALClusterize* ConfigEMCALClusterize()
   clusterize->JustUnfold(kFALSE); // if TRUE, do just unfolding, do not recluster cells
   
   AliEMCALRecParam * params = clusterize->GetRecParam();
-  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
+  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerV2);
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
-  params->SetMinECut(0.01);  //10 MeV    
+  params->SetMinECut(0.50);  //50 MeV    
   params->SetUnfold(kFALSE);
   params->SetW0(4.5);
-  params->SetTimeCut(1e6);//Open this cut for AODs
-  params->SetTimeMin(-1); //Open this cut for AODs
-  params->SetTimeMax(1e6);//Open this cut for AODs    
   
-  // Alignment matrices
+  // Open cuts, be careful using this 
+  params->SetTimeCut(1e6);
+  params->SetTimeMin(-1);  
+  params->SetTimeMax(1e6);     
+  
+  //
+  // Below, examples how to pass manually calibration/alignment.
+  //
+  
+//  // Alignment matrices
 //  clusterize->SwitchOnLoadOwnGeometryMatrices();
 //  TGeoHMatrix *matrix[4];
 //  double rotationMatrix[4][9] = {
@@ -53,10 +59,10 @@ AliAnalysisTaskEMCALClusterize* ConfigEMCALClusterize()
 //    clusterize->SetGeometryMatrixInSM(matrix[j],j);
 //  }
   
-  
+//  
 //  AliEMCALRecoUtils * reco = clusterize->GetRecoUtils();
-
-  //Recalibration factors
+//
+//  //Recalibration factors
 //  reco->SwitchOnRecalibration();
 //  TFile * f = new TFile("RecalibrationFactors.root","read");
 //  TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0");

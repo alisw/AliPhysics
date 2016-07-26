@@ -10,7 +10,7 @@
 
 AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE, 
 				   UInt_t  triggerMask = AliVEvent::kAnyINT, 
-				   Int_t   trackCutSetTOFqa = 0, 
+				   Int_t   trackCutSetTOFqa = AliAnalysisTaskTOFqaID::kStd2011crossedRows, 
 				   Bool_t  flagEnableChargeSplit = kFALSE,
 				   TString cutName = "",
 				   Bool_t  isMC = kFALSE, 

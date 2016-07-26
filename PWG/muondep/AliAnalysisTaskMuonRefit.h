@@ -42,11 +42,12 @@ public:
   /// Set the sigma cut for tracker/trigger track matching (by default use the one set in the recoParam)
   void SetSigmaCutForTrigger(Double_t val) {fSigmaCutForTrigger = val;}
   
-  /// Set the OCDB path to the alignment file used in the reco (if not set use default storage)
-  void SetAlignStorage(const char* ocdbPath) { fOldAlignStorage = ocdbPath; }
+  // Set OCDB path + version/subversion to find the alignment file used in the reco (if not set use default storage)
+  void SetAlignStorage(const char* ocdbPath, Int_t version = -1, Int_t subVersion = -1);
   
-  // set the OCDB path to the alignment files to be used to realign the clusters before refitting
-  void ReAlign(const char* oldAlignStorage = 0x0, const char* newAlignStorage = "");
+  // Re-align clusters before refitting and set OCDB paths + versions/subversions to find the old/new alignment files
+  void ReAlign(const char* oldAlignStorage = 0x0, Int_t oldVersion = -1, Int_t oldSubVersion = -1,
+               const char* newAlignStorage = "", Int_t newVersion = -1, Int_t newSubVersion = -1);
   
   // Set the magnetic field map to be used during refitting
   void SetFieldPath(const char* field) { fField = field; }
@@ -86,7 +87,11 @@ private:
   Double_t fSigmaCutForTrigger; ///< sigma cut for tracker/trigger track matching
   Bool_t   fReAlign;            ///< flag telling wether to re-align the spectrometer or not before refitting
   TString  fOldAlignStorage;    ///< location of the OCDB storage where to find old MUON/Align/Data (use the default one if empty)
+  Int_t    fOldAlignVersion;    ///< specific version of the old MUON/Align/Data/object to load
+  Int_t    fOldAlignSubVersion; ///< specific subversion of the old MUON/Align/Data/object to load
   TString  fNewAlignStorage;    ///< location of the OCDB storage where to find new MUON/Align/Data (use the default one if empty)
+  Int_t    fNewAlignVersion;    ///< specific version of the new MUON/Align/Data/object to load
+  Int_t    fNewAlignSubVersion; ///< specific subversion of the new MUON/Align/Data/object to load
   AliMUONGeometryTransformer *fOldGeoTransformer; //!< geometry transformer used to recontruct the present data
   AliMUONGeometryTransformer *fNewGeoTransformer; //!< new geometry transformer containing the new alignment to be applied
   TString  fField;              ///< magnetic field map to be used during refitting
@@ -100,7 +105,7 @@ private:
   AliMUONRefitter        *fRefitter;        //!< refitter object
   AliMUONTrackHitPattern *fTrackHitPattern; //!< object to perform the tracker/trigger track matching
   
-  ClassDef(AliAnalysisTaskMuonRefit, 2); // track refitter
+  ClassDef(AliAnalysisTaskMuonRefit, 3); // track refitter
 };
 
 //________________________________________________________________________
@@ -123,14 +128,50 @@ inline void AliAnalysisTaskMuonRefit::ResetClusterResolution(Double_t valNB[10],
 }
 
 //________________________________________________________________________
-inline void AliAnalysisTaskMuonRefit::ReAlign(const char* oldAlignStorage, const char* newAlignStorage)
+inline void AliAnalysisTaskMuonRefit::SetAlignStorage(const char* ocdbPath, Int_t version, Int_t subVersion)
 {
-  /// Set the flag to activate the re-alignment and the specific storage where to find the old/new alignment data.
-  /// If oldAlignStorage = 0x0 we assume the spectrometer was not aligned before (default geometry)
-  /// If old(new)AlignStorage = "" we assume the old(new) alignment data are in the default storage
-  if (oldAlignStorage) fOldAlignStorage = oldAlignStorage;
-  else fOldAlignStorage = "none";
-  fNewAlignStorage = newAlignStorage;
+  /// Set the OCDB path + version/subversion to find the alignment file used in the reco.
+  /// If ocdbPath = 0x0: do not apply any alignment (default geometry)
+  /// If ocdbPath = "" : assume the alignment data are in the default storage
+  /// If version = subversion = -1 the lastest object is loaded
+  if (ocdbPath) {
+    fNewAlignStorage = ocdbPath;
+    fNewAlignVersion = version;
+    fNewAlignSubVersion = subVersion;
+  } else {
+    fNewAlignStorage = "none";
+    fNewAlignVersion = -1;
+    fNewAlignSubVersion = -1;
+  }
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskMuonRefit::ReAlign(const char* oldAlignStorage, Int_t oldVersion, Int_t oldSubVersion,
+                                              const char* newAlignStorage, Int_t newVersion, Int_t newSubVersion)
+{
+  /// Set the flag to activate the re-alignment and set the specific storages where to find
+  /// the old/new alignment files of specified version/subversion.
+  /// If old(new)AlignStorage = 0x0: do not apply any alignment (default geometry)
+  /// If old(new)AlignStorage = "" : assume the old(new) alignment data are in the default storage
+  /// If version = subversion = -1 the lastest object is loaded
+  if (oldAlignStorage) {
+    fOldAlignStorage = oldAlignStorage;
+    fOldAlignVersion = oldVersion;
+    fOldAlignSubVersion = oldSubVersion;
+  } else {
+    fOldAlignStorage = "none";
+    fOldAlignVersion = -1;
+    fOldAlignSubVersion = -1;
+  }
+  if (newAlignStorage) {
+    fNewAlignStorage = newAlignStorage;
+    fNewAlignVersion = newVersion;
+    fNewAlignSubVersion = newSubVersion;
+  } else {
+    fNewAlignStorage = "none";
+    fNewAlignVersion = -1;
+    fNewAlignSubVersion = -1;
+  }
   fReAlign = kTRUE;
 }
 

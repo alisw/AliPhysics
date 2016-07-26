@@ -29,8 +29,7 @@ AliEMCalTriggerBinningFactory::AliEMCalTriggerBinningFactory() {
 
 /**
  * Initialise binning component with default binning
- *
- * \param data the binning component to be initialised
+ * \param[out] data the binning component to be initialised
  */
 void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* const data) {
   TArrayD binLimits;
@@ -51,8 +50,8 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
     data->SetBinning("zvertex", binLimits);
   }
   if(!data->GetBinning("centrality")){
-	CreateLinearBinning(binLimits, 5, 0., 100.);
-	data->SetBinning("centrality", binLimits);
+    CreateLinearBinning(binLimits, 5, 0., 100.);
+    data->SetBinning("centrality", binLimits);
   }
 }
 
@@ -69,7 +68,7 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
  * - from 30 to 100 GeV/c: 10 GeV/c bins
  * - from 100 to 200 GeV/c: 20 GeV/c bins
  *
- * \param binning Array where to store the results.
+ * \param[out] binning Array where to store the results.
  */
 void AliEMCalTriggerBinningFactory::CreateMarkusPtBinning(TArrayD &binning) const{
   std::vector<double> mybinning;
@@ -111,7 +110,7 @@ void AliEMCalTriggerBinningFactory::CreateMarkusPtBinning(TArrayD &binning) cons
  * - from 40 to 50 GeV/c: 5 GeV/c bins
  * - from 50 to 100 GeV/c: 10 GeV/c bins
  *
- * \param binning: Array where to store the results
+ * \param[out] binning Array where to store the results
  */
 void AliEMCalTriggerBinningFactory::CreateRAAPtBinning(TArrayD& binning) const {
   std::vector<double> mybinning;
@@ -144,8 +143,7 @@ void AliEMCalTriggerBinningFactory::CreateRAAPtBinning(TArrayD& binning) const {
 
 /**
  * Creating default z-Vertex binning. Bin size 5 cm.
- *
- * \param binning Array where to store the results.
+ * \param[out] binning Array where to store the results.
  */
 void AliEMCalTriggerBinningFactory::CreateDefaultZVertexBinning(TArrayD &binning) const {
   std::vector<double> mybinning;
@@ -163,8 +161,7 @@ void AliEMCalTriggerBinningFactory::CreateDefaultZVertexBinning(TArrayD &binning
 
 /**
  * Creating default \f$ \eta \$f  binning. Bin size fixed at 0.1 units of rapidity.
- *
- * \param binning Array where to store the results.
+ * \param[out] binning Array where to store the results.
  */
 void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) const {
   std::vector<double> mybinning;
@@ -182,13 +179,12 @@ void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) co
 
 /**
  * Create any kind of linear binning from given ranges and stores it in the binning array.
- *
- * \param binning output array
- * \param nbins Number of bins
- * \param min lower range
- * \param max upper range
+ * \param[out] binning output array
+ * \param[in] nbins Number of bins
+ * \param[in] min lower range
+ * \param[in] max upper range
  */
-void AliEMCalTriggerBinningFactory::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const {
+void AliEMCalTriggerBinningFactory::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max){
   double binwidth = (max-min)/static_cast<double>(nbins);
   binning.Set(nbins+1);
   binning[0] = min;

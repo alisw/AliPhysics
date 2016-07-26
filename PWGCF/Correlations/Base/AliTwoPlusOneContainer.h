@@ -29,7 +29,7 @@ class AliTwoPlusOneContainer : public TNamed
   
   enum PlotKind {kSameNS = 0, kSameAS, kMixedNS, kMixedAS, kMixedCombNS, kMixedCombAS, k1plus1, kBackgroundSameNS, kBackgroundSameAS, kMixed1plus1, kParticleDist, kMixedMixedCombNS, kMixedMixedCombAS, kMixedBackgroundSameNS, kMixedBackgroundSameAS};
 
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency);
+  Int_t FillCorrelations(Double_t centrality, Float_t zVtx, AliTwoPlusOneContainer::PlotKind step, TObjArray* triggerNear, TObjArray* triggerAway, TObjArray* assocNear, TObjArray* assocAway, Double_t weight, Bool_t is1plus1, Bool_t isBackgroundSame, Bool_t applyEfficiency);
   void FillParticleDist(Double_t centrality, Float_t zVtx, TObjArray* particleDist, Double_t weight, Bool_t applyEfficiency);
   
   AliUEHist* GetData() {return fTwoPlusOne;}
@@ -81,7 +81,7 @@ protected:
   THnF* fEfficiencyCorrection;   // if non-0 this efficiency correction is applied on the fly to the filling for trigger particles. The factor is multiplicative, i.e. should contain 1/efficiency
   Int_t fMergeCount;	             // counts how many objects have been merged together
   
-  ClassDef(AliTwoPlusOneContainer, 9)  // underlying event histogram container
+  ClassDef(AliTwoPlusOneContainer, 10)  // underlying event histogram container
 };
 
 

@@ -59,6 +59,7 @@ set(SRCS
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
+  AliAnalysisTaskEmcalIteratorTest.cxx
   )
 
 # Headers from sources

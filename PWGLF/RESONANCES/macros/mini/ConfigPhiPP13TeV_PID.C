@@ -1,5 +1,5 @@
 /***************************************************************************
-              Anders Knospe - last modified on 9 July 2015
+              Anders Knospe - last modified on 26 March 2016
 
 *** Configuration script for phi analysis of 2015 pp 13-TeV data ***
 ****************************************************************************/
@@ -20,7 +20,8 @@ Bool_t ConfigPhiPP13TeV_PID
  TString                monitorOpt="",
  Bool_t                 useMixLS=0,
  Bool_t                 checkReflex=0,
- AliRsnMiniValue::EType yaxisVar=AliRsnMiniValue::kPt
+ AliRsnMiniValue::EType yaxisVar=AliRsnMiniValue::kPt,
+ TString                polarizationOpt="" /* J - Jackson,T - Transversity */
 )
 {
   // manage suffix
@@ -30,15 +31,15 @@ Bool_t ConfigPhiPP13TeV_PID
   AliRsnCutSetDaughterParticle* cutSetQ;
   AliRsnCutSetDaughterParticle* cutSetK;
 
-  Bool_t useFineMcBinning=kFALSE;
-  if(aodFilterBit>=100) useFineMcBinning=kTRUE;
-  aodFilterBit=aodFilterBit%100;
+  Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
+  Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
+  if(nsigmaKaTOF<1.e-10) nsigmaKaTOF=-1.;
 
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
     //Set custom quality cuts for systematic checks
     cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKa);
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
   }else{
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
@@ -58,7 +59,8 @@ Bool_t ConfigPhiPP13TeV_PID
 
   // -- Values ------------------------------------------------------------------------------------
   /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,kFALSE);
-  /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes,kTRUE);
+  /* mother mass      */ Int_t mmID   = task->CreateValue(AliRsnMiniValue::kInvMassMother,kFALSE);
+  /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,kFALSE);
@@ -67,6 +69,11 @@ Bool_t ConfigPhiPP13TeV_PID
   /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
   /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP,kFALSE);
   /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP,kFALSE);
+  /* cos(theta) J     */ Int_t ctjID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kFALSE);
+  /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
+  /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
+  /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
+
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -75,16 +82,16 @@ Bool_t ConfigPhiPP13TeV_PID
   // [2] = like ++
   // [3] = like --
 
-  Bool_t  use    [8]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly, isMC,isMC, useMixLS,useMixLS};
-  Bool_t  useIM  [8]={ 1      ,  1     , 1      ,  1     ,  1     ,  0     , 1        , 1        };
-  TString name   [8]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"Res"   ,"MixingPP","MixingMM"};
-  TString comp   [8]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" ,"TRUE"  ,"MIX"     ,"MIX"     };
-  TString output [8]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"  ,"SPARSE"  };
-  Int_t   pdgCode[8]={333     , 333    ,333     ,333     , 333    ,333     , 333      ,333       };
-  Char_t  charge1[8]={'+'     , '+'    ,'+'     ,'-'     , '+'    ,'+'     ,'+'       ,'-'       };
-  Char_t  charge2[8]={'-'     , '-'    ,'+'     ,'-'     , '-'    ,'-'     ,'+'       ,'-'       };
+  Bool_t  use    [11]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly, isMC,isMC,isMC,isMC,isMC, useMixLS,useMixLS};
+  Int_t   useIM  [11]={ 1      ,  1     , 1      ,  1     ,  1     ,  1        ,  2      , 2           ,0       , 1        , 1        };
+  TString name   [11]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"TruesFine","TruesMM","TruesFineMM","Res"   ,"MixingPP","MixingMM"};
+  TString comp   [11]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" , "TRUE"    ,"TRUE"   ,"TRUE"       ,"TRUE"  ,"MIX"     ,"MIX"     };
+  TString output [11]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"   ,"SPARSE" ,"SPARSE"     ,"SPARSE","SPARSE"  ,"SPARSE"  };
+  Int_t   pdgCode[11]={333     , 333    ,333     ,333     , 333    , 333       ,333      ,333          ,333     , 333      ,333       };
+  Char_t  charge1[11]={'+'     , '+'    ,'+'     ,'-'     , '+'    , '+'       ,'+'      , '+'         ,'+'     ,'+'       ,'-'       };
+  Char_t  charge2[11]={'-'     , '-'    ,'+'     ,'-'     , '-'    , '-'       ,'-'      , '-'         ,'-'     ,'+'       ,'-'       };
 
-  for(Int_t i=0;i<8;i++){
+  for(Int_t i=0;i<9;i++){
     if(!use[i]) continue;
     AliRsnMiniOutput* out=task->CreateOutput(Form("phi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
     out->SetCutID(0,iCutK);
@@ -98,15 +105,16 @@ Bool_t ConfigPhiPP13TeV_PID
     out->SetPairCuts(cutsPair);
 
     //axis X: invmass (or resolution)
-    if(useIM[i]) out->AddAxis(imID,215,0.985,1.2);
-    else out->AddAxis(resID,200,-0.02,0.02);
+    if(useIM[i]==1) out->AddAxis(imID,215,0.985,1.2);
+    if(useIM[i]==2) out->AddAxis(mmID,75,0.985,1.06);
+    else out->AddAxis(diffID,200,-0.02,0.02);
 
     //axis Y: transverse momentum of pair as default - else chosen value
     if(yaxisVar==AliRsnMiniValue::kFirstDaughterPt) out->AddAxis(fdpt,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterPt) out->AddAxis(sdpt,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
     else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
-    else if(isMC && useFineMcBinning) out->AddAxis(ptID,300,0.,3.);
+    else if(isMC && (i==5 || i==7)) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     else out->AddAxis(ptID,200,0.,20.);//default use mother pt
 
     // axis Z: centrality-multiplicity
@@ -116,7 +124,10 @@ Bool_t ConfigPhiPP13TeV_PID
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
-  }   
+
+    if (polarizationOpt.Contains("J")) out->AddAxis(ctjID,21,-1.,1);
+    if (polarizationOpt.Contains("T")) out->AddAxis(cttID,21,-1.,1);
+  }
 
   if(isMC){   
     //get mothers for phi PDG = 333
@@ -127,10 +138,24 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetMotherMass(1.019461);
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
-    if(useFineMcBinning) outm->AddAxis(ptID,300,0.,3.);
-    else outm->AddAxis(ptID,200,0.,20.);
+    outm->AddAxis(ptID,200,0.,20.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
+    if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
+    if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
+
+    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");
+    outmf->SetDaughter(0,AliRsnDaughter::kKaon);
+    outmf->SetDaughter(1,AliRsnDaughter::kKaon);
+    outmf->SetMotherPDG(333);
+    outmf->SetMotherMass(1.019461);
+    outmf->SetPairCuts(cutsPair);
+    outmf->AddAxis(imID,215,0.985,1.2);
+    outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
+    if(!isPP) outmf->AddAxis(centID,100,0.,100.);
+    else outmf->AddAxis(centID,161,-0.5,160.5);
+    if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
+    if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
     //get phase space of the decay from mothers
     AliRsnMiniOutput* outps=task->CreateOutput(Form("phi_phaseSpace%s", suffix),"HIST","TRUE");
@@ -159,6 +184,8 @@ Bool_t ConfigPhiPP13TeV_PID
       outreflex->AddAxis(ptID,200,0.,20.);
       if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
       else outreflex->AddAxis(centID,400,0.5,400.5);
+      if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,21,-1.,1.);
+      if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections
   }//end MC
 

@@ -257,7 +257,7 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fLS(0)
 ,Rconv_pT(0)
 {
-
+    
     fPID = new AliHFEpid("hfePid");
     //  fvalueTrkmat = new Double_t[9];
     // Constructor
@@ -273,7 +273,7 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 //________________________________________________________________________
 AliAnalysisTaskHFEEfficiency::~AliAnalysisTaskHFEEfficiency()
 {
-
+    
     
     delete fOutputList;
     delete fTrackCuts;
@@ -290,8 +290,8 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
     //Called for each event
     // create pointer to event
     
-   //    cout <<   "In UserExec()      " << endl;
-
+    //    cout <<   "In UserExec()      " << endl;
+    
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -305,7 +305,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         printf("ERROR: fVEvent not available\n");
         return;
     }
-
+    
     AliKFParticle::SetField(fVevent->GetMagneticField());
     
     AliMCEvent *mcEvent;
@@ -359,7 +359,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         if(IsAODanalysis())fPID->InitializePID(fAOD->GetRunNumber());
         else fPID->InitializePID(fESD->GetRunNumber());
     }
-
+    
     // centrality selection
     Bool_t pass = kFALSE;
     CheckCentrality(fVevent,pass);
@@ -369,26 +369,26 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
     
     double mcZvertex = mcHeader->GetVtxZ();//mcEvent->GetPrimaryVertex()->GetZ();
     
-        //-------------AOD HFE spectrum--------------
-        //    Bool_t MChijingPrim = kFALSE;
+    //-------------AOD HFE spectrum--------------
+    //    Bool_t MChijingPrim = kFALSE;
     if(TMath::Abs(mcZvertex) < 10){
-    
+        
         fNoEventsStackHFE->Fill(0);
         
         
         
         for(Int_t imcArrayL=0; imcArrayL< mcArray->GetEntries(); imcArrayL++){
             
-//            
-//            // Fill Here after HFE track cuts
+            //
+            //            // Fill Here after HFE track cuts
             Double_t ForHFEeffGen[4];
             Bool_t ShouldiFillit = kFALSE;
-//            FillNumerator(mcArray,track,ForHFEeffGen);
-//            fHFEDenominator->Fill(ForHFEeffGen);
+            //            FillNumerator(mcArray,track,ForHFEeffGen);
+            //            fHFEDenominator->Fill(ForHFEeffGen);
             
             AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(imcArrayL);
             if(AODMCtrack->Eta() < -0.8 || AODMCtrack->Eta() > 0.8) continue;
-
+            
             Int_t from_D_or_B;
             if(TMath::Abs(AODMCtrack->GetPdgCode())==11){
                 
@@ -422,13 +422,13 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
                 
             }//end is an electron
             if(ShouldiFillit){fHFEDenominator->Fill(ForHFEeffGen);}
-
+            
         }//end loop stack HFE
     }//end vertex selection
     
-
     
-  
+    
+    
     const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
     Double_t pVtxZ = -999;
     pVtxZ = pVtx->GetZ();
@@ -436,7 +436,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
     Int_t fNOtrks =  fVevent->GetNumberOfTracks();
     if(fNOtrks<2) return;
     fNoEvents->Fill(0);
-
+    
     AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
     if(!pidResponse){
         AliDebug(1, "Using default PID Response");
@@ -445,48 +445,48 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
     
     fPID->SetPIDResponse(pidResponse);
     fCFM->SetRecEventInfo(fVevent);
-  //  Double_t Bz = fInputEvent->GetMagneticField();
+    //  Double_t Bz = fInputEvent->GetMagneticField();
     
     Double_t qaweights[5];
     if(fStackloop){
         //-------------AOD pi0 and eta spectrum--------------
-    //    Bool_t MChijingPrim = kFALSE;
+        //    Bool_t MChijingPrim = kFALSE;
         
         for(Int_t imcArrayL=0; imcArrayL< mcArray->GetEntries(); imcArrayL++){
             AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(imcArrayL);
-    //        Int_t PDGcode = TMath::Abs(AODMCtrack->GetPdgCode());
+            //        Int_t PDGcode = TMath::Abs(AODMCtrack->GetPdgCode());
             if(AODMCtrack->Eta() < -1.2 || AODMCtrack->Eta() > 1.2) continue;
-
-	  
-	    // Pt
-	    qaweights[0] = AODMCtrack->Pt();
-	    // See from where it comes
-	    Int_t fromhijing = kElse;
-	    Int_t Prim = GetPrimary(imcArrayL, mcArray);
-	    AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)mcArray->At(Prim);
-	    Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle array
-	    if(IsFromBGEventAOD(trkIndexPrim)) fromhijing = kHijing;//check if the particle comes from hijing or from enhanced event
+            
+            
+            // Pt
+            qaweights[0] = AODMCtrack->Pt();
+            // See from where it comes
+            Int_t fromhijing = kElse;
+            Int_t Prim = GetPrimary(imcArrayL, mcArray);
+            AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)mcArray->At(Prim);
+            Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle array
+            if(IsFromBGEventAOD(trkIndexPrim)) fromhijing = kHijing;//check if the particle comes from hijing or from enhanced event
             qaweights[2]=fromhijing;
-
-	    // What pdg
-	    qaweights[1]=-1.;
-	    if (TMath::Abs(AODMCtrack->GetPdgCode())==111) qaweights[1]=0.2;
-	    if (TMath::Abs(AODMCtrack->GetPdgCode())==221) qaweights[1]=1.2;
-	    if (TMath::Abs(AODMCtrack->GetPdgCode())==22) qaweights[1]=2.2;
-	    
-	    // What type
-	    Int_t type = GetPi0EtaType(AODMCtrack,mcArray);
-	    qaweights[3]=type;
-
-	    // Fill
-	    if(qaweights[1]>0.) fPi0EtaSpectra->Fill(qaweights);
-	    
-		
-        
+            
+            // What pdg
+            qaweights[1]=-1.;
+            if (TMath::Abs(AODMCtrack->GetPdgCode())==111) qaweights[1]=0.2;
+            if (TMath::Abs(AODMCtrack->GetPdgCode())==221) qaweights[1]=1.2;
+            if (TMath::Abs(AODMCtrack->GetPdgCode())==22) qaweights[1]=2.2;
+            
+            // What type
+            Int_t type = GetPi0EtaType(AODMCtrack,mcArray);
+            qaweights[3]=type;
+            
+            // Fill
+            if(qaweights[1]>0.) fPi0EtaSpectra->Fill(qaweights);
+            
+            
+            
         }//end stack
     }//end if Bool stack
-
-
+    
+    
     // Look for kink mother for AOD
     Double_t *listofmotherkink =0;
     Int_t numberofvertices = 0, numberofmotherkink = 0;
@@ -506,14 +506,14 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         }
     }
     
- //   cout <<   "After  kink      " << endl;
-
+    //   cout <<   "After  kink      " << endl;
+    
     Double_t incls[3];
-  
-
+    
+    
     //------Reco stack-------------
     // Track loop
-      for (Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+    for (Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
         AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
         if (!Vtrack) {
             printf("ERROR: Could not receive track %d\n", iTracks);
@@ -522,19 +522,19 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
         AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
-                        
-      if(IsAODanalysis()) if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
-          if(track->Eta() < -0.8 || track->Eta() > 0.8) continue;
-
-          // Fill Here after HFE track cuts
-          Double_t ForHFEeffRecoFilt[4];
-          Bool_t canIfilltrkFilt = FillNumerator(mcArray,track,ForHFEeffRecoFilt);
-          if(canIfilltrkFilt){fHFENumeratorTRKCUTS_Filt->Fill(ForHFEeffRecoFilt);}
-          
+        
+        if(IsAODanalysis()) if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+        if(track->Eta() < -0.8 || track->Eta() > 0.8) continue;
+        
+        // Fill Here after HFE track cuts
+        Double_t ForHFEeffRecoFilt[4];
+        Bool_t canIfilltrkFilt = FillNumerator(mcArray,track,ForHFEeffRecoFilt);
+        if(canIfilltrkFilt){fHFENumeratorTRKCUTS_Filt->Fill(ForHFEeffRecoFilt);}
+        
         fTrackPtBefTrkCuts->Fill(track->Pt());
         // RecKine: ITSTPC cuts
         if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-          
+        
         // Reject kink mother
         if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
             if(IsAODanalysis()){
@@ -551,41 +551,41 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
                 if(etrack->GetKinkIndex(0) != 0) continue;
             }
         }
-    
-          // Fill Here after HFE track cuts
-          Double_t ForHFEeffRecoITSTPCRef[4];
-          Bool_t canIfilltrkITSTPC = FillNumerator(mcArray,track,ForHFEeffRecoITSTPCRef);
-          if(canIfilltrkITSTPC){fHFENumeratorTRKCUTS_ITSTPC->Fill(ForHFEeffRecoITSTPCRef);}
-          
-          
+        
+        // Fill Here after HFE track cuts
+        Double_t ForHFEeffRecoITSTPCRef[4];
+        Bool_t canIfilltrkITSTPC = FillNumerator(mcArray,track,ForHFEeffRecoITSTPCRef);
+        if(canIfilltrkITSTPC){fHFENumeratorTRKCUTS_ITSTPC->Fill(ForHFEeffRecoITSTPCRef);}
+        
+        
         // RecPrim
         //      if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
         // HFEcuts: ITS layers cuts
         if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-          
-          
-          // Fill Here after HFE track cuts
-//          Double_t ForHFEeffRecoITStrkCut[4];
-//          Bool_t canIfilltrkITStrkCut = FillNumerator(mcArray,track,ForHFEeffRecoITStrkCut);
-//          if(canIfilltrkITStrkCut){fHFENumeratorTRKCUTS_ITStrkCut->Fill(ForHFEeffRecoITStrkCut);}
-  
-          
+        
+        
+        // Fill Here after HFE track cuts
+        //          Double_t ForHFEeffRecoITStrkCut[4];
+        //          Bool_t canIfilltrkITStrkCut = FillNumerator(mcArray,track,ForHFEeffRecoITStrkCut);
+        //          if(canIfilltrkITStrkCut){fHFENumeratorTRKCUTS_ITStrkCut->Fill(ForHFEeffRecoITStrkCut);}
+        
+        
         // HFE cuts: TPC PID cleanup
         if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-      
-          // Fill Here after HFE track cuts
-          Double_t ForHFEeffRecoTrackCuts[4];
-          Bool_t canIfilltrk = FillNumerator(mcArray,track,ForHFEeffRecoTrackCuts);
-          if(canIfilltrk){fHFENumeratorTRKCUTS->Fill(ForHFEeffRecoTrackCuts);}
-          
-
+        
+        // Fill Here after HFE track cuts
+        Double_t ForHFEeffRecoTrackCuts[4];
+        Bool_t canIfilltrk = FillNumerator(mcArray,track,ForHFEeffRecoTrackCuts);
+        if(canIfilltrk){fHFENumeratorTRKCUTS->Fill(ForHFEeffRecoTrackCuts);}
+        
+        
         fTrackPtAftTrkCuts->Fill(track->Pt());
         
-          
-          
+        
+        
         Double_t MCtrkPt=-999;
-          Int_t trkLabel = TMath::Abs(track->GetLabel());
-       // if(trkLabel <0) continue;
+        Int_t trkLabel = TMath::Abs(track->GetLabel());
+        // if(trkLabel <0) continue;
         
         
         AliAODMCParticle *MCtrack = (AliAODMCParticle*)mcArray->At(trkLabel);
@@ -607,19 +607,27 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         fITSnsigma->Fill(p,fITSnSigma);
         fTOFnsigma->Fill(p,fTOFnSigma);
         
-            if(TMath::Abs(MCtrack->GetPdgCode()) == 11){
-              fITSnsigmaElectron->Fill(p,fITSnSigma);
-          }
-          
-                
+        
+        
+        Bool_t MCElectron=kFALSE;
+        Int_t PrimElectron = GetPrimary(trkLabel, mcArray);
+        AliAODMCParticle *AODMCElectron = (AliAODMCParticle*)mcArray->At(PrimElectron);
+        Int_t trkIndexElectron = AODMCElectron->GetLabel();//gives index of the particle in original MCparticle array
+        MCElectron = IsFromBGEventAOD(trkIndexElectron);//check if the particle comes from hijing or from enhanced event
+        if(MCElectron){
+        if(TMath::Abs(MCtrack->GetPdgCode()) == 11){
+            fITSnsigmaElectron->Fill(p,fITSnSigma);
+        }
+        }
+        
         //Electron id
-            if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
-          
-          // Fill Here after TOF cuts
+        if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
+        
+        // Fill Here after TOF cuts
         Double_t ForHFEeffRecoTOF[4];
         Bool_t canIfillTOF = FillNumerator(mcArray,track,ForHFEeffRecoTOF);
         if(canIfillTOF){fHFENumeratorTOF->Fill(ForHFEeffRecoTOF);}
-          
+        
         if( pt < 1.5){
             if(fITSnSigma < fminITSnsigmaLowpT || fITSnSigma > fmaxITSnsigmaLowpT)continue;
         }
@@ -627,12 +635,12 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
             if(fITSnSigma < fminITSnsigmaHighpT || fITSnSigma > fmaxITSnsigmaHighpT)continue;
         }//cuts on nsigma ITS
         fTPCnsigmaAftITSTOF->Fill(track->P(),fTPCnSigma);
-
+        
         // Fill Here after ITS cuts
-          Double_t ForHFEeffRecoITS[4];
-          Bool_t canIfillITS = FillNumerator(mcArray,track,ForHFEeffRecoITS);
-          if(canIfillITS){fHFENumeratorITS->Fill(ForHFEeffRecoITS);}
-
+        Double_t ForHFEeffRecoITS[4];
+        Bool_t canIfillITS = FillNumerator(mcArray,track,ForHFEeffRecoITS);
+        if(canIfillITS){fHFENumeratorITS->Fill(ForHFEeffRecoITS);}
+        
         if(pt < 1.5){
             if(fTPCnSigma < fminTPCnsigmaLowpT || fTPCnSigma > fmaxTPCnsigmaLowpT) continue;
         }//cuts on nsigma tpc
@@ -640,39 +648,39 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
             if(fTPCnSigma < fminTPCnsigmaHighpT || fTPCnSigma > fmaxTPCnsigmaHighpT) continue;
         }//cuts on nsigma tpc
         
-          // Fill Here after TPC cuts
-          Double_t ForHFEeffReco[4];
-          Bool_t canIfill = FillNumerator(mcArray,track,ForHFEeffReco);
-          if(canIfill){fHFENumerator->Fill(ForHFEeffReco);}
-
-          
-          
-          fTPCnsigmaAft->Fill(track->P(),fTPCnSigma);
-          fTPCnsigmaVSptAft->Fill(pt,fTPCnSigma);
-//=============FROM HERE efficiency NHFE===================================
-          
-          Int_t PhototrkLabel_forfake = TMath::Abs(track->GetLabel());
-          //  if(PhototrkLabel_forfake <0) continue;
-          AliAODMCParticle *MCPhotoEle_forfake = (AliAODMCParticle*)mcArray->At(PhototrkLabel_forfake);
-          Int_t fMCmom_fake = MCPhotoEle_forfake->GetMother();
-          AliAODMCParticle *MCMother_forfake = (AliAODMCParticle*)mcArray->At(fMCmom_fake);
-          if(TMath::Abs(MCPhotoEle_forfake->GetPdgCode()) == 11 && MCMother_forfake->GetPdgCode()==22){
-              Double_t fVx = MCPhotoEle_forfake->Xv();
-              Double_t fVy = MCPhotoEle_forfake->Yv();
-              Double_t Rconv = TMath::Sqrt(fVx*fVx+fVy*fVy);
-           //   cout << "production X vertex  ==  " << fVx << endl;
-           //   cout << "production Y vertex  ==  " << fVy << endl;
-              
-          //    cout << "production vertex  ==  " << Rconv << endl;
-              // Double_t Rconv = MCPhotoEle_forfake->R(); // production vertex of particles.
-              Rconv_pT->Fill(MCPhotoEle_forfake->Pt(),Rconv);
-              
-              fakepT->Fill(MCPhotoEle_forfake->Pt());
-              if(Rconv > 5)fakepTgraterFive->Fill(MCPhotoEle_forfake->Pt());
-            }//electron with gamma mother
-
-          
-          
+        // Fill Here after TPC cuts
+        Double_t ForHFEeffReco[4];
+        Bool_t canIfill = FillNumerator(mcArray,track,ForHFEeffReco);
+        if(canIfill){fHFENumerator->Fill(ForHFEeffReco);}
+        
+        
+        
+        fTPCnsigmaAft->Fill(track->P(),fTPCnSigma);
+        fTPCnsigmaVSptAft->Fill(pt,fTPCnSigma);
+        //=============FROM HERE efficiency NHFE===================================
+        
+        Int_t PhototrkLabel_forfake = TMath::Abs(track->GetLabel());
+        //  if(PhototrkLabel_forfake <0) continue;
+        AliAODMCParticle *MCPhotoEle_forfake = (AliAODMCParticle*)mcArray->At(PhototrkLabel_forfake);
+        Int_t fMCmom_fake = MCPhotoEle_forfake->GetMother();
+        AliAODMCParticle *MCMother_forfake = (AliAODMCParticle*)mcArray->At(fMCmom_fake);
+        if(TMath::Abs(MCPhotoEle_forfake->GetPdgCode()) == 11 && MCMother_forfake->GetPdgCode()==22){
+            Double_t fVx = MCPhotoEle_forfake->Xv();
+            Double_t fVy = MCPhotoEle_forfake->Yv();
+            Double_t Rconv = TMath::Sqrt(fVx*fVx+fVy*fVy);
+            //   cout << "production X vertex  ==  " << fVx << endl;
+            //   cout << "production Y vertex  ==  " << fVy << endl;
+            
+            //    cout << "production vertex  ==  " << Rconv << endl;
+            // Double_t Rconv = MCPhotoEle_forfake->R(); // production vertex of particles.
+            Rconv_pT->Fill(MCPhotoEle_forfake->Pt(),Rconv);
+            
+            fakepT->Fill(MCPhotoEle_forfake->Pt());
+            if(Rconv > 5)fakepTgraterFive->Fill(MCPhotoEle_forfake->Pt());
+        }//electron with gamma mother
+        
+        
+        
         
         Bool_t fFlagMCPhotonicElec = kFALSE;
         
@@ -680,7 +688,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         
         //MC truth All photonic electron
         Int_t PhototrkLabel = TMath::Abs(track->GetLabel());
-     //   if(PhototrkLabel <0) continue;
+        //   if(PhototrkLabel <0) continue;
         
         AliAODMCParticle *MCPhotoEleAll = (AliAODMCParticle*)mcArray->At(PhototrkLabel);
         Int_t fMCmomAll = -999;
@@ -690,103 +698,103 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         fInclusiveElecPt->Fill(track->Pt());
         fMCmomAll = MCPhotoEleAll->GetMother();
         AliAODMCParticle *MCMotherAll = (AliAODMCParticle*)mcArray->At(fMCmomAll);
-
-	
-      if(MCMotherAll->GetPdgCode()==22 || MCMotherAll->GetPdgCode()==111 || MCMotherAll->GetPdgCode()==221)
-      {
-	  fFlagMCPhotonicElec = kTRUE;
-	  fElecNos->Fill(3);
-	  fMCtagPhotoElecPtAll->Fill(track->Pt());
-	  fMCtagTruePhotoElecPtAll->Fill(MCPhotoEleAll->Pt());
-          
-	  
-          
-	  if(MCMotherAll->GetPdgCode()==22) fMCtagGammaElecPtAll->Fill(track->Pt());
-	  if(MCMotherAll->GetPdgCode()==111) fMCtagPi0ElecPtAll->Fill(track->Pt());
-	  if(MCMotherAll->GetPdgCode()==221) fMCtagEtaElecPtAll->Fill(track->Pt());
         
-	  // Pt
-	  incls[0] = track->Pt();
-
-	  //--------Weight calculation--------------
-	  //Check ele from hijing or enhanced
-	  Bool_t MChijingAll=kFALSE;
-	  Int_t PrimAll = GetPrimary(PhototrkLabel, mcArray);
-	  AliAODMCParticle *AODMCtrackPrimAll = (AliAODMCParticle*)mcArray->At(PrimAll);
-	  Int_t trkIndexPrimAll = AODMCtrackPrimAll->GetLabel();//gives index of the particle in original MCparticle array
-	  MChijingAll = IsFromBGEventAOD(trkIndexPrimAll);//check if the particle comes from hijing or from enhanced event
-	  if(MChijingAll) incls[1]=kHijing;
-	  else incls[1]=kElse;
-	  
-	  // Source
-	  if(MCMotherAll->GetPdgCode()==22) incls[2] = kGamma;
-	  if(MCMotherAll->GetPdgCode()==111) incls[2] = kPi0;
-	  if(MCMotherAll->GetPdgCode()==221) incls[2] = kEta;
-	  
-    if(WeightsForEnhanced){//accept only Enhanced event using HIJING weights for MC closure test
-        if(!fcocktail){
-            if(MChijingAll) continue;
-          }
-        if(fcocktail){
-            if(!MChijingAll) continue;
-          }
         
-	  // Weights
-	  Double_t weightsRaphaelle = -1.;
-	  Double_t ptmotherw = -1.;
-	  Int_t electronsource = GetElecSourceType(MCPhotoEleAll,mcArray,ptmotherw);
-	  if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
-	    if(fcocktail)weightsRaphaelle = GetMCweightPi0(ptmotherw);
-        if(!fcocktail)weightsRaphaelle = GetMCweightPi0HIJING(ptmotherw);
-	    fIncl->Fill(incls,weightsRaphaelle);
-	    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-       // SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
-	  }
-	  if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
-	      if(fcocktail) weightsRaphaelle = GetMCweightEta(ptmotherw);
-          if(!fcocktail) weightsRaphaelle = GetMCweightEtaHIJING(ptmotherw);
-	    fIncl->Fill(incls,weightsRaphaelle);
-	    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-      //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
-	  }
-        
-    }//with whatever weights (or HIJING +Enh with cocktail weight or Enhanced only with HIJING weights)
+        if(MCMotherAll->GetPdgCode()==22 || MCMotherAll->GetPdgCode()==111 || MCMotherAll->GetPdgCode()==221)
+        {
+            fFlagMCPhotonicElec = kTRUE;
+            fElecNos->Fill(3);
+            fMCtagPhotoElecPtAll->Fill(track->Pt());
+            fMCtagTruePhotoElecPtAll->Fill(MCPhotoEleAll->Pt());
             
-    if(!WeightsForEnhanced){
-        if(!MChijingAll) continue;
-        // Weights == 1
-        Double_t weightsRaphaelle = -1.;
-        Double_t ptmotherw = -1.;
-        Int_t electronsource = GetElecSourceType(MCPhotoEleAll,mcArray,ptmotherw);
-        if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
-            weightsRaphaelle = 1;
-            fIncl->Fill(incls,weightsRaphaelle);
-            SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-          //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
-        }
-        if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
-            weightsRaphaelle = 1;
-            fIncl->Fill(incls,weightsRaphaelle);
-            SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-          //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
-        }
-    
-    }
-
-	
+            
+            
+            if(MCMotherAll->GetPdgCode()==22) fMCtagGammaElecPtAll->Fill(track->Pt());
+            if(MCMotherAll->GetPdgCode()==111) fMCtagPi0ElecPtAll->Fill(track->Pt());
+            if(MCMotherAll->GetPdgCode()==221) fMCtagEtaElecPtAll->Fill(track->Pt());
+            
+            // Pt
+            incls[0] = track->Pt();
+            
+            //--------Weight calculation--------------
+            //Check ele from hijing or enhanced
+            Bool_t MChijingAll=kFALSE;
+            Int_t PrimAll = GetPrimary(PhototrkLabel, mcArray);
+            AliAODMCParticle *AODMCtrackPrimAll = (AliAODMCParticle*)mcArray->At(PrimAll);
+            Int_t trkIndexPrimAll = AODMCtrackPrimAll->GetLabel();//gives index of the particle in original MCparticle array
+            MChijingAll = IsFromBGEventAOD(trkIndexPrimAll);//check if the particle comes from hijing or from enhanced event
+            if(MChijingAll) incls[1]=kHijing;
+            else incls[1]=kElse;
+            
+            // Source
+            if(MCMotherAll->GetPdgCode()==22) incls[2] = kGamma;
+            if(MCMotherAll->GetPdgCode()==111) incls[2] = kPi0;
+            if(MCMotherAll->GetPdgCode()==221) incls[2] = kEta;
+            
+            if(WeightsForEnhanced){//accept only Enhanced event using HIJING weights for MC closure test
+                if(!fcocktail){
+                    if(MChijingAll) continue;
+                }
+                if(fcocktail){
+                    if(!MChijingAll) continue;
+                }
+                
+                // Weights
+                Double_t weightsRaphaelle = -1.;
+                Double_t ptmotherw = -1.;
+                Int_t electronsource = GetElecSourceType(MCPhotoEleAll,mcArray,ptmotherw);
+                if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
+                    if(fcocktail)weightsRaphaelle = GetMCweightPi0(ptmotherw);
+                    if(!fcocktail)weightsRaphaelle = GetMCweightPi0HIJING(ptmotherw);
+                    fIncl->Fill(incls,weightsRaphaelle);
+                    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    // SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                }
+                if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
+                    if(fcocktail) weightsRaphaelle = GetMCweightEta(ptmotherw);
+                    if(!fcocktail) weightsRaphaelle = GetMCweightEtaHIJING(ptmotherw);
+                    fIncl->Fill(incls,weightsRaphaelle);
+                    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                }
+                
+            }//with whatever weights (or HIJING +Enh with cocktail weight or Enhanced only with HIJING weights)
+            
+            if(!WeightsForEnhanced){
+                if(!MChijingAll) continue;
+                // Weights == 1
+                Double_t weightsRaphaelle = -1.;
+                Double_t ptmotherw = -1.;
+                Int_t electronsource = GetElecSourceType(MCPhotoEleAll,mcArray,ptmotherw);
+                if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
+                    weightsRaphaelle = 1;
+                    fIncl->Fill(incls,weightsRaphaelle);
+                    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                }
+                if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
+                    weightsRaphaelle = 1;
+                    fIncl->Fill(incls,weightsRaphaelle);
+                    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                }
+                
+            }
+            
+            
         }//mom
- 
+        
     } //track loop
-
-
-
+    
+    
+    
     PostData(1, fOutputList);
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
 {
     
-
+    
     
     AliDebug(3, "Creating Output Objects");
     // Automatic determination of the analysis mode
@@ -833,7 +841,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     
     fNoEvents = new TH1F("fNoEvents","",1,0,1) ;
     fOutputList->Add(fNoEvents);
-        
+    
     fMCPdgmom = new TH1F("fMCPdgmom", "MC pdg of electron mother; PDG code; count",1000,-0.5,999.5);
     fOutputList->Add(fMCPdgmom);
     
@@ -871,36 +879,36 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fInvmassULSNHFE);
     
     fOpeningAngleLS = new TH1F("fOpeningAngleLS","Opening angle for LS pairs",100,0,1);
-       fOutputList->Add(fOpeningAngleLS);
+    fOutputList->Add(fOpeningAngleLS);
     
     fOpeningAngleULS = new TH1F("fOpeningAngleULS","Opening angle for ULS pairs",100,0,1);
-       fOutputList->Add(fOpeningAngleULS);
+    fOutputList->Add(fOpeningAngleULS);
     
     fTrackPtBefTrkCuts = new TH1F("fTrackPtBefTrkCuts","track pt before track cuts",1000,0,50);
-       fOutputList->Add(fTrackPtBefTrkCuts);
+    fOutputList->Add(fTrackPtBefTrkCuts);
     
     fTrackPtAftTrkCuts = new TH1F("fTrackPtAftTrkCuts","track pt after track cuts",1000,0,50);
-       fOutputList->Add(fTrackPtAftTrkCuts);
+    fOutputList->Add(fTrackPtAftTrkCuts);
     
     fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma",1000,0,50,400,-20,20);
-      fOutputList->Add(fTPCnsigma);
-   
+    fOutputList->Add(fTPCnsigma);
+    
     
     fITSnsigma = new TH2F("fITSnsigma", "ITS - n sigma",1000,0,50,400,-20,20);
     fOutputList->Add(fITSnsigma);
-
-    fITSnsigmaElectron = new TH2F("fITSnsigmaElectron", "ITS - n sigma Elect",1000,0,50,400,-20,20);
+    
+    fITSnsigmaElectron = new TH2F("fITSnsigmaElectron", "ITS - n sigma Elect",600,0,6,400,-20,20);
     fOutputList->Add(fITSnsigmaElectron);
     
     fTOFnsigma = new TH2F("fTOFnsigma", "TOF - n sigma",1000,0,50,400,-20,20);
     fOutputList->Add(fTOFnsigma);
-
+    
     
     fTrkEovPBef = new TH2F("fTrkEovPBef","track E/p before HFE pid",1000,0,50,100,0,2);
-      fOutputList->Add(fTrkEovPBef);
+    fOutputList->Add(fTrkEovPBef);
     
     fdEdxBef = new TH2F("fdEdxBef","track dEdx vs p before HFE pid",1000,0,50,150,0,150);
-      fOutputList->Add(fdEdxBef);
+    fOutputList->Add(fdEdxBef);
     
     
     fCentralityPass = new TH1F("fCentralityPass", "Centrality Pass", 101, -1, 100);
@@ -937,7 +945,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fMCtagEtaElecPtAll = new TH1F("fMCtagEtaElecPtAll","All MC tagged Eta elec Pt; p_{T}; count",1000,0,50);
     fMCtagEtaElecPtAll->Sumw2();
     fOutputList->Add(fMCtagEtaElecPtAll);
-
+    
     
     fTPCnsigmaAft = new TH2F("fTPCnsigmaAft", "TPC - n sigma after HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fTPCnsigmaAft);
@@ -947,14 +955,14 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     
     fTPCnsigmaAftITSTOF = new TH2F("fTPCnsigmaAftITSTOF", "TPC - n sigma after HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fTPCnsigmaAftITSTOF);
-  
+    
     Rconv_pT = new TH2F("Rconv_pT", "Rconv_pT",500,0,50,100,0,30);
     fOutputList->Add(Rconv_pT);
     
     
     fakepT= new TH1F("fakepT", "fakepT",500,0,50);
     fOutputList->Add(fakepT);
-   
+    
     fakepTgraterFive= new TH1F("fakepTgraterFive", "fakepTgraterFive",500,0,50);
     fOutputList->Add(fakepTgraterFive);
     
@@ -972,39 +980,39 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fSparseMassLS->GetAxis(1)->SetTitle("mass");
     fOutputList->Add(fSparseMassLS);
     
-/*
+    /*
      Int_t binsv1[9]={2000,2000,1000,200,1000,100, 2,2,2}; //trkPt, trkMCPt, p, dEdx, ClsE, E/p,fFlagPhotonicElec, fFlagMCPhotonicElec, fFlagMCPhotonicElecInvmass
      Double_t xminv1[9]={0,   0,  0,   0,    0,   0,  0,0,0};
      Double_t xmaxv1[]={100, 100,100, 200, 100, 2.5, 2,2,2};
      fSparseTrkMat = new THnSparseD ("Electrons","Electrons",9,binsv1,xminv1,xmaxv1);
      fOutputList->Add(fSparseTrkMat);
      */
-
+    
     // QA weights
     Int_t nBinspdg = 3;
     Double_t minpdg = 0.;
     Double_t maxpdg = 3.;
     Double_t binLimpdg[nBinspdg+1];
-    for(Int_t i=0; i<=nBinspdg; i++) binLimpdg[i]=(Double_t)minpdg + (maxpdg-minpdg)/nBinspdg*(Double_t)i ;    
-
+    for(Int_t i=0; i<=nBinspdg; i++) binLimpdg[i]=(Double_t)minpdg + (maxpdg-minpdg)/nBinspdg*(Double_t)i ;
+    
     Int_t nBinsg = 2;
     Double_t ming = 0.;
     Double_t maxg = 2.;
     Double_t binLimg[nBinsg+1];
-    for(Int_t i=0; i<=nBinsg; i++) binLimg[i]=(Double_t)ming + (maxg-ming)/nBinsg*(Double_t)i ;    
-
+    for(Int_t i=0; i<=nBinsg; i++) binLimg[i]=(Double_t)ming + (maxg-ming)/nBinsg*(Double_t)i ;
+    
     Int_t nBinstype = 7;
     Double_t mintype = -1.;
     Double_t maxtype = 6.;
     Double_t binLimtype[nBinstype+1];
-    for(Int_t i=0; i<=nBinstype; i++) binLimtype[i]=(Double_t)mintype + (maxtype-mintype)/nBinstype*(Double_t)i ;    
-
+    for(Int_t i=0; i<=nBinstype; i++) binLimtype[i]=(Double_t)mintype + (maxtype-mintype)/nBinstype*(Double_t)i ;
+    
     Int_t nBinspt = 500;
     Double_t minpt = 0.;
     Double_t maxpt = 50.;
     Double_t binLimpt[nBinspt+1];
-    for(Int_t i=0; i<=nBinspt; i++) binLimpt[i]=(Double_t)minpt + (maxpt-minpt)/nBinspt*(Double_t)i ;    
-
+    for(Int_t i=0; i<=nBinspt; i++) binLimpt[i]=(Double_t)minpt + (maxpt-minpt)/nBinspt*(Double_t)i ;
+    
     const Int_t nDima=4;
     Int_t nBina[nDima] = {nBinspt,nBinspdg,nBinsg,nBinstype};
     fPi0EtaSpectra = new THnSparseF("Pi0EtaSpectra","Pi0EtaSpectra",nDima,nBina);
@@ -1015,12 +1023,12 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fPi0EtaSpectra->Sumw2();
     fOutputList->Add(fPi0EtaSpectra);
     
-//    const Int_t BinsPtDefaultHF = 28;
-//    Double_t binLimPtDefaultHF[BinsPtDefaultHF+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
+    //    const Int_t BinsPtDefaultHF = 28;
+    //    Double_t binLimPtDefaultHF[BinsPtDefaultHF+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
     
     const Int_t BinsPtDefaultHF = 12;
     Double_t binLimPtDefaultHF[BinsPtDefaultHF+1] = {0, 0.25, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2, 2.5, 3, 4, 5};
-
+    
     
     Int_t nBinsPhi = 200;
     Double_t minPhi = 0;
@@ -1047,7 +1055,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fHFENumeratorTRKCUTS_Filt->SetBinEdges(3,binLimPhi);
     fHFENumeratorTRKCUTS_Filt->Sumw2();
     fOutputList->Add(fHFENumeratorTRKCUTS_Filt);
-
+    
     fHFENumeratorTRKCUTS_ITSTPC = new THnSparseF("fHFENumeratorTRKCUTS_ITSTPC","fHFENumeratorTRKCUTS_ITSTPC;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
     fHFENumeratorTRKCUTS_ITSTPC->SetBinEdges(0,binLimPtDefaultHF);
     fHFENumeratorTRKCUTS_ITSTPC->SetBinEdges(1,binLimg);
@@ -1057,14 +1065,14 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fHFENumeratorTRKCUTS_ITSTPC);
     
     
-//    fHFENumeratorTRKCUTS_ITStrkCut = new THnSparseF("fHFENumeratorTRKCUTS_ITStrkCut","fHFENumeratorTRKCUTS_ITStrkCut;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
-//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(0,binLimPtDefaultHF);
-//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(1,binLimg);
-//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(2,binLimg);
-//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(3,binLimPhi);
-//    fHFENumeratorTRKCUTS_ITStrkCut->Sumw2();
-//    fOutputList->Add(fHFENumeratorTRKCUTS_ITStrkCut);
-//   
+    //    fHFENumeratorTRKCUTS_ITStrkCut = new THnSparseF("fHFENumeratorTRKCUTS_ITStrkCut","fHFENumeratorTRKCUTS_ITStrkCut;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
+    //    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(0,binLimPtDefaultHF);
+    //    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(1,binLimg);
+    //    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(2,binLimg);
+    //    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(3,binLimPhi);
+    //    fHFENumeratorTRKCUTS_ITStrkCut->Sumw2();
+    //    fOutputList->Add(fHFENumeratorTRKCUTS_ITStrkCut);
+    //
     
     fHFENumeratorTRKCUTS = new THnSparseF("fHFENumeratorTRKCUTS","fHFENumeratorTRKCUTS;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
     fHFENumeratorTRKCUTS->SetBinEdges(0,binLimPtDefaultHF);
@@ -1073,7 +1081,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fHFENumeratorTRKCUTS->SetBinEdges(3,binLimPhi);
     fHFENumeratorTRKCUTS->Sumw2();
     fOutputList->Add(fHFENumeratorTRKCUTS);
-
+    
     
     fHFENumeratorTOF = new THnSparseF("fHFENumeratorTOF","fHFENumeratorTOF;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
     fHFENumeratorTOF->SetBinEdges(0,binLimPtDefaultHF);
@@ -1082,7 +1090,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fHFENumeratorTOF->SetBinEdges(3,binLimPhi);
     fHFENumeratorTOF->Sumw2();
     fOutputList->Add(fHFENumeratorTOF);
-
+    
     
     fHFENumeratorITS = new THnSparseF("fHFENumeratorITS","fHFENumeratorITS;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
     fHFENumeratorITS->SetBinEdges(0,binLimPtDefaultHF);
@@ -1091,7 +1099,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fHFENumeratorITS->SetBinEdges(3,binLimPhi);
     fHFENumeratorITS->Sumw2();
     fOutputList->Add(fHFENumeratorITS);
-
+    
     fHFENumerator = new THnSparseF("fHFENumerator","fHFENumerator;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
     fHFENumerator->SetBinEdges(0,binLimPtDefaultHF);
     fHFENumerator->SetBinEdges(1,binLimg);
@@ -1099,27 +1107,27 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fHFENumerator->SetBinEdges(3,binLimPhi);
     fHFENumerator->Sumw2();
     fOutputList->Add(fHFENumerator);
-
     
-
+    
+    
     Int_t nBinsInvMass = 100;
     Double_t minInvMass = 0.;
     Double_t maxInvMass = 1;
     Double_t binLimInvMass[nBinsInvMass+1];
     for(Int_t i=0; i<=nBinsInvMass; i++) binLimInvMass[i]=(Double_t)minInvMass + (maxInvMass-minInvMass)/nBinsInvMass*(Double_t)i ;
-
+    
     Int_t nBinsSource = 6;
     Double_t minSource = 0.;
     Double_t maxSource = 6.;
     Double_t binLimSource[nBinsSource+1];
     for(Int_t i=0; i<=nBinsSource; i++) binLimSource[i]=(Double_t)minSource + (maxSource-minSource)/nBinsSource*(Double_t)i ;
-
-//    const Int_t kBinsPtDefault = 28;
-//    Double_t binLimPtDefault[kBinsPtDefault+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
+    
+    //    const Int_t kBinsPtDefault = 28;
+    //    Double_t binLimPtDefault[kBinsPtDefault+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
     
     const Int_t kBinsPtDefault = 12;
     Double_t binLimPtDefault[kBinsPtDefault+1] = {0, 0.25, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2, 2.5, 3, 4, 5};
-
+    
     const Int_t nDimb=3;
     Int_t nBinb[nDimb] = {kBinsPtDefault,nBinsg,nBinsSource};
     fIncl = new THnSparseF("Incl","Incl",nDimb,nBinb);
@@ -1128,8 +1136,8 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fIncl->SetBinEdges(2,binLimSource);
     fIncl->Sumw2();
     fOutputList->Add(fIncl);
-
-
+    
+    
     const Int_t nDimc=4;
     Int_t nBinc[nDimc] = {kBinsPtDefault,nBinsg,nBinsSource,nBinsInvMass};
     fInvMULS = new THnSparseF("InvMULS","InvMULS",nDimc,nBinc);
@@ -1155,18 +1163,18 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fLS->SetBinEdges(3,binLimInvMass);
     fLS->Sumw2();
     fOutputList->Add(fLS);
-
     
-//    fhHFStackBeauty = new TH1F("fhHFStackBeauty","fhHFStackBeauty",500,-5,5);
-//    fhHFStackBeauty->Sumw2();
-//    fOutputList->Add(fhHFStackBeauty);
-//    fhHFStackCharm = new TH1F("fhHFStackCharm","fhHFStackCharm",500,-5,5);
-//    fhHFStackCharm->Sumw2();
-//    fOutputList->Add(fhHFStackCharm);
+    
+    //    fhHFStackBeauty = new TH1F("fhHFStackBeauty","fhHFStackBeauty",500,-5,5);
+    //    fhHFStackBeauty->Sumw2();
+    //    fOutputList->Add(fhHFStackBeauty);
+    //    fhHFStackCharm = new TH1F("fhHFStackCharm","fhHFStackCharm",500,-5,5);
+    //    fhHFStackCharm->Sumw2();
+    //    fOutputList->Add(fhHFStackCharm);
     
     fNoEventsStackHFE = new TH1F("fNoEventsStackHFE","",1,0,1) ;
     fOutputList->Add(fNoEventsStackHFE);
-
+    
     PostData(1,fOutputList);
 }
 //________________________________________________________________________
@@ -1186,126 +1194,126 @@ Bool_t AliAnalysisTaskHFEEfficiency::ProcessCutStep(Int_t cutStep, AliVParticle 
 //_________________________________________
 void AliAnalysisTaskHFEEfficiency::SelectPhotonicElectronR(Int_t itrack, AliVTrack *track, Int_t hijing, Double_t weight, Int_t motherindex, Int_t pdg, Int_t source)
 {
-  
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetRequireITSRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.9,0.9);
-  fTrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts->SetMinNClustersTPC(80);
-  fTrackCuts->SetMaxDCAToVertexZ(3.2);
-  fTrackCuts->SetMaxDCAToVertexXY(2.4);
-  fTrackCuts->SetDCAToVertex2D(kTRUE);
-  
-  // load MC array
-  AliMCEvent* mcEvent;
-  AliMCEventHandler* eventHandler;
-  AliAODMCHeader *mcHeader;
-  TClonesArray* mcArray;
-  
+    
+    fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    fTrackCuts->SetRequireTPCRefit(kTRUE);
+    fTrackCuts->SetRequireITSRefit(kTRUE);
+    fTrackCuts->SetEtaRange(-0.9,0.9);
+    fTrackCuts->SetRequireSigmaToVertex(kTRUE);
+    fTrackCuts->SetMaxChi2PerClusterTPC(4);
+    fTrackCuts->SetMinNClustersTPC(80);
+    fTrackCuts->SetMaxDCAToVertexZ(3.2);
+    fTrackCuts->SetMaxDCAToVertexXY(2.4);
+    fTrackCuts->SetDCAToVertex2D(kTRUE);
+    
+    // load MC array
+    AliMCEvent* mcEvent;
+    AliMCEventHandler* eventHandler;
+    AliAODMCHeader *mcHeader;
+    TClonesArray* mcArray;
+    
     if(IsAODanalysis()){
-      mcArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(!mcArray){
-	AliError("Array of MC particles not found");
-	return;
-      }
-      
-      mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-      if (!mcHeader) {
-	AliError("Could not find MC Header in AOD");
-	return;
-      }
+        mcArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+        if(!mcArray){
+            AliError("Array of MC particles not found");
+            return;
+        }
+        
+        mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+        if (!mcHeader) {
+            AliError("Could not find MC Header in AOD");
+            return;
+        }
     }
     else{
-      eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-      if (!eventHandler) {
-	Printf("ERROR: Could not retrieve MC event handler");
-	return;
-      }
-      
-      mcEvent = eventHandler->MCEvent();
-      if (!mcEvent) {
-	Printf("ERROR: Could not retrieve MC event");
-	return;
-      }
+        eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+        if (!eventHandler) {
+            Printf("ERROR: Could not retrieve MC event handler");
+            return;
+        }
+        
+        mcEvent = eventHandler->MCEvent();
+        if (!mcEvent) {
+            Printf("ERROR: Could not retrieve MC event");
+            return;
+        }
         //AliStack * MCstack = mcEvent->Stack();
     }
-   
+    
     Double_t invms[4];
     for(Int_t jTracks = 0; jTracks<fVevent->GetNumberOfTracks(); jTracks++){
-      AliVParticle* VtrackAsso = fVevent->GetTrack(jTracks);
-      if (!VtrackAsso) {
-	printf("ERROR: Could not receive track %d\n", jTracks);
-	continue;
-      }
-      
-      AliVTrack *trackAsso = dynamic_cast<AliVTrack*>(VtrackAsso);
-      
-      //track cuts applied
-      Int_t pdgass = 0;
-      if(IsAODanalysis()) {
-	AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
-	if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-	if(atrackAsso->GetTPCNcls() < fAssoTPCCluster) continue;
-	if(fAssoITSRefit){
-	  if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
-	}
-	if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
-	AliAODMCParticle *MCass = (AliAODMCParticle*)mcArray->At(TMath::Abs(atrackAsso->GetLabel()));
-	if(!(TMath::Abs(MCass->GetPdgCode())==11)) continue;
-	pdgass=MCass->GetPdgCode();
-	Int_t indexass = MCass->GetMother();
-	if(TMath::Abs(indexass-motherindex)>0.8) continue;
-     
-      }
-      else{
-	AliESDtrack *etrackAsso = dynamic_cast<AliESDtrack*>(VtrackAsso);
-	if(!fTrackCuts->AcceptTrack(etrackAsso)) continue;
-      }
-      
-      if(jTracks==itrack) continue;
-      
-      Double_t  ptAsso=-999., nsigma=-999.0;
-      Double_t mass=-999., width = -999;
-      Bool_t fFlagULS=kFALSE;
-      
-      nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
-      ptAsso = trackAsso->Pt();
-      Int_t chargeAsso = trackAsso->Charge();
-      Int_t charge = track->Charge();
-      
-      //---------------pt and track cuts-----------------
-      if(ptAsso < fAssopTMin) continue;
-      if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-      if(nsigma < -3 || nsigma > 3) continue;
-      
-      
-      //-------------------AliKFParticle-------------------
-      Int_t PDGe1 = 11; Int_t PDGe2 = 11;
-      if(charge>0) PDGe1 = -11;
-      if(chargeAsso>0) PDGe2 = -11;
-      
-      if((pdgass*pdg)<0.) fFlagULS = kTRUE;
-      
-      AliKFParticle ge1(*track, PDGe1);
-      AliKFParticle ge2(*trackAsso, PDGe2);
-      AliKFParticle recg(ge1, ge2);
-      
-      if(recg.GetNDF()<1) continue;
-      Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
-      if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+        AliVParticle* VtrackAsso = fVevent->GetTrack(jTracks);
+        if (!VtrackAsso) {
+            printf("ERROR: Could not receive track %d\n", jTracks);
+            continue;
+        }
         
-      recg.GetMass(mass,width);
-      
-      // Mother associated track
-      invms[0]=track->Pt();
-      invms[1]=hijing;
-      invms[2]=source;
-      invms[3]=mass;
-      if(fFlagULS) fInvMULS->Fill(invms,weight);
-      
-      
+        AliVTrack *trackAsso = dynamic_cast<AliVTrack*>(VtrackAsso);
+        
+        //track cuts applied
+        Int_t pdgass = 0;
+        if(IsAODanalysis()) {
+            AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
+            if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            if(atrackAsso->GetTPCNcls() < fAssoTPCCluster) continue;
+            if(fAssoITSRefit){
+                if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+            }
+            if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
+            AliAODMCParticle *MCass = (AliAODMCParticle*)mcArray->At(TMath::Abs(atrackAsso->GetLabel()));
+            if(!(TMath::Abs(MCass->GetPdgCode())==11)) continue;
+            pdgass=MCass->GetPdgCode();
+            Int_t indexass = MCass->GetMother();
+            if(TMath::Abs(indexass-motherindex)>0.8) continue;
+            
+        }
+        else{
+            AliESDtrack *etrackAsso = dynamic_cast<AliESDtrack*>(VtrackAsso);
+            if(!fTrackCuts->AcceptTrack(etrackAsso)) continue;
+        }
+        
+        if(jTracks==itrack) continue;
+        
+        Double_t  ptAsso=-999., nsigma=-999.0;
+        Double_t mass=-999., width = -999;
+        Bool_t fFlagULS=kFALSE;
+        
+        nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
+        ptAsso = trackAsso->Pt();
+        Int_t chargeAsso = trackAsso->Charge();
+        Int_t charge = track->Charge();
+        
+        //---------------pt and track cuts-----------------
+        if(ptAsso < fAssopTMin) continue;
+        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+        if(nsigma < -3 || nsigma > 3) continue;
+        
+        
+        //-------------------AliKFParticle-------------------
+        Int_t PDGe1 = 11; Int_t PDGe2 = 11;
+        if(charge>0) PDGe1 = -11;
+        if(chargeAsso>0) PDGe2 = -11;
+        
+        if((pdgass*pdg)<0.) fFlagULS = kTRUE;
+        
+        AliKFParticle ge1(*track, PDGe1);
+        AliKFParticle ge2(*trackAsso, PDGe2);
+        AliKFParticle recg(ge1, ge2);
+        
+        if(recg.GetNDF()<1) continue;
+        Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+        
+        recg.GetMass(mass,width);
+        
+        // Mother associated track
+        invms[0]=track->Pt();
+        invms[1]=hijing;
+        invms[2]=source;
+        invms[3]=mass;
+        if(fFlagULS) fInvMULS->Fill(invms,weight);
+        
+        
     }
 }
 //___________________________________________________________________________________________________________________
@@ -1380,8 +1388,8 @@ void AliAnalysisTaskHFEEfficiency::SelectPhotonicElectronR_ULSLS(Int_t itrack, A
             AliAODMCParticle *MCass = (AliAODMCParticle*)mcArray->At(TMath::Abs(atrackAsso->GetLabel()));
             if(!(TMath::Abs(MCass->GetPdgCode())==11)) continue;
             pdgass=MCass->GetPdgCode();
-           // Int_t indexass = MCass->GetMother();
-           // if(TMath::Abs(indexass-motherindex)>0.8) continue;
+            // Int_t indexass = MCass->GetMother();
+            // if(TMath::Abs(indexass-motherindex)>0.8) continue;
             
         }
         else{
@@ -1514,94 +1522,94 @@ Int_t AliAnalysisTaskHFEEfficiency::GetPrimary(Int_t id, TClonesArray *mcArray){
 //_________________________________________
 
 Int_t AliAnalysisTaskHFEEfficiency::GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArray *mcArray){
-  //
-  // Return what type of pi0, eta it is
-  //
-
-  
-   // IsPrimary
-  Bool_t primMC = pi0eta->IsPrimary();
-  if(!primMC) return kNoIsPrimary;
-
-  // Mother           
-  Int_t motherlabel = pi0eta->GetMother();
-  if(motherlabel<0) return kNoMother;
-  else {
+    //
+    // Return what type of pi0, eta it is
+    //
     
-    AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherlabel);
-    Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
-//    if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113) return kLightMesons;
-    if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213 || motherpdg == 313 || motherpdg == 323) return kLightMesons;
-      
-    if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
-    if ( (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm;
-    return kNoFeedDown;
-
-  }
+    
+    // IsPrimary
+    Bool_t primMC = pi0eta->IsPrimary();
+    if(!primMC) return kNoIsPrimary;
+    
+    // Mother
+    Int_t motherlabel = pi0eta->GetMother();
+    if(motherlabel<0) return kNoMother;
+    else {
+        
+        AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherlabel);
+        Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
+        //    if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113) return kLightMesons;
+        if(motherpdg == 111 || motherpdg == 221 || motherpdg == 223 || motherpdg == 333 || motherpdg == 331 || motherpdg == 113 || motherpdg == 213 || motherpdg == 313 || motherpdg == 323) return kLightMesons;
+        
+        if ( (int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
+        if ( (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm;
+        return kNoFeedDown;
+        
+    }
 }
 //_________________________________________
 
 Int_t AliAnalysisTaskHFEEfficiency::GetElecSourceType(AliAODMCParticle *electron, TClonesArray *mcArray,Double_t &ptm){
-  //
-  // Return what type of gammax it is
-  //
-
-
-
-  // Mother           
-  Int_t motherlabel = electron->GetMother();
-  if(motherlabel<0) return kNoMotherE;
-  else {
+    //
+    // Return what type of gammax it is
+    //
     
-    AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherlabel);
-    Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
-    ptm=mother->Pt();
-    if(motherpdg == 111) {
-      Int_t typepi0eta = GetPi0EtaType(mother,mcArray);
-      if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) 	return kPi0NoFeedDown;
+    
+    
+    // Mother
+    Int_t motherlabel = electron->GetMother();
+    if(motherlabel<0) return kNoMotherE;
+    else {
+        
+        AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherlabel);
+        Int_t motherpdg = TMath::Abs(mother->GetPdgCode());
+        ptm=mother->Pt();
+        if(motherpdg == 111) {
+            Int_t typepi0eta = GetPi0EtaType(mother,mcArray);
+            if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) 	return kPi0NoFeedDown;
+        }
+        if(motherpdg == 221) {
+            Int_t typepi0eta = GetPi0EtaType(mother,mcArray);
+            if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kEtaNoFeedDown;
+        }
+        if(motherpdg == 22) {
+            Int_t gmotherlabel = mother->GetMother();
+            if(gmotherlabel<0) return kDirectGamma;
+            else {
+                AliAODMCParticle *gmother = (AliAODMCParticle*)mcArray->At(gmotherlabel);
+                ptm=gmother->Pt();
+                Int_t gmotherpdg = TMath::Abs(gmother->GetPdgCode());
+                if(gmotherpdg == 111) {
+                    Int_t typepi0eta = GetPi0EtaType(gmother,mcArray);
+                    if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGPi0NoFeedDown;
+                }
+                if(gmotherpdg == 221) {
+                    Int_t typepi0eta = GetPi0EtaType(gmother,mcArray);
+                    if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGEtaNoFeedDown;
+                }
+                if(gmotherpdg == 22) {
+                    Int_t ggmotherlabel = gmother->GetMother();
+                    if(ggmotherlabel<0) return kDirectGamma;
+                    else {
+                        AliAODMCParticle *ggmother = (AliAODMCParticle*)mcArray->At(ggmotherlabel);
+                        ptm=ggmother->Pt();
+                        Int_t ggmotherpdg = TMath::Abs(ggmother->GetPdgCode());
+                        if(ggmotherpdg == 111) {
+                            Int_t typepi0eta = GetPi0EtaType(ggmother,mcArray);
+                            if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGPi0NoFeedDown;
+                        }
+                        if(ggmotherpdg == 221) {
+                            Int_t typepi0eta = GetPi0EtaType(ggmother,mcArray);
+                            if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGEtaNoFeedDown;
+                        }
+                    }
+                }
+            }
+        }
     }
-    if(motherpdg == 221) {
-      Int_t typepi0eta = GetPi0EtaType(mother,mcArray);
-      if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kEtaNoFeedDown;
-    }
-    if(motherpdg == 22) {
-      Int_t gmotherlabel = mother->GetMother();
-      if(gmotherlabel<0) return kDirectGamma;
-      else {
-	AliAODMCParticle *gmother = (AliAODMCParticle*)mcArray->At(gmotherlabel);
-	ptm=gmother->Pt();
-	Int_t gmotherpdg = TMath::Abs(gmother->GetPdgCode());
-	if(gmotherpdg == 111) {
-	  Int_t typepi0eta = GetPi0EtaType(gmother,mcArray);
-	  if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGPi0NoFeedDown;
-	}
-	if(gmotherpdg == 221) {
-	  Int_t typepi0eta = GetPi0EtaType(gmother,mcArray);
-	  if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGEtaNoFeedDown;
-	}
-	if(gmotherpdg == 22) {
-	  Int_t ggmotherlabel = gmother->GetMother();
-	  if(ggmotherlabel<0) return kDirectGamma;
-	  else {
-	    AliAODMCParticle *ggmother = (AliAODMCParticle*)mcArray->At(ggmotherlabel);
-	    ptm=ggmother->Pt();
-	    Int_t ggmotherpdg = TMath::Abs(ggmother->GetPdgCode());
-	    if(ggmotherpdg == 111) {
-	      Int_t typepi0eta = GetPi0EtaType(ggmother,mcArray);
-	      if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGPi0NoFeedDown;
-	    }
-	    if(ggmotherpdg == 221) {
-	      Int_t typepi0eta = GetPi0EtaType(ggmother,mcArray);
-	      if((typepi0eta==kNoFeedDown) || (typepi0eta==kNoMother)) return kGEtaNoFeedDown;
-	    }
-	  }
-	}	
-      }
-    }
-  }
-
-  return kOthersE;
-
+    
+    return kOthersE;
+    
 }
 //================================================================================================
 //_________________________________________
@@ -1673,15 +1681,15 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEta(Double_t mcEtapT) // make 
 
 Bool_t AliAnalysisTaskHFEEfficiency::FillNumerator(TClonesArray *mcArray, AliVTrack *track, Double_t ForHFEReco[])
 {
-//============Numerator HFE efficiency===============
+    //============Numerator HFE efficiency===============
     Int_t HFElabel = TMath::Abs(track->GetLabel());
     AliAODMCParticle *MCHFE = (AliAODMCParticle*)mcArray->At(HFElabel);
     
     Int_t from_D_or_B_Reco;
     Bool_t ShouldIfillevenHere = kFALSE;
-
-    if(TMath::Abs(MCHFE->GetPdgCode())==11){
     
+    if(TMath::Abs(MCHFE->GetPdgCode())==11){
+        
         Int_t MChijingHFE=kElse;
         Int_t PrimHFE = GetPrimary(HFElabel, mcArray);
         AliAODMCParticle *AODMCtrackPrimHFE = (AliAODMCParticle*)mcArray->At(PrimHFE);
@@ -1701,7 +1709,7 @@ Bool_t AliAnalysisTaskHFEEfficiency::FillNumerator(TClonesArray *mcArray, AliVTr
             ForHFEReco[3] = track->Phi();
             ShouldIfillevenHere = kTRUE;
         }
-    
+        
         if ( (int(TMath::Abs(motherpdgforHFE_Reco)/100.)%10) == 4 || (int(TMath::Abs(motherpdgforHFE_Reco)/1000.)%10) == 4 ){
             from_D_or_B_Reco = kelectronCharm;
             ForHFEReco[0] = track->Pt();
@@ -1711,10 +1719,10 @@ Bool_t AliAnalysisTaskHFEEfficiency::FillNumerator(TClonesArray *mcArray, AliVTr
             ShouldIfillevenHere = kTRUE;
         }
     }
-
+    
     if(ShouldIfillevenHere) return kTRUE;
     else return kFALSE;
-
+    
 }
 //====================================================
 

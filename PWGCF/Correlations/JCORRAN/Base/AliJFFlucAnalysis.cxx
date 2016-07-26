@@ -123,7 +123,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	double CentBin[NCent+1] = {0, 5, 10, 20, 30, 40, 50, 60};
 	fNCent = NCent;
 	fDebugLevel = 0;
-	AnaEntry = 0;
 	fCent = -1;
 	fCBin = -1;
 	fEffMode = 0;
@@ -214,7 +213,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
 	// Create histograms
 	// Called once
-	AnaEntry = 0;
 	// need to fill to book a histo
 	fHMG = new AliJHistManager("AliJFFlucHistManager","test");
 	// set AliJBin here // 
@@ -239,6 +237,14 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fh_ImpactParameter
 		<< TH1D("h_IP", "h_IP", 400, -2, 20)
 		<< "END" ;
+
+	fh_TrkQA_TPCvsCent
+		<< TH2D("h_trk_Cent_vs_TPC","h_trk_Cent_vs_TPC", 100, 0, 100, 100, 0, 3000)
+		<< "END" ;
+
+	fh_TrkQA_TPCvsGlob
+		<< TH2D("h_trk_Glob_vs_TPC", "h_trk_Glob_vs_TPC", 100, 0, 2000, 100, 0, 3000)
+		<< "END";
 
 	fh_vertex
 		<< TH1D("h_vertex","h_vertex", 400, -20, 20)
@@ -339,23 +345,6 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// Main loop
-	// Called for each event
-/*	if (AnaEntry == 0){
-			if (IsPhiModule == kTRUE){
-					TGrid::Connect("alien:");
-					inclusFile = TFile::Open( fInFileName.Data() , "read" );
-					cout << "open grid file " << endl;
-					for(int icent=0; icent<fNCent; icent++){
-							for(int isub=0; isub<2; isub++){	
-									h_phi_module[icent][isub] = (TH1D*)inclusFile->Get(Form("h_phi_moduleC%02dS%02d", icent, isub));
-							}
-					}
-			}
-	} // DO NOT READ FILE ON EVENT LOOP!!!!!!!!!!! DO this in AddTask => Save into lego_train.root !
-*/
-	//
-	// DO ANALYSIS WORK HERE // 
-	if (AnaEntry==0){ cout<< "start event loop " << endl; } ;
 	// find Centrality
 	double inputCent = fCent;
 	fCBin = -1;
@@ -363,44 +352,47 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		if( inputCent > fCentBin[iCbin] && inputCent < fCentBin[iCbin+1] ){fCBin = iCbin;};
 	}
 	if(fCBin == -1){return;};
+	DEBUG(3, "cent bin found" );
 	int trk_number = fInputList->GetEntriesFast();
+	DEBUG(3, Form("trk number is %d", trk_number) );
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
+	DEBUG(3, "trk number filled into histo");
 	fh_cent->Fill( inputCent ) ;
+	DEBUG(3, "filled cent into histo" );
 	fh_ImpactParameter->Fill( fImpactParameter); 
+	DEBUG(3, "impact parameter has been filled" );
 	Fill_QA_plot( fEta_min, fEta_max );
+	DEBUG(3, "QA Plot filled");
 
 	enum{kSubA, kSubB, kNSub};
+	enum{kMin, kMax};
 	enum{kReal, kImg, kNPhase};
 	double Eta_config[kNSub][2];
-	Eta_config[kSubA][0] = fEta_min;  // 0.4 min for SubA 
-	Eta_config[kSubA][1] = fEta_max;  // 0.8 max for SubA
-	Eta_config[kSubB][0] = -1*fEta_max; // -0.8  min for SubB
-	Eta_config[kSubB][1] = -1*fEta_min; // -0.4  max for SubB
+	Eta_config[kSubA][kMin] = fEta_min;  // 0.4 min for SubA 
+	Eta_config[kSubA][kMax] = fEta_max;  // 0.8 max for SubA
+	Eta_config[kSubB][kMin] = -1*fEta_max; // -0.8  min for SubB
+	Eta_config[kSubB][kMax] = -1*fEta_min; // -0.4  max for SubB
 
 	// use complex variable instead of doulbe Qn // 
 	TComplex QnA[kNH];
 	TComplex QnB[kNH];
 	TComplex QnB_star[kNH];
-
 	//---------------- Do initialize here -----------
-	for(int ih=2; ih<kNH; ih++){
+	for(int ih=0; ih<kNH; ih++){
 			QnA[ih]= TComplex(0,0);
 			QnB[ih]= TComplex(0,0);
 			QnB_star[ih] = TComplex(0,0);			
 	}
 	//--------------- Calculate Qn--------------------
-	for(int ih=2; ih<kNH; ih++){
-					double QAReal = Get_Qn_Real( Eta_config[kSubA][0], Eta_config[kSubA][1], ih );
-					double QAImag = Get_Qn_Img(  Eta_config[kSubA][0], Eta_config[kSubA][1], ih );
-					QnA[ih]= TComplex(QAReal, QAImag);
+	for(int ih=0; ih<kNH; ih++){
+					QnA[ih] = CalculateQnSP( Eta_config[kSubA][kMin], Eta_config[kSubA][kMax], ih);
+ 					QnB[ih] = CalculateQnSP( Eta_config[kSubB][kMin], Eta_config[kSubB][kMax], ih);
 					fh_Qvector[fCBin][0][ih]->Fill( QnA[ih].Theta() );
-					double QBReal = Get_Qn_Real( Eta_config[kSubB][0], Eta_config[kSubB][1], ih );
-					double QBImag = Get_Qn_Img(  Eta_config[kSubB][0], Eta_config[kSubB][1], ih );
-					QnB[ih]= TComplex(QBReal, QBImag);
 					fh_Qvector[fCBin][1][ih]->Fill( QnB[ih].Theta() );	
 					QnB_star[ih] = TComplex::Conjugate ( QnB[ih] ) ;
 	}
-
+	NSubTracks[kSubA] = QnA[0].Re(); // this is number of tracks in Sub A
+	NSubTracks[kSubB] = QnB[0].Re(); // this is number of tracks in Sub B
 	//-------------- Fill histos with below Values ----
 	// v2^2 :  k=1  /// remember QnQn = vn^(2k) not k
 	// use k=0 for check v2, v3 only
@@ -445,11 +437,14 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//************************************************************************
 	// doing this 
 	//Fill the Histos here
-	for(int ih=2; ih< kNH; ih++){
-		if(vn2[ih][0] != -999)	fh_vn[ih][0][fCBin]->Fill( vn2[ih][0] );
+	double ebe_2p_weight = 1;
+	double ebe_4p_weight = 1;
+	if( IsEbEWeighted == kTRUE ) ebe_2p_weight = NSubTracks[kSubA] * NSubTracks[kSubB] ; 	
+	if( IsEbEWeighted == kTRUE ) ebe_4p_weight = NSubTracks[kSubA]* NSubTracks[kSubB] * (NSubTracks[kSubA]-1) * (NSubTracks[kSubB]-1) ; 
 
-		for(int ik=1; ik<nKL; ik++){
-			if(vn2[ih][ik] != -999)	fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] ); // Fill hvn2
+	for(int ih=2; ih< kNH; ih++){
+		for(int ik=0; ik<nKL; ik++){
+			if(vn2[ih][ik] != -999)	fh_vn[ih][ik][fCBin]->Fill( vn2[ih][ik] , ebe_2p_weight ); // Fill hvn2
 		}
 	}
 
@@ -457,7 +452,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		for( int ik=1; ik<nKL; ik++){
 			for( int ihh=2; ihh<kNH; ihh++){ 
 				for(int ikk=1; ikk<nKL; ikk++){
-					if(vn2_vn2[ih][ik][ihh][ikk] != -999 ) fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk] ) ; // Fill hvn_vn 
+					if(vn2_vn2[ih][ik][ihh][ikk] != -999 ) fh_vn_vn[ih][ik][ihh][ikk][fCBin]->Fill( vn2_vn2[ih][ik][ihh][ikk], ebe_4p_weight ) ; // Fill hvn_vn 
 				}
 			}
 		}
@@ -475,7 +470,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 
 	// New correlattors (Modified by You's corretion term for self-correlations)
-	//
 	TComplex nV4V2star = (QnA[4] * QnB_star[2] * QnB_star[2]) -( 1./(NSubTracks[1]-1) * QnA[4] * QnB_star[4] );
 	TComplex nV5V2starV3star = (QnA[5] * QnB_star[2] * QnB_star[3])- (1/(NSubTracks[1]-1) * QnA[5] * QnB_star[5]);
 	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
@@ -485,7 +479,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	// New correlattors (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] )) 
 						- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] ); 
- // 2nd term for slef correlation correct
 	TComplex nV3V3V2V2 = (QnA[3]*QnB_star[3]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[5] * QnA[3] *QnA[2] )) 
 						- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] );
 	// add higher order SC results
@@ -512,15 +505,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[10][fCBin]->Fill( nV5V2starV3star.Re() );
 	fh_correlator[11][fCBin]->Fill( nV6V3star_2.Re() ) ;
 
-	// use this to avoid self-correlation
-	// vn2vn2_mean -> nV4V4V2V2 like this.
-	//
-	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() );
-	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() ) ;
+	// use this to avoid self-correlation 4p correlation (2 particles from A, 2 particles from B) -> MA(MA-1)MB(MB-1) : evt weight..
+	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() , ebe_4p_weight);
+	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() , ebe_4p_weight);
 
-	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re() );
-	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() );
-	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() );
+	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re() , ebe_4p_weight);
+	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() , ebe_4p_weight);
+	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() , ebe_4p_weight);
 
 
 	if(IsSCptdep == kTRUE){
@@ -585,35 +576,39 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			fh_SC_ptdep_4corr[2][1][5][1][fCBin][ipt]->Fill( nV5V5V2V2_pt.Re() );
 			fh_SC_ptdep_4corr[3][1][4][1][fCBin][ipt]->Fill( nV4V4V3V3_pt.Re() );
 			fh_SC_ptdep_4corr[3][1][5][1][fCBin][ipt]->Fill( nV5V5V3V3_pt.Re() ) ;
-
 		}	
-
 	}//pt dep done
 
 	if(IsSCwithQC==kTRUE){
 		// (a) calculate QC q-vecotr 
 		// (b) calculate 4p correaltion
 		// (c) calculate 2p correaltion
-
-		CalculateQvectorsQC(); // (a) 
+	
+		//(a)
+		CalculateQvectorsQC(); 
+		//(b)
 		for(int ih=2; ih<=5; ih++){
 			for(int ihh=2; ihh<ih; ihh++){
-				TComplex four = Four( ih, ihh, -1*ih, -1*ihh ) / Four(0,0,0,0).Re() ;
-				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( four.Re() );
+				double event_weight = 1;
+				if( IsEbEWeighted == kTRUE) event_weight = Four(0,0,0,0).Re();
+				TComplex four = Four( ih, ihh, -1*ih, -1*ihh ) / Four(0,0,0,0).Re();
+				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( four.Re(), event_weight );
 			};
-		}; // (b) 
+		}; 
+		//(c)
 		for(int ih=2; ih<=5; ih++){
 			// Finally we want 2p corr as like
 			// 1/( M*(M-1) ) * [ QQ* - M ] 			
 			// two(2,2) = Q2 Q2* - Q0 = Q2Q2* - M
-			// two(0,0) = Q0 Q0* - Q0 = M^2 - M  
+			// two(0,0) = Q0 Q0* - Q0 = M^2 - M 
+			double event_weight = 1;
+			if( IsEbEWeighted == kTRUE) event_weight = Two(0,0).Re(); 
 			TComplex two = Two(ih, -1*ih) / Two(0,0).Re() ;
-			fh_SC_with_QC_2corr[ih][fCBin]->Fill( two.Re() );
-		} // (c) 	
+			fh_SC_with_QC_2corr[ih][fCBin]->Fill( two.Re(), event_weight );
+		}  	
 	} // QC method done.
 
-	// all job in 1 evt is done...
-	AnaEntry++;
+	//1 evt is done...
 }
 
 //________________________________________________________________________
@@ -627,41 +622,6 @@ void AliJFFlucAnalysis::Terminate(Option_t *)
 	cout<<"Sucessfully Finished"<<endl;
 }
 //________________________________________________________________________
-//________________________________________________________________________
-double AliJFFlucAnalysis::Get_Qn_Real(double eta1, double eta2, int harmonics)
-{
-		if( eta1 > eta2) cout << "ERROR eta1 should be smaller than eta2!!!" << endl;
-		int nh = harmonics;
-		double Qn_real = 0;
-		double Sub_Ntrk =0;
-
-		Long64_t ntracks = fInputList->GetEntriesFast();
-		for( Long64_t it=0; it< ntracks; it++){
-			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
-			double eta = itrack->Eta();
-			if( eta>eta1 &&  eta<eta2 ){ 
-					int isub = -1;
-					if( eta < 0 ) isub = 0;
-					if( eta > 0 ) isub = 1;
-					double phi = itrack->Phi();
-					double phi_module_corr =1; 
-					if( IsPhiModule == kTRUE){
-							phi_module_corr=
-									h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
-					}
-					double pt = itrack->Pt();
-					double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-					Qn_real += 1.0 / effCorr * phi_module_corr * TMath::Cos( nh * phi);
-					Sub_Ntrk = Sub_Ntrk + 1.0 / effCorr * phi_module_corr;
-			}
-		}
-		Qn_real /= Sub_Ntrk;
-		int iside = 0; // eta - 
-		if (eta1 > 0 ) iside = 1; // eta +
-		NSubTracks[iside] = Sub_Ntrk; // it will be overwrite for each harmonics but should be same.		
-
-		return Qn_real; 
-}
 //________________________________________________________________________
 void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 {
@@ -691,36 +651,35 @@ void AliJFFlucAnalysis::Fill_QA_plot( double eta1, double eta2 )
 	for(int iaxis=0; iaxis<3; iaxis++){
 		fh_vertex[iaxis]->Fill(  fVertex[iaxis] );
 	}
+	fh_TrkQA_TPCvsCent->Fill( fCent, fTPCtrks);
+	fh_TrkQA_TPCvsGlob->Fill( fGlbtrks, fTPCtrks);
 }
 //________________________________________________________________________
-double AliJFFlucAnalysis::Get_Qn_Img(double eta1, double eta2, int harmonics)
+TComplex AliJFFlucAnalysis::CalculateQnSP( double eta1, double eta2, int harmonics)
 {
-		int nh = harmonics;
-		double Qn_img = 0;
-		double Sub_Ntrk =0;
-
+		int ih=harmonics;
+		TComplex Qn = TComplex(0,0);
+		double Sub_Ntrk = 0; // number of Tracks * effCorr * phi modulation factor 
 		Long64_t ntracks = fInputList->GetEntriesFast();
-		for( Long64_t it=0; it< ntracks; it++){
+		for(Long64_t it=0; it< ntracks; it++){
 			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
+			double pt = itrack->Pt();
 			double eta = itrack->Eta();
-			if( eta > eta1 && eta < eta2 ){ 
-					int isub = -1;
-					if( eta < 0 ) isub = 0;
-					if( eta > 0 ) isub = 1;
-					double phi = itrack->Phi();
-					double phi_module_corr =1; 
-					if( IsPhiModule == kTRUE){
-							phi_module_corr=
-									h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
-					}
-					double pt = itrack->Pt();
-					double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-					Qn_img += 1./ effCorr * phi_module_corr * TMath::Sin( nh * phi);
-					Sub_Ntrk = Sub_Ntrk + 1./ effCorr * phi_module_corr; 
-			}
+			double phi = itrack->Phi();
+			if( eta < eta1 || eta > eta2) continue; // eta cut
+
+			double phi_module_corr = 1;
+			int isub = -1;
+ 			if( eta < 0 ) isub = 0;
+			if( eta > 0 ) isub = 1;
+			if( IsPhiModule == kTRUE){ phi_module_corr = h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi ) )  );}
+			double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent );
+
+			Qn += TComplex( 1./effCorr * phi_module_corr * TMath::Cos(ih*phi), 1./effCorr * phi_module_corr * TMath::Sin(ih*phi) );
+			Sub_Ntrk += 1./effCorr * phi_module_corr ; 
 		}
-		Qn_img /= Sub_Ntrk;
-		return Qn_img; 
+		if( ih !=0) Qn /= Sub_Ntrk; // Use Qn[0] as total number of tracks(*eff)
+		return Qn;
 }
 ///________________________________________________________________________
 double AliJFFlucAnalysis::Get_QC_Vn(double QnA_real, double QnA_img, double QnB_real, double QnB_img )
@@ -734,48 +693,6 @@ double AliJFFlucAnalysis::Get_QC_Vn(double QnA_real, double QnA_img, double QnB_
 		double QC_Vn = TMath::Sqrt(QAB_real);
 		return QC_Vn; 
 }
-///________________________________________________________________________
-double AliJFFlucAnalysis::Complex_product_real(double QnA_real, double QnA_img, double QnB_real, double QnB_img)
-{
-		// this values is  (Q_An Q*_Bn ) // output is complex
-		return (QnA_real* QnB_real - QnA_img * QnB_img) ;
-
-}
-///___________________
-double AliJFFlucAnalysis::Complex_product_img(double QnA_real, double QnA_img, double QnB_real, double QnB_img)
-{
-		// this values is  (Q_An Q*_Bn ) // output is complex
-		return ( QnA_img * QnB_real + QnA_real * QnB_img ) ;
-
-}
-///___________________
-double AliJFFlucAnalysis::Complex_abs(double real, double img)
-{
-		// this values is  (Q_An Q*_Bn ) // output is complex
-		return ( TMath::Sqrt(  real* real + img * img ) ) ;
-
-}
-///___________________
-double AliJFFlucAnalysis::Complex_sqr_real(double real, double img)
-{
-		// this value is  real-part of  (Qn)^2 
-		return ( ( real* real - img * img ) ) ;
-}
-///___________________
-double AliJFFlucAnalysis::Complex_sqr_img(double real, double img)
-{
-		// this value is  real-part of  (Qn)^2 
-		return ( 2* real * img ) ;
-}
-//_____________________
-void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi)
-{
-		// hPhi histo setter
-		h_phi_module[cent][sub] = hModuledPhi;
-}
-
-
-
 //________________________________________________________________________
 double AliJFFlucAnalysis::Get_Qn_Real_pt(double eta1, double eta2, int harmonics, int ptbin, double pt_min, double pt_max)
 {
@@ -853,7 +770,7 @@ double AliJFFlucAnalysis::Get_Qn_Img_pt(double eta1, double eta2, int harmonics,
 	use Standalone method  */
 //________________________________________________________________________
 void AliJFFlucAnalysis::CalculateQvectorsQC(){
-	// calcualte Q-vector for QC method
+	// calcualte Q-vector for QC method ( no subgroup )
 	//init
 	for(int ih=0; ih<kNH; ih++){
 		for(int ik=0; ik<nKL; ik++){
@@ -877,7 +794,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	// Q-vector[ih][ik] calculated doen. //(need ik??)
 
 	// Save QA plot
-	for(int ih=0; ih<kNH; ih++){
+	for(int ih=2; ih<kNH; ih++){
 		fh_QvectorQC[ih][fCBin]->Fill( QvectorQC[ih][1].Re()/QvectorQC[0][1].Re() , QvectorQC[ih][1].Im()/QvectorQC[0][1].Re() ); // fill normalized Q vector
 		fh_QvectorQCphi[ih][fCBin]->Fill( QvectorQC[ih][1].Theta() );
 	}

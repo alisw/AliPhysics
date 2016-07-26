@@ -577,7 +577,8 @@ void AliHadCorrTask::DoMatchedTracksLoop(Int_t icluster,
     }
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(i));
-      if (!tracks->AcceptParticle(track)) track = 0;
+      UInt_t rejectionReason = 0;
+      if (!tracks->AcceptParticle(track, rejectionReason)) track = 0;
     }
 
     if (!track) continue;
@@ -730,7 +731,8 @@ Double_t AliHadCorrTask::ApplyHadCorrOneTrack(Int_t icluster, Double_t hadCorr)
     }
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
-      if (!tracks->AcceptParticle(track)) track = 0;
+      UInt_t rejectionReason = 0;
+      if (!tracks->AcceptParticle(track, rejectionReason)) track = 0;
     }
   }
   
@@ -886,7 +888,8 @@ Double_t AliHadCorrTask::ApplyHadCorrAllTracks(Int_t icluster, Double_t hadCorr)
         }
         else {
           track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
-          if (!tracks->AcceptParticle(track)) track = 0;
+          UInt_t rejectionReason = 0;
+          if (!tracks->AcceptParticle(track, rejectionReason)) track = 0;
         }
         if (track) {
           Int_t centbinchm = fCentBin;

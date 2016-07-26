@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKNOMEGALPK_H
 
   //------------------------------------------------------------------------------------------
-  // version 1.60 (2016/03/01)
+  // version 1.62 (2016/03/03)
   //------------------------------------------------------------------------------------------
 
 /* $Id$ */ 
@@ -30,29 +30,41 @@ class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE
 	virtual void UserExec(Option_t *option);
 	virtual void Terminate(Option_t *option);
 
-	void SetReqSigmaTPC(double tpcsigma) {fReqSigmaTPC = tpcsigma;}
-	void SetReqClustersTPC(int tpcclust) {fReqClustersTPC = tpcclust;}
-	void SetReqSigmaTOF(double tofsigma) {fReqSigmaTOF = tofsigma;}
-	void SetReqPseudoRap(double pseudorap) {fReqPseudoRap = pseudorap;}
-	void SetProtonPMax(double maxprotonp) {fProtonPMax = maxprotonp;}
-	void SetPionPMax(double maxpionp) {fPionPMax = maxpionp;}
-	void SetKaonPMax(double maxkaonp) {fKaonPMax = maxkaonp;}
+	void SetReqSigmaTPC(Double_t tpcsigma) {fReqSigmaTPC = tpcsigma;}
+	void SetReqClustersTPC(Int_t tpcclust) {fReqClustersTPC = tpcclust;}
+	void SetReqSigmaTOF(Double_t tofsigma) {fReqSigmaTOF = tofsigma;}
+	void SetReqPseudoRap(Double_t pseudorap) {fReqPseudoRap = pseudorap;}
+	void SetProtonPMax(Double_t maxprotonp) {fProtonPMax = maxprotonp;}
+	void SetPionPMax(Double_t maxpionp) {fPionPMax = maxpionp;}
+	void SetKaonPMax(Double_t maxkaonp) {fKaonPMax = maxkaonp;}
+	void SetTrackPMin(Double_t mintrkp) {fTrackPMin = mintrkp;}
 
-	void SetFiducialVolMin1(double minfv1) {fFiducialVolMin1 = minfv1;}
-	void SetFiducialVolMax1(double maxfx1) {fFiducialVolMax1 = maxfx1;}
-	void SetPosDCAToPVMin1(double minposdca1) {fPosDCAToPVMin1 = minposdca1;}
-	void SetNegDCAToPVMin1(double minnegdca1) {fNegDCAToPVMin1 = minnegdca1;}
-	void SetDCADaughterMax1(double maxdcad1) {fDCADaughterMax1 = maxdcad1;}
-	void SetCPAMin1(double mincpa1) {fCPAMin1 = mincpa1;}
-	void SetDCAToPVMin1(double mindcapv1) {fDCAToPVMin1 = mindcapv1;}
-	void SetCOADaughterMin1(double mincoad1) {fCOADaughterMin1 = mincoad1;}
-	void SetDCAZDaughterMax1(double maxdcazd1) {fDCAZDaughterMax1 = maxdcazd1;}
+	void SetFiducialVolMin1(Double_t minfv1) {fFiducialVolMin1 = minfv1;}
+	void SetFiducialVolMax1(Double_t maxfx1) {fFiducialVolMax1 = maxfx1;}
+	void SetPosDCAToPVMin1(Double_t minposdca1) {fPosDCAToPVMin1 = minposdca1;}
+	void SetNegDCAToPVMin1(Double_t minnegdca1) {fNegDCAToPVMin1 = minnegdca1;}
+	void SetDCADaughterMax1(Double_t maxdcad1) {fDCADaughterMax1 = maxdcad1;}
+	void SetCPAMin1(Double_t mincpa1) {fCPAMin1 = mincpa1;}
+	void SetDCAToPVMin1(Double_t mindcapv1) {fDCAToPVMin1 = mindcapv1;}
+	void SetCOADaughterMin1(Double_t mincoad1) {fCOADaughterMin1 = mincoad1;}
+	void SetDCAZDaughterMax1(Double_t maxdcazd1) {fDCAZDaughterMax1 = maxdcazd1;}
+	void SetMassGammaMin1(Double_t mingammamass1) {fMassGammaMin1 = mingammamass1;}
 
-	void SetWindowLambda(double winlam) {fWindowV02 = winlam;}
-	void SetCPADibaryon(double cpadi) {fCPADibaryonNO = cpadi;}
+	void SetFiducialVolMin2(Double_t minfv2) {fFiducialVolMin2 = minfv2;}
+	void SetFiducialVolMax2(Double_t maxfx2) {fFiducialVolMax2 = maxfx2;}
+	void SetPosDCAToPVMin2(Double_t minposdca2) {fPosDCAToPVMin2 = minposdca2;}
+	void SetNegDCAToPVMin2(Double_t minnegdca2) {fNegDCAToPVMin2 = minnegdca2;}
+	void SetDCADaughterMax2(Double_t maxdcad2) {fDCADaughterMax2 = maxdcad2;}
+	void SetCPAMin2(Double_t mincpa2) {fCPAMin2 = mincpa2;}
+	void SetDCAToPVMin2(Double_t mindcapv2) {fDCAToPVMin2 = mindcapv2;}
+	void SetCOADaughterMin2(Double_t mincoad2) {fCOADaughterMin2 = mincoad2;}
+	void SetDCAZDaughterMax2(Double_t maxdcazd2) {fDCAZDaughterMax2 = maxdcazd2;}
 
-	void SetRecoTypeV0(int recotypev0) {fRecoTypeV0 = recotypev0;}
-	void SetLikeSignDB(int likesigndb) {fLikeSignDB = likesigndb;}
+	void SetWindowLambda(Double_t winlam) {fWindowV02 = winlam;}
+	void SetCPADibaryon(Double_t cpadi) {fCPADibaryonNO = cpadi;}
+
+	void SetRecoTypeV0(Int_t recotypev0) {fRecoTypeV0 = recotypev0;}
+	void SetLikeSignDB(Int_t likesigndb) {fLikeSignDB = likesigndb;}
 
 	void MakeAnalysis(TClonesArray *mcArray, AliESDEvent *esdEvent);
 
@@ -111,6 +123,7 @@ class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE
 	Double_t fProtonPMax;       // Max momentum of proton
 	Double_t fPionPMax;         // Max momentum of pion
 	Double_t fKaonPMax;         // Max momentum of kaon
+	Double_t fTrackPMin;        // Min momentum of track
 
 	// cut parameters for V01 (Inner V0)
 	Double_t fFiducialVolMin1;  // Min radius of the fiducial volume
@@ -123,6 +136,7 @@ class AliAnalysisTaskNOmegaLPK : public AliAnalysisTaskSE
 	Double_t fCOADaughterMin1;  // Min cosine between the daughter tracks
 	Double_t fDCAZDaughterMax1; // Max DCAZ V0 to PV
 	Double_t fWindowV01;        // Mass window cut for Lambda
+	Double_t fMassGammaMin1;    // Min mass of gamma conversion
 
 	// cut paramters for V02 (Outer V0)
 	Double_t fFiducialVolMin2;  // Min radius of the fiducial volume

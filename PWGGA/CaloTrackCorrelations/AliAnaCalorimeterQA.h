@@ -102,6 +102,7 @@ public:
   
   void         WeightHistograms(AliVCluster *clus, AliVCaloCells* cells);
 
+  
   // Setters and getters
   
   Float_t      GetEMCALCellAmpMin()      const  { return fEMCALCellAmpMin    ; }
@@ -483,11 +484,12 @@ public:
   TH2F *   fhEMaxCellClusterRatio;              //!<! e max cell / e cluster vs e cluster
   TH2F *   fhEMaxCellClusterLogRatio;           //!<! log (e max cell / e cluster) vs e cluster
   
-  TH2F *   fhLambda0ForW0[14];                  //!<! L0 for 7 defined w0= 3, 3.5 ... 6
-//TH2F *   fhLambda1ForW0[7];                   //!<! L1 for 7 defined w0= 3, 3.5 ... 6
+  TH2F *   fhLambda0ForW0AndCellCuts    [12][4][3]; //!<! L0 for different w0 and cell cuts
+  TH2F *   fhLambda0ForW0AndCellCutsEta0[12][4][3]; //!<! L0 for different w0 and cell cuts, |eta| < 0.15
+//TH2F *   fhLambda1ForW0AndCellCuts    [12][4][3]; //!<! L1 for different w0 and cell cuts
 
-  TH2F *   fhLambda0ForW0MC[14][5];             //!<! L0 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
-//TH2F *   fhLambda1ForW0MC[7][5];              //!<! L1 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
+  TH2F *   fhLambda0ForW0MC[12][5];             //!<! L0 for different w0, depending on the particle of origin
+//TH2F *   fhLambda1ForW0MC[12][5];             //!<! L1 for different w0, depending on the particle of origin
   
   TH2F *   fhECellTotalRatio;                   //!<! e cell / e total vs e total
   TH2F *   fhECellTotalLogRatio;                //!<! log (e cell / e total)  vs e total
@@ -590,7 +592,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,32) ;
+  ClassDef(AliAnaCalorimeterQA,33) ;
   /// \endcond
 
 } ;

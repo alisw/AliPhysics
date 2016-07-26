@@ -84,6 +84,48 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
 }
 
 //__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaJackson(Bool_t useMC)
+{
+//
+// Return cosine of angle of one daughter in the resonance rest frame to beam z-axis (Jackson frame)
+//
+
+   TLorentzVector &mother    = fSum[ID(useMC)];
+   TLorentzVector daughter = fP1[ID(useMC)];
+//    TLorentzVector daughter = fP2[ID(useMC)];
+   daughter.Boost(-mother.BoostVector());
+
+//   TVector3 beamAxis(0,0,1);
+//   TVector3 momentumD = daughter.Vect();
+     // cos(theta) via dot product
+//   Double_t cosTheta = momentumD.Dot(beamAxis)/TMath::Sqrt(momentumD.Mag2()*beamAxis.Mag2());
+     // Faster way (less computing)
+//   Double_t cosTheta = daughter.CosTheta();
+
+   return daughter.CosTheta();
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaTransversity(Bool_t useMC)
+{
+//
+// Return cosine of angle of one daughter in the resonance rest frame to normal of
+// beam z-axis and resonance production plane (Transversity frame)
+//
+
+	TLorentzVector &mother = fSum[ID(useMC)];
+	TLorentzVector daughter = fP1[ID(useMC)];
+	//    TLorentzVector daughter = fP2[ID(useMC)];
+	daughter.Boost(-mother.BoostVector());
+
+	TVector3 beamAxis(0, 0, 1);
+	TVector3 transFrame = beamAxis.Cross(mother.Vect());
+	TVector3 momentumD = daughter.Vect();
+
+	return momentumD.Dot(transFrame) / TMath::Sqrt((momentumD.Mag2() * transFrame.Mag2()));
+}
+
+//__________________________________________________________________________________________________
 void AliRsnMiniPair::InvertP(Bool_t first)
 {
 //
@@ -165,6 +207,31 @@ Double_t AliRsnMiniPair::DipAngle(Bool_t mc) const
 }
 
 //__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DeltaCos(Bool_t mc) const
+{
+//
+// Difference of cos(theta) angles
+// - alpha : angle between particles of a pair in the case
+// when they are daughters of the resonance with the mass M
+// - beta : angle between particles of a pair
+// More info in Phys.Rev.C65 (2002) 034909
+
+   const TLorentzVector &p1 = fP1[ID(mc)];
+   const TLorentzVector &p2 = fP2[ID(mc)];
+   const TLorentzVector &mother = fRef[ID(mc)];
+
+   TVector3 p1Vect = p1.Vect();
+   TVector3 p2Vect = p2.Vect();
+
+   Double_t magP1P2 = TMath::Sqrt(p1Vect.Mag2()*p2Vect.Mag2());
+
+   Double_t cosA = (p1.E()*p2.E() - 0.5*(mother.M()*mother.M() - p1.M()*p1.M() - p2.M()*p2.M()))/magP1P2;
+   Double_t cosB = p1Vect.Dot(p2Vect)/magP1P2;
+
+   return cosB-cosA;
+}
+
+//__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
 {
   //returns pt of the <id> daughter 
@@ -215,4 +282,24 @@ void AliRsnMiniPair::DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpyp
     pxpypz[2]=fP2[ID(mc)].Pz();
   }
   return;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairPtRes() const
+{
+//
+// Return pair pt resolution
+//
+   if (Pt(1) <= 0.0) return 1E20;
+   return (Pt(0) - Pt(1)) / Pt(1);
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairYRes() const
+{
+//
+// Return pair rapidity resolution
+//
+  if (Y(1) <= 0.0) return 1E20;
+  return (Y(0) - Y(1)) / Y(1);
 }

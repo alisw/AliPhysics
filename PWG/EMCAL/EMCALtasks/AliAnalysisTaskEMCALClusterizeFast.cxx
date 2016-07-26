@@ -840,7 +840,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
       UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
       
       // Get the digit that originated this cell cluster
-      AliVCaloCells* cells = InputEvent()->GetEMCALCells();
+      //AliVCaloCells* cells = InputEvent()->GetEMCALCells();
       
       for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
       {

@@ -94,7 +94,7 @@ class AliIsolationCut : public TObject {
   Int_t      GetParticleTypeInCone()  const { return fPartInCone     ; }
   Int_t      GetDebug()               const { return fDebug          ; }
   Bool_t     GetFracIsThresh()        const { return fFracIsThresh   ; }
-
+  Float_t    GetMinDistToTrigger()    const { return fDistMinToTrigger ; }
 
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetPtThreshold(Float_t pt)                        { fPtThreshold       = pt   ; }
@@ -106,7 +106,9 @@ class AliIsolationCut : public TObject {
   void       SetParticleTypeInCone(Int_t i)                    { fPartInCone        = i    ; }
   void       SetDebug(Int_t d)                                 { fDebug             = d    ; }
   void       SetFracIsThresh(Bool_t f )                        { fFracIsThresh      = f    ; }
-  void       SetTrackMatchedClusterRejectionInCone(Bool_t tm)  { fIsTMClusterInConeRejected = tm   ; }
+  void       SetTrackMatchedClusterRejectionInCone(Bool_t tm)  { fIsTMClusterInConeRejected = tm ; }
+  void       SetMinDistToTrigger(Float_t md)                   { fDistMinToTrigger  = md   ; }
+    
  private:
 
   Float_t    fConeSize ;         ///< Size of the isolation cone
@@ -129,8 +131,10 @@ class AliIsolationCut : public TObject {
 
   Bool_t     fFracIsThresh;      ///< Use threshold instead of fraction when pt leading is small.
 
-  Bool_t     fIsTMClusterInConeRejected;  ///< Enable to remove the Track matching removal of clusters in cone sum pt calculation in case of kNeutralAndCharged analysis
-
+  Bool_t     fIsTMClusterInConeRejected; ///< Enable to remove the Track matching removal of clusters in cone sum pt calculation in case of kNeutralAndCharged analysis
+  
+  Float_t    fDistMinToTrigger;  ///<  Minimal distance between isolation candidate particle and particles in cone to count them for this isolation.
+  
   TLorentzVector fMomentum;      //!<! Momentum of cluster, temporal object.
 
   TVector3   fTrackVector;       //!<! Track moment, temporal object.
@@ -139,10 +143,10 @@ class AliIsolationCut : public TObject {
   AliIsolationCut(              const AliIsolationCut & g) ;
 
   /// Assignment operator not implemented.
-  AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
+  AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,10) ;
+  ClassDef(AliIsolationCut,11) ;
   /// \endcond
 
 } ;

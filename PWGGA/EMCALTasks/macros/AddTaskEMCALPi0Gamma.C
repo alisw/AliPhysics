@@ -4,19 +4,22 @@
 AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       Bool_t mcmode = 0, 
                                       Bool_t addsig = 0, 
-				      Bool_t issys = 0,
+                                      Bool_t issys = 0,
                                       const char geoname[] = "EMCAL_COMPLETEV1",
                                       Bool_t qf = 0, 
-				      Double_t asym1 = 0.3, 
+                                      Double_t asym1 = 0.3,
                                       Double_t asym2 = 0.7, 
                                       Double_t minE = 0.4, 
                                       Double_t minecc = -10, 
                                       Int_t ncells = 2, 
                                       Bool_t bunfold = 0,
-				      Double_t cutm02 = 100,
-				      Double_t cutchi2 = -1,
-				      Bool_t dotrmsmpl = 0,
-                                      Bool_t doManualRecal = 0)
+                                      Double_t cutm02 = 100,
+                                      Double_t cutchi2 = -1,
+                                      Bool_t dotrmsmpl = 0,
+                                      Bool_t doManualRecal = 0,
+                                      Int_t dataPeriod = 0,
+                                      Double_t centMin = 0,
+                                      Double_t centMax = 100)
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -46,15 +49,14 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
     
     AliEMCALRecParam * params = clusterize->GetRecParam();
     params->SetClusterizerFlag( AliEMCALRecParam ::kClusterizerv1); //Select the clusterization algorithm this or kClusterizerv1, kClusterizerNxN
-    params->SetClusteringThreshold(0.3); // 100 MeV
-    params->SetMinECut(0.05); //10 MeV , no effect
+    params->SetClusteringThreshold(0.5); // 100 MeV
+    params->SetMinECut(0.15); //10 MeV , no effect
     params->SetUnfold(kTRUE); //Do the unfolding or not like in the standard reconstruction
-    params->SetW0(4.5);
+    params->SetW0(4.3);
     mgr->AddTask(clusterize);
     
     mgr->ConnectInput (clusterize, 0, cinput);  //connect input
   }
-  
   
   // Create the task and configure it.
   //===========================================================================
@@ -74,6 +76,8 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetMinEcc(cutchi2);
   task->SetTrackMatchSimple(dotrmsmpl);
   task->SetDoManualRecal(doManualRecal);
+  task->SetDataPeriod(dataPeriod);
+  task->SetCentralityRange(centMin,centMax);
   mgr->AddTask(task);
   
   char name[256];
@@ -92,7 +96,16 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   if(issys){
     strcat(name,"sys");
   }
-  //RequestMemory(task,320*1024); // request 0.5GB memory for task 
+
+  char ccentmin[10];
+  char ccentmax[10];
+  sprintf(ccentmin,"_%.0f",centMin);
+  sprintf(ccentmax,"_%.0f",centMax);
+  
+  strcat(name,ccentmin);
+  strcat(name,ccentmax);
+  
+  //RequestMemory(task,320*1024); // request 0.5GB memory for task
 
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below

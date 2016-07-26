@@ -1,5 +1,3 @@
-/* $Id: AliTriggerAnalysis.cxx 35782 2009-10-22 11:54:31Z jgrosseo $ */
-
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -17,9 +15,11 @@
 
 //-------------------------------------------------------------------------
 //                      Implementation of   Class AliTriggerAnalysis
-//   This class provides function to check if events have been triggered based on the data in the ESD
-//   The trigger bits, trigger class inputs and only the data (offline trigger) can be used
-//   Origin: Jan Fiete Grosse-Oetringhaus, CERN
+// This class provides function to check if events have been triggered based 
+// on the data in ESD and AODs. The trigger bits, trigger class inputs and 
+// only the data (offline trigger) can be used
+// Origin: Jan Fiete Grosse-Oetringhaus, CERN
+// Current support and development: Evgeny Kryshen, PNPI
 //-------------------------------------------------------------------------
 
 #include "TH1F.h"
@@ -43,17 +43,13 @@
 #include "AliDAQ.h"
 #include "AliESDTrdTrack.h"
 #include "AliVCaloTrigger.h"
-
+#include "AliAODTZERO.h"
+#include "AliAODEvent.h"
 ClassImp(AliTriggerAnalysis)
 
 AliTriggerAnalysis::AliTriggerAnalysis() :
 fSPDGFOThreshold(2),
 fSPDGFOEfficiency(0),
-fV0TimeOffset(0),
-fV0AdcThr(0),
-fV0HwAdcThr(2.5),
-fV0HwWinLow(61.5),
-fV0HwWinHigh(86.5),
 fZDCCutRefSum(-568.5),
 fZDCCutRefDelta(-2.1),
 fZDCCutSigmaSum(3.25),
@@ -99,9 +95,7 @@ fHistFMDSingle(0),
 fHistFMDSum(0),
 fHistT0(0),
 fTriggerClasses(0),
-fMC(kFALSE),
-fEsdTrackCuts(0),
-fTPCOnly(kFALSE)
+fMC(kFALSE)
 {
   // constructor
 }
@@ -126,7 +120,6 @@ AliTriggerAnalysis::~AliTriggerAnalysis(){
   if (fHistFMDSingle)    { delete fHistFMDSingle;    fHistFMDSingle = 0;    }
   if (fHistFMDSum)       { delete fHistFMDSum;       fHistFMDSum = 0;       }
   if (fHistT0)           { delete fHistT0;           fHistT0 = 0;           }
-  if (fEsdTrackCuts)     { delete fEsdTrackCuts;     fEsdTrackCuts =0;      }
   if (fTriggerClasses)   { fTriggerClasses->DeleteAll(); delete fTriggerClasses; fTriggerClasses = 0; }
 }
 
@@ -223,38 +216,29 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){
     case kTRDHEE :         str = "TRD Dielectron";            break;
     default:               str = "";                          break;
   }
-  if (trigger & kOfflineFlag) str += " OFFLINE";  
-  if (trigger & kOneParticle) str += " OneParticle";  
-  if (trigger & kOneTrack)    str += " OneTrack";  
+  if (trigger & kOfflineFlag) str += " OFFLINE";
   return str;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger){
+Bool_t AliTriggerAnalysis::IsTriggerFired(const AliVEvent* event, Trigger trigger){
   // checks if an event has been triggered
-  if (trigger & kOfflineFlag) return IsOfflineTriggerFired(aEsd, trigger);
-  return IsTriggerBitFired(aEsd, trigger);
+  if (trigger & kOfflineFlag) return IsOfflineTriggerFired(event, trigger);
+  return IsTriggerBitFired(event, trigger);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliESDEvent* /*aEsd*/, Trigger /*trigger*/) const { 
-  AliFatal("This IsTriggerBitFired function is obsolete.\n"); 
-  return 0; 
-}
-
-
-//-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t tclass) const {
+Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliVEvent* event, ULong64_t tclass) const {
   // Checks if corresponding bit in mask is on
-  ULong64_t trigmask = aEsd->GetTriggerMask();
+  ULong64_t trigmask = event->GetTriggerMask();
   return (trigmask & (1ull << (tclass-1)));
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigger){
+Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigger){
   // evaluates a given trigger
   // trigger combinations are not supported, for that see IsOfflineTriggerFired
 
@@ -300,57 +284,57 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
   }
   
   switch (triggerNoFlags) {
-    case kCTPV0A:          return aEsd->GetHeader()->IsTriggerInputFired("V0A");
-    case kCTPV0C:          return aEsd->GetHeader()->IsTriggerInputFired("V0C");
-    case kSPDGFO:          return SPDFiredChips(aEsd, !offline, kFALSE, 0); 
-    case kSPDGFOL0:        return SPDFiredChips(aEsd, !offline, kFALSE, 1);
-    case kSPDGFOL1:        return SPDFiredChips(aEsd, !offline, kFALSE, 2);
-    case kSPDClsVsTrkBG:   return IsSPDClusterVsTrackletBG(aEsd);
-    case kADA:             return ADTrigger(aEsd, kASide, !offline) == kADBB; 
-    case kADC:             return ADTrigger(aEsd, kCSide, !offline) == kADBB;
-    case kADABG:           return ADTrigger(aEsd, kASide, !offline) == kADBG;
-    case kADCBG:           return ADTrigger(aEsd, kCSide, !offline) == kADBG;
-    case kV0A:             return V0Trigger(aEsd, kASide, !offline) == kV0BB; 
-    case kV0C:             return V0Trigger(aEsd, kCSide, !offline) == kV0BB;
-    case kV0ABG:           return V0Trigger(aEsd, kASide, !offline) == kV0BG;
-    case kV0CBG:           return V0Trigger(aEsd, kCSide, !offline) == kV0BG;
-    case kT0:              return T0Trigger(aEsd, !offline) == kT0BB;
-    case kT0BG:            return T0Trigger(aEsd, !offline) == kT0DecBG;
-    case kT0Pileup:        return T0Trigger(aEsd, !offline) == kT0DecPileup;
-    case kZDCA:            return ZDCTrigger(aEsd, kASide);
-    case kZDCC:            return ZDCTrigger(aEsd, kCSide);
-    case kZDCTDCA:         return ZDCTDCTrigger(aEsd, kASide);
-    case kZDCTDCC:         return ZDCTDCTrigger(aEsd, kCSide);
-    case kZDCTime:         return ZDCTimeTrigger(aEsd);
-    case kZNA:             return ZDCTDCTrigger(aEsd,kASide,kTRUE,kFALSE,kFALSE);
-    case kZNC:             return ZDCTDCTrigger(aEsd,kCSide,kTRUE,kFALSE,kFALSE);
-    case kZNABG:           return ZDCTimeBGTrigger(aEsd,kASide);
-    case kZNCBG:           return ZDCTimeBGTrigger(aEsd,kCSide);
-    case kFMDA:            return FMDTrigger(aEsd, kASide);
-    case kFMDC:            return FMDTrigger(aEsd, kCSide);
-    case kTPCLaserWarmUp:  return IsLaserWarmUpTPCEvent(aEsd);
-    case kTPCHVdip:        return IsHVdipTPCEvent(aEsd);
-    case kIncompleteEvent: return IsIncompleteEvent(aEsd);
-    case kEMCAL:           return EMCALCellsTrigger(aEsd);
-    case kEmcalL0:         return EMCALTrigger(aEsd,kEmcalL0);
-    case kEmcalL1GammaHigh:return EMCALTrigger(aEsd,kEmcalL1GammaHigh);
-    case kEmcalL1GammaLow: return EMCALTrigger(aEsd,kEmcalL1GammaLow);
-    case kEmcalL1JetHigh:  return EMCALTrigger(aEsd,kEmcalL1JetHigh);
-    case kEmcalL1JetLow:   return EMCALTrigger(aEsd,kEmcalL1JetLow);
-    case kTRDHCO:          return TRDTrigger(aEsd,kTRDHCO);
-    case kTRDHJT:          return TRDTrigger(aEsd,kTRDHJT);
-    case kTRDHSE:          return TRDTrigger(aEsd,kTRDHSE);
-    case kTRDHQU:          return TRDTrigger(aEsd,kTRDHQU);
-    case kTRDHEE:          return TRDTrigger(aEsd,kTRDHEE);
+    case kCTPV0A:          return event->GetHeader()->IsTriggerInputFired("V0A");
+    case kCTPV0C:          return event->GetHeader()->IsTriggerInputFired("V0C");
+    case kSPDGFO:          return SPDFiredChips(event, !offline, kFALSE, 0); 
+    case kSPDGFOL0:        return SPDFiredChips(event, !offline, kFALSE, 1);
+    case kSPDGFOL1:        return SPDFiredChips(event, !offline, kFALSE, 2);
+    case kSPDClsVsTrkBG:   return IsSPDClusterVsTrackletBG(event);
+    case kADA:             return ADTrigger(event, kASide, !offline) == kADBB; 
+    case kADC:             return ADTrigger(event, kCSide, !offline) == kADBB;
+    case kADABG:           return ADTrigger(event, kASide, !offline) == kADBG;
+    case kADCBG:           return ADTrigger(event, kCSide, !offline) == kADBG;
+    case kV0A:             return V0Trigger(event, kASide, !offline) == kV0BB; 
+    case kV0C:             return V0Trigger(event, kCSide, !offline) == kV0BB;
+    case kV0ABG:           return V0Trigger(event, kASide, !offline) == kV0BG;
+    case kV0CBG:           return V0Trigger(event, kCSide, !offline) == kV0BG;
+    case kT0:              return T0Trigger(event, !offline) == kT0BB;
+    case kT0BG:            return T0Trigger(event, !offline) == kT0DecBG;
+    case kT0Pileup:        return T0Trigger(event, !offline) == kT0DecPileup;
+    case kZDCA:            return ZDCTrigger(event, kASide);
+    case kZDCC:            return ZDCTrigger(event, kCSide);
+    case kZDCTDCA:         return ZDCTDCTrigger(event, kASide);
+    case kZDCTDCC:         return ZDCTDCTrigger(event, kCSide);
+    case kZDCTime:         return ZDCTimeTrigger(event);
+    case kZNA:             return ZDCTDCTrigger(event,kASide,kTRUE,kFALSE,kFALSE);
+    case kZNC:             return ZDCTDCTrigger(event,kCSide,kTRUE,kFALSE,kFALSE);
+    case kZNABG:           return ZDCTimeBGTrigger(event,kASide);
+    case kZNCBG:           return ZDCTimeBGTrigger(event,kCSide);
+    case kFMDA:            return FMDTrigger(event, kASide);
+    case kFMDC:            return FMDTrigger(event, kCSide);
+    case kTPCLaserWarmUp:  return IsLaserWarmUpTPCEvent(event);
+    case kTPCHVdip:        return IsHVdipTPCEvent(event);
+    case kIncompleteEvent: return IsIncompleteEvent(event);
+    case kEMCAL:           return EMCALCellsTrigger(event);
+    case kEmcalL0:         return EMCALTrigger(event,kEmcalL0);
+    case kEmcalL1GammaHigh:return EMCALTrigger(event,kEmcalL1GammaHigh);
+    case kEmcalL1GammaLow: return EMCALTrigger(event,kEmcalL1GammaLow);
+    case kEmcalL1JetHigh:  return EMCALTrigger(event,kEmcalL1JetHigh);
+    case kEmcalL1JetLow:   return EMCALTrigger(event,kEmcalL1JetLow);
+    case kTRDHCO:          return TRDTrigger(event,kTRDHCO);
+    case kTRDHJT:          return TRDTrigger(event,kTRDHJT);
+    case kTRDHSE:          return TRDTrigger(event,kTRDHSE);
+    case kTRDHQU:          return TRDTrigger(event,kTRDHQU);
+    case kTRDHEE:          return TRDTrigger(event,kTRDHEE);
     case kCentral: {
-      if (!aEsd->GetVZEROData()) { AliWarning("V0 centrality trigger bits were not filled!"); return kFALSE; }
-      if (!aEsd->GetVZEROData()->TestBit(AliESDVZERO::kTriggerChargeBitsFilled)) return kFALSE;
-      return aEsd->GetVZEROData()->GetTriggerBits() & (1<<AliESDVZERO::kCTA2andCTC2);
+      if (!event->GetVZEROData()) { AliWarning("V0 centrality trigger bits were not filled!"); return kFALSE; }
+      if (!event->GetVZEROData()->TestBit(AliVVZERO::kTriggerChargeBitsFilled)) return kFALSE;
+      return event->GetVZEROData()->GetTriggerBits() & (1<<AliVVZERO::kCTA2andCTC2);
     }
     case kSemiCentral: {
-      if (!aEsd->GetVZEROData()) { AliWarning("V0 centrality trigger bits were not filled!"); return kFALSE; }
-      if (!aEsd->GetVZEROData()->TestBit(AliESDVZERO::kTriggerChargeBitsFilled)) return kFALSE;
-      return aEsd->GetVZEROData()->GetTriggerBits() & (1<<AliESDVZERO::kCTA1andCTC1);
+      if (!event->GetVZEROData()) { AliWarning("V0 centrality trigger bits were not filled!"); return kFALSE; }
+      if (!event->GetVZEROData()->TestBit(AliVVZERO::kTriggerChargeBitsFilled)) return kFALSE;
+      return event->GetVZEROData()->GetTriggerBits() & (1<<AliVVZERO::kCTA1andCTC1);
     }
     default: AliFatal(Form("Trigger type %d not implemented", triggerNoFlags));
   }
@@ -359,155 +343,86 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger){
+Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliVEvent* event, Trigger trigger){
   // checks if an event has been triggered "offline"
   UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
-  
+  if (trigger & kOneParticle) AliError("AliTriggerAnalysis::kOneParticle functionality is obsolete");
+  if (trigger & kOneTrack)    AliError("AliTriggerAnalysis::kOneTrack functionality is obsolete");
+
   Bool_t decision = kFALSE;
   switch (triggerNoFlags) {
-    case kAcceptAll:        decision = kTRUE; break;
-    case kMB1:              decision = SPDGFOTrigger(aEsd, 0) ||  V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB;  break;
-    case kMB2:              decision = SPDGFOTrigger(aEsd, 0) && (V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB); break;
-    case kMB3:              decision = SPDGFOTrigger(aEsd, 0) &&  V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB;  break;
-    case kSPDGFO:           decision = SPDGFOTrigger(aEsd, 0); break;
-    case kSPDGFOBits:       decision = SPDGFOTrigger(aEsd, 1); break;
-    case kADA:              decision = ADTrigger(aEsd, kASide, kFALSE) == kADBB; break;
-    case kADC:              decision = ADTrigger(aEsd, kCSide, kFALSE) == kADBB; break;
-    case kADABG:            decision = ADTrigger(aEsd, kASide, kFALSE) == kADBG; break;
-    case kADCBG:            decision = ADTrigger(aEsd, kCSide, kFALSE) == kADBG; break;
-    case kV0A:              decision = V0Trigger(aEsd, kASide, kFALSE) == kV0BB; break;
-    case kV0C:              decision = V0Trigger(aEsd, kCSide, kFALSE) == kV0BB; break;
-    case kV0OR:             decision = V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB; break;
-    case kV0AND:            decision = V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB; break;
-    case kV0ABG:            decision = V0Trigger(aEsd, kASide, kFALSE) == kV0BG; break;
-    case kV0CBG:            decision = V0Trigger(aEsd, kCSide, kFALSE) == kV0BG; break;
-    case kZDC:              decision = ZDCTrigger(aEsd, kASide) || ZDCTrigger(aEsd, kCentralBarrel) || ZDCTrigger(aEsd, kCSide); break;
-    case kZDCA:             decision = ZDCTrigger(aEsd, kASide); break;
-    case kZDCC:             decision = ZDCTrigger(aEsd, kCSide); break;
-    case kZNA:              decision = ZDCTDCTrigger(aEsd,kASide,kTRUE,kFALSE,kFALSE); break;
-    case kZNC:              decision = ZDCTDCTrigger(aEsd,kCSide,kTRUE,kFALSE,kFALSE); break;
-    case kZNABG:            decision = ZDCTimeBGTrigger(aEsd,kASide); break;
-    case kZNCBG:            decision = ZDCTimeBGTrigger(aEsd,kCSide); break;
-    case kFMDA:             decision = FMDTrigger(aEsd, kASide); break;
-    case kFMDC:             decision = FMDTrigger(aEsd, kCSide); break;
-    case kEMCAL:            decision = EMCALCellsTrigger(aEsd); break;
-    case kEmcalL0:          decision = EMCALTrigger(aEsd,kEmcalL0);          break;
-    case kEmcalL1GammaHigh: decision = EMCALTrigger(aEsd,kEmcalL1GammaHigh); break;
-    case kEmcalL1GammaLow:  decision = EMCALTrigger(aEsd,kEmcalL1GammaLow);  break;
-    case kEmcalL1JetHigh:   decision = EMCALTrigger(aEsd,kEmcalL1JetHigh);   break;
-    case kEmcalL1JetLow:    decision = EMCALTrigger(aEsd,kEmcalL1JetLow);    break;
-    case kTRDHCO:           decision = TRDTrigger(aEsd,kTRDHCO); break;
-    case kTRDHJT:           decision = TRDTrigger(aEsd,kTRDHJT); break;
-    case kTRDHSE:           decision = TRDTrigger(aEsd,kTRDHSE); break;
-    case kTRDHQU:           decision = TRDTrigger(aEsd,kTRDHQU); break;
-    case kTRDHEE:           decision = TRDTrigger(aEsd,kTRDHEE); break;
-    case kNSD1:             decision = SPDFiredChips(aEsd, 0) >= 5 || (V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB); break;
-    case kFPANY:            decision |= SPDGFOTrigger(aEsd, 0); 
-                            decision |= V0Trigger(aEsd, kASide, kFALSE) == kV0BB;
-                            decision |= V0Trigger(aEsd, kCSide, kFALSE) == kV0BB;
-                            decision |= ZDCTrigger(aEsd, kASide);
-                            decision |= ZDCTrigger(aEsd, kCentralBarrel);
-                            decision |= ZDCTrigger(aEsd, kCSide);
-                            decision |= FMDTrigger(aEsd, kASide);
-                            decision |= FMDTrigger(aEsd, kCSide);
-                            break; 
-    case kMB1Prime:         decision |= SPDGFOTrigger(aEsd, 0) && V0Trigger(aEsd, kASide, kFALSE) == kV0BB;
-                            decision |= SPDGFOTrigger(aEsd, 0) && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB;
-                            decision |= V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB;
-                            break; 
+    case kAcceptAll:        return kTRUE; 
+    case kMB1:              return SPDGFOTrigger(event, 0) ||  V0Trigger(event, kASide, kFALSE) == kV0BB || V0Trigger(event, kCSide, kFALSE) == kV0BB;
+    case kMB2:              return SPDGFOTrigger(event, 0) && (V0Trigger(event, kASide, kFALSE) == kV0BB || V0Trigger(event, kCSide, kFALSE) == kV0BB);
+    case kMB3:              return SPDGFOTrigger(event, 0) &&  V0Trigger(event, kASide, kFALSE) == kV0BB && V0Trigger(event, kCSide, kFALSE) == kV0BB;
+    case kSPDGFO:           return SPDGFOTrigger(event, 0);
+    case kSPDGFOBits:       return SPDGFOTrigger(event, 1);
+    case kADA:              return ADTrigger(event, kASide, kFALSE) == kADBB;
+    case kADC:              return ADTrigger(event, kCSide, kFALSE) == kADBB;
+    case kADABG:            return ADTrigger(event, kASide, kFALSE) == kADBG;
+    case kADCBG:            return ADTrigger(event, kCSide, kFALSE) == kADBG;
+    case kV0A:              return V0Trigger(event, kASide, kFALSE) == kV0BB;
+    case kV0C:              return V0Trigger(event, kCSide, kFALSE) == kV0BB;
+    case kV0OR:             return V0Trigger(event, kASide, kFALSE) == kV0BB || V0Trigger(event, kCSide, kFALSE) == kV0BB;
+    case kV0AND:            return V0Trigger(event, kASide, kFALSE) == kV0BB && V0Trigger(event, kCSide, kFALSE) == kV0BB;
+    case kV0ABG:            return V0Trigger(event, kASide, kFALSE) == kV0BG;
+    case kV0CBG:            return V0Trigger(event, kCSide, kFALSE) == kV0BG;
+    case kZDC:              return ZDCTrigger(event, kASide) || ZDCTrigger(event, kCentralBarrel) || ZDCTrigger(event, kCSide);
+    case kZDCA:             return ZDCTrigger(event, kASide);
+    case kZDCC:             return ZDCTrigger(event, kCSide);
+    case kZNA:              return ZDCTDCTrigger(event,kASide,kTRUE,kFALSE,kFALSE);
+    case kZNC:              return ZDCTDCTrigger(event,kCSide,kTRUE,kFALSE,kFALSE);
+    case kZNABG:            return ZDCTimeBGTrigger(event,kASide);
+    case kZNCBG:            return ZDCTimeBGTrigger(event,kCSide);
+    case kFMDA:             return FMDTrigger(event, kASide);
+    case kFMDC:             return FMDTrigger(event, kCSide);
+    case kEMCAL:            return EMCALCellsTrigger(event);
+    case kEmcalL0:          return EMCALTrigger(event,kEmcalL0);
+    case kEmcalL1GammaHigh: return EMCALTrigger(event,kEmcalL1GammaHigh);
+    case kEmcalL1GammaLow:  return EMCALTrigger(event,kEmcalL1GammaLow);
+    case kEmcalL1JetHigh:   return EMCALTrigger(event,kEmcalL1JetHigh);
+    case kEmcalL1JetLow:    return EMCALTrigger(event,kEmcalL1JetLow);
+    case kTRDHCO:           return TRDTrigger(event,kTRDHCO);
+    case kTRDHJT:           return TRDTrigger(event,kTRDHJT);
+    case kTRDHSE:           return TRDTrigger(event,kTRDHSE);
+    case kTRDHQU:           return TRDTrigger(event,kTRDHQU);
+    case kTRDHEE:           return TRDTrigger(event,kTRDHEE);
+    case kNSD1:             return SPDFiredChips(event, 0) >= 5 || (V0Trigger(event, kASide, kFALSE) == kV0BB && V0Trigger(event, kCSide, kFALSE) == kV0BB);
+    case kFPANY:            decision |= SPDGFOTrigger(event, 0); 
+                            decision |= V0Trigger(event, kASide, kFALSE) == kV0BB;
+                            decision |= V0Trigger(event, kCSide, kFALSE) == kV0BB;
+                            decision |= ZDCTrigger(event, kASide);
+                            decision |= ZDCTrigger(event, kCentralBarrel);
+                            decision |= ZDCTrigger(event, kCSide);
+                            decision |= FMDTrigger(event, kASide);
+                            decision |= FMDTrigger(event, kCSide);
+                            return decision; 
+    case kMB1Prime:         decision |= SPDGFOTrigger(event, 0) && V0Trigger(event, kASide, kFALSE) == kV0BB;
+                            decision |= SPDGFOTrigger(event, 0) && V0Trigger(event, kCSide, kFALSE) == kV0BB;
+                            decision |= V0Trigger(event, kASide, kFALSE) == kV0BB && V0Trigger(event, kCSide, kFALSE) == kV0BB;
+                            return decision;
     default:                AliFatal(Form("Trigger type %d not implemented", triggerNoFlags));
   }
   
-  // hadron-level requirement: SPD tracklets
-  if (decision && (trigger & kOneParticle))  {
-    decision = kFALSE;
-    
-    const AliESDVertex* vertex = aEsd->GetPrimaryVertexSPD();
-    const AliMultiplicity* mult = aEsd->GetMultiplicity();
-    
-    if (mult && vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZ()) < 5.5)    {
-      for (Int_t i=0; i<mult->GetNumberOfTracklets(); ++i) {
-        if (TMath::Abs(mult->GetEta(i)) < 1) {
-          decision = kTRUE;
-          break;
-        }
-      }
-    }
-  }
-  
-  // hadron level requirement: TPC tracks
-  if (decision && (trigger & kOneTrack)) {
-    decision = kFALSE;
-    const AliESDVertex* vertex =0x0;
-    vertex = aEsd->GetPrimaryVertexTracks();
-    if (!vertex || vertex->GetNContributors() <= 0) vertex = aEsd->GetPrimaryVertexSPD();
-    Float_t ptmin, ptmax;
-    fEsdTrackCuts->GetPtRange(ptmin,ptmax);
-    AliDebug(3, Form("ptmin = %f, ptmax = %f\n",ptmin, ptmax));
-    
-    if (vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZ()) < 10.) {
-      AliDebug(3,Form("Check on the vertex passed\n"));
-      for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){
-        if (fTPCOnly == kFALSE){
-          if (fEsdTrackCuts->AcceptTrack(aEsd->GetTrack(i))){
-            AliDebug(2, Form("pt of track = %f --> check passed\n",aEsd->GetTrack(i)->Pt()));
-            decision = kTRUE;
-            break;
-          }
-        }
-        else {
-          // TPC only tracks
-          AliESDtrack *tpcTrack = fEsdTrackCuts->GetTPCOnlyTrack((AliESDEvent*)aEsd, i);
-          if (!tpcTrack){
-            AliDebug(3,Form("track %d is NOT a TPC track",i));
-            continue;
-          }
-          else{
-            AliDebug(3,Form("track %d IS a TPC track",i));
-            if (!(fEsdTrackCuts->AcceptTrack(tpcTrack))) {
-              AliDebug(2, Form("TPC track %d NOT ACCEPTED, pt = %f, eta = %f",i,tpcTrack->Pt(), tpcTrack->Eta()));
-              delete tpcTrack; tpcTrack = 0x0;
-              continue;
-            } // end if the TPC track is not accepted
-            else{
-              AliDebug(2, Form("TPC track %d ACCEPTED, pt = %f, eta = %f",i,tpcTrack->Pt(), tpcTrack->Eta()));
-              decision = kTRUE;
-              delete tpcTrack; tpcTrack = 0x0;
-              break;
-            } // end if the TPC track is accepted
-          } // end if it is a TPC track
-        } // end if you are looking at TPC only tracks			
-      } // end loop on tracks
-    } // end check on vertex
-    else{
-      AliDebug(4,Form("Check on the vertex not passed\n"));
-      for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){
-        if (fEsdTrackCuts->AcceptTrack(aEsd->GetTrack(i))){
-          AliDebug(4,Form("pt of track = %f --> check would be passed if the vertex was ok\n",aEsd->GetTrack(i)->Pt()));
-          break;
-        }
-      }
-    }
-    if (!decision) AliDebug(3,("Check for kOneTrack NOT passed\n"));
-  }
-  
-  return decision;
+  return kFALSE;
 }
 
 
-
 //-------------------------------------------------------------------------------------------------
-Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists, Int_t layer){
+Int_t AliTriggerAnalysis::SPDFiredChips(const AliVEvent* event, Int_t origin, Bool_t fillHists, Int_t layer){
   // returns the number of fired chips in the SPD
   //
-  // origin = 0 --> aEsd->GetMultiplicity()->GetNumberOfFiredChips() (filled from clusters)
-  // origin = 1 --> aEsd->GetMultiplicity()->TestFastOrFiredChips() (from hardware bits)
+  // origin = 0 --> event->GetMultiplicity()->GetNumberOfFiredChips() (filled from clusters)
+  // origin = 1 --> event->GetMultiplicity()->TestFastOrFiredChips() (from hardware bits)
   // layer  = 0 --> both layers
   // layer  = 1 --> inner
   // layer  = 2 --> outer
   
-  const AliMultiplicity* mult = aEsd->GetMultiplicity();
-  if (!mult) { AliFatal("AliMultiplicity not available"); return 0; }
+  const AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) { 
+    AliError("AliVMultiplicity not available"); 
+    return -1; 
+  }
   
   if (origin == 0) {
     if (layer == 0) return mult->GetNumberOfFiredChips(0) + mult->GetNumberOfFiredChips(1);
@@ -537,162 +452,79 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
 
 
 //-------------------------------------------------------------------------------------------------
-Int_t AliTriggerAnalysis::SSDClusters(const AliVEvent* event){ 
-  return event->GetNumberOfITSClusters(4)+event->GetNumberOfITSClusters(5); 
-}
-
-
-//-------------------------------------------------------------------------------------------------
-AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists){
-  // See comments on V0Trigger
+AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliVEvent* event, AliceSide side, Bool_t online, Bool_t fillHists){
+  // Returns the AD trigger decision 
+  // argument 'online' is used as a switch between online and offline trigger algorithms
   
-  AliESDAD* esdAD = aEsd->GetADData();
-  if (!esdAD) { AliError("AliESDAD not available");  return kADInvalid; }
-  if (side != kASide && side != kCSide) return kADInvalid;
-  
-  AliDebug(2,Form("In ADTrigger: %f %f",esdAD->GetADATime(),esdAD->GetADCTime()));
-
-  if (fillHists) {
-    if (fHistAD) fHistAD->Fill(esdAD->GetADCTime()-esdAD->GetADATime(),esdAD->GetADATime()+esdAD->GetADCTime());
-    if (side == kASide && fHistADA) fHistADA->Fill(esdAD->GetADATime());
-    if (side == kCSide && fHistADC) fHistADC->Fill(esdAD->GetADCTime());
+  const AliVAD* ad = event->GetADData();
+  if (!ad) { 
+    // print error only for runs from >=2015
+    if (event->GetRunNumber()>=208505) AliError("AliVAD not available");
+    return kADInvalid; 
+  }
+  if (side != kASide && side != kCSide) {
+    AliError("Invalid AD side argument");
+    return kADInvalid;
   }
   
+  AliDebug(2,Form("In ADTrigger: %f %f",ad->GetADATime(),ad->GetADCTime()));
+
   if (online) {
-    UShort_t bits = esdAD->GetTriggerBits();
+    UShort_t bits = ad->GetTriggerBits();
     if (side==kASide && (bits & 1<<12)) return kADBB;
     if (side==kCSide && (bits & 1<<13)) return kADBB;
     if (side==kASide && (bits & 1<< 3)) return kADBG;
     if (side==kCSide && (bits & 1<< 5)) return kADBG;
-    return kADEmpty;
   } else {
-    if      (side == kASide) return (ADDecision) esdAD->GetADADecision();
-    else if (side == kCSide) return (ADDecision) esdAD->GetADCDecision();
+    if (fillHists) {
+      if (fHistAD) fHistAD->Fill(ad->GetADCTime()-ad->GetADATime(),ad->GetADATime()+ad->GetADCTime());
+      if (side == kASide && fHistADA) fHistADA->Fill(ad->GetADATime());
+      if (side == kCSide && fHistADC) fHistADC->Fill(ad->GetADCTime());
+    }
+    if      (side == kASide) return (ADDecision) ad->GetADADecision();
+    else if (side == kCSide) return (ADDecision) ad->GetADCDecision();
   }
   
   return kADEmpty;
 }
 
 
-
 //-------------------------------------------------------------------------------------------------
-AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists){
-  // Returns the V0 trigger decision in V0A | V0C
-  //
-  // Returns kV0Fake if the calculated average time is in a window where neither BB nor BG is expected. 
-  // The rate of such triggers can be used to estimate the background. Note that the rate has to be 
-  // rescaled with the size of the windows (numerical values see below in the code)
-  //
+AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* event, AliceSide side, Bool_t online, Bool_t fillHists){
+  // Returns the V0 trigger decision 
   // argument 'online' is used as a switch between online and offline trigger algorithms
-  //
-  // Based on an algorithm by Cvetan Cheshkov
   
-  AliESDVZERO* esdV0 = aEsd->GetVZEROData();
-  if (!esdV0) { AliError("AliESDVZERO not available");  return kV0Invalid; }
-  if (side != kASide && side != kCSide) return kV0Invalid;
-  
-  AliDebug(2,Form("In V0Trigger: %f %f",esdV0->GetV0ATime(),esdV0->GetV0CTime()));
-  
-  Int_t begin = (side == kASide) ? 32 :  0;
-  Int_t end   = (side == kASide) ? 64 : 32;
-  
-  if (esdV0->TestBit(AliESDVZERO::kDecisionFilled)) {
-    if (online) {
-      if (esdV0->TestBit(AliESDVZERO::kOnlineBitsFilled)) {
-        for (Int_t i = begin; i < end; ++i) if (esdV0->GetBBFlag(i)) return kV0BB;
-        for (Int_t i = begin; i < end; ++i) if (esdV0->GetBGFlag(i)) return kV0BG;
-        return kV0Empty;
-      }
-      else {
-        AliWarning("V0 online trigger analysis is not yet available!");
-        return kV0BB;
-      }
-    }
-    else {
-      if (fillHists) {
-        if (side == kASide && fHistV0A) fHistV0A->Fill(esdV0->GetV0ATime());
-        if (side == kCSide && fHistV0C) fHistV0C->Fill(esdV0->GetV0CTime());
-      }
-      if      (side == kASide) return (V0Decision) esdV0->GetV0ADecision();
-      else if (side == kCSide) return (V0Decision) esdV0->GetV0CDecision();
-    }
+  const AliVVZERO* vzero = event->GetVZEROData();
+  if (!vzero) { 
+    AliError("AliVVZERO not available");  
+    return kV0Invalid; 
+  }
+  if (!vzero->TestBit(AliVVZERO::kDecisionFilled)) {
+    AliError("V0 decisions not filled");
+    return kV0Invalid;
+  }
+  if (!vzero->TestBit(AliVVZERO::kOnlineBitsFilled)) {
+    AliError("V0 online trigger bits not filled");
+  }
+  if (side != kASide && side != kCSide) {
+    AliError("Invalid V0 side argument");
+    return kV0Invalid;
   }
   
-  Float_t time = 0;
-  Float_t weight = 0;
-  if (fMC) {
-    Int_t runRange;
-    if      (aEsd->GetRunNumber() <= 104803) runRange = 0;
-    else if (aEsd->GetRunNumber() <= 104876) runRange = 1;
-    else runRange = 2;
-    
-    Float_t factors[3][64] = {
-      /*104792-104803*/ {4.6,5.9,6.3,6.0,4.7,5.9,4.9,5.4,4.8,4.1,4.9,4.6,4.5,5.5,5.1,5.8,4.3,4.0,4.0,3.3,3.1,2.9,3.0,5.6,3.3,4.9,3.9,5.3,4.1,4.4,3.9,5.5,5.7,9.5,5.1,5.3,6.6,7.1,8.9,4.4,4.1,5.9,9.0,4.5,4.1,6.0,4.7,7.1,4.2,4.7,3.9,6.3,5.9,4.8,4.7,4.5,4.7,5.4,5.8,5.0,5.1,5.9,5.3,3.6},
-      /*104841-104876*/ {4.6,4.8,4.9,4.8,4.3,4.9,4.4,4.5,4.6,5.0,4.7,4.6,4.7,4.6,4.6,5.5,4.7,4.5,4.7,5.0,6.5,7.6,5.3,4.9,5.5,4.8,4.6,4.9,4.5,4.5,4.6,4.9,5.7,9.8,4.9,5.2,7.1,7.1,8.1,4.4,4.0,6.0,8.3,4.6,4.2,5.6,4.6,6.4,4.4,4.7,4.5,6.5,6.0,4.7,4.5,4.4,4.8,5.5,5.9,5.3,5.0,5.7,5.1,3.6},
-      /*104890-104892*/ {4.7,5.2,4.8,5.0,4.4,5.0,4.4,4.6,4.6,4.5,4.4,4.6,4.5,4.6,4.8,5.5,4.8,4.5,4.4,4.3,5.4,7.7,5.6,5.0,5.4,4.3,4.5,4.8,4.5,4.5,4.6,5.3,5.7,9.6,4.9,5.4,6.1,7.2,8.6,4.4,4.0,5.4,8.8,4.4,4.2,5.8,4.7,6.7,4.3,4.7,4.0,6.1,6.0,4.9,4.8,4.6,4.7,5.2,5.7,5.0,5.0,5.8,5.3,3.6}
-    };
-    Float_t dA = 77.4 - 11.0;
-    Float_t dC = 77.4 - 2.9;
-    // Time misalignment
-    Float_t timeShift[64] = {0.477957 , 0.0889999 , 0.757669 , 0.205439 , 0.239666 , -0.183705 , 0.442873 , -0.281366 , 0.260976 , 0.788995 , 0.974758 , 0.548532 , 0.495023 , 0.868472 , 0.661167 , 0.358307 , 0.221243 , 0.530179 , 1.26696 , 1.33082 , 1.27086 , 1.77133 , 1.10253 , 0.634806 , 2.14838 , 1.50212 , 1.59253 , 1.66122 , 1.16957 , 1.52056 , 1.47791 , 1.81905 , -1.94123 , -1.29124 , -2.16045 , -1.78939 , -3.11111 , -1.87178 , -1.57671 , -1.70311 , -1.81208 , -1.94475 , -2.53058 , -1.7042 , -2.08109 , -1.84416 , -0.61073 , -1.77145 , 0.16999 , -0.0585339 , 0.00401133 , 0.397726 , 0.851111 , 0.264187 , 0.59573 , -0.158263 , 0.584362 , 1.20835 , 0.927573 , 1.13895 , 0.64648 , 2.18747 , 1.68909 , 0.451194};
-    Float_t dA2 = 2.8, dC2 = 3.3;
-    
-    if (online) {
-      for (Int_t i = begin; i < end; ++i) {
-        Float_t tempAdc = esdV0->GetAdc(i)/factors[runRange][i];
-        Float_t tempTime = (i >= 32) ? esdV0->GetTime(i)+dA+timeShift[i]+dA2 : esdV0->GetTime(i)+dC+timeShift[i]+dC2;
-        if (esdV0->GetTime(i) >= 1e-6 && tempTime > fV0HwWinLow && tempTime < fV0HwWinHigh && tempAdc > fV0HwAdcThr) return kV0BB;
-      }
-      return kV0Empty;
-    }
-    else {
-      for (Int_t i = begin; i < end; ++i) {
-        Float_t tempAdc = esdV0->GetAdc(i)/factors[runRange][i];
-        Float_t tempTime = (i >= 32) ? esdV0->GetTime(i)+dA : esdV0->GetTime(i)+dC;
-        Float_t tempRawTime = (i >= 32) ? esdV0->GetTime(i)+dA+timeShift[i]+dA2 : esdV0->GetTime(i)+dC+timeShift[i]+dC2;
-        if (esdV0->GetTime(i) >= 1e-6 && tempRawTime < 125.0 && tempAdc > fV0AdcThr) {
-          weight += 1.0;
-          time += tempTime;
-        }
-      }
-    }
-  }
-  else {
-    if (online) {
-      for (Int_t i = begin; i < end; ++i) {
-        if (esdV0->GetTime(i) >= 1e-6 && esdV0->GetTime(i) > fV0HwWinLow && esdV0->GetTime(i) < fV0HwWinHigh && esdV0->GetAdc(i) > fV0HwAdcThr) return kV0BB;
-      }
-      return kV0Empty;
-    }
-    else {
-      for (Int_t i = begin; i < end; ++i) {
-        if (esdV0->GetTime(i) > 1e-6 && esdV0->GetAdc(i) > fV0AdcThr) {
-          Float_t correctedTime = V0CorrectLeadingTime(i, esdV0->GetTime(i), esdV0->GetAdc(i),aEsd->GetRunNumber());
-          Float_t timeWeight = V0LeadingTimeWeight(esdV0->GetAdc(i));
-          time += correctedTime*timeWeight;
-          weight += timeWeight;
-        }
-      }
-    }
-  }
+  AliDebug(2,Form("In V0Trigger: %f %f",vzero->GetV0ATime(),vzero->GetV0CTime()));
   
-  if (weight > 0) time /= weight;
-  time += fV0TimeOffset;
-  
-  if (fillHists) {
-    if (side == kASide && fHistV0A) fHistV0A->Fill(time);
-    if (side == kCSide && fHistV0C) fHistV0C->Fill(time);
-  }
-  
-  if (side == kASide) {
-    if (time > 68 && time < 100)  return kV0BB;
-    if (time > 54 && time < 57.5) return kV0BG;
-    if (time > 57.5 && time < 68) return kV0Fake;
-  }
-  if (side == kCSide) {
-    if (time > 75.5 && time < 100) return kV0BB;
-    if (time > 69.5 && time < 73)  return kV0BG; 
-    if (time > 55 && time < 69.5)  return kV0Fake;
+  if (online) {
+    Int_t begin = (side == kASide) ? 32 :  0;
+    Int_t end   = (side == kASide) ? 64 : 32;
+    for (Int_t i=begin; i<end; i++) if (vzero->GetBBFlag(i)) return kV0BB;
+    for (Int_t i=begin; i<end; i++) if (vzero->GetBGFlag(i)) return kV0BG;
+  } else {
+    if (fillHists) {
+      if (side == kASide && fHistV0A) fHistV0A->Fill(vzero->GetV0ATime());
+      if (side == kCSide && fHistV0C) fHistV0C->Fill(vzero->GetV0CTime());
+    }
+    if      (side == kASide) return (V0Decision) vzero->GetV0ADecision();
+    else if (side == kCSide) return (V0Decision) vzero->GetV0CDecision();
   }
   
   return kV0Empty;
@@ -700,43 +532,14 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* 
 
 
 //-------------------------------------------------------------------------------------------------
-Float_t AliTriggerAnalysis::V0CorrectLeadingTime(Int_t i, Float_t time, Float_t adc, Int_t runNumber) const {
-  // Correct for slewing and align the channels
-  // Authors: Cvetan Cheshkov / Raphael Tieulent
-  if (time == 0) return 0;
-
-  // Time alignment
-  Float_t timeShift[64] = {0.477957 , 0.0889999 , 0.757669 , 0.205439 , 0.239666 , -0.183705 , 0.442873 , -0.281366 , 0.260976 , 0.788995 , 0.974758 , 0.548532 , 0.495023 , 0.868472 , 0.661167 , 0.358307 , 0.221243 , 0.530179 , 1.26696 , 1.33082 , 1.27086 , 1.77133 , 1.10253 , 0.634806 , 2.14838 , 1.50212 , 1.59253 , 1.66122 , 1.16957 , 1.52056 , 1.47791 , 1.81905 , -1.94123 , -1.29124 , -2.16045 , -1.78939 , -3.11111 , -1.87178 , -1.57671 , -1.70311 , -1.81208 , -1.94475 , -2.53058 , -1.7042 , -2.08109 , -1.84416 , -0.61073 , -1.77145 , 0.16999 , -0.0585339 , 0.00401133 , 0.397726 , 0.851111 , 0.264187 , 0.59573 , -0.158263 , 0.584362 , 1.20835 , 0.927573 , 1.13895 , 0.64648 , 2.18747 , 1.68909 , 0.451194};
-  
-  if(runNumber < 106031) time -= timeShift[i];
-  
-  // Slewing correction
-  if (adc == 0) return time;
-  
-  Double_t p1 = 1.57345e+1;
-  Double_t p2 =-4.25603e-1;
-  
-  if(runNumber >= 106031) adc *= (2.5/4.0);
-  return (time - p1*TMath::Power(adc,p2));
-}
-
-
-//-------------------------------------------------------------------------------------------------
-Float_t AliTriggerAnalysis::V0LeadingTimeWeight(Float_t adc) const {
-  if (adc < 1e-6) return 0;
-  
-  Float_t p1 = 40.211;
-  Float_t p2 =-4.25603e-1;
-  Float_t p3 = 0.5646;
-  
-  return 1./(p1*p1*TMath::Power(adc,2.*(p2-1.))+p3*p3);
-}
-
-
-//-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN, Bool_t useZP, Bool_t fillHists) const{
+Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side, Bool_t useZN, Bool_t useZP, Bool_t fillHists) const{
   // Returns if ZDC triggered, based on TDC information 
-  
+  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
+    AliError("ZDCTDCTrigger method implemented for ESDs only");
+    return kFALSE;
+  }
+  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
+
   AliESDZDC *esdZDC = aEsd->GetESDZDC();
   
   Bool_t zdcNA = kFALSE;
@@ -770,9 +573,15 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists) const {
+Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Bool_t fillHists) const {
   // This method implements a selection based on the timing in both sides of zdcN
   // It can be used in order to eliminate parasitic collisions
+  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
+    AliError("ZDCTimeTrigger method implemented for ESDs only");
+    return kFALSE;
+  }
+  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
+
   AliESDZDC *esdZDC = aEsd->GetESDZDC();
   if(fMC) {
     UInt_t esdFlag =  esdZDC->GetESDQuality();
@@ -818,11 +627,17 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide side) const{
+Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliVEvent* event, AliceSide side) const{
   // This method implements a selection based on the timing in zdcN
   // It can be used in order to flag background
   if(fMC) return kFALSE;
   
+  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
+    AliError("ZDCTimeBGTrigger method implemented for ESDs only");
+    return kFALSE;
+  }
+  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
+
   AliESDZDC* zdcData = aEsd->GetESDZDC();
   Bool_t znabadhit = kFALSE;
   Bool_t zncbadhit = kFALSE;
@@ -851,8 +666,14 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::ZDCTrigger(const AliESDEvent* aEsd, AliceSide side) const {
+Bool_t AliTriggerAnalysis::ZDCTrigger(const AliVEvent* event, AliceSide side) const {
   // Returns if ZDC triggered
+
+  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
+    AliError("ZDCTrigger method implemented for ESDs only");
+    return kFALSE;
+  }
+  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
   
   AliESDZDC* zdcData = aEsd->GetESDZDC();
   UInt_t quality = zdcData->GetESDQuality();
@@ -918,49 +739,61 @@ Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide 
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::FMDTrigger(const AliESDEvent* aEsd, AliceSide side){
+Bool_t AliTriggerAnalysis::FMDTrigger(const AliVEvent* event, AliceSide side){
   // Returns if the FMD triggered
   // Authors: FMD team, Hans Dalsgaard (code merged from FMD/AliFMDOfflineTrigger)
-  return FMDHitCombinations(aEsd, side, kFALSE);
+  if (event->GetDataLayoutType()!=AliVEvent::kESD) return 0;
+  return FMDHitCombinations((AliESDEvent*) event, side, kFALSE);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* aEsd, Bool_t online, Bool_t fillHists){
+AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* event, Bool_t online, Bool_t fillHists){
   // Returns the T0 TVDC trigger decision
   //  
   // argument 'online' is used as a switch between online and offline trigger algorithms
   // in online mode return 0TVX 
   // in offline mode in addition check pile-up and background :
-  // pile-up readed from ESD: check if TVDC (0TVX module name) has more 1 hit;
-  // backgroud flag readed from ESD : check in given time interval OrA and OrC were correct but TVDC not  
+  // pile-up read from ESD: check if TVDC (0TVX module name) has more 1 hit;
+  // background flag read from ESD : check in given time interval OrA and OrC were correct but TVDC not
   // 
-  // Based on an algorithm by Alla Maevskaya 
+  // Based on an algorithm by Alla Maevskaya
+  // TODO: implement online and offline selection in AOD
+  // TODO: read vtx thresholds from OCDB
   
-  const AliESDTZERO* esdT0 = aEsd->GetESDTZERO();
-  if (!esdT0) {
-    AliError("AliESDTZERO not available");
-    return kT0Invalid;
+  if (event->GetDataLayoutType()==AliVEvent::kAOD) {
+    // AOD analysis
+    const AliAODTZERO* tzero = dynamic_cast<const AliAODEvent*>(event)->GetTZEROData();
+    if (!tzero) {
+      AliError("AliAODTZERO not available");
+      return kT0Invalid;
+    }
+    if (fMC) if(tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+  } 
+  else if (event->GetDataLayoutType()==AliVEvent::kESD) {
+    // ESD analysis
+    const AliESDTZERO* tzero = dynamic_cast<const AliESDEvent*>(event)->GetESDTZERO();
+    if (!tzero) {
+      AliError("AliESDTZERO not available");
+      return kT0Invalid;
+    }
+    if (online) {
+      if (event->GetHeader()->IsTriggerInputFired("0TVX")) return kT0BB;
+    } else {
+      Float_t tvdc0 = tzero->GetTVDC(0);
+      if(fillHists) fHistT0->Fill(tvdc0);
+      if (tzero->GetPileupFlag()) return kT0DecPileup;
+      if (tzero->GetBackgroundFlag()) return kT0DecBG;
+      if (tvdc0>-5 && tvdc0<5 && tvdc0!=0) return kT0BB;
+    }
+    if (fMC) if (tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
   }
-
-  Float_t  tvdc0 = esdT0->GetTVDC(0);
-  if(fillHists) fHistT0->Fill(tvdc0);
   
-  if (online) {
-    if( aEsd->GetHeader()->IsTriggerInputFired("0TVX")) return kT0BB;
-  }
-  else {
-    if (esdT0->GetPileupFlag()) return kT0DecPileup;
-    if (esdT0->GetBackgroundFlag()) return kT0DecBG;
-    if (tvdc0>-5 && tvdc0<5 && tvdc0!=0) return kT0BB; 
-  }
-  
-  if (fMC) if(esdT0->GetT0zVertex()>-12.3 && esdT0->GetT0zVertex() < 10.3) return kT0BB; 
   return kT0Empty;
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::EMCALCellsTrigger(const AliESDEvent *aEsd){
+Bool_t AliTriggerAnalysis::EMCALCellsTrigger(const AliVEvent* event){
   //
   // Returns the EMCAL trigger decision
   // so far only implemented for LHC11a data
@@ -968,17 +801,10 @@ Bool_t AliTriggerAnalysis::EMCALCellsTrigger(const AliESDEvent *aEsd){
   //
   
   Bool_t isFired = kTRUE;
-  const Int_t runNumber = aEsd->GetRunNumber();
-  
-  /*
-  // Load EMCAL branches from the manager
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  am->LoadBranch("EMCALCells.");
-  am->LoadBranch("CaloClusters");
-   */
+  const Int_t runNumber = event->GetRunNumber();
   
   // Get EMCAL cells
-  AliVCaloCells *cells = aEsd->GetEMCALCells();
+  AliVCaloCells *cells = event->GetEMCALCells();
   const Short_t nCells = cells->GetNumberOfCells();
   
   // count cells above threshold per sm
@@ -1013,7 +839,7 @@ Bool_t AliTriggerAnalysis::EMCALCellsTrigger(const AliESDEvent *aEsd){
 
 
 //----------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::TRDTrigger(const AliESDEvent *esd, Trigger trigger){
+Bool_t AliTriggerAnalysis::TRDTrigger(const AliVEvent* event, Trigger trigger){
   // evaluate the TRD trigger conditions,
   // so far HCO, HSE, HQU, HJT, HEE
   if(trigger!=kTRDHCO && trigger!=kTRDHJT && trigger!=kTRDHSE && trigger!=kTRDHQU && trigger!=kTRDHEE) {
@@ -1021,12 +847,12 @@ Bool_t AliTriggerAnalysis::TRDTrigger(const AliESDEvent *esd, Trigger trigger){
     return kFALSE;
   }
   
-  Int_t nTrdTracks = esd->GetNumberOfTrdTracks();
+  Int_t nTrdTracks = event->GetNumberOfTrdTracks();
   if (nTrdTracks<=0) return kFALSE;
   if      (trigger==kTRDHCO) return kTRUE;
   else if (trigger!=kTRDHJT) {
     for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
-      AliESDTrdTrack *trdTrack = esd->GetTrdTrack(iTrack);
+      AliVTrdTrack* trdTrack = event->GetTrdTrack(iTrack);
       if (!trdTrack) continue;
       // for the electron triggers we only consider matched tracks
       if(trigger==kTRDHQU) if (TMath::Abs(trdTrack->Pt())>fTRDptHQU && trdTrack->GetPID()>fTRDpidHQU) return kTRUE;
@@ -1037,7 +863,7 @@ Bool_t AliTriggerAnalysis::TRDTrigger(const AliESDEvent *esd, Trigger trigger){
   else if (trigger==kTRDHJT) {
     Int_t nTracks[90] = { 0 }; // stack-wise counted number of tracks above pt threshold
     for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
-      AliESDTrdTrack *trdTrack = esd->GetTrdTrack(iTrack);    
+      AliVTrdTrack *trdTrack = event->GetTrdTrack(iTrack);    
       if (!trdTrack) continue;
       Int_t globalStack = 5*trdTrack->GetSector() + trdTrack->GetStack();
       // stack-wise counting of tracks above pt threshold for jet trigger
@@ -1083,11 +909,11 @@ Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliVEvent* event, Bool
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliESDEvent* esd){
+Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
   // This function flags noisy TPC events which can happen during laser warm-up.
   Int_t trackCounter = 0;
-  for (Int_t i=0; i<esd->GetNumberOfTracks(); ++i) {
-    AliESDtrack *track = esd->GetTrack(i);
+  for (Int_t i=0; i<event->GetNumberOfTracks(); i++) {
+    AliVTrack *track = dynamic_cast<AliVTrack*>(event->GetTrack(i));
     if (!track) continue;
     if (track->GetTPCNcls() < 30) continue;
     if (TMath::Abs(track->Eta()) > 0.005) continue;
@@ -1105,23 +931,27 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliESDEvent* esd){
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliESDEvent* esd) {
+Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
   if (fMC) return kFALSE; // there are no dip events in MC
-  if (!esd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
+  
+  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
+    AliError("IsHVdipTPCEvent method implemented for ESDs only");
+    return kFALSE;
+  }
+  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
+
+  if (!aEsd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
   return kFALSE;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliESDEvent* esd){
+Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliVEvent* event){
   // Check whether the event is incomplete 
   // (due to DAQ-HLT issues, it could be only part of the event was saved)
   if (fMC) return kFALSE; // there are no incomplete events on MC
-  if ((esd->GetEventType() == 7) &&
-      (esd->GetDAQDetectorPattern() & (1<<4)) &&
-      !(esd->GetDAQAttributes() & (1<<7))) return kTRUE;
-  return kFALSE;
+  return const_cast<AliVEvent*>(event)->IsIncompleteDAQ(); 
 }
 
 
@@ -1201,48 +1031,47 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
 
 
 //-------------------------------------------------------------------------------------------------
-void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd){
-  // fills the histograms with the info from the ESD
+void AliTriggerAnalysis::FillHistograms(const AliVEvent* event){
+  fHistBitsSPD->Fill(SPDFiredChips(event, 0), SPDFiredChips(event, 1, kTRUE));
   
-  fHistBitsSPD->Fill(SPDFiredChips(aEsd, 0), SPDFiredChips(aEsd, 1, kTRUE));
+  ADTrigger(event, kASide, kFALSE, kTRUE);
+  ADTrigger(event, kCSide, kFALSE, kTRUE);
+  V0Trigger(event, kASide, kFALSE, kTRUE);
+  V0Trigger(event, kCSide, kFALSE, kTRUE);
+  T0Trigger(event, kFALSE, kTRUE);
+  ZDCTDCTrigger(event,kASide,kFALSE,kFALSE,kTRUE);
+  ZDCTimeTrigger(event,kTRUE);
+  IsSPDClusterVsTrackletBG(event, kTRUE);
   
-  ADTrigger(aEsd, kASide, kFALSE, kTRUE);
-  ADTrigger(aEsd, kCSide, kFALSE, kTRUE);
-  V0Trigger(aEsd, kASide, kFALSE, kTRUE);
-  V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
-  T0Trigger(aEsd, kFALSE, kTRUE);
-  ZDCTDCTrigger(aEsd,kASide,kFALSE,kFALSE,kTRUE);
-  ZDCTimeTrigger(aEsd,kTRUE);
-  IsSPDClusterVsTrackletBG(aEsd, kTRUE);
+//  TODO: Adjust for AOD
+//  AliESDZDC* zdcData = event->GetESDZDC();
+//  if (zdcData)  {
+//    UInt_t quality = zdcData->GetESDQuality();
+//    
+//    // from Nora's presentation, general first physics meeting 16.10.09
+//    static UInt_t zpc  = 0x20;
+//    static UInt_t znc  = 0x10;
+//    static UInt_t zem1 = 0x08;
+//    static UInt_t zem2 = 0x04;
+//    static UInt_t zpa  = 0x02;
+//    static UInt_t zna  = 0x01;
+//    
+//    fHistZDC->Fill(1, (quality & zna)  ? 1 : 0);
+//    fHistZDC->Fill(2, (quality & zpa)  ? 1 : 0);
+//    fHistZDC->Fill(3, (quality & zem2) ? 1 : 0);
+//    fHistZDC->Fill(4, (quality & zem1) ? 1 : 0);
+//    fHistZDC->Fill(5, (quality & znc)  ? 1 : 0);
+//    fHistZDC->Fill(6, (quality & zpc)  ? 1 : 0);
+//  }
+//  else {
+//    fHistZDC->Fill(-1);
+//    AliError("AliESDZDC not available");
+//  }
   
-  AliESDZDC* zdcData = aEsd->GetESDZDC();
-  if (zdcData)  {
-    UInt_t quality = zdcData->GetESDQuality();
-    
-    // from Nora's presentation, general first physics meeting 16.10.09
-    static UInt_t zpc  = 0x20;
-    static UInt_t znc  = 0x10;
-    static UInt_t zem1 = 0x08;
-    static UInt_t zem2 = 0x04;
-    static UInt_t zpa  = 0x02;
-    static UInt_t zna  = 0x01;
-    
-    fHistZDC->Fill(1, (quality & zna)  ? 1 : 0);
-    fHistZDC->Fill(2, (quality & zpa)  ? 1 : 0);
-    fHistZDC->Fill(3, (quality & zem2) ? 1 : 0);
-    fHistZDC->Fill(4, (quality & zem1) ? 1 : 0);
-    fHistZDC->Fill(5, (quality & znc)  ? 1 : 0);
-    fHistZDC->Fill(6, (quality & zpc)  ? 1 : 0);
-  }
-  else {
-    fHistZDC->Fill(-1);
-    AliError("AliESDZDC not available");
-  }
-  
-  if (fDoFMD) {
-    fHistFMDA->Fill(FMDHitCombinations(aEsd, kASide, kTRUE));
-    fHistFMDC->Fill(FMDHitCombinations(aEsd, kCSide, kTRUE));
-  }
+//  if (fDoFMD) {
+//    fHistFMDA->Fill(FMDHitCombinations(event, kASide, kTRUE));
+//    fHistFMDC->Fill(FMDHitCombinations(event, kCSide, kTRUE));
+//  }
 }
 
 
@@ -1272,12 +1101,12 @@ void AliTriggerAnalysis::SaveHistograms() const {
 
 
 //-------------------------------------------------------------------------------------------------
-void AliTriggerAnalysis::FillTriggerClasses(const AliESDEvent* aEsd){
+void AliTriggerAnalysis::FillTriggerClasses(const AliVEvent* event){
   // fills trigger classes map
-  TParameter<Long64_t>* count = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(aEsd->GetFiredTriggerClasses().Data()));
+  TParameter<Long64_t>* count = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(event->GetFiredTriggerClasses().Data()));
   if (!count) {
-    count = new TParameter<Long64_t>(aEsd->GetFiredTriggerClasses(), 0);
-    fTriggerClasses->Add(new TObjString(aEsd->GetFiredTriggerClasses().Data()), count);
+    count = new TParameter<Long64_t>(event->GetFiredTriggerClasses(), 0);
+    fTriggerClasses->Add(new TObjString(event->GetFiredTriggerClasses().Data()), count);
   }
   count->SetVal(count->GetVal() + 1);
 }

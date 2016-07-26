@@ -34,6 +34,7 @@ set(SRCS
   AliAnalysisTaskEmcal.cxx
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
+  AliEmcalIterableContainer.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx

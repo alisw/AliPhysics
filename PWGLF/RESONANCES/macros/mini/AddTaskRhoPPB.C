@@ -1,6 +1,6 @@
 /***************************************************************************
               fbellini@cern.ch - last modified on 28/11/2013
-//
+//            inayat.rasool.bhat@cern.ch   last modified on  07/03/2016 
 //Lauches Rho analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
 //
@@ -29,7 +29,7 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask * AddTaskRhoPPB
 (
- Bool_t      isMC = kFALSE,
+ Bool_t      isMC = kTRUE,
  Bool_t      isPP = kFALSE,
  TString     outNameSuffix = "tpc3s",
  Int_t       evtCutSetID = 0,
@@ -37,15 +37,15 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
  Int_t       customQualityCutsID = -1,
- AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPi1Candidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
- AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPi2Candidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
- Float_t     nsigmaPi1 = 3.0,
- Float_t     nsigmaPi2 = 3.0,
+ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
+ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,
+ Float_t     nsigmaPi = 3.0,
+ Float_t     nsigmaKa = 3.0,
  Bool_t      enableMonitor = kTRUE,
  Bool_t      IsMcTrueOnly = kFALSE,
  TString     monitorOpt = "NoSIGN",
- Bool_t      useMixLS = 0,
- Bool_t      checkReflex = 0,
+ // Bool_t      useMixLS = 0,
+ Bool_t      checkReflex = 1,
  AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt
 )
 {  
@@ -54,7 +54,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kMB;
+  UInt_t      triggerMask = AliVEvent::kINT7;
   Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
   Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
   Int_t       MinPlpContribSPD = 5; //default value if used
@@ -137,12 +137,12 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
   //
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AddAnalysisTaskRhoPPB", "No analysis manager to connect to.");
+      ::Error("AddAnalysisTaskTPCRho", "No analysis manager to connect to.");
       return NULL;
    } 
 
    // create the task and configure 
-   TString taskName = Form("Rho%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPi1Candidate,(Int_t)cutPi2Candidate );
+   TString taskName = Form("TPCRho%s%s_%i%i", (isPP? "pp" : "PBPB"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    //task->UseESDTriggerMask(triggerMask); //ESD
    task->SelectCollisionCandidates(triggerMask); //AOD
@@ -157,7 +157,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
-   ::Info("AddAnalysisTaskRhoPPB", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+   ::Info("AddAnalysisTaskTPCRho", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
    
    mgr->AddTask(task);
    
@@ -173,18 +173,18 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
    //set check for pileup in 2013
    AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
    cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA);
-   ::Info("AddAnalysisTaskRhoPPB", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
+   ::Info("AddAnalysisTaskTPCRho", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
    if (useMVPileUpSelection){
      cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
      cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
      cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-     ::Info("AddAnalysisTaskRhoPPB", Form("Multiple-vtx Pile-up rejection settings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
+     ::Info("AddAnalysisTaskTPCRho", Form("Multiple-vtx Pile-up rejection settings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
    } else {
      cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-     ::Info("AddAnalysisTaskRhoPPB", Form("SPD Pile-up rejection settings: MinPlpContribSPD = %i", MinPlpContribSPD));
+     ::Info("AddAnalysisTaskTPCRho", Form("SPD Pile-up rejection settings: MinPlpContribSPD = %i", MinPlpContribSPD));
    }
-   ::Info("AddAnalysisTaskRhoPPB", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
-   ::Info("AddAnalysisTaskRhoPPB", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
+   ::Info("AddAnalysisTaskTPCRho", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
+   ::Info("AddAnalysisTaskTPCRho", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -230,8 +230,9 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
+   // gROOT->LoadMacro("ConfigRhoPPb.C");
    gROOT->LoadMacro("${ALICE_PHYSICS}/PWGLF/RESONANCES/macros/mini/ConfigRhoPPb.C");
-   if (!ConfigRhoPPb(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPi1Candidate, cutPi2Candidate, nsigmaPi1, nsigmaPi2, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+   if (!ConfigRhoPPb(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(),/*  useMixLS, */isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //
@@ -239,7 +240,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddAnalysisTaskRhoPPB - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddAnalysisTaskTPCRho - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
 							   TList::Class(), 

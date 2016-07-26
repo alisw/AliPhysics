@@ -58,26 +58,26 @@ ClassImp(AliAnalysisTaskNOmegaLPK)
 
 //______________________________________________________________________________________________________
 AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK() :
-  AliAnalysisTaskSE(),
+	AliAnalysisTaskSE(),
 	fESDEvent(0x0),
 	fVEvent(0x0),
 	fESDtrackCutsNeg(0x0),
 	fESDtrackCuts(0x0),
-  fUseMCInfo(kFALSE),
-  fPIDResponse(0x0),
-  fIsEventSelected(kFALSE),
-  fMixedEvent(kFALSE),
-  fParametersTree(0x0),
-  fVariablesTree(0x0),
-  fParameters(),
-  fCandidateVariables(),
-  fVtx1(0x0),
-  fBzkG(0),
-  fCentrality(0),
+	fUseMCInfo(kFALSE),
+	fPIDResponse(0x0),
+	fIsEventSelected(kFALSE),
+	fMixedEvent(kFALSE),
+	fParametersTree(0x0),
+	fVariablesTree(0x0),
+	fParameters(),
+	fCandidateVariables(),
+	fVtx1(0x0),
+	fBzkG(0),
+	fCentrality(0),
 	fCountEvent(0),
 	fIsDCA(0),
 	fNAll(0),
-	fRecoTypeV0(1),// Reconstruction type of V0 (0:N-Omega, 1:H-dibaryon)
+	fRecoTypeV0(0),// Reconstruction type of V0 (0:N-Omega, 1:H-dibaryon)
 	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:LL, 2:(Lbar)(Lbar), 3:L(Lbar), 4:(Lbar)L)
 	fReqSigmaTPC(3.0),// TPC PIDcut sigma
 	fReqClustersTPC(80),// TPC number of clusters
@@ -85,53 +85,55 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK() :
 	fReqPseudoRap(0.9),// PseudoRapidity
 	fProtonPMax(999.),// Max momentum of proton
 	fPionPMax(1.5),//!!CHECK ALSO ESDtrackCuts!! Max momentum of pion
-	fKaonPMax(0.6),//!!CHECK ALSO ESDtrackCuts!! Max momentum of kaon
+	fKaonPMax(1.5),//0.6!!CHECK ALSO ESDtrackCuts!! Max momentum of kaon
+	fTrackPMin(0.0),//Min momentum of track
 	fFiducialVolMin1(2.0),// Min radius of the fiducial volume
 	fFiducialVolMax1(200.),// Max radius of the fiducial volume
-	fPosDCAToPVMin1(2.0),// Min length of impact parameter for the positive track
-	fNegDCAToPVMin1(2.0),// Min length of impact parameter for the negative track
+	fPosDCAToPVMin1(0.1),//2.0 Min length of impact parameter for the positive track
+	fNegDCAToPVMin1(0.1),//2.0 Min length of impact parameter for the negative track
 	fDCADaughterMax1(0.5),//1.0 Max DCA between the daughter tracks
 	fCPAMin1(-1.),// Min cosine of V0's pointing angle to PV
 	fDCAToPVMin1(0.0),// Min DCA V0 to PV
 	fCOADaughterMin1(0.0),// Min cosine between the daughter tracks
 	fDCAZDaughterMax1(2.0),// Max DCAZ V0 to PV
 	fWindowV01(0.0045),// Mass window cut for Lambda
+	fMassGammaMin1(0.05),// Min mass of gamma conversion
 	fFiducialVolMin2(2.0),// Min radius of the fiducial volume
 	fFiducialVolMax2(200.),// Max radius of the fiducial volume
-	fPosDCAToPVMin2(2.0),// Min length of impact parameter for the positive track
-	fNegDCAToPVMin2(2.0),// Min length of impact parameter for the negative track
+	fPosDCAToPVMin2(0.5),//2.0 Min length of impact parameter for the positive track
+	fNegDCAToPVMin2(0.5),//2.0 Min length of impact parameter for the negative track
 	fDCADaughterMax2(1.0),// Max DCA between the daughter tracks
 	fCPAMin2(-1.),// Min cosine of V0's pointing angle to PV
 	fDCAToPVMin2(0.0),// Min DCA V0 to PV
 	fCOADaughterMin2(0.0),// Min cosine between the daughter tracks
 	fDCAZDaughterMax2(2.0),// Max DCAZ V0 to PV
 	fWindowV02(0.0045),// Mass window cut for Lambda
-	fCPAV01toV02(0.0),// Min cosine of V02's pointing angle to V01
-	fCPADibaryonNO(-1.0)//0.99875 Min cosine of dibaryon's pointing angle
+	fCPAV01toV02(0.99),// Min cosine of V02's pointing angle to V01
+	fCPADibaryonNO(0.99)//0.99875 Min cosine of dibaryon's pointing angle
 {
 }
 //______________________________________________________________________________________________________
 AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK(const Char_t* name) :
-  AliAnalysisTaskSE(name),
+	AliAnalysisTaskSE(name),
 	fESDEvent(0x0),
 	fVEvent(0x0),
 	fESDtrackCutsNeg(0x0),
 	fESDtrackCuts(0x0),
-  fUseMCInfo(kFALSE),
-  fPIDResponse(0x0),
-  fIsEventSelected(kFALSE),
-  fMixedEvent(kFALSE),
-  fParametersTree(0x0),
-  fVariablesTree(0x0),
-  fParameters(),
-  fCandidateVariables(),
-  fVtx1(0x0),
-  fBzkG(0),
-  fCentrality(0),
+	fUseMCInfo(kFALSE),
+	fPIDResponse(0x0),
+	fIsEventSelected(kFALSE),
+	fMixedEvent(kFALSE),
+	fParametersTree(0x0),
+	fVariablesTree(0x0),
+	fParameters(),
+	fCandidateVariables(),
+	fVtx1(0x0),
+	fBzkG(0),
+	fCentrality(0),
 	fCountEvent(0),
 	fIsDCA(0),
 	fNAll(0),
-	fRecoTypeV0(1),// Reconstruction type of V0 (0:N-Omega, 1:H-dibaryon)
+	fRecoTypeV0(0),// Reconstruction type of V0 (0:N-Omega, 1:H-dibaryon)
 	fLikeSignDB(1),// Like-sign of DB (0:ALL, 1:LL, 2:(Lbar)(Lbar), 3:L(Lbar), 4:(Lbar)L)
 	fReqSigmaTPC(3.0),// TPC PIDcut sigma
 	fReqClustersTPC(80),// TPC number of clusters
@@ -139,46 +141,48 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK(const Char_t* name) :
 	fReqPseudoRap(0.9),// PseudoRapidity
 	fProtonPMax(999.),// Max momentum of proton
 	fPionPMax(1.5),//!!CHECK ALSO ESDtrackCuts!! Max momentum of pion
-	fKaonPMax(0.6),//!!CHECK ALSO ESDtrackCuts!! Max momentum of kaon
+	fKaonPMax(1.5),//!!CHECK ALSO ESDtrackCuts!! Max momentum of kaon
+	fTrackPMin(0.0),//Min momentum of track
 	fFiducialVolMin1(2.0),// Min radius of the fiducial volume
 	fFiducialVolMax1(200.),// Max radius of the fiducial volume
-	fPosDCAToPVMin1(2.0),// Min length of impact parameter for the positive track
-	fNegDCAToPVMin1(2.0),// Min length of impact parameter for the negative track
+	fPosDCAToPVMin1(0.1),//2.0 Min length of impact parameter for the positive track
+	fNegDCAToPVMin1(0.1),//2.0 Min length of impact parameter for the negative track
 	fDCADaughterMax1(0.5),//1.0 Max DCA between the daughter tracks
 	fCPAMin1(-1.),// Min cosine of V0's pointing angle to PV
 	fDCAToPVMin1(0.0),// Min DCA V0 to PV
 	fCOADaughterMin1(0.0),// Min cosine between the daughter tracks
 	fDCAZDaughterMax1(2.0),// Max DCAZ V0 to PV
 	fWindowV01(0.0045),// Mass window cut for Lambda
+	fMassGammaMin1(0.05),// Min mass of gamma conversion
 	fFiducialVolMin2(2.0),// Min radius of the fiducial volume
 	fFiducialVolMax2(200.),// Max radius of the fiducial volume
-	fPosDCAToPVMin2(2.0),// Min length of impact parameter for the positive track
-	fNegDCAToPVMin2(2.0),// Min length of impact parameter for the negative track
+	fPosDCAToPVMin2(0.5),//2.0 Min length of impact parameter for the positive track
+	fNegDCAToPVMin2(0.5),//2.0 Min length of impact parameter for the negative track
 	fDCADaughterMax2(1.0),// Max DCA between the daughter tracks
 	fCPAMin2(-1.),// Min cosine of V0's pointing angle to PV
 	fDCAToPVMin2(0.0),// Min DCA V0 to PV
 	fCOADaughterMin2(0.0),// Min cosine between the daughter tracks
 	fDCAZDaughterMax2(2.0),// Max DCAZ V0 to PV
 	fWindowV02(0.0045),// Mass window cut for Lambda
-	fCPAV01toV02(0.0),// Min cosine of V02's pointing angle to V01
-	fCPADibaryonNO(-1.0)//0.99875 Min cosine of dibaryon's pointing angle
+	fCPAV01toV02(0.99),// Min cosine of V02's pointing angle to V01
+	fCPADibaryonNO(0.99)//0.99875 Min cosine of dibaryon's pointing angle
 {
-  //
-  // Constructor. Initialization of Inputs and Outputs
-  //
-  Info("AliAnalysisTaskNOmegaLPK","Calling Constructor");
+	//
+	// Constructor. Initialization of Inputs and Outputs
+	//
+	Info("AliAnalysisTaskNOmegaLPK","Calling Constructor");
 
 	DefineOutput(1,TTree::Class());  //My private output
 	DefineOutput(2,TTree::Class());  //My private output
 
 	//ESD Track cuts for Negative track
-  fESDtrackCutsNeg = new AliESDtrackCuts("AliESDtrackCutsNeg","AliESDtrackCutsNeg");
-  fESDtrackCutsNeg->SetMinNClustersTPC(80);
-  fESDtrackCutsNeg->SetAcceptKinkDaughters(kFALSE);
-  fESDtrackCutsNeg->SetMaxChi2PerClusterTPC(5);
-  fESDtrackCutsNeg->SetRequireTPCRefit(kTRUE);
-  fESDtrackCutsNeg->SetEtaRange(-0.9,0.9);
-  fESDtrackCutsNeg->SetPtRange(0.2,1.5);
+	fESDtrackCutsNeg = new AliESDtrackCuts("AliESDtrackCutsNeg","AliESDtrackCutsNeg");
+	fESDtrackCutsNeg->SetMinNClustersTPC(80);
+	fESDtrackCutsNeg->SetAcceptKinkDaughters(kFALSE);
+	fESDtrackCutsNeg->SetMaxChi2PerClusterTPC(5);
+	fESDtrackCutsNeg->SetRequireTPCRefit(kTRUE);
+	fESDtrackCutsNeg->SetEtaRange(-0.9,0.9);
+	fESDtrackCutsNeg->SetPtRange(fTrackPMin,1.5);
 
 	//ESD Track cuts
 	fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
@@ -191,66 +195,66 @@ AliAnalysisTaskNOmegaLPK::AliAnalysisTaskNOmegaLPK(const Char_t* name) :
 }
 //______________________________________________________________________________________________________
 AliAnalysisTaskNOmegaLPK::~AliAnalysisTaskNOmegaLPK() {
-  //
-  // destructor
-  //
-  Info("~AliAnalysisTaskNOmegaLPK","Calling Destructor");
+	//
+	// destructor
+	//
+	Info("~AliAnalysisTaskNOmegaLPK","Calling Destructor");
   
 	if(fESDtrackCutsNeg) delete fESDtrackCutsNeg;
 //	if(fESDCutsV0) delete fESDCutsV0;
 	if (fESDtrackCuts) delete fESDtrackCuts;
   if (fPIDResponse) delete  fPIDResponse;
 
-  if (fParametersTree) {
-    delete fParameters;
-    fParametersTree = 0;
-  }
+	if (fParametersTree) {
+		delete fParameters;
+		fParametersTree = 0;
+	}
 
-  if (fVariablesTree) {
-    delete fVariablesTree;
-    fVariablesTree = 0;
-  }
+	if (fVariablesTree) {
+		delete fVariablesTree;
+		fVariablesTree = 0;
+	}
 
 }
 //______________________________________________________________________________________________________
 void AliAnalysisTaskNOmegaLPK::Init() {
-  //
-  // Initialization
-  //
+	//
+	// Initialization
+	//
 	//
 
-		//Copied from $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C
+	//Copied from $ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C
 
-  fIsEventSelected=kFALSE;
+	fIsEventSelected=kFALSE;
 
-  if (fDebug > 1) AliInfo("Init");
+	if (fDebug > 1) AliInfo("Init");
 
-  return;
+	return;
 }
 //______________________________________________________________________________________________________
 void AliAnalysisTaskNOmegaLPK::UserExec(Option_t *)
 {
-// user exec
-  //----------------------
-  // Check the PIDresponse
-  //----------------------
-  if(!fPIDResponse) {
+	// user exec
+	//----------------------
+	// Check the PIDresponse
+	//----------------------
+	if(!fPIDResponse) {
 		AliError("No pid response");
 		return;
 	}
 
-  //---------------------
-  // Check the InputEvent
-  //---------------------
+	//---------------------
+	// Check the InputEvent
+	//---------------------
 	fESDEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
 	if (!fESDEvent) {
- 	  AliError("NO EVENT FOUND!");
- 		return;
-  }
+		AliError("NO EVENT FOUND!");
+		return;
+	}
 
-  //------------------------------------------------
-  // First check if the event has proper vertex and B
-  //------------------------------------------------
+	//------------------------------------------------
+	// First check if the event has proper vertex and B
+	//------------------------------------------------
 	AliESDVertex *esdTrkPV = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
 	Double_t PosTrkPV[3];
 	esdTrkPV->GetXYZ(PosTrkPV);
@@ -260,76 +264,76 @@ void AliAnalysisTaskNOmegaLPK::UserExec(Option_t *)
 	esdPV->GetXYZ(posPV);
 
 	if (TMath::Abs(PosTrkPV[2])>10.) {
- 	  AliError("Z of primary vertex is not within +-10cm !");
+		AliError("Z of primary vertex is not within +-10cm !");
 		return;
 	}
 
 	Int_t runNumber = 0;
-  runNumber = (InputEvent())->GetRunNumber();
+	runNumber = (InputEvent())->GetRunNumber();
 
 	fBzkG = (Double_t)fESDEvent->GetMagneticField(); 
 	AliKFParticle::SetField(fBzkG);
-  if (TMath::Abs(fBzkG)<0.001) {
- 	  AliError("No magnet field !");
-    return;
-  }
+	if (TMath::Abs(fBzkG)<0.001) {
+		AliError("No magnet field !");
+		return;
+	}
 
 	//------------------------------------------------
-  // MC analysis setting
-  //------------------------------------------------
-  TClonesArray *mcArray = 0;
-//  AliAODMCHeader *mcHeader=0;
+	// MC analysis setting
+	//------------------------------------------------
+	TClonesArray *mcArray = 0;
+//	AliAODMCHeader *mcHeader=0;
 /*
-  if (fUseMCInfo) {
-    // MC array need for maching
-    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find Monte-Carlo in AOD");
-      return;
-    }
+	if (fUseMCInfo) {
+		// MC array need for maching
+		mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if (!mcArray) {
+			AliError("Could not find Monte-Carlo in AOD");
+			return;
+		}
 
-    // load MC header
-    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("AliAnalysisTaskNOmegaLPK::UserExec: MC header branch not found!\n");
-      return;
-    }
+		// load MC header
+		mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+		if (!mcHeader) {
+			AliError("AliAnalysisTaskNOmegaLPK::UserExec: MC header branch not found!\n");
+			return;
+		}
 
-    Double_t zMCVertex = mcHeader->GetVtxZ();
+		Double_t zMCVertex = mcHeader->GetVtxZ();
 	}
 */
 
 	//------------------------------------------------
-  // Main analysis done in this function
-  //------------------------------------------------
+	// Main analysis done in this function
+	//------------------------------------------------
 	MakeAnalysis(mcArray, fESDEvent);
 
 	PostData(1,fParametersTree);
 	PostData(2,fVariablesTree);
 
-  fIsEventSelected=kFALSE;
+	fIsEventSelected=kFALSE;
 
-  return;
+	return;
 }
 
 //______________________________________________________________________________________________________
 void AliAnalysisTaskNOmegaLPK::Terminate(Option_t*)
 {    
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
+	// The Terminate() function is the last function to be called during
+	// a query. It always runs on the client, it can be used to present
+	// the results graphically or save the results to file.
   
-  //AliInfo("Terminate","");
-  AliAnalysisTaskSE::Terminate();
+	//AliInfo("Terminate","");
+	AliAnalysisTaskSE::Terminate();
   
-  return;
+	return;
 }
 
 //______________________________________________________________________________________________________
 void AliAnalysisTaskNOmegaLPK::UserCreateOutputObjects() 
 { 
-  // output
-  AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
+	// output
+	AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
 
 	DefineTreeVariables();
 	PostData(1,fParametersTree);
@@ -337,18 +341,18 @@ void AliAnalysisTaskNOmegaLPK::UserCreateOutputObjects()
 
 	// I don't want to use the PID through the cut object, 
 	// but I will use the PID response directly!!!
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
+	AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+	AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+	fPIDResponse = inputHandler->GetPIDResponse();
 
-  return;
+	return;
 }
 //______________________________________________________________________________________________________
 void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *fESDEvent)
 {
 
   //------------------------------------------------------------------------------------------
-  // version NO1-0-9 (2016/03/01)
+  // version PO1-0-10 (2016/03/03)
   // Reconstruct dibaryon from two V0s by ESD class and myself
   // and calculate the invariant mass of dibaryon
   //------------------------------------------------------------------------------------------
@@ -374,7 +378,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	Double_t mProtonPDG   = TDatabasePDG::Instance()->GetParticle(2212)->Mass();//0.938272
 	Double_t mLambdaPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();//1.115680
 //  Double_t mXiPDG       = TDatabasePDG::Instance()->GetParticle(3312)->Mass();//1.321710
-//  Double_t mOmegaPDG    = TDatabasePDG::Instance()->GetParticle(3334)->Mass();//1.672450
+  Double_t mOmegaPDG    = TDatabasePDG::Instance()->GetParticle(3334)->Mass();//1.672450
 
   const Int_t nTracks = fESDEvent->GetNumberOfTracks();
   if (nTracks==0) {
@@ -428,6 +432,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 	fParameters[28] = fPionPMax;
 	fParameters[29] = fKaonPMax;
 	fParameters[30] = fLikeSignDB;
+	fParameters[31] = fTrackPMin;
 
 	fParametersTree->Fill();
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -496,23 +501,6 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		if( !fESDtrackCuts->AcceptTrack(trkPrel) ) continue;
 		if( !fESDtrackCuts->AcceptTrack(trkNrel) ) continue;
 
-/*
-		Double_t trkPrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kProton));
-		Double_t trkPrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkPrel, AliPID::kPion  ));
-		Double_t trkNrelTPCProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kProton));
-		Double_t trkNrelTPCPion   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trkNrel, AliPID::kPion  ));
-		if ( fLikeSignDB == 0 ) {//All
-			if ( !(   (trkPrelTPCProton<=fReqSigmaTPC && trkNrelTPCPion<=fReqSigmaTPC  )||
-			          (trkPrelTPCPion<=fReqSigmaTPC   && trkNrelTPCProton<=fReqSigmaTPC)   ) ) continue;
-		} else if ( fLikeSignDB==1 || fLikeSignDB==4 ) {//???-Lambda
-			if ( trkPrelTPCProton>fReqSigmaTPC ) continue;
-			if ( trkNrelTPCPion>fReqSigmaTPC   ) continue;
-		} else if ( fLikeSignDB==2 || fLikeSignDB==3 ) {//???-Lambdabar
-			if ( trkPrelTPCPion>fReqSigmaTPC   ) continue;
-			if ( trkNrelTPCProton>fReqSigmaTPC ) continue;
-		} 
-*/
-
 		Double_t v0pos[3], v0neg[3];
 		if ( trkPrel->GetSign()>0 && trkNrel->GetSign()<0 ) {
 			v0rel->GetPPxPyPz(v0pos[0],v0pos[1],v0pos[2]);
@@ -528,7 +516,6 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		invmassL = InvMassLambda(v0pos,v0neg,trkPrel,trkNrel,returnv0);
 		if ( TMath::Abs(invmassL-mLambdaPDG)>fWindowV02 ) continue;
 
-
 		if ( fLikeSignDB == 0 ) {//All
 			if ( returnv0[0]==0 ) continue;
 		} else if ( fLikeSignDB==1 || fLikeSignDB==4 ) {//???-Lambda
@@ -536,8 +523,6 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		} else if ( fLikeSignDB==2 || fLikeSignDB==3 ) {//???-Lambdabar
 			if ( returnv0[0]!=-1 ) continue;
 		} 
-
-
 
 		v0Array[nV0Survived++] = iV0;
 	}
@@ -589,8 +574,8 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
     if ( trkrelCharge<0 ) trkNArray[nTrkNSurvived++] = iTrk;
   }
 
-  printf("\n\n### nTracks:%d, pSurvive:%d, nSurvive:%d\n",nTracks,nTrkPSurvived,nTrkNSurvived);
-  printf("### nV0s:%d, nV0Survived:%d\n",nV0s,nV0Survived);
+//  printf("\n\n### nTracks:%d, pSurvive:%d, nSurvive:%d\n",nTracks,nTrkPSurvived,nTrkNSurvived);
+//  printf("### nV0s:%d, nV0Survived:%d\n",nV0s,nV0Survived);
 
 
 	//------------------------------------------------------------------------------------------
@@ -677,7 +662,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			Bool_t IsV01    = kFALSE;
 			Bool_t IsESDv01 = kFALSE;
 			IsV01    = GetSelfV0Momentum(1,pos1Trk,neg1Trk,ReturnV01,MomV01,PosV01,MomV01Pos,MomV01Neg);
-			IsESDv01 = GetEsdV0Momentum(1,pos1ID,neg1ID,ReturnV01ESD,MomV01ESD,PosV01ESD,MomV01PosESD,MomV01NegESD);
+//			IsESDv01 = GetEsdV0Momentum(1,pos1ID,neg1ID,ReturnV01ESD,MomV01ESD,PosV01ESD,MomV01PosESD,MomV01NegESD);
 
 			Double_t InvMassLambdaV01 = -9.;
 			Double_t L1ReturnV0[1];
@@ -701,7 +686,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			dcaZV01 = ReturnV01[3];
 			xyV01   = ReturnV01[4];
 			rV01    = ReturnV01[5];
-			ctauV01 = ReturnV01[5]*mLambdaPDG/GetPaFromPxPyPz(MomV01);
+			ctauV01 = ReturnV01[5]*(mOmegaPDG+mProtonPDG)/GetPaFromPxPyPz(MomV01);
 
 			Double_t antiLambda1 = 0.;
 			if ( L1ReturnV0[0]==1. ) {
@@ -715,6 +700,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			vE1.SetXYZM(MomV01Pos[0],MomV01Pos[1],MomV01Pos[2],mElectronPDG);
 			vE2.SetXYZM(MomV01Neg[0],MomV01Neg[1],MomV01Neg[2],mElectronPDG);
 			vCon = vE1 + vE2;
+			if (vCon.M()<fMassGammaMin1) continue;
 
 			// Armenteros-Podolanski (self)
 			Double_t AlphaV01 = 0.;
@@ -785,7 +771,7 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 			esdV02->GetNPxPyPz(MomV02Pos[0],MomV02Pos[1],MomV02Pos[2]);
 		}
 		Double_t dca2 = esdV02->GetDcaV0Daughters();
-		if ( dca2>1. ) continue;
+		if ( dca2>fDCADaughterMax2 ) continue;
 
 		Double_t xV01toV02  = PosV02[0] - PosV01[0];
 		Double_t yV01toV02  = PosV02[1] - PosV01[1];
@@ -804,11 +790,12 @@ void AliAnalysisTaskNOmegaLPK::MakeAnalysis(TClonesArray *mcArray,AliESDEvent *f
 		Double_t Mom2PosP   = GetPaFromPxPyPz(MomV02Pos);
 		Double_t Mom2NegP   = GetPaFromPxPyPz(MomV02Neg);
 		Double_t coa2PosNeg = (MomV02Pos[0]*MomV02Neg[0]+MomV02Pos[1]*MomV02Neg[1]+MomV02Pos[2]*MomV02Neg[2])/Mom2PosP/Mom2NegP;
+		if ( coa2PosNeg<fCOADaughterMin2 ) continue;
 
 		Double_t pDca = ptrk->GetD(PosV01[0],PosV01[1],fBzkG);
 		Double_t nDca = ntrk->GetD(PosV01[0],PosV01[1],fBzkG);
-		if ( pDca<2. ) continue;
-		if ( nDca<2. ) continue;
+		if ( TMath::Abs(pDca)<fPosDCAToPVMin2 ) continue;
+		if ( TMath::Abs(nDca)<fNegDCAToPVMin2 ) continue;
 
 		Double_t InvMassLambdaV02 = -9.;
 		Double_t L2ReturnV0[1];
@@ -907,7 +894,7 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
 
   const char* nameoutput1 = GetOutputSlot(1)->GetContainer()->GetName();
   fParametersTree = new TTree(nameoutput1,"Parameters tree");
-  Int_t nVar1 = 31;
+  Int_t nVar1 = 32;
   fParameters = new Float_t [nVar1];
   TString * fParameterNames = new TString[nVar1];
 
@@ -942,6 +929,7 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
 	fParameterNames[28]="PPionMax";// = fPionPMax;
 	fParameterNames[29]="PKaonMax";// = fKaonPMax;
 	fParameterNames[30]="LikeSsingDB";// = fLikeSignDB;
+	fParameterNames[31]="PTrackMin";// = fTrackPMin;
 
   for (Int_t ivar=0; ivar<nVar1; ivar++) {
     fParametersTree->Branch(fParameterNames[ivar].Data(),&fParameters[ivar],Form("%s/f",fParameterNames[ivar].Data()));
@@ -964,9 +952,9 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
 	fCandidateVariableNames[ 7]="Cpa1";// = cpaV01;
 	fCandidateVariableNames[ 8]="Coa1";// = coaV01;
 	fCandidateVariableNames[ 9]="DcaZ1";// = dcaZV01;
-	fCandidateVariableNames[10]="xy1";// = xyV01;
-	fCandidateVariableNames[11]="r1";// = rV01;
-	fCandidateVariableNames[12]="ctauL1";// = ctauV01;
+	fCandidateVariableNames[10]="xyDB";// = xyV01;
+	fCandidateVariableNames[11]="rDB";// = rV01;
+	fCandidateVariableNames[12]="ctauDB";// = ctauV01;
 	fCandidateVariableNames[13]="Centrality";// = fCentrality;
 	fCandidateVariableNames[14]="Cpa2";// = cpa2;
 	fCandidateVariableNames[15]="IMLV02";// = InvMassLambdaV02;
@@ -986,7 +974,7 @@ void AliAnalysisTaskNOmegaLPK::DefineTreeVariables() {
 	fCandidateVariableNames[29]="Cpa2PV";// = cpa2ESD;
 	fCandidateVariableNames[30]="Alpha";// = AlphaV01;
 	fCandidateVariableNames[31]="PtArm";// = PtArmV01;
-	fCandidateVariableNames[32]="IMG1";// = vCon;
+	fCandidateVariableNames[32]="IMG1";// = vCon.M;
 	fCandidateVariableNames[33]="IMDBL";// = vDBL.M();
 	fCandidateVariableNames[34]="IMDBOriL";// = vDBOriL.M();
 	fCandidateVariableNames[35]="ctau2L";// = ctau1to2L;
@@ -1355,7 +1343,7 @@ Bool_t AliAnalysisTaskNOmegaLPK::GetSelfV0Momentum(Int_t typeV0, AliESDtrack *po
 Double_t AliAnalysisTaskNOmegaLPK::InvMassLambda(Double_t MomPos[3], Double_t MomNeg[3], AliESDtrack *pos, AliESDtrack *neg, Double_t v0Return[1]) {
 
 	//------------------------------------------------------------------------------------------
-	// version 1.11 (2015/10/23)
+	// version 1.20 (2016/03/02)
 	// Input:  MomPos & MomNeg: Array of momentum (positive and negative tracks) (0:Px, 1:Py, 2:Pz)
 	//         pos & neg: AliESDtrack information for each track that has MomPos/MomNeg momentum
 	// Return: Invariant mass of Lambda (Proton(+/-) + Pion(-/+))
@@ -1382,13 +1370,11 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambda(Double_t MomPos[3], Double_t Mo
 	Double_t posTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kProton  ));
 	Double_t posTPCPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kPion    ));
 	if (posTPCProton>fReqSigmaTPC && posTPCPion>fReqSigmaTPC) return 0.;
-//	if (posTPCProton>fReqSigmaTPC) return 0.;
 
 	// For negative track
 	Double_t negTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kProton  ));
 	Double_t negTPCPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kPion    ));
 	if (negTPCProton>fReqSigmaTPC && negTPCPion>fReqSigmaTPC) return 0.;
-//	if (negTPCPion>fReqSigmaTPC) return 0.;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	// TOF sigma cut ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1401,7 +1387,6 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambda(Double_t MomPos[3], Double_t Mo
 		posTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(pos, AliPID::kProton  ));
 		posTOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(pos, AliPID::kPion    ));
 		if (posTOFProton>fReqSigmaTOF && posTOFPion>fReqSigmaTOF) return 0.;
-//		if (posTOFProton>fReqSigmaTOF) return 0.;
 		posTOFOn       = kTRUE;
 	}
 
@@ -1414,7 +1399,6 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambda(Double_t MomPos[3], Double_t Mo
 		negTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kProton  ));
 		negTOFPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kPion    ));
 		if (negTOFProton>fReqSigmaTOF && negTOFPion>fReqSigmaTOF) return 0.;
-//		if (negTOFPion>fReqSigmaTOF) return 0.;
 		negTOFOn       = kTRUE;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1503,7 +1487,7 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambda(Double_t MomPos[3], Double_t Mo
 Double_t AliAnalysisTaskNOmegaLPK::InvMassLambdaStar(Double_t MomPos[3], Double_t MomNeg[3], AliESDtrack *pos, AliESDtrack *neg, Double_t v0Return[1]) {
 
 	//------------------------------------------------------------------------------------------
-	// version 1.11 (2015/10/23)
+	// version 1.20 (2016/03/02)
 	// Input:  MomPos & MomNeg: Array of momentum (positive and negative tracks) (0:Px, 1:Py, 2:Pz)
 	//         pos & neg: AliESDtrack information for each track that has MomPos/MomNeg momentum
 	// Return: Invariant mass of Lambda(1520) (Proton(+/-) + Kaon(-/+))
@@ -1529,14 +1513,12 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambdaStar(Double_t MomPos[3], Double_
 	// For positive track
 	Double_t posTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kProton  ));
 	Double_t posTPCKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pos, AliPID::kKaon    ));
-//	if (posTPCProton>fReqSigmaTPC && posTPCKaon>fReqSigmaTPC) return 0.;
-	if (posTPCProton>fReqSigmaTPC) return 0.;
+	if (posTPCProton>fReqSigmaTPC && posTPCKaon>fReqSigmaTPC) return 0.;
 
 	// For negative track
 	Double_t negTPCProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kProton  ));
 	Double_t negTPCKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(neg, AliPID::kKaon    ));
-//	if (negTPCProton>fReqSigmaTPC && negTPCKaon>fReqSigmaTPC) return 0.;
-	if (negTPCKaon>fReqSigmaTPC) return 0.;
+	if (negTPCProton>fReqSigmaTPC && negTPCKaon>fReqSigmaTPC) return 0.;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	// TOF sigma cut ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1548,8 +1530,7 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambdaStar(Double_t MomPos[3], Double_
 	if(posStatus&AliESDtrack::kTOFpid) {
 		posTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(pos, AliPID::kProton  ));
 		posTOFKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(pos, AliPID::kKaon    ));
-//		if (posTOFProton>fReqSigmaTOF && posTOFKaon>fReqSigmaTOF) return 0.;
-		if (posTOFProton>fReqSigmaTOF) return 0.;
+		if (posTOFProton>fReqSigmaTOF && posTOFKaon>fReqSigmaTOF) return 0.;
 		posTOFOn       = kTRUE;
 	}
 
@@ -1561,8 +1542,7 @@ Double_t AliAnalysisTaskNOmegaLPK::InvMassLambdaStar(Double_t MomPos[3], Double_
 	if(negStatus&AliESDtrack::kTOFpid) {
 		negTOFProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kProton  ));
 		negTOFKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(neg, AliPID::kKaon    ));
-//		if (negTOFProton>fReqSigmaTOF && negTOFKaon>fReqSigmaTOF) return 0.;
-		if (negTOFKaon>fReqSigmaTOF) return 0.;
+		if (negTOFProton>fReqSigmaTOF && negTOFKaon>fReqSigmaTOF) return 0.;
 		negTOFOn       = kTRUE;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

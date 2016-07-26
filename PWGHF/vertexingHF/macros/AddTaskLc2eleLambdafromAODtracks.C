@@ -109,6 +109,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
   mgr->ConnectOutput(task,10,coutputLc10);
   AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleLambda_mcgenpairvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,11,coutputLc11);
+  AliAnalysisDataContainer *coutputLc12 = mgr->CreateContainer(Form("eleLambda_correlationvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  mgr->ConnectOutput(task,12,coutputLc12);
 
   return task;
 

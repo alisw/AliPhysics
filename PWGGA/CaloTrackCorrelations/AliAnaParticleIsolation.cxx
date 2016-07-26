@@ -954,12 +954,13 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
     GetReader()->GetVertex(vertex);
   
-  Float_t ptcone = 0;
-  
+  Float_t ptcone        = 0;
+  Float_t distToTrigger = 0;
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
     AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
     calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
+    
     ptcone = fMomentum.Pt();
     
     fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
@@ -1085,10 +1086,13 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   Float_t  ptTrig = aodParticle->Pt();
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
   
+  Float_t pTtrack       = 0;
+  Float_t distToTrigger = 0;
   for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++)
   {
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
-    Float_t pTtrack = track->Pt();
+    
+    pTtrack       = track->Pt();
     
     fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
     fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());
@@ -4970,7 +4974,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
-      if(primStack->Energy() == TMath::Abs(primStack->Pz()))  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
+          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
       
       //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
       //       primStack->GetName(), primStack->GetPdgCode());
@@ -4992,7 +4999,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
-      if(primAOD->E() == TMath::Abs(primAOD->Pz()))  continue ; //Protection against floating point exception
+      // Protection against floating point exception
+      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
       
       //photonY   = 0.5*TMath::Log((prim->Energy()+prim->Pz())/(prim->Energy()-prim->Pz())) ;
       

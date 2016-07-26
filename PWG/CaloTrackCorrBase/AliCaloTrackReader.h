@@ -113,6 +113,9 @@ public:
   enum detector { kEMCAL = AliFiducialCut::kEMCAL, kPHOS = AliFiducialCut::kPHOS,
                   kCTS   = AliFiducialCut::kCTS  , kDCAL = AliFiducialCut::kDCAL,
                   kDCALPHOS = AliFiducialCut::kDCALPHOS } ;
+  
+  /// Smearing function enum.
+  enum smearingFunction     { kNoSmearing, kSmearingLandau, kSmearingLandauShift           } ;
 
   // Minimum pt setters and getters
   
@@ -140,6 +143,9 @@ public:
   void             SetPHOSEMin  (Float_t  e)               { SetPHOSPtMin (e)              ; }
   void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
   void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
+  
+  void             SetSmearingFunction(Float_t smearfunct) {fSmearingFunction = smearfunct ; }
+  Float_t          GetSmearingFunction()             const {return fSmearingFunction       ; }
   
   // Track DCA cut
   
@@ -695,6 +701,7 @@ public:
   Float_t          fCTSPtMax;                      ///<  pT Threshold on charged particles.
   Float_t          fEMCALPtMax;                    ///<  pT Threshold on emcal clusters.
   Float_t          fPHOSPtMax;                     ///<  pT Threshold on phos clusters.
+  Float_t          fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05).
   Bool_t           fUseEMCALTimeCut;               ///<  Do time cut selection.
   Bool_t           fUseParamTimeCut;               ///<  Use simple or parametrized time cut.
   Bool_t           fUseTrackTimeCut;               ///<  Do time cut selection.

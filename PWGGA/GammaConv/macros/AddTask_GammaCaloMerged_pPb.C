@@ -1,17 +1,17 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                       *
- * Author: Friederike Bock, Daniel Mühlheim                     *
- * Version 1.0                                 *
- *                                       *
  *                                                                        *
- * Permission to use, copy, modify and distribute this software and its    *
- * documentation strictly for non-commercial purposes is hereby granted    *
- * without fee, provided that the above copyright notice appears in all    *
- * copies and that both the copyright notice and this permission notice    *
- * appear in the supporting documentation. The authors make no claims    *
- * about the suitability of this software for any purpose. It is      *
- * provided "as is" without express or implied warranty.               *
+ * Author: Friederike Bock, Daniel Mühlheim                               *
+ * Version 1.0                                                            *
+ *                                                                        *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 //***************************************************************************************
@@ -76,17 +76,17 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   Int_t isHeavyIon = 2;
   
   // ================== GetAnalysisManager ===============================
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisManager *mgr           = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error(Form("AddTask_GammaCaloMerged_pp_%i",trainConfig), "No analysis manager found.");
     return ;
   }
 
   // ================== GetInputEventHandler =============================
-  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-
-  Bool_t isMCForOtherSettings = 0;
-  if (isMC > 0) isMCForOtherSettings = 1;
+  AliVEventHandler *inputHandler    = mgr->GetInputEventHandler();
+  Bool_t isMCForOtherSettings       = 0;
+  if (isMC > 0) 
+    isMCForOtherSettings            = 1;
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -96,14 +96,15 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   Printf("here \n");
   
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton   = "00000008400100001500000000";
-  TString cutnumberEvent    = "80000003";
-  Bool_t doEtaShift         = kFALSE;
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  TString cutnumberPhoton           = "00000008400100001500000000";
+  TString cutnumberEvent            = "80000003";
+  Bool_t doEtaShift                 = kFALSE;
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+    AliV0ReaderV1 *fV0ReaderV1      = new AliV0ReaderV1(V0ReaderName.Data());
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -113,10 +114,11 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
     }
-    AliConvEventCuts *fEventCuts=NULL;
+    AliConvEventCuts *fEventCuts    = NULL;
     if(cutnumberEvent!=""){
-      fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
+      fEventCuts                    = new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
+      fEventCuts->SetV0ReaderName(V0ReaderName);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -124,11 +126,12 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
       }
     }
     // Set AnalysisCut Number
-    AliConversionPhotonCuts *fCuts=NULL;
+    AliConversionPhotonCuts *fCuts  = NULL;
     if(cutnumberPhoton!=""){
-      fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
+      fCuts                         = new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -150,10 +153,11 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
-  AliAnalysisTaskGammaCaloMerged *task=NULL;
-  task= new AliAnalysisTaskGammaCaloMerged(Form("GammaCaloMerged_%i",trainConfig));
+  AliAnalysisTaskGammaCaloMerged *task  = NULL;
+  task                                  = new AliAnalysisTaskGammaCaloMerged(Form("GammaCaloMerged_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
+  task->SetV0ReaderName(V0ReaderName);
 
   //create cut handler
   CutHandlerCaloMerged cuts;
@@ -165,40 +169,35 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   // ************************************* EMCAL cuts ****************************************************
   // LHC13b-d
   if (trainConfig == 1){ // NLM 1 no non linearity
-    cuts.AddCut("80000013","1111100050032200000","1111100050022110001","0163100000000000"); //
-    cuts.AddCut("80052013","1111100050032200000","1111100050022110001","0163100000000000"); //
-    cuts.AddCut("80085013","1111100050032200000","1111100050022110001","0163100000000000"); //
-    cuts.AddCut("80083013","1111100050032200000","1111100050022110001","0163100000000000"); //
+    cuts.AddCut("80000013","1111100050032200000","1111100050022110001","0163300000000000"); //
+    cuts.AddCut("80052013","1111100050032200000","1111100050022110001","0163300000000000"); //
+    cuts.AddCut("80085013","1111100050032200000","1111100050022110001","0163300000000000"); //
+    cuts.AddCut("80083013","1111100050032200000","1111100050022110001","0163300000000000"); //
   } else if (trainConfig == 2){ // NLM 2 no non linearity
-    cuts.AddCut("80000013","1111100050032200000","1111100050022110002","0163102200000000"); //
-    cuts.AddCut("80052013","1111100050032200000","1111100050022110002","0163102200000000"); //
-    cuts.AddCut("80085013","1111100050032200000","1111100050022110002","0163102200000000"); //
-    cuts.AddCut("80083013","1111100050032200000","1111100050022110002","0163102200000000"); //
+    cuts.AddCut("80000013","1111100050032200000","1111100050022110002","0163302200000000"); //
+    cuts.AddCut("80052013","1111100050032200000","1111100050022110002","0163302200000000"); //
+    cuts.AddCut("80085013","1111100050032200000","1111100050022110002","0163302200000000"); //
+    cuts.AddCut("80083013","1111100050032200000","1111100050022110002","0163302200000000"); //
   } else if (trainConfig == 3){ // NLM 1 conv non linearity
-    cuts.AddCut("80000013","1111141050032200000","1111141050022110001","0163100000000000"); //
-    cuts.AddCut("80052013","1111141050032200000","1111141050022110001","0163100000000000"); //
-    cuts.AddCut("80085013","1111141050032200000","1111141050022110001","0163100000000000"); //
-    cuts.AddCut("80083013","1111141050032200000","1111141050022110001","0163100000000000"); //
+    cuts.AddCut("80000013","1111141053032200000","1111141053022110001","0163301100000000"); //
+    cuts.AddCut("80052013","1111141053032200000","1111141053022110001","0163301100000000"); //
+    cuts.AddCut("80085013","1111141053032200000","1111141053022110001","0163301100000000"); //
+    cuts.AddCut("80083013","1111141053032200000","1111141053022110001","0163301100000000"); //
   } else if (trainConfig == 4){ // NLM 2 conv non linearity
-    cuts.AddCut("80000013","1111141050032200000","1111141050022110002","0163102200000000"); //
-    cuts.AddCut("80052013","1111141050032200000","1111141050022110002","0163102200000000"); //
-    cuts.AddCut("80085013","1111141050032200000","1111141050022110002","0163102200000000"); //
-    cuts.AddCut("80083013","1111141050032200000","1111141050022110002","0163102200000000"); //
+    cuts.AddCut("80000013","1111141053032200000","1111141053022110002","0163302200000000"); //
+    cuts.AddCut("80052013","1111141053032200000","1111141053022110002","0163302200000000"); //
+    cuts.AddCut("80085013","1111141053032200000","1111141053022110002","0163302200000000"); //
+    cuts.AddCut("80083013","1111141053032200000","1111141053022110002","0163302200000000"); //
   } else if (trainConfig == 5){ // NLM 1 conv non linearity
-    cuts.AddCut("80000013","1111141053032200000","1111141053022110001","0163101100000000"); //
-    cuts.AddCut("80052013","1111141053032200000","1111141053022110001","0163101100000000"); //
-    cuts.AddCut("80085013","1111141053032200000","1111141053022110001","0163101100000000"); //
-    cuts.AddCut("80083013","1111141053032200000","1111141053022110001","0163101100000000"); //
+    cuts.AddCut("80000013","1111141053032200000","1111141053022210001","0163301100000000"); //
+    cuts.AddCut("80052013","1111141053032200000","1111141053022210001","0163301100000000"); //
+    cuts.AddCut("80085013","1111141053032200000","1111141053022210001","0163301100000000"); //
+    cuts.AddCut("80083013","1111141053032200000","1111141053022210001","0163301100000000"); //
   } else if (trainConfig == 6){ // NLM 2 conv non linearity
-    cuts.AddCut("80000013","1111141053032200000","1111141053022110002","0163102200000000"); //
-    cuts.AddCut("80052013","1111141053032200000","1111141053022110002","0163102200000000"); //
-    cuts.AddCut("80085013","1111141053032200000","1111141053022110002","0163102200000000"); //
-    cuts.AddCut("80083013","1111141053032200000","1111141053022110002","0163102200000000"); //
-  } else if (trainConfig == 7){ // NLM 1 conv non linearity
-    cuts.AddCut("80000013","1111141053032200000","1111141053022110001","0163100000000000"); //
-    cuts.AddCut("80052013","1111141053032200000","1111141053022110001","0163100000000000"); //
-    cuts.AddCut("80085013","1111141053032200000","1111141053022110001","0163100000000000"); //
-    cuts.AddCut("80083013","1111141053032200000","1111141053022110001","0163100000000000"); //
+    cuts.AddCut("80000013","1111141053032200000","1111141053022210002","0163302200000000"); //
+    cuts.AddCut("80052013","1111141053032200000","1111141053022210002","0163302200000000"); //
+    cuts.AddCut("80085013","1111141053032200000","1111141053022210002","0163302200000000"); //
+    cuts.AddCut("80083013","1111141053032200000","1111141053022210002","0163302200000000"); //
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -211,8 +210,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     return;
   }
 
-  Int_t numberOfCuts = cuts.GetNCuts();
-
+  Int_t numberOfCuts            = cuts.GetNCuts();
   TList *EventCutList           = new TList();
   TList *ClusterCutList         = new TList();
   TList *ClusterMergedCutList   = new TList();
@@ -220,17 +218,17 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
 
   TList *HeaderList             = new TList();
   if (doWeightingPart==1) {
-    TObjString *Header1 = new TObjString("pi0_1");
+    TObjString *Header1         = new TObjString("pi0_1");
     HeaderList->Add(Header1);
   }
   if (doWeightingPart==2){
-    TObjString *Header3 = new TObjString("eta_2");
+    TObjString *Header3         = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
   if (doWeightingPart==3) {
-    TObjString *Header1 = new TObjString("pi0_1");
+    TObjString *Header1         = new TObjString("pi0_1");
     HeaderList->Add(Header1);
-    TObjString *Header3 = new TObjString("eta_2");
+    TObjString *Header3         = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
   
@@ -244,31 +242,33 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   AliConversionMesonCuts **analysisMesonCuts    = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-    analysisEventCuts[i] = new AliConvEventCuts();
+    analysisEventCuts[i]          = new AliConvEventCuts();
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
-    analysisClusterCuts[i] = new AliCaloPhotonCuts();
+    analysisClusterCuts[i]        = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
+    analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
-    analysisClusterMergedCuts[i] = new AliCaloPhotonCuts();
+    analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts();
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
+    analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
     ClusterMergedCutList->Add(analysisClusterMergedCuts[i]);
     analysisClusterMergedCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterMergedCuts[i]->SetFillCutHistograms("");
 
-    
-    analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i]          = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetEnableOpeningAngleCut(kFALSE);
     analysisMesonCuts[i]->SetIsMergedClusterCut(1);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());

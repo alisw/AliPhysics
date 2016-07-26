@@ -46,12 +46,14 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetAnalysisType                 (const char* analysisType                 ) { fAnalysisType                   = analysisType;                 }
         void SetCollidingSystem              (const char* collidingSystem              ) { fCollidingSystem                = collidingSystem;              }
         void SetSelectedTriggerClass         (AliVEvent::EOfflineTriggerTypes trigType ) { fkTriggerClass                  = trigType;                     }
-        void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete             ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
         void SetEventSelSDDstatus            (Bool_t eventselSDDstatus                 ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
+        void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete             ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
+        void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet      ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; }
+        void SetEventSelPileup               (Bool_t eventselPileup                    ) { fApplyEvSelPileup               = eventselPileup;               }
         void SetEventSelPhysicsSel           (Bool_t eventselPhysicsSel                ) { fApplyEvSelPhysicsSel           = eventselPhysicsSel;           }
         void SetEventSelNoTPConlyPrimVtx     (Bool_t eventselNoTPConlyPrimVtx          ) { fApplyEvSelNoTPConlyPrimVtx     = eventselNoTPConlyPrimVtx;     }
-        void SetEventSelPileup               (Bool_t eventselPileup                    ) { fApplyEvSelPileup               = eventselPileup;               }
-        void SetEventSelSPDclustervstracklet (Bool_t eventselSPDclustervstracklet      ) { fApplyEvSelSPDclustervstracklet = eventselSPDclustervstracklet; } 
+        void SetEventSelSPDvtxres            (Bool_t eventselSPDvtxres                 ) { fApplyEvSelSPDvtxres            = eventselSPDvtxres;            }
+        void SetEventSelVtxProximity         (Bool_t eventselVtxProximity              ) { fApplyEvSelVtxProximity         = eventselVtxProximity;         }
         void SetEventSelZprimVtxPos          (Bool_t eventselZprimVtxPos               ) { fApplyEvSelZprimVtxPos          = eventselZprimVtxPos;          }
         void SetRelaunchV0CascVertexers      (Bool_t rerunV0CascVertexers              ) { fRerunV0CascVertexers           = rerunV0CascVertexers;         }
         void SetWithSDDOn                    (Bool_t withsddOn                         ) { fwithSDD                        = withsddOn;                    }
@@ -59,12 +61,11 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetTrackQualityCutTPCrefit      (Bool_t trackqualityCutTPCrefit           ) { fTrackQualityCutTPCrefit        = trackqualityCutTPCrefit;      }
         void SetTrackQualityCutnTPCcls       (Bool_t trackqualityCutnTPCcls            ) { fTrackQualityCutnTPCcls         = trackqualityCutnTPCcls;       }
         void SetQualityCutMinnTPCcls         (Int_t  minnTPCcls                        ) { fMinnTPCcls                     = minnTPCcls;                   }
-        void SetVertexRange                  (Float_t vtxrangemin, Float_t vtxrangemax ) { fVtxRangeMax                    = vtxrangemax; 
+        void SetVertexRange                  (Float_t vtxrangemin, Float_t vtxrangemax ) { fVtxRangeMax                    = vtxrangemax;     
                                                                                            fVtxRangeMin                    = vtxrangemin;                  }
-        //void SetVertexRangeMax               (Float_t vtxrangemax                      ) { fVtxRangeMax                    = vtxrangemax;                  }
-        //void SetVertexRangeMin               (Float_t vtxrangemin                      ) { fVtxRangeMin                    = vtxrangemin;                  }
         void SetMinptCutOnDaughterTracks     (Float_t minptdaughtrks                   ) { fMinPtCutOnDaughterTracks       = minptdaughtrks;               }
         void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                     ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
+        void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors         ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
         //Setters for the V0 and cascade Vertexer Parameters
         void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
         void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -94,12 +95,14 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         AliVEvent::EOfflineTriggerTypes fkTriggerClass;    // Trigger selection: kMB, kINT7, etc as needed
         AliPIDResponse   *fPIDResponse;                    //! PID response object
 
+        Bool_t            fApplyEvSelSDDstatus;            
         Bool_t            fApplyEvSelDAQincomplete;        //       
-        Bool_t            fApplyEvSelSDDstatus;            //
+        Bool_t            fApplyEvSelSPDclustervstracklet; //
+        Bool_t            fApplyEvSelPileup;               //
         Bool_t            fApplyEvSelPhysicsSel;           //
         Bool_t            fApplyEvSelNoTPConlyPrimVtx;     //
-        Bool_t            fApplyEvSelPileup;               //
-        Bool_t            fApplyEvSelSPDclustervstracklet; //
+        Bool_t            fApplyEvSelSPDvtxres;            //
+        Bool_t            fApplyEvSelVtxProximity;         //
         Bool_t            fApplyEvSelZprimVtxPos;          //
         Bool_t            fRerunV0CascVertexers;           // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t            fwithSDD;                        // Boolean : kTRUE = select events with SDD reco
@@ -111,6 +114,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         Float_t           fVtxRangeMin;                    // to select events with |zvtx|>fVtxRangeMin cm
         Float_t           fMinPtCutOnDaughterTracks;       // minimum pt cut on daughter tracks
         Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
+        Int_t             fSPDPileUpminContributors;       //
        
         Double_t          fV0Sels[7];                      // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t          fCascSels[8];                    // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -118,21 +122,21 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         TList      *fListHistCascade;                   //! List of Cascade histograms
         // Cascades multiplicity plots
         TH1F *fHistCascadeMultiplicityBeforeAnySel;
-        TH1F *fHistCascadeMultiplicityAfterDAQincompleteEvRej;
         TH1F *fHistCascadeMultiplicityAfterSDDstatusSel;
+        TH1F *fHistCascadeMultiplicityAfterDAQincompleteEvRej;
+        TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
+        TH1F *fHistCascadeMultiplicityAfterPileupRej;
         TH1F *fHistCascadeMultiplicityAfterPhysicsSel;
         TH1F *fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel;
-        TH1F *fHistCascadeMultiplicityAfterPileupRej;
-        TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
         TH1F *fHistCascadeMultiplicityAfterZprimVtxPosSel;
         // Tracks multiplicity plots
         TH1F *fHistTrackMultiplicityBeforeAnySel;
-        TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
         TH1F *fHistTrackMultiplicityAfterSDDstatusSel;
+        TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
+        TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
+        TH1F *fHistTrackMultiplicityAfterPileupRej;
         TH1F *fHistTrackMultiplicityAfterPhysicsSel;
         TH1F *fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel;
-        TH1F *fHistTrackMultiplicityAfterPileupRej;
-        TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
         TH1F *fHistTrackMultiplicityAfterZprimVtxPosSel;
         // Vertex position plots (BestVertex)
         TH1F   *fHistPVx;                                             //! Best primary vertex X position distribution after all evnt selection
@@ -206,7 +210,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadepp(const AliAnalysisTaskCheckCascadepp&);            // not implemented
   AliAnalysisTaskCheckCascadepp& operator=(const AliAnalysisTaskCheckCascadepp&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadepp, 9);
+  ClassDef(AliAnalysisTaskCheckCascadepp, 11);
 };
 
 #endif

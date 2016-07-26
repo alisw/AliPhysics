@@ -53,6 +53,20 @@ main()
   calibObjectsFileName="CalibObjects.root"
   [[ -n ${ALIEN_JDL_TTL} ]] && maxTimeToLive=$(( ${ALIEN_JDL_TTL}-2000 ))
 
+  # ===| TPC default values |===================================================
+  # can be overwritten by config file, or JDL below
+  # JDL will overwrite the config file
+  #
+  # ---| gain calibration |-----------------------------------------------------
+  # default in CPass0 is full calibration,
+  # default in CPass1 is combined calibration + residual QA,
+  #    for number convention see AliTPCPreprocessorOffline::EGainCalibType
+  #
+  export TPC_CPass0_GainCalibType=1
+  export TPC_CPass1_GainCalibType=3
+
+
+  # ===| Parse config file |====================================================
   parseConfig "$@"
 
   #some sanity checks of option values
@@ -74,6 +88,18 @@ main()
 
   # take Data Quality Flags from JDL
   detectorBitsQualityFlag=${ALIEN_JDL_RUNQUALITY--1}
+
+  # ===| TPC JDL overwrites |===================================================
+  #
+  export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPass0_GainCalibType-$TPC_CPass0_GainCalibType}
+  export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPass1_GainCalibType-$TPC_CPass1_GainCalibType}
+
+  # take the path to the reference storage (used by TPC) from the JDL
+  export targetStorageResidual=${ALIEN_JDL_TARGETSTORAGERESIDUAL}
+
+  echo "TPC_CPass0_GainCalibType=${TPC_CPass0_GainCalibType}" | tee -a ocdb.log
+  echo "TPC_CPass1_GainCalibType=${TPC_CPass1_GainCalibType}" | tee -a ocdb.log
+  echo "targetStorageResidual=${targetStorageResidual}" | tee -a ocdb.log
 
   #################################################################
   echo "" | tee -a merge.log

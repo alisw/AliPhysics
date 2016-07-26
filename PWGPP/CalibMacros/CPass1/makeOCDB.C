@@ -90,6 +90,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   Bool_t T0_qf  = kTRUE;
   Bool_t SDD_qf = kTRUE;
   Bool_t SPD_qf = kTRUE;
+  Bool_t AD_qf  = kTRUE;
 
   /*
     // RS: commenting to sync with working version from alidaq
@@ -100,34 +101,70 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     T0_qf  = ((detectorBitsQualityFlag & AliDAQ::kT0_QF)  == AliDAQ::kT0_QF)?  kTRUE : kFALSE;
     SDD_qf = ((detectorBitsQualityFlag & AliDAQ::kSDD_QF) == AliDAQ::kSDD_QF)? kTRUE : kFALSE;
     SPD_qf = ((detectorBitsQualityFlag & AliDAQ::kSPD_QF) == AliDAQ::kSPD_QF)? kTRUE : kFALSE;
+    AD_qf = ((detectorBitsQualityFlag & AliDAQ::kAD_QF) == AliDAQ::kAD_QF)? kTRUE : kFALSE;
   }    
   */
 
-  Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf);
+  Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d, AD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf, (Int_t)AD_qf);
 
-  // TPC part
+  // ===========================================================================
+  // ===| TPC part |============================================================
+  //
   AliTPCPreprocessorOffline *procesTPC = 0;
   if (detStr.Contains("TPC") && TPC_qf){
-    TString targetStorageResidual="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-    if (gSystem->Getenv("targetStorageResidual"))  targetStorageResidual=gSystem->Getenv("targetStorageResidual");
-    AliCDBStorage *residualStorage = AliCDBManager::Instance()->GetStorage(targetStorageResidual.Data());
     Printf("\n******* Calibrating TPC *******");
-    Printf("TPC will calibrate only the Gain at CPass1, the rest will be updated in the residual storage %s", targetStorage->GetURI().Data());
+
+    // ===| set up residual storage |===========================================
+    TString targetStorageResidual="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+
+    // --- check for overwrites
+    const TString targetStorageResidualEnv(gSystem->Getenv("targetStorageResidual"));
+    if (!targetStorageResidualEnv.IsNull())  targetStorageResidual=targetStorageResidualEnv;
+    AliCDBStorage *residualStorage = AliCDBManager::Instance()->GetStorage(targetStorageResidual.Data());
+
+    // ===| set up TPC calibration object |=====================================
     procesTPC = new AliTPCPreprocessorOffline;
-    // switch on parameter validation
+
+    // ---| set up gain calibratin type |---------------------------------------
+    //
+    // default is Combined Calibration + Residual QA in CPass1
+    // will be overwritte by mergeMakeOCDB.byComponent.perStage.sh
+    // NOTE: This must be consistent to the settings in runCPass*.sh (runCalibTrain.C)
+    //
+    procesTPC->SetGainCalibrationType(AliTPCPreprocessorOffline::kResidualGainQA);
+
+    // --- check for overwrites from environment variable
+    //
+    const TString sGainTypeFromEnv(gSystem->Getenv("TPC_CPass1_GainCalibType"));
+    if (!sGainTypeFromEnv.IsNull()) {
+      if (!procesTPC->SetGainCalibrationType(sGainTypeFromEnv)) {
+        ::Fatal("makeOCDB","Could not set up gain calibration type from environment variable TPC_CPass1_GainCalibType: %s",sGainTypeFromEnv.Data());
+      }
+
+      ::Info("makeOCDB","Setting gain calibration type from environment variable TPC_CPass1_GainCalibType: %d", Int_t(procesTPC->GetGainCalibrationType()));
+    }
+
+    // ---| switch on parameter validation |------------------------------------
     procesTPC->SetTimeGainRange(0.5,5.0);
+
     procesTPC->SetMinTracksVdrift(100000);
     procesTPC->SwitchOnValidation();
-    // Make timegain calibration
-    if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber, runNumber, targetStorage);
-    // Make vdrift calibration
+
+    // ===| Run calibration |===================================================
+    //
+    // ---| Make time gain calibration |----------------------------------------
+    if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber, runNumber, targetStorage, residualStorage);
+
+    // ---| Make vdrift calibration |-------------------------------------------
     procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber, runNumber, residualStorage);
   }
   else {
     Printf("\n******* NOT Calibrating TPC: detStr = %s, TPC_qf = %d *******", detStr.Data(), (Int_t)TPC_qf);
   }
 
-  // TOF part
+  // ===========================================================================
+  // ===| TOF part |============================================================
+  //
   AliTOFAnalysisTaskCalibPass0 *procesTOF=0;
   if (detStr.Contains("TOF") && detStr.Contains("TPC") && TOF_qf){
     procesTOF = new AliTOFAnalysisTaskCalibPass0;
@@ -201,6 +238,16 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     Printf("\n******* NOT Calibrating MeanVertex: detStr = %s, SPD_qf = %d *******", detStr.Data(), (Int_t)SPD_qf);
   }
   */
+
+  AliAnalysisTaskADCalib *procesAD = NULL;
+  if (detStr.Contains("AD") && AD_qf) {
+    Printf("\n******* Calibrating AD *******");
+    procesAD = new AliAnalysisTaskADCalib;
+    procesAD->ProcessOutput("CalibObjects.root", targetStorage, runNumber);
+  }
+  else {
+    Printf("\n******* NOT Calibrating AD: detStr = %s, AD_qf = %d*******", detStr.Data(), (Int_t)AD_qf);
+  }
 
   //
   // Print calibration status into the stdout
@@ -407,6 +454,22 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   printf("Monalisa SDDtracks\t%d\n",sddTracks);
   if (pcstream) (*pcstream)<<"calibStatAll"<<"SDDtracks="<<sddTracks;
 
+  //
+  // 6. AD dump
+  //
+  Int_t adEvents=0;
+  TDirectory *adDir = (TDirectory*)fin->Get("ADCalib");
+  if (adDir) {
+    TList  *adList = (TList*) adDir->Get("ADCalibListHist");
+    if (adList) {
+      TH2* adHist = (TH2*) adList->At(0);
+      adEvents = TMath::Nint(adHist->GetEntries());
+      delete adList;
+    }
+  }
+  printf("Monalisa ADevents\t%d\n",adEvents);
+  if (pcstream) (*pcstream)<<"calibStatAll"<<"ADevents="<<adEvents;
+  
   //
   if (pcstream) (*pcstream)<<"calibStatAll"<<"\n";
   delete fin;

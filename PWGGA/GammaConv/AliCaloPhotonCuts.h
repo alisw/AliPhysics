@@ -1,8 +1,8 @@
 #ifndef ALICALOPHOTONCUTS_H
 #define ALICALOPHOTONCUTS_H
 
-// Class handling all kinds of selection cuts for Gamma Conversion analysis
-// Authors: Svein Lindal, Daniel Lohner                                    *
+// Class handling all kinds of selection cuts for Gamma Calo analysis
+// Authors: Friederike Bock, Daniel Muehlheim
 
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -96,6 +96,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k15h1,
       k15h2,
       k14j4,
+      k16c2,
+      k16c3a,
+      k16c3b,
+      k16c3c,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
@@ -175,7 +179,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
     void        SetExtendedQA(Int_t extendedQA)                 {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
-    void        FillHistogramsExtendedQA(AliVEvent *event);
+    void        FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
 
@@ -225,7 +229,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
     Float_t     CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
     Float_t     CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
-
+    Double_t    GetDistanceBetweenClusters(AliVCluster* cluster1, AliVCluster* cluster2);
+    void        SetLogBinningXTH2 (TH2* histoRebin);
       
   protected:
     TList      *fHistograms;
@@ -310,13 +315,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiBeforeAcc;            // eta-phi-distribution before acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterAcc;             // eta-phi-distribution of all after acceptance cuts
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
-  //     TH1F*     fHistDistanceToBadChannelBeforeAcc;  // distance to bad channel before acceptance cuts
-  //     TH1F*     fHistDistanceToBadChannelAfterAcc;   // distance to bad channel after acceptance cuts
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
-  //     TH2F*     fHistExoticCellBeforeQA;             // Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
-  //     TH2F*     fHistExoticCellAfterQA;              // Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
-  //     TH1F*     fHistNMatchedTracks;                 // number of matched tracks
     TH1F*     fHistEnergyOfClusterBeforeNL;             // enery per cluster before NonLinearity correction
     TH1F*     fHistEnergyOfClusterAfterNL;              // enery per cluster after NonLinearity correction
     TH1F*     fHistEnergyOfClusterBeforeQA;             // enery per cluster before acceptance cuts
@@ -348,7 +348,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistClusterIncludedCellsAfterQA;         // CellIDs in Cluster of accepted ones
     TH1F*     fHistClusterEnergyFracCellsBeforeQA;      // Energy fraction of CellIDs in Cluster
     TH1F*     fHistClusterEnergyFracCellsAfterQA;       // Energy fraction of CellIDs in Cluster of accepted ones
-    TH1F*     fHistClusterIncludedCellsTimingAfterQA;   // Timing of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterIncludedCellsTimingAfterQA;   // Timing of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterIncludedCellsTimingEnergyAfterQA;   // Timing vs Energy of CellIDs in Cluster of accepted ones
+    TH2F*     fHistClusterDistanceInTimeCut;            // distance of clusters: within cluster timing cut + within cluster timing cut
+    TH2F*     fHistClusterDistanceOutTimeCut;           // distance of clusters: within cluster timing cut + outside cluster timing cut
 
     //Track matching histograms
     TH1F*     fHistClusterRBeforeQA;                    // cluster position in R=SQRT(x^2+y^2) (before QA)
@@ -376,7 +379,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,21)
+    ClassDef(AliCaloPhotonCuts,24)
 };
 
 #endif

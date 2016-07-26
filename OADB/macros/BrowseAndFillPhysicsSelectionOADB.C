@@ -112,7 +112,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kINT8,"+CINT8-[B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !TPCHVdip");
-
+  
+  triggerCount++;
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kMUSPB,"+CINT7-B-NOPF-MUFAST","B",triggerCount);
+  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
+  oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C");
+  
   triggerCount++;
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kMuonSingleHighPt7,"+CMSH7-[B|S]-NOPF-[MUON|MUFAST|ALLNOTRD]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");

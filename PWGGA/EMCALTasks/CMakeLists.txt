@@ -53,6 +53,7 @@ set(SRCS
     Alipi0mixedDiClusterStatStruct.cxx
     AliStaObjects.cxx
     AliAnalysisTaskNeutralMesons.cxx
+    AliAnalysisTaskGammaHadron.cxx
    )
 
 # Headers from sources

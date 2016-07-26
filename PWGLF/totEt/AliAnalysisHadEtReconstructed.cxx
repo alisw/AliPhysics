@@ -275,6 +275,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	    corrNoID = fCorrections->GetNotIDConstCorrectionITSNoID();
 	  }
 	  if(fDataSet==20100||fDataSet==2015||fDataSet==2011){
+	    FillHisto2D("rawspectra",fCentBin,track->Pt(),1.0);
 	    FillHisto2D("fbkgdVsCentralityBin",fCentBin,corrBkgd,1.0);
 	    FillHisto2D("fnotIDVsCentralityBin",fCentBin,corrNotID,1.0);
 	    FillHisto2D("fpTcutVsCentralityBin",fCentBin,fCorrections->GetpTCutCorrectionTPC(),1.0);
@@ -988,6 +989,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
     CreateHisto2D("fpTcutVsCentralityBin","f_{pTcut} vs centrality bin","centrality bin","f_{pTcut}",fNCentBins,-1.5,maxCentbinRange,50,0.95,1.05);
     CreateHisto2D("fneutralVsCentralityBin","f_{neutral} vs centrality bin","centrality bin","f_{neutral}",fNCentBins,-1.5,maxCentbinRange,50,0.5,1.00);
     CreateHisto2D("ConstantCorrectionsVsCentralityBin","constant corrections vs centrality bin","centrality bin","constant corrections",fNCentBins,-1.5,maxCentbinRange,50,0.5,1.00);
+    CreateHisto2D("rawspectra","raw spectra vs centrality bin","centrality bin","p_{T}",fNCentBins,-1.5,maxCentbinRange,200,0,20);//
   }
 
   delete sTPC;

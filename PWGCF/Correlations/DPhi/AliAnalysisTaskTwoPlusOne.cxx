@@ -24,6 +24,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
+#include "AliGenHepMCEventHeader.h"
 
 #include "AliEventPoolManager.h"
 #include <iostream>
@@ -121,6 +122,8 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
 
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("eventStatCent", ";events;centrality", 4, -0.5, 3.5, 201, 0, 100.5));
+  fListOfHistos->Add(new TH2F("nCollCent_T1", ";N_{coll};centrality", 2500, 0, 2500, 201, 0, 100.5));
+  fListOfHistos->Add(new TH2F("nCollCent_all", ";N_{coll};centrality", 2500, 0, 2500, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
 
   PostData(1,fListOfHistos);
@@ -193,6 +196,8 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     fMcEvent = fMcHandler->MCEvent();
   }
 
+  Int_t n_coll = 0;
+
   if(fMode){
       AliGenEventHeader* eventHeader = GetFirstHeader();
       if (!eventHeader)
@@ -204,14 +209,21 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
 	return;
       }
       
-      AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
-      if (!collGeometry)
-      {
+      Double_t impact_parameter = -1.;
+
+      if (AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader)) {
+        n_coll = collGeometry->HardScatters();
+        impact_parameter = collGeometry->ImpactParameter();
+      }
+      else if (AliGenHepMCEventHeader *headerHepMC = dynamic_cast<AliGenHepMCEventHeader*> (eventHeader)) {
+        n_coll = headerHepMC->Ncoll_hard();
+        impact_parameter = headerHepMC->impact_parameter();
+      }
+      else {
 	eventHeader->Dump();
 	AliFatal("Asking for MC_b centrality, but event header has no collision geometry information");
       }
-      
-      double impact_parameter = collGeometry->ImpactParameter();
+
       //put centrality on the middle of the bin
       if(impact_parameter<1.60)
 	centrality = 0.5;
@@ -315,83 +327,98 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   fHistos->FillParticleDist(centrality, zVtx, tracksClone, 1.0, applyEfficiency);
 
   if(fRunCorrelations){
+      
+    ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
+    ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)1, centrality);
 
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+
+    //run 1+1 analysis even if the pool is not ready because these events are not used for 
+    Int_t found_1plus1_trigger = fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::k1plus1, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kTRUE, kFALSE, applyEfficiency);//get number of possible away side triggers in the trigger area and outside of it
+
+    ((TH1F*) fListOfHistos->FindObject("nCollCent_all"))->Fill(n_coll, centrality);
+    if(found_1plus1_trigger>0)
+      ((TH1F*) fListOfHistos->FindObject("nCollCent_T1"))->Fill(n_coll, centrality);
 
     if (fRunIfPoolReady && !pool)
 	AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
     if (!fRunIfPoolReady || pool->IsReady()){  
-
-    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kFALSE, applyEfficiency);//same event for near and away side
-
-    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::k1plus1, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kTRUE, kFALSE, applyEfficiency);//get number of possible away side triggers in the trigger area and outside of it
-    
-    if(!fUseBackgroundSameFromMixedComb)
-      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kTRUE, applyEfficiency);//background estimation for the same event
-
-    ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
-    ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)1, centrality);
-    
-    // event mixing
-
-    // 1. First get an event pool corresponding in mult (cent) and
-    //    zvertex to the current event. Once initialized, the pool
-    //    should contain nMix (reduced) events. This routine does not
-    //    pre-scan the chain. The first several events of every chain
-    //    will be skipped until the needed pools are filled to the
-    //    specified depth. If the pool categories are not too rare, this
-    //    should not be a problem. If they are rare, you could lose
-    //    statistics.
-    
-    // 2. Collect the whole pool's content of tracks into one TObjArray
-    //    (bgTracks), which is effectively a single background super-event.
-    
-    // 3. The reduced and bgTracks arrays must both be passed into
-    //    FillCorrelations(). Also nMix should be passed in, so a weight
-    //    of 1./nMix can be applied.
-    
-    if (!pool)
-      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
-    if (pool->IsReady()){    
-      ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-      Int_t nMix = pool->GetCurrentNEvents();
-
-      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
-      ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)2, centrality);
       
-      // Fill mixed-event histos here  
-      for (Int_t jMix=0; jMix<nMix; jMix++){
-	TObjArray* bgTracks = pool->GetEvent(jMix);
-	
-	//standard mixed event
-	if(!fThreeParticleMixed){
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
-	}
-	
-	//1plus1 mixed event
-	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / (2*nMix), kTRUE, kFALSE, applyEfficiency);
-	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / (2*nMix), kTRUE, kFALSE, applyEfficiency);
-	
-	//mixed combinatorics
-	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
-	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kFALSE, applyEfficiency);
-	
-	//background same from mixed comb
-	if(fUseBackgroundSameFromMixedComb){
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / (2*nMix), kFALSE, kTRUE, applyEfficiency);
-	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / (2*nMix), kFALSE, kTRUE, applyEfficiency);
-	}
+      if(found_1plus1_trigger>0){//for events without a trigger 1 particle no Same event or Background Same event can be found
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kFALSE, applyEfficiency);//same event for near and away side
+      
+	if(!fUseBackgroundSameFromMixedComb)
+	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kFALSE, kTRUE, applyEfficiency);//background estimation for the same event
+      }
+      
+      // event mixing
+      
+      // 1. First get an event pool corresponding in mult (cent) and
+      //    zvertex to the current event. Once initialized, the pool
+      //    should contain nMix (reduced) events. This routine does not
+      //    pre-scan the chain. The first several events of every chain
+      //    will be skipped until the needed pools are filled to the
+      //    specified depth. If the pool categories are not too rare, this
+      //    should not be a problem. If they are rare, you could lose
+      //    statistics.
+      
+      // 2. Collect the whole pool's content of tracks into one TObjArray
+      //    (bgTracks), which is effectively a single background super-event.
+      
+      // 3. The reduced and bgTracks arrays must both be passed into
+      //    FillCorrelations(). Also nMix should be passed in, so a weight
+      //    of 1./nMix can be applied.
 
+      if (!pool)
+	AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
+      if (pool->IsReady() && !(fMixOnlyBiasedEvents && found_1plus1_trigger==0)){
+	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+	Int_t nMix = pool->GetCurrentNEvents();
+	
+	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+	((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)2, centrality);
+	
+	// Fill mixed-event histos here  
+	for (Int_t jMix=0; jMix<nMix; jMix++){
+	  TObjArray* bgTracks = pool->GetEvent(jMix);
+	  Int_t mixScale = 2*nMix;
+	  if(fMixOnlyBiasedEvents)
+	    mixScale = nMix;
+
+	  //standard mixed event
+	  if(!fThreeParticleMixed){
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
+	    if(!fMixOnlyBiasedEvents)
+	      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
+	  }
+	  
+	  //1plus1 mixed event
+	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / mixScale, kTRUE, kFALSE, applyEfficiency);
+	  if(!fMixOnlyBiasedEvents)
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixed1plus1, bgTracks, bgTracks, tracksClone, tracksClone, 1.0 / mixScale, kTRUE, kFALSE, applyEfficiency);
+	  
+	  //mixed combinatorics
+	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
+	  if(!fMixOnlyBiasedEvents)
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / mixScale, kFALSE, kFALSE, applyEfficiency);
+	  
+	  //background same from mixed comb
+	  if(fUseBackgroundSameFromMixedComb){
+	    fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / mixScale, kFALSE, kTRUE, applyEfficiency);
+	    if(!fMixOnlyBiasedEvents)
+	      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kBackgroundSameNS, bgTracks, tracksClone, bgTracks, tracksClone, 1.0 / mixScale, kFALSE, kTRUE, applyEfficiency);
+	  }
+	  
 	  //mixed event for background Same
 	  fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedBackgroundSameNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / nMix, kFALSE, kTRUE, applyEfficiency);
-      }
+	}
         
     
-    }
+      }
     }
     // ownership is with the pool now
-    pool->UpdatePool(tracksClone);
+    if(!fMixOnlyBiasedEvents||found_1plus1_trigger>0)
+      pool->UpdatePool(tracksClone);
   }
 }
 

@@ -11,6 +11,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRefS
   TString outfile(mgr->GetCommonFileName());
   outfile += ":ClusterQA_" + TString(suffix);
   TString containername = "ClusterResults_" + TString(suffix);
+  printf("Outfile: %s, container: %s\n", outfile.Data(), containername.Data());
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(containername.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));

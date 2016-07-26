@@ -34,6 +34,7 @@
 #pragma link C++ class AliAnalysisTaskResolution+;
 #pragma link C++ class AliAnalysisTaskGammaCaloDalitzV1+;
 #pragma link C++ class AliAnalysisTaskGammaPureMC+;
+#pragma link C++ class AliAnalysisTaskGammaCocktailMC+;
 
 #pragma link C++ class AliAnaConvIsolation+;
 #pragma link C++ class AliAnaConvCorrBase+;

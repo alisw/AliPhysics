@@ -17,7 +17,7 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   // Get the pointer to the existing analysis manager via the static access method.
   TString centralityName("");
 
-  centralityName+=Form("%.0f-%.0f_%.0f",centrMin,centrMax);
+  centralityName+=Form("%.0f-%.0f",centrMin,centrMax);
   TString outputFileName(fileNameBase);
   outputFileName.Append(".root");
   
@@ -42,7 +42,7 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   //===========================================================================
 
 
-  AliAnalysisTaskEffContPIDBF *taskEffContPIDBF = new AliAnalysisTaskEffContPIDBF("TaskEffContPIDBF");
+  AliAnalysisTaskEffContPIDBF *taskEffContPIDBF = new AliAnalysisTaskEffContPIDBF(Form("TaskEffContPIDBF%.0f-%.0f_Bit%d_%s%s",centrMin,centrMax,AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()));
 
   // centrality
   if(centralityEstimator) {
@@ -64,7 +64,7 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   taskEffContPIDBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
   taskEffContPIDBF->SetPtRange(0.2, 20.0, 100);  //acceptance cuts //5.0,49
   taskEffContPIDBF->SetNSigmaCut(nsigmapid); // NSigma Cut;
-  taskEffContPIDBF->SetPIDType(pidType); // KNSigmaTPCTOF == 1, KNSigmaTPC==0, KNSigmaTOF == 2
+  taskEffContPIDBF->SetPIDType(pidType); // KNSigmaTPCTOF == 1, KNSigmaTPC==0, KNSigmaTOF == 2 : Here i used 1 i.e for TPC+TOF
   
 
 

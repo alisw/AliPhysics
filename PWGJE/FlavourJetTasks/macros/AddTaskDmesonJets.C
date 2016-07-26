@@ -90,11 +90,9 @@ AliAnalysisTaskDmesonJets* AddTaskDmesonJets(
 
   AliAnalysisTaskDmesonJets* jetTask = new AliAnalysisTaskDmesonJets(name);
   jetTask->SetVzRange(-10,10);
-  jetTask->SetNeedEmcalGeom(kFALSE);
 
   if (!trackName.IsNull()) {
     AliHFTrackContainer* trackCont = new AliHFTrackContainer(trackName);
-    trackCont->SetFilterHybridTracks(kTRUE);
     jetTask->AdoptParticleContainer(trackCont);
   }
 

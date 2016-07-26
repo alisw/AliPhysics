@@ -1,10 +1,3 @@
-/**
- * \file AliEmcalTrackSelectionAOD.h
- * \brief Implement virtual track selection for AOD analysis
- *
- * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \date Jul 24, 2015
- */
 #ifndef ALIEMCALTRACKSELECTIONAOD_H_
 #define ALIEMCALTRACKSELECTIONAOD_H_
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
@@ -20,6 +13,8 @@ class AliVTrack;
  * \class AliEmcalTrackSelectionAOD
  * \brief Implement virtual track selection for AOD analysis
  * \ingroup EMCALCOREFW
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \date Jul 24, 2015
  *
  * Implementation of track selection in case the analysis runs on AODs
  * For the moment it uses the AliESDtrackCuts and converts AOD tracks to

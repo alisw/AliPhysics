@@ -249,7 +249,8 @@ public:
   AliJTH1D fhIphiAssocFromFile  ;//FK//mix2
   AliJTH1D fhDphiAssocMixFromFile  ;//FK//mix2
   
-  TH1D *fhDEtaNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // comment me
+  TH1D *fhDEtaNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // mixed event near side delta eta distribution
+  TH1D *fhDEta3DNearMixFromFile[kMaxNoCentrBin][kPtDim][kPtDim]; // mixed event 3D near side delta eta distribution
   
   //===================================================
   // Event/Track histograms

@@ -47,6 +47,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   void SetCombinedPIDThreshold(Double_t a){fCombinedPIDThreshold=a;}
   Double_t GetCombinedPIDThreshold(){return fCombinedPIDThreshold;}
 
+  void SetUseV0Topology(Int_t a) { fUseV0Topology=a; }
+  Int_t GetUseV0Topology() { return fUseV0Topology; }
 
   Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *primvert);
   Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *primvert);
@@ -155,6 +157,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t dEtaSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t dPhiSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, AliAODTrack *trackb, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en, Double_t &dPhiS_eb, Double_t &dEtaS_eb);
+  Double_t DeltaPhi(AliAODcascade *casc, AliAODTrack *trk);
+  Double_t DeltaEta(AliAODcascade *casc, AliAODTrack *trk);
 
  protected:
 	
@@ -166,6 +170,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   AliAODPidHF *fPidObjCascPi;         /// PID object for cascade-pion
   AliAODPidHF *fPidObjCascPr;         /// PID object for cascade-proton
 //  Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
+  Int_t   fUseV0Topology;          /// 0: Cowboy+Sailor 1: Cowboy 2:Sailor
   Double_t fBzkG; ///B field
   Double_t fPrimVert[3];///Primary vertex
   
@@ -218,7 +223,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	Double_t fConversionMassMax; /// Conversion mass
   
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,7);
+  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,8);
   /// \endcond
 };
 

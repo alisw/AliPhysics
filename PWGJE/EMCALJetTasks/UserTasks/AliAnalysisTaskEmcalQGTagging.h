@@ -20,13 +20,14 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
  public:
   
   enum JetShapeType {
-    kTrue = 0,   // generated jets only 
+    kMCTrue = 0,   // generated jets only
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
     kDetEmb = 3,  //detector embedded jets
-    kDetEmbPart=4,
+    kDetEmbPart = 4,
     kPythiaDef = 5,
-    kDetEmbPartPythia=6
+    kDetEmbPartPythia=6,
+    kGenOnTheFly = 7
   };
   enum JetShapeSub {
     kNoSub = 0, 
@@ -58,6 +59,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
+  void SetSelectShapes(Int_t c)                                {fSelectedShapes = c;}
   void SetPtTriggerSelections(Float_t minpT, Float_t maxpT) { fminpTTrig = minpT; fmaxpTTrig = maxpT; }
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
@@ -99,7 +101,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                            *fShapesVar;                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
-
+  Int_t                                 fSelectedShapes;                //chose set of shapes 
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
@@ -132,7 +134,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalQGTagging(const AliAnalysisTaskEmcalQGTagging&);            // not implemented
   AliAnalysisTaskEmcalQGTagging &operator=(const AliAnalysisTaskEmcalQGTagging&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalQGTagging, 5)
+  ClassDef(AliAnalysisTaskEmcalQGTagging, 6)
 };
 #endif
 

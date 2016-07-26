@@ -10,6 +10,7 @@
 #pragma link C++ class AliFemtoEventCutCentrality+;
 #pragma link C++ class AliFemtoKKTrackCut;
 #pragma link C++ class AliFemtoKpmTrackCut;
+#pragma link C++ class AliFemtoKpm45TrackCut;
 #pragma link C++ class AliFemtoKtBinnedCorrFunc+;
 #pragma link C++ class AliFemtoMJTrackCut;
 #pragma link C++ class AliFemtoPairCutRadialDistanceKK;

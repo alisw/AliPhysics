@@ -123,10 +123,12 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Float_t fMultPercV0Aeq;     //  tree var: V0Aeq multiplicity percentile from AliMultSelection
   Float_t fMultPercV0Ceq;     //  tree var: V0Ceq multiplicity percentile from AliMultSelection
   Float_t fMultPercV0Meq;     //  tree var: V0Meq multiplicity percentile from AliMultSelection
+  Float_t fMultPercTKL;       //  tree var: TKL multiplicity percentile from AliMultSelection
   Float_t fMultPercV0S;       //  tree var: V0S multiplicity percentile from AliPPVsMultUtils
   Float_t fMultMeanV0A;       //  tree var: V0A mean multiplicity percentile from AliMultSelection
   Float_t fMultMeanV0C;       //  tree var: V0C mean multiplicity percentile from AliMultSelection
   Float_t fMultMeanV0M;       //  tree var: V0M mean multiplicity percentile from AliMultSelection
+  Float_t fMultMeanTKL;       //  tree var: TKL mean multiplicity percentile from AliMultSelection
   Int_t fIsEventSel;          //  tree var: is event selected by AliMultSelection class
   Int_t fNchTPC;              //  tree var: Nch in TPC for |eta|<1 and pT>0.2
   Int_t fNchTPCmc;            //  tree var: Nch in TPC for |eta|<1 and pT>0.2 - generated MC
@@ -162,7 +164,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   TClonesArray* fDecayArray;
   TPythia6Decayer* fDecayer;
 
-  ClassDef(AliAnalysisTaskCFTree,6);
+  ClassDef(AliAnalysisTaskCFTree,7);
 };
 #endif
 

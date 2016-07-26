@@ -1,13 +1,3 @@
-/**
- * \file AliEmcalTrackSelectionESD.h
- * \brief Declaration of class AliEmcalTrackSelectionESD
- *
- * In this header file the class AliEmcalTrackSelectionESD, which implements
- * the virtual track selection for ESD tracks, is declared
- *
- * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \date Jul 24, 2015
- */
 #ifndef ALIEMCALTASKTRACKSELECTIONESD_H_
 #define ALIEMCALTASKTRACKSELECTIONESD_H_
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
@@ -22,6 +12,8 @@ class AliVTrack;
  * \class AliEmcalTrackSelectionESD
  * \brief Implementation of virtual track selection for ESDs
  * \ingroup EMCALCOREFW
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \date Jul 24, 2015
  *
  * Implementation of the track selection for the analysis on ESDs using
  * AliESDtrackCuts as underlying structure

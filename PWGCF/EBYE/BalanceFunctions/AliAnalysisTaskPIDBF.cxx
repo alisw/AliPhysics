@@ -48,8 +48,10 @@
 
 
 
-// Analysis task for the BF vs Psi code
-// Authors: Panos.Christakoglou@nikhef.nl
+// Analysis task for the PID BF code:
+// Base Class : AliBalancePsi.cxx
+// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch
+//[Special thanks to Michael Weber(m.weber@cern.ch) and Panos Christakoglou(panos.christakoglou@cern.ch)] 
 
 using std::cout;
 using std::endl;
@@ -135,6 +137,8 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fPIDCombined(0x0),
   fParticleOfInterest(kPion),
   fParticleType_(kPion_),
+  fHistdEdxTPC(0),
+  fHistBetaTOF(0),
   fPidDetectorConfig(kTPCTOF),
   fUsePID(kFALSE),
   fUsePIDnSigma(kTRUE),
@@ -282,6 +286,7 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
     }
   }
 
+ TString gAnalysisLevel = fBalance->GetAnalysisLevel();
   //QA list
   fList = new TList();
   fList->SetName("listQA");
@@ -361,36 +366,74 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
   fHistMixTracks = new TH2F("fHistMixTracks","Number of mixed tracks;Centrality percentile;N_{mix,trks}",101, 0, 101, 200, 0, fMixingTracks * 1.5);
   fList->Add(fHistMixTracks);
 
-if(fUsePID){
 
+   if(gAnalysisLevel == "AOD" || gAnalysisLevel == "MCAODrec") {
+
+   if(fUsePID){
   switch(fParticleType_){
   case kPion_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Pion particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Pion Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Pion After Cut ",200,0.0,200);
+  fList->Add(HistNSigmaBeforeCut);
+  fList->Add(HistNSigmaAfterCut);
+  fList->Add(HistEtaTest); 		 	 
   break;
 
   case kKaon_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Kaon particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Kaon Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Kaon After Cut ",200,0.0,200);
+  fList->Add(HistNSigmaBeforeCut);
+  fList->Add(HistNSigmaAfterCut);
+  fList->Add(HistEtaTest); 		 	 
   break;
 
   case kProton_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Proton particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Proton Before Cut ",200,0.0,200);
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Proton After Cut ",200,0.0,200);
-  break;
-  }
-}
-
-else {
-  HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of All Charged particles ",40,-1.6,1.6);
-} // end of switch command
-
-  fList->Add(HistEtaTest); 		 	 
   fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistNSigmaAfterCut);
+  fList->Add(HistEtaTest); 		 	 
+  break;
+  } // Switch end
+ } // fUsePID End
+
+  else {
+  HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of All Charged particles ",40,-1.6,1.6);
+  fList->Add(HistEtaTest);
+}
+
+} //Analysis Level AOD end
+
+ else if(gAnalysisLevel == "MCAOD"){
+     if(fUsePID){
+     switch(fParticleType_){
+     case kPion_:
+     HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC Pion particles ",40,-1.6,1.6);
+     fList->Add(HistEtaTest);
+     break;  
+
+     case kKaon_:
+     HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC Kaon particles ",40,-1.6,1.6);
+     fList->Add(HistEtaTest);
+     break;
+
+     case kProton_:
+     HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC Proton particles ",40,-1.6,1.6);
+     fList->Add(HistEtaTest);
+     break;
+    }
+ }
+
+else {
+  HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of MC All Charged particles ",40,-1.6,1.6);
+  fList->Add(HistEtaTest);
+}
+ 
+}
+
   //TPC vs VZERO multiplicity
   fHistTPCvsVZEROMultiplicity = new TH2F("fHistTPCvsVZEROMultiplicity","VZERO vs TPC multiplicity",10001,-0.5,10000.5,4001,-0.5,4000.5);
   if(fMultiplicityEstimator == "V0A") 
@@ -591,6 +634,10 @@ else {
   if(fUsePID) {
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
+    fHistdEdxTPC = new TH2F("fHistdEdxTPC", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,fPtMax,500, 0., 500.);
+    fHistListPIDQA->Add(fHistdEdxTPC);
+    fHistBetaTOF = new TH2F(Form("fHistBetaTOF"), ";p_{T} (GeV/c);v/c",200, 0.0, fPtMax, 500, 0.1, 1.1);
+    fHistListPIDQA->Add(fHistBetaTOF);
 
     fHistdEdxVsPTPCbeforePID = new TH2D ("dEdxVsPTPCbefore","dEdxVsPTPCbefore", 1000, -10.0, 10.0, 1000, 0, 1000); 
     fHistListPIDQA->Add(fHistdEdxVsPTPCbeforePID);
@@ -725,7 +772,7 @@ void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename,
     //Printf("iCent %d:",iCent);    
     TString histoName = "fHistCorrectionPlus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionPlus[iCent]= dynamic_cast<TH3F *>(f->Get(histoName.Data()));
+    fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
       AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return;
@@ -733,7 +780,7 @@ void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename,
     
     histoName = "fHistCorrectionMinus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionMinus[iCent] = dynamic_cast<TH3F *>(f->Get(histoName.Data())); 
+    fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
       AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return; 
@@ -1806,10 +1853,8 @@ else {
 	
 	// Remove neutral tracks
 	if( vCharge == 0 ) continue;
-	
 	//Exclude resonances
 	if(fExcludeResonancesInMC) {
-	  
 	  Bool_t kExcludeParticle = kFALSE;
 	  Int_t gMotherIndex = aodTrack->GetMother();
 	  if(gMotherIndex != -1) {
@@ -1846,23 +1891,117 @@ else {
 	  if(TMath::Abs(aodTrack->GetPdgCode()) == 11) continue;
 	  
 	}
+
+      //if(TMath::Abs(aodTrack->GetPdgCode())==211) cout<<" Pion pdg code is "<<TMath::Abs(aodTrack->GetPdgCode())<<endl;
+
+
+       //cout<<" Hi noor are you in MC AOD level"<<endl;
 	
 	// fill QA histograms
-	fHistPt->Fill(vPt,gCentrality);
-	fHistEta->Fill(vEta,gCentrality);
-	fHistRapidity->Fill(vY,gCentrality);
-	if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
-	else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
-	fHistPhi->Fill(vPhi,gCentrality);
-	if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
-	else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
-	
-	//=======================================correction
-	Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
-	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
-	
-	// add the track to the TObjArray
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+// For MC PID ---------------------------------------------------------------
+     if(fUsePID) {
+
+     switch(fParticleType_){
+
+         case kPion_:
+
+         if(TMath::Abs(aodTrack->GetPdgCode()) == 211){
+        //cout<<" i am in MC pion loop"<<endl;
+        // fill QA histograms
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+        } // Pion  end 
+       break;
+
+         case kKaon_:
+
+         if(TMath::Abs(aodTrack->GetPdgCode()) == 321){
+         //cout<<" i am in MC Kaon loop"<<endl;
+        // fill QA histograms
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+        } // Kaon  end 
+       break;
+
+         case kProton_:
+
+         if(TMath::Abs(aodTrack->GetPdgCode()) == 2212){
+         //cout<<" i am in MC proton loop"<<endl;
+        // fill QA histograms
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+        } // Proton  end 
+       break;
+
+  } // Switch end
+} // fUsePID end
+// For MC PID ---------------------------------------------------------------
+
+// For All Charge Particles 
+else {
+//cout<<"  I am now at All particles track "<<endl;
+
+        fHistPt->Fill(vPt,gCentrality);
+        fHistEta->Fill(vEta,gCentrality);
+        HistEtaTest->Fill(vEta);
+        fHistRapidity->Fill(vY,gCentrality);
+        if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+        else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+        fHistPhi->Fill(vPhi,gCentrality);
+        if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+        else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+        //=======================================correction
+        Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+        //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
+
+        // add the track to the TObjArray
+        tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+
+        }  
+// For All Charge Particles 
       }//aodTracks
     }//MC event
   }//MCAOD
@@ -1929,6 +2068,7 @@ else {
 
       //===========================PID (so far only for electron rejection)===============================//		    
       if(fElectronRejection) {
+
 
 	// get the electron nsigma
 	Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)AliPID::kElectron));
@@ -2043,26 +2183,208 @@ else {
 	  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
 	}
       }
-      
-      // fill QA histograms
+
+
+// For PID ---------------------------------------------------------------------------
+
+
+ if(fUsePID) {
+ Double_t dEdx   = aodTrack-> GetTPCsignal();  //dEdX for TPC
+ fHistdEdxTPC->Fill(aodTrack->Pt(),dEdx);
+ IsTOF(aodTrack);
+ if(fHasTOFPID){
+ Double_t beta = Beta(aodTrack); // Beta for TOF 
+ fHistBetaTOF->Fill(aodTrack->Pt(), beta);
+}
+}
+
+ AliAODMCParticle* recoMC = static_cast<AliAODMCParticle*>(fArrayMC->At(TMath::Abs(aodTrack->GetLabel())));
+ if(!recoMC) continue;
+ if (((AliAODMCParticle*) recoMC)->IsSecondaryFromWeakDecay()) continue;
+ Int_t pdgCodeReco = ((AliAODMCParticle*)recoMC)->GetPdgCode();
+
+ Double_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
+
+  if(fUsePID) {
+
+  Double_t nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
+  Double_t nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
+  Double_t nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+
+  Double_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
+  Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
+  
+  IsTOF(aodTrack); 
+
+  // --------------------------> If loop start
+   if(fHasTOFPID && aodTrack->Pt()>fPtTOFMin && aodTrack->Pt()<fPtTOFMax){
+//cout<<" Hi I am now at TPC+TOF  track "<<endl;
+    nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kProton);
+    nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kKaon);
+    nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
+    Double_t d2Proton=nsigmaTPCkProton * nsigmaTPCkProton + nsigmaTOFkProton * nsigmaTOFkProton;
+    Double_t d2Kaon=nsigmaTPCkKaon * nsigmaTPCkKaon + nsigmaTOFkKaon * nsigmaTOFkKaon;
+    Double_t d2Pion=nsigmaTPCkPion * nsigmaTPCkPion + nsigmaTOFkPion * nsigmaTOFkPion;
+    nsigmaTPCTOFkProton  =  TMath::Sqrt(d2Proton);
+    nsigmaTPCTOFkKaon    =  TMath::Sqrt(d2Kaon);
+    nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
+
+    nsigmaProton  =  TMath::Abs(nsigmaTPCTOFkProton);
+    nsigmaKaon    =  TMath::Abs(nsigmaTPCTOFkKaon)  ;
+    nsigmaPion    =  TMath::Abs(nsigmaTPCTOFkPion)  ;
+}
+else {
+     IsTPC(aodTrack);
+    if(fHasTPCPID && aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax){
+//cout<<" Hi I am now at TPC track "<<endl;
+    nsigmaProton =  TMath::Abs(nsigmaTPCkProton);
+    nsigmaKaon   =  TMath::Abs(nsigmaTPCkKaon);
+    nsigmaPion   =  TMath::Abs(nsigmaTPCkPion);
+}
+}
+
+      switch(fParticleType_) {
+      case kPion_:
+      HistNSigmaBeforeCut->Fill(nsigmaPion);
+      //cout<<"Nsigma of  Pion Before cut is "<<nsigmaPion<<endl;
+      break;
+
+      case kKaon_:
+      HistNSigmaBeforeCut->Fill(nsigmaKaon);
+      //cout<<"Nsigma of  Kaon Before cut is "<<nsigmaKaon<<endl;
+      break;
+
+      case kProton_:
+      HistNSigmaBeforeCut->Fill(nsigmaProton);
+      //cout<<"Nsigma of  Proton Before cut is "<<nsigmaProton<<endl;
+      break;
+
+        } // end of switch command
+
+} // fUsePID end
+
+if(fUsePID) {
+
+switch(fParticleType_){
+
+case kPion_:
+
+if(TMath::Abs(pdgCodeReco) == 211) {
+if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)){
+  // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
       fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
       fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      HistNSigmaAfterCut->Fill(nsigmaPion);
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
-      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);         
       else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
-      
+
       //=======================================correction
-      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
-      
+
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+      } // Pion if loop end
+}
+
+   break;
+
+ case kKaon_:
+
+if(TMath::Abs(pdgCodeReco) == 321) {
+if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSigma)){
+  // fill QA histograms
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      HistNSigmaAfterCut->Fill(nsigmaPion);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+      } // kaon if loop end
+}
+
+   break;
+
+  case kProton_:
+
+if(TMath::Abs(pdgCodeReco) == 2212) {
+if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fPIDNSigma)){
+  // fill QA histograms
+
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      HistNSigmaAfterCut->Fill(nsigmaPion);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+      } // Proton if loop end
+}
+
+   break;
+
+
+} // Switch end;
+} // fUsePID end;
+//For PID-----------------------------------------------------------------------------
+else{
+ // fill QA histograms
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+} // Else command end
+      
     }//track loop
   }//MCAODrec
   //==============================================================================================================
@@ -2661,9 +2983,18 @@ if(track->Pt()<fPtTPCMin || track->Pt()>fPtTPCMax) fHasTPCPID=kFALSE;
 }
 
 
+Double_t AliAnalysisTaskPIDBF::Beta(AliAODTrack *track)
+{
+  Double_t stoptime=track->GetTOFsignal();
 
-
-
+  Double_t c=TMath::C()*1.E-9;// m/ns
+  Float_t startTime = fPIDResponse->GetTOFResponse().GetStartTime(((AliVTrack*)track)->P());//in ps
+  Double_t length= fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kElectron)*1E-3*c;
+  stoptime -= startTime;
+  Double_t scaleStopTime= stoptime*1E-3;
+  scaleStopTime=scaleStopTime*c;
+  return length/scaleStopTime;
+}
 
 
 

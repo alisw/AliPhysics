@@ -526,7 +526,7 @@ Int_t nClus1 = 0;
 Int_t nClus2 = 0;
 
 if(fesd){
-
+FillHist("Stat_Efficiency", 19);
 for(Int_t icluster = 0; icluster < fesd->GetNumberOfCaloClusters(); icluster++) {
 
   AliESDCaloCluster *cluster = fesd->GetCaloCluster(icluster);
@@ -640,7 +640,7 @@ Double_t rx=(dx-meanX)/sx ;
 Double_t r = TMath::Sqrt(rx*rx+rz*rz); //I understand this to be the number of std of projected track trajectory is from the center of the cluster.
 
 FillHist("Clus_TrackMatchStd", r);
-
+//printf("r = %f", r);
 if(r < fMinCPVStd){return 0;}
 return 1;
 }
@@ -765,7 +765,10 @@ fAtlas = ReferenceAtlas(fvertexx[2], fcentrality, fevPlane);
 
 if(fSextant == 0x0){return;} //If there's no valid photons... don't bother saving.
 
-fAtlas->AddLast(fSextant);
+//<Changed March 18, 2016>
+if(fAtlas->At(100) == 0){fAtlas->AddLast(fSextant);} //if the Atlas is less than 100 entries long, work as normal
+else{fAtlas->Delete(); fAtlas->AddLast(fSextant);} //if Atlas is more than 100 entries long, freak out and destory the continent, then start over
+//</Changed March 18, 2016>
 
 //printf("Event Saved! \n");
 }

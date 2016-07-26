@@ -63,7 +63,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase AOD ESD ANALYSIS ANALYSISalice)
+set(LIBDEPS STEERBase AOD ESD STEER ANALYSIS ANALYSISalice CDB)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

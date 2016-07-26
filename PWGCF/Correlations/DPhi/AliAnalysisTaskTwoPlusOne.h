@@ -79,6 +79,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetRunIfPoolReady(Bool_t flag) { fRunIfPoolReady = flag; }
   void   SetRandomPosition(Bool_t flag) { fRandomPosition = flag; }
   void   SetSelectCentrality(Bool_t flag) { fSelectCentrality = flag; }
+  void   SetMixOnlyBiasedEvents(Bool_t flag) { fMixOnlyBiasedEvents = flag; }
 
   void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
 
@@ -145,6 +146,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t fRunIfPoolReady;                    //run whole analysis only if the pool exists and it is ready
     Bool_t fRandomPosition;                    //use randomized position of the particles in the eveng
     Bool_t fSelectCentrality;                  //sort out centralities 7.5% - 30% and >50% because they are not used for the analysis anyway
+    Bool_t fMixOnlyBiasedEvents;               //use for the mixing only events which have a T1
     
     THnF* fEfficiencyCorrection;     // if non-0 this efficiency correction is applied on the fly to the filling for all particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx
 
@@ -152,7 +154,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     AliAnalysisTaskTwoPlusOne& operator=(const AliAnalysisTaskTwoPlusOne&); // not implemented
 
 
-    ClassDef(AliAnalysisTaskTwoPlusOne, 9); // two plus one analysis with two trigger particles and particle correlations to these triggers
+    ClassDef(AliAnalysisTaskTwoPlusOne, 10); // two plus one analysis with two trigger particles and particle correlations to these triggers
 };
 
 #endif

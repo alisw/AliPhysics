@@ -11,6 +11,15 @@ class TH1D;
 class TH2D;
 class AliHFJetsTagging;
 class TParticle;
+class TClonesArray;
+class AliAODMCParticle;
+class AliMCEvent;
+class AliESDEvent;
+class AliESDtrack;
+class AliAnalysisUtils;
+#include "AliESDtrackCuts.h"
+
+
 
 class AliAnalysisTaskHFJetIPQA: public AliAnalysisTaskEmcalJet
 {
@@ -57,16 +66,78 @@ public:
 		kGammaK2P=40
 	};
 
+
+	enum particletype
+	{
+	bPi0=111,
+	bEta=221,
+	bEtaPrime=331,
+	bPhi=333,
+	bRho=113,
+	bOmega=223,
+	bSigma0=3212,
+	bK0s=310,
+	bLambda=3122,
+	bPi=211,
+	bProton=2212,
+	bKaon=321,
+	bOmegaBaryon=3334,
+	bAntiOmegaBaryon=-3334,
+	bXiBaryon=3312,
+	bAntiXiBaryon=-3312,
+	bD0=411,
+	bDPlus=421,
+	bDStarPlus=413,
+	bDSPlus=431,
+	bK0l=431,
+	bSigmaPlus = 3222,
+	bRhoPlus=213,
+	bBPlus = 521,
+	bB0 = 511,
+	bLambdaB =5122,
+	bLambdaC=4122,
+	bBStarPlus=523
+	};
+
+	enum particlearraxidx
+	{
+	bIdxPi0=0,
+	bIdxEta=1,
+	bIdxEtaPrime=2,
+	bIdxPhi=3,
+	bIdxRho=4,
+	bIdxOmega=5,
+	bIdxK0s=6,
+	bIdxLambda=7,
+	bIdxPi=8,
+	bIdxProton=9,
+	bIdxKaon=10,
+	bIdxD0=11,
+	bIdxDPlus=12,
+	bIdxDStarPlus=13,
+	bIdxDSPlus=14,
+	bIdxLambdaC=15,
+	bIdxBPlus = 16,
+	bIdxB0 = 17,
+	bIdxLambdaB = 18,
+	bIdxBStarPlus=19
+	};
+
+
 	struct myvaluetuple {
-		myvaluetuple(double v1,double v2, bool b){
+		myvaluetuple(double v1,double v2, bool b,bool c){
 			first = v1;
 			second = v2;
 			is_electron = b;
+			is_fromB = c;
+
 		};
 		double first; // to be compatible with std::pair
 		double second;// to be compatible with std::pair
 		bool   is_electron; // added for electron contribution check
+		bool   is_fromB; // added for electron contribution check
 	};
+
 
 
 	Int_t fNparents; // number of heavy hadrons to be considered
@@ -74,36 +145,80 @@ public:
 	static const Int_t fgkMaxGener=10; // ancester level wanted to be checked
 	static const Int_t fgkMaxIter=100; // number of iteration to find out matching particle
 
-	/*
-      -------------------------------------------------------------------------------------
-     fParentSelect[0][0] =  411; //D+
-     fParentSelect[0][1] =  421; //D0
-     fParentSelect[0][2] =  431; //Ds+
-     fParentSelect[0][3] = 4122; //Lambdac+
-     fParentSelect[0][4] = 4132; //Ksic0
-     fParentSelect[0][5] = 4232; //Ksic+
-     fParentSelect[0][6] = 4332; //OmegaC0
 
-         -------------------------------------------------------------------------------------
-     fParentSelect[1][0] =  511; //B0
-     fParentSelect[1][1] =  521; //B+
-     fParentSelect[1][2] =  531; //Bs0
-     fParentSelect[1][3] = 5122; //Lambdab0
-     fParentSelect[1][4] = 5132; //Ksib-
-     fParentSelect[1][5] = 5232; //Ksib0
-     fParentSelect[1][6] = 5332; //Omegab-
-	 */
 	enum TTypeImpPar {kXY,kXYSig,kXYZ,kXYZSig,kXYZSigmaOnly};
 	AliAnalysisTaskHFJetIPQA();
 	AliAnalysisTaskHFJetIPQA(const char *name);
 	virtual ~AliAnalysisTaskHFJetIPQA(){;}
 	virtual void  UserCreateOutputObjects();
 	virtual Bool_t Run();
+
+	void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);};
+	void SetRunESD (Bool_t val = kTRUE){fESD = val;};
+
+
 	/*
 	AliAnalysisTaskHFJetIPQA(const AliAnalysisTaskHFJetIPQA&);
 	AliAnalysisTaskHFJetIPQA& operator=(const AliAnalysisTaskHFJetIPQA&);*/
 	virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;};
 	Bool_t IsEventSelected();
+	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+	  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kVertexZContrib,kPhysicsSelection,kNoContributors,kDeltaVertexZ,kNoVertexTracks,kVertexZResolution,kMVPileup,kSPDClusterCut,kZVtxSPDOutFid,kCentralityFlattening};
+	Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
+
+	void SetUseMonteCarloWeighingLinus(
+			TH1F *Pi0 ,
+			TH1F *Eta,
+			TH1F *EtaP,
+			TH1F *Rho,
+			TH1F *Phi,
+			TH1F *Omega,
+			TH1F *K0s,
+			TH1F *Lambda,
+			TH1F *ChargedPi,
+			TH1F *ChargedKaon,
+			TH1F *Proton,
+			TH1F *D0,
+			TH1F *DPlus,
+			TH1F *DStarPlus,
+			TH1F *DSPlus,
+			TH1F *LambdaC,
+			TH1F *BPlus,
+			TH1F *B0,
+			TH1F *LambdaB,
+			TH1F *BStarPlus
+ //
+	)
+	{
+		for(int i =1 ; i< Pi0->GetNbinsX()+1;++i){
+			fBackgroundFactorLinus[bIdxPi0][i-1] =Pi0->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxEta][i-1] =Eta->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxEtaPrime][i-1] =EtaP->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxRho][i-1] =Rho->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxPhi][i-1] =Phi->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxOmega][i-1] =Omega->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxK0s][i-1] =K0s->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambda][i-1] =Lambda->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxPi][i-1] =ChargedPi->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxKaon][i-1] =ChargedKaon->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxProton][i-1] =Proton->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxD0][i-1] =D0->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxDPlus][i-1] =DPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxDStarPlus][i-1] =DStarPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxDSPlus][i-1] =DSPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambdaC][i-1] =LambdaC->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxBPlus][i-1] =BPlus->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxB0][i-1] =B0->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxLambdaB][i-1] =LambdaB->GetBinContent(i);
+			fBackgroundFactorLinus[bIdxBStarPlus][i-1] =BStarPlus->GetBinContent(i);
+ //
+		}
+		return;
+	};
+
+
+
+
 	void SetUseMonteCarloWeighing(
 			TH1D *PionHist ,
 			TH1D *EtaHist,
@@ -140,28 +255,57 @@ public:
 	};
 
 	void UseCorrectedRhoPt(bool val = true){fUseCorrPt =val;};
+	void UseGammaV0RejectionESD(bool val = true){fEnableV0GammaRejection =val;};
 private:
-	Bool_t CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
-	Bool_t CalculateTrackImpactParameterTruth(AliAODTrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
-	Bool_t CalculateJetSignedTrackImpactParameter(AliAODTrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength);
-	Double_t GetValImpactParameter(TTypeImpPar type,double *impar, double * cov);
 
-	// Helper
+	Double_t GetArmenteros(AliESDv0 * v0 , int pidneg,int pidpos ,double &alpha);
+	Double_t GetPsiPair(AliESDv0 * v0);
+	Bool_t CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
+	Bool_t CalculateTrackImpactParameter(AliESDtrack * track,double *impar, double * cov); // Removes track from Vertex calculation first
+	Bool_t CalculateTrackImpactParameterTruth(AliAODTrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
+	Bool_t CalculateTrackImpactParameterTruth(AliESDtrack * track,double *impar, double * cov); // calculates DCA on MC particle/event information
+	Bool_t CalculateJetSignedTrackImpactParameter(AliAODTrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength);
+	Bool_t CalculateJetSignedTrackImpactParameter(AliESDtrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength);
+	Double_t GetValImpactParameter(TTypeImpPar type,double *impar, double * cov);
+	Bool_t IsV0PhotonFromBeamPipeDaughter(const AliAODTrack* track);
+	Bool_t IsV0PhotonFromBeamPipeDaughter(const AliESDtrack* track);
 	Bool_t IsTrackAccepted(AliAODTrack* track);
+	Bool_t IsTrackAccepted(AliESDtrack* track);
 	Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
 	void   DoJetLoop(); //jet matching function 2/4
 	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0);
 	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
-	Double_t GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise);
+	Double_t GetMonteCarloCorrectionFactor(AliAODTrack* track,bool &ise,bool &fromB);
+	Double_t GetMonteCarloCorrectionFactor(AliESDtrack* track,bool &ise,bool &fromB);
 	Int_t GetElecSource(const AliAODMCParticle *  const mcpart,Double_t &mpt) const;
 	Double_t GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel);
+	Double_t GetWeightFactorLinus( AliAODMCParticle * mcpart,bool &isTrackFromPromptB);
+	Double_t GetWeightFactorLinus( AliMCParticle * mcpart,bool &isTrackFromPromptB);
+	Bool_t ParticleIsPossibleSource(int pdg);
+	Bool_t IsSelectionParticle( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	Bool_t IsSelectionParticle( AliMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	Bool_t IsSecondaryFromWeakDecay( AliAODMCParticle * particle ) ;
+	Bool_t IsSecondaryFromWeakDecay( AliMCParticle * particle ) ;
+
+	bool   IsPromptDMeson(AliAODMCParticle * part );
+	bool   IsPromptDMeson(AliMCParticle * part );
+
+	bool   IsPromptBMeson(AliAODMCParticle * part );
+	bool   IsPromptBMeson(AliMCParticle * part );
+
+	Bool_t GetBMesonWeight( AliAODMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+	Bool_t GetBMesonWeight( AliMCParticle * mcpart ,int &pdg,double &pT,int &idx  );
+
+	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
+
 	Float_t  GetRapidity(const TParticle *part);
 
 	AliRDHFJetsCuts* fJetCutsHF;//
 	AliHFJetsTagging* fHFJetUtils;//!
 
 	Bool_t fUseCorrPt;
-
+	Bool_t fESD ;
+	Bool_t fEnableV0GammaRejection;
 
 	TH1D * fh1dEventRejectionRDHFCuts;//! Store Rejection reasons and number of accepted events
 	TH1D * fh1dVertexZ;//!
@@ -214,48 +358,56 @@ private:
 	TH2D * fh2dJetSignedImpParXYUnidentified; //!
 	TH2D * fh2dJetSignedImpParXYudsg; //!
 	TH2D * fh2dJetSignedImpParXYb; //!
+	TH2D * fh2dJetSignedImpParXYbNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYc; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificance; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentified; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsg; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceb; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancec; //!
 
 	TH2D * fh2dJetSignedImpParXYZ; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentified; //!
 	TH2D * fh2dJetSignedImpParXYZudsg; //!
 	TH2D * fh2dJetSignedImpParXYZb; //!
+	TH2D * fh2dJetSignedImpParXYZbNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZc; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificance; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentified; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsg; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceb; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancec; //!
 	// inclusive signed impact parameter distributions with light meson (TODO D meson) correction in Monte Carlo
 	TH2D * fh2dJetSignedImpParXY_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYUnidentified_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYudsg_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYb_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYb_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYc_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificance_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentified_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsg_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceb_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYSignificanceb_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancec_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZ_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentified_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZudsg_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZb_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZb_McCorr_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZc_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificance_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentified_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsg_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceb_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZSignificanceb_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancec_McCorr; //!
 
 
@@ -266,72 +418,84 @@ private:
 	TH2D * fh2dJetSignedImpParXYUnidentifiedFirst; //!
 	TH2D * fh2dJetSignedImpParXYudsgFirst; //!
 	TH2D * fh2dJetSignedImpParXYbFirst; //!
+	TH2D * fh2dJetSignedImpParXYbFirstNonBDecay; //
 	TH2D * fh2dJetSignedImpParXYcFirst; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificanceFirst; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentifiedFirst; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsgFirst; //!
 	TH2D * fh2dJetSignedImpParXYSignificancebFirst; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebFirstNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancecFirst; //!
 
 	TH2D * fh2dJetSignedImpParXYZFirst; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentifiedFirst; //!
 	TH2D * fh2dJetSignedImpParXYZudsgFirst; //!
 	TH2D * fh2dJetSignedImpParXYZbFirst; //!
+	TH2D * fh2dJetSignedImpParXYZbFirstNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZcFirst; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificanceFirst; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgFirst; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebFirst; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebFirstNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecFirst; //!
 	//Second
 	TH2D * fh2dJetSignedImpParXYSecond; //!
 	TH2D * fh2dJetSignedImpParXYUnidentifiedSecond; //!
 	TH2D * fh2dJetSignedImpParXYudsgSecond; //!
 	TH2D * fh2dJetSignedImpParXYbSecond; //!
+	TH2D * fh2dJetSignedImpParXYbSecondNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYcSecond; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificanceSecond; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentifiedSecond; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsgSecond; //!
 	TH2D * fh2dJetSignedImpParXYSignificancebSecond; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebSecondNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancecSecond; //!
 
 	TH2D * fh2dJetSignedImpParXYZSecond; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentifiedSecond; //!
 	TH2D * fh2dJetSignedImpParXYZudsgSecond; //!
 	TH2D * fh2dJetSignedImpParXYZbSecond; //!
+	TH2D * fh2dJetSignedImpParXYZbSecondNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZcSecond; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificanceSecond; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgSecond; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebSecond; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebSecondNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecSecond; //!
 	//Third
 	TH2D * fh2dJetSignedImpParXYThird; //!
 	TH2D * fh2dJetSignedImpParXYUnidentifiedThird; //!
 	TH2D * fh2dJetSignedImpParXYudsgThird; //!
 	TH2D * fh2dJetSignedImpParXYbThird; //!
+	TH2D * fh2dJetSignedImpParXYbThirdNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYcThird; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificanceThird; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentifiedThird; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsgThird; //!
 	TH2D * fh2dJetSignedImpParXYSignificancebThird; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebThirdNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancecThird; //!
 
 	TH2D * fh2dJetSignedImpParXYZThird; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentifiedThird; //!
 	TH2D * fh2dJetSignedImpParXYZudsgThird; //!
 	TH2D * fh2dJetSignedImpParXYZbThird; //!
+	TH2D * fh2dJetSignedImpParXYZbThirdNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZcThird; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificanceThird; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentifiedThird; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgThird; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebThirdNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird; //!
 
 	// inclusive signed impact parameter distributions corrected for light mesons (TODO D mesons) in Monte Carlo
@@ -340,72 +504,84 @@ private:
 	TH2D * fh2dJetSignedImpParXYUnidentifiedFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYudsgFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYbFirst_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYbFirst_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYcFirst_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificanceFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentifiedFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsgFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificancebFirst_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebFirst_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancecFirst_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentifiedFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZudsgFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZbFirst_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZbFirst_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZcFirst_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificanceFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentifiedFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgFirst_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebFirst_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebFirst_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecFirst_McCorr; //!
 	//Second
 	TH2D * fh2dJetSignedImpParXYSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYUnidentifiedSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYudsgSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYbSecond_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYbSecond_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYcSecond_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificanceSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentifiedSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsgSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificancebSecond_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebSecond_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancecSecond_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentifiedSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZudsgSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZbSecond_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZbSecond_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZcSecond_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificanceSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentifiedSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgSecond_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebSecond_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebSecond_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecSecond_McCorr; //!
 	//Third
 	TH2D * fh2dJetSignedImpParXYThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYUnidentifiedThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYudsgThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYbThird_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYbThird_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYcThird_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYSignificanceThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceUnidentifiedThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificanceudsgThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYSignificancebThird_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebThird_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYSignificancecThird_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZUnidentifiedThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZudsgThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZbThird_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZbThird_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZcThird_McCorr; //!
 
 	TH2D * fh2dJetSignedImpParXYZSignificanceThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceUnidentifiedThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgThird_McCorr; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird_McCorr; //!
+	TH2D * fh2dJetSignedImpParXYZSignificancebThird_McCorrNonBDecay; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird_McCorr; //!
 
 
@@ -513,17 +689,22 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificanceudsgThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird_electron; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird_electron; //!
-
+	TClonesArray * fMCArray;//!
+	AliMCEvent   * fMCEvent;//!;
+	AliESDtrackCuts  *fESDTrackCut;// copy to manager - root from AddTask
+	AliAnalysisUtils *fUtils;//!
 	//Monte Carlo correction factor containers
 
-	Double_t fBackgroundFactor[9][44];
-	Double_t fBackgroundFactorBins[45];
+	Double_t fBackgroundFactor[9][44];//[9][44]
+	Double_t fBackgroundFactorBins[45];//[45]
+	Double_t fBackgroundFactorLinus[21][498]; //[21][498]FineBinned correction factors up 0.1-25 GeV/c first value below last above 0.05 binwidth
 	static bool mysort(const myvaluetuple& i, const myvaluetuple& j);
 
-	ClassDef(AliAnalysisTaskHFJetIPQA, 1)
+	ClassDef(AliAnalysisTaskHFJetIPQA, 4	)
 };
 #endif
 
 
 
 
+ //

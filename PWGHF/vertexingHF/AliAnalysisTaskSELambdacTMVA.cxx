@@ -73,6 +73,11 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fOutput(0), 
 		fHistNEvents(0),
 		fHistNEventsRejTM(0),
+		fhSelectBit(0),
+		fhSelectionBits(0),
+		fhSelectionBitsSigc(0),
+		fhSelectionBitsSigb(0),
+		fhSetIsLc(0),
 		fhPIDmassLcPt(0),
 		fhPIDmassLcPtSig(0),
 		fhPIDmassLcPtSigc(0),
@@ -90,18 +95,32 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fhIsLcGen(0),
 		fhIsLcReco(0),
 		fhRecoPDGmom(0),
-		fhSelectBit(0),
-		fhSelectionBits(0),
-		fhSelectionBitsSigc(0),
-		fhSelectionBitsSigb(0),
+		fhPtMisIdpKpi(0),
+		fhPtMisIdpiKp(0),
+		fhPtCorrId(0),
+		fhInvMassMisIdpKpi(0),
+		fhInvMassMisIdpiKp(0),
+		fhPtMisIdpKpiProb(0),
+		fhPtMisIdpiKpProb(0),
+		fhPtCorrIdProb(0),
+		fhInvMassMisIdpKpiProb(0),
+		fhInvMassMisIdpiKpProb(0),
 		fNtupleLambdac(0),
+		fFuncWeightPythia(0),
+		fFuncWeightFONLL7overLHC10f6a(0),
+		fFuncWeightFONLL5overLHC13d3(0),
+		fFuncWeightFONLL5overLHC10f6a(0),
 		fIsLc(0),
 		fIsLcResonant(0),
+		fPtLc(0.),
+		fUpmasslimit(2.486),
+		fLowmasslimit(2.086),
 		fRDCutsAnalysis(0),
 		fListCuts(0),
 		fFillNtuple(0),
-		fUpmasslimit(2.486),
-		fLowmasslimit(2.086),
+		fKeepLcNotFromQuark(kFALSE),
+		fKeepBkgNt(kTRUE),
+		fSyst(2),
 		fReadMC(kFALSE),
 		fMCPid(kFALSE),
 		fRealPid(kFALSE),
@@ -111,10 +130,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fVHF(0),
 		fLcCut(kFALSE),
 		fLcPIDCut(kFALSE),    
-		fKeepLcNotFromQuark(kFALSE),
 		fIsHijing(kFALSE),
-		fKeepBkgNt(kTRUE),
-		fSyst(2),
 		fNentries(0),
 		fPIDResponse(0),
 		fCounter(0),
@@ -187,6 +203,11 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fOutput(0), 
 	fHistNEvents(0),
 	fHistNEventsRejTM(0),
+	fhSelectBit(0),
+	fhSelectionBits(0),
+	fhSelectionBitsSigc(0),
+	fhSelectionBitsSigb(0),
+	fhSetIsLc(0),
 	fhPIDmassLcPt(0),
 	fhPIDmassLcPtSig(0),
 	fhPIDmassLcPtSigc(0),
@@ -204,18 +225,32 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fhIsLcGen(0),
 	fhIsLcReco(0),
 	fhRecoPDGmom(0),
-	fhSelectBit(0),
-	fhSelectionBits(0),
-	fhSelectionBitsSigc(0),
-	fhSelectionBitsSigb(0),
+	fhPtMisIdpKpi(0),
+	fhPtMisIdpiKp(0),
+	fhPtCorrId(0),
+	fhInvMassMisIdpKpi(0),
+	fhInvMassMisIdpiKp(0),
+	fhPtMisIdpKpiProb(0),
+	fhPtMisIdpiKpProb(0),
+	fhPtCorrIdProb(0),
+	fhInvMassMisIdpKpiProb(0),
+	fhInvMassMisIdpiKpProb(0),
 	fNtupleLambdac(0),
+	fFuncWeightPythia(0),
+	fFuncWeightFONLL7overLHC10f6a(0),
+	fFuncWeightFONLL5overLHC13d3(0),
+	fFuncWeightFONLL5overLHC10f6a(0),
 	fIsLc(0),
 	fIsLcResonant(0),
+	fPtLc(0.),
+	fUpmasslimit(2.486),
+	fLowmasslimit(2.086),
 	fRDCutsAnalysis(lccutsana),
 	fListCuts(0),
-  fUpmasslimit(2.486),
-  fLowmasslimit(2.086),
 	fFillNtuple(fillNtuple),
+	fKeepLcNotFromQuark(kFALSE),
+	fKeepBkgNt(kTRUE),
+	fSyst(2),
 	fReadMC(kFALSE),
 	fMCPid(kFALSE),
 	fRealPid(kFALSE),
@@ -225,10 +260,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fVHF(0),
 	fLcCut(kFALSE),
 	fLcPIDCut(kFALSE),    
-	fKeepLcNotFromQuark(kFALSE),
 	fIsHijing(kFALSE),
-	fKeepBkgNt(kTRUE),
-	fSyst(2),
 	fNentries(0),
 	fPIDResponse(0),
 	fCounter(0),
@@ -728,6 +760,31 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	fOutput->Add(fhInvMassMisIdpiKpProb);
 
 
+  // weight function from ratio of flat value (1/30) to pythia 
+	// use to normalise to flat distribution (should lead to flat pT distribution
+	fFuncWeightPythia=new TF1("funcWeightPythia","1./(30. *[0]*x/TMath::Power(1.+(TMath::Power((x/[1]),[3])),[2]))",0.15,30);
+	fFuncWeightPythia->SetParameters(0.36609,1.94635,1.40463,2.5);
+
+  // weight function from the ratio of the LHC10f6a MC
+  // and FONLL calculations for pp data
+  fFuncWeightFONLL7overLHC10f6a=new TF1("funcWeightFONLL7overLHC10f6a","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
+  fFuncWeightFONLL7overLHC10f6a->SetParameters(2.41522e+01,4.92146e+00,6.72495e+00,2.5,6.15361e-03,4.78995e+00,-4.29135e-01,3.99421e-01,-1.57220e-02);
+
+  // weight function from the ratio of the LHC13d3 MC
+  // and FONLL calculations for pp data
+  fFuncWeightFONLL5overLHC13d3=new TF1("funcWeightFONLL5overLHC13d3","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
+  fFuncWeightFONLL5overLHC13d3->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
+
+  // weight function from the ratio of the LHC10f6a MC
+  // and FONLL calculations for pp data
+  fFuncWeightFONLL5overLHC10f6a=new TF1("funcWeightFONLL5overLHC10f6a","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
+  fFuncWeightFONLL5overLHC10f6a->SetParameters(2.77730e+01,4.78942e+00,7.45378e+00,2.5,9.86255e-02,2.30120e+00,-4.16435e-01,3.43770e-01,-2.29380e-02);
+	fOutput->Add(fFuncWeightPythia);
+	fOutput->Add(fFuncWeightFONLL7overLHC10f6a);
+	fOutput->Add(fFuncWeightFONLL5overLHC10f6a);
+	fOutput->Add(fFuncWeightFONLL5overLHC13d3);
+
+
 	// fhChi2 = new TH1F("fhChi2", "Chi2",100,0.,10.);
 	// fhChi2->Sumw2();
 	// fOutput->Add(fhChi2);
@@ -781,11 +838,11 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 		TString ntName="fNtupleLambdac";
 		AliAnalysisDataContainer *contnt = GetOutputSlot(5)->GetContainer();
 		if(contnt)ntName=(TString)contnt->GetName();
-		if(fFillNtuple==1)       fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp");
+		if(fFillNtuple==1)       fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp");
 		//NSigma PID
-		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber");
+		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber");
 		//2 prong decay products
-		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
+		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
 		else AliFatal("Invalid fill ntuple argument");
 		PostData(5,fNtupleLambdac);
 	}
@@ -1524,7 +1581,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	//fill ntuple
 	// 1 - loose pid
 	// 2 - bayesian pid
-	Float_t tmp[48];
+	Float_t tmp[53];
 	//Is Lc
 	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
 	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
@@ -1540,7 +1597,8 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	tmp[4]=part->PtProng(0);
 	tmp[5]=part->PtProng(1); //pt kaon
 	tmp[6]=part->PtProng(2);
-	tmp[7]=part->Pt();
+	Float_t ptLc=part->Pt();
+	tmp[7]=ptLc;
 	tmp[8]=part->CosPointingAngle();
 	tmp[9]=part->DecayLength();
 	tmp[10]=part->NormalizedDecayLength();
@@ -1556,6 +1614,34 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	tmp[16]=fIsLcResonant; // bkg
 	//PID selection
 	tmp[17]=selection;
+	//FONLL weights
+
+	//Get MC Lc to get true pT
+	Double_t ptLcMC=-1;
+	Double_t weightPythia=-1,weight7LHC10f6a=-1,weight5LHC10f6a=-1,weight5LHC13d3=-1;	
+	if(IsLc) {
+		Int_t labDp = -1;
+		Int_t pdgCand =4122;
+		Int_t pdgDaughter[3]={-1,-1,-1};
+		pdgDaughter[0]=2212;
+		pdgDaughter[1]=321;
+		pdgDaughter[2]=211;   
+		labDp = part->MatchToMC(pdgCand,arrayMC,3,pdgDaughter);
+		if(labDp>=0){
+			AliAODMCParticle *motherPart = (AliAODMCParticle*)arrayMC->At(labDp);
+
+			ptLcMC = motherPart->Pt();
+			weightPythia = fFuncWeightPythia->Eval(ptLcMC);
+			weight7LHC10f6a = fFuncWeightFONLL7overLHC10f6a->Eval(ptLcMC);
+			weight5LHC10f6a = fFuncWeightFONLL5overLHC10f6a->Eval(ptLcMC);
+			weight5LHC13d3 = fFuncWeightFONLL5overLHC13d3->Eval(ptLcMC);
+		}
+	}
+	tmp[18]=ptLcMC;
+	tmp[19]=weightPythia;
+	tmp[20]=weight7LHC10f6a;
+	tmp[21]=weight5LHC10f6a;
+	tmp[22]=weight5LHC13d3;
 
 	AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
 	AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
@@ -1577,19 +1663,19 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 			//if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
 			//if(prob1[AliPID::kKaon] < 0.3) return;
 			//if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
-			tmp[18]=prob0[AliPID::kPion];			//track 0, pion
-			tmp[19]=prob0[AliPID::kKaon];     		//kaon
-			tmp[20]=prob0[AliPID::kProton];			//proton
-			tmp[21]=prob1[AliPID::kPion];			//track 1, pion		
-			tmp[22]=prob1[AliPID::kKaon];     		//kaon
-			tmp[23]=prob1[AliPID::kProton];			//proton
-			tmp[24]=prob2[AliPID::kPion];			//track 2, pion
-			tmp[25]=prob2[AliPID::kKaon];     		//kaon
-			tmp[26]=prob2[AliPID::kProton];			//proton
+			tmp[23]=prob0[AliPID::kPion];			//track 0, pion
+			tmp[24]=prob0[AliPID::kKaon];     		//kaon
+			tmp[25]=prob0[AliPID::kProton];			//proton
+			tmp[26]=prob1[AliPID::kPion];			//track 1, pion		
+			tmp[27]=prob1[AliPID::kKaon];     		//kaon
+			tmp[28]=prob1[AliPID::kProton];			//proton
+			tmp[29]=prob2[AliPID::kPion];			//track 2, pion
+			tmp[30]=prob2[AliPID::kKaon];     		//kaon
+			tmp[31]=prob2[AliPID::kProton];			//proton
 		}
 		else {
 			//fill w 0
-			for(Int_t iprob=18;iprob<=26;iprob++) {
+			for(Int_t iprob=23;iprob<=31;iprob++) {
 				tmp[iprob]=-1;
 			}
 		}
@@ -1601,13 +1687,13 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 		Double_t d0err0 = part->Getd0errProng(0);
 		Double_t d0err1 = part->Getd0errProng(1);
 		Double_t d0err2 = part->Getd0errProng(2);
-		tmp[27]=d00;
-		tmp[28]=d01;
-		tmp[29]=d02;
-		tmp[30]=d00*d00 + d01*d01 + d02*d02;
-		tmp[31]=d00/d0err0;
-		tmp[32]=d01/d0err1;
-		tmp[33]=d02/d0err2;
+		tmp[32]=d00;
+		tmp[33]=d01;
+		tmp[34]=d02;
+		tmp[35]=d00*d00 + d01*d01 + d02*d02;
+		tmp[36]=d00/d0err0;
+		tmp[37]=d01/d0err1;
+		tmp[38]=d02/d0err2;
 		Double_t dd0,edd0;
 		Double_t dd1,edd1;
 		Double_t dd2,edd2;
@@ -1617,25 +1703,25 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 		Double_t ns0=dd0/edd0;
 		Double_t ns1=dd1/edd1;
 		Double_t ns2=dd2/edd2;
-		tmp[34]=ns0;
-		tmp[35]=ns1;
-		tmp[36]=ns2;
-		tmp[37]=part->CosPointingAngleXY();
+		tmp[39]=ns0;
+		tmp[40]=ns1;
+		tmp[41]=ns2;
+		tmp[42]=part->CosPointingAngleXY();
 		tmp[13]=dcas[0];
-		tmp[38]=dcas[1];
-		tmp[39]=dcas[2];
+		tmp[43]=dcas[1];
+		tmp[44]=dcas[2];
 		tmp[11]=part->GetDist12toPrim();
-		tmp[40]=part->GetDist23toPrim();
+		tmp[45]=part->GetDist23toPrim();
 	  Int_t runNumber=aod->GetRunNumber();
-		tmp[41]=(Float_t)runNumber;
+		tmp[46]=(Float_t)runNumber;
 	}
 	if(fFillNtuple>=3) {
-		tmp[42]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
-		tmp[43]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
-		tmp[44]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
-		tmp[45]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
-		tmp[46]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
-		tmp[47]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
+		tmp[47]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
+		tmp[48]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
+		tmp[49]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
+		tmp[50]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
+		tmp[51]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
+		tmp[52]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
 	}
 
 	fNtupleLambdac->Fill(tmp);
@@ -1815,3 +1901,5 @@ Int_t AliAnalysisTaskSELambdacTMVA::GetPIDselectionMaxProb(AliAODRecoDecayHF3Pro
 	}
 	return selection;
 }
+
+

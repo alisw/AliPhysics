@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKOMEGAOMEGAOX_H
 
 	//------------------------------------------------------------------------------------------
-	// version 1.60 (2016/03/01)
+	// version 1.61 (2016/04/11)
 	//------------------------------------------------------------------------------------------
 
 /* $Id$ */ 
@@ -35,18 +35,22 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	void SetReqClustersTPC(int tpcclust) {fReqClustersTPC = tpcclust;}
 	void SetReqSigmaTOF(double tofsigma) {fReqSigmaTOF = tofsigma;}
 	void SetReqPseudoRap(double pseudorap) {fReqPseudoRap = pseudorap;}
+	void SetProtonPMax(Double_t maxprotonp) {fProtonPMax = maxprotonp;}
+	void SetPionPMax(Double_t maxpionp) {fPionPMax = maxpionp;}
+	void SetKaonPMax(Double_t maxkaonp) {fKaonPMax = maxkaonp;}
 
 	void SetCPADibaryon(double cpadi) {fCPADibaryon = cpadi;}
+	void SetDCADibaryon(double dcadi) {fDCADibaryon = dcadi;}
 	void SetMassWinCascade(double masswinc) {fMassWinCascade = masswinc;}
 
-	void SetCascChi2max(double cschi2max) {fCsChi2max = cschi2max;}
-	void SetCascDV0Min(double csdv0min) {fCsDV0min = csdv0min;}
-	void SetCascMassWinLambda(double csmasswinl) {fCsMassWinLambda = csmasswinl;}
-	void SetCascDBachMin(double csdbachmin) {fCsDBachMin = csdbachmin;}
-	void SetCascDCAmax(double csdcamax) {fCsDCAmax = csdcamax;}
-	void SetCascCPAmin(double cscpamin) {fCsCPAmin = cscpamin;}
-	void SetCascRmin(double csrmin) {fCsRmin = csrmin;}
-	void SetCascRmax(double csrmax) {fCsRmax = csrmax;}
+	void SetCascChi2max(double cschi2max) {fCsReqChi2max = cschi2max;}
+	void SetCascDV0Min(double csdv0min) {fCsReqDV0min = csdv0min;}
+	void SetCascMassWinLambda(double csmasswinl) {fCsReqMassWinLambda = csmasswinl;}
+	void SetCascDBachMin(double csdbachmin) {fCsReqDBachMin = csdbachmin;}
+	void SetCascDCAmax(double csdcamax) {fCsReqDCAmax = csdcamax;}
+	void SetCascCPAmin(double cscpamin) {fCsReqCPAmin = cscpamin;}
+	void SetCascRmin(double csrmin) {fCsReqRmin = csrmin;}
+	void SetCascRmax(double csrmax) {fCsReqRmax = csrmax;}
 
 	void SetRecoTypeDB(int recotype) {fRecoTypeDB = recotype;}
 	void SetLikeSignDB(int likesigndb) {fLikeSignDB = likesigndb;}
@@ -67,11 +71,8 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	AliESDtrackCuts  *fESDtrackCuts;   // track cuts
 
 	Bool_t PreTrackCut(AliESDtrack *track);
-	Double_t InvMassLambda(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
-	Double_t InvMassLambdaStar(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
-	Double_t GetPaFromPxPyPz(Double_t Momentum[3]);
-	Double_t GetPtFromPxPyPz(Double_t Momentum[3]);
 	Bool_t ReconstructCascade();
+	Bool_t ReconstructCascadeString(Bool_t allocateStr,Int_t &nCascade,Int_t v0IDCasc[], Int_t trkIDCasc[]);
 
   Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
   Double_t Det(Double_t a00,Double_t a01,Double_t a02,
@@ -79,9 +80,13 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
          Double_t a20,Double_t a21,Double_t a22) const;
   Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
 
-	void Rotate(Double_t x,Double_t y,Double_t angle);
-	void Rotate(Double_t x,Double_t y,Double_t angle,Double_t xCenter,Double_t yCenter);
-	Double_t GetAngleFromCosSin(Double_t cos,Double_t sin);
+	// for V0 (Invariant mass)
+	Double_t InvMassLambda(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
+	Double_t InvMassLambdaStar(Double_t MomPos[3],Double_t MomNeg[3],AliESDtrack *pos,AliESDtrack *neg,Double_t v0Return[1]);
+
+	// others
+	Double_t GetPaFromPxPyPz(Double_t Momentum[3]) {return TMath::Sqrt( Momentum[0]*Momentum[0] + Momentum[1]*Momentum[1] + Momentum[2]*Momentum[2] );}
+	Double_t GetPtFromPxPyPz(Double_t Momentum[3]) {return TMath::Sqrt( Momentum[0]*Momentum[0] + Momentum[1]*Momentum[1] );}
 
 	void DefineTreeVariables();
 
@@ -104,27 +109,31 @@ class AliAnalysisTaskOmegaOmegaOX : public AliAnalysisTaskSE
 	// settings for analysis
 	Int_t fRecoTypeDB;   // Reconstruction type of DiBaryon (0:All, 1:OmOm, 2:OmXi, 3:XiOm, 4:XiXi)
 	Int_t fLikeSignDB;   // Like-sign of DB (0:ALL, 1:OO, 2:(Obar)(Obar))
-	Int_t fRecoSelfCasc; // Cascade reconstruction is made by (0:ESD class, 1:by myself)
+	Int_t fRecoSelfCasc; // Cascade reconstruction is made by (0:ESD class, 1:by myself(with ESD), 2:by myself(with string))
 
 	// cut parameters for tracks
 	Double_t fReqSigmaTPC;  // TPC PIDcut sigma
 	Int_t fReqClustersTPC;  // TPC number of clusters
 	Double_t fReqSigmaTOF;  // TOF PIDcut sigma
 	Double_t fReqPseudoRap; // PseudoRapidity
+	Double_t fProtonPMax;   // Max momentum of proton
+	Double_t fPionPMax;     // Max momentum of pion
+	Double_t fKaonPMax;     // Max momentum of kaon
 
 	// cut parameters for dibaryon
 	Double_t fCPADibaryon; // Min cosine of dibaryon's pointing angle
+	Double_t fDCADibaryon; // Max DCA betwenn two cascades
 	Double_t fMassWinCascade; //"window" around the Cascade mass
 
 	// cut parameters for reconstruction of cascade
-	Double_t fCsChi2max;       //maximal allowed chi2 
-	Double_t fCsDV0min;        //min V0 impact parameter
-	Double_t fCsMassWinLambda; //"window" around the Lambda mass
-	Double_t fCsDBachMin;      //min bachelor impact parameter
-	Double_t fCsDCAmax;        //max DCA between the V0 and the track 
-	Double_t fCsCPAmin;        //min cosine of the cascade pointing angle
-	Double_t fCsRmin;          //min radius of the fiducial volume
-	Double_t fCsRmax;          //max radius of the fiducial volume
+	Double_t fCsReqChi2max;       //maximal allowed chi2 
+	Double_t fCsReqDV0min;        //min V0 impact parameter
+	Double_t fCsReqMassWinLambda; //"window" around the Lambda mass
+	Double_t fCsReqDBachMin;      //min bachelor impact parameter
+	Double_t fCsReqDCAmax;        //max DCA between the V0 and the track 
+	Double_t fCsReqCPAmin;        //min cosine of the cascade pointing angle
+	Double_t fCsReqRmin;          //min radius of the fiducial volume
+	Double_t fCsReqRmax;          //max radius of the fiducial volume
 
 	ClassDef(AliAnalysisTaskOmegaOmegaOX,2); // analysisclass
 };

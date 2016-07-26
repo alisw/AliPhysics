@@ -12,23 +12,29 @@
 #define ALIANALYSISTASKEMCALJETCDF_H
 
 #include <cstdio>
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <algorithm>
+
 #include <Rtypes.h>
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TProfile.h>
 #include <TH1.h>
 #include <TH1D.h>
 #include <TProfile.h>
 #include <TMath.h>
 
-#include "AliLog.h"
-#include "AliEmcalJet.h"
-#include "AliJetContainer.h"
-#include "AliParticleContainer.h"
-#include "AliClusterContainer.h"
-#include "THistManager.h"
+#include <AliEmcalJet.h>
+#include <AliJetContainer.h>
+#include <AliParticleContainer.h>
+#include <AliClusterContainer.h>
+#include <THistManager.h>
 
 #include "AliAnalysisTaskEmcalJet.h"
+
+using std::cout;
+using std::endl;
+using std::vector;
+using std::pair;
 
 class TH1;
 class TProfile;
@@ -55,6 +61,22 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     /// Get what jet container is set to be processed
     /// \return index of jer container
     Int_t                       GetProcessJetCont () {return idx_jetcont;}
+
+    /// Get P() fraction of constituent to jet
+    /// \param AliEmcalJet* jet
+    /// \param AliVParticle* trk
+    /// \return Z = trk->P()/jet->P()
+    Double_t                    Z_ptot ( const AliEmcalJet* jet, const AliVParticle* trk )  const; // Get Z of constituent trk ; p total
+
+    /// Get Pt() fraction of constituent to jet
+    /// \param AliEmcalJet* jet
+    /// \param AliVParticle* trk
+    /// \return Z = trk->Pt()/jet->Pt()
+    Double_t                    Z_pt   ( const AliEmcalJet* jet, const AliVParticle* trk )  const; // Get Z of constituent trk ; pt
+
+    /// Get Xi for a double value z
+    /// \return Xi
+    Double_t                    Xi ( Double_t z )  const { return TMath::Log ( 1/z ); } // Get Xi of value z
 
   protected:
     void                        ExecOnce();
@@ -116,8 +138,24 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     TH1D      *fH8xi;              //!<!  Xi distribution for leading jet (fragmentation function)
 
 //________________________________________________________________________
+    TH1D      *fH8_p;                //!<!  Momentum distribution for leading jet (fragmentation function) - Z_ptot
+    TH1D      *fH8xi_p;              //!<!  Xi distribution for leading jet (fragmentation function) - Z_ptot
+
+//________________________________________________________________________
+    TH1D      *fH8_pt;                //!<!  Momentum distribution for leading jet (fragmentation function) - Z_pt
+    TH1D      *fH8xi_pt;              //!<!  Xi distribution for leading jet (fragmentation function) - Z_pt
+
+//________________________________________________________________________
     TH1D      *fH8_all;            //!<!  Momentum distribution for jets (fragmentation function)
     TH1D      *fH8xi_all;          //!<!  Xi distribution for jets (fragmentation function)
+
+//________________________________________________________________________
+    TH1D      *fH8_all_p;            //!<!  Momentum distribution for jets (fragmentation function) - Z_ptot
+    TH1D      *fH8xi_all_p;          //!<!  Xi distribution for jets (fragmentation function) - Z_ptot
+
+//________________________________________________________________________
+    TH1D      *fH8_all_pt;            //!<!  Momentum distribution for jets (fragmentation function) - Z_pt
+    TH1D      *fH8xi_all_pt;          //!<!  Xi distribution for jets (fragmentation function) - Z_pt
 
 //________________________________________________________________________
     TProfile  *fH15;               //!<!  <p_{T}> track vs the Distance R from Jet1
@@ -278,7 +316,7 @@ class AliAnalysisTaskEmcalJetCDF : public AliAnalysisTaskEmcalJet
     AliAnalysisTaskEmcalJetCDF &operator= ( const AliAnalysisTaskEmcalJetCDF& ); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef ( AliAnalysisTaskEmcalJetCDF, 3 );
+    ClassDef ( AliAnalysisTaskEmcalJetCDF, 4 );
     /// \endcond
 
   };

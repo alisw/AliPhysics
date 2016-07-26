@@ -47,8 +47,10 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   virtual Bool_t UserNotify() { std::cout<<"DEBUG UserNotify"<<std::endl; return kTRUE;}
 
   void SetJetTaskName(TString name){ fJetTaskName=name; }
+  void SetMCJetTaskName(TString name){ fMCJetTaskName=name; }
   void SetJJetJtAnalysis(AliJJetJtAnalysis * jco){ fJJetJtAnalysis=jco; }
   void SetCard( AliJCard * card ){ fCard=card; }
+  void SetMC(int mc) {fDoMC = mc;};
   void SetNrandom( int Nrand) { NRandom = Nrand;}
   void SetMoveJet( int move) { moveJet = move;}
 
@@ -56,7 +58,9 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   
   // TODO new Task - AliJJetTask?
   AliJJetTask           * fJetTask;
+  AliJJetTask           * fMCJetTask;
   TString                 fJetTaskName;
+  TString                 fMCJetTaskName;
   AliJJetJtAnalysis     * fJJetJtAnalysis;
   TDirectory     * fOutput;
   AliJCard              * fCard;
@@ -65,6 +69,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   int zBin;
   int NRandom;
   int moveJet;
+  int fDoMC;
   double zVert;
   AliAnalysisUtils *fAnaUtils;
   AliJRunTable *fRunTable;

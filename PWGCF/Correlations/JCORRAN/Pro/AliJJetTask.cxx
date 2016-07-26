@@ -47,6 +47,7 @@
 #include "AliClusterContainer.h"
 #include "AliPicoTrack.h"
 #include "AliJBaseTrack.h"
+#include "AliJMCTrack.h"
 #include "AliJJet.h"
 #include "AliJJetTask.h"
 
@@ -55,54 +56,61 @@ ClassImp(AliJJetTask);
 
 //________________________________________________________________________
 AliJJetTask::AliJJetTask() : 
-	AliAnalysisTaskEmcalJet("AliJJetTask", kTRUE),
-	fJetsCont(),
-	fTracksCont(),
-	fCaloClustersCont(),
-	fJTracks("AliJBaseTrack",1000),
-	fJJets(),
-	fTaskEntry(-1),
-	fJetFinderString(),
-	fTrackArrayName("nonejk"),
-	fNJetFinder(0),
-	debug(0)
+  AliAnalysisTaskEmcalJet("AliJJetTask", kTRUE),
+  fJetsCont(),
+  fTrackOrMCParticle(),
+  fJTracks("AliJBaseTrack",1000),
+  fJClusters("AliJBaseTrack",1000),
+  fJMCTracks("AliJMCTrack",1000),
+  fJJets(),
+  fTaskEntry(-1),
+  fJetFinderString(),
+  fTrackArrayName("nonejk"),
+  fNJetFinder(0),
+  debug(0),
+  fIsMC(0)
 
 {
-	// Default constructor.
+  // Default constructor.
 
 
-	SetMakeGeneralHistograms(kTRUE);
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
 AliJJetTask::AliJJetTask(const char *name, const int nJetFinder) : 
-	AliAnalysisTaskEmcalJet(name, kTRUE),
-	fJetsCont(nJetFinder),
-	fTracksCont(nJetFinder),
-	fCaloClustersCont(nJetFinder),
-	fJTracks("AliJBaseTrack",1000),
-	fJJets(),
-	fTaskEntry(-1),
-	fJetFinderString(nJetFinder),
-	fTrackArrayName("nonejk"),
-	fNJetFinder(nJetFinder),
-	debug(0)
+  AliAnalysisTaskEmcalJet(name, kTRUE),
+  fJetsCont(nJetFinder),
+  fTrackOrMCParticle(nJetFinder,kJUndefined),
+  fJTracks("AliJBaseTrack",1000),
+  fJClusters("AliJBaseTrack",1000),
+  fJMCTracks("AliJMCTrack",1000),
+  fJJets(),
+  fTaskEntry(-1),
+  fJetFinderString(nJetFinder),
+  fTrackArrayName("nonejk"),
+  fNJetFinder(nJetFinder),
+  debug(0),
+  fIsMC(0)
 {
-	SetMakeGeneralHistograms(kTRUE);
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 AliJJetTask::AliJJetTask(const AliJJetTask& ap) :
-	AliAnalysisTaskEmcalJet(ap.fName, kTRUE),
-	fJetsCont(ap.fJetsCont),
-	fTracksCont(ap.fTracksCont),
-	fCaloClustersCont(ap.fCaloClustersCont),
-	fJTracks(ap.fJTracks),
-	fJJets(ap.fJJets),
-	fTaskEntry(ap.fTaskEntry),
-	fJetFinderString(ap.fJetFinderString),
-	fTrackArrayName(ap.fTrackArrayName),
-	fNJetFinder(ap.fNJetFinder),
-	debug(ap.debug)
+  AliAnalysisTaskEmcalJet(ap.fName, kTRUE),
+  fJetsCont(ap.fJetsCont),
+  //fCaloClustersCont(ap.fCaloClustersCont),
+  fTrackOrMCParticle(ap.fTrackOrMCParticle),
+  fJTracks(ap.fJTracks),
+  fJMCTracks(ap.fJMCTracks),
+  fJClusters(ap.fJClusters),
+  fJJets(ap.fJJets),
+  fTaskEntry(ap.fTaskEntry),
+  fJetFinderString(ap.fJetFinderString),
+  fTrackArrayName(ap.fTrackArrayName),
+  fNJetFinder(ap.fNJetFinder),
+  debug(ap.debug),
+  fIsMC(ap.fIsMC)
 {
 
 }
@@ -111,17 +119,17 @@ AliJJetTask::AliJJetTask(const AliJJetTask& ap) :
 AliJJetTask& AliJJetTask::operator = (const AliJJetTask& ap)
 {
 
-	this->~AliJJetTask();
-	new(this) AliJJetTask(ap);
-	return *this;
+  this->~AliJJetTask();
+  new(this) AliJJetTask(ap);
+  return *this;
 }
 
 //________________________________________________________________________
 AliJJetTask::~AliJJetTask()
 {
-	// Destructor.
+  // Destructor.
 
-	//delete[] fJJets;
+  //delete[] fJJets;
 }
 
 
@@ -130,33 +138,27 @@ AliJJetTask::~AliJJetTask()
 //________________________________________________________________________
 void AliJJetTask::UserCreateOutputObjects()
 {
-	// Create user output.
+  // Create user output.
 
-	fJetsCont.resize(fNJetFinder); 
-	fJJets.clear();
-	fJJets.resize(fNJetFinder, TClonesArray("AliJJet",1000));
-	fTracksCont.resize(fNJetFinder); 
-	fCaloClustersCont.resize(fNJetFinder); 
+  //== Init Variables
+  fJJets.clear();
+  fJJets.resize( fNJetFinder, TClonesArray("AliJJet",1000) );
+  fJetsCont.resize( fNJetFinder ); 
+  //fCaloClustersCont.resize( fNJetFinder ); 
 
+  cout << "Debug 1" << endl;
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  cout << "Debug 2" << endl;
 
-	AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  fJetFinderString.clear();
 
-
-	//fJJets = new TClonesArray[fNJetFinder];
-
-
-	fJetFinderString.clear();
-	for (int i=0; i<fNJetFinder; i++){
-		fJetsCont[i]           = GetJetContainer(i);
-		fJetFinderString.push_back(fJetsCont[i]->GetArrayName());
-		cout << i <<"\t" << fJetFinderString[i] << endl;
-		fTracksCont[i]       = GetParticleContainer(0);
-		fCaloClustersCont[i] = GetClusterContainer(0);
-		fTracksCont[i]->SetClassName("AliVTrack");
-		fCaloClustersCont[i]->SetClassName("AliAODCaloCluster");
-		//fJJets.push_back(TClonesArray("AliJJet",1000));
-	}
+  cout << "fNJetFinder: " << fNJetFinder << endl;
+  for (int i=0; i<fNJetFinder; i++){
+    fJetsCont[i]           = GetJetContainer(i);
+    fJetFinderString.push_back(fJetsCont[i]->GetArrayName());
+    cout << i <<"\t" << fJetFinderString[i] << endl;
+  }
 
 }
 
@@ -164,96 +166,148 @@ void AliJJetTask::UserCreateOutputObjects()
 Bool_t AliJJetTask::FillHistograms()
 {
 
-
-
-    for (int itrack = 0; itrack<fTracksCont[0]->GetNParticles(); itrack++){
-        AliVTrack *track = static_cast<AliVTrack*>(fTracksCont[0]->GetParticle(itrack));
-        new (fJTracks[itrack]) AliJBaseTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,0);
-
+  // FIXME : We assume that we have only one of each. be  carefull. This must be fixed later
+  //== AliJTrack
+  //FIXME Search by container name
+  AliParticleContainer *tracksCont = GetParticleContainer("tracks");
+  if(debug > 0){
+    cout << "AliParticleContainer name: " << tracksCont->GetName() << endl;
+  }
+  if( tracksCont ){
+    for (int itrack = 0; itrack<tracksCont->GetNParticles(); itrack++){
+      AliVTrack *track = static_cast<AliVTrack*>(tracksCont->GetParticle(itrack));
+      new (fJTracks[itrack]) AliJBaseTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
     }     
+  }
 
+  //FIXME Search by container name
+  AliMCParticleContainer * mcTracksCont = GetMCParticleContainer("mcparticles");
+  if(debug > 0){
+    cout << "MCParticleContainer name: " << mcTracksCont->GetName() << endl;
+  }
+  if( mcTracksCont ){
+    if(debug > 0){
+      cout << "mcTracksCont->GetNParticles(): " << mcTracksCont->GetNParticles() << endl;
+    }
+    for (int itrack = 0; itrack<mcTracksCont->GetNParticles(); itrack++){
+      AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
+      new (fJMCTracks[itrack]) AliJMCTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
+      if(debug > 0){
+        cout << "Track " << itrack << " Px: " << track->Px() << " Py: " << track->Py() << " Pz: " << track->Pz() << " charge: " << track->Charge() << endl;
+      }
+      AliJMCTrack * particle = static_cast<AliJMCTrack*>(fJMCTracks[itrack]);
+      particle->SetPdgCode(track->GetPdgCode());
+    }     
+  }
 
+  AliClusterContainer *clusterCont = GetClusterContainer(0);
+  if( clusterCont ){
+    for (int itrack = 0; itrack<clusterCont->GetNClusters(); itrack++){
+      AliAODCaloCluster *track = static_cast<AliAODCaloCluster*>(clusterCont->GetCluster(itrack));
+      TLorentzVector momentum;
+      Double_t vertex[3] = {0,0,0}; //FIXME Get the true collision vertex
+      track->GetMomentum(momentum,vertex); //FIXME Find the right way of getting the momentum
+      new (fJClusters[itrack]) AliJBaseTrack(momentum.Px(),momentum.Py(), momentum.Pz(), track->E(), itrack,0,0); //No charge in AliAODCaloCluster //FIXME Particle type?
+      // FIXME: AliJPhoton instead of JBaseTrack?
+    }     
+  }
 
+  for (int i=0; i<fNJetFinder; i++){
+    if( ! fJetsCont[i] ){
+      // FIXME: Give Warning!
+      continue;
+    }
 
-	for (int i=0; i<fNJetFinder; i++){
-		fJetsCont[i]->ResetCurrentID();
-		AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet();
-		int iJet =0; 
+    fJetsCont[i]->ResetCurrentID(); // FIXME:Comments me //Needed to reset internal iterator
+    AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet();
+    int iJet =0; 
 
-		//fills fJJets[icontainer][ijet] and histograms        
-		while(jet){
-			TClonesArray & jets = fJJets[i];
-			new (jets[iJet]) AliJJet(jet->Px(),jet->Py(), jet->Pz(), jet->E(), jet->GetLabel(),0,0);
-			AliJJet * j = (AliJJet*) fJJets[i][iJet];   
-			j->SetArea(jet->Area() );
+    //fills fJJets[icontainer][ijet] and histograms        
+    while(jet){
+      TClonesArray & jets = fJJets[i]; // just alias for AliJJet array
+      new (jets[iJet]) AliJJet(jet->Px(),jet->Py(), jet->Pz(), jet->E(), jet->GetLabel(),0,0);
+      AliJJet * j = (AliJJet*) fJJets[i][iJet];   
+      j->SetArea( jet->Area() );
 
+      //== TRACK or Particle
+      int nTrack = jet->GetNumberOfTracks();
+      for (int it=0; it<nTrack; it++){
+        int iTrack = jet->TrackAt(it);
+        if( fTrackOrMCParticle[i] == kJRecoTrack ){
+          j->AddConstituent(fJTracks[iTrack]); // Save as pointers
+        } else {
+          j->AddConstituent(fJMCTracks[iTrack]); // Save as pointers
+          if(debug > 0){
+            cout << "iTrack: " << iTrack << endl;
+          }
+        }
+      }
+      //Particle type is kJCluster, set particle type§
+      int nCluster = jet->GetNumberOfClusters();
+      for (int it=0; it<nCluster; it++){
+        int iTrack = jet->ClusterAt(it);
+        j->AddConstituent(fJClusters[iTrack]); // Save as pointers
+      }
 
-			Int_t nConstituents = jet->GetNumberOfTracks();
+      Int_t nConstituents = jet->GetNumberOfConstituents();
 
-			for (int it=0; it<nConstituents; it++){
-				int iTrack = jet->TrackAt(it);
-				j->AddConstituent(fJTracks[iTrack]);
+      if (debug>0) { 
+        cout
+          << "    iContainer    : " << i
+          << "    iJet          : " << iJet
+          << "    iTrack        : " << nTrack
+          << "    iCluster      : " << nCluster
+          << "    nConstituents : " << nConstituents
+          << endl;
+      }
 
-			}
-
-			if (debug>0) { cout<<"    iContainer    : "<<i<< 
-				"    iJet          : "<<iJet<<
-					"    nConstituents : "<<nConstituents<<endl;
-			}
-
-			//Goes to the next jet
-			jet = fJetsCont[i]->GetNextAcceptJet();
-			if (debug>0) {
-				cout<<"  fJJets N lists : "<<fJJets[i].GetEntries()<<
-					"  fJJets constituents : "<<((AliJJet*)fJJets[i][iJet])->GetConstituents()->GetEntries()<<endl;
-			}
-
-			iJet++;
-		}
-
-
-	}
-
-
-	return kTRUE;
+      //Goes to the next jet
+      jet = fJetsCont[i]->GetNextAcceptJet();
+      if (debug>0) {
+        cout
+          << "  fJJets N lists : "     << fJJets[i].GetEntries()
+          << "  fJJets constituents : "<< ((AliJJet*)fJJets[i][iJet])->GetConstituents()->GetEntries()
+          <<endl;
+      }
+      iJet++;
+    }
+  }
+  return kTRUE;
 
 }
-
-
-
 
 //________________________________________________________________________
 void AliJJetTask::ExecOnce() {
 
-	if(debug > 0){
-		cout << "AliJJetTask::ExecOnce(): " << endl;
-	}
-	AliAnalysisTaskEmcalJet::ExecOnce();
+  if(debug > 0){
+    cout << "AliJJetTask::ExecOnce(): " << endl;
+  }
+  AliAnalysisTaskEmcalJet::ExecOnce();
 
-	for (int i=0; i<fNJetFinder; i++){
-		if (fJetsCont[i] && fJetsCont[i]->GetArray() == 0) fJetsCont[i] = 0;
-		if (fTracksCont[i] && fTracksCont[i]->GetArray() == 0) fTracksCont[i] = 0;
-		if (fCaloClustersCont[i] && fCaloClustersCont[i]->GetArray() == 0) fCaloClustersCont[i] = 0;
-	}
+  for (int i=0; i<fNJetFinder; i++){
+    if (fJetsCont[i] && fJetsCont[i]->GetArray() == 0) fJetsCont[i] = 0;
+  }
 }
 
 //________________________________________________________________________
 Bool_t AliJJetTask::Run()
 {
-	// Run analysis code here, if needed. It will be executed before FillHistograms().
-	fTaskEntry = fEntry;
-	for (int i=0; i<fNJetFinder; i++){
-		fJJets[i]. Clear();
-	}
-	fJTracks.Clear(); 
+  // Run analysis code here, if needed. It will be executed before FillHistograms().
+  fTaskEntry = fEntry; // FIXME: Comments me
 
-	if (debug >0 && Entry()%1000 ==0 ) cout<<Entry()<<endl;
-	return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
+  //== Clear Before Fill Histogram
+  for (int i=0; i<fNJetFinder; i++) { fJJets[i]. Clear();
+    fJTracks.Clear(); 
+    fJMCTracks.Clear();
+
+  }
+  if (debug >0 && Entry()%1000 ==0 ) cout<<Entry()<<endl;
+  return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
 }
 
 //________________________________________________________________________
 void AliJJetTask::Terminate(Option_t *) 
 {
-	// Called once at the end of the analysis.
+  // Called once at the end of the analysis.
 }
 

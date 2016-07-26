@@ -1,5 +1,5 @@
 /***************************************************************************
-              Anders Knospe - last modified on 9 July 2015
+              Anders Knospe - last modified on 26 March 2016
 
 //Lauches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
@@ -14,7 +14,9 @@ enum eventCutSet { kEvtDefault=0,
 		   kDefaultVtx12,//=2
 		   kDefaultVtx8, //=3
 		   kDefaultVtx5, //=4                    
-		   kMCEvtDefault //=5
+		   kMCEvtDefault, //=5                   
+		   kSpecial1, //=6                   
+		   kSpecial2 //=7
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -41,7 +43,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  TString     monitorOpt="NoSIGN",
  Bool_t      useMixLS=0,
  Bool_t      checkReflex=0,
- AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt
+ AliRsnMiniValue::EType yaxisvar=AliRsnMiniValue::kPt,
+ TString     polarizationOpt="" /* J - Jackson,T - Transversity */
 )
 {  
   //-------------------------------------------
@@ -55,6 +58,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
   if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
+  if(evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
 
   if(!isPP || isMC) rejectPileUp=kFALSE;
 
@@ -85,12 +89,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
-    ::Error("AddAnalysisTaskTOFKStar", "No analysis manager to connect to.");
+    ::Error("AddTaskPhiPP13TeV_PID", "No analysis manager to connect to.");
     return NULL;
   }
 
   // create the task and configure 
-  TString taskName=Form("TOFphi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
+  TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
   //task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
   task->SelectCollisionCandidates(triggerMask); //AOD
@@ -104,7 +108,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   task->SetNMix(nmix);
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
-  ::Info("AddAnalysisTaskTOFKStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+  ::Info("AddTaskPhiPP13TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
 
   mgr->AddTask(task);
 
@@ -112,25 +116,33 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 2nd argument --> |Vz| range
   // - 3rd argument --> minimum required number of contributors to vtx
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-  AliRsnCutPrimaryVertex* cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-  cutVertex->SetCheckZResolutionSPD();
-  cutVertex->SetCheckDispersionSPD();
-  cutVertex->SetCheckZDifferenceSPDTrack();
+
+  AliRsnCutPrimaryVertex* cutVertex=0;
+  if(evtCutSetID!=eventCutSet::kSpecial1){
+    cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+    cutVertex->SetCheckZResolutionSPD();
+    cutVertex->SetCheckDispersionSPD();
+    cutVertex->SetCheckZDifferenceSPDTrack();
+  }
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-  if(aodFilterBit<200) cutEventUtils->SetCheckIncompleteDAQ();
+  cutEventUtils->SetCheckIncompleteDAQ();
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
-  if(isPP && (!isMC)){ 
+  if(isPP && (!isMC) && cutVertex){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
-    ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));   
+    ::Info("AddTaskPhiPP13TeV_PID", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
 
   // define and fill cut set for event cut
   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
   eventCuts->AddCut(cutEventUtils);
-  eventCuts->AddCut(cutVertex);
-  eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+  if(cutVertex){
+    eventCuts->AddCut(cutVertex);
+    eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+  }else{
+    eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+  }
   task->SetEventCuts(eventCuts);
 
   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
@@ -165,7 +177,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
-  if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar)) return 0x0;
+  if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
 

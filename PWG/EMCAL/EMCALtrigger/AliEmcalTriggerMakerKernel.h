@@ -7,8 +7,7 @@
 #include <iostream>
 
 #include <TObject.h>
-
-#include "AliEMCALTriggerChannelContainer.h"
+#include <TArrayF.h>
 
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
@@ -89,11 +88,6 @@ public:
   void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
   /**
-   * Set the size of jet patches
-   * @param patchsize Size of jet patches
-   */
-  void SetJetPatchsize(Int_t patchsize)                          { fJetPatchsize = patchsize; }
-  /**
    * Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */
@@ -109,7 +103,7 @@ public:
    * Set the trigger bit configuration applied for the given data set
    * @param config Trigger bit config applied
    */
-  void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *const config) { fTriggerBitConfig = config; }
+  void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *const config);
 
   /**
    * Set range for L0 time
@@ -117,6 +111,32 @@ public:
    * @param max Maximum L0 time (default is 10)
    */
   void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
+
+  /**
+   * Set thresholds applied to FastORs and offline cells before patch reconstruction
+   * @param l0 Threshold for L0 FastOR amplitudes
+   * @param l1 Threshold for L1 FastOR amplitudes
+   * @param cell Threshold for cell amplitudes
+   */
+  void SetFastORandCellThresholds(Int_t l0, Int_t l1, Int_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
+
+  /**
+   * Add a FastOR bad channel to the list
+   * @param absId Absolute ID of the bad channel
+   */
+  void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+
+  /**
+   * Read the FastOR bad channel map from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadFastORBadChannelFromStream(std::istream& stream);
+
+  /**
+   * Read the FastOR bad channel map from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadFastORBadChannelFromFile(const char* fname);
 
   /**
    * Add an offline bad channel to the set
@@ -135,6 +155,30 @@ public:
    * @param fname Path and name of the file
    */
   void ReadOfflineBadChannelFromFile(const char* fname);
+
+  /**
+   * Read the FastOR pedestals from a standard stream
+   * @param stream A reference to a standard stream to read from (can be a file stream)
+   */
+  void ReadFastORPedestalFromStream(std::istream& stream);
+
+  /**
+   * Read the FastOR pedestals from a text file
+   * @param fname Path and name of the file
+   */
+  void ReadFastORPedestalFromFile(const char* fname);
+
+  /**
+   * Set the pedestal value for a FastOR
+   * @param absId Absolute ID of a FastOR
+   * @param ped   Pedestal value
+   */
+  void SetFastORPedestal(Short_t absId, Float_t ped);
+
+  /**
+   * Reset the FastOR pedestal array
+   */
+  void ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   /**
    * Reset data grids
@@ -162,6 +206,56 @@ public:
    */
   void BuildL1ThresholdsOffline(const AliVVZERO *vzdata);
 
+  /**
+   * Add a L1 trigger algorithm
+   * @param rowmin Minimum row value
+   * @param rowmax Maximum row value
+   * @param bitmask Offline bit mask to be applied to the patches
+   * @param patchSize Size of the patches
+   * @param subregionSize Size of the sliding sub region
+   */
+  void AddL1TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
+
+  /**
+   * Set the L0 algorithm
+   * @param rowmin Minimum row value
+   * @param rowmax Maximum row value
+   * @param bitmask Offline bit mask to be applied to the patches
+   * @param patchSize Size of the patches
+   * @param subregionSize Size of the sliding sub region
+   */
+  void SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
+
+  /**
+   * Configure the class for 2015 PbPb
+   */
+  void ConfigureForPbPb2015();
+
+  /**
+   * Configure the class for 2015 pp
+   */
+  void ConfigureForPP2015();
+
+  /**
+   * Configure the class for 2013 pPb
+   */
+  void ConfigureForPPb2013();
+
+  /**
+   * Configure the class for 2012 pp
+   */
+  void ConfigureForPP2012();
+
+  /**
+   * Configure the class for 2011 PbPb
+   */
+  void ConfigureForPbPb2011();
+
+  /**
+   * Configure the class for 2011 pp
+   */
+  void ConfigureForPP2011();
+
 protected:
   enum{
     kColsEta = 48
@@ -174,28 +268,6 @@ protected:
    * @return the status of the patch (not L0, candidate, fired)
    */
   ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
-
-  /**
-   * Create trigger algorithm for gamma triggers
-   * @param rowmin Minimum row the trigger algorithm operates on
-   * @param rowmax Maximum row the trigger algorithm operates on
-   * @return The gamma trigger algorithm
-   */
-  AliEMCALTriggerAlgorithm<double> *CreateGammaTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
-  /**
-   * Create trigger algorithm for jet triggers
-   * @param rowmin Minimum row the trigger algorithm operates on
-   * @param rowmax Maximum row the trigger algorithm operates on
-   * @return The jet trigger algorithm
-   */
-  AliEMCALTriggerAlgorithm<double> *CreateJetTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
-  /**
-   * Create trigger algorithm for jet triggers
-   * @param rowmin Minimum row the trigger algorithm operates on
-   * @param rowmax Maximum row the trigger algorithm operates on
-   * @return The jet trigger algorithm
-   */
-  AliEMCALTriggerAlgorithm<double> *CreateBkgTriggerAlgorithm(Int_t rowmin, Int_t rowmax) const;
 
   /**
    * Check from the bitmask whether the patch is a gamma patch
@@ -216,34 +288,36 @@ protected:
    */
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
 
-  AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
+  std::set<Short_t>                         fBadChannels;                 ///< Container of bad channels
   std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
-  const AliEMCALTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
-  const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
+  TArrayF                                   fFastORPedestal;              ///< FastOR pedestal
+  const AliEMCALTriggerBitConfig           *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
 
+  AliEMCALTriggerPatchFinder<double>       *fPatchFinder;                 ///< The actual patch finder
+  AliEMCALTriggerAlgorithm<double>         *fLevel0PatchFinder;           ///< Patch finder for Level0 patches
+  Int_t                                     fL0MinTime;                   ///< Minimum L0 time
+  Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
+  Int_t                                     fMinCellAmp;                  ///< Minimum offline amplitude of the cells used to generate the patches
+  Int_t                                     fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs used to generate the patches
+  Int_t                                     fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs used to generate the patches
+  Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
+  ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
+  Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
+  Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
+  Bool_t                                    fIsMC;                        ///< Set MC offset
+  Int_t                                     fDebugLevel;                  ///< Debug lebel;
+
+  const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
   AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
   AliEMCALTriggerDataGrid<double>           *fPatchADC;                   //!<! ADC values map
   AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   AliEMCALTriggerDataGrid<int>              *fTriggerBitMap;              //!<! Map of trigger bits
 
-  AliEMCALTriggerPatchFinder<double>        *fPatchFinder;                //!<! The actual patch finder
-  AliEMCALTriggerAlgorithm<double>          *fLevel0PatchFinder;          //!<! Patch finder for Level0 patches
-  Int_t                                     fL0MinTime;                   ///< Minimum L0 time
-  Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
   Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 
-  Int_t                                     fJetPatchsize;                ///< Size of a jet patch
-  Int_t                                     fThresholdConstants[4][3];    ///< simple offline trigger thresholds constants
-  ULong64_t                                 fL1ThresholdsOffline[4];      ///< container for V0-dependent offline thresholds
-  Int_t                                     fBkgThreshold;                ///< threshold for the background patches (8x8)
-  Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
-  Bool_t                                    fIsMC;                        ///< Set MC offset
-
-  Int_t                                     fDebugLevel;                  ///< Debug lebel;
-
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerMakerKernel, 1);
+  ClassDef(AliEmcalTriggerMakerKernel, 4);
   /// \endcond
 };
 

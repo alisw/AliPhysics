@@ -15,6 +15,7 @@
 
 # Include the libraries
 add_subdirectory(Base)
+add_subdirectory(C2)
 add_subdirectory(DPhi)
 add_subdirectory(JCORRAN)
 add_subdirectory(ThreePart)

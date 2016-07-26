@@ -1,14 +1,3 @@
-/**
- * \file AliEmcalTrackSelection.h
- * \brief Declartion of class AliEmcalTrackSelection
- *
- * In this header file the class AliEmcalTrackSelection, which handles the
- * track selection in a transparent way for ESD, AOD and Pico Tracks, is declared.
- *
- * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
- * \date Jan 30, 2016
- */
 #ifndef ALIEMCALTRACKSELECTION_H_
 #define ALIEMCALTRACKSELECTION_H_
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
@@ -27,6 +16,9 @@ class AliVTrack;
  * \class AliEmcalTrackSelection
  * \brief Interface for virtual track selection
  * \ingroup EMCALCOREFW
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * \date Jan 30, 2016
  *
  * Interface for track selection within the EMCAL framework. Enables transparent track selection
  * for ESDs and AODs by implementing a wrapper derived from this class. The following abstract
@@ -34,6 +26,8 @@ class AliVTrack;
  * - GetAcceptedTracks (with TClonesArray and AliVEvent as parameters)
  * - IsTrackAccepted (with AliVTrackCuts)
  * - GenerateTrackCuts
+ *
+ * The usage of the virtual track selection is described here: \subpage VirtualTrackSelection
  */
 class AliEmcalTrackSelection : public TObject {
 public:

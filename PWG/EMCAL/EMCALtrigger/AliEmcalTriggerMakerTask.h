@@ -98,7 +98,7 @@ public:
    * @param min Minimum L0 time (default is 7)
    * @param max Maximum L0 time (default is 10)
    */
-  void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
+  void SetL0TimeRange(Int_t min, Int_t max) { if (fTriggerMaker) fTriggerMaker->SetL0TimeRange(min, max); }
 
 
   /**
@@ -117,7 +117,7 @@ public:
    * Trigger bit configuration to be used in the trigger patch maker.
    * @param bitConfig Type of the trigger bit config (old - 3 bit, new - 5 bit)
    */
-  void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
+  void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig);
 
   void SetTriggerThresholdJetLow   ( Int_t a, Int_t b, Int_t c ) {
     if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdJetLow(a, b, c);
@@ -134,7 +134,6 @@ public:
 
   AliEmcalTriggerMakerKernel* GetTriggerMaker() const { return fTriggerMaker; }
 
-  void SetJetPatchsize(Int_t jetpatchsize) { fJetPatchsize    = jetpatchsize; }
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
 protected:
@@ -146,11 +145,7 @@ protected:
 
   TString                                 fCaloTriggersOutName;       ///< name of output track array
   TString                                 fV0InName;                  ///< name of output track array
-  TriggerMakerBitConfig_t                 fUseTriggerBitConfig;       ///< type of trigger config
-  Int_t                                   fJetPatchsize;              ///< Size of a jet patch
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
-  Int_t                                   fL0MinTime;                 ///< Minimum L0 time
-  Int_t                                   fL0MaxTime;                 ///< Maximum L0 time
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fDoQA;                      ///< Fill QA histograms

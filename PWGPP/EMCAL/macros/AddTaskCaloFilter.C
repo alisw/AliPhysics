@@ -116,7 +116,7 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
   AliEMCALRecoUtils * reco = filter->GetEMCALRecoUtils();
   reco->SwitchOnRejectExoticCluster() ;
   reco->SetExoticCellFractionCut(0.97);
-  reco->SetExoticCellMinAmplitudeCut(2.);
+  reco->SetExoticCellMinAmplitudeCut(4.);
 
   if(fillTrack) { filter->SwitchOnFillTracks()  ; filter->SwitchOnFillHybridTracks()  ; }
   else          { filter->SwitchOffFillTracks() ; filter->SwitchOffFillHybridTracks() ; }

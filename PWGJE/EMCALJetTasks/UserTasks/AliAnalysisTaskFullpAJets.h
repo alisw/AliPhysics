@@ -291,7 +291,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     
     virtual void UserCreateOutputObjects();
     virtual void UserExecOnce();
-    virtual void UserExec(Option_t *option);
+
+    virtual Bool_t Run();
     virtual void Terminate(Option_t *);
 
     // User Defined Sub-Routines
@@ -481,7 +482,6 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     {
         fDo3DHistos = do3DPlotting;
     };
-    
     private:
     TList *fOutput; //! Output list
     TList *flTrack; //! Track QA List

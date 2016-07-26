@@ -83,13 +83,14 @@ void AliAnalysisTaskJetsEvshape::UserCreateOutputObjects()
   fJetCollArray.Print();
   printf("end\n");
   if(fJetsCont) { //get particles and clusters connected to jets
+    fJetsCont->PrintCuts();
     fTracksCont       = fJetsCont->GetParticleContainer();
     fCaloClustersCont = fJetsCont->GetClusterContainer();
   } else {        //no jets, just analysis tracks and clusters
     fTracksCont       = GetParticleContainer(0);
     fCaloClustersCont = GetClusterContainer(0);
   }
-  if(fTracksCont) fTracksCont->SetClassName("AliVTrack");
+  if(fTracksCont) fTracksCont->SetClassName("AliVParticle");
   if(fCaloClustersCont) fCaloClustersCont->SetClassName("AliVCluster");
 
   // setup list
@@ -167,16 +168,16 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
   FillH1(kHistStat, kStatUsed);
 
   AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
-  Int_t nTracklets = mult->GetNumberOfTracklets();
+  const Int_t nTracklets = mult ? mult->GetNumberOfTracklets() : -1;
   FillH1(kHistMult, nTracklets);
 
   if (fJetsCont) {
+    // const Int_t nJets         = fJetsCont->GetNJets();
+    // const Int_t nAcceptedJets = fJetsCont->GetNAcceptedJets();
+
     fJetsCont->ResetCurrentID();
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
-    Int_t i = 0;
-    while (jet) {
+    while (AliEmcalJet *jet = fJetsCont->GetNextAcceptJet()) {
       FillH1(kHistJetPt, jet->Pt());
-      jet = fJetsCont->GetNextAcceptJet();
     }
   }
 

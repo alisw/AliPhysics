@@ -131,16 +131,17 @@ public:
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
     
-    AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
+    AliHelperPID                   * GetHelperPID()     { return fHelperPID; }
     //AliHelperPID* helperpid;
  
-    void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid; }
+    void SetHelperPID(AliHelperPID* pid)                { fHelperPID = pid; }
 
     void SetParticleSpecies( int species ){ particleSpecies = species; }
 
-    void SetAnalysisType( const char* analysisType ) { fAnalysisType = analysisType; }
-    void SetResonancesCut( Bool_t NoResonances )     { fExcludeResonancesInMC = NoResonances; }
-    void SetElectronCut( Bool_t NoElectron )         { fExcludeElectronsInMC = NoElectron; }
+    void SetAnalysisType( const char * analysisType ) { fAnalysisType = analysisType; }
+    void SetSystemType( const char * systemType )     { fSystemType = systemType; }
+    void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
+    void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
     
 protected:
     
@@ -192,6 +193,7 @@ protected:
     Double_t particleSpecies;
 
     TString      fAnalysisType;
+    TString      fSystemType;
 
     Bool_t fExcludeResonancesInMC;
     Bool_t fExcludeElectronsInMC;
@@ -345,9 +347,7 @@ protected:
     TH3F * _vZ_y_eta_POI_AliHelperPID;
 
     TH2F * _y_Pt_AllCh_MCAODTruth;
-    TH2F * _y_Pt_Pion_MCAODTruth;
-    TH2F * _y_Pt_Kaon_MCAODTruth;
-    TH2F * _y_Pt_Proton_MCAODTruth;
+    TH2F * _y_Pt_POI_MCAODTruth;
     
     TH1F * _phidis_POI_AliHelperPID;
     TH1F * _phidis_before_any_cuts;
@@ -521,7 +521,7 @@ protected:
     TString vsPtVsPt;
     
     
-    ClassDef(AliAnalysisTaskPIDBFDptDpt,1)
+    ClassDef(AliAnalysisTaskPIDBFDptDpt,2)
 }; 
 
 

@@ -238,6 +238,12 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliF
 
   // Calculate dEta:
   double deta = eta2 - eta1;
+
+  // Calculate dPhiStar for minimal radius:
+  double afsi0b_radiusmin = -0.07510020733*chg1*fMagSign*fRadiusMin/pt1;
+  double afsi1b_radiusmin = -0.07510020733*chg2*fMagSign*fRadiusMin/pt2;
+  Double_t dphistar_radiusmin =  phi2 - phi1 + TMath::ASin(afsi1b_radiusmin) - TMath::ASin(afsi0b_radiusmin);
+  dphistar_radiusmin = TVector2::Phi_mpi_pi(dphistar_radiusmin);
   
   if(TMath::Abs(deta) < TMath::Abs(fDEtaMax)) {
     
@@ -255,9 +261,9 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliF
 
       // Check if pair parameters meet the requirements:
       if(distance < fDistanceMax) {
-	fDPhiStarKStarMergedNumerator->Fill(kstar, dphistar);
+	fDPhiStarKStarMergedNumerator->Fill(kstar, dphistar_radiusmin);
       }
-      fDPhiStarKStarTotalNumerator->Fill(kstar, dphistar);
+      fDPhiStarKStarTotalNumerator->Fill(kstar, dphistar_radiusmin);
     }
   }
 }
@@ -299,6 +305,12 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( Ali
 
   // Calculate dEta:
   double deta = eta2 - eta1;
+
+  // Calculate dPhiStar for minimal radius:
+  double afsi0b_radiusmin = -0.07510020733*chg1*fMagSign*fRadiusMin/pt1;
+  double afsi1b_radiusmin = -0.07510020733*chg2*fMagSign*fRadiusMin/pt2;
+  Double_t dphistar_radiusmin =  phi2 - phi1 + TMath::ASin(afsi1b_radiusmin) - TMath::ASin(afsi0b_radiusmin);
+  dphistar_radiusmin = TVector2::Phi_mpi_pi(dphistar_radiusmin);
   
   if(TMath::Abs(deta) < TMath::Abs(fDEtaMax)) {
     
@@ -316,9 +328,9 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( Ali
 
       // Check if pair parameters meet the requirements:
       if(distance < fDistanceMax) {
-	fDPhiStarKStarMergedDenominator->Fill(kstar, dphistar);
+	fDPhiStarKStarMergedDenominator->Fill(kstar, dphistar_radiusmin);
       }
-      fDPhiStarKStarTotalDenominator->Fill(kstar, dphistar);
+      fDPhiStarKStarTotalDenominator->Fill(kstar, dphistar_radiusmin);
     }
   }
 }

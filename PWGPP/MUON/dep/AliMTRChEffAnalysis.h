@@ -27,8 +27,8 @@ class AliMTRChEffAnalysis : public TObject {
   AliMTRChEffAnalysis();
   AliMTRChEffAnalysis ( const char *localFileList, const char *outputName = "testMTRChamberEff" );
 
-  TArrayI GetHomogeneusRanges ( Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, Bool_t perRPC = kTRUE, TArrayI* forcedChanges = 0x0, Double_t minEff = 0.85, Double_t maxEff = 1.01 );
-  TArrayI GetHomogeneusRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Bool_t returnIndex = kFALSE );
+  TArrayI GetHomogeneousRanges ( Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, Bool_t perRPC = kTRUE, TArrayI* forcedChanges = 0x0, Double_t minEff = 0.85, Double_t maxEff = 1.01 );
+  TArrayI GetHomogeneousRanges ( TGraphAsymmErrors* trendGraph, Double_t chi2Cut = 3, Int_t maxNRanges = 4, Double_t minEffVariation = 0.005, TArrayI* forcedChanges = 0x0, Bool_t returnIndex = kFALSE );
 
   void DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmasOutliers = -1., Double_t minEff = 0.8, Double_t maxEff = 1.01 ) const;
   void DrawStatContribution ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers = -1., Double_t minY = 0., Double_t maxY = 0.15 ) const;
@@ -41,6 +41,7 @@ class AliMTRChEffAnalysis : public TObject {
   TGraphAsymmErrors* GetTrendEff ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const;
 
   Int_t CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "" ) const;
+  Int_t CompareEfficiencyMethods ( const char* source, const char* opt, const char* canvasNameSuffix = "" ) const;
   void CompareMergedEfficiencies ( const char* opt ) const;
 
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
@@ -73,6 +74,8 @@ class AliMTRChEffAnalysis : public TObject {
   Int_t GetIndexFromRun ( UInt_t runNumber ) const;
   Int_t GetRunNumber ( Int_t ipt ) const;
   TList* GetRunList ( const char* runList ) const;
+
+  Bool_t GetShortConditionTitles ( AliTrigChEffOutput* trigOut, TObjArray& condTitles ) const;
 
   TH1* GetSum ( AliTrigChEffOutput* trigOut, TObjArray* condition, Int_t itype, Int_t icount, Int_t ichamber ) const;
 

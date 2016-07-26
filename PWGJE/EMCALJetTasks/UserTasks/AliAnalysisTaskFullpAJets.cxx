@@ -920,7 +920,7 @@ void AliAnalysisTaskFullpAJets::UserExecOnce()
     fIsInitialized=kTRUE;
 }
 //________________________________________________________________________
-void AliAnalysisTaskFullpAJets::UserExec(Option_t *) 
+Bool_t AliAnalysisTaskFullpAJets::Run()
 {
     if (fIsInitialized==kFALSE)
     {
@@ -932,15 +932,9 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     if (!fEvent)
     {
         AliError("Pointer == 0, this can not happen!");
-        return;
+        return 0;
     }
-    
-    // Check if Event is selected (for triggers)
-    if (IsEventSelected() == kFALSE)
-    {
-        return;
-    }
-    
+
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(fEvent);
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
     
@@ -957,7 +951,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
             if (TMath::Sqrt(TMath::Power(esd->GetPrimaryVertex()->GetX(),2)+TMath::Power(esd->GetPrimaryVertex()->GetY(),2))>fVertexMaxR)
             {
                 DeleteJetData(0);
-                return;
+                return 0;
             }
         }
 
@@ -975,7 +969,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
             if (TMath::Sqrt(TMath::Power(aod->GetPrimaryVertex()->GetX(),2)+TMath::Power(aod->GetPrimaryVertex()->GetY(),2))>fVertexMaxR)
             {
                 DeleteJetData(0);
-                return;
+                return 0;
             }
         }
         
@@ -987,7 +981,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     {
         AliError("Cannot get AOD/ESD event. Rejecting Event");
         DeleteJetData(0);
-        return;
+        return 0;
     }
     
     // Make sure Centrality isn't exactly 100% (to avoid bin filling errors in profile plots. Make it 99.99
@@ -1013,7 +1007,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         AliWarning("No PicoTracks, Rejecting Event");
         DeleteJetData(1);
         PostData(1,fOutput);
-        return;
+        return 0;
     }
     
     if (fnClusters<1)
@@ -1061,7 +1055,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
         DeleteJetData(2);
         fnEventsCharged++;
         PostData(1,fOutput);
-        return;
+        return 0;
     }
 
     if (fTrackQA==kTRUE)
@@ -1125,6 +1119,7 @@ void AliAnalysisTaskFullpAJets::UserExec(Option_t *)
     DeleteJetData(3);
     fnEvents++;
     PostData(1,fOutput);
+    return 1;
 }
 
 //________________________________________________________________________

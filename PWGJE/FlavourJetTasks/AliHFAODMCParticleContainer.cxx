@@ -31,8 +31,6 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
   fAcceptedDecay(0)
 {
   // Constructor.
-
-  fClassName = "AliAODMCParticle";
 }
 
 /// This is the standard named constructor.
@@ -45,8 +43,6 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
   fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay)
 {
   // Constructor.
-
-  fClassName = "AliAODMCParticle";
 }
 
 
@@ -75,7 +71,8 @@ void AliHFAODMCParticleContainer::SelectCharmtoDStartoKpipi()
 /// \param Pointer to an AliVParticle object.
 Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(AliAODMCParticle* vp)
 {
-  return AliMCParticleContainer::AcceptMCParticle(vp);
+  UInt_t rejectionReason = 0;
+  return AliMCParticleContainer::AcceptMCParticle(vp, rejectionReason);
 }
 
 /// First check whether the particle is a "special" PDG particle (in which case the particle is accepted)
@@ -88,6 +85,7 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(AliAODMCParticle* vp)
 Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i)
 {
   // Determine whether the MC particle is accepted.
+  UInt_t rejectionReason = 0;
 
   AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fClArray->At(i));
 
@@ -110,22 +108,22 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i)
     // Special PDG particle. Apply generator cut and kinematic cuts.
 
     if (fGeneratorIndex >= 0 && fGeneratorIndex != part->GetGeneratorIndex()) {
-      fRejectionReason |= kMCGeneratorCut;
+      rejectionReason |= kMCGeneratorCut;
       return kFALSE;
     }
 
     AliTLorentzVector mom;
     GetMomentum(mom, i);
-    return ApplyKinematicCuts(mom);
+    return ApplyKinematicCuts(mom, rejectionReason);
   }
 
   if (IsSpecialPDGDaughter(part)) {
-    fRejectionReason = kHFCut;
+    rejectionReason = kHFCut;
     return kFALSE;  // daughter of a special PDG particle, reject it.
   }
 
   // Not a special PDG particle, and not a daughter of a special PDG particle. Apply regular cuts.
-  return AliMCParticleContainer::AcceptMCParticle(i);
+  return AliMCParticleContainer::AcceptMCParticle(i, rejectionReason);
 }
 
 /// Check if particle it's a daughter of a "special" PDG particle: AOD mode

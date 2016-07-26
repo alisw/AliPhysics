@@ -29,18 +29,19 @@ enum eventCutSet { kEvtDefault=0,  //data
 
 AliRsnMiniAnalysisTask * AddTaskF0
 (
- TString     outNameSuffix = "f0",
+ TString     outNameSuffix = "f0",  //suffix for output container
  AliPIDResponse::EBeamType  collSys = AliPIDResponse::kPP, //=0, kPPB=1, kPBPB=2 outNameSuffix
- Bool_t      isMC          = 0,
- UInt_t      triggerMask   = AliVEvent::kINT7,
- Int_t       evtCutSetID   = eventCutSet::kEvtDefault,
- Int_t       pairCutSetID  = pairYCutSet::kPairDefault,
- Int_t       aodFilterBit  = 5,
- Float_t     nsigma        = 3.0,
- Float_t     masslow       = 0.6,
- Float_t     massup        = 1.2,
- Int_t       nbins         = 600,
- Bool_t      enableMonitor = kTRUE)
+ Bool_t      isMC          = 0,     //MC flag
+ UInt_t      triggerMask   = AliVEvent::kINT7, //trigger selection
+ Int_t       evtCutSetID   = eventCutSet::kEvtDefault, //event selection
+ Int_t       pairCutSetID  = pairYCutSet::kPairDefault, //pair cuts
+ Int_t       aodFilterBit  = 5,     //AOD filter bit for AOD only
+ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiPid = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, //PID cut
+ Float_t     nsigma        = 3.0,   //PID cut
+ Float_t     masslow       = 0.6,   //inv mass range lower boundary
+ Float_t     massup        = 1.2,   //inv mass range upper boundary
+ Int_t       nbins         = 600,   //inv mass: N bins
+ Bool_t      enableMonitor = kTRUE) //enable single track QA
 {  
 
   //-------------------------------------------
@@ -337,8 +338,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   //
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //
-  gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGLF/RESONANCES/macros/mini/ConfigF0.C");
-  if (!ConfigF0(task, isMC, collSys, cutsPair, masslow, massup, nbins, aodFilterBit, nsigma, enableMonitor) ) return 0x0;
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF0.C");
+  if (!ConfigF0(task, isMC, collSys, cutsPair, masslow, massup, nbins, aodFilterBit, cutPiPid, nsigma, enableMonitor) ) return 0x0;
    
   // -- CONTAINERS --------------------------------------------------------------------------------
   TString outputFileName = AliAnalysisManager::GetCommonFileName();

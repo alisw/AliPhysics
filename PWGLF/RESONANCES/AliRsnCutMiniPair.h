@@ -22,6 +22,7 @@ public:
       kRapidityFiducialRegionMC,
       kMomentumComparison,
       kDCAproduct,
+      kDeltaCosRange,
       kTypes
    };
 

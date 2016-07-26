@@ -8,6 +8,7 @@
 # include <TError.h>
 # include <TMath.h>
 # include <TDirectory.h>
+# include <THashList.h>
 #else
 class TList;
 class TH1;
@@ -32,6 +33,85 @@ public:
    * Dummy destructor 
    */
   virtual ~AliTrackletdNdetaUtils() {}
+  //_________________________________________________________________________
+  /** 
+   * @{
+   * @name Service functions to check histogram consistencies 
+   */
+  /** 
+   * Check if both axis have the same number of bins 
+   * 
+   * @param which Which axis is being checked 
+   * @param a1    First axis
+   * @param a2    Second axis 
+   * 
+   * @return true of both axis have equal number of bins 
+   */
+  static Bool_t CheckAxisNBins(const char*  which,
+			       const TAxis* a1,
+			       const TAxis* a2);
+  /** 
+   * Check axis limits (min,max) are the same 
+   * 
+   * @param which Which axis we're checking 
+   * @param a1    First axis 
+   * @param a2    Second axis 
+   * 
+   * @return true if axis min/max are indetical 
+   */
+  static Bool_t CheckAxisLimits(const char*  which,
+				const TAxis* a1,
+				const TAxis* a2);
+  /** 
+   * In case of non-uniform bins, check each bin edge to see if they
+   * are the same
+   *  
+   * @param which Which axis we're checking  
+   * @param a1    First axis 
+   * @param a2    Second axis 
+   * 
+   * @return true if all bin edges are the same 
+   */
+  static Bool_t CheckAxisBins(const char*  which,
+			      const TAxis* a1,
+			      const TAxis* a2);
+  /** 
+   * Check if all bin labels (if specified) are the same 
+   * 
+   * @param which Which axis we're checking 
+   * @param a1    First axis 
+   * @param a2    Second axis 
+   * 
+   * @return True if all bin labels are the same 
+   */
+  static Bool_t CheckAxisLabels(const char*  which,
+				const TAxis* a1,
+				const TAxis* a2);
+  /** 
+   * Check that axis definitions are compatible 
+   * 
+   * @param which    Which axis we're checking 
+   * @param a1       First axis 
+   * @param a2       Second axis 
+   * @param alsoLbls If true, also check labels 
+   *  
+   * @return true if the axes are compatible 
+   */
+  static Bool_t CheckAxis(const char*  which, 
+			  const TAxis* a1,
+			  const TAxis* a2,
+			  Bool_t       alsoLbls);
+  /** 
+   * Check if two histograms are compatible by checking each defined
+   * axis.
+   * 
+   * @param h1 First histogram 
+   * @param h2 Second histogram 
+   * 
+   * @return true of they are compatible 
+   */
+  static Bool_t CheckConsistency(const TH1* h1, const TH1* h2);
+  /* @} */
   //__________________________________________________________________
   /** 
    * @{ 
@@ -177,6 +257,36 @@ public:
 		     const TAxis&   yAxis);
 
   /** 
+   * Scale a histogram by factor with error propagation 
+   * 
+   * @param h   Histogram to scale 
+   * @param x   Scalar 
+   * @param xe  Error on scalar 
+   * 
+   * @return Pointer to histogram 
+   */
+  static TH1* Scale(TH1* h, Double_t x, Double_t xe);
+  /** 
+   * Scale a histogram by factor with error propagation 
+   * 
+   * @param h   Histogram to scale 
+   * @param x   Scalar 
+   * @param xe  Error on scalar 
+   * 
+   * @return Pointer to histogram 
+   */
+  static TH2* Scale(TH2* h, Double_t x, Double_t xe);
+  /** 
+   * Scale the two dimensional histogram with content of the
+   * 1-dimensional histogram (over X)
+   * 
+   * @param h Histogram to scale 
+   * @param s The scalar histogram
+   * 
+   * @return The scaled histogram (pointer to input)
+   */
+  static TH2* Scale(TH2* h, TH1* s);
+  /** 
    * Fix axis attributes
    * 
    * @param axis  Axis to fix 
@@ -259,10 +369,16 @@ public:
    * @param name  Name of projection 
    * @param mode  Mode of operation. 
    * @param ipz   Vertex distribution
+   * @param mask  Optional mask - if a bin is zero here, do not count
+   *              it in average.
    * 
    * @return Newly allocated histogram or null
    */
-  static TH1* AverageOverIPz(TH2* h, const char* name, UShort_t mode, TH1* ipz);
+  static TH1* AverageOverIPz(TH2*        h,
+			     const char* name,
+			     UShort_t    mode,
+			     TH1*        ipz,
+			     TH2*        mask=0);
   /** 
    * Clone an object and add to container 
    * 
@@ -320,6 +436,187 @@ protected:
 
 //====================================================================
 // Utilities
+//____________________________________________________________________
+Bool_t AliTrackletdNdetaUtils::CheckAxisNBins(const char*  which,
+					      const TAxis* a1,
+					      const TAxis* a2)
+{
+  if (a1->GetNbins() != a2->GetNbins()) {
+    ::Warning("CheckAxisNBins", "Incompatible number %s bins: %d vs %d",
+	      which, a1->GetNbins(), a2->GetNbins());
+    return false;
+  }
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliTrackletdNdetaUtils::CheckAxisLimits(const char*  which,
+					       const TAxis* a1,
+					       const TAxis* a2)
+{
+  if (!TMath::AreEqualRel(a1->GetXmin(), a2->GetXmin(),1.E-12) ||
+      !TMath::AreEqualRel(a1->GetXmax(), a2->GetXmax(),1.E-12)) {
+    Warning("CheckAxisLimits",
+	    "Limits of %s axis incompatible [%f,%f] vs [%f,%f]", which,
+	    a1->GetXmin(), a1->GetXmax(), a2->GetXmin(), a2->GetXmax());
+    return false;
+  }
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliTrackletdNdetaUtils::CheckAxisBins(const char*  which,
+					     const TAxis* a1,
+					     const TAxis* a2)
+{
+  const TArrayD * h1Array = a1->GetXbins();
+  const TArrayD * h2Array = a2->GetXbins();
+  Int_t fN = h1Array->fN;
+  if ( fN == 0 ) return true;
+  if (h2Array->fN != fN) {
+    // Redundant?
+    Warning("CheckAxisBins", "Not equal number of %s bin limits: %d vs %d",
+	    which, fN, h2Array->fN);
+    return false;
+  }
+  else {
+    for (int i = 0; i < fN; ++i) {
+      if (!TMath::AreEqualRel(h1Array->GetAt(i),h2Array->GetAt(i),1E-10)) {
+	Warning("CheckAxisBins",
+		"%s limit # %3d incompatible: %f vs %f",
+		which, i, h1Array->GetAt(i),h2Array->GetAt(i));
+	return false;
+      }
+    }
+  }
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliTrackletdNdetaUtils::CheckAxisLabels(const char*  which,
+					       const TAxis* a1,
+					       const TAxis* a2)
+{
+  // check that axis have same labels
+  THashList *l1 = (const_cast<TAxis*>(a1))->GetLabels();
+  THashList *l2 = (const_cast<TAxis*>(a2))->GetLabels();
+  
+  if (!l1 && !l2) return true;
+  if (!l1 ||  !l2) {
+    Warning("CheckAxisLabels", "Difference in %s labels: %p vs %p",
+	    which, l1, l2);
+    return false;
+  }
+  // check now labels sizes  are the same
+  if (l1->GetSize() != l2->GetSize()) {
+    Warning("CheckAxisLabels", "Different number of %s labels: %d vs %d",
+	    which, l1->GetSize(), l2->GetSize());
+    return false;
+  }
+  for (int i = 1; i <= a1->GetNbins(); ++i) {
+    TString label1 = a1->GetBinLabel(i);
+    TString label2 = a2->GetBinLabel(i);
+    if (label1 != label2) {
+      Warning("CheckAxisLabels", "%s label # %d not the same: '%s' vs '%s'",
+	      which, i, label1.Data(), label2.Data());
+      return false;
+    }
+  }
+    
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliTrackletdNdetaUtils::CheckAxis(const char*  which, 
+					 const TAxis* a1,
+					 const TAxis* a2,
+					 Bool_t       alsoLbls)
+{
+  if (!CheckAxisNBins (which, a1, a2)) return false;
+  if (!CheckAxisLimits(which, a1, a2)) return false;
+  if (!CheckAxisBins  (which, a1, a2)) return false;
+  if (alsoLbls && !CheckAxisLabels(which, a1, a2)) return false;
+  return true;
+}
+//____________________________________________________________________
+Bool_t AliTrackletdNdetaUtils::CheckConsistency(const TH1* h1, const TH1* h2)
+{
+  // Check histogram compatibility
+  if (h1 == h2) return true;
+    
+  if (h1->GetDimension() != h2->GetDimension() ) {
+    Warning("CheckConsistency",
+	    "%s and %s have different dimensions %d vs %d",
+	    h1->GetName(), h2->GetName(),
+	    h1->GetDimension(), h2->GetDimension());
+    return false;
+  }
+  Int_t dim = h1->GetDimension(); 
+    
+  Bool_t alsoLbls = (h1->GetEntries() != 0 && h2->GetEntries() != 0);
+  if (!CheckAxis("X", h1->GetXaxis(), h2->GetXaxis(), alsoLbls)) return false;
+  if (dim > 1 &&
+      !CheckAxis("Y", h1->GetYaxis(), h2->GetYaxis(), alsoLbls)) return false;
+  if (dim > 2 &&
+      !CheckAxis("Z", h1->GetZaxis(), h2->GetZaxis(), alsoLbls)) return false;
+    
+  return true;
+}
+
+//____________________________________________________________________
+TH2* AliTrackletdNdetaUtils::Scale(TH2* h, TH1* s)
+{
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+    Double_t dc = s->GetBinContent(i);
+    Double_t de = s->GetBinError  (i);
+    Double_t dr = (dc > 1e-6 ? 1/dc : 0);
+    Double_t dq = dr * de;
+    for (Int_t j = 1; j <= h->GetNbinsY(); j++) {
+      Double_t nc  = h->GetBinContent(i,j);
+      Double_t ne  = h->GetBinError  (i,j);
+      Double_t ns  = (nc > 0 ? ne/nc : 0);
+      Double_t sc  = dr * nc;
+      Double_t se  = sc*TMath::Sqrt(ns*ns+dq*dq);
+      // Printf("Setting bin %2d,%2d to %f +/- %f", sc, se);
+      h->SetBinContent(i,j,sc);
+      h->SetBinError  (i,j,se);
+    }
+  }
+  return h;
+}
+
+//____________________________________________________________________
+TH2* AliTrackletdNdetaUtils::Scale(TH2* h, Double_t x, Double_t xe)
+{
+  Double_t rr    = xe/x;
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+    for (Int_t j = 1; j <= h->GetNbinsY(); j++) {
+      Double_t c  = h->GetBinContent(i,j);
+      Double_t e  = h->GetBinError  (i,j);
+      Double_t s  = (c > 0 ? e/c : 0);
+      Double_t sc = x * c;
+      Double_t se = sc*TMath::Sqrt(s*s+rr*rr);
+      // Printf("Setting bin %2d,%2d to %f +/- %f", sc, se);
+      h->SetBinContent(i,j,sc);
+      h->SetBinError  (i,j,se);
+    }
+  }
+  return h;
+}
+
+//____________________________________________________________________
+TH1* AliTrackletdNdetaUtils::Scale(TH1* h, Double_t x, Double_t xe)
+{
+  Double_t rr    = xe/x;
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+    Double_t c  = h->GetBinContent(i);
+    Double_t e  = h->GetBinError  (i);
+    Double_t s  = (c > 0 ? e/c : 0);
+    Double_t sc = x * c;
+    Double_t se = sc*TMath::Sqrt(s*s+rr*rr);
+    // Printf("Setting bin %2d,%2d to %f +/- %f", sc, se);
+    h->SetBinContent(i,sc);
+    h->SetBinError  (i,se);
+  }
+  return h;
+}
+
 //____________________________________________________________________
 TObject* AliTrackletdNdetaUtils::GetO(Container*  parent,
 				     const char* name,
@@ -506,7 +803,7 @@ TH2* AliTrackletdNdetaUtils::Make2D(Container&     c,
   const Double_t* yb  = (yAxis.GetXbins() && yAxis.GetXbins()->GetArray() ?
 			 yAxis.GetXbins()->GetArray() : 0);
   if (t.IsNull())
-    t.Form("%s\\hbox{ vs }%s", yAxis.GetTitle(), xAxis.GetTitle());
+    t.Form("%s vs %s", yAxis.GetTitle(), xAxis.GetTitle());
   if (xb) {	  
     if   (yb) ret = new TH2D(n,t,nx,xb,ny,yb);
     else      ret = new TH2D(n,t,
@@ -598,7 +895,7 @@ void AliTrackletdNdetaUtils::SetAxis(TAxis&         axis,
   TObjString* token = 0;
   TIter       next(tokens);
   Int_t       i = 0;
-  while (token = static_cast<TObjString*>(next())) {
+  while ((token = static_cast<TObjString*>(next()))) {
     Double_t v = token->String().Atof();
     bins[i] = v;
     i++;
@@ -691,43 +988,40 @@ TH2* AliTrackletdNdetaUtils::ScaleToIPz(TH2* h, TH1* ipZ, Bool_t full)
 TH1* AliTrackletdNdetaUtils::AverageOverIPz(TH2*        h,
 					    const char* name,
 					    UShort_t    mode,
-					    TH1*        ipz)
+					    TH1*        ipz,
+					    TH2*        other)
 {
   if (!h) return 0;
   
   Int_t nIPz = h->GetNbinsY();
   Int_t nEta = h->GetNbinsX();
   TH1*  p    = h->ProjectionX(name,1,nIPz,"e");
+  TH2*  mask = (other ? other : h);
   p->SetDirectory(0);
   p->SetFillColor(0);
   p->SetFillStyle(0);
-  p->SetYTitle(Form("\\langle(%s)\\rangle", h->GetYaxis()->GetTitle()));
+  p->SetYTitle(Form("#LT%s#GT", h->GetYaxis()->GetTitle()));
   p->Reset();
   for (Int_t etaBin = 1; etaBin <= nEta; etaBin++) {
     TArrayD hv(nIPz);
     TArrayD he(nIPz);
     TArrayD hr(nIPz);
-    TArrayD iv(nIPz);
-    TArrayD ie(nIPz);   
+    TArrayI hb(nIPz);
     Int_t   j = 0;
     for (Int_t ipzBin = 1; ipzBin <= nIPz; ipzBin++) {
-      Double_t bc = h->GetBinContent(etaBin, ipzBin);
+      Double_t bc = mask->GetBinContent(etaBin, ipzBin);
       if (bc < 1e-9) continue; // Low value
-      Double_t be = h->GetBinError  (etaBin, ipzBin);
+      Double_t be = mask->GetBinError  (etaBin, ipzBin);
       if (TMath::IsNaN(be)) continue; // Bad error value 
-      Double_t by = h->GetYaxis()->GetBinCenter(ipzBin);
-      Int_t    ib = ipz ? ipz->FindBin(by) : 0;
       hv[j] = bc;
       he[j] = be;
       hr[j] = be/bc;
-      // If we do not have the vertex distribution, then just count
-      // number of observations. 
-      iv[j] = !ipz ? 1 : ipz->GetBinContent(ib);
-      ie[j] = !ipz ? 0 : ipz->GetBinError  (ib);
+      hb[j] = ipzBin;
       j++;		
     }
     // Now we have all interesting values.  Sort the relative error
-    // array to get the most significant first.
+    // array to get the most significant first.  Note, we sort on the
+    // mask errors which may not be the same as the histogram errors.
     TArrayI idx(nIPz);
     TMath::Sort(j, hr.fArray, idx.fArray, false);
     Double_t nsum  = 0; // Running weighted sum
@@ -739,22 +1033,24 @@ TH1* AliTrackletdNdetaUtils::AverageOverIPz(TH2*        h,
     
     Int_t k = 0;
     for (k = 0; k < j; k++) {
-      Int_t    l   = idx[k]; // Sorted index
-      Double_t hvv = hv[l];      
-      Double_t hee = he[l];
-      Double_t ivv = iv[l];
-      Double_t iee = ie[l];
-      Double_t hrr = hr[l];
-      Double_t x = TMath::Sqrt(nsume+hee*hee)/(nsum+hvv);
+      Int_t    l      = idx[k]; // Sorted index - ipzBin
+      Int_t    ipzBin = hb[l];
+      Double_t hvv    = hv[l];      
+      Double_t hee    = he[l];
+      Double_t x      = TMath::Sqrt(nsume+hee*hee)/(nsum+hvv);
       if (x > rat) {
 	continue; // Ignore - does not help
       }
 
+      Double_t by = mask->GetYaxis()->GetBinCenter(ipzBin);
+      Int_t    ib = ipz ? ipz->FindBin(by) : 0;
       rat   =  x;
-      nsum  += hvv;
-      nsume += hee*hee;
-      dsum  += ivv;
-      dsume += iee*iee;
+      nsum  += h->GetBinContent(etaBin, ipzBin);
+      nsume += TMath::Power(h->GetBinError(etaBin, ipzBin), 2);
+      // If we do not have the vertex distribution, then just count
+      // number of observations. 
+      dsum  += !ipz ? 1 : ipz->GetBinContent(ib);
+      dsume += !ipz ? 0 : TMath::Power(ipz->GetBinError(ib),2);
       n++;
     }
     if (k == 0 || n == 0) {
@@ -768,7 +1064,6 @@ TH1* AliTrackletdNdetaUtils::AverageOverIPz(TH2*        h,
     Double_t ave  = 0;
     if (mode==2) ave = TMath::Sqrt(nsume)/n;
     else         ave = av*TMath::Sqrt(rne+rde);
-    //Info("AverageSim", "Setting eta bin # %3d to %f +/- %f", etaBin,av,ave);
     p->SetBinContent(etaBin, av);
     p->SetBinError  (etaBin, ave);
   }

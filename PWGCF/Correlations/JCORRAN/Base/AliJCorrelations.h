@@ -45,7 +45,7 @@ public:
   void FillAzimuthHistos (fillType fTyp,    int cBin, int zBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2);
   
   double GetGeoAccCorrFlat(double deltaEta);
-  double GetGeoAccCorrIncl(double deltaEta);
+  double GetGeoAccCorrIncl(double deltaEta, int assocBin, int assocType);
   
   void SetSampligInclusive(){fsamplingMethod = 1;}
   
@@ -103,7 +103,8 @@ protected:
 
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
-  double fGeometricAcceptanceCorrection;  // Acceptance correction due to the detector geometry
+  double fGeometricAcceptanceCorrection;   // Acceptance correction due to the detector geometry
+  double fGeometricAcceptanceCorrection3D; // Acceptance correction due to the detector geometry for 3D near side
   
 private:
   

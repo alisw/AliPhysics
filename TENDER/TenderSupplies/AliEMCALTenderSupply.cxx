@@ -61,6 +61,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fCalibrateEnergy(kFALSE)
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeParamAvailable(kFALSE)
+  ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
   ,fRejectExoticCells(kFALSE)
@@ -130,6 +131,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fCalibrateEnergy(kFALSE)
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeParamAvailable(kFALSE)
+  ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
   ,fRejectExoticCells(kFALSE)
@@ -199,6 +201,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fCalibrateEnergy(kFALSE)
   ,fCalibrateTime(kFALSE)
   ,fCalibrateTimeParamAvailable(kFALSE)
+  ,fCalibrateTimeL1Phase(kFALSE)
   ,fDoNonLinearity(kFALSE)
   ,fBadCellRemove(kFALSE)
   ,fRejectExoticCells(kFALSE)
@@ -320,6 +323,7 @@ void AliEMCALTenderSupply::Init()
     fCalibrateEnergy        = tender->fCalibrateEnergy;
     fCalibrateTime          = tender->fCalibrateTime;
     fCalibrateTimeParamAvailable = tender->fCalibrateTimeParamAvailable;
+    fCalibrateTimeL1Phase   = tender->fCalibrateTimeL1Phase;
     fFiducial               = tender->fFiducial;
     fNCellsFromEMCALBorder  = tender->fNCellsFromEMCALBorder;
     fRecalDistToBadChannels = tender->fRecalDistToBadChannels;    
@@ -357,6 +361,7 @@ void AliEMCALTenderSupply::Init()
     AliInfo(Form("ExoticCellRemove : %d", fRejectExoticCells)); 
     AliInfo(Form("CalibrateEnergy : %d", fCalibrateEnergy)); 
     AliInfo(Form("CalibrateTime : %d", fCalibrateTime)); 
+    AliInfo(Form("CalibrateTimeL1Phase : %d", fCalibrateTimeL1Phase));
     AliInfo(Form("UpdateCell : %d", fUpdateCell)); 
     AliInfo(Form("DoUpdateOnly : %d", fDoUpdateOnly)); 
     AliInfo(Form("Reclustering : %d", fReClusterize)); 
@@ -506,6 +511,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     Bool_t needTimecalib   = fCalibrateTime   | fReClusterize;
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
+    Bool_t needTimecalibL1Phase = fCalibrateTimeL1Phase;
 
     // init bad channels
     if (needBadChannels) {
@@ -555,6 +561,19 @@ void AliEMCALTenderSupply::ProcessEvent()
       }
       if (initTC > 1)
         AliWarning(Form("No external time calibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+    }
+
+    // init time calibration with L1 phase
+    if (needTimecalibL1Phase && fUseAutomaticTimeCalib) {
+      Int_t initTCL1Phase = InitTimeCalibrationL1Phase();
+      if (!initTCL1Phase) 
+	AliError("InitTimeCalibrationL1Phase returned false, returning");
+      if (initTCL1Phase==1) {
+	fCalibrateTimeParamAvailable = kTRUE;
+	AliWarning("InitTimeCalibL1Phase OK");
+      }
+      if (initTCL1Phase > 1)
+	AliWarning(Form("No external time calibration L1 phase available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
     }
 
     // init misalignment matrix
@@ -615,6 +634,12 @@ void AliEMCALTenderSupply::ProcessEvent()
   else
     fEMCALRecoUtils->SwitchOffTimeRecalibration();
 
+  // allows time calibration with L1 phase
+  if (fCalibrateTimeL1Phase)
+    fEMCALRecoUtils->SwitchOnL1PhaseInTimeRecalibration();
+  else
+    fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
+
   // allows to zero bad cells
   if (fBadCellRemove)
     fEMCALRecoUtils->SwitchOnBadChannelsRemoval();
@@ -658,7 +683,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 
   // mark the cells not recalibrated in case of selected
   // time, energy recalibration or bad channel removal
-  if (fCalibrateEnergy || fCalibrateTime || fBadCellRemove)
+  if (fCalibrateEnergy || fCalibrateTime || fBadCellRemove || fCalibrateTimeL1Phase)
     fEMCALRecoUtils->ResetCellsCalibrated();
   
  // CELL RECALIBRATION -------------------------------------------------------
@@ -676,7 +701,8 @@ void AliEMCALTenderSupply::ProcessEvent()
     // should not allow for farther processing anyways
     fEMCALRecoUtils->SwitchOffRecalibration();
     fEMCALRecoUtils->SwitchOffTimeRecalibration();  
-  
+    fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
+
     if (fDoUpdateOnly)
       return;
   }
@@ -1301,6 +1327,96 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
   }
+  
+  delete contBC;
+  
+  return 1;  
+}
+
+//_____________________________________________________
+Int_t AliEMCALTenderSupply::InitTimeCalibrationL1Phase()
+{
+  // Initialising run-by-run L1 phase in time calibration maps
+  AliVEvent *event = GetEvent();
+
+  if (!event) 
+    return 0;
+  
+  if (fDebugLevel>0) 
+    AliInfo("Initialising run-by-run L1 phase in time calibration map");
+  
+  // init default maps first
+  if (!fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationArray())
+    fEMCALRecoUtils->InitEMCALL1PhaseInTimeRecalibration() ;
+
+  Int_t runBC = event->GetRunNumber();
+  
+  AliOADBContainer *contBC = new AliOADBContainer("");
+  if (fBasePath!="")
+  { //if fBasePath specified in the ->SetBasePath()
+    if (fDebugLevel>0) AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
+    
+    TFile *timeFile=new TFile(Form("%s/EMCALTimeL1PhaseCalib.root",fBasePath.Data()),"read");
+    if (!timeFile || timeFile->IsZombie())
+    {
+      AliFatal(Form("EMCALTimeL1PhaseCalib.root was not found in the path provided: %s",fBasePath.Data()));
+      return 0;
+    }  
+    
+    if (timeFile) delete timeFile;
+    
+    contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fBasePath.Data()),"AliEMCALTimeL1PhaseCalib");    
+  } 
+  else 
+  { // Else choose the one in the $ALICE_PHYSICS directory
+    if (fDebugLevel>0) AliInfo("Loading L1 phase in time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+    
+    TFile *timeFile=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root","read");
+    if (!timeFile || timeFile->IsZombie())
+    {
+      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root was not found");
+      return 0;
+    }  
+      
+    if (timeFile) delete timeFile;
+    
+    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root","AliEMCALTimeL1PhaseCalib"); 
+  }
+  
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
+  if (!arrayBC)
+  {
+    AliError(Form("No external L1 phase in time calibration set for run number: %d", runBC));
+    delete contBC;
+    return 2; 
+  }
+  
+  // Here, it looks for a specific pass
+  TString pass = fFilepass;
+  if (fFilepass=="calo_spc") pass ="pass1";
+  if (fFilepass=="muon_calo_pass1") pass ="pass0";
+  if (fFilepass=="muon_calo_pass2" || fFilepass=="pass2" || fFilepass=="pass3" || fFilepass=="pass4") pass ="pass1";
+  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
+  if (!arrayBCpass)
+  {
+    AliError(Form("No external L1 phase in time calibration set for: %d -%s", runBC,pass.Data()));
+    delete contBC;
+    return 2; 
+  }
+
+  if (fDebugLevel>0) arrayBCpass->Print();
+
+
+  TH1C *h = fEMCALRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+  if (h) delete h;
+    
+  h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runBC));
+    
+  if (!h) {
+    AliFatal(Form("There is no calibration histogram h%d for this run",runBC));
+  }
+  h->SetDirectory(0);
+  fEMCALRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
   
   delete contBC;
   

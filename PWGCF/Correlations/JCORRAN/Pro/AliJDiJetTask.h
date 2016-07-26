@@ -27,7 +27,7 @@ using namespace std;
 
 class AliJDiJetTask : public AliAnalysisTaskSE {
 
- public:
+public:
   AliJDiJetTask();
   AliJDiJetTask(const char *name,  TString inputformat);
   AliJDiJetTask(const AliJDiJetTask& ap);   
@@ -40,7 +40,7 @@ class AliJDiJetTask : public AliAnalysisTaskSE {
   virtual void LocalInit() { Init(); }
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  virtual Bool_t UserNotify() { std::cout<<"DEBUG UserNotify"<<std::endl; return kTRUE;}
+  virtual Bool_t UserNotify() { return kTRUE;}
 
   bool IsGoodEvent( AliVEvent * event );
 
@@ -48,8 +48,8 @@ class AliJDiJetTask : public AliAnalysisTaskSE {
   void SetDiJetAnalysis(AliJDiJetAnalysis * jco){ fJDiJetAnalysis=jco; }
   void SetCard( AliJCard * card ){ fCard=card; }
 
- private:
-  
+private:
+
   // TODO new Task - AliJJetTask?
   AliJJetTask           * fJetTask;
   TString                 fJetTaskName;

@@ -205,6 +205,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   void       SetReweightStack(Int_t v=0)         {fReweightStack=v;} // R+HACK
   void       SetReweightFlag(Int_t v=0)          {fReweightFlag=v;} // R+HACK
   void       SetEtaBinWidth(Double_t w)          {fEtaBinWidth=w;}
+  void       Print(Option_t* option) const;
   //
  protected:
   void       InitMultReco();

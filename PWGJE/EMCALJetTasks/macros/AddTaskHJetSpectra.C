@@ -514,7 +514,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          ptHardMaxEmb,//ptHardMax
          ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
-         Form("JetEmbeddingFromGenTask_TT%d%d_AN%d%d_R%02d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius)),//taskName
+         Form("JetEmbeddingFromGenTask_TT%d%d_AN%d%d_R%02d_%s",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data()),//taskName
          0.15, //const Double_t  minPt 
          1000.,//const Double_t  maxPt          
         -0.9, //const Double_t  minEta 
@@ -539,7 +539,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
       AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", 
-                           Form("SigleTrackEmb_TT%d%d_AN%d%d_R%02d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius)), 
+                           Form("SigleTrackEmb_TT%d%d_AN%d%d_R%02d_%s",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data()), 
                                        ptHardMinEmb, ptHardMaxEmb, //min pT max pT
                                        -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
@@ -550,7 +550,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //FK//?// embSingle->SetMasslessParticles(kTRUE);
 
       embSingle->SetCopyArray(kTRUE);
-      embSingle->SetSuffix(Form("TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal));
+      embSingle->SetSuffix(Form("TT%d%d_AN%d%d_R%02d_%s",
+         TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data()));
       kGenPartices = embSingle->GetOutTrackName(); 
    }
  
@@ -559,11 +560,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       // Branch merger  merge reconstructed tracks with embedded pythia generated 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskMergeBranches.C");
       AliJetModelMergeBranches* brmergTask = AddTaskMergeBranches(kTracksName.Data(),kGenPartices.Data(),
-      Form("Emb_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),"");
+      Form("Emb_TT%d%d_AN%d%d_R%02d_%s",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal,
+         TMath::Nint(10*jetRadius), cntype.Data()),"");
       brmergTask->SetCopyArray(kTRUE);
       brmergTask->SelectCollisionCandidates(trigger);
 
-      recoTracks.Append(Form("Emb_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal)); //reconstructed level are  tracks +ebeded tracks
+      recoTracks.Append(Form("Emb_TT%d%d_AN%d%d_R%02d_%s",
+        TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data())); //reconstructed level are  tracks +ebeded tracks
       mcParticles = kGenPartices.Data(); //generator level are embedded particles
    }
 

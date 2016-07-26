@@ -109,6 +109,13 @@ public:
    * @param axis Use this binning
    */
   void SetCentralityAxis(TAxis* axis) { fCentAxis = axis; }
+  /** 
+   * Set the centrality axis to use based on a string.  The bin edges
+   * are separated by colons.
+   * 
+   * @param bins String of bin edges
+   */
+  void SetCentralityAxis(const char* bins);
   /**
    * Set detector sigma cuts
    *

@@ -129,8 +129,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
+  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
     if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -150,6 +151,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
+      fEventCuts->SetV0ReaderName(V0ReaderName);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -162,6 +164,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -193,6 +196,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   task= new AliAnalysisTaskGammaConvV1(Form("GammaConvV1_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
+  task->SetV0ReaderName(V0ReaderName);
   // Cut Numbers to use in Analysis
   
   CutHandlerConv cuts;
@@ -752,6 +756,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000");  
     cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); 
     cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000");
+  } else if (trainConfig == 116) {  // like trainconfig 101, with changes in conversion cuts
+      cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000");
+      cuts.AddCut("00010113", "00200009327302008250400000", "0152103500000000"); //variation dE/dx e -2.5<sigma<4
+      cuts.AddCut("00010113", "00200009227302009250400000", "0152103500000000"); //variation qT cut 0.03 2D
+      cuts.AddCut("00010113", "00200009227312008250400000", "0152103500000000"); //variation nSigma rejection cut
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -862,14 +871,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
-	
+
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     if (trainConfig > 106 && trainConfig < 115){
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
+        analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
         analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
         analysisClusterCuts[i]->SetFillCutHistograms("");   
@@ -879,7 +890,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     if (trainConfig == 76 ){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
-      analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     
     if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);

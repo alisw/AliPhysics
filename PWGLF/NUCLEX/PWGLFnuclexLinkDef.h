@@ -12,6 +12,7 @@
 /// * NOmega
 #pragma link C++ class AliAnalysisTaskNOmegaLPK+;
 #pragma link C++ class AliAnalysisTaskOmegaOmegaOX+;
+#pragma link C++ class AliAnalysisTaskNOmegaLX+;
 
 /// Nuclei
 /// * DeltaMasses
@@ -34,12 +35,19 @@
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
+/// * TRDabsorption
+#pragma link C++ class AliAnalysisTaskAbsorptionStudies+;
 
 /// Hypernuclei
 /// * Hyp2body
 #pragma link C++ class AliAnalysisTaskHelium3Pi+;
 #pragma link C++ class AliAnalysisTaskHelium3PiAOD+;
 #pragma link C++ class AliAnalysisTaskHelium3PiMC+;
+#pragma link C++ class AliAnalysisTaskHypTritEventTree+;
+#pragma link C++ class AliReducedHypTritV0+;
+#pragma link C++ class AliReducedHypTritTrack+;
+#pragma link C++ class AliReducedHypTritEvent+;
+
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3AOD+;
