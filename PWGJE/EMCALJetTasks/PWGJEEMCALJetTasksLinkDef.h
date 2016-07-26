@@ -96,6 +96,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
+#pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
 #pragma link C++ namespace JETriggerRejectionAna+;
@@ -176,6 +177,7 @@
 #pragma link C++ class AliEmcalJetUtility+;
 #pragma link C++ class AliEmcalJetUtilityGenSubtractor+;
 #pragma link C++ class AliEmcalJetUtilityConstSubtractor+;
+#pragma link C++ class AliEmcalJetUtilitySoftDrop+;
 #pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetEmbeddingFromAODTask+;

@@ -476,6 +476,8 @@ public:
     TObject* fObject;    // The data 
     ClassDef(Correction,1) // Correction meta object
   };
+  const char* GetObjectName(Int_t what) const;
+
 protected:
   /**
    * Constructor 

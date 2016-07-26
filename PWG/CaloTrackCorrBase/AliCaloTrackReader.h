@@ -84,6 +84,8 @@ public:
 
   virtual Int_t   GetEventNumber()                   const { return fEventNumber           ; }
 	
+  virtual TObjString *  GetListOfParameters() ;
+  
   TString         GetTaskName()                      const { return fTaskName              ; }
   void            SetTaskName(TString name)                { fTaskName = name              ; }
     
@@ -104,6 +106,10 @@ public:
   void            SwitchOnWriteDeltaAOD()                  { fWriteOutputDeltaAOD = kTRUE  ; }
   void            SwitchOffWriteDeltaAOD()                 { fWriteOutputDeltaAOD = kFALSE ; }
   Bool_t          WriteDeltaAODToFile()              const { return fWriteOutputDeltaAOD   ; } 
+  
+  virtual TList * GetCreateControlHistograms() ;
+  void            SetControlHistogramEnergyBinning(Int_t nBins, Float_t emin, Float_t emax)
+  { fEnergyHistogramNbins = nBins ; fEnergyHistogramLimit[0] = emin; fEnergyHistogramLimit[1] = emax ; }
   
   //------------------------------------------------------------
   // Clusters/Tracks arrays filtering/filling methods and switchs 
@@ -129,7 +135,6 @@ public:
   void             SetEMCALPtMin(Float_t  pt)              { fEMCALPtMin = pt              ; }
   void             SetPHOSPtMin (Float_t  pt)              { fPHOSPtMin  = pt              ; }
   void             SetCTSPtMin  (Float_t  pt)              { fCTSPtMin   = pt              ; }  
-  
   void             SetEMCALPtMax(Float_t  pt)              { fEMCALPtMax = pt              ; }
   void             SetPHOSPtMax (Float_t  pt)              { fPHOSPtMax  = pt              ; }
   void             SetCTSPtMax  (Float_t  pt)              { fCTSPtMax   = pt              ; }  
@@ -139,13 +144,26 @@ public:
   Float_t          GetEMCALEMax()                    const { return GetEMCALPtMax()        ; }
   Float_t          GetPHOSEMax()                     const { return GetPHOSPtMax()         ; }
   
-  void             SetEMCALEMin (Float_t  e)               { SetEMCALPtMin(e)              ; }
-  void             SetPHOSEMin  (Float_t  e)               { SetPHOSPtMin (e)              ; }
-  void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
-  void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
+  void             SetEMCALEMin (Float_t  en)              { SetEMCALPtMin(en)             ; }
+  void             SetPHOSEMin  (Float_t  en)              { SetPHOSPtMin (en)             ; }
+  void             SetEMCALEMax (Float_t  en)              { SetEMCALPtMax(en)             ; }
+  void             SetPHOSEMax  (Float_t  en)              { SetPHOSPtMax (en)             ; }
   
-  void             SetSmearingFunction(Float_t smearfunct) {fSmearingFunction = smearfunct ; }
-  Float_t          GetSmearingFunction()             const {return fSmearingFunction       ; }
+  // Distance to bad channels cut
+  
+  Float_t          GetEMCALBadChannelMinDist()       const { return fEMCALBadChMinDist     ; }
+  Float_t          GetPHOSBadChannelMinDist()        const { return fPHOSBadChMinDist      ; }
+
+  void             SetEMCALBadChannelMinDist(Float_t di)   { fEMCALBadChMinDist = di       ; }
+  void             SetPHOSBadChannelMinDist (Float_t di)   { fPHOSBadChMinDist  = di       ; }
+
+  // Number of cells in cluster cut
+  
+  Int_t            GetEMCALNCellsCut()               const { return fEMCALNCellsCut       ; }
+  Int_t            GetPHOSNCellsCut()                const { return fPHOSNCellsCut        ; }
+    
+  void             SetEMCALNCellsCut(Int_t nc)             { fEMCALNCellsCut = nc         ; }
+  void             SetPHOSNCellsCut (Int_t nc)             { fPHOSNCellsCut  = nc         ; }
   
   // Track DCA cut
   
@@ -237,15 +255,20 @@ public:
   void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
   void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
 
+  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
+  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
+  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
+
+  // Shower shape smearing function
+  
+  void             SetSmearingFunction(Int_t smfu)        { fSmearingFunction = smfu      ; }
+  Int_t            GetSmearingFunction()           const  { return fSmearingFunction      ; }
+  
   Bool_t           IsShowerShapeSmeared()            const { return fSmearShowerShape      ; }
   void             SwitchOnShowerShapeSmearing()           { fSmearShowerShape = kTRUE     ; }
   void             SwitchOffShowerShapeSmearing()          { fSmearShowerShape = kFALSE    ; }
   
   void             SetShowerShapeSmearWidth(Float_t w )    { fSmearShowerShapeWidth = w    ; }
-
-  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
-  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
-  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
   
   // Filling/ filtering / detector information access methods
   
@@ -701,7 +724,13 @@ public:
   Float_t          fCTSPtMax;                      ///<  pT Threshold on charged particles.
   Float_t          fEMCALPtMax;                    ///<  pT Threshold on emcal clusters.
   Float_t          fPHOSPtMax;                     ///<  pT Threshold on phos clusters.
-  Float_t          fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05).
+  
+  Float_t          fEMCALBadChMinDist ;            ///<  Minimal distance to bad channel to accept cluster in EMCal, cell units
+  Float_t          fPHOSBadChMinDist ;             ///<  Minimal distance to bad channel to accept cluster in PHOS, cm
+
+  Int_t            fEMCALNCellsCut ;               ///<  Accept for the analysis EMCAL clusters with more than fNCellsCut cells
+  Int_t            fPHOSNCellsCut ;                ///<  Accept for the analysis PHOS clusters with more than fNCellsCut cells
+  
   Bool_t           fUseEMCALTimeCut;               ///<  Do time cut selection.
   Bool_t           fUseParamTimeCut;               ///<  Use simple or parametrized time cut.
   Bool_t           fUseTrackTimeCut;               ///<  Do time cut selection.
@@ -712,6 +741,7 @@ public:
   Double_t         fEMCALParamTimeCutMax[4];       ///<  Remove clusters/cells with time larger than parametrized value, in ns.
   Double_t         fTrackTimeCutMin;               ///<  Remove tracks with time smaller than this value, in ns.
   Double_t         fTrackTimeCutMax;               ///<  Remove tracks with time larger than this value, in ns.
+  
   Bool_t           fUseTrackDCACut;                ///<  Do DCA selection.
   Double_t         fTrackDCACut[3];                ///<  Remove tracks with DCA larger than cut, parameters of function stored here.
 
@@ -750,7 +780,8 @@ public:
   Bool_t           fSmearShowerShape;              ///<  Smear shower shape (use in MC).
   Float_t          fSmearShowerShapeWidth;         ///<  Smear shower shape landau function "width" (use in MC).
   TRandom3         fRandom ;                       //!<! Random generator.
-  
+  Int_t            fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05). See enum smearingFunction 
+
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
   Int_t            fTrackMult          ;           ///<  Track multiplicity.
@@ -884,6 +915,20 @@ public:
   Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1.
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
+    
+  // cut control histograms
+  
+  TList *          fOutputContainer;               //!<! Output container with cut control histograms.
+
+  TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
+  TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
+ 
+  Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
+  Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
+  
+  TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
+
   
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
@@ -892,7 +937,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,72) ;
+  ClassDef(AliCaloTrackReader,74) ;
   /// \endcond
 
 } ;

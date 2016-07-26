@@ -31,7 +31,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Double_t         TMdphi                    = 0.03,
                                                                  const Bool_t           bTMClusterRejection       = kTRUE,
                                                                  const Bool_t           bTMClusterRejectionInCone = kTRUE,
-                                                                 const Float_t          iIsoConeRadius            = 0.4
+                                                                 const Float_t          iIsoConeRadius            = 0.4,
+                                                                 const Bool_t           iSmearingSS               = kFALSE,
+                                                                 const Float_t          iWidthSSsmear             = 0.,
+                                                                 const Float_t          iMean_SSsmear             = 0.,
                                                                  )
 {
   
@@ -52,7 +55,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   else
     myContName = Form("Analysis_Neutrals");
   
-  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut));
+  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
@@ -70,6 +73,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetUEMethod(iUEMethod);
   task->SetUSEofTPC(bUseofTPC);
   task->SetMC(bIsMC);
+  task->SetM02Smearing(iSmearingSS);
+  task->SetWidth4Smear(iWidthSSsmear);
+  task->SetMean4Smear(iMean_SSsmear);
+  
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
   task->SetNLMCut(bNLMCut,NLMCut);

@@ -112,6 +112,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
+  fHistoTimeEMC(0),
+  fHistoTimeEMCcorr(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -209,6 +211,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistoNClsE3(0),
   fHistoNCells(0),
   fHistoCalCell(0),
+  fHistoTimeEMC(0),
+  fHistoTimeEMCcorr(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -367,6 +371,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",15000,-0.5,14999.5,600,0,30);
   fOutputList->Add(fHistoCalCell);
+
+  fHistoTimeEMC = new TH2F("fHistoTimeEMC","EMCAL Time;E (GeV); t(ns)",480,2,50,20000,400,800);
+  fOutputList->Add(fHistoTimeEMC);
+
+  fHistoTimeEMCcorr = new TH2F("fHistoTimeEMCcorr","EMCAL Time (tender);E (GeV); t(ns)",480,2,50,20000,-200,200);
+  fOutputList->Add(fHistoTimeEMCcorr);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
   fOutputList->Add(fNegTrkIDPt);
@@ -950,7 +960,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         fClsEtaPhiAftMatchEMCout->Fill(emceta,emcphi);
       }
 
-      //Float_t tof = clustMatch->GetTOF();
+      Float_t tof = clustMatch->GetTOF()*1e+9; // ns
+      cout << "EMC_tof = " << tof << " (ns)" << endl;   
+      if(clustMatchE>2.0)fHistoTimeEMC->Fill(clustMatchE,tof);
+      if(clustMatchE>2.0 && fUseTender)fHistoTimeEMCcorr->Fill(clustMatchE,tof);
+      //cout << "T0 = " << fVevent->GetT0TOF()<< endl;
 
       //EMCAL EID info
       Double_t eop = -1.0;

@@ -26,8 +26,10 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t GetZDCCutZNATimeCorrMin() { return fZDCCutZNATimeCorrMin; }
   Float_t GetZDCCutZNCTimeCorrMax() { return fZDCCutZNCTimeCorrMax; }
   Float_t GetZDCCutZNCTimeCorrMin() { return fZDCCutZNCTimeCorrMin; }
-  Float_t GetfSPDClsVsTklA()        { return fSPDClsVsTklA;         }
-  Float_t GetfSPDClsVsTklB()        { return fSPDClsVsTklB;         }
+  Float_t GetSPDClsVsTklA()         { return fSPDClsVsTklA;         }
+  Float_t GetSPDClsVsTklB()         { return fSPDClsVsTklB;         }
+  Float_t GetV0C012vsTklA()         { return fV0C012vsTklA;         }
+  Float_t GetV0C012vsTklB()         { return fV0C012vsTklB;         }
   Float_t GetV0MOnVsOfA()           { return fV0MOnVsOfA;           }
   Float_t GetV0MOnVsOfB()           { return fV0MOnVsOfB;           }
   Float_t GetSPDOnVsOfA()           { return fSPDOnVsOfA;           }
@@ -44,7 +46,7 @@ class AliOADBTriggerAnalysis : public TNamed {
   Int_t   GetVIRBBAflags()          { return fVIRBBAflags;          }
   Int_t   GetVIRBBCflags()          { return fVIRBBCflags;          }
   Int_t   GetVIRBGAflags()          { return fVIRBGAflags;          }
-  Int_t   GSetVIRBGCflags()         { return fVIRBGCflags;          }
+  Int_t   GetVIRBGCflags()          { return fVIRBGCflags;          }
   Int_t   GetVHMBBAflags()          { return fVHMBBAflags;          }
   Int_t   GetVHMBBCflags()          { return fVHMBBCflags;          }
   Int_t   GetVHMBGAflags()          { return fVHMBGAflags;          }
@@ -54,6 +56,7 @@ class AliOADBTriggerAnalysis : public TNamed {
   Int_t   GetSPDGFOThreshhold()     { return fSPDGFOThreshold;      }
   Int_t   GetSH1OuterThreshold()    { return fSH1OuterThreshold;    }
   Int_t   GetSH2OuterThreshold()    { return fSH2OuterThreshold;    }
+  Int_t   GetTklThreshold()         { return fTklThreshold;         }
   Float_t GetFMDLowThreshold()      { return fFMDLowCut;            }
   Float_t GetFMDHitThreshold()      { return fFMDHitCut;            }
   Float_t GetTRDptHSE()             { return fTRDptHSE;             }
@@ -70,6 +73,8 @@ class AliOADBTriggerAnalysis : public TNamed {
   // Setters
   void SetSPDClsVsTklA(Float_t val)     { fSPDClsVsTklA       = val; }
   void SetSPDClsVsTklB(Float_t val)     { fSPDClsVsTklB       = val; }
+  void SetV0C012vsTklA(Float_t val)     { fV0C012vsTklA       = val; }
+  void SetV0C012vsTklB(Float_t val)     { fV0C012vsTklB       = val; }
   void SetV0MOnVsOfA(Float_t val)       { fV0MOnVsOfA         = val; }
   void SetV0MOnVsOfB(Float_t val)       { fV0MOnVsOfB         = val; }
   void SetSPDOnVsOfA(Float_t val)       { fSPDOnVsOfA         = val; }
@@ -96,6 +101,7 @@ class AliOADBTriggerAnalysis : public TNamed {
   void SetSPDGFOThreshhold(Int_t val)   { fSPDGFOThreshold    = val; }
   void SetSH1OuterThreshold(Int_t val)  { fSH1OuterThreshold  = val; }
   void SetSH2OuterThreshold(Int_t val)  { fSH2OuterThreshold  = val; }
+  void SetTklThreshold(Int_t val)       { fTklThreshold       = val; }
   
   void SetZDCCorrParameters(Float_t sumCorr, Float_t deltaCorr, Float_t sigmaSumCorr, Float_t sigmaDeltaCorr){ 
     fZDCCutRefSumCorr = sumCorr; 
@@ -139,32 +145,35 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t fZDCCutZNCTimeCorrMax;  // Corrected ZNC maximum time cut configuration
   Float_t fSPDClsVsTklA;          // constant for the linear cut in SPD clusters vs tracklets
   Float_t fSPDClsVsTklB;          // slope for the linear cut in SPD clusters vs tracklets
-  Float_t fV0MOnVsOfA;            // 
-  Float_t fV0MOnVsOfB;            // 
-  Float_t fSPDOnVsOfA;            // 
-  Float_t fSPDOnVsOfB;            // 
-  Int_t   fVtxMinContributors;    // 
-  Float_t fVtxMinZdist;           //
-  Float_t fVtxNSigmaZdist;        //
-  Float_t fVtxNSigmaDiamXY;       // 
-  Float_t fVtxNSigmaDiamZ;        //
-  Float_t fV0CasymA;              // 
-  Float_t fV0CasymB;              // 
-  Int_t fNBCsPast;                // 
-  Int_t fNBCsFuture;              // 
-  Int_t fVIRBBAflags;             // 
-  Int_t fVIRBBCflags;             // 
-  Int_t fVIRBGAflags;             // 
-  Int_t fVIRBGCflags;             // 
-  Int_t fVHMBBAflags;             // 
-  Int_t fVHMBBCflags;             // 
-  Int_t fVHMBGAflags;             // 
-  Int_t fVHMBGCflags;             // 
-  Int_t fV0MOnThreshold;          // 
-  Float_t fV0MOfThreshold;        // 
-  Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
-  Int_t fSH1OuterThreshold;       //
-  Int_t fSH2OuterThreshold;       //
+  Float_t fV0C012vsTklA;          // constant for the linear cut in V0C012 vs tracklets
+  Float_t fV0C012vsTklB;          // slope for the linear cut in V0C012 vs tracklets
+  Float_t fV0MOnVsOfA;            // constant for the linear pileup cut in Online vs Offline V0M
+  Float_t fV0MOnVsOfB;            // slope for the linear pileup cut in Online vs Offline V0M
+  Float_t fSPDOnVsOfA;            // constant for the linear pileup cut in Online vs Offline SPD
+  Float_t fSPDOnVsOfB;            // slope for the linear pileup cut in Online vs Offline SPD
+  Int_t   fVtxMinContributors;    // SPD vertex pileup cut: minimum number of contributors
+  Float_t fVtxMinZdist;           // SPD vertex pileup cut: minimum z-vertex distance
+  Float_t fVtxNSigmaZdist;        // SPD vertex pileup cut: n sigma distrance
+  Float_t fVtxNSigmaDiamXY;       // SPD vertex pileup cut: n sigma xy diam
+  Float_t fVtxNSigmaDiamZ;        // SPD vertex pileup cut: n sigma z diam
+  Float_t fV0CasymA;              // constant for the linear cut on V0C012 vs V0C3 asymmetry
+  Float_t fV0CasymB;              // slope for the linear cut on V0C012 vs V0C3 asymmetry
+  Int_t fNBCsPast;                // VIR past-future protection: number of past BCs (BC%4=0)
+  Int_t fNBCsFuture;              // VIR past-future protection: number of future BCs (BC%4=0)
+  Int_t fVIRBBAflags;             // VIR past-future protection: min number of BBA flags in VIR definition
+  Int_t fVIRBBCflags;             // VIR past-future protection: min number of BBC flags in VIR definition
+  Int_t fVIRBGAflags;             // VIR past-future protection: min number of BGA flags in VIR definition
+  Int_t fVIRBGCflags;             // VIR past-future protection: min number of BGC flags in VIR definition
+  Int_t fVHMBBAflags;             // VHM trigger: min number of BBA flags (read out from OCDB)
+  Int_t fVHMBBCflags;             // VHM trigger: min number of BBC flags (read out from OCDB)
+  Int_t fVHMBGAflags;             // VHM trigger: min number of BGA flags (read out from OCDB)
+  Int_t fVHMBGCflags;             // VHM trigger: min number of BGC flags (read out from OCDB)
+  Int_t fV0MOnThreshold;          // V0M HM trigger: min V0M threshold (read out from OCDB)
+  Float_t fV0MOfThreshold;        // V0M HM offline: min V0M threshold
+  Int_t fSPDGFOThreshold;         // SPD GFO trigger: min number of outer chips
+  Int_t fSH1OuterThreshold;       // SPD 0SH1 trigger: min number of outer chips
+  Int_t fSH2OuterThreshold;       // SPD 0SH2 trigger: min number of outer chips
+  Int_t fTklThreshold;            // Offline cut on number of tracklets (for high-multiplicity SPD trigger)
   Float_t fTRDptHSE;              // pt threshold for HSE trigger
   UChar_t fTRDpidHSE;             // PID threshold for HSE trigger
   Float_t fTRDptHQU;              // pt threshold for HQU trigger
@@ -179,7 +188,7 @@ class AliOADBTriggerAnalysis : public TNamed {
   AliOADBTriggerAnalysis(const AliOADBTriggerAnalysis& cont);  // not implemented
   AliOADBTriggerAnalysis& operator=(const AliOADBTriggerAnalysis& cont); // not implemented
 
-  ClassDef(AliOADBTriggerAnalysis, 5);
+  ClassDef(AliOADBTriggerAnalysis, 6);
 };
 
 #endif

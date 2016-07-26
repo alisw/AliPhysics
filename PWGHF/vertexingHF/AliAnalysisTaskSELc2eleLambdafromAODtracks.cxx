@@ -545,7 +545,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fNCentBins					(0),
   fNOfPools(1),
   fEventBuffer(0x0),
-  fEventInfo(0x0),
+	fEventInfo(new TObjString("")),
   fElectronTracks(0x0),
   fV0Tracks1(0x0),
   fV0Tracks2(0x0),
@@ -1029,7 +1029,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fNCentBins					(0),
 	fNOfPools(1),
 	fEventBuffer(0x0),
-	fEventInfo(0x0),
+	fEventInfo(new TObjString("")),
 	fElectronTracks(0x0),
 	fV0Tracks1(0x0),
 	fV0Tracks2(0x0),
@@ -5468,11 +5468,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::SelectTrack( const AliVEvent *e
 //        FillElectronROOTObjects(aodt,aodtpid,mcArray);
 //      }
 
-      Double_t minmass_ee = 9999.;
-      Double_t minmasslike_ee = 9999.;
-      Bool_t isconv = fAnalCuts->TagConversions(aodt,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmass_ee);
+			Double_t minmass_ee = 9999.;
+			Double_t minmasslike_ee = 9999.;
+			Bool_t isconv = fAnalCuts->TagConversions(aodt,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmass_ee);
 			Bool_t isconv_like = fAnalCuts->TagConversionsSameSign(aodt,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmasslike_ee);
 			Int_t mcetype = -9999;
+			fHistoMassConversionsMin->Fill(minmass_ee);
+			fHistoMassConversionsSameSignMin->Fill(minmasslike_ee);
 
       if(fUseMCInfo)
       {

@@ -11,8 +11,8 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     Error("AddTask_tbroeker_ElectronEfficiency", "No analysis manager found.");
     return 0;
   }
-  
-  //Base Directory for GRID / LEGO Train  
+
+  //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
     configBasePath=Form("%s/",gSystem->pwd());
@@ -34,7 +34,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   for(Int_t i=0;i<=nBinsPhi;i++) { PhiBins[i] = PhiMin + i*(PhiMax-PhiMin)/nBinsPhi; }
 
   const Int_t nBinsPt = ( sizeof(PtBins) / sizeof(PtBins[0]) )-1;
-  
+
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
   std::cout << "hasMC = " << hasMC << std::endl;
@@ -42,13 +42,18 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   // Electron efficiency task
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
-  
-//   if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
-//     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-//     TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
-//     task->SetResolution(arr);
-//   }
-  
+
+  if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
+     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+    if(bUsePtResolution){  task->SetResolutionPt( (TObjArray*) fRes->Get("PtResArr") ); }
+    else                {  task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr") ); }
+    if(bUseEtaResolution){ task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr") ); }
+    else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
+    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiResArr") );
+  }
+  task->SetCalcEfficiencyRec(CalcEfficiencyRec);
+  task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
   SetupMCSignals(task);
   //event related
   task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
@@ -62,6 +67,11 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   // resolution calculation
   task->SetCalcResolution(CalcResolution);
   if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
+  task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+  task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
+  task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
+  task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
+
   // pair efficiency
   if(doPairing){
     task->SetKineTrackCuts(SetupTrackCutsAndSettings(100));
@@ -84,7 +94,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   else                task->SetWriteTree(writeTree);
   task->SetSupportedCutInstance(supportedCutInstance);
   task->CreateHistoGen();
-  
+
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i); // main function in config file
     if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
@@ -99,12 +109,12 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     task->AttachRejCutMee(rejCutMee);
     task->AttachRejCutTheta(rejCutTheta);
     task->AttachRejCutPhiV(rejCutPhiV);
-    
+
     task->CreateHistograms(names,i);
   }
-  
+
   mgr->AddTask(task);
-  
+
   //
   // Create containers for input/output
   //
@@ -115,7 +125,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("tbroeker_EffTree", TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("tbroeker_stats", TH1D::Class(),
-                                                            AliAnalysisManager::kOutputContainer,outputFileName);                                                          
+                                                            AliAnalysisManager::kOutputContainer,outputFileName);
 
   //connect input/output
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

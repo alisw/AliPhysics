@@ -34,15 +34,13 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
   void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
 
-  void                        ActivateRejectionJetConstituents(TF1* rejectionFunction)
-                                { fRejectionFunction = rejectionFunction; }
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
-  void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading;}
+  void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading, Double_t dphi) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading; fEventCriteriumMinJetDeltaPhi = dphi;}
   void                        SetEventCriteriumSelection(Int_t type);
 
-  void                        ActivateJetExtraction(Double_t percentage, Double_t minPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt;}
+  void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
 
  protected:
   void                        ExecOnce();
@@ -65,6 +63,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void*                       fJetsTreeBuffer;                          //!<!  buffer for one jet (that will be saved to the tree)
   Double_t                    fExtractionPercentage;                    ///< percentage that is recorded
   Double_t                    fExtractionMinPt;                         ///< minimum pt of recorded jets
+  Double_t                    fExtractionMaxPt;                         ///< maximum pt of recorded jets
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
@@ -75,7 +74,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TRandom3*                   fRandom;                                  ///< random number generator
 
   // Criteria for the selection of jets that are passed to the correlation task
-  TF1*                        fRejectionFunction;                       ///< Function describing the cut applied to jet const.
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Double_t                    fMinFakeFactorPercentage;                 ///< min fake factor (percentage relative to cut profile)
   Double_t                    fMaxFakeFactorPercentage;                 ///< max fake factor (percentage relative to cut profile)
@@ -84,6 +82,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Double_t                    fEventCriteriumMaxBackground;             ///< Maximum background
   Double_t                    fEventCriteriumMinLeadingJetPt;           ///< Min leading jet
   Double_t                    fEventCriteriumMinSubleadingJetPt;        ///< Min subleading jet
+  Double_t                    fEventCriteriumMinJetDeltaPhi;            ///< Min jet delta phi in dijet criterium
 
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
@@ -104,7 +103,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // ######### HELPER FUNCTIONS
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
-  AliEmcalJet*                GetSubleadingJet(const char* opt);
+  void                        GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading);
   void                        CalculateEventProperties();
 
 
@@ -113,7 +112,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 6) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 7) // Charged jet+h analysis support task
   /// \endcond
 };
 

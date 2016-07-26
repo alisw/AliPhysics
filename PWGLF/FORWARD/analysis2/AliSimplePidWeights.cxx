@@ -60,7 +60,7 @@ Double_t AliSimplePidWeights::CalcWeight(Double_t,
   return 1.;
 }
 //____________________________________________________________________
-void AliSimplePidWeights::AddPDGCode(Int_t  pdg, Double_t factor)
+void AliSimplePidWeights::AddPDGCode(Int_t pdg, Double_t factor, Bool_t anti)
 {
 
   Int_t n   = fPdgs.GetSize();
@@ -78,6 +78,8 @@ void AliSimplePidWeights::AddPDGCode(Int_t  pdg, Double_t factor)
   // Now set the slot 
   fPdgs.AddAt(pdg, pos);
   fWeights.AddAt(factor, pos);
+
+  if (anti) AddPDGCode(-pdg,factor,false);
 }
 #define PF(N,V,...)					\
   AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)

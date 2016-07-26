@@ -145,8 +145,14 @@ fNumberOfRPsEBE(0.),
 fNumberOfPOIsEBE(0.),
 fReferenceMultiplicityEBE(0.),
 fCentralityEBE(0.),
+fZDCESEclEbE(0),
 fNewMetricLEBE(0.),
-fCentralityVarEBE(0.),
+fNewMetricDEBE(0.),
+fNewMetricL2EBE(0.),
+fNewMetricD2EBE(0.),
+fCentralityCL1EBE(0.),
+fNITSCL1EBE(0.),
+fCentralityTRKEBE(0.),
 fAvMultiplicity(NULL),
 fIntFlowCorrelationsPro(NULL),
 fIntFlowSquaredCorrelationsPro(NULL),
@@ -249,6 +255,7 @@ fCalculateCRCZDC(kFALSE),
 fCalculateFlowQC(kFALSE),
 fCalculateFlowZDC(kFALSE),
 fCalculateFlowVZ(kFALSE),
+fCalculateEbEFlow(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
 fRecenterZDC(kFALSE),
@@ -283,7 +290,6 @@ fCRCZDCList(NULL),
 fCRCZDCRbRList(NULL),
 fCRCPtList(NULL),
 fCMEList(NULL),
-fCMERbRList(NULL),
 fCMETPCList(NULL),
 fCMEZDCList(NULL),
 fCRC2List(NULL),
@@ -295,6 +301,7 @@ fFlowQCList(NULL),
 fFlowQCCenBin(100),
 fFlowSPVZList(NULL),
 fVariousList(NULL),
+fEbEFlowList(NULL),
 fCenWeightEbE(0.),
 fQAZDCCuts(kFALSE),
 fQAZDCCutsFlag(kTRUE),
@@ -345,6 +352,7 @@ fMaxDevZN(5.)
   this->InitializeArraysForFlowQC();
   this->InitializeArraysForFlowSPZDC();
   this->InitializeArraysForFlowSPVZ();
+  this->InitializeArraysForEbEFlow();
   
   // printf("Arrays initialized \n");
   
@@ -410,6 +418,7 @@ void AliFlowAnalysisCRC::Init()
   this->BookEverythingForFlowQC();
   this->BookEverythingForFlowSPZDC();
   this->BookEverythingForFlowSPVZ();
+  this->BookEverythingForEbEFlow();
   this->BookEverythingForVarious();
   
   this->SetCentralityWeights();
@@ -476,7 +485,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   if(!fNumberOfRPsEBE || !fNumberOfPOIsEBE){return;}
   fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
   fCentralityEBE = anEvent->GetCentrality(); // centrality percentile for current event
-  fCentralityVarEBE = anEvent->GetCentralityVar(); // centrality percentile for current event (alternative estimation)
+  fCentralityCL1EBE = anEvent->GetCentralityCL1(); // centrality percentile for current event (alternative estimation)
+  fCentralityTRKEBE = anEvent->GetCentralityTRK(); // centrality percentile for current event (alternative estimation)
+  fNITSCL1EBE = anEvent->GetNITSCL1();
   if(!fCentralityEBE){return;}
   
   // centrality flattening with weights
@@ -565,6 +576,18 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     if(fRecenterZDC) this->RecenterCRCQVecZDC();
     if(fQAZDCCuts) fQAZDCCutsFlag = this->PassQAZDCCuts();
   }
+  
+  // EbE flow *********************************************************************************************************
+  
+  if(fCalculateEbEFlow) {
+    if(fNumberOfPOIsEBE>=200 && fNumberOfPOIsEBE<=2500) {
+      fEBEFlowMulBin = (Int_t)(fNumberOfPOIsEBE/100)-2;
+    } else {
+      fEBEFlowMulBin = -1;
+    }
+  }
+  
+  // loop over particles **********************************************************************************************
   
   for(Int_t i=0;i<nPrim;i++) {
     if(fExactNoRPs > 0 && nCounterNoRPs>fExactNoRPs){continue;}
@@ -832,6 +855,10 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           fFlowQCMetricSpec->Fill(dPt,fNewMetricLEBE,wPhiEta);
         }
         
+        if(fCalculateEbEFlow) {
+          if(fEBEFlowMulBin>=0) fEbEFlowAzimDis[fEBEFlowMulBin]->Fill(dPhi,wPhiEta);
+        }
+        
       } // end of if(pTrack->InPOISelection())
     } else // to if(aftsTrack)
     {
@@ -990,6 +1017,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   if(fCalculateFlowQC) this->CalculateFlowQC();
   if(fCalculateFlowZDC && fUseZDC) this->CalculateFlowSPZDC();
   if(fCalculateFlowVZ && fUseVZERO) this->CalculateFlowSPVZ();
+  if(fCalculateEbEFlow) this->FitEbEFlow();
   
   // j) Distributions of correlations:
   if(fStoreDistributions){this->StoreDistributionsOfCorrelations();}
@@ -1614,6 +1642,7 @@ void AliFlowAnalysisCRC::GetOutputHistograms(TList *outputListHistos)
     this->GetPointersForFlowQC();
     this->GetPointersForFlowSPZDC();
     this->GetPointersForFlowSPVZ();
+    this->GetPointersForEbEFlow();
     this->GetPointersForVarious();
   } else
   {
@@ -15939,8 +15968,8 @@ void AliFlowAnalysisCRC::InitializeCostantsForCRC()
   }
   
   fZDCESENBins = 100;
-  fZDCESELCtot = 59.4; // hardwired, TBI
-  fZDCESELAtot = 53.4;  // hardwired, TBI
+  fZDCESELCtot = 1.800004698536e+04; // hardwired, TBI
+  fZDCESELC2tot = 4.489404e+01; // hardwired, TBI
   
 } // end of AliFlowAnalysisCRC::InitializeCostantsForCRC()
 
@@ -16199,6 +16228,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     fZDCESEMinMetricHist[k] =  NULL;
     fZDCESEMaxMetricHist[k] =  NULL;
   }
+  for(Int_t k=0; k<fZDCESEnPol; k++) {
+    fZDCESECutsHist[k] =  NULL;
+  }
 } // end of AliFlowAnalysisCRC::InitializeArraysForQVec()
 
 //=======================================================================================================================
@@ -16215,11 +16247,6 @@ void AliFlowAnalysisCRC::InitializeArraysForCME()
   
   for (Int_t h=0; h<fCRCnCen; h++) {
     for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
-      fCMETPCCorHist[eg][h] = NULL;
-      fCMETPCCovHist[eg][h] = NULL;
-      for (Int_t k=0;k<fCMETPCnDist;k++) {
-        fCMETPCDistHist[eg][h][k] = NULL;
-      }
       fCMEZDCCorHist[eg][h] = NULL;
       fCMEZDCCovHist[eg][h] = NULL;
       for (Int_t k=0;k<fCMEZDCnDist;k++) {
@@ -16228,19 +16255,22 @@ void AliFlowAnalysisCRC::InitializeArraysForCME()
     } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  for(Int_t r=0;r<fCRCnRun;r++) {
-    fCMERunsList[r] = NULL;
-    for (Int_t h=0; h<fCRCnCen; h++) {
-      for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
-        fCMETPCCorPro[r][eg][h] = NULL;
-        fCMETPCCovPro[r][eg][h] = NULL;
-        fCMETPCNUAPro[r][eg][h] = NULL;
-        fCMEZDCCorPro[r][eg][h] = NULL;
-        fCMEZDCCovPro[r][eg][h] = NULL;
-        fCMEZDCNUAPro[r][eg][h] = NULL;
-      } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
-    } // end of for (Int_t h=0;h<fCRCnCen;h++)
-  } // end of for(Int_t r=0;r<fCRCnRun;r++)
+  for (Int_t h=0; h<fCRCnCen; h++) {
+    for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
+      fCMEZDCCorPro[eg][h] = NULL;
+      fCMEZDCCovPro[eg][h] = NULL;
+      fCMEZDCNUAPro[eg][h] = NULL;
+    } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
+  } // end of for (Int_t h=0;h<fCRCnCen;h++)
+  
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
+      fCMETPCCorPro[k][h] = NULL;
+      fCMETPCCorHist[k][h] = NULL;
+      fCMETPCFinalHist[k][h] = NULL;
+    }
+  }
+  
 } // end of AliFlowAnalysisCRC::InitializeArraysForCME()
 
 //=======================================================================================================================
@@ -16305,15 +16335,15 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
     for(Int_t j=0; j<3; j++) {
       fFlowQCIntCorPro[i][j] = NULL;
       fFlowQCIntCorHist[i][j] = NULL;
-      fFlowQCMulCorPro[i][j] = NULL;
-      fFlowQCMulCorHist[i][j] = NULL;
+      fFlowQCNewCenPro[i][j] = NULL;
+      fFlowQCNewCenHist[i][j] = NULL;
       fFlowQCMetricCorPro[i][j] = NULL;
       fFlowQCMetricCorHist[i][j] = NULL;
     }
     fFlowQCIntCorProEG[i] = NULL;
     fFlowQCIntCorHistEG[i] = NULL;
-    fFlowQCMetricCorProEG[i] = NULL;
-    fFlowQCMetricCorHistEG[i] = NULL;
+    fFlowQCNewCenProEG[i] = NULL;
+    fFlowQCNewCenHistEG[i] = NULL;
   }
   
   for(Int_t bng=0; bng<4; bng++) {
@@ -16368,6 +16398,28 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowSPVZ()
     }
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
+} // end of AliFlowAnalysisCRC::InitializeArraysForFlowSPVZ()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisCRC::InitializeArraysForEbEFlow()
+{
+  fEBEFlowMulBin = 0;
+  for (Int_t h=0; h<24; h++) {
+    fEbEFlowAzimDis[h] = NULL;
+  }
+  fEBEFlowRChiSqHist = NULL;
+  fEBEFlowpValueHist = NULL;
+  for (Int_t h=0; h<fCRCnCen; h++) {
+    fEBEFlowCrosPro[h] = NULL;
+    for(Int_t i=0; i<2; i++) {
+      fEBEFlowFlucHis[h][i] = NULL;
+    }
+  }
+  for(Int_t h=0; h<8; h++) {
+    fEBEFlowResVZPro[h] = NULL;
+  }
+  FourierExp = NULL;
 } // end of AliFlowAnalysisCRC::InitializeArraysForFlowSPVZ()
 
 //=======================================================================================================================
@@ -16757,12 +16809,15 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
     fPolMin[k] = NULL;
     fPolMax[k] = NULL;
     fPolAv[k] = NULL;
-    fPolDer[k] = NULL;
-    fPolInt[k] = NULL;
+//    fPolDer[k] = NULL;
+//    fPolInt[k] = NULL;
     fPolDist[k] = NULL;
-    fPolMinMetric[k] = NULL;
-    fPolMaxMetric[k] = NULL;
+    fPolSlope[k] = NULL;
   }
+  for(Int_t k=0; k<fZDCESEnPol; k++) {
+    fPolCuts[k] = NULL;
+  }
+  fCenMetric = NULL;
   
 } //  end of void AliFlowAnalysisCRC::InitializeArraysForVarious()
 
@@ -16874,16 +16929,18 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
     fhZNvsTCen[c] = new TH2F(Form("fhZNvsTCen[%d]",c), Form("fhZNvsTCen[%d]",c), 100, 0., 100., 100, 0., 100.);
     fhZNvsTCen[c]->Sumw2();
     fVariousList->Add(fhZNvsTCen[c]);
-    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 1100, 0., 11000, 100, 0., 100.);
+    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 1250, 0., 25000, 100, 0., 100.);
     fhCenvsMul[c]->Sumw2();
     fVariousList->Add(fhCenvsMul[c]);
-    fhCenvsDif[c] = new TH2F(Form("fhCenvsDif[%d]",c), Form("fhCenvsDif[%d]",c), 220, -10., 100., 200, 0., 100.);
+    if(c==0) fhCenvsDif[c] = new TH2F(Form("fhCenvsDif[%d]",c), Form("fhCenvsDif[%d]",c), 1.E4, 0., 25000., 200, 0., 100.);
+    else     fhCenvsDif[c] = new TH2F(Form("fhCenvsDif[%d]",c), Form("fhCenvsDif[%d]",c), 1000, 0., 100., 1000, 0., 100.);
     fhCenvsDif[c]->Sumw2();
     fVariousList->Add(fhCenvsDif[c]);
-    fhZNvsMul[c] = new TH2F(Form("fhZNvsMul[%d]",c), Form("fhZNvsMul[%d]",c), 1100, 0., 11000, 100, 0., 100.);
+    fhZNvsMul[c] = new TH2F(Form("fhZNvsMul[%d]",c), Form("fhZNvsMul[%d]",c), 1250, 0., 25000, 100, 0., 100.);
     fhZNvsMul[c]->Sumw2();
     fVariousList->Add(fhZNvsMul[c]);
-    fhImpvsNcol[c] = new TH2F(Form("fhImpvsNcol[%d]",c), Form("fhImpvsNcol[%d]",c), fZDCESENBins, 0., (c==0?fZDCESELCtot:fZDCESELAtot), 2000, -100., 100.);
+    if(c==0) fhImpvsNcol[c] = new TH2F(Form("fhImpvsNcol[%d]",c), Form("fhImpvsNcol[%d]",c), 1.E4, 0., fZDCESELCtot, 2000, -5000., 5000.);
+    if(c==1) fhImpvsNcol[c] = new TH2F(Form("fhImpvsNcol[%d]",c), Form("fhImpvsNcol[%d]",c), 1.E4, 0., fZDCESELC2tot, 2000, -50., 50.);
     fhImpvsNcol[c]->Sumw2();
     fVariousList->Add(fhImpvsNcol[c]);
   }
@@ -17122,11 +17179,6 @@ void AliFlowAnalysisCRC::BookAndNestAllLists()
   fCMEList->SetOwner(kTRUE);
   fHistList->Add(fCMEList);
   
-  fCMERbRList = new TList();
-  fCMERbRList->SetName("Run-by-Run");
-  fCMERbRList->SetOwner(kTRUE);
-  fCMEList->Add(fCMERbRList);
-  
   fCMETPCList = new TList();
   fCMETPCList->SetName("CME TPC only");
   fCMETPCList->SetOwner(kTRUE);
@@ -17166,6 +17218,11 @@ void AliFlowAnalysisCRC::BookAndNestAllLists()
   fFlowSPVZList->SetName("Flow SP VZ");
   fFlowSPVZList->SetOwner(kTRUE);
   fHistList->Add(fFlowSPVZList);
+  
+  fEbEFlowList = new TList();
+  fEbEFlowList->SetName("EbE Flow");
+  fEbEFlowList->SetOwner(kTRUE);
+  fHistList->Add(fEbEFlowList);
   
 } // end of void AliFlowAnalysisCRC::BookAndNestAllLists()
 
@@ -18023,13 +18080,15 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fZDCQHist[1] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecC[%d][%d]",fRunNum,1)));
     fZDCQHist[2] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecA[%d][%d]",fRunNum,0)));
     fZDCQHist[3] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecA[%d][%d]",fRunNum,1)));
-    fZDCQHist[4] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2A[%d][%d]",fRunNum,0)));
-    fZDCQHist[5] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2A[%d][%d]",fRunNum,1)));
-    fZDCQHist[6] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2C[%d][%d]",fRunNum,2)));
-    fZDCQHist[7] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2C[%d][%d]",fRunNum,3)));
-    for (Int_t k=0; k<4; k++) {
-      fZDCQHist[k+4]->Fit(fZDCFitSec[k],"QRN","",3.,87.);
-    }
+    
+//    fZDCQHist[4] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2A[%d][%d]",fRunNum,0)));
+//    fZDCQHist[5] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2A[%d][%d]",fRunNum,1)));
+//    fZDCQHist[6] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2C[%d][%d]",fRunNum,2)));
+//    fZDCQHist[7] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2C[%d][%d]",fRunNum,3)));
+//    
+//    for (Int_t k=0; k<4; k++) {
+//      if(fZDCQHist[k+4]) fZDCQHist[k+4]->Fit(fZDCFitSec[k],"QRN","",3.,87.);
+//    }
   }
   
   if (!fZDCQHist[0] || !fZDCQHist[1] || !fZDCQHist[2] || !fZDCQHist[3]) return;
@@ -18062,8 +18121,8 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     QCReR = QCRe-AvQCRe;
     QCImR = QCIm-AvQCIm;
     if(fDivSigma && SDQCRe>0. && SDQCIm>0.) {
-      QCReR /= SDQCRe/AvSD;
-      QCImR /= SDQCIm/AvSD;
+      QCReR /= SDQCRe;
+      QCImR /= SDQCIm;
     }
     fZDCFlowVect[0].Set(QCReR,QCImR);
     fCRCZDCQVecCCorr[fRunBin][0]->Fill(fCentralityEBE,QCReR);
@@ -18074,8 +18133,8 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     QAReR = QARe-AvQARe;
     QAImR = QAIm-AvQAIm;
     if(fDivSigma && SDQARe>0. && SDQAIm>0.) {
-      QAReR /= SDQARe/AvSD;
-      QAImR /= SDQAIm/AvSD;
+      QAReR /= SDQARe;
+      QAImR /= SDQAIm;
     }
     fZDCFlowVect[1].Set(QAReR,QAImR);
     fCRCZDCQVecACorr[fRunBin][0]->Fill(fCentralityEBE,QAReR);
@@ -18084,44 +18143,50 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   
   // twist and shout
   
-  if (!fZDCQHist[4] || !fZDCQHist[5] || !fZDCQHist[6] || !fZDCQHist[7]) return;
-  
-  Double_t AvQC2Re = fZDCFitSec[2]->Eval(fCentralityEBE);
-  Double_t AvQC2Im = fZDCFitSec[3]->Eval(fCentralityEBE);
-  Double_t A2P = 1.+AvQC2Re;
-  Double_t A2M = 1.-AvQC2Re;
-  Double_t L2P = AvQC2Im/A2P;
-  Double_t L2M = AvQC2Im/A2M;
-  
-  Double_t QCReT = (QCReR-L2M*QCImR)/(1.-L2M*L2P);
-  Double_t QCImT = (QCImR-L2P*QCReR)/(1.-L2M*L2P);
-  
-  QCReR = QCReT/A2P;
-  QCImR = QCImT/A2M;
-  
-  fZDCFlowVect[0].Set(QCReR,QCImR);
-  
-  Double_t AvQA2Re = fZDCFitSec[0]->Eval(fCentralityEBE);
-  Double_t AvQA2Im = -fZDCFitSec[1]->Eval(fCentralityEBE); // WARNING: MINUS SIGN
-  A2P = 1.+AvQA2Re;
-  A2M = 1.-AvQA2Re;
-  L2P = AvQA2Im/A2P;
-  L2M = AvQA2Im/A2M;
-  
-  Double_t QAReT = (QAReR-L2M*QAImR)/(1.-L2M*L2P);
-  Double_t QAImT = (QAImR-L2P*QAReR)/(1.-L2M*L2P);
-  
-  QAReR = QAReT/A2P;
-  QAImR = QAImT/A2M;
-  
-  fZDCFlowVect[1].Set(QAReR,QAImR);
+//  if (!fZDCQHist[4] || !fZDCQHist[5] || !fZDCQHist[6] || !fZDCQHist[7]) return;
+//  
+//  Double_t AvQC2Re = fZDCFitSec[2]->Eval(fCentralityEBE);
+//  Double_t AvQC2Im = fZDCFitSec[3]->Eval(fCentralityEBE);
+//  Double_t A2P = 1.+AvQC2Re;
+//  Double_t A2M = 1.-AvQC2Re;
+//  Double_t L2P = AvQC2Im/A2P;
+//  Double_t L2M = AvQC2Im/A2M;
+//  
+//  Double_t QCReT = (QCReR-L2M*QCImR)/(1.-L2M*L2P);
+//  Double_t QCImT = (QCImR-L2P*QCReR)/(1.-L2M*L2P);
+//  
+//  QCReR = QCReT/A2P;
+//  QCImR = QCImT/A2M;
+//  
+//  fZDCFlowVect[0].Set(QCReR,QCImR);
+//  
+//  Double_t AvQA2Re = fZDCFitSec[0]->Eval(fCentralityEBE);
+//  Double_t AvQA2Im = -fZDCFitSec[1]->Eval(fCentralityEBE); // WARNING: MINUS SIGN
+//  A2P = 1.+AvQA2Re;
+//  A2M = 1.-AvQA2Re;
+//  L2P = AvQA2Im/A2P;
+//  L2M = AvQA2Im/A2M;
+//  
+//  Double_t QAReT = (QAReR-L2M*QAImR)/(1.-L2M*L2P);
+//  Double_t QAImT = (QAImR-L2P*QAReR)/(1.-L2M*L2P);
+//  
+//  QAReR = QAReT/A2P;
+//  QAImR = QAImT/A2M;
+//  
+//  fZDCFlowVect[1].Set(QAReR,QAImR);
   
   if(QMA>0. && QMC>0.) {
     if( fInvertZDC ) QAReR = -QAReR;
     Double_t EvPlZDCC = TMath::ATan2(QCImR,QCReR);
-    fCRCZDCEvPlC[fRunBin][fCenBin]->Fill(EvPlZDCC);
     Double_t EvPlZDCA = TMath::ATan2(QAImR,QAReR);
-    fCRCZDCEvPlA[fRunBin][fCenBin]->Fill(EvPlZDCA);
+    Double_t EvPlSum = EvPlZDCC+EvPlZDCC;
+    if(EvPlSum < -TMath::Pi()) EvPlSum += TMath::Pi();
+    if(EvPlSum > TMath::Pi()) EvPlSum -= TMath::Pi();
+    fCRCZDCEvPlC[fRunBin][fCenBin]->Fill(EvPlSum);
+    
+    EvPlSum = TMath::ATan2(QAReR*QCReR-QAImR*QCImR,QAImR*QCReR+QAReR*QCImR);
+    fCRCZDCEvPlA[fRunBin][fCenBin]->Fill(EvPlSum);
+    
     fCRCZDCQVecCov[fRunBin][0]->Fill(fCentralityEBE,QAReR*QAReR-QAImR*QAImR);
     fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,2.*QAReR*QAImR);
     fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,QCReR*QCReR-QCImR*QCImR);
@@ -18149,7 +18214,6 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   Double_t VZCM = fVZFlowVect[0][1].GetMult();
   // VZ eta > 0
   Double_t VZAM = fVZFlowVect[1][1].GetMult();
-  Double_t VZM = (VZCM+VZAM)/2.;
   
   if( fInvertZDC ) ZARe = -ZARe;
   // cut on multiplicity
@@ -18185,42 +18249,51 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   }
   
   // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
-  Double_t ZCmax = 52.5;
-  Double_t ZAmax = 47.1;
-  Double_t VZCmin = 10577;
-  Double_t VZAmin = 10510;
-  Double_t sCVZM = ZCmax/VZCmin*VZM;
-  Double_t sAVZM = ZAmax/VZAmin*VZM;
-  
-  Double_t DC=0.,LC=0.,mC=0.,DA=0.,LA=0.,mA=0.;
-  if(sCVZM>5. && sAVZM>5. && sCVZM<50. && sAVZM<45.) {
-    fPolDist[0]->SetParameter(0,sCVZM);
-    fPolDist[0]->SetParameter(1,ZCM);
-    DC = fPolDist[0]->GetMinimum(5.,50.);
-    mC = fPolDist[0]->GetMinimumX(5.,50.);
-    DC *= (ZCM<fPolAv[0]->Eval(mC)?-1.:1.);
-    LC = fPolInt[0]->Integral(5.,mC);
-    
-    fPolDist[1]->SetParameter(0,sAVZM);
-    fPolDist[1]->SetParameter(1,ZAM);
-    DA = fPolDist[1]->GetMinimum(5.,45.);
-    mA = fPolDist[1]->GetMinimumX(5.,45.);
-    DA *= (ZAM<fPolAv[1]->Eval(mA)?-1.:1.);
-    LA = fPolInt[1]->Integral(5.,mA);
-  }
-  
-  fNewMetricLEBE = (LA*(fZDCESELCtot/fZDCESELAtot)+LC)/2.;
+  Double_t ZNM = (ZCM+ZAM)/2.;
+  Double_t VZM = VZCM+VZAM;
   
   if(fMinMulZN==7) {
-    if(LC==0. || LA==0.) PassZDCcuts = kFALSE;
+    if (VZM>5.E3) {
+      Double_t par1 = 0.;
+      if(VZM<1.E4) par1 = fPolSlope[0]->Eval(VZM);
+      else         par1 = fPolSlope[1]->Eval(VZM);
+      Double_t par0 = ZNM-par1*VZM;
+      
+      fPolDist[0]->SetParameter(0,par0);
+      fPolDist[0]->SetParameter(1,par1);
+      Double_t VZMint = fPolDist[0]->GetMinimumX();
+      fNewMetricLEBE = sqrt(pow(VZMint-5.E3,2.)+pow(fPolAv[0]->Eval(VZMint)-fPolAv[0]->Eval(5.E3),2.));
+      fNewMetricL2EBE = sqrt(pow((VZMint-5.E3)/1.E3,2.)+pow(fPolAv[0]->Eval(VZMint)-fPolAv[0]->Eval(5.E3),2.));
+      
+      fPolAv[1]->SetParameter(0,par0);
+      fPolAv[1]->SetParameter(1,par1);
+      fNewMetricDEBE = sqrt(pow(VZM-VZMint,2.)+pow(fPolAv[1]->Eval(VZM)-fPolAv[1]->Eval(VZMint),2.));
+      fNewMetricD2EBE = sqrt(pow((VZM-VZMint)/1.E3,2.)+pow(fPolAv[1]->Eval(VZM)-fPolAv[1]->Eval(VZMint),2.));
+      if(fPolAv[1]->Eval(VZM)<fPolAv[0]->Eval(VZM)) {
+        fNewMetricDEBE *= -1.;
+        fNewMetricD2EBE *= -1.;
+      }
+      
+    } else {
+      fNewMetricLEBE = -1.;
+      fNewMetricDEBE = -1.;
+      PassZDCcuts = kFALSE;
+    }
   }
+  
+  // new ZDC ESE selection
   if(fMinMulZN==5) {
-    if(LC==0. || LA==0.) PassZDCcuts = kFALSE;
-    if((DC > fPolMinMetric[0]->Eval(LC)) || (DA > fPolMinMetric[1]->Eval(LA))) PassZDCcuts = kFALSE;
-  }
-  if(fMinMulZN==6) {
-    if(LC==0. || LA==0.) PassZDCcuts = kFALSE;
-    if((DC < fPolMaxMetric[0]->Eval(LC)) || (DA < fPolMaxMetric[1]->Eval(LA))) PassZDCcuts = kFALSE;
+    fZDCESEclEbE=-1;
+    Double_t DifMin=1.E3;
+    for (Int_t k=0; k<fZDCESEnPol; k++) {
+      Double_t PolV = fPolCuts[k]->Eval(fCentralityEBE)-fCorrMap[CenBin];
+      if(ZNM<PolV && PolV-ZNM<DifMin) {
+        fZDCESEclEbE=k;
+        DifMin=PolV-ZNM;
+      }
+    }
+    if (fZDCESEclEbE==-1) fZDCESEclEbE=fZDCESEnPol;
+    if (fCentralityEBE>=90.) PassZDCcuts = kFALSE;
   }
   
   // cut on centroid position
@@ -18238,16 +18311,17 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhZNCvsZNA[fCenBin]->Fill(ZCM,ZAM);
     fhZNvsCen[0]->Fill(fCentralityEBE,ZCM);
     fhZNvsCen[1]->Fill(fCentralityEBE,ZAM);
-    fhZNvsTCen[0]->Fill(fCentralityVarEBE,ZCM);
-    fhZNvsTCen[1]->Fill(fCentralityVarEBE,ZAM);
+    fhZNvsTCen[0]->Fill(fCentralityCL1EBE,ZCM);
+    fhZNvsTCen[1]->Fill(fCentralityCL1EBE,ZAM);
     fhCenvsMul[0]->Fill(VZM,fCentralityEBE);
-    fhCenvsMul[1]->Fill(VZM,fCentralityVarEBE);
-    fhZNvsMul[0]->Fill(VZM,ZCM);
-    fhZNvsMul[1]->Fill(VZM,ZAM);
-    fhCenvsDif[0]->Fill(sCVZM,ZCM);
-    fhCenvsDif[1]->Fill(sAVZM,ZAM);
-    if(LC>0.) fhImpvsNcol[0]->Fill(LC,DC);
-    if(LA>0.) fhImpvsNcol[1]->Fill(LA,DA);
+    fhCenvsMul[1]->Fill(VZM,fCentralityCL1EBE);
+    fhZNvsMul[0]->Fill(VZM,ZNM);
+    fhZNvsMul[1]->Fill(VZM,ZNM);
+    fhCenvsDif[0]->Fill(VZM,ZNM);
+    Double_t NewCentralityEBE = fCenMetric->Eval(fNewMetricLEBE);
+    fhCenvsDif[1]->Fill(NewCentralityEBE,fCentralityEBE);
+    fhImpvsNcol[0]->Fill(fNewMetricLEBE,fNewMetricDEBE);
+    fhImpvsNcol[1]->Fill(fNewMetricL2EBE,fNewMetricD2EBE);
     fhZNQVecCov[0]->Fill(fCentralityEBE,ZCRe*ZARe);
     fhZNQVecCov[1]->Fill(fCentralityEBE,ZCIm*ZAIm);
     fhZNQVecCov[2]->Fill(fCentralityEBE,ZCRe*ZAIm);
@@ -18258,7 +18332,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
       ZCM -= fCorrMap[CenBin];
     }
 //    fhCenvsDif[0]->Fill(fCentralityEBE,ZCM-ZAM);
-//    fhCenvsDif[1]->Fill(fCentralityVarEBE,ZCM-ZAM);
+//    fhCenvsDif[1]->Fill(fCentralityCL1EBE,ZCM-ZAM);
   }
   
   return PassZDCcuts;
@@ -19033,133 +19107,146 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
 
 void AliFlowAnalysisCRC::CalculateCMETPC()
 {
-  Int_t h = fHarmonic-1;
+  // ZDC QA cuts
+  if(fQAZDCCuts && !fQAZDCCutsFlag) {return;}
+  
+  Int_t h = 0;
   Double_t e = 1E-5;
+  
+  Int_t VZH = 2;
+  // VZ eta < 0
+  Double_t VZCRe = fVZFlowVect[0][VZH-1].X();
+  Double_t VZCIm = fVZFlowVect[0][VZH-1].Y();
+  Double_t VZCM  = fVZFlowVect[0][VZH-1].GetMult();
+  // VZ eta > 0
+  Double_t VZARe = fVZFlowVect[1][VZH-1].X();
+  Double_t VZAIm = fVZFlowVect[1][VZH-1].Y();
+  Double_t VZAM  = fVZFlowVect[1][VZH-1].GetMult();
+  
+  if( VZCM<1. || VZAM<1. ) return;
+  if(fZDCESEclEbE<0 || fZDCESEclEbE>=fZDCESEnCl) return;
+  
+  // ZDC-C (eta < -8.8)
+  Double_t ZCM  = fZDCFlowVect[0].GetMult()/1380.;
+  // ZDC-A (eta > 8.8)
+  Double_t ZAM  = fZDCFlowVect[1].GetMult()/1380.;
+  Double_t ZNM = ZCM+ZAM;
   
   // Common variables
   
-  Double_t uPRe=0., uPIm=0., uPM=0., uP2Re=0., uP2Im=0.;
-  Double_t uNRe=0., uNIm=0., uNM=0., uN2Re=0., uN2Im=0.;
-  Double_t uARe=0., uAIm=0., uAM=0.;
-  Double_t uBRe=0., uBIm=0., uBM=0.;
-  Double_t QDRe=0., QDIm=0., QRRe=0., QRIm=0.;
-  Double_t B2Re=0., B2Im=0., BM=0.;
+  Double_t uPReA=0., uPImA=0., uPMA=0., uPReC=0., uPImC=0., uPMC=0.;
+  Double_t uNReA=0., uNImA=0., uNMA=0., uNReC=0., uNImC=0., uNMC=0.;
   
-  // Event plane
+  uPReA = fCMEQRe[0][h]->GetBinContent(1);
+  uPImA = fCMEQIm[0][h]->GetBinContent(1);
+  uPMA  = fCMEMult[0][h]->GetBinContent(1);
+  uPReC = fCMEQRe[0][h]->GetBinContent(2);
+  uPImC = fCMEQIm[0][h]->GetBinContent(2);
+  uPMC  = fCMEMult[0][h]->GetBinContent(2);
   
-  Double_t T2Re[fCMEnEtaBin]={0.}, T2Im[fCMEnEtaBin]={0.}, T2Psi[fCMEnEtaBin]={0.};
-  for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
-    Int_t EBinC = ( eg == 0 ? fCMEQRe[0][h+1]->FindBin(-0.4) : fCMEQRe[0][h+1]->FindBin(0.4) );
-    for(Int_t c=0; c<2; c++) {
-      T2Re[eg] += fCMEQRe[c][h+1]->GetBinContent(EBinC);
-      T2Im[eg] += fCMEQIm[c][h+1]->GetBinContent(EBinC);
-    }
-    T2Psi[eg] = TMath::ATan2(T2Im[eg],T2Re[eg])/2.;
+  // negative charge
+  uNReA = fCMEQRe[1][h]->GetBinContent(1);
+  uNImA = fCMEQIm[1][h]->GetBinContent(1);
+  uNMA  = fCMEMult[1][h]->GetBinContent(1);
+  uNReC = fCMEQRe[1][h]->GetBinContent(2);
+  uNImC = fCMEQIm[1][h]->GetBinContent(2);
+  uNMC  = fCMEMult[1][h]->GetBinContent(2);
+  
+  if (uPMA>1. && uNMA>1. && uPMC>1. && uNMC>1.) {
+    
+    Double_t TwoQpQn = (uPReA*uNReC+uPImA*uNImC)/(uPMA*uNMC) ;
+    fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPMA*uNMC);
+    
+    Double_t TwoQpQp = (uPReA*uPReC+uPImA*uPImC)/(uPMA*uPMC) ;
+    fCMETPCCorPro[fZDCESEclEbE][1]->Fill(fCentralityEBE,TwoQpQp,uPMA*uPMC);
+    
+    Double_t TwoQnQn = (uNReA*uNReC+uNImA*uNImC)/(uNMA*uNMC) ;
+    fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,uNMA*uNMC);
+    
   }
   
   // **********************************************************************************************************
   
-  for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
-    
+  Double_t uPRe=0., uPIm=0., uPM=0., uP2Re=0., uP2Im=0.;
+  Double_t uNRe=0., uNIm=0., uNM=0., uN2Re=0., uN2Im=0.;
+  
+  for(Int_t EBin=1; EBin<=fCMEQRe[0][0]->GetNbinsX(); EBin++) {
     // positive charge
-    Int_t EBin = ( eg == 0 ? fCMEQRe[0][h+1]->FindBin(0.4) : fCMEQRe[0][h+1]->FindBin(-0.4) );
-    uPRe = fCMEQRe[0][h]->GetBinContent(EBin);
-    uPIm = fCMEQIm[0][h]->GetBinContent(EBin);
-    uPM  = fCMEMult[0][h]->GetBinContent(EBin);
-    uP2Re = fCMEQRe[0][h+1]->GetBinContent(EBin);
-    uP2Im = fCMEQIm[0][h+1]->GetBinContent(EBin);
+    uPRe += fCMEQRe[0][h]->GetBinContent(EBin);
+    uPIm += fCMEQIm[0][h]->GetBinContent(EBin);
+    uPM  += fCMEMult[0][h]->GetBinContent(EBin);
+    uP2Re += fCMEQRe[0][h+1]->GetBinContent(EBin);
+    uP2Im += fCMEQIm[0][h+1]->GetBinContent(EBin);
     // negative charge
-    uNRe = fCMEQRe[1][h]->GetBinContent(EBin);
-    uNIm = fCMEQIm[1][h]->GetBinContent(EBin);
-    uNM  = fCMEMult[1][h]->GetBinContent(EBin);
-    uN2Re = fCMEQRe[1][h+1]->GetBinContent(EBin);
-    uN2Im = fCMEQIm[1][h+1]->GetBinContent(EBin);
-    // random A
-    uARe = fCMEQRe[2][h]->GetBinContent(EBin);
-    uAIm = fCMEQIm[2][h]->GetBinContent(EBin);
-    uAM  = fCMEMult[2][h]->GetBinContent(EBin);
-    // random B
-    uBRe = fCMEQRe[3][h]->GetBinContent(EBin);
-    uBIm = fCMEQIm[3][h]->GetBinContent(EBin);
-    uBM  = fCMEMult[3][h]->GetBinContent(EBin);
+    uNRe += fCMEQRe[1][h]->GetBinContent(EBin);
+    uNIm += fCMEQIm[1][h]->GetBinContent(EBin);
+    uNM  += fCMEMult[1][h]->GetBinContent(EBin);
+    uN2Re += fCMEQRe[1][h+1]->GetBinContent(EBin);
+    uN2Im += fCMEQIm[1][h+1]->GetBinContent(EBin);
+  }
+  
+  if (uPM>1. && uNM>1.) {
     
-    QDRe = uPRe-uNRe;
-    QDIm = uPIm-uNIm;
-    QRRe = uARe-uBRe;
-    QRIm = uAIm-uBIm;
-    BM = uPM+uNM;
-    B2Re = uP2Re+uN2Re;
-    B2Im = uP2Im+uN2Im;
+    Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VZCRe + (uPRe*uNIm+uPIm*uNRe)*VZCIm) / (uPM*uNM) ;
+    fCMETPCCorPro[fZDCESEclEbE][3]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
     
-    if (uPM>1. && uNM>1.) {
-      
-      // Delta
-      
-      Double_t TwoQpQn = (uPRe*uNRe+uPIm*uNIm)/(uPM*uNM) ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(0+e,TwoQpQn);
-      
-      Double_t TwoQpQp = (uPRe*uPRe+uPIm*uPIm-uPM)/(uPM*(uPM-1.)) ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(1+e,TwoQpQp);
-      
-      Double_t TwoQnQn = (uNRe*uNRe+uNIm*uNIm-uNM)/(uNM*(uNM-1.)) ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(2+e,TwoQnQn);
-      
-      // Gamma
-      
-      Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*T2Re[eg] + (uPRe*uNIm+uPIm*uNRe)*T2Im[eg]) / (uPM*uNM) ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(3+e,TwoQpQnV);
-      
-      Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*T2Re[eg] + (2.*uPRe*uPIm-uP2Im)*T2Im[eg]) / (uPM*(uPM-1.)) ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(4+e,TwoQpQpV);
-      
-      Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*T2Re[eg] + (2.*uNRe*uNIm-uN2Im)*T2Im[eg]) / (uNM*(uNM-1.)) ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(5+e,TwoQnQnV);
-      
-      // Dipole
-      
-      Double_t TwoQdip = (QDRe*QDRe+QDIm*QDIm-BM) / (BM*(BM-1.));
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(6+e,TwoQdip);
-      
-      Double_t TwoQran = (QRRe*QRRe+QRIm*QRIm-BM) / (BM*(BM-1.));
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(7+e,TwoQran);
-      
-      // Gamma dipole
-      
-      Double_t TwoQtDV = ((QDRe*QDRe-QDIm*QDIm-B2Re)*T2Re[eg] + (2.*QDRe*QDIm-B2Im)*T2Im[eg]) / (BM*(BM-1.));
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(8+e,TwoQtDV);
-      
-      Double_t TwoQtRV = ((QRRe*QRRe-QRIm*QRIm-B2Re)*T2Re[eg] + (2.*QRRe*QRIm-B2Im)*T2Im[eg]) / (BM*(BM-1.));
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(9+e,TwoQtRV);
-      
-      // Resolution corrections
-      
-      Double_t TwoT2 = T2Re[0]*T2Re[1]+T2Im[0]*T2Im[1] ;
-      fCMETPCCorPro[fRunBin][eg][fCenBin]->Fill(10+e,TwoT2);
-      
-      // **********************************************************************************************************
-      
-      // Distributions:
-      
-      Double_t MagQdip = pow(QDRe*QDRe+QDIm*QDIm,0.5);
-      fCMETPCDistHist[eg][fCenBin][0]->Fill(MagQdip);
-      Double_t MagQran = pow(QRRe*QRRe+QRIm*QRIm,0.5);
-      fCMETPCDistHist[eg][fCenBin][1]->Fill(MagQran);
-      
-      Double_t PhiD = TMath::ATan2(QDIm,QDRe);
-      Double_t PhiR = TMath::ATan2(QRIm,QRRe);
-      
-      Double_t Dist = 0.;
-      Dist = TMath::Abs(TMath::ATan2(TMath::Sin(PhiD-T2Psi[eg]),TMath::Cos(PhiD-T2Psi[eg])));
-      if(Dist > TMath::Pi()/2.)  Dist = TMath::Pi() - Dist;
-      fCMETPCDistHist[eg][fCenBin][2]->Fill(Dist);
-      
-      Dist = TMath::Abs(TMath::ATan2(TMath::Sin(PhiR-T2Psi[eg]),TMath::Cos(PhiR-T2Psi[eg])));
-      if(Dist > TMath::Pi()/2.)  Dist = TMath::Pi() - Dist;
-      fCMETPCDistHist[eg][fCenBin][3]->Fill(Dist);
-      
-    } // end of if (uPM>1. && uNM>1.)
+    Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VZCRe + (2.*uPRe*uPIm-uP2Im)*VZCIm) / (uPM*(uPM-1.)) ;
+    fCMETPCCorPro[fZDCESEclEbE][4]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
     
-  } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
+    Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VZCRe + (2.*uNRe*uNIm-uN2Im)*VZCIm) / (uNM*(uNM-1.)) ;
+    fCMETPCCorPro[fZDCESEclEbE][5]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
+    
+    TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VZARe + (uPRe*uNIm+uPIm*uNRe)*VZAIm) / (uPM*uNM) ;
+    fCMETPCCorPro[fZDCESEclEbE][6]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
+    
+    TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VZARe + (2.*uPRe*uPIm-uP2Im)*VZAIm) / (uPM*(uPM-1.)) ;
+    fCMETPCCorPro[fZDCESEclEbE][7]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
+    
+    TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VZARe + (2.*uNRe*uNIm-uN2Im)*VZAIm) / (uNM*(uNM-1.)) ;
+    fCMETPCCorPro[fZDCESEclEbE][8]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
+    
+    // Resolution corrections
+    
+    Double_t TwoT2 = VZARe*VZCRe+VZAIm*VZCIm;
+    fCMETPCCorPro[fZDCESEclEbE][9]->Fill(fCentralityEBE,TwoT2);
+    
+    TwoT2 = ((uP2Re+uN2Re)*VZCRe+(uP2Im+uN2Im)*VZCIm)/(uPM+uNM);
+    fCMETPCCorPro[fZDCESEclEbE][10]->Fill(fCentralityEBE,TwoT2,uPM+uNM);
+    
+    TwoT2 = ((uP2Re+uN2Re)*VZARe+(uP2Im+uN2Im)*VZAIm)/(uPM+uNM);
+    fCMETPCCorPro[fZDCESEclEbE][11]->Fill(fCentralityEBE,TwoT2,uPM+uNM);
+    
+    // ZDC-ESE terms
+    
+    fCMETPCCorPro[fZDCESEclEbE][12]->Fill(fCentralityEBE,ZNM);
+    fCMETPCCorPro[fZDCESEclEbE][13]->Fill(fCentralityEBE,uPM+uNM);
+    
+  } // end of if (uPM>1. && uNM>1.)
+  
+  // **********************************************************************************************************
+  
+  // Eta Gap
+  Double_t QARe=0., QAIm=0., QBRe=0., QBIm=0., QAM0=0., QAM=0., QBM0=0., QBM=0.;
+  Int_t hr=0;
+  
+  for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
+    QARe += fPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
+    QAIm += fPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
+    QBRe += fPtDiffQReEG[1][1][hr+1]->GetBinContent(pt+1);
+    QBIm += fPtDiffQImEG[1][1][hr+1]->GetBinContent(pt+1);
+    QAM0 += fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
+    QAM  += fPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
+    QBM0 += fPtDiffMulEG[1][0][0]->GetBinContent(pt+1);
+    QBM  += fPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
+  }
+  
+  Double_t IQM2EG = QAM*QBM;
+  if(QAM0+QBM0>1) {
+    if(IQM2EG) {
+      Double_t IQC2EG = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
+      fCMETPCCorPro[fZDCESEclEbE][14]->Fill(fCentralityEBE,IQC2EG,IQM2EG);
+    }
+  }
   
 } // end of AliFlowAnalysisCRC::CalculateCMETPC();
 
@@ -19257,47 +19344,47 @@ void AliFlowAnalysisCRC::CalculateCMEZDC()
       // ZDC-C Gamma
       
       Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VCRe + (uPRe*uNIm+uPIm*uNRe)*VCIm) / (uPM*uNM) ;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(0+e,TwoQpQnV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(0+e,TwoQpQnV);
       
       Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VCRe + (2.*uPRe*uPIm-uP2Im)*VCIm) / (uPM*(uPM-1.)) ;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(1+e,TwoQpQpV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(1+e,TwoQpQpV);
       
       Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VCRe + (2.*uNRe*uNIm-uN2Im)*VCIm) / (uNM*(uNM-1.)) ;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(2+e,TwoQnQnV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(2+e,TwoQnQnV);
       
       // ZDC-C Gamma dipole
       
       Double_t TwoQtDV = ((QDRe*QDRe-QDIm*QDIm-B2Re)*VCRe + (2.*QDRe*QDIm-B2Im)*VCIm) / (BM*(BM-1.));
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(3+e,TwoQtDV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(3+e,TwoQtDV);
       
       Double_t TwoQtRV = ((QRRe*QRRe-QRIm*QRIm-B2Re)*VCRe + (2.*QRRe*QRIm-B2Im)*VCIm) / (BM*(BM-1.));
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(4+e,TwoQtRV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(4+e,TwoQtRV);
       
       // ZDC-A Gamma
       
       TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VARe + (uPRe*uNIm+uPIm*uNRe)*VAIm) / (uPM*uNM) ;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(5+e,TwoQpQnV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(5+e,TwoQpQnV);
       
       TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VARe + (2.*uPRe*uPIm-uP2Im)*VAIm) / (uPM*(uPM-1.)) ;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(6+e,TwoQpQpV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(6+e,TwoQpQpV);
       
       TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VARe + (2.*uNRe*uNIm-uN2Im)*VAIm) / (uNM*(uNM-1.)) ;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(7+e,TwoQnQnV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(7+e,TwoQnQnV);
       
       // ZDC-A Gamma dipole
       
       TwoQtDV = ((QDRe*QDRe-QDIm*QDIm-B2Re)*VARe + (2.*QDRe*QDIm-B2Im)*VAIm) / (BM*(BM-1.));
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(8+e,TwoQtDV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(8+e,TwoQtDV);
       
       TwoQtRV = ((QRRe*QRRe-QRIm*QRIm-B2Re)*VARe + (2.*QRRe*QRIm-B2Im)*VAIm) / (BM*(BM-1.));
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(9+e,TwoQtRV);
+      fCMEZDCCorPro[eg][fCenBin]->Fill(9+e,TwoQtRV);
       
       // Resolution corrections
       
       Double_t TPsi = TMath::ATan2(uP2Im,uP2Re)/2.;
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(10+e,TMath::Cos(2.*(VAPsi-VCPsi)));
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(11+e,TMath::Cos(2.*(VAPsi-TPsi)));
-      fCMEZDCCorPro[fRunBin][eg][fCenBin]->Fill(12+e,TMath::Cos(2.*(VCPsi-TPsi)));
+      fCMEZDCCorPro[eg][fCenBin]->Fill(10+e,TMath::Cos(2.*(VAPsi-VCPsi)));
+      fCMEZDCCorPro[eg][fCenBin]->Fill(11+e,TMath::Cos(2.*(VAPsi-TPsi)));
+      fCMEZDCCorPro[eg][fCenBin]->Fill(12+e,TMath::Cos(2.*(VCPsi-TPsi)));
       
     } // end of if (uPM>1. && uNM>1.)
     
@@ -19358,10 +19445,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
   }
   
   // Set ZDC weights
-  Double_t NZC = (fCorrWeightZDC==kMultiplicity? ZCM : fZDCFlowVect[0].Mod());
-  Double_t NZA = (fCorrWeightZDC==kMultiplicity? ZAM : fZDCFlowVect[1].Mod());
-  Double_t WZC = (fCorrWeightZDC==kMultiplicity? ZCM : 1.);
-  Double_t WZA = (fCorrWeightZDC==kMultiplicity? ZAM : 1.);
+  Double_t NZC = (fCorrWeightZDC==kMultiplicity? 1. : fZDCFlowVect[0].Mod());
+  Double_t NZA = (fCorrWeightZDC==kMultiplicity? 1. : fZDCFlowVect[1].Mod());
+  Double_t WZC = (fCorrWeightZDC==kMultiplicity? 1. : 1.);
+  Double_t WZA = (fCorrWeightZDC==kMultiplicity? 1. : 1.);
   
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     
@@ -19596,9 +19683,17 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
   // V0
   Double_t VZCM = fVZFlowVect[0][1].GetMult();
   Double_t VZAM = fVZFlowVect[1][1].GetMult();
-  Double_t VZM = (VZCM+VZAM)/2.;
+  Double_t VZM = VZCM+VZAM;
+  
+  Double_t NewCentralityEBE = fCenMetric->Eval(fNewMetricLEBE);
+  Int_t NewCenBin = GetCRCCenBin(NewCentralityEBE);
   
   Double_t FillPtBin = 0.;
+  Double_t IQC2[fFlowNHarm] = {0.};
+  Double_t IQC4[fFlowNHarm] = {0.};
+  Double_t IQC2EG[fFlowNHarm] = {0.};
+  Double_t IQM2=0., IQM4=0., IQM2EG=0.;
+  
   
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     
@@ -19619,32 +19714,32 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
         QM4  += fPtDiffMul[4][0]->GetBinContent(pt+1);
       }
     
-    Double_t IQM2 = QM*QM-QM2;
+    IQM2 = QM*QM-QM2;
     if(QM0>1) {
       if(IQM2) {
-        Double_t IQC2 = (QRe*QRe+QIm*QIm-QM2)/IQM2;
-        fFlowQCCorPro[fCenBin][hr][0]->Fill(fPtDiffQRe[0][0]->GetBinCenter(1),IQC2,IQM2*fCenWeightEbE);
-        fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2,IQM2);
-        fFlowQCMulCorPro[hr][0]->Fill(fNumberOfPOIsEBE,IQC2,IQM2);
-        fFlowQCMetricCorPro[hr][0]->Fill(fNewMetricLEBE,IQC2,IQM2);
+        IQC2[hr] = (QRe*QRe+QIm*QIm-QM2)/IQM2;
+        fFlowQCCorPro[fCenBin][hr][0]->Fill(fPtDiffQRe[0][0]->GetBinCenter(1),IQC2[hr],IQM2*fCenWeightEbE);
+        fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],IQM2);
+        fFlowQCNewCenPro[hr][0]->Fill(NewCentralityEBE,IQC2[hr],IQM2);
+        fFlowQCMetricCorPro[hr][0]->Fill(fNewMetricLEBE,IQC2[hr],IQM2);
       }
     }
     
-    Double_t IQM4 = pow(QM,4.)-6.*QM2*QM*QM+8.*QM3*QM+3.*QM2*QM2-6.*QM4;
+    IQM4 = pow(QM,4.)-6.*QM2*QM*QM+8.*QM3*QM+3.*QM2*QM2-6.*QM4;
     
     if(QM0>3) {
       if(IQM4) {
-        Double_t IQC4 = (pow(pow(QRe,2.)+pow(QIm,2.),2)
+        IQC4[hr] = (pow(pow(QRe,2.)+pow(QIm,2.),2)
                          - 2.*(pow(QRe,2.)*Q2Re2+2.*QRe*QIm*Q2Im2-pow(QIm,2.)*Q2Re2)
                          + 8.*(QRe3*QRe+QIm3*QIm)
                          + (pow(Q2Re2,2)+pow(Q2Im2,2))
                          - 4.*QM2*(pow(QRe,2)+pow(QIm,2))
                          - 6.*QM4 + 2.*QM2*QM2) / IQM4;
         
-        fFlowQCCorPro[fCenBin][hr][0]->Fill(fPtDiffQRe[0][0]->GetBinCenter(2),IQC4,IQM4*fCenWeightEbE);
-        fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4,IQM4);
-        fFlowQCMulCorPro[hr][1]->Fill(fNumberOfPOIsEBE,IQC4,IQM4);
-        fFlowQCMetricCorPro[hr][1]->Fill(fNewMetricLEBE,IQC4,IQM4);
+        fFlowQCCorPro[fCenBin][hr][0]->Fill(fPtDiffQRe[0][0]->GetBinCenter(2),IQC4[hr],IQM4*fCenWeightEbE);
+        fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],IQM4);
+        fFlowQCNewCenPro[hr][1]->Fill(NewCentralityEBE,IQC4[hr],IQM4);
+        fFlowQCMetricCorPro[hr][1]->Fill(fNewMetricLEBE,IQC4[hr],IQM4);
       }
     }
     
@@ -19705,16 +19800,17 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       QBM  += fPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
     }
     
-    Double_t IQM2EG = QAM*QBM;
+    IQM2EG = QAM*QBM;
     if(QAM0+QBM0>1) {
-      if(IQM2) {
-        Double_t IQC2EG = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
-        fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG,IQM2EG);
-        fFlowQCMetricCorProEG[hr]->Fill(fNewMetricLEBE,IQC2EG,IQM2EG);
-        fFlowQCMetric2DProEG[hr][0]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
-        fFlowQCMetric2DProEG[hr][1]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
-        fFlowQCMetric2DProEG[hr][2]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
-        fFlowQCMetric2DProEG[hr][3]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
+      if(IQM2EG) {
+        IQC2EG[hr] = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
+        fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG);
+        fFlowQCNewCenProEG[hr]->Fill(NewCentralityEBE,IQC2EG[hr],IQM2EG);
+        
+        fFlowQCMetric2DProEG[hr][0]->Fill(VZM,ZNM,IQC2EG[hr],IQM2EG);
+        fFlowQCMetric2DProEG[hr][1]->Fill(fNumberOfPOIsEBE,ZNM,IQC2EG[hr],IQM2EG);
+        fFlowQCMetric2DProEG[hr][2]->Fill(fNITSCL1EBE,ZNM,IQC2EG[hr],IQM2EG);
+        fFlowQCMetric2DProEG[hr][3]->Fill(fNewMetricL2EBE,fNewMetricD2EBE,IQC2EG[hr],IQM2EG);
       }
     }
     
@@ -19819,6 +19915,104 @@ void AliFlowAnalysisCRC::CalculateFlowSPVZ()
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
   
 } // end of AliFlowAnalysisCRC::CalculateFlowSPVZ();
+
+//=======================================================================================================================
+
+void AliFlowAnalysisCRC::FitEbEFlow()
+{
+  if(fEBEFlowMulBin<0) return;
+
+  // VZ eta < 0
+  Double_t VZC2Re = fVZFlowVect[0][1].X();
+  Double_t VZC2Im = fVZFlowVect[0][1].Y();
+  Double_t VZC3Re = fVZFlowVect[0][2].X();
+  Double_t VZC3Im = fVZFlowVect[0][2].Y();
+  // VZ eta > 0
+  Double_t VZA2Re = fVZFlowVect[1][1].X();
+  Double_t VZA2Im = fVZFlowVect[1][1].Y();
+  Double_t VZA3Re = fVZFlowVect[1][2].X();
+  Double_t VZA3Im = fVZFlowVect[1][2].Y();
+  
+  Double_t VZCM  = fVZFlowVect[0][1].GetMult();
+  Double_t VZAM  = fVZFlowVect[1][1].GetMult();
+  if( VZCM<1. || VZAM<1. ) return;
+  
+  //FourierExp [0]*(1 + 2.*[1]*cos(2.*(x-[3])) + 2.*[2]*cos(3.*(x-[4])))
+  
+  Double_t VZApsi2 = TMath::ATan2(VZA2Im,VZA2Re)/2.;
+  if(VZApsi2<0.) VZApsi2 += TMath::TwoPi();
+  
+  Double_t VZCpsi2 = TMath::ATan2(VZC2Im,VZC2Re)/2.;
+  if(VZCpsi2<0.) VZCpsi2 += TMath::TwoPi();
+  
+  Double_t VZApsi3 = TMath::ATan2(VZA3Im,VZA3Re)/3.;
+  if(VZApsi3<0.) VZApsi3 += TMath::TwoPi();
+  
+  Double_t VZCpsi3 = TMath::ATan2(VZC3Im,VZC3Re)/3.;
+  if(VZCpsi3<0.) VZCpsi3 += TMath::TwoPi();
+  
+  AliFlowVector CombQVZpsi2 = fVZFlowVect[0][1]+fVZFlowVect[1][1];
+  Double_t VZpsi2 = TMath::ATan2(CombQVZpsi2.Y(),CombQVZpsi2.X())/2.;
+  if(VZpsi2<0.) VZpsi2 += TMath::TwoPi();
+  FourierExp->FixParameter(3,VZpsi2);
+  
+  AliFlowVector CombQVZpsi3 = fVZFlowVect[0][2]+fVZFlowVect[1][2];
+  Double_t VZpsi3 = TMath::ATan2(CombQVZpsi3.Y(),CombQVZpsi3.X())/3.;
+  if(VZpsi3<0.) VZpsi3 += TMath::TwoPi();
+  FourierExp->FixParameter(4,VZpsi3);
+
+  Int_t DoF = fEbEFlowAzimDis[fEBEFlowMulBin]->GetNbinsX();
+  
+  FourierExp->SetParameter(0,(Double_t)(fEbEFlowAzimDis[fEBEFlowMulBin]->GetSumOfWeights()/DoF));
+  
+  fEbEFlowAzimDis[fEBEFlowMulBin]->Fit(FourierExp,"QWLB");
+  
+  Double_t ChiSq = fEbEFlowAzimDis[fEBEFlowMulBin]->Chisquare(FourierExp);
+  Double_t RChiSq = ChiSq/DoF;
+  fEBEFlowRChiSqHist->Fill(fCentralityEBE,RChiSq);
+  
+  Double_t pValue = 1. - TMath::Gamma(DoF/2.,ChiSq/2.);
+  fEBEFlowpValueHist->Fill(fCentralityEBE,pValue);
+  
+  if (pValue>0.01) {
+    Double_t v2 = FourierExp->GetParameter(1);
+    Double_t v3 = FourierExp->GetParameter(2);
+    
+    fEBEFlowFlucHis[fCenBin][0]->Fill(v2);
+    fEBEFlowFlucHis[fCenBin][1]->Fill(v3);
+    
+    fEBEFlowCrosPro[fCenBin]->Fill(v2,v3);
+    
+     Double_t Q2Re=0., Q2Im=0., Q3Re=0., Q3Im=0., QMraw=0., QM=0.;
+    
+    for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
+      Q2Re += fPtDiffQRe[1][1]->GetBinContent(pt+1);
+      Q2Im += fPtDiffQIm[1][1]->GetBinContent(pt+1);
+      Q3Re += fPtDiffQRe[1][2]->GetBinContent(pt+1);
+      Q3Im += fPtDiffQIm[1][2]->GetBinContent(pt+1);
+      QMraw += fPtDiffMul[0][0]->GetBinContent(pt+1);
+      QM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
+    }
+    
+    Double_t TPCpsi2 = TMath::ATan2(Q2Im,Q2Re)/2.;
+    if(TPCpsi2<0.) TPCpsi2 += TMath::TwoPi();
+    
+    Double_t TPCpsi3 = TMath::ATan2(Q3Im,Q3Re)/3.;
+    if(TPCpsi3<0.) TPCpsi3 += TMath::TwoPi();
+    
+    fEBEFlowResVZPro[0]->Fill(fCentralityEBE,cos(2.*(VZApsi2-VZCpsi2)));
+    fEBEFlowResVZPro[1]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZApsi2)));
+    fEBEFlowResVZPro[2]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZCpsi2)));
+    
+    fEBEFlowResVZPro[3]->Fill(fCentralityEBE,cos(3.*(VZApsi3-VZCpsi3)));
+    fEBEFlowResVZPro[4]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZApsi3)));
+    fEBEFlowResVZPro[5]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZApsi3)));
+    
+    fEBEFlowResVZPro[6]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZpsi2)));
+    fEBEFlowResVZPro[7]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZpsi3)));
+  }
+  
+}
 
 //=======================================================================================================================
 
@@ -21382,29 +21576,27 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
   cout << endl;
   cout << endl;
   
-  for (Int_t h=0; h<fCRCnCen; h++) {
-    for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
       
-      for(Int_t c=1;c<=fCMETPCnCR;c++) {
+      for(Int_t c=1;c<=fCMETPCCorPro[k][h]->GetNbinsX();c++) {
         
         Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumTwoSq=0., SumWeigSq=0.;
         Double_t stats[6]={0.};
         
-        for(Int_t r=0;r<fCRCnRun;r++) {
-          fCMETPCCorPro[r][eg][h]->GetXaxis()->SetRange(c,c);
-          fCMETPCCorPro[r][eg][h]->GetStats(stats);
-          Double_t sumw   = stats[0];
-          Double_t sumw2  = stats[1];
-          Double_t sumwx  = stats[4];
-          Double_t sumwx2 = stats[5];
-          if(sumw>0.) {
-            SumTwo    += sumwx;
-            SumWeig   += sumw;
-            SumTwoSq  += sumwx2;
-            SumWeigSq += sumw2;
-            SumTwoCorr += sumwx;
-          } // end of if(sumw>0.)
-        } // end of for(Int_t r=0;r<fCRCnRun;r++)
+        fCMETPCCorPro[k][h]->GetXaxis()->SetRange(c,c);
+        fCMETPCCorPro[k][h]->GetStats(stats);
+        Double_t sumw   = stats[0];
+        Double_t sumw2  = stats[1];
+        Double_t sumwx  = stats[4];
+        Double_t sumwx2 = stats[5];
+        if(sumw>0.) {
+          SumTwo    += sumwx;
+          SumWeig   += sumw;
+          SumTwoSq  += sumwx2;
+          SumWeigSq += sumw2;
+        } // end of if(sumw>0.)
         
         if(!SumWeig) continue;
         
@@ -21418,130 +21610,95 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
         if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
         Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
         
-        Double_t CorrCorr = SumTwoCorr/SumWeig;
-        fCMETPCCorHist[eg][h]->SetBinContent(c,CorrCorr);
-        fCMETPCCorHist[eg][h]->SetBinError(c,CorrErr);
-        
-        // do NOT overwrite fCRCCorrProdTempHist, temporarily covariances disabled
-        //    fCRCCorrProdTempHist[0][0][0]->SetBinContent(c,Corr);
-        //    fCRCCorrProdTempHist[1][0][0]->SetBinContent(c,SumWeig);
+        if(CorrErr>0.) {
+          fCMETPCCorHist[k][h]->SetBinContent(c,Corr);
+          fCMETPCCorHist[k][h]->SetBinError(c,CorrErr);
+        }
         
       } // end of for(Int_t c=1;c<=fCMEnCR;c++)
-      
-      // calculate covariances
-      Int_t ce = 1;
-      //   for(Int_t c=1;c<=fCMETPCnCR;c++) {
-      //    for(Int_t c2=1;c2<=fCMETPCnCR;c2++) {
-      //
-      //     Double_t SumTwoProd=0., SumWeiProd=0., CorrProd=0.;
-      //     Double_t stats[6]={0.};
-      //
-      //     for(Int_t r=0;r<fCRCnRun;r++) {
-      //      fCMETPCCovPro[r][eg][h]->GetXaxis()->SetRange(ce,ce);
-      //      fCMETPCCovPro[r][eg][h]->GetStats(stats);
-      //      if(stats[0]>0.) {
-      //       SumTwoProd += stats[4];
-      //       SumWeiProd += stats[0];
-      //      }
-      //     } // end of for(Int_t r=0;r<fCRCnRun;r++)
-      //
-      //     Double_t Corr1 = fCRCCorrProdTempHist[0][0][0]->GetBinContent(c);
-      //     Double_t Corr2 = fCRCCorrProdTempHist[0][0][0]->GetBinContent(c2);
-      //     Double_t Weig1 = fCRCCorrProdTempHist[1][0][0]->GetBinContent(c);
-      //     Double_t Weig2 = fCRCCorrProdTempHist[1][0][0]->GetBinContent(c2);
-      //     Double_t WeigProd = SumWeiProd;
-      //     if(SumWeiProd>0.) { CorrProd = SumTwoProd/SumWeiProd; }
-      //     else { CorrProd = 0.; }
-      //     Double_t spread=0., termA=0., termB=0.;
-      //     spread = CorrProd-Corr1*Corr2;
-      //     if((Weig1*Weig2)>0.) { termA = WeigProd/(Weig1*Weig2); }
-      //     if((1.-termA)>0.) { termB = 1./(1.-termA); }
-      //     Double_t Cov = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-      //     fCMETPCCovHist[eg][h]->SetBinContent(c,c2,Cov);
-      //     ce++;
-      //
-      //    } // end of for(Int_t c=1;c<=fCMETPCnCR;c++)
-      //   } // end of for(Int_t c2=1;c2<=fCMETPCnCR;c2++)
-      
-    } // end of for(Int_t eg=0; eg<fCRCZDCnEtaBin; eg++)
-  } // end of for (Int_t h=0;h<fCRCZDCnCen;h++)
-  
-  // calculate correlation functions
-  
-  for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
-    for (Int_t h=0; h<fCRCnCen; h++) {
+    } // end of for (Int_t h=0;h<fCRCZDCnCen;h++)
+    
+    // calculate correlation functions
+    
+    for(Int_t c=1;c<=fCMETPCCorHist[k][0]->GetNbinsX();c++) {
       
       // Delta
-      Double_t QPQN   = fCMETPCCorHist[eg][h]->GetBinContent(1);
-      Double_t QPQNer = fCMETPCCorHist[eg][h]->GetBinError(1);
+      Double_t QPQN   = fCMETPCCorHist[k][0]->GetBinContent(c);
+      Double_t QPQNer = fCMETPCCorHist[k][0]->GetBinError(c);
       
-      Double_t QPQP   = fCMETPCCorHist[eg][h]->GetBinContent(2);
-      Double_t QPQPer = fCMETPCCorHist[eg][h]->GetBinError(2);
+      Double_t QPQP   = fCMETPCCorHist[k][1]->GetBinContent(c);
+      Double_t QPQPer = fCMETPCCorHist[k][1]->GetBinError(c);
       
-      Double_t QNQN   = fCMETPCCorHist[eg][h]->GetBinContent(3);
-      Double_t QNQNer = fCMETPCCorHist[eg][h]->GetBinError(3);
+      Double_t QNQN   = fCMETPCCorHist[k][2]->GetBinContent(c);
+      Double_t QNQNer = fCMETPCCorHist[k][2]->GetBinError(c);
       
       // Gamma
-      Double_t QPQNG   = fCMETPCCorHist[eg][h]->GetBinContent(4);
-      Double_t QPQNGer = fCMETPCCorHist[eg][h]->GetBinError(4);
+      Double_t QPQNGC   = fCMETPCCorHist[k][3]->GetBinContent(c);
+      Double_t QPQNGCer = fCMETPCCorHist[k][3]->GetBinError(c);
       
-      Double_t QPQPG   = fCMETPCCorHist[eg][h]->GetBinContent(5);
-      Double_t QPQPGer = fCMETPCCorHist[eg][h]->GetBinError(5);
+      Double_t QPQPGC   = fCMETPCCorHist[k][4]->GetBinContent(c);
+      Double_t QPQPGCer = fCMETPCCorHist[k][4]->GetBinError(c);
       
-      Double_t QNQNG   = fCMETPCCorHist[eg][h]->GetBinContent(6);
-      Double_t QNQNGer = fCMETPCCorHist[eg][h]->GetBinError(6);
+      Double_t QNQNGC   = fCMETPCCorHist[k][5]->GetBinContent(c);
+      Double_t QNQNGCer = fCMETPCCorHist[k][5]->GetBinError(c);
       
-      // Dipole
-      Double_t QD   = fCMETPCCorHist[eg][h]->GetBinContent(7);
-      Double_t QDer = fCMETPCCorHist[eg][h]->GetBinError(7);
+      Double_t QPQNGA   = fCMETPCCorHist[k][6]->GetBinContent(c);
+      Double_t QPQNGAer = fCMETPCCorHist[k][6]->GetBinError(c);
       
-      Double_t QR   = fCMETPCCorHist[eg][h]->GetBinContent(8);
-      Double_t QRer = fCMETPCCorHist[eg][h]->GetBinError(8);
+      Double_t QPQPGA   = fCMETPCCorHist[k][7]->GetBinContent(c);
+      Double_t QPQPGAer = fCMETPCCorHist[k][7]->GetBinError(c);
       
-      // Gamma dipole
-      Double_t QDG   = fCMETPCCorHist[eg][h]->GetBinContent(9);
-      Double_t QDGer = fCMETPCCorHist[eg][h]->GetBinError(9);
+      Double_t QNQNGA   = fCMETPCCorHist[k][8]->GetBinContent(c);
+      Double_t QNQNGAer = fCMETPCCorHist[k][8]->GetBinError(c);
       
-      Double_t QRG   = fCMETPCCorHist[eg][h]->GetBinContent(10);
-      Double_t QRGer = fCMETPCCorHist[eg][h]->GetBinError(10);
+      Double_t Res   = fCMETPCCorHist[k][9]->GetBinContent(c);
+      Double_t Reser = fCMETPCCorHist[k][9]->GetBinError(c);
       
-      Double_t V2   = fCMETPCCorHist[eg][h]->GetBinContent(11);
-      Double_t V2er = fCMETPCCorHist[eg][h]->GetBinError(11);
+      if(Res>0.) {
+        Double_t DeltaOp = QPQN;
+        Double_t DeltaOper = QPQNer;
+        //      printf(" delta, oppo charges: %e, %e \n",DeltaOp,DeltaOper);
+        fCMETPCFinalHist[k][0]->SetBinContent(c,DeltaOp);
+        fCMETPCFinalHist[k][0]->SetBinError(c,DeltaOper);
+        Double_t DeltaSa = (QPQP+QNQN)/2.;
+        Double_t DeltaSaer = pow(pow(QPQPer,2.)+pow(QNQNer,2.),0.5)/2.;
+        //      printf(" delta, same charges: %e, %e \n",DeltaSa,DeltaSaer);
+        fCMETPCFinalHist[k][1]->SetBinContent(c,DeltaSa);
+        fCMETPCFinalHist[k][1]->SetBinError(c,DeltaSaer);
+        
+        Double_t GammaOp = QPQNGC/sqrt(Res);
+        Double_t GammaOper = pow(QPQNGCer/(2.*sqrt(Res)),2.) + pow(QPQNGC*Reser/(2.*pow(Res,1.5)),2.);
+        GammaOper = pow(GammaOper,0.5);
+        //      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
+        fCMETPCFinalHist[k][2]->SetBinContent(c,GammaOp);
+        fCMETPCFinalHist[k][2]->SetBinError(c,GammaOper);
+        
+        Double_t GammaSa = (QPQPGC+QNQNGC)/(2.*sqrt(Res));
+        Double_t GammaSaer = pow(QPQPGCer/(2.*sqrt(Res)),2.) + pow(QPQPGC*Reser/(2.*pow(Res,1.5)),2.);
+        GammaSaer = pow(GammaSaer,0.5)/2.;
+        //      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
+        fCMETPCFinalHist[k][3]->SetBinContent(c,GammaSa);
+        fCMETPCFinalHist[k][3]->SetBinError(c,GammaSaer);
+        
+        GammaOp = QPQNGA/sqrt(Res);
+        GammaOper = pow(QPQNGAer/(2.*sqrt(Res)),2.) + pow(QPQNGA*Reser/(2.*pow(Res,1.5)),2.);
+        GammaOper = pow(GammaOper,0.5);
+        //      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
+        fCMETPCFinalHist[k][4]->SetBinContent(c,GammaOp);
+        fCMETPCFinalHist[k][4]->SetBinError(c,GammaOper);
+        
+        GammaSa = (QPQPGA+QNQNGA)/(2.*sqrt(Res));
+        GammaSaer = pow(QPQPGAer/(2.*sqrt(Res)),2.) + pow(QPQPGA*Reser/(2.*pow(Res,1.5)),2.);
+        GammaSaer = pow(GammaSaer,0.5)/2.;
+        //      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
+        fCMETPCFinalHist[k][5]->SetBinContent(c,GammaSa);
+        fCMETPCFinalHist[k][5]->SetBinError(c,GammaSaer);
+      }
       
-      if(!V2) continue;
-      
-      Double_t DeltaOp = QPQN;
-      Double_t DeltaOper = QPQNer;
-      printf(" delta, oppo charges: %e, %e \n",DeltaOp,DeltaOper);
-      Double_t DeltaSa = (QPQP+QNQN)/2.;
-      Double_t DeltaSaer = pow(pow(QPQPer,2.)+pow(QNQNer,2.),0.5)/2.;
-      printf(" delta, same charges: %e, %e \n",DeltaSa,DeltaSaer);
-      
-      Double_t GammaOp = QPQNG/pow(TMath::Abs(V2),0.5);
-      Double_t GammaOper = pow(QPQNGer/pow(TMath::Abs(V2),0.5),2.) + pow(QPQNG*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
-      GammaOper = pow(GammaOper,0.5);
-      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
-      Double_t GammaSa = (QPQPG+QNQNG)/(2.*pow(TMath::Abs(V2),0.5));
-      Double_t GammaSaer = pow(QPQPGer/pow(TMath::Abs(V2),0.5),2.) + pow(QPQPG*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.)
-      + pow(QNQNGer/pow(TMath::Abs(V2),0.5),2.) + pow(QNQNG*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
-      GammaSaer = pow(GammaSaer,0.5)/2.;
-      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
-      
-      printf(" dipole, magnitude  : %e, %e \n",QD,QDer);
-      printf(" random, magnitude  : %e, %e \n",QR,QRer);
-      
-      Double_t GammaDer = pow(QDGer/pow(TMath::Abs(V2),0.5),2.) + pow(QDG*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
-      GammaDer = pow(GammaDer,0.5);
-      printf(" gamma dipole   : %e, %e \n",QDG/pow(TMath::Abs(V2),0.5),GammaDer);
-      Double_t GammaRer = pow(QRGer/pow(TMath::Abs(V2),0.5),2.) + pow(QRG*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
-      GammaRer = pow(GammaRer,0.5);
-      printf(" gamma random   : %e, %e \n \n",QRG/pow(TMath::Abs(V2),0.5),GammaRer);
-      
-    } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
-  } // end of for (Int_t h=0; h<fCRCnCen; h++)
+    } // end of for(Int_t c=1;c<=fCMETPCCorPro->GetNbinsX();c++)
+    
+  }
   
-  cout << "*************************************" << endl;
-  cout << endl;
 } // end of void AliFlowAnalysisCRC::FinalizeCMETPC()
 
 //=======================================================================================================================
@@ -21564,21 +21721,19 @@ void AliFlowAnalysisCRC::FinalizeCMEZDC()
         Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumTwoSq=0., SumWeigSq=0.;
         Double_t stats[6]={0.};
         
-        for(Int_t r=0;r<fCRCnRun;r++) {
-          fCMEZDCCorPro[r][eg][h]->GetXaxis()->SetRange(c,c);
-          fCMEZDCCorPro[r][eg][h]->GetStats(stats);
-          Double_t sumw   = stats[0];
-          Double_t sumw2  = stats[1];
-          Double_t sumwx  = stats[4];
-          Double_t sumwx2 = stats[5];
-          if(sumw>0.) {
-            SumTwo    += sumwx;
-            SumWeig   += sumw;
-            SumTwoSq  += sumwx2;
-            SumWeigSq += sumw2;
-            SumTwoCorr += sumwx;
-          } // end of if(sumw>0.)
-        } // end of for(Int_t r=0;r<fCRCnRun;r++)
+        fCMEZDCCorPro[eg][h]->GetXaxis()->SetRange(c,c);
+        fCMEZDCCorPro[eg][h]->GetStats(stats);
+        Double_t sumw   = stats[0];
+        Double_t sumw2  = stats[1];
+        Double_t sumwx  = stats[4];
+        Double_t sumwx2 = stats[5];
+        if(sumw>0.) {
+          SumTwo    += sumwx;
+          SumWeig   += sumw;
+          SumTwoSq  += sumwx2;
+          SumWeigSq += sumw2;
+          SumTwoCorr += sumwx;
+        } // end of if(sumw>0.)
         
         if(!SumWeig) continue;
         
@@ -21601,41 +21756,6 @@ void AliFlowAnalysisCRC::FinalizeCMEZDC()
         //    fCRCCorrProdTempHist[1][0][0]->SetBinContent(c,SumWeig);
         
       } // end of for(Int_t c=1;c<=fCMEnCR;c++)
-      
-      // calculate covariances
-      Int_t ce = 1;
-      //   for(Int_t c=1;c<=fCMEZDCnCR;c++) {
-      //    for(Int_t c2=1;c2<=fCMEZDCnCR;c2++) {
-      //
-      //     Double_t SumTwoProd=0., SumWeiProd=0., CorrProd=0.;
-      //     Double_t stats[6]={0.};
-      //
-      //     for(Int_t r=0;r<fCRCnRun;r++) {
-      //      fCMEZDCCovPro[r][eg][h]->GetXaxis()->SetRange(ce,ce);
-      //      fCMEZDCCovPro[r][eg][h]->GetStats(stats);
-      //      if(stats[0]>0.) {
-      //       SumTwoProd += stats[4];
-      //       SumWeiProd += stats[0];
-      //      }
-      //     } // end of for(Int_t r=0;r<fCRCnRun;r++)
-      //
-      //     Double_t Corr1 = fCRCCorrProdTempHist[0][0][0]->GetBinContent(c);
-      //     Double_t Corr2 = fCRCCorrProdTempHist[0][0][0]->GetBinContent(c2);
-      //     Double_t Weig1 = fCRCCorrProdTempHist[1][0][0]->GetBinContent(c);
-      //     Double_t Weig2 = fCRCCorrProdTempHist[1][0][0]->GetBinContent(c2);
-      //     Double_t WeigProd = SumWeiProd;
-      //     if(SumWeiProd>0.) { CorrProd = SumTwoProd/SumWeiProd; }
-      //     else { CorrProd = 0.; }
-      //     Double_t spread=0., termA=0., termB=0.;
-      //     spread = CorrProd-Corr1*Corr2;
-      //     if((Weig1*Weig2)>0.) { termA = WeigProd/(Weig1*Weig2); }
-      //     if((1.-termA)>0.) { termB = 1./(1.-termA); }
-      //     Double_t Cov = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-      //     fCMEZDCCovHist[eg][h]->SetBinContent(c,c2,Cov);
-      //     ce++;
-      //
-      //    } // end of for(Int_t c=1;c<=fCMEnCR;c++)
-      //   } // end of for(Int_t c2=1;c2<=fCMEnCR;c2++)
       
     } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
   } // end of for (Int_t h=0;h<fCRCZDCnCen;h++)
@@ -22063,11 +22183,11 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         }
       }
     } // end of for(Int_t pt=1;pt<=100;pt++)
-    for(Int_t pt=1;pt<=fFlowQCMetricCorProEG[hr]->GetNbinsX();pt++) {
+    for(Int_t pt=1;pt<=fFlowQCNewCenProEG[hr]->GetNbinsX();pt++) {
       
       Double_t stats[6]={0.};
-      fFlowQCMetricCorProEG[hr]->GetXaxis()->SetRange(pt,pt);
-      fFlowQCMetricCorProEG[hr]->GetStats(stats);
+      fFlowQCNewCenProEG[hr]->GetXaxis()->SetRange(pt,pt);
+      fFlowQCNewCenProEG[hr]->GetStats(stats);
       Double_t SumWeig   = stats[0];
       Double_t SumWeigSq  = stats[1];
       Double_t SumTwo  = stats[4];
@@ -22084,8 +22204,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
         Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
         if(CorrErr) {
-          fFlowQCMetricCorHistEG[hr]->SetBinContent(pt,Corr);
-          fFlowQCMetricCorHistEG[hr]->SetBinError(pt,CorrErr);
+          fFlowQCNewCenHistEG[hr]->SetBinContent(pt,Corr);
+          fFlowQCNewCenHistEG[hr]->SetBinError(pt,CorrErr);
         }
       }
     } // end of for(Int_t pt=1;pt<=100;pt++)
@@ -22156,11 +22276,11 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         
       } // end of for(Int_t pt=1;pt<=100;pt++)
       
-      for(Int_t pt=1;pt<=fFlowQCMulCorPro[hr][j]->GetNbinsX();pt++) {
+      for(Int_t pt=1;pt<=fFlowQCNewCenPro[hr][j]->GetNbinsX();pt++) {
         
         Double_t stats[6]={0.};
-        fFlowQCMulCorPro[hr][j]->GetXaxis()->SetRange(pt,pt);
-        fFlowQCMulCorPro[hr][j]->GetStats(stats);
+        fFlowQCNewCenPro[hr][j]->GetXaxis()->SetRange(pt,pt);
+        fFlowQCNewCenPro[hr][j]->GetStats(stats);
         Double_t SumWeig   = stats[0];
         Double_t SumWeigSq  = stats[1];
         Double_t SumTwo  = stats[4];
@@ -22177,8 +22297,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
           if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
           Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
           if(CorrErr) {
-            fFlowQCMulCorHist[hr][j]->SetBinContent(pt,Corr);
-            fFlowQCMulCorHist[hr][j]->SetBinError(pt,CorrErr);
+            fFlowQCNewCenHist[hr][j]->SetBinContent(pt,Corr);
+            fFlowQCNewCenHist[hr][j]->SetBinError(pt,CorrErr);
           }
         }
         
@@ -22228,18 +22348,18 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         fFlowQCIntCorHist[hr][2]->SetBinError(pt,Flow4E);
       }
     }
-    for(Int_t pt=1; pt<=fFlowQCMulCorHist[hr][0]->GetNbinsX(); pt++) {
-      Double_t QC2    = fFlowQCMulCorHist[hr][0]->GetBinContent(pt);
-      Double_t QC2Err = fFlowQCMulCorHist[hr][0]->GetBinError(pt);
-      Double_t QC4    = fFlowQCMulCorHist[hr][1]->GetBinContent(pt);
-      Double_t QC4Err = fFlowQCMulCorHist[hr][1]->GetBinError(pt);
+    for(Int_t pt=1; pt<=fFlowQCNewCenHist[hr][0]->GetNbinsX(); pt++) {
+      Double_t QC2    = fFlowQCNewCenHist[hr][0]->GetBinContent(pt);
+      Double_t QC2Err = fFlowQCNewCenHist[hr][0]->GetBinError(pt);
+      Double_t QC4    = fFlowQCNewCenHist[hr][1]->GetBinContent(pt);
+      Double_t QC4Err = fFlowQCNewCenHist[hr][1]->GetBinError(pt);
       Double_t Cn4 = QC4-2.*QC2*QC2;
       Double_t Cn4E = pow( pow(QC4Err,2.)+pow(4.*QC2*QC2Err,2.) ,0.5);
       if(fabs(Cn4)>0.) {
         Double_t Flow4 = pow(fabs(Cn4),0.25);
         Double_t Flow4E = fabs(Flow4/(4.*Cn4))*Cn4E;
-        fFlowQCMulCorHist[hr][2]->SetBinContent(pt,Flow4);
-        fFlowQCMulCorHist[hr][2]->SetBinError(pt,Flow4E);
+        fFlowQCNewCenHist[hr][2]->SetBinContent(pt,Flow4);
+        fFlowQCNewCenHist[hr][2]->SetBinError(pt,Flow4E);
       }
     }
     for(Int_t pt=1; pt<=fFlowQCMetricCorHist[hr][0]->GetNbinsX(); pt++) {
@@ -22268,14 +22388,14 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         fFlowQCIntCorHistEG[hr]->SetBinError(pt,Flow2E);
       }
     }
-    for(Int_t pt=1; pt<=fFlowQCMetricCorHistEG[hr]->GetNbinsX(); pt++) {
-      Double_t QC2    = fFlowQCMetricCorHistEG[hr]->GetBinContent(pt);
-      Double_t QC2Err = fFlowQCMetricCorHistEG[hr]->GetBinError(pt);
+    for(Int_t pt=1; pt<=fFlowQCNewCenHistEG[hr]->GetNbinsX(); pt++) {
+      Double_t QC2    = fFlowQCNewCenHistEG[hr]->GetBinContent(pt);
+      Double_t QC2Err = fFlowQCNewCenHistEG[hr]->GetBinError(pt);
       if(fabs(QC2)>0.) {
         Double_t Flow2 = pow(fabs(QC2),0.5);
         Double_t Flow2E = fabs(Flow2/(2.*QC2))*QC2Err;
-        fFlowQCMetricCorHistEG[hr]->SetBinContent(pt,Flow2);
-        fFlowQCMetricCorHistEG[hr]->SetBinError(pt,Flow2E);
+        fFlowQCNewCenHistEG[hr]->SetBinContent(pt,Flow2);
+        fFlowQCNewCenHistEG[hr]->SetBinError(pt,Flow2E);
       }
     }
     for(Int_t bng=0; bng<4; bng++) {
@@ -22367,12 +22487,10 @@ void AliFlowAnalysisCRC::FinalizeFlowSPVZ()
           Double_t Flow = pow(TMath::Abs(qpVA*qpVC/VCVA),0.5);
           Double_t FlowRE = pow(pow(qpVAErr*qpVC/VCVA,2.)+pow(qpVCErr*qpVA/VCVA,2.)+pow(VCVAErr*qpVA*qpVC/pow(VCVA,2.),2.),0.5);
           Double_t FlowE = FlowRE/(2.*Flow);
-          printf("v_%d {VZ} (pt %f) : %e pm %e \n",hr+2,AvPtBin,Flow,FlowE);
         }
         
       } // end of for(Int_t pt=1;pt<=fPtDiffNBins;pt++)
     } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
-    cout << endl;
     
   } // end of for (Int_t h=0; h<fCRCnCen; h++)
   
@@ -23092,6 +23210,7 @@ void AliFlowAnalysisCRC::StoreCRCFlags()
   fCRCFlags->Fill(13.5,(Int_t)fCalculateFlowQC);
   fCRCFlags->Fill(14.5,(Int_t)fCalculateFlowZDC);
   fCRCFlags->Fill(15.5,(Int_t)fCalculateFlowVZ);
+  fCRCFlags->Fill(16.5,(Int_t)fCalculateEbEFlow);
   
 } // end of void AliFlowAnalysisCRC::StoreCRCFlags()
 
@@ -24553,6 +24672,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
     fCalculateFlowQC = (Bool_t)fCRCFlags->GetBinContent(14);
     fCalculateFlowZDC = (Bool_t)fCRCFlags->GetBinContent(15);
     fCalculateFlowVZ = (Bool_t)fCRCFlags->GetBinContent(16);
+    fCalculateEbEFlow = (Bool_t)fCRCFlags->GetBinContent(17);
   } else {
     cout<<"WARNING: CRCFlags is NULL in AFAWQC::GPFCRC() !!!!"<<endl;
     exit(0);
@@ -24869,20 +24989,6 @@ void AliFlowAnalysisCRC::GetPointersForCME()
   for (Int_t h=0; h<fCRCnCen; h++) {
     for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
       // Correlations:
-      TH1D *CMETPCCorHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCCorHist[%d][%d]",eg,h)));
-      if(CMETPCCorHist) { this->SetCMETPCCorHist(CMETPCCorHist,eg,h); }
-      else { cout<<"WARNING: CMETPCCorHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-      // Covariances:
-      TH2D *CMETPCCovHist = dynamic_cast<TH2D*>(fCMETPCList->FindObject(Form("fCMETPCCovHist[%d][%d]",eg,h)));
-      if(CMETPCCovHist) { this->SetCMETPCCovHist(CMETPCCovHist,eg,h); }
-      else { cout<<"WARNING: CMETPCCovHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-      // Distributions:
-      for (Int_t k=0;k<fCMETPCnDist;k++) {
-        TH1D *CMETPCDistHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCDistHist[%d][%d][%d]",eg,h,k)));
-        if(CMETPCDistHist) { this->SetCMETPCDistHist(CMETPCDistHist,eg,h,k); }
-        else { cout<<"WARNING: CMETPCDistHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-      }
-      // Correlations:
       TH1D *CMEZDCCorHist = dynamic_cast<TH1D*>(fCMEZDCList->FindObject(Form("fCMEZDCCorHist[%d][%d]",eg,h)));
       if(CMEZDCCorHist) { this->SetCMEZDCCorHist(CMEZDCCorHist,eg,h); }
       else { cout<<"WARNING: CMEZDCCorHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
@@ -24899,53 +25005,38 @@ void AliFlowAnalysisCRC::GetPointersForCME()
     } // end of for(Int_t eg=0; eg<fCRCZDCnEtaBin; eg++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  TList *CMERbRList = dynamic_cast<TList*>(fCMEList->FindObject("Run-by-Run"));
-  if (CMERbRList) {
-    this->SetCMERbRList(CMERbRList);
-  } else {
-    cout<<"WARNING: CMERbRList is NULL in AFAWQC::GPFCME() !!!!"<<endl;
-    exit(0);
-  }
+  for (Int_t h=0;h<fCRCnCen;h++) {
+    for(Int_t eg=0;eg<fCMEnEtaBin;eg++) {
+      // Correlations:
+      TProfile *CMEZDCCorPro = dynamic_cast<TProfile*>(fCMEZDCList->FindObject(Form("fCMEZDCCorPro[%d][%d]",eg,h)));
+      if(CMEZDCCorPro) { this->SetCMEZDCCorPro(CMEZDCCorPro,eg,h); }
+      else { cout<<"WARNING: CMEZDCCorPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+      // Covariances:
+      TProfile *CMEZDCCovPro = dynamic_cast<TProfile*>(fCMEZDCList->FindObject(Form("fCMEZDCCovPro[%d][%d]",eg,h)));
+      if(CMEZDCCovPro) { this->SetCMEZDCCovPro(CMEZDCCovPro,eg,h); }
+      else { cout<<"WARNING: CMEZDCCovPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+      // NUA:
+      TProfile *CMEZDCNUAPro = dynamic_cast<TProfile*>(fCMEZDCList->FindObject(Form("fCMEZDCNUAPro[%d][%d]",eg,h)));
+      if(CMEZDCNUAPro) { this->SetCMEZDCNUAPro(CMEZDCNUAPro,eg,h); }
+      else { cout<<"WARNING: CMEZDCNUAPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+    } // end of for(Int_t eg=0;eg<fCRCZDCnEtaBin;eg++)
+  } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  for(Int_t r=0;r<fCRCnRun;r++) {
-    
-    TList *CMERunsList = dynamic_cast<TList*>(fCMERbRList->FindObject(Form("Run %d",fRunList[r])));
-    if (CMERunsList) {
-      this->SetCMERunsList(CMERunsList,r);
-    } else {
-      cout<<"WARNING: CMERunsList is NULL in AFAWQC::GPFCME() !!!!"<<endl;
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
+      // Profiles
+      TProfile *CMETPCCorPro = dynamic_cast<TProfile*>(fCMETPCList->FindObject(Form("fCMETPCCorPro[%d][%d]",k,h)));
+      if(CMETPCCorPro) { this->SetCMETPCCorPro(CMETPCCorPro,k,h); }
+      else { cout<<"WARNING: CMETPCCorPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+      // Correlations:
+      TH1D *CMETPCCorHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCCorHist[%d][%d]",k,h)));
+      if(CMETPCCorHist) { this->SetCMETPCCorHist(CMETPCCorHist,k,h); }
+      else { cout<<"WARNING: CMETPCCorHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+      TH1D *CMETPCFinalHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCFinalHist[%d][%d]",k,h)));
+      if(CMETPCFinalHist) { this->SetCMETPCFinalHist(CMETPCFinalHist,k,h); }
+      else { cout<<"WARNING: CMETPCFinalHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
     }
-    
-    for (Int_t h=0;h<fCRCnCen;h++) {
-      for(Int_t eg=0;eg<fCMEnEtaBin;eg++) {
-        // Correlations:
-        TProfile *CMETPCCorPro = dynamic_cast<TProfile*>(fCMERunsList[r]->FindObject(Form("fCMETPCCorPro[%d][%d][%d]",r,eg,h)));
-        if(CMETPCCorPro) { this->SetCMETPCCorPro(CMETPCCorPro,r,eg,h); }
-        else { cout<<"WARNING: CMETPCCorPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-        // Covariances:
-        TProfile *CMETPCCovPro = dynamic_cast<TProfile*>(fCMERunsList[r]->FindObject(Form("fCMETPCCovPro[%d][%d][%d]",r,eg,h)));
-        if(CMETPCCovPro) { this->SetCMETPCCovPro(CMETPCCovPro,r,eg,h); }
-        else { cout<<"WARNING: CMETPCCovPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-        // NUA:
-        TProfile *CMETPCNUAPro = dynamic_cast<TProfile*>(fCMERunsList[r]->FindObject(Form("fCMETPCNUAPro[%d][%d][%d]",r,eg,h)));
-        if(CMETPCNUAPro) { this->SetCMETPCNUAPro(CMETPCNUAPro,r,eg,h); }
-        else { cout<<"WARNING: CMETPCNUAPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-        // Correlations:
-        TProfile *CMEZDCCorPro = dynamic_cast<TProfile*>(fCMERunsList[r]->FindObject(Form("fCMEZDCCorPro[%d][%d][%d]",r,eg,h)));
-        if(CMEZDCCorPro) { this->SetCMEZDCCorPro(CMEZDCCorPro,r,eg,h); }
-        else { cout<<"WARNING: CMEZDCCorPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-        // Covariances:
-        TProfile *CMEZDCCovPro = dynamic_cast<TProfile*>(fCMERunsList[r]->FindObject(Form("fCMEZDCCovPro[%d][%d][%d]",r,eg,h)));
-        if(CMEZDCCovPro) { this->SetCMEZDCCovPro(CMEZDCCovPro,r,eg,h); }
-        else { cout<<"WARNING: CMEZDCCovPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-        // NUA:
-        TProfile *CMEZDCNUAPro = dynamic_cast<TProfile*>(fCMERunsList[r]->FindObject(Form("fCMEZDCNUAPro[%d][%d][%d]",r,eg,h)));
-        if(CMEZDCNUAPro) { this->SetCMEZDCNUAPro(CMEZDCNUAPro,r,eg,h); }
-        else { cout<<"WARNING: CMEZDCNUAPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-      } // end of for(Int_t eg=0;eg<fCRCZDCnEtaBin;eg++)
-    } // end of for (Int_t h=0;h<fCRCnCen;h++)
-    
-  } // end of for(Int_t r=0;r<fCRCnRun;r++)
+  }
   
 } // end void AliFlowAnalysisCRC::GetPointersForCME()
 
@@ -25075,12 +25166,12 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
       TH1D *FlowQCIntCorHist = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCIntCorHist[%d][%d]",i,j)));
       if(FlowQCIntCorHist) { this->SetFlowQCIntCorHist(FlowQCIntCorHist,i,j); }
       else { cout<<"WARNING: FlowQCIntCorHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-      TProfile *FlowQCMulCorPro = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCMulCorPro[%d][%d]",i,j)));
-      if(FlowQCMulCorPro) { this->SetFlowQCMulCorPro(FlowQCMulCorPro,i,j); }
-      else { cout<<"WARNING: FlowQCMulCorPro is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-      TH1D *FlowQCMulCorHist = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCMulCorHist[%d][%d]",i,j)));
-      if(FlowQCMulCorHist) { this->SetFlowQCMulCorHist(FlowQCMulCorHist,i,j); }
-      else { cout<<"WARNING: FlowQCMulCorHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+      TProfile *FlowQCNewCenPro = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCNewCenPro[%d][%d]",i,j)));
+      if(FlowQCNewCenPro) { this->SetFlowQCNewCenPro(FlowQCNewCenPro,i,j); }
+      else { cout<<"WARNING: FlowQCNewCenPro is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+      TH1D *FlowQCNewCenHist = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCNewCenHist[%d][%d]",i,j)));
+      if(FlowQCNewCenHist) { this->SetFlowQCNewCenHist(FlowQCNewCenHist,i,j); }
+      else { cout<<"WARNING: FlowQCNewCenHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
       TProfile *FlowQCMetricCorPro = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCMetricCorPro[%d][%d]",i,j)));
       if(FlowQCMetricCorPro) { this->SetFlowQCMetricCorPro(FlowQCMetricCorPro,i,j); }
       else { cout<<"WARNING: FlowQCMetricCorPro is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
@@ -25094,12 +25185,12 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
     TH1D *FlowQCIntCorHistEG = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCIntCorHistEG[%d]",i)));
     if(FlowQCIntCorHistEG) { this->SetFlowQCIntCorHistEG(FlowQCIntCorHistEG,i); }
     else { cout<<"WARNING: FlowQCIntCorHistEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-    TProfile *FlowQCMetricCorProEG = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCMetricCorProEG[%d]",i)));
-    if(FlowQCMetricCorProEG) { this->SetFlowQCMetricCorProEG(FlowQCMetricCorProEG,i); }
-    else { cout<<"WARNING: FlowQCMetricCorProEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-    TH1D *FlowQCMetricCorHistEG = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCMetricCorHistEG[%d]",i)));
-    if(FlowQCMetricCorHistEG) { this->SetFlowQCMetricCorHistEG(FlowQCMetricCorHistEG,i); }
-    else { cout<<"WARNING: FlowQCMetricCorHistEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+    TProfile *FlowQCNewCenProEG = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCNewCenProEG[%d]",i)));
+    if(FlowQCNewCenProEG) { this->SetFlowQCNewCenProEG(FlowQCNewCenProEG,i); }
+    else { cout<<"WARNING: FlowQCNewCenProEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+    TH1D *FlowQCNewCenHistEG = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCNewCenHistEG[%d]",i)));
+    if(FlowQCNewCenHistEG) { this->SetFlowQCNewCenHistEG(FlowQCNewCenHistEG,i); }
+    else { cout<<"WARNING: FlowQCNewCenHistEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
   }
   
   for(Int_t bng=0; bng<4; bng++) {
@@ -25149,6 +25240,22 @@ void AliFlowAnalysisCRC::GetPointersForFlowSPVZ()
   }
   
 } // end void AliFlowAnalysisCRC::GetPointersForFlowSPVZ()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisCRC::GetPointersForEbEFlow()
+{
+  if(!fCalculateEbEFlow){return;}
+  
+  TList *EbEFlowList = dynamic_cast<TList*>(fHistList->FindObject("EbE Flow"));
+  if (EbEFlowList) {
+    this->SetEbEFlowList(EbEFlowList);
+  } else {
+    cout<<"WARNING: EbEFlowList is NULL in AFAWQC::GPFEbEF() !!!!"<<endl;
+    exit(0);
+  }
+  
+} // end void AliFlowAnalysisCRC::GetPointersForEbEFlow()
 
 //=======================================================================================================================
 
@@ -25810,7 +25917,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCZDC()
 void AliFlowAnalysisCRC::BookEverythingForCRC()
 {
   // Profile to hold flags for CRC;
-  fCRCFlags = new TProfile("fCRCFlags","fCRCFlags",16,0.,16.);
+  fCRCFlags = new TProfile("fCRCFlags","fCRCFlags",17,0.,17.);
   fCRCFlags->SetTickLength(-0.01,"Y");
   fCRCFlags->SetMarkerStyle(25);
   fCRCFlags->SetLabelSize(0.04);
@@ -25832,6 +25939,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
   fCRCFlags->GetXaxis()->SetBinLabel(14,"CalculateFlowQC");
   fCRCFlags->GetXaxis()->SetBinLabel(15,"CalculateFlowZDC");
   fCRCFlags->GetXaxis()->SetBinLabel(16,"CalculateFlowVZ");
+  fCRCFlags->GetXaxis()->SetBinLabel(17,"CalculateEbEFlow");
   fCRCList->Add(fCRCFlags);
   
   // EbE quantities
@@ -26005,7 +26113,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   }
   for(Int_t k=0; k<4; k++) {
     fZDCFitSec[k] = new TF1(Form("fZDCFitSec[%d]",k),"pol3",0.,100.);
-    fVariousList->Add(fZDCFitSec[k]);
+    fTempList->Add(fZDCFitSec[k]);
   }
   if(fZDCESEList) {
     fZDCESEMinHist[0] = (TH1D*)(fZDCESEList->FindObject("MinMulHis[0]"));
@@ -26048,41 +26156,73 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
         fZDCESEMinHist[k]->Fit(fPolMin[k],"QRN","",0.,90.);
         fZDCESEMaxHist[k]->Fit(fPolMax[k],"QRN","",0.,90.);
       }
-      fVariousList->Add(fPolMin[k]);
-      fVariousList->Add(fPolMax[k]);
+      fTempList->Add(fPolMin[k]);
+      fTempList->Add(fPolMax[k]);
       
       // to calculate new metric
-      Double_t Lmax=(k==0?50.:45.);
-      fPolAv[k] = new TF1(Form("fPolAv[%d]",k),"pol4",0.,65.);
-      fPolDer[k] = new TF1(Form("fPolDer[%d]",k),"pol3",0.,65.);
-      fPolInt[k] = new TF1(Form("fPolInt[%d]",k),"sqrt(1+pol3**2)",0.,65.);
-      fPolDist[k] = new TF1(Form("fPolDist[%d]",k),"sqrt((x-[0])**2+(pol4(2)-[1])**2)",0.,65.);
+      fPolAv[k] = new TF1(Form("fPolAv[%d]",k),"pol4",5.E3,2.5E4);
+//      fPolDer[k] = new TF1(Form("fPolDer[%d]",k),"pol3",5.E3,2.5E4);
+//      fPolInt[k] = new TF1(Form("fPolInt[%d]",k),"sqrt(1+pol3**2)",5.E3,2.5E4);
+      fPolDist[k] = new TF1(Form("fPolDist[%d]",k),"TMath::Abs(pol1(0)-pol1(2))",5.E3,2.5E4);
       if(fZDCESEAvHist[k]) {
-        fZDCESEAvHist[k]->Fit(fPolAv[k],"QRN","",10.,Lmax);
-        for (Int_t p=1; p<=fPolAv[k]->GetNpar(); p++) {
-          fPolDer[k]->SetParameter(p-1,p*fPolAv[k]->GetParameter(p));
-        }
-        fPolInt[k]->SetParameters(fPolDer[k]->GetParameters());
-        
+//        fZDCESEAvHist[k]->Fit(fPolAv[k],"QRN","",5.E3,2.1E4);
+//        for (Int_t p=1; p<=fPolAv[k]->GetNpar(); p++) {
+//          fPolDer[k]->SetParameter(p-1,p*fPolAv[k]->GetParameter(p));
+//        }
+//        fPolInt[k]->SetParameters(fPolDer[k]->GetParameters());
+        fPolAv[k]->SetParameter(0,4.92958e+01);
+        fPolAv[k]->SetParameter(1,-2.28486e-03);
         for (Int_t p=0; p<=fPolAv[k]->GetNpar(); p++) {
           fPolDist[k]->SetParameter(p+2,fPolAv[k]->GetParameter(p));
         }
       }
-      fVariousList->Add(fPolAv[k]);
-      fVariousList->Add(fPolDer[k]);
-      fVariousList->Add(fPolInt[k]);
-      fVariousList->Add(fPolDist[k]);
+      fTempList->Add(fPolAv[k]);
+//      fTempList->Add(fPolDer[k]);
+//      fTempList->Add(fPolInt[k]);
+      fTempList->Add(fPolDist[k]);
       
       // cuts on new metric
-      fPolMinMetric[k] = new TF1(Form("fPolMinMetric[%d]",k),"pol1",0.,Lmax);
-      fPolMaxMetric[k] = new TF1(Form("fPolMaxMetric[%d]",k),"pol1",0.,Lmax);
-      if(fZDCESEMinMetricHist[k] && fZDCESEMaxMetricHist[k]) {
-        fZDCESEMinMetricHist[k]->Fit(fPolMinMetric[k],"QRN","",10.,Lmax); // hardwired, TBI
-        fZDCESEMaxMetricHist[k]->Fit(fPolMaxMetric[k],"QRN","",10.,Lmax); // hardwired, TBI
+//      Double_t Lmax=(k==0?50.:45.);
+//      fPolMinMetric[k] = new TF1(Form("fPolMinMetric[%d]",k),"pol1",0.,Lmax);
+//      fPolMaxMetric[k] = new TF1(Form("fPolMaxMetric[%d]",k),"pol1",0.,Lmax);
+//      if(fZDCESEMinMetricHist[k] && fZDCESEMaxMetricHist[k]) {
+//        fZDCESEMinMetricHist[k]->Fit(fPolMinMetric[k],"QRN","",10.,Lmax); // hardwired, TBI
+//        fZDCESEMaxMetricHist[k]->Fit(fPolMaxMetric[k],"QRN","",10.,Lmax); // hardwired, TBI
+//      }
+//      fTempList->Add(fPolMinMetric[k]);
+//      fTempList->Add(fPolMaxMetric[k]);
+      
+      // new cuts on ZDC-ESE
+      for(Int_t k=0; k<fZDCESEnPol; k++) {
+        fZDCESECutsHist[k] = (TH1D*)(fZDCESEList->FindObject(Form("CutsHis[%d]",k)));
+        if(fZDCESECutsHist[k]) fTempList->Add(fZDCESECutsHist[k]);
+        else printf("WARNING: fZDCESECutsHist not found! \n");
+        
+        fPolCuts[k] = new TF1(Form("fPolCuts[%d]",k),"pol9",0.,100.);
+        if(fZDCESECutsHist[k]) {
+          fZDCESECutsHist[k]->Fit(fPolCuts[k],"QRN","",0.,90.);
+        }
+        fTempList->Add(fPolCuts[k]);
       }
-      fVariousList->Add(fPolMinMetric[k]);
-      fVariousList->Add(fPolMaxMetric[k]);
+      
+      const Int_t nbins = 3410;
+      
+      Double_t xd[nbins] = {1.800005e+00, 1.800005e+00, 1.800005e+00, 5.400014e+00, 1.080003e+01, 1.440004e+01, 1.800005e+01, 2.160006e+01, 2.520007e+01, 2.700007e+01, 3.060008e+01, 3.240008e+01, 3.600009e+01, 3.780010e+01, 4.140011e+01, 4.320011e+01, 4.500012e+01, 4.860013e+01, 5.040013e+01, 5.220014e+01, 5.580015e+01, 5.760015e+01, 5.940016e+01, 6.120016e+01, 6.480017e+01, 6.660017e+01, 6.840018e+01, 7.020018e+01, 7.380019e+01, 7.560020e+01, 7.740020e+01, 7.920021e+01, 8.280022e+01, 8.460022e+01, 8.640023e+01, 8.820023e+01, 9.180024e+01, 9.360024e+01, 9.540025e+01, 9.900026e+01, 1.008003e+02, 1.026003e+02, 1.044003e+02, 1.080003e+02, 1.098003e+02, 1.116003e+02, 1.134003e+02, 1.152003e+02, 1.188003e+02, 1.206003e+02, 1.224003e+02, 1.242003e+02, 1.278003e+02, 1.296003e+02, 1.314003e+02, 1.332003e+02, 1.368004e+02, 1.386004e+02, 1.404004e+02, 1.422004e+02, 1.458004e+02, 1.476004e+02, 1.494004e+02, 1.530004e+02, 1.548004e+02, 1.566004e+02, 1.584004e+02, 1.620004e+02, 1.638004e+02, 1.656004e+02, 1.674004e+02, 1.692004e+02, 1.728005e+02, 1.746005e+02, 1.764005e+02, 1.800005e+02, 1.818005e+02, 1.836005e+02, 1.854005e+02, 1.890005e+02, 1.908005e+02, 1.926005e+02, 1.944005e+02, 1.980005e+02, 1.998005e+02, 2.016005e+02, 2.034005e+02, 2.070005e+02, 2.088005e+02, 2.106005e+02, 2.124006e+02, 2.160006e+02, 2.178006e+02, 2.196006e+02, 2.214006e+02, 2.250006e+02, 2.268006e+02, 2.286006e+02, 2.304006e+02, 2.340006e+02, 2.358006e+02, 2.376006e+02, 2.412006e+02, 2.430006e+02, 2.448006e+02, 2.466006e+02, 2.502007e+02, 2.520007e+02, 2.538007e+02, 2.556007e+02, 2.592007e+02, 2.610007e+02, 2.628007e+02, 2.646007e+02, 2.682007e+02, 2.700007e+02, 2.718007e+02, 2.754007e+02, 2.772007e+02, 2.790007e+02, 2.808007e+02, 2.844007e+02, 2.862007e+02, 2.880008e+02, 2.916008e+02, 2.934008e+02, 2.952008e+02, 2.970008e+02, 3.006008e+02, 3.024008e+02, 3.042008e+02, 3.078008e+02, 3.096008e+02, 3.114008e+02, 3.132008e+02, 3.168008e+02, 3.186008e+02, 3.204008e+02, 3.240008e+02, 3.258009e+02, 3.276009e+02, 3.294009e+02, 3.330009e+02, 3.348009e+02, 3.366009e+02, 3.402009e+02, 3.420009e+02, 3.438009e+02, 3.456009e+02, 3.492009e+02, 3.510009e+02, 3.528009e+02, 3.564009e+02, 3.582009e+02, 3.600009e+02, 3.618009e+02, 3.654010e+02, 3.672010e+02, 3.690010e+02, 3.726010e+02, 3.744010e+02, 3.762010e+02, 3.780010e+02, 3.816010e+02, 3.834010e+02, 3.852010e+02, 3.888010e+02, 3.906010e+02, 3.924010e+02, 3.960010e+02, 3.978010e+02, 3.996010e+02, 4.014010e+02, 4.050011e+02, 4.068011e+02, 4.086011e+02, 4.122011e+02, 4.140011e+02, 4.158011e+02, 4.194011e+02, 4.212011e+02, 4.230011e+02, 4.266011e+02, 4.284011e+02, 4.302011e+02, 4.320011e+02, 4.356011e+02, 4.374011e+02, 4.392011e+02, 4.428012e+02, 4.446012e+02, 4.464012e+02, 4.500012e+02, 4.518012e+02, 4.536012e+02, 4.554012e+02, 4.590012e+02, 4.608012e+02, 4.626012e+02, 4.662012e+02, 4.680012e+02, 4.698012e+02, 4.734012e+02, 4.752012e+02, 4.770012e+02, 4.806013e+02, 4.824013e+02, 4.842013e+02, 4.860013e+02, 4.896013e+02, 4.914013e+02, 4.932013e+02, 4.968013e+02, 4.986013e+02, 5.004013e+02, 5.040013e+02, 5.058013e+02, 5.076013e+02, 5.112013e+02, 5.130013e+02, 5.148013e+02, 5.184014e+02, 5.202014e+02, 5.220014e+02, 5.256014e+02, 5.274014e+02, 5.292014e+02, 5.328014e+02, 5.346014e+02, 5.364014e+02, 5.400014e+02, 5.418014e+02, 5.436014e+02, 5.472014e+02, 5.490014e+02, 5.508014e+02, 5.544014e+02, 5.562015e+02, 5.580015e+02, 5.616015e+02, 5.634015e+02, 5.652015e+02, 5.688015e+02, 5.706015e+02, 5.724015e+02, 5.760015e+02, 5.778015e+02, 5.796015e+02, 5.832015e+02, 5.850015e+02, 5.868015e+02, 5.886015e+02, 5.922015e+02, 5.940016e+02, 5.958016e+02, 5.994016e+02, 6.012016e+02, 6.030016e+02, 6.066016e+02, 6.084016e+02, 6.102016e+02, 6.138016e+02, 6.156016e+02, 6.174016e+02, 6.210016e+02, 6.228016e+02, 6.246016e+02, 6.282016e+02, 6.300016e+02, 6.318016e+02, 6.354017e+02, 6.372017e+02, 6.390017e+02, 6.426017e+02, 6.444017e+02, 6.462017e+02, 6.498017e+02, 6.516017e+02, 6.534017e+02, 6.570017e+02, 6.588017e+02, 6.606017e+02, 6.642017e+02, 6.660017e+02, 6.696017e+02, 6.714018e+02, 6.732018e+02, 6.768018e+02, 6.786018e+02, 6.804018e+02, 6.840018e+02, 6.858018e+02, 6.876018e+02, 6.912018e+02, 6.930018e+02, 6.948018e+02, 6.984018e+02, 7.002018e+02, 7.020018e+02, 7.056018e+02, 7.074018e+02, 7.092019e+02, 7.128019e+02, 7.146019e+02, 7.164019e+02, 7.200019e+02, 7.218019e+02, 7.236019e+02, 7.272019e+02, 7.290019e+02, 7.326019e+02, 7.344019e+02, 7.362019e+02, 7.380019e+02, 7.416019e+02, 7.434019e+02, 7.470019e+02, 7.488020e+02, 7.506020e+02, 7.542020e+02, 7.560020e+02, 7.578020e+02, 7.614020e+02, 7.632020e+02, 7.650020e+02, 7.686020e+02, 7.704020e+02, 7.740020e+02, 7.758020e+02, 7.776020e+02, 7.812020e+02, 7.830020e+02, 7.848020e+02, 7.884021e+02, 7.902021e+02, 7.920021e+02, 7.956021e+02, 7.974021e+02, 8.010021e+02, 8.028021e+02, 8.046021e+02, 8.082021e+02, 8.100021e+02, 8.118021e+02, 8.154021e+02, 8.172021e+02, 8.190021e+02, 8.226021e+02, 8.244022e+02, 8.280022e+02, 8.298022e+02, 8.316022e+02, 8.352022e+02, 8.370022e+02, 8.406022e+02, 8.424022e+02, 8.442022e+02, 8.478022e+02, 8.496022e+02, 8.514022e+02, 8.550022e+02, 8.568022e+02, 8.604022e+02, 8.622023e+02, 8.640023e+02, 8.676023e+02, 8.694023e+02, 8.712023e+02, 8.748023e+02, 8.766023e+02, 8.802023e+02, 8.820023e+02, 8.838023e+02, 8.874023e+02, 8.892023e+02, 8.910023e+02, 8.946023e+02, 8.964023e+02, 9.000023e+02, 9.018024e+02, 9.036024e+02, 9.072024e+02, 9.090024e+02, 9.108024e+02, 9.144024e+02, 9.162024e+02, 9.198024e+02, 9.216024e+02, 9.234024e+02, 9.270024e+02, 9.288024e+02, 9.324024e+02, 9.342024e+02, 9.360024e+02, 9.396025e+02, 9.414025e+02, 9.432025e+02, 9.468025e+02, 9.486025e+02, 9.522025e+02, 9.540025e+02, 9.576025e+02, 9.594025e+02, 9.612025e+02, 9.648025e+02, 9.666025e+02, 9.702025e+02, 9.720025e+02, 9.738025e+02, 9.774026e+02, 9.792026e+02, 9.828026e+02, 9.846026e+02, 9.864026e+02, 9.900026e+02, 9.918026e+02, 9.954026e+02, 9.972026e+02, 9.990026e+02, 1.002603e+03, 1.004403e+03, 1.006203e+03, 1.009803e+03, 1.011603e+03, 1.015203e+03, 1.017003e+03, 1.018803e+03, 1.022403e+03, 1.024203e+03, 1.027803e+03, 1.029603e+03, 1.031403e+03, 1.035003e+03, 1.036803e+03, 1.040403e+03, 1.042203e+03, 1.044003e+03, 1.047603e+03, 1.049403e+03, 1.053003e+03, 1.054803e+03, 1.058403e+03, 1.060203e+03, 1.062003e+03, 1.065603e+03, 1.067403e+03, 1.071003e+03, 1.072803e+03, 1.076403e+03, 1.078203e+03, 1.080003e+03, 1.083603e+03, 1.085403e+03, 1.089003e+03, 1.090803e+03, 1.094403e+03, 1.096203e+03, 1.098003e+03, 1.101603e+03, 1.103403e+03, 1.105203e+03, 1.108803e+03, 1.110603e+03, 1.114203e+03, 1.116003e+03, 1.117803e+03, 1.121403e+03, 1.123203e+03, 1.126803e+03, 1.128603e+03, 1.132203e+03, 1.134003e+03, 1.135803e+03, 1.139403e+03, 1.141203e+03, 1.144803e+03, 1.146603e+03, 1.150203e+03, 1.152003e+03, 1.153803e+03, 1.157403e+03, 1.159203e+03, 1.162803e+03, 1.164603e+03, 1.168203e+03, 1.170003e+03, 1.173603e+03, 1.175403e+03, 1.177203e+03, 1.180803e+03, 1.182603e+03, 1.186203e+03, 1.188003e+03, 1.191603e+03, 1.193403e+03, 1.195203e+03, 1.198803e+03, 1.200603e+03, 1.204203e+03, 1.206003e+03, 1.209603e+03, 1.211403e+03, 1.215003e+03, 1.216803e+03, 1.218603e+03, 1.222203e+03, 1.224003e+03, 1.227603e+03, 1.229403e+03, 1.233003e+03, 1.234803e+03, 1.238403e+03, 1.240203e+03, 1.243803e+03, 1.245603e+03, 1.247403e+03, 1.251003e+03, 1.252803e+03, 1.256403e+03, 1.258203e+03, 1.261803e+03, 1.263603e+03, 1.265403e+03, 1.269003e+03, 1.270803e+03, 1.274403e+03, 1.276203e+03, 1.279803e+03, 1.281603e+03, 1.285203e+03, 1.287003e+03, 1.290603e+03, 1.292403e+03, 1.296003e+03, 1.297803e+03, 1.299603e+03, 1.303203e+03, 1.305003e+03, 1.308603e+03, 1.310403e+03, 1.314003e+03, 1.315803e+03, 1.319403e+03, 1.321203e+03, 1.324803e+03, 1.326603e+03, 1.328403e+03, 1.332003e+03, 1.333803e+03, 1.337403e+03, 1.339203e+03, 1.342804e+03, 1.344604e+03, 1.348204e+03, 1.350004e+03, 1.353604e+03, 1.355404e+03, 1.359004e+03, 1.360804e+03, 1.364404e+03, 1.366204e+03, 1.368004e+03, 1.371604e+03, 1.373404e+03, 1.377004e+03, 1.378804e+03, 1.382404e+03, 1.384204e+03, 1.387804e+03, 1.389604e+03, 1.393204e+03, 1.395004e+03, 1.398604e+03, 1.400404e+03, 1.404004e+03, 1.405804e+03, 1.407604e+03, 1.411204e+03, 1.413004e+03, 1.416604e+03, 1.418404e+03, 1.422004e+03, 1.423804e+03, 1.427404e+03, 1.429204e+03, 1.432804e+03, 1.434604e+03, 1.438204e+03, 1.440004e+03, 1.443604e+03, 1.445404e+03, 1.449004e+03, 1.450804e+03, 1.454404e+03, 1.456204e+03, 1.458004e+03, 1.461604e+03, 1.463404e+03, 1.467004e+03, 1.468804e+03, 1.472404e+03, 1.474204e+03, 1.477804e+03, 1.479604e+03, 1.483204e+03, 1.485004e+03, 1.488604e+03, 1.490404e+03, 1.494004e+03, 1.495804e+03, 1.499404e+03, 1.501204e+03, 1.504804e+03, 1.506604e+03, 1.510204e+03, 1.512004e+03, 1.515604e+03, 1.517404e+03, 1.521004e+03, 1.522804e+03, 1.526404e+03, 1.528204e+03, 1.531804e+03, 1.533604e+03, 1.537204e+03, 1.539004e+03, 1.542604e+03, 1.544404e+03, 1.548004e+03, 1.549804e+03, 1.553404e+03, 1.555204e+03, 1.558804e+03, 1.560604e+03, 1.564204e+03, 1.566004e+03, 1.569604e+03, 1.571404e+03, 1.575004e+03, 1.576804e+03, 1.580404e+03, 1.582204e+03, 1.585804e+03, 1.587604e+03, 1.591204e+03, 1.593004e+03, 1.596604e+03, 1.598404e+03, 1.602004e+03, 1.603804e+03, 1.607404e+03, 1.609204e+03, 1.612804e+03, 1.616404e+03, 1.618204e+03, 1.621804e+03, 1.623604e+03, 1.627204e+03, 1.629004e+03, 1.632604e+03, 1.634404e+03, 1.638004e+03, 1.639804e+03, 1.641604e+03, 1.645204e+03, 1.647004e+03, 1.650604e+03, 1.654204e+03, 1.656004e+03, 1.659604e+03, 1.661404e+03, 1.665004e+03, 1.666804e+03, 1.670404e+03, 1.672204e+03, 1.675804e+03, 1.677604e+03, 1.681204e+03, 1.683004e+03, 1.686604e+03, 1.688404e+03, 1.692004e+03, 1.693804e+03, 1.697404e+03, 1.699204e+03, 1.702804e+03, 1.706404e+03, 1.708204e+03, 1.710004e+03, 1.713604e+03, 1.715404e+03, 1.719004e+03, 1.722604e+03, 1.724405e+03, 1.728005e+03, 1.729805e+03, 1.733405e+03, 1.735205e+03, 1.738805e+03, 1.740605e+03, 1.744205e+03, 1.746005e+03, 1.749605e+03, 1.751405e+03, 1.755005e+03, 1.756805e+03, 1.760405e+03, 1.762205e+03, 1.765805e+03, 1.767605e+03, 1.771205e+03, 1.773005e+03, 1.776605e+03, 1.778405e+03, 1.782005e+03, 1.785605e+03, 1.787405e+03, 1.791005e+03, 1.792805e+03, 1.796405e+03, 1.798205e+03, 1.801805e+03, 1.803605e+03, 1.807205e+03, 1.809005e+03, 1.812605e+03, 1.814405e+03, 1.818005e+03, 1.819805e+03, 1.823405e+03, 1.827005e+03, 1.828805e+03, 1.832405e+03, 1.834205e+03, 1.837805e+03, 1.839605e+03, 1.843205e+03, 1.845005e+03, 1.848605e+03, 1.850405e+03, 1.854005e+03, 1.857605e+03, 1.859405e+03, 1.861205e+03, 1.864805e+03, 1.868405e+03, 1.870205e+03, 1.873805e+03, 1.875605e+03, 1.879205e+03, 1.881005e+03, 1.884605e+03, 1.888205e+03, 1.890005e+03, 1.893605e+03, 1.895405e+03, 1.899005e+03, 1.902605e+03, 1.904405e+03, 1.908005e+03, 1.909805e+03, 1.913405e+03, 1.915205e+03, 1.918805e+03, 1.920605e+03, 1.924205e+03, 1.926005e+03, 1.929605e+03, 1.933205e+03, 1.935005e+03, 1.938605e+03, 1.940405e+03, 1.944005e+03, 1.945805e+03, 1.949405e+03, 1.953005e+03, 1.954805e+03, 1.958405e+03, 1.960205e+03, 1.963805e+03, 1.965605e+03, 1.969205e+03, 1.972805e+03, 1.974605e+03, 1.978205e+03, 1.980005e+03, 1.983605e+03, 1.985405e+03, 1.989005e+03, 1.992605e+03, 1.994405e+03, 1.998005e+03, 1.999805e+03, 2.003405e+03, 2.005205e+03, 2.008805e+03, 2.010605e+03, 2.014205e+03, 2.017805e+03, 2.019605e+03, 2.023205e+03, 2.025005e+03, 2.028605e+03, 2.030405e+03, 2.034005e+03, 2.037605e+03, 2.039405e+03, 2.043005e+03, 2.046605e+03, 2.048405e+03, 2.052005e+03, 2.053805e+03, 2.057405e+03, 2.059205e+03, 2.062805e+03, 2.066405e+03, 2.068205e+03, 2.071805e+03, 2.073605e+03, 2.077205e+03, 2.080805e+03, 2.082605e+03, 2.086205e+03, 2.088005e+03, 2.091605e+03, 2.095205e+03, 2.097005e+03, 2.100605e+03, 2.102405e+03, 2.106005e+03, 2.109606e+03, 2.111406e+03, 2.115006e+03, 2.116806e+03, 2.120406e+03, 2.122206e+03, 2.125806e+03, 2.129406e+03, 2.131206e+03, 2.134806e+03, 2.136606e+03, 2.140206e+03, 2.143806e+03, 2.145606e+03, 2.149206e+03, 2.152806e+03, 2.154606e+03, 2.158206e+03, 2.160006e+03, 2.163606e+03, 2.167206e+03, 2.169006e+03, 2.172606e+03, 2.174406e+03, 2.178006e+03, 2.181606e+03, 2.183406e+03, 2.187006e+03, 2.188806e+03, 2.192406e+03, 2.196006e+03, 2.197806e+03, 2.201406e+03, 2.205006e+03, 2.206806e+03, 2.210406e+03, 2.212206e+03, 2.215806e+03, 2.219406e+03, 2.221206e+03, 2.224806e+03, 2.226606e+03, 2.230206e+03, 2.233806e+03, 2.235606e+03, 2.239206e+03, 2.241006e+03, 2.244606e+03, 2.248206e+03, 2.250006e+03, 2.253606e+03, 2.257206e+03, 2.259006e+03, 2.262606e+03, 2.264406e+03, 2.268006e+03, 2.271606e+03, 2.273406e+03, 2.277006e+03, 2.280606e+03, 2.282406e+03, 2.286006e+03, 2.287806e+03, 2.291406e+03, 2.295006e+03, 2.296806e+03, 2.300406e+03, 2.304006e+03, 2.305806e+03, 2.309406e+03, 2.313006e+03, 2.314806e+03, 2.318406e+03, 2.320206e+03, 2.323806e+03, 2.327406e+03, 2.329206e+03, 2.332806e+03, 2.336406e+03, 2.338206e+03, 2.341806e+03, 2.345406e+03, 2.347206e+03, 2.350806e+03, 2.354406e+03, 2.356206e+03, 2.359806e+03, 2.363406e+03, 2.365206e+03, 2.368806e+03, 2.372406e+03, 2.374206e+03, 2.377806e+03, 2.381406e+03, 2.383206e+03, 2.386806e+03, 2.390406e+03, 2.392206e+03, 2.395806e+03, 2.397606e+03, 2.401206e+03, 2.404806e+03, 2.406606e+03, 2.410206e+03, 2.413806e+03, 2.415606e+03, 2.419206e+03, 2.422806e+03, 2.424606e+03, 2.428206e+03, 2.431806e+03, 2.433606e+03, 2.437206e+03, 2.439006e+03, 2.442606e+03, 2.446206e+03, 2.448006e+03, 2.451606e+03, 2.455206e+03, 2.457006e+03, 2.460606e+03, 2.464206e+03, 2.466006e+03, 2.469606e+03, 2.473206e+03, 2.475006e+03, 2.478606e+03, 2.480406e+03, 2.484006e+03, 2.487606e+03, 2.489406e+03, 2.493007e+03, 2.496607e+03, 2.498407e+03, 2.502007e+03, 2.505607e+03, 2.507407e+03, 2.511007e+03, 2.514607e+03, 2.516407e+03, 2.520007e+03, 2.523607e+03, 2.527207e+03, 2.529007e+03, 2.532607e+03, 2.536207e+03, 2.538007e+03, 2.541607e+03, 2.545207e+03, 2.547007e+03, 2.550607e+03, 2.554207e+03, 2.557807e+03, 2.559607e+03, 2.563207e+03, 2.566807e+03, 2.568607e+03, 2.572207e+03, 2.575807e+03, 2.577607e+03, 2.581207e+03, 2.584807e+03, 2.588407e+03, 2.590207e+03, 2.593807e+03, 2.597407e+03, 2.599207e+03, 2.602807e+03, 2.606407e+03, 2.610007e+03, 2.611807e+03, 2.615407e+03, 2.619007e+03, 2.620807e+03, 2.624407e+03, 2.628007e+03, 2.629807e+03, 2.633407e+03, 2.637007e+03, 2.640607e+03, 2.642407e+03, 2.646007e+03, 2.649607e+03, 2.651407e+03, 2.655007e+03, 2.658607e+03, 2.660407e+03, 2.664007e+03, 2.667607e+03, 2.669407e+03, 2.673007e+03, 2.676607e+03, 2.680207e+03, 2.682007e+03, 2.685607e+03, 2.689207e+03, 2.692807e+03, 2.694607e+03, 2.698207e+03, 2.701807e+03, 2.705407e+03, 2.707207e+03, 2.710807e+03, 2.714407e+03, 2.716207e+03, 2.719807e+03, 2.723407e+03, 2.727007e+03, 2.728807e+03, 2.732407e+03, 2.736007e+03, 2.737807e+03, 2.741407e+03, 2.745007e+03, 2.748607e+03, 2.750407e+03, 2.754007e+03, 2.757607e+03, 2.759407e+03, 2.763007e+03, 2.766607e+03, 2.770207e+03, 2.772007e+03, 2.775607e+03, 2.779207e+03, 2.781007e+03, 2.784607e+03, 2.788207e+03, 2.790007e+03, 2.793607e+03, 2.797207e+03, 2.800807e+03, 2.802607e+03, 2.806207e+03, 2.809807e+03, 2.813407e+03, 2.815207e+03, 2.818807e+03, 2.822407e+03, 2.824207e+03, 2.827807e+03, 2.831407e+03, 2.833207e+03, 2.836807e+03, 2.840407e+03, 2.844007e+03, 2.845807e+03, 2.849407e+03, 2.853007e+03, 2.856607e+03, 2.858407e+03, 2.862007e+03, 2.865607e+03, 2.867407e+03, 2.871007e+03, 2.874608e+03, 2.878208e+03, 2.880008e+03, 2.883608e+03, 2.887208e+03, 2.890808e+03, 2.892608e+03, 2.896208e+03, 2.899808e+03, 2.903408e+03, 2.905208e+03, 2.908808e+03, 2.912408e+03, 2.916008e+03, 2.917808e+03, 2.921408e+03, 2.925008e+03, 2.928608e+03, 2.930408e+03, 2.934008e+03, 2.937608e+03, 2.941208e+03, 2.943008e+03, 2.946608e+03, 2.950208e+03, 2.953808e+03, 2.955608e+03, 2.959208e+03, 2.962808e+03, 2.966408e+03, 2.968208e+03, 2.971808e+03, 2.975408e+03, 2.979008e+03, 2.980808e+03, 2.984408e+03, 2.988008e+03, 2.991608e+03, 2.993408e+03, 2.997008e+03, 3.000608e+03, 3.004208e+03, 3.006008e+03, 3.009608e+03, 3.013208e+03, 3.016808e+03, 3.018608e+03, 3.022208e+03, 3.025808e+03, 3.029408e+03, 3.033008e+03, 3.034808e+03, 3.038408e+03, 3.042008e+03, 3.045608e+03, 3.047408e+03, 3.051008e+03, 3.054608e+03, 3.058208e+03, 3.061808e+03, 3.063608e+03, 3.067208e+03, 3.070808e+03, 3.074408e+03, 3.076208e+03, 3.079808e+03, 3.083408e+03, 3.087008e+03, 3.088808e+03, 3.092408e+03, 3.096008e+03, 3.099608e+03, 3.101408e+03, 3.105008e+03, 3.108608e+03, 3.112208e+03, 3.115808e+03, 3.117608e+03, 3.121208e+03, 3.124808e+03, 3.128408e+03, 3.130208e+03, 3.133808e+03, 3.137408e+03, 3.141008e+03, 3.142808e+03, 3.146408e+03, 3.150008e+03, 3.153608e+03, 3.155408e+03, 3.159008e+03, 3.162608e+03, 3.166208e+03, 3.168008e+03, 3.171608e+03, 3.175208e+03, 3.178808e+03, 3.182408e+03, 3.184208e+03, 3.187808e+03, 3.191408e+03, 3.195008e+03, 3.198608e+03, 3.200408e+03, 3.204008e+03, 3.207608e+03, 3.211208e+03, 3.214808e+03, 3.216608e+03, 3.220208e+03, 3.223808e+03, 3.227408e+03, 3.231008e+03, 3.234608e+03, 3.236408e+03, 3.240008e+03, 3.243608e+03, 3.247208e+03, 3.250808e+03, 3.252608e+03, 3.256208e+03, 3.259809e+03, 3.263409e+03, 3.267009e+03, 3.268809e+03, 3.272409e+03, 3.276009e+03, 3.279609e+03, 3.283209e+03, 3.285009e+03, 3.288609e+03, 3.292209e+03, 3.295809e+03, 3.297609e+03, 3.301209e+03, 3.304809e+03, 3.308409e+03, 3.312009e+03, 3.313809e+03, 3.317409e+03, 3.321009e+03, 3.324609e+03, 3.328209e+03, 3.330009e+03, 3.333609e+03, 3.337209e+03, 3.340809e+03, 3.344409e+03, 3.346209e+03, 3.349809e+03, 3.353409e+03, 3.357009e+03, 3.360609e+03, 3.362409e+03, 3.366009e+03, 3.369609e+03, 3.373209e+03, 3.376809e+03, 3.380409e+03, 3.382209e+03, 3.385809e+03, 3.389409e+03, 3.393009e+03, 3.396609e+03, 3.398409e+03, 3.402009e+03, 3.405609e+03, 3.409209e+03, 3.412809e+03, 3.416409e+03, 3.418209e+03, 3.421809e+03, 3.425409e+03, 3.429009e+03, 3.432609e+03, 3.434409e+03, 3.438009e+03, 3.441609e+03, 3.445209e+03, 3.447009e+03, 3.450609e+03, 3.454209e+03, 3.457809e+03, 3.461409e+03, 3.465009e+03, 3.468609e+03, 3.470409e+03, 3.474009e+03, 3.477609e+03, 3.481209e+03, 3.484809e+03, 3.488409e+03, 3.490209e+03, 3.493809e+03, 3.497409e+03, 3.501009e+03, 3.504609e+03, 3.508209e+03, 3.511809e+03, 3.513609e+03, 3.517209e+03, 3.520809e+03, 3.524409e+03, 3.528009e+03, 3.531609e+03, 3.535209e+03, 3.537009e+03, 3.540609e+03, 3.544209e+03, 3.547809e+03, 3.551409e+03, 3.555009e+03, 3.556809e+03, 3.560409e+03, 3.564009e+03, 3.567609e+03, 3.571209e+03, 3.574809e+03, 3.576609e+03, 3.580209e+03, 3.583809e+03, 3.587409e+03, 3.591009e+03, 3.594609e+03, 3.598209e+03, 3.601809e+03, 3.605409e+03, 3.609009e+03, 3.610809e+03, 3.614409e+03, 3.618009e+03, 3.621609e+03, 3.625209e+03, 3.628809e+03, 3.632409e+03, 3.634209e+03, 3.637809e+03, 3.641410e+03, 3.645010e+03, 3.648610e+03, 3.652210e+03, 3.655810e+03, 3.659410e+03, 3.661210e+03, 3.664810e+03, 3.668410e+03, 3.672010e+03, 3.675610e+03, 3.679210e+03, 3.682810e+03, 3.686410e+03, 3.688210e+03, 3.691810e+03, 3.695410e+03, 3.699010e+03, 3.702610e+03, 3.706210e+03, 3.709810e+03, 3.713410e+03, 3.715210e+03, 3.718810e+03, 3.722410e+03, 3.726010e+03, 3.729610e+03, 3.733210e+03, 3.736810e+03, 3.740410e+03, 3.744010e+03, 3.745810e+03, 3.749410e+03, 3.753010e+03, 3.756610e+03, 3.760210e+03, 3.763810e+03, 3.767410e+03, 3.771010e+03, 3.774610e+03, 3.778210e+03, 3.780010e+03, 3.783610e+03, 3.787210e+03, 3.790810e+03, 3.794410e+03, 3.798010e+03, 3.801610e+03, 3.805210e+03, 3.807010e+03, 3.810610e+03, 3.814210e+03, 3.817810e+03, 3.821410e+03, 3.825010e+03, 3.828610e+03, 3.832210e+03, 3.834010e+03, 3.837610e+03, 3.841210e+03, 3.844810e+03, 3.848410e+03, 3.852010e+03, 3.855610e+03, 3.859210e+03, 3.862810e+03, 3.866410e+03, 3.870010e+03, 3.871810e+03, 3.875410e+03, 3.879010e+03, 3.882610e+03, 3.886210e+03, 3.889810e+03, 3.893410e+03, 3.897010e+03, 3.900610e+03, 3.904210e+03, 3.907810e+03, 3.909610e+03, 3.913210e+03, 3.916810e+03, 3.920410e+03, 3.924010e+03, 3.927610e+03, 3.931210e+03, 3.934810e+03, 3.938410e+03, 3.940210e+03, 3.943810e+03, 3.947410e+03, 3.951010e+03, 3.954610e+03, 3.958210e+03, 3.961810e+03, 3.965410e+03, 3.969010e+03, 3.972610e+03, 3.976210e+03, 3.979810e+03, 3.983410e+03, 3.985210e+03, 3.988810e+03, 3.992410e+03, 3.996010e+03, 3.999610e+03, 4.003210e+03, 4.006810e+03, 4.010410e+03, 4.014010e+03, 4.017610e+03, 4.021210e+03, 4.024811e+03, 4.028411e+03, 4.032011e+03, 4.033811e+03, 4.037411e+03, 4.041011e+03, 4.044611e+03, 4.048211e+03, 4.051811e+03, 4.055411e+03, 4.059011e+03, 4.062611e+03, 4.066211e+03, 4.069811e+03, 4.073411e+03, 4.077011e+03, 4.080611e+03, 4.084211e+03, 4.087811e+03, 4.091411e+03, 4.095011e+03, 4.098611e+03, 4.102211e+03, 4.105811e+03, 4.109411e+03, 4.113011e+03, 4.114811e+03, 4.118411e+03, 4.122011e+03, 4.125611e+03, 4.129211e+03, 4.132811e+03, 4.136411e+03, 4.140011e+03, 4.143611e+03, 4.147211e+03, 4.150811e+03, 4.154411e+03, 4.158011e+03, 4.161611e+03, 4.165211e+03, 4.168811e+03, 4.172411e+03, 4.176011e+03, 4.179611e+03, 4.183211e+03, 4.186811e+03, 4.190411e+03, 4.194011e+03, 4.197611e+03, 4.199411e+03, 4.203011e+03, 4.206611e+03, 4.210211e+03, 4.213811e+03, 4.217411e+03, 4.221011e+03, 4.224611e+03, 4.228211e+03, 4.231811e+03, 4.235411e+03, 4.239011e+03, 4.242611e+03, 4.246211e+03, 4.249811e+03, 4.253411e+03, 4.257011e+03, 4.260611e+03, 4.264211e+03, 4.267811e+03, 4.271411e+03, 4.275011e+03, 4.278611e+03, 4.282211e+03, 4.285811e+03, 4.289411e+03, 4.293011e+03, 4.296611e+03, 4.300211e+03, 4.303811e+03, 4.307411e+03, 4.311011e+03, 4.314611e+03, 4.318211e+03, 4.321811e+03, 4.325411e+03, 4.329011e+03, 4.332611e+03, 4.336211e+03, 4.339811e+03, 4.343411e+03, 4.347011e+03, 4.350611e+03, 4.354211e+03, 4.357811e+03, 4.361411e+03, 4.365011e+03, 4.368611e+03, 4.372211e+03, 4.375811e+03, 4.379411e+03, 4.383011e+03, 4.386611e+03, 4.390211e+03, 4.393811e+03, 4.397411e+03, 4.401011e+03, 4.404611e+03, 4.408212e+03, 4.411812e+03, 4.415412e+03, 4.419012e+03, 4.422612e+03, 4.426212e+03, 4.429812e+03, 4.433412e+03, 4.437012e+03, 4.440612e+03, 4.444212e+03, 4.447812e+03, 4.451412e+03, 4.455012e+03, 4.460412e+03, 4.462212e+03, 4.467612e+03, 4.471212e+03, 4.474812e+03, 4.478412e+03, 4.482012e+03, 4.485612e+03, 4.489212e+03, 4.492812e+03, 4.496412e+03, 4.500012e+03, 4.503612e+03, 4.507212e+03, 4.510812e+03, 4.514412e+03, 4.518012e+03, 4.521612e+03, 4.525212e+03, 4.528812e+03, 4.532412e+03, 4.536012e+03, 4.539612e+03, 4.545012e+03, 4.548612e+03, 4.552212e+03, 4.555812e+03, 4.559412e+03, 4.563012e+03, 4.566612e+03, 4.570212e+03, 4.573812e+03, 4.577412e+03, 4.581012e+03, 4.584612e+03, 4.590012e+03, 4.593612e+03, 4.597212e+03, 4.600812e+03, 4.604412e+03, 4.608012e+03, 4.611612e+03, 4.615212e+03, 4.618812e+03, 4.622412e+03, 4.626012e+03, 4.629612e+03, 4.633212e+03, 4.638612e+03, 4.642212e+03, 4.645812e+03, 4.649412e+03, 4.653012e+03, 4.656612e+03, 4.660212e+03, 4.663812e+03, 4.667412e+03, 4.672812e+03, 4.676412e+03, 4.680012e+03, 4.683612e+03, 4.687212e+03, 4.690812e+03, 4.694412e+03, 4.698012e+03, 4.703412e+03, 4.707012e+03, 4.710612e+03, 4.714212e+03, 4.717812e+03, 4.721412e+03, 4.725012e+03, 4.730412e+03, 4.734012e+03, 4.737612e+03, 4.741212e+03, 4.744812e+03, 4.748412e+03, 4.752012e+03, 4.755612e+03, 4.761012e+03, 4.764612e+03, 4.768212e+03, 4.771812e+03, 4.775412e+03, 4.780812e+03, 4.784412e+03, 4.788012e+03, 4.791613e+03, 4.795213e+03, 4.798813e+03, 4.802413e+03, 4.807813e+03, 4.811413e+03, 4.815013e+03, 4.818613e+03, 4.822213e+03, 4.825813e+03, 4.829413e+03, 4.834813e+03, 4.838413e+03, 4.842013e+03, 4.845613e+03, 4.849213e+03, 4.852813e+03, 4.858213e+03, 4.861813e+03, 4.865413e+03, 4.869013e+03, 4.872613e+03, 4.876213e+03, 4.881613e+03, 4.885213e+03, 4.888813e+03, 4.892413e+03, 4.897813e+03, 4.901413e+03, 4.905013e+03, 4.908613e+03, 4.912213e+03, 4.915813e+03, 4.921213e+03, 4.924813e+03, 4.928413e+03, 4.932013e+03, 4.937413e+03, 4.941013e+03, 4.944613e+03, 4.948213e+03, 4.951813e+03, 4.957213e+03, 4.960813e+03, 4.964413e+03, 4.968013e+03, 4.973413e+03, 4.977013e+03, 4.980613e+03, 4.984213e+03, 4.989613e+03, 4.993213e+03, 4.996813e+03, 5.000413e+03, 5.005813e+03, 5.009413e+03, 5.013013e+03, 5.016613e+03, 5.022013e+03, 5.025613e+03, 5.029213e+03, 5.032813e+03, 5.036413e+03, 5.041813e+03, 5.045413e+03, 5.049013e+03, 5.052613e+03, 5.058013e+03, 5.061613e+03, 5.065213e+03, 5.068813e+03, 5.074213e+03, 5.077813e+03, 5.081413e+03, 5.086813e+03, 5.090413e+03, 5.094013e+03, 5.099413e+03, 5.103013e+03, 5.106613e+03, 5.110213e+03, 5.113813e+03, 5.119213e+03, 5.122813e+03, 5.126413e+03, 5.130013e+03, 5.133613e+03, 5.139013e+03, 5.142613e+03, 5.146213e+03, 5.151613e+03, 5.155213e+03, 5.158813e+03, 5.162413e+03, 5.167813e+03, 5.171413e+03, 5.175014e+03, 5.178614e+03, 5.184014e+03, 5.187614e+03, 5.191214e+03, 5.194814e+03, 5.200214e+03, 5.203814e+03, 5.207414e+03, 5.211014e+03, 5.216414e+03, 5.220014e+03, 5.223614e+03, 5.229014e+03, 5.232614e+03, 5.236214e+03, 5.239814e+03, 5.245214e+03, 5.248814e+03, 5.252414e+03, 5.256014e+03, 5.261414e+03, 5.265014e+03, 5.268614e+03, 5.272214e+03, 5.277614e+03, 5.281214e+03, 5.284814e+03, 5.290214e+03, 5.293814e+03, 5.297414e+03, 5.301014e+03, 5.306414e+03, 5.310014e+03, 5.313614e+03, 5.317214e+03, 5.322614e+03, 5.326214e+03, 5.329814e+03, 5.335214e+03, 5.338814e+03, 5.342414e+03, 5.346014e+03, 5.351414e+03, 5.355014e+03, 5.358614e+03, 5.362214e+03, 5.367614e+03, 5.371214e+03, 5.374814e+03, 5.380214e+03, 5.383814e+03, 5.387414e+03, 5.391014e+03, 5.396414e+03, 5.400014e+03, 5.403614e+03, 5.409014e+03, 5.412614e+03, 5.416214e+03, 5.419814e+03, 5.425214e+03, 5.428814e+03, 5.432414e+03, 5.437814e+03, 5.441414e+03, 5.445014e+03, 5.448614e+03, 5.454014e+03, 5.457614e+03, 5.461214e+03, 5.464814e+03, 5.470214e+03, 5.473814e+03, 5.477414e+03, 5.481014e+03, 5.486414e+03, 5.490014e+03, 5.493614e+03, 5.499014e+03, 5.502614e+03, 5.506214e+03, 5.509814e+03, 5.515214e+03, 5.518814e+03, 5.522414e+03, 5.526014e+03, 5.531414e+03, 5.535014e+03, 5.538614e+03, 5.544014e+03, 5.547614e+03, 5.551214e+03, 5.554814e+03, 5.560215e+03, 5.563815e+03, 5.567415e+03, 5.571015e+03, 5.576415e+03, 5.580015e+03, 5.583615e+03, 5.589015e+03, 5.592615e+03, 5.596215e+03, 5.601615e+03, 5.605215e+03, 5.608815e+03, 5.612415e+03, 5.617815e+03, 5.621415e+03, 5.625015e+03, 5.630415e+03, 5.634015e+03, 5.637615e+03, 5.641215e+03, 5.646615e+03, 5.650215e+03, 5.653815e+03, 5.659215e+03, 5.662815e+03, 5.666415e+03, 5.670015e+03, 5.675415e+03, 5.679015e+03, 5.682615e+03, 5.688015e+03, 5.691615e+03, 5.695215e+03, 5.700615e+03, 5.704215e+03, 5.707815e+03, 5.713215e+03, 5.716815e+03, 5.720415e+03, 5.725815e+03, 5.729415e+03, 5.733015e+03, 5.736615e+03, 5.742015e+03, 5.745615e+03, 5.749215e+03, 5.754615e+03, 5.758215e+03, 5.761815e+03, 5.767215e+03, 5.770815e+03, 5.774415e+03, 5.778015e+03, 5.783415e+03, 5.787015e+03, 5.790615e+03, 5.796015e+03, 5.799615e+03, 5.803215e+03, 5.808615e+03, 5.812215e+03, 5.815815e+03, 5.821215e+03, 5.824815e+03, 5.828415e+03, 5.833815e+03, 5.837415e+03, 5.841015e+03, 5.846415e+03, 5.850015e+03, 5.853615e+03, 5.859015e+03, 5.862615e+03, 5.866215e+03, 5.871615e+03, 5.875215e+03, 5.878815e+03, 5.884215e+03, 5.887815e+03, 5.891415e+03, 5.896815e+03, 5.900415e+03, 5.904015e+03, 5.909415e+03, 5.913015e+03, 5.916615e+03, 5.922015e+03, 5.925615e+03, 5.929215e+03, 5.934615e+03, 5.938216e+03, 5.943616e+03, 5.947216e+03, 5.950816e+03, 5.956216e+03, 5.959816e+03, 5.963416e+03, 5.968816e+03, 5.972416e+03, 5.976016e+03, 5.981416e+03, 5.985016e+03, 5.988616e+03, 5.994016e+03, 5.997616e+03, 6.003016e+03, 6.006616e+03, 6.010216e+03, 6.015616e+03, 6.019216e+03, 6.024616e+03, 6.028216e+03, 6.031816e+03, 6.037216e+03, 6.040816e+03, 6.044416e+03, 6.049816e+03, 6.053416e+03, 6.058816e+03, 6.062416e+03, 6.066016e+03, 6.071416e+03, 6.075016e+03, 6.078616e+03, 6.084016e+03, 6.087616e+03, 6.093016e+03, 6.096616e+03, 6.100216e+03, 6.105616e+03, 6.109216e+03, 6.112816e+03, 6.118216e+03, 6.121816e+03, 6.125416e+03, 6.130816e+03, 6.134416e+03, 6.139816e+03, 6.143416e+03, 6.147016e+03, 6.152416e+03, 6.156016e+03, 6.159616e+03, 6.165016e+03, 6.168616e+03, 6.174016e+03, 6.177616e+03, 6.181216e+03, 6.186616e+03, 6.190216e+03, 6.193816e+03, 6.199216e+03, 6.202816e+03, 6.208216e+03, 6.211816e+03, 6.215416e+03, 6.220816e+03, 6.224416e+03, 6.229816e+03, 6.233416e+03, 6.238816e+03, 6.242416e+03, 6.246016e+03, 6.251416e+03, 6.255016e+03, 6.260416e+03, 6.264016e+03, 6.267616e+03, 6.273016e+03, 6.276616e+03, 6.282016e+03, 6.285616e+03, 6.289216e+03, 6.294616e+03, 6.298216e+03, 6.303616e+03, 6.307216e+03, 6.310816e+03, 6.316216e+03, 6.319816e+03, 6.325217e+03, 6.328817e+03, 6.334217e+03, 6.337817e+03, 6.341417e+03, 6.346817e+03, 6.350417e+03, 6.355817e+03, 6.359417e+03, 6.364817e+03, 6.368417e+03, 6.372017e+03, 6.377417e+03, 6.381017e+03, 6.386417e+03, 6.390017e+03, 6.395417e+03, 6.399017e+03, 6.404417e+03, 6.408017e+03, 6.413417e+03, 6.417017e+03, 6.420617e+03, 6.426017e+03, 6.431417e+03, 6.435017e+03, 6.438617e+03, 6.444017e+03, 6.447617e+03, 6.453017e+03, 6.456617e+03, 6.462017e+03, 6.465617e+03, 6.469217e+03, 6.474617e+03, 6.478217e+03, 6.483617e+03, 6.487217e+03, 6.492617e+03, 6.496217e+03, 6.501617e+03, 6.505217e+03, 6.510617e+03, 6.514217e+03, 6.519617e+03, 6.523217e+03, 6.528617e+03, 6.532217e+03, 6.537617e+03, 6.541217e+03, 6.546617e+03, 6.550217e+03, 6.555617e+03, 6.559217e+03, 6.564617e+03, 6.568217e+03, 6.573617e+03, 6.577217e+03, 6.582617e+03, 6.586217e+03, 6.591617e+03, 6.595217e+03, 6.600617e+03, 6.604217e+03, 6.609617e+03, 6.613217e+03, 6.618617e+03, 6.622217e+03, 6.627617e+03, 6.631217e+03, 6.636617e+03, 6.640217e+03, 6.645617e+03, 6.649217e+03, 6.654617e+03, 6.658217e+03, 6.663617e+03, 6.667217e+03, 6.672617e+03, 6.676217e+03, 6.681617e+03, 6.687017e+03, 6.690617e+03, 6.696017e+03, 6.699617e+03, 6.705018e+03, 6.708618e+03, 6.714018e+03, 6.717618e+03, 6.723018e+03, 6.726618e+03, 6.732018e+03, 6.735618e+03, 6.741018e+03, 6.744618e+03, 6.750018e+03, 6.753618e+03, 6.757218e+03, 6.762618e+03, 6.768018e+03, 6.771618e+03, 6.777018e+03, 6.780618e+03, 6.786018e+03, 6.789618e+03, 6.795018e+03, 6.798618e+03, 6.804018e+03, 6.809418e+03, 6.813018e+03, 6.818418e+03, 6.822018e+03, 6.827418e+03, 6.831018e+03, 6.836418e+03, 6.840018e+03, 6.845418e+03, 6.849018e+03, 6.854418e+03, 6.858018e+03, 6.863418e+03, 6.867018e+03, 6.872418e+03, 6.877818e+03, 6.881418e+03, 6.886818e+03, 6.892218e+03, 6.895818e+03, 6.901218e+03, 6.904818e+03, 6.910218e+03, 6.913818e+03, 6.919218e+03, 6.922818e+03, 6.928218e+03, 6.931818e+03, 6.937218e+03, 6.942618e+03, 6.946218e+03, 6.951618e+03, 6.955218e+03, 6.960618e+03, 6.966018e+03, 6.969618e+03, 6.975018e+03, 6.978618e+03, 6.984018e+03, 6.989418e+03, 6.993018e+03, 6.998418e+03, 7.002018e+03, 7.007418e+03, 7.012818e+03, 7.016418e+03, 7.021818e+03, 7.025418e+03, 7.030818e+03, 7.036218e+03, 7.039818e+03, 7.045218e+03, 7.048818e+03, 7.054218e+03, 7.057818e+03, 7.063218e+03, 7.068618e+03, 7.072218e+03, 7.077618e+03, 7.081218e+03, 7.086618e+03, 7.092019e+03, 7.095619e+03, 7.101019e+03, 7.104619e+03, 7.110019e+03, 7.115419e+03, 7.119019e+03, 7.124419e+03, 7.129819e+03, 7.133419e+03, 7.138819e+03, 7.142419e+03, 7.147819e+03, 7.153219e+03, 7.156819e+03, 7.162219e+03, 7.167619e+03, 7.171219e+03, 7.176619e+03, 7.180219e+03, 7.185619e+03, 7.191019e+03, 7.194619e+03, 7.200019e+03, 7.205419e+03, 7.209019e+03, 7.214419e+03, 7.219819e+03, 7.223419e+03, 7.228819e+03, 7.234219e+03, 7.237819e+03, 7.243219e+03, 7.248619e+03, 7.252219e+03, 7.257619e+03, 7.261219e+03, 7.266619e+03, 7.272019e+03, 7.275619e+03, 7.281019e+03, 7.286419e+03, 7.290019e+03, 7.295419e+03, 7.300819e+03, 7.304419e+03, 7.309819e+03, 7.315219e+03, 7.320619e+03, 7.324219e+03, 7.329619e+03, 7.335019e+03, 7.338619e+03, 7.344019e+03, 7.347619e+03, 7.353019e+03, 7.358419e+03, 7.362019e+03, 7.367419e+03, 7.372819e+03, 7.376419e+03, 7.381819e+03, 7.387219e+03, 7.390819e+03, 7.396219e+03, 7.401619e+03, 7.405219e+03, 7.410619e+03, 7.416019e+03, 7.419619e+03, 7.425019e+03, 7.430419e+03, 7.434019e+03, 7.439419e+03, 7.444819e+03, 7.448419e+03, 7.453819e+03, 7.459219e+03, 7.462819e+03, 7.468219e+03, 7.473620e+03, 7.477220e+03, 7.482620e+03, 7.488020e+03, 7.493420e+03, 7.497020e+03, 7.502420e+03, 7.507820e+03, 7.511420e+03, 7.516820e+03, 7.522220e+03, 7.525820e+03, 7.531220e+03, 7.536620e+03, 7.540220e+03, 7.545620e+03, 7.551020e+03, 7.556420e+03, 7.561820e+03, 7.565420e+03, 7.570820e+03, 7.576220e+03, 7.579820e+03, 7.585220e+03, 7.590620e+03, 7.596020e+03, 7.599620e+03, 7.605020e+03, 7.608620e+03, 7.614020e+03, 7.619420e+03, 7.624820e+03, 7.628420e+03, 7.633820e+03, 7.639220e+03, 7.644620e+03, 7.650020e+03, 7.653620e+03, 7.659020e+03, 7.664420e+03, 7.668020e+03, 7.673420e+03, 7.678820e+03, 7.684220e+03, 7.689620e+03, 7.693220e+03, 7.698620e+03, 7.704020e+03, 7.709420e+03, 7.713020e+03, 7.718420e+03, 7.723820e+03, 7.729220e+03, 7.732820e+03, 7.738220e+03, 7.743620e+03, 7.747220e+03, 7.752620e+03, 7.758020e+03, 7.763420e+03, 7.767020e+03, 7.772420e+03, 7.777820e+03, 7.783220e+03, 7.786820e+03, 7.792220e+03, 7.797620e+03, 7.803020e+03, 7.806620e+03, 7.812020e+03, 7.817420e+03, 7.822820e+03, 7.828220e+03, 7.831820e+03, 7.837220e+03, 7.842620e+03, 7.846220e+03, 7.851620e+03, 7.857021e+03, 7.862421e+03, 7.867821e+03, 7.871421e+03, 7.876821e+03, 7.882221e+03, 7.887621e+03, 7.893021e+03, 7.896621e+03, 7.902021e+03, 7.907421e+03, 7.912821e+03, 7.918221e+03, 7.921821e+03, 7.927221e+03, 7.932621e+03, 7.938021e+03, 7.943421e+03, 7.947021e+03, 7.952421e+03, 7.957821e+03, 7.963221e+03, 7.968621e+03, 7.972221e+03, 7.977621e+03, 7.983021e+03, 7.988421e+03, 7.993821e+03, 7.999221e+03, 8.002821e+03, 8.008221e+03, 8.013621e+03, 8.019021e+03, 8.024421e+03, 8.028021e+03, 8.033421e+03, 8.038821e+03, 8.044221e+03, 8.049621e+03, 8.055021e+03, 8.058621e+03, 8.064021e+03, 8.069421e+03, 8.074821e+03, 8.080221e+03, 8.085621e+03, 8.089221e+03, 8.094621e+03, 8.100021e+03, 8.105421e+03, 8.110821e+03, 8.116221e+03, 8.119821e+03, 8.125221e+03, 8.130621e+03, 8.136021e+03, 8.141421e+03, 8.145021e+03, 8.150421e+03, 8.155821e+03, 8.161221e+03, 8.166621e+03, 8.172021e+03, 8.175621e+03, 8.181021e+03, 8.186421e+03, 8.191821e+03, 8.197221e+03, 8.202621e+03, 8.208021e+03, 8.213421e+03, 8.218821e+03, 8.224221e+03, 8.227821e+03, 8.233221e+03, 8.238622e+03, 8.244022e+03, 8.249422e+03, 8.254822e+03, 8.260222e+03, 8.265622e+03, 8.271022e+03, 8.276422e+03, 8.281822e+03, 8.287222e+03, 8.290822e+03, 8.296222e+03, 8.301622e+03, 8.307022e+03, 8.312422e+03, 8.317822e+03, 8.323222e+03, 8.328622e+03, 8.334022e+03, 8.339422e+03, 8.344822e+03, 8.348422e+03, 8.353822e+03, 8.359222e+03, 8.364622e+03, 8.370022e+03, 8.375422e+03, 8.380822e+03, 8.386222e+03, 8.391622e+03, 8.397022e+03, 8.400622e+03, 8.406022e+03, 8.411422e+03, 8.416822e+03, 8.422222e+03, 8.427622e+03, 8.433022e+03, 8.438422e+03, 8.443822e+03, 8.449222e+03, 8.454622e+03, 8.460022e+03, 8.465422e+03, 8.470822e+03, 8.476222e+03, 8.481622e+03, 8.487022e+03, 8.490622e+03, 8.496022e+03, 8.501422e+03, 8.506822e+03, 8.512222e+03, 8.517622e+03, 8.523022e+03, 8.528422e+03, 8.533822e+03, 8.539222e+03, 8.544622e+03, 8.550022e+03, 8.555422e+03, 8.560822e+03, 8.566222e+03, 8.569822e+03, 8.575222e+03, 8.580622e+03, 8.586022e+03, 8.591422e+03, 8.596822e+03, 8.602222e+03, 8.607622e+03, 8.613022e+03, 8.618422e+03, 8.623823e+03, 8.629223e+03, 8.634623e+03, 8.640023e+03, 8.645423e+03, 8.650823e+03, 8.656223e+03, 8.661623e+03, 8.667023e+03, 8.672423e+03, 8.677823e+03, 8.683223e+03, 8.688623e+03, 8.694023e+03, 8.699423e+03, 8.704823e+03, 8.710223e+03, 8.715623e+03, 8.721023e+03, 8.726423e+03, 8.731823e+03, 8.737223e+03, 8.742623e+03, 8.748023e+03, 8.753423e+03, 8.758823e+03, 8.764223e+03, 8.769623e+03, 8.775023e+03, 8.780423e+03, 8.785823e+03, 8.791223e+03, 8.796623e+03, 8.802023e+03, 8.807423e+03, 8.812823e+03, 8.818223e+03, 8.823623e+03, 8.829023e+03, 8.834423e+03, 8.839823e+03, 8.845223e+03, 8.850623e+03, 8.856023e+03, 8.861423e+03, 8.866823e+03, 8.872223e+03, 8.877623e+03, 8.883023e+03, 8.888423e+03, 8.893823e+03, 8.901023e+03, 8.906423e+03, 8.911823e+03, 8.917223e+03, 8.922623e+03, 8.928023e+03, 8.933423e+03, 8.938823e+03, 8.944223e+03, 8.949623e+03, 8.955023e+03, 8.962223e+03, 8.967623e+03, 8.973023e+03, 8.978423e+03, 8.983823e+03, 8.989223e+03, 8.994623e+03, 9.000023e+03, 9.005424e+03, 9.010824e+03, 9.016224e+03, 9.021624e+03, 9.028824e+03, 9.034224e+03, 9.039624e+03, 9.045024e+03, 9.050424e+03, 9.055824e+03, 9.061224e+03, 9.066624e+03, 9.072024e+03, 9.079224e+03, 9.084624e+03, 9.090024e+03, 9.095424e+03, 9.100824e+03, 9.106224e+03, 9.111624e+03, 9.117024e+03, 9.124224e+03, 9.129624e+03, 9.135024e+03, 9.140424e+03, 9.145824e+03, 9.151224e+03, 9.156624e+03, 9.163824e+03, 9.169224e+03, 9.174624e+03, 9.180024e+03, 9.185424e+03, 9.190824e+03, 9.196224e+03, 9.201624e+03, 9.207024e+03, 9.212424e+03, 9.217824e+03, 9.225024e+03, 9.230424e+03, 9.235824e+03, 9.241224e+03, 9.248424e+03, 9.253824e+03, 9.259224e+03, 9.264624e+03, 9.270024e+03, 9.275424e+03, 9.282624e+03, 9.288024e+03, 9.293424e+03, 9.298824e+03, 9.304224e+03, 9.309624e+03, 9.315024e+03, 9.320424e+03, 9.327624e+03, 9.333024e+03, 9.338424e+03, 9.343824e+03, 9.351024e+03, 9.356424e+03, 9.361824e+03, 9.367224e+03, 9.372624e+03, 9.378024e+03, 9.383424e+03, 9.390625e+03, 9.396025e+03, 9.401425e+03, 9.406825e+03, 9.412225e+03, 9.417625e+03, 9.424825e+03, 9.430225e+03, 9.435625e+03, 9.441025e+03, 9.448225e+03, 9.453625e+03, 9.459025e+03, 9.464425e+03, 9.469825e+03, 9.475225e+03, 9.482425e+03, 9.487825e+03, 9.493225e+03, 9.498625e+03, 9.504025e+03, 9.511225e+03, 9.516625e+03, 9.522025e+03, 9.527425e+03, 9.534625e+03, 9.540025e+03, 9.545425e+03, 9.550825e+03, 9.556225e+03, 9.563425e+03, 9.568825e+03, 9.574225e+03, 9.579625e+03, 9.586825e+03, 9.592225e+03, 9.597625e+03, 9.603025e+03, 9.608425e+03, 9.613825e+03, 9.621025e+03, 9.626425e+03, 9.631825e+03, 9.637225e+03, 9.644425e+03, 9.649825e+03, 9.655225e+03, 9.660625e+03, 9.666025e+03, 9.673225e+03, 9.678625e+03, 9.684025e+03, 9.689425e+03, 9.694825e+03, 9.702025e+03, 9.707425e+03, 9.712825e+03, 9.720025e+03, 9.725425e+03, 9.730825e+03, 9.738025e+03, 9.743425e+03, 9.748825e+03, 9.754225e+03, 9.761425e+03, 9.766825e+03, 9.772226e+03, 9.777626e+03, 9.784826e+03, 9.790226e+03, 9.795626e+03, 9.802826e+03, 9.808226e+03, 9.813626e+03, 9.819026e+03, 9.826226e+03, 9.831626e+03, 9.837026e+03, 9.844226e+03, 9.849626e+03, 9.856826e+03, 9.862226e+03, 9.867626e+03, 9.873026e+03, 9.880226e+03, 9.885626e+03, 9.892826e+03, 9.898226e+03, 9.903626e+03, 9.909026e+03, 9.916226e+03, 9.921626e+03, 9.927026e+03, 9.934226e+03, 9.939626e+03, 9.946826e+03, 9.952226e+03, 9.957626e+03, 9.964826e+03, 9.970226e+03, 9.977426e+03, 9.982826e+03, 9.988226e+03, 9.995426e+03, 1.000083e+04, 1.000623e+04, 1.001343e+04, 1.001883e+04, 1.002423e+04, 1.003143e+04, 1.003683e+04, 1.004223e+04, 1.004763e+04, 1.005483e+04, 1.006023e+04, 1.006743e+04, 1.007283e+04, 1.007823e+04, 1.008543e+04, 1.009083e+04, 1.009803e+04, 1.010343e+04, 1.011063e+04, 1.011603e+04, 1.012143e+04, 1.012863e+04, 1.013403e+04, 1.014123e+04, 1.014663e+04, 1.015203e+04, 1.015923e+04, 1.016463e+04, 1.017003e+04, 1.017723e+04, 1.018263e+04, 1.018803e+04, 1.019523e+04, 1.020063e+04, 1.020783e+04, 1.021323e+04, 1.021863e+04, 1.022583e+04, 1.023123e+04, 1.023843e+04, 1.024383e+04, 1.025103e+04, 1.025643e+04, 1.026363e+04, 1.026903e+04, 1.027443e+04, 1.028163e+04, 1.028703e+04, 1.029423e+04, 1.029963e+04, 1.030683e+04, 1.031223e+04, 1.031763e+04, 1.032483e+04, 1.033023e+04, 1.033743e+04, 1.034283e+04, 1.035003e+04, 1.035543e+04, 1.036083e+04, 1.036803e+04, 1.037343e+04, 1.038063e+04, 1.038603e+04, 1.039323e+04, 1.039863e+04, 1.040583e+04, 1.041123e+04, 1.041843e+04, 1.042383e+04, 1.043103e+04, 1.043643e+04, 1.044363e+04, 1.044903e+04, 1.045623e+04, 1.046163e+04, 1.046703e+04, 1.047423e+04, 1.047963e+04, 1.048683e+04, 1.049223e+04, 1.049943e+04, 1.050483e+04, 1.051203e+04, 1.051923e+04, 1.052463e+04, 1.053003e+04, 1.053723e+04, 1.054443e+04, 1.054983e+04, 1.055703e+04, 1.056243e+04, 1.056783e+04, 1.057503e+04, 1.058043e+04, 1.058763e+04, 1.059483e+04, 1.060023e+04, 1.060563e+04, 1.061283e+04, 1.061823e+04, 1.062543e+04, 1.063263e+04, 1.063803e+04, 1.064523e+04, 1.065063e+04, 1.065783e+04, 1.066503e+04, 1.067043e+04, 1.067763e+04, 1.068303e+04, 1.069023e+04, 1.069563e+04, 1.070283e+04, 1.070823e+04, 1.071543e+04, 1.072083e+04, 1.072803e+04, 1.073523e+04, 1.074063e+04, 1.074783e+04, 1.075323e+04, 1.076043e+04, 1.076763e+04, 1.077303e+04, 1.078023e+04, 1.078563e+04, 1.079283e+04, 1.079823e+04, 1.080543e+04, 1.081263e+04, 1.081803e+04, 1.082523e+04, 1.083063e+04, 1.083783e+04, 1.084323e+04, 1.085043e+04, 1.085583e+04, 1.086303e+04, 1.087023e+04, 1.087563e+04, 1.088283e+04, 1.088823e+04, 1.089543e+04, 1.090263e+04, 1.090803e+04, 1.091523e+04, 1.092063e+04, 1.092783e+04, 1.093323e+04, 1.094043e+04, 1.094583e+04, 1.095303e+04, 1.095843e+04, 1.096563e+04, 1.097103e+04, 1.097823e+04, 1.098543e+04, 1.099083e+04, 1.099803e+04, 1.100343e+04, 1.101063e+04, 1.101783e+04, 1.102323e+04, 1.103043e+04, 1.103763e+04, 1.104303e+04, 1.105023e+04, 1.105563e+04, 1.106283e+04, 1.107003e+04, 1.107723e+04, 1.108263e+04, 1.108983e+04, 1.109703e+04, 1.110243e+04, 1.110963e+04, 1.111683e+04, 1.112403e+04, 1.112943e+04, 1.113663e+04, 1.114383e+04, 1.114923e+04, 1.115643e+04, 1.116363e+04, 1.116903e+04, 1.117623e+04, 1.118343e+04, 1.119063e+04, 1.119603e+04, 1.120323e+04, 1.121043e+04, 1.121763e+04, 1.122303e+04, 1.123023e+04, 1.123563e+04, 1.124283e+04, 1.125003e+04, 1.125543e+04, 1.126263e+04, 1.126983e+04, 1.127523e+04, 1.128243e+04, 1.128963e+04, 1.129503e+04, 1.130223e+04, 1.130943e+04, 1.131663e+04, 1.132203e+04, 1.132923e+04, 1.133643e+04, 1.134363e+04, 1.135083e+04, 1.135623e+04, 1.136343e+04, 1.137063e+04, 1.137783e+04, 1.138323e+04, 1.139043e+04, 1.139763e+04, 1.140483e+04, 1.141023e+04, 1.141743e+04, 1.142463e+04, 1.143003e+04, 1.143723e+04, 1.144443e+04, 1.144983e+04, 1.145703e+04, 1.146423e+04, 1.147143e+04, 1.147863e+04, 1.148583e+04, 1.149123e+04, 1.149843e+04, 1.150563e+04, 1.151283e+04, 1.152003e+04, 1.152543e+04, 1.153263e+04, 1.153983e+04, 1.154703e+04, 1.155423e+04, 1.155963e+04, 1.156683e+04, 1.157403e+04, 1.158123e+04, 1.158663e+04, 1.159383e+04, 1.160103e+04, 1.160823e+04, 1.161363e+04, 1.162083e+04, 1.162803e+04, 1.163523e+04, 1.164243e+04, 1.164963e+04, 1.165683e+04, 1.166403e+04, 1.167123e+04, 1.167663e+04, 1.168383e+04, 1.169103e+04, 1.169823e+04, 1.170543e+04, 1.171263e+04, 1.171983e+04, 1.172523e+04, 1.173243e+04, 1.173963e+04, 1.174683e+04, 1.175403e+04, 1.175943e+04, 1.176663e+04, 1.177383e+04, 1.178103e+04, 1.178823e+04, 1.179543e+04, 1.180263e+04, 1.180803e+04, 1.181523e+04, 1.182243e+04, 1.182963e+04, 1.183683e+04, 1.184223e+04, 1.184943e+04, 1.185663e+04, 1.186383e+04, 1.187103e+04, 1.187823e+04, 1.188543e+04, 1.189263e+04, 1.189803e+04, 1.190523e+04, 1.191243e+04, 1.191963e+04, 1.192683e+04, 1.193403e+04, 1.194123e+04, 1.194843e+04, 1.195563e+04, 1.196283e+04, 1.196823e+04, 1.197543e+04, 1.198263e+04, 1.198983e+04, 1.199703e+04, 1.200423e+04, 1.201143e+04, 1.201863e+04, 1.202403e+04, 1.203123e+04, 1.203843e+04, 1.204563e+04, 1.205283e+04, 1.206003e+04, 1.206723e+04, 1.207443e+04, 1.207983e+04, 1.208703e+04, 1.209423e+04, 1.210143e+04, 1.210863e+04, 1.211583e+04, 1.212303e+04, 1.213023e+04, 1.213743e+04, 1.214463e+04, 1.215003e+04, 1.215723e+04, 1.216443e+04, 1.217163e+04, 1.217883e+04, 1.218603e+04, 1.219323e+04, 1.220043e+04, 1.220763e+04, 1.221483e+04, 1.222203e+04, 1.222923e+04, 1.223643e+04, 1.224363e+04, 1.225083e+04, 1.225803e+04, 1.226523e+04, 1.227243e+04, 1.227963e+04, 1.228683e+04, 1.229403e+04, 1.230123e+04, 1.230843e+04, 1.231563e+04, 1.232283e+04, 1.233003e+04, 1.233723e+04, 1.234443e+04, 1.235163e+04, 1.235883e+04, 1.236603e+04, 1.237323e+04, 1.238043e+04, 1.238763e+04, 1.239483e+04, 1.240203e+04, 1.240923e+04, 1.241643e+04, 1.242363e+04, 1.243083e+04, 1.243803e+04, 1.244523e+04, 1.245243e+04, 1.245963e+04, 1.246683e+04, 1.247583e+04, 1.248303e+04, 1.249023e+04, 1.249743e+04, 1.250463e+04, 1.251183e+04, 1.251903e+04, 1.252623e+04, 1.253343e+04, 1.254063e+04, 1.254783e+04, 1.255503e+04, 1.256223e+04, 1.256943e+04, 1.257843e+04, 1.258563e+04, 1.259283e+04, 1.260003e+04, 1.260723e+04, 1.261443e+04, 1.262163e+04, 1.262883e+04, 1.263603e+04, 1.264323e+04, 1.265043e+04, 1.265763e+04, 1.266663e+04, 1.267383e+04, 1.268103e+04, 1.268823e+04, 1.269543e+04, 1.270263e+04, 1.270983e+04, 1.271703e+04, 1.272603e+04, 1.273323e+04, 1.274043e+04, 1.274763e+04, 1.275483e+04, 1.276203e+04, 1.276923e+04, 1.277643e+04, 1.278363e+04, 1.279263e+04, 1.279983e+04, 1.280703e+04, 1.281423e+04, 1.282143e+04, 1.282863e+04, 1.283763e+04, 1.284483e+04, 1.285203e+04, 1.285923e+04, 1.286643e+04, 1.287363e+04, 1.288083e+04, 1.288983e+04, 1.289703e+04, 1.290423e+04, 1.291143e+04, 1.291863e+04, 1.292763e+04, 1.293483e+04, 1.294203e+04, 1.294923e+04, 1.295643e+04, 1.296543e+04, 1.297263e+04, 1.297983e+04, 1.298703e+04, 1.299423e+04, 1.300143e+04, 1.300863e+04, 1.301583e+04, 1.302483e+04, 1.303203e+04, 1.303923e+04, 1.304643e+04, 1.305363e+04, 1.306083e+04, 1.306803e+04, 1.307703e+04, 1.308423e+04, 1.309143e+04, 1.309863e+04, 1.310583e+04, 1.311483e+04, 1.312203e+04, 1.312923e+04, 1.313823e+04, 1.314543e+04, 1.315263e+04, 1.315983e+04, 1.316703e+04, 1.317603e+04, 1.318323e+04, 1.319043e+04, 1.319943e+04, 1.320663e+04, 1.321383e+04, 1.322103e+04, 1.323003e+04, 1.323723e+04, 1.324443e+04, 1.325343e+04, 1.326063e+04, 1.326963e+04, 1.327683e+04, 1.328403e+04, 1.329303e+04, 1.330023e+04, 1.330743e+04, 1.331463e+04, 1.332363e+04, 1.333083e+04, 1.333803e+04, 1.334523e+04, 1.335423e+04, 1.336143e+04, 1.337043e+04, 1.337763e+04, 1.338483e+04, 1.339203e+04, 1.340103e+04, 1.340823e+04, 1.341724e+04, 1.342444e+04, 1.343164e+04, 1.344064e+04, 1.344784e+04, 1.345504e+04, 1.346404e+04, 1.347124e+04, 1.347844e+04, 1.348744e+04, 1.349464e+04, 1.350364e+04, 1.351084e+04, 1.351804e+04, 1.352704e+04, 1.353424e+04, 1.354324e+04, 1.355044e+04, 1.355764e+04, 1.356664e+04, 1.357384e+04, 1.358284e+04, 1.359004e+04, 1.359904e+04, 1.360624e+04, 1.361524e+04, 1.362244e+04, 1.362964e+04, 1.363864e+04, 1.364584e+04, 1.365484e+04, 1.366204e+04, 1.366924e+04, 1.367824e+04, 1.368544e+04, 1.369444e+04, 1.370344e+04, 1.371064e+04, 1.371784e+04, 1.372684e+04, 1.373404e+04, 1.374304e+04, 1.375024e+04, 1.375924e+04, 1.376824e+04, 1.377544e+04, 1.378444e+04, 1.379164e+04, 1.380064e+04, 1.380784e+04, 1.381684e+04, 1.382404e+04, 1.383304e+04, 1.384024e+04, 1.384924e+04, 1.385644e+04, 1.386544e+04, 1.387444e+04, 1.388164e+04, 1.389064e+04, 1.389784e+04, 1.390684e+04, 1.391584e+04, 1.392304e+04, 1.393204e+04, 1.394104e+04, 1.394824e+04, 1.395724e+04, 1.396624e+04, 1.397524e+04, 1.398244e+04, 1.399144e+04, 1.399864e+04, 1.400764e+04, 1.401484e+04, 1.402384e+04, 1.403284e+04, 1.404004e+04, 1.404904e+04, 1.405804e+04, 1.406704e+04, 1.407424e+04, 1.408324e+04, 1.409224e+04, 1.409944e+04, 1.410844e+04, 1.411744e+04, 1.412644e+04, 1.413364e+04, 1.414444e+04, 1.415164e+04, 1.416064e+04, 1.416964e+04, 1.417864e+04, 1.418764e+04, 1.419484e+04, 1.420384e+04, 1.421284e+04, 1.422184e+04, 1.423084e+04, 1.423984e+04, 1.424884e+04, 1.425784e+04, 1.426684e+04, 1.427584e+04, 1.428484e+04, 1.429384e+04, 1.430464e+04, 1.431364e+04, 1.432264e+04, 1.433164e+04, 1.434064e+04, 1.435144e+04, 1.436044e+04, 1.436944e+04, 1.437844e+04, 1.438924e+04, 1.439824e+04, 1.440904e+04, 1.441804e+04, 1.442884e+04, 1.443784e+04, 1.444684e+04, 1.445764e+04, 1.446664e+04, 1.447744e+04, 1.448824e+04, 1.449724e+04, 1.450804e+04, 1.451884e+04, 1.452784e+04, 1.453864e+04, 1.454944e+04, 1.456024e+04, 1.457284e+04, 1.458364e+04, 1.459444e+04, 1.460524e+04, 1.461784e+04, 1.462864e+04, 1.464124e+04, 1.465204e+04, 1.466464e+04, 1.467724e+04, 1.468984e+04, 1.470244e+04, 1.471324e+04, 1.472764e+04, 1.474024e+04, 1.475464e+04, 1.476724e+04, 1.478164e+04, 1.479604e+04, 1.481044e+04, 1.482484e+04, 1.483924e+04, 1.485544e+04, 1.487164e+04, 1.488784e+04, 1.490404e+04, 1.492024e+04, 1.493824e+04, 1.495444e+04, 1.497424e+04, 1.499404e+04, 1.501384e+04, 1.503544e+04, 1.505884e+04, 1.508224e+04, 1.510744e+04, 1.513444e+04, 1.516324e+04, 1.519384e+04, 1.522804e+04, 1.526404e+04, 1.530544e+04, 1.535404e+04, 1.541344e+04, 1.549444e+04, 1.561144e+04};
+      Double_t yd[nbins] = {3.409000e+01, 3.408000e+01, 3.407000e+01, 3.406000e+01, 3.405000e+01, 3.404000e+01, 3.403000e+01, 3.402000e+01, 3.401000e+01, 3.400000e+01, 3.399000e+01, 3.398000e+01, 3.397000e+01, 3.396000e+01, 3.395000e+01, 3.394000e+01, 3.393000e+01, 3.392000e+01, 3.391000e+01, 3.390000e+01, 3.389000e+01, 3.388000e+01, 3.387000e+01, 3.386000e+01, 3.385000e+01, 3.384000e+01, 3.383000e+01, 3.382000e+01, 3.381000e+01, 3.380000e+01, 3.379000e+01, 3.378000e+01, 3.377000e+01, 3.376000e+01, 3.375000e+01, 3.374000e+01, 3.373000e+01, 3.372000e+01, 3.371000e+01, 3.370000e+01, 3.369000e+01, 3.368000e+01, 3.367000e+01, 3.366000e+01, 3.365000e+01, 3.364000e+01, 3.363000e+01, 3.362000e+01, 3.361000e+01, 3.360000e+01, 3.359000e+01, 3.358000e+01, 3.357000e+01, 3.356000e+01, 3.355000e+01, 3.354000e+01, 3.353000e+01, 3.352000e+01, 3.351000e+01, 3.350000e+01, 3.349000e+01, 3.348000e+01, 3.347000e+01, 3.346000e+01, 3.345000e+01, 3.344000e+01, 3.343000e+01, 3.342000e+01, 3.341000e+01, 3.340000e+01, 3.339000e+01, 3.338000e+01, 3.337000e+01, 3.336000e+01, 3.335000e+01, 3.334000e+01, 3.333000e+01, 3.332000e+01, 3.331000e+01, 3.330000e+01, 3.329000e+01, 3.328000e+01, 3.327000e+01, 3.326000e+01, 3.325000e+01, 3.324000e+01, 3.323000e+01, 3.322000e+01, 3.321000e+01, 3.320000e+01, 3.319000e+01, 3.318000e+01, 3.317000e+01, 3.316000e+01, 3.315000e+01, 3.314000e+01, 3.313000e+01, 3.312000e+01, 3.311000e+01, 3.310000e+01, 3.309000e+01, 3.308000e+01, 3.307000e+01, 3.306000e+01, 3.305000e+01, 3.304000e+01, 3.303000e+01, 3.302000e+01, 3.301000e+01, 3.300000e+01, 3.299000e+01, 3.298000e+01, 3.297000e+01, 3.296000e+01, 3.295000e+01, 3.294000e+01, 3.293000e+01, 3.292000e+01, 3.291000e+01, 3.290000e+01, 3.289000e+01, 3.288000e+01, 3.287000e+01, 3.286000e+01, 3.285000e+01, 3.284000e+01, 3.283000e+01, 3.282000e+01, 3.281000e+01, 3.280000e+01, 3.279000e+01, 3.278000e+01, 3.277000e+01, 3.276000e+01, 3.275000e+01, 3.274000e+01, 3.273000e+01, 3.272000e+01, 3.271000e+01, 3.270000e+01, 3.269000e+01, 3.268000e+01, 3.267000e+01, 3.266000e+01, 3.265000e+01, 3.264000e+01, 3.263000e+01, 3.262000e+01, 3.261000e+01, 3.260000e+01, 3.259000e+01, 3.258000e+01, 3.257000e+01, 3.256000e+01, 3.255000e+01, 3.254000e+01, 3.253000e+01, 3.252000e+01, 3.251000e+01, 3.250000e+01, 3.249000e+01, 3.248000e+01, 3.247000e+01, 3.246000e+01, 3.245000e+01, 3.244000e+01, 3.243000e+01, 3.242000e+01, 3.241000e+01, 3.240000e+01, 3.239000e+01, 3.238000e+01, 3.237000e+01, 3.236000e+01, 3.235000e+01, 3.234000e+01, 3.233000e+01, 3.232000e+01, 3.231000e+01, 3.230000e+01, 3.229000e+01, 3.228000e+01, 3.227000e+01, 3.226000e+01, 3.225000e+01, 3.224000e+01, 3.223000e+01, 3.222000e+01, 3.221000e+01, 3.220000e+01, 3.219000e+01, 3.218000e+01, 3.217000e+01, 3.216000e+01, 3.215000e+01, 3.214000e+01, 3.213000e+01, 3.212000e+01, 3.211000e+01, 3.210000e+01, 3.209000e+01, 3.208000e+01, 3.207000e+01, 3.206000e+01, 3.205000e+01, 3.204000e+01, 3.203000e+01, 3.202000e+01, 3.201000e+01, 3.200000e+01, 3.199000e+01, 3.198000e+01, 3.197000e+01, 3.196000e+01, 3.195000e+01, 3.194000e+01, 3.193000e+01, 3.192000e+01, 3.191000e+01, 3.190000e+01, 3.189000e+01, 3.188000e+01, 3.187000e+01, 3.186000e+01, 3.185000e+01, 3.184000e+01, 3.183000e+01, 3.182000e+01, 3.181000e+01, 3.180000e+01, 3.179000e+01, 3.178000e+01, 3.177000e+01, 3.176000e+01, 3.175000e+01, 3.174000e+01, 3.173000e+01, 3.172000e+01, 3.171000e+01, 3.170000e+01, 3.169000e+01, 3.168000e+01, 3.167000e+01, 3.166000e+01, 3.165000e+01, 3.164000e+01, 3.163000e+01, 3.162000e+01, 3.161000e+01, 3.160000e+01, 3.159000e+01, 3.158000e+01, 3.157000e+01, 3.156000e+01, 3.155000e+01, 3.154000e+01, 3.153000e+01, 3.152000e+01, 3.151000e+01, 3.150000e+01, 3.149000e+01, 3.148000e+01, 3.147000e+01, 3.146000e+01, 3.145000e+01, 3.144000e+01, 3.143000e+01, 3.142000e+01, 3.141000e+01, 3.140000e+01, 3.139000e+01, 3.138000e+01, 3.137000e+01, 3.136000e+01, 3.135000e+01, 3.134000e+01, 3.133000e+01, 3.132000e+01, 3.131000e+01, 3.130000e+01, 3.129000e+01, 3.128000e+01, 3.127000e+01, 3.126000e+01, 3.125000e+01, 3.124000e+01, 3.123000e+01, 3.122000e+01, 3.121000e+01, 3.120000e+01, 3.119000e+01, 3.118000e+01, 3.117000e+01, 3.116000e+01, 3.115000e+01, 3.114000e+01, 3.113000e+01, 3.112000e+01, 3.111000e+01, 3.110000e+01, 3.109000e+01, 3.108000e+01, 3.107000e+01, 3.106000e+01, 3.105000e+01, 3.104000e+01, 3.103000e+01, 3.102000e+01, 3.101000e+01, 3.100000e+01, 3.099000e+01, 3.098000e+01, 3.097000e+01, 3.096000e+01, 3.095000e+01, 3.094000e+01, 3.093000e+01, 3.092000e+01, 3.091000e+01, 3.090000e+01, 3.089000e+01, 3.088000e+01, 3.087000e+01, 3.086000e+01, 3.085000e+01, 3.084000e+01, 3.083000e+01, 3.082000e+01, 3.081000e+01, 3.080000e+01, 3.079000e+01, 3.078000e+01, 3.077000e+01, 3.076000e+01, 3.075000e+01, 3.074000e+01, 3.073000e+01, 3.072000e+01, 3.071000e+01, 3.070000e+01, 3.069000e+01, 3.068000e+01, 3.067000e+01, 3.066000e+01, 3.065000e+01, 3.064000e+01, 3.063000e+01, 3.062000e+01, 3.061000e+01, 3.060000e+01, 3.059000e+01, 3.058000e+01, 3.057000e+01, 3.056000e+01, 3.055000e+01, 3.054000e+01, 3.053000e+01, 3.052000e+01, 3.051000e+01, 3.050000e+01, 3.049000e+01, 3.048000e+01, 3.047000e+01, 3.046000e+01, 3.045000e+01, 3.044000e+01, 3.043000e+01, 3.042000e+01, 3.041000e+01, 3.040000e+01, 3.039000e+01, 3.038000e+01, 3.037000e+01, 3.036000e+01, 3.035000e+01, 3.034000e+01, 3.033000e+01, 3.032000e+01, 3.031000e+01, 3.030000e+01, 3.029000e+01, 3.028000e+01, 3.027000e+01, 3.026000e+01, 3.025000e+01, 3.024000e+01, 3.023000e+01, 3.022000e+01, 3.021000e+01, 3.020000e+01, 3.019000e+01, 3.018000e+01, 3.017000e+01, 3.016000e+01, 3.015000e+01, 3.014000e+01, 3.013000e+01, 3.012000e+01, 3.011000e+01, 3.010000e+01, 3.009000e+01, 3.008000e+01, 3.007000e+01, 3.006000e+01, 3.005000e+01, 3.004000e+01, 3.003000e+01, 3.002000e+01, 3.001000e+01, 3.000000e+01, 2.999000e+01, 2.998000e+01, 2.997000e+01, 2.996000e+01, 2.995000e+01, 2.994000e+01, 2.993000e+01, 2.992000e+01, 2.991000e+01, 2.990000e+01, 2.989000e+01, 2.988000e+01, 2.987000e+01, 2.986000e+01, 2.985000e+01, 2.984000e+01, 2.983000e+01, 2.982000e+01, 2.981000e+01, 2.980000e+01, 2.979000e+01, 2.978000e+01, 2.977000e+01, 2.976000e+01, 2.975000e+01, 2.974000e+01, 2.973000e+01, 2.972000e+01, 2.971000e+01, 2.970000e+01, 2.969000e+01, 2.968000e+01, 2.967000e+01, 2.966000e+01, 2.965000e+01, 2.964000e+01, 2.963000e+01, 2.962000e+01, 2.961000e+01, 2.960000e+01, 2.959000e+01, 2.958000e+01, 2.957000e+01, 2.956000e+01, 2.955000e+01, 2.954000e+01, 2.953000e+01, 2.952000e+01, 2.951000e+01, 2.950000e+01, 2.949000e+01, 2.948000e+01, 2.947000e+01, 2.946000e+01, 2.945000e+01, 2.944000e+01, 2.943000e+01, 2.942000e+01, 2.941000e+01, 2.940000e+01, 2.939000e+01, 2.938000e+01, 2.937000e+01, 2.936000e+01, 2.935000e+01, 2.934000e+01, 2.933000e+01, 2.932000e+01, 2.931000e+01, 2.930000e+01, 2.929000e+01, 2.928000e+01, 2.927000e+01, 2.926000e+01, 2.925000e+01, 2.924000e+01, 2.923000e+01, 2.922000e+01, 2.921000e+01, 2.920000e+01, 2.919000e+01, 2.918000e+01, 2.917000e+01, 2.916000e+01, 2.915000e+01, 2.914000e+01, 2.913000e+01, 2.912000e+01, 2.911000e+01, 2.910000e+01, 2.909000e+01, 2.908000e+01, 2.907000e+01, 2.906000e+01, 2.905000e+01, 2.904000e+01, 2.903000e+01, 2.902000e+01, 2.901000e+01, 2.900000e+01, 2.899000e+01, 2.898000e+01, 2.897000e+01, 2.896000e+01, 2.895000e+01, 2.894000e+01, 2.893000e+01, 2.892000e+01, 2.891000e+01, 2.890000e+01, 2.889000e+01, 2.888000e+01, 2.887000e+01, 2.886000e+01, 2.885000e+01, 2.884000e+01, 2.883000e+01, 2.882000e+01, 2.881000e+01, 2.880000e+01, 2.879000e+01, 2.878000e+01, 2.877000e+01, 2.876000e+01, 2.875000e+01, 2.874000e+01, 2.873000e+01, 2.872000e+01, 2.871000e+01, 2.870000e+01, 2.869000e+01, 2.868000e+01, 2.867000e+01, 2.866000e+01, 2.865000e+01, 2.864000e+01, 2.863000e+01, 2.862000e+01, 2.861000e+01, 2.860000e+01, 2.859000e+01, 2.858000e+01, 2.857000e+01, 2.856000e+01, 2.855000e+01, 2.854000e+01, 2.853000e+01, 2.852000e+01, 2.851000e+01, 2.850000e+01, 2.849000e+01, 2.848000e+01, 2.847000e+01, 2.846000e+01, 2.845000e+01, 2.844000e+01, 2.843000e+01, 2.842000e+01, 2.841000e+01, 2.840000e+01, 2.839000e+01, 2.838000e+01, 2.837000e+01, 2.836000e+01, 2.835000e+01, 2.834000e+01, 2.833000e+01, 2.832000e+01, 2.831000e+01, 2.830000e+01, 2.829000e+01, 2.828000e+01, 2.827000e+01, 2.826000e+01, 2.825000e+01, 2.824000e+01, 2.823000e+01, 2.822000e+01, 2.821000e+01, 2.820000e+01, 2.819000e+01, 2.818000e+01, 2.817000e+01, 2.816000e+01, 2.815000e+01, 2.814000e+01, 2.813000e+01, 2.812000e+01, 2.811000e+01, 2.810000e+01, 2.809000e+01, 2.808000e+01, 2.807000e+01, 2.806000e+01, 2.805000e+01, 2.804000e+01, 2.803000e+01, 2.802000e+01, 2.801000e+01, 2.800000e+01, 2.799000e+01, 2.798000e+01, 2.797000e+01, 2.796000e+01, 2.795000e+01, 2.794000e+01, 2.793000e+01, 2.792000e+01, 2.791000e+01, 2.790000e+01, 2.789000e+01, 2.788000e+01, 2.787000e+01, 2.786000e+01, 2.785000e+01, 2.784000e+01, 2.783000e+01, 2.782000e+01, 2.781000e+01, 2.780000e+01, 2.779000e+01, 2.778000e+01, 2.777000e+01, 2.776000e+01, 2.775000e+01, 2.774000e+01, 2.773000e+01, 2.772000e+01, 2.771000e+01, 2.770000e+01, 2.769000e+01, 2.768000e+01, 2.767000e+01, 2.766000e+01, 2.765000e+01, 2.764000e+01, 2.763000e+01, 2.762000e+01, 2.761000e+01, 2.760000e+01, 2.759000e+01, 2.758000e+01, 2.757000e+01, 2.756000e+01, 2.755000e+01, 2.754000e+01, 2.753000e+01, 2.752000e+01, 2.751000e+01, 2.750000e+01, 2.749000e+01, 2.748000e+01, 2.747000e+01, 2.746000e+01, 2.745000e+01, 2.744000e+01, 2.743000e+01, 2.742000e+01, 2.741000e+01, 2.740000e+01, 2.739000e+01, 2.738000e+01, 2.737000e+01, 2.736000e+01, 2.735000e+01, 2.734000e+01, 2.733000e+01, 2.732000e+01, 2.731000e+01, 2.730000e+01, 2.729000e+01, 2.728000e+01, 2.727000e+01, 2.726000e+01, 2.725000e+01, 2.724000e+01, 2.723000e+01, 2.722000e+01, 2.721000e+01, 2.720000e+01, 2.719000e+01, 2.718000e+01, 2.717000e+01, 2.716000e+01, 2.715000e+01, 2.714000e+01, 2.713000e+01, 2.712000e+01, 2.711000e+01, 2.710000e+01, 2.709000e+01, 2.708000e+01, 2.707000e+01, 2.706000e+01, 2.705000e+01, 2.704000e+01, 2.703000e+01, 2.702000e+01, 2.701000e+01, 2.700000e+01, 2.699000e+01, 2.698000e+01, 2.697000e+01, 2.696000e+01, 2.695000e+01, 2.694000e+01, 2.693000e+01, 2.692000e+01, 2.691000e+01, 2.690000e+01, 2.689000e+01, 2.688000e+01, 2.687000e+01, 2.686000e+01, 2.685000e+01, 2.684000e+01, 2.683000e+01, 2.682000e+01, 2.681000e+01, 2.680000e+01, 2.679000e+01, 2.678000e+01, 2.677000e+01, 2.676000e+01, 2.675000e+01, 2.674000e+01, 2.673000e+01, 2.672000e+01, 2.671000e+01, 2.670000e+01, 2.669000e+01, 2.668000e+01, 2.667000e+01, 2.666000e+01, 2.665000e+01, 2.664000e+01, 2.663000e+01, 2.662000e+01, 2.661000e+01, 2.660000e+01, 2.659000e+01, 2.658000e+01, 2.657000e+01, 2.656000e+01, 2.655000e+01, 2.654000e+01, 2.653000e+01, 2.652000e+01, 2.651000e+01, 2.650000e+01, 2.649000e+01, 2.648000e+01, 2.647000e+01, 2.646000e+01, 2.645000e+01, 2.644000e+01, 2.643000e+01, 2.642000e+01, 2.641000e+01, 2.640000e+01, 2.639000e+01, 2.638000e+01, 2.637000e+01, 2.636000e+01, 2.635000e+01, 2.634000e+01, 2.633000e+01, 2.632000e+01, 2.631000e+01, 2.630000e+01, 2.629000e+01, 2.628000e+01, 2.627000e+01, 2.626000e+01, 2.625000e+01, 2.624000e+01, 2.623000e+01, 2.622000e+01, 2.621000e+01, 2.620000e+01, 2.619000e+01, 2.618000e+01, 2.617000e+01, 2.616000e+01, 2.615000e+01, 2.614000e+01, 2.613000e+01, 2.612000e+01, 2.611000e+01, 2.610000e+01, 2.609000e+01, 2.608000e+01, 2.607000e+01, 2.606000e+01, 2.605000e+01, 2.604000e+01, 2.603000e+01, 2.602000e+01, 2.601000e+01, 2.600000e+01, 2.599000e+01, 2.598000e+01, 2.597000e+01, 2.596000e+01, 2.595000e+01, 2.594000e+01, 2.593000e+01, 2.592000e+01, 2.591000e+01, 2.590000e+01, 2.589000e+01, 2.588000e+01, 2.587000e+01, 2.586000e+01, 2.585000e+01, 2.584000e+01, 2.583000e+01, 2.582000e+01, 2.581000e+01, 2.580000e+01, 2.579000e+01, 2.578000e+01, 2.577000e+01, 2.576000e+01, 2.575000e+01, 2.574000e+01, 2.573000e+01, 2.572000e+01, 2.571000e+01, 2.570000e+01, 2.569000e+01, 2.568000e+01, 2.567000e+01, 2.566000e+01, 2.565000e+01, 2.564000e+01, 2.563000e+01, 2.562000e+01, 2.561000e+01, 2.560000e+01, 2.559000e+01, 2.558000e+01, 2.557000e+01, 2.556000e+01, 2.555000e+01, 2.554000e+01, 2.553000e+01, 2.552000e+01, 2.551000e+01, 2.550000e+01, 2.549000e+01, 2.548000e+01, 2.547000e+01, 2.546000e+01, 2.545000e+01, 2.544000e+01, 2.543000e+01, 2.542000e+01, 2.541000e+01, 2.540000e+01, 2.539000e+01, 2.538000e+01, 2.537000e+01, 2.536000e+01, 2.535000e+01, 2.534000e+01, 2.533000e+01, 2.532000e+01, 2.531000e+01, 2.530000e+01, 2.529000e+01, 2.528000e+01, 2.527000e+01, 2.526000e+01, 2.525000e+01, 2.524000e+01, 2.523000e+01, 2.522000e+01, 2.521000e+01, 2.520000e+01, 2.519000e+01, 2.518000e+01, 2.517000e+01, 2.516000e+01, 2.515000e+01, 2.514000e+01, 2.513000e+01, 2.512000e+01, 2.511000e+01, 2.510000e+01, 2.509000e+01, 2.508000e+01, 2.507000e+01, 2.506000e+01, 2.505000e+01, 2.504000e+01, 2.503000e+01, 2.502000e+01, 2.501000e+01, 2.500000e+01, 2.499000e+01, 2.498000e+01, 2.497000e+01, 2.496000e+01, 2.495000e+01, 2.494000e+01, 2.493000e+01, 2.492000e+01, 2.491000e+01, 2.490000e+01, 2.489000e+01, 2.488000e+01, 2.487000e+01, 2.486000e+01, 2.485000e+01, 2.484000e+01, 2.483000e+01, 2.482000e+01, 2.481000e+01, 2.480000e+01, 2.479000e+01, 2.478000e+01, 2.477000e+01, 2.476000e+01, 2.475000e+01, 2.474000e+01, 2.473000e+01, 2.472000e+01, 2.471000e+01, 2.470000e+01, 2.469000e+01, 2.468000e+01, 2.467000e+01, 2.466000e+01, 2.465000e+01, 2.464000e+01, 2.463000e+01, 2.462000e+01, 2.461000e+01, 2.460000e+01, 2.459000e+01, 2.458000e+01, 2.457000e+01, 2.456000e+01, 2.455000e+01, 2.454000e+01, 2.453000e+01, 2.452000e+01, 2.451000e+01, 2.450000e+01, 2.449000e+01, 2.448000e+01, 2.447000e+01, 2.446000e+01, 2.445000e+01, 2.444000e+01, 2.443000e+01, 2.442000e+01, 2.441000e+01, 2.440000e+01, 2.439000e+01, 2.438000e+01, 2.437000e+01, 2.436000e+01, 2.435000e+01, 2.434000e+01, 2.433000e+01, 2.432000e+01, 2.431000e+01, 2.430000e+01, 2.429000e+01, 2.428000e+01, 2.427000e+01, 2.426000e+01, 2.425000e+01, 2.424000e+01, 2.423000e+01, 2.422000e+01, 2.421000e+01, 2.420000e+01, 2.419000e+01, 2.418000e+01, 2.417000e+01, 2.416000e+01, 2.415000e+01, 2.414000e+01, 2.413000e+01, 2.412000e+01, 2.411000e+01, 2.410000e+01, 2.409000e+01, 2.408000e+01, 2.407000e+01, 2.406000e+01, 2.405000e+01, 2.404000e+01, 2.403000e+01, 2.402000e+01, 2.401000e+01, 2.400000e+01, 2.399000e+01, 2.398000e+01, 2.397000e+01, 2.396000e+01, 2.395000e+01, 2.394000e+01, 2.393000e+01, 2.392000e+01, 2.391000e+01, 2.390000e+01, 2.389000e+01, 2.388000e+01, 2.387000e+01, 2.386000e+01, 2.385000e+01, 2.384000e+01, 2.383000e+01, 2.382000e+01, 2.381000e+01, 2.380000e+01, 2.379000e+01, 2.378000e+01, 2.377000e+01, 2.376000e+01, 2.375000e+01, 2.374000e+01, 2.373000e+01, 2.372000e+01, 2.371000e+01, 2.370000e+01, 2.369000e+01, 2.368000e+01, 2.367000e+01, 2.366000e+01, 2.365000e+01, 2.364000e+01, 2.363000e+01, 2.362000e+01, 2.361000e+01, 2.360000e+01, 2.359000e+01, 2.358000e+01, 2.357000e+01, 2.356000e+01, 2.355000e+01, 2.354000e+01, 2.353000e+01, 2.352000e+01, 2.351000e+01, 2.350000e+01, 2.349000e+01, 2.348000e+01, 2.347000e+01, 2.346000e+01, 2.345000e+01, 2.344000e+01, 2.343000e+01, 2.342000e+01, 2.341000e+01, 2.340000e+01, 2.339000e+01, 2.338000e+01, 2.337000e+01, 2.336000e+01, 2.335000e+01, 2.334000e+01, 2.333000e+01, 2.332000e+01, 2.331000e+01, 2.330000e+01, 2.329000e+01, 2.328000e+01, 2.327000e+01, 2.326000e+01, 2.325000e+01, 2.324000e+01, 2.323000e+01, 2.322000e+01, 2.321000e+01, 2.320000e+01, 2.319000e+01, 2.318000e+01, 2.317000e+01, 2.316000e+01, 2.315000e+01, 2.314000e+01, 2.313000e+01, 2.312000e+01, 2.311000e+01, 2.310000e+01, 2.309000e+01, 2.308000e+01, 2.307000e+01, 2.306000e+01, 2.305000e+01, 2.304000e+01, 2.303000e+01, 2.302000e+01, 2.301000e+01, 2.300000e+01, 2.299000e+01, 2.298000e+01, 2.297000e+01, 2.296000e+01, 2.295000e+01, 2.294000e+01, 2.293000e+01, 2.292000e+01, 2.291000e+01, 2.290000e+01, 2.289000e+01, 2.288000e+01, 2.287000e+01, 2.286000e+01, 2.285000e+01, 2.284000e+01, 2.283000e+01, 2.282000e+01, 2.281000e+01, 2.280000e+01, 2.279000e+01, 2.278000e+01, 2.277000e+01, 2.276000e+01, 2.275000e+01, 2.274000e+01, 2.273000e+01, 2.272000e+01, 2.271000e+01, 2.270000e+01, 2.269000e+01, 2.268000e+01, 2.267000e+01, 2.266000e+01, 2.265000e+01, 2.264000e+01, 2.263000e+01, 2.262000e+01, 2.261000e+01, 2.260000e+01, 2.259000e+01, 2.258000e+01, 2.257000e+01, 2.256000e+01, 2.255000e+01, 2.254000e+01, 2.253000e+01, 2.252000e+01, 2.251000e+01, 2.250000e+01, 2.249000e+01, 2.248000e+01, 2.247000e+01, 2.246000e+01, 2.245000e+01, 2.244000e+01, 2.243000e+01, 2.242000e+01, 2.241000e+01, 2.240000e+01, 2.239000e+01, 2.238000e+01, 2.237000e+01, 2.236000e+01, 2.235000e+01, 2.234000e+01, 2.233000e+01, 2.232000e+01, 2.231000e+01, 2.230000e+01, 2.229000e+01, 2.228000e+01, 2.227000e+01, 2.226000e+01, 2.225000e+01, 2.224000e+01, 2.223000e+01, 2.222000e+01, 2.221000e+01, 2.220000e+01, 2.219000e+01, 2.218000e+01, 2.217000e+01, 2.216000e+01, 2.215000e+01, 2.214000e+01, 2.213000e+01, 2.212000e+01, 2.211000e+01, 2.210000e+01, 2.209000e+01, 2.208000e+01, 2.207000e+01, 2.206000e+01, 2.205000e+01, 2.204000e+01, 2.203000e+01, 2.202000e+01, 2.201000e+01, 2.200000e+01, 2.199000e+01, 2.198000e+01, 2.197000e+01, 2.196000e+01, 2.195000e+01, 2.194000e+01, 2.193000e+01, 2.192000e+01, 2.191000e+01, 2.190000e+01, 2.189000e+01, 2.188000e+01, 2.187000e+01, 2.186000e+01, 2.185000e+01, 2.184000e+01, 2.183000e+01, 2.182000e+01, 2.181000e+01, 2.180000e+01, 2.179000e+01, 2.178000e+01, 2.177000e+01, 2.176000e+01, 2.175000e+01, 2.174000e+01, 2.173000e+01, 2.172000e+01, 2.171000e+01, 2.170000e+01, 2.169000e+01, 2.168000e+01, 2.167000e+01, 2.166000e+01, 2.165000e+01, 2.164000e+01, 2.163000e+01, 2.162000e+01, 2.161000e+01, 2.160000e+01, 2.159000e+01, 2.158000e+01, 2.157000e+01, 2.156000e+01, 2.155000e+01, 2.154000e+01, 2.153000e+01, 2.152000e+01, 2.151000e+01, 2.150000e+01, 2.149000e+01, 2.148000e+01, 2.147000e+01, 2.146000e+01, 2.145000e+01, 2.144000e+01, 2.143000e+01, 2.142000e+01, 2.141000e+01, 2.140000e+01, 2.139000e+01, 2.138000e+01, 2.137000e+01, 2.136000e+01, 2.135000e+01, 2.134000e+01, 2.133000e+01, 2.132000e+01, 2.131000e+01, 2.130000e+01, 2.129000e+01, 2.128000e+01, 2.127000e+01, 2.126000e+01, 2.125000e+01, 2.124000e+01, 2.123000e+01, 2.122000e+01, 2.121000e+01, 2.120000e+01, 2.119000e+01, 2.118000e+01, 2.117000e+01, 2.116000e+01, 2.115000e+01, 2.114000e+01, 2.113000e+01, 2.112000e+01, 2.111000e+01, 2.110000e+01, 2.109000e+01, 2.108000e+01, 2.107000e+01, 2.106000e+01, 2.105000e+01, 2.104000e+01, 2.103000e+01, 2.102000e+01, 2.101000e+01, 2.100000e+01, 2.099000e+01, 2.098000e+01, 2.097000e+01, 2.096000e+01, 2.095000e+01, 2.094000e+01, 2.093000e+01, 2.092000e+01, 2.091000e+01, 2.090000e+01, 2.089000e+01, 2.088000e+01, 2.087000e+01, 2.086000e+01, 2.085000e+01, 2.084000e+01, 2.083000e+01, 2.082000e+01, 2.081000e+01, 2.080000e+01, 2.079000e+01, 2.078000e+01, 2.077000e+01, 2.076000e+01, 2.075000e+01, 2.074000e+01, 2.073000e+01, 2.072000e+01, 2.071000e+01, 2.070000e+01, 2.069000e+01, 2.068000e+01, 2.067000e+01, 2.066000e+01, 2.065000e+01, 2.064000e+01, 2.063000e+01, 2.062000e+01, 2.061000e+01, 2.060000e+01, 2.059000e+01, 2.058000e+01, 2.057000e+01, 2.056000e+01, 2.055000e+01, 2.054000e+01, 2.053000e+01, 2.052000e+01, 2.051000e+01, 2.050000e+01, 2.049000e+01, 2.048000e+01, 2.047000e+01, 2.046000e+01, 2.045000e+01, 2.044000e+01, 2.043000e+01, 2.042000e+01, 2.041000e+01, 2.040000e+01, 2.039000e+01, 2.038000e+01, 2.037000e+01, 2.036000e+01, 2.035000e+01, 2.034000e+01, 2.033000e+01, 2.032000e+01, 2.031000e+01, 2.030000e+01, 2.029000e+01, 2.028000e+01, 2.027000e+01, 2.026000e+01, 2.025000e+01, 2.024000e+01, 2.023000e+01, 2.022000e+01, 2.021000e+01, 2.020000e+01, 2.019000e+01, 2.018000e+01, 2.017000e+01, 2.016000e+01, 2.015000e+01, 2.014000e+01, 2.013000e+01, 2.012000e+01, 2.011000e+01, 2.010000e+01, 2.009000e+01, 2.008000e+01, 2.007000e+01, 2.006000e+01, 2.005000e+01, 2.004000e+01, 2.003000e+01, 2.002000e+01, 2.001000e+01, 2.000000e+01, 1.999000e+01, 1.998000e+01, 1.997000e+01, 1.996000e+01, 1.995000e+01, 1.994000e+01, 1.993000e+01, 1.992000e+01, 1.991000e+01, 1.990000e+01, 1.989000e+01, 1.988000e+01, 1.987000e+01, 1.986000e+01, 1.985000e+01, 1.984000e+01, 1.983000e+01, 1.982000e+01, 1.981000e+01, 1.980000e+01, 1.979000e+01, 1.978000e+01, 1.977000e+01, 1.976000e+01, 1.975000e+01, 1.974000e+01, 1.973000e+01, 1.972000e+01, 1.971000e+01, 1.970000e+01, 1.969000e+01, 1.968000e+01, 1.967000e+01, 1.966000e+01, 1.965000e+01, 1.964000e+01, 1.963000e+01, 1.962000e+01, 1.961000e+01, 1.960000e+01, 1.959000e+01, 1.958000e+01, 1.957000e+01, 1.956000e+01, 1.955000e+01, 1.954000e+01, 1.953000e+01, 1.952000e+01, 1.951000e+01, 1.950000e+01, 1.949000e+01, 1.948000e+01, 1.947000e+01, 1.946000e+01, 1.945000e+01, 1.944000e+01, 1.943000e+01, 1.942000e+01, 1.941000e+01, 1.940000e+01, 1.939000e+01, 1.938000e+01, 1.937000e+01, 1.936000e+01, 1.935000e+01, 1.934000e+01, 1.933000e+01, 1.932000e+01, 1.931000e+01, 1.930000e+01, 1.929000e+01, 1.928000e+01, 1.927000e+01, 1.926000e+01, 1.925000e+01, 1.924000e+01, 1.923000e+01, 1.922000e+01, 1.921000e+01, 1.920000e+01, 1.919000e+01, 1.918000e+01, 1.917000e+01, 1.916000e+01, 1.915000e+01, 1.914000e+01, 1.913000e+01, 1.912000e+01, 1.911000e+01, 1.910000e+01, 1.909000e+01, 1.908000e+01, 1.907000e+01, 1.906000e+01, 1.905000e+01, 1.904000e+01, 1.903000e+01, 1.902000e+01, 1.901000e+01, 1.900000e+01, 1.899000e+01, 1.898000e+01, 1.897000e+01, 1.896000e+01, 1.895000e+01, 1.894000e+01, 1.893000e+01, 1.892000e+01, 1.891000e+01, 1.890000e+01, 1.889000e+01, 1.888000e+01, 1.887000e+01, 1.886000e+01, 1.885000e+01, 1.884000e+01, 1.883000e+01, 1.882000e+01, 1.881000e+01, 1.880000e+01, 1.879000e+01, 1.878000e+01, 1.877000e+01, 1.876000e+01, 1.875000e+01, 1.874000e+01, 1.873000e+01, 1.872000e+01, 1.871000e+01, 1.870000e+01, 1.869000e+01, 1.868000e+01, 1.867000e+01, 1.866000e+01, 1.865000e+01, 1.864000e+01, 1.863000e+01, 1.862000e+01, 1.861000e+01, 1.860000e+01, 1.859000e+01, 1.858000e+01, 1.857000e+01, 1.856000e+01, 1.855000e+01, 1.854000e+01, 1.853000e+01, 1.852000e+01, 1.851000e+01, 1.850000e+01, 1.849000e+01, 1.848000e+01, 1.847000e+01, 1.846000e+01, 1.845000e+01, 1.844000e+01, 1.843000e+01, 1.842000e+01, 1.841000e+01, 1.840000e+01, 1.839000e+01, 1.838000e+01, 1.837000e+01, 1.836000e+01, 1.835000e+01, 1.834000e+01, 1.833000e+01, 1.832000e+01, 1.831000e+01, 1.830000e+01, 1.829000e+01, 1.828000e+01, 1.827000e+01, 1.826000e+01, 1.825000e+01, 1.824000e+01, 1.823000e+01, 1.822000e+01, 1.821000e+01, 1.820000e+01, 1.819000e+01, 1.818000e+01, 1.817000e+01, 1.816000e+01, 1.815000e+01, 1.814000e+01, 1.813000e+01, 1.812000e+01, 1.811000e+01, 1.810000e+01, 1.809000e+01, 1.808000e+01, 1.807000e+01, 1.806000e+01, 1.805000e+01, 1.804000e+01, 1.803000e+01, 1.802000e+01, 1.801000e+01, 1.800000e+01, 1.799000e+01, 1.798000e+01, 1.797000e+01, 1.796000e+01, 1.795000e+01, 1.794000e+01, 1.793000e+01, 1.792000e+01, 1.791000e+01, 1.790000e+01, 1.789000e+01, 1.788000e+01, 1.787000e+01, 1.786000e+01, 1.785000e+01, 1.784000e+01, 1.783000e+01, 1.782000e+01, 1.781000e+01, 1.780000e+01, 1.779000e+01, 1.778000e+01, 1.777000e+01, 1.776000e+01, 1.775000e+01, 1.774000e+01, 1.773000e+01, 1.772000e+01, 1.771000e+01, 1.770000e+01, 1.769000e+01, 1.768000e+01, 1.767000e+01, 1.766000e+01, 1.765000e+01, 1.764000e+01, 1.763000e+01, 1.762000e+01, 1.761000e+01, 1.760000e+01, 1.759000e+01, 1.758000e+01, 1.757000e+01, 1.756000e+01, 1.755000e+01, 1.754000e+01, 1.753000e+01, 1.752000e+01, 1.751000e+01, 1.750000e+01, 1.749000e+01, 1.748000e+01, 1.747000e+01, 1.746000e+01, 1.745000e+01, 1.744000e+01, 1.743000e+01, 1.742000e+01, 1.741000e+01, 1.740000e+01, 1.739000e+01, 1.738000e+01, 1.737000e+01, 1.736000e+01, 1.735000e+01, 1.734000e+01, 1.733000e+01, 1.732000e+01, 1.731000e+01, 1.730000e+01, 1.729000e+01, 1.728000e+01, 1.727000e+01, 1.726000e+01, 1.725000e+01, 1.724000e+01, 1.723000e+01, 1.722000e+01, 1.721000e+01, 1.720000e+01, 1.719000e+01, 1.718000e+01, 1.717000e+01, 1.716000e+01, 1.715000e+01, 1.714000e+01, 1.713000e+01, 1.712000e+01, 1.711000e+01, 1.710000e+01, 1.709000e+01, 1.708000e+01, 1.707000e+01, 1.706000e+01, 1.705000e+01, 1.704000e+01, 1.703000e+01, 1.702000e+01, 1.701000e+01, 1.700000e+01, 1.699000e+01, 1.698000e+01, 1.697000e+01, 1.696000e+01, 1.695000e+01, 1.694000e+01, 1.693000e+01, 1.692000e+01, 1.691000e+01, 1.690000e+01, 1.689000e+01, 1.688000e+01, 1.687000e+01, 1.686000e+01, 1.685000e+01, 1.684000e+01, 1.683000e+01, 1.682000e+01, 1.681000e+01, 1.680000e+01, 1.679000e+01, 1.678000e+01, 1.677000e+01, 1.676000e+01, 1.675000e+01, 1.674000e+01, 1.673000e+01, 1.672000e+01, 1.671000e+01, 1.670000e+01, 1.669000e+01, 1.668000e+01, 1.667000e+01, 1.666000e+01, 1.665000e+01, 1.664000e+01, 1.663000e+01, 1.662000e+01, 1.661000e+01, 1.660000e+01, 1.659000e+01, 1.658000e+01, 1.657000e+01, 1.656000e+01, 1.655000e+01, 1.654000e+01, 1.653000e+01, 1.652000e+01, 1.651000e+01, 1.650000e+01, 1.649000e+01, 1.648000e+01, 1.647000e+01, 1.646000e+01, 1.645000e+01, 1.644000e+01, 1.643000e+01, 1.642000e+01, 1.641000e+01, 1.640000e+01, 1.639000e+01, 1.638000e+01, 1.637000e+01, 1.636000e+01, 1.635000e+01, 1.634000e+01, 1.633000e+01, 1.632000e+01, 1.631000e+01, 1.630000e+01, 1.629000e+01, 1.628000e+01, 1.627000e+01, 1.626000e+01, 1.625000e+01, 1.624000e+01, 1.623000e+01, 1.622000e+01, 1.621000e+01, 1.620000e+01, 1.619000e+01, 1.618000e+01, 1.617000e+01, 1.616000e+01, 1.615000e+01, 1.614000e+01, 1.613000e+01, 1.612000e+01, 1.611000e+01, 1.610000e+01, 1.609000e+01, 1.608000e+01, 1.607000e+01, 1.606000e+01, 1.605000e+01, 1.604000e+01, 1.603000e+01, 1.602000e+01, 1.601000e+01, 1.600000e+01, 1.599000e+01, 1.598000e+01, 1.597000e+01, 1.596000e+01, 1.595000e+01, 1.594000e+01, 1.593000e+01, 1.592000e+01, 1.591000e+01, 1.590000e+01, 1.589000e+01, 1.588000e+01, 1.587000e+01, 1.586000e+01, 1.585000e+01, 1.584000e+01, 1.583000e+01, 1.582000e+01, 1.581000e+01, 1.580000e+01, 1.579000e+01, 1.578000e+01, 1.577000e+01, 1.576000e+01, 1.575000e+01, 1.574000e+01, 1.573000e+01, 1.572000e+01, 1.571000e+01, 1.570000e+01, 1.569000e+01, 1.568000e+01, 1.567000e+01, 1.566000e+01, 1.565000e+01, 1.564000e+01, 1.563000e+01, 1.562000e+01, 1.561000e+01, 1.560000e+01, 1.559000e+01, 1.558000e+01, 1.557000e+01, 1.556000e+01, 1.555000e+01, 1.554000e+01, 1.553000e+01, 1.552000e+01, 1.551000e+01, 1.550000e+01, 1.549000e+01, 1.548000e+01, 1.547000e+01, 1.546000e+01, 1.545000e+01, 1.544000e+01, 1.543000e+01, 1.542000e+01, 1.541000e+01, 1.540000e+01, 1.539000e+01, 1.538000e+01, 1.537000e+01, 1.536000e+01, 1.535000e+01, 1.534000e+01, 1.533000e+01, 1.532000e+01, 1.531000e+01, 1.530000e+01, 1.529000e+01, 1.528000e+01, 1.527000e+01, 1.526000e+01, 1.525000e+01, 1.524000e+01, 1.523000e+01, 1.522000e+01, 1.521000e+01, 1.520000e+01, 1.519000e+01, 1.518000e+01, 1.517000e+01, 1.516000e+01, 1.515000e+01, 1.514000e+01, 1.513000e+01, 1.512000e+01, 1.511000e+01, 1.510000e+01, 1.509000e+01, 1.508000e+01, 1.507000e+01, 1.506000e+01, 1.505000e+01, 1.504000e+01, 1.503000e+01, 1.502000e+01, 1.501000e+01, 1.500000e+01, 1.499000e+01, 1.498000e+01, 1.497000e+01, 1.496000e+01, 1.495000e+01, 1.494000e+01, 1.493000e+01, 1.492000e+01, 1.491000e+01, 1.490000e+01, 1.489000e+01, 1.488000e+01, 1.487000e+01, 1.486000e+01, 1.485000e+01, 1.484000e+01, 1.483000e+01, 1.482000e+01, 1.481000e+01, 1.480000e+01, 1.479000e+01, 1.478000e+01, 1.477000e+01, 1.476000e+01, 1.475000e+01, 1.474000e+01, 1.473000e+01, 1.472000e+01, 1.471000e+01, 1.470000e+01, 1.469000e+01, 1.468000e+01, 1.467000e+01, 1.466000e+01, 1.465000e+01, 1.464000e+01, 1.463000e+01, 1.462000e+01, 1.461000e+01, 1.460000e+01, 1.459000e+01, 1.458000e+01, 1.457000e+01, 1.456000e+01, 1.455000e+01, 1.454000e+01, 1.453000e+01, 1.452000e+01, 1.451000e+01, 1.450000e+01, 1.449000e+01, 1.448000e+01, 1.447000e+01, 1.446000e+01, 1.445000e+01, 1.444000e+01, 1.443000e+01, 1.442000e+01, 1.441000e+01, 1.440000e+01, 1.439000e+01, 1.438000e+01, 1.437000e+01, 1.436000e+01, 1.435000e+01, 1.434000e+01, 1.433000e+01, 1.432000e+01, 1.431000e+01, 1.430000e+01, 1.429000e+01, 1.428000e+01, 1.427000e+01, 1.426000e+01, 1.425000e+01, 1.424000e+01, 1.423000e+01, 1.422000e+01, 1.421000e+01, 1.420000e+01, 1.419000e+01, 1.418000e+01, 1.417000e+01, 1.416000e+01, 1.415000e+01, 1.414000e+01, 1.413000e+01, 1.412000e+01, 1.411000e+01, 1.410000e+01, 1.409000e+01, 1.408000e+01, 1.407000e+01, 1.406000e+01, 1.405000e+01, 1.404000e+01, 1.403000e+01, 1.402000e+01, 1.401000e+01, 1.400000e+01, 1.399000e+01, 1.398000e+01, 1.397000e+01, 1.396000e+01, 1.395000e+01, 1.394000e+01, 1.393000e+01, 1.392000e+01, 1.391000e+01, 1.390000e+01, 1.389000e+01, 1.388000e+01, 1.387000e+01, 1.386000e+01, 1.385000e+01, 1.384000e+01, 1.383000e+01, 1.382000e+01, 1.381000e+01, 1.380000e+01, 1.379000e+01, 1.378000e+01, 1.377000e+01, 1.376000e+01, 1.375000e+01, 1.374000e+01, 1.373000e+01, 1.372000e+01, 1.371000e+01, 1.370000e+01, 1.369000e+01, 1.368000e+01, 1.367000e+01, 1.366000e+01, 1.365000e+01, 1.364000e+01, 1.363000e+01, 1.362000e+01, 1.361000e+01, 1.360000e+01, 1.359000e+01, 1.358000e+01, 1.357000e+01, 1.356000e+01, 1.355000e+01, 1.354000e+01, 1.353000e+01, 1.352000e+01, 1.351000e+01, 1.350000e+01, 1.349000e+01, 1.348000e+01, 1.347000e+01, 1.346000e+01, 1.345000e+01, 1.344000e+01, 1.343000e+01, 1.342000e+01, 1.341000e+01, 1.340000e+01, 1.339000e+01, 1.338000e+01, 1.337000e+01, 1.336000e+01, 1.335000e+01, 1.334000e+01, 1.333000e+01, 1.332000e+01, 1.331000e+01, 1.330000e+01, 1.329000e+01, 1.328000e+01, 1.327000e+01, 1.326000e+01, 1.325000e+01, 1.324000e+01, 1.323000e+01, 1.322000e+01, 1.321000e+01, 1.320000e+01, 1.319000e+01, 1.318000e+01, 1.317000e+01, 1.316000e+01, 1.315000e+01, 1.314000e+01, 1.313000e+01, 1.312000e+01, 1.311000e+01, 1.310000e+01, 1.309000e+01, 1.308000e+01, 1.307000e+01, 1.306000e+01, 1.305000e+01, 1.304000e+01, 1.303000e+01, 1.302000e+01, 1.301000e+01, 1.300000e+01, 1.299000e+01, 1.298000e+01, 1.297000e+01, 1.296000e+01, 1.295000e+01, 1.294000e+01, 1.293000e+01, 1.292000e+01, 1.291000e+01, 1.290000e+01, 1.289000e+01, 1.288000e+01, 1.287000e+01, 1.286000e+01, 1.285000e+01, 1.284000e+01, 1.283000e+01, 1.282000e+01, 1.281000e+01, 1.280000e+01, 1.279000e+01, 1.278000e+01, 1.277000e+01, 1.276000e+01, 1.275000e+01, 1.274000e+01, 1.273000e+01, 1.272000e+01, 1.271000e+01, 1.270000e+01, 1.269000e+01, 1.268000e+01, 1.267000e+01, 1.266000e+01, 1.265000e+01, 1.264000e+01, 1.263000e+01, 1.262000e+01, 1.261000e+01, 1.260000e+01, 1.259000e+01, 1.258000e+01, 1.257000e+01, 1.256000e+01, 1.255000e+01, 1.254000e+01, 1.253000e+01, 1.252000e+01, 1.251000e+01, 1.250000e+01, 1.249000e+01, 1.248000e+01, 1.247000e+01, 1.246000e+01, 1.245000e+01, 1.244000e+01, 1.243000e+01, 1.242000e+01, 1.241000e+01, 1.240000e+01, 1.239000e+01, 1.238000e+01, 1.237000e+01, 1.236000e+01, 1.235000e+01, 1.234000e+01, 1.233000e+01, 1.232000e+01, 1.231000e+01, 1.230000e+01, 1.229000e+01, 1.228000e+01, 1.227000e+01, 1.226000e+01, 1.225000e+01, 1.224000e+01, 1.223000e+01, 1.222000e+01, 1.221000e+01, 1.220000e+01, 1.219000e+01, 1.218000e+01, 1.217000e+01, 1.216000e+01, 1.215000e+01, 1.214000e+01, 1.213000e+01, 1.212000e+01, 1.211000e+01, 1.210000e+01, 1.209000e+01, 1.208000e+01, 1.207000e+01, 1.206000e+01, 1.205000e+01, 1.204000e+01, 1.203000e+01, 1.202000e+01, 1.201000e+01, 1.200000e+01, 1.199000e+01, 1.198000e+01, 1.197000e+01, 1.196000e+01, 1.195000e+01, 1.194000e+01, 1.193000e+01, 1.192000e+01, 1.191000e+01, 1.190000e+01, 1.189000e+01, 1.188000e+01, 1.187000e+01, 1.186000e+01, 1.185000e+01, 1.184000e+01, 1.183000e+01, 1.182000e+01, 1.181000e+01, 1.180000e+01, 1.179000e+01, 1.178000e+01, 1.177000e+01, 1.176000e+01, 1.175000e+01, 1.174000e+01, 1.173000e+01, 1.172000e+01, 1.171000e+01, 1.170000e+01, 1.169000e+01, 1.168000e+01, 1.167000e+01, 1.166000e+01, 1.165000e+01, 1.164000e+01, 1.163000e+01, 1.162000e+01, 1.161000e+01, 1.160000e+01, 1.159000e+01, 1.158000e+01, 1.157000e+01, 1.156000e+01, 1.155000e+01, 1.154000e+01, 1.153000e+01, 1.152000e+01, 1.151000e+01, 1.150000e+01, 1.149000e+01, 1.148000e+01, 1.147000e+01, 1.146000e+01, 1.145000e+01, 1.144000e+01, 1.143000e+01, 1.142000e+01, 1.141000e+01, 1.140000e+01, 1.139000e+01, 1.138000e+01, 1.137000e+01, 1.136000e+01, 1.135000e+01, 1.134000e+01, 1.133000e+01, 1.132000e+01, 1.131000e+01, 1.130000e+01, 1.129000e+01, 1.128000e+01, 1.127000e+01, 1.126000e+01, 1.125000e+01, 1.124000e+01, 1.123000e+01, 1.122000e+01, 1.121000e+01, 1.120000e+01, 1.119000e+01, 1.118000e+01, 1.117000e+01, 1.116000e+01, 1.115000e+01, 1.114000e+01, 1.113000e+01, 1.112000e+01, 1.111000e+01, 1.110000e+01, 1.109000e+01, 1.108000e+01, 1.107000e+01, 1.106000e+01, 1.105000e+01, 1.104000e+01, 1.103000e+01, 1.102000e+01, 1.101000e+01, 1.100000e+01, 1.099000e+01, 1.098000e+01, 1.097000e+01, 1.096000e+01, 1.095000e+01, 1.094000e+01, 1.093000e+01, 1.092000e+01, 1.091000e+01, 1.090000e+01, 1.089000e+01, 1.088000e+01, 1.087000e+01, 1.086000e+01, 1.085000e+01, 1.084000e+01, 1.083000e+01, 1.082000e+01, 1.081000e+01, 1.080000e+01, 1.079000e+01, 1.078000e+01, 1.077000e+01, 1.076000e+01, 1.075000e+01, 1.074000e+01, 1.073000e+01, 1.072000e+01, 1.071000e+01, 1.070000e+01, 1.069000e+01, 1.068000e+01, 1.067000e+01, 1.066000e+01, 1.065000e+01, 1.064000e+01, 1.063000e+01, 1.062000e+01, 1.061000e+01, 1.060000e+01, 1.059000e+01, 1.058000e+01, 1.057000e+01, 1.056000e+01, 1.055000e+01, 1.054000e+01, 1.053000e+01, 1.052000e+01, 1.051000e+01, 1.050000e+01, 1.049000e+01, 1.048000e+01, 1.047000e+01, 1.046000e+01, 1.045000e+01, 1.044000e+01, 1.043000e+01, 1.042000e+01, 1.041000e+01, 1.040000e+01, 1.039000e+01, 1.038000e+01, 1.037000e+01, 1.036000e+01, 1.035000e+01, 1.034000e+01, 1.033000e+01, 1.032000e+01, 1.031000e+01, 1.030000e+01, 1.029000e+01, 1.028000e+01, 1.027000e+01, 1.026000e+01, 1.025000e+01, 1.024000e+01, 1.023000e+01, 1.022000e+01, 1.021000e+01, 1.020000e+01, 1.019000e+01, 1.018000e+01, 1.017000e+01, 1.016000e+01, 1.015000e+01, 1.014000e+01, 1.013000e+01, 1.012000e+01, 1.011000e+01, 1.010000e+01, 1.009000e+01, 1.008000e+01, 1.007000e+01, 1.006000e+01, 1.005000e+01, 1.004000e+01, 1.003000e+01, 1.002000e+01, 1.001000e+01, 1.000000e+01, 9.990000e+00, 9.980000e+00, 9.970000e+00, 9.960000e+00, 9.950000e+00, 9.940000e+00, 9.930000e+00, 9.920000e+00, 9.910000e+00, 9.900000e+00, 9.890000e+00, 9.880000e+00, 9.870000e+00, 9.860000e+00, 9.850000e+00, 9.840000e+00, 9.830000e+00, 9.820000e+00, 9.810000e+00, 9.800000e+00, 9.790000e+00, 9.780000e+00, 9.770000e+00, 9.760000e+00, 9.750000e+00, 9.740000e+00, 9.730000e+00, 9.720000e+00, 9.710000e+00, 9.700000e+00, 9.690000e+00, 9.680000e+00, 9.670000e+00, 9.660000e+00, 9.650000e+00, 9.640000e+00, 9.630000e+00, 9.620000e+00, 9.610000e+00, 9.600000e+00, 9.590000e+00, 9.580000e+00, 9.570000e+00, 9.560000e+00, 9.550000e+00, 9.540000e+00, 9.530000e+00, 9.520000e+00, 9.510000e+00, 9.500000e+00, 9.490000e+00, 9.480000e+00, 9.470000e+00, 9.460000e+00, 9.450000e+00, 9.440000e+00, 9.430000e+00, 9.420000e+00, 9.410000e+00, 9.400000e+00, 9.390000e+00, 9.380000e+00, 9.370000e+00, 9.360000e+00, 9.350000e+00, 9.340000e+00, 9.330000e+00, 9.320000e+00, 9.310000e+00, 9.300000e+00, 9.290000e+00, 9.280000e+00, 9.270000e+00, 9.260000e+00, 9.250000e+00, 9.240000e+00, 9.230000e+00, 9.220000e+00, 9.210000e+00, 9.200000e+00, 9.190000e+00, 9.180000e+00, 9.170000e+00, 9.160000e+00, 9.150000e+00, 9.140000e+00, 9.130000e+00, 9.120000e+00, 9.110000e+00, 9.100000e+00, 9.090000e+00, 9.080000e+00, 9.070000e+00, 9.060000e+00, 9.050000e+00, 9.040000e+00, 9.030000e+00, 9.020000e+00, 9.010000e+00, 9.000000e+00, 8.990000e+00, 8.980000e+00, 8.970000e+00, 8.960000e+00, 8.950000e+00, 8.940000e+00, 8.930000e+00, 8.920000e+00, 8.910000e+00, 8.900000e+00, 8.890000e+00, 8.880000e+00, 8.870000e+00, 8.860000e+00, 8.850000e+00, 8.840000e+00, 8.830000e+00, 8.820000e+00, 8.810000e+00, 8.800000e+00, 8.790000e+00, 8.780000e+00, 8.770000e+00, 8.760000e+00, 8.750000e+00, 8.740000e+00, 8.730000e+00, 8.720000e+00, 8.710000e+00, 8.700000e+00, 8.690000e+00, 8.680000e+00, 8.670000e+00, 8.660000e+00, 8.650000e+00, 8.640000e+00, 8.630000e+00, 8.620000e+00, 8.610000e+00, 8.600000e+00, 8.590000e+00, 8.580000e+00, 8.570000e+00, 8.560000e+00, 8.550000e+00, 8.540000e+00, 8.530000e+00, 8.520000e+00, 8.510000e+00, 8.500000e+00, 8.490000e+00, 8.480000e+00, 8.470000e+00, 8.460000e+00, 8.450000e+00, 8.440000e+00, 8.430000e+00, 8.420000e+00, 8.410000e+00, 8.400000e+00, 8.390000e+00, 8.380000e+00, 8.370000e+00, 8.360000e+00, 8.350000e+00, 8.340000e+00, 8.330000e+00, 8.320000e+00, 8.310000e+00, 8.300000e+00, 8.290000e+00, 8.280000e+00, 8.270000e+00, 8.260000e+00, 8.250000e+00, 8.240000e+00, 8.230000e+00, 8.220000e+00, 8.210000e+00, 8.200000e+00, 8.190000e+00, 8.180000e+00, 8.170000e+00, 8.160000e+00, 8.150000e+00, 8.140000e+00, 8.130000e+00, 8.120000e+00, 8.110000e+00, 8.100000e+00, 8.090000e+00, 8.080000e+00, 8.070000e+00, 8.060000e+00, 8.050000e+00, 8.040000e+00, 8.030000e+00, 8.020000e+00, 8.010000e+00, 8.000000e+00, 7.990000e+00, 7.980000e+00, 7.970000e+00, 7.960000e+00, 7.950000e+00, 7.940000e+00, 7.930000e+00, 7.920000e+00, 7.910000e+00, 7.900000e+00, 7.890000e+00, 7.880000e+00, 7.870000e+00, 7.860000e+00, 7.850000e+00, 7.840000e+00, 7.830000e+00, 7.820000e+00, 7.810000e+00, 7.800000e+00, 7.790000e+00, 7.780000e+00, 7.770000e+00, 7.760000e+00, 7.750000e+00, 7.740000e+00, 7.730000e+00, 7.720000e+00, 7.710000e+00, 7.700000e+00, 7.690000e+00, 7.680000e+00, 7.670000e+00, 7.660000e+00, 7.650000e+00, 7.640000e+00, 7.630000e+00, 7.620000e+00, 7.610000e+00, 7.600000e+00, 7.590000e+00, 7.580000e+00, 7.570000e+00, 7.560000e+00, 7.550000e+00, 7.540000e+00, 7.530000e+00, 7.520000e+00, 7.510000e+00, 7.500000e+00, 7.490000e+00, 7.480000e+00, 7.470000e+00, 7.460000e+00, 7.450000e+00, 7.440000e+00, 7.430000e+00, 7.420000e+00, 7.410000e+00, 7.400000e+00, 7.390000e+00, 7.380000e+00, 7.370000e+00, 7.360000e+00, 7.350000e+00, 7.340000e+00, 7.330000e+00, 7.320000e+00, 7.310000e+00, 7.300000e+00, 7.290000e+00, 7.280000e+00, 7.270000e+00, 7.260000e+00, 7.250000e+00, 7.240000e+00, 7.230000e+00, 7.220000e+00, 7.210000e+00, 7.200000e+00, 7.190000e+00, 7.180000e+00, 7.170000e+00, 7.160000e+00, 7.150000e+00, 7.140000e+00, 7.130000e+00, 7.120000e+00, 7.110000e+00, 7.100000e+00, 7.090000e+00, 7.080000e+00, 7.070000e+00, 7.060000e+00, 7.050000e+00, 7.040000e+00, 7.030000e+00, 7.020000e+00, 7.010000e+00, 7.000000e+00, 6.990000e+00, 6.980000e+00, 6.970000e+00, 6.960000e+00, 6.950000e+00, 6.940000e+00, 6.930000e+00, 6.920000e+00, 6.910000e+00, 6.900000e+00, 6.890000e+00, 6.880000e+00, 6.870000e+00, 6.860000e+00, 6.850000e+00, 6.840000e+00, 6.830000e+00, 6.820000e+00, 6.810000e+00, 6.800000e+00, 6.790000e+00, 6.780000e+00, 6.770000e+00, 6.760000e+00, 6.750000e+00, 6.740000e+00, 6.730000e+00, 6.720000e+00, 6.710000e+00, 6.700000e+00, 6.690000e+00, 6.680000e+00, 6.670000e+00, 6.660000e+00, 6.650000e+00, 6.640000e+00, 6.630000e+00, 6.620000e+00, 6.610000e+00, 6.600000e+00, 6.590000e+00, 6.580000e+00, 6.570000e+00, 6.560000e+00, 6.550000e+00, 6.540000e+00, 6.530000e+00, 6.520000e+00, 6.510000e+00, 6.500000e+00, 6.490000e+00, 6.480000e+00, 6.470000e+00, 6.460000e+00, 6.450000e+00, 6.440000e+00, 6.430000e+00, 6.420000e+00, 6.410000e+00, 6.400000e+00, 6.390000e+00, 6.380000e+00, 6.370000e+00, 6.360000e+00, 6.350000e+00, 6.340000e+00, 6.330000e+00, 6.320000e+00, 6.310000e+00, 6.300000e+00, 6.290000e+00, 6.280000e+00, 6.270000e+00, 6.260000e+00, 6.250000e+00, 6.240000e+00, 6.230000e+00, 6.220000e+00, 6.210000e+00, 6.200000e+00, 6.190000e+00, 6.180000e+00, 6.170000e+00, 6.160000e+00, 6.150000e+00, 6.140000e+00, 6.130000e+00, 6.120000e+00, 6.110000e+00, 6.100000e+00, 6.090000e+00, 6.080000e+00, 6.070000e+00, 6.060000e+00, 6.050000e+00, 6.040000e+00, 6.030000e+00, 6.020000e+00, 6.010000e+00, 6.000000e+00, 5.990000e+00, 5.980000e+00, 5.970000e+00, 5.960000e+00, 5.950000e+00, 5.940000e+00, 5.930000e+00, 5.920000e+00, 5.910000e+00, 5.900000e+00, 5.890000e+00, 5.880000e+00, 5.870000e+00, 5.860000e+00, 5.850000e+00, 5.840000e+00, 5.830000e+00, 5.820000e+00, 5.810000e+00, 5.800000e+00, 5.790000e+00, 5.780000e+00, 5.770000e+00, 5.760000e+00, 5.750000e+00, 5.740000e+00, 5.730000e+00, 5.720000e+00, 5.710000e+00, 5.700000e+00, 5.690000e+00, 5.680000e+00, 5.670000e+00, 5.660000e+00, 5.650000e+00, 5.640000e+00, 5.630000e+00, 5.620000e+00, 5.610000e+00, 5.600000e+00, 5.590000e+00, 5.580000e+00, 5.570000e+00, 5.560000e+00, 5.550000e+00, 5.540000e+00, 5.530000e+00, 5.520000e+00, 5.510000e+00, 5.500000e+00, 5.490000e+00, 5.480000e+00, 5.470000e+00, 5.460000e+00, 5.450000e+00, 5.440000e+00, 5.430000e+00, 5.420000e+00, 5.410000e+00, 5.400000e+00, 5.390000e+00, 5.380000e+00, 5.370000e+00, 5.360000e+00, 5.350000e+00, 5.340000e+00, 5.330000e+00, 5.320000e+00, 5.310000e+00, 5.300000e+00, 5.290000e+00, 5.280000e+00, 5.270000e+00, 5.260000e+00, 5.250000e+00, 5.240000e+00, 5.230000e+00, 5.220000e+00, 5.210000e+00, 5.200000e+00, 5.190000e+00, 5.180000e+00, 5.170000e+00, 5.160000e+00, 5.150000e+00, 5.140000e+00, 5.130000e+00, 5.120000e+00, 5.110000e+00, 5.100000e+00, 5.090000e+00, 5.080000e+00, 5.070000e+00, 5.060000e+00, 5.050000e+00, 5.040000e+00, 5.030000e+00, 5.020000e+00, 5.010000e+00, 5.000000e+00, 4.990000e+00, 4.980000e+00, 4.970000e+00, 4.960000e+00, 4.950000e+00, 4.940000e+00, 4.930000e+00, 4.920000e+00, 4.910000e+00, 4.900000e+00, 4.890000e+00, 4.880000e+00, 4.870000e+00, 4.860000e+00, 4.850000e+00, 4.840000e+00, 4.830000e+00, 4.820000e+00, 4.810000e+00, 4.800000e+00, 4.790000e+00, 4.780000e+00, 4.770000e+00, 4.760000e+00, 4.750000e+00, 4.740000e+00, 4.730000e+00, 4.720000e+00, 4.710000e+00, 4.700000e+00, 4.690000e+00, 4.680000e+00, 4.670000e+00, 4.660000e+00, 4.650000e+00, 4.640000e+00, 4.630000e+00, 4.620000e+00, 4.610000e+00, 4.600000e+00, 4.590000e+00, 4.580000e+00, 4.570000e+00, 4.560000e+00, 4.550000e+00, 4.540000e+00, 4.530000e+00, 4.520000e+00, 4.510000e+00, 4.500000e+00, 4.490000e+00, 4.480000e+00, 4.470000e+00, 4.460000e+00, 4.450000e+00, 4.440000e+00, 4.430000e+00, 4.420000e+00, 4.410000e+00, 4.400000e+00, 4.390000e+00, 4.380000e+00, 4.370000e+00, 4.360000e+00, 4.350000e+00, 4.340000e+00, 4.330000e+00, 4.320000e+00, 4.310000e+00, 4.300000e+00, 4.290000e+00, 4.280000e+00, 4.270000e+00, 4.260000e+00, 4.250000e+00, 4.240000e+00, 4.230000e+00, 4.220000e+00, 4.210000e+00, 4.200000e+00, 4.190000e+00, 4.180000e+00, 4.170000e+00, 4.160000e+00, 4.150000e+00, 4.140000e+00, 4.130000e+00, 4.120000e+00, 4.110000e+00, 4.100000e+00, 4.090000e+00, 4.080000e+00, 4.070000e+00, 4.060000e+00, 4.050000e+00, 4.040000e+00, 4.030000e+00, 4.020000e+00, 4.010000e+00, 4.000000e+00, 3.990000e+00, 3.980000e+00, 3.970000e+00, 3.960000e+00, 3.950000e+00, 3.940000e+00, 3.930000e+00, 3.920000e+00, 3.910000e+00, 3.900000e+00, 3.890000e+00, 3.880000e+00, 3.870000e+00, 3.860000e+00, 3.850000e+00, 3.840000e+00, 3.830000e+00, 3.820000e+00, 3.810000e+00, 3.800000e+00, 3.790000e+00, 3.780000e+00, 3.770000e+00, 3.760000e+00, 3.750000e+00, 3.740000e+00, 3.730000e+00, 3.720000e+00, 3.710000e+00, 3.700000e+00, 3.690000e+00, 3.680000e+00, 3.670000e+00, 3.660000e+00, 3.650000e+00, 3.640000e+00, 3.630000e+00, 3.620000e+00, 3.610000e+00, 3.600000e+00, 3.590000e+00, 3.580000e+00, 3.570000e+00, 3.560000e+00, 3.550000e+00, 3.540000e+00, 3.530000e+00, 3.520000e+00, 3.510000e+00, 3.500000e+00, 3.490000e+00, 3.480000e+00, 3.470000e+00, 3.460000e+00, 3.450000e+00, 3.440000e+00, 3.430000e+00, 3.420000e+00, 3.410000e+00, 3.400000e+00, 3.390000e+00, 3.380000e+00, 3.370000e+00, 3.360000e+00, 3.350000e+00, 3.340000e+00, 3.330000e+00, 3.320000e+00, 3.310000e+00, 3.300000e+00, 3.290000e+00, 3.280000e+00, 3.270000e+00, 3.260000e+00, 3.250000e+00, 3.240000e+00, 3.230000e+00, 3.220000e+00, 3.210000e+00, 3.200000e+00, 3.190000e+00, 3.180000e+00, 3.170000e+00, 3.160000e+00, 3.150000e+00, 3.140000e+00, 3.130000e+00, 3.120000e+00, 3.110000e+00, 3.100000e+00, 3.090000e+00, 3.080000e+00, 3.070000e+00, 3.060000e+00, 3.050000e+00, 3.040000e+00, 3.030000e+00, 3.020000e+00, 3.010000e+00, 3.000000e+00, 2.990000e+00, 2.980000e+00, 2.970000e+00, 2.960000e+00, 2.950000e+00, 2.940000e+00, 2.930000e+00, 2.920000e+00, 2.910000e+00, 2.900000e+00, 2.890000e+00, 2.880000e+00, 2.870000e+00, 2.860000e+00, 2.850000e+00, 2.840000e+00, 2.830000e+00, 2.820000e+00, 2.810000e+00, 2.800000e+00, 2.790000e+00, 2.780000e+00, 2.770000e+00, 2.760000e+00, 2.750000e+00, 2.740000e+00, 2.730000e+00, 2.720000e+00, 2.710000e+00, 2.700000e+00, 2.690000e+00, 2.680000e+00, 2.670000e+00, 2.660000e+00, 2.650000e+00, 2.640000e+00, 2.630000e+00, 2.620000e+00, 2.610000e+00, 2.600000e+00, 2.590000e+00, 2.580000e+00, 2.570000e+00, 2.560000e+00, 2.550000e+00, 2.540000e+00, 2.530000e+00, 2.520000e+00, 2.510000e+00, 2.500000e+00, 2.490000e+00, 2.480000e+00, 2.470000e+00, 2.460000e+00, 2.450000e+00, 2.440000e+00, 2.430000e+00, 2.420000e+00, 2.410000e+00, 2.400000e+00, 2.390000e+00, 2.380000e+00, 2.370000e+00, 2.360000e+00, 2.350000e+00, 2.340000e+00, 2.330000e+00, 2.320000e+00, 2.310000e+00, 2.300000e+00, 2.290000e+00, 2.280000e+00, 2.270000e+00, 2.260000e+00, 2.250000e+00, 2.240000e+00, 2.230000e+00, 2.220000e+00, 2.210000e+00, 2.200000e+00, 2.190000e+00, 2.180000e+00, 2.170000e+00, 2.160000e+00, 2.150000e+00, 2.140000e+00, 2.130000e+00, 2.120000e+00, 2.110000e+00, 2.100000e+00, 2.090000e+00, 2.080000e+00, 2.070000e+00, 2.060000e+00, 2.050000e+00, 2.040000e+00, 2.030000e+00, 2.020000e+00, 2.010000e+00, 2.000000e+00, 1.990000e+00, 1.980000e+00, 1.970000e+00, 1.960000e+00, 1.950000e+00, 1.940000e+00, 1.930000e+00, 1.920000e+00, 1.910000e+00, 1.900000e+00, 1.890000e+00, 1.880000e+00, 1.870000e+00, 1.860000e+00, 1.850000e+00, 1.840000e+00, 1.830000e+00, 1.820000e+00, 1.810000e+00, 1.800000e+00, 1.790000e+00, 1.780000e+00, 1.770000e+00, 1.760000e+00, 1.750000e+00, 1.740000e+00, 1.730000e+00, 1.720000e+00, 1.710000e+00, 1.700000e+00, 1.690000e+00, 1.680000e+00, 1.670000e+00, 1.660000e+00, 1.650000e+00, 1.640000e+00, 1.630000e+00, 1.620000e+00, 1.610000e+00, 1.600000e+00, 1.590000e+00, 1.580000e+00, 1.570000e+00, 1.560000e+00, 1.550000e+00, 1.540000e+00, 1.530000e+00, 1.520000e+00, 1.510000e+00, 1.500000e+00, 1.490000e+00, 1.480000e+00, 1.470000e+00, 1.460000e+00, 1.450000e+00, 1.440000e+00, 1.430000e+00, 1.420000e+00, 1.410000e+00, 1.400000e+00, 1.390000e+00, 1.380000e+00, 1.370000e+00, 1.360000e+00, 1.350000e+00, 1.340000e+00, 1.330000e+00, 1.320000e+00, 1.310000e+00, 1.300000e+00, 1.290000e+00, 1.280000e+00, 1.270000e+00, 1.260000e+00, 1.250000e+00, 1.240000e+00, 1.230000e+00, 1.220000e+00, 1.210000e+00, 1.200000e+00, 1.190000e+00, 1.180000e+00, 1.170000e+00, 1.160000e+00, 1.150000e+00, 1.140000e+00, 1.130000e+00, 1.120000e+00, 1.110000e+00, 1.100000e+00, 1.090000e+00, 1.080000e+00, 1.070000e+00, 1.060000e+00, 1.050000e+00, 1.040000e+00, 1.030000e+00, 1.020000e+00, 1.010000e+00, 1.000000e+00, 9.900000e-01, 9.800000e-01, 9.700000e-01, 9.600000e-01, 9.500000e-01, 9.400000e-01, 9.300000e-01, 9.200000e-01, 9.100000e-01, 9.000000e-01, 8.900000e-01, 8.800000e-01, 8.700000e-01, 8.600000e-01, 8.500000e-01, 8.400000e-01, 8.300000e-01, 8.200000e-01, 8.100000e-01, 8.000000e-01, 7.900000e-01, 7.800000e-01, 7.700000e-01, 7.600000e-01, 7.500000e-01, 7.400000e-01, 7.300000e-01, 7.200000e-01, 7.100000e-01, 7.000000e-01, 6.900000e-01, 6.800000e-01, 6.700000e-01, 6.600000e-01, 6.500000e-01, 6.400000e-01, 6.300000e-01, 6.200000e-01, 6.100000e-01, 6.000000e-01, 5.900000e-01, 5.800000e-01, 5.700000e-01, 5.600000e-01, 5.500000e-01, 5.400000e-01, 5.300000e-01, 5.200000e-01, 5.100000e-01, 5.000000e-01, 4.900000e-01, 4.800000e-01, 4.700000e-01, 4.600000e-01, 4.500000e-01, 4.400000e-01, 4.300000e-01, 4.200000e-01, 4.100000e-01, 4.000000e-01, 3.900000e-01, 3.800000e-01, 3.700000e-01, 3.600000e-01, 3.500000e-01, 3.400000e-01, 3.300000e-01, 3.200000e-01, 3.100000e-01, 3.000000e-01, 2.900000e-01, 2.800000e-01, 2.700000e-01, 2.600000e-01, 2.500000e-01, 2.400000e-01, 2.300000e-01, 2.200000e-01, 2.100000e-01, 2.000000e-01, 1.900000e-01, 1.800000e-01, 1.700000e-01, 1.600000e-01, 1.500000e-01, 1.400000e-01, 1.300000e-01, 1.200000e-01, 1.100000e-01, 1.000000e-01, 9.000000e-02, 8.000000e-02, 7.000000e-02, 6.000000e-02, 5.000000e-02, 4.000000e-02, 3.000000e-02, 2.000000e-02, 1.000000e-02, 0.000000e+00};
+      
+      fCenMetric = new TGraph(nbins,xd,yd);
+      fTempList->Add(fCenMetric);
+      
     }
+    
+    fPolSlope[0] = new TF1("slopeper","expo",1.E2,1.E4);
+    Double_t parper[] = {9.45678e-01,-5.66325e-04};
+    fPolSlope[0]->SetParameters(parper);
+    
+    fPolSlope[1] = new TF1("slopecen","landaun",1.E4,2.5E4);
+    Double_t parcen[] = {1.35360e+02,8.35468e+03,2.39137e+03};
+    fPolSlope[1]->SetParameters(parcen);
+    
   }
   
   for(Int_t r=0;r<fCRCnRun;r++) {
@@ -26224,30 +26364,10 @@ void AliFlowAnalysisCRC::BookEverythingForCME()
   
   if(!fCalculateCME){return;}
   if(!fUseZDC){return;}
+  Double_t cent[] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100};
   
   for (Int_t h=0;h<fCRCnCen;h++) {
     for(Int_t eg=0; eg<fCMEnEtaBin; eg++) {
-      // Final Histo:
-      fCMETPCCorHist[eg][h] = new TH1D(Form("fCMETPCCorHist[%d][%d]",eg,h),Form("fCMETPCCorHist[%d][%d]",eg,h),fCMETPCnCR,0.,1.*fCMETPCnCR);
-      fCMETPCCorHist[eg][h]->Sumw2();
-      fCMETPCList->Add(fCMETPCCorHist[eg][h]);
-      // Covariances:
-      fCMETPCCovHist[eg][h] = new TH2D(Form("fCMETPCCovHist[%d][%d]",eg,h),Form("fCMETPCCovHist[%d][%d]",eg,h),fCMETPCnCR,0.,1.*fCMETPCnCR,fCMETPCnCR,0.,1.*fCMETPCnCR);
-      fCMETPCCovHist[eg][h]->Sumw2();
-      fCMETPCList->Add(fCMETPCCovHist[eg][h]);
-      // Distributions:
-      fCMETPCDistHist[eg][h][0] = new TH1D(Form("fCMETPCDistHist[%d][%d][0]",eg,h),Form("fCMETPCDistHist[%d][%d][0]",eg,h),1E4,0.,1.E3);
-      fCMETPCDistHist[eg][h][0]->Sumw2();
-      fCMETPCList->Add(fCMETPCDistHist[eg][h][0]);
-      fCMETPCDistHist[eg][h][1] = new TH1D(Form("fCMETPCDistHist[%d][%d][1]",eg,h),Form("fCMETPCDistHist[%d][%d][1]",eg,h),1E4,0.,1.E3);
-      fCMETPCDistHist[eg][h][1]->Sumw2();
-      fCMETPCList->Add(fCMETPCDistHist[eg][h][1]);
-      fCMETPCDistHist[eg][h][2] = new TH1D(Form("fCMETPCDistHist[%d][%d][2]",eg,h),Form("fCMETPCDistHist[%d][%d][2]",eg,h),1E4,0.,TMath::Pi()/2.);
-      fCMETPCDistHist[eg][h][2]->Sumw2();
-      fCMETPCList->Add(fCMETPCDistHist[eg][h][2]);
-      fCMETPCDistHist[eg][h][3] = new TH1D(Form("fCMETPCDistHist[%d][%d][3]",eg,h),Form("fCMETPCDistHist[%d][%d][3]",eg,h),1E4,0.,TMath::Pi()/2.);
-      fCMETPCDistHist[eg][h][3]->Sumw2();
-      fCMETPCList->Add(fCMETPCDistHist[eg][h][3]);
       // Final Histo:
       fCMEZDCCorHist[eg][h] = new TH1D(Form("fCMEZDCCorHist[%d][%d]",eg,h),Form("fCMEZDCCorHist[%d][%d]",eg,h),fCMEZDCnCR,0.,1.*fCMEZDCnCR);
       fCMEZDCCorHist[eg][h]->Sumw2();
@@ -26272,35 +26392,37 @@ void AliFlowAnalysisCRC::BookEverythingForCME()
     } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  for(Int_t r=0;r<fCRCnRun;r++) {
-    fCMERunsList[r] = new TList();
-    fCMERunsList[r]->SetName(Form("Run %d",fRunList[r]));
-    fCMERunsList[r]->SetOwner(kTRUE);
-    fCMERbRList->Add(fCMERunsList[r]);
-    
-    for (Int_t h=0;h<fCRCnCen;h++) {
-      for(Int_t eg=0;eg<fCMEnEtaBin;eg++) {
-        fCMETPCCorPro[r][eg][h] = new TProfile(Form("fCMETPCCorPro[%d][%d][%d]",r,eg,h),Form("fCMETPCCorPro[%d][%d][%d]",r,eg,h),fCMETPCnCR,0.,1.*fCMETPCnCR,"s");
-        fCMETPCCorPro[r][eg][h]->Sumw2();
-        fCMERunsList[r]->Add(fCMETPCCorPro[r][eg][h]);
-        fCMETPCCovPro[r][eg][h] = new TProfile(Form("fCMETPCCovPro[%d][%d][%d]",r,eg,h),Form("fCMETPCCovPro[%d][%d][%d]",r,eg,h),fCMETPCnCR*fCMETPCnCR,0.,fCMETPCnCR*fCMETPCnCR,"s");
-        fCMETPCCovPro[r][eg][h]->Sumw2();
-        fCMERunsList[r]->Add(fCMETPCCovPro[r][eg][h]);
-        fCMETPCNUAPro[r][eg][h] = new TProfile(Form("fCMETPCNUAPro[%d][%d][%d]",r,eg,h),Form("fCMETPCNUAPro[%d][%d][%d]",r,eg,h),fCMETPCnCR,0.,1.*fCMETPCnCR,"s");
-        fCMETPCNUAPro[r][eg][h]->Sumw2();
-        fCMERunsList[r]->Add(fCMETPCNUAPro[r][eg][h]);
-        fCMEZDCCorPro[r][eg][h] = new TProfile(Form("fCMEZDCCorPro[%d][%d][%d]",r,eg,h),Form("fCMEZDCCorPro[%d][%d][%d]",r,eg,h),fCMEZDCnCR,0.,1.*fCMEZDCnCR,"s");
-        fCMEZDCCorPro[r][eg][h]->Sumw2();
-        fCMERunsList[r]->Add(fCMEZDCCorPro[r][eg][h]);
-        fCMEZDCCovPro[r][eg][h] = new TProfile(Form("fCMEZDCCovPro[%d][%d][%d]",r,eg,h),Form("fCMEZDCCovPro[%d][%d][%d]",r,eg,h),fCMEZDCnCR*fCMEZDCnCR,0.,fCMEZDCnCR*fCMEZDCnCR,"s");
-        fCMEZDCCovPro[r][eg][h]->Sumw2();
-        fCMERunsList[r]->Add(fCMEZDCCovPro[r][eg][h]);
-        fCMEZDCNUAPro[r][eg][h] = new TProfile(Form("fCMEZDCNUAPro[%d][%d][%d]",r,eg,h),Form("fCMEZDCNUAPro[%d][%d][%d]",r,eg,h),fCMEZDCnCR,0.,1.*fCMEZDCnCR,"s");
-        fCMEZDCNUAPro[r][eg][h]->Sumw2();
-        fCMERunsList[r]->Add(fCMEZDCNUAPro[r][eg][h]);
-      } // end of for(Int_t eg=0;eg<fCMEnEtaBin;eg++)
-    } // end of for (Int_t h=0;h<fCRCnCen;h++)
-  } // end of for(Int_t r=0;r<fCRCnRun;r++)
+  for (Int_t h=0;h<fCRCnCen;h++) {
+    for(Int_t eg=0;eg<fCMEnEtaBin;eg++) {
+      fCMEZDCCorPro[eg][h] = new TProfile(Form("fCMEZDCCorPro[%d][%d]",eg,h),Form("fCMEZDCCorPro[%d][%d]",eg,h),fCMEZDCnCR,0.,1.*fCMEZDCnCR,"s");
+      fCMEZDCCorPro[eg][h]->Sumw2();
+      fCMEZDCList->Add(fCMEZDCCorPro[eg][h]);
+      fCMEZDCCovPro[eg][h] = new TProfile(Form("fCMEZDCCovPro[%d][%d]",eg,h),Form("fCMEZDCCovPro[%d][%d]",eg,h),fCMEZDCnCR*fCMEZDCnCR,0.,fCMEZDCnCR*fCMEZDCnCR,"s");
+      fCMEZDCCovPro[eg][h]->Sumw2();
+      fCMEZDCList->Add(fCMEZDCCovPro[eg][h]);
+      fCMEZDCNUAPro[eg][h] = new TProfile(Form("fCMEZDCNUAPro[%d][%d]",eg,h),Form("fCMEZDCNUAPro[%d][%d]",eg,h),fCMEZDCnCR,0.,1.*fCMEZDCnCR,"s");
+      fCMEZDCNUAPro[eg][h]->Sumw2();
+      fCMEZDCList->Add(fCMEZDCNUAPro[eg][h]);
+    } // end of for(Int_t eg=0;eg<fCMEnEtaBin;eg++)
+  } // end of for (Int_t h=0;h<fCRCnCen;h++)
+  
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
+      // Profiles
+      fCMETPCCorPro[k][h] = new TProfile(Form("fCMETPCCorPro[%d][%d]",k,h),Form("fCMETPCCorPro[%d][%d]",k,h),fFlowQCCenBin,0.,100.,"s");
+      fCMETPCCorPro[k][h]->Sumw2();
+      fCMETPCList->Add(fCMETPCCorPro[k][h]);
+      // Correlations:
+      // Final Histo:
+      fCMETPCCorHist[k][h] = new TH1D(Form("fCMETPCCorHist[%d][%d]",k,h),Form("fCMETPCCorHist[%d][%d]",k,h),fFlowQCCenBin,0.,100.);
+      fCMETPCCorHist[k][h]->Sumw2();
+      fCMETPCList->Add(fCMETPCCorHist[k][h]);
+      fCMETPCFinalHist[k][h] = new TH1D(Form("fCMETPCFinalHist[%d][%d]",k,h),Form("fCMETPCFinalHist[%d][%d]",k,h),fFlowQCCenBin,0.,100.);
+      fCMETPCFinalHist[k][h]->Sumw2();
+      fCMETPCList->Add(fCMETPCFinalHist[k][h]);
+    }
+  }
+  
 } // end of AliFlowAnalysisCRC::BookEverythingForCME()
 
 //=======================================================================================================================
@@ -26446,12 +26568,12 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
       fFlowQCIntCorHist[i][j] = new TH1D(Form("fFlowQCIntCorHist[%d][%d]",i,j),Form("fFlowQCIntCorHist[%d][%d]",i,j),fFlowQCCenBin,0.,100.);
       fFlowQCIntCorHist[i][j]->Sumw2();
       fFlowQCList->Add(fFlowQCIntCorHist[i][j]);
-      fFlowQCMulCorPro[i][j] = new TProfile(Form("fFlowQCMulCorPro[%d][%d]",i,j),Form("fFlowQCMulCorPro[%d][%d]",i,j),250,0.,2500,"s");
-      fFlowQCMulCorPro[i][j]->Sumw2();
-      fFlowQCList->Add(fFlowQCMulCorPro[i][j]);
-      fFlowQCMulCorHist[i][j] = new TH1D(Form("fFlowQCMulCorHist[%d][%d]",i,j),Form("fFlowQCMulCorHist[%d][%d]",i,j),250,0.,2500);
-      fFlowQCMulCorHist[i][j]->Sumw2();
-      fFlowQCList->Add(fFlowQCMulCorHist[i][j]);
+      fFlowQCNewCenPro[i][j] = new TProfile(Form("fFlowQCNewCenPro[%d][%d]",i,j),Form("fFlowQCNewCenPro[%d][%d]",i,j),fFlowQCCenBin,0.,100.,"s");
+      fFlowQCNewCenPro[i][j]->Sumw2();
+      fFlowQCList->Add(fFlowQCNewCenPro[i][j]);
+      fFlowQCNewCenHist[i][j] = new TH1D(Form("fFlowQCNewCenHist[%d][%d]",i,j),Form("fFlowQCNewCenHist[%d][%d]",i,j),fFlowQCCenBin,0.,100.);
+      fFlowQCNewCenHist[i][j]->Sumw2();
+      fFlowQCList->Add(fFlowQCNewCenHist[i][j]);
       fFlowQCMetricCorPro[i][j] = new TProfile(Form("fFlowQCMetricCorPro[%d][%d]",i,j),Form("fFlowQCMetricCorPro[%d][%d]",i,j),fZDCESENBins,0.,fZDCESELCtot,"s");
       fFlowQCMetricCorPro[i][j]->Sumw2();
       fFlowQCList->Add(fFlowQCMetricCorPro[i][j]);
@@ -26465,21 +26587,29 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
     fFlowQCIntCorHistEG[i] = new TH1D(Form("fFlowQCIntCorHistEG[%d]",i),Form("fFlowQCIntCorHistEG[%d]",i),fFlowQCCenBin,0.,100.);
     fFlowQCIntCorHistEG[i]->Sumw2();
     fFlowQCList->Add(fFlowQCIntCorHistEG[i]);
-    fFlowQCMetricCorProEG[i] = new TProfile(Form("fFlowQCMetricCorProEG[%d]",i),Form("fFlowQCMetricCorProEG[%d]",i),fZDCESENBins,0.,fZDCESELCtot,"s");
-    fFlowQCMetricCorProEG[i]->Sumw2();
-    fFlowQCList->Add(fFlowQCMetricCorProEG[i]);
-    fFlowQCMetricCorHistEG[i] = new TH1D(Form("fFlowQCMetricCorHistEG[%d]",i),Form("fFlowQCMetricCorHistEG[%d]",i),fZDCESENBins,0.,fZDCESELCtot);
-    fFlowQCMetricCorHistEG[i]->Sumw2();
-    fFlowQCList->Add(fFlowQCMetricCorHistEG[i]);
+    fFlowQCNewCenProEG[i] = new TProfile(Form("fFlowQCNewCenProEG[%d]",i),Form("fFlowQCNewCenProEG[%d]",i),fFlowQCCenBin,0.,100.,"s");
+    fFlowQCNewCenProEG[i]->Sumw2();
+    fFlowQCList->Add(fFlowQCNewCenProEG[i]);
+    fFlowQCNewCenHistEG[i] = new TH1D(Form("fFlowQCNewCenHistEG[%d]",i),Form("fFlowQCNewCenHistEG[%d]",i),fFlowQCCenBin,0.,100.);
+    fFlowQCNewCenHistEG[i]->Sumw2();
+    fFlowQCList->Add(fFlowQCNewCenHistEG[i]);
   }
   
   for(Int_t bng=0; bng<4; bng++) {
+    Double_t xmax = 100.;
+    if(bng==0) xmax = 25000.;
+    if(bng==1) xmax = 2500.;
+    if(bng==2) xmax = 6500.;
     for(Int_t i=0; i<fFlowNHarm; i++) {
-      fFlowQCMetric2DProEG[i][bng] = new TProfile2D(Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),100*(bng+1),0.,11000.,100*(bng+1),0.,100.);
+      if(bng<3) {
+       fFlowQCMetric2DProEG[i][bng] = new TProfile2D(Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),200,0.,xmax,200,0.,100.);
+      } else {
+       fFlowQCMetric2DProEG[i][bng] = new TProfile2D(Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),fZDCESENBins,0.,fZDCESELC2tot,200,-50.,50.);
+      }
       fFlowQCMetric2DProEG[i][bng]->SetErrorOption("s");
       fFlowQCMetric2DProEG[i][bng]->Sumw2();
       fFlowQCList->Add(fFlowQCMetric2DProEG[i][bng]);
-      fFlowQCMetric2DHistEG[i][bng] = new TH2D(Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng),Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng),100*(bng+1),0.,11000.,100*(bng+1),0.,100.);
+      fFlowQCMetric2DHistEG[i][bng] = new TH2D(Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng),Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng),200,0.,xmax,200,0.,100.);
       fFlowQCMetric2DHistEG[i][bng]->Sumw2();
       fFlowQCList->Add(fFlowQCMetric2DHistEG[i][bng]);
     }
@@ -26513,6 +26643,42 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPVZ()
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
 } // end of AliFlowAnalysisCRC::BookEverythingForFlowSPVZ()
+
+//=======================================================================================================================
+
+void AliFlowAnalysisCRC::BookEverythingForEbEFlow()
+{
+  if(!fCalculateEbEFlow){return;}
+  
+  for(Int_t k=0; k<24; k++) {
+    Int_t nbins = (Int_t)(sqrt(200.+k*100.));
+    fEbEFlowAzimDis[k] = new TH1D(Form("fEbEFlowAzimDis[%d]",k),Form("fEbEFlowAzimDis[%d]",k),nbins,0.,TMath::TwoPi());
+    fEbEFlowAzimDis[k]->Sumw2();
+    fTempList->Add(fEbEFlowAzimDis[k]);
+  }
+  fEBEFlowRChiSqHist = new TH2D("fEBEFlowRChiSqHist","fEBEFlowRChiSqHist",100,0.,100.,100,0.,5.);
+  fEbEFlowList->Add(fEBEFlowRChiSqHist);
+  fEBEFlowpValueHist = new TH2D("fEBEFlowpValueHist","fEBEFlowpValueHist",100,0.,100.,100,0.,1.);
+  fEbEFlowList->Add(fEBEFlowpValueHist);
+  for (Int_t h=0; h<fCRCnCen; h++) {
+    fEBEFlowCrosPro[h] = new TProfile(Form("fEBEFlowCrosPro[%d]",h),Form("fEBEFlowCrosPro[%d]",h),100,-0.1,0.6);
+    fEBEFlowCrosPro[h]->Sumw2();
+    fEbEFlowList->Add(fEBEFlowCrosPro[h]);
+    for(Int_t i=0; i<2; i++) {
+      fEBEFlowFlucHis[h][i] = new TH1D(Form("fEBEFlowFlucHis[%d][%d]",h,i),Form("fEBEFlowFlucHis[%d][%d]",h,i),100,-0.1,0.6);
+      fEBEFlowFlucHis[h][i]->Sumw2();
+      fEbEFlowList->Add(fEBEFlowFlucHis[h][i]);
+    }
+  }
+  for(Int_t h=0; h<8; h++) {
+    fEBEFlowResVZPro[h] = new TProfile(Form("fEBEFlowResVZPro[%d]",h),Form("fEBEFlowResVZPro[%d]",h),100,0.,100.);
+    fEBEFlowResVZPro[h]->Sumw2();
+    fEbEFlowList->Add(fEBEFlowResVZPro[h]);
+  }
+  
+  FourierExp = new TF1("FourierExp","[0]*(1 + 2.*[1]*cos(2.*(x-[3])) + 2.*[2]*cos(3.*(x-[4])))",0.,TMath::TwoPi());
+  
+} // end of AliFlowAnalysisCRC::BookEverythingForEbEFlow()
 
 //=======================================================================================================================
 
@@ -27949,6 +28115,12 @@ void AliFlowAnalysisCRC::ResetEventByEventQuantities()
   if(fUseCRCRecenter) fTPCQ2Recenter.Clear();
   // CRC Pt
   fCRCPtEbEQVec->Reset();
+  
+  if(fCalculateEbEFlow) {
+    for(Int_t k=0; k<24; k++) {
+      fEbEFlowAzimDis[k]->Reset();
+    }
+  }
   
 } // end of void AliFlowAnalysisCRC::ResetEventByEventQuantities();
 

@@ -8,7 +8,9 @@ project(AliPhysics CXX C)
 
 foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
           CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
-          CMP0042) # MACOSX_RPATH is enabled by default (v3.0)
+          CMP0042  # MACOSX_RPATH is enabled by default (v3.0)
+          CMP0053  # Simplify variable reference and escape sequence evaluation (v3.1.3)
+       )
   if(POLICY ${p})
     cmake_policy(SET ${p} NEW)
   endif()
@@ -49,6 +51,8 @@ set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake")
 # ALIPHYSICS_REVISION
 # ALIPHYSICS_SERIAL
 include(CheckGitVersion)
+
+include(CheckCXXCompilerFlag)
 
 #       - CLANG_MAJOR.CLANG_MINOR or
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
@@ -118,6 +122,16 @@ else()
   if(ROOT_HAS_CXX14 AND NOT DISABLE_CXX14)
     message(STATUS "Enabling C++14")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  endif()
+
+  # Turn some common warnings into errors
+  check_cxx_compiler_flag(-Werror=mismatched-new-delete CXX_COMPILER_HAS_MISMATCHED_NEW_DELETE)
+  if(CXX_COMPILER_HAS_MISMATCHED_NEW_DELETE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=mismatched-new-delete")
+  endif()
+  check_cxx_compiler_flag(-Werror=delete-non-virtual-dtor CXX_COMPILER_DELETE_NON_VIRTUAL_DTOR)
+  if(CXX_COMPILER_HAS_MISMATCHED_NEW_DELETE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=delete-non-virtual-dtor")
   endif()
 
   # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)

@@ -213,39 +213,25 @@ Int_t AliEmcalJetTask::FindJets()
 
   AliDebug(2,Form("Jet type = %d", fJetType));
 
-  AliTLorentzVector mom;
-
   Int_t iColl = 1;
   TIter nextPartColl(&fParticleCollArray);
   AliParticleContainer* tracks = 0;
   while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
     AliDebug(2,Form("Tracks from collection %d: '%s'.", iColl-1, tracks->GetName()));
-    tracks->ResetCurrentID();
-    AliVParticle* t = 0;
-    while ((t = tracks->GetNextAcceptParticle())) {
-      tracks->GetMomentum(mom, tracks->GetCurrentID());
-      if (((fJetType & AliJetContainer::kChargedJet) != 0) && (t->Charge() == 0)) {
-        AliDebug(2,Form("Skipping track %d because it is neutral.", tracks->GetCurrentID()));
-        continue;
-      }
-
-      if (((fJetType & AliJetContainer::kNeutralJet) != 0) && (t->Charge() != 0)) {
-        AliDebug(2,Form("Skipping track %d because it is charged.", tracks->GetCurrentID()));
-        continue;
-      }
-
+    AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
+    for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
       // artificial inefficiency
       if (fTrackEfficiency < 1.) {
         Double_t rnd = gRandom->Rndm();
         if (fTrackEfficiency < rnd) {
-          AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", tracks->GetCurrentID()));
+          AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
           continue;
         }
       }
 
-      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", tracks->GetCurrentID(), t->GetLabel(), t->Pt()));
-      Int_t uid = tracks->GetCurrentID() + fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(mom.Px(), mom.Py(), mom.Pz(), mom.E(), uid);
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", it.current_index(), it->second->GetLabel(), it->first.Pt()));
+      Int_t uid = it.current_index() + fgkConstIndexShift * iColl;
+      fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
     }
     iColl++;
   }
@@ -255,22 +241,11 @@ Int_t AliEmcalJetTask::FindJets()
   AliClusterContainer* clusters = 0;
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
     AliDebug(2,Form("Clusters from collection %d: '%s'.", iColl-1, clusters->GetName()));
-    clusters->ResetCurrentID();
-    AliVCluster* c = 0;
-    while ((c = clusters->GetNextAcceptCluster())) {
-      clusters->GetMomentum(mom, clusters->GetCurrentID());
-      Double_t cEta = mom.Eta();
-      Double_t cPhi = mom.Phi_0_2pi();
-      Double_t cPt  = mom.Pt();
-      Double_t cPx  = mom.Px();
-      Double_t cPy  = mom.Py();
-      Double_t cPz  = mom.Pz();
-
-      Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
-
-      AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", clusters->GetCurrentID(), c->GetLabel(), e));
-      Int_t uid = -clusters->GetCurrentID() - fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(cPx, cPy, cPz, e, uid);
+    AliClusterIterableMomentumContainer itcont = clusters->accepted_momentum();
+    for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+      AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", it.current_index(), it->second->GetLabel(), it->first.E()));
+      Int_t uid = -it.current_index() - fgkConstIndexShift * iColl;
+      fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
     }
     iColl++;
   }

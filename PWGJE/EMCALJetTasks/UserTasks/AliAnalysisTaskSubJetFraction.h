@@ -17,7 +17,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-
+const Int_t nVar = 18;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -97,8 +97,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
-  JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Double_t                            *fShapesVar;                  // jet shapes used for the tagging
+  JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
+  Double_t                            fShapesVar[nVar];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
 
@@ -138,10 +138,6 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhJetRadius;
   TH1F                                *fhJetRadius_1;
   TH1F                                *fhJetRadius_2;
-  TH1F                                *fhJetAngularity;
-  TH2F                                *fhJetAngularityJetPt;
-  TH1F                                *fhJetPTD;
-  TH2F                                *fhJetPTDJetPt;
   TH1F                                *fhJetCounter;
   TH1F                                *fhJetCounter_1;
   TH1F                                *fhJetCounter_2;
@@ -163,27 +159,10 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhNumberOfSubJetTracks;
   TH1F                                *fhNumberOfSubJetTracks_1;
   TH1F                                *fhNumberOfSubJetTracks_2;
-  TH1F                                *fhSubJetPtFrac;
-  TH1F                                *fhSubJetPtFrac2;
-  TH1F                                *fhSubJetPtLoss;
-  TH1F                                *fhSubJetPtLoss2;
-  TH1F                                *fhSubJetEnergyFrac;
-  TH1F                                *fhSubJetEnergyFrac2;
-  TH1F                                *fhSubJetEnergyLoss;
-  TH1F                                *fhSubJetEnergyLoss2;
-  TH1F                                *fhSubJetiness1;
-  TH2F                                *fhSubJetiness1JetPt;
-  TH1F                                *fhSubJetiness2;
-  TH2F                                *fhSubJetiness2JetPt;
-  TH1F                                *fh2to1SubJetinessRatio;
-  TH2F                                *fh2to1SubJetinessRatioJetPt;
   TH1F                                *fhEventCounter;
   TH1F                                *fhEventCounter_1;
   TH1F                                *fhEventCounter_2;
-  TH2F                                *fhJetPtJetEta;
-  TH2F                                *fhSubJetiness2Distance;
   TH2F                                *fh2PtRatio;
-  TH2D                                *fh2JetTracksEtaPhiPt;
   TH2D                                *fhSubJettiness1CheckRatio_FJ_AKT;
   TH2D                                *fhSubJettiness1CheckRatio_FJ_KT;
   TH2D                                *fhSubJettiness1CheckRatio_FJ_CA;

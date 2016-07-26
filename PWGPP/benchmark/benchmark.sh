@@ -1321,7 +1321,7 @@ goGenerateMakeflow()
   ############################# Summary ##################################
 
   echo "### Summary ###"
-  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]} ${arr_cpass2_merged[*]}"
+  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]} ${arr_cpass2_outputs[*]} ${arr_cpass2_merged[*]}"
   echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
   echo ; echo
 

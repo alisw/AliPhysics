@@ -19,10 +19,10 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fPID(pid),
    fCutQuality(Form("%sQuality", name)),
-   fPIDCut(3.0),
-   fMinTPCcluster(70),
+//fMinTPCcluster(70),
    //fDCARptFormula("0.0182+0.0350/pt^1.01")
-   fDCARmax(0.05)
+//fDCARmax(0.05),
+   fPIDCut(3.0)
 {
 //
 // Constructor
@@ -31,13 +31,13 @@ AliRsnCutDaughterSigmaStar2010PP::AliRsnCutDaughterSigmaStar2010PP(const char *n
 
    fCutQuality.SetPtRange(0.15, 1E+20);
    fCutQuality.SetEtaRange(-0.8, 0.8);
-   fCutQuality.SetDCARmax(fDCARmax);
+   fCutQuality.SetDCARmax(0.05);
    //fCutQuality.SetDCARPtFormula(fDCARptFormula);
    fCutQuality.SetDCAZmax(2.0);
    fCutQuality.SetSPDminNClusters(1);
    fCutQuality.SetITSminNClusters(0);
    fCutQuality.SetITSmaxChi2(1E+20);
-   fCutQuality.SetTPCminNClusters(fMinTPCcluster);
+   fCutQuality.SetTPCminNClusters(70);
    fCutQuality.SetTPCmaxChi2(4.0);
    fCutQuality.SetRejectKinkDaughters();
    fCutQuality.SetAODTestFilterBit(5);
@@ -109,6 +109,6 @@ Bool_t AliRsnCutDaughterSigmaStar2010PP::IsSelected(TObject *obj)
    maxTPC = fPIDCut;
    return (nsTPC <= maxTPC);
 
-   AliDebugClass(2, "Good Pion (hallelujah)");
+   AliDebugClass(2, "Good Pion");
    return kTRUE;
 }

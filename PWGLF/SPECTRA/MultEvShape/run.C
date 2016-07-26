@@ -85,8 +85,6 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
 // *******************  Physics Selection  *************
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(mc); // 0 = real data; 1 = MC
-  physSelTask->GetPhysicsSelection()->SetComputeBG();
-
 
   // *******************  MES Tender  ******************
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMEStender.C");

@@ -58,9 +58,9 @@ class CutHandlerConvCalo{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,                      //change different set of cuts
-                                Int_t     isMC                          = 0,                      //run MC
-                                Int_t     enableQAMesonTask             = 1,                      //enable QA in AliAnalysisTaskGammaConvV1
+void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,                      // change different set of cuts
+                                Int_t     isMC                          = 0,                      // run MC
+                                Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
                                 TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
@@ -72,11 +72,12 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
                                 Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                  = 3.,                     // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader            = "",                     // 
-                                Bool_t    doTreeConvGammaShape          = kFALSE,                 //
-                                Bool_t    doMultiplicityWeighting       = kFALSE,                  //
-                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",    //
-                                TString   periodNameAnchor              = ""
+                                TString   periodNameV0Reader            = "",                     // period Name for V0 Reader 
+                                Bool_t    doTreeConvGammaShape          = kFALSE,                 // enable additional tree for conversion properties for clusters
+                                Bool_t    doMultiplicityWeighting       = kFALSE,                 // enable multiplicity weights
+                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",    // file for multiplicity weights
+                                TString   periodNameAnchor              = "",                     // anchor period name for mult weighting
+                                Bool_t    enableSortingMCLabels         = kTRUE                   // enable sorting for MC cluster labels
               ) {
   
   Int_t isHeavyIon = 0;
@@ -1256,6 +1257,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(doTreeConvGammaShape) task->SetDoTreeConvGammaShowerShape(kTRUE);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 

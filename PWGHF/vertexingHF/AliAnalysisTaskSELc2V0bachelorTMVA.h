@@ -265,8 +265,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 
   ULong64_t fTriggerMask;			  /// mask to the trigger word returned by the physics selection
 
+  TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
+  TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
+  TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
+
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 8); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 9); /// class for Lc->p K0
   /// \endcond    
 };
 

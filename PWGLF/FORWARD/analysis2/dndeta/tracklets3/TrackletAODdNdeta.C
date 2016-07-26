@@ -61,6 +61,7 @@ struct TrackletAODdNdeta : public TrainSetup
     fOptions.Add("ipz-bins",   "BINS",   "IPz bins",               "u15");
     fOptions.Add("max-delta",  "X",      "Cut on weighted distance",25.);
     fOptions.Add("tail-delta", "X",      "Tail cut on distance",    5.);
+    fOptions.Add("tail-max",   "X",      "Tail cut on distance",    -1.);
     fOptions.Add("delta-cut",  "X",      "Cut on weighted distance",1.5);
     fOptions.Add("dphi-shift", "RADIANS","Bending shift",           0.0045);
     fOptions.Add("shifted-dphi-cut", "RADIANS", "Cut on dPhi-phiBent",  -1.);
@@ -144,6 +145,7 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "IPzAxis",         "ipz-bins",         "u15");
     FromOption(task, "DeltaCut",	"delta-cut",	    1.5);
     FromOption(task, "TailDelta",	"tail-delta",	    5.);
+    FromOption(task, "TailMax",		"tail-max",	    -1);
     FromOption(task, "MaxDelta",	"max-delta",	    25.);
     FromOption(task, "DPhiShift",	"dphi-shift",	    0.0045);
     FromOption(task, "ShiftedDPhiCut",	"shifted-dphi-cut",-1.);

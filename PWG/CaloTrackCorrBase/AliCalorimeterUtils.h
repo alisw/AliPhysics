@@ -371,8 +371,6 @@ class AliCalorimeterUtils : public TObject {
 
   void          SetRunNumber(Int_t run)                         { fRunNumber  = run             ; }
   Int_t         GetRunNumber()                            const { return fRunNumber             ; }
-
-  enum detector { kEMCAL = 0, kPHOS = 1, kCTS = 2, kDCAL = 3, kDCALPHOS = 4 };
   
  private:
 

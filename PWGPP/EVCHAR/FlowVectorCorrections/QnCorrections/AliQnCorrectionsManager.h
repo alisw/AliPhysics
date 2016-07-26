@@ -196,7 +196,7 @@ class AliQnCorrectionsManager : public TObject {
 
   TString fRunList; // list of run labels separated by a semi-colon
 
-  ClassDef(AliQnCorrectionsManager, 1);
+  ClassDef(AliQnCorrectionsManager, 2);
   
 };
 

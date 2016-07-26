@@ -42,7 +42,7 @@ protected:
 
   void CreateEnergyBinning(TArrayD& binning) const;
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
-  void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi);
+  void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;

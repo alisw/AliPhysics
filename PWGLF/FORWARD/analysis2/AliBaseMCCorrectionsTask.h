@@ -5,7 +5,7 @@
 #define ALIBASEMCCORRECTIONS_H
 /**
  * @file   AliBaseMCCorrectionsTask.h
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 14:05:51 2011
  * 
  * @brief  
@@ -120,6 +120,12 @@ public:
    * @param axis Axis
    */
   void SetEtaAxis(const TAxis& axis);
+  /** 
+   * Set-up for satellite collisions 
+   * 
+   * @param sat If true, set-up for satellites 
+   */
+  void SetSatellite(Bool_t sat);
   /** 
    * Get a reference to the track density calculator 
    * 

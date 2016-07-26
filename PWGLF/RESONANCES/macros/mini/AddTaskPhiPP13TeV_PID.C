@@ -17,8 +17,9 @@ enum eventCutSet { kEvtDefault=0,
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
-		   kVOM, //=8
-		   kRM08 //=9
+		   kNoEvtSel, //=8
+		   kV0M, //=9
+		   kRM08 //=10
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -53,6 +54,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // event cuts
   //-------------------------------------------
   UInt_t      triggerMask=AliVEvent::kINT7;
+  if(isMC && evtCutSetID==eventCutSet::kNoEvtSel) triggerMask=AliVEvent::kAny;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
 
@@ -123,16 +125,19 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1){
+  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
     cutVertex->SetCheckZResolutionSPD();
     cutVertex->SetCheckDispersionSPD();
     cutVertex->SetCheckZDifferenceSPDTrack();
   }
 
-  AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-  cutEventUtils->SetCheckIncompleteDAQ();
-  cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+  AliRsnCutEventUtils* cutEventUtils=0;
+  if(evtCutSetID!=eventCutSet::kNoEvtSel){
+    cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+    cutEventUtils->SetCheckIncompleteDAQ();
+    cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+  }
 
   if(isPP && (!isMC) && cutVertex){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
@@ -140,15 +145,24 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   }
 
   // define and fill cut set for event cut
-  AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-  eventCuts->AddCut(cutEventUtils);
-  if(cutVertex){
-    eventCuts->AddCut(cutVertex);
-    eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
-  }else{
-    eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+  AliRsnCutSet* eventCuts=0;
+  if(cutEventUtils || cutVertex){
+    eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
+
+    if(cutEventUtils && cutVertex){
+      eventCuts->AddCut(cutEventUtils);
+      eventCuts->AddCut(cutVertex);
+      eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+    }else if(cutEventUtils && !cutVertex){
+      eventCuts->AddCut(cutEventUtils);
+      eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+    }else if(!cutEventUtils && !cutVertex){
+      eventCuts->AddCut(cutVertex);
+      eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
+    }
+
+    task->SetEventCuts(eventCuts);
   }
-  task->SetEventCuts(eventCuts);
 
   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
 

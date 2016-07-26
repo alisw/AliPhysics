@@ -18,12 +18,12 @@ using namespace std;
   public:
    AliReconstructedProton();
 
-   ~AliReconstructedProton();
+   virtual ~AliReconstructedProton();
 
 //   AliReconstructedProton(const AliReconstructedProton&);
 //   AliReconstructedProton & operator=(const AliReconstructedProton&);
-
-   enum MCProtonOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
+ 
+   enum MCProtonOrigin_t {kUnassigned, kPrimaryP, kSecondaryWeak, kMaterial};
    double pMomentum[3]; // 3 reconstructed momentum
    double pMomentumTruth[3]; // 3 true momentum, used in momentum smearing analysis
    double pPt;
@@ -55,11 +55,11 @@ using namespace std;
 
   public:
    AliReconstructedXi();
-   ~AliReconstructedXi();
+   virtual ~AliReconstructedXi();
 //   AliReconstructedXi(const AliReconstructedXi&);
 //   AliReconstructedXi & operator=(const AliReconstructedXi&);
 
-   enum MCXiOrigin_t {kUnassigned, kFake, kFakeXi, kPrimaryXi, kPrimaryOmega, kOtherOriginXi, kPrimaryAntiOmega, kOtherOriginAntiXi};
+   enum MCXiOrigin_t {kUnassigned, kFake, kFakeXi, kPrimaryXi, kPrimaryOmega, kOtherOriginXi, kPrimaryAntiXi, kPrimaryAntiOmega, kOtherOriginAntiXi, kSecondaryXi, kSecondaryOmega,kSecondaryAntiXi, kSecondaryAntiOmega};
    double xiMomentum[3]; // reconstructed momentum
    double xiMomentumTruth[3]; //true momentum, used in momentum smearing analysis
    double xiPt;
@@ -149,9 +149,9 @@ using namespace std;
 class AliAnalysishCascadeEvent {
 
    public:
-
+    virtual ~AliAnalysishCascadeEvent() {}
     int fNumberCandidateXi;
-    int fNumberCandidateProton; 
+    int fNumberCandidateProton;
     double fPrimaryVertex[3]; //Location of the primary vertex
 
     AliReconstructedXi *fReconstructedXi;
@@ -172,7 +172,7 @@ class AliAnalysishCascadeEventCollection  {
     AliAnalysishCascadeEventCollection(const AliAnalysishCascadeEventCollection&);
     AliAnalysishCascadeEventCollection & operator=(const AliAnalysishCascadeEventCollection&);
 
-    ~AliAnalysishCascadeEventCollection();
+    virtual ~AliAnalysishCascadeEventCollection();
 
     void FifoShift();
 

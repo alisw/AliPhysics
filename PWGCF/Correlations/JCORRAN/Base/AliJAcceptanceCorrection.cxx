@@ -144,7 +144,7 @@ void AliJAcceptanceCorrection::Generate3DAcceptanceCorrection(){
  *  const char* fileName = file name for the file, in which the histogram are located
  */
 void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
-  // read inclusive histos
+  // read the mixed event histograms
   
   TPMERegexp sep("::");
   int ncol = sep.Split( fileName );
@@ -161,6 +161,7 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
   }
 
   AliJHistManager *histogramReader = new AliJHistManager("hst",sep[1]);
+  histogramReader->LoadConfig();
   
   // Check if the new acceptance histogram exists in the inclusive file.
   // This check is done for backwards compatibility. If the histogram is
@@ -174,22 +175,23 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     std::cout << "Inclusive histograms for traditional 1D acceptance correction are not loaded! " << std::endl;
   }
   
-  
-  if(histogramReader->HistogramExists("hDPhiDEtaPta")){
-    fDEtaDPhiNearAcceptance = histogramReader->GetTH2D("hDPhiDEtaPta");
+  // Load the mixed event deltaPhi deltaEta histogram in the traditional near side
+  if(histogramReader->HistogramExists("hDphiDetaPta")){
+    fDEtaDPhiNearAcceptance = histogramReader->GetTH2D("hDphiDetaPta");
     NormalizeAcceptanceTraditionalInclusive(fDEtaDPhiNearAcceptance, kAssocType);
     fDEtaDPhiNearLoaded = true;
   } else {
-    std::cout << "Could not find histogram: hDPhiDEtaPta" << std::endl;
+    std::cout << "Could not find histogram: hDphiDetaPta" << std::endl;
     std::cout << "Inclusive histograms for traditional 2D acceptance correction are not loaded! " << std::endl;
   }
   
-  if(histogramReader->HistogramExists("hDPhiDEtaXlong")){
-    fDEtaDPhi3DNearAcceptance = histogramReader->GetTH2D("hDPhiDEtaXlong");
+  // Load the mixed event deltaPhi deltaEta histogram in the 3D near side
+  if(histogramReader->HistogramExists("hDphiDetaXlong")){
+    fDEtaDPhi3DNearAcceptance = histogramReader->GetTH2D("hDphiDetaXlong");
     NormalizeAcceptance3DNearSideInclusive(fDEtaDPhi3DNearAcceptance, kXeType);
     fDEtaDPhi3DNearLoaded = true;
   } else {
-    std::cout << "Could not find histogram: hDPhiDEtaXlong" << std::endl;
+    std::cout << "Could not find histogram: hDphiDetaXlong" << std::endl;
     std::cout << "Inclusive histograms for 3D near side acceptance correction are not loaded! " << std::endl;
   }
   
@@ -242,13 +244,14 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceTraditional(AliJTH1D &acceptan
 }
 
 /*
- * Do a proper normalization for the acceptance histograms for traditional near side
- * These histograms we can just normalize to interval [0,1]
+ * Do a proper normalization for the acceptance histograms
+ * pTa or xLong bins are summed over to remove possible biases and to get better statistics
+ * The  histograms arethen scaled to a given peak value
  *
  *  AliJTH2D &acceptanceHisto = Custom histogram array containing the histogram to be normalized
  *  corrType assocType = Associated particle binning type, mainly pTa or xLong
  */
-void AliJAcceptanceCorrection::NormalizeAcceptanceTraditionalInclusive(AliJTH2D &acceptanceHisto, corrType assocType){
+void AliJAcceptanceCorrection::NormalizeAcceptanceInclusive(AliJTH2D &acceptanceHisto, corrType assocType, double peakValue){
   // Method for normalizing and rebinning the inclusive acceptance histograms from 3D near side
   
   // Find the correct binning
@@ -263,35 +266,58 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceTraditionalInclusive(AliJTH2D 
   
   // Find the number of bins in the histogram. Each histogram has the same binning
   // so this can just be read from the first histogram
-  // In the regular analysis, the size of the histograms is 320 (eta) x 320 (phi) bins
-  const int nBinsEta = acceptanceHisto[0][0][0]->GetNbinsX();
-  const int nBinsPhi = acceptanceHisto[0][0][0]->GetNbinsY();
+  // In the regular analysis, the size of the histograms is 320 (eta) x 640 (phi) bins
+  const int nBinsEta = acceptanceHisto[1][0][0][0]->GetNbinsX();
+  const int nBinsPhi = acceptanceHisto[1][0][0][0]->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
   
   // Loop over the input histograms and find the correct normalization
   for (int iCent = 0; iCent < numCent; iCent++) {
     for (int iPtt = 0; iPtt < numPtt; iPtt++){
-      for (int iAssoc = 0; iAssoc < numAssoc; iAssoc++){
-        
-        // Rebin and normalize to the interval [0,1]
-        counts  = acceptanceHisto[iCent][iPtt][iAssoc]->Integral();
-        
-        // Do rebinning requiring at least fMinCountsPerBinInclusive counts in every bin in the histogram.  Maximum rebin is 16
-        rebin = 1;
-        if(counts<nBins*fMinCountsPerBinInclusive) rebin=2;
-        if(counts<(nBins/4.0)*fMinCountsPerBinInclusive) rebin=4;
-        if(counts<(nBins/16.0)*fMinCountsPerBinInclusive) rebin=8;
-        if(counts<(nBins/64.0)*fMinCountsPerBinInclusive) rebin=10;
-        if(counts<(nBins/100.0)*fMinCountsPerBinInclusive) rebin=16;
-        acceptanceHisto[iCent][iPtt][iAssoc]->Rebin2D(rebin,rebin);
-        
-        // Normalize the rebinned histogram. GetMaximum is probably good enough for finding maximum value.
-        maxValue = acceptanceHisto[iCent][iPtt][iAssoc]->GetMaximum();
-        if(maxValue > 0) acceptanceHisto[iCent][iPtt][iAssoc]->Scale(1/maxValue);
-        
+      // xLong bins bias the deltaEta deltaPhi distribution, so we need to integrate over them
+      // Also pTa bins are integrated over to get a good statistics
+      for (int iAssoc = 1; iAssoc < numAssoc; iAssoc++){
+        // Check the leading particle condition for the histograms
+        if(assocType == kAssocType && fCard->Get(kTriggType,iPtt) < fCard->Get(kAssocType,iAssoc)) continue;
+        acceptanceHisto[1][iCent][iPtt][0]->Add(acceptanceHisto[1][iCent][iPtt][iAssoc]);
       }
+      
+      // Rebin and normalize to the interval [0,peakValue]
+      counts  = acceptanceHisto[1][iCent][iPtt][0]->Integral();
+      
+      // Set the correct number of entries after the addition
+      acceptanceHisto[1][iCent][iPtt][0]->SetEntries(counts);
+      
+      // Do rebinning requiring at least fMinCountsPerBinInclusive counts in every bin in the histogram.  Maximum rebin is 16
+      rebin = 1;
+      if(counts<nBins*fMinCountsPerBinInclusive) rebin=2;
+      if(counts<(nBins/4.0)*fMinCountsPerBinInclusive) rebin=4;
+      if(counts<(nBins/16.0)*fMinCountsPerBinInclusive) rebin=8;
+      if(counts<(nBins/64.0)*fMinCountsPerBinInclusive) rebin=10;
+      if(counts<(nBins/100.0)*fMinCountsPerBinInclusive) rebin=16;
+      
+      acceptanceHisto[1][iCent][iPtt][0]->Rebin2D(rebin,rebin);
+      
+      // Normalize the rebinned histogram. GetMaximum is probably good enough for finding maximum value.
+      maxValue = acceptanceHisto[1][iCent][iPtt][0]->GetMaximum();
+      if(maxValue > 0) acceptanceHisto[1][iCent][iPtt][0]->Scale(peakValue/maxValue);
+      
+      // Note: The correction for away side effect for 3D near side done in GetAcceptanceCorrection3DNearSidelInclusive method
     }
   }
+}
+
+/*
+ * Do a proper normalization for the acceptance histograms for traditional near side
+ * These histograms we can just normalize to interval [0,1]
+ *
+ *  AliJTH2D &acceptanceHisto = Custom histogram array containing the histogram to be normalized
+ *  corrType assocType = Associated particle binning type, mainly pTa or xLong
+ */
+void AliJAcceptanceCorrection::NormalizeAcceptanceTraditionalInclusive(AliJTH2D &acceptanceHisto, corrType assocType){
+  // Method for normalizing and rebinning the inclusive acceptance histograms from 3D near side
+  
+  NormalizeAcceptanceInclusive(acceptanceHisto,assocType,1);
 }
 
 /*
@@ -306,52 +332,13 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceTraditionalInclusive(AliJTH2D 
 void AliJAcceptanceCorrection::NormalizeAcceptance3DNearSideInclusive(AliJTH2D &acceptanceHisto, corrType assocType){
   // Method for normalizing and rebinning the inclusive acceptance histograms from 3D near side
   
-  // Find the correct binning
-  const int numCent  = fCard->GetNoOfBins(kCentrType);
-  const int numPtt   = fCard->GetNoOfBins(kTriggType);
-  const int numAssoc = fCard->GetNoOfBins(assocType);
+  // Find the acceptance eta range
   const double etaRange = fCard->Get("EtaRange");
+
+  // Do the normalization
+  const double peakValue = 2*sqrt(2)*etaRange;
+  NormalizeAcceptanceInclusive(acceptanceHisto,assocType,peakValue);
   
-  // Variables for the loop
-  int rebin;
-  double counts;
-  double maxValue;
-  
-  // Find the number of bins in the histogram. Each histogram has the same binning
-  // so this can just be read from the first histogram
-  // In the regular analysis, the size of the histograms is 320 (eta) x 640 (phi) bins
-  const int nBinsEta = acceptanceHisto[0][0][0]->GetNbinsX();
-  const int nBinsPhi = acceptanceHisto[0][0][0]->GetNbinsY();
-  const int nBins = nBinsEta*nBinsPhi;
-  
-  // Loop over the input histograms and find the correct normalization
-  for (int iCent = 0; iCent < numCent; iCent++) {
-    for (int iPtt = 0; iPtt < numPtt; iPtt++){
-      
-      // xLong bins bias the deltaEta deltaPhi distribution, so we need to integrate over them
-      for (int iAssoc = 1; iAssoc < numAssoc; iAssoc++){
-        acceptanceHisto[iCent][iPtt][0]->Add(acceptanceHisto[iCent][iPtt][iAssoc]);
-      }
-      
-      // Rebin and normalize to the interval [0,2*sqrt(2)*etaRange]
-      counts  = acceptanceHisto[iCent][iPtt][0]->Integral();
-      
-      // Do rebinning requiring at least fMinCountsPerBinInclusive counts in every bin in the histogram.  Maximum rebin is 16
-      rebin = 1;
-      if(counts<nBins*fMinCountsPerBinInclusive) rebin=2;
-      if(counts<(nBins/4.0)*fMinCountsPerBinInclusive) rebin=4;
-      if(counts<(nBins/16.0)*fMinCountsPerBinInclusive) rebin=8;
-      if(counts<(nBins/64.0)*fMinCountsPerBinInclusive) rebin=10;
-      if(counts<(nBins/100.0)*fMinCountsPerBinInclusive) rebin=16;
-      acceptanceHisto[iCent][iPtt][0]->Rebin2D(rebin,rebin);
-      
-      // Normalize the rebinned histogram. GetMaximum is probably good enough for finding maximum value.
-      maxValue = acceptanceHisto[iCent][iPtt][0]->GetMaximum();
-      if(maxValue > 0) acceptanceHisto[iCent][iPtt][0]->Scale(2*sqrt(2)*etaRange/maxValue);
-      
-      // Note: The correction for away side effect done in GetAcceptanceCorrection3DNearSidelInclusive method
-    }
-  }
 }
 
 /*
@@ -403,7 +390,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideCalculation(do
  *  int triggerBin = bin index for trigger particle transverse momentum
  *  int assocBin = bin index for associated particle binning
  */
-double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, int centralityBin, int triggerBin, int assocBin){
+double AliJAcceptanceCorrection::GetAcceptanceCorrectionTriangleInclusive(double deltaEta, int centralityBin, int triggerBin, int assocBin){
   // Inclusive acceptance correction
   
   // If the inclusive histograms are not found from the file, return correction from triangle
@@ -438,24 +425,21 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusive(dou
  *  double deltaPhi = deltaPhi for the particle pair
  *  int centralityBin = bin index for centrality
  *  int triggerBin = bin index for trigger particle transverse momentum
- *  int assocBin = bin index for associated particle binning
  */
-double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin, int assocBin){
+double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin){
   // Inclusive acceptance correction from two dimensional histogram
   
   // If the inclusive histograms are not found from the file, return correction from triangle
   if(!fDEtaDPhiNearLoaded) return GetAcceptanceCorrectionTriangle(deltaEta);
-  
-  // If the given bin is negative, return correction from triangle
-  if(assocBin < 0) return GetAcceptanceCorrectionTriangle(deltaEta);
-  
-  // The acceptance histogram comes always from pTa bins since 1D correction for 3D near side is meaningless
-  TH2D *acceptanceHistogram = fDEtaDPhiNearAcceptance[1][centralityBin][triggerBin][assocBin];
+
+  // The acceptance histogram comes always from 2D distribution
+  TH2D *acceptanceHistogram = fDEtaDPhiNearAcceptance[1][centralityBin][triggerBin][0];
   
   // If there are less than fMinCountsPerBinInclusive entries per bin use calculation instead of histogram
   const int nBinsEta = acceptanceHistogram->GetNbinsX();
   const int nBinsPhi = acceptanceHistogram->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
+  
   if(acceptanceHistogram->GetEntries() < nBins*fMinCountsPerBinInclusive) return GetAcceptanceCorrectionTriangle(deltaEta);
   
   // Use the value in the bin corresponding to deltaEta as acceptance correction
@@ -485,10 +469,12 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusive(doub
   if(!fDEtaDPhi3DNearLoaded) return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
   
   // If there are less than fMinCountsPerBinInclusive entries per bin use calculation instead of histogram
+  // This can happen only if after rebin of 16 the entries per bin are still low
   TH2D *acceptanceHistogram = fDEtaDPhi3DNearAcceptance[1][centralityBin][triggerBin][0];
   const int nBinsEta = acceptanceHistogram->GetNbinsX();
   const int nBinsPhi = acceptanceHistogram->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
+  
   if(acceptanceHistogram->GetEntries() < nBins*fMinCountsPerBinInclusive) return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
   
   // First find the length of the deltaEta line in the near side
@@ -517,14 +503,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusive(doub
  *  double deltaPhi = deltaPhi for the particle pair
  *  int centralityBin = bin index for centrality
  *  int triggerBin = bin index for trigger particle transverse momentum
- *  int assocBin = bin index for associated particle binning
  */
-double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin, int assocBin){
+double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin){
   
   if(samplingMethod == 0){
     return GetAcceptanceCorrectionTriangle(deltaEta);
   } else {
-    return GetAcceptanceCorrectionTraditionalInclusive(deltaEta,deltaPhi,centralityBin,triggerBin,assocBin);
+    return GetAcceptanceCorrectionTraditionalInclusive(deltaEta,deltaPhi,centralityBin,triggerBin);
   }
   
 }
@@ -560,14 +545,13 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingM
  *  double deltaPhi = deltaPhi for the particle pair
  *  int centralityBin = bin index for centrality
  *  int triggerBin = bin index for trigger particle transverse momentum
- *  int assocBin = bin index for associated particle binning
  */
-double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin, int assocBin){
+double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin){
   
   if(nearSideDefinition == 0 || nearSideDefinition == 1){
     return GetAcceptanceCorrection3DNearSide(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin);
   } else {
-    return GetAcceptanceCorrectionTraditional(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin,assocBin);
+    return GetAcceptanceCorrectionTraditional(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin);
   }
   
 }

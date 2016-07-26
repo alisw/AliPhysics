@@ -219,7 +219,7 @@ THnF* AliQnCorrectionsHistograms::DivideTHnF(THnF* t1, THnF* t2){
     if(n>1) {f=f/n;f2=f2/n;}                    // these thn's are divided to calculate averages for calibrations, and is designed to fail for n=1
     else {f=0;f2=0;}
 
-    if((f2-f*f)<=0.0) e = TMath::Sqrt(f);
+    if((f2-f*f)<=0.0) e = TMath::Sqrt(f*f-f2);
     else if((f2-f*f)>0.0) e  = TMath::Sqrt(f2-f*f);
     else e=1.0;
 
@@ -563,13 +563,13 @@ Bool_t AliQnCorrectionsHistograms::ConnectMultiplicityHistograms(TList* list, Al
   if(!fEqualizationHistogramsM[0]) return kFALSE;
   if(fEqualizationHistogramsM[0]->GetEntries()==0) return kFALSE;
 
-  SetEqualizationHistogramM(  DivideTHnF(fEqualizationHistogramsM[0],fEqualizationHistogramsE[0]),0);
- 
   if(QnConf->ChannelGroups()){
     CreateGroupMultiplicityHistograms(list,QnConf);
     SetGroupEqualizationHistogramM(  DivideTHnF(fGroupEqualizationHistogramsM[0],fGroupEqualizationHistogramsE[0]),0);
   }
 
+  SetEqualizationHistogramM(  DivideTHnF(fEqualizationHistogramsM[0],fEqualizationHistogramsE[0]),0);
+ 
   return kTRUE;
 
 }

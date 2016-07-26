@@ -23,7 +23,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   virtual ~AliAnalysisTaskGammaHadron();
 
   void                        UserCreateOutputObjects();
-
   //Set things for the analyis
   //void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut      ; }
   //void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b        ; }
@@ -36,6 +35,7 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 
  protected:
 
+  void                        InitArrays()                                                  ;
   void                        ExecOnce()         										  ;
   void                        InitEventMixer()											  ;
   Bool_t                      RetrieveEventObjects()                                        ;
@@ -53,6 +53,7 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   Bool_t                      fGammaOrPi0;               // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fSameEventAnalysis;        // This tells me whether the analysis is done for same event fSameEventAnalysis==1 or mixed events
   Bool_t                      fDebug;			        // Can be set for debugging
+  Bool_t                      fUsePerTrigWeight;		    // Sets whether you want to look at absolute yields or per trigger yields
 
   // Input histograms
   THnF                       *fHistEffGamma;             // input efficiency for trigger particles

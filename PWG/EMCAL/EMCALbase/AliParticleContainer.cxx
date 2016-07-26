@@ -33,7 +33,7 @@ ClassImp(AliParticleContainer);
 AliParticleContainer::AliParticleContainer():
   AliEmcalContainer(),
   fMinDistanceTPCSectorEdge(-1),
-  fCharge(-1),
+  fChargeCut(kNoChargeCut),
   fGeneratorIndex(-1)
 {
   fBaseClassName = "AliVParticle";
@@ -47,7 +47,7 @@ AliParticleContainer::AliParticleContainer():
 AliParticleContainer::AliParticleContainer(const char *name) :
   AliEmcalContainer(name),
   fMinDistanceTPCSectorEdge(-1),
-  fCharge(-1),
+  fChargeCut(kNoChargeCut),
   fGeneratorIndex(-1)
 {
   fBaseClassName = "AliVParticle";
@@ -338,9 +338,37 @@ Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp, UInt_t &r
     return kFALSE;
   }
 
-  if (fCharge>=0 && fCharge != vp->Charge()) {
-    rejectionReason |= kChargeCut;
-    return kFALSE;
+  switch (fChargeCut) {
+  case kCharged:
+    if (vp->Charge() == 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  case kNeutral:
+    if (vp->Charge() != 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  case kPositiveCharge:
+    if (vp->Charge() <= 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  case kNegativeCharge:
+    if (vp->Charge() >= 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  default:
+    break;
   }
 
   if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex()) {
@@ -433,6 +461,24 @@ const AliParticleIterableContainer AliParticleContainer::accepted() const {
   return AliParticleIterableContainer(this, true);
 }
 
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliParticleIterableMomentumContainer AliParticleContainer::all_momentum() const {
+  return AliParticleIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliParticleIterableMomentumContainer AliParticleContainer::accepted_momentum() const {
+  return AliParticleIterableMomentumContainer(this, true);
+}
+
 /******************************************
  * Unit tests                             *
  ******************************************/
@@ -451,13 +497,13 @@ int TestParticleContainerIterator(const AliParticleContainer *const cont, int it
 
   if(!iteratorType){
     // test accept iterator
-    for(AliParticleIterableContainer::iterator iter = cont->accept_begin(); iter != cont->accept_end(); ++iter){
-      variation.push_back(*iter);
+    for(auto part : cont->accepted()){
+      variation.push_back(part);
     }
   } else {
     // test all iterator
-    for(AliParticleIterableContainer::iterator iter = cont->begin(); iter != cont->end(); ++iter){
-      variation.push_back(*iter);
+    for(auto part : cont->all()){
+      variation.push_back(part);
     }
   }
 

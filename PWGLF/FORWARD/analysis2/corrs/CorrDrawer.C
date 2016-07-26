@@ -1087,14 +1087,14 @@ protected:
   {
     if (!stacks) return false;
     // --- Make summary page -------------------------------------------
-    Int_t nVtx = 10; // stacks->GetEntries();
+    Int_t nVtx = stacks->GetEntries();
 
     fBody->Divide(3, (nVtx+2)/3, 0, 0);
     Int_t ipad = 0;
     for (UShort_t v = 1; v <= nVtx; v++) {
       ipad++;
     
-      if (ipad == 1 || ipad == 12) ipad++;
+      if (nVtx == 10 && (ipad == 1 || ipad == 12)) ipad++;
 
       THStack*     stack = static_cast<THStack*>(stacks->At(v-1));
       if (!stack) { 

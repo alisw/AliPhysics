@@ -784,8 +784,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
 
   }
 
-  delete type1;
-  delete type2;
+  delete[] type1;
+  delete[] type2;
 
   double fhntReco1_nbins = fhntReco1->GetNbins();
   double fhntReco2_nbins = fhntReco2->GetNbins();

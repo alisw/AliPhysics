@@ -82,6 +82,60 @@ Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
   return kFALSE;
 }
 
+
+//___________________________________________________
+/// Fill the output list of initialized control histograms.
+/// Cluster or track spectra histograms, depending on different selection cuts.
+/// First fill the histograms of the mother class, that are independent on ESD/AOD.
+/// Then add the AOD specific ones.
+//___________________________________________________
+TList * AliCaloTrackAODReader::GetCreateControlHistograms()
+{  
+  AliCaloTrackReader::GetCreateControlHistograms();
+    
+  if(fFillCTS)
+  {
+    for(Int_t i = 0; i < 4; i++)
+    {
+      TString names[] = {"FilterBit_Hybrid", "SPDHit", "SharedCluster", "Primary"};
+      
+      fhCTSAODTrackCutsPt[i] = new TH1F(Form("hCTSReaderAODClusterCuts_%d_%s",i,names[i].Data()),
+                                        Form("AOD CTS Cut %d, %s",i,names[i].Data()), 
+                                        fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]) ;
+      fhCTSAODTrackCutsPt[i]->SetYTitle("# tracks");
+      fhCTSAODTrackCutsPt[i]->SetXTitle("#it{p}_{T} (GeV)");
+      fOutputContainer->Add(fhCTSAODTrackCutsPt[i]);
+    }
+  }
+  
+  return fOutputContainer ;
+}
+
+//________________________________________________________
+/// Save parameters used for analysis in a string.
+//________________________________________________________
+TObjString *  AliCaloTrackAODReader::GetListOfParameters()
+{
+  // Recover the string from the mother class
+  TString parList = (AliCaloTrackReader::GetListOfParameters())->GetString();
+  
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
+  
+  snprintf(onePar,buffersize,"AOD Track: Hybrid %d, Filter bit %d, Complementary bit %d, Primary %d; ", 
+           fSelectHybridTracks, (Int_t)fTrackFilterMask, (Int_t)fTrackFilterMaskComplementary, fSelectPrimaryTracks) ;
+  parList+=onePar ;
+  
+  if(fSelectFractionTPCSharedClusters)
+  {
+    snprintf(onePar,buffersize,"Fraction of TPC shared clusters ON: %2.2f ", fCutTPCSharedClustersFraction) ;
+    parList+=onePar ;
+  }
+  
+  return new TObjString(parList) ;
+
+}
+
 //____________________________________________________________
 /// \return list of MC particles in AOD. Do it for the corresponding input event.
 //____________________________________________________________
@@ -138,13 +192,17 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
       if (!accept && !acceptcomplement) return kFALSE ;
     }
   }
-  
+
+  fhCTSAODTrackCutsPt[0]->Fill(aodtrack->Pt());
+
   //
   if(fSelectSPDHitTracks)
   { // Not much sense to use with TPC only or Hybrid tracks
     if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) return kFALSE ;
   }
   
+  fhCTSAODTrackCutsPt[1]->Fill(aodtrack->Pt());
+
   //
   if ( fSelectFractionTPCSharedClusters )
   {
@@ -160,6 +218,8 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     }
   }
   
+  fhCTSAODTrackCutsPt[2]->Fill(aodtrack->Pt());
+
   //
   if ( fSelectPrimaryTracks )
   {
@@ -169,8 +229,10 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
       return kFALSE ;
     }
   }
-  
+
   AliDebug(2,"\t accepted track!");
+  
+  fhCTSAODTrackCutsPt[3]->Fill(aodtrack->Pt());
   
   track->GetPxPyPz(pTrack) ;
   

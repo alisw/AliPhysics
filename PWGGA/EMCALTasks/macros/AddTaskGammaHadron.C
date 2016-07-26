@@ -3,33 +3,44 @@
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Bool_t      InputGammaOrPi0        = 0,      //gamma analysis=0, pi0 analyis=1
   Bool_t      InputSameEventAnalysis = 1,      //same event=1 mixed event =0 (currently only used to throw out event in  Run() function)
-  const char *tracksName             = "Tracks",
-  const char *clustersName           = "CaloClusters",
-  const char *ncells                 = "EMCALCells",   //probably delete this this is nowhere used
+  const char *trackName              = "usedefault",
+  const char *clusName               = "usedefault",
+  const char *cellName               = "usedefault",   //probably delete this this is nowhere used
   Double_t    trackptcut             = 0.15,
   Double_t    clusptcut              = 0.30,
   const char *taskname               = "AliAnalysisTask",
   const char *suffix                 = ""
 )
 {  
-	cout<<"in AddTaskGammaHadron.C(...)"<<endl;
+  //cout<<"in AddTaskGammaHadron.C(...)"<<endl;
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
     ::Error("AddTaskGammaHadron", "No analysis manager to connect to.");
-    return NULL;
+    return 0;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
     ::Error("AddTaskGammaHadron", "This task requires an input event handler");
-    return NULL;
+    return 0;
   }
-  
+  if (handler->InheritsFrom("AliESDInputHandler"))
+  {
+	  ::Error("AddTaskGammaHadron", "We have never taken care if this works for ESDs");
+	  return 0;
+   }
+
+  //in case of AOD the default names are:
+  if(trackName=="usedefault")trackName = "tracks";   //could be hybrid tracks
+  if(clusName =="usedefault")clusName  = "caloClusters";
+  if(cellName =="usedefault")cellName  = "emcalCells";
+
   //-------------------------------------------------------
   // Built the name of the Task together
   //-------------------------------------------------------
@@ -53,44 +64,68 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   }
 
   TString combinedName;
-  combinedName.Form("%s_%s_%s_%s_%s",taskname,(const char*)GammaPi0Name,(const char*)SameMixName,tracksName,clustersName);
+  combinedName.Form("%s_%s_%s_%s_%s",taskname,(const char*)GammaPi0Name,(const char*)SameMixName,trackName,clusName);
   if(suffix!="")
   {
 	  combinedName += "_";
 	  combinedName += suffix;
   }
-
   cout<<"combinedName: "<<combinedName<<endl;
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
   AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputSameEventAnalysis);
 
-  //perform some settings
-  AnalysisTask->SetCaloCellsName(ncells);
+  //..Add the containers and set the names
+  AnalysisTask->SetCaloCellsName(cellName);
+  AnalysisTask->AddClusterContainer(clusName);
+
+  if (trackName == "mcparticles")
+  {
+	  AliMCParticleContainer* mcpartCont = AnalysisTask->AddMCParticleContainer(trackName);
+	  mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  }
+  else if (trackName == "tracks")
+  {
+	  AliTrackContainer* trackCont = AnalysisTask->AddTrackContainer(trackName);
+	  trackCont->SetFilterHybridTracks(kTRUE); //gives me Hyprid tracks
+  }
+  //..check that condition!! maybe for mixed events its different!!!!!!
+  if(!AnalysisTask->GetTrackContainer(trackName) || !AnalysisTask->GetClusterContainer(clusName))
+  {
+	 cout<<"Task can not run like this!"<<endl;
+	 return 0;
+  }
+
+  //..Add some selection criteria
   AnalysisTask->SetVzRange(-10,10);
-
- //for later AnalysisTask->SetEffHistGamma(THnF *h);
- //for later AnalysisTask->SetEffHistHadron(THnF *h);
-
-
-  //add particle and cluster container
-  AliParticleContainer *partCont = AnalysisTask->AddParticleContainer(tracksName);
-  AliClusterContainer  *clusCont = AnalysisTask->AddClusterContainer(clustersName);
-  if(partCont)
+  if(AnalysisTask->GetTrackContainer(trackName))
   {
-	  partCont->SetParticlePtCut(trackptcut);
+	  AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
   }
-  if(clusCont)
+  if(AnalysisTask->GetClusterContainer(clusName))
   {
-    clusCont->SetClusPtCut(clusptcut);
-    AnalysisTask->SetNeedEmcalGeom(kTRUE);
-  }
-  else
-  {
-	  AnalysisTask->SetNeedEmcalGeom(kFALSE);
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);     //by default set to 0
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(0.3);  //by default set to 0.15
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,clusptcut);
+	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+	  //AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,clusptcut);
+	  //AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
 
+  /*
+  // Used for physics selection
+  task->SetUseAliAnaUtils(kTRUE);
+  task->DoVertexRCut(doVertexRCut);
+  */
+
+
+
+  //..some additional input for the analysis
+  AnalysisTask->SetNeedEmcalGeom(kTRUE);
+  //for later AnalysisTask->SetEffHistGamma(THnF *h);
+  //for later AnalysisTask->SetEffHistHadron(THnF *h);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

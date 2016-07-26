@@ -28,7 +28,7 @@
  */
 void
 DrawCorrSecMap(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
-	    const char* fname=0, Bool_t details=true)
+	       Bool_t sat, const char* fname=0, Bool_t details=true)
 {
   //__________________________________________________________________
   // Load libraries and object 
@@ -41,7 +41,7 @@ DrawCorrSecMap(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
 
   CorrDrawer d;
   d.Run(AliForwardCorrectionManager::kSecondaryMap, runNo, sys, sNN, field, 
-	false, false, "LANDSCAPE", fname);
+	true, sat, "LANDSCAPE", fname);
 }
 //
 // EOF

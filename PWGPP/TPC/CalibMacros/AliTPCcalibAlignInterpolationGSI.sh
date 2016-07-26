@@ -31,7 +31,7 @@ makeEnvHera(){
 # 
     export isBatch=1
     echo makeEnvHera
-    export batchCommand="qsub -cwd -V -l h_rt=24:0:0,h_rss=4G  "
+    export batchCommand="qsub -cwd -V -l h_rt=24:0:0,h_rss=6G  "
     export balice=/hera/alice/$USER/bin/.baliceCalib.sh
     export incScript=$NOTES/aux/rootlogon.C
     source $balice
@@ -55,6 +55,7 @@ submitTiming(){
 	echo source  $balice >  submitTime.sh
 	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitTime.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(5,$run\\\) >> submitTime.sh
+	echo cp syswatch.log syswatch_Time.log     >> submitTime.sh 
 	chmod a+x submitTime.sh  
 	rm -f submitTime.log
 	if [ $isBatch -eq 0 ] ; then
@@ -92,7 +93,8 @@ submitDrift(){
         echo export driftSigmaT=$driftSigmaT  >> submitDrift.sh 
 	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitDrift.sh
 	echo source  $balice >>  submitDrift.sh
-	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(6,$run\\\) >> submitDrift.sh
+	echo aliroot -b -q $incScript  $ALICE_PHYSICS/../src/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C\\\($run,\\\"$OCDB_PATH0\\\"\\\) AliTPCcalibAlignInterpolationMacro.C+\\\(6,$run\\\) >> submitDrift.sh
+	echo cp syswatch.log syswatch_Drift.log >>  submitDrift.sh   
 	chmod a+x submitDrift.sh  
 	rm -f submitDrift.log
 	if [ $isBatch -eq 0 ] ; then
@@ -125,6 +127,7 @@ submitHistogramming(){
     
     for arun in `cat run.list`; do
 	wdirRun=$wdir/$arun
+	export irun=`echo $arun | sed s_000__`
 	cd $wdirRun
 	gminTime=`cat submitTime.log  | grep StatInfo.minTime | gawk '{print $2}' | tail -n 1`	
 	gmaxTime=`cat submitTime.log  | grep StatInfo.maxTime | gawk '{print $2}' | tail -n 1`
@@ -150,16 +153,20 @@ submitHistogramming(){
 		ln -sf $wdirRun/residual.list .
                 ln -sf $wdirRun/residualInfo.root .
                 ln -sf $wdirRun/fitDrift.root .
+		rm core*
 		cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 		echo export mapStartTime=$itime > submitHisto$ihis.sh
 		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitHisto$ihis.sh
 		echo export mapStopTime=$(($itime+$timeDeltaRun)) >> submitHisto$ihis.sh
 		echo export runNumber=$arun    >> submitHisto$ihis.sh  
 		echo source  $balice >>submitHisto$ihis.sh
-		echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(1,$ihis,$nTracks\\\) >> submitHisto$ihis.sh
+		echo export ALIROOT_FORCE_COREDUMP=1  >>submitHisto$ihis.sh
+		echo mv core core.his >> submitHisto$ihis.sh
+		echo aliroot -b -q  $incScript $ALICE_PHYSICS/../src/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C\\\($irun,\\\"$OCDB_PATH0\\\"\\\) AliTPCcalibAlignInterpolationMacro.C+\\\(1,$ihis,$nTracks\\\) >> submitHisto$ihis.sh
 		echo cp syswatch.log syswatch_His$ihis.log >>submitHisto$ihis.sh
 		echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(2,$ihis,0\\\) >> submitHisto$ihis.sh
 		echo cp syswatch.log syswatch_Map$ihis.log >>submitHisto$ihis.sh
+		echo mv core core.map >> submitHisto$ihis.sh
                 chmod a+x submitHisto$ihis.sh
 	        echo qsub -cwd  -V -o submitHisto$ihis.log submitHisto$ihis.sh
 		if [ $isBatch -eq 0 ] ; then
@@ -280,7 +287,7 @@ submitTimeDependentGSI(){
     # assuming run.list and residual.list ascii file exist in working directory
     
     source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationGSI.sh
-    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+    #source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
     source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh      
     #
     # Set parameters:
@@ -292,7 +299,9 @@ submitTimeDependentGSI(){
     export AliTPCcalibAlignInterpolation_MakeNDFit_KeepCovariance=0;  # do not keep covariance matrix
     export AliTPCcalibAlignInterpolation_MakeNDFit_DumpFitTree=0;     # do not store the tree dump of ND local
     export treeCacheSize=200000000; # 200MBy for the tree cache
-
+    #export OCDB_PATH=local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB/; # OCDB path used
+    export OCDB_PATH0="local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB/"
+    export ALIROOT_FORCE_COREDUMP=1;   # make core dumps in case of failure
     gitInfo 1 > gitInfo.log
     #
     # Set parameters of $ALICE_ROOT and batch farm
@@ -371,6 +380,17 @@ submitProfileHis(){
 
 }
 
+makeSysWatchSummary(){
+    #
+    #
+    #
+    wdir=`pwd`;
+    find $wdir/*  -iname syswatch_Time.log > $wdir/syswatch/syswatchTime.list
+    cd $wdir/syswatch
+    ( source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh;  mergeAliSysInfo syswatchTime.list syswatchTime.root; )
+
+}
+
 
 runCallgrind(){
     #cd /hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o30012015.callgrind/000245231/Time1448613598/his1/calgrindHis;
@@ -391,4 +411,6 @@ summarizeVDriftLog(){
     #
 
 }
+
+
 

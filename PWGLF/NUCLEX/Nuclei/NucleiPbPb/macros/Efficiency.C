@@ -28,18 +28,12 @@ void Efficiency() {
     output_file.cd(list_key->GetName());
 
     /// Getting all the histograms
-    TH2F  *fITS_TPC[2] = {
-      dynamic_cast<TH2F*>(list->Get("fAITS_TPC")),
-      dynamic_cast<TH2F*>(list->Get("fMITS_TPC"))
-    };
-    TH2F  *fTotal[2] = {
-      dynamic_cast<TH2F*>(list->Get("fATotal")),
-      dynamic_cast<TH2F*>(list->Get("fMTotal"))
-    };
-    TH2F  *fITS_TPC_TOF[2] = {
-      dynamic_cast<TH2F*>(list->Get("fAITS_TPC_TOF")),
-      dynamic_cast<TH2F*>(list->Get("fMITS_TPC_TOF"))
-    };
+    TH2F  *fITS_TPC[2],*fTotal[2],*fITS_TPC_TOF[2];
+    for (int iS = 0; iS < 2; ++iS) {
+      fTotal[iS] = dynamic_cast<TH2F*>(list->Get(Form("f%cTotal",kLetter[iS])));
+      fITS_TPC[iS] = dynamic_cast<TH2F*>(list->Get(Form("f%cITS_TPC",kLetter[iS])));
+      fITS_TPC_TOF[iS] = dynamic_cast<TH2F*>(list->Get(Form("f%cITS_TPC_TOF",kLetter[iS])));
+    }
 
     /// Taking information about centrality bins
     auto n_centralities = fTotal[0]->GetNbinsX();

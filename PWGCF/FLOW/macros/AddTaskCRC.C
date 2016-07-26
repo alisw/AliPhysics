@@ -4,11 +4,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
-                             Bool_t bCalculateCRC2=kFALSE,
+                             Bool_t bCalculateEbEFlow=kFALSE,
                              Bool_t bUseCRCRecenter,
                              TString QVecWeightsFileName,
-                             Bool_t bUsePhiEtaWeights,
-                             TString PhiEtaWeightsFileName,
+                             Bool_t bCalculateCME=kFALSE,
                              Bool_t bUseVZERO=kFALSE,
                              Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
@@ -76,8 +75,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
  Int_t CRC2nEtaBins=6;
+ Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
- Bool_t bCalculateCME=kFALSE;
+ Bool_t bUsePhiEtaWeights=kFALSE;
+ TString PhiEtaWeightsFileName="";
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -126,8 +127,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  if (analysisTypeUser != "") analysisType = analysisTypeUser;
  if (analysisTypeUser == "AOD") analysisType = "AUTOMATIC";
  taskFE->SetAnalysisType(analysisType);
- // add the task to the manager
- mgr->AddTask(taskFE);
  // set the trigger selection
  if (EvTrigger == "Cen")
   taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -137,6 +136,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFE->SelectCollisionCandidates(AliVEvent::kMB);
  else if (EvTrigger == "Any")
   taskFE->SelectCollisionCandidates(AliVEvent::kAny);
+  // add the task to the manager
+  mgr->AddTask(taskFE);
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
@@ -309,12 +310,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCalculateCRC2(bCalculateCRC2);
  taskQC->SetCalculateCRCVZ(bCalculateCRCVZ);
  taskQC->SetCalculateCRCZDC(bCalculateCRCZDC);
+ taskQC->SetCalculateEbEFlow(bCalculateEbEFlow);
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
-  taskQC->SetFlowQCCenBin(NumCenBins);
+ taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetUseVZERO(bUseVZERO);
- taskQC->SetUseZDC(bUseZDC);
+ taskQC->SetUseZDC(kTRUE);
  taskQC->SetRecenterZDC(bUseZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);

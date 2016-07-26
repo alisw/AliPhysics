@@ -21,7 +21,10 @@ class AliLocalRhoParameter;
 #include "AliVEvent.h"
 #include "AliEmcalJet.h"
 
-typedef AliEmcalIterableContainerT<AliEmcalJet> AliJetIterableContainer;
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliEmcalJet, EMCALIterableContainer::operator_star_object<AliEmcalJet> > AliJetIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliEmcalJet, EMCALIterableContainer::operator_star_pair<AliEmcalJet> > AliJetIterableMomentumContainer;
+#endif
 
 /**
  * @class AliJetContainer
@@ -176,18 +179,13 @@ class AliJetContainer : public AliParticleContainer {
 
   static TString              GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliJetIterableContainer      all() const;
   const AliJetIterableContainer      accepted() const;
 
-  AliJetIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
-  AliJetIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
-  AliJetIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
-  AliJetIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
-
-  AliJetIterableContainer::iterator  begin()         const { return all().begin()        ; }
-  AliJetIterableContainer::iterator  end()           const { return all().end()          ; }
-  AliJetIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
-  AliJetIterableContainer::iterator  rend()          const { return all().rend()         ; }
+  const AliJetIterableMomentumContainer      all_momentum() const;
+  const AliJetIterableMomentumContainer      accepted_momentum() const;
+#endif
 
  protected:
   void SetEMCALGeometry();

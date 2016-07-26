@@ -74,34 +74,24 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
   TString option(opt);
   option.ToLower();
 
-  Int_t tempID = fCurrentID;
-  ResetCurrentID();
-
-  AliVCluster *clusterMax = GetNextAcceptCluster();
-  AliVCluster *cluster = 0;
+  double (AliTLorentzVector::*momentum)() const = 0;
 
   if (option.Contains("e")) {
-    while ((cluster = GetNextAcceptCluster())) {
-      if (cluster->E() > clusterMax->E()) clusterMax = cluster;
-    }
+    momentum = &AliTLorentzVector::E;
   }
   else {
-    Double_t et = 0;
-    Double_t etmax = 0;
-    while ((cluster = GetNextAcceptCluster())) {
-      TLorentzVector mom;
-      cluster->GetMomentum(mom,const_cast<Double_t*>(fVertex));
-      et = mom.Et();
-      if (et > etmax) { 
-	clusterMax = cluster;
-	etmax = et;
-      }
+    momentum = &AliTLorentzVector::Et;
+  }
+
+  AliClusterIterableMomentumContainer::momentum_object_pair clusterMax;
+
+  for (auto cluster : accepted_momentum()) {
+    if ((clusterMax.first.*momentum)() < (cluster.first.*momentum)()) {
+      clusterMax = cluster;
     }
   }
 
-  fCurrentID = tempID;
-
-  return clusterMax;
+  return clusterMax.second;
 }
 
 /**
@@ -429,6 +419,24 @@ const AliClusterIterableContainer AliClusterContainer::accepted() const {
   return AliClusterIterableContainer(this, true);
 }
 
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliClusterIterableMomentumContainer AliClusterContainer::all_momentum() const {
+  return AliClusterIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliClusterIterableMomentumContainer AliClusterContainer::accepted_momentum() const {
+  return AliClusterIterableMomentumContainer(this, true);
+}
+
 const char* AliClusterContainer::GetTitle() const
 {
   static TString clusterString;
@@ -467,13 +475,13 @@ int TestClusterContainerIterator(const AliClusterContainer *const cont, int iter
 
   if(!iteratorType){
     // test accept iterator
-    for(AliClusterIterableContainer::iterator iter = cont->accept_begin(); iter != cont->accept_end(); ++iter){
-      variation.push_back(*iter);
+    for(auto cluster : cont->accepted()){
+      variation.push_back(cluster);
     }
   } else {
     // test all iterator
-    for(AliClusterIterableContainer::iterator iter = cont->begin(); iter != cont->end(); ++iter){
-      variation.push_back(*iter);
+    for(auto cluster : cont->all()){
+      variation.push_back(cluster);
     }
   }
 

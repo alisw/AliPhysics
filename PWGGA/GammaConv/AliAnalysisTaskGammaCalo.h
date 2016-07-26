@@ -96,6 +96,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     
+    // Function to enable MC label sorting
+    void SetEnableSortingOfMCClusLabels(Bool_t enableSort)  { fEnableSortForClusMC   = enableSort; }
+
+    
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
@@ -310,12 +314,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
     Double_t              fMinTimingCluster;                                    // corresponding ranges, min
     Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
+    Bool_t                fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 18);
+    ClassDef(AliAnalysisTaskGammaCalo, 19);
 };
 
 #endif

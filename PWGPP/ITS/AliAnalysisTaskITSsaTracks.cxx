@@ -21,6 +21,7 @@
 #include <TH2F.h>
 #include <TChain.h>
 #include "AliESDInputHandlerRP.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisTaskITSsaTracks.h"
 
 /**************************************************************************
@@ -571,7 +572,18 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
   const Int_t ntSize=39;
   Float_t xnt[ntSize];
   
-  Double_t centrality=esd->GetCentrality()->GetCentralityPercentile("V0M");
+  Double_t centrality=-1.;
+  if(esd->GetRunNumber()<244824){
+    centrality=esd->GetCentrality()->GetCentralityPercentile("V0M");
+  }else{
+    AliMultSelection *multSelection = (AliMultSelection * )esd->FindListObject("MultSelection");
+    if(multSelection){
+      centrality=multSelection->GetMultiplicityPercentile("V0M"); 
+      Int_t qual = multSelection->GetEvSelCode();
+      if(qual == 199 ) centrality=-1.;
+    }
+  }
+
   if(fUseCentrality){
     if(centrality<fMinCentrality) return;
     if(centrality>fMaxCentrality) return;

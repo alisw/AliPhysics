@@ -314,7 +314,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
-  doConvGammaShowerShapeTree(kFALSE)
+  doConvGammaShowerShapeTree(kFALSE),
+  fEnableSortForClusMC(kFALSE)
 {
   
 }
@@ -574,7 +575,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
-  doConvGammaShowerShapeTree(kFALSE)
+  doConvGammaShowerShapeTree(kFALSE),
+  fEnableSortForClusMC(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2240,7 +2242,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
 //       cout << clus->GetNLabels() << endl;
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k<(Int_t)clus->GetNLabels(); k++){
-          if (k<20)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+          if (k<50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 //           Int_t pdgCode = fMCStack->Particle(mclabelsCluster[k])->GetPdgCode();
 //           cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
         }
@@ -2304,7 +2306,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
     return;
   }
 
-  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
+  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack, fEnableSortForClusMC);
   
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX           = primVtxMC->GetX();
@@ -2447,7 +2449,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
     return;
   }
 
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
   fHistoTrueNLabelsInClusPt[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(),TruePhotonCandidate->Pt(),fWeightJetJetMC);
 
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();

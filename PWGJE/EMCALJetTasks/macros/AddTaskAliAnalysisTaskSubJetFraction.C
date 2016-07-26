@@ -45,11 +45,20 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       return NULL;
     }
 
-  if (jetShapeType==AliAnalysisTaskSubJetFraction::kData || jetShapeType==AliAnalysisTaskSubJetFraction::kSim) TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-  if (jetShapeType==AliAnalysisTaskSubJetFraction::kTrue || jetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet || jetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly) TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
-  if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart) TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kData || jetShapeType==AliAnalysisTaskSubJetFraction::kSim){
+    TString wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
+    TString wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+  }
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kTrue || jetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet || jetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    TString wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
+    TString wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
+  }
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart){
+    TString wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
+    TString wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
+  }
   //Configure jet tagger task
-  AliAnalysisTaskSubJetFraction *task = new AliAnalysisTaskSubJetFraction(wagonName.Data());
+  AliAnalysisTaskSubJetFraction *task = new AliAnalysisTaskSubJetFraction(wagonName1.Data());
 
   //  task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
@@ -202,37 +211,74 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
 
   //Connect output
-  TString contName1(wagonName);
-
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrue) contName1 += "_True"; 
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrueDet) contName1 += "_TrueDet"; 
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kData) contName1 += "_Data";
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kSim) contName1 += "_Sim";  
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart) contName1 += "_DetEmbPart";
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) contName1 += "_GenOnTheFly"; 
-
-  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kNoSub) contName1 += "_NoSub"; 
-  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub) contName1 += "_ConstSub";
-  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kDerivSub && derivSubtrOrder == 0) contName1 += "_DerivSubSecondOrder";
-  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kDerivSub && derivSubtrOrder == 1) contName1 += "_DerivSubFirstOrder";
+  TString contName1(wagonName1);
+  TString contName2(wagonName2);
   
-  if (jetSelection == AliAnalysisTaskSubJetFraction::kInclusive) contName1 += "_Incl";
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrue){
+    contName1 += "_True";
+    contName2 += "_True";
+  }
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrueDet){
+    contName1 += "_TrueDet";
+    contName2 += "_TrueDet";
+  }
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kData){
+    contName1 += "_Data";
+    contName2 += "_Data";
+  }
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kSim){
+    contName1 += "_Sim";
+    contName2 += "_Sim";
+  }
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart){
+    contName1 += "_DetEmbPart";
+    contName2 += "_DetEmbPart";
+  }
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    contName1 += "_GenOnTheFly";
+    contName2 += "_GenOnTheFly";
+  }
+
+  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kNoSub){
+    contName1 += "_NoSub";
+    contName2 += "_NoSub";
+  }
+  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub){
+    contName1 += "_ConstSub";
+    contName2 += "_ConstSub";
+  }
+  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kDerivSub && derivSubtrOrder == 0){
+    contName1 += "_DerivSubSecondOrder";
+    contName2 += "_DerivSubSecondOrder";
+  }
+  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kDerivSub && derivSubtrOrder == 1){
+    contName1 += "_DerivSubFirstOrder";
+    contName2 += "_DerivSubFirstOrder";
+  }
+  if (jetSelection == AliAnalysisTaskSubJetFraction::kInclusive){
+    contName1 += "_Incl";
+    contName2 += "_Incl";
+  }
   if (jetSelection == AliAnalysisTaskSubJetFraction::kRecoil) {
   TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
   contName1 += recoilTriggerString;
+  contName2 += recoilTriggerString;
   }
   TString SubJetRadiusString = Form("_SubJetRadius_%f", SubJetRadius);
   contName1 += SubJetRadiusString;
+  contName2 += SubJetRadiusString;
   TString SubJetMinPtString = Form("_SubJetMinPt_%f", SubJetMinPt);
   contName1 += SubJetMinPtString;
+  contName2 += SubJetMinPtString;
  
 
 
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,1,coutput1);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  mgr->ConnectOutput(task,2,coutput2);
 
   return task;  
 

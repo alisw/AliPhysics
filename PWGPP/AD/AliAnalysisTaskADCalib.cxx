@@ -40,6 +40,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
+#include "AliADRecoParam.h"
 
 ClassImp(AliAnalysisTaskADCalib);
 
@@ -52,7 +53,7 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
   fBCRangeTail[1] = 20;
 
   fBCRangeExtrapolation[0] =  9;
-  fBCRangeExtrapolation[1] = 13;
+  fBCRangeExtrapolation[1] = 15;
 
   fTimeResolution[0] = 25./256.;
   fTimeResolution[1] = 25./256.;
@@ -141,6 +142,34 @@ void AliAnalysisTaskADCalib::NotifyRun() {
   fTimeResolution[0] = calibData->GetTimeResolution(0);
   fTimeResolution[1] = calibData->GetTimeResolution(1);
   AliInfo(Form("timeResolution: %f %f", fTimeResolution[0], fTimeResolution[1]));
+
+  // get the event specie from AliESDEvent
+  AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (NULL == esdEvent) {
+    AliFatal("NULL == esdEvent");
+    return;
+  }
+  entry = man->Get("AD/Calib/RecoParam");
+  const TObjArray *recoParamArray =  dynamic_cast<const TObjArray*>(entry->GetObject());
+  if (NULL == recoParamArray) {
+    AliFatal("NULL == recoParamArray");
+    return;
+  }
+  const AliADRecoParam *recoParam = NULL;
+  for (Int_t i=0, n=recoParamArray->GetEntries(); i<n; ++i) {
+    recoParam = dynamic_cast<const AliADRecoParam*>(recoParamArray->At(i));
+    if (NULL == recoParam)
+      continue;
+    if ((recoParam->GetEventSpecie() & esdEvent->GetEventSpecie()) != 0)
+      break;
+  }
+  if (NULL == recoParam) {
+    AliFatal("NULL == recoParam");
+    return;
+  }
+  fBCRangeTail[0] = recoParam->GetTailBegin();
+  fBCRangeTail[1] = recoParam->GetTailEnd();
+  AliInfo(Form("BCRangeTail: [%2d,%2d]", fBCRangeTail[0], fBCRangeTail[1]));
 }
 
 void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
@@ -384,6 +413,8 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   case 11:
   case 12:
   case 13:
+  case 14:
+  case 15:
     f->SetParameters(0, 2, 0, 2);
     f->SetParNames("offset", "slope", "p_{0}", "power");
     f->SetParLimits(0,-20.0,20.0);
@@ -555,7 +586,9 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
 	}
 	case 11:
 	case 12:
-	case 13: {
+	case 13:
+	case 14:
+	case 15: {
 	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };

@@ -261,6 +261,8 @@ void AliQnCorrectionsVarManager::SetDefaultVarNames() {
   fVariableNames[kDeltaTheta][0] = "#Delta #theta"; fVariableNames[kDeltaTheta][1] = "rad.";
   fVariableNames[kDeltaEta][0] = "#Delta #eta"; fVariableNames[kDeltaEta][1] = "";
   for(Int_t ibit=0;ibit<9;++ibit) { fVariableNames[kFilterBit+ibit][0] = Form("filter bit %d", ibit); fVariableNames[kFilterBit+ibit][1] = "";}
+  fVariableNames[kFilterBitMask768][0] = "filter bit 768"; fVariableNames[kFilterBitMask768][1] = "";
+
 }
 
 

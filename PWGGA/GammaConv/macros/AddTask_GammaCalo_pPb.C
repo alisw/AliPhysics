@@ -63,14 +63,15 @@ void AddTask_GammaCalo_pPb(
                             Int_t      enableQAClusterTask        = 0,                // enable additional QA task
                             TString    fileNameInputForWeighting  = "MCSpectraInput.root",       // path to file for weigting input
                             Int_t      doWeightingPart            = 0,                // enable Weighting
-                            TString    generatorName              = "DPMJET",
+                            TString    generatorName              = "DPMJET",         // generator name for weighting
                             TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
                             Bool_t     isUsingTHnSparse           = kFALSE,           // enable or disable usage of THnSparses for background estimation
                             Int_t      enableExtMatchAndQA        = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
                             Bool_t     enableTriggerMimicking     = kFALSE,           // enable trigger mimicking
                             Bool_t     enableTriggerOverlapRej    = kTRUE,            // enable trigger overlap rejection
                             Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
-                            TString    periodNameV0Reader         = ""
+                            TString    periodNameV0Reader         = "",               // period Name for V0Reader
+                            Bool_t     enableSortingMCLabels      = kTRUE            // enable sorting for MC cluster labels
                            ) {
 
   // ================= Load Librariers =================================
@@ -467,6 +468,7 @@ void AddTask_GammaCalo_pPb(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers

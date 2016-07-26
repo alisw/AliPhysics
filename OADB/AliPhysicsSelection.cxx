@@ -101,6 +101,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
 #include "AliVZEROTriggerData.h"
@@ -114,6 +115,7 @@ fPassName(""),
 fCurrentRun(-1),
 fMC(kFALSE),
 fIsPP(kFALSE),
+fReadOCDB(kFALSE),
 fUseBXNumbers(0),
 fUsingCustomClasses(0),
 fCollTrigClasses(),
@@ -125,14 +127,13 @@ fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
 fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(new TList())
+fCashedTokens(NULL)
 {
   // constructor
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
-  fCashedTokens->SetOwner();
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
@@ -242,8 +243,8 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
     if (nMatches <= 0) break;
     
     TString token(trigger(pos[0], pos[1]-pos[0]+1));
-    
-    TParameter<Int_t>* param = (TParameter<Int_t>*) fCashedTokens->FindObject(token);
+
+    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
     if (!param) {
       TInterpreter::EErrorCode error;
       Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
@@ -330,14 +331,20 @@ Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
   fIsPP = kTRUE;
   if (event->GetDataLayoutType()==AliVEvent::kESD) {
     fIsPP = !TString(((AliESDEvent*) event)->GetESDRun()->GetBeamType()).EqualTo("A-A");
-  } else {
+  } else if (fReadOCDB) {
     AliCDBManager* man = AliCDBManager::Instance();
     if (man) {
-      man->SetDefaultStorage("raw://");
+      if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
       man->SetRun(event->GetRunNumber());
       AliGRPObject* grp = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
       if (grp) fIsPP = !grp->GetBeamType().EqualTo("A-A");
     }
+  } else {
+    Int_t run = event->GetRunNumber();
+    if ((run>=136849 && run<=139517) ||
+        (run>=166477 && run<=170593) ||
+        (run>=243399 && run<=243984) ||
+        (run>=244913 && run<=246994)) fIsPP = kFALSE;
   }
   return Initialize(event->GetRunNumber());
 }
@@ -399,15 +406,17 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       }
     }
     
-    if (fTriggerOADB->GetV0MOnThreshold()<0 ||
-        fTriggerOADB->GetVHMBBAflags()<0 ||
-        fTriggerOADB->GetVHMBBCflags()<0 ||
-        fTriggerOADB->GetVHMBGAflags()<0 ||
-        fTriggerOADB->GetVHMBGCflags()<0
+    if (fReadOCDB && 
+        (fTriggerOADB->GetV0MOnThreshold()<0 ||
+         fTriggerOADB->GetVHMBBAflags()<0 ||
+         fTriggerOADB->GetVHMBBCflags()<0 ||
+         fTriggerOADB->GetVHMBGAflags()<0 ||
+         fTriggerOADB->GetVHMBGCflags()<0)
        ) 
     {
       AliInfo("Setting V0 online thresholds from OCDB");
       AliCDBManager* man = AliCDBManager::Instance();
+      if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
       man->SetRun(runNumber);
       AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
       AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
@@ -441,12 +450,15 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       } else AliError("Failed to set V0 online thresholds from OCDB");
     }
     
-    if (fTriggerOADB->GetSH1OuterThreshold()<0 ||
-        fTriggerOADB->GetSH2OuterThreshold()<0
+    if (fReadOCDB && 
+        (fTriggerOADB->GetSH1OuterThreshold()<0 ||
+         fTriggerOADB->GetSH2OuterThreshold()<0)
         ){
       AliInfo("Setting FO online thresholds from OCDB");
       AliITSOnlineCalibrationSPDhandler h;
-      h.ReadPITConditionsFromDB(runNumber,"raw://") ;
+      AliCDBManager* man = AliCDBManager::Instance();
+      if (!man->IsDefaultStorageSet()) h.ReadPITConditionsFromDB(runNumber,"raw://");
+      else h.ReadPITConditionsFromDB(runNumber,man->GetDefaultStorage()->GetURI().Data());
       AliITSTriggerConditions* tri = h.GetTriggerConditions();
       if (tri) {
         Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
@@ -471,6 +483,10 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       fTriggerAnalysis.Add(triggerAnalysis);
     }
   }
+  if(!fCashedTokens){
+    fCashedTokens = new TList();
+    fCashedTokens->SetOwner();
+  }
   
   fCurrentRun = runNumber;
 
@@ -489,54 +505,61 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t accepted            = histStat->GetBinContent(4);
     Float_t v0and = 0;
     Float_t plusNoSPDClsVsTrkBG   = 0;
+    Float_t plusNoV0C012vsTklBG   = 0;
     Float_t plusNoV0MOnVsOfPileup = 0;
     Float_t plusNoSPDOnVsOfPileup = 0;
     Float_t plusNoSPDVtxPileup    = 0;
     Float_t plusNoV0PFPileup      = 0;
     Float_t plusNoV0Casym         = 0;
     Float_t noSPDClsVsTrkBG   = 0;
+    Float_t noV0C012vsTklBG   = 0;
     Float_t noV0MOnVsOfPileup = 0;
     Float_t noSPDOnVsOfPileup = 0;
     Float_t noSPDVtxPileup    = 0;
     Float_t noV0PFPileup      = 0;
     Float_t noV0Casym         = 0;
     Float_t znInTime          = 0;
-    Bool_t b[14];
+    Bool_t b[16];
     for (Int_t i=4;i<histStat->GetNbinsX();i++){
-      for (Int_t bit=0;bit<15;bit++) b[bit]=i & 1<<bit;
-      if (b[ 5]) noSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
-      if (b[ 6]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
-      if (b[ 7]) noSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
-      if (b[ 8]) noSPDVtxPileup+=histStat->GetBinContent(i+1);
-      if (b[ 9]) noV0PFPileup+=histStat->GetBinContent(i+1);
-      if (b[10]) noV0Casym+=histStat->GetBinContent(i+1);
-      if (b[14]) znInTime+=histStat->GetBinContent(i+1);
+      for (Int_t bit=0;bit<16;bit++) b[bit]=i & 1<<bit;
+      if (b[ 5]) noSPDClsVsTrkBG  +=histStat->GetBinContent(i+1);
+      if (b[ 6]) noV0C012vsTklBG  +=histStat->GetBinContent(i+1);
+      if (b[ 7]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (b[ 8]) noSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (b[ 9]) noSPDVtxPileup   +=histStat->GetBinContent(i+1);
+      if (b[10]) noV0PFPileup     +=histStat->GetBinContent(i+1);
+      if (b[11]) noV0Casym        +=histStat->GetBinContent(i+1);
+      if (b[15]) znInTime         +=histStat->GetBinContent(i+1);
       if (!b[ 3]) continue;
       if (!b[ 4]) continue;
       v0and+=histStat->GetBinContent(i+1);
       if (!b[ 5]) continue;
       plusNoSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
       if (!b[ 6]) continue;
-      plusNoV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
+      plusNoV0C012vsTklBG+=histStat->GetBinContent(i+1);
       if (!b[ 7]) continue;
-      plusNoSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
+      plusNoV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
       if (!b[ 8]) continue;
-      plusNoSPDVtxPileup+=histStat->GetBinContent(i+1);
+      plusNoSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
       if (!b[ 9]) continue;
-      plusNoV0PFPileup+=histStat->GetBinContent(i+1);
+      plusNoSPDVtxPileup+=histStat->GetBinContent(i+1);
       if (!b[10]) continue;
+      plusNoV0PFPileup+=histStat->GetBinContent(i+1);
+      if (!b[11]) continue;
       plusNoV0Casym+=histStat->GetBinContent(i+1);
     }
     fHistStat->Fill("all",trigger,all);
     fHistStat->Fill("accepted",trigger,accepted);
     fHistStat->Fill("V0A & V0C",trigger,v0and);
     fHistStat->Fill("+ !SPDClsVsTrkBG",trigger,plusNoSPDClsVsTrkBG);
+    fHistStat->Fill("+ !V0C012vsTklBG",trigger,plusNoV0C012vsTklBG);
     fHistStat->Fill("+ !V0MOnVsOfPileup",trigger,plusNoV0MOnVsOfPileup);
     fHistStat->Fill("+ !SPDOnVsOfPileup",trigger,plusNoSPDOnVsOfPileup);
     fHistStat->Fill("+ !SPDVtxPileup",trigger,plusNoSPDVtxPileup);
     fHistStat->Fill("+ !V0PFPileup",trigger,plusNoV0PFPileup);
     fHistStat->Fill("+ !V0Casym",trigger,plusNoV0Casym);
     fHistStat->Fill("!SPDClsVsTrkBG",trigger,noSPDClsVsTrkBG);
+    fHistStat->Fill("!V0C012vsTklBG",trigger,noV0C012vsTklBG);
     fHistStat->Fill("!V0MOnVsOfPileup",trigger,noV0MOnVsOfPileup);
     fHistStat->Fill("!SPDOnVsOfPileup",trigger,noSPDOnVsOfPileup);
     fHistStat->Fill("!SPDVtxPileup",trigger,noSPDVtxPileup);
@@ -544,6 +567,8 @@ void AliPhysicsSelection::FillStatistics(){
     fHistStat->Fill("!V0Casym",trigger,noV0Casym);
     fHistStat->Fill("ZN time",trigger,znInTime);
   }
+  fHistStat->LabelsDeflate("X");
+  fHistStat->LabelsDeflate("Y");
 }
 
 void AliPhysicsSelection::Print(const Option_t *option) const{

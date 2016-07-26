@@ -213,6 +213,24 @@ const AliMCParticleIterableContainer AliMCParticleContainer::accepted() const {
 }
 
 /**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliMCParticleIterableMomentumContainer AliMCParticleContainer::all_momentum() const {
+  return AliMCParticleIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliMCParticleIterableMomentumContainer AliMCParticleContainer::accepted_momentum() const {
+  return AliMCParticleIterableMomentumContainer(this, true);
+}
+
+/**
  * Build title of the container consisting of the container name
  * and a string encoding the minimum \f$ p_{t} \f$ cut applied
  * in the kinematic particle selection.

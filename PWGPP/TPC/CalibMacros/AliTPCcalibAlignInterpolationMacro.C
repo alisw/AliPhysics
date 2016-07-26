@@ -270,7 +270,7 @@ void  CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const cha
     TTree * treeMeta = (TTree*)fHistos->Get("metaData");
     if (histo) {
       //TStatToolkit::MakeDistortionMap(4, histo, pcstream, projectionInfo); 
-      TStatToolkit::MakeDistortionMapFast(histo, pcstream, projectionInfo,kFALSE); 
+      TStatToolkit::MakeDistortionMapFast(histo, pcstream, projectionInfo,kFALSE, 0.1, "0.8:0.7:0.6"); 
       if (treeMeta){
 	pcstream->GetFile()->cd();
 	TTree * treeMeta2 = treeMeta->CopyTree("1");

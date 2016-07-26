@@ -28,9 +28,13 @@ public:
   virtual    ~AliCaloTrackAODReader() {;} // virtual dtor
   
   Bool_t      CheckForPrimaryVertex()  const ;
-  
+    
   TClonesArray   * GetAODMCParticles() const ;
   AliAODMCHeader * GetAODMCHeader   () const ;
+  
+  TList *     GetCreateControlHistograms() ;
+  
+  TObjString *GetListOfParameters() ;
   
   AliVEvent * GetOriginalInputEvent()            const { return fOrgInputEvent        ; }
   
@@ -61,12 +65,19 @@ private:
   AliVEvent * fOrgInputEvent;                   //!<! Original input event, not from filtering
   
   Bool_t      fSelectHybridTracks;              ///< Select CTS tracks of type hybrid
+ 
   Bool_t      fSelectPrimaryTracks;             ///< Select CTS tracks of type primary
+  
   ULong_t     fTrackFilterMask;                 ///< Track selection bit, for AODs (any difference with track status?)
+  
   ULong_t     fTrackFilterMaskComplementary;    ///< Complementary Track selection bit, for AODs in case hybrid option selected
+  
   Bool_t      fSelectFractionTPCSharedClusters; ///< Accept only TPC tracks with over a given fraction of shared clusters
+  
   Float_t     fCutTPCSharedClustersFraction;    ///< Fraction of TPC shared clusters to be accepted.
 
+  TH1F  *     fhCTSAODTrackCutsPt[4];           //!<! control histogram on the different CTS tracks selection cuts, pT
+  
   /// Copy constructor not implemented.
   AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; 
   
@@ -74,7 +85,7 @@ private:
   AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackAODReader,7) ;
+  ClassDef(AliCaloTrackAODReader,8) ;
   /// \endcond
 
 } ;

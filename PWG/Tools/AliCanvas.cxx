@@ -428,7 +428,7 @@ void AliCanvas::UpdateLogoPos()
 
   Float_t offset = - (0.*fTextSize)/this->GetWh();
 
-  if ((fStatus == kPerformance)) {
+  if (fStatus == kPerformance) {
     fStatusPad->SetX(fLogoPosX);
     fStatusPad->SetY(fLogoPosY - height/2 + offset);
     offset -= (1.2*fTextSize)/this->GetWh();

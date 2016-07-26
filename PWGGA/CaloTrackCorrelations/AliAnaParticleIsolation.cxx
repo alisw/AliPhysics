@@ -602,9 +602,21 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
       continue;
     }
     
-    // Do not count the candidate (pion, conversion photon) or the daughters of the candidate
-    if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) ||
-       track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
+    // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+    // do not count the candidate or the daughters of the candidate
+    // in the isolation conte
+    if ( pCandidate->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
+    {
+      Int_t  trackID   = TMath::Abs(track->GetID()) ;
+      Bool_t contained = kFALSE;
+      
+      for(Int_t i = 0; i < 4; i++) 
+      {
+        if( trackID == pCandidate->GetTrackLabel(i) ) contained = kTRUE;
+      }
+      
+      if ( contained ) continue ;
+    }
     
     // Histogram of eta:phi for all tracks
     fhEtaPhiTrack->Fill(track->Eta(), track->Phi(), GetEventWeight());
@@ -4397,8 +4409,21 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
   {
     AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
     
-    if(track->GetID() == pLeading->GetTrackLabel(0) || track->GetID() == pLeading->GetTrackLabel(1) ||
-       track->GetID() == pLeading->GetTrackLabel(2) || track->GetID() == pLeading->GetTrackLabel(3)   ) continue ;
+    // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+    // do not count the candidate or the daughters of the candidate
+    // in the isolation conte
+    if ( pLeading->GetDetectorTag() == AliFiducialCut::kCTS ) // make sure conversions are tagged as kCTS!!!
+    {
+      Int_t  trackID   = TMath::Abs(track->GetID()) ;
+      Bool_t contained = kFALSE;
+      
+      for(Int_t i = 0; i < 4; i++) 
+      {
+        if( trackID == pLeading->GetTrackLabel(i) ) contained = kTRUE;
+      }
+      
+      if ( contained ) continue ;
+    }
     
     fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
     Float_t pt   = fTrackVector.Pt();

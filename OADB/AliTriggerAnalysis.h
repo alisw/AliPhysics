@@ -31,7 +31,7 @@ public:
     kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
-    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,
+    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,kV0C012vsTklBG,
     kVHM,kV0M,kSH1,kSH2,kTKL,
     kADA, kADC, kADABG, kADCBG,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
@@ -68,6 +68,7 @@ public:
   Bool_t IsV0PFPileup            (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t IsSPDVtxPileup          (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t IsV0Casym               (const AliVEvent* event, Int_t fillHists = 0);
+  Bool_t IsV0C012vsTklBG         (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t VHMTrigger              (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t V0MTrigger              (const AliVEvent* event, Bool_t online, Int_t fillHists = 0);
   Bool_t SH1Trigger              (const AliVEvent* event, Int_t fillHists = 0);
@@ -88,6 +89,7 @@ public:
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
   
   TObject* GetHistogram(const char* histName);
+  TList* GetHistList() { return fHistList; }
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms() const;
@@ -107,6 +109,8 @@ protected:
   TH1F* fHistFiredBitsSPD;   //! fired hardware bits
   TH2F* fHistSPDClsVsTklAll; //! Cluster-vs-tracklet correlation for all events
   TH2F* fHistSPDClsVsTklCln; //! Cluster-vs-tracklet correlation for events accepted by basic cuts apart from SPDClusterVsTrackletBG
+  TH2F* fHistV0C012vsTklAll; //! Offline multiplicity in V0C012(rings 0,1,2) vs tracklets for all events
+  TH2F* fHistV0C012vsTklCln; //! Offline multiplicity in V0C012(rings 0,1,2) vs tracklets events accepted by basic cuts apart from V0C012vsTklBG
   TH2F* fHistV0MOnVsOfAll;   //! Online V0M (V0A123+V0C) vs offline V0A123+V0C correlation for all events
   TH2F* fHistV0MOnVsOfCln;   //! Online V0M (V0A123+V0C) vs offline V0A123+V0C correlation for events accepted by basic cuts apart from V0MOnVsOfPileup
   TH2F* fHistSPDOnVsOfAll;   //! Online-FO vs offline-FO correlation  for all events
@@ -127,6 +131,7 @@ protected:
   TH1F* fHistBGCflagsAcc;    //! Number of beam-gas V0C flags fired (max 32) for events accepted by basic cuts
   TH1F* fHistV0MOnAll;       //! Online V0M (V0A123+V0C) distribution for all events
   TH1F* fHistV0MOnAcc;       //! Online V0M (V0A123+V0C) distribution for events accepted by basic cuts
+  TH1F* fHistV0MOnVHM;       //! Online V0M (V0A123+V0C) distribution for all events with VHM clean up
   TH1F* fHistV0MOfAll;       //! Offline V0M (V0A+V0C) distribution for all events
   TH1F* fHistV0MOfAcc;       //! Offline V0M (V0A+V0C) distribution for events accepted by basic cuts
   TH1F* fHistOFOAll;         //! Outer FO chip distribution for all events
@@ -142,18 +147,23 @@ protected:
   TH1F* fHistV0AAcc;         //! V0A timing for events accepted by basic cuts
   TH1F* fHistV0CAll;         //! V0C timing for all events
   TH1F* fHistV0CAcc;         //! V0C timing for events accepted by basic cuts
-  TH1F* fHistZDC;            //! histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
-  TH1F* fHistTDCZDC;         //! histograms that histogram the criterion the cut is applied on: TDC bits (32 bins)
-  TH2F* fHistTimeZDC;        //! ZDC TDC timing
-  TH2F* fHistTimeCorrZDC;    //! ZDC Corrected TDC timing
+  TH1F* fHistZDC;            //! fired bits (6 bins)
+  TH1F* fHistTimeZNA;        //! ZNA time distribution
+  TH1F* fHistTimeZNC;        //! ZNC time distribution
+  TH1F* fHistTDCZDC;         //! TDC bits (32 bins)
+  TH2F* fHistTimeZNSumVsDif; //! (ZNC-ZNA) vs (ZNC+ZNA) corrected times zoomed
+  TH2F* fHistTimeCorrZDC;    //! (ZNC-ZNA) vs (ZNC+ZNA) corrected times large scale
   TH1F* fHistFMDA;           //! number of hit combination above threshold
   TH1F* fHistFMDC;           //! number of hit combination above threshold
   TH1F* fHistFMDSingle;      //! single mult value (more than one entry per event)
   TH1F* fHistFMDSum;         //! summed mult value (more than one entry per event)
   TH1F* fHistT0;             //! bb triggers
+  TH2F* fHistOFOvsTKLAcc;    //! Outer FO vs tracklet distribution for threshold efficiency studies
+  TH2F* fHistV0MOnVsOfAcc;   //! V0M online vs V0M offline distribution for threshold efficiency studies
+
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 29)
+  ClassDef(AliTriggerAnalysis, 33)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);
