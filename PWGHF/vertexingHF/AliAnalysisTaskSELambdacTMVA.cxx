@@ -889,7 +889,7 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 		TString ntName="fNtupleLambdacReco";
 		AliAnalysisDataContainer *contntrec = GetOutputSlot(6)->GetContainer();
 		if(contntrec)ntName=(TString)contntrec->GetName();
-		fNtupleLambdacReco = new TNtuple(ntName.Data(), "Lc Reco", "isLcBkg:PtLc:PtLcMC:PtTr0:PtTr1:PtTr2:PtTr0MC:PtTr1MC:PtTr2MC:isTOFTr0:isTOFTr1:isTOFTr2:selectionCand:selectionPID:selectionPIDprob");
+		fNtupleLambdacReco = new TNtuple(ntName.Data(), "Lc Reco", "isLcBkg:PtLc:PtLcMC:PtTr0:PtTr1:PtTr2:PtTr0MC:PtTr1MC:PtTr2MC:isTOFTr0:isTOFTr1:isTOFTr2:selectionCand:selectionPID:selectionPIDprob:Charge");
 		PostData(6,fNtupleLambdacReco);
 	}
 
@@ -2007,9 +2007,9 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
-	if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
+	//if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
 
-	Float_t tmp[15];
+	Float_t tmp[16];
 	//Is Lc
 	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
 	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
@@ -2063,6 +2063,7 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 	tmp[12]=selectionCand;
 	tmp[13]=selectionPID;
 	tmp[14]=selectionPIDprob;
+	tmp[15]=part->Charge();
 
 //	Bool_t ispKpiMC = IspKpiMC(part,arrayMC); 
 //	Bool_t ispiKpMC = IspiKpMC(part,arrayMC); 
