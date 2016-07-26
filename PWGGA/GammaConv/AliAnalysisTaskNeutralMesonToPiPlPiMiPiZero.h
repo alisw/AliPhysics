@@ -117,8 +117,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliStack 						*fMCStack;									// current MC stack
 		TList 							**fCutFolder;								// list of output folders with main cut name 
 		TList 							**fESDList;									// list with main output histograms for data
-		TList 							**fBackList;								// list with THnSparseF for BG 
-		TList 							**fMotherList;								// list with THnSparseF for FG 
+//		TList 							**fBackList;								// list with THnSparseF for BG
+//		TList 							**fMotherList;								// list with THnSparseF for FG
 		TList 							**fTrueList;								// list with validated reconstructed MC histograms
 		TList 							**fMCList;									// list with pure MC histograms
 		TList 							*fOutputContainer;							// output container
@@ -240,7 +240,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 8);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 9);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
