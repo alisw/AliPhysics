@@ -128,7 +128,7 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
-install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Run2)
+install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Run2)
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
