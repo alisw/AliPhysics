@@ -178,6 +178,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
         TH2F 							**fHistoAnglePiZeroPiMi;                    // angle between Pi0 and Pi-
         TH2F 							**fHistoAnglePiPlPiZero;                    // angle between Pi+ and Pi0
         TH2F 							**fHistoAngleSum;                           // angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
+        TH2F                            **fHistoTrueAngleSum;
         // pure MC properties
 		TH1F 							**fHistoMCAllGammaPt;						// array of histos of all produced gammas in the specified y range
 		TH1F 							**fHistoMCConvGammaPt;						// array of histos of all converted gammas in the specified y range 
@@ -240,7 +241,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 9);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 10);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

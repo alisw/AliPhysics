@@ -58,14 +58,6 @@ ClassImp( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero )
 
 //-----------------------------------------------------------------------------------------------
 AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero():
-    fHistoAngleOmegaPiPlPiMi(NULL),
-    fHistoAngleOmegaPiZero(NULL),
-    fHistoAngleOmegaPiPl(NULL),
-    fHistoAngleOmegaPiMi(NULL),
-    fHistoAnglePiPlPiMi(NULL),
-    fHistoAnglePiZeroPiMi(NULL),
-    fHistoAnglePiPlPiZero(NULL),
-    fHistoAngleSum(NULL),
 	fV0Reader(NULL),
     fV0ReaderName("V0ReaderV1"),
 	fPionSelector(NULL),
@@ -125,6 +117,15 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoMotherSameSameDiff2BackInvMassPt(NULL),
 	fHistoMotherSameDiff1SameBackInvMassPt(NULL),
 //	fTHnSparseMotherBackInvMassPtZM(NULL),
+    fHistoAngleOmegaPiPlPiMi(NULL),
+    fHistoAngleOmegaPiZero(NULL),
+    fHistoAngleOmegaPiPl(NULL),
+    fHistoAngleOmegaPiMi(NULL),
+    fHistoAnglePiPlPiMi(NULL),
+    fHistoAnglePiZeroPiMi(NULL),
+    fHistoAnglePiPlPiZero(NULL),
+    fHistoAngleSum(NULL),
+    fHistoTrueAngleSum(NULL),
 	fHistoMCAllGammaPt(NULL),
 	fHistoMCConvGammaPt(NULL),
 	fHistoMCAllPosPionsPt(NULL),
@@ -182,15 +183,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 
 //-----------------------------------------------------------------------------------------------
 AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const char* name ):
-
-    fHistoAngleOmegaPiPlPiMi(NULL),
-    fHistoAngleOmegaPiZero(NULL),
-    fHistoAngleOmegaPiPl(NULL),
-    fHistoAngleOmegaPiMi(NULL),
-    fHistoAnglePiPlPiMi(NULL),
-    fHistoAnglePiZeroPiMi(NULL),
-    fHistoAnglePiPlPiZero(NULL),
-    fHistoAngleSum(NULL),
 	AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
     fV0ReaderName("V0ReaderV1"),
@@ -251,6 +243,15 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoMotherSameSameDiff2BackInvMassPt(NULL),
 	fHistoMotherSameDiff1SameBackInvMassPt(NULL),
 //	fTHnSparseMotherBackInvMassPtZM(NULL),
+    fHistoAngleOmegaPiPlPiMi(NULL),
+    fHistoAngleOmegaPiZero(NULL),
+    fHistoAngleOmegaPiPl(NULL),
+    fHistoAngleOmegaPiMi(NULL),
+    fHistoAnglePiPlPiMi(NULL),
+    fHistoAnglePiZeroPiMi(NULL),
+    fHistoAnglePiPlPiZero(NULL),
+    fHistoAngleSum(NULL),
+    fHistoTrueAngleSum(NULL),
 	fHistoMCAllGammaPt(NULL),
 	fHistoMCConvGammaPt(NULL),
 	fHistoMCAllPosPionsPt(NULL),
@@ -719,6 +720,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 			fHistoTruePionPionFromEtaInvMassPt = 	new TH2F*[fnCuts];
 			fHistoTruePionPionFromOmegaInvMassPt = 	new TH2F*[fnCuts];
 // 		}
+        fHistoTrueAngleSum = new TH2F*[fnCuts];
 		
 		for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 			TString cutstringEvent		= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -835,6 +837,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 				fTrueList[iCut]->Add(fHistoTruePionPionFromOmegaInvMassPt[iCut]);
 
 				// 			}
+            fHistoTrueAngleSum[iCut] = new TH2F("ESD_TrueMother_AngleSum_Pt","ESD_TrueMother_AngleSum_Pt",250,0,25,720,0,2*TMath::Pi());
+            fTrueList[iCut]->Add(fHistoTrueAngleSum[iCut]);
 		}
 	}
 
@@ -2689,6 +2693,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
 // 				}
 // 			}
 			fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+
+
+            AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
+            PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
+            AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
+            NegPiontmp->SetPxPyPzE(negativeMC->Px(), negativeMC->Py(), negativeMC->Pz(), negativeMC->Energy());
+
+            fHistoTrueAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp->Angle(mesoncand->Vect()))+(NegPiontmp->Angle(PosPiontmp->Vect()))+(PosPiontmp->Angle(TrueNeutralPionCandidate->Vect()))));
+
+            delete PosPiontmp; PosPiontmp = 0x0;
+            delete NegPiontmp; NegPiontmp = 0x0;
 		}	
 	}
 
