@@ -80,3 +80,5 @@ cp $SOURCE//HLT/ConfigTPC/TPCDataCompressorHuffmanTables/* $TARGET/HLT/ConfigTPC
 #Create a default huffman table with diffential compression to match HLT settings in data replay
 aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
 
+#copy old GRP entries
+cp -n $ALIHLT_HCDBDIR/GRP/GRP/Data/* $TARGET/GRP/GRP/Data
