@@ -519,12 +519,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     }
 
     //Superlight mode output
-    fListV0 = new TList();
-    fListV0->SetOwner();
+    if ( !fListV0 ){
+        fListV0 = new TList();
+        fListV0->SetOwner();
+    }
     
-    //Superlight mode output
-    fListCascade = new TList();
-    fListCascade->SetOwner();
+    if ( !fListCascade ){
+        //Superlight mode output
+        fListCascade = new TList();
+        fListCascade->SetOwner();
+    }
     
     //Regular Output: Slots 1, 2, 3
     PostData(1, fListHist    );
@@ -607,6 +611,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
     }
+    
+    fCentrality = lPercentile;
     
     if( lEvSelCode != 0 ) {
         PostData(1, fListHist    );
@@ -1262,8 +1268,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
         //Xi    Mass window: 150MeV wide
         //Omega mass window: 150MeV wide
+        
+        //Random denial
+        Bool_t lKeepCascade = kTRUE;
+        if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
 
-        if( fkSaveCascadeTree && ( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
+        if( fkSaveCascadeTree && lKeepCascade && ( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
                                    (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ) ) {
             fTreeCascade->Fill();
         }
@@ -1275,10 +1285,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     }// end of the Cascade loop (ESD or AOD)
 
     // Post output data.
-    PostData(1, fListHist);
-    PostData(2, fTreeEvent);
-    PostData(3, fTreeV0);
-    PostData(4, fTreeCascade);
+    PostData(1, fListHist    );
+    PostData(2, fListV0      );
+    PostData(3, fListCascade );
+    if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
+    if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
+    if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
 }
 
 //________________________________________________________________________
@@ -1321,5 +1333,11 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::MyRapidity(Double_t rE, D
 //________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliV0Result *lV0Result )
 {
-    fListV0->Add(lV0Result); 
+    if (!fListV0){
+        Printf("fListV0 does not exist. Creating...");
+        fListV0 = new TList();
+        fListV0->SetOwner();
+        
+    }
+    fListV0->Add(lV0Result);
 }
