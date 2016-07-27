@@ -736,6 +736,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   for(int i=0; i<6; i++){
     if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
   }
+  values[AliDielectronVarManager::kNclsITS]     = itsNcls;
   values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
   values[AliDielectronVarManager::kNclsSFracITS] = itsNcls ? itsNclsS/ itsNcls :0;
 
