@@ -160,11 +160,14 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCPi0SecInAccPt;                              //! array of histos with weighted pi0 from sec in acceptance, pT
     TH1F**                  fHistoMCPi0SecFromK0sPt;                            //! array of histos with weighted pi0 from sec from K0s, pT
     TH1F**                  fHistoMCPi0SecFromK0sInAccPt;                       //! array of histos with weighted pi0 from sec from K0s in acceptance, pT
+    TH1F**                  fHistoMCPi0SecFromK0lPt;                            //! array of histos with weighted pi0 from sec from K0l, pT
+    TH1F**                  fHistoMCPi0SecFromK0lInAccPt;                       //! array of histos with weighted pi0 from sec from K0l in acceptance, pT
     TH2F**                  fHistoMCPi0PtJetPt;                                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                                 //! array of histos with weighted eta, pT, hardest jet pt
     TH1F**                  fHistoMCNegPiPt;                                    //! array of histos with weighted neg pions
     TH1F**                  fHistoMCPosPiPt;                                    //! array of histos with weighted pos pions
     TH1F**                  fHistoMCK0sPt;                                      //! array of histos with weighted K0s
+    TH1F**                  fHistoMCK0lPt;                                      //! array of histos with weighted K0l
     TH1F**                  fHistoMCNegKPt;                                     //! array of histos with weighted neg kaons
     TH1F**                  fHistoMCPosKPt;                                     //! array of histos with weighted pos kaons
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
@@ -177,6 +180,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPrimPi0PtvsM02;                       //!
     TH2F**                  fHistoTrueClusSecPi0PtvsM02;                        //!
     TH2F**                  fHistoTrueClusSecPi0FromK0sPtvsM02;                 //!
+    TH2F**                  fHistoTrueClusSecPi0FromK0lPtvsM02;                 //!
     TH2F**                  fHistoTrueClusSecPi0FromLambdaPtvsM02;              //!
     TH2F**                  fHistoTrueClusEtaPtvsM02;                           //!
     TH2F**                  fHistoTrueClusEtaDalitzPtvsM02;                     //!
@@ -198,6 +202,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPrimPi0InvMassvsPt;                   //!
     TH2F**                  fHistoTrueClusSecPi0InvMassvsPt;                    //!
     TH2F**                  fHistoTrueClusSecPi0FromK0sInvMassvsPt;             //!
+    TH2F**                  fHistoTrueClusSecPi0FromK0lInvMassvsPt;             //!
     TH2F**                  fHistoTrueClusSecPi0FromLambdaInvMassvsPt;          //!
     TH2F**                  fHistoTrueClusEtaInvMassvsPt;                       //!
     TH2F**                  fHistoTrueClusBGInvMassvsPt;                        //!
@@ -266,7 +271,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 15);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 16);
 };
 
 #endif
