@@ -166,6 +166,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoMCPi0PtAlpha;                                   //! array of histos with weighted pi0, pT, alpha
     TH2F**                fHistoMCEtaPtAlpha;                                   //! array of histos with weighted eta, pT, alpha
     TH1F**                fHistoMCK0sPt;                                        //! array of histos with weighted K0s, pT
+    TH1F**                fHistoMCK0lPt;                                        //! array of histos with weighted K0l, pT
     TH1F**                fHistoMCNegKPt;                                       //! array of histos with weighted K-, pT
     TH1F**                fHistoMCPosKPt;                                       //! array of histos with weighted K+, pT
     TH1F**                fHistoMCNegPiPt;                                      //! array of histos with weighted pi-, pT
@@ -220,6 +221,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTrueSecondaryPi0InvMassPt;                      //! array of histos with validated secondary mothers, invMass, pt
     TH2F**                fHistoTrueSecondaryPi0FromK0sInvMassPt;               //! array of histos with validated secondary mothers from K0s, invMass, pt
     TH1F**                fHistoTrueK0sWithPi0DaughterMCPt;                     //! array of histos with K0s with reconstructed pi0 as daughter, pt
+    TH2F**                fHistoTrueSecondaryPi0FromK0lInvMassPt;               //! array of histos with validated secondary mothers from K0l, invMass, pt
+    TH1F**                fHistoTrueK0lWithPi0DaughterMCPt;                     //! array of histos with K0l with reconstructed pi0 as daughter, pt
     TH2F**                fHistoTrueSecondaryPi0FromEtaInvMassPt;               //! array of histos with validated secondary mothers from eta, invMass, pt
     TH1F**                fHistoTrueEtaWithPi0DaughterMCPt;                     //! array of histos with eta with reconstructed pi0 as daughter, pt
     TH2F**                fHistoTrueSecondaryPi0FromLambdaInvMassPt;            //! array of histos with validated secondary mothers from Lambda, invMass, pt
@@ -260,6 +263,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoTrueSecondaryClusConvGammaPt;                   //! array of histos with validated secondary cluster photon, pt  
     TH1F**                fHistoTrueSecondaryClusGammaFromXFromK0sPt;           //! array of histos with validated secondary cluster photon from K0s, pt  
     TH1F**                fHistoTrueSecondaryClusConvGammaFromXFromK0sPt;       //! array of histos with validated secondary cluster conversion photon from K0s, pt  
+    TH1F**                fHistoTrueSecondaryClusGammaFromXFromK0lPt;           //! array of histos with validated secondary cluster photon from K0l, pt
+    TH1F**                fHistoTrueSecondaryClusConvGammaFromXFromK0lPt;       //! array of histos with validated secondary cluster conversion photon from K0l, pt
     TH1F**                fHistoTrueSecondaryClusGammaFromXFromLambdaPt;        //! array of histos with validated secondary cluster photon from Lambda, pt  
     TH1F**                fHistoTrueSecondaryClusConvGammaFromXFromLambdaPt;    //! array of histos with validated secondary cluster conversion photon from Lambda, pt  
     TH1F**                fHistoTrueSecondaryClusGammaFromXFromEtasPt;          //! array of histos with validated secondary Cluster photon from Eta, pt  
@@ -326,7 +331,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 22);
+    ClassDef(AliAnalysisTaskGammaCalo, 23);
 };
 
 #endif
