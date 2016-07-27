@@ -70,7 +70,7 @@ private:
     Bool_t fCutArmenteros;
     Double_t fCutTPCdEdx;
     
-    TH3F *fHisto; //Histogram for storing output with these configuration
+    TH3F *fHisto; //Histogram for storing output with these configurations
     
     ClassDef(AliV0Result, 1)
     // 1 - original implementation
