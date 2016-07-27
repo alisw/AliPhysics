@@ -5,7 +5,6 @@
 
 class TH1;
 class THn;
-class TProfile2D;
 
 class AliAODTrack;
 class AliVEvent;
@@ -26,18 +25,6 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
   THn *fSingles;       //!
   THn *fPairs;         //!
 
-  // Profile <N(cent, zvtx)> for a given estimator
-  TProfile2D *fNchDistribution;  //!
-
-  // QA Histograms
-  TH1 *fmultDistribution;  //!
-
-  // struct to buffer the track informations. Makes it easy to replace tracks with random data
-  struct cNano_track {
-    Double_t eta;
-    Double_t phi;
-    Double_t pt;
-  };
   struct cEventCounterDims {
     enum type {kMult, kZvtx, kNdimensions};
   };

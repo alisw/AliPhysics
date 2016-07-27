@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TAxis.h"
 #include "THn.h"
 #include "TList.h"
@@ -10,12 +11,13 @@
 #include "TRandom3.h"
 #include "TVectorF.h"
 
-#include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
+#include "AliAODForwardMult.h"
 #include "AliAODITSsaTrackCuts.h"
 #include "AliAODMCParticle.h"
-#include "AliHeader.h"
+#include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
+#include "AliHeader.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
@@ -33,22 +35,30 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskC2Base::AliAnalysisTaskC2Base()
   : AliAnalysisTaskSE(),
-    fOutputList(0),
-    fitssatrackcuts(0),
+    fCachedValues(),
     fDiscardedEvents(0),
     fDiscardedTracks(0),
-    fSettings()
+    fOutputList(0),
+    fSettings(),
+    fValidTracks(0),
+    fitssatrackcuts(0),
+    fmultDistribution(0),
+    fetaVsZvtx(0)
 {
 }
 
 //________________________________________________________________________
 AliAnalysisTaskC2Base::AliAnalysisTaskC2Base(const char *name)
   : AliAnalysisTaskSE(name),
-    fOutputList(0),
-    fitssatrackcuts(0),
+    fCachedValues(),
     fDiscardedEvents(0),
     fDiscardedTracks(0),
-    fSettings()
+    fOutputList(0),
+    fSettings(),
+    fValidTracks(0),
+    fitssatrackcuts(0),
+    fmultDistribution(0),
+    fetaVsZvtx(0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -65,12 +75,14 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
 				    cDiscardEventReasons::nDiscardEventReasons);
   TAxis *discardedEvtsAx = this->fDiscardedEvents->GetXaxis();
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::_eventIsValid + 1, "event is valid");
-  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::badRun + 1, "bad run");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::invalidxVertex + 1, "invalid vertex");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isIncomplete + 1, "incomplete");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isOutOfBunchPileup + 1, "out of bunch PU");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::multEstimatorNotAvailable + 1, "!multEstimator");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noMultSelectionObject + 1, "!multSelection");
+  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noForwardMultObj + 1, "!ForwardMult");
+  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noEntriesInFMD + 1, "!Entries in FMD");
+  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::MeanMult0 + 1, "MeanMult0");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noTracks + 1, "!trackArray");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noTracksInPtRegion + 1, "no track in pt interval");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noTrigger + 1, "no trigger fired");
@@ -99,6 +111,19 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::notMCPrimary + 1, "not MC PhysicalPrimary");
   this->fOutputList->Add(this->fDiscardedTracks);
 
+  this->fmultDistribution = new TH1F("multDistribution", "multDistribution", 210, 0, 210);
+  this->fOutputList->Add(this->fmultDistribution);
+
+  this->fetaVsZvtx = new TH2F("etaVsZvtx", "etaVsZvtx",
+  			      200,
+  			      -4,
+  			      6,
+			      100,
+  			      this->fSettings.fZVtxAcceptanceLowEdge,
+  			      this->fSettings.fZVtxAcceptanceUpEdge
+			      );
+  this->fOutputList->Add(this->fetaVsZvtx);
+  
   this->fitssatrackcuts = AliAODITSsaTrackCuts::GetStandardAODITSsaTrackCuts2015();
 
   AliLog::SetGlobalLogLevel(AliLog::kError);
@@ -107,8 +132,16 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskC2Base::IsValidEvent()
 {
-  // skip runs with long tails in V0C
-  std::vector< Int_t > badRuns = {225611, 225609, 225589};
+  AliAODForwardMult* aodForward =
+    dynamic_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
+  if (!aodForward) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::noForwardMultObj);
+    return false;
+  }
+  if (aodForward->GetHistogram().GetEntries() == 0) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::noEntriesInFMD);
+    return false;
+  }
   
   if (!this->InputEvent()->GetPrimaryVertex() || !this->InputEvent()->GetPrimaryVertex()->GetZ()) {
     this->fDiscardedEvents->Fill(cDiscardEventReasons::invalidxVertex);
@@ -119,20 +152,28 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
     this->fDiscardedEvents->Fill(cDiscardEventReasons::zvtxPosition);
     return false;
   }
-  if(std::find(badRuns.begin(), badRuns.end(), InputEvent()->GetRunNumber()) != badRuns.end()) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::badRun);
+  if (!this->GetAllTracks() || this->GetAllTracks()->GetSize() == 0) {
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::noTracks);
     return false;
   }
-  AliMultSelection *multSel =
-    dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
-  // no multSelection object found
-  if (!multSel){
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::noMultSelectionObject);
-    return false;
-  }
-  if (!multSel->GetEstimator(this->fSettings.fMultEstimator)){
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::multEstimatorNotAvailable);
-    return false;
+
+  // are we using a multSelector from the multSelection framework? Is it present?
+  if (this->fSettings.fMultEstimator != this->fSettings.fMultEstimatorValidTracks) {
+    AliMultSelection *multSel =
+      dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
+    // no multSelection object found
+    if (!multSel){
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::noMultSelectionObject);
+      return false;
+    }
+    if (!multSel->GetEstimator(this->fSettings.fMultEstimator)){
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::multEstimatorNotAvailable);
+      return false;
+    }
+    if (multSel->GetEstimator(this->fSettings.fMultEstimator)->GetMean() == 0){
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::MeanMult0);
+      return false;
+    }
   }
 
   // ITSsa specific checks
@@ -191,13 +232,13 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
       }
     }
     // tkl-cluster cut
-    Float_t multTKL = multSel->GetEstimator("SPDTracklets")->GetValue();
-    Int_t nITScluster = (InputEvent()->GetNumberOfITSClusters(0)
-			 + InputEvent()->GetNumberOfITSClusters(1));
-    if (nITScluster > 64+4*multTKL) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::tklClusterCut);
-      return false;
-    }
+    // Float_t multTKL = multSel->GetEstimator("SPDTracklets")->GetValue();
+    // Int_t nITScluster = (InputEvent()->GetNumberOfITSClusters(0)
+    // 			 + InputEvent()->GetNumberOfITSClusters(1));
+    // if (nITScluster > 64+4*multTKL) {
+    //   this->fDiscardedEvents->Fill(cDiscardEventReasons::tklClusterCut);
+    //   return false;
+    // }
   }
   this->fDiscardedEvents->Fill(cDiscardEventReasons::_eventIsValid);
   return true;
@@ -208,11 +249,11 @@ Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle) {
     this->fDiscardedTracks->Fill(cDiscardTrackReasons::neutralCharge);
     return false;
   }
-  if (particle->Eta() < this->fSettings.fEtaAcceptanceLowEdge ||
-      particle->Eta() > this->fSettings.fEtaAcceptanceUpEdge) {
-    this->fDiscardedTracks->Fill(cDiscardTrackReasons::etaAcceptance);
-    return false;
-  }
+  // if (particle->Eta() < this->fSettings.fEtaAcceptanceLowEdge ||
+  //     particle->Eta() > this->fSettings.fEtaAcceptanceUpEdge) {
+  //   this->fDiscardedTracks->Fill(cDiscardTrackReasons::etaAcceptance);
+  //   return false;
+  // }
   // MC specific cuts
   if (this->fSettings.kMCTRUTH == this->fSettings.fDataType) {
     AliAODMCParticle* mcParticle = dynamic_cast< AliAODMCParticle* >(particle);
@@ -265,8 +306,111 @@ Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle) {
 }
 
 void AliAnalysisTaskC2Base::SetupEventForBase() {
-    // Pass the current event's vertext to the ITS cut class
-    fitssatrackcuts->ExtractAndSetPrimaryVertex(this->InputEvent());
+  // reset event status
+  for (Int_t i = 0; i < cCachedValues::nCachedValues; i++) {
+    this->fCachedValues[i] = false;
+  }
+
+  // Pass the current event's vertext to the ITS cut class
+  fitssatrackcuts->ExtractAndSetPrimaryVertex(this->InputEvent());
+}
+
+TClonesArray* AliAnalysisTaskC2Base::GetAllTracks() {
+  // Yes, the following is realy "aodEvent" not mcEvent :P
+  AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
+  TClonesArray* tracksArray = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
+    ? dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))
+    : aodEvent->GetTracks();
+  return tracksArray;
+}
+
+std::vector< AliAnalysisC2NanoTrack > AliAnalysisTaskC2Base::GetFMDhits() {
+  // Relies on the event being vaild (no extra checks if object exists done here)
+  AliAODForwardMult* aodForward =
+    static_cast<AliAODForwardMult*>(fInputEvent->FindListObject("Forward"));
+  // Shape of d2Ndetadphi: 200, -4, 6, 20, 0, 2pi
+  const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+  Double_t fmdSignalThreshold = 0.01;
+  Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
+  Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+  std::vector< AliAnalysisC2NanoTrack > ret_vector;
+  for (Int_t iEta = 1; iEta <= nEta; iEta++) {
+    Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
+    if (!valid) {
+       // No data expected for this eta
+      continue;
+    }
+    Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
+    for (Int_t iPhi = 1; iPhi <= nPhi; iPhi++) {
+      Float_t signal = d2Ndetadphi.GetBinContent(iEta, iPhi);
+      if(signal > fmdSignalThreshold) {
+	Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
+	ret_vector.push_back(AliAnalysisC2NanoTrack(eta, phi, 0/*pt*/));
+      }
+    }
+  }
+  return ret_vector;
+}
+
+std::vector< AliAnalysisC2NanoTrack > &AliAnalysisTaskC2Base::GetValidTracks() {
+  if (this->fCachedValues[cCachedValues::validTracks]) {
+    return this->fValidTracks;
+  }
+  this->fValidTracks.clear();
+  TIter nextTrack(this->GetAllTracks());
+  while (TObject* obj = nextTrack()){
+    // The naming around VTrack, VParticle, AODTrack mcParticle is a mess!
+    // Take-away message: They all derive from AliVParticle one way or another.
+    AliVParticle* particle = static_cast< AliVParticle* >(obj);
+    if (!this->IsValidParticle(particle)){
+      continue;
+    }
+    AliAnalysisC2NanoTrack tmp_track = {
+      particle->Eta(),
+      particle->Phi(),
+      particle->Pt()
+    };
+
+    // The following is a bit ugly. We do not have the pt information
+    // available in the reconstructed data. In order to compare apples
+    // with apples in a MC colsure test, it is necessary to blind the
+    // pt value in for MC truth in the FMD region. TODO: create a
+    // switch for this in the settings; rewrite this nicer...
+    if (this->fSettings.kMCTRUTH == this->fSettings.fDataType &&
+	std::abs(tmp_track.eta) > 1.5) { // 1.5 is between its and fmd1/2
+      tmp_track.pt = 0;
+    }
+    this->fValidTracks.push_back(tmp_track);
+  }
+  // Append the fmd hits to this vector if we are looking at reconstructed data,
+  // All hits on the FMD (above the internally used threshold) are "valid"
+  if (this->fSettings.kRECON == this->fSettings.fDataType) {
+    auto fmdhits = this->GetFMDhits();
+    this->fValidTracks.insert(this->fValidTracks.end(), fmdhits.begin(), fmdhits.end());
+  }
+  // fill the valid tracks into the appropriate QA histograms
+  Float_t zvtx = this->InputEvent()->GetPrimaryVertex()->GetZ();
+  for (auto &t: this->fValidTracks) {
+    this->fetaVsZvtx->Fill(t.eta, zvtx);
+  }
+  // Mark the valid tracks as cached:
+  this->fCachedValues[cCachedValues::validTracks] = true;
+  return this->fValidTracks;
+}
+
+Float_t AliAnalysisTaskC2Base::GetEventClassifierValue() {
+  if (this->fSettings.fMultEstimator == this->fSettings.fMultEstimatorValidTracks){
+    // 7.049 seems to be the mean for 16j; this is an ugly hack!
+    return this->GetValidTracks().size() / 7.049;
+  }
+  else {
+    // Event is invalid if no multselection is present; ie. tested in IsValidEvent() already
+    AliMultEstimator *multEstimator =
+      (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
+      ->GetEstimator(this->fSettings.fMultEstimator);
+    const Float_t multiplicity = multEstimator->GetValue() / multEstimator->GetMean();
+    return multiplicity;
+  }
 }
 
 Bool_t AliAnalysisTaskC2Base::IsAsymmetricV0() {
