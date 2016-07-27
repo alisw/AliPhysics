@@ -129,6 +129,7 @@ protected:
   Bool_t fPushEmptyHistograms;
   Bool_t fResetAfterPush;
 
+  Int_t fScaleDownClusterAttachHistos; //Scale down filling of histograms: 0 = disable histogramn, 1 = fill every histogram, n = fill every n-th histogram
 
   std::map<string,histStruct> fHistograms;
   std::map<string,axisStruct> fAxes;

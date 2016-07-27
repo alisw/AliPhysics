@@ -90,6 +90,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fEventsSinceSkip(0)
   , fPushEmptyHistograms(false)
   , fResetAfterPush(true)
+  , fScaleDownClusterAttachHistos(1)
   , fHistograms()
   , fAxes()
   , fnClustersSPD(0.)
@@ -201,6 +202,8 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
     fPushEmptyHistograms=kTRUE;
   } else if (option.EqualTo("ResetAfterPush")) {
     fResetAfterPush=(value.Contains("0"))?false:true;
+  } else if (option.EqualTo("ScaleClusterAttachHistos")) {
+    fScaleDownClusterAttachHistos = atoi(value);
   } else if (option.EqualTo("pushback-period")) {
   } else {
     HLTError("invalid option: %s", value.Data());
@@ -554,7 +557,7 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   //cluster occupancies (attached and non)
   axisStruct& axisAngles = fAxes["phiAngles"];
   axisStruct& axisPadrows = fAxes["tpcPadRows"];
-  if (axisAngles.bins>0 && axisPadrows.bins>0) {
+  if (fScaleDownClusterAttachHistos != 0 && axisAngles.bins>0 && axisPadrows.bins>0) {
     fHistTPCAallClustersRowPhi = new TH2F("fHistTPCAallClustersRowPhi",
         "TPCA clusters all, raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
@@ -904,9 +907,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   //cluster access arrays of pointers to blocks per slice/patch
   const AliHLTTPCClusterXYZData* clusterXYZblocks[AliHLTTPCGeometry::GetNSlice()][AliHLTTPCGeometry::GetNPatches()];
-  memset(clusterXYZblocks, 0, sizeof(clusterXYZblocks));
   const AliHLTTPCRawClusterData* clusterRAWblocks[AliHLTTPCGeometry::GetNSlice()][AliHLTTPCGeometry::GetNPatches()];
-  memset(clusterRAWblocks, 0, sizeof(clusterRAWblocks));
+  if (fScaleDownClusterAttachHistos != 0)
+  {
+    memset(clusterXYZblocks, 0, sizeof(clusterXYZblocks));
+    memset(clusterRAWblocks, 0, sizeof(clusterRAWblocks));
+  }
 
   nEvents++;
 
@@ -1173,33 +1179,36 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nITSSAPtracks += inPtr->fCount;
     }
 
-    //gather all per slice/patch cluster blocks in the access arrays
-    if ( iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType))
+    if (fScaleDownClusterAttachHistos != 0 && nEvents % fScaleDownClusterAttachHistos == 0)
     {
-      HLTInfo("have raw TPC clusters");
-      Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
-      Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
-      if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
-        HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d", slice, patch );
-        continue;
+      //gather all per slice/patch cluster blocks in the access arrays
+      if ( iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType))
+      {
+        HLTInfo("have raw TPC clusters");
+        Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
+        Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
+        if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
+          HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d", slice, patch );
+          continue;
+        }
+        const AliHLTTPCRawClusterData* clusterRAWdata = static_cast<AliHLTTPCRawClusterData*>( iter->fPtr );
+        if( !clusterRAWdata ) continue;
+        clusterRAWblocks[slice][patch] = clusterRAWdata;
       }
-      const AliHLTTPCRawClusterData* clusterRAWdata = static_cast<AliHLTTPCRawClusterData*>( iter->fPtr );
-      if( !clusterRAWdata ) continue;
-      clusterRAWblocks[slice][patch] = clusterRAWdata;
-    }
 
-    if ( iter->fDataType == (AliHLTTPCDefinitions::ClustersXYZDataType()))
-    {
-      HLTInfo("have TPC XYZ clusters");
-      Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
-      Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
-      if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
-        HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d", slice, patch );
-        continue;
+      if ( iter->fDataType == (AliHLTTPCDefinitions::ClustersXYZDataType()))
+      {
+        HLTInfo("have TPC XYZ clusters");
+        Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
+        Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
+        if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
+          HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d", slice, patch );
+          continue;
+        }
+        const AliHLTTPCClusterXYZData* clusterXYZdata = static_cast<AliHLTTPCClusterXYZData*>( iter->fPtr );
+        if( !clusterXYZdata ) continue;
+        clusterXYZblocks[slice][patch] = clusterXYZdata;
       }
-      const AliHLTTPCClusterXYZData* clusterXYZdata = static_cast<AliHLTTPCClusterXYZData*>( iter->fPtr );
-      if( !clusterXYZdata ) continue;
-      clusterXYZblocks[slice][patch] = clusterXYZdata;
     }
 
   }// end read input blocks
@@ -1240,38 +1249,79 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
 
-    //cluster phi vs padrow for clusters attached to tracks
-    if ( fHistTPCAattachedClustersRowPhi && fHistTPCCattachedClustersRowPhi &&
-         iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC) )
+    if (fScaleDownClusterAttachHistos != 0 && nEvents % fScaleDownClusterAttachHistos == 0)
     {
-      AliHLTTracksData* tracks = static_cast<AliHLTTracksData*>(iter->fPtr);
-      const AliHLTUInt8_t* currentTrackPtr = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
-      HLTInfo("filling clusters attached to tracks, ntracks=%i",tracks->fCount);
-      for (AliHLTUInt32_t i = 0; i < tracks->fCount; i++)
+      //cluster phi vs padrow for clusters attached to tracks
+      if ( fHistTPCAattachedClustersRowPhi && fHistTPCCattachedClustersRowPhi &&
+           iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC) )
       {
-        const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(currentTrackPtr);
-        currentTrackPtr += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
-
-        //cut on number of points
-        Int_t fMinNPoints = 10;
-        if (track->fNPoints < fMinNPoints) continue;
-
-        for (UInt_t i=0; i<track->fNPoints; i++)
+        AliHLTTracksData* tracks = static_cast<AliHLTTracksData*>(iter->fPtr);
+        const AliHLTUInt8_t* currentTrackPtr = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
+        HLTInfo("filling clusters attached to tracks, ntracks=%i",tracks->fCount);
+        for (AliHLTUInt32_t i = 0; i < tracks->fCount; i++)
         {
-          UInt_t clusterID = track->fPointIDs[i];
-          UInt_t slice = AliHLTTPCGeometry::CluID2Slice( clusterID );
-          UInt_t patch = AliHLTTPCGeometry::CluID2Partition( clusterID );
+          const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(currentTrackPtr);
+          currentTrackPtr += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
 
-          const AliHLTTPCClusterXYZData* clusterXYZdata = clusterXYZblocks[slice][patch];
-          const AliHLTTPCRawClusterData* clusterRAWdata = clusterRAWblocks[slice][patch];
+          //cut on number of points
+          Int_t fMinNPoints = 10;
+          if (track->fNPoints < fMinNPoints) continue;
 
-          if (!clusterRAWdata) continue;
-          //if (!clusterXYZdata) continue;
+          for (UInt_t i=0; i<track->fNPoints; i++)
+          {
+            UInt_t clusterID = track->fPointIDs[i];
+            UInt_t slice = AliHLTTPCGeometry::CluID2Slice( clusterID );
+            UInt_t patch = AliHLTTPCGeometry::CluID2Partition( clusterID );
 
-          UInt_t index = AliHLTTPCGeometry::CluID2Index( clusterID );
-          //const AliHLTTPCClusterXYZ& clusterXYZ = clusterXYZdata->fClusters[index];
-          const AliHLTTPCRawCluster& clusterRAW = clusterRAWdata->fClusters[index];
+            const AliHLTTPCClusterXYZData* clusterXYZdata = clusterXYZblocks[slice][patch];
+            const AliHLTTPCRawClusterData* clusterRAWdata = clusterRAWblocks[slice][patch];
 
+            if (!clusterRAWdata) continue;
+            //if (!clusterXYZdata) continue;
+
+            UInt_t index = AliHLTTPCGeometry::CluID2Index( clusterID );
+            //const AliHLTTPCClusterXYZ& clusterXYZ = clusterXYZdata->fClusters[index];
+            const AliHLTTPCRawCluster& clusterRAW = clusterRAWdata->fClusters[index];
+
+            Int_t pad = clusterRAW.fPad;
+            Int_t slicerow = clusterRAW.fPadRow + AliHLTTPCGeometry::GetFirstRow(patch);
+
+            Int_t npads= AliHLTTPCGeometry::GetNPads(slicerow);
+            Float_t x = AliHLTTPCGeometry::Row2X(slicerow);
+            Float_t y = (slicerow<AliHLTTPCGeometry::GetNRowLow())?
+              y=(pad-0.5*(npads-1))*AliHLTTPCGeometry::GetPadPitchWidthLow()
+              :
+              y=(pad-0.5*(npads-1))*AliHLTTPCGeometry::GetPadPitchWidthUp();
+
+            Float_t phi = atan2(y,x);
+            AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
+
+            //Fill the hist
+            if (slice < 18) {
+              fHistTPCAattachedClustersRowPhi->Fill(phi,slicerow);
+            } else {
+              fHistTPCCattachedClustersRowPhi->Fill(phi,slicerow);
+            }
+          }
+        }
+      }
+
+      //cluster phi vs padrow
+      if ( fHistTPCAallClustersRowPhi && fHistTPCCallClustersRowPhi &&
+          iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType) )
+      {
+        AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
+        Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
+        Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
+        if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
+          HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d", slice, patch );
+          continue;
+        }
+
+        HLTInfo("filling raw clusters, n=%i",clusters->fCount);
+        for (unsigned i = 0;i < clusters->fCount;i++)
+        {
+          AliHLTTPCRawCluster& clusterRAW = clusters->fClusters[i];
           Int_t pad = clusterRAW.fPad;
           Int_t slicerow = clusterRAW.fPadRow + AliHLTTPCGeometry::GetFirstRow(patch);
 
@@ -1286,49 +1336,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
           AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
 
           //Fill the hist
-          if (slice < 18) {
-            fHistTPCAattachedClustersRowPhi->Fill(phi,slicerow);
+          if (slice<18) {
+            fHistTPCAallClustersRowPhi->Fill(phi,slicerow);
           } else {
-            fHistTPCCattachedClustersRowPhi->Fill(phi,slicerow);
+            fHistTPCCallClustersRowPhi->Fill(phi,slicerow);
           }
-        }
-      }
-    }
-
-    //cluster phi vs padrow
-    if ( fHistTPCAallClustersRowPhi && fHistTPCCallClustersRowPhi &&
-        iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType) )
-    {
-      AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
-      Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
-      Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
-      if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
-        HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d", slice, patch );
-        continue;
-      }
-
-      HLTInfo("filling raw clusters, n=%i",clusters->fCount);
-      for (unsigned i = 0;i < clusters->fCount;i++)
-      {
-        AliHLTTPCRawCluster& clusterRAW = clusters->fClusters[i];
-        Int_t pad = clusterRAW.fPad;
-        Int_t slicerow = clusterRAW.fPadRow + AliHLTTPCGeometry::GetFirstRow(patch);
-
-        Int_t npads= AliHLTTPCGeometry::GetNPads(slicerow);
-        Float_t x = AliHLTTPCGeometry::Row2X(slicerow);
-        Float_t y = (slicerow<AliHLTTPCGeometry::GetNRowLow())?
-          y=(pad-0.5*(npads-1))*AliHLTTPCGeometry::GetPadPitchWidthLow()
-          :
-          y=(pad-0.5*(npads-1))*AliHLTTPCGeometry::GetPadPitchWidthUp();
-
-        Float_t phi = atan2(y,x);
-        AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
-
-        //Fill the hist
-        if (slice<18) {
-          fHistTPCAallClustersRowPhi->Fill(phi,slicerow);
-        } else {
-          fHistTPCCallClustersRowPhi->Fill(phi,slicerow);
         }
       }
     }
@@ -1419,7 +1431,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   //Fill the histograms
   int pushed_something = FillHistograms();
-
 
   static int nPrinted = 0;
   if (fPrintStats && (fPrintStats == 2 || (pushed_something && nPrinted++ % fPrintDownscale == 0))) //Don't print this for every event if we use a pushback period
