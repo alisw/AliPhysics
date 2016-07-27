@@ -289,8 +289,6 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	fHistos->fhEvents->Fill( 4 );
 	Int_t nt = aodEvent->GetNumberOfTracks();
 
-	fHistos->fhCentr->Fill(fcent);
-	fHistos->fhiCentr->Fill(cBin);
 
 	// clear them up for every event
 	fInputList->Clear();
@@ -354,7 +352,10 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	if(fDebugMode) fEbECentBinBorders->Print();
 	if(fDebugMode) cout << "EbECentBinBorders="<< (*fEbECentBinBorders)[1]<<","<< (*fEbECentBinBorders)[2]<<endl;
 
-	if( (*fEbECentBinBorders)[1] > ebeCent || ebeCent > (*fEbECentBinBorders)[2] ) return; 
+	if( (*fEbECentBinBorders)[1] > ebeCent || ebeCent > (*fEbECentBinBorders)[2] ) return;
+
+	fHistos->fhCentr->Fill(fcent);
+	fHistos->fhiCentr->Fill(cBin);
 
 	if(fDebugMode) cout << "End of RunEbEFlowAnalysis.."<<endl;
 
@@ -595,7 +596,7 @@ double AliJEbECORRTask::RunEbEFlowAnalysis(AliVEvent *event, TClonesArray* input
 	int ih = 3;// for 3 rd harmonics
 	double ebeCent = fEbePercentile->GetEbeFlowPercentile( cBin, ih, vobsalt[ih] );//From the data scan observed distribution at this moment, we need matrix to unfloded vn
 
-	return ebeCent;
+	return ebeCent*100.;
 }
 
 //________________________________________________________________________
