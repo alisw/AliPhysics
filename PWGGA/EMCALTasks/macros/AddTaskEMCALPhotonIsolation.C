@@ -63,24 +63,46 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
-  if(configBasePath.IsNull()){
+  
+  TString configFile("config_PhotonIsolation.C"); //Name of config file
+//  if(gSystem->AccessPathName(configFile.Data())){ //Check for exsisting file and delete it
+//    gSystem->Exec(Form("rm %s",configFile.Data()));
+//  }
+
+  if(configBasePath.IsNull()){ //Check if a specific config should be used and copy appropriate file
 	configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
-  	gSystem->Exec(Form("cp %s/config_PhotonIsolation.C .",configBasePath.Data()));
-  	configBasePath=Form("%s/",gSystem->pwd());
+  	gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
   }
   else if(configBasePath.Contains("alien:///")){
-  	gSystem->Exec(Form("alien_cp %s/config_PhotonIsolation.C .",configBasePath.Data()));
-  	configBasePath=Form("%s/",gSystem->pwd());
+  	gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
   }
   else{
-  	gSystem->Exec(Form("cp %s/config_PhotonIsolation.C .",configBasePath.Data()));
-  	configBasePath=Form("%s/",gSystem->pwd());
+  	gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
   }
 
-  TString configFile("/config_PhotonIsolation.C");
-  TString configFilePath(configBasePath+configFile);
-  printf("Path of config file: %s\n",configFilePath.Data());
+  configBasePath=Form("%s/",gSystem->pwd());
+  ifstream configIn; //Open config file for hash calculation
+  configIn.open(configFile);
+  TString configStr;
+  configStr.ReadFile(configIn);
+  TString configMD5 = configStr.MD5();
+  configMD5.Resize(5); //Short hash value for usable extension
+  TString configFileMD5 = configFile;
+  TDatime time; //Get timestamp
+  Int_t timeStamp = time.GetTime();
+  configFileMD5.ReplaceAll(".C",Form("\_%s_%i.C",configMD5.Data(),timeStamp));
+
+  if(gSystem->AccessPathName(configFileMD5.Data())){ //Add additional identifier if file exists
+    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+  }
+  else{
+    configFileMD5.ReplaceAll(".C","_1.C");
+    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+  }
+
+  TString configFilePath(configBasePath+"/"+configFileMD5);
   gROOT->LoadMacro(configFilePath.Data());
+  printf("Path of config file: %s\n",configFilePath.Data());
   
     // #### Task preferences
   task->SetOutputFormat(iOutput);
