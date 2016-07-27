@@ -111,12 +111,13 @@ public:
     kMMC,                    // MC mass
     kCharge,                 // charge
     kNclsITS,                // number of clusters assigned in the ITS
-    kNclsITSS,               // number of shared clusters in the ITS
-    kNclsSFracITS,           // fraction of shared clusters in the ITS
+    kITSFakeFlag,            // ITS fake flag
     kITSchi2Cl,              // chi2/cl in the ITS
     kNclsTPC,                // number of clusters assigned in the TPC
     kNclsSTPC,               // number of shared clusters assigned in the TPC
     kNclsSFracTPC,           // fraction of shared clusters assigned in the TPC
+    kNclsSITS,                // number of shared clusters assigned in the ITS
+    kNclsSFracITS,           // fraction of shared clusters assigned in the ITS
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters(crossed rows) in the TPC with more robust definition
@@ -247,6 +248,9 @@ public:
     kDecayLength,            // decay length
     kR,                      // distance to the origin
     kOpeningAngle,           // opening angle
+    kOpeningAngleXY,           // opening angle at in XY direction
+    kOpeningAngleRZ,           // opening angle at in RZ direction
+    kTriangularConversionCut, // triangular cut on opening angle and kPhivPair
     kCosPointingAngle,       // cosine of the pointing angle
     kArmAlpha,               // Armenteros-Podolanski alpha
     kArmPt,                  // Armenteros-Podolanski pt
@@ -308,6 +312,7 @@ public:
     kLegDistXY,              // distance of the legs in XY
     kDeltaEta,         // Absolute value of Delta Eta for the legs
     kDeltaPhi,           // Absolute value of Delta Phi for the legs
+    kDeltaPhiChargeOrdered,  // Absolute value of Delta Phi for the legs
     kMerr,                   // error of mass calculation
     kDCA,                    // distance of closest approach TODO: not implemented yet
     kPairType,               // type of the pair, like like sign ++ unlikesign ...
@@ -707,18 +712,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   Double_t itsNcls=particle->GetNcls(0);
   Double_t tpcSignalN=particle->GetTPCsignalN();
   Double_t tpcClusFindable=particle->GetTPCNclsF();
-  Double_t itsNclsS = 0;
-  Double_t itsFracClsS = 0;
-  for (int i = 0; i < 6; ++i)
-  {
-    if (particle->HasPointOnITSLayer(i) && particle->HasSharedPointOnITSLayer(i)) { itsNclsS += 1 ;}
-  }
-  itsFracClsS = itsNclsS/itsNcls;
-
-  values[AliDielectronVarManager::kNclsITS]       = itsNcls; // TODO: get rid of the plain numbers
-  values[AliDielectronVarManager::kNclsITSS]      = itsNclsS; // TODO: get rid of the plain numbers
-  values[AliDielectronVarManager::kNclsSFracITS]  = itsFracClsS; // TODO: get rid of the plain numbers
-
+  values[AliDielectronVarManager::kITSFakeFlag]   = particle->GetITSFakeFlag();
   values[AliDielectronVarManager::kNclsTPC]       = tpcNcls; // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
@@ -737,6 +731,15 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
+
+  Double_t itsNclsS = 0.;
+  for(int i=0; i<6; i++){
+    if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+  }
+  values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+  values[AliDielectronVarManager::kNclsSFracITS] = itsNcls ? itsNclsS/ itsNcls :0;
+
+
   UChar_t threshold = 5;
   TBits tpcClusterMap = particle->GetTPCClusterMap();
   UChar_t n=0; UChar_t j=0;
@@ -1577,6 +1580,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kDecayLength))      values[AliDielectronVarManager::kDecayLength]      = kfPair.GetDecayLength();
   if(Req(kR))                values[AliDielectronVarManager::kR]                = kfPair.GetR();
   if(Req(kOpeningAngle))     values[AliDielectronVarManager::kOpeningAngle]     = pair->OpeningAngle();
+  if(Req(kOpeningAngleXY))     values[AliDielectronVarManager::kOpeningAngleXY] = pair->OpeningAngleXY();
+  if(Req(kOpeningAngleRZ))     values[AliDielectronVarManager::kOpeningAngleRZ] = pair->OpeningAngleRZ();
   if(Req(kCosPointingAngle)) values[AliDielectronVarManager::kCosPointingAngle] = fgEvent ? pair->GetCosPointingAngle(fgEvent->GetPrimaryVertex()) : -1;
 
   if(Req(kLegDist))   values[AliDielectronVarManager::kLegDist]      = pair->DistanceDaughters();
@@ -1592,6 +1597,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   if(Req(kPsiPair))  values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
   if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]      = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  if(Req(kTriangularConversionCut)) values[AliDielectronVarManager::kTriangularConversionCut] = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) - 21. * pair->M() : -999.;
   if(Req(kPseudoProperTime) || Req(kPseudoProperTimeErr)) {
     values[AliDielectronVarManager::kPseudoProperTime] =
       fgEvent ? kfPair.GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
@@ -1769,6 +1775,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	// Fill AliDielectronPair specific information
 	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
 	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
+
+       if( Req(kDeltaPhiChargeOrdered) && fgEvent ) values[AliDielectronVarManager::kDeltaPhiChargeOrdered] = fD1.GetQ() * fgEvent->GetMagneticField() > 0 ? lv1.Phi() - lv2.Phi() :lv2.Phi() - lv1.Phi() ;
 	values[AliDielectronVarManager::kPairType]     = pair->GetType();
 
         // Calculate pair variables for corresponding generated pair
