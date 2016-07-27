@@ -1226,10 +1226,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //------------------------------------------------
 
         fTreeCascVarCharge	= lChargeXi;
-        if(lInvMassXiMinus!=0)    fTreeCascVarMassAsXi = lInvMassXiMinus;
-        if(lInvMassXiPlus!=0)     fTreeCascVarMassAsXi = lInvMassXiPlus;
-        if(lInvMassOmegaMinus!=0) fTreeCascVarMassAsOmega = lInvMassOmegaMinus;
-        if(lInvMassOmegaPlus!=0)  fTreeCascVarMassAsOmega = lInvMassOmegaPlus;
+        if (lChargeXi < 0 ){
+            fTreeCascVarMassAsXi    = lInvMassXiMinus;
+            fTreeCascVarMassAsOmega = lInvMassOmegaMinus;
+        }
+        if (lChargeXi > 0 ){
+            fTreeCascVarMassAsXi    = lInvMassXiPlus;
+            fTreeCascVarMassAsOmega = lInvMassOmegaPlus;
+        }
         fTreeCascVarPt = lXiTransvMom;
         fTreeCascVarRapXi = lRapXi ;
         fTreeCascVarRapOmega = lRapOmega ;
