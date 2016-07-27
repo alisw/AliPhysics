@@ -345,9 +345,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ichg>=20 && ichg<=26)
 					  dtc4etaphitpc[aniter]->SetPt(1.4,maxPt); //0.5,5.0
 					if(ichg>=13 && ichg<=19)
-					  dtc4etaphitpc[aniter]->SetPt(0.5,1.4);
+					  dtc4etaphitpc[aniter]->SetPt(0.6,1.4);
 					if(ichg>=27 && ichg<=33)
-					  dtc4etaphitpc[aniter]->SetPt(0.5,maxPt);
+					  dtc4etaphitpc[aniter]->SetPt(0.6,maxPt);
 					dtc4etaphitpc[aniter]->SetEtaDaughters(0.8);
 					dtc4etaphitpc[aniter]->SetPtPosDaughter(0.3,4.0);
 					dtc4etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0);
@@ -376,9 +376,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ichg>=20 && ichg<=26)
 					  dtc5etaphitpc[aniter]->SetPt(1.4,maxPt);
 					if(ichg>=13 && ichg<=19)
-					  dtc5etaphitpc[aniter]->SetPt(0.5,1.4);
+					  dtc5etaphitpc[aniter]->SetPt(0.6,1.4);
 					if(ichg>=27 && ichg<=33)
-					  dtc5etaphitpc[aniter]->SetPt(0.5,maxPt);
+					  dtc5etaphitpc[aniter]->SetPt(0.6,maxPt);
 					dtc5etaphitpc[aniter]->SetEtaDaughters(0.8);
 					dtc5etaphitpc[aniter]->SetPtPosDaughter(0.16,4.0);
 					dtc5etaphitpc[aniter]->SetPtNegDaughter(0.3,4.0);
