@@ -356,6 +356,7 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 
 	fHistos->fhCentr->Fill(fcent);
 	fHistos->fhiCentr->Fill(cBin);
+    //only for v3 selection ih ==3
 
 	if(fDebugMode) cout << "End of RunEbEFlowAnalysis.."<<endl;
 
@@ -595,8 +596,12 @@ double AliJEbECORRTask::RunEbEFlowAnalysis(AliVEvent *event, TClonesArray* input
 	// E-b-E vn selection here
 	int ih = 3;// for 3 rd harmonics
 	double ebeCent = fEbePercentile->GetEbeFlowPercentile( cBin, ih, vobsalt[ih] );//From the data scan observed distribution at this moment, we need matrix to unfloded vn
+    ebeCent *=100; // make it to a percentile;
 
-	return ebeCent*100.;
+    if( (*fEbECentBinBorders)[1] < ebeCent && ebeCent < (*fEbECentBinBorders)[2] ) {
+        fEbeHistos->fhVnObsVectorAfterSelection[cBin][ih]->Fill(vobsalt[ih]);
+    }
+	return ebeCent;
 }
 
 //________________________________________________________________________
