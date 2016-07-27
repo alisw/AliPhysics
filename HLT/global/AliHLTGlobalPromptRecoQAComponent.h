@@ -206,6 +206,7 @@ protected:
   //Fixed histograms with track / cluster properties.
   //These are not created dynamically because that would require quite some CPU resources.
   TH1D* fHistClusterChargeTot;
+  TH1D* fHistClusterChargeMax;
   TH1D* fHistTPCTrackPt;
   TH2F* fHistTPCAattachedClustersRowPhi;
   TH2F* fHistTPCAallClustersRowPhi;

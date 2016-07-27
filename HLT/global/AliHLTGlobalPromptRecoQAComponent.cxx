@@ -153,6 +153,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fTotalClusters(0)
   , fTotalCompressedBytes(0)
   , fHistClusterChargeTot(NULL)
+  , fHistClusterChargeMax(NULL)
   , fHistTPCTrackPt(NULL)
   , fHistTPCAattachedClustersRowPhi(NULL)
   , fHistTPCAallClustersRowPhi(NULL)
@@ -475,6 +476,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   static double fakePtr = 0.;
   fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
   fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
+  fAxes["tpcClusterChargeMax"].set( 100, 0, 199, &fakePtr );
   fAxes["phiAngles"].set(180, 0., TMath::TwoPi(), &fakePtr, "phi(rad)");
   fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr, "padrow" );
 
@@ -530,6 +532,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
 void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
 {
   delete fHistClusterChargeTot; fHistClusterChargeTot=NULL;
+  delete fHistClusterChargeMax; fHistClusterChargeMax=NULL;
   delete fHistTPCTrackPt; fHistTPCTrackPt=NULL;
   delete fHistTPCAallClustersRowPhi; fHistTPCAallClustersRowPhi=NULL;
   delete fHistTPCAattachedClustersRowPhi; fHistTPCAattachedClustersRowPhi=NULL;
@@ -545,6 +548,11 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   if (axisClusterChargeTot.bins>0) {
     fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal",
         axisClusterChargeTot.bins, axisClusterChargeTot.low, axisClusterChargeTot.high );
+  }
+  axisStruct& axisClusterChargeMax = fAxes["tpcClusterChargeMax"];
+  if (axisClusterChargeMax.bins>0) {
+    fHistClusterChargeMax = new TH1D("fHistClusterChargeMax", "TPC Cluster ChargeMax",
+        axisClusterChargeMax.bins, axisClusterChargeMax.low, axisClusterChargeMax.high );
   }
 
   //track pt
@@ -1236,14 +1244,15 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
 
-    if ( fHistClusterChargeTot &&
+    if ( (fHistClusterChargeTot || fHistClusterChargeMax) &&
          iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType) )
     {
       AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
       for (unsigned i = 0;i < clusters->fCount;i++)
       {
         AliHLTTPCRawCluster& cluster = clusters->fClusters[i];
-        fHistClusterChargeTot->Fill(cluster.GetCharge());
+        if (fHistClusterChargeTot) fHistClusterChargeTot->Fill(cluster.GetCharge());
+        if (fHistClusterChargeMax) fHistClusterChargeMax->Fill(cluster.GetQMax());
         nTPCHitsSplitPad += cluster.GetFlagSplitPad();
         nTPCHitsSplitTime += cluster.GetFlagSplitTime();
       }
@@ -1352,6 +1361,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   }
   if (PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistClusterChargeTot->Reset();
+  }
+  if (PushBack(fHistClusterChargeMax, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    if (fResetAfterPush) fHistClusterChargeMax->Reset();
   }
   if (PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     if (fResetAfterPush) fHistTPCAattachedClustersRowPhi->Reset();
