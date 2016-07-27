@@ -6,9 +6,7 @@ ClassImp(AliAnalysisC2Settings)
 //________________________________________________________________________
 AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fDataType(-1),
-  fEtaAcceptanceLowEdge(-0.8),
-  fEtaAcceptanceUpEdge(0.8),
-  fNEtaBins(15),
+  fEtaBinEdges(0),
   fPhiAcceptanceLowEdge(0),
   fPhiAcceptanceUpEdge(2*TMath::Pi()),
   fNPhiBins(26),
@@ -21,6 +19,7 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fMaxDcaTang(2.4),
   fMultEstimatorRefMult08("RefMult08"),
   fMultEstimatorV0M("V0M"),
+  fMultEstimatorValidTracks("ValidTracks"),
   fMultEstimator(""),
   fTriggerCint7("CINT7-B-"),
   fTriggerVhmV0M("CVHMV0M-B-"),
