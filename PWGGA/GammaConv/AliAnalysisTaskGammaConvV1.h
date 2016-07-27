@@ -171,6 +171,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            hMCPi0PtAlpha;                              //!
     TH2F**                            hMCEtaPtAlpha;                              //!
     TH1F**                            hMCK0sPt;                                   //!
+    TH1F**                            hMCK0lPt;                                   //!
     TH2F**                            hMCSecPi0PtvsSource;                        //!
     TH2F**                            hMCSecPi0RvsSource;                         //!
     TH1F**                            hMCSecPi0Source;                            //!
@@ -196,7 +197,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            hESDTruePrimaryEtaMCPtResolPt;              //!
     TH2F**                            hESDTrueSecondaryMotherInvMassPt;           //!
     TH2F**                            hESDTrueSecondaryMotherFromK0sInvMassPt;    //!
+    TH2F**                            hESDTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            hESDTrueK0sWithPi0DaughterMCPt;             //!
+    TH1F**                            hESDTrueK0lWithPi0DaughterMCPt;             //!
     TH2F**                            hESDTrueSecondaryMotherFromEtaInvMassPt;    //!
     TH1F**                            hESDTrueEtaWithPi0DaughterMCPt;             //!
     TH2F**                            hESDTrueSecondaryMotherFromLambdaInvMassPt; //!
@@ -229,6 +232,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            hESDTruePrimaryConvGammaESDPtMCPt;          //!
     TH1F**                            hESDTrueSecondaryConvGammaPt;               //!
     TH1F**                            hESDTrueSecondaryConvGammaFromXFromK0sPt;   //!
+    TH1F**                            hESDTrueSecondaryConvGammaFromXFromK0lPt;   //!
     TH1F**                            hESDTrueSecondaryConvGammaFromXFromLambdaPt;//!
     TH2F**                            hESDTrueDalitzPsiPairDeltaPhi;              //!
     TH2F**                            hESDTrueGammaPsiPairDeltaPhi;               //!
@@ -309,7 +313,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 33);
+    ClassDef(AliAnalysisTaskGammaConvV1, 34);
 };
 
 #endif
