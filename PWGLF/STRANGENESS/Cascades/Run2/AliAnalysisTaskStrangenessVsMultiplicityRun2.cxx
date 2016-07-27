@@ -841,6 +841,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         //Step 1: Sweep members of the output object TList and fill all of them as appropriate
         Int_t lNumberOfConfigurations = fListV0->GetEntries();
+        AliWarning(Form("Processing different configurations (%i detected)",lNumberOfConfigurations));
         TH3F *histoout         = 0x0;
         AliV0Result *lV0Result = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurations; lcfg++){
@@ -891,8 +892,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableDcaV0Daughters < lV0Result->GetCutDCAV0Daughters() &&
                 fTreeVariableV0CosineOfPointingAngle > lV0Result->GetCutV0CosPA() &&
                 fTreeVariableDistOverTotMom*lPDGMass < lV0Result->GetCutProperLifetime() &&
-                fTreeVariableLeastNbrCrossedRows < lV0Result->GetCutLeastNumberOfCrossedRows() &&
-                fTreeVariableLeastRatioCrossedRowsOverFindable < lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
+                fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
+                fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
                 
                 //FIXME: ADD REJECTION CUTS HERE//
                 
