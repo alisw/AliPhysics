@@ -14,7 +14,6 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    UInt_t trigEvent                 = AliVEvent::kAny,
    UInt_t mixEvent                  = AliVEvent::kAny,
    // Options
-   const char *suffix               = "biased",
    const char *CentEst              = "V0M",
    const Int_t nCentBins            = 5,
    const Double_t trackEta          = 0.9,
@@ -25,8 +24,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection",
-   // Beam type
-   const Short_t beamType           = AliAnalysisTaskEmcal::kAA, 
+   const char *suffix               = "biased"
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -122,7 +120,6 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   // Options
   correlationTask->SetCentralityEstimator(CentEst);
   correlationTask->SetNCentBins(nCentBins);
-  correlationTask->SetForceBeamType(beamType);
   correlationTask->SetVzRange(-10,10);
   correlationTask->SetDoLessSparseAxes(lessSparseAxes);
   correlationTask->SetDoWiderTrackBin(widerTrackBin);
