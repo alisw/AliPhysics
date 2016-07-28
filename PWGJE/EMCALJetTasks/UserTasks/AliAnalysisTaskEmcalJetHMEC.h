@@ -53,7 +53,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   enum binArrayLimits_t {
     kMaxJetPtBins = 5,
     kMaxTrackPtBins = 7,
-    kMaxCentralityBins = 6,
+    kMaxCentralityBins = 5,
     kMixedEventMulitplictyBins = 8,
     kMaxEtaBins = 3
   };
