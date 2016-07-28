@@ -279,17 +279,17 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   Double_t maxRhom = 1.;
 
   //Binning for THnSparse
-  const Int_t nBinsSparse0 = 7;
+  const Int_t nBinsSparse0 = 9;
   //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead, nBinsRho, nBinsRhom};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead, minRho, minRhom};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead, maxRho, maxRhom};
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead, nBinsRho, nBinsRhom, nBinsM, nBinsPt};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead, minRho, minRhom, minM, minPt};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead, maxRho, maxRhom, maxM, maxPt};
 
-  const Int_t nBinsSparse0b = 8;
-  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}
-  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt, nBinsRho, nBinsRhom};
-  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt, minRho, minRhom};
-  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt, maxRho, maxRhom};
+  const Int_t nBinsSparse0b = 10;
+  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}; Mass unsub; #it{p}_{T,unsub}
+  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt, nBinsRho, nBinsRhom, nBinsM, nBinsPt};
+  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt, minRho, minRhom, minM, minPt};
+  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt, maxRho, maxRhom, maxM, maxPt};
   
   const Int_t nBinsSparse1 = 7;
   // #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
@@ -346,7 +346,7 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
 
     histName = Form("fhnMassResponse_%d",i);
     if(fFromTree) {
-       histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m}", i, varName.Data(),varName.Data(), varName.Data());
+       histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m}; %s unsub; #it{p}_{T,unsub}", i, varName.Data(),varName.Data(), varName.Data(),varName.Data());
        fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0b, nBins0b, xmin0b, xmax0b);
 
     } else{
