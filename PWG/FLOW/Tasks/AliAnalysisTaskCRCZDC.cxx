@@ -1155,8 +1155,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->SetZNAEnergy(towZNA[0]);
       
       Int_t CenBin = GetCenBin(centrperc);
+      if(CenBin==-1) return;
       Double_t zvtxpos[3]={0.,0.,0.};
       fFlowEvent->GetVertexPosition(zvtxpos);
+      
       Int_t RunNum=fFlowEvent->GetRun();
       if(fTowerEqList) {
         if(RunNum!=fCachedRunNum) {
@@ -1236,16 +1238,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       }
       if(fDataSet.EqualTo("MCkine")) RunBin=0;
       
-      if(CenBin!=-1) {
-        for(Int_t i=0; i<4; i++) {
-          if(towZNC[i+1]>0.) {
-            fhnTowerGainVtx[CenBin][i]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
-            fhnTowerGain[i]->Fill(centrperc,TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
-          }
-          if(towZNA[i+1]>0.) {
-            fhnTowerGainVtx[CenBin][i+4]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
-            fhnTowerGain[i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
-          }
+      for(Int_t i=0; i<4; i++) {
+        if(towZNC[i+1]>0.) {
+          fhnTowerGainVtx[CenBin][i]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
+          fhnTowerGain[i]->Fill(centrperc,TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
+        }
+        if(towZNA[i+1]>0.) {
+          fhnTowerGainVtx[CenBin][i+4]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
+          fhnTowerGain[i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
         }
       }
       
