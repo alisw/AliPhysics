@@ -23,9 +23,10 @@ void HFEemcQA_PlotHisto()
   char dQA1[100];
   SetTrigQA(dQA0,dQA1);
 
+  TString file;
+  file.Form("EMCalQA_Trig.pdf");
+
   TFile *f1 = new TFile("AnalysisResults.root");
-  //f1->cd("PWGHF_hfeHFEemcQAINT7"); //change for different triggers
-  //f1->cd(filename); //change for different triggers
   //PWGHF_hfeHFEemcQAINT7 - QA1
   //PWGHF_hfeHFEemcQAINT8 - HFEemcQAINT8_woTender
   //PWGHF_hfeHFEemcQAEMC7 - HFEemcQAEMC7_woTender
@@ -40,6 +41,7 @@ void HFEemcQA_PlotHisto()
   TH1F *VtxZ = QA1->FindObject("fVtxZ");
   TH2F *TrigMulti = QA1->FindObject("fTrigMulti");
   TH1F *ClusE = QA1->FindObject("fHistClustE");
+  TH2F *ClusEcent = QA1->FindObject("fHistClustEcent");
   TH2F *EMCClsEtaPhi= QA1->FindObject("fEMCClsEtaPhi");
   TH1F *NCls = QA1->FindObject("fHistoNCls");
   TH1F *NClsE1 = QA1->FindObject("fHistoNClsE1");
@@ -57,28 +59,32 @@ void HFEemcQA_PlotHisto()
   TH2F *TPCNsigEta2 = QA1->FindObject("fTPCnsigEta2");
   TH1F *EMCTrkMatchPt = QA1->FindObject("fHistPtMatch");
   TH2F *EMCDeltaR = QA1->FindObject("fEMCTrkMatch");
+  //TH2F *EMCDeltaR = QA1->FindObject("fEMCTrkMatch2");
   TH1F *EMCTrkPt = QA1->FindObject("fEMCTrkPt");
   TH1F *EMCTrketa = QA1->FindObject("fEMCTrketa");
   TH1F *EMCTrkphi = QA1->FindObject("fEMCTrkphi");
   TH2F *ClsEAftTrkMatch = QA1->FindObject("fClsEtaPhiAftMatch");
   TH2F *EMCTrkTPCNsig = QA1->FindObject("fEMCTPCnsig");
   TH2F *EovP = QA1->FindObject("fHistEop");
-  TH2F *NsigEovP = QA1->FindObject("fHistNsigEop");
+  TH2F *NsigEovP = QA1->FindObject("fHistdEdxEop");
   TH2F *M20 = QA1->FindObject("fM20");
   TH2F *M02 = QA1->FindObject("fM02");
   TH2F *M02EovP = QA1->FindObject("fM02EovP");
   TH2F *M20EovP = QA1->FindObject("fM20EovP");
+  TH1F *cent = QA1->FindObject("fCent");
 
   cout << "No of events with NTrk > 2, ZVtx < 10 cm = " << NEvents->GetBinContent(3) <<endl;
 
   TCanvas *NE = new TCanvas("NoEvents", "Number of events",50,50,700,500);
   ProcessHisto(NEvents);
   NEvents->Draw();
+  NE->Print(file + "(","pdf");
 
   TCanvas *c2 = new TCanvas("VtxZ", "Z vertex postion",50,50,700,500);
   ProcessHisto(VtxZ);
   VtxZ->GetXaxis()->SetRangeUser(-25,25);
   VtxZ->Draw();
+  c2->Print(file,"pdf");
 
   TCanvas *c3 = new TCanvas("TrigMultiplicity", "Trigger multiplicity",50,50,700,500);
   ProcessHisto2D(TrigMulti);
@@ -97,18 +103,34 @@ void HFEemcQA_PlotHisto()
   TrigMulti->Draw("COLZ");
   gPad->SetLogz();
 
-  TCanvas *c9 = new TCanvas("EMCClusE", "EMCAL cluster energy",50,50,700,500);
-  ClusE->Sumw2();
-  ProcessHisto(ClusE);
-  ClusE->Rebin(10);
-  gPad->SetLogy();
-  ClusE->Draw();
 
   TCanvas *c10 = new TCanvas("EMCClusEtaPhi", "EMCAL cluster eta and phi distribution",50,50,700,500);
   ProcessHisto2D(EMCClsEtaPhi);
   EMCClsEtaPhi->GetXaxis()->SetRangeUser(-0.7,0.7);
   gPad->SetLogz();
   EMCClsEtaPhi->Draw("COLZ");
+  c10->Print(file,"pdf");
+
+
+  TCanvas *ncel = new TCanvas("NcellPerCls", "N cell per cluster",50,50,700,500);
+  ProcessHisto2D(NCellPerCls);
+  gPad->SetLogz();
+  NCellPerCls->Draw("COLZ");
+  ncel->Print(file,"pdf");
+
+  TCanvas *cE = new TCanvas("EnergyCell", "Energy of Cell",50,50,700,500);
+  ProcessHisto2D(CellE);
+  gPad->SetLogz();
+  CellE->Draw("COLZ");
+  cE->Print(file,"pdf");
+
+  TCanvas *c9 = new TCanvas("EMCClusE", "EMCAL cluster energy",50,50,700,500);
+  ClusE->Sumw2();
+  ProcessHisto(ClusE);
+  ClusE->Rebin(10);
+  gPad->SetLogy();
+  ClusE->Draw();
+  c9->Print(file,"pdf");
 
   TCanvas *ncls = new TCanvas("EMC_NCls", "Number of clusters in event",50,50,700,500);
   ProcessHisto(NCls,1.4,1,20);
@@ -128,16 +150,7 @@ void HFEemcQA_PlotHisto()
   leg->AddEntry(NClsE1,"ClsE > 0.1 GeV","pl");
   leg->AddEntry(NClsE2,"ClsE > 0.2 GeV","pl");
   leg->AddEntry(NClsE3,"ClsE > 0.5 GeV","pl");
-
-  TCanvas *ncel = new TCanvas("NcellPerCls", "N cell per cluster",50,50,700,500);
-  ProcessHisto2D(NCellPerCls);
-  gPad->SetLogz();
-  NCellPerCls->Draw("COLZ");
-
-  TCanvas *cE = new TCanvas("EnergyCell", "Energy of Cell",50,50,700,500);
-  ProcessHisto2D(CellE);
-  gPad->SetLogz();
-  CellE->Draw("COLZ");
+  ncls->Print(file,"pdf");
 
   TCanvas *c11 = new TCanvas("TrackPt", "TrackPt",50,50,700,500);
   TrkPt->Sumw2();
@@ -161,6 +174,7 @@ void HFEemcQA_PlotHisto()
   leg->AddEntry(TrkPt,"All track","pl");
   leg->AddEntry(EMCTrkMatchPt,"EMC matched track","pl");
   leg->AddEntry(EMCTrkPt,"EMCAL selected track","pl");
+  c11->Print(file,"pdf");
 
   TCanvas *c12 = new TCanvas("TrackEta", "Track eta distribution",50,50,700,500);
   Trketa->SetTitle("Track #eta ditribution");
@@ -173,6 +187,7 @@ void HFEemcQA_PlotHisto()
   ProcessLegend(leg);
   leg->AddEntry(Trketa,"All track","l");
   leg->AddEntry(EMCTrketa,"EMCAL selected track","l");
+  c12->Print(file,"pdf");
 
   TCanvas *c14 = new TCanvas("TrackPhi", "Track Phi distribution",50,50,700,500);
   Trkphi->SetTitle("Track #phi ditribution");
@@ -186,51 +201,65 @@ void HFEemcQA_PlotHisto()
   ProcessLegend(leg);
   leg->AddEntry(Trkphi,"All track","l");
   leg->AddEntry(EMCTrkphi,"EMCAL selected track","l");
+  c14->Print(file,"pdf");
 
   TCanvas *c16 = new TCanvas("dedx","dEdx distribution",50,50,700,500);
   ProcessHisto2D(dEdx);
   dEdx->GetXaxis()->SetRangeUser(0,15);
   gPad->SetLogz();
   dEdx->Draw("colz");
+  c16->Print(file,"pdf");
 
   TCanvas *c23 = new TCanvas("TPNnSig","TPC nsigma distribution",50,50,700,500);
   ProcessHisto2D(TPCNsig);
   TPCNsig->GetXaxis()->SetRangeUser(0,15);
   gPad->SetLogz();
   TPCNsig->Draw("colz");
+  c23->Print(file,"pdf");
 
   TCanvas *nSigE0 = new TCanvas("TPNnSig_Eta_Pt0","TPC nsigma vs #eta for pT>2",50,50,700,500);
   gPad->SetLogz();
   TPCNsigEta0->SetTitle("TPC Nsigma vs #eta, p_{T} > 2 GeV/c");
   ProcessHisto2D(TPCNsigEta0);
   TPCNsigEta0->Draw("colz");
+  nSigE0->Print(file,"pdf");
 
   TCanvas *nSigE1 = new TCanvas("TPNnSig_Eta_Pt1","TPC nsigma vs #eta for pT>3",50,50,700,500);
   gPad->SetLogz();
   TPCNsigEta1->SetTitle("TPC Nsigma vs #eta, p_{T} > 3 GeV/c");
   ProcessHisto2D(TPCNsigEta1);
   TPCNsigEta1->Draw("colz");
+  nSigE1->Print(file,"pdf");
 
   TCanvas *nSigE2 = new TCanvas("TPNnSig_Eta_Pt2","TPC nsigma vs #eta for pT>5",50,50,700,500);
   gPad->SetLogz();
   TPCNsigEta2->SetTitle("TPC Nsigma vs #eta, p_{T} > 5 GeV/c");
   ProcessHisto2D(TPCNsigEta2);
   TPCNsigEta2->Draw("colz");
+  nSigE2->Print(file,"pdf");
 
   TCanvas *c18 = new TCanvas("EMCdeltaR","Distance of EMC cluster to its closest track",50,50,700,500);
-  EMCDeltaR->GetXaxis()->SetRangeUser(-0.08,0.08);
-  EMCDeltaR->GetYaxis()->SetRangeUser(-0.04,0.04);
+  //EMCDeltaR->GetXaxis()->SetRangeUser(-0.08,0.08);
+  //EMCDeltaR->GetYaxis()->SetRangeUser(-0.04,0.04);
   EMCDeltaR->GetXaxis()->SetTitle("#Delta#phi");
   EMCDeltaR->GetYaxis()->SetTitle("#Delta#eta");
   gPad->SetLogz();
-  ProcessHisto2D(EMCDeltaR);
-  EMCDeltaR->Draw("colz");
+  //ProcessHisto2D(EMCDeltaR);
+  //EMCDeltaR->Draw("colz");
+  c18->Divide(2,1);
+  c18->cd(1);
+  EMCDeltaR->ProjectionX()->Draw();
+  c18->cd(2);
+  EMCDeltaR->ProjectionY()->Draw();
+  c18->Print(file,"pdf");
 
   TCanvas *ClsPE = new TCanvas("ClusEtaPhi_AftMat", "EMCAL cluster eta and phi distribution aft trk matching",50,50,700,500);
   ProcessHisto2D(ClsEAftTrkMatch);
   ClsEAftTrkMatch->GetXaxis()->SetRangeUser(-0.7,0.7);
   gPad->SetLogz();
   ClsEAftTrkMatch->Draw("COLZ");
+  ClsPE->Print(file,"pdf");
+ 
 
   TCanvas *c25 = new TCanvas("emcTrkTPCnsig","EMC matched track nsig distribution",50,50,700,500);
   EMCTrkTPCNsig->SetTitle("#phi,#eta distribution of clusters matched to tracks");
@@ -238,14 +267,20 @@ void HFEemcQA_PlotHisto()
   gPad->SetLogz();
   ProcessHisto2D(EMCTrkTPCNsig);
   EMCTrkTPCNsig->Draw("colz");
+  c25->Print(file,"pdf");
 
   TCanvas *c24 = new TCanvas("nsigEovP","TPCnsig vs E/p distribution",50,50,700,500);
   gPad->SetLogz();
-  NsigEovP->SetTitle("TPCnsigma vs E/p, p_{T} > 1 GeV/c");
+  NsigEovP->SetTitle("TPCnsigma vs E/p, p_{T} > 3 GeV/c");
   NsigEovP->GetXaxis()->SetTitle("E/p");
   NsigEovP->GetYaxis()->SetTitle("#sigma_{TPC-dE/dx}");
   ProcessHisto2D(NsigEovP);
   NsigEovP->Draw("colz");
+  //NsigEovP->ProjectionY()->Draw();
+  //NsigEovP->ProjectionX("a",535,700);
+  //a->Rebin(2);
+  //a->Draw("e");
+  c24->Print(file,"pdf");
 
   TCanvas *c22 = new TCanvas("EovP","E/p distribution",50,50,700,500);
   ProcessHisto2D(EovP);
@@ -253,6 +288,8 @@ void HFEemcQA_PlotHisto()
   EovP->GetXaxis()->SetRangeUser(0,15);
   gPad->SetLogz();
   EovP->Draw("colz");
+  //EovP->ProjectionY()->Draw();
+  c22->Print(file,"pdf");
 
   TCanvas *24 = new TCanvas("M20","M20 distribution",50,50,700,500);
   M20->GetXaxis()->SetRangeUser(0,15);
@@ -262,8 +299,9 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(M20);
   gPad->SetLogz();
   M20->Draw("colz");
+  c24->Print(file,"pdf");
 
-  TCanvas *25 = new TCanvas("M02","M02 distribution",50,50,700,500);
+  TCanvas *c25 = new TCanvas("M02","M02 distribution",50,50,700,500);
   M02->GetXaxis()->SetRangeUser(0,15);
   M02->SetTitle("");
   M02->GetXaxis()->SetTitle("p_{T} GeV/c");
@@ -271,6 +309,7 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(M02);
   gPad->SetLogz();
   M02->Draw("colz");
+  c25->Print(file,"pdf");
 
   TCanvas *c26 = new TCanvas("M02EovP","M02 vs E/p distribution",50,50,700,500);
   M02EovP->SetTitle("M02 vs E/p, p_{T} > 1 GeV/c");
@@ -287,6 +326,8 @@ void HFEemcQA_PlotHisto()
   gPad->SetLogz();
   ProcessHisto2D(M20EovP);
   M20EovP->Draw("colz");
+  c26->Print(file + ")","pdf");
+
 }
 //----------------------------------------
 void ProcessHisto(TH1 *h, Double_t size=1.4, Int_t col=1, Int_t style=20)
@@ -336,44 +377,35 @@ void SetTrigQA(char *name0, char *name1)
 {
   int itrig;
   cout << "select event selection" << endl;
-  cout << "int7 0" << endl;  //change for different triggers
-  cout << "int8 1" << endl;   //hfeemcqaint8_wotender
+  cout << "INT7 0" << endl;  //change for different triggers
+  cout << "INT8 1" << endl;   //HFEemcQAINT8_woTender
   cout << "EMC7 2" << endl;   //HFEemcQAEMC7_woTender
   cout << "EMC8 3" << endl;   //HFEemcQAEMC8_woTender
   cout << "TrigGA 4" << endl;   //HFEemcQATrigGA_woTender
   cout << "TrigJE 5" << endl;   //HFEemcQATrigJE_woTender
   cin >> itrig;
 
-  int iTender = 0;
-  cout << "Tender ?" << endl;
-  cout << "No: 0 / Yes: 1" << endl;  //change for different triggers
-  cin >> iTender;
 
-  if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7"); //change for different triggers
-  if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8");  //HFEemcQAINT8_woTender
-  if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7");  //HFEemcQAEMC7_woTender
-  if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8");  //HFEemcQAEMC8_woTender
-  if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA");  //HFEemcQATrigGA_woTender
-  if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE");  //HFEemcQATrigJE_woTender
-
-  if(iTender==0)
-    {
-     if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender"); //change for different triggers
-     if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender");
-     if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender");
-     if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender");
-     if(itrig==4)sprintf(name1,"HFEemcQATrigGA_woTender");
-     if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender");
-    }
-   else
-    {
-     if(itrig==0)sprintf(name1,"HFEemcQAINT7_wTender"); //change for different triggers
-     if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender");
-     if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender");
-     if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender");
-     if(itrig==4)sprintf(name1,"HFEemcQATrigGA_wTender");
-     if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender");
-    }
+  if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_EMC"); //change for different triggers
+  if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_EMC");  //HFEemcQAINT8_woTender
+  if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_EMC");  //HFEemcQAEMC7_woTender
+  if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_EMC");  //HFEemcQAEMC8_woTender
+  if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_EMC");  //HFEemcQATrigGA_woTender
+  if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_EMC");  //HFEemcQATrigJE_woTender
+  /*
+  if(itrig==0)sprintf(name1,"HFEemcQAINT7_wTender"); //change for different triggers
+  if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender");
+  if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender");
+  if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender");
+  if(itrig==4)sprintf(name1,"HFEemcQATrigGA_wTender");
+  if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender");
+  */
+  if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
+  if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
+  if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
+  if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
+  if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_EMC");
+  if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_EMC");
 
   cout << "Selection: " << name0 << endl;
   //cout << "+++++++++++++++++++ " << name1 << endl;
