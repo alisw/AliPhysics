@@ -53,7 +53,7 @@ fCutTPCdEdx(3.0)
     if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F("fHisto","", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",this->GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const AliV0Result& lCopyMe)
