@@ -481,7 +481,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	  nInjected++;
 	}else if(title.Contains("pythiaHF")){ 
 	  nInjected++;
-	}else if(title.Contains("hijing")){
+	}else if(title.Contains("hijing") || title.Contains("Hijing")){
 	  AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lgen->At(ig);
 	  imppar=hijh->ImpactParameter();
 	}
