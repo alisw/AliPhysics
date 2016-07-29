@@ -110,7 +110,7 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   TH3F          **fh3PtTrueDeltaMLeadPt;                           //!<! true jet pT vs (Msub - Mtrue) vs LeadPt for matched jets
   TH3F          **fh3PtTrueDeltaMRelLeadPt;                        //!<! true jet pT vs (Msub - Mtrue)/Mtrue vs LeadPt for matched jets
   THnSparse     **fhnMassResponse;                                 //!<! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
-  THnSparse     **fhnDeltaMass;                                    //!<! deltaM vs deltapT
+  //THnSparse     **fhnDeltaMass;                                    //!<! deltaM vs deltapT
   THnSparse      *fhnDeltaMassAndBkgInfo;                          //!<! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
   TH1F 	        *fhNJetsSelEv;                                      //!<! number of selected signal jets per event
   TH2F          *fhRjetTrvspTj;                                     //!<! distance in R between each jetO and embedded single track (those below fRadius are rejected)
