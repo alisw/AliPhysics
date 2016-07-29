@@ -46,6 +46,10 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
     void ProcessMCParticles             ();
     void ProcessAODMCParticles          ();
+    void ProcessTruePhotonCandidates    ( AliAODConversionPhoton* TruePhotonCandidate);
+    void ProcessTruePhotonCandidatesAOD ( AliAODConversionPhoton* TruePhotonCandidate);
+    void ProcessTrueClusterCandidates   ( AliAODConversionPhoton* TruePhotonCandidate);
+    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
     void RelabelAODPhotonCandidates     ( Bool_t mode);
     void ProcessTrueMesonCandidates     ( AliAODConversionMother *OmegaCandidate,
                                           AliAODConversionPhoton *TrueGammaCandidate0, 
