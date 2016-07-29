@@ -45,7 +45,7 @@
 using std::vector;
 using std::cout;
 using std::endl;
-using std::fstream;
+using std::ofstream;
 using std::flush;
 using std::ios;
 
