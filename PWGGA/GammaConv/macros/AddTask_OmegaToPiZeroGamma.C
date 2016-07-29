@@ -197,6 +197,10 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
+  } else if(trainConfig == 3){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
+
   // cuts for ReconMethod==1
   } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
@@ -205,6 +209,10 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 103){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
 
   // cuts for ReconMethod==2
   } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
@@ -215,6 +223,10 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
+  } else if(trainConfig == 203){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
+
   // cuts for ReconMethod==3
   } else if(trainConfig == 301){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
@@ -223,6 +235,10 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 303){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
 
   // cuts for ReconMethod==4
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
@@ -233,6 +249,10 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
+  } else if(trainConfig == 403){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
+
   // cuts for ReconMethod==5
   } else if(trainConfig == 501){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
@@ -241,6 +261,10 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 503){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
+      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
 
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
