@@ -51,7 +51,7 @@
 #include "THnSparse.h"
 #include <cmath>
 
-using std::isfinite;
+//using std::isfinite;
 
 class TH1;
 class TH2;
@@ -841,7 +841,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
             Double_t SpecWeig = 1.;
             if(fUseZDCESESpecWeights && fZDCESESpecWeightsHist[fZDCESEclEbE] && dPt>0.2 && dPt<20.) {
               Double_t weraw = fZDCESESpecWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESESpecWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,dPt));
-              if(isfinite(1./weraw)) SpecWeig = 1./weraw;
+              if(std::isfinite(1./weraw)) SpecWeig = 1./weraw;
             }
             fCMEQRe[cw][h]->Fill(dEta,SpecWeig*wPhiEta*TMath::Cos((h+1.)*dPhi));
             fCMEQIm[cw][h]->Fill(dEta,SpecWeig*wPhiEta*TMath::Sin((h+1.)*dPhi));
