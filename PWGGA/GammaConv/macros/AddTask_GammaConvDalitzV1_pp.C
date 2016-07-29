@@ -1,3 +1,42 @@
+
+//***************************************************************************************
+//CutHandler contains all cuts for a certain analysis and trainconfig,
+//it automatically checks length of cutStrings and takes care of the number of added cuts,
+//no specification of the variable 'numberOfCuts' needed anymore.
+//***************************************************************************************
+
+class CutHandlerConvDalitz{
+  public:
+    CutHandlerConvDalitz(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; elecCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; elecCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString elecCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvDalitz: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || elecCut.Length()!=20 ) {cout << "ERROR in CutHandlerConvDalitz: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; elecCutArray[nCuts]=elecCut;
+      nCuts++;
+      return;
+    }
+
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvDalitz: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvDalitz: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvDalitz: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetElecCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return elecCutArray[i]; else {cout << "ERROR in CutHandlerConvDalitz: GetElecCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+    TString* mesonCutArray;
+    TString* elecCutArray;
+};
+
+
 void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                                     Bool_t isMC   = kFALSE, //run MC 
                                     TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
@@ -135,34 +174,54 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   task->SetV0ReaderName(V0ReaderName);
   
   
-  // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 2;
+  CutHandlerConvDalitz cuts;
   
-  TString *eventCutArray   = new TString[numberOfCuts];
-  TString *photonCutArray  = new TString[numberOfCuts];
-  TString *MesonCutarray   = new TString[numberOfCuts];
-  TString *ElecCutarray    = new TString[numberOfCuts];
-  
-
   if(trainConfig == 1){
-    //TOF PID                                           
-    eventCutArray[0]="00000113"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "0163103100900000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-    eventCutArray[1]="00000113"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "0163103100900000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+   	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202221710"); // standard cut number for pp7TeV
+	cuts.AddCut("00000113", "00200009360300007800004000", "0163103100900000", "20475400253202221710");
+    // train configs 2 to 4 for estimation of systematics of standard cut number pp7TeV
   } else if (trainConfig == 2) {
-    //TOF PID
-    eventCutArray[0]="00000113"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "0163103100900000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-    eventCutArray[1]="00000113"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "0163103100900000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "10475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "30475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253201221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253203221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202121710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202321710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253302221710");
+    
   } else if (trainConfig == 3) {
-    //TOF PID
-    eventCutArray[0]="00000113"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "0163103100900000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
-    eventCutArray[1]="00000113"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "0163103100900000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+	cuts.AddCut("00000113", "00200009360300007900004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007200004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007100004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300001800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300002800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200049360300007800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200019360300007800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20475400253202222710");
+    
   } else if (trainConfig == 4) {
-    //working electron cutnumber
-    eventCutArray[0]="00000113"; photonCutArray[0] = "00200009360300007800004000"; MesonCutarray[0] = "0263103100900000";ElecCutarray[0] = "20475400253202221710";  //New Standard Only MB, standard pp7Tev cut dalitz
-  } else {
-    Error(Form("GammaConvDalitzV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20575400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20775400253202221710");
+	cuts.AddCut("00000113", "00200009260300007800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009660300007800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20425400253202221710");
+	cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000", "20407200253202221710");
+	cuts.AddCut("00000113", "00200009320300007800004000", "0263103100900000", "20475400253202221710");
+	cuts.AddCut("00000113", "00200009305100007800004000", "0263103100900000", "20475400253202221710");
+ } else {
+    Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConvDalitz! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+  
+  Int_t numberOfCuts = cuts.GetNCuts(); 
 
   TList  *EventCutList = new TList();
   TList  *ConvCutList  = new TList();
@@ -184,11 +243,11 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   Bool_t initializedMatBudWeigths_existing    = kFALSE;
   
   for(Int_t i = 0; i<numberOfCuts; i++){
-    TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(),photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
+    TString cutName( Form("%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetElecCut(i)).Data(),(cuts.GetMesonCut(i)).Data() ) );
     
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
@@ -202,17 +261,17 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
   
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(MesonCutarray[i].Data());
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     
     analysisElecCuts[i] = new AliDalitzElectronCuts();
-    analysisElecCuts[i]->InitializeCutsFromCutString(ElecCutarray[i].Data());
+    analysisElecCuts[i]->InitializeCutsFromCutString((cuts.GetElecCut(i)).Data());
     ElecCutList->Add(analysisElecCuts[i]);
     analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
     
