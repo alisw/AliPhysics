@@ -27,11 +27,11 @@
  
 #include <Riostream.h>
 #include <TString.h>
+#include <TArrayD.h>
 
 class TH1;
 class TH1F;
 class TH2F;
-class TArrayD;
 
 class AliCalorimeterUtils;
 

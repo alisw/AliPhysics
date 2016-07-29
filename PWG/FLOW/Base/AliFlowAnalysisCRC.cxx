@@ -49,6 +49,9 @@
 #include "TF1.h"
 #include "TNtuple.h"
 #include "THnSparse.h"
+#include <cmath>
+
+using std::isfinite;
 
 class TH1;
 class TH2;
