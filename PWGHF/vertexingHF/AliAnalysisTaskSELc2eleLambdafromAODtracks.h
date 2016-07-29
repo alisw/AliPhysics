@@ -140,6 +140,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void DefineTreeVariables();
   void DefineEleTreeVariables();
+  void DefineSingleTreeVariables();
   void DefineV0TreeVariables();
   void DefineMCTreeVariables();
   void DefineMCEleTreeVariables();
@@ -173,6 +174,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TTree    *fVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fSingleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
@@ -187,6 +189,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateV0Variables;   //!<! variables to be written to the tree
+  Float_t *fCandidateSingleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCV0Variables;   //!<! variables to be written to the tree
@@ -689,7 +692,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,33); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,34); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
