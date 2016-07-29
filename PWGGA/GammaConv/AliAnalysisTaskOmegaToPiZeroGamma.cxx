@@ -1757,13 +1757,13 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessPhotonCandidates()
             fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
           }
         }
-      }
-      if(fIsMC>0){
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessTruePhotonCandidates(PhotonCandidate);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessTruePhotonCandidatesAOD(PhotonCandidate);
-      }else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
+        if(fIsMC>0){
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessTruePhotonCandidates(PhotonCandidate);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessTruePhotonCandidatesAOD(PhotonCandidate);
+        }
+      } else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
     }
   }
   if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){

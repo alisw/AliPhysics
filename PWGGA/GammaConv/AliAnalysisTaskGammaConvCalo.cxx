@@ -2780,31 +2780,30 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
             fHistoConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
           }
         }
-      }
-      if(fIsMC>0){
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessTruePhotonCandidates(PhotonCandidate);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessTruePhotonCandidatesAOD(PhotonCandidate);
-      }else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
-      
-      if (fIsFromMBHeader && fDoPhotonQA == 2){
-        if (fIsHeavyIon ==1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
-          fPtGamma = PhotonCandidate->Pt();
-          fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-          fRConvPhoton = PhotonCandidate->GetConversionRadius();
-          fEtaPhoton = PhotonCandidate->GetPhotonEta();
-          fCharCatPhoton = PhotonCandidate->GetPhotonQuality();
-          fTreeConvGammaPtDcazCat[fiCut]->Fill();
-        }else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
-          fPtGamma = PhotonCandidate->Pt();
-          fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-          fRConvPhoton = PhotonCandidate->GetConversionRadius();
-          fEtaPhoton = PhotonCandidate->GetPhotonEta();
-          fCharCatPhoton = PhotonCandidate->GetPhotonQuality();
-          fTreeConvGammaPtDcazCat[fiCut]->Fill();
+        if(fIsMC>0){
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessTruePhotonCandidates(PhotonCandidate);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessTruePhotonCandidatesAOD(PhotonCandidate);
         }
-      }
+        if (fIsFromMBHeader && fDoPhotonQA == 2){
+          if (fIsHeavyIon ==1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
+            fPtGamma = PhotonCandidate->Pt();
+            fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+            fRConvPhoton = PhotonCandidate->GetConversionRadius();
+            fEtaPhoton = PhotonCandidate->GetPhotonEta();
+            fCharCatPhoton = PhotonCandidate->GetPhotonQuality();
+            fTreeConvGammaPtDcazCat[fiCut]->Fill();
+          }else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
+            fPtGamma = PhotonCandidate->Pt();
+            fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+            fRConvPhoton = PhotonCandidate->GetConversionRadius();
+            fEtaPhoton = PhotonCandidate->GetPhotonEta();
+            fCharCatPhoton = PhotonCandidate->GetPhotonQuality();
+            fTreeConvGammaPtDcazCat[fiCut]->Fill();
+          }
+        }
+      } else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
     }
   }
   if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
