@@ -23,9 +23,9 @@
 #include <TLine.h>
 #include <TCanvas.h>
 #include <TStyle.h>
-#include <TSystem.h>
 #include <TLegend.h>
 #include <TString.h>
+#include <TSystem.h>
 #include <TLatex.h>
 
 #include <Riostream.h>
@@ -42,7 +42,12 @@
 #include <AliAnaCaloChannelAnalysis.h>
 #include <AliAODEvent.h>
 
-using namespace std;
+using std::vector;
+using std::cout;
+using std::endl;
+using std::fstream;
+using std::flush;
+using std::ios;
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloChannelAnalysis);
@@ -53,13 +58,31 @@ ClassImp(AliAnaCaloChannelAnalysis);
 ///
 //________________________________________________________________________
 AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis():
-	TObject(),
-	fCurrentRunNumber(-1),fPeriod(),fPass(),fTrigger(),fNoOfCells(),fCellStartDCal(),
-	fMergeOutput(),fAnalysisOutput(),fAnalysisInput(),fRunList(),
-	fQADirect(), fMergedFileName(), fAnalysisVector(),
-	fRunListFileName(),fWorkdir(),fTrial(),fExternalFileName(),fTestRoutine(),
-	fNMaxCols(),fNMaxRows(),fNMaxColsAbs(),fNMaxRowsAbs(),
-	fFlag(),fCaloUtils()
+TObject(),
+	fCurrentRunNumber(-1),
+	fPeriod(),
+	fPass(),
+	fTrigger(),
+	fNoOfCells(),
+	fCellStartDCal(12288),
+	fMergeOutput(),
+	fAnalysisOutput(),
+	fAnalysisInput(),
+	fRunList(),
+	fQADirect(),
+	fMergedFileName(),
+	fAnalysisVector(),
+	fRunListFileName(),
+	fWorkdir(),
+	fTrial(),
+	fExternalFileName(),
+	fTestRoutine(),
+	fNMaxCols(),
+	fNMaxRows(48),
+	fNMaxColsAbs(24),
+	fNMaxRowsAbs(),
+	fFlag(),
+	fCaloUtils()
 {
 	fCurrentRunNumber = 254381;
 	fPeriod           = "LHC16h";
@@ -75,14 +98,34 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis():
 /// Constructor
 ///
 //________________________________________________________________________
+
 AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber, TString workDir, TString listName):
 	TObject(),
-	fCurrentRunNumber(-1),fPeriod(),fPass(),fTrigger(),fNoOfCells(),fCellStartDCal(),
-	fMergeOutput(),fAnalysisOutput(),fAnalysisInput(),fRunList(),
-	fQADirect(), fMergedFileName(), fAnalysisVector(),
-	fRunListFileName(),fWorkdir(),fTrial(),fExternalFileName(),fTestRoutine(),
-	fNMaxCols(),fNMaxRows(),fNMaxColsAbs(),fNMaxRowsAbs(),
-	fFlag(),fCaloUtils()
+	fCurrentRunNumber(-1),
+	fPeriod(),
+	fPass(),
+	fTrigger(),
+	fNoOfCells(),
+	fCellStartDCal(12288),
+	fMergeOutput(),
+	fAnalysisOutput(),
+	fAnalysisInput(),
+	fRunList(),
+	fQADirect(),
+	fMergedFileName(),
+	fAnalysisVector(),
+	fRunListFileName(),
+	fWorkdir(),
+	fTrial(),
+	fExternalFileName(),
+	fTestRoutine(),
+	fNMaxCols(),
+	fNMaxRows(),
+	fNMaxColsAbs(),
+	fNMaxRowsAbs(),
+	fFlag(),
+	fCaloUtils()
+
 {
 	fCurrentRunNumber = runNumber;
 	fPeriod           = period;
@@ -107,7 +150,8 @@ void AliAnaCaloChannelAnalysis::Init()
 	fTestRoutine=0;
 
 	//..Settings for the input/output structure (hard coded)
-	fAnalysisInput  ="AnalysisInput";
+	//fAnalysisInput  ="AnalysisInput";
+	fAnalysisInput = "";
 	fMergeOutput    ="ConvertOutput";
 	fAnalysisOutput ="AnalysisOutput";
 	//..Stuff for the convert function
@@ -128,11 +172,11 @@ void AliAnaCaloChannelAnalysis::Init()
 	fCaloUtils->SetRunNumber(fCurrentRunNumber);
 	fCaloUtils->AccessGeometry(aod);
 
-	fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
-	Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
-	fCellStartDCal=12288; //..ELI this should be automatized from the geometry information!!
+    fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
+    Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
+    
+    //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
 
-	//..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
 	cout<<"Called geometry for run number: "<<fCurrentRunNumber<<endl;
 	cout<<"Number of supermod: "<<nModules<<endl;
 	cout<<"Number of cells: "<<fNoOfCells<<endl;
@@ -148,8 +192,8 @@ void AliAnaCaloChannelAnalysis::Init()
 
 	//......................................................
 	//..setings for the 2D histogram
-	fNMaxCols    = 48;  //eta direction
-	fNMaxRows    = 24;  //phi direction
+	//fNMaxCols    = 48;  //eta direction
+	//fNMaxRows    = 24;  //phi direction
 	fNMaxColsAbs = 2*fNMaxCols;
 	fNMaxRowsAbs = Int_t (nModules/2)*fNMaxRows; //multiply by number of supermodules
 }
@@ -177,6 +221,10 @@ void AliAnaCaloChannelAnalysis::Run()
 		cout<<". . .Start process by converting files. . . . . . . . . . . ."<<endl;
 		cout<<endl;
 		fMergedFileName = MergeRuns();
+		if(fMergedFileName.IsNull()){
+			Printf("File not produced, exit");
+			return;
+		}
 		cout<<endl;
 	}
 	else
@@ -249,7 +297,10 @@ TString AliAnaCaloChannelAnalysis::MergeRuns()
 	//..Open the text file with the run list numbers and run index
 	cout<<"o o o Open .txt file with run indices. Name = " << fRunList << endl;
 	FILE *pFile = fopen(fRunList.Data(), "r");
-	if(!pFile)cout<<"count't open file!"<<endl;
+	if(!pFile){
+		cout<<"couldn't open file!"<<endl;
+		return "";
+	}
 	Int_t Nentr;
 	Int_t q;
 	Int_t ncols;

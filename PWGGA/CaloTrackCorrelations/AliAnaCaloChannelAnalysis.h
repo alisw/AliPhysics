@@ -21,30 +21,26 @@
 /// \date Jun 24, 2016
 
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-#if !defined(__CINT__) || defined(__MAKECINT__) 
-#include <TFile.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TF1.h>
-#include <TROOT.h>
-#include <TArrayD.h>
+ * See cxx source for full Copyright notice
+*/
+ 
+ 
 #include <Riostream.h>
-#include <AliCalorimeterUtils.h>
-#endif
-using namespace std;
-using std::vector;
-using std::array;
+#include <TString.h>
 
+class TH1;
+class TH1F;
+class TH2F;
+class TArrayD;
+
+class AliCalorimeterUtils;
 
 
 class AliAnaCaloChannelAnalysis : public TObject {
-
+	
 public:
-
       AliAnaCaloChannelAnalysis() ;                // default ctor
-	  virtual ~AliAnaCaloChannelAnalysis()  { ; }  // virtual dtor
+	  virtual ~AliAnaCaloChannelAnalysis();//  { ; }  // virtual dtor
 	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber, TString workDir, TString listName);
 
 	  void Run();
@@ -126,12 +122,13 @@ protected:
 	  TH1F* fAvgNHitPerEvVsCellId;          //!<! being discussed
 	  TH1F* fAvgEngPerHitVsCellId;          //!<! being discussed
 	  
-private:
-	  AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
-	  AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
 
-  /// \cond CLASSIMP
-  ClassDef(AliAnaCaloChannelAnalysis, 1);
-  /// \endcond
+private:
+	AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
+	AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
+	
+	/// \cond CLASSIMP
+	ClassDef(AliAnaCaloChannelAnalysis, 1);
+	/// \endcond
 };
 #endif
