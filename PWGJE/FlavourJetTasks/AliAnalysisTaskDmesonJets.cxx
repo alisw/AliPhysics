@@ -394,13 +394,12 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition() :
   fRadius(0),
   fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecoScheme(AliJetContainer::pt_scheme),
-  fAcceptance(AliEmcalJet::kUser),
   fMinJetPt(0.),
   fMaxJetPt(500.),
   fMinJetPhi(0.),
   fMaxJetPhi(0.),
-  fMinJetEta(0.),
-  fMaxJetEta(0.),
+  fMinJetEta(-1.),
+  fMaxJetEta(1.),
   fMinChargedPt(0.),
   fMaxChargedPt(0.),
   fMinNeutralPt(0.),
@@ -420,28 +419,17 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(EJetType_t typ
   fRadius(r),
   fJetAlgo(algo),
   fRecoScheme(reco),
-  fAcceptance(AliEmcalJet::kUser),
   fMinJetPt(0.),
   fMaxJetPt(500.),
   fMinJetPhi(0.),
   fMaxJetPhi(0.),
-  fMinJetEta(0.),
-  fMaxJetEta(0.),
+  fMinJetEta(-1.),
+  fMaxJetEta(1.),
   fMinChargedPt(0.),
   fMaxChargedPt(0.),
   fMinNeutralPt(0.),
   fMaxNeutralPt(0.)
 {
-  // By default set detector fiducial acceptance
-  switch (type) {
-  case AliJetContainer::kFullJet:
-  case AliJetContainer::kNeutralJet:
-    fAcceptance = AliEmcalJet::kEMCALfid;
-    break;
-  case AliJetContainer::kChargedJet:
-    fAcceptance = AliEmcalJet::kTPCfid;
-    break;
-  }
 }
 
 /// Copy constructor
@@ -453,7 +441,6 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(const AliHFJet
   fRadius(source.fRadius),
   fJetAlgo(source.fJetAlgo),
   fRecoScheme(source.fRecoScheme),
-  fAcceptance(source.fAcceptance),
   fMinJetPt(source.fMinJetPt),
   fMaxJetPt(source.fMaxJetPt),
   fMinJetPhi(source.fMinJetPhi),
@@ -510,67 +497,6 @@ Bool_t AliAnalysisTaskDmesonJets::AliHFJetDefinition::IsJetInAcceptance(const Al
   const AliJetInfo* jet = dMesonJet.GetJet(n);
   if (!jet) return kFALSE;
   return IsJetInAcceptance((*jet));
-}
-
-/// Sets the eta/phi acceptance of the jets to the detector boundaries
-///
-/// \param geom Const pointer to the EMCal/DCal geometry
-/// \param run  Run number (needed because certain runs in 2012/2013 had the 1/3 EMCal modules off
-void AliAnalysisTaskDmesonJets::AliHFJetDefinition::SetDetectorJetEtaPhiRange(const AliEMCALGeometry* const geom, Int_t run)
-{
-  Double_t r = 0;
-  switch (fAcceptance) {
-  case AliEmcalJet::kTPCfid:
-    r = fRadius;
-    // enforce fiducial acceptance
-    /* no break */
-  case AliEmcalJet::kTPC:
-    SetJetEtaRange(-0.9 + r, 0.9 - r);
-    SetJetPhiRange(0, 0);  // No cut on phi
-    break;
-
-  case AliEmcalJet::kEMCALfid:
-    r = fRadius;
-    // enforce fiducial acceptance
-    /* no break */
-  case AliEmcalJet::kEMCAL:
-    if (geom) {
-      SetJetEtaRange(geom->GetArm1EtaMin() + r, geom->GetArm1EtaMax() - r);
-
-      if(run>=177295 && run<=197470) {//small SM masked in 2012 and 2013
-        SetJetPhiRange(1.405 + r,3.135 - r);
-      }
-      else {
-        SetJetPhiRange(geom->GetArm1PhiMin() * TMath::DegToRad() + r, geom->GetEMCALPhiMax() * TMath::DegToRad() - r);
-      }
-    }
-    else {
-      AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
-      SetJetEtaRange(-0.7 + r, 0.7 - r);
-      SetJetPhiRange(1.405 + r, 3.135 - r);
-    }
-    break;
-
-  case AliEmcalJet::kDCALfid:
-    r = fRadius;
-    // enforce fiducial acceptance
-    /* no break */
-  case AliEmcalJet::kDCAL:
-    if (geom) {
-      SetJetEtaRange(geom->GetArm1EtaMin() + r, geom->GetArm1EtaMax() - r);
-      SetJetPhiRange(geom->GetDCALPhiMin() * TMath::DegToRad() + r, geom->GetDCALPhiMax() * TMath::DegToRad() - r);
-    }
-    else {
-      AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
-      SetJetEtaRange(-0.7 + r, 0.7 - r);
-      SetJetPhiRange(4.538 + r, 5.727 - r);
-    }
-    break;
-
-  case AliEmcalJet::kUser:
-    // Nothing to be done
-    break;
-  }
 }
 
 /// Compares 2 jet definitions.
@@ -756,11 +682,8 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::IsAnyJetInAcceptance(const Ali
 }
 
 /// Initialize the analysis engine
-void AliAnalysisTaskDmesonJets::AnalysisEngine::Init(const AliEMCALGeometry* const geom, Int_t runNumber)
+void AliAnalysisTaskDmesonJets::AnalysisEngine::Init(const AliEMCALGeometry* const /*geom*/, Int_t /*runNumber*/)
 {
-  for (Int_t i = 0; i < fJetDefinitions.size(); i++) {
-    fJetDefinitions[i].SetDetectorJetEtaPhiRange(geom, runNumber);
-  }
 }
 
 /// Sets the D meson candidate properties.
@@ -1770,10 +1693,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
       fCurrentJetInfo[ij]->Set(dmeson_pair.second, fJetDefinitions[ij].GetName());
       accJets++;
     }
-    if (kTRUE || accJets > 0) { // always fill D meson tree, even if no jet was accepted
+    if (accJets > 0) {
       fTree->Fill();
     }
-    else { // this is never executed
+    else {
       hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Pt());
       hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
@@ -2301,7 +2224,15 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
+  // Now adding an entry in teh histogram so as to check that this is actually cutting anything out
+  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) {
+    for (auto &eng : fAnalysisEngines) {
+        if (eng.fInhibit) continue;
+        hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
+        fHistManager.FillTH1(hname, "ESDfilterBug");
+    }
+    return kFALSE;
+  }
 
   for (auto &eng : fAnalysisEngines) {
 

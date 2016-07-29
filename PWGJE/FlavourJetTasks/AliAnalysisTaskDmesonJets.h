@@ -281,7 +281,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetJetPtRange(Double_t min, Double_t max)        { fMinJetPt     = min; fMaxJetPt     = max; }
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
-    void SetAcceptanceType(UInt_t a)        { fAcceptance   = a  ;                      }
     Double_t GetRadius() const { return fRadius; }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
@@ -299,13 +298,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     friend class AliAnalysisTaskDmesonJets;
     friend class AnalysisEngine;
 
-    void                      SetDetectorJetEtaPhiRange(const AliEMCALGeometry* const geom, Int_t run);
-
     EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
     Double_t                  fRadius        ; ///<  Jet radius
     EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
     ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
-    UInt_t                    fAcceptance    ; ///<  Jet acceptance
     Double_t                  fMinJetPt      ; ///<  Minimum jet pT
     Double_t                  fMaxJetPt      ; ///<  Maximum jet pT
     Double_t                  fMinJetPhi     ; ///<  Minimum jet phi
@@ -320,7 +316,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliHFJetDefinition, 3);
+    ClassDef(AliHFJetDefinition, 4);
     /// \endcond
   };
 
