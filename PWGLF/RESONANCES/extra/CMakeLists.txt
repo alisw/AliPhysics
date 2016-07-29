@@ -38,6 +38,7 @@ set(SRCS
   AliXiStarEventCollection.cxx
   AliAnalysisTaskLambdaStar.cxx
   AliAnalysisTaskSEF01710fromAODtracks.cxx
+  AliRsnf0f2Task.cxx
   )
 
 # Headers from sources
