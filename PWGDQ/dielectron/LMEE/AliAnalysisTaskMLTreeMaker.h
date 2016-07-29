@@ -71,13 +71,13 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   //AliPIDCombined *fPIDCombined;    
 
      
-  vector<Double_t> eta;
-  vector<Double_t> phi;
-  vector<Double_t> pt;
-  vector<Int_t> charge;
+  std::vector<Double_t> eta;
+  std::vector<Double_t> phi;
+  std::vector<Double_t> pt;
+  std::vector<Int_t> charge;
   
-  vector<Int_t> IsBG;
-  vector<Int_t> runn;
+  std::vector<Int_t> IsBG;
+  std::vector<Int_t> runn;
   
   Double_t pttemp;
   Double_t etatemp;
@@ -116,9 +116,9 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   AliMCEvent* fMcArray; 
 
-  vector<Double_t> EsigTPC;
-  vector<Double_t> EsigTOF;
-  vector<Double_t> EsigITS;
+  std::vector<Double_t> EsigTPC;
+  std::vector<Double_t> EsigTOF;
+  std::vector<Double_t> EsigITS;
   
   
  Double_t tempEsigTPC;
@@ -128,13 +128,13 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
   Bool_t hasMC;
   
-  vector<Double_t> MCpt;
-  vector<Double_t> MCeta;
-  vector<Double_t> MCphi;
+  std::vector<Double_t> MCpt;
+  std::vector<Double_t> MCeta;
+  std::vector<Double_t> MCphi;
   
-  vector<Float_t> dcar;    //DCA
+  std::vector<Float_t> dcar;    //DCA
 
-  vector<Float_t> dcaz;
+  std::vector<Float_t> dcaz;
   
   Float_t tempdca[2];
 
@@ -145,20 +145,20 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Double_t vert[3];
 
   
-  vector<Int_t> nITS;
+  std::vector<Int_t> nITS;
   Int_t tempnits;
   Double_t nitssharedtemp;
-  vector<Double_t> nITSshared;
-  vector<Double_t> chi2ITS;
-  vector<Double_t> chi2TPC;
-  vector<Double_t> chi2Global;
-  vector<Double_t> chi2GlobalvsTPC;
+  std::vector<Double_t> nITSshared;
+  std::vector<Double_t> chi2ITS;
+  std::vector<Double_t> chi2TPC;
+  std::vector<Double_t> chi2Global;
+  std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   
-  vector<Int_t> pdg;
-  vector<Int_t> pdgmother;
-  vector<Int_t> hasmother;
-  vector<Int_t> motherlabel;
+  std::vector<Int_t> pdg;
+  std::vector<Int_t> pdgmother;
+  std::vector<Int_t> hasmother;
+  std::vector<Int_t> motherlabel;
   
   
   
