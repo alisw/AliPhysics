@@ -45,7 +45,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskMLTreeMaker.h"
 
-
+using std::vector;
 
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
 
