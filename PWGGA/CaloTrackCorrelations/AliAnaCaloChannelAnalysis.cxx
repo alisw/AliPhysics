@@ -77,9 +77,9 @@ TObject(),
 	fTrial(),
 	fExternalFileName(),
 	fTestRoutine(),
-	fNMaxCols(),
-	fNMaxRows(48),
-	fNMaxColsAbs(24),
+	fNMaxCols(48),
+	fNMaxRows(24),
+	fNMaxColsAbs(),
 	fNMaxRowsAbs(),
 	fFlag(),
 	fCaloUtils()
@@ -119,8 +119,8 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pas
 	fTrial(),
 	fExternalFileName(),
 	fTestRoutine(),
-	fNMaxCols(),
-	fNMaxRows(),
+	fNMaxCols(48),
+	fNMaxRows(24),
 	fNMaxColsAbs(),
 	fNMaxRowsAbs(),
 	fFlag(),
@@ -150,8 +150,8 @@ void AliAnaCaloChannelAnalysis::Init()
 	fTestRoutine=0;
 
 	//..Settings for the input/output structure (hard coded)
-	//fAnalysisInput  ="AnalysisInput";
-	fAnalysisInput = "";
+	// TO BE CHANGED
+	fAnalysisInput  ="AnalysisInput";
 	fMergeOutput    ="ConvertOutput";
 	fAnalysisOutput ="AnalysisOutput";
 	//..Stuff for the convert function
