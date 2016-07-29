@@ -69,7 +69,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0),
+  //fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -99,7 +99,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
-  fhnDeltaMass             = new THnSparse*[fNcentBins];
+  //fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -110,7 +110,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
-    fhnDeltaMass[i]             = 0;
+    //fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -154,7 +154,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0),
+  //fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -184,7 +184,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
-  fhnDeltaMass             = new THnSparse*[fNcentBins];
+  //fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -195,7 +195,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
-    fhnDeltaMass[i]             = 0;
+    //fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -355,11 +355,11 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
     }
     fOutput->Add(fhnMassResponse[i]);
     
-    histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
-    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
-    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
-    fOutput->Add(fhnDeltaMass[i]);
+    //histName = Form("fhnDeltaMass_%d", i);
+    //histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
+    //Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    //fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    //fOutput->Add(fhnDeltaMass[i]);
 
   }
 
