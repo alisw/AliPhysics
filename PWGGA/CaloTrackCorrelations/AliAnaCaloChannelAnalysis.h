@@ -40,7 +40,7 @@ class AliAnaCaloChannelAnalysis : public TObject {
 	
 public:
       AliAnaCaloChannelAnalysis() ;                // default ctor
-	  virtual ~AliAnaCaloChannelAnalysis();//  { ; }  // virtual dtor
+	  virtual ~AliAnaCaloChannelAnalysis()  { ; }  // virtual dtor
 	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber, TString workDir, TString listName);
 
 	  void Run();
