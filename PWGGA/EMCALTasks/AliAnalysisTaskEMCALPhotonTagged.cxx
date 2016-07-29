@@ -350,7 +350,7 @@ void AliAnalysisTaskEMCALPhotonTagged::UserCreateOutputObjects()
   Double_t xmin[] = { fPtBinLowEdge,   0., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,fPtBinLowEdge,-0.5};
   Double_t xmax[] = { fPtBinHighEdge, 4.,  0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,fPtBinHighEdge,10.5};
   if(fPeriod.Contains("11h")){
-    xmax[12]=3999.5;
+    xmax[10]=3999.5;
   }
   fHnOutput =  new THnSparseF("fHnOutput","Output matrix: E_{T},M02, d#phi_{trk},d#eta_{trk},#eta_{clus},#phi_{clus},T_{max},mult,mc-p_{T}^{#gamma},NLM", ndims, bins, xmin, xmax);
   fHnOutput->Sumw2();
