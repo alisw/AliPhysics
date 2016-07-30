@@ -355,13 +355,13 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   //
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
   if(!esd) {
-    printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
+    printf("AliAnalysisTaskSDDRP::UserExec(): bad ESD\n");
     return;
   } 
 
 
   if(!ESDfriend()) {
-    printf("AliAnalysisTaskSDDRP::Exec(): bad ESDfriend\n");
+    printf("AliAnalysisTaskSDDRP::UserExec(): bad ESDfriend\n");
     return;
   }
   
@@ -615,7 +615,7 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  printf("Number of analyzed events = %.0f\n",fHistNEvents->GetBinContent(1));
+  printf("AliAnalysisTaskSDDRP::Terminate --- Number of analyzed events = %.0f\n",fHistNEvents->GetBinContent(1));
   return;
 }
 
