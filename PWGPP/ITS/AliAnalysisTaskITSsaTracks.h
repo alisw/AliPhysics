@@ -110,6 +110,8 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   TH1F*   fHistPtGood[kNtrackTypes];      //! pt distr. good tracks, no PID
   TH1F*   fHistPtFake[kNtrackTypes];      //! pt distr. fake tracks, no PID
 
+  TH2F*   fHistEtaPhiLay[7*kNtrackTypes]; //! etaphi distr., layer requirements
+
   TH2F*   fHistEtaPhi[kNtrackTypes];      //! etaphi distr., no PID
   TH2F*   fHistEtaPhiGood[kNtrackTypes];  //! etaphi distr. good tracks, no PID
   TH2F*   fHistEtaPhiFake[kNtrackTypes];  //! etaphi distr. fake tracks, no PID
@@ -184,8 +186,9 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   Bool_t  fRequireSDD;      // check that SDD are in trigger cluster
   Bool_t  fRequireSSD;      // check that SSD are in trigger cluster
   AliTriggerConfiguration* fTrigConfig; // trigger configuration object
+  Bool_t fInitCalib;        // Flag to check calib initiatization
 
-  ClassDef(AliAnalysisTaskITSsaTracks,5);  
+  ClassDef(AliAnalysisTaskITSsaTracks,6);
 };
 
 
