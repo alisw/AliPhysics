@@ -19161,8 +19161,8 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
         dM2AB = mA*mR;
         twoAB = (dReA1n*dReR1n+dImA1n*dImR1n) / dM2AB;
         fCRC2CorPro[fRunBin][fCenBin][2]->Fill(EtaBin,twoAB,dM2AB*fCenWeightEbE);
-        fCRCCorrProdTempHist[2][0][0]->SetBinContent(1,twoAB);
-        fCRCCorrProdTempHist[2][1][0]->SetBinContent(1,dM2AB);
+        fCRC2CorHist[0][2][0]->SetBinContent(1,twoAB);
+        fCRC2CorHist[0][2][1]->SetBinContent(1,dM2AB);
         fCRC2NUAPro[fRunBin][fCenBin][2][0]->Fill(EtaBin,dReA1n/mA,mA*fCenWeightEbE);
         fCRC2NUAPro[fRunBin][fCenBin][2][1]->Fill(EtaBin,dImA1n/mA,mA*fCenWeightEbE);
         fCRC2NUAPro[fRunBin][fCenBin][2][2]->Fill(EtaBin,dReR1n/mR,mR*fCenWeightEbE);
@@ -19170,13 +19170,13 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
         
         twoAB = (dReA2n*dReR2n+dImA2n*dImR2n) / dM2AB;
         fCRC2CorPro[fRunBin][fCenBin][5]->Fill(EtaBin,twoAB,dM2AB*fCenWeightEbE);
-        fCRCCorrProdTempHist[5][0][0]->SetBinContent(1,twoAB);
-        fCRCCorrProdTempHist[5][1][0]->SetBinContent(1,dM2AB);
+        fCRC2CorHist[0][5][0]->SetBinContent(1,twoAB);
+        fCRC2CorHist[0][5][1]->SetBinContent(1,dM2AB);
       } else {
-        fCRCCorrProdTempHist[2][0][0]->SetBinContent(1,0.);
-        fCRCCorrProdTempHist[2][1][0]->SetBinContent(1,0.);
-        fCRCCorrProdTempHist[5][0][0]->SetBinContent(1,0.);
-        fCRCCorrProdTempHist[5][1][0]->SetBinContent(1,0.);
+        fCRC2CorHist[0][2][0]->SetBinContent(1,0.);
+        fCRC2CorHist[0][2][1]->SetBinContent(1,0.);
+        fCRC2CorHist[0][5][0]->SetBinContent(1,0.);
+        fCRC2CorHist[0][5][1]->SetBinContent(1,0.);
       }
       
       for(Int_t c=0;c<2;c++) {
@@ -19189,8 +19189,8 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
           dM2AB = mp*mR;
           twoAB = (p1n0kRe*dReR1n+p1n0kIm*dImR1n) / dM2AB;
           fCRC2CorPro[fRunBin][fCenBin][c]->Fill(EtaBin,twoAB,dM2AB*fCenWeightEbE);
-          fCRCCorrProdTempHist[c][0][0]->SetBinContent(1,twoAB);
-          fCRCCorrProdTempHist[c][1][0]->SetBinContent(1,dM2AB);
+          fCRC2CorHist[0][c][0]->SetBinContent(1,twoAB);
+          fCRC2CorHist[0][c][1]->SetBinContent(1,dM2AB);
           
           fCRC2NUAPro[fRunBin][fCenBin][c][0]->Fill(EtaBin,p1n0kRe/mp,mp*fCenWeightEbE);
           fCRC2NUAPro[fRunBin][fCenBin][c][1]->Fill(EtaBin,p1n0kIm/mp,mp*fCenWeightEbE);
@@ -19199,24 +19199,24 @@ void AliFlowAnalysisCRC::CalculateCRC2Cor()
           
           twoAB = (p1n0kRe*dReR2n+p1n0kIm*dImR2n) / dM2AB;
           fCRC2CorPro[fRunBin][fCenBin][c+3]->Fill(EtaBin,twoAB,dM2AB*fCenWeightEbE);
-          fCRCCorrProdTempHist[c+3][0][0]->SetBinContent(1,twoAB);
-          fCRCCorrProdTempHist[c+3][1][0]->SetBinContent(1,dM2AB);
+          fCRC2CorHist[0][c+3][0]->SetBinContent(1,twoAB);
+          fCRC2CorHist[0][c+3][1]->SetBinContent(1,dM2AB);
         } else {
-          fCRCCorrProdTempHist[c][0][0]->SetBinContent(1,0.);
-          fCRCCorrProdTempHist[c][1][0]->SetBinContent(1,0.);
-          fCRCCorrProdTempHist[c+3][0][0]->SetBinContent(1,0.);
-          fCRCCorrProdTempHist[c+3][1][0]->SetBinContent(1,0.);
+          fCRC2CorHist[0][c][0]->SetBinContent(1,0.);
+          fCRC2CorHist[0][c][1]->SetBinContent(1,0.);
+          fCRC2CorHist[0][c+3][0]->SetBinContent(1,0.);
+          fCRC2CorHist[0][c+3][1]->SetBinContent(1,0.);
         }
         
       } // end of for(Int_t c=0;c<2;c++)
       
       // calculate covariances
       for(Int_t c=0;c<fkNCorCRC2;c++) {
-        CorrA = fCRCCorrProdTempHist[c][0][0]->GetBinContent(1);
-        WeigA = fCRCCorrProdTempHist[c][1][0]->GetBinContent(1);
+        CorrA = fCRC2CorHist[0][c][0]->GetBinContent(1);
+        WeigA = fCRC2CorHist[0][c][1]->GetBinContent(1);
         for(Int_t c2=0;c2<fkNCorCRC2;c2++) {
-          CorrB = fCRCCorrProdTempHist[c2][0][0]->GetBinContent(1);
-          WeigB = fCRCCorrProdTempHist[c2][1][0]->GetBinContent(1);
+          CorrB = fCRC2CorHist[0][c2][0]->GetBinContent(1);
+          WeigB = fCRC2CorHist[0][c2][1]->GetBinContent(1);
           fCRC2CovPro[fCenBin][c][c2]->Fill(EtaBin,CorrA*CorrB,WeigA*WeigB*fCenWeightEbE);
         }
       }
@@ -21670,8 +21670,8 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
           fCRCCorrHist[k][eg][h]->SetBinContent(c,CorrCorr);
           fCRCCorrHist[k][eg][h]->SetBinError(c,CorrErr);
           
-          fCRCCorrProdTempHist[k][0][0]->SetBinContent(c,Corr);
-          fCRCCorrProdTempHist[k][1][0]->SetBinContent(c,SumWeig);
+          fCRCCorrProdTempHist[0][0][0]->SetBinContent(c,Corr);
+          fCRCCorrProdTempHist[1][0][0]->SetBinContent(c,SumWeig);
           fCRCCumHist[k][eg][h]->SetBinContent(c,SumMul);
           fCRCCumHist[k][eg][h]->SetBinError(c,SumEv);
           
@@ -21680,11 +21680,10 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
         // calculate covariances
         for(Int_t c=1;c<=fCRCnCR;c++) {
           for(Int_t c2=1;c2<=fCRCnCR;c2++) {
-            Double_t Corr1 = fCRCCorrProdTempHist[k][0][0]->GetBinContent(c);
-            Double_t Corr2 = fCRCCorrProdTempHist[k][0][0]->GetBinContent(c2);
-            Int_t k2 = (k == 2 ? 1 : k);
-            Double_t Weig1 = fCRCCorrProdTempHist[k2][1][0]->GetBinContent(c);
-            Double_t Weig2 = fCRCCorrProdTempHist[k2][1][0]->GetBinContent(c2);
+            Double_t Corr1 = fCRCCorrProdTempHist[0][0][0]->GetBinContent(c);
+            Double_t Corr2 = fCRCCorrProdTempHist[0][0][0]->GetBinContent(c2);
+            Double_t Weig1 = fCRCCorrProdTempHist[1][0][0]->GetBinContent(c);
+            Double_t Weig2 = fCRCCorrProdTempHist[1][0][0]->GetBinContent(c2);
             
             Int_t CRCBin2 = (c-1)*fCRCnCR+c2;
             fCRCCorrProd2p2pPro[k][eg][h]->GetXaxis()->SetRange(CRCBin2,CRCBin2);
