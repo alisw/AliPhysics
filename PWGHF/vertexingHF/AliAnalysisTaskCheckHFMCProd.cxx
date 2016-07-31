@@ -323,7 +323,7 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
 
   fHistNcollHFtype=new TH2F("hNcollHFtype","",5,-1.5,3.5,30,-0.5,29.5);
   fOutput->Add(fHistNcollHFtype);
-  fHistNinjectedvsb=new TH2F("hNinjectedvsb","",50,0.,20.,100,-0.5,99.5);
+  fHistNinjectedvsb=new TH2F("hNinjectedvsb","",50,0.,20.,140,-0.5,139.5);
   fOutput->Add(fHistNinjectedvsb);
 
   Double_t binseta[11]={-1.0,-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8,1.0};
@@ -489,6 +489,9 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       nColl=lgen->GetEntries();
       fHistNcollHFtype->Fill(typeHF,nColl);
       fHistNinjectedvsb->Fill(imppar,nInjected);
+    }else if(genname.Contains("HijingEventHeader")){
+      AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)mcEvent->GenEventHeader();
+      imppar=hijh->ImpactParameter();
     }else{
       TString genTitle=mcEvent->GenEventHeader()->GetTitle();
       if(genTitle.Contains("bchadr")) typeHF=1;
