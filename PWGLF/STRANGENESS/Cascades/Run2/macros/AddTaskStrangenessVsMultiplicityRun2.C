@@ -44,23 +44,23 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRu
                                                                      TTree::Class(),
                                                                      AliAnalysisManager::kOutputContainer,
                                                                      outputFileName );
+        coutputTree->SetSpecialOutput();
     }
     if( lSaveV0 ){
         AliAnalysisDataContainer *coutputTreeV0 = mgr->CreateContainer("cTreeV0",
                                                                        TTree::Class(),
                                                                        AliAnalysisManager::kOutputContainer,
                                                                        outputFileName );
+        coutputTreeV0->SetSpecialOutput();
     }
     if (lSaveCascade){
         AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer("cTreeCascade",
                                                                             TTree::Class(),
                                                                             AliAnalysisManager::kOutputContainer,
                                                                             outputFileName );
+        coutputTreeCascade->SetSpecialOutput();
     }
     //This one you should merge in file-resident ways...
-    coutputTree->SetSpecialOutput();
-    coutputTreeV0->SetSpecialOutput();
-    coutputTreeCascade->SetSpecialOutput();
     
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskAuxiliary, 0, mgr->GetCommonInputContainer());
