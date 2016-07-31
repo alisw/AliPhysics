@@ -158,7 +158,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     
     return *this;
 }
-/*
+
 //________________________________________________________________
 Long64_t AliV0Result::Merge(TCollection *hlist)
 //Merging function to allow for usage as analysis output
@@ -177,4 +177,3 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
     }
     return (Long64_t) GetHistogram()->GetEntries();
 }
-*/
