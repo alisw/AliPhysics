@@ -57,14 +57,14 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
     */
 
     AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-    TString classInputHandler;
+    TString classInputHandler = esdH->ClassName();
+
+    Printf("----> AliAnalysisTaskPt: ClassName of handler = %s", classInputHandler.Data());
 
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
     } 
     else {
-      classInputHandler = esdH->ClassName();
-      Printf("----> AliAnalysisTaskPt: ClassName of handler = %s", classInputHandler.Data());
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
       fESD = esdH->GetEvent();
       if (fUseFriends){

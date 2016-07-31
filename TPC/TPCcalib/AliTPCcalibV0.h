@@ -8,10 +8,8 @@
 class TTreeSRedirector;
 class AliTPCROC;
 class AliTPCseed;
-//class AliESDtrack;
-//class AliESDEvent;
-class AliVEvent;
 class AliVTrack;
+class AliVEvent;
 class TH3F;
 class TH1F;
 class TH2F;
@@ -34,7 +32,7 @@ public :
   AliTPCcalibV0();
   AliTPCcalibV0(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibV0();
-  virtual void     Process(AliVEvent *event) {return ProcessESD(event);}
+  virtual void     Process(AliVEvent *event) {return ProcessEv(event);}
   void FilterV0s(AliVEvent* event);
   Long64_t Merge(TCollection *const li);
   void AddTree(TTree * treeInput);
@@ -45,9 +43,9 @@ public :
   //
   //
   //
-  void ProcessESD(AliVEvent *event);
-  void DumpToTree(AliVEvent *event);
-  void DumpToTreeHPT(AliVEvent *event);
+  void ProcessEv(AliVEvent *ev);
+  void DumpToTree(AliVEvent *ev);
+  void DumpToTreeHPT(AliVEvent *ev);
   TTree * GetV0Tree(){return fV0Tree;}
   TTree * GetHPTTree(){return fHPTTree;}
   //  
@@ -70,17 +68,16 @@ private:
   TTree          *fHPTTree;      // tree with high mometa tracks - full calib info
   //
   AliStack       *fStack;        // pointer to kinematic tree        
-  AliVEvent      *fEvent;              //! current ED to proccess - NOT OWNER
+  AliVEvent      *fVevent;              //! current ED to proccess - NOT OWNER
   TDatabasePDG   *fPdg;              //! particle database
   TObjArray      *fParticles;         // array of selected MC particles
   TObjArray      *fV0s;               // array of V0s
   TObjArray      *fGammas;           // gamma conversion candidates
   //
-  //void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}  
   //       
-  ClassDef(AliTPCcalibV0,3);
+  ClassDef(AliTPCcalibV0,3)
 };
 
 

@@ -11,9 +11,6 @@
 #include "AliAnalysisTask.h"
 #include "TObjArray.h"
 #include "AliTPCcalibBase.h"
-//class AliESDEvent;
-//class AliESDtrack;
-//class AliESDfriend;
 class AliVEvent;
 class AliVTrack;
 class AliVfriendEvent;

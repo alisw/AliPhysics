@@ -11,11 +11,8 @@
 #include "TNamed.h"
 #include "TObjString.h"
 class AliTPCseed;
-//class AliESDEvent;
 class AliVEvent;
-//class AliESDtrack;
 class AliVTrack;
-//class AliESDfriendTrack;
 class AliVfriendTrack;
 class TCollection;
 class TTreeSRedirector;
@@ -33,15 +30,9 @@ public:
   AliTPCcalibBase(const AliTPCcalibBase&calib);
   AliTPCcalibBase &operator=(const AliTPCcalibBase&calib);
   virtual ~AliTPCcalibBase();
-  virtual void     Process(AliVEvent *event){
-      //Printf("AliTPCCalibBase::Process(ESD event)...");
-      fCurrentEvent = event; return;}
-  virtual void     Process(AliTPCseed *track){
-      //Printf("AliTPCCalibBase::Process(TPC track)...");
-      fCurrentSeed = track; return;}
-  virtual void     Process(AliVTrack *track, Int_t /*runNo=-1*/){
-      //Printf("AliTPCCalibBase::Process(ESD track)...");
-      fCurrentTrack=track; return;}
+  virtual void     Process(AliVEvent *event){ fCurrentEvent = event; return;}
+  virtual void     Process(AliTPCseed *track){fCurrentSeed = track; return;}
+  virtual void     Process(AliVTrack *track, Int_t /*runNo=-1*/){fCurrentTrack=track; return;}
   virtual Long64_t Merge(TCollection */*li*/){return 0;}
   virtual void     Analyze(){return;}
   virtual void     Terminate();

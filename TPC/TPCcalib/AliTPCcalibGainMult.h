@@ -15,9 +15,7 @@
 #include "TString.h"
 class TH1F;
 class TList;
-//class AliESDEvent;
 class AliVEvent;
-//class AliESDtrack;
 class AliVTrack;
 class AliVfriendTrack;
 class AliTPCseed;
@@ -33,15 +31,7 @@ public:
   void SetBBParam(TVectorD * param) {fBBParam=param;}
   //  virtual void Terminate();  
   //
-  //virtual void           Process(AliESDEvent *event);
   virtual void           Process(AliVEvent *event);
-
-  //virtual void           ProcessV0s(AliESDEvent *event);
-  //virtual void           ProcessCosmic(const AliESDEvent *event);
-  //virtual void           ProcessKinks(const AliESDEvent *event);
-  //virtual void           ProcessTOF(const AliESDEvent *event);
-  //virtual void           DumpHPT(const AliESDEvent *event);
-
   virtual void           ProcessV0s(AliVEvent *event);
   virtual void           ProcessCosmic(const AliVEvent *event);
   virtual void           ProcessKinks(const AliVEvent *event);
@@ -53,14 +43,14 @@ public:
   void                   DumpTrack(AliVTrack * track, AliVfriendTrack *ftrack, AliTPCseed * seed, Int_t index);
   static Double_t GetTruncatedMeanPosition(Double_t q0, Double_t q1, Double_t q2, Int_t ntracks, Int_t tuneIndex=0, TTreeSRedirector *pcstream=0);
   //
-  TH1F   *          GetHistNTracks() const {return fHistNTracks;};
-  TH1F   *          GetHistClusterShape() const {return fHistClusterShape;};
-  TH3F   *          GetHistQA() const {return fHistQA;};
+  TH1F   *          GetHistNTracks() const {return fHistNTracks;}
+  TH1F   *          GetHistClusterShape() const {return fHistClusterShape;}
+  TH3F   *          GetHistQA() const {return fHistQA;}
   //
-  THnSparseF *      GetHistGainSector() const {return fHistGainSector;};
-  THnSparseF *      GetHistPadEqual() const {return fHistPadEqual;};
-  THnSparseF *      GetHistGainMult() const {return fHistGainMult;};  
-  THnF       *      GetHistTopology() const {return fHistTopology;};
+  THnSparseF *      GetHistGainSector() const {return fHistGainSector;}
+  THnSparseF *      GetHistPadEqual() const {return fHistPadEqual;}
+  THnSparseF *      GetHistGainMult() const {return fHistGainMult;}
+  THnF       *      GetHistTopology() const {return fHistTopology;}
   //
   THnSparseF * GetHistdEdxMap() const { return fHistdEdxMap;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxMax() const { return fHistdEdxMax;}      // 4D dedx histogram
@@ -88,12 +78,11 @@ public:
   void    SetMinTPCsignalN(Float_t minSignalN) { fMinTPCsignalN=minSignalN; }
   Float_t GetMinTPCsignalN() const             { return fMinTPCsignalN;     }
   //
-  void SetMinMomentumMIP(Float_t minMom = 0.4){fMinMomentumMIP = minMom;};
-  void SetMaxMomentumMIP(Float_t maxMom = 0.6){fMaxMomentumMIP = maxMom;};
-  void SetAlephParameters(Float_t * parameters){for(Int_t j=0;j<5;j++) fAlephParameters[j] = parameters[j];};
+  void SetMinMomentumMIP(Float_t minMom = 0.4){fMinMomentumMIP = minMom;}
+  void SetMaxMomentumMIP(Float_t maxMom = 0.6){fMaxMomentumMIP = maxMom;}
+  void SetAlephParameters(Float_t * parameters){for(Int_t j=0;j<5;j++) fAlephParameters[j] = parameters[j];}
   //
   //
-  //void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliVTrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
   //

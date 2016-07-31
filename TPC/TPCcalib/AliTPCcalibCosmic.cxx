@@ -48,10 +48,6 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliESDVertex.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDfriend.h"
-#include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
 
 #include "AliVEvent.h"
@@ -490,12 +486,15 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
    if(!track) continue;
    fClusters->Fill(track->GetTPCNcls()); 
   
-   const AliExternalTrackParam * trackIn = track->GetInnerParam();
-   const AliExternalTrackParam * trackOut = track->GetOuterParam();
-   if (!trackIn) continue;
-   if (!trackOut) continue;
-   if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
+   AliExternalTrackParam trckIn;
+   if( (track->GetTrackParamIp(trckIn)) < 0 ) continue;
+   AliExternalTrackParam * trackIn = &trckIn;
 
+   AliExternalTrackParam trckOut;
+   if ( (track->GetTrackParamOp(trckOut)) < 0 ) continue;
+   AliExternalTrackParam * trackOut = &trckOut;
+
+   if (ntracks>4 && TMath::Abs(trackIn->GetTgl())<0.0015) continue;  // filter laser 
 
    const AliVfriendTrack *friendTrack = friendEvent->GetTrack(i);
    if (!friendTrack) continue;
@@ -531,8 +530,11 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
       AliVTrack *track0 = event->GetVTrack(i);
     // track0 - choosen upper part
     if (!track0) continue;
-    if (!track0->GetOuterParam()) continue;
-    if (track0->GetOuterParam()->GetAlpha()<0) continue;
+
+    AliExternalTrackParam trk0Out;
+    if ( (track0->GetTrackParamOp(trk0Out)) < 0) continue;
+    if (trk0Out.GetAlpha()<0) continue;
+
     Double_t dir0[3];
     track0->GetDirection(dir0);    
     for (Int_t j=0;j<ntracks;++j) {
@@ -540,8 +542,10 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
       AliVTrack *track1 = event->GetVTrack(j);
       //track 1 lower part
       if (!track1) continue;
-      if (!track1->GetOuterParam()) continue;
-      if (track1->GetOuterParam()->GetAlpha()>0) continue;
+
+      AliExternalTrackParam trk1Out;
+      if ( (track1->GetTrackParamOp(trk1Out)) < 0 ) continue;
+      if (trk1Out.GetAlpha()>0) continue;
       //
       Double_t dir1[3];
       track1->GetDirection(dir1);
@@ -623,10 +627,22 @@ void AliTPCcalibCosmic::FindPairs(const AliVEvent *event){
       if (fStreamLevel>0){
 	TTreeSRedirector * cstream =  GetDebugStreamer();
 	//printf("My stream=%p\n",(void*)cstream);
-	AliExternalTrackParam *ip0 = (AliExternalTrackParam *)track0->GetInnerParam();
-	AliExternalTrackParam *ip1 = (AliExternalTrackParam *)track1->GetInnerParam();
-	AliExternalTrackParam *op0 = (AliExternalTrackParam *)track0->GetOuterParam();
-	AliExternalTrackParam *op1 = (AliExternalTrackParam *)track1->GetOuterParam();
+    AliExternalTrackParam trck0ip;
+    track0->GetTrackParamIp(trck0ip);
+    AliExternalTrackParam *ip0 = &trck0ip;
+
+    AliExternalTrackParam trck1ip;
+    track1->GetTrackParamIp(trck1ip);
+    AliExternalTrackParam *ip1 = &trck1ip;
+
+    AliExternalTrackParam trck0op;
+    track0->GetTrackParamOp(trck0op);
+    AliExternalTrackParam *op0 = &trck0op;
+
+    AliExternalTrackParam trck1op;
+    track1->GetTrackParamOp(trck1op);
+    AliExternalTrackParam *op1 = &trck1op;
+
 	Bool_t isCrossI = ip0->GetZ()*ip1->GetZ()<0;
 	Bool_t isCrossO = op0->GetZ()*op1->GetZ()<0;
 	Double_t alpha0 = TMath::ATan2(dir0[1],dir0[0]);
@@ -1092,9 +1108,9 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       Int_t ntracksSPD = vertexSPD->GetNContributors();
       Int_t ntracksTPC = vertexTPC->GetNContributors();
       //
-      const AliVfriendTrack *friendTrack0 = friendEvent->GetTrack(itrack0);
+      AliVfriendTrack *friendTrack0 = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(itrack0));
       if (!friendTrack0) continue;
-      const AliVfriendTrack *friendTrack1 = friendEvent->GetTrack(itrack1);
+      AliVfriendTrack *friendTrack1 = const_cast<AliVfriendTrack*>(friendEvent->GetTrack(itrack1));
       if (!friendTrack1) continue;
       AliTPCseed *seed0 = 0;   
       AliTPCseed *seed1 = 0;
@@ -1120,28 +1136,11 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
 	  "vTPC.="<<vertexTPC<<         //primary vertex -TPC
 	  "t0.="<<track0<<              //track0
 	  "t1.="<<track1<<              //track1
-      //"ft0.="<<dummyfriendTrack0<<       //track0
-      //"ft1.="<<dummyfriendTrack1<<       //track1
+	  "ft0.="<<friendTrack0<<       //track0
+	  "ft1.="<<friendTrack1<<       //track1
  	  "s0.="<<seed0<<               //track0
  	  "s1.="<<seed1<<               //track1
 	  "\n";      
-      }
-
-      //**********************TEMPORARY!!*******************************************
-      // more investigation is needed with Tree ///!!!
-      //all dummy stuff here is just for code to compile and work with ESD
-
-      AliESDfriendTrack *dummyfriendTrack0 = (AliESDfriendTrack*)friendTrack0;
-      AliESDfriendTrack *dummyfriendTrack1 = (AliESDfriendTrack*)friendTrack1;
-
-      AliESDtrack *dummytrack0 = (AliESDtrack*)track0;
-      AliESDtrack *dummytrack1 = (AliESDtrack*)track1;
-
-      if ((pcstream)&&(dummyfriendTrack0)){
-          (*pcstream)<<"ft0.="<<dummyfriendTrack0<<"\n";
-      }
-      if ((pcstream)&&(dummyfriendTrack1)){
-          (*pcstream)<<"ft1.="<<dummyfriendTrack1<<"\n";
       }
 
       if (!fCosmicTree) {
@@ -1151,15 +1150,15 @@ void AliTPCcalibCosmic::FindCosmicPairs(const AliVEvent *event) {
       if (fCosmicTree->GetEntries()==0){
 	//
 	fCosmicTree->SetDirectory(0);
-    fCosmicTree->Branch("t0.",&dummytrack0);
-    fCosmicTree->Branch("t1.",&dummytrack1);
-    fCosmicTree->Branch("ft0.",&dummyfriendTrack0);
-    fCosmicTree->Branch("ft1.",&dummyfriendTrack1);
+    fCosmicTree->Branch("t0.",&track0);
+    fCosmicTree->Branch("t1.",&track1);
+    fCosmicTree->Branch("ft0.",&friendTrack0);
+    fCosmicTree->Branch("ft1.",&friendTrack1);
       }else{
-    fCosmicTree->SetBranchAddress("t0.",&dummytrack0);
-    fCosmicTree->SetBranchAddress("t1.",&dummytrack1);
-    fCosmicTree->SetBranchAddress("ft0.",&dummyfriendTrack0);
-    fCosmicTree->SetBranchAddress("ft1.",&dummyfriendTrack1);
+    fCosmicTree->SetBranchAddress("t0.",&track0);
+    fCosmicTree->SetBranchAddress("t1.",&track1);
+    fCosmicTree->SetBranchAddress("ft0.",&friendTrack0);
+    fCosmicTree->SetBranchAddress("ft1.",&friendTrack1);
       }
       fCosmicTree->Fill();
     }
@@ -1185,10 +1184,10 @@ void AliTPCcalibCosmic::AddTree(TTree* treeOutput, TTree * treeInput){
   //  
   return;
   //if (TMath::Abs(fMagF)<0.1) return; // work around - otherwise crashes 
-  AliESDtrack *track0=new AliESDtrack;     ///!!!
-  AliESDtrack *track1=new AliESDtrack;
-  AliESDfriendTrack *ftrack0=new AliESDfriendTrack;
-  AliESDfriendTrack *ftrack1=new AliESDfriendTrack;
+  AliVTrack *track0 = 0;
+  AliVTrack *track1 = 0;
+  AliVfriendTrack *ftrack0 = 0;
+  AliVfriendTrack *ftrack1 = 0;
   treeInput->SetBranchAddress("t0.",&track0);	
   treeInput->SetBranchAddress("t1.",&track1);
   treeInput->SetBranchAddress("ft0.",&ftrack0);	
@@ -1209,10 +1208,15 @@ void AliTPCcalibCosmic::AddTree(TTree* treeOutput, TTree * treeInput){
     if (!ftrack1) continue;
     if (track0->GetTPCncls()<=0) continue;
     if (track1->GetTPCncls()<=0) continue;
-    if (!track0->GetInnerParam()) continue;
-    if (!track1->GetInnerParam()) continue;
-    if (!track0->GetTPCInnerParam()) continue;
-    if (!track1->GetTPCInnerParam()) continue;
+
+    AliExternalTrackParam trck0Ip;
+    if ( (track0->GetTrackParamIp(trck0Ip)) < 0 ) continue;
+    AliExternalTrackParam trck1Ip;
+    if ( (track1->GetTrackParamIp(trck1Ip)) < 0 ) continue;
+    AliExternalTrackParam trck0TPCIn;
+    if ( (track0->GetTrackParamTPCInner(trck0TPCIn)) < 0 ) continue;
+    AliExternalTrackParam trck1TPCIn;
+    if ( (track1->GetTrackParamTPCInner(trck1TPCIn)) < 0 ) continue;
     //track0
     treeOutput->SetBranchAddress("t0.",&track0);	
     treeOutput->SetBranchAddress("t1.",&track1);
@@ -1270,10 +1274,10 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
   covar[14]=0.2*0.2;
   Double_t *distortions = new Double_t[ncorr+1];
 
-  AliESDtrack *track0=new AliESDtrack;
-  AliESDtrack *track1=new AliESDtrack;
-  AliESDfriendTrack *ftrack0=new AliESDfriendTrack;
-  AliESDfriendTrack *ftrack1=new AliESDfriendTrack;
+  AliVTrack *track0 = 0;
+  AliVTrack *track1 = 0;
+  AliVfriendTrack *ftrack0 = 0;
+  AliVfriendTrack *ftrack1 = 0;
   treeInput->SetBranchAddress("t0.",&track0);	
   treeInput->SetBranchAddress("t1.",&track1);
   treeInput->SetBranchAddress("ft0.",&ftrack0);	
@@ -1282,8 +1286,11 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
   for (Int_t i=0; i<entries; i+=step){    
     treeInput->GetEntry(i);
     if (i%20==0) printf("%d\n",i);
-    if (!ftrack0->GetTPCOut()) continue;
-    if (!ftrack1->GetTPCOut()) continue;
+
+    AliExternalTrackParam ftrck0TPCOut;
+    if ( (ftrack0->GetTrackParamTPCOut(ftrck0TPCOut)) < 0 ) continue;
+    AliExternalTrackParam ftrck1TPCOut;
+    if ( (ftrack1->GetTrackParamTPCOut(ftrck1TPCOut)) < 0 ) continue;
     AliTPCseed *seed0=0;
     AliTPCseed *seed1=0;
     AliTPCseed tpcSeed0;
@@ -1389,8 +1396,10 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
     Double_t cos = TMath::Cos(alpha);
     Double_t sin = TMath::Sin(alpha);
     Double_t mass =  TDatabasePDG::Instance()->GetParticle("mu+")->Mass();
-    AliExternalTrackParam  btrack0=*(ftrack0->GetTPCOut());
-    AliExternalTrackParam  btrack1=*(ftrack1->GetTPCOut());
+    AliExternalTrackParam  btrack0;
+    ftrack0->GetTrackParamTPCOut(btrack0);
+    AliExternalTrackParam  btrack1;
+    ftrack1->GetTrackParamTPCOut(btrack1);
     btrack0.Rotate(alpha);
     btrack1.Rotate(alpha);
     // change the sign for track 1
@@ -1469,8 +1478,10 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
       }
       tracks0.AddAt(rtrack0.Clone(), icorr+1);
       tracks1.AddAt(rtrack1.Clone(), icorr+1);
-      AliExternalTrackParam out0=*(ftrack0->GetTPCOut());
-      AliExternalTrackParam out1=*(ftrack1->GetTPCOut());
+      AliExternalTrackParam out0;
+      ftrack0->GetTrackParamTPCOut(out0);
+      AliExternalTrackParam out1;
+      ftrack1->GetTrackParamTPCOut(out1);
       Int_t nentries=TMath::Min(ncl0,ncl1);
 
       if (icorr<0) {
@@ -1527,7 +1538,9 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
 	    Int_t dtype=20;
 	    Double_t theta=param0->GetParameter()[3];
 	    Double_t phi = alpha;
-	    Double_t snp = track0->GetInnerParam()->GetSnp();
+        AliExternalTrackParam trk0Ip;
+        track0->GetTrackParamIp(trk0Ip);
+        Double_t snp = trk0Ip.GetSnp();
 	    Double_t mean= distortions[0];
 	    Int_t index = param0->GetIndex(ipar,ipar);
 	    Double_t rms=TMath::Sqrt(param1->GetCovariance()[index]+param1->GetCovariance()[index]);

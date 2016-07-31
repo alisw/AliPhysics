@@ -630,7 +630,6 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliVEvent *event){
   // Export track points for alignment - calibration
   // export space points for pairs of tracks if possible
   //
-  //
 
   AliVfriendEvent *Vfriend=event->FindFriend();
   if (!Vfriend) return;

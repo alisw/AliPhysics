@@ -204,10 +204,9 @@
 #include "AliTPCcalibDB.h"
 //
 #include "AliTracker.h"
-#include "AliESD.h"
-#include "AliESDtrack.h"
-#include "AliESDfriend.h"
-#include "AliESDfriendTrack.h" 
+#include "AliVTrack.h"
+#include "AliVfriendEvent.h"
+#include "AliVfriendTrack.h"
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCcalibTracksCuts.h"
@@ -218,14 +217,14 @@
 
 //
 #include <TTree.h>
-#include "AliESDEvent.h"
+#include "AliVEvent.h"
 #include <iostream>
 
 /*
   
 TFile f("TPCCalibTracksGain.root")
 
-gSystem->Load("libPWGPP")
+gSystem->Load("libPWGPP.so")
 AliTreeDraw comp
 comp.SetTree(dEdx)
 Double_t chi2;

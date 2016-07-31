@@ -26,7 +26,7 @@
 #include <TChain.h>
 #include <TList.h>
 #include "AliTPCseed.h"
-#include "AliESDtrack.h"
+#include "AliVTrack.h"
 #include "AliTPCcalibTracksCuts.h"
 
 ClassImp(AliTPCcalibTracksCuts)

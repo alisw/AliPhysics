@@ -8,9 +8,7 @@
 class TH2F;
 class TH1F;
 class TList;
-//class AliESDEvent;
 class AliVEvent;
-//class AliESDtrack;
 class AliVTrack;
 class THnSparse;
 
@@ -41,19 +39,18 @@ public:
   static void MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstream, const TObjArray * corrArray, Int_t step, Int_t run);
   TTree * GetCosmicTree() const {return fCosmicTree;}
   //
-  TH1F   *          GetHistNTracks() const {return fHistNTracks;};
-  TH1F   *          GetHistClusters() const {return fClusters;};
-  TH2F   *          GetHistAcorde()const {return fModules;};
-  TH1F   *          GetHistPt() const {return fHistPt;};
-  TH2F   *          GetHistDeDx() const {return fDeDx;};
-  TH1F   *          GetHistMIP() const {return fDeDxMIP;};
+  TH1F   *          GetHistNTracks() const {return fHistNTracks;}
+  TH1F   *          GetHistClusters() const {return fClusters;}
+  TH2F   *          GetHistAcorde()const {return fModules;}
+  TH1F   *          GetHistPt() const {return fHistPt;}
+  TH2F   *          GetHistDeDx() const {return fDeDx;}
+  TH1F   *          GetHistMIP() const {return fDeDxMIP;}
   //
-  Double_t          GetMIPvalue()const {return fMIPvalue;};
+  Double_t          GetMIPvalue()const {return fMIPvalue;}
   //
   static void       BinLogX(TH1 *const h);   // method for correct histogram binning
   static void       BinLogX(THnSparse *const h, Int_t axisDim);   // method for correct histogram binning
 
-  //void     Process(AliESDtrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliVTrack *const track, Int_t runNo=-1) {AliTPCcalibBase::Process(track,runNo);}
   void     Process(AliTPCseed *const track)  {return AliTPCcalibBase::Process(track);}
   virtual void  Terminate();
@@ -93,7 +90,7 @@ private:
   AliTPCcalibCosmic(const AliTPCcalibCosmic&); 
   AliTPCcalibCosmic& operator=(const AliTPCcalibCosmic&); 
 
-  ClassDef(AliTPCcalibCosmic, 3); 
+  ClassDef(AliTPCcalibCosmic, 3)
 };
 
 #endif

@@ -396,7 +396,6 @@ void AliTPCcalibTime::Process(AliVEvent *event){
 
   stopWatch.Stop();
   AliSysInfo::AddStamp("AliTPCcalibTime::Process()",event->GetNumberOfTracks(),stopWatch.RealTime()*1000,stopWatch.CpuTime()*1000);
-
 }
 
 void AliTPCcalibTime::ProcessLaser(AliVEvent *event){
@@ -555,7 +554,6 @@ void AliTPCcalibTime::ProcessCosmic(const AliVEvent *const event){
   
   if (GetDebugLevel()>20) printf("Hallo world: Im here\n");
   AliVfriendEvent *vFriend=event->FindFriend();
-  
   TObjArray  tpcSeeds(ntracks);
   Double_t vtxx[3]={0,0,0};
   Double_t svtxx[3]={0.000001,0.000001,100.};
@@ -1346,7 +1344,6 @@ Bool_t AliTPCcalibTime::IsSame(const AliVTrack *const tr0, const AliVTrack *cons
 
   AliExternalTrackParam trck1In;
   tr1->GetTrackParamIp(trck1In);
-
   if (trck0Out.GetZ()*trck0In.GetZ()>0) result&=kFALSE;
   if (trck1Out.GetZ()*trck1In.GetZ()>0) result&=kFALSE;
 
@@ -1606,6 +1603,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   //
   // try to find standalone ITS track corresponing to the TPC if possible
   //
+  AliExternalTrackParam tmpParam;
   Bool_t hasAlone=kFALSE;
   Int_t ntracks=event->GetNumberOfTracks();
   for (Int_t i=0; i<ntracks; i++){
@@ -1623,16 +1621,23 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
     if (TMath::Abs(pTPC.GetSigned1Pt()-ITStrackOut->GetSigned1Pt())> kMax1Pt) continue;
     pITS=(*ITStrackOut);
     //
-    pITS.Rotate(pTPC.GetAlpha());
-    AliTracker::PropagateTrackToBxByBz(&pITS,pTPC.GetX(),0.1,0.1,kFALSE);
-    if (TMath::Abs(pTPC.GetY()-pITS.GetY())> kMaxDy) continue;
-    if (TMath::Abs(pTPC.GetSnp()-pITS.GetSnp())> kMaxAngle) continue;
+    if (!tmpParam.RotateParamOnly(pTPC.GetAlpha())) continue;
+    if (!tmpParam.PropagateParamOnlyTo(pTPC.GetX(),AliTrackerBase::GetBz())) continue;
+    if (TMath::Abs(pTPC.GetY()-tmpParam.GetY())> kMaxDy) continue;
+    if (TMath::Abs(pTPC.GetSnp()-tmpParam.GetSnp())> kMaxAngle) continue;
     hasAlone=kTRUE;
+    pITS=(*ITStrackOut);
+    break;
   }
   if (!hasAlone) {
     if (track->GetNumberOfITSClusters()<kMinITS) return;
     pITS=pITS2;  // use combined track if it has ITS
   }
+
+  pITS.Rotate(pTPC.GetAlpha());
+  //AliTracker::PropagateTrackToBxByBz(&pITS,pTPC.GetX(),0.1,0.1,kFALSE);
+  pITS.PropagateTo(pTPC.GetX(),AliTrackerBase::GetBz());
+
   //
   if (TMath::Abs(pITS.GetY()-pTPC.GetY())    >kMaxDy)    return;
   if (TMath::Abs(pITS.GetSnp()-pTPC.GetSnp())>kMaxAngle) return;
@@ -1974,7 +1979,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliVTrack *const track, const AliVfriendT
     Float_t xyz[3];
     point.GetXYZ(xyz);
     Double_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-    if (r<370)  continue;
+    if (r<370)  continue;   // I will be happy to use flag in case it will be implemented in AliTrackPoint - should be requested
     if (r>400)  continue;
     AliTracker::PropagateTrackToBxByBz(&pTPC,r,mass,2.,kTRUE);
     AliTracker::PropagateTrackToBxByBz(&pTPC,r,mass,0.1,kTRUE);    
