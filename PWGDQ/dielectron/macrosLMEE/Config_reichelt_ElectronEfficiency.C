@@ -1,4 +1,4 @@
-TString names=("cut16_SPDorSDD14_PID16");
+TString names=("cut_resolution");
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
@@ -19,16 +19,16 @@ const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
 // main task settings
 // fill resolutions for one cutInstance (step 1).
-const Bool_t calcResolution = kTRUE;
-const Int_t  resoCutInstance = 0;
+const Bool_t CalcResolution   = kTRUE;
 // use previously extracted resolutions (step 2).
-TString resolutionfile = "user/p/preichel/PWGDQ/dielectron/supportFiles/PbPb_resolution_cut16_deltaXvsX.root";
-Bool_t bUsePtResolution = kFALSE;
-Bool_t bUseEtaResolution = kFALSE;
-Bool_t CalcEfficiencyRec = kFALSE;
+TString resolutionfile = "resolution_PbPb2011_CENTRALITY_deltaXvsP.root";
+Bool_t CalcEfficiencyRec      = kFALSE;  // use given resolution file to smear the kinematics.
+Bool_t bUseRelPResolution     = kTRUE;  // specify if the file contains a relative or an absolute momentum resolution array.
+Bool_t bUseEtaResolution      = kFALSE; // kFALSE means using theta instead of eta.
+// determine efficiency from only positive label tracks (in addition to using all labels).
 Bool_t CalcEfficiencyPoslabel = kFALSE;
 // determine pair efficiency for all cutInstances. (Consider high combinatorics if not only MC-true electrons are selected.)
-const Bool_t doPairing = kTRUE;
+const Bool_t doPairing = kFALSE;
 // specify for which "cutInstance" the support histos should be filled!
 const Int_t     supportedCutInstance = 0;
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
@@ -52,10 +52,13 @@ const Double_t PtBins[] = {
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,8.0
 };
-// resolution binnings
-Int_t NbinsDeltaMom    = 1000;
-Double_t DeltaMomMin   = -9.0;
-Double_t DeltaMomMax   =  1.0;
+// resolution binning
+Int_t NbinsDeltaMom    =1200;
+Double_t DeltaMomMin   =-10.0;
+Double_t DeltaMomMax   =  2.0;
+Int_t NbinsRelMom      = 400;
+Double_t RelMomMin     =  0.0;
+Double_t RelMomMax     =  2.0;
 Int_t NbinsDeltaEta    = 200;
 Double_t DeltaEtaMin   = -0.4;
 Double_t DeltaEtaMax   =  0.4;
@@ -167,7 +170,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
   rejCutMee=-1;
   rejCutTheta=-1;
   rejCutPhiV=3.2; // relevant are values below pi, so initialization to 3.2 means disabling.
-  
+
   // -----
   // produce analysis filter by using functions in this config:
   // -----
@@ -186,7 +189,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
   {
     LMEECutLib* LMcutlib = new LMEECutLib();
     LMcutlib->SetIsESDTask(isESD);
-    
+
     // --------------------------------------------------
     // common settings:
     // --------------------------------------------------
@@ -204,8 +207,15 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
     // specific settings for each cutset:
     // --------------------------------------------------
     if (cutInstance==0+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kCut16;
-      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;
+      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_p50inf_eta150; // maximum acceptance
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_TPCITS_3;  // ITS+TPC, 100% efficiency
+      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;                 // combined tracks SPDorSDD
+    }
+    else if (cutInstance==99) {
+      // cuts for the resolution extraction and usage
+      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_p50inf_eta150; // maximum acceptance
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_TPCITS_3;  // ITS+TPC, 100% efficiency
+      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;                 // combined tracks SPDorSDD
     }
     else if (cutInstance==100) {
       // kinematic cuts for the legs during pair efficiency determination:
@@ -224,7 +234,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       cout << " =============================== " << endl;
       return 0x0;
     }
-    
+
     if (!isPrefilterCutset) {
       anaFilter->AddCuts( LMcutlib->GetTrackCutsAna() );
     }
@@ -233,13 +243,13 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       // cuts for final analysis electrons
       anaFilterExtra->AddCuts( LMcutlib->GetTrackCutsAna() );
     }
-    
+
     // export selectedPairCutsPre so that function SetupPrefilterPairCuts() can use it. (not really nice but...)
     selectedPairCutsPre = LMcutlib->selectedPairCutsPre;
   }
   // -----
-  
-  
+
+
   //  std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance <<std::endl;
   //  anaFilter->GetCuts()->Print();
   //  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" <<std::endl;
@@ -256,22 +266,22 @@ Int_t SetupPairCutsAna(Int_t selectedPairCutsAna)
   std::cout << "SetupPairCutsAna()" <<std::endl;
   selectedPairCutsPre = selectedPairCutsAna;
   return SetupPrefilterPairCuts(-1);
-}  
+}
 
 //________________________________________________________________
 Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 {
   std::cout << "SetupPrefilterPairCuts()" <<std::endl;
-  
+
   if (selectedPairCutsPre > -1) { // case with LMcutlib
     LMEECutLib* LMcutlib = new LMEECutLib();
     LMcutlib->selectedPairCutsPre = selectedPairCutsPre;
     //cout << " LMcutlib->selectedPairCutsPre = " << LMcutlib->selectedPairCutsPre << endl;
     Double_t dummy=-1;
-    
+
     // this function is NOT failsafe!!!
     // the version commented out by /* ... */ needs a cutgroup as top level object and one or more varcuts inside, which have internal cuts on the needed variables.
-    
+
     /*    AliDielectronCutGroup* cgPairCutsPre = (AliDielectronCutGroup*) LMcutlib->GetPairCutsPre();
      if(!cgPairCutsPre) {
      std::cout << "WARNING: no Prefilter PairCuts given (bad cutgroup)!" << std::endl;
@@ -289,10 +299,10 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
     //   AliDielectronCutGroup::GetNCuts() and ::GetCut()
     //   AliDielectronVarCuts::IsCutOnVariableX() and ::GetCutLimits()
     //
-    
+
     /*  for (Int_t iCutGroupCut=0; iCutGroupCut<cgPairCutsPre->GetNCuts(); iCutGroupCut++) {
      AliDielectronVarCuts* varcuti = (AliDielectronVarCuts*) cgPairCutsPre->GetCut(iCutGroupCut);  */
-    
+
     for (Int_t iCut=0; iCut<varcuti->GetNCuts(); iCut++) {
       if ( varcuti->IsCutOnVariableX(iCut, AliDielectronVarManager::kM) ) {
         if (rejCutMee>-1) { std::cout << "WARNING: rejCutMee was defined two times!" << std::endl; return -1; } // should take the stronger cut in that case...
@@ -323,12 +333,12 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
         return -1;
     }
   }
-  
+
   std::cout << "SetupPrefilterPairCuts() done!" <<std::endl;
   std::cout << "  rejCutMee   = " << rejCutMee <<std::endl;
   std::cout << "  rejCutTheta = " << rejCutTheta <<std::endl;
   std::cout << "  rejCutPhiV  = " << rejCutPhiV <<std::endl;
-  
+
   return 1;
 }
 
@@ -338,7 +348,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
 {
   std::cout << "SetupTrackCuts()" <<std::endl;
   //AliAnalysisCuts* trackCuts=0x0;
-  
+
   if(cutInstance == 0) {
     // reproduce AOD filter bit 4:
     AliESDtrackCuts *esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -346,7 +356,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     //esdTrackCuts->SetMaxDCAToVertexZ(3.2);
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
+
     // additional or modified cuts: like in LMEECutLib::GetTrackCutsAna()
     esdTrackCuts->SetMaxDCAToVertexXY(1.);
     esdTrackCuts->SetMaxDCAToVertexZ(3.);
@@ -355,14 +365,14 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //default is 0.8
     //
     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    
+
     // kinematic cuts:
     esdTrackCuts->SetPtRange(   0.4 , 3.5 );
     esdTrackCuts->SetEtaRange( -0.9 , 0.9 );
     //    esdTrackCuts->SetPtRange(   0.399 , 3.499 );
     //    esdTrackCuts->SetEtaRange( -0.899 , 0.901 ); // on purpose to check if something gets mixed up...
   }
-  
+
   return esdTrackCuts;
   //  trackCuts = fesdTrackCuts;
   //  trackCuts->Print();
@@ -374,15 +384,15 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
 {
   std::cout << "SetupPIDcuts()" <<std::endl;
   AliAnalysisCuts* pidCuts=0x0;
-  
+
   if(cutInstance == 0) {
     AliDielectronPID *pid = new AliDielectronPID("pidXtraPIn","pidXtraPIn");
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -3.  ,3. ,0.0, 100., kTRUE);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5 ,3. ,0.0, 100., kFALSE);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3.  ,3. ,0.0, 1.7 , kFALSE);
   }
-  
+
   pidCuts = pid;
   //pidCuts->Print();
-  return pidCuts;  
+  return pidCuts;
 }

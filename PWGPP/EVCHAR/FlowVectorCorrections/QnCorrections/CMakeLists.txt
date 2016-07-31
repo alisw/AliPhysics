@@ -27,13 +27,47 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliQnCorrectionsAxes.cxx
-  AliQnCorrectionsConfiguration.cxx
-  AliQnCorrectionsCuts.cxx
+  AliQnCorrectionsCorrectionOnInputData.cxx
+  AliQnCorrectionsCorrectionOnQvector.cxx
+  AliQnCorrectionsCorrectionsSetOnInputData.cxx
+  AliQnCorrectionsCorrectionsSetOnQvector.cxx
+  AliQnCorrectionsCorrectionStepBase.cxx
+  AliQnCorrectionsCutAbove.cxx
+  AliQnCorrectionsCutBelow.cxx
+  AliQnCorrectionsCutOutside.cxx
+  AliQnCorrectionsCutsBase.cxx
+  AliQnCorrectionsCutSetBit.cxx
+  AliQnCorrectionsCutsSet.cxx
+  AliQnCorrectionsCutValue.cxx
+  AliQnCorrectionsCutWithin.cxx
   AliQnCorrectionsDataVector.cxx
-  AliQnCorrectionsHistograms.cxx
+  AliQnCorrectionsDataVectorChannelized.cxx
+  AliQnCorrectionsDetector.cxx
+  AliQnCorrectionsDetectorConfigurationBase.cxx
+  AliQnCorrectionsDetectorConfigurationChannels.cxx
+  AliQnCorrectionsDetectorConfigurationsSet.cxx
+  AliQnCorrectionsDetectorConfigurationTracks.cxx
+  AliQnCorrectionsEventClassVariable.cxx
+  AliQnCorrectionsEventClassVariablesSet.cxx
+  AliQnCorrectionsHistogram.cxx
+  AliQnCorrectionsHistogramBase.cxx
+  AliQnCorrectionsHistogramChannelized.cxx
+  AliQnCorrectionsHistogramChannelizedSparse.cxx
+  AliQnCorrectionsHistogramSparse.cxx
+  AliQnCorrectionsInputGainEqualization.cxx
   AliQnCorrectionsManager.cxx
+  AliQnCorrectionsProfile.cxx
+  AliQnCorrectionsProfile3DCorrelations.cxx
+  AliQnCorrectionsProfileChannelized.cxx
+  AliQnCorrectionsProfileChannelizedIngress.cxx
+  AliQnCorrectionsProfileComponents.cxx
+  AliQnCorrectionsProfileCorrelationComponents.cxx
+  AliQnCorrectionsProfileCorrelationComponentsHarmonics.cxx
   AliQnCorrectionsQnVector.cxx
-  AliQnCorrectionsSteps.cxx
+  AliQnCorrectionsQnVectorBuild.cxx
+  AliQnCorrectionsQnVectorAlignment.cxx
+  AliQnCorrectionsQnVectorRecentering.cxx
+  AliQnCorrectionsQnVectorTwistAndRescale.cxx
   )
 
 # Headers from sources

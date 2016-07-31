@@ -5,7 +5,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
                                  Bool_t ispPb=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1, 
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
-                                 TString ContNameExt = "")
+                                 TString ContNameExt = "", TString centrality="V0M")
 {
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -67,7 +67,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqa->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqa->SetCentralityMim(MimCent);
     hfecalqa->SetCentralityMax(MaxCent);
-    
+    hfecalqa->SetCentralityEstimator(centrality.Data());
     
     TString containerName = mgr->GetCommonFileName();
     containerName += ":PWGHF_hfeHFEemcQAINT8";
@@ -91,6 +91,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqa7->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqa7->SetCentralityMim(MimCent);
     hfecalqa7->SetCentralityMax(MaxCent);
+    hfecalqa7->SetCentralityEstimator(centrality.Data());
     
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_hfeHFEemcQAINT7";
@@ -115,6 +116,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqaL07->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqaL07->SetCentralityMim(MimCent);
     hfecalqaL07->SetCentralityMax(MaxCent);
+    hfecalqaL07->SetCentralityEstimator(centrality.Data());
     
     TString containerNameL07 = mgr->GetCommonFileName();
     containerNameL07 += ":PWGHF_hfeHFEemcQAEMC7";
@@ -138,6 +140,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqaL08->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqaL08->SetCentralityMim(MimCent);
     hfecalqaL08->SetCentralityMax(MaxCent);
+    hfecalqaL08->SetCentralityEstimator(centrality.Data());
     
     TString containerNameL08 = mgr->GetCommonFileName();
     containerNameL08 += ":PWGHF_hfeHFEemcQAEMC8";
@@ -166,7 +169,8 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig01->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaTrig01->SetCentralityMim(MimCent);
         hfecalqaTrig01->SetCentralityMax(MaxCent);
-        
+        hfecalqaTrig01->SetCentralityEstimator(centrality.Data());
+	
         TString containerName01 = mgr->GetCommonFileName();
         containerName01 += ":PWGHF_hfeHFEemcQATrigGAEG1";
         containerName01 += ContNameExt;
@@ -190,7 +194,8 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaTrig02->SetCentralityMim(MimCent);
         hfecalqaTrig02->SetCentralityMax(MaxCent);
-        
+        hfecalqaTrig02->SetCentralityEstimator(centrality.Data());
+	
         TString containerName02 = mgr->GetCommonFileName();
         containerName02 += ":PWGHF_hfeHFEemcQATrigGAEG2";
         containerName02 += ContNameExt;
@@ -215,7 +220,8 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig0->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaTrig0->SetCentralityMim(MimCent);
         hfecalqaTrig0->SetCentralityMax(MaxCent);
-        
+        hfecalqaTrig0->SetCentralityEstimator(centrality.Data());
+	
         TString containerName1 = mgr->GetCommonFileName();
         containerName1 += ":PWGHF_hfeHFEemcQATrigGA";
         containerName1 += ContNameExt;
@@ -239,6 +245,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqaTrig1->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqaTrig1->SetCentralityMim(MimCent);
     hfecalqaTrig1->SetCentralityMax(MaxCent);
+    hfecalqaTrig1->SetCentralityEstimator(centrality.Data());
     
     TString containerName2 = mgr->GetCommonFileName();
     containerName2 += ":PWGHF_hfeHFEemcQATrigJE";

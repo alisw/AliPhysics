@@ -28,6 +28,9 @@ Bool_t AliEventClassifierSpherocity::TrackPassesSelection(AliMCParticle* track, 
       Printf("ERROR: Could not receive track %d", iTrack);
       return false;
     }
+    // discard unphysical particles from some generators
+    if (track->Pt() == 0 || track->E() <= 0)
+      return false;
 
     // Only calculate for primaries (Aliroot definition excluding Pi0)
     if (!stack->IsPhysicalPrimary(iTrack)) return false;

@@ -46,7 +46,9 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
 
   using AliRDHFCuts::IsSelected;
-  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
+                         {return IsSelected(obj,selectionLevel,0);}
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
 
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
@@ -54,7 +56,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
-  Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex);
+  Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod=0x0);
 
   Int_t CombineCuts (Int_t returnvalueTrack, Int_t returnvalue, Int_t returnvaluePID) const;
 
@@ -64,7 +66,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   void SetPidSelectionFlag(Int_t a) {fPidSelectionFlag=a;}
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
 
-  Bool_t AreLctoV0DaughtersSelected(AliAODRecoDecayHF *rd) const;
+  Bool_t AreLctoV0DaughtersSelected(AliAODRecoDecayHF *rd, AliAODEvent* aod=0x0) const;
 
   Int_t GetV0Type();
 

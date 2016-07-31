@@ -16,7 +16,7 @@ AliAnalysisTaskLocalRho* AddTaskLocalRho(
   Double_t   jetradius          = 0.3,          // jet radius (to remove leading jet)
   Double_t   jetptcut           = 1,            
   Double_t   jetareacut         = 0.557,
-  UInt_t     type               = AliJetContainer::kTPC,
+  UInt_t     type               = AliEmcalJet::kTPC,
   Int_t      leadhadtype        = 0,
   const char *name              = "AliAnalysisTaskLocalRho",    // task name
   TString    fitOpts            = "WLQI",                       // options for tfitter

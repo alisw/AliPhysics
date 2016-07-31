@@ -56,7 +56,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kDistanceToBadChannel,
       kTiming,
       kTrackMatching,
-      kExoticCell,
+      kExoticCluster,
       kMinEnergy,
       kNMinCells,
       kMinM02,
@@ -149,6 +149,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
       
+    void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
@@ -213,7 +214,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetDistanceToBadChannelCut(Int_t);
     Bool_t      SetTimingCut(Int_t);
     Bool_t      SetTrackMatchingCut(Int_t);
-    Bool_t      SetExoticCellCut(Int_t);
+    Bool_t      SetExoticClusterCut(Int_t);
     Bool_t      SetMinEnergyCut(Int_t);
     Bool_t      SetMinNCellsCut(Int_t);
     Bool_t      SetMaxM02(Int_t);
@@ -226,12 +227,21 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetNonLinearity2(Int_t);
     
     
-    Float_t     FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
+    Int_t       GetNonLinearity()                                {return fSwitchNonLinearity;}
+    void        SetUseNonLinearitySwitch( Bool_t useNonLin)      { fUseNonLinearity = useNonLin;}
+    
+    Float_t     FunctionM02 (Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
     Float_t     CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
     Float_t     CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
     Double_t    GetDistanceBetweenClusters(AliVCluster* cluster1, AliVCluster* cluster2);
     void        SetLogBinningXTH2 (TH2* histoRebin);
       
+    Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
+    Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
+    Bool_t      AcceptCellByBadChannelMap (Int_t absID );
+    void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
+    void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
+    
   protected:
     TList      *fHistograms;
     TList      *fHistExtQA;
@@ -249,6 +259,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
     Int_t      fNMaxPHOSModules;                        // max number of PHOS Modules
 
+    Bool_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t    fIsJetJet;                                // Flag for usage of JetJet MC
 
     //for NonLinearity correction
@@ -274,8 +285,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
     Bool_t    fUseDistTrackToCluster;                   // flag for switching on distance between track and cluster cut
     Int_t     fExtendedMatchAndQA;                      // switching on extended matching histograms (1) + extended QA (2) / only extended QA (3) or both off (0)
-    Double_t  fExoticCell;                              // exotic cell cut
-    Bool_t    fUseExoticCell;                           // flag for switching on exotic cell cut
+    Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
+    Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
+    Bool_t    fUseExoticCluster;                        // flag for switching on exotic cluster cut
+    Bool_t    fDoExoticsQA;                             // flag for switching on exotic cluster cut
     Double_t  fMinEnergy;                               // minium energy per cluster
     Double_t  fSeedEnergy;                              // seed energy for clusters
     Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
@@ -377,9 +390,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterM20M02BeforeQA;               // 2-dim plot M20 vs. M02
     TH2F*     fHistClusterM20M02AfterQA;                // 2-dim plot M20 vs. M20
 
+    // QA histograms for exotic clusters
+    TH2F*     fHistClusterEtavsPhiExotics;              // eta-phi-distribution of exotic clusters
+    TH2F*     fHistClusterEM02Exotics;                  // 2-dim plot E vs. M02 for exotic clusters
+    TH2F*     fHistClusterEnergyvsNCellsExotics;        // Cluster Energy vs NCells
+    TH2F*     fHistClusterEEstarExotics;                // 2-dim plot E vs. Estar for exotic clusters
+    
   private:
 
-    ClassDef(AliCaloPhotonCuts,24)
+    ClassDef(AliCaloPhotonCuts,26)
 };
 
 #endif

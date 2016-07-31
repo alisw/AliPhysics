@@ -50,7 +50,7 @@ const Float_t multmax_50_102 = 102;
 //----------------------------------------------------
 
 //AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta", const char* suffix = "")
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0, const char* suffix = "")
 {
 	if(suffix!="") coutName+=Form("%s",suffix); //for subwagons containers 
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -605,6 +605,26 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 			task->SetWeightFunction(funcWeight);
 			Printf("User-defined Weights will be used. The function being:");
 			task->GetWeightFunction()->Print();
+		}
+	}
+
+	if(useNtrkWeight>0){
+		TH1F *hNchPrimaries;
+		if(useNtrkWeight==1) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithD");
+		else if(useNtrkWeight==2) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithCand");
+		else if(useNtrkWeight==3) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvSel");
+		else if(useNtrkWeight==4) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrPSSel");
+		else {
+			AliFatal("useNtrkWeight value not a valid option - choice from 1-4");
+			return 0x0;
+		}
+		if(hNchPrimaries) {
+			task->SetUseNchWeight(kTRUE);
+			task->SetMCNchHisto(hNchPrimaries);
+			task->SetUseNchTrackletsWeight();
+		} else {
+			AliFatal("Histogram for multiplicity weights not found");
+			return 0x0;
 		}
 	}
 

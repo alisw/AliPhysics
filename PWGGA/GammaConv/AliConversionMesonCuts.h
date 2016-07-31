@@ -56,15 +56,15 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
       kNCuts
     };
 
-    Bool_t SetCutIds(TString cutString); 
-    Int_t fCuts[kNCuts];
-    Bool_t SetCut(cutIds cutID, Int_t cut);
-    Bool_t UpdateCutString();
+    Bool_t  SetCutIds(TString cutString);
+    Int_t   fCuts[kNCuts];
+    Bool_t  SetCut(cutIds cutID, Int_t cut);
+    Bool_t  UpdateCutString();
 
     static const char * fgkCutNames[kNCuts];
 
-    Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
-    void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
+    Bool_t  InitializeCutsFromCutString(const TString analysisCutSelection);
+    void    FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
     
     AliConversionMesonCuts(const char *name="MesonCuts", const char * title="Meson Cuts");
     AliConversionMesonCuts(const AliConversionMesonCuts&);
@@ -85,18 +85,24 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
-    void PrintCuts();
-    void PrintCutsWithValues();
+    void   PrintCuts();
+    void   PrintCutsWithValues();
     
-    void InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
-    void SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
-    TList *GetCutHistograms(){return fHistograms;}
-    void SmearParticle(AliAODConversionPhoton * photon);
-    void SmearVirtualPhoton(AliAODConversionPhoton* photon);
+    void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void    SetRunningMode(Int_t mode){fMode = mode; return;}
+    void    InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
+    void    SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
+    TList   *GetCutHistograms(){return fHistograms;}
+    void    SmearParticle(AliAODConversionPhoton * photon);
+    void    SmearVirtualPhoton(AliAODConversionPhoton* photon);
     TLorentzVector SmearElectron(TLorentzVector particle);
-    ///Cut functions
+
+    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1.;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
+
+    //Cut functions
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
+
     // Set Individual Cuts
     Bool_t SetRCut(Int_t RCut);
     Bool_t SetMesonKind(Int_t mesonKind);
@@ -114,32 +120,35 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetDCAGammaGammaCut(Int_t DCAGammaGamma);
     Bool_t SetDCAZMesonPrimVtxCut(Int_t DCAZMesonPrimVtx);
     Bool_t SetDCARMesonPrimVtxCut(Int_t DCARMesonPrimVtx);
-    void SetOpeningAngleCut(Float_t OpeningAngle){fOpeningAngle = OpeningAngle;} 
+    void   SetOpeningAngleCut(Float_t OpeningAngle){fOpeningAngle = OpeningAngle;}
     Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
     Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
-    void SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
-    void      SetIsMergedClusterCut(Int_t merged)               {fIsMergedClusterCut = merged; return;}
-    Int_t     GetIsMergedClusterCut()                           {return fIsMergedClusterCut;}
-
+    void   SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
+    void   SetIsMergedClusterCut(Int_t merged)                { fIsMergedClusterCut = merged; return;}
+    Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
+    Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
+    
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
     
     // Request Flags
-    Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
-    Bool_t UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
-    Int_t GetNumberOfBGEvents(){return fNumberOfBGEvents;}
-    Int_t NDegreesRotation(){return fnDegreeRotationPMForBG;}
-    Bool_t DoBGCalculation(){return fDoBG;}
-    Bool_t DoBGProbability(){return fdoBGProbability;}
-    Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
-    Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
-    Bool_t UseMCPSmearing(){return fUseMCPSmearing;}
-    Int_t BackgroundHandlerType(){return fBackgroundHandler;}
+    Bool_t   UseRotationMethod(){return fUseRotationMethodInBG;}
+    Bool_t   UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
+    Int_t    GetNumberOfBGEvents(){return fNumberOfBGEvents;}
+    Int_t    NDegreesRotation(){return fnDegreeRotationPMForBG;}
+    Bool_t   DoBGCalculation(){return fDoBG;}
+    Bool_t   DoBGProbability(){return fdoBGProbability;}
+    Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
+    Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
+    Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
+    Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
     
   protected:
     TList*    fHistograms;
+    Bool_t    fDoLightOutput;             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t     fMode;                      // running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
     //cuts
     Int_t     fMesonKind;
     Int_t     fIsMergedClusterCut;        // flag for merged cluster and di cluster analysis
@@ -201,7 +210,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliConversionMesonCuts,14)
+    ClassDef(AliConversionMesonCuts,16)
 };
 
 

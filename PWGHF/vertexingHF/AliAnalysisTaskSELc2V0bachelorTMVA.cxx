@@ -88,6 +88,8 @@ AliAnalysisTaskSE(),
   fCounter(0),
   fAnalCuts(0),
   fListCuts(0),
+  fListWeight(0),
+  fHistoMCNch(0x0),
   fUseOnTheFlyV0(kFALSE),
   fIsEventSelected(kFALSE),
   fVariablesTreeSgn(0),
@@ -196,7 +198,8 @@ AliAnalysisTaskSE(),
   fTriggerMask(0),
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
-  fFuncWeightFONLL5overLHC13d3Lc(0)
+  fFuncWeightFONLL5overLHC13d3Lc(0),
+  fNTracklets(0)
 {
   //
   /// Default ctor
@@ -215,6 +218,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fCounter(0),
   fAnalCuts(analCuts),
   fListCuts(0),
+  fListWeight(0),
+  fHistoMCNch(0x0),
   fUseOnTheFlyV0(useOnTheFly),
   fIsEventSelected(kFALSE),
   fVariablesTreeSgn(0),
@@ -324,7 +329,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
 
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
-  fFuncWeightFONLL5overLHC13d3Lc(0)
+  fFuncWeightFONLL5overLHC13d3Lc(0),
+  fNTracklets(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -337,7 +343,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   DefineOutput(4, TTree::Class());  // Tree signal + Tree Bkg + histoEvents
   DefineOutput(5, TTree::Class());  // Tree signal + Tree Bkg + histoEvents
   DefineOutput(6, TList::Class());  // Tree signal + Tree Bkg + histoEvents
-
+  DefineOutput(7, TList::Class());  // weights
 }
 
 //___________________________________________________________________________
@@ -375,6 +381,11 @@ AliAnalysisTaskSELc2V0bachelorTMVA::~AliAnalysisTaskSELc2V0bachelorTMVA() {
     fListCuts = 0;
   }
 
+  if (fListWeight) {
+    delete fListWeight;
+    fListWeight = 0;
+  }
+
   if(fVariablesTreeSgn){
     delete fVariablesTreeSgn;
     fVariablesTreeSgn = 0;
@@ -410,6 +421,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
   fListCuts->SetOwner();
   fListCuts->Add(new AliRDHFCutsLctoV0(*fAnalCuts));
   PostData(3,fListCuts);
+
+  // Save the weight functions or histograms
+  fListWeight = new TList();
+  fListWeight->Add(fHistoMCNch);
+  PostData(7,fListWeight);
 
   if (fUseMCInfo && (fKeepingOnlyHIJINGBkg || fKeepingOnlyPYTHIABkg)) fUtils = new AliVertexingHFUtils();
 
@@ -476,7 +492,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   const char* nameoutput = GetOutputSlot(1)->GetContainer()->GetName();
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
-  Int_t nVar = 89;
+  Int_t nVar = 90;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[0]="massLc2K0Sp";
@@ -581,6 +597,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fCandidateVariableNames[86]="weightPtFlat";
   fCandidateVariableNames[87]="weightFONLL5overLHC13d3";
   fCandidateVariableNames[88]="weightFONLL5overLHC13d3Lc";
+  fCandidateVariableNames[89]="weightNch";
 
 
   for(Int_t ivar=0; ivar<nVar; ivar++){
@@ -953,6 +970,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
       return;
     }
     
+    // multiplicity definition with tracklets
+    fNTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+
     //Printf("Filling MC histo");
     FillMCHisto(mcArray);
   }
@@ -1568,7 +1588,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   nSigmaTOFka = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kKaon));
   nSigmaTOFpr = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kProton));
   
-  Double_t ptLcMC=-1;
+  Double_t ptLcMC = -1;
   Double_t weightPythia = -1, weight5LHC13d3 = -1, weight5LHC13d3Lc = -1; 
 
   if (fUseMCInfo) {
@@ -1581,7 +1601,18 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
       weight5LHC13d3Lc = fFuncWeightFONLL5overLHC13d3Lc->Eval(ptLcMC);
     }
   }
+
+  Double_t weightNch = 1;
+  if (fUseMCInfo) {
+    //Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
+    //  if(nChargedMCPhysicalPrimary > 0){
+    if(fNTracklets > 0){
+      if(!fHistoMCNch) AliInfo("Input histos to evaluate Nch weights missing"); 
+      if(fHistoMCNch) weightNch *= fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(fNTracklets));
+    }
+  }
   
+
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if (!onFlyV0 && isInV0window && isInCascadeWindow && part->CosV0PointingAngle()>0.99 && TMath::Abs(nSigmaTPCpr) <= 3 && v0part->Getd0Prong(0) < 20 && v0part->Getd0Prong(1) < 20) {
 
@@ -1743,7 +1774,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     fCandidateVariables[86] = weightPythia;
     fCandidateVariables[87] = weight5LHC13d3;
     fCandidateVariables[88] = weight5LHC13d3Lc;
-
+    fCandidateVariables[89] = weightNch;
 
 
     if (fUseMCInfo) {

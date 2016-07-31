@@ -1,34 +1,43 @@
-/*
-***********************************************************
-  event plane corrections framework
-  contact: jaap onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
-  2014/12/10
-  *********************************************************
-*/
+#ifndef ALIANALYSISTASKFLOWVECTORCORRECTION_H
+#define ALIANALYSISTASKFLOWVECTORCORRECTION_H
 
-//#include "AliSysInfo.h"
+/***************************************************************************
+ * Package:       FlowVectorCorrections ALICE glue                         *
+ * Authors:       Jaap Onderwaater, GSI, jacobus.onderwaater@cern.ch       *
+ *                Ilya Selyuzhenkov, GSI, ilya.selyuzhenkov@gmail.com      *
+ *                Víctor González, UCM, victor.gonzalez@cern.ch            *
+ *                Contributors are mentioned in the code where appropriate.*
+ * Development:   2014-2016                                                *
+ ***************************************************************************/
 
-#ifndef ALIANALYSISTASKEVENTPLANECALIBRATION_H
-#define ALIANALYSISTASKEVENTPLANECALIBRATION_H
+#include <TObject.h>
+#include "Rtypes.h"
 
 #include "TFile.h"
 #include "TTree.h"
-////#include "framework/AliQnCorrectionsCuts.h"
+
 #include "AliAnalysisTaskSE.h"
+#include "AliQnCorrectionsFillEventTask.h"
 
 class AliAnalysis;
-//class AliReducedEvent;
-class AliQnCorrectionsCuts;
-class AliQnCorrectionsFillEvent;
 class AliQnCorrectionsManager;
+class AliQnCorrectionsCutsSet;
 class AliQnCorrectionsHistos;
-//class QnCorrectionsReducedVarManager;
 
-//_________________________________________________________
-//class AliAnalysisTaskFlowVectorCorrections : public TObject {
-class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
+class AliAnalysisTaskFlowVectorCorrections : public AliQnCorrectionsFillEventTask {
 
- public:
+public:
+  /// \enum CalibrationFileSource
+  /// \brief The supported sources for the calibration file
+  enum CalibrationFileSource {
+    CALIBSRC_local,    ///< the calibration file will be taken locally when the task object is created
+    CALIBSRC_aliensingle,    ///< the calibration file, which contains correction parameters for every run, will be taken from alien on each execution node
+    CALIBSRC_alienmultiple,  ///< run calibration file, which contains correction parameters only for the intended run, will be taken from alien on each execution node
+    CALIBSRC_OADBsingle,    ///< the calibration file, which contains correction parameters for every run, will be taken from OADB on each execution node
+    CALIBSRC_OADBmultiple,  ///< run calibration file, which contains correction parameters only for the intended run, will be taken from OADB on each execution node
+  };
+
+
   AliAnalysisTaskFlowVectorCorrections();
   AliAnalysisTaskFlowVectorCorrections(const char *name);
   virtual ~AliAnalysisTaskFlowVectorCorrections(){}
@@ -37,67 +46,57 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void UserCreateOutputObjects();
   virtual void FinishTaskOutput();
+  virtual void NotifyRun();
 
 
-  void SetRunByRunCalibration(Bool_t cal) {fCalibrateByRun = cal;}
-  void SetCalibrationHistograms(TList* input) {fListInputHistogramsQnCorrections = input;}
-
-  //void InitializeCalibrationHistograms(TString label);
-  void SetEventPlaneManager(AliQnCorrectionsManager* EPmanager)  {fEventPlaneManager = EPmanager;}
-  void SetVarManager(AliQnCorrectionsFillEvent* eventfill)  {fFillEvent = eventfill;}
-  //void SetVarManager(QnCorrectionsReducedVarManager* eventfill)  {fFillEvent = eventfill;}
-  void SetEventCuts(AliQnCorrectionsCuts* cuts)  {fEventCuts = cuts;}
+  void SetRunByRunCalibration(Bool_t enable) { fCalibrateByRun = enable; }
+  void SetAliQnCorrectionsManager(AliQnCorrectionsManager* QnManager)  {fAliQnCorrectionsManager = QnManager;}
+  void SetEventCuts(AliQnCorrectionsCutsSet *cuts)  {fEventCuts = cuts;}
+  void SetFillExchangeContainerWithQvectors(Bool_t enable = kTRUE) { fProvideQnVectorsList = enable; }
+  void SetFillEventQA(Bool_t enable = kTRUE) { fFillEventQA = enable; }
   void SetTrigger(UInt_t triggerbit) {fTriggerMask=triggerbit;}
   void AddHistogramClass(TString hist) {fQAhistograms+=hist+";";}
+  void SetCalibrationHistogramsFile(CalibrationFileSource source, const char *filename);
   void DefineInOutput();
-  void FillExchangeContainerWithQvectors(Bool_t b=kTRUE) {fProvideQnVectorsList=b;}
-  void SetRunListPath(TString path) {fRunListPath=path;}
-  void SetCalibrationFilePath(TString path) {fCalibrationFilePath=path;}
+  void SetRunsLabels(TObjArray *runsList) { fAliQnCorrectionsManager->SetListOfProcessesNames(runsList); }
 
-  AliQnCorrectionsManager* EventPlaneManager() {return fEventPlaneManager;}
-  AliQnCorrectionsHistos* GetHistograms() {return fEventPlaneHistos;}
-  AliQnCorrectionsFillEvent* GetFillEvent() {return fFillEvent;}
-  AliQnCorrectionsCuts* EventCuts()  const {return fEventCuts;}
+  AliQnCorrectionsManager *GetAliQnCorrectionsManager() {return fAliQnCorrectionsManager;}
+  AliQnCorrectionsHistos* GetEventHistograms() {return fEventHistos;}
+  AliQnCorrectionsCutsSet* GetEventCuts()  const {return fEventCuts;}
   Int_t OutputSlotEventQA()        const {return fOutputSlotEventQA;}
   Int_t OutputSlotHistQA()        const {return fOutputSlotHistQA;}
+  Int_t OutputSlotHistNveQA()        const {return fOutputSlotHistNveQA;}
   Int_t OutputSlotHistQn()        const {return fOutputSlotHistQn;}
   Int_t OutputSlotGetListQnVectors() const {return fOutputSlotQnVectorsList;}
   Int_t OutputSlotTree()          const {return fOutputSlotTree;}
   Bool_t IsEventSelected(Float_t* values);
-  Bool_t IsFillExchangeContainerWithQvectors() const  {return fProvideQnVectorsList;}
-  Bool_t IsFillEventQA() const  {return fFillEventQA;}
+  Bool_t GetFillExchangeContainerWithQvectors() const  {return fProvideQnVectorsList;}
+  Bool_t GetFillEventQA() const  {return fFillEventQA;}
 
- private:
-  Bool_t fRunLightWeight;
+private:
   Bool_t fCalibrateByRun;
-  Bool_t fUseFriendEvent;
+  TString fCalibrationFile;                       ///< the name of the calibration file
+  CalibrationFileSource fCalibrationFileSource;   ///< the source of the calibration file
   UInt_t fTriggerMask;
-  Bool_t fInitialized;
-  TList* fListInputHistogramsQnCorrections;          //! List of input histograms for corrections
   TList* fEventQAList;
-  AliQnCorrectionsManager * fEventPlaneManager;
-  AliQnCorrectionsCuts * fEventCuts;
-  //QnCorrectionsReducedVarManager* fFillEvent;
-  AliQnCorrectionsFillEvent* fFillEvent;
-  AliQnCorrectionsHistos* fEventPlaneHistos;
+  AliQnCorrectionsCutsSet *fEventCuts;
   TString fLabel;
   TString fQAhistograms;
   Bool_t fFillEventQA;
   Bool_t fProvideQnVectorsList;
   Int_t fOutputSlotEventQA;
   Int_t fOutputSlotHistQA;
+  Int_t fOutputSlotHistNveQA;
   Int_t fOutputSlotHistQn;
   Int_t fOutputSlotQnVectorsList;
   Int_t fOutputSlotTree;
-  TString fRunListPath;
-  TString fCalibrationFilePath;
-  
+
   AliAnalysisTaskFlowVectorCorrections(const AliAnalysisTaskFlowVectorCorrections &c);
   AliAnalysisTaskFlowVectorCorrections& operator= (const AliAnalysisTaskFlowVectorCorrections &c);
 
-  ClassDef(AliAnalysisTaskFlowVectorCorrections, 2);
+  ClassDef(AliAnalysisTaskFlowVectorCorrections, 4);
 };
 
-#endif
+#endif // ALIANALYSISTASKFLOWVECTORCORRECTION_H
 
 

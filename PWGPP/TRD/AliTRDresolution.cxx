@@ -107,11 +107,15 @@ ClassImp(AliTRDresolution::AliTRDrecoProjection)
 
 Int_t const   AliTRDresolution::fgkNbins[kNdim] = {
   Int_t(kNbunchCross)/*bc*/,
-  144/*phi*/,
+  //144/*phi*/,
+  72/*phi*/,
   45/*eta*/,
-  50/*dy*/,
-  40/*dphi*/,
-  50/*dz*/,
+  //50/*dy*/,
+  25/*dy*/,
+  //40/*dphi*/,
+  20/*dphi*/,
+  //50/*dz*/,
+  25/*dz*/,
   5/*chg*species*/,
   3/*pt*/
 };  //! no of bins/projection

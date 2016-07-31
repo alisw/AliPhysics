@@ -1337,7 +1337,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Int_t label = calo->GetLabel();
       aodpart.SetLabel(label);
       aodpart.SetCaloLabel (calo->GetID(),-1);
-      aodpart.SetTrackLabel(TMath::Abs(track->GetID()),-1);
+      aodpart.SetTrackLabel(GetReader()->GetTrackID(track),-1); // needed instead of track->GetID() since AOD needs some manipulations
 
       aodpart.SetDetectorTag(GetCalorimeter());
       //printf("Index %d, Id %d, iaod %d\n",icalo, calo->GetID(),GetOutputAODBranch()->GetEntriesFast());

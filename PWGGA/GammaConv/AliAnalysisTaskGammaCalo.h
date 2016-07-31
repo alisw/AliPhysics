@@ -50,6 +50,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     
     // switches for additional analysis streams or outputs
+    void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
@@ -114,7 +115,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList**               fTrueList;                                            // Array of lists with histograms with MC validated reconstructed properties
     TList**               fMCList;                                              // Array of lists with histograms with pure MC information
     TList**               fTreeList;                                            // Array of lists with tree for validated MC
-    TList**               fHeaderNameList;                                      // Array of lists with header names for MC header selection
     TList*                fOutputContainer;                                     // Output container
     TList*                fClusterCandidates;                                   //! current list of cluster candidates
     TList*                fEventCutArray;                                       // List with Event Cuts
@@ -159,15 +159,20 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoMCEtaWOEvtWeightPt;                             //! array of histos without event weights eta, pT
     TH1F**                fHistoMCPi0InAccPt;                                   //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                fHistoMCEtaInAccPt;                                   //! array of histos with weighted eta in acceptance, pT
+    TH1F**                fHistoMCPi0WOEvtWeightInAccPt;                        //! array of histos without evt weight pi0 in acceptance, pT
+    TH1F**                fHistoMCEtaWOEvtWeightInAccPt;                        //! array of histos without evt weight eta in acceptance, pT
     TH2F**                fHistoMCPi0PtY;                                       //! array of histos with weighted pi0, pT, Y
     TH2F**                fHistoMCEtaPtY;                                       //! array of histos with weighted eta, pT, Y
     TH2F**                fHistoMCPi0PtAlpha;                                   //! array of histos with weighted pi0, pT, alpha
     TH2F**                fHistoMCEtaPtAlpha;                                   //! array of histos with weighted eta, pT, alpha
     TH1F**                fHistoMCK0sPt;                                        //! array of histos with weighted K0s, pT
-    TH1F**                fHistoMCK0sWOWeightPt;                                //! array of histos with unweighted K0s, pT
-    TH2F**                fHistoMCK0sPtY;                                       //! array of histos with weighted K0s, pT, Y
+    TH1F**                fHistoMCNegKPt;                                       //! array of histos with weighted K-, pT
+    TH1F**                fHistoMCPosKPt;                                       //! array of histos with weighted K+, pT
+    TH1F**                fHistoMCNegPiPt;                                      //! array of histos with weighted pi-, pT
+    TH1F**                fHistoMCPosPiPt;                                      //! array of histos with weighted pi+, pT
     TH2F**                fHistoMCSecPi0PtvsSource;                             //! array of histos with secondary pi0, pT, source
     TH1F**                fHistoMCSecPi0Source;                                 //! array of histos with secondary pi0, source
+    TH2F**                fHistoMCSecPi0InAccPtvsSource;                        //! array of histos with secondary pi0 in acceptance, pT, source
     TH1F**                fHistoMCSecEtaPt;                                     //! array of histos with secondary eta, pT
     TH1F**                fHistoMCSecEtaSource;                                 //! array of histos with secondary eta, source
     TH2F**                fHistoMCPi0PtJetPt;                                   //! array of histos with weighted pi0, pT, hardest jet pt
@@ -293,8 +298,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     UChar_t               iFlag;                                                //! flag (0 = gamma, 1 = pi0, 2 = eta)
     
     // hists for nonlineartiy calibration
-    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
-    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
+//    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
+//    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
 
     // additional variables
     Double_t              fEventPlaneAngle;                                     // EventPlaneAngle
@@ -302,6 +307,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fnCuts;                                               // number of cuts to be analysed in parallel
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
+    Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
@@ -320,7 +326,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 19);
+    ClassDef(AliAnalysisTaskGammaCalo, 22);
 };
 
 #endif

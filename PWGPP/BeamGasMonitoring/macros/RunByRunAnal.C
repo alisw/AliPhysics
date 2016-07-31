@@ -1,8 +1,9 @@
 #include <stdio.h>
 
 void ValueFromRoot(int i, const char *filename);
+Double_t GetFractionOfBG(TH2 * hClsVsTrkOrigin, TH2 * hClsVsTrkInput, Int_t typeOfSpdCut, Int_t typeOfResult);
 #define buf 128
-Double_t ResultValue[500][7]; // [n][0]=RunNumber, [n][1]=Purity of MB [n][2]=Efficiency of MB, [n][3]=Rejection Eff. of MB, [n][4]=Purity of HM and so on..
+Double_t ResultValue[500][10][3]; // 
 
 void RunByRunAnal(){
     const char *line[500] = new char*;
@@ -37,129 +38,284 @@ void RunByRunAnal(){
         if(ResultValue[j][1]==0) break;
         if(j==3) break;
         cout << j << endl;
-        cout << "RunNumber       :" << ResultValue[j][0] << endl;
-        cout << "Purity(MB)      :" << ResultValue[j][1] << endl;
-        cout << "Efficiency(MB)  :" << ResultValue[j][2] << endl;
-        cout << "Reject Eff.(MB) :" << ResultValue[j][3] << endl;
-        cout << "Purity(HM)      :" << ResultValue[j][4] << endl;
-        cout << "Efficiency(HM)  :" << ResultValue[j][5] << endl;
-        cout << "Reject Eff.(HM) :" << ResultValue[j][6] << endl;
+        cout << "RunNumber       :" << ResultValue[j][0][0] << endl;
+        cout << "==CINT7==" << endl;
+        cout << "Purity(None, PF2, PF10)        :" << ResultValue[j][1][0] << ", " << ResultValue[j][2][0] << ", " << ResultValue[j][3][0] << endl;
+        cout << "Efficiency(None, PF2, PF10)  :" << ResultValue[j][4][0] << ", " << ResultValue[j][5][0] << ", " << ResultValue[j][6][0] << endl;
+        cout << "Reject Eff.(None, PF2, PF10) :" << ResultValue[j][7][0] << ", " << ResultValue[j][8][0] << ", " << ResultValue[j][9][0] << endl;
+        cout << "==V0M==" << endl;
+        cout << "Purity(None, PF2, PF10)        :" << ResultValue[j][1][1] << ", " << ResultValue[j][2][1] << ", " << ResultValue[j][3][1] << endl;
+        cout << "Efficiency(None, PF2, PF10)  :" << ResultValue[j][4][1] << ", " << ResultValue[j][5][1] << ", " << ResultValue[j][6][1] << endl;
+        cout << "Reject Eff.(None, PF2, PF10) :" << ResultValue[j][7][1] << ", " << ResultValue[j][8][1] << ", " << ResultValue[j][9][1] << endl;
+        cout << "==SH2==" << endl;
+        cout << "Purity(None, PF2, PF10)        :" << ResultValue[j][1][2] << ", " << ResultValue[j][2][2] << ", " << ResultValue[j][3][2] << endl;
+        cout << "Efficiency(None, PF2, PF10)  :" << ResultValue[j][4][2] << ", " << ResultValue[j][5][2] << ", " << ResultValue[j][6][2] << endl;
+        cout << "Reject Eff.(None, PF2, PF10) :" << ResultValue[j][7][2] << ", " << ResultValue[j][8][2] << ", " << ResultValue[j][9][2] << endl;
         cout << endl;
         j++;
     }
     
+    const char* fNames[] = {"CINT7","V0M","SH2"};
+    const char* pfValues[] = {"","PF2","PF10"};
+    const char* resultValues[] = {"Purity","Efficiency","RejectEffciency"};
+    
     double noffiles = ii;
     
-    TH1F *hRunbyRunPurity;
-    TH1F *hRunbyRunPurity_HM;
-    TH1F *hRunbyRunEff;
-    TH1F *hRunbyRunEff_HM;
-    TH1F *hRunbyRunRejectEff;
-    TH1F *hRunbyRunRejectEff_HM;
-    
-    TH1F *hRunbyRunPurity = new TH1F("hRunbyRunPurity","Purity", noffiles, 0, noffiles);
-    TH1F *hRunbyRunPurity_HM = new TH1F("hRunbyRunPurity_HM","Purity", noffiles, 0, noffiles);
-    TH1F *hRunbyRunEff = new TH1F("hRunbyRunEff","Efficiency", noffiles, 0, noffiles);
-    TH1F *hRunbyRunEff_HM = new TH1F("hRunbyRunEff_HM","Efficiency", noffiles, 0, noffiles);
-    TH1F *hRunbyRunRejectEff = new TH1F("hRunbyRunRejectEff","Rejection Eff.", noffiles, 0, noffiles);
-    TH1F *hRunbyRunRejectEff_HM = new TH1F("hRunbyRunRejectEff_HM","Rejection Eff.", noffiles, 0, noffiles);
-    
+    TH1F *hRunbyRun[3][3][3];
+    for(Int_t iValue = 0 ; iValue<3 ; iValue++){
+        for(Int_t iPF = 0 ; iPF<3 ; iPF++){                
+            for(Int_t iTrig = 0 ; iTrig<3 ; iTrig++){
+                if(iPF ==0){
+                    hRunbyRun[iValue][iPF][iTrig] =  new TH1F(Form("hRunbyRun%s_%s",resultValues[iValue],fNames[iTrig]),resultValues[iValue], noffiles, 0, noffiles);
+                    hRunbyRun[iValue][iPF][iTrig]->GetYaxis()->SetRangeUser(0,1.0);
+                }
+                else{
+                    hRunbyRun[iValue][iPF][iTrig] =  new TH1F(Form("hRunbyRun%s_%s_%s",resultValues[iValue],fNames[iTrig],pfValues[iPF]),resultValues[iValue], noffiles, 0, noffiles);
+                    hRunbyRun[iValue][iPF][iTrig]->GetYaxis()->SetRangeUser(0,1.0);
+                }
+                hRunbyRun[iValue][iPF][iTrig]->SetLineWidth(2);
+                hRunbyRun[iValue][iPF][iTrig]->SetLineColor(iTrig+1); // CINT7 = Black, V0M = Red, SH2 = Green
+                hRunbyRun[iValue][iPF][iTrig]->SetLineStyle(iPF); // None = line, PF2 = dot line, PF10 = many dot line
+            }
+        }
+    }
     int k = 0;
     TString RunN;
     while(1){
-        if(ResultValue[k][1]==0) break;
-        hRunbyRunPurity->SetBinContent(k+1,ResultValue[k][1]);
-        RunN = Form("%.0f",ResultValue[k][0]);
-//        cout << RunN << endl;
-        hRunbyRunPurity->GetXaxis()->SetBinLabel(k+1, RunN );
-        
-        hRunbyRunEff->SetBinContent(k+1,ResultValue[k][2]);
-        hRunbyRunEff->GetXaxis()->SetBinLabel(k+1, RunN );
-        
-        hRunbyRunRejectEff->SetBinContent(k+1,ResultValue[k][3]);
-        hRunbyRunRejectEff->GetXaxis()->SetBinLabel(k+1, RunN );
-        
-        hRunbyRunPurity_HM->SetBinContent(k+1,ResultValue[k][4]);
-        hRunbyRunPurity_HM->GetXaxis()->SetBinLabel(k+1, RunN );
-        
-        hRunbyRunEff_HM->SetBinContent(k+1,ResultValue[k][5]);
-        hRunbyRunEff_HM->GetXaxis()->SetBinLabel(k+1, RunN );
-        
-        hRunbyRunRejectEff_HM->SetBinContent(k+1,ResultValue[k][6]);
-        hRunbyRunRejectEff_HM->GetXaxis()->SetBinLabel(k+1, RunN );
-        
+        RunN = Form("%.0f",ResultValue[k][0][0]);
+        if(!ResultValue[k][1][0]) break;
+        for(Int_t iTrig = 0 ; iTrig<3 ; iTrig++){
+        hRunbyRun[0][0][iTrig]->SetBinContent(k+1,ResultValue[k][1][iTrig]);
+        hRunbyRun[0][0][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+        hRunbyRun[0][1][iTrig]->SetBinContent(k+1,ResultValue[k][2][iTrig]);
+        hRunbyRun[0][1][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+        hRunbyRun[0][2][iTrig]->SetBinContent(k+1,ResultValue[k][3][iTrig]);
+        hRunbyRun[0][2][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+
+
+        hRunbyRun[1][0][iTrig]->SetBinContent(k+1,ResultValue[k][4][iTrig]);
+        hRunbyRun[1][0][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+        hRunbyRun[1][1][iTrig]->SetBinContent(k+1,ResultValue[k][5][iTrig]);
+        hRunbyRun[1][1][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+        hRunbyRun[1][2][iTrig]->SetBinContent(k+1,ResultValue[k][6][iTrig]);
+        hRunbyRun[1][2][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+
+
+        hRunbyRun[2][0][iTrig]->SetBinContent(k+1,ResultValue[k][7][iTrig]);
+        hRunbyRun[2][0][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+        hRunbyRun[2][1][iTrig]->SetBinContent(k+1,ResultValue[k][8][iTrig]);
+        hRunbyRun[2][1][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN);
+        hRunbyRun[2][2][iTrig]->SetBinContent(k+1,ResultValue[k][9][iTrig]);
+        hRunbyRun[2][2][iTrig]->GetXaxis()->SetBinLabel(k+1, RunN );
+        }
+
         k++;
     }
     
-    hRunbyRunPurity->GetYaxis()->SetRangeUser(0,1.0);
-    hRunbyRunEff->GetYaxis()->SetRangeUser(0,1.0);
-    hRunbyRunRejectEff->GetYaxis()->SetRangeUser(0,1.0);
-    hRunbyRunPurity->Draw();
-    hRunbyRunEff->Draw();
-    hRunbyRunRejectEff->Draw();
-    hRunbyRunPurity_HM->GetYaxis()->SetRangeUser(0,1.0);
-    hRunbyRunEff_HM->GetYaxis()->SetRangeUser(0,1.0);
-    hRunbyRunRejectEff_HM->GetYaxis()->SetRangeUser(0,1.0);
-    hRunbyRunPurity_HM->Draw();
-    hRunbyRunEff_HM->Draw();
-    hRunbyRunRejectEff_HM->Draw();
     
-    TLatex *texbc1 = new TLatex(1 , 0.1,"#color[4]{Blue dot line} : Results from HM trigger");
+    TLatex *texbc1 = new TLatex(0.1 , 0.15,"#color[1]{Black line} : Results from CINT7 trigger");
     texbc1->SetTextSize(.04);
     texbc1->SetTextColor(1);
-    TLatex *texbc2 = new TLatex(1 , 0.05,"#color[2]{Red line} : Results from MB trigger");
+    TLatex *texbc2 = new TLatex(0.1 , 0.1,"#color[2]{Red line} : Results from V0M trigger");
     texbc2->SetTextSize(.04);
     texbc2->SetTextColor(1);
-
-    TLatex *texbc3 = new TLatex(1 , 0.95,"#color[4]{Blue dot line} : Results from HM trigger");
+    TLatex *texbc3 = new TLatex(0.1 , 0.05,"#color[3]{Green line} : Results from SH2 trigger");
     texbc3->SetTextSize(.04);
     texbc3->SetTextColor(1);
-    TLatex *texbc4 = new TLatex(1 , 0.9,"#color[2]{Red line} : Results from MB trigger");
-    texbc4->SetTextSize(.04);
-    texbc4->SetTextColor(1);
     
     
-    RunByRunResult= new TCanvas("RunByRunResult","RunByRunResult",1000,500);
+    RunByRunResult01= new TCanvas("RunByRunResult01","RunByRunResult01",1000,500); // with Triggers, PF=2 condition
     gStyle->SetOptStat(0);
-    RunByRunResult->Divide(3,1);
+    RunByRunResult01->Divide(3,1);
     
-    RunByRunResult->cd(1);
-    
-    hRunbyRunPurity->SetLineColor(2); //red is from MB
-    hRunbyRunPurity->SetLineWidth(2);
-    hRunbyRunPurity_HM->SetLineWidth(2);
-    hRunbyRunPurity_HM->SetLineColor(4); //blue is from HM
-    hRunbyRunPurity_HM->SetLineStyle(2);
-    hRunbyRunPurity->Draw("same");
-    hRunbyRunPurity_HM->Draw("same");
+    RunByRunResult01->cd(1);
+
+    hRunbyRun[0][1][0]->Draw("same");
+    hRunbyRun[0][1][1]->Draw("same");
+    hRunbyRun[0][1][2]->Draw("same");
     texbc1->Draw("same");
     texbc2->Draw("same");
-    
-    RunByRunResult->cd(2);
-    
-    hRunbyRunEff->SetLineColor(2);
-    hRunbyRunEff->SetLineWidth(2);
-    hRunbyRunEff_HM->SetLineWidth(2);
-    hRunbyRunEff_HM->SetLineColor(4);
-    hRunbyRunEff_HM->SetLineStyle(2);
-    hRunbyRunEff->Draw("same");
-    hRunbyRunEff_HM->Draw("same");
-    texbc1->Draw("same");
-    texbc2->Draw("same");
-    
-    RunByRunResult->cd(3);
-    hRunbyRunRejectEff->SetLineColor(2);
-    hRunbyRunRejectEff->SetLineWidth(2);
-    hRunbyRunRejectEff_HM->SetLineWidth(2);
-    hRunbyRunRejectEff_HM->SetLineColor(4);
-    hRunbyRunRejectEff_HM->SetLineStyle(2);
-    hRunbyRunRejectEff->Draw("same");
-    hRunbyRunRejectEff_HM->Draw("same");
     texbc3->Draw("same");
-    texbc4->Draw("same");
     
-    RunByRunResult->SaveAs("./Fig/RunByRunResult.pdf");
+    RunByRunResult01->cd(2);
     
+    hRunbyRun[1][1][0]->Draw("same");
+    hRunbyRun[1][1][1]->Draw("same");
+    hRunbyRun[1][1][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult01->cd(3);
+    hRunbyRun[2][1][0]->Draw("same");
+    hRunbyRun[2][1][1]->Draw("same");
+    hRunbyRun[2][1][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult01->SaveAs("./Fig/CINT7_PF2_OverallRuns.pdf");
+    
+    RunByRunResult02= new TCanvas("RunByRunResult02","RunByRunResult02",1000,500); // with Triggers, PF=10 condition
+    gStyle->SetOptStat(0);
+    RunByRunResult02->Divide(3,1);
+    
+    RunByRunResult02->cd(1);
+
+    hRunbyRun[0][2][0]->Draw("same");
+    hRunbyRun[0][2][1]->Draw("same");
+    hRunbyRun[0][2][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult02->cd(2);
+    
+    hRunbyRun[1][2][0]->Draw("same");
+    hRunbyRun[1][2][1]->Draw("same");
+    hRunbyRun[1][2][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult02->cd(3);
+    hRunbyRun[2][2][0]->Draw("same");
+    hRunbyRun[2][2][1]->Draw("same");
+    hRunbyRun[2][2][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult02->SaveAs("./Fig/CINT7_PF10_OverallRuns.pdf");
+
+    RunByRunResult03= new TCanvas("RunByRunResult03","RunByRunResult03",1000,500); // with Triggers, No PF condition
+    gStyle->SetOptStat(0);
+    RunByRunResult03->Divide(3,1);
+    
+    RunByRunResult03->cd(1);
+
+    hRunbyRun[0][0][0]->Draw("same");
+    hRunbyRun[0][0][1]->Draw("same");
+    hRunbyRun[0][0][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult03->cd(2);
+    
+    hRunbyRun[1][0][0]->Draw("same");
+    hRunbyRun[1][0][1]->Draw("same");
+    hRunbyRun[1][0][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult03->cd(3);
+    hRunbyRun[2][0][0]->Draw("same");
+    hRunbyRun[2][0][1]->Draw("same");
+    hRunbyRun[2][0][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult03->SaveAs("./Fig/CINT7_NOPF_OverallRuns.pdf");
+
+    RunByRunResult04= new TCanvas("RunByRunResult04","RunByRunResult04",1000,500); // with NOPF, Trigger condition
+    gStyle->SetOptStat(0);
+    RunByRunResult04->Divide(3,1);
+    
+    RunByRunResult04->cd(1);
+
+    hRunbyRun[0][0][0]->Draw("same");
+    hRunbyRun[0][1][0]->Draw("same");
+    hRunbyRun[0][2][0]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult04->cd(2);
+    
+    hRunbyRun[1][0][0]->Draw("same");
+    hRunbyRun[1][1][0]->Draw("same");
+    hRunbyRun[1][2][0]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult04->cd(3);
+    hRunbyRun[2][0][0]->Draw("same");
+    hRunbyRun[2][1][0]->Draw("same");
+    hRunbyRun[2][2][0]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult04->SaveAs("./Fig/NOPF_Trigger_OverallRuns.pdf");
+
+    RunByRunResult05= new TCanvas("RunByRunResult05","RunByRunResult05",1000,500); // with PF=2, Trigger condition
+    gStyle->SetOptStat(0);
+    RunByRunResult05->Divide(3,1);
+    
+    RunByRunResult05->cd(1);
+
+    hRunbyRun[0][0][1]->Draw("same");
+    hRunbyRun[0][1][1]->Draw("same");
+    hRunbyRun[0][2][1]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult05->cd(2);
+    
+    hRunbyRun[1][0][1]->Draw("same");
+    hRunbyRun[1][1][1]->Draw("same");
+    hRunbyRun[1][2][1]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult05->cd(3);
+    hRunbyRun[2][0][1]->Draw("same");
+    hRunbyRun[2][1][1]->Draw("same");
+    hRunbyRun[2][2][1]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult05->SaveAs("./Fig/PF2_Trigger_OverallRuns.pdf");
+
+
+    RunByRunResult06= new TCanvas("RunByRunResult06","RunByRunResult06",1000,500); // with PF=10, Trigger condition
+    gStyle->SetOptStat(0);
+    RunByRunResult06->Divide(3,1);
+    
+    RunByRunResult06->cd(1);
+
+    hRunbyRun[0][0][2]->Draw("same");
+    hRunbyRun[0][1][2]->Draw("same");
+    hRunbyRun[0][2][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult06->cd(2);
+    
+    hRunbyRun[1][0][2]->Draw("same");
+    hRunbyRun[1][1][2]->Draw("same");
+    hRunbyRun[1][2][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult06->cd(3);
+    hRunbyRun[2][0][2]->Draw("same");
+    hRunbyRun[2][1][2]->Draw("same");
+    hRunbyRun[2][2][2]->Draw("same");
+    texbc1->Draw("same");
+    texbc2->Draw("same");
+    texbc3->Draw("same");
+    
+    RunByRunResult06->SaveAs("./Fig/PF10_Trigger_OverallRuns.pdf");
 }
 
 void ValueFromRoot(int inputnum, const char *filename){
@@ -172,108 +328,243 @@ void ValueFromRoot(int inputnum, const char *filename){
     
     TDirectoryFile *dir = (TDirectoryFile*)filein->Get("BeamGasMon");
     
-    TList *list = (TList*)dir->Get("cOutputH_MB");
-    TList *list2 = (TList*)dir->Get("cOutputH_HM");
+    TList *list = (TList*)dir->Get("cOutputH");
     TTree *TTree = (TTree*)dir->Get("TreeTrack");
 
     Int_t Temp = 0;
     TTree->SetBranchAddress("runNumber",&Temp);
     TTree->GetEntry(0);
-    
-    
-    //____________________MB________________________
-    TH1F *hNumEffPurityBC[3][3][3];
-    TH1F *hDenomEffBC[3][3][3];
-    TH1F *hDenomPurityBC[3][3][3];
-    TH1F *hDenomRejecEffBC[3][3][3];
-    TH1F *hNumRejecEffBC[3][3][3];
-    
-    TH1F *hPurityBC[3][3][3];
-    TH1F *hEfficiencyBC[3][3][3];
-    TH1F *hRejectEfficiencyBC[3][3][3];
-    
-    TH1F *runNumber_hist;
-    runNumber_hist = (TH1F*)list->FindObject("runNumber_hist");
-    
-    
-    hNumEffPurityBC[2][0][1] =(TH1F*)list->FindObject("hNumEffPurityBC2_V00_Flag1");
-    hDenomEffBC[2][0][1]=(TH1F*)list->FindObject("hDenomEffBC2_V00_Flag1");
-    hDenomPurityBC[2][0][1]=(TH1F*)list->FindObject("hDenomPurityBC2_V00_Flag1");
-    hDenomRejecEffBC[2][0][1]=(TH1F*)list->FindObject("hDenomRejecEffBC2_V00_Flag1");
-    hNumRejecEffBC[2][0][1]=(TH1F*)list->FindObject("hNumRejecEffBC2_V00_Flag1");
-    
-    hPurityBC[2][0][1] = new TH1F("hPurityBC2_V00_Flag1","; #V0flags in PF", 35, 0, 35);
-    hPurityBC[2][0][1]->SetTitle("Purity");
-    hEfficiencyBC[2][0][1] = new TH1F("hEfficiencyBC2_V00_Flag1","; #V0flags in PF", 35, 0, 35);
-    hEfficiencyBC[2][0][1]->SetTitle("Efficiency");
-    hRejectEfficiencyBC[2][0][1] = new TH1F("hRejectEfficiencyBC2_V00_Flag1","; #V0flags in PF", 35, 0, 35);
-    hRejectEfficiencyBC[2][0][1]->SetTitle("Rejection-Efficiency");
-    
-    //____________________HM________________________
-    TH1F *hNumEffPurityBC_HM[3][3][3];
-    TH1F *hDenomEffBC_HM[3][3][3];
-    TH1F *hDenomPurityBC_HM[3][3][3];
-    TH1F *hDenomRejecEffBC_HM[3][3][3];
-    TH1F *hNumRejecEffBC_HM[3][3][3];
-    
-    TH1F *hPurityBC_HM[3][3][3];
-    TH1F *hEfficiencyBC_HM[3][3][3];
-    TH1F *hRejectEfficiencyBC_HM[3][3][3];
-    
-    hNumEffPurityBC_HM[2][0][1] =(TH1F*)list2->FindObject("hNumEffPurityBC_HM2_V00_Flag1");
-    hDenomEffBC_HM[2][0][1]=(TH1F*)list2->FindObject("hDenomEffBC_HM2_V00_Flag1");
-    hDenomPurityBC_HM[2][0][1]=(TH1F*)list2->FindObject("hDenomPurityBC_HM2_V00_Flag1");
-    hDenomRejecEffBC_HM[2][0][1]=(TH1F*)list2->FindObject("hDenomRejecEffBC_HM2_V00_Flag1");
-    hNumRejecEffBC_HM[2][0][1]=(TH1F*)list2->FindObject("hNumRejecEffBC_HM2_V00_Flag1");
-    
-    hPurityBC_HM[2][0][1] = new TH1F("hPurityBC_HM2_V00_Flag1","; #V0flags in PF", 35, 0, 35);
-    hPurityBC_HM[2][0][1]->SetTitle("Purity");
-    hEfficiencyBC_HM[2][0][1] = new TH1F("hEfficiencyBC_HM2_V00_Flag1","; #V0flags in PF", 35, 0, 35);
-    hEfficiencyBC_HM[2][0][1]->SetTitle("Efficiency");
-    hRejectEfficiencyBC_HM[2][0][1] = new TH1F("hRejectEfficiencyBC_HM2_V00_Flag1","; #V0flags in PF", 35, 0, 35);
-    hRejectEfficiencyBC_HM[2][0][1]->SetTitle("Rejection-Efficiency");
-    
 
+    const char* fNames[] = {"CINT7","V0M","SH2"};
+    const char* pfValues[] = {"","PF2","PF10"};
     
-    
-    
-    //____________________MB________________________
-    double denomeff = hDenomEffBC[2][0][1]->GetBinContent(10);
-    double denomrejeceff = hDenomRejecEffBC[2][0][1]->GetBinContent(10);
-    
-    hPurityBC[2][0][1]->Divide(hNumEffPurityBC[2][0][1], hDenomPurityBC[2][0][1], 1, 1, "B");
-    hPurityBC[2][0][1]->GetYaxis()->SetRangeUser(0,1.0);
-    
-    hEfficiencyBC[2][0][1]->Divide(hNumEffPurityBC[2][0][1], hDenomEffBC[2][0][1], 1, 1, "B");
-    hEfficiencyBC[2][0][1]->GetYaxis()->SetRangeUser(0,1.0);
-    
-    hRejectEfficiencyBC[2][0][1]->Divide(hNumRejecEffBC[2][0][1], hDenomRejecEffBC[2][0][1], 1, 1, "B");
-    hRejectEfficiencyBC[2][0][1]->GetYaxis()->SetRangeUser(0,1.0);
+    //____________________Open Histos________________________
+    TH2F* hTotalTrkVsClsSPID[3][3];
+    for(Int_t iTrig = 0 ; iTrig<3 ; iTrig++){
+        for(Int_t iPF = 0 ; iPF<3 ; iPF++){
+            if (iPF == 0){
+                hTotalTrkVsClsSPID[iTrig][0]=(TH2F*)list->FindObject(Form("hTotalTrkVsClsSPID_%s",fNames[iTrig]));
+            }
+            else{
+                hTotalTrkVsClsSPID[iTrig][iPF]=(TH2F*)list->FindObject(Form("hTotalTrkVsClsSPID_%s_%s",fNames[iTrig],pfValues[iPF]));    
+            }
+        }
+    }
+    cout << "Loading histograms complete" << endl;
+    //____________________CINT7________________________
+    TH2F *hTotalTrkVsClsSPID_CINT7_PF2_NP;
+    TH2F *hTotalTrkVsClsSPID_CINT7_PF10_NP;
+    hTotalTrkVsClsSPID_CINT7_PF2_NP = new TH2F("hTotalTrkVsClsSPID_CINT7_PF2_NP","; Spd : total",140,0,140,500,0,500);
+    hTotalTrkVsClsSPID_CINT7_PF10_NP = new TH2F("hTotalTrkVsClsSPID_CINT7_PF10_NP","; Spd : total",140,0,140,500,0,500);
 
-    //____________________HM________________________
-    double denomeff_HM = hDenomEffBC_HM[2][0][1]->GetBinContent(10);
-    double denomrejeceff_HM = hDenomRejecEffBC_HM[2][0][1]->GetBinContent(10);
-    
-    hPurityBC_HM[2][0][1]->Divide(hNumEffPurityBC_HM[2][0][1], hDenomPurityBC_HM[2][0][1], 1, 1, "B");
-    hPurityBC_HM[2][0][1]->GetYaxis()->SetRangeUser(0,1.0);
-    
-    hEfficiencyBC_HM[2][0][1]->Divide(hNumEffPurityBC_HM[2][0][1], hDenomEffBC_HM[2][0][1], 1, 1, "B");
-    hEfficiencyBC_HM[2][0][1]->GetYaxis()->SetRangeUser(0,1.0);
-    
-    hRejectEfficiencyBC_HM[2][0][1]->Divide(hNumRejecEffBC_HM[2][0][1], hDenomRejecEffBC_HM[2][0][1], 1, 1, "B");
-    hRejectEfficiencyBC_HM[2][0][1]->GetYaxis()->SetRangeUser(0,1.0);
-    
-    //____________________RunbyRun_Analysis_Result________________________
-    ResultValue[i][0] = Temp;
+    TH2F *hTotalTrkVsClsSPID_CINT7_PF10_NP;
+    hTotalTrkVsClsSPID_CINT7_PF2_NP->Add(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][1],1,-1);
+    hTotalTrkVsClsSPID_CINT7_PF10_NP->Add(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][2],1,-1);
+
+
+    Double_t purityNone = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][0],0,0);
+    Double_t purityPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][1],0,0);
+    Double_t purityPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][2],0,0);
+
+    Double_t efficiencyNone = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][0],0,1);
+    Double_t efficiencyPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][1],0,1);
+    Double_t efficiencyPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][2],0,1);
+    Double_t rejectionEfficiencyNone = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID[0][0],0,2);
+    Double_t rejectionEfficiencyPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID_CINT7_PF2_NP,0,2);
+    Double_t rejectionEfficiencyPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[0][0],hTotalTrkVsClsSPID_CINT7_PF10_NP,0,2);
+
+    ResultValue[i][0][0] = Temp;
     //    ResultValue[i][0] = runNumber_hist->GetBinContent(1);
 //    ResultValue[i][0] = i; //temporary, will be modifyed soon.
-    ResultValue[i][1] = hPurityBC[2][0][1]->GetBinContent(10);
-    ResultValue[i][2] = hEfficiencyBC[2][0][1]->GetBinContent(10);
-    ResultValue[i][3] = hRejectEfficiencyBC[2][0][1]->GetBinContent(10);
-    ResultValue[i][4] = hPurityBC_HM[2][0][1]->GetBinContent(10);
-    ResultValue[i][5] = hEfficiencyBC_HM[2][0][1]->GetBinContent(10);
-    ResultValue[i][6] = hRejectEfficiencyBC_HM[2][0][1]->GetBinContent(10);
+    ResultValue[i][1][0] = purityNone;
+    ResultValue[i][2][0] = purityPF2;
+    ResultValue[i][3][0] = purityPF10;
+    ResultValue[i][4][0] = efficiencyNone;
+    ResultValue[i][5][0] = efficiencyPF2;
+    ResultValue[i][6][0] = efficiencyPF10;
+    ResultValue[i][7][0] = rejectionEfficiencyNone;
+    ResultValue[i][8][0] = rejectionEfficiencyPF2;
+    ResultValue[i][9][0] = rejectionEfficiencyPF10;    
+
+
+    //____________________V0M________________________
+    TH2F *hTotalTrkVsClsSPID_V0M_PF2_NP;
+    TH2F *hTotalTrkVsClsSPID_V0M_PF10_NP;
+    hTotalTrkVsClsSPID_V0M_PF2_NP = new TH2F("hTotalTrkVsClsSPID_V0M_PF2_NP","; Spd : total",140,0,140,500,0,500);
+    hTotalTrkVsClsSPID_V0M_PF10_NP = new TH2F("hTotalTrkVsClsSPID_V0M_PF10_NP","; Spd : total",140,0,140,500,0,500);
+
+    TH2F *hTotalTrkVsClsSPID_V0M_PF10_NP;
+    hTotalTrkVsClsSPID_V0M_PF2_NP->Add(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][1],1,-1);
+    hTotalTrkVsClsSPID_V0M_PF10_NP->Add(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][2],1,-1);
+
+
+    Double_t purityNone = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][0],0,0);
+    Double_t purityPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][1],0,0);
+    Double_t purityPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][2],0,0);
+
+    Double_t efficiencyNone = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][0],0,1);
+    Double_t efficiencyPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][1],0,1);
+    Double_t efficiencyPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][2],0,1);
+    Double_t rejectionEfficiencyNone = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID[1][0],0,2);
+    Double_t rejectionEfficiencyPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID_V0M_PF2_NP,0,2);
+    Double_t rejectionEfficiencyPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[1][0],hTotalTrkVsClsSPID_V0M_PF10_NP,0,2);
+
+    ResultValue[i][0][1] = Temp;
+    ResultValue[i][1][1] = purityNone;
+    ResultValue[i][2][1] = purityPF2;
+    ResultValue[i][3][1] = purityPF10;
+    ResultValue[i][4][1] = efficiencyNone;
+    ResultValue[i][5][1] = efficiencyPF2;
+    ResultValue[i][6][1] = efficiencyPF10;
+    ResultValue[i][7][1] = rejectionEfficiencyNone;
+    ResultValue[i][8][1] = rejectionEfficiencyPF2;
+    ResultValue[i][9][1] = rejectionEfficiencyPF10;    
+
+
+    //____________________SH2________________________
+    TH2F *hTotalTrkVsClsSPID_SH2_PF2_NP;
+    TH2F *hTotalTrkVsClsSPID_SH2_PF10_NP;
+    hTotalTrkVsClsSPID_SH2_PF2_NP = new TH2F("hTotalTrkVsClsSPID_SH2_PF2_NP","; Spd : total",140,0,140,500,0,500);
+    hTotalTrkVsClsSPID_SH2_PF10_NP = new TH2F("hTotalTrkVsClsSPID_SH2_PF10_NP","; Spd : total",140,0,140,500,0,500);
+
+    TH2F *hTotalTrkVsClsSPID_SH2_PF10_NP;
+    hTotalTrkVsClsSPID_SH2_PF2_NP->Add(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][1],1,-1);
+    hTotalTrkVsClsSPID_SH2_PF10_NP->Add(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][2],1,-1);
+
+
+    Double_t purityNone = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][0],0,0);
+    Double_t purityPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][1],0,0);
+    Double_t purityPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][2],0,0);
+
+    Double_t efficiencyNone = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][0],0,1);
+    Double_t efficiencyPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][1],0,1);
+    Double_t efficiencyPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][2],0,1);
+    Double_t rejectionEfficiencyNone = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID[2][0],0,2);
+    Double_t rejectionEfficiencyPF2 = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID_SH2_PF2_NP,0,2);
+    Double_t rejectionEfficiencyPF10 = GetFractionOfBG(hTotalTrkVsClsSPID[2][0],hTotalTrkVsClsSPID_SH2_PF10_NP,0,2);
+
+
+    ResultValue[i][0][2] = Temp;
+    ResultValue[i][1][2] = purityNone;
+    ResultValue[i][2][2] = purityPF2;
+    ResultValue[i][3][2] = purityPF10;
+    ResultValue[i][4][2] = efficiencyNone;
+    ResultValue[i][5][2] = efficiencyPF2;
+    ResultValue[i][6][2] = efficiencyPF10;
+    ResultValue[i][7][2] = rejectionEfficiencyNone;
+    ResultValue[i][8][2] = rejectionEfficiencyPF2;
+    ResultValue[i][9][2] = rejectionEfficiencyPF10;    
 
     filein->Close();
 //    cout << "close root file" << endl;
+}
+
+Double_t GetFractionOfBG(TH2 * hClsVsTrkOrigin, TH2 * hClsVsTrkInput, Int_t typeOfSpdCut, Int_t typeOfResult) {
+  // returns the fraction of events not bassing the SPD BG cut
+  // typeOfSpdCut == 0: standard linear cut (as in physics selection)
+  // typeOfSpdCut == 1: "Christoph's" cut
+  // typeOfResult == 0: Purity
+  // typeOfResult == 1: Efficiency
+  // typeOfResult == 2: Rejection Efficiency
+
+  //First, get the !BG and Total entry of Original (No PF) histogram
+  Int_t nbinx = hClsVsTrkOrigin->GetNbinsX();
+  Int_t nbiny = hClsVsTrkOrigin->GetNbinsY();
+  Double_t nBGEvts = 0;
+
+  for(Int_t ibinx = 0; ibinx < nbinx; ibinx++){
+    for(Int_t ibiny = 0; ibiny < nbiny; ibiny++){
+      Bool_t spdBg = false;
+      Float_t trk = hClsVsTrkOrigin->GetXaxis()->GetBinCenter(ibinx);
+      Float_t cls = hClsVsTrkOrigin->GetYaxis()->GetBinCenter(ibiny);
+      if (typeOfSpdCut == 0 && (cls > 65.0+4.0*trk)) spdBg = true;
+      if (typeOfSpdCut == 1) {
+        std::cout << "Not yet implemented" << std::endl;
+        exit(1);
+      }
+
+      if(spdBg) nBGEvts += hClsVsTrkOrigin->GetBinContent(ibinx, ibiny);
+    }
+  }
+
+  std::cout << "Origin/// Total number of events: " << hClsVsTrkOrigin->GetEntries()
+            << ", BG: " << nBGEvts
+            << ", Not BG: " <<  hClsVsTrkOrigin->GetEntries()-nBGEvts << std::endl;
+
+  //Second, Get the same values from Input value
+  nbinx = hClsVsTrkInput->GetNbinsX();
+  nbiny = hClsVsTrkInput->GetNbinsY();
+  Double_t nBGEvtsInput = 0;
+
+  for(Int_t ibinx = 0; ibinx < nbinx; ibinx++){
+    for(Int_t ibiny = 0; ibiny < nbiny; ibiny++){
+      Bool_t spdBg = false;
+      Float_t trk = hClsVsTrkInput->GetXaxis()->GetBinCenter(ibinx);
+      Float_t cls = hClsVsTrkInput->GetYaxis()->GetBinCenter(ibiny);
+      if (typeOfSpdCut == 0 && (cls > 65.0+4.0*trk)) spdBg = true;
+      if (typeOfSpdCut == 1) {
+        std::cout << "Not yet implemented" << std::endl;
+        exit(1);
+      }
+
+      if(spdBg) nBGEvtsInput += hClsVsTrkInput->GetBinContent(ibinx, ibiny);
+    }
+  }
+
+
+  std::cout << "Input/// Total number of events: " << hClsVsTrkInput->GetEntries()
+            << ", BG: " << nBGEvtsInput
+            << ", Not BG: " <<  hClsVsTrkInput->GetEntries()-nBGEvtsInput  << std::endl;
+
+  if(typeOfResult==0){
+        if(hClsVsTrkInput->GetEntries() != 0){
+            std::cout << "Purity: " << (hClsVsTrkInput->GetEntries()-nBGEvtsInput)/hClsVsTrkInput->GetEntries() << std::endl;
+        }
+        else{
+                std::cout << "Purity: Null"<< std::endl;
+        }   
+    }     
+  if(typeOfResult==1){
+    if((hClsVsTrkOrigin->GetEntries()-nBGEvts) != 0){
+        std::cout << "Efficiency: " << (hClsVsTrkInput->GetEntries()-nBGEvtsInput)/(hClsVsTrkOrigin->GetEntries()-nBGEvts) << std::endl;    
+    }
+    else{
+        std::cout << "Efficiency: Null"<< std::endl;
+    }
+    }
+  if(typeOfResult==2){
+    if(nBGEvts != 0){
+        std::cout << "Rejection Efficiency: " << nBGEvtsInput/nBGEvts << std::endl;          
+    }
+    else{
+        std::cout << "Rejection Efficiency: Null"<< std::endl;
+    }
+    }
+
+
+
+  if(typeOfResult==0){
+    if(hClsVsTrkInput->GetEntries() != 0){
+        return (hClsVsTrkInput->GetEntries()-nBGEvtsInput)/hClsVsTrkInput->GetEntries();
+    }
+    else{
+        return 0.001;
+    }
+  }
+  if(typeOfResult==1){
+    if((hClsVsTrkOrigin->GetEntries()-nBGEvts) != 0){
+            return (hClsVsTrkInput->GetEntries()-nBGEvtsInput)/(hClsVsTrkOrigin->GetEntries()-nBGEvts);
+    }
+    else{
+        return 0.001;
+    }
+    }
+  if(typeOfResult==2){
+    if(nBGEvts != 0){
+        return nBGEvtsInput/nBGEvts;
+    }
+    else{
+       return 0.001;
+    }
+}
 }

@@ -77,7 +77,7 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
 				TString periodname                      = "LHC10b",           // period name
 				TString periodNameV0Reader              = "",
 				TString periodNameAnchor                = "",
-				Bool_t 	enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+				Bool_t 	enableV0findingEffi 		= kFALSE             	// enables V0finding efficiency histograms
 				){
 
   // ================= Load Librariers =================================
@@ -205,7 +205,9 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
 
   CutHandlerConv cuts;
    if(trainConfig == 1){
-     cuts.AddCut("10000013", "00000009247602008250404000"); // kMB, V0M
+     cuts.AddCut("50000013", "00000009247602008250404000"); // kMB, V0M, std cuts
+  } else  if(trainConfig == 2){
+     cuts.AddCut("50000013", "00000070000000000500004000"); // kMB, V0M, open cuts
 
     // Offline V0Finder is used
 

@@ -36,7 +36,7 @@ public:
   AliJJtCorrelations(); // default constructor
   AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *histosIn); // constructor
   AliJJtCorrelations(const AliJJtCorrelations& in); // copy constructor
-  virtual ~AliJJtCorrelations(){;} //destructor
+  virtual ~AliJJtCorrelations(); //destructor
   AliJJtCorrelations& operator=(const AliJJtCorrelations& obj); // equal sign operator
   
   void PrintOut(){cout<<"Number of events = "<<fnReal<<"  Mixed events = "<<fnMix<<endl;} // Event count print
@@ -45,14 +45,13 @@ public:
   void FillCorrelationHistograms (fillType fTyp, int cBin, int zBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2); // correlation histogram filler
   
   void SetSamplingInclusive(){fsamplingMethod = 1;} // Setter for inclusive sampling
+  void UseZVertexAcceptance(bool useZ){fUseZVertexBinsAcceptance = useZ;} // Setter for fUseZVertexBinsAcceptance
   void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;} // Setter for acceptance correction
-  
-  double DeltaPhi(double phi1, double phi2); // Calculate deltaPhi from the phi values
   
   
 protected:
   
-  AliJCard*   fcard; // Card with binning information etc.
+  AliJCard* fcard; // Card with binning information etc.
   AliJJtHistograms* fhistos;  // Histograms needed in the analysis
   AliJAcceptanceCorrection *fAcceptanceCorrection;  // Acceptance correction container
   int fnReal; // Number of events
@@ -75,21 +74,19 @@ protected:
   double fDeltaPhiPiPi;  // The same as above but measured from -pi to pi
   double fDeltaEta;  // Difference of the pseudorapidities of the trigger and associated particles
   double fXlong;  // The xlong value of the trigger and associated particles
+  int fZBin; // z-vertex bin
   
   bool fNearSide;  // true if near side correlation, false if away side
   bool fNearSide3D; // near side defined by the half ball around the trigger
   int fEtaGapBin;  // Bin index for the current eta gap
   int fPhiGapBinNear;  // Bin index for the phi gap in the near side
-  int fPhiGapBinAway;  // Bin index for the phi gap in the away side
   int fRGapBinNear;  // Bin index for the R gap in the near side
-  int fRGapBinAway;  // Bin index for the R gap in the away side
   int fCentralityBin;  // Bin index for the centrality bin
   int fXlongBin;  // Bin index for xlong bin
 
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
-  double fGeometricAcceptanceCorrection;   // Acceptance correction due to the detector geometry
-  double fGeometricAcceptanceCorrection3D; // Acceptance correction due to the detector geometry for 3D near side
+  bool fUseZVertexBinsAcceptance; // false = integrate over z-vertex bins, true = Do acceptance correction in z-vertex bins
   
 private:
   

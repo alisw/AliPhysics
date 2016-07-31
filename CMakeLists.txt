@@ -26,7 +26,7 @@ message(STATUS "Installation folder: ${CMAKE_INSTALL_PREFIX}")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 
-# You can change the build type using 
+# You can change the build type using
 # cmake -DCMAKE_BUILD_TYPE=DEBUG | RELEASE | RELWITHDEBINFO | MINSIZEREL ...
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
@@ -142,7 +142,7 @@ else()
   # ROOT dictionaries and maps
   include(CMakeALICE)
 
-  # Checking first for DIM, DATE, AMORE and daqDA 
+  # Checking first for DIM, DATE, AMORE and daqDA
   # in case ROOT Extra static library needs to be enabled
 
   # DATE
@@ -234,12 +234,10 @@ endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
 #   ctest --output-on-failure -R load_library -j 8
 install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_PREFIX})
 enable_testing()
-string(REPLACE ";" ":" FASTJET_LIBS_DIR_FLAT "${FASTJET_LIBS_DIR}")
 foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:${FASTJET_LIBS_DIR_FLAT}:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${ROOT_LIBDIR}:${FASTJET_LIBS_DIR_FLAT}:$ENV{DYLD_LIBRARY_PATH}
-    PATH=${ROOTSYS}/bin:$ENV{PATH}
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
     root -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()

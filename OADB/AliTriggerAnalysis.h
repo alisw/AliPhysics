@@ -46,6 +46,7 @@ public:
   virtual ~AliTriggerAnalysis();
   void EnableHistograms(Bool_t isLowFlux = kFALSE);
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
+  void ApplyPileupCuts(Bool_t val = kTRUE) { fPileupCutsEnabled = val; }
   void SetParameters(AliOADBTriggerAnalysis* oadb);
   Bool_t IsTriggerFired(const AliVEvent* event, Trigger trigger);
   Int_t EvaluateTrigger(const AliVEvent* event, Trigger trigger);
@@ -101,8 +102,9 @@ protected:
   
   TH1F* fSPDGFOEfficiency;   //! FO efficiency applied in SPDFiredChips. function of chip number (bin 1..400: first layer; 401..1200: second layer)
   
-  Bool_t  fDoFMD;            // If false, skips the FMD (physics selection runs much faster)
-  Bool_t  fMC;               // flag if MC is analyzed
+  Bool_t fDoFMD;             // If false, skips the FMD (physics selection runs much faster)
+  Bool_t fMC;                // flag if MC is analyzed
+  Bool_t fPileupCutsEnabled; // flag to enable/disable cuts sensitive to in/out-of-bunch pileup
   
   TList* fHistList;          //
   TH1F* fHistStat;           //!
@@ -121,6 +123,7 @@ protected:
   TH1F* fHistSPDVtxPileupCln;//! Pileup identified by SPD vertexer for events accepted by basic cuts apart from SPDVtxPileup
   TH2F* fHistVIRvsBCmod4pup; //! V0 out-of-bunch distributions for different BCmod4 for pileup events
   TH2F* fHistVIRvsBCmod4acc; //! V0 out-of-bunch distributions for different BCmod4 for accepted events
+  TH1F* fHistVIRCln;         //! V0 out-of-bunch distributions for cleaned events
   TH1F* fHistBBAflagsAll;    //! Number of beam-beam V0A flags fired (max 32) for all events
   TH1F* fHistBBAflagsAcc;    //! Number of beam-beam V0A flags fired (max 32) for events accepted by basic cuts
   TH1F* fHistBBCflagsAll;    //! Number of beam-beam V0C flags fired (max 32) for all events
@@ -163,7 +166,7 @@ protected:
 
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 33)
+  ClassDef(AliTriggerAnalysis, 35)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

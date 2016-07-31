@@ -31,12 +31,17 @@ class AliGenPythiaEventHeader;
 class AliGenHijingEventHeader;
 class AliFlowTrack;
 class AliAnalysisUtils;
+class AliMultSelection;
+class AliCentrality;
+class AliStack;
 class TROOT;
 class TSystem;
 class TFile;
 class TH1F;
 class TH2F;
 class TProfile;
+class TProfile3D;
+class TH3D;
 
 class AliAnalysisTaskCRCZDC : public AliAnalysisTaskSE {
  
@@ -135,6 +140,9 @@ public:
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
  void SetDataSet(TString DataSet) {fDataSet = DataSet;}
  void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
+  void SetTowerEqList(TList* const kList) {this->fTowerEqList = kList;};
+  TList* GetTowerEqList() const {return this->fTowerEqList;};
+ virtual Int_t GetCenBin(Double_t Centrality);
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -249,15 +257,10 @@ private:
  TH2F *fhZNCvsZPC;		//! ZNC vs ZPC;
  TH2F *fhZNAvsZPA;		//! ZNA vs ZPA;
  TH2F *fhZNvsZP;		//! ZNC+ZNA vs ZPC+ZPA;
- TH2F *fhZNvsZEM;		//! ZN vs ZEM;
- TH2F *fhZNvsZEMwV0M;		//! ZN vs ZEM weighted with V0M centr. perc.;
- TH2F *fhZDCvsZEM;		//! ZDC vs ZEM;
- TH2F *fhZDCvsZEMwV0M;		//! ZDC vs ZEM weighted with V0M centr. perc.;
  TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
  TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
  TH2F *fhZDCvsTracklets;	//! ZDC vs N_tracklets;
  TH2F *fhZDCvsNclu1;		//! ZDC vs N_cluster layer 1;
- TH2F *fhVZEROvsZEM;		//! VZERO vs ZEM;
  TH2F *fhDebunch;		//! Debunch;
  TH2F *fhZNCcentroid;		//! ZNC centroid
  TH2F *fhZNAcentroid;		//! ZNA centroid
@@ -284,18 +287,29 @@ private:
  
  const static Int_t fCRCMaxnRun = 211;
  const static Int_t fCRCnTow = 8;
+ const static Int_t fnCen = 10;
  Int_t fCRCnRun;
  Float_t fZDCGainAlpha;
  TString fDataSet;
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
- TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
+ TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
+ TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
- AliStack* fStack; //!
+ TClonesArray* fStack; //!
  TH1F *fPtSpecGen[10];		//! PtSpecGen
- TH1F *fPtSpecRec[10];		//! PtSpecRec
+ TH1F *fPtSpecFB32[10];		//! PtSpecRec FB32
+ TH1F *fPtSpecFB96[10];		//! PtSpecRec FB96
+ TH1F *fPtSpecFB128[10];  //! PtSpecRec FB128
+ TH1F *fPtSpecFB768[10];  //! PtSpecRec FB768
  Bool_t fCutTPC;
+ TH1F *fCenDis; //! centrality distribution
+ AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
+ AliCentrality* fCentrality; //!
+  TList *fTowerEqList;   // list with weights
+  TH3D *fTowerGainEq[fnCen][8]; //!
+  Int_t fCachedRunNum;   //
  
- ClassDef(AliAnalysisTaskCRCZDC,4);
+ ClassDef(AliAnalysisTaskCRCZDC,5);
  
 };
 

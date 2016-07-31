@@ -17,7 +17,7 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
 						   const char * njetsOverl     = "",
 						   const char * ntmptracksOvlJ = "",
 						   Double_t     sigJetpTCut    = 5.)
-						   )
+						   
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

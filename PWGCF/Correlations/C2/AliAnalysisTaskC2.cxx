@@ -82,7 +82,7 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
     Double_t(nptPairBins),  // ptpairbin max
     1,  // mult dummy
     this->fSettings.fZVtxAcceptanceUpEdge};
-  this->fPairs = new THnC("pairs",
+  this->fPairs = new THnS("pairs",
 			  "<N_{1}N_{2}>;#eta_{1};#eta_{2};#phi_{1};#phi_{2};p_{pair};mult;z_{vtx};",
 			  cPairsDims::kNdimensions, nbins_pairs, xmin_pairs, xmax_pairs);
   this->fPairs->GetAxis(cPairsDims::kMult)
@@ -111,7 +111,7 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
     1,  // Dummy
     xmax_pairs[cPairsDims::kMult],
     xmax_pairs[cPairsDims::kZvtx]};
-  this->fSingles = new THnS("singles", "<N>;#eta;#phi;p_{T};mult;z_{vtx};",
+  this->fSingles = new THnF("singles", "<N>;#eta;#phi;p_{T};mult;z_{vtx};",
 			    cSinglesDims::kNdimensions, nbins_singles, xmin_singles, xmax_singles);
   this->fSingles->GetAxis(cSinglesDims::kPt)->Set(nPtbins, &this->fSettings.fPtBinEdges[0]);
   this->fSingles->GetAxis(cSinglesDims::kMult)->Set(nMult, &this->fSettings.fMultBinEdges[0]);
@@ -171,9 +171,10 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     return;
   }
   // Event is invalid if no multselection is present; ie. tested in base class
-  AliMultSelection *multSelection =
-    dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection"));
-  const Float_t multiplicity = multSelection->GetMultiplicityPercentile("V0M");
+  AliMultEstimator *multEstimator =
+    (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
+    ->GetEstimator(this->fSettings.fMultEstimator);
+  const Float_t multiplicity = multEstimator->GetPercentile();
   this->fmultDistribution->Fill(multiplicity);
 
   const Double_t weight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
@@ -183,7 +184,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
     : -999;
 
-  this->fNchDistribution->Fill(multiplicity, zvtx, multSelection->GetEstimator("V0M")->GetValue());
+  this->fNchDistribution->Fill(multiplicity, zvtx, multEstimator->GetValue());
   // Yes, the following is realy "aodEvent" not mcEvent :P
   TClonesArray* tracksArray = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))
@@ -200,7 +201,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
   while (TObject* obj = nextTrack()){
     // The naming around VTrack, VParticle, AODTrack mcParticle is a mess!
     // Take-away message: They all derive from AliVParticle one way or another.
-    AliVParticle* particle = dynamic_cast< AliVParticle* >(obj);
+    AliVParticle* particle = static_cast< AliVParticle* >(obj);
     if (!this->IsValidParticle(particle)){
       continue;
     }

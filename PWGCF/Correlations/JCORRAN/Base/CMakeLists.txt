@@ -26,6 +26,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
 # Sources - alphabetical order
@@ -68,6 +70,11 @@ set(SRCS
   jtAnalysis/AliJJtAnalysis.cxx
   jtAnalysis/AliJJtHistograms.cxx
   jtAnalysis/AliJJtCorrelations.cxx
+  iaaAnalysis/AliJDiHadronIaaTask.cxx
+  iaaAnalysis/AliJIaaAnalysis.cxx
+  iaaAnalysis/AliJIaaCorrelations.cxx
+  iaaAnalysis/AliJIaaHistos.cxx
+  AliJPartLifetime.cxx
   )
 
 # Headers from sources
@@ -98,7 +105,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-	install(TARGETS ${MODULE} 
+	install(TARGETS ${MODULE}
 			ARCHIVE DESTINATION lib
 			LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

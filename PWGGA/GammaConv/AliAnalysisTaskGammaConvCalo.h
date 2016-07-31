@@ -65,6 +65,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessConversionPhotonsForMissingTagsAOD  ();
     
     // switches for additional analysis streams or outputs
+    void SetLightOutput                 ( Bool_t flag )                                     { fDoLightOutput = flag                       ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
@@ -242,17 +243,22 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCEtaWOEvtWeightPt;           //! array of histos without evt weight eta, pT
     TH1F**                  fHistoMCPi0InAccPt;                 //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                  fHistoMCPi0WOWeightInAccPt;         //! array of histos without weight pi0 in acceptance, pT
+    TH1F**                  fHistoMCPi0WOEvtWeightInAccPt;      //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaInAccPt;                 //! array of histos with weighted eta in acceptance, pT
     TH1F**                  fHistoMCEtaWOWeightInAccPt;         //! array of histos without weight eta in acceptance, pT
+    TH1F**                  fHistoMCEtaWOEvtWeightInAccPt;      //! array of histos without evt weight eta in acceptance, pT
     TH2F**                  fHistoMCPi0PtY;                     //! array of histos with weighted pi0, pT, Y
     TH2F**                  fHistoMCEtaPtY;                     //! array of histos with weighted eta, pT, Y
     TH2F**                  fHistoMCPi0PtAlpha;                 //! array of histos with weighted pi0, pT, alpha
     TH2F**                  fHistoMCEtaPtAlpha;                 //! array of histos with weighted eta, pT, alpha
     TH1F**                  fHistoMCK0sPt;                      //! array of histos with weighted K0s, pT
-    TH1F**                  fHistoMCK0sWOWeightPt;              //! array of histos with unweighted K0s, pT
-    TH2F**                  fHistoMCK0sPtY;                     //! array of histos with weighted K0s, pT, Y
+    TH1F**                  fHistoMCNegKPt;                     //! array of histos with weighted K-, pT
+    TH1F**                  fHistoMCPosKPt;                     //! array of histos with weighted K+, pT
+    TH1F**                  fHistoMCNegPiPt;                    //! array of histos with weighted pi-, pT
+    TH1F**                  fHistoMCPosPiPt;                    //! array of histos with weighted pi+, pT
     TH2F**                  fHistoMCSecPi0PtvsSource;           //! array of histos with secondary pi0, pT, source
     TH1F**                  fHistoMCSecPi0Source;               //! array of histos with secondary pi0, source
+    TH2F**                  fHistoMCSecPi0InAccPtvsSource;      //! array of histos with secondary pi0, pT, source in acceptance
     TH1F**                  fHistoMCSecEtaPt;                   //! array of histos with secondary eta, pT
     TH1F**                  fHistoMCSecEtaSource;               //! array of histos with secondary eta, source
     TH2F**                  fHistoMCPi0PtJetPt;                 //! array of histos with weighted pi0, pT, hardest jet pt
@@ -400,6 +406,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Int_t                   fiCut;                                              // current cut  
     Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
+    Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
     Int_t                   fDoMesonQA;                                         // flag for meson QA
     Int_t                   fDoPhotonQA;                                        // flag for photon QA
@@ -418,7 +425,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 26);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 29);
 };
 
 #endif

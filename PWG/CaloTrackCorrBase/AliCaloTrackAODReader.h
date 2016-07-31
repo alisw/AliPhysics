@@ -40,6 +40,8 @@ public:
   
   Bool_t      SelectTrack(AliVTrack* track, Double_t* pTrack);
 
+  Int_t       GetTrackID(AliVTrack* track) ;
+  
   ULong_t     GetTrackFilterMask()               const { return fTrackFilterMask      ; }
   void        SetTrackFilterMask(ULong_t bit)          { fTrackFilterMask = bit       ; }
   

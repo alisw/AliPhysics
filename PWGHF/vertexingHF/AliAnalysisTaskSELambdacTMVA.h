@@ -55,7 +55,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSELambdacTMVA();
-  AliAnalysisTaskSELambdacTMVA(const char *name, Int_t fillNtuple,AliRDHFCutsLctopKpi *lccutsana);
+  AliAnalysisTaskSELambdacTMVA(const char *name, Int_t fillNtuple,Int_t fillNtupleReco,AliRDHFCutsLctopKpi *lccutsana);
   virtual ~AliAnalysisTaskSELambdacTMVA();
 
 	void SetKeepLcNotFromQuark(Bool_t keep = kTRUE) {fKeepLcNotFromQuark = keep;}
@@ -74,9 +74,15 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   void SetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC, Bool_t &isInAcc) {fIsLcResonant=LambdacDaugh(part,arrayMC,isInAcc);} 
   void SetIsLcGen(AliAODMCParticle *partMC, TClonesArray *arrayMC);
   void SetIsLcReco(AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC);
+	void SetUseNchWeight(Bool_t opt = kTRUE) {fUseNchWeight = opt;}
+	void SetMCNchHisto(TH1F* h){
+		if(fHistoMCNch) delete fHistoMCNch;
+		fHistoMCNch=new TH1F(*h);
+	}
 
   Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const {Bool_t dummy=kTRUE; return LambdacDaugh(part,arrayMC,dummy)>=1 ? kTRUE : kFALSE;} 
 	Int_t GetPIDselectionMaxProb(AliAODRecoDecayHF3Prong *part); 
+	Double_t GetNchWeight(Int_t nch);
 
   Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
@@ -84,6 +90,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   Int_t LambdacDaugh(AliAODMCParticle *part,TClonesArray *arrayMC, Bool_t &isInAcc) const;
 	void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection, Int_t selectionProb);
   void FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, Int_t selection);
+  void FillRecoNtuple(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC);
   void FillEffHists(Int_t kStep);
 	void FillSelectionBits(AliAODRecoDecayHF3Prong *d, TH2F *hSelectionBits);
 
@@ -185,6 +192,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	TH2F *fhInvMassMisIdpKpiProb; //!<! hist for inv mass pKpi signal mis id'd as piKp most prob PID
 	TH2F *fhInvMassMisIdpiKpProb; //!<! hist for inv mass pKpi signal mis id'd as piKp most prob PID
   TNtuple *fNtupleLambdac; //!<! output ntuple
+  TNtuple *fNtupleLambdacReco; //!<! output ntuple after reconstruction
 	TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
 	TF1 *fFuncWeightFONLL7overLHC10f6a; //!<! weight function for FONLL vs p prod.
 	TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
@@ -192,6 +200,8 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod. Lc
 	TF1 *fFuncWeightFONLL7overLHC11b2Lc; //!<! weight function for FONLL vs p prod. Lc
 	TF1 *fFuncWeightFONLL7overLHC10f7aLc; //!<! weight function for FONLL vs p prod. Lc
+	Bool_t fUseNchWeight; /// flag for using multiplicity weights
+	TH1F *fHistoMCNch; /// multiplicity weight histogram
   Float_t fCutsKF[2]; /// cuts with KF vertexer
   Int_t fIsLc; /// is MC Lc - 0=not Lc, 1=Lc from c, 2=Lc from b
   Int_t fIsLcResonant; /// is Lc resonant - 1=non resonant, 2=via L1520 + pi, 3=via K* + p, 4=via Delta++ + K
@@ -202,6 +212,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   AliRDHFCutsLctopKpi *fRDCutsAnalysis; /// Analysis cuts
   TList *fListCuts; /// list of cuts
   Int_t fFillNtuple;   ///  filling ntuple type
+  Int_t fFillNtupleReco;   ///  filling ntuple type reco
 	Bool_t fKeepLcNotFromQuark; /// flag to keep Lc not from quark
 	Bool_t fKeepBkgNt; /// flag to keep background in 
 	Int_t fSyst; /// flag for collision system. 0=pp, 1=PbPb, 2=pPb
@@ -222,7 +233,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	AliVertexingHFUtils *fVertUtil;         /// vertexing HF Util
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELambdacTMVA,9); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,11); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
   /// \endcond
 };
 

@@ -1,203 +1,228 @@
 #ifndef ALIQNCORRECTIONS_MANAGER_H
 #define ALIQNCORRECTIONS_MANAGER_H
+
 /***************************************************************************
  * Package:       FlowVectorCorrections                                    *
  * Authors:       Jaap Onderwaater, GSI, jacobus.onderwaater@cern.ch       *
  *                Ilya Selyuzhenkov, GSI, ilya.selyuzhenkov@gmail.com      *
+ *                Víctor González, UCM, victor.gonzalez@cern.ch            *
  *                Contributors are mentioned in the code where appropriate.*
- * Development:   2012-2015                                                *
+ * Development:   2012-2016                                                *
  * See cxx source for GPL licence et. al.                                  *
  ***************************************************************************/
- 
- 
- 
 
+/// \file AliQnCorrectionsManager.h
+/// \brief Class that orchestrates the Q vector correction framework
+
+/// \class AliQnCorrectionsManager
+/// \brief Class orchestrates the Q vector correction framework
+///
+/// It should be only one instance of it and behaves as the anchor
+/// point between the Q vector correction framework and the external
+/// run time environment.
+///
+/// It owns the list of the detectors incorporated to the framework
+/// and distributes among them the different commands according to
+/// the analysis phase.
+///
+/// To improve performance a mapping between internal detector address
+/// and external detector id is maintained.
+///
+/// When the framework is in the calibration phase there are no complete
+/// calibration information available to fully implement the desired
+/// correction on the input data and on the subsequent Q vector. During
+/// this phase a list of support histograms is kept to build the
+/// needed quantities to produce the intended calibration information.
+/// At the same time a list of the available calibration histograms is
+/// as well kept to perform the feasible corrections.
+///
+/// When, finally, the whole calibration information were available the
+/// support histograms list will not need to be present and the framework
+/// will be performing just the intended corrections on input data and on
+/// the subsequent Q vector.
+///
+/// The Qn correction manager supports an optional list of concurrent
+/// processes that will each contribute to the final merged results. Each
+/// process has its own name and it is expected to get contribution of
+/// different running instances. At merging time, only the contributions
+/// from instances of the same process must be merged.
+///
+/// \author Jaap Onderwaater <jacobus.onderwaater@cern.ch>, GSI
+/// \author Ilya Selyuzhenkov <ilya.selyuzhenkov@gmail.com>, GSI
+/// \author Víctor González <victor.gonzalez@cern.ch>, UCM
+/// \date Feb 16, 2016
+
+
+#include <TObject.h>
+#include <TList.h>
 #include <TTree.h>
-#include <TClonesArray.h>
-#include <TFile.h>
-#include <TDirectoryFile.h>
-#include <TKey.h>
-#include <THashList.h>
-#include <iostream>
-#include <THn.h>
-#include <TProfile.h>
-#include "AliQnCorrectionsConstants.h"
-#include "AliQnCorrectionsConfiguration.h"
-#include "AliQnCorrectionsDataVector.h"
-#include "AliQnCorrectionsSteps.h"
-//#include "AliQnCorrectionsHistograms.h"
+#include "AliQnCorrectionsDetector.h"
 
-//const Int_t AliQnCorrectionsConstants::nDataVectors = 10;
-
-class AliQnCorrectionsHistograms;
-
-//_________________________________________________________________________
 class AliQnCorrectionsManager : public TObject {
-
- public:
-
+public:
   AliQnCorrectionsManager();
-  AliQnCorrectionsManager(const AliQnCorrectionsManager &c);
-  AliQnCorrectionsManager & operator=(const AliQnCorrectionsManager &c);
-  ~AliQnCorrectionsManager();
+  virtual ~AliQnCorrectionsManager();
 
-  void Process();
-  void Initialize();
-  void Finalize();
-  void SetCommonOutputFile(TFile* file)                  {SetOutputHistogramsQnCorrectionsFile(file);SetHistogramsQAFile(file);SetTreeQnVectorsFile(file);}
-  void SetOutputHistogramsQnCorrectionsFile(TFile* file) {fOutputHistogramsQnCorrectionsFile=file;}
-  void SetHistogramsQAFile(TFile* file)                  {fHistogramsQAFile=file;}
-  void SetTreeQnVectorsFile(TFile* file)                 {fTreeQnVectorsFile=file;}
-  void AddRunLabel(TString label)                        {fRunList+=label+";";}
-  void SetFileRunLabels(TString path);
-  //TODO add SetQAFile(), add fQAFile variable
+  /// Establishes the list of processes names
+  /// \param names an array containing the processes names
+  void SetListOfProcessesNames(TObjArray *names) { fProcessesNames = names; }
+  void SetCurrentProcessListName(const char *name);
+  void SetCalibrationHistogramsList(TFile *calibrationFile);
+  /// Enables disables the filling of histograms for building correction parameters
+  /// \param enable kTRUE for enabling histograms filling
+  void SetShouldFillOutputHistograms(Bool_t enable = kTRUE) { fFillOutputHistograms = enable; }
+  /// Enables disables the filling of QA histograms
+  /// \param enable kTRUE for enabling QA histograms filling
+  void SetShouldFillQAHistograms(Bool_t enable = kTRUE) { fFillQAHistograms = enable; }
+  /// Enables disables the filling of non validated entries QA histograms
+  /// \param enable kTRUE for enabling non validated entries QA histograms filling
+  void SetShouldFillNveQAHistograms(Bool_t enable = kTRUE) { fFillNveQAHistograms = enable; }
+  /// Enables disables the output of Qn vector on a TTree structure
+  /// \param enable kTRUE for enabling Qn vector output into a TTree
+  void SetShouldFillQnVectorTree(Bool_t enable = kTRUE) { fFillQnVectorTree = enable; }
 
-  Bool_t SetCalibrationFile(TFile* inputFile)         {if(inputFile) if(inputFile->GetListOfKeys()->GetEntries()>0) fListInputHistogramsQnCorrections = (THashList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj()->Clone(); return (fListInputHistogramsQnCorrections ? kTRUE : kFALSE);} //TODO make "CalibrationHistograms" name customizable
-  void SetListHistogramsQnCorrections(THashList* list)    {fListInputHistogramsQnCorrections = (THashList*) list->Clone();}
-  //void SetCalibrationFile(TFile* inputFile)         {if(inputFile) fListInputHistogramsQnCorrections = (THashList*) inputFile->Get("CalibrationHistograms");} //TODO make "CalibrationHistograms" name customizable
-  //void SetCalibrationFile(TFile* inputFile)         { fListInputHistogramsQnCorrections = inputFile;} //TODO make "CalibrationHistograms" name customizable
-  void SetCalibrationFileDirectoryName(TString label) {fLabel=label;};
-  void SetFillTreeQnVectors(Bool_t b=kTRUE)             {fSetFillTreeQnVectors 	          = b;}
-  void SetFillHistogramsQA(Bool_t b=kTRUE)             {fSetFillHistogramsQA             = b;}
-  void SetFillHistogramsQnCorrections(Bool_t b=kTRUE)  {fSetFillHistogramsQnCorrections  = b;}
+  void AddDetector(AliQnCorrectionsDetector *detector);
 
-  void AddQnConfiguration(AliQnCorrectionsConfiguration* QnConf, Int_t detectorId);
-
-  void AddDataVector(Int_t detId, Double_t phi, Double_t weight=1., Int_t id=-1);
-  void SetDataContainer(Int_t var, Float_t val) {fDataContainer[var]=val;}; //set event and track/hit variables
-  
-  Int_t GetNumberOfQnConfigurations()    const  {return fNumberOfQnConfigurations;}
-  Int_t GetNumberOfDetectors()           const  {return fNumberOfDetectors;}
-  
-  Bool_t ShouldFillTreeQnVectors()              {return fSetFillTreeQnVectors;}   
-  Bool_t ShouldFillHistogramsQA()            {return fSetFillHistogramsQA;}   
-  Bool_t ShouldFillHistogramsQnCorrections()  {return fSetFillHistogramsQnCorrections ;}
-  
-  AliQnCorrectionsConfiguration* GetQnConfiguration(Int_t globalIndex)  {return (AliQnCorrectionsConfiguration*) fAliQnCorrectionsConfigurations[fIndex[globalIndex][0]]->At(fIndex[globalIndex][1]);}
-  AliQnCorrectionsConfiguration* GetQnConfiguration(TString name);
-  AliQnCorrectionsConfiguration* GetQnConfiguration(Int_t det, Int_t localIndex) {return (AliQnCorrectionsConfiguration*) fAliQnCorrectionsConfigurations[det]->At(localIndex);}
-  TClonesArray* GetQnConfigurations(Int_t det)       {return fAliQnCorrectionsConfigurations[det];}
-  TClonesArray* GetDataVectors(Int_t det)                {return (det>-1&&det<fNumberOfDetectors ? fDataVectors[det] : 0x0);}
-  TClonesArray* GetConfDataVectors(Int_t det)            {return fConfDataVectors[det];}
-
-  TClonesArray* CorrectedQnVector(Int_t conf, Int_t step=-1){ return (step==-1 ? fCorrectedQvectors[conf][fLastStep[conf]] : fCorrectedQvectors[conf][step]); }
-
-  TTree* GetTreeQnVectors()                 {return fTreeQnVectors;}    
-  THashList* GetListQnVectors()                 {WriteQnVectorsToList();  return fListQnVectors;}
-  THashList* GetListOutputHistogramsQnCorrections()     {return fListOutputHistogramsQnCorrections;}
-  THashList* GetListHistogramsQA()              {return fListHistogramsQA;}
-
-  Float_t* GetDataContainer() {return fDataContainer;}; //event and track/hit variables overwritten for each track/hit and event
-
-  void PrintFrameworkInformation();
-  void PrintFrameworkInformationLine(Bool_t HistOrCor,TString correctionname, AliQnCorrectionsConstants::CorrectionSteps stepflag, Int_t widthEntry, Int_t widthBar);
+  AliQnCorrectionsDetector *FindDetector(const char *name) const;
+  AliQnCorrectionsDetector *FindDetector(Int_t id) const;
+  AliQnCorrectionsDetectorConfigurationBase *FindDetectorConfiguration(const char *name) const;
 
 
-  //void BuildQnVectors(Bool_t useEqualizedWeights=kFALSE);
-  //void CalibrateChannels();
-  //void RecenterQvec();
-  //void RotateQvec();
-  //void CorrelationTwistAndRescalingQvec(Float_t* values, Int_t corpar);
-  //void TwoDetectorCorrelationTwistQvec(Float_t* values, Int_t corpar);
-  //void CorrelationRescalingQvec(Float_t* values, Int_t corpar);
-  //void ThreeDetectorCorrelationTPCTwistQvec(Float_t* values, Int_t corpar);
-  //void ThreeDetectorCorrelationTPCRescalingQvec(Float_t* values, Int_t corpar);
-  //void ThreeDetectorCorrelationTPCTwistAndRescalingQvec(Float_t* values, Int_t corpar);
-  //void 2nTwistQvec(Float_t* values, Int_t corpar);
-  //void 2nRescalingQvec(Float_t* values, Int_t corpar);
-  //void U2nTwistAndRescalingQvec(Float_t* values, Int_t corpar);
-  Int_t GetDetectorId(Int_t type)             { return fDetectorIdMap[type]-1;}
+  /// Gets a pointer to the data variables bank
+  /// \return the pointer to the data container
+  Float_t *GetDataContainer() { return fDataContainer; }
+
+  /// Get whether the output histograms should be filled
+  /// \return kTRUE if the output histograms should be filled
+  Bool_t GetShouldFillOutputHistograms() const { return fFillOutputHistograms; }
+  /// Get whether the QA histograms should be filled
+  /// \return kTRUE if the QA histograms should be filled
+  Bool_t GetShouldFillQAHistograms() const { return fFillQAHistograms; }
+  /// Get whether the non validated entries QA histograms should be filled
+  /// \return kTRUE if the non validated entries QA histograms should be filled
+  Bool_t GetShouldFillNveQAHistograms() const { return fFillNveQAHistograms; }
+  /// Get whether the Qn vector tree should be populated
+  /// \return kTRUE if the Qn vector should be written into a TTree
+  Bool_t GetShouldFillQnVectorTree() const { return fFillQnVectorTree; }
+  /// Gets the output histograms list
+  /// \return the list of histograms for building correction parameters
+  TList *GetOutputHistogramsList() const { return fSupportHistogramsList; }
+  /// Gets the QA histograms list
+  /// \return the list of QA histograms
+  TList *GetQAHistogramsList() const { return fQAHistogramsList; }
+  /// Gets the non validated entries QA histograms list
+  /// \return the list of QA histograms
+  TList *GetNveQAHistogramsList() const { return fNveQAHistogramsList; }
+  /// Gets the Qn vector tree
+  /// \return the tree of histograms for building correction parameters
+  TTree *GetQnVectorTree() const { return fQnVectorTree; }
+  /// Gets the Qn vector tree
+  /// \return the list of detector configurations Qn vectors
+  TList *GetQnVectorList() const { return fQnVectorList; }
+  /// Gets the name of the calibration histograms container
+  /// \return the calibration histograms container name
+  const char *GetCalibrationHistogramsContainerName() const
+  { return szCalibrationHistogramsKeyName; }
+  /// Gets the name of the calibration QA histograms container
+  /// \return the calibration QA histograms container name
+  const char *GetCalibrationQAHistogramsContainerName() const
+  { return szCalibrationQAHistogramsKeyName; }
+  /// Gets the name of the non validated calibration entries QA histograms container
+  /// \return the calibration QA histograms container name
+  const char *GetCalibrationNveQAHistogramsContainerName() const
+  { return szCalibrationNveQAHistogramsKeyName; }
+
+
+  void PrintFrameworkConfiguration() const;
+  void InitializeQnCorrectionsFramework();
+  Int_t AddDataVector(Int_t detectorId, Double_t phi, Double_t weight = 1.0, Int_t channelId = -1);
+  const char *GetAcceptedDataDetectorConfigurationName(Int_t detectorId, Int_t index) const;
+  void ProcessEvent();
   void ClearEvent();
+  void FinalizeQnCorrectionsFramework();
 
- private:
+private:
+  static const Int_t nMaxNoOfDetectors;              ///< the highest detector id currently supported by the framework
+  static const Int_t nMaxNoOfDataVariables;          ///< the maximum number of variables currently supported by the framework
+  static const char *szCalibrationHistogramsKeyName; ///< the name of the key under which calibration histograms lists are stored
+  static const char *szCalibrationQAHistogramsKeyName; ///< the name of the key under which calibration QA histograms lists are stored
+  static const char *szCalibrationNveQAHistogramsKeyName; ///< the name of the key under which non validated calibration entries QA histograms lists are stored
+  static const char *szDummyProcessListName;         ///< accepted temporary name before getting the definitive one
+  static const char *szAllProcessesListName;         ///< the name of the list that collects data from all concurrent processes
+  TList fDetectorsSet;                  ///< the list of detectors
+  AliQnCorrectionsDetector **fDetectorsIdMap; //!<! map between external detector Id and internal detector
+  Float_t *fDataContainer;              //!<! the data variables bank
+  TList *fCalibrationHistogramsList;    ///< the list of the input calibration histograms
+  TList *fSupportHistogramsList;        //!<! the list of the support histograms
+  TList *fQAHistogramsList;             //!<! the list of QA histograms
+  TList *fNveQAHistogramsList;          //!<! the list of not validated entries QA histograms
+  TTree *fQnVectorTree;                 //!<! the tree to out Qn vectors
+  TList *fQnVectorList;                 //!<! list that contains the current event corrected Qn vectors
+  Bool_t fFillOutputHistograms;         ///< kTRUE if output histograms for building correction parameters must be filled
+  Bool_t fFillQAHistograms;             ///< kTRUE if QA histograms must be filled
+  Bool_t fFillNveQAHistograms;          ///< kTRUE if non validated entries QA histograms must be filled
+  Bool_t fFillQnVectorTree;             ///< kTRUE if Qn vectors must be written in a TTree structure
+  TString fProcessListName;             ///< the name of the list associated to the current process
+  TObjArray *fProcessesNames;           ///< array with the list of processes names
 
-  //THashList* GetInputListWithLabel(TString label)   {return (fListInputHistogramsQnCorrections ? (THashList*) fListInputHistogramsQnCorrections->Get(label) : 0x0);}
+private:
+  /// Copy constructor
+  /// Not allowed. Forced private.
+  AliQnCorrectionsManager(const AliQnCorrectionsManager &);
+  /// Assignment operator
+  /// Not allowed. Forced private.
+  AliQnCorrectionsManager& operator= (const AliQnCorrectionsManager &);
 
-  void FillHistograms();
-  void FillHistogramsMeanQ(AliQnCorrectionsConfiguration* QnConf, Int_t step);
-  void FillHistogramsMeanQ_QA(AliQnCorrectionsConfiguration* QnConf);
-  //TODO define set of QA histograms for other steps besides Recentering
-  void FillHistogramsWeights(AliQnCorrectionsConfiguration* QnConf);
-  void FillHistogramsQnCorrelations(AliQnCorrectionsConfiguration* QnConf);
-  void FillHistogramsQnCorrelationsQA(AliQnCorrectionsConfiguration* QnConf);
-  void FillHistogramsU2n(AliQnCorrectionsConfiguration* QnConf);
-  void FillHistogramsQnAlignment(AliQnCorrectionsConfiguration* QnConf);
-  void FillHistogramsQnAlignmentQA(AliQnCorrectionsConfiguration* QnConf);
-
-  THashList* GetInputList()   {return fListInputHistogramsQnCorrections;}
-  THashList* GetInputListWithLabel(TString label)   {return (fListInputHistogramsQnCorrections ? (THashList*) fListInputHistogramsQnCorrections->FindObject(label) : 0x0);}
-
-  void AddDetectorType(Int_t type)                     { if(fDetectorIdMap[type]==0) fDetectorIdMap[type] = ++fNdetectors;};
-  void ApplyQnCorrections();
-  void SetCorrectionStep(Int_t step) {fCorrectionStep=step;};
-  Int_t GetCorrectionStep()          const  {return fCorrectionStep;}
-  void InitializeCalibrationHistograms(); // TODO: call from Process(), need to add bool which is FALSE after the first time it is called
-
-  void DisableFillHistograms(AliQnCorrectionsConstants::CorrectionSteps step);
-  void DisableCorrections(AliQnCorrectionsConstants::CorrectionSteps step);
-
-  //TODO Move/copy here the code from AliQnCorrectionsSteps and remove function AliQnCorrectionsSteps::BuildQnVectors
-  Bool_t BuildQnVectors(AliQnCorrectionsConfiguration* QnConf, Bool_t useEqualizedWeights);
-  void FillQnVectors();
-  Bool_t CallStepEqualizeDataVectorWeights(AliQnCorrectionsConfiguration* QnConf);
-  Bool_t CallStepRecenterQnVector(AliQnCorrectionsConfiguration* QnConf);
-  //void CallStepRescaleQnVector(Int_t corpar);
-  void CallStepTwistAndRescaleQnVector(AliQnCorrectionsConfiguration* QnConf);
-  void CallStepRotateQvector(AliQnCorrectionsConfiguration* QnConf);
-
-  void WriteCalibrationHistogramsToList();
-  void WriteQaHistogramsToList();
-  void WriteQnVectorsToList();
-  void WriteOutputToFile();
-
-
-  TClonesArray* fDataVectors[AliQnCorrectionsConstants::nDataVectors];                                                            // arrays containing data 
-  TClonesArray* fConfDataVectors[AliQnCorrectionsConstants::nQnConfigurations];                                                            // arrays containing data 
-  TClonesArray* fAliQnCorrectionsConfigurations[AliQnCorrectionsConstants::nDataVectors];                                            // arrays containing QnConfigurations
-
-  TClonesArray* fCorrectedQvectors[AliQnCorrectionsConstants::nQnConfigurations][AliQnCorrectionsConstants::nCorrectionSteps];      // arrays containing QnVectors at each correction step
-  Int_t fLastStep[AliQnCorrectionsConstants::nQnConfigurations];                                                                     // arrays containing the id of last applied correction step
-
-  AliQnCorrectionsHistograms* fInputHistograms[AliQnCorrectionsConstants::nQnConfigurations];                                           // container for input calibration histograms
-  AliQnCorrectionsHistograms* fOutputHistograms[AliQnCorrectionsConstants::nQnConfigurations];                                          // container for output calibration and QA histograms
-
-  typedef std::map<int, int> Map;
-  Map fDetectorIdMap;
-
-  Int_t fNumberOfQnConfigurations;
-  Int_t fNumberOfDetectors;
-  Int_t fNumberOfQnConfigurationsForDetector[AliQnCorrectionsConstants::nDataVectors];
-  Int_t fNdetectors;
-  //Int_t fNMasterDetectors;
-  Int_t fIndex[AliQnCorrectionsConstants::nQnConfigurations][2];
-  Int_t fCorrectionStep;
-  Int_t fPassesRequired;
-  Bool_t fCalibrateByRun;
-  THashList* fListInputHistogramsQnCorrections;          // List of input histograms for corrections
-  //TDirectoryFile* fListInputHistogramsQnCorrections;          //! List of input histograms for corrections
-  Float_t fDataContainer[AliQnCorrectionsConstants::nDataContainerVariables];
-  TString fLabel; // events can be characterised with a label, corrections are applied with events from this label (for example label=<run number>)
-  Bool_t fProcessedFirstEvent;
-
-  AliQnCorrectionsQnVector* fQvecOutputList[AliQnCorrectionsConstants::nQnConfigurations];
-
-  Bool_t fSetFillTreeQnVectors;                                                                              // whether to create, fill and write Qn vectors to tree
-  Bool_t fSetFillHistogramsQA;                                                                              // whether to create, fill and write QA histograms to list
-  Bool_t fSetFillHistogramsQnCorrections;                                                                   // whether to create, fill and write correction histograms to list
-
-  THashList* fListQnVectors;                                                                                  // event list of Qn vectors (overwritten at each event)
-  TTree* fTreeQnVectors;                                                                                  // event by event tree of corrected Qn vectors
-  THashList* fListOutputHistogramsQnCorrections;                                                                // output list with Qn correction histograms
-  THashList* fListHistogramsQA;                                                                               // output list with Qn QA histograms
-
-  TFile* fOutputHistogramsQnCorrectionsFile;
-  TFile* fHistogramsQAFile;
-  TFile* fTreeQnVectorsFile;
-
-  TString fRunList; // list of run labels separated by a semi-colon
-
-  ClassDef(AliQnCorrectionsManager, 2);
-  
+/// \cond CLASSIMP
+  ClassDef(AliQnCorrectionsManager, 5);
+/// \endcond
 };
 
-#endif
+/// New data vector for the framework
+/// The request is transmitted to the passed detector together with
+/// the current content of the variable bank.
+/// \param detectorId id of the involved detector
+/// \param phi azimuthal angle
+/// \param weight the weight of the data vector
+/// \param channelId the channel Id that originates the data vector
+/// \return the number of detector configurations that accepted and stored the data vector
+inline Int_t AliQnCorrectionsManager::AddDataVector(Int_t detectorId, Double_t phi, Double_t weight, Int_t channelId) {
+  return fDetectorsIdMap[detectorId]->AddDataVector(fDataContainer, phi, weight, channelId);
+}
+
+/// Gets the name of the detector configuration at index that accepted last data vector
+/// \param detectorId id of the involved detector
+/// \param index the position in the list of accepted data vector configuration
+/// \return the configuration name
+inline const char *AliQnCorrectionsManager::GetAcceptedDataDetectorConfigurationName(Int_t detectorId, Int_t index) const {
+  return fDetectorsIdMap[detectorId]->GetAcceptedDataDetectorConfigurationName(index);
+}
+
+/// Process the current event
+///
+/// The request is transmitted to the different detectors first for applying the different
+/// correction steps and then to collect the correction steps data.
+///
+/// Must be called only when the whole data vectors for the event
+/// have been incorporated to the framework.
+inline void AliQnCorrectionsManager::ProcessEvent() {
+  for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+    ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->ProcessCorrections(fDataContainer);
+  }
+  for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+    ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->ProcessDataCollection(fDataContainer);
+  }
+}
+
+/// Clear the current event
+///
+/// The request is transmitted to the different detectors.
+///
+/// Must be called only at the end of each event to start processing the next one
+inline void AliQnCorrectionsManager::ClearEvent() {
+  for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+    ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->ClearDetector();
+  }
+}
+
+#endif // ALIQNCORRECTIONS_MANAGER_H

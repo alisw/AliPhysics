@@ -216,19 +216,14 @@ void AliJCORRAN::UserCreateOutputObjects(){
   fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
   fIsolationR = fcard->Get("IsolationR");
   
-  cout << "Create new AliJHistos" << endl;
   fhistos = new AliJHistos( fcard );
-  cout << "AliJHistos created" << endl;
   if(fcard->Get("QualityControlLevel")>1) fhistos->Set2DHistoCreate(true);
-  if(fcard->Get("QualityControlLevel")>0) fhistos->SetAcceptanceCorrectionQA(true);
   fhistos->CreateEventTrackHistos();
   fhistos->CreateAzimuthCorrHistos();
-  cout << "First histos created" << endl;
   //fhistos->CreateIAAMoons();
   fhistos->CreateXEHistos();
   fhistos->CreateXtHistos();
   //fhistos->CreatePairPtCosThetaStar();
-  cout << "All histos created" << endl;
   
   fhistos->fHMG->Print();
   
@@ -259,87 +254,7 @@ void AliJCORRAN::UserCreateOutputObjects(){
   // Tell the correlation analysis to use the defined acceptance correction
   fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
   
-  // If we want to save the acceptance correction histograms to file for quality assurance, do it
-  // Note that the histograms are there only if they are provided from the inclusive file
-  if(fcard->Get("QualityControlLevel")>0 && fInclusiveFile.Length()){
-    
-    const int numCentBins  = fcard->GetNoOfBins(kCentrType);
-    const int numPttBins   = fcard->GetNoOfBins(kTriggType);
-    
-    fhistos->fhAcceptanceTraditional2D[0][0][1]->Fill(0.0,0.0);
-    int nBinsEta = fhistos->fhAcceptanceTraditional2D[0][0][1]->GetNbinsX();
-    int nBinsPhi = fhistos->fhAcceptanceTraditional2D[0][0][1]->GetNbinsY();
-    
-    // Define the limits of histograms
-    double minValueEta = 1.6;
-    double minValuePhi = kJPi/2;
-    double binWidthEta = 2*minValueEta/nBinsEta;
-    double binWidthPhi = 2*minValuePhi/nBinsPhi;
-    double etaValue = 0;
-    double phiValue = 0;
-    double correction = 0;
-    
-    // Construct the acceptance correction histogram from the obtained accetpance correction values
-    for(int iCent = 0; iCent < numCentBins; iCent++){
-      for(int iPtt = 0; iPtt < numPttBins; iPtt++){
-        for(int iEta = 0; iEta < nBinsEta; iEta++){
-          for(int iPhi = 0; iPhi < nBinsPhi; iPhi++){
-            etaValue = binWidthEta/2.0 + iEta*binWidthEta - minValueEta;
-            phiValue = binWidthPhi/2.0 + iPhi*binWidthPhi - minValuePhi;
-            correction = fAcceptanceCorrection->GetAcceptanceCorrectionTraditionalInclusive(etaValue,phiValue,iCent,iPtt);
-            if(correction < 1e-6){
-              fhistos->fhAcceptanceTraditional2D[iCent][iPtt][0]->Fill(etaValue,phiValue,0);
-            } else {
-              fhistos->fhAcceptanceTraditional2D[iCent][iPtt][0]->Fill(etaValue,phiValue,1.0/correction);
-            }
-          } // phi loop
-        } // eta loop
-        
-        // In case the histogram is rebinned in acceptance correction class, we need to
-        // normalize the distribution to one here
-        double maxValue = fhistos->fhAcceptanceTraditional2D[iCent][iPtt][0]->GetMaximum();
-        if(maxValue > 0) fhistos->fhAcceptanceTraditional2D[iCent][iPtt][0]->Scale(1.0/maxValue);
-        
-      } // trigger loop
-    } // centrality loop
-    
-    fhistos->fhAcceptance3DNearSide[0][0][1]->Fill(0.0,0.0);
-    nBinsEta = fhistos->fhAcceptance3DNearSide[0][0][1]->GetNbinsX();
-    nBinsPhi = fhistos->fhAcceptance3DNearSide[0][0][1]->GetNbinsY();
-    
-    // Define the limits of histograms
-    minValueEta = 1.6;
-    minValuePhi = kJPi;
-    binWidthEta = 2*minValueEta/nBinsEta;
-    binWidthPhi = 2*minValuePhi/nBinsPhi;
-    
-    // Construct the acceptance correction histogram from the obtained accetpance correction values
-    for(int iCent = 0; iCent < numCentBins; iCent++){
-      for(int iPtt = 0; iPtt < numPttBins; iPtt++){
-        for(int iEta = 0; iEta < nBinsEta; iEta++){
-          for(int iPhi = 0; iPhi < nBinsPhi; iPhi++){
-            etaValue = binWidthEta/2.0 + iEta*binWidthEta - minValueEta;
-            phiValue = binWidthPhi/2.0 + iPhi*binWidthPhi - minValuePhi;
-            correction = fAcceptanceCorrection->GetAcceptanceCorrection3DNearSideInclusive(etaValue,phiValue,iCent,iPtt);
-            if(correction < 1e-6){
-              fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->Fill(etaValue,phiValue,0);
-            } else {
-              fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->Fill(etaValue,phiValue,1.0/correction);
-            }
-          } // phi loop
-        } // eta loop
-        
-        // In case the histogram is rebinned in acceptance correction class, we need to
-        // normalize the distribution to one here
-        double maxValue = fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->GetMaximum();
-        if(maxValue > 0) fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->Scale(1.0/maxValue);
-        
-      } // trigger loop
-    } // centrality loop
-    
-  } // Quality control check
-  
-  //==================================
+   //==================================
   
   //cout<<kParticleTypeStrName[kPhoton]<<" "<<kParticleTypeStrName[fjtrigg]<<endl;
   // EventPool for Mixing

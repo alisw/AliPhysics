@@ -106,6 +106,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fhInvMassMisIdpKpiProb(0),
 		fhInvMassMisIdpiKpProb(0),
 		fNtupleLambdac(0),
+		fNtupleLambdacReco(0),
 		fFuncWeightPythia(0),
 		fFuncWeightFONLL7overLHC10f6a(0),
 		fFuncWeightFONLL5overLHC13d3(0),
@@ -113,6 +114,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fFuncWeightFONLL5overLHC13d3Lc(0),
 		fFuncWeightFONLL7overLHC11b2Lc(0),
 		fFuncWeightFONLL7overLHC10f7aLc(0),
+		fUseNchWeight(kFALSE),
+		fHistoMCNch(0x0),
 		fIsLc(0),
 		fIsLcResonant(0),
 		fPtLc(0.),
@@ -121,6 +124,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fRDCutsAnalysis(0),
 		fListCuts(0),
 		fFillNtuple(0),
+		fFillNtupleReco(0),
 		fKeepLcNotFromQuark(kFALSE),
 		fKeepBkgNt(kTRUE),
 		fSyst(2),
@@ -201,7 +205,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_t fillNtuple,AliRDHFCutsLctopKpi *lccutsana):
+AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_t fillNtuple,Int_t fillNtupleReco,AliRDHFCutsLctopKpi *lccutsana):
 	AliAnalysisTaskSE(name),
 	fOutput(0), 
 	fHistNEvents(0),
@@ -239,6 +243,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fhInvMassMisIdpKpiProb(0),
 	fhInvMassMisIdpiKpProb(0),
 	fNtupleLambdac(0),
+	fNtupleLambdacReco(0),
 	fFuncWeightPythia(0),
 	fFuncWeightFONLL7overLHC10f6a(0),
 	fFuncWeightFONLL5overLHC13d3(0),
@@ -246,6 +251,8 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fFuncWeightFONLL5overLHC13d3Lc(0),
 	fFuncWeightFONLL7overLHC11b2Lc(0),
 	fFuncWeightFONLL7overLHC10f7aLc(0),
+	fUseNchWeight(kFALSE),
+	fHistoMCNch(0x0),
 	fIsLc(0),
 	fIsLcResonant(0),
 	fPtLc(0.),
@@ -254,6 +261,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fRDCutsAnalysis(lccutsana),
 	fListCuts(0),
 	fFillNtuple(fillNtuple),
+	fFillNtupleReco(fillNtupleReco),
 	fKeepLcNotFromQuark(kFALSE),
 	fKeepBkgNt(kTRUE),
 	fSyst(2),
@@ -340,6 +348,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 		// Output slot #2 writes into a TNtuple container
 		DefineOutput(5,TNtuple::Class());  //My private output
 	}
+	if(fFillNtupleReco) DefineOutput(6,TNtuple::Class());  //My private output
 }
 
 
@@ -868,11 +877,20 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 		//more variables
 		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber");
 	//weights
-		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:weights5LHC13d3Lc:weights7LHC11b2Lc:weights7LHC10f7aLc");
+		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:weights5LHC13d3Lc:weights7LHC11b2Lc:weights7LHC10f7aLc:multiplicity:weightsMultiplicity");
 		//2 prong decay products
-		else if(fFillNtuple==4)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:weights5LHC13d3Lc:weights7LHC11b2Lc:weights7LHC10f7aLc:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
+		else if(fFillNtuple==4)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCATr0:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:d00:d01:d02:d0Squared:d00Sig:d01Sig:d02Sig:d00SigResidual:d01SigResidual:d02SigResidual:CosPXY:DCATr1:DCATr2:Dist23:RunNumber:PtLcMC:weightsPythia:weights7LHC106a:weights5LHC10f6a:weights5LHC13d3:weights5LHC13d3Lc:weights7LHC11b2Lc:weights7LHC10f7aLc:multiplicity:weightsMultiplicity:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
 		else AliFatal("Invalid fill ntuple argument");
 		PostData(5,fNtupleLambdac);
+
+	}
+	if(fFillNtupleReco) {
+		//Reco ntuple
+		TString ntName="fNtupleLambdacReco";
+		AliAnalysisDataContainer *contntrec = GetOutputSlot(6)->GetContainer();
+		if(contntrec)ntName=(TString)contntrec->GetName();
+		fNtupleLambdacReco = new TNtuple(ntName.Data(), "Lc Reco", "isLcBkg:PtLc:PtLcMC:PtTr0:PtTr1:PtTr2:PtTr0MC:PtTr1MC:PtTr2MC:isTOFTr0:isTOFTr1:isTOFTr2:selectionCand:selectionPID:selectionPIDprob");
+		PostData(6,fNtupleLambdacReco);
 	}
 
 	return;
@@ -1095,6 +1113,8 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 			unsetvtx=kTRUE;
 		}
 
+
+
 		//add histogram with filter bit
 		//one at start of task, one at filter bit selection
 		//check every bit, bit vs pT
@@ -1130,6 +1150,8 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		if(ptbin==-1) {fNentries->Fill(10); continue;} //out of bounds
 		FillEffHists(kPtRange);
 
+		//Fill reco ntuple
+		if(fReadMC && fIsLc>=1 && fFillNtupleReco) FillRecoNtuple(aod,d,arrayMC);
 		//idproton, pion using isSelectedPID
 		//Bool_t isPID=fRDCutsAnalysis->GetIsUsePID();
 		Int_t isSelectedPID=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kPID,aod);
@@ -1185,6 +1207,9 @@ void AliAnalysisTaskSELambdacTMVA::Terminate(Option_t */*option*/)
 
 	if(fFillNtuple){
 		fNtupleLambdac = dynamic_cast<TNtuple*>(GetOutputData(5));
+	}
+	if(fFillNtupleReco){
+		fNtupleLambdacReco = dynamic_cast<TNtuple*>(GetOutputData(6));
 	}
 
 
@@ -1609,7 +1634,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	//fill ntuple
 	// 1 - loose pid
 	// 2 - bayesian pid
-	Float_t tmp[56];
+	Float_t tmp[58];
 	//Is Lc
 	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
 	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
@@ -1749,13 +1774,27 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 			tmp[47]=weight5LHC13d3Lc;
 			tmp[48]=weight7LHC11b2Lc;
 			tmp[49]=weight7LHC10f7aLc;
+
+			//Multiplicity weights
+			Double_t multWeight = 1.;
+			Double_t nTracklets = 0.;
+			if(fUseNchWeight){
+				//tracklets within |eta| < 1.
+				nTracklets = static_cast<Int_t>(fVertUtil->GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+				multWeight *= GetNchWeight(static_cast<Int_t>(nTracklets));
+				AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",nTracklets,multWeight));
+			}
+			tmp[50]=nTracklets;
+			tmp[51]=multWeight;
+
+
 			if(fFillNtuple>=4) { //fill with invariant mass of 2 prongs
-				tmp[50]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
-				tmp[51]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
-				tmp[52]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
-				tmp[53]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
-				tmp[54]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
-				tmp[55]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
+				tmp[52]=part->InvMass2Prongs(1,0,321,2212); //inv mass pK
+				tmp[53]=part->InvMass2Prongs(2,1,211,321); //inv mass Kpi
+				tmp[54]=part->InvMass2Prongs(2,0,211,2212);//inv mass ppi
+				tmp[55]=part->InvMass2Prongs(1,2,321,2212); //inv mass Kp 
+				tmp[56]=part->InvMass2Prongs(0,1,211,321); //inv mass piK
+				tmp[57]=part->InvMass2Prongs(0,2,211,2212);//inv mass pip
 			}
 		}
 	}
@@ -1851,9 +1890,8 @@ void AliAnalysisTaskSELambdacTMVA::FillEffHists(Int_t kStep) {
 	}
 }
 
-
-
 //-----------------------------
+
 Bool_t AliAnalysisTaskSELambdacTMVA::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
 
 	//
@@ -1911,6 +1949,8 @@ void AliAnalysisTaskSELambdacTMVA::FillSelectionBits(AliAODRecoDecayHF3Prong *d,
 	if(d->HasSelectionBit(AliRDHFCuts::kDstarPID)) hSelectionBits->Fill(12,fCandidateVars[0]);
 }
 
+//-----------------------------
+
 Int_t AliAnalysisTaskSELambdacTMVA::GetPIDselectionMaxProb(AliAODRecoDecayHF3Prong *part) {
 
 	Int_t selection = 0;
@@ -1937,4 +1977,98 @@ Int_t AliAnalysisTaskSELambdacTMVA::GetPIDselectionMaxProb(AliAODRecoDecayHF3Pro
 	return selection;
 }
 
+Double_t AliAnalysisTaskSELambdacTMVA::GetNchWeight(Int_t nch){
+  //
+  //  calculates the Nch weight using the measured and generateed Nch distributions
+  //
+  if(nch<=0) return 0.;
+  if(!fHistoMCNch) { AliError("Input histos to evaluate Nch weights missing"); return 0.; }
+  Double_t pMC=fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nch));
+  Double_t weight = pMC;
+  return weight;
+}
 
+void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part,
+																							TClonesArray *arrayMC) 
+{
+	//
+	/// Function to fill NTuple after reco stage with candidates variables
+	/// including TOF information for each daughter track for Geant3/Fluka
+	/// correction needed in pp
+	//
+
+	Bool_t IsInjected   = 0;
+	Bool_t IsLc		= 0;
+	Bool_t IsLcfromLb	= 0;
+
+	if(fReadMC){ 
+		AliAODMCHeader *mcHeader3 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+		if(!fIsHijing) IsInjected = fVertUtil->IsCandidateInjected(part,mcHeader3,arrayMC); //for dedicated MC set to 0
+	}
+	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
+	if(fIsLc==2) IsLcfromLb=kTRUE;
+	if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
+
+	Float_t tmp[15];
+	//Is Lc
+	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
+	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
+	else if(IsLc==1 && IsLcfromLb) tmp[0]=2; //non-prompt Lc
+	else if(IsInjected && IsLc==0) tmp[0]=3; //injected bkg
+	else tmp[0]=-99; //should not happen
+	tmp[1]=part->Pt();
+	//Get MC Lc to get true pT
+	Float_t ptLcMC=0;
+	Int_t labDp = -1;
+	Int_t pdgCand =4122;
+	Int_t pdgDaughter[3]={-1,-1,-1};
+	pdgDaughter[0]=2212;
+	pdgDaughter[1]=321;
+	pdgDaughter[2]=211;   
+	labDp = part->MatchToMC(pdgCand,arrayMC,3,pdgDaughter);
+	if(labDp>=0){
+		AliAODMCParticle *motherPart = (AliAODMCParticle*)arrayMC->At(labDp);
+		ptLcMC = motherPart->Pt();
+	}
+	tmp[2]=ptLcMC;
+
+	tmp[3]=part->PtProng(0);
+	tmp[4]=part->PtProng(1); //pt kaon
+	tmp[5]=part->PtProng(2);
+	// Is the track good for TOF PID (for pp proton GEANT3/FLUKA correction)
+	// and MC pt of each track
+	Bool_t isTOFpid[3];
+	Float_t MCpt[3];
+	for(Int_t i=0;i<3;i++) {
+		AliAODTrack *daugh=(AliAODTrack*)part->GetDaughter(i);
+		Int_t daughLab= daugh->GetLabel();
+		if(daughLab<0) continue;
+		else{
+			AliAODMCParticle* pdaugh = dynamic_cast<AliAODMCParticle*>(arrayMC->At(daughLab));
+			isTOFpid[i] = fRDCutsAnalysis->GetPidHF()->CheckTOFPIDStatus(daugh);
+			MCpt[i] = pdaugh->Pt();
+		}
+	}
+	tmp[6]=MCpt[0];
+	tmp[7]=MCpt[1];
+	tmp[8]=MCpt[2];
+	tmp[9]=isTOFpid[0];
+	tmp[10]=isTOFpid[1];
+	tmp[11]=isTOFpid[2];
+
+	// Selection
+	Int_t selectionCand=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kCandidate,aod);
+	Int_t selectionPID=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kPID,aod);
+	Int_t selectionPIDprob = GetPIDselectionMaxProb(part);
+	tmp[12]=selectionCand;
+	tmp[13]=selectionPID;
+	tmp[14]=selectionPIDprob;
+
+//	Bool_t ispKpiMC = IspKpiMC(part,arrayMC); 
+//	Bool_t ispiKpMC = IspiKpMC(part,arrayMC); 
+
+//	tmp[15] = ispKpiMC?1:ispiKpMC?2:0;
+
+	fNtupleLambdacReco->Fill(tmp);
+	PostData(6,fNtupleLambdacReco);
+}

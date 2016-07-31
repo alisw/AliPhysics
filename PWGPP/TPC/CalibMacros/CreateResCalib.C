@@ -95,7 +95,7 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
   }
   if (nMinTracks>0) {
     ::Info("CreateResCalib","SetMinTracks %d",nMinTracks);
-    clb->SetMaxTracks(nMinTracks);
+    clb->SetMinTrackToUse(nMinTracks);
   }
   if (nBinsZ>0) {
     ::Info("CreateResCalib","SetNZ2XBins %d",nBinsZ);

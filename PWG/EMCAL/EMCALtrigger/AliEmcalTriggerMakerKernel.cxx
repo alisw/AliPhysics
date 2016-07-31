@@ -509,6 +509,14 @@ AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::C
   return result;
 }
 
+void AliEmcalTriggerMakerKernel::ClearFastORBadChannels(){
+  fBadChannels.clear();
+}
+
+void AliEmcalTriggerMakerKernel::ClearOfflineBadChannels() {
+  fOfflineBadChannels.clear();
+}
+
 Bool_t AliEmcalTriggerMakerKernel::IsGammaPatch(const AliEMCALTriggerRawPatch &patch) const {
   ULong_t bitmask = patch.GetBitmask(), testmask = 1 << fTriggerBitConfig->GetGammaHighBit() | 1 << fTriggerBitConfig->GetGammaLowBit();
   return bitmask & testmask;

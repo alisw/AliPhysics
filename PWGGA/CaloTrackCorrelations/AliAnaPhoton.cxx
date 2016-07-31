@@ -2517,12 +2517,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   {
     TString ptype[] = { "#gamma"         , "#gamma_{#pi decay}"    , "#gamma_{#eta decay}", "#gamma_{other decay}",
                         "#pi^{0}"        , "#eta"                  , "e^{#pm}"            , "#gamma->e^{#pm}"     ,
-                        "hadron?"        , "Anti-N"                , "Anti-P"             ,
+                        "hadron?"        , "Anti-N"                , "Anti-P"             , 
+                        "Neutron"        , "Proton"                , "#pi^{#pm}"          ,
                         "#gamma_{prompt}", "#gamma_{fragmentation}", "#gamma_{ISR}"       , "String"               } ;
     
     TString pname[] = { "Photon"      , "PhotonPi0Decay"     , "PhotonEtaDecay", "PhotonOtherDecay",
                         "Pi0"         , "Eta"                , "Electron"      , "Conversion"      ,
-                        "Hadron"      , "AntiNeutron"        , "AntiProton"    ,
+                        "Hadron"      , "AntiNeutron"        , "AntiProton"    , 
+                        "Neutron"     , "Proton"             , "ChPion"        ,
                         "PhotonPrompt", "PhotonFragmentation", "PhotonISR"     , "String"           } ;
     
     for(Int_t i = 0; i < fNOriginHistograms; i++)
@@ -3550,6 +3552,18 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) )
       {
         mcParticleTag = kmcAntiProton;
+      }
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCNeutron) )
+      {
+        mcParticleTag = kmcNeutron;
+      }
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton) )
+      {
+        mcParticleTag = kmcProton;
+      }
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion) )
+      {
+        mcParticleTag = kmcChPion;
       }
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) )
       {

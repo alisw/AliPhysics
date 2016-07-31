@@ -61,7 +61,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void SetMesonCutList(TList *CutArray){ fMesonCutArray = CutArray; }
 		void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
 		void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
-	
+        void SetTolerance(Double_t tol){fTolerance=tol;}
 
 	private:
 
@@ -103,6 +103,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const;
 
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
+
+        Bool_t KinematicCut(AliAODConversionMother *negpion, AliAODConversionMother *pospion, AliAODConversionMother *neutpion, AliAODConversionMother *omega);
+
 
 		AliV0ReaderV1 					*fV0Reader;									// V0Reader for basic conversion photon selection
         TString                         fV0ReaderName;
@@ -158,14 +161,24 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F 							**fHistoPionPionInvMassPt;					// array of histos of pion pion, invMass, pT_{pi+pi-}
 		TH2F	 						**fHistoGammaGammaInvMassPt;				// array of histos of gamma-gamma, invMass, pT_{gamma gamma}
 		TH2F	 						**fHistoMotherInvMassPt;					// array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
-		THnSparseF 						**fTHnSparseMotherInvMassPtZM;				// array of THnSparseF of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}, Z, M
+        TH2F                            **fHistoMotherInvMassPtRejectedKinematic;   // array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
+//		THnSparseF 						**fTHnSparseMotherInvMassPtZM;				// array of THnSparseF of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}, Z, M
 		TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 		TH2F 							**fHistoMotherSameSameDiff2BackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 		TH2F 							**fHistoMotherSameDiff1SameBackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
-		
-		// pure MC properties
+//		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
+
+        // angle distributions
+        TH2F 							**fHistoAngleOmegaPiPlPiMi;                 // angle between combined Pi+ and Pi- and omega
+        TH2F 							**fHistoAngleOmegaPiZero;                   // angle between Pi0 and omega
+        TH2F 							**fHistoAngleOmegaPiPl;                     // angle between Pi+ and omega
+        TH2F 							**fHistoAngleOmegaPiMi;                     // angle between Pi- and omega
+        TH2F 							**fHistoAnglePiPlPiMi;                      // angle between Pi+ and Pi-
+        TH2F 							**fHistoAnglePiZeroPiMi;                    // angle between Pi0 and Pi-
+        TH2F 							**fHistoAnglePiPlPiZero;                    // angle between Pi+ and Pi0
+        TH2F 							**fHistoAngleSum;                           // angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
+        // pure MC properties
 		TH1F 							**fHistoMCAllGammaPt;						// array of histos of all produced gammas in the specified y range
 		TH1F 							**fHistoMCConvGammaPt;						// array of histos of all converted gammas in the specified y range 
 		TH1F 							**fHistoMCAllPosPionsPt;					// array of histos with all produced primary positive pions in the specified y range
@@ -221,12 +234,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t 							fIsFromMBHeader;							// Flag for particle whether it belongs to accepted header
 		Bool_t 							fIsMC;										// Flag for MC  
 		Int_t							fNeutralPionMode;							// Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
+        Double_t                        fTolerance;                                 // tolerance in rad for angle cuts
 
 	private:
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 6);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 8);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

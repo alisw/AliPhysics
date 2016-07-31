@@ -67,7 +67,7 @@ class EmcEvent {
 	Float_t TrigPhi; // phi of highest pT hit on EMCal
   Float_t TrigTheta; // eta of highest pT hit ...
   
-  const static int nMaxHit = 800;
+  const static int nMaxHit = 1000;
   
   int nHits;
   EmcHit hit[nMaxHit];
@@ -278,10 +278,6 @@ protected:
   TH2                   *fHCellIndexEnergy;      //!histo for cell energy vs cell number
   TH2                   *fHCellIndexEnergyAfterCuts;      //!histo for cell energy vs cell number
   
-  // histogram for emcal and dcal
-//  TH1                   *fHCellIndexEMCAL;      //!histo for cell energy vs cell number
-//  TH1                   *fHCellIndexDCAL;       //!histo for cell energy vs cell number
-  
   // histograms for clusters
   TH1                   *fHClusters;                  //!histo for cuts
   TH1                   *fHClustAllEtaPhi;        //!histo for all clusters eta and phi
@@ -294,7 +290,7 @@ protected:
   TH2                   *fHClustEnergyPtDCal;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergySM;         //!histo for cluster energy vs. Supermodule
   TH2                   *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis
-  TH2                   *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
+  TH2                   *fHClustEnergyTime;       //!histo for cluster energy vs. time
   TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n cells vs. energy ratio
   TH2			*fHClustEnergyNCell;      //!histo for cluster energy vs. cluster n cells
   // histograms for primary tracks
@@ -364,7 +360,7 @@ protected:
   TH2                   *fHPrimPionInvMassesAsym;       //!histos for invariant mass plots
   
   // conversion info
-  TH1                   * fHConversionPoint;   //!histo for conversion position in XY
+  //TH1                   * fHConversionPoint;   //!histo for conversion position in XY
   
   // histograms for MC
   TH1                   *fHWgt;         //!histo for weight of particles
@@ -436,7 +432,7 @@ private:
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 17) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 18) // Analysis task for neutral pions in Pb+Pb
 };
 
 

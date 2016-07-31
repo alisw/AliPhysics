@@ -65,14 +65,15 @@ AliTRDPIDTree::AliTRDPIDTree(const char *name)
     fESDEvent(0), fMCEvent(0), fMCStack(0), fTreeTRDPID(0), fPIDResponse(0), fOutputContainer(0), fESDtrackCuts(0),
     fESDtrackCutsV0(0), fListQATRD(0x0), fListQATRDV0(0x0),
     fNumTagsStored(0), fCollisionSystem(3),
-    fpdg(0), frun(0), frunnumber(0), fcentrality(0), fTRDNtracklets(0), fTRDNcls(0), fTRDntracklets(0), fTRDntrackletsPID(0),
-    fTRDtheta(0), fTRDglobalphi(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fPDGTRUE(0), fChi2(0),
+    fpdg(0), frun(0), frunnumber(0), fcentrality(0), fTRDNcls(0), fTRDntracklets(0), fTRDntrackletsPID(0),
+    fTRDtheta(0), fTRDTPCtgl(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fTrackCharge(0), fPDGTRUE(0), fChi2(0),
     fhtrackCuts(0), fhArmenteros(0)
 {
 
   //
   // Constructor
   //
+     
   DefineInput(0, TChain::Class());
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TList::Class());
@@ -126,24 +127,22 @@ void AliTRDPIDTree::UserCreateOutputObjects()
     fTreeTRDPID = new TTree("TreeTRDPID", "TRD PID");
     fTreeTRDPID->Branch("run", &frunnumber);
     fTreeTRDPID->Branch("centrality", &fcentrality);
-    fTreeTRDPID->Branch("TRDNtracklets",&fTRDNtracklets);
     fTreeTRDPID->Branch("TRDslices[48]",fTRDslices);
     fTreeTRDPID->Branch("TRDMomentum[6]",fTRDMomentum);
     fTreeTRDPID->Branch("TRDNcls",&fTRDNcls);
     fTreeTRDPID->Branch("TRDntracklets",&fTRDntracklets);
-    fTreeTRDPID->Branch("TRDntrackletsPID",&fTRDntrackletsPID);
-    fTreeTRDPID->Branch("TRDphi[6]",fTRDphi);
-    fTreeTRDPID->Branch("TRDeta[6]",fTRDeta);
-    fTreeTRDPID->Branch("TRDthetalayer[6]",fTRDthetalayer);
-    fTreeTRDPID->Branch("TRDglobalphi",&fTRDglobalphi);
-    fTreeTRDPID->Branch("TRDY[6]",fTRDY);
-    fTreeTRDPID->Branch("TRDtheta",&fTRDtheta);
-    fTreeTRDPID->Branch("TRDsignal",&fTRDsignal);
-    fTreeTRDPID->Branch("TRDnclsdEdx",&fTRDnclsdEdx);
-    fTreeTRDPID->Branch("TRDnch",&fTRDnch);
+    fTreeTRDPID->Branch("TRDntrackletsPID",&fTRDntrackletsPID); 
+    fTreeTRDPID->Branch("TRDphi[6]",fTRDphi); // values in different layers slightly different, clear correlation -> keep all layers for the moment
+    fTreeTRDPID->Branch("TRDtheta",&fTRDtheta); // value in different layers identical -> keep layer 0 only
+    fTreeTRDPID->Branch("TRDY[6]",fTRDY); // raus
+    fTreeTRDPID->Branch("TRDTPCtgl",&fTRDTPCtgl);
+    fTreeTRDPID->Branch("TRDsignal",&fTRDsignal); 
+    fTreeTRDPID->Branch("TRDnclsdEdx",&fTRDnclsdEdx); 
+    fTreeTRDPID->Branch("TRDnch",&fTRDnch);  
     fTreeTRDPID->Branch("NSigmaTPC[3]",fNSigmaTPC);
     fTreeTRDPID->Branch("NSigmaTOF[3]",fNSigmaTOF);
     fTreeTRDPID->Branch("PDG",&fPDG);
+    fTreeTRDPID->Branch("TrackCharge",&fTrackCharge);
     fTreeTRDPID->Branch("PDGTRUE",&fPDGTRUE);
     fTreeTRDPID->Branch("DCA[2]",fDCA);
     fTreeTRDPID->Branch("Chi2",&fChi2);
@@ -166,7 +165,9 @@ void AliTRDPIDTree::UserCreateOutputObjects()
 
   fhtrackCuts  = new TH1F("fhtrackCuts","TrackEventCuts QA",10,-0.5,9.5);
   fListQATRD->Add(fhtrackCuts);
-
+  fhEventCount  = new TH1F("fhEventCount","Event Count",5,-0.5,4.5);
+  fListQATRD->Add(fhEventCount);
+  
   PostData(2,fListQATRD);
 
 
@@ -246,6 +247,8 @@ void AliTRDPIDTree::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEve
   if (ncontr <= 0) return;
   frunnumber = fESDEvent->GetRunNumber();
 
+  if(fESDEvent) fhEventCount->Fill(1,1);
+  
   // - Begin: track loop for electrons from V0 -
     for(Int_t itrack = 0; itrack < fV0electrons->GetEntries(); itrack++){
     //  AliVTrack *track=(AliVTrack*)fV0electrons->At(itrack);
@@ -275,9 +278,8 @@ void AliTRDPIDTree::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEve
    
 
     PostData(1,fTreeTRDPID);
-    PostData(2,fListQATRD);
-
-}      
+    PostData(2,fListQATRD);}
+  
 
 //________________________________________________________________________
 void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumber, Int_t centralityvalue)
@@ -292,7 +294,7 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     // track cuts:
     Int_t ntrackletstracking=track->GetTRDntracklets();
     if(ntrackletstracking<fgMinLayer) return;
-    Int_t trdnch  = track->GetTRDNchamberdEdx(); // only available for p-Pb up to now
+    Int_t trdnch  = track->GetTRDNchamberdEdx(); 
 //    if(trdnch<1) return;
 
 
@@ -303,9 +305,9 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     Bool_t hasTOFtime = status&AliESDtrack::kTIME;
     if(!(hasTOFout && hasTOFtime)) return;
 
-    // add kaons?
-    Double_t nSigmaTPC = 0;
-    Double_t nSigmaTOF = 0;
+    
+    Double_t nSigmaTPC = -999;
+    Double_t nSigmaTOF = -999;
 
     if(TMath::Abs(pdgfromv0)==11){
 	nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
@@ -331,13 +333,14 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     frun=runnumber;
 
     Int_t charge = track->Charge();
-    fPDG=pdgfromv0*charge;
+    fPDG=pdgfromv0;
+    fTrackCharge=charge;
     fcentrality = centralityvalue;
     fTRDntracklets = ntrackletstracking;
     fTRDntrackletsPID = track->GetTRDntrackletsPID();
 
     fTRDNcls=track->GetTRDncls();
-    fTRDtheta=track->Theta()-0.5*TMath::Pi();
+    fTRDTPCtgl=track->GetTPCTgl();
     fChi2=track->GetTRDchi2();
 
     fTRDsignal=track->GetTRDsignal(); // truncated mean signal
@@ -353,27 +356,19 @@ void AliTRDPIDTree::FillTree(AliESDtrack *track, Int_t pdgfromv0, Int_t runnumbe
     fNSigmaTOF[1]=fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
     fNSigmaTOF[2]=fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 
-    fTRDglobalphi=track->PhiPos();
-
     Int_t ntracklets=0;
     for(Int_t iPl=0;iPl<AliVTrack::kTRDnPlanes;iPl++){
 
-	fTRDphi[iPl]=GetPhi(track,iPl,fTRDY[iPl],fTRDeta[iPl],fTRDthetalayer[iPl]);
-      //  printf("testing %i %f %f %f \n",iPl,fTRDtheta,(-TMath::Log(TMath::Tan(0.5 * fTRDtheta))),fTRDeta[iPl]);
+	fTRDphi[iPl]=GetPhi(track,iPl,fTRDY[iPl],fTRDthetalayer[iPl]);
+	//  printf("testing %i %f %f %f \n",iPl,fTRDtheta,(-TMath::Log(TMath::Tan(0.5 * fTRDtheta))),fTRDeta[iPl]);
 	Float_t dEdx=0;
 	fTRDMomentum[iPl]= track->GetTRDmomentum(iPl);
 	for(int isl= 0; isl<= 7;isl++){
 	    fTRDslices[iPl*8+isl]=track->GetTRDslice(iPl,isl);
-	    Double_t sig=track->GetTRDslice(iPl,isl);
-	    if(sig>0){
-		dEdx+=sig;
-	    }
-	}
-	if(dEdx>0){
-	    ntracklets++;
 	}
     }
-    fTRDNtracklets=ntracklets;
+    fTRDtheta=fTRDthetalayer[0];
+    
 
     fPDGTRUE=0;
     if(fMCStack){
@@ -562,7 +557,7 @@ void AliTRDPIDTree::SetupV0qa()
 }
 
 //________________________________________________________________________
-Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yposlayer, Double_t &etalayer, Double_t &thetalayer)
+Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yposlayer, Double_t &thetalayer)
 {
     //
     // extrapolate track to TRD radii and convert global phi angle to local coordinate system
@@ -570,7 +565,6 @@ Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yp
 
     Double_t phi=-999;
     yposlayer=-999;
-    etalayer=-999;
     thetalayer=-999;
     // Phi at entrance of TRD
     Double_t xtrdbeg=AliTRDgeometry::GetXtrdBeg();
@@ -585,14 +579,17 @@ Double_t AliTRDPIDTree::GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t &yp
 
     if(tempparam){
 	AliExternalTrackParam param(*tempparam);
-	param.PropagateTo(x,fESDEvent->GetMagneticField());
-	phi=param.Phi()-param.GetAlpha();
-        yposlayer= param.GetY();
-	etalayer= param.Eta();
-	thetalayer= param.Eta();
+	Bool_t isOk=param.PropagateTo(x,fESDEvent->GetMagneticField());
+	if(isOk){
+	  phi=param.Phi()-param.GetAlpha();
+	  yposlayer= param.GetY();
+	  thetalayer= param.Eta();
+	}	
     }
-    if(phi<-TMath::Pi())phi+=2*TMath::Pi();
-    if(phi>TMath::Pi())phi-=2*TMath::Pi();
+    if(phi!=-999){
+      if(phi<-TMath::Pi())phi+=2*TMath::Pi();
+      if(phi>TMath::Pi())phi-=2*TMath::Pi();
+    }
 
     return phi;
 }

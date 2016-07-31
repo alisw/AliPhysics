@@ -1118,37 +1118,44 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster,   
     for(UInt_t ilab = 0; ilab< cluster->GetNLabels(); ilab++)
     {
       Int_t label = cluster->GetLabels()[ilab];
-      if(label==pairLabel)
+      if ( label==pairLabel )
       {
         SetTagBit(tag, kMCDecayPairInCalo);
         return ;
       }
-      else if(label== iParent || label== iMom)
+      else if ( label== iParent || label== iMom )
       {
         continue;
       }
       else // check the ancestry
       {
         TParticle * mother = stack->Particle(label);
-        Int_t momPDG = TMath::Abs(mother->GetPdgCode());
-        if(momPDG!=11 && momPDG!=22) continue;
         
-        //Check if "mother" of entity is converted, if not, get the first non converted mother
+        if ( !mother )
+        {
+          AliInfo(Form("MC Mother not available for label %d",label));
+          continue;
+        }
+        
+        Int_t momPDG = TMath::Abs(mother->GetPdgCode());
+        if ( momPDG!=11 && momPDG!=22 ) continue;
+        
+        // Check if "mother" of entity is converted, if not, get the first non converted mother
         Int_t iParentClus = mother->GetFirstMother();
-        if(iParentClus < 0) continue;
+        if ( iParentClus < 0 ) continue;
         
         TParticle * parentClus = stack->Particle(iParentClus);
-        if(!parentClus) continue;
+        if ( !parentClus ) continue;
         
         Int_t parentClusPDG    = TMath::Abs(parentClus->GetPdgCode());
         Int_t parentClusStatus = parentClus->GetStatusCode();
         
-        if( parentClusPDG != 22 && parentClusPDG != 11 && parentClusStatus != 0) continue;
+        if( parentClusPDG != 22 && parentClusPDG != 11 && parentClusStatus != 0 ) continue;
         
         //printf("Conversion\n");
         
-        //Check if the mother is photon or electron with status not stable
-        while ((parentClusPDG == 22 || parentClusPDG == 11) && parentClusStatus != 1)
+        // Check if the mother is photon or electron with status not stable
+        while ( (parentClusPDG == 22 || parentClusPDG == 11) && parentClusStatus != 1 )
         {
           //New Mother
           label            = iParentClus;
@@ -1164,7 +1171,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster,   
           parentClusStatus = parentClus->GetStatusCode() ;
         }//while
     
-        if((momPDG == 22 || parentClusPDG ==22) && (label==pairLabel || iParentClus == pairLabel))
+        if ( (momPDG == 22 || parentClusPDG ==22) && (label==pairLabel || iParentClus == pairLabel) )
         {
           SetTagBit(tag, kMCDecayPairInCalo);
           //printf("Conversion is paired\n");
@@ -1221,13 +1228,13 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
       
       //printf("\t \t label %d\n",label);
 
-      if(label==pairLabel)
+      if ( label==pairLabel )
       {
         //printf("\t \t Pair found\n");
         SetTagBit(tag, kMCDecayPairInCalo);
         return ;
       }
-      else if(label== iParent || label== iMom)
+      else if ( label== iParent || label== iMom )
       {
         //printf("\t \t skip\n");
         continue;
@@ -1235,14 +1242,17 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
       else // check the ancestry
       {
         AliAODMCParticle * mother = (AliAODMCParticle*) mcparticles->At(label);
-        Int_t momPDG = TMath::Abs(mother->GetPdgCode());
-        if(momPDG!=11 && momPDG!=22)
+        
+        if ( !mother )
         {
-          //printf("\t \t skip, pdg %d\n",momPDG);
+          AliInfo(Form("MC Mother not available for label %d",label));
           continue;
         }
         
-        //Check if "mother" of entity is converted, if not, get the first non converted mother
+        Int_t momPDG = TMath::Abs(mother->GetPdgCode());
+        if ( momPDG!=11 && momPDG!=22 ) continue;
+        
+        // Check if "mother" of entity is converted, if not, get the first non converted mother
         Int_t iParentClus = mother->GetMother();
         if(iParentClus < 0) continue;
         
@@ -1252,7 +1262,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
         Int_t parentClusPDG    = TMath::Abs(parentClus->GetPdgCode());
         Int_t parentClusStatus = parentClus->GetStatus();
         
-        if( parentClusPDG != 22 && parentClusPDG != 11 && parentClusStatus != 0)
+        if ( parentClusPDG != 22 && parentClusPDG != 11 && parentClusStatus != 0 )
         {
           //printf("\t \t skip, not a conversion, parent: pdg %d, status %d\n",parentClusPDG,parentClusStatus);
           continue;
@@ -1260,7 +1270,7 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
         
         //printf("\t \t Conversion\n");
         
-        //Check if the mother is photon or electron with status not stable
+        // Check if the mother is photon or electron with status not stable
         while ((parentClusPDG == 22 || parentClusPDG == 11) && parentClusStatus != 1)
         {
           //New Mother
@@ -1268,16 +1278,16 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray   * arrayCluster,
           momPDG           = parentClusPDG;
           
           iParentClus      = parentClus->GetMother();
-          if(iParentClus < 0) break;
+          if ( iParentClus < 0 ) break;
           
           parentClus       =  (AliAODMCParticle*) mcparticles->At(iParentClus);
-          if(!parentClus) break;
+          if ( !parentClus ) break;
           
           parentClusPDG    = TMath::Abs(parentClus->GetPdgCode());
           parentClusStatus = parentClus->GetStatus() ;
         }//while
         
-        if((momPDG == 22 || parentClusPDG ==22) && (label==pairLabel || iParentClus == pairLabel))
+        if ( (momPDG == 22 || parentClusPDG ==22) && (label==pairLabel || iParentClus == pairLabel) )
         {
           SetTagBit(tag, kMCDecayPairInCalo);
           //printf("\t \t Conversion is paired: mom %d, parent %d\n",label,iParentClus);

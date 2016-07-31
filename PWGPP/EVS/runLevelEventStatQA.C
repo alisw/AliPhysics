@@ -2,6 +2,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TPad.h"
 #endif
 #include "triggerInfo.C"
 
@@ -15,7 +16,7 @@ TString bitNames[NBITS] = {
     "kHighMultSPD",
     "kEMC1",
     "kINT5",
-    "kINT7inMUFAST",
+    "kINT7inMUON",
     "kMuonSingleHighPt7",
     "kMuonLikeLowPt7",
     "kMuonUnlikeLowPt7",
@@ -49,7 +50,7 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "raw://"){
+Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -107,6 +108,15 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   Double_t meanErrV0MOf = 0;
   Double_t meanErrOFO = 0;
   Double_t meanErrTKL = 0;
+  Double_t meanV0MOnHM = 0;
+  Double_t meanV0MOfHM = 0;
+  Double_t meanOFOHM = 0;
+  Double_t meanTKLHM = 0;
+  Double_t meanErrV0MOnHM = 0;
+  Double_t meanErrV0MOfHM = 0;
+  Double_t meanErrOFOHM = 0;
+  Double_t meanErrTKLHM = 0;
+  Double_t thresholdV0M = 0;
   TH2F* hHistStat = new TH2F();
 
   TFile* fout = new TFile("trending.root","recreate");
@@ -161,6 +171,15 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("meanErrV0MOf",&meanErrV0MOf);
   t->Branch("meanErrOFO",&meanErrOFO);
   t->Branch("meanErrTKL",&meanErrTKL);
+  t->Branch("meanV0MOnHM",&meanV0MOnHM);
+  t->Branch("meanV0MOfHM",&meanV0MOfHM);
+  t->Branch("meanOFOHM",&meanOFOHM);
+  t->Branch("meanTKLHM",&meanTKLHM);
+  t->Branch("meanErrV0MOnHM",&meanErrV0MOnHM);
+  t->Branch("meanErrV0MOfHM",&meanErrV0MOfHM);
+  t->Branch("meanErrOFOHM",&meanErrOFOHM);
+  t->Branch("meanErrTKLHM",&meanErrTKLHM);
+  t->Branch("thresholdV0M",&thresholdV0M);
   t->Branch("hHistStat",&hHistStat);
   
   TString refClass="";
@@ -232,7 +251,9 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   else if (run>=243399 && run<=243984) { refSigma=6700.; refEff = 0.90; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=243985 && run<=244912) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=244913 && run<=246994) { refSigma=4600.; refEff = 0.60; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // estimates from Cvetan and Alberica
-  else if (run>=246995               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Cvetan and Alberica
+  else if (run>=246995 && run<=256147) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=256148 && run<=256157) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
+  else if (run>=256158               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   Double_t orbitRate = 11245.;
   TString partition;
   TString lhcState;
@@ -279,7 +300,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     cl->GetDownscaleFactor(class_ds[i]);
   }
 
-  if (run>=244917) {
+  // special treatment for Pb-Pb
+  if (run>=244917 && run<=246994) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
       TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
@@ -300,8 +322,28 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       delete tokens;
     }
   }
-  
-  
+  // special treatment for DG
+  if (run>=256504) {
+    Int_t iCUP13=-1;
+    Int_t iCTRUE_NOPF=-1;
+    Int_t iCTRUE_SPD1=-1;
+    Int_t iCEMC7=-1;
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).EqualTo("CCUP13-B-SPD1-CENTNOTRD")  ) iCUP13=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
+      if (TString(cl->GetName()).EqualTo("CEMC7EG1-B-NOPF-CENTNOTRD")) iCEMC7=i;
+    }
+    if (iCUP13>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iCEMC7>=0) {
+      class_lifetime[iCUP13] =class_lifetime[iCEMC7];
+      class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP13]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
+      class_lifetime[iCUP13]*=1-TMath::Power(1-class_ds[iCUP13],4.);
+      class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
+      printf("lumi=%f\n",class_lumi[iCUP13]);
+    }
+  }
   
   TFile* fin = new TFile(qafilename);
   if (!fin) {
@@ -310,11 +352,13 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     return 4;
   }
   
-  if (qafilename.Contains("event_stat.root")) {
+  AliPhysicsSelection* ps = 0;
+  
+  if (qafilename.Contains("event_stat")) {
     hHistStat = (TH2F*) fin->Get("fHistStat");
   } else {
     TList* statsout = (TList*) fin->Get("cstatsout");
-    AliPhysicsSelection* ps = statsout ? (AliPhysicsSelection*) statsout->FindObject("AliPhysicsSelection") : 0;
+    ps = statsout ? (AliPhysicsSelection*) statsout->FindObject("AliPhysicsSelection") : 0;
     hHistStat = ps ? (TH2F*) ps->GetStatistics("") : 0;
   }
   
@@ -325,14 +369,61 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   }
   
   fout->cd();
+
   meanV0MOn = 0;
   meanV0MOf = 0;
-  meanOFO = 0;
-  meanTKL = 0;
+  meanOFO   = 0;
+  meanTKL   = 0;
   meanErrV0MOn = 0;
   meanErrV0MOf = 0;
-  meanErrOFO = 0;
-  meanErrTKL = 0;
+  meanErrOFO   = 0;
+  meanErrTKL   = 0;
+  meanV0MOnHM = 0;
+  meanV0MOfHM = 0;
+  meanOFOHM   = 0;
+  meanTKLHM   = 0;
+  meanErrV0MOnHM = 0;
+  meanErrV0MOfHM = 0;
+  meanErrOFOHM   = 0;
+  meanErrTKLHM   = 0;
+  thresholdV0M   = 0;
+  for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
+    TString label = hHistStat->GetYaxis()->GetBinLabel(j);
+    // kINT7
+    TList* list = NULL;
+    if (qafilename.Contains("event_stat")) {
+      list = (TList*) fin->Get(Form("trigger_histograms_%s/histos",label.Data()));
+    } else {
+      AliTriggerAnalysis* ta = ps->GetTriggerAnalysis(j-1);
+      list = ta->GetHistList();
+    }
+    if (!list) continue;
+    TH1F* hV0MOnAcc = (TH1F*) list->FindObject("fHistV0MOnAcc");
+    TH1F* hV0MOfAcc = (TH1F*) list->FindObject("fHistV0MOfAcc");
+    TH1F* hOFOAcc   = (TH1F*) list->FindObject("fHistOFOAcc");
+    TH1F* hTKLAcc   = (TH1F*) list->FindObject("fHistTKLAcc");
+    if (label.Contains(" &2 ")) {
+      meanV0MOn    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
+      meanV0MOf    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
+      meanOFO      = hOFOAcc   ? hOFOAcc->GetMean()        : 0;
+      meanTKL      = hTKLAcc   ? hTKLAcc->GetMean()        : 0;
+      meanErrV0MOn = hV0MOnAcc ? hV0MOnAcc->GetMeanError() : 0;
+      meanErrV0MOf = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
+      meanErrOFO   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
+      meanErrTKL   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+    } else if (label.Contains(" &65536 ")) {
+      meanV0MOnHM    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
+      meanV0MOfHM    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
+      meanOFOHM      = hOFOAcc   ? hOFOAcc->GetMean()        : 0;
+      meanTKLHM      = hTKLAcc   ? hTKLAcc->GetMean()        : 0;
+      meanErrV0MOnHM = hV0MOnAcc ? hV0MOnAcc->GetMeanError() : 0;
+      meanErrV0MOfHM = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
+      meanErrOFOHM   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
+      meanErrTKLHM   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+      thresholdV0M   = hV0MOnAcc->GetBinLowEdge(hV0MOnAcc->FindFirstBinAbove(9));
+      printf("thresholdV0M=%f\n",thresholdV0M);
+    }
+  }
 
   for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
     TString label = hHistStat->GetYaxis()->GetBinLabel(j);
@@ -419,7 +510,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     // Fill run QA histograms
     const char* bitName = bitNames[ibit].Data();
     TList* list = NULL;
-    if (qafilename.Contains("event_stat.root")) {
+    if (qafilename.Contains("event_stat")) {
       list = (TList*) fin->Get(Form("trigger_histograms_%s/histos",label.Data()));
     } else {
       AliTriggerAnalysis* ta = ps->GetTriggerAnalysis(j-1);
@@ -477,18 +568,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH2F* hTimeCorrZDC     = (TH2F*) list->FindObject("fHistTimeCorrZDC");
     TH2F* hOFOvsTKLAcc     = (TH2F*) list->FindObject("fHistOFOvsTKLAcc");
     TH2F* hV0MOnVsOfAcc    = (TH2F*) list->FindObject("fHistV0MOnVsOfAcc");
-
-    if (bitNames[ibit].EqualTo("kINT7")) {
-      meanV0MOn = hV0MOnAcc->GetMean();
-      meanV0MOf = hV0MOfAcc->GetMean();
-      meanOFO   = hOFOAcc->GetMean();
-      meanTKL   = hTKLAcc->GetMean();
-      meanErrV0MOn = hV0MOnAcc->GetMeanError();
-      meanErrV0MOf = hV0MOfAcc->GetMeanError();
-      meanErrOFO   = hOFOAcc->GetMeanError();
-      meanErrTKL   = hTKLAcc->GetMeanError();
-    }
-    
+        
     DrawV0MOnVsOf(hV0MOnVsOfAll,hV0MOnVsOfCln,bitName);
     DrawSPDOnVsOf(hSPDOnVsOfAll,hSPDOnVsOfCln,bitName);
     DrawSPDClsVsTkl(hSPDClsVsTklAll,hSPDClsVsTklCln,bitName);
@@ -542,13 +622,15 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     gSystem->cd("..");
   }
   
-  t->Fill();
-  t->Write();
-  fout->Close();
+  writeTree(fout,t);
   return 0;
 }
 
 void DrawEfficiency(TH2F* h2D, const char* multOn, const char* bitName){
+  if (!h2D) {
+    printf("h2D histo for HM trigger efficiency monitoring not found\n");
+    return;
+  }
   TCanvas* c = new TCanvas(Form("c_%s_%s",multOn,bitName),Form("c_%s_%s",multOn,bitName),1000,1000);
   c->Divide(2,2,0.001,0.001);
   c->cd(1);
@@ -750,6 +832,7 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
 
   c->cd(1);
   gPad->SetLogy();
+  hOnAll->SetMinimum(0.9);
   hOnAll->Draw();
   hOnAcc->Draw("same");
   if (hOnVHM) hOnVHM->Draw("same");
@@ -757,6 +840,7 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   
   c->cd(2);
   gPad->SetLogy();
+  hOfAll->SetMinimum(0.9);
   hOfAll->Draw();
   hOfAcc->Draw("same");
   leg2->Draw();
@@ -772,12 +856,12 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   for (Int_t i=1;i<=hOnAcc->GetNbinsX();i++){
     Float_t binCenter  = hOnAcc->GetXaxis()->GetBinCenter(i);
     Float_t binContent = hOnAcc->GetBinContent(i);
-    hOnNorm->Fill(binCenter/meanOn,binContent);
+    hOnNorm->Fill(meanOn>1e-10 ? binCenter/meanOn : 0,binContent);
   }
   for (Int_t i=1;i<=hOfAcc->GetNbinsX();i++){
     Float_t binCenter  = hOfAcc->GetXaxis()->GetBinCenter(i);
     Float_t binContent = hOfAcc->GetBinContent(i);
-    hOfNorm->Fill(binCenter/meanOf,binContent);
+    hOfNorm->Fill(meanOf>1e-10 ? binCenter/meanOf : 0,binContent);
   }
 
   hOnNorm->SetLineColor(kBlue);
@@ -794,7 +878,12 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   hOfNorm->DrawCopy();
 
   cNorm->Print(Form("%s_norm.png",multOn.Data()));
-  
+
+  TFile* fout = new TFile(Form("fout_%s.root",multOn.Data()),"recreate");
+  hOfNorm->Write();
+  hOnNorm->Write();
+  fout->Close();
+
   TH1F* hOnAllCum  = (TH1F*) hOnAll->GetCumulative(kFALSE);
   TH1F* hOnAccCum  = (TH1F*) hOnAcc->GetCumulative(kFALSE);
   TH1F* hOfAllCum  = (TH1F*) hOfAll->GetCumulative(kFALSE);
@@ -844,9 +933,6 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   
   ccum->Print(Form("%s_cum.png",multOn.Data()));
   
-//  TFile* fout = new TFile(Form("fout_%s.root",multOn.Data()),"recreate");
-//  hOfAcc->Write();
-//  fout->Close();
 }
 
 

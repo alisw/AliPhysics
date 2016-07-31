@@ -83,8 +83,8 @@ class AliAnalysisTaskEmcalJetMass : public AliAnalysisTaskEmcalJet {
   TH3F            **fh3JetPtVsMassVsEPRelAllSel;           //!jet pt vs mass vs (phi-ep) for all jets
   TH3F            **fh3JetPtVsMassVsEPRelTagged;           //!jet pt vs mass vs (phi-ep) for tagged jets
   TH3F            **fh3JetPtVsMassVsEPRelTaggedMatch;      //!jet pt vs mass vs (phi-ep) for tagged matched jets
-  TH3F            *fh3RhoVsLeadJetPtVsCent;               //! Rho vs pT leading jet (non sub) vs centrality
-  TH3F            *fh3RhoMVsLeadJetPtVsCent;              //! Rhom vs pT leading jet (non sub) vs centrality
+  THnSparse       *fhnJetPtMassAndBkg;                     //! correlation between leading jet kinematics and event background
+  
   AliAnalysisTaskEmcalJetMass(const AliAnalysisTaskEmcalJetMass&);            // not implemented
   AliAnalysisTaskEmcalJetMass &operator=(const AliAnalysisTaskEmcalJetMass&); // not implemented
 

@@ -74,6 +74,8 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
 AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *title) :
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
+  fDoLightOutput(kFALSE),
+  fMode(0),
   fMesonKind(0),
   fIsMergedClusterCut(0),
   fMaxR(200),
@@ -146,6 +148,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
 AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref) :
   AliAnalysisCuts(ref),
   fHistograms(NULL),
+  fDoLightOutput(ref.fDoLightOutput),
+  fMode(ref.fMode),
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fMaxR(ref.fMaxR),
@@ -322,35 +326,37 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistograms->Add(fHistoMesonBGCuts);
   }  
   
-  if (fIsMergedClusterCut == 1){
-    fHistoInvMassBefore=new TH1F(Form("InvMassMeson Before %s",GetCutNumber().Data()),"InvMassMeson Before",1000,0,1);
-    fHistograms->Add(fHistoInvMassBefore);
-    fHistoInvMassAfter=new TH1F(Form("InvMassMeson After %s",GetCutNumber().Data()),"InvMassMeson After",1000,0,1);
-    fHistograms->Add(fHistoInvMassAfter);
-  }  
-  
-  if (additionalHists && fIsMergedClusterCut== 0){
-    fHistoDCAGGMesonBefore=new TH1F(Form("DCAGammaGammaMeson Before %s",GetCutNumber().Data()),"DCAGammaGammaMeson Before",200,0,10);
-    fHistograms->Add(fHistoDCAGGMesonBefore);
+  if(!fDoLightOutput){
+    if (fIsMergedClusterCut == 1){
+      fHistoInvMassBefore=new TH1F(Form("InvMassMeson Before %s",GetCutNumber().Data()),"InvMassMeson Before",1000,0,1);
+      fHistograms->Add(fHistoInvMassBefore);
+      fHistoInvMassAfter=new TH1F(Form("InvMassMeson After %s",GetCutNumber().Data()),"InvMassMeson After",1000,0,1);
+      fHistograms->Add(fHistoInvMassAfter);
+    }
 
-    fHistoDCARMesonPrimVtxBefore=new TH1F(Form("DCARMesonPrimVtx Before %s",GetCutNumber().Data()),"DCARMesonPrimVtx Before",200,0,10);
-    fHistograms->Add(fHistoDCARMesonPrimVtxBefore);
+    if (additionalHists && fIsMergedClusterCut== 0){
+      fHistoDCAGGMesonBefore=new TH1F(Form("DCAGammaGammaMeson Before %s",GetCutNumber().Data()),"DCAGammaGammaMeson Before",200,0,10);
+      fHistograms->Add(fHistoDCAGGMesonBefore);
 
-    fHistoDCAZMesonPrimVtxBefore=new TH1F(Form("DCAZMesonPrimVtx Before %s",GetCutNumber().Data()),"DCAZMesonPrimVtx Before",401,-10,10);
-    fHistograms->Add(fHistoDCAZMesonPrimVtxBefore);
+      fHistoDCARMesonPrimVtxBefore=new TH1F(Form("DCARMesonPrimVtx Before %s",GetCutNumber().Data()),"DCARMesonPrimVtx Before",200,0,10);
+      fHistograms->Add(fHistoDCARMesonPrimVtxBefore);
+
+      fHistoDCAZMesonPrimVtxBefore=new TH1F(Form("DCAZMesonPrimVtx Before %s",GetCutNumber().Data()),"DCAZMesonPrimVtx Before",401,-10,10);
+      fHistograms->Add(fHistoDCAZMesonPrimVtxBefore);
+    }
+
+    if (fIsMergedClusterCut == 0){
+      fHistoDCAGGMesonAfter=new TH1F(Form("DCAGammaGammaMeson After %s",GetCutNumber().Data()),"DCAGammaGammaMeson After",200,0,10);
+      fHistograms->Add(fHistoDCAGGMesonAfter);
+
+      fHistoDCAZMesonPrimVtxAfter=new TH2F(Form("InvMassDCAZMesonPrimVtx After %s",GetCutNumber().Data()),"InvMassDCAZMesonPrimVtx After",800,0,0.8,401,-10,10);
+      fHistograms->Add(fHistoDCAZMesonPrimVtxAfter);
+
+      fHistoDCARMesonPrimVtxAfter=new TH1F(Form("DCARMesonPrimVtx After %s",GetCutNumber().Data()),"DCARMesonPrimVtx After",200,0,10);
+      fHistograms->Add(fHistoDCARMesonPrimVtxAfter);
+    }
   }
 
-  if (fIsMergedClusterCut == 0){
-    fHistoDCAGGMesonAfter=new TH1F(Form("DCAGammaGammaMeson After %s",GetCutNumber().Data()),"DCAGammaGammaMeson After",200,0,10);
-    fHistograms->Add(fHistoDCAGGMesonAfter);
-
-    fHistoDCAZMesonPrimVtxAfter=new TH2F(Form("InvMassDCAZMesonPrimVtx After %s",GetCutNumber().Data()),"InvMassDCAZMesonPrimVtx After",800,0,0.8,401,-10,10);
-    fHistograms->Add(fHistoDCAZMesonPrimVtxAfter);
-
-    fHistoDCARMesonPrimVtxAfter=new TH1F(Form("DCARMesonPrimVtx After %s",GetCutNumber().Data()),"DCARMesonPrimVtx After",200,0,10);
-    fHistograms->Add(fHistoDCARMesonPrimVtxAfter);
-  }
-  
   TH1::AddDirectory(kTRUE);
 }
 
@@ -1013,6 +1019,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   else printf("\t Min theta_{open} pT-dep cut active\n");
   if (!fMaxOpanPtDepCut) printf("\t %3.2f < theta_{open}\n", fMaxOpanCutMeson);
   else printf("\t Max theta_{open} pT-dep cut active\n");
+  printf("\t Running mode for cutselection (0 std, 2 PCM-Calo): %d\n", fMode);
   
   printf("Meson BG settings \n");
   if (!fDoBG){
@@ -1173,151 +1180,159 @@ Float_t AliConversionMesonCuts::FunctionMaxMassCut(Float_t e){
   Float_t sigma         = 0;
   
   switch(fSelectionWindowCut){
-  case 0:
-    fEnableMassCut = kFALSE;
-    break;
-  case 1:   //NLM 1
-    aMass         = 0.044;
-    bMass         = 0.0049;
-    switchSigma   = 19.;
-    nSigma        = 3;
-    aSigmaLow     = 0.012;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0012;
-    bSigmaHigh    = 6e-4;
-    
-    mass          = aMass + bMass*e;
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-    return mass + nSigma*sigma;
-    break;
-  case 2:  //NLM 2
-    switchMass    = 21;
-    aMassLow      = 0.115;
-    bMassLow      = 9.6e-4;
-    aMassHigh     = 0.1;
-    bMassHigh     = 0.0017;
-    switchSigma   = 10.;
-    nSigma        = 3;
-    aSigmaLow     = 0.009;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0023;
-    bSigmaHigh    = 6.7e-4;
-    
-    mass          = 0;
-    if (e < switchMass){
-      mass        = aMassLow + bMassLow*e;
-    } else {
-      mass        = aMassHigh + bMassHigh*e;
-    }    
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-    return mass + nSigma*sigma;
-    break;
-  case 3:   //NLM 1
-    aMass         = 0.044;
-    bMass         = 0.0049;
-    switchSigma   = 19.;
-    nSigma        = 2;
-    aSigmaLow     = 0.012;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0012;
-    bSigmaHigh    = 6e-4;
-    
-    mass          = aMass + bMass*e;
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-    return mass + nSigma*sigma;
-    break;
-  case 4:  //NLM 2
-    switchMass    = 21;
-    aMassLow      = 0.115;
-    bMassLow      = 9.6e-4;
-    aMassHigh     = 0.1;
-    bMassHigh     = 0.0017;
-    switchSigma   = 10.;
-    nSigma        = 2;
-    aSigmaLow     = 0.009;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0023;
-    bSigmaHigh    = 6.7e-4;
-    
-    mass          = 0;
-    if (e < switchMass){
-      mass        = aMassLow + bMassLow*e;
-    } else {
-      mass        = aMassHigh + bMassHigh*e;
-    }    
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-    return mass + nSigma*sigma;
-    break;
-  case 5:   //NLM 1
-    aMass         = 0.044;
-    bMass         = 0.0049;
-    switchSigma   = 19.;
-    nSigma        = 4;
-    aSigmaLow     = 0.012;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0012;
-    bSigmaHigh    = 6e-4;
-    
-    mass          = aMass + bMass*e;
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-    return mass + nSigma*sigma;
-    break;
-  case 6:  //NLM 2
-    switchMass    = 21;
-    aMassLow      = 0.115;
-    bMassLow      = 9.6e-4;
-    aMassHigh     = 0.1;
-    bMassHigh     = 0.0017;
-    switchSigma   = 10.;
-    nSigma        = 4;
-    aSigmaLow     = 0.009;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0023;
-    bSigmaHigh    = 6.7e-4;
-    
-    mass          = 0;
-    if (e < switchMass){
-      mass        = aMassLow + bMassLow*e;
-    } else {
-      mass        = aMassHigh + bMassHigh*e;
-    }    
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-    return mass + nSigma*sigma;
-    break;
-    
-  default:
-    cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
-    return -1;
+    case 0:
+      fEnableMassCut = kFALSE;
+      break;
+    case 1:   //NLM 1
+      aMass         = 0.044;
+      bMass         = 0.0049;
+      switchSigma   = 19.;
+      nSigma        = 3;
+      aSigmaLow     = 0.012;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0012;
+      bSigmaHigh    = 6e-4;
+      
+      mass          = aMass + bMass*e;
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+      return mass + nSigma*sigma;
+      break;
+    case 2:  //NLM 2
+      switchMass    = 21;
+      aMassLow      = 0.115;
+      bMassLow      = 9.6e-4;
+      aMassHigh     = 0.1;
+      bMassHigh     = 0.0017;
+      switchSigma   = 10.;
+      nSigma        = 3;
+      aSigmaLow     = 0.009;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0023;
+      bSigmaHigh    = 6.7e-4;
+      
+      mass          = 0;
+      if (e < switchMass){
+        mass        = aMassLow + bMassLow*e;
+      } else {
+        mass        = aMassHigh + bMassHigh*e;
+      }    
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+      return mass + nSigma*sigma;
+      break;
+    case 3:   //NLM 1
+      aMass         = 0.044;
+      bMass         = 0.0049;
+      switchSigma   = 19.;
+      nSigma        = 2;
+      aSigmaLow     = 0.012;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0012;
+      bSigmaHigh    = 6e-4;
+      
+      mass          = aMass + bMass*e;
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+      return mass + nSigma*sigma;
+      break;
+    case 4:  //NLM 2
+      switchMass    = 21;
+      aMassLow      = 0.115;
+      bMassLow      = 9.6e-4;
+      aMassHigh     = 0.1;
+      bMassHigh     = 0.0017;
+      switchSigma   = 10.;
+      nSigma        = 2;
+      aSigmaLow     = 0.009;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0023;
+      bSigmaHigh    = 6.7e-4;
+      
+      mass          = 0;
+      if (e < switchMass){
+        mass        = aMassLow + bMassLow*e;
+      } else {
+        mass        = aMassHigh + bMassHigh*e;
+      }    
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+      return mass + nSigma*sigma;
+      break;
+    case 5:   //NLM 1
+      aMass         = 0.044;
+      bMass         = 0.0049;
+      switchSigma   = 19.;
+      nSigma        = 4;
+      aSigmaLow     = 0.012;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0012;
+      bSigmaHigh    = 6e-4;
+      
+      mass          = aMass + bMass*e;
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+      return mass + nSigma*sigma;
+      break;
+    case 6:  //NLM 2
+      switchMass    = 21;
+      aMassLow      = 0.115;
+      bMassLow      = 9.6e-4;
+      aMassHigh     = 0.1;
+      bMassHigh     = 0.0017;
+      switchSigma   = 10.;
+      nSigma        = 4;
+      aSigmaLow     = 0.009;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0023;
+      bSigmaHigh    = 6.7e-4;
+      
+      mass          = 0;
+      if (e < switchMass){
+        mass        = aMassLow + bMassLow*e;
+      } else {
+        mass        = aMassHigh + bMassHigh*e;
+      }    
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+      return mass + nSigma*sigma;
+      break;
+    case 7: // maximum mass
+      return 10000.;
+      break;
+    case 8: // maximum mass
+      return 10000.;
+      break;
+    case 9: // maximum mass
+      return 10000.;
+      break;
+    default:
+      cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
+      return -1;
   }
   return -1;
   
@@ -1342,160 +1357,169 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
   Float_t sigma           = 0;
   
   switch(fSelectionWindowCut){
-  case 0:
-    fEnableMassCut      = kFALSE;
-    break;
-  case 1:   //NLM 1
-    aMass         = 0.044;
-    bMass         = 0.0049;
-    switchSigma   = 19.;
-    nSigma        = 3;
-    aSigmaLow     = 0.012;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0012;
-    bSigmaHigh    = 6e-4;
-    
-    mass          = aMass + bMass*e;
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
-    return mass - nSigma*sigma;
-    break;
-  case 2:  //NLM 2
-    switchMass    = 21;
-    aMassLow      = 0.115;
-    bMassLow      = 9.6e-4;
-    aMassHigh     = 0.1;
-    bMassHigh     = 0.0017;
-    switchSigma   = 10.;
-    nSigma        = 3;
-    aSigmaLow     = 0.009;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0023;
-    bSigmaHigh    = 6.7e-4;
-    
-    mass          = 0;
-    if (e < switchMass){
-      mass        = aMassLow + bMassLow*e;
-    } else {
-      mass        = aMassHigh + bMassHigh*e;
-    }    
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
-    
-    return mass - nSigma*sigma;
-    break;
-  case 3:   //NLM 1
-    aMass         = 0.044;
-    bMass         = 0.0049;
-    switchSigma   = 19.;
-    nSigma        = 2;
-    aSigmaLow     = 0.012;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0012;
-    bSigmaHigh    = 6e-4;
-    
-    mass          = aMass + bMass*e;
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
-    return mass - nSigma*sigma;
-    break;
-  case 4:  //NLM 2
-    switchMass    = 21;
-    aMassLow      = 0.115;
-    bMassLow      = 9.6e-4;
-    aMassHigh     = 0.1;
-    bMassHigh     = 0.0017;
-    switchSigma   = 10.;
-    nSigma        = 2;
-    aSigmaLow     = 0.009;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0023;
-    bSigmaHigh    = 6.7e-4;
-    
-    mass          = 0;
-    if (e < switchMass){
-      mass        = aMassLow + bMassLow*e;
-    } else {
-      mass        = aMassHigh + bMassHigh*e;
-    }    
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
-    
-    return mass - nSigma*sigma;
-    break;
-  case 5:   //NLM 1
-    aMass         = 0.044;
-    bMass         = 0.0049;
-    switchSigma   = 19.;
-    nSigma        = 4;
-    aSigmaLow     = 0.012;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0012;
-    bSigmaHigh    = 6e-4;
-    
-    mass          = aMass + bMass*e;
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
-    return mass - nSigma*sigma;
-    break;
-  case 6:  //NLM 2
-    switchMass    = 21;
-    aMassLow      = 0.115;
-    bMassLow      = 9.6e-4;
-    aMassHigh     = 0.1;
-    bMassHigh     = 0.0017;
-    switchSigma   = 10.;
-    nSigma        = 4;
-    aSigmaLow     = 0.009;
-    bSigmaLow     = 0;
-    aSigmaHigh    = 0.0023;
-    bSigmaHigh    = 6.7e-4;
-    
-    mass          = 0;
-    if (e < switchMass){
-      mass        = aMassLow + bMassLow*e;
-    } else {
-      mass        = aMassHigh + bMassHigh*e;
-    }    
-    sigma         = 0;
-    if (e < switchSigma){
-      sigma       = aSigmaLow + bSigmaLow*e;
-    } else {
-      sigma       = aSigmaHigh + bSigmaHigh*e;
-    }
-//     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
-    
-    return mass - nSigma*sigma;
-    break;
-    
-  default:
-    cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
-    return -1;
+    case 0:
+      fEnableMassCut      = kFALSE;
+      break;
+    case 1:   //NLM 1
+      aMass         = 0.044;
+      bMass         = 0.0049;
+      switchSigma   = 19.;
+      nSigma        = 3;
+      aSigmaLow     = 0.012;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0012;
+      bSigmaHigh    = 6e-4;
+      
+      mass          = aMass + bMass*e;
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+  //     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+      return mass - nSigma*sigma;
+      break;
+    case 2:  //NLM 2
+      switchMass    = 21;
+      aMassLow      = 0.115;
+      bMassLow      = 9.6e-4;
+      aMassHigh     = 0.1;
+      bMassHigh     = 0.0017;
+      switchSigma   = 10.;
+      nSigma        = 3;
+      aSigmaLow     = 0.009;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0023;
+      bSigmaHigh    = 6.7e-4;
+      
+      mass          = 0;
+      if (e < switchMass){
+        mass        = aMassLow + bMassLow*e;
+      } else {
+        mass        = aMassHigh + bMassHigh*e;
+      }    
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+  //     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+      
+      return mass - nSigma*sigma;
+      break;
+    case 3:   //NLM 1
+      aMass         = 0.044;
+      bMass         = 0.0049;
+      switchSigma   = 19.;
+      nSigma        = 2;
+      aSigmaLow     = 0.012;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0012;
+      bSigmaHigh    = 6e-4;
+      
+      mass          = aMass + bMass*e;
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+  //     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+      return mass - nSigma*sigma;
+      break;
+    case 4:  //NLM 2
+      switchMass    = 21;
+      aMassLow      = 0.115;
+      bMassLow      = 9.6e-4;
+      aMassHigh     = 0.1;
+      bMassHigh     = 0.0017;
+      switchSigma   = 10.;
+      nSigma        = 2;
+      aSigmaLow     = 0.009;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0023;
+      bSigmaHigh    = 6.7e-4;
+      
+      mass          = 0;
+      if (e < switchMass){
+        mass        = aMassLow + bMassLow*e;
+      } else {
+        mass        = aMassHigh + bMassHigh*e;
+      }    
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+  //     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+      
+      return mass - nSigma*sigma;
+      break;
+    case 5:   //NLM 1
+      aMass         = 0.044;
+      bMass         = 0.0049;
+      switchSigma   = 19.;
+      nSigma        = 4;
+      aSigmaLow     = 0.012;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0012;
+      bSigmaHigh    = 6e-4;
+      
+      mass          = aMass + bMass*e;
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+  //     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: " << sigma<<  endl;
+      return mass - nSigma*sigma;
+      break;
+    case 6:  //NLM 2
+      switchMass    = 21;
+      aMassLow      = 0.115;
+      bMassLow      = 9.6e-4;
+      aMassHigh     = 0.1;
+      bMassHigh     = 0.0017;
+      switchSigma   = 10.;
+      nSigma        = 4;
+      aSigmaLow     = 0.009;
+      bSigmaLow     = 0;
+      aSigmaHigh    = 0.0023;
+      bSigmaHigh    = 6.7e-4;
+      
+      mass          = 0;
+      if (e < switchMass){
+        mass        = aMassLow + bMassLow*e;
+      } else {
+        mass        = aMassHigh + bMassHigh*e;
+      }    
+      sigma         = 0;
+      if (e < switchSigma){
+        sigma       = aSigmaLow + bSigmaLow*e;
+      } else {
+        sigma       = aSigmaHigh + bSigmaHigh*e;
+      }
+  //     cout << "E: "<< e << "\t mass: " << mass << "\t sigma: "<< sigma << endl; 
+      return mass - nSigma*sigma;
+      break;
+
+    case 7: // just exclude band at 0
+      return 0.005+0.004*e;
+      break;
+    case 8: // just exclude band at 0 looser
+      return 0.004+0.004*e;
+      break;
+    case 9: // just exclude band at 0 tighter
+      return 0.006+0.004*e;
+      break;
+      
+    default:
+      cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
+      return -1;
   }
   return -1;
 }
@@ -1875,71 +1899,140 @@ Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 {// Set Cut
-  switch(useMCPSmearing){
-  case 0:
-    fUseMCPSmearing   = 0;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 1:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.0e-14;
-    fPSigSmearing     = 0.;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 2:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.0e-15;
-    fPSigSmearing     = 0.0;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 3:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.003;
-    fPSigSmearingCte  = 0.002;
-    break;
-  case 4:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.003;
-    fPSigSmearingCte  = 0.007;
-    break;
-  case 5:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.003;
-    fPSigSmearingCte  = 0.016;
-    break;
-  case 6:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.007;
-    fPSigSmearingCte  = 0.016;
-    break;
-  case 7:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.0e-16;
-    fPSigSmearing     = 0.0;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 8:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.007;
-    fPSigSmearingCte  = 0.014;
-    break;
-  case 9:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.007;
-    fPSigSmearingCte  = 0.011;
-    break;
+  if(fMode == 2){
+    switch(useMCPSmearing){
+    case 0:
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 1:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1;
+      fPSigSmearing     = 0.010;
+      fPSigSmearingCte  = 0.010;
+      break;
+    case 2:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1;
+      fPSigSmearing     = 0.015;
+      fPSigSmearingCte  = 0.010;
+      break;
+    case 3:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.010;
+      break;
+    case 4:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.020;
+      break;
+    case 5:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.020;
+      break;
+    case 6:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 7:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.050;
+      break;
+    case 8:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.060;
+      break;
+    case 9:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.075;
+      fPSigSmearingCte  = 0.050;
+      break;
 
-  default:
-    AliError("Warning: UseMCPSmearing not defined");
-    return kFALSE;
+    default:
+      AliError("Warning: UseMCPSmearing not defined");
+      return kFALSE;
+    }
+  }else{
+    switch(useMCPSmearing){
+    case 0:
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 1:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.0e-14;
+      fPSigSmearing     = 0.;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 2:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.0e-15;
+      fPSigSmearing     = 0.0;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 3:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.003;
+      fPSigSmearingCte  = 0.002;
+      break;
+    case 4:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.003;
+      fPSigSmearingCte  = 0.007;
+      break;
+    case 5:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.003;
+      fPSigSmearingCte  = 0.016;
+      break;
+    case 6:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.007;
+      fPSigSmearingCte  = 0.016;
+      break;
+    case 7:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.0e-16;
+      fPSigSmearing     = 0.0;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 8:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.007;
+      fPSigSmearingCte  = 0.014;
+      break;
+    case 9:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.007;
+      fPSigSmearingCte  = 0.011;
+      break;
+
+    default:
+      AliError("Warning: UseMCPSmearing not defined");
+      return kFALSE;
+    }
   }
   return kTRUE;
 }

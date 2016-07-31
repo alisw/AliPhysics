@@ -31,6 +31,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetLightOutput(Bool_t flag ){fDoLightOutput = flag;}
 
     void SetIsHeavyIon(Int_t flag)                                { fIsHeavyIon                 = flag    ;}
     void SetIsMC(Int_t isMC)                                      { fIsMC                       = isMC    ;}
@@ -65,7 +66,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                                                   fMesonCutArray                = CutArray  ;}
     void SetClusterCutList(Int_t nCuts, TList *CutArray)        { fnCuts                        = nCuts     ;
                                                                   fClusterCutArray              = CutArray  ;}
-
+                                                                  
+    void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
     void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Int_t fDoPhotonQA, Double_t PhiParticle[]);
@@ -82,6 +85,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
     TString                           fV0ReaderName;
+    Bool_t                            fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliGammaConversionAODBGHandler**  fBGHandler;                                 //
     AliConversionAODBGHandlerRP**     fBGHandlerRP;                               //
     AliVEvent*                        fInputEvent;                                //
@@ -160,16 +164,17 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            hMCEtaWOWeightInAccPt;                      //!
     TH1F**                            hMCPi0InAccPt;                              //!
     TH1F**                            hMCEtaInAccPt;                              //!
+    TH1F**                            hMCPi0WOEvtWeightInAccPt;                   //!
+    TH1F**                            hMCEtaWOEvtWeightInAccPt;                   //!
     TH2F**                            hMCPi0PtY;                                  //!
     TH2F**                            hMCEtaPtY;                                  //!
     TH2F**                            hMCPi0PtAlpha;                              //!
     TH2F**                            hMCEtaPtAlpha;                              //!
     TH1F**                            hMCK0sPt;                                   //!
-    TH1F**                            hMCK0sWOWeightPt;                           //!
-    TH2F**                            hMCK0sPtY;                                  //!
     TH2F**                            hMCSecPi0PtvsSource;                        //!
     TH2F**                            hMCSecPi0RvsSource;                         //!
     TH1F**                            hMCSecPi0Source;                            //!
+    TH2F**                            hMCSecPi0InAccPtvsSource;                   //!
     TH1F**                            hMCSecEtaPt;                                //!
     TH1F**                            hMCSecEtaSource;                            //!
     TH2F**                            hMCPi0PtJetPt;                              //! array of histos with weighted pi0, pT, hardest jet pt
@@ -298,12 +303,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;                //enables ClusterCuts for Trigger
+    Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
     
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 30);
+    ClassDef(AliAnalysisTaskGammaConvV1, 33);
 };
 
 #endif

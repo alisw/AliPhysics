@@ -13,7 +13,6 @@ class TF1;
 class TF2;
 class TGraph;
 class TH3F;
-class AliESDtrackCuts;
 class TProfile;
 class TFile;
 class TList;
@@ -22,9 +21,9 @@ class TTree;
 class AliAODEvent;
 class AliESDEvent;
 class AliVEvent;
-class AliAnalysisFilter;
-class AliPPVsMultUtils;
 class AliESDtrackCuts;
+class AliPPVsMultUtils;
+class AliPIDResponse;
 // for Monte Carlo:
 class AliMCEventHandler;
 class AliMCEvent;
@@ -44,11 +43,11 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetTrackFilter(AliAnalysisFilter *filter) {fTrackFilter = filter;};
-  void SetMultEstimator(Int_t tMultEstimator=0) {iMultEstimator = tMultEstimator;};
-  void SetMultiplicityRange(Float_t multMin=-999, Float_t multMax=999) {//multMin=-999 -> analysis over all Minimum Bias collisions
-    multiplicityMin=multMin;
-    multiplicityMax=multMax;
+  void SetESDtrackCutsObj(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;};
+  void SetPPVsMultUtilsObj(AliPPVsMultUtils *fAliPPVsMultUtils) {fPPVsMultUtils = fAliPPVsMultUtils;};
+  void SetMultiplicityRange(Float_t multiplicityMin=0, Float_t multiplicityMax=100) {
+    multMin=multiplicityMin;
+    multMax=multiplicityMax;
   };
   
  private:
@@ -59,56 +58,67 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   AliAODEvent* fAOD;                              //! AOD object
   AliESDEvent* fESD;                              //! ESD object
   AliVEvent* fEvent;                              //! general object
-  AliAnalysisFilter *fTrackFilter;                //  track filter object
+  AliESDtrackCuts *fESDtrackCuts;                 //  ESD track cuts object
   AliPPVsMultUtils *fPPVsMultUtils;               //  for multiplicity estimator
   AliPIDResponse *fPIDResponse;                   //! pointer to PID response
 
   TList *fList;                                   //! output container
   
-  Int_t iMultEstimator;                           //  iMultEstimator: 0-> VZERO Amplitude Estimator; 1->Mid-psudorapidity Estimator;
-  Float_t multiplicityMin;                        //  min. mult.
-  Float_t multiplicityMax;                        //  max. mult.
+  Float_t multMin;                                //  min. multiplicity accepted
+  Float_t multMax;                                //  max. multiplicity accepted
   
-  Int_t stdPdg[9];                                //! Pdg code of e,mu,pi,K,p,d,t,He3,He4
-
+  Int_t stdPdg[18];                               //! Pdg code of e,mu,pi,K,p,d,t,He3,He4
+  
   TH1I *htriggerMask;                             //! trigger mask
-  TH1I *htriggerMask_noMB;
-  TH1I *hNspdVertex;                              //! num. of spd vertices
+  TH1I *htriggerMask_noMB;                        //! trigger mask for no MB events
   TH1F *hzvertex;                                 //! z-vertex distribution
-  TH1I *hpileUp;                                  //! pileup in spd?
-  TH2I *fNtrVsMult;
-  TProfile *prNtrVsMult;
-  TH1I *hmult_tot;                                //! multiplicity distribution
-  TH1I *hmult;                                    //! selected multiplicity distribution
-  TH1I *hNtrack;                                  //! number of tracks distribution
-    
-  TH1I *hpdg;                                     //! pdg label
+  TH1I *hNevent;                                  //! To check the event selection
 
-  TH1F *hpt[7][18];                               //! pT efficiencies
+  TH1I *hV0mult;                                  //! selected V0 multiplicity distribution
+  TH1I *hTrackMult;                               //! number of ITS+TPC tracklets
   
-  TH2F *fptRecoVsTrue[4][18];                     //! pT reco vs. true
-  TProfile *prptRecoVsTrue[4][18];                //! pT reco vs. true
-    
+  TH2I *hpdg;                                     //! pdg label (after event selection)
+  TH1I *htemp;                                    //! temporary
+  
+  TH1I *hCheckTrackSel;                           //! To check the track selection
+
+  TH1I *hnTPCclusters[2];                         //! number of TPC clusters
+  TH1D *hchi2TPC[2];                              //! chi2 per TPC cluster 
+  TH1I *hisTPCrefit[2];                           //! if kTPCrefit
+  TH1I *hisITSrefit[2];                           //! if kITSrefit
+  TH1I *hnSPD[2];                                 //! number of SPD rec. points
+  TH1I *hnKinkDaughters[2];                       //! number of kink daughters
+  TH1D *hsigmaToVtx[2];                           //! number of sigma to the vertex
+  TH1D *hchi2ITS[2];                              //! chi2 per ITS cluster 
+  TH1D *heta[2];                                  //! eta dist.
+  TH1I *hisPropagatedToDca[2];                    //! kPropagatedToDca
+  
   TH2F *fdEdxVSp[2];                              //! dedx vs pTPC
   TProfile *hDeDxExp[9];                          //! TPC splines
-  TH2F *fNsigmaTPC[2][18];                        //! NsigmaTPC vs. pT
-
-  TH3F *fDca[2][3][18];                           //! DCAxy vs DCAz
-
+  
   TH2F *fBetaTOFvspt[2];                          //! beta (TOF) vs pT
   TProfile *hBetaExp[9];                          //! TOF expected beta
 
-  TH2F *fM2tof[2];                                //! m2 computed with TOF
-  TH2F *fM2vspt[3][18];                           //! m2 computed with TOF (TPC cut)
+  TH1F *hpt[4][3][18];                            //! pT distributions
+  
+  TH2F *fptRecoVsTrue[1][18];                     //! pT reco vs. true
+  
+  TH3F *fDca[3][18];                              //! DCAxy vs DCAz
 
-  TF1 *fpTcorr[2];                                //! pT corrections for (anti-)deuteron
+  void EventSelectionMonitor();
+  Bool_t IsInsideMultiplicityBin(Float_t multiplicity);
+  
+  Bool_t AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz);
+  void TrackSelectionMonitor(Int_t nTPCclusters, Double_t chi2TPC, Bool_t isTPCrefit, Bool_t isITSrefit, Int_t nSPD, Int_t nKinkDaughters, Double_t chi2ITS, Bool_t isPropagatedToDca, Double_t DCAxy, Double_t DCAz, Double_t eta);
+  
+  void FillDca(Double_t DCAxy, Double_t DCAz, Double_t t_pt, Int_t kSpec, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
+  
+  void ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec);
+  
+  void CheckTPCsignal(AliVTrack *track);
+  void CheckTOFsignal(AliVTrack *track);
 
-  void ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge, Bool_t isPrimary);
-  void PtCorrection(Double_t &pt, Int_t FlagPid, Short_t charge);
-  void CheckPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge);
-  void FillDca(Double_t DCAxy, Double_t DCAz, Int_t Pdg, Short_t t_charge, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak, Double_t t_pt, Bool_t kTOF);
-    
-  ClassDef(AliAnalysisMCNuclMult, 3);
+  ClassDef(AliAnalysisMCNuclMult, 4);
 };
 
 #endif

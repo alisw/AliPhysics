@@ -32,12 +32,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskEMCALDirGamma.cxx
     AliAnalysisTaskEMCALIsolation.cxx
     AliAnalysisTaskEMCALIsoPhoton.cxx
     AliAnalysisTaskEMCALMesonGGSDM.cxx
     AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
     AliAnalysisTaskEMCALPhoton.cxx
     AliAnalysisTaskEMCALPhotonIsolation.cxx
+    AliAnalysisTaskEMCALPhotonTagged.cxx
     AliAnalysisTaskEMCALPi0Gamma.cxx
     AliAnalysisTaskEMCALPi0PbPb.cxx
     AliAnalysisTaskEMCALPi0V2ShSh.cxx

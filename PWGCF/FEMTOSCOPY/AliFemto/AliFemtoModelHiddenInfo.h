@@ -38,6 +38,8 @@ public:
   Int_t                  GetPDGPidNeg() const;
   Double_t               GetMassNeg() const;
 
+  Int_t                  GetOrigin() const;
+
   void                   SetTrueMomentum(AliFemtoThreeVector *aMom);
   void                   SetTrueMomentum(const AliFemtoThreeVector& aMom);
   void                   SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz);
@@ -66,6 +68,8 @@ public:
   void                   SetPDGPidNeg(Int_t aPid);
   void                   SetMassNeg(Double_t aMass);
 
+  void                   SetOrigin(Int_t origin);
+
 // !!! MANDATORY !!!
 // --- Copy the hidden info from AliFemtoTrack to AliFemtoParticle
   virtual AliFemtoHiddenInfo* Clone() const;
@@ -89,6 +93,8 @@ protected:
   AliFemtoLorentzVector *fEmissionPointNeg; ///< Emission point coordinates of negative daughter
   Int_t                  fPDGPidNeg;        ///< True PID of negative daughter
   Double_t               fMassNeg;          ///< True particle mass of negative daughter
+
+  Int_t                  fOrigin;           ///< Origin of particles, 0 - physical primary, 1 - secondary from weak decay, 2 - secondary from material
 };
 //_______________________________________
 inline AliFemtoHiddenInfo* AliFemtoModelHiddenInfo::Clone() const

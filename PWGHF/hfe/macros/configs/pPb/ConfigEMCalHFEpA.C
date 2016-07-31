@@ -53,11 +53,26 @@ Bool_t isCentralitySys 		= kFALSE
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
+	
+	
+	
 	if(configIndex==14) hfecuts->SetMinNClustersITS(2);								//Minimum number of clusters on ITS
 	else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
 	else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
 	else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
-	else hfecuts->SetMinNClustersITS(3);								            //Minimum number of clusters on ITS
+	else hfecuts->SetMinNClustersITS(3);	
+		
+	if(!isEMCal){
+		if(configIndex==13) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+		else if(configIndex==82) hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+		else hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);	
+		
+		if(configIndex==14) hfecuts->SetMinNClustersITS(3);								//Minimum number of clusters on ITS
+		else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
+		else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
+		else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
+		else hfecuts->SetMinNClustersITS(4);
+	}//Minimum number of clusters on ITS
 	
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
@@ -128,50 +143,23 @@ Bool_t isCentralitySys 		= kFALSE
 			printf("\n\n Running on 13d period!!! WITHOUT CALIBRATION \n\n  TPC Calibration NOT set !!! \n\n ");
 			printf("======================================================================================\n ");
 		
-		/*
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(0.63, 1.17);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-		*/
+			task->SetTPCCalibration();
+	        task->SetTPC_mean_sigma(1.02, 1.68);
+		    task->SetTPCcal_cut_min(-1);
+		    task->SetTPCcal_cut_max(3);
+			
 	}
 	
 	if(period == "e" || period == "f"){
-		task->SetTPCCalibration_eta();
+		task->SetTPCCalibration_eta(kTRUE);
+	}
+	
+	if(configIndex==300){
+		task->SetTPCCalibration_eta(kFALSE);
 	}
 	
 	
-	
-		//Calibration for other periods
-	if(configIndex==200){
-	
-		if(period == "e"){
 			
-				//printf("======================================================================================\n ");
-				//printf("\n\n Running on 13e period!!!  \n\n  TPC Calibration is set !!! \n\n ");
-				//printf("======================================================================================\n ");
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(-0.24, 0.92);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-			
-		}	
-	
-		if(period == "f"){
-			
-				//printf("======================================================================================\n ");
-				//printf("\n\n Running on 13f period!!!  \n\n  TPC Calibration is set !!! \n\n ");
-				//printf("======================================================================================\n ");
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(-0.27, 0.97);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-			
-		}
-	 
-	 
-	}//close confiIndex==200
-	
 		//if(period == "d3"){
 		//task->SetUseShowerShapeCut(kTRUE);
 		//printf("Shower Shape on for d3 because is for the trigger data correction!!! Cannot run as trigger because the corrections with weight\n");
@@ -373,6 +361,8 @@ Bool_t isCentralitySys 		= kFALSE
 				task->SetTPCcal_cut_min(-1);
 			
 		}
+		
+		if(!isEMCal)params[0] = 0;
 	
 	}
 

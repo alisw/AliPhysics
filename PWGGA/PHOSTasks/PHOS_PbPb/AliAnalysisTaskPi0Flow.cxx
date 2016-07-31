@@ -2521,20 +2521,18 @@ void AliAnalysisTaskPi0Flow::SetESDTrackCuts()
 //_____________________________________________________________________________
 void AliAnalysisTaskPi0Flow::SetGeometry()
 {
-  // Initialize the PHOS geometry
-  if( kLHC10h == fPeriod && fEventESD ) {
-    TGeoManager::Import("geometry.root"); //TODO: should perhaps not be done
-    fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-    if( ! fPHOSGeo )
-      AliError("geometry (fPHOSGeo) not initialised");
-  }
-
-  //Init geometry
+  // Initialize the PHOS geometry 
   if(!fPHOSGeo){
+    
     AliOADBContainer geomContainer("phosGeo");
     geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    
+    if (fRunNumber < 224994)
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    else
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2") ;
+    
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
 	if( fDebug )
@@ -2726,10 +2724,6 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
     if (fRunNumber < 224994) { // Run1
         if( ! fEvent->GetCentrality() )
             return true; // reject
-    }
-    else { // Run2
-        if (! fEvent->FindListObject("MultSelection") )
-            return true;
     }
     
     LogSelection(kHasCentrality, fInternalRunNumber);

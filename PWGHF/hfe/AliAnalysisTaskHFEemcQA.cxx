@@ -48,15 +48,6 @@
 #include "AliESDpid.h"
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
-//#include "AliHFEcontainer.h"
-//#include "AliHFEcuts.h"
-//#include "AliHFEpid.h"
-//#include "AliHFEpidBase.h"
-//#include "AliHFEpidQAmanager.h"
-//#include "AliHFEtools.h"
-//#include "AliCFContainer.h"
-//#include "AliCFManager.h"
-
 #include "AliCentrality.h"
 
 #include "AliKFParticle.h"
@@ -90,6 +81,9 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fcentMim(0),
+  fcentMax(0),
+  fCentralityEstimator("V0M"),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -188,6 +182,9 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fThresholdEG2(89),
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
+  fcentMim(0),
+  fcentMax(0),
+  fCentralityEstimator("V0M"),
   fFlagClsTypeDCAL(kTRUE),
   fOutputList(0),
   fNevents(0),
@@ -502,13 +499,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
   fOutputList->Add(fMCcheckMother);
 
-  //Int_t bins[8]={8,500,200,400,400,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  //Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
-  //Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
-  //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
-  //Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  //Double_t xmin[10]={-0.5,   0,  -8,   0,   0,   0,    0, -0.5, -8,   0};
-  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
   Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
   Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
   fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
@@ -577,8 +568,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   ///////////////////
   // centrality
- /////////////////////
-  
+  /////////////////////
+
   Double_t centrality = -1;
   AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality(); 
   //centrality = fCentrality->GetCentralityPercentile("V0M");
@@ -588,19 +579,19 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   if( !fMultSelection) {
     //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     //AliWarning("AliMultSelection object not found!");
-    centrality = fCentrality->GetCentralityPercentile("V0M");
+    centrality = fCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
   }else{
-   //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-   centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
- }
+    //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+    centrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false); 
+  }
   //printf("mim cent selection %d\n",fcentMim);
   //printf("max cent selection %d\n",fcentMax);
   //printf("cent selection %d\n",centrality);
 
   if(fcentMim>-0.5)
-    {
-     if(centrality < fcentMim || centrality > fcentMax)return;
-    }
+  {
+    if(centrality < fcentMim || centrality > fcentMax)return;
+  }
 
   ////////////////
   //Event vertex//
@@ -644,7 +635,6 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   Int_t trigger = -1;
   if (fAOD){
-    //Double_t multiplicity=fAOD->GetHeader()->GetRefMultiplicity();
     AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
     if(!header) AliFatal("Not a standard AOD");
     Double_t multiplicity = header->GetRefMultiplicity();
@@ -865,11 +855,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       Int_t ilabelM = -1;
       if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
       if(pidM==22) // from pi0 & eta
-        {
-          //cout << "check photonic " << endl;
-          AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-          FindMother(fMCparticleM, ilabelM, pidM);
-        }
+      {
+        AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+        FindMother(fMCparticleM, ilabelM, pidM);
+      }
       fMCcheckMother->Fill(abs(pidM));
     }
 
@@ -902,6 +891,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     ///////////////////////////
     //Track matching to EMCAL//
     //////////////////////////
+    if(!track->IsEMCAL()) continue;
     Int_t EMCalIndex = -1;
     EMCalIndex = track->GetEMCALcluster();
     if(EMCalIndex < 0) continue;
@@ -915,8 +905,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
     if(clustMatch && clustMatch->IsEMCAL())
     {
-      fEMCTrkMatch->Fill(clustMatch->GetTrackDx(),clustMatch->GetTrackDz());
-      if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
+      // fEMCTrkMatch->Fill(clustMatch->GetTrackDx(),clustMatch->GetTrackDz());
+      //if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
+
+      Double_t fPhiDiff = -999, fEtaDiff = -999;
+      GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
+      fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
+
+      if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
 
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
@@ -961,24 +957,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       }
 
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
-      cout << "EMC_tof = " << tof << " (ns)" << endl;   
       if(clustMatchE>2.0)fHistoTimeEMC->Fill(clustMatchE,tof);
       if(clustMatchE>2.0 && fUseTender)fHistoTimeEMCcorr->Fill(clustMatchE,tof);
-      //cout << "T0 = " << fVevent->GetT0TOF()<< endl;
 
       //EMCAL EID info
       Double_t eop = -1.0;
-      //Double_t m02 = -99999,m20 = -99999,sqm02=-99999.0,sqm20=-99999.0;//Ratm02m20=-999.0;
       Double_t m02 = -99999,m20 = -99999,sqm02m20=-99999.0;
       if(track->P()>0)eop = clustMatchE/track->P();
       m02 =clustMatch->GetM02();
       m20 =clustMatch->GetM20();
-      //sqm02=sqrt(m02);
-      //sqm20=sqrt(m20);
       sqm02m20 = sqrt(pow(m02,2)+pow(m20,2));
-      //if(m02>0 && m20>0){
-      //    Ratm02m20 = m02/m20;
-      //}
 
       if(track->Pt()>1.0){
         fHistdEdxEop->Fill(eop,dEdx);
@@ -1129,16 +1117,39 @@ void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *tr
   fFlagPhotonicElec = flagPhotonicElec;
 }
 
-void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, int &label, int &pid)
+//________________________________________________________________________
+void AliAnalysisTaskHFEemcQA::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
+  // Calculate phi and eta difference between a track and a cluster. The position of the track is obtained on the EMCAL surface
 
- if(part->GetMother()>-1)
-   {
+  phidiff = 999;
+  etadiff = 999;
+
+  if (!t||!v) return;
+
+  Double_t veta = t->GetTrackEtaOnEMCal();
+  Double_t vphi = t->GetTrackPhiOnEMCal();
+
+  Float_t pos[3] = {0};
+  v->GetPosition(pos);
+  TVector3 cpos(pos);
+  Double_t ceta     = cpos.Eta();
+  Double_t cphi     = cpos.Phi();
+  etadiff=veta-ceta;
+  phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid)
+{
+  // Find mother in case of MC
+
+  if(part->GetMother()>-1)
+  {
     label = part->GetMother();
     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
     pid = partM->GetPdgCode();
-   }
-   //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
+  }
 }
 
 //________________________________________________________________________

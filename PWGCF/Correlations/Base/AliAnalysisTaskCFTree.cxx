@@ -261,6 +261,7 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   if (fMuonOrigin)  fTree->Branch("muon_origin",&fMuonOrigin);
   if (fMcMuons)     fTree->Branch("mcmuons",&fMcMuons);
 
+  fMapping = new AliCFTreeMapping();
   Int_t iParameter=0; // Mapping Tracks
   for (Int_t i=0; i<=AliCFTreeMapping::kZ; i++) {
     if (fStoreTrackInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;

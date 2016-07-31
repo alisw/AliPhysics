@@ -61,7 +61,6 @@ public:
   
   // JV // One dimensional deltaEta histograms for acceptance correction
   AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
-  AliJTH1D fhDeta3DNearMixAcceptance; // Mixed event uncorrected deltaEta histogram in 3D near side for acceptance corfection
   
   // JV // 2D dphi deta histos to study better the background
   AliJTH2D fhDphiDetaBgKlongEta; // 2D histogram from deltaPhi-deltaEta plane in klong and eta gap bins
@@ -194,7 +193,8 @@ public:
   AliJTH1D fhAcceptanceTraditional;   // Acceptance correction check for traditional 1D triangle
   AliJTH2D fhAcceptanceTraditional2D; // Acceptance correction check for traditional deltaEta deltaPhi distribution
   AliJTH2D fhAcceptance3DNearSide; // Acceptance correction check for 3D near side deltaEta deltaPhi distribution
-  
+  AliJTH2D fhAcceptanceTraditional2DZ; // Z-vertex binned acceptance correction check for traditional deltaEta deltaPhi distribution
+  AliJTH2D fhAcceptance3DNearSideZ; // Z-vertex binned acceptance correction check for 3D near side deltaEta deltaPhi distribution
 
   
 protected:

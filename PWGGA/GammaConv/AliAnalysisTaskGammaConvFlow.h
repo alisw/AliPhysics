@@ -27,6 +27,7 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskGammaConvFlow();
     AliAnalysisTaskGammaConvFlow(const char *name);
+    AliAnalysisTaskGammaConvFlow(const char *name, Int_t nCuts);
     virtual ~AliAnalysisTaskGammaConvFlow();
     
     virtual void   UserCreateOutputObjects();
@@ -115,6 +116,17 @@ protected:
 	TH2F 								**hInvMassPair;									//
 	TH2F 								**hKappaTPC;									//
 	TH2F                **hKappaTPC_after;                  //
+	TH2F                **hKappaTPC_Temp0;                  //
+	TH2F                **hKappaTPC_Temp1;                  //
+	TH2F                **hKappaTPC_Temp2;                  //
+	TH2F                **hKappaTPC_Temp3;                  //
+	TH2F                **hKappaTPC_Temp4;                  //
+	TH2F                **hKappaTPC_Temp5;                  //
+	TH2F                **hKappaTPC_Temp6;                  //
+	TH2F                **hKappaTPC_Temp7;                  //
+	TH2F                **hKappaTPC_Temp8;                  //
+	TH2F                **hKappaTPC_Temp9;                  //
+	TH2F                **hKappaTPC_Temp10;                  //
 	TH1F 								**hESDConvGammaR;									//
 	TH1F 								**hESDConvGammaEta;									//
 	Float_t 							fPtGamma;											//
@@ -199,13 +211,14 @@ private:
 	Bool_t               fDebug; //! enable debug mode
 	AliFlowTrackCuts     *fCutsRP; // track cuts for reference particles
 	AliFlowTrackCuts     *fNullCuts; // dummy cuts for flow event tracks
-	AliFlowEvent         *fFlowEvent; //! flow events Inclusive e
+	AliFlowEvent         **fFlowEvent; //! flow events Inclusive e
   
   Bool_t MCElectronElectron( AliAODConversionPhoton *MCPhoton );
+  Int_t GetTemplateID( AliAODConversionPhoton *MCPhoton );
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvFlow, 6);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 8);
 };
 
 #endif

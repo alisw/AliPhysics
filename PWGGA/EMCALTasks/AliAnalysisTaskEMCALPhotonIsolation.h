@@ -55,6 +55,7 @@ class AliAODCaloCluster;
 class AliESDCaloCluster;
 class AliVCaloCells;
 class AliAODMCParticle;
+class AliGenPythiaEventHeader;
   //class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcal.h"
@@ -86,13 +87,10 @@ public:
   void                     SetRejectEventWithoutTracks(Bool_t revwotr)                     { fRejectionEventWithoutTracks = revwotr;}
   void                     SetAnalysispPb(Bool_t ana)                                      { fAnalysispPb = ana;}
   void                     SetTriggerLevel1(Int_t L)                                       { fTriggerLevel1 = L;}
-  void                     SetM02Smearing(Bool_t smear)                                    {
-    fSSsmearing = smear;}
-  void                     SetWidth4Smear(Float_t width)                                   {
-    fSSsmearwidth = width;}
-  void                     SetMean4Smear(Float_t mean)                                     {
-    fSSsmear_mean = mean;}
-  
+  void                     SetM02Smearing(Bool_t smear)                                    { fSSsmearing = smear;}
+  void                     SetWidth4Smear(Float_t width)                                   { fSSsmearwidth = width;}
+  void                     SetMean4Smear(Float_t mean)                                     { fSSsmear_mean = mean;}
+  void                     SetExtraIsoCuts(Bool_t bExtraIsoCuts)                           { fExtraIsoCuts = bExtraIsoCuts;}
 protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI); // Fill some QA histograms
@@ -123,109 +121,31 @@ protected:
   void                     AnalyzeMC();
   void                     LookforParticle(Int_t, Double_t, Double_t, Double_t,Double_t,Double_t, Double_t);
   Bool_t                   MCSimTrigger(AliVEvent *eventIn, Int_t triggerLevel=0); // for the trigger level 1 = EMCEGA1 level 2 = EMCEGA2
-  
+  void                     IsolationAndUEinEMCAL(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index);
+  void                     IsolationAndUEinTPC(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index);
+  void                     AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp,Double_t eta,Double_t phi);
+  void                     CalculateUEDensityMC(Double_t& sumUE);
+
   using AliAnalysisTaskEmcal::FillGeneralHistograms;
   Bool_t FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
     //Bool_t                   FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
   
-  AliAODEvent *fAOD;       //!
-  AliVEvent *fVevent;      //! AliVEvent
+  AliAODEvent *fAOD;       //!<!
+  AliVEvent *fVevent;      //!<! AliVEvent
   
-    //    TObjArray                   fParticleCollArray;              // Neutral Clusters collection array
-  TClonesArray               *fNCluster;                       // Neutral clusters
-  TClonesArray               *fAODMCParticles; //!
-  TClonesArray               *fTracksAna;             //! hybrid track array in
-  AliStack                   *fStack;//!
-  AliEMCALRecoUtils          *fEMCALRecoUtils;  //!  EMCAL utils for cluster rereconstruction.
+  TClonesArray               *fNCluster;       // Neutral clusters
+  TClonesArray               *fAODMCParticles; //!<!
+  TClonesArray               *fTracksAna;      //!<! hybrid track array in
+  AliStack                   *fStack;          //!<!
+  AliEMCALRecoUtils          *fEMCALRecoUtils; //!<!  EMCAL utils for cluster rereconstruction.
   
   Int_t       fWho;           // MODE for the Output Object (TTree or THnSparse)
   Bool_t      fSSsmearing;
   Float_t     fSSsmearwidth;
   Float_t     fSSsmear_mean;
   
-    //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
-    //    TList       *fOutputList; //! Output list
-    //    TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
-  
-  
-  TH1D        *fTrackMult;                      //!Track Multiplicity ---QA
-  TH1D        *fTrackMultEMCAL;                 //!Track Multiplicity EMCAL ---QA
-  TH1D       *fClustMult;                      //!Cluster Multiplicity EMCAL ---QA
-  TH1D        *fPVZBefore;                      //!Z Vertex distribution before cuts. ---QA
-  TH2D        *fEtaPhiCell;                     //!EMCAL Active Cells Distribution EtaPhi ---QA
-  TH2D        *fEtaPhiClus;                     //!EMCAL Cluster Distribution EtaPhi ---QA
-  TH2D        *fClusEvsClusT;                   //!Cluster Energy vs Cluster Time ---QA
-  TH1D        *fVz;                             //! Veretex Z distribution
-  TH1D        *fEvents;                         //! Number of Events
-  TH1D        *fPT;                             //!Pt distribution
-  TH1D        *fE;                              //!E distribution
-  TH1D        *fPtaftTime;                       //!E distribution for clusters after cluster time cut
-  TH1D        *fPtaftTM;                         //!E distribution for neutral clusters
-  TH1D        *fPtaftFC;                         //!E distribution for clusters after fiducial cut
-  TH1D        *fPtaftM02C;                       //!E distribution for clusters after shower shape cut
-  TH1D        *fClusTime;                       //!Time distribution for clusters
-  TH2D        *fM02;                            //!Squared_Lambda0 distribution
-  TH1D        *fNLM;                            //!NLM distribution
-  TH1D        *fDeltaETAClusTrack;              //!dEta Cluster-Track!
-  TH1D        *fDeltaPHIClusTrack;              //!dPhi Cluster-Track!
-  TH1D        *fDeltaETAClusTrackMatch;              //!dEta Cluster-Track matched!
-  TH1D        *fDeltaPHIClusTrackMatch;              //!dPhi Cluster-Track matched!
-  TH2D        *fDeltaETAClusTrackVSpT;          //!dEta Cluster-Track VS pT!
-  TH2D        *fDeltaPHIClusTrackVSpT;          //!dPhi Cluster-Track VS pT!
-  TH1D        *fEtIsoCells;                     //!Isolation Energy with EMCAL Cells
-  TH2D        *fEtIsoClust;                     //!Isolation Energy with EMCAL Clusters
-  TH2D        *fPtIsoTrack;                     //!Isolation Pt with Tracks
-  TH1D        *fPtEtIsoTC;                      //!Isolation with Pt from Tracks and Et from NON-Matched Clusters
-  TH2D        *fPhiBandUEClust;                 //!UE with Phi Band (Clusters)
-  TH2D        *fEtaBandUEClust;                 //!UE with Eta Band (Clusters)
-  TH2D        *fPhiBandUECells;                 //!UE with Phi Band (Cells)
-  TH2D        *fEtaBandUECells;                 //!UE with Eta Band (Cells)
-  TH2D        *fPhiBandUETracks;                //!UE with Phi Band (Tracks)
-  TH2D        *fEtaBandUETracks;                //!UE with Eta Band (Tracks)
-  TH2D        *fPerpConesUETracks;              //!UE with Cones (Tracks ONLY)
-  TH2D        *fTPCWithoutIsoConeB2BbandUE;     //!UE with Full TPC except IsoCone and EtaBand in Back2Back
-  TH1D        *fNTotClus10GeV;                  //!number of TOTAL clusters with Energy bigger than 10 GeV
-  TH1D        *fRecoPV;                         //! primary vertex reconstruction
-  TH1D        *fEtIsolatedCells;                //! Isolated photons, isolation with cells
-  TH1D        *fEtIsolatedClust;                //! Isolated photons, isolation with clusters
-  TH1D        *fPtIsolatedNClust;               //! Isolated neutral clusters
-  TH1D        *fPtIsolatedNTracks;               //! Isolated neutral clusters with tracks
-  TH1D        *fEtIsolatedTracks;               //! Isolated photons, isolation with tracks
-  TH2D        *fPtvsM02iso;                     //! Isolated clusters, pt distribution vs M02
-  TH2D        *fPtvsM02noiso;                   //! Non isolated clusters, pt distribution vs M02
-  TH2D        *fTestIndex;                      //! Index and local index test
-  TH2D        *fTestIndexE;
-  TH2D        *fTestLocalIndexE;
-  TH2D        *fTestEnergyCone;                 //! ernergy cone clusters vs tracks
-  TH2D        *fTestEtaPhiCone;
-  TH3D        *fInvMassM02iso;
-  TH3D        *fInvMassM02noiso;
-  TH3D        *fPtvsM02vsSumPi0;
-  TH3D        *fPtvsM02vsSumEta;
-  TH3D        *fPtvsM02vsSum;
-  TH3D        *fPtvsM02vsSumUE;
-  TH3D        *fTrackMultvsSumChargedvsUE;
-  TH2D        *fTrackMultvsPt;
-  TH3D        *fTracksConeEtaPt;
-  TH3D        *fTracksConeEtaM02;
-  TH1         *fHistXsection;
-  TH1         *fHistTrials;
-  
-  THnSparse   *fOutputTHnS;                    //! 1st Method 4 Output
-  THnSparse   *fOutMCTruth;                    //! 1st Method 4 MC truth Output //Isolation on pTMax
-  THnSparse   *fOutClustMC;                    //! 1st Method 4 MC+Truth Output via Clusterlabel
-  
-  TTree       *fOutputQATree;                  //! 2nd method 4 QA Output
-  TTree       *fOutputTree;                    //! 2nd Method 4 Output
-  
-  TH3D   *fphietaPhotons; //!
-  TH3D   *fphietaOthers; //!
-  TH3D   *fphietaOthersBis;//!
-                           // TH1         *fPDGM02;                        //! check for zeroM02 clusters
-                           //TH2         *fEtrueEclustM02;                //! check for zeroM02 clusters
-                           //TH2         *fDphiDetaM02;                   //!  check for zeroM02 clusters
-                           //TH1D        *fMomPDGM02;                     //!
-                           //TH2D        *fTvsE_MismatchEM02  ;            //!
+    //    TList       *fOutputList; //!<! Output list
+    //    TGeoHMatrix *fGeomMatrix[12];//!<! Geometry misalignment matrices for EMCal
   
   Float_t     fIsoConeRadius;                  // Radius for the Isolation Cont
   Int_t       fEtIsoMethod;                    // Isolation definition 0=SumEt<EtThr, 1=SumEt<%Ephoton, 2=Etmax<EtThr
@@ -234,14 +154,15 @@ protected:
   Double_t    fdphicut;                        // cut on dphi between track and cluster
   Double_t    fM02mincut;                      // lambda0^2 minimum cut
   Double_t    fM02maxcut;                      // lambda0^2 maximum cut
+  Bool_t      fExtraIsoCuts;                   // Cuts on Ncell and DTBC for Clusters in Eiso calculation
   Bool_t      fQA;                             // Flag for few further QA plots wrt the ones already done in the EMCALTask
   Bool_t      fIsMC;                           // Flag for MC Truth Analysis
-  Bool_t      fTPC4Iso;                        //0=EMCAL_ONLY; 1=EMCAL+TPC
-  Int_t       fIsoMethod;                      //0=Cells, 1=Clusters (EMCAL_ONLY),  2=Tracks (EMCAL w/o TPC)
-  Int_t       fUEMethod;                       //0=PhiBand, 1=EtaBand, (EMCAL or TPC) 2= Ort Cones, 3=FullTPC (only with TPC)
-  Int_t       fNDimensions;                    //!number of Dimensions for the THnSPARSE
-  Int_t       fMCDimensions;
-  Int_t       fMCQAdim;                        //!
+  Bool_t      fTPC4Iso;                        // 0=EMCAL_ONLY; 1=Candidate in EMCAL+ TPC for Isolation and UE
+  Int_t       fIsoMethod;                      // 0=Cells, 1=Clusters (EMCAL_ONLY),  2=Tracks (EMCAL w/o TPC)
+  Int_t       fUEMethod;                       // 0=PhiBand, 1=EtaBand, (EMCAL or TPC) 2= Ort Cones, 3=FullTPC (only with TPC)
+  Int_t       fNDimensions;                    //!<!number of Dimensions for the THnSPARSE Reconstruction
+  Int_t       fMCDimensions;                   //!<!number of Dimensions for the THnSPARSE Truth
+  Int_t       fMCQAdim;                        //!<!number of Dimensions for the THnSPARSE Mix
   Bool_t      fisLCAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
   Bool_t      fIsNLMCut;                       // NLM cut available
   Int_t       fNLMCut;                         // number of NLM cut
@@ -260,7 +181,6 @@ protected:
   Double_t    fEtaClustersT;                   // Eta for all clusters
   Double_t    fPhiClustersT;                   // Phi for all clusters
   Double_t    fM02ClustersT;                   // lamnda0^2 for all clusters
-  
   Int_t       fevents;                         // N events
   Int_t       fNClustersT;                     // Clusters multiplicity
   Double_t    flambda0T;                       // M02 for considered clusters (leading one or all depending on flag)
@@ -270,23 +190,99 @@ protected:
   Double_t    fEtT;                            // Et for considered clusters (leading one or all depending on flag)
   Double_t    fPtT;                            // Pt for considered clusters (leading one or all depending on flag)
   Double_t    fPtisoT;                         // Pt for all isolated neutral clusters
-  Double_t    fEtisolatedT;                         // Et for isolated clusters
-  Double_t    fPtisolatedT;                         // Pt for isolated clusters
+  Double_t    fEtisolatedT;                    // Et for isolated clusters
+  Double_t    fPtisolatedT;                    // Pt for isolated clusters
   Double_t    fetaT;                           // Eta for considered clusters
   Double_t    fphiT;                           // Phi for considered clusters
   Double_t    fsumEtisoconeT;                  // sum Et  in cone
   Double_t    fsumEtUE;                        // sum UE
   
+
+    //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
+  TH1D        *fTrackMult;                      ///< Track Multiplicity ---QA
+  TH2D        *fEtaPhiClus;                     ///< EMCAL Cluster Distribution EtaPhi ---QA
+  TH2D        *fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
+  TH1D        *fPT;                             //!<! Pt distribution
+  TH1D        *fE;                              //!<! E distribution
+  TH2D        *fNLM;                            //!<! NLM distribution
+  TH1D        *fVz;                             //!<! Veretex Z distribution
+  TH1D        *fEvents;                         //!<! Number of Events
+  TH1D        *fPtaftTime;                      //!<! E distribution for clusters after cluster time cut
+  TH1D        *fPtaftCell;                      //!<! Pt distribution for clusters after NCells cut
+  TH1D        *fPtaftNLM;                       //!<! Pt distribution for clusters after NLM cut
+  TH1D        *fPtaftTM;                        //!<! E distribution for neutral clusters
+  TH1D        *fPtaftDTBC;                      //!<! E distribution for NC after DistanceToBadChannel cut
+  TH1D        *fPtaftFC;                        //!<! E distribution for clusters after fiducial cut
+  TH1D        *fPtaftM02C;                      //!<! E distribution for clusters after shower shape cut
+  TH1D        *fClusTime;                       //!<! Time distribution for clusters
+  TH2D        *fM02;                            //!<! Squared_Lambda0 distribution
+  TH1D        *fDeltaETAClusTrack;              //!<! dEta Cluster-Track!
+  TH1D        *fDeltaPHIClusTrack;              //!<! dPhi Cluster-Track!
+  TH1D        *fDeltaETAClusTrackMatch;         //!<! dEta Cluster-Track matched!
+  TH1D        *fDeltaPHIClusTrackMatch;         //!<! dPhi Cluster-Track matched!
+  TH1D        *fEtIsoCells;                     //!<! Isolation Energy with EMCAL Cells
+  TH2D        *fEtIsoClust;                     //!<! Isolation Energy with EMCAL Clusters
+  TH2D        *fPtIsoTrack;                     //!<! Isolation Pt with Tracks
+  TH1D        *fPtEtIsoTC;                      //!<! Isolation with Pt from Tracks and Et from NON-Matched Clusters
+  TH2D        *fPhiBandUEClust;                 //!<! UE with Phi Band (Clusters)
+  TH2D        *fEtaBandUEClust;                 //!<! UE with Eta Band (Clusters)
+  TH2D        *fPhiBandUECells;                 //!<! UE with Phi Band (Cells)
+  TH2D        *fEtaBandUECells;                 //!<! UE with Eta Band (Cells)
+  TH2D        *fPhiBandUETracks;                //!<! UE with Phi Band (Tracks)
+  TH2D        *fEtaBandUETracks;                //!<! UE with Eta Band (Tracks)
+  TH2D        *fPerpConesUETracks;              //!<! UE with Cones (Tracks ONLY)
+  TH2D        *fTPCWithoutIsoConeB2BbandUE;     //!<! UE with Full TPC except IsoCone and EtaBand in Back2Back
+  TH1D        *fNTotClus10GeV;                  //!<! number of TOTAL clusters with Energy bigger than 10 GeV
+  TH1D        *fEtIsolatedCells;                //!<! Isolated photons, isolation with cells
+  TH1D        *fEtIsolatedClust;                //!<! Isolated photons, isolation with clusters
+  TH1D        *fPtIsolatedNClust;               //!<! Isolated neutral clusters
+  TH1D        *fPtIsolatedNTracks;              //!<! Isolated neutral clusters with tracks
+  TH1D        *fEtIsolatedTracks;               //!<! Isolated photons, isolation with tracks
+  TH2D        *fPtvsM02iso;                     //!<! Isolated clusters, pt distribution vs M02
+  TH2D        *fPtvsM02noiso;                   //!<! Non isolated clusters, pt distribution vs M02
+  TH2D        *fTestIndex;                      //!<! Index and local index test
+  TH2D        *fTestIndexE;
+  TH2D        *fTestLocalIndexE;
+  TH3F        *fTestEnergyCone;                 //!<! ernergy cone clusters vs tracks
+  TH2D        *fTestEtaPhiCone;
+  TH3D        *fInvMassM02iso;
+  TH3D        *fInvMassM02noiso;
+  TH3D        *fPtvsM02vsSumPi0;
+  TH3D        *fPtvsM02vsSumEta;
+  TH3D        *fPtvsM02vsSum;
+  TH3D        *fPtvsM02vsSumUE;
+  TH3D        *fTrackMultvsSumChargedvsUE;
+  TH2D        *fTrackMultvsPt;
+  TH3D        *fTracksConeEtaPt;
+  TH3D        *fTracksConeEtaM02;
+  TH1F        *fHistXsection;
+  TH1F        *fHistTrials;
   
-    //  AliParticleContainer       *fTracksCont;     //!Tracks
-    //  AliParticleContainer       *fclusters;                       //!Container for Particle container 4 clusters
+  THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
+  THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output //Isolation on pTMax
+  THnSparse   *fOutClustMC;                    //!<! 1st Method 4 MC+Truth Output via Clusterlabel
+  
+  TTree       *fOutputQATree;                  //!<! 2nd method 4 QA Output
+  TTree       *fOutputTree;                    //!<! 2nd Method 4 Output
+  
+  TH3D   *fphietaPhotons; //!<!
+  TH3D   *fphietaOthers; //!<!
+  TH3D   *fphietaOthersBis;//!<!
+                           // TH1         *fPDGM02;                        //!<! check for zeroM02 clusters
+                           //TH2         *fEtrueEclustM02;                //!<! check for zeroM02 clusters
+                           //TH2         *fDphiDetaM02;                   //!<!  check for zeroM02 clusters
+                           //TH1D        *fMomPDGM02;                     //!<!
+                           //TH2D        *fTvsE_MismatchEM02  ;            //!<!
+  
+    //  AliParticleContainer       *fTracksCont;     //!<!Tracks
+    //  AliParticleContainer       *fclusters;                       //!<!Container for Particle container 4 clusters
   
 private:
   AliAnalysisTaskEMCALPhotonIsolation(const AliAnalysisTaskEMCALPhotonIsolation&);            // not implemented
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 4);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 5);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif

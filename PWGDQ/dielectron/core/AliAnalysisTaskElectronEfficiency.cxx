@@ -15,8 +15,8 @@
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-//          Single Electron and Pair-Prefilter Efficiency Task           //
-//                                     (description in .h file)          //
+//       Single Electron, Pair and Pair-Prefilter Efficiency Task        //
+//                                        (description in .h file)       //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -120,11 +120,11 @@ fvReco_Ele_poslabel(),
 fNgen_Pos(0x0),
 fvReco_Pos(),
 fvReco_Pos_poslabel(),
-fNgen_Rec_Ele(0x0),
+fNgen1_Rec_Ele(0x0),
 fNgen2_Rec_Ele(0x0),
 fvReco_Rec_Ele(),
 fvReco_Rec_Ele_poslabel(),
-fNgen_Rec_Pos(0x0),
+fNgen1_Rec_Pos(0x0),
 fNgen2_Rec_Pos(0x0),
 fvReco_Rec_Pos(),
 fvReco_Rec_Pos_poslabel(),
@@ -146,20 +146,34 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
-fDeltaMomNbins(1000),
+fDeltaMomNbins(1200),
 fDeltaMomMin(-10.),
-fDeltaMomMax(10.),
-fDeltaEtaNbins(300),
-fDeltaEtaMin(-1.5),
-fDeltaEtaMax(1.5),
-fDeltaThetaNbins(300),
-fDeltaThetaMin(-1.5),
-fDeltaThetaMax(1.5),
-fDeltaPhiNbins(300),
-fDeltaPhiMin(-1.5),
-fDeltaPhiMax(1.5),
+fDeltaMomMax(2.),
+fRelMomNbins(400),
+fRelMomMin(0.),
+fRelMomMax(2.),
+fDeltaEtaNbins(200),
+fDeltaEtaMin(-0.4),
+fDeltaEtaMax(0.4),
+fDeltaThetaNbins(200),
+fDeltaThetaMin(-0.4),
+fDeltaThetaMax(0.4),
+fDeltaPhiNbins(200),
+fDeltaPhiMin(-0.4),
+fDeltaPhiMax(0.4),
+fDeltaAngleNbins(300),
+fDeltaAngleMin(-0.5),
+fDeltaAngleMax(1.),
+fPGen(0x0),
+fPRec(0x0),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
+fPGen_PrecOverPGen(0x0),
+fPtGen_PtRecOverPtGen(0x0),
+fPGen_DeltaEta(0x0),
+fPGen_DeltaTheta(0x0),
+fPGen_DeltaPhi_Ele(0x0),
+fPGen_DeltaPhi_Pos(0x0),
 fEtaGen_DeltaEta(0x0),
 fThetaGen_DeltaTheta(0x0),
 fPhiGen_DeltaPhi(0x0),
@@ -174,12 +188,11 @@ fOpeningAngleGen_DeltaOpeningAngleUS_pions(0x0),
 fOpeningAngleGen_DeltaOpeningAngleLS_pions(0x0),
 fMgen_PtGen_mRes_ptRes(0x0),
 fPResArr(0x0),
-fPtResArr(0x0),
+fUseRelPResolution(kFALSE),
 fThetaResArr(0x0),
 fEtaResArr(0x0),
-fPhiResArr(0x0),
-fSmearing_Ele(),
-fSmearing_Pos(),
+fPhiEleResArr(0x0),
+fPhiPosResArr(0x0),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -291,11 +304,11 @@ fvReco_Ele_poslabel(),
 fNgen_Pos(0x0),
 fvReco_Pos(),
 fvReco_Pos_poslabel(),
-fNgen_Rec_Ele(0x0),
+fNgen1_Rec_Ele(0x0),
 fNgen2_Rec_Ele(0x0),
 fvReco_Rec_Ele(),
 fvReco_Rec_Ele_poslabel(),
-fNgen_Rec_Pos(0x0),
+fNgen1_Rec_Pos(0x0),
 fNgen2_Rec_Pos(0x0),
 fvReco_Rec_Pos(),
 fvReco_Rec_Pos_poslabel(),
@@ -317,20 +330,34 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
-fDeltaMomNbins(1000),
+fDeltaMomNbins(1200),
 fDeltaMomMin(-10.),
-fDeltaMomMax(10.),
-fDeltaEtaNbins(300),
-fDeltaEtaMin(-1.5),
-fDeltaEtaMax(1.5),
-fDeltaThetaNbins(300),
-fDeltaThetaMin(-1.5),
-fDeltaThetaMax(1.5),
-fDeltaPhiNbins(300),
-fDeltaPhiMin(-1.5),
-fDeltaPhiMax(1.5),
+fDeltaMomMax(2.),
+fRelMomNbins(400),
+fRelMomMin(0.),
+fRelMomMax(2.),
+fDeltaEtaNbins(200),
+fDeltaEtaMin(-0.4),
+fDeltaEtaMax(0.4),
+fDeltaThetaNbins(200),
+fDeltaThetaMin(-0.4),
+fDeltaThetaMax(0.4),
+fDeltaPhiNbins(200),
+fDeltaPhiMin(-0.4),
+fDeltaPhiMax(0.4),
+fDeltaAngleNbins(300),
+fDeltaAngleMin(-0.5),
+fDeltaAngleMax(1.),
+fPGen(0x0),
+fPRec(0x0),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
+fPGen_PrecOverPGen(0x0),
+fPtGen_PtRecOverPtGen(0x0),
+fPGen_DeltaEta(0x0),
+fPGen_DeltaTheta(0x0),
+fPGen_DeltaPhi_Ele(0x0),
+fPGen_DeltaPhi_Pos(0x0),
 fEtaGen_DeltaEta(0x0),
 fThetaGen_DeltaTheta(0x0),
 fPhiGen_DeltaPhi(0x0),
@@ -345,12 +372,11 @@ fOpeningAngleGen_DeltaOpeningAngleUS_pions(0x0),
 fOpeningAngleGen_DeltaOpeningAngleLS_pions(0x0),
 fMgen_PtGen_mRes_ptRes(0x0),
 fPResArr(0x0),
-fPtResArr(0x0),
+fUseRelPResolution(kFALSE),
 fThetaResArr(0x0),
 fEtaResArr(0x0),
-fPhiResArr(0x0),
-fSmearing_Ele(),
-fSmearing_Pos(),
+fPhiEleResArr(0x0),
+fPhiPosResArr(0x0),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -453,11 +479,13 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 	Printf("Now running: CreateOutputObjects()");
   if(fCalcEfficiencyRec){
     Printf("Calculating efficiency in reconstructed binning! ");
-    std::cout << "  pResArr:     " << fPResArr << std::endl;
-    std::cout << "  ptResArr:    " << fPtResArr << std::endl;
-    std::cout << "  thetaResArr: " << fThetaResArr << std::endl;
-    std::cout << "  etaResArr:   " << fEtaResArr << std::endl;
-    std::cout << "  phiResArr:   " << fPhiResArr << std::endl;
+    std::cout << "  pResArr:      " << fPResArr ;
+    if(fUseRelPResolution) std::cout << "   relative momentum resolution will be used" << std::endl;
+    else std::cout << "   momentum difference will be used" << std::endl;
+    std::cout << "  thetaResArr:  " << fThetaResArr << std::endl;
+    std::cout << "  etaResArr:    " << fEtaResArr << std::endl;
+    std::cout << "  phiEleResArr: " << fPhiEleResArr << std::endl;
+    std::cout << "  phiPosResArr: " << fPhiPosResArr << std::endl;
   }
   /// Check if an MC signal was attached
   if(!fSignalsMC) {
@@ -534,26 +562,56 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fDeltaPhi_charge = new TH2D("DeltaPhi_charge","",320,-0.1,6.4,3,-1.5,1.5);
     fDeltaPhi_charge->Sumw2();
 
+    fPGen                                = new TH1D("PGen",                               "",500,0., 5.);
+    fPRec                                = new TH1D("PRec",                               "",500,0., 5.);
     fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
     fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+    fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "",500,0.,10.,fRelMomNbins,fRelMomMin,fRelMomMax);
+    fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "",500,0.,10.,fRelMomNbins,fRelMomMin,fRelMomMax);
+    fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "",500,0.,10.,fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
+    fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "",500,0.,10.,fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
+    fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "",500,0.,10.,fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
+    fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "",500,0.,10.,fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
     fEtaGen_DeltaEta                     = new TH2D("EtaGen_DeltaEta",                    "",200,-1.,1.,fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
     fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "",220,-0.1*TMath::Pi(),1.1*TMath::Pi(),fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
     fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "",320,-0.1*TMath::Pi(),2.1*TMath::Pi(),fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
-    fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,300,-0.5,1.);
-    fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,300,-0.5,1.);
+    fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,fDeltaAngleNbins,fDeltaAngleMin,fDeltaAngleMax);
+    fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,fDeltaAngleNbins,fDeltaAngleMin,fDeltaAngleMax);
 
+    fPGen                                ->Sumw2();
+    fPRec                                ->Sumw2();
     fPGen_DeltaP                         ->Sumw2();
     fPtGen_DeltaPt                       ->Sumw2();
+    fPGen_PrecOverPGen                   ->Sumw2();
+    fPtGen_PtRecOverPtGen                ->Sumw2();
+    fPGen_DeltaEta                       ->Sumw2();
+    fPGen_DeltaTheta                     ->Sumw2();
+    fPGen_DeltaPhi_Ele                   ->Sumw2();
+    fPGen_DeltaPhi_Pos                   ->Sumw2();
     fEtaGen_DeltaEta                     ->Sumw2();
     fThetaGen_DeltaTheta                 ->Sumw2();
     fPhiGen_DeltaPhi                     ->Sumw2();
     fOpeningAngleGen_DeltaOpeningAngleUS ->Sumw2();
     fOpeningAngleGen_DeltaOpeningAngleLS ->Sumw2();
 
+    fPGen                                ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPRec                                ->GetXaxis()->SetTitle("p^{rec} (GeV/c)");
     fPGen_DeltaP                         ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
     fPGen_DeltaP                         ->GetYaxis()->SetTitle("p^{rec} - p^{gen} (GeV/c)");
     fPtGen_DeltaPt                       ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
     fPtGen_DeltaPt                       ->GetYaxis()->SetTitle("p^{rec}_{T} - p^{gen}_{T} (GeV/c)");
+    fPGen_PrecOverPGen                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_PrecOverPGen                   ->GetYaxis()->SetTitle("p^{rec} / p^{gen} (GeV/c)");
+    fPtGen_PtRecOverPtGen                ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+    fPtGen_PtRecOverPtGen                ->GetYaxis()->SetTitle("p^{rec}_{T} / p^{gen}_{T} (GeV/c)");
+    fPGen_DeltaEta                       ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaEta                       ->GetYaxis()->SetTitle("#eta^{rec} - #eta^{gen}");
+    fPGen_DeltaTheta                     ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaTheta                     ->GetYaxis()->SetTitle("#theta^{rec} - #theta^{gen} (rad)");
+    fPGen_DeltaPhi_Ele                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaPhi_Ele                   ->GetYaxis()->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
+    fPGen_DeltaPhi_Pos                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaPhi_Pos                   ->GetYaxis()->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
     fEtaGen_DeltaEta                     ->GetXaxis()->SetTitle("#eta^{gen}");
     fEtaGen_DeltaEta                     ->GetYaxis()->SetTitle("#eta^{rec} - #eta^{gen}");
     fThetaGen_DeltaTheta                 ->GetXaxis()->SetTitle("#theta^{gen} (rad)");
@@ -582,8 +640,16 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->Add(fDeltaPhi_charge);
     resolutionList->Add(fDeltaPhi);
 
+    resolutionList->Add(fPGen);
+    resolutionList->Add(fPRec);
     resolutionList->Add(fPGen_DeltaP);
     resolutionList->Add(fPtGen_DeltaPt);
+    resolutionList->Add(fPGen_PrecOverPGen   );
+    resolutionList->Add(fPtGen_PtRecOverPtGen);
+    resolutionList->Add(fPGen_DeltaEta       );
+    resolutionList->Add(fPGen_DeltaTheta     );
+    resolutionList->Add(fPGen_DeltaPhi_Ele   );
+    resolutionList->Add(fPGen_DeltaPhi_Pos   );
     resolutionList->Add(fEtaGen_DeltaEta);
     resolutionList->Add(fThetaGen_DeltaTheta);
     resolutionList->Add(fPhiGen_DeltaPhi);
@@ -642,52 +708,12 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   singleEffList->Add(singleEffGenList);
 
   if(fCalcEfficiencyRec){
-    if(fPResArr)        {
-      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-    }
-    else if(fPtResArr)  {
-      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
-    }
-    if(fThetaResArr)    {
-      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
-      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
-      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
-      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
-    }
-    else if(fEtaResArr) {
-      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
-      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
-      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
-      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
-    }
-    if(fPhiResArr)      {
-      fSmearing_Ele[4] = new TH1D("smearingValues1_Ele_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
-      fSmearing_Ele[5] = new TH1D("smearingValues2_Ele_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
-      fSmearing_Pos[4] = new TH1D("smearingValues1_Pos_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
-      fSmearing_Pos[5] = new TH1D("smearingValues2_Pos_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
-    }
+
     TList *singleEffRecList = new TList();
     singleEffRecList->SetName("reconstructedBinning");
     singleEffRecList->SetOwner();
-    TList *smearingList = new TList();
-    smearingList->SetName("smearing");
-    smearingList->SetOwner();
-    if(fPResArr || fPtResArr)     { smearingList->Add(fSmearing_Ele[0]); smearingList->Add(fSmearing_Ele[1]);}
-    if(fThetaResArr || fEtaResArr){ smearingList->Add(fSmearing_Ele[2]); smearingList->Add(fSmearing_Ele[3]);}
-    if(fPhiResArr)                { smearingList->Add(fSmearing_Ele[4]); smearingList->Add(fSmearing_Ele[5]);}
-    if(fPResArr || fPtResArr)     { smearingList->Add(fSmearing_Pos[0]); smearingList->Add(fSmearing_Pos[1]);}
-    if(fThetaResArr || fEtaResArr){ smearingList->Add(fSmearing_Pos[2]); smearingList->Add(fSmearing_Pos[3]);}
-    if(fPhiResArr)                { smearingList->Add(fSmearing_Pos[4]); smearingList->Add(fSmearing_Pos[5]);}
-    if(smearingList->GetEntries() > 0)
-      singleEffRecList->Add(smearingList);
 
-    singleEffRecList->Add(fNgen_Rec_Ele);
+    singleEffRecList->Add(fNgen1_Rec_Ele);
     singleEffRecList->Add(fNgen2_Rec_Ele);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       singleEffRecList->Add(fvReco_Rec_Ele.at(iCut));
@@ -695,7 +721,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
         singleEffRecList->Add(fvReco_Rec_Ele_poslabel.at(iCut));
 
-    singleEffRecList->Add(fNgen_Rec_Pos);
+    singleEffRecList->Add(fNgen1_Rec_Pos);
     singleEffRecList->Add(fNgen2_Rec_Pos);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       singleEffRecList->Add(fvReco_Rec_Pos.at(iCut));
@@ -816,7 +842,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if (!fPIDResponse) SetPIDResponse( ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
 
-
   // set pid correction function to var manager
   if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
@@ -912,7 +937,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 
 
   Int_t NEleSelected = 0;
-
+  UInt_t ResolutionMask = 1000;
+  if(fResolutionCuts) ResolutionMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
   if(mcEvent){
     Int_t nMCtracks = mcEvent->GetNumberOfTracks();
     //AliStack *fStack = mcEvent->Stack();
@@ -936,7 +962,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
       if(mctrack->Charge() < 0) fNgen_Ele->Fill(mcPt,mcEta,mcPhi);
       else                      fNgen_Pos->Fill(mcPt,mcEta,mcPhi);
-      Bool_t bFilled1(kFALSE),bFilled2(kFALSE);
+      Bool_t bFilled(kFALSE);
       for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         fSelectedByCut = 0;
         fSelectedByExtraCut = 0;
@@ -950,13 +976,13 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t trackPt  = track->Pt();
         Double_t trackEta = track->Eta();
         Double_t trackPhi = track->Phi();
-
-        if(fCalcEfficiencyRec && !bFilled1){
-          if(mctrack->Charge() < 0) fNgen_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
-          else                      fNgen_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
-          bFilled1 = kTRUE;
+        UInt_t ResolutionMaskSelected = 999;
+        if(fResolutionCuts) ResolutionMaskSelected = fResolutionCuts->IsSelected(track);
+        if(fCalcEfficiencyRec && !bFilled && ResolutionMask == ResolutionMaskSelected){
+          if(mctrack->Charge() < 0) fNgen2_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
+          else                      fNgen2_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
+          bFilled = kTRUE;
         }
-
         for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
           //cutting logic taken from AliDielectron::FillTrackArrays()
           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
@@ -994,11 +1020,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
         } // cut loop
         if(fSelectedByCut==0) continue;// only go on if the track survived at least 1 of the cut settings!
-        if(fCalcEfficiencyRec && !bFilled2){
-          if(mctrack->Charge() < 0) fNgen2_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
-          else                      fNgen2_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
-          bFilled2 = kTRUE;
-        }
         // get track information
         // feel free to add more information to the tree, some more variables are already defined as branches...
         pxESD = track->Px();
@@ -1119,76 +1140,44 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(73)))->Fill(pdgmotherT, pdggrandmotherT);//hPdgCodeM_GM
         } //fSupportedCutInstance
       } // reco track loop
-      if(fCalcEfficiencyRec && (!bFilled1 || !bFilled2)){
+      if(fCalcEfficiencyRec){
         // smear generated but not reconstructed particles with external response matrix
-        if(fPhiResArr){
-          Double_t phiSmearing =  GetSmearing(fPhiResArr,mcPhi);
-          if(mctrack->Charge() < 0){
-            if(!bFilled1) fSmearing_Ele[4]->Fill(phiSmearing);
-            if(!bFilled2) fSmearing_Ele[5]->Fill(phiSmearing);
-          }
-          else{
-            if(!bFilled1) fSmearing_Pos[4]->Fill(phiSmearing);
-            if(!bFilled2) fSmearing_Pos[5]->Fill(phiSmearing);
-          }
-          mcPhi = mcPhi + phiSmearing;
+        Double_t trackP     = mcP;
+        Double_t trackPt    = mcPt;
+        Double_t trackEta   = mcEta;
+        Double_t trackTheta = mcTheta;
+        Double_t trackPhi   = mcPhi;
+
+        if(fPhiEleResArr && fPhiPosResArr){
+          Double_t phiSmearing = 0.;
+          if(mctrack->Charge() < 0) phiSmearing =  GetSmearing(fPhiEleResArr,mcP);
+          else                      phiSmearing =  GetSmearing(fPhiPosResArr,mcP);
+          trackPhi = mcPhi + phiSmearing;
         }
         if(fThetaResArr){
-          Double_t thetaSmearing = GetSmearing(fThetaResArr,mcTheta);
-          if(mctrack->Charge() < 0){
-            if(!bFilled1) fSmearing_Ele[2]->Fill(thetaSmearing);
-            if(!bFilled2) fSmearing_Ele[3]->Fill(thetaSmearing);
-          }
-          else{
-            if(!bFilled1) fSmearing_Pos[2]->Fill(thetaSmearing);
-            if(!bFilled2) fSmearing_Pos[3]->Fill(thetaSmearing);
-          }
-          mcTheta = mcTheta + thetaSmearing;
-          mcEta = -TMath::Log(TMath::Tan(mcTheta/2));
+          Double_t thetaSmearing = GetSmearing(fThetaResArr,mcP);
+          trackTheta = mcTheta + thetaSmearing;
+          trackEta = -TMath::Log(TMath::Tan(trackTheta/2.));
         } else if(fEtaResArr){
-          Double_t etaSmearing = GetSmearing(fEtaResArr,mcEta);
-          if(mctrack->Charge() < 0){
-            if(!bFilled1) fSmearing_Ele[2]->Fill(etaSmearing);
-            if(!bFilled2) fSmearing_Ele[3]->Fill(etaSmearing);
-          }
-          else{
-            if(!bFilled1) fSmearing_Pos[2]->Fill(etaSmearing);
-            if(!bFilled2) fSmearing_Pos[3]->Fill(etaSmearing);
-          }
-          mcEta = mcEta + etaSmearing;
+          Double_t etaSmearing = GetSmearing(fEtaResArr,mcP);
+          trackEta = mcEta + etaSmearing;
         }
         if(fPResArr){
           Double_t pSmearing = GetSmearing(fPResArr,mcP);
-          if(mctrack->Charge() < 0){
-            if(!bFilled1) fSmearing_Ele[0]->Fill(pSmearing);
-            if(!bFilled2) fSmearing_Ele[1]->Fill(pSmearing);
-          }
-          else{
-            if(!bFilled1) fSmearing_Pos[0]->Fill(pSmearing);
-            if(!bFilled2) fSmearing_Pos[1]->Fill(pSmearing);
-          }
-          mcP = mcP + pSmearing;
-          mcPt = TMath::Sin(mcTheta) * mcP;
-        } else if(fPtResArr){
-          Double_t ptSmearing = GetSmearing(fPtResArr,mcPt);
-          if(mctrack->Charge() < 0){
-            if(!bFilled1) fSmearing_Ele[0]->Fill(ptSmearing);
-            if(!bFilled2) fSmearing_Ele[1]->Fill(ptSmearing);
-          }
-          else{
-            if(!bFilled1) fSmearing_Pos[0]->Fill(ptSmearing);
-            if(!bFilled2) fSmearing_Pos[1]->Fill(ptSmearing);
-          }
-          mcPt = mcPt + ptSmearing;
+          if(fUseRelPResolution) trackP  = mcP * pSmearing;
+          else  trackP  = mcP + pSmearing;
+          trackPt = TMath::Sin(trackTheta) * trackP;
         }
 
         if(mctrack->Charge() < 0){
-          if(!bFilled1) fNgen_Rec_Ele ->Fill(mcPt,mcEta,mcPhi);
-          if(!bFilled2) fNgen2_Rec_Ele->Fill(mcPt,mcEta,mcPhi);
+          fNgen1_Rec_Ele->Fill(trackPt,trackEta,trackPhi);
+          if(!bFilled)
+            fNgen2_Rec_Ele->Fill(trackPt,trackEta,trackPhi);
         }
         else{
-          if(!bFilled1) fNgen_Rec_Pos ->Fill(mcPt,mcEta,mcPhi);
-          if(!bFilled2) fNgen2_Rec_Pos->Fill(mcPt,mcEta,mcPhi);
+          fNgen1_Rec_Pos->Fill(trackPt,trackEta,trackPhi);
+          if(!bFilled)
+            fNgen2_Rec_Pos->Fill(trackPt,trackEta,trackPhi);
         }
       }
 
@@ -1208,8 +1197,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         cutMaskKine=fKineTrackCuts->IsSelected( p1 );
         if (cutMaskKine!=selectedMaskKine) continue;
         l1.SetPtEtaPhiM(p1->Pt(),p1->Eta(),p1->Phi(),0.0005109989);
-        for(Int_t iMC2 = 0; iMC2 < nMCtracks; iMC2++){
-          if(iMC1 == iMC2) continue;
+        for(Int_t iMC2 = iMC1+1; iMC2 < nMCtracks; iMC2++){
           AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(iMC2));
           if(!p2){ Printf("no MCtrack: %d", iMC2); continue; }
           if(!AliDielectronMC::Instance()->IsMCTruth(iMC2, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
@@ -1231,8 +1219,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             fNgenPairs_sameMother->Fill(mee,ptee);
           else
             fNgenPairs_diffMothers->Fill(mee,ptee);
-        } // positron loop
-      } // electron loop
+        } // inner loop
+      } // outer loop
 
       for(Int_t iTrack1 = 0; iTrack1 < fESD->GetNumberOfTracks(); iTrack1++){
         AliESDtrack *track1 = fESD->GetTrack(iTrack1);
@@ -1296,13 +1284,12 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     } // end of pair efficiency calculation
 
     if(fCalcResolution && fResolutionCuts){ // calculate electron pt resolution
-      UInt_t selectedMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
       Int_t Nprimaries = mcEvent->GetNumberOfPrimaries();
       TLorentzVector l1Gen,l2Gen,l1Rec,l2Rec;
       for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         AliESDtrack *track = fESD->GetTrack(iTracks);
         if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
-        if(fResolutionCuts->IsSelected(track) != selectedMask) continue;
+        if(fResolutionCuts->IsSelected(track) != ResolutionMask) continue;
         Int_t label = track->GetLabel();
         AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label)));
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
@@ -1332,7 +1319,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(iTracks == iTracks2) continue;
           AliESDtrack *track2 = fESD->GetTrack(iTracks2);
           if (!track2) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
-          if(fResolutionCuts->IsSelected(track2) != selectedMask) continue;
+          if(fResolutionCuts->IsSelected(track2) != ResolutionMask) continue;
           Int_t label2 = track2->GetLabel();
           if(label == label2) continue;
           AliMCParticle *part2 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label2)));
@@ -1381,18 +1368,30 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t recPt  = track->Pt();
         Double_t recP   = track->P();
         if(pdg == 11){
-          if(TMath::Abs(part->Eta()) < 0.8) fPGen_DeltaP   ->Fill(mcP,recP - mcP);
-          if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt ->Fill(mcPt,recPt - mcPt);
+          if(TMath::Abs(part->Eta()) < 0.8) {
+            fPGen                ->Fill(mcP);
+            fPRec                ->Fill(recP);
+            fPGen_DeltaP         ->Fill(mcP, recP - mcP);
+            fPtGen_DeltaPt       ->Fill(mcPt,recPt - mcPt);
+            fPGen_PrecOverPGen   ->Fill(mcP, recP / mcP);
+            fPtGen_PtRecOverPtGen->Fill(mcPt,recPt / mcPt);
+            if (part->Charge()<0) fPGen_DeltaPhi_Ele->Fill(mcP, track->Phi()   - part->Phi());
+            else                  fPGen_DeltaPhi_Pos->Fill(mcP, track->Phi()   - part->Phi());
+            fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
+          }
+          fPGen_DeltaEta       ->Fill(mcP, track->Eta()   - part->Eta());
+          fPGen_DeltaTheta     ->Fill(mcP, track->Theta() - part->Theta());
           fEtaGen_DeltaEta     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta ->Fill(part->Theta(),track->Theta() - part->Theta());
-          if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
         }
         else if(pdg == 211){
-          if(TMath::Abs(part->Eta()) < 0.8) fPGen_DeltaP_pions   ->Fill(mcP,recP - mcP);
-          if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt_pions ->Fill(mcPt,recPt - mcPt);
+          if(TMath::Abs(part->Eta()) < 0.8) {
+            fPGen_DeltaP_pions       ->Fill(mcP,recP - mcP);
+            fPtGen_DeltaPt_pions     ->Fill(mcPt,recPt - mcPt);
+            fPhiGen_DeltaPhi_pions   ->Fill(part->Phi(),  track->Phi()   - part->Phi());
+          }
           fEtaGen_DeltaEta_pions     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta_pions ->Fill(part->Theta(),track->Theta() - part->Theta());
-          if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi_pions     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
         }
         fDeltaPhi->Fill(deltaPhi);
       } // track loop
@@ -1769,8 +1768,8 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
   fNgen_Ele                 = new TH3D("Ngen_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   fNgen_Pos                 = new TH3D("Ngen_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   if(fCalcEfficiencyRec){
-    fNgen_Rec_Ele   = new TH3D("Ngen1_Rec_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-    fNgen_Rec_Pos   = new TH3D("Ngen1_Rec_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+    fNgen1_Rec_Ele  = new TH3D("Ngen1_Rec_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+    fNgen1_Rec_Pos  = new TH3D("Ngen1_Rec_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
     fNgen2_Rec_Ele  = new TH3D("Ngen2_Rec_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
     fNgen2_Rec_Pos  = new TH3D("Ngen2_Rec_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   }
@@ -2055,7 +2054,8 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
 
 }
 //__________________________________________________________________
-void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signal) {
+void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signal)
+{
   //
   //  Add an MC signal to the signals list
   //

@@ -46,12 +46,13 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
      (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-    if(bUsePtResolution){  task->SetResolutionPt( (TObjArray*) fRes->Get("PtResArr") ); }
-    else                {  task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr") ); }
-    if(bUseEtaResolution){ task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr") ); }
-    else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
-    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiResArr") );
+    if(bUseRelPResolution) task->SetResolutionP ((TObjArray*) fRes->Get("RelPResArr"),  kTRUE);
+    else                   task->SetResolutionP ((TObjArray*) fRes->Get("DeltaPResArr"),kFALSE);
+    if(bUseEtaResolution)  task->SetResolutionEta  ((TObjArray*) fRes->Get("EtaResArr"));
+    else                   task->SetResolutionTheta((TObjArray*) fRes->Get("ThetaResArr"));
+    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiEleResArr"), (TObjArray*) fRes->Get("PhiPosResArr"));
   }
+  if(CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
   SetupMCSignals(task);
@@ -68,10 +69,11 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetCalcResolution(CalcResolution);
   if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
   task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+  task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
   task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
   task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
   task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
-
+  task->SetDeltaAngleBinning(NbinsDeltaAngle,DeltaAngleMin,DeltaAngleMax);
   // pair efficiency
   if(doPairing){
     task->SetKineTrackCuts(SetupTrackCutsAndSettings(100));

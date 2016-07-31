@@ -59,10 +59,12 @@ public:
       , fL1Inputs(0)
       , fRunNumber(0)
       , fnTrk(0)
-      , fnTrklet(0)
       , fCharge(0)
       , fL2Inputs(0)
-      , fOrbitID(0) {}
+      , fOrbitID(0) {
+      for (Int_t i=0; i<4; ++i)
+	fnTrklet[i] = 0;
+    }
 
     void Fill(const AliESDEvent *);
 
@@ -75,7 +77,7 @@ public:
     UInt_t    fL1Inputs;
     Int_t     fRunNumber;
     UShort_t  fnTrk;
-    UShort_t  fnTrklet;
+    UShort_t  fnTrklet[4]; // all, C,cent,A
     Char_t    fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;  
@@ -94,6 +96,8 @@ public:
 	fBB[i] = fBG[i] = -1;
 	fDecisionOnline[i] = fDecisionOffline[i] = -1;
       }
+      for (Int_t bc=0; bc<21; ++bc)
+	fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     }
 
     void FillAD(const AliESDEvent *, AliTriggerAnalysis &);
@@ -106,8 +110,22 @@ public:
     Char_t     fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
-
+    Double32_t fPFBBA[21];          //[0,32,5]
+    Double32_t fPFBBC[21];          //[0,32,5]
+    Double32_t fPFBGA[21];          //[0,32,5]
+    Double32_t fPFBGC[21];          //[0,32,5]
   } ;
+
+  struct FMD {
+    FMD()
+      : fA(kFALSE)
+      , fC(kFALSE) {}
+
+    void Fill(const AliESDEvent *, AliTriggerAnalysis &);
+
+    Bool_t fA;
+    Bool_t fC;
+  };
 
   class TreeData : public TObject {
   public:
@@ -116,6 +134,7 @@ public:
       , fEventInfo()
       , fV0Info()
       , fADInfo()
+      , fFMDInfo()
       , fIsIncompleteDAQ(kFALSE)
       , fIsSPDClusterVsTrackletBG(kFALSE)
       , fIskMB(kFALSE) {}
@@ -123,10 +142,11 @@ public:
     EventInfo fEventInfo;
     ADV0      fV0Info;
     ADV0      fADInfo;
+    FMD       fFMDInfo;
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 1);
+    ClassDef(TreeData, 5);
   } ;
 
   struct TrackData : public TObject {
@@ -143,6 +163,7 @@ public:
       for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
 	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
       }
+      fChipKey[0] = fChipKey[1] = -1;
       Fill(tr, pidResponse);
     }
 
@@ -155,7 +176,8 @@ public:
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTOF[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
-    ClassDef(TrackData, 1);
+    Short_t    fChipKey[2];                    //
+    ClassDef(TrackData, 3);
   } ;
 
 
@@ -202,7 +224,7 @@ private:
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
   
-  ClassDef(AliAnalysisTaskDG, 3);
+  ClassDef(AliAnalysisTaskDG, 7);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

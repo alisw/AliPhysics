@@ -21,6 +21,7 @@
 #include "TROOT.h"
 #include "TVector.h"
 #include "TSystem.h"
+#include "TProfile.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -72,6 +73,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Bool_t GetMC() const {return fUseMCInfo;}
   void SetUseCentralityV0M(Bool_t centon) {fUseCentralityV0M = centon;}
   Bool_t GetUseCentralityV0M() const {return fUseCentralityV0M;}
+  void SetUseCentralitySPDTracklet(Bool_t centon) {fUseCentralitySPDTracklet = centon;}
+  Bool_t GetUseCentralitySPDTracklet() const {return fUseCentralitySPDTracklet;}
   void SetWriteEachVariableTree(Bool_t a) {fWriteEachVariableTree = a;}
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
@@ -91,6 +94,28 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
   void StoreGlobalTrackReference(AliAODTrack *track, Int_t id);
   void ResetGlobalTrackReference();
+
+	// multiplicity dep analysis
+	void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+		if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+		fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+		if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+		fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+		if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+		fMultEstimatorAvg[2]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+		if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+		fMultEstimatorAvg[3]=new TProfile(*hprof);
+	}
+
+	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+
+  void SetSingleElectronAnalysis(Bool_t a){fDoSingleElectronAnalysis=a;}
 
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
@@ -131,6 +156,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
+	TProfile* GetEstimatorHistogram(const AliVEvent *event);
 
   Bool_t fUseMCInfo;                 /// Use MC info
   TList *fOutput;                    //!<! User output slot 1 // general histos
@@ -139,6 +165,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;                    //!<! Histogram to check selected events
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
+	TH2F *fHNTrackletvsZ;                //!<! Histogram to check N tracklet vs Z
+	TH2F *fHNTrackletCorrvsZ;                //!<! Histogram to check N tracklet vs Z
   AliRDHFCutsXictoeleXifromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;          /// flag for event selected
   Bool_t    fWriteVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
@@ -174,6 +202,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Int_t  fRunNumber;           /// Run Number
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
+  Bool_t  fUseCentralitySPDTracklet;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
 	Int_t fMCEventType; ///MC eventtype to analyze 1: ccbar 2: bbbar 
 	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
@@ -342,6 +371,30 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoEleXiPtvsRapidityWS; //!<! e-Xi pT vs y
 	TH2F *fHistoEleXiPtvsRapidityMCS; //!<! e-Xi pT vs y
 
+  THnSparse* fHistoCorrelationVariablesvsEleXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsEleXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsEleXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoCorrelationVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoCorrelationVariablesvsXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
+  THnSparse* fHistoMassVariablesvsEleXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoMassVariablesvsEleXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoMassVariablesvsEleXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoMassVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoMassVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoMassVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoMassVariablesvsXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoMassVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoMassVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
+  THnSparse* fHistoSingleElectronVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoSingleElectronVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoSingleElectronVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
@@ -367,6 +420,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistoMCDeltaPhiccbar;//!<!  MC Event Type
 	TH1F *fHistoMCNccbar;//!<!  MC Event Type
 
+	//Multiplicity dep analysis
+	TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+	Double_t fRefMult;   /// refrence multiplcity (period b)
+
   // Store pointers to global tracks for pid and dca
   AliAODTrack **fGTI;                //! Array of pointers, just nicely sorted according to the id
   Int_t *fGTIndex;                //! Array of integers to keep the index of tpc only track
@@ -383,6 +440,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WS;//!<! dPhiS vs dEtaS R125 WS
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+  Bool_t fDoSingleElectronAnalysis; /// flag for event mixing
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -401,9 +459,11 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
   TObjArray* fCascadeCutVarsArray1; /// array of RDHF cut information
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
+  TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
+  TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,27); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,32); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

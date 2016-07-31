@@ -64,8 +64,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass() :
   fh3JetPtVsMassVsEPRelAllSel(0),
   fh3JetPtVsMassVsEPRelTagged(0),
   fh3JetPtVsMassVsEPRelTaggedMatch(0),
-  fh3RhoVsLeadJetPtVsCent(0),
-  fh3RhoMVsLeadJetPtVsCent(0)
+  fhnJetPtMassAndBkg(0)
 {
   // Default constructor.
 
@@ -174,8 +173,7 @@ AliAnalysisTaskEmcalJetMass::AliAnalysisTaskEmcalJetMass(const char *name) :
   fh3JetPtVsMassVsEPRelAllSel(0),
   fh3JetPtVsMassVsEPRelTagged(0),
   fh3JetPtVsMassVsEPRelTaggedMatch(0),
-  fh3RhoVsLeadJetPtVsCent(0),
-  fh3RhoMVsLeadJetPtVsCent(0)
+  fhnJetPtMassAndBkg(0)
 {
   // Standard constructor.
 
@@ -280,13 +278,22 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   const Double_t minNConst = 0.;
   const Double_t maxNConst = 200.;
   
-  Int_t nBinsRho = 200;
+  Int_t nBinsRho = 50;
   Double_t minRho = 0.;
   Double_t maxRho = 20.;
-  Int_t nBinsRhom = 200;
+  Int_t nBinsRhom = 50;
   Double_t minRhom = 0.;
   Double_t maxRhom = 1.;
 
+  const Int_t nbinsCent = 101;
+  Double_t minCent = -1., maxCent = 100.;
+  
+  //#rho; #rho_{m}; #it{p}_{T,lead-jet} (GeV/#it{c}); #it{M}_{lead-jet} (GeV); centrality
+  const Int_t nBinsSparse = 5;
+  const Int_t nBins[nBinsSparse] = {nBinsRho, nBinsRhom, nBinsPt, nBinsM, nbinsCent};
+  const Double_t xmin[nBinsSparse]  = {minRho, minRhom, minPt, minM, minCent};
+  const Double_t xmax[nBinsSparse]  = {maxRho, maxRhom, maxPt, maxM, maxCent};
+  
   TString histName = "";
   TString histTitle = "";
   for (Int_t i = 0; i < fNcentBins; i++) {
@@ -442,27 +449,23 @@ void AliAnalysisTaskEmcalJetMass::UserCreateOutputObjects()
   fh3PtJet1VsMassVsCentTaggedMatch = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsM,minM,maxM,101,-1.,100.);
   fOutput->Add(fh3PtJet1VsMassVsCentTaggedMatch);
   
-  histName = "fh2RhoVsLeadJetPtVsCent";
-  histTitle = Form("Rho Vs LeadJetPt Vs Cent; #rho;#it{p}_{T,lead-jet} (GeV/#it{c});centrality");
-  fh3RhoVsLeadJetPtVsCent = new TH3F(histName.Data(), histTitle.Data(), nBinsRho, minRho, maxRho, nBinsPt, minPt, maxPt, 101, -1., 100.);
-  fOutput->Add(fh3RhoVsLeadJetPtVsCent);
+  histName = "fhnRhoVsRhoMVsLeadJetPtVsMassVsCent";
+  histTitle = Form("Jets and background; #rho; #rho_{m}; #it{p}_{T,lead-jet} (GeV/#it{c}); #it{M}_{lead-jet} (GeV); centrality");
   
-  histName = "fh2RhoMVsLeadJetPtVsCent";
-  histTitle = Form("RhoM Vs LeadJetPt Vs Cent; #rho_{m};#it{p}_{T,lead-jet} (GeV/#it{c});centrality");
-  fh3RhoMVsLeadJetPtVsCent = new TH3F(histName.Data(), histTitle.Data(), nBinsRhom, minRhom, maxRhom, nBinsPt, minPt, maxPt, 101, -1., 100.);
-  fOutput->Add(fh3RhoMVsLeadJetPtVsCent);
+  fhnJetPtMassAndBkg = new THnSparseF(histName.Data(), histTitle.Data(), nBinsSparse, nBins, xmin, xmax);
+  fOutput->Add(fhnJetPtMassAndBkg);
 
   if(fUseSumw2) {
-    // =========== Switch on Sumw2 for all histos ===========
-    for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
-      TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
-      if (h1){
-	h1->Sumw2();
-	continue;
-      }
-      THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
-      if(hn)hn->Sumw2();
-    }
+  	  // =========== Switch on Sumw2 for all histos ===========
+  	  for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
+  	  	  TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
+  	  	  if (h1){
+  	  	  	  h1->Sumw2();
+  	  	  	  continue;
+  	  	  }
+  	  	  THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
+  	  	  if(hn)hn->Sumw2();
+  	  }
   }
 
   TH1::AddDirectory(oldStatus);
@@ -497,9 +500,11 @@ Bool_t AliAnalysisTaskEmcalJetMass::FillHistograms()
 
     AliEmcalJet *lj = jetCont->GetLeadingJet(); //leading pt without rho subtraction
     if(lj){
-       fh3RhoVsLeadJetPtVsCent->Fill(jetCont->GetRhoVal(),lj->Pt(),fCent);
-       fh3RhoMVsLeadJetPtVsCent->Fill(rhomassval,lj->Pt(),fCent);
-    }                
+    	Double_t njetandbkg[5] = {jetCont->GetRhoVal(), rhomassval, lj->Pt() - GetRhoVal(fContainerBase)*lj->Area(), GetJetMass(lj),   fCent};
+    	//#rho; #rho_{m}; #it{p}_{T,lead-jet} (GeV/#it{c}); #it{M}_{lead-jet} (GeV); centrality
+    	
+    	fhnJetPtMassAndBkg->Fill(njetandbkg);
+    }      
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
 

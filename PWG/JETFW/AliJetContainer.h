@@ -65,14 +65,19 @@ class AliJetContainer : public AliParticleContainer {
     external_scheme = 99
   };
 
+  /**
+   * @enum JetAcceptanceType
+   * @brief Bit definition for jet geometry acceptance. Defined here for backwards compatibility. This will be 
+   * removed. Please use AliEmcalJet::JetAcceptanceType in your code.
+   */
   enum JetAcceptanceType {
-    kTPC       ,     // TPC acceptance
-    kTPCfid    ,     // TPC fiducial acceptance
-    kEMCAL     ,     // EMCal acceptance
-    kEMCALfid  ,     // EMCal fiducial acceptance
-    kDCAL      ,     // DCal acceptance
-    kDCALfid   ,     // DCal fiducial acceptance
-    kUser            // User defined acceptance
+    kTPC              = AliEmcalJet::kTPC,        ///< TPC acceptance
+    kTPCfid           = AliEmcalJet::kTPCfid,     ///< TPC fiducial acceptance (each eta edge narrowed by jet R)
+    kEMCAL            = AliEmcalJet::kEMCAL,      ///< EMCal acceptance
+    kEMCALfid         = AliEmcalJet::kEMCALfid,   ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kDCAL             = AliEmcalJet::kDCAL,       ///< DCal acceptance
+    kDCALfid          = AliEmcalJet::kDCALfid,    ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kUser             = AliEmcalJet::kUser        ///< Full acceptance, i.e. no acceptance cut applied -- left to user
   };
 
   AliJetContainer();
@@ -84,16 +89,13 @@ class AliJetContainer : public AliParticleContainer {
   void LoadLocalRho(const AliVEvent *event);
   void LoadRhoMass(const AliVEvent *event);
 
-  void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
+  void                        SetJetAcceptanceType(UInt_t type)         { fJetAcceptanceType          = type ; }
   void                        PrintCuts();
   void                        ResetCuts();
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { SetEtaLimits(min, max)             ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max)            { SetPhiLimits(min, max)             ; }
   void                        SetJetPtCut(Float_t cut)                             { SetMinPt(cut)                      ; }
   void                        SetJetPtCutMax(Float_t cut)                          { SetMaxPt(cut)                      ; }
-  void                        SetJetEtaPhiEMCAL(Double_t r=0.) ;
-  void                        SetJetEtaPhiDCAL(Double_t r=0.)  ;
-  void                        SetJetEtaPhiTPC(Double_t r=0.)   ;
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
@@ -188,10 +190,7 @@ class AliJetContainer : public AliParticleContainer {
 #endif
 
  protected:
-  void SetEMCALGeometry();
-  void SetAcceptanceCuts();
-  
-  JetAcceptanceType           fJetAcceptanceType;    ///  acceptance type
+  UInt_t                      fJetAcceptanceType;    ///  Jet acceptance type cut, see AliEmcalJet::JetAcceptanceType
   Float_t                     fJetRadius;            ///  jet radius
   TString                     fRhoName;              ///  Name of rho object
   TString                     fLocalRhoName;         ///  Name of local rho object
@@ -225,7 +224,7 @@ class AliJetContainer : public AliParticleContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer, 16);
+  ClassDef(AliJetContainer, 17);
 };
 
 #endif

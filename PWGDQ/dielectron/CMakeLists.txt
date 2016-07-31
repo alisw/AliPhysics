@@ -74,6 +74,8 @@ set(SRCS
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
       JPSI/AliDielectronSpectrum.cxx
+      LMEE/AliAnalysisTask_Syst_PtDistributionsData.cxx
+      LMEE/AliAnalysisTask_Syst_PtDistributionsMC.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
       LMEE/AliDielectronReducedTrack.cxx

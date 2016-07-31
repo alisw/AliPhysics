@@ -161,7 +161,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   Printf(":::: Getting post-analysis info for run %i",runNumber);
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
   Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
-    avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
+    avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999., meanResTOF=-999., spreadResTOF=-999., meanResTOFerr=-999., spreadResTOFerr=-999.,
     orphansRatio=-9999., avL=-9999., negLratio=-9999.,
     effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.; 
   Double_t avPiDiffTime=-9999.,peakPiDiffTime=-9999., spreadPiDiffTime=-9999.,peakPiDiffTimeErr=-9999., spreadPiDiffTimeErr=-9999.;
@@ -202,7 +202,12 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   ttree->Branch("spreadTot",&spreadTot,"spreadTot/D"); //spread of main peak of tot after fit
   ttree->Branch("peakTotErr",&peakTotErr,"peakTotErr/D"); // main peak of tot after fit
   ttree->Branch("spreadTotErr",&spreadTotErr,"spreadTotErr/D"); //spread of main peak of tot after fit
-  
+
+  ttree->Branch("meanResTOF",&meanResTOF,"meanResTOF/D"); 
+  ttree->Branch("spreadResTOF",&spreadResTOF,"spreadResTOF/D"); 
+  ttree->Branch("meanResTOFerr",&meanResTOFerr,"meanResTOFerr/D"); 
+  ttree->Branch("spreadResTOFerr",&spreadResTOFerr,"spreadResTOFerr/D");
+ 
   ttree->Branch("orphansRatio",&orphansRatio,"orphansRatio/D"); //orphans ratio
 
   ttree->Branch("avL",&avL,"avL/D"); //mean track length
@@ -329,6 +334,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     }
   }      
   MakeUpHisto(hTot, "matched tracks", 8, kViolet-3);
+
   
   char orphansTxt[200];
   if (hTot->GetEntries()>1){
@@ -465,7 +471,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   }
  
   TH1F * hDiffTimeT0fillPion=(TH1F*)pidList->FindObject("hExpTimePiFillSub_all"); 
-  TH1F * hDiffTimeT0TOFPion1GeV=(TH1F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");  
+  TH2F * hDiffTimeT0TOFPion1GeV=(TH2F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");  
   TH2F * hDiffTimePi=(TH2F*)pidList->FindObject("hExpTimePiVsP_all"); 
   hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
 
@@ -488,6 +494,47 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hDiffTimeKa->Write();
     hDiffTimePro->Write();
   }
+
+
+  //---------------------------------TOF resolution plot ----------------------------------//
+  TH2F * hDiffTimeT0TOFPion1GeV=(TH2F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");
+  Int_t min = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(10.);
+  Int_t max = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(20.);
+  TH1D* ResTOF = (TH1D*)hDiffTimeT0TOFPion1GeV->ProjectionY("ResTOF",min,max);
+  //ResTOF->Draw();
+    //  TProfile* hStartTimeResProfile = (TProfile*) hStartTimeRes->ProfileY("hStartTimeResProfile",binminstRes,binmaxstRes);
+    //hStartTimeResProfile->SetFillStyle(0);
+    //hStartTimeResProfile->SetLineWidth(3);
+    //hStartTimeResProfile->SetLineColor(1);
+    //TH1D *ProjectionY (const char *name="_py", Int_t firstxbin=0, Int_t lastxbin=-1, Option_t *option="") const 
+  ResTOF->Fit("gaus","","",-200.,100.);
+    if (ResTOF->GetFunction("gaus")) {
+      meanResTOF=(ResTOF->GetFunction("gaus"))->GetParameter(1);
+      spreadResTOF=(ResTOF->GetFunction("gaus"))->GetParameter(2);
+      meanResTOFerr=(ResTOF->GetFunction("gaus"))->GetParError(1);
+      spreadResTOFerr=(ResTOF->GetFunction("gaus"))->GetParError(2);	
+    }
+
+    TCanvas *cTOFresolution = new TCanvas("cTOFresolution","TOFresolution",1200,500);  
+    gStyle->SetOptStat(10); 
+    gStyle->SetOptFit();
+    cTOFresolution->Divide(2,1);
+    cTOFresolution->cd(1);
+    gPad->SetLogz();
+    hDiffTimeT0TOFPion1GeV->GetXaxis()->SetRangeUser(0.,50.);
+    hDiffTimeT0TOFPion1GeV->Draw("colz");
+    cTOFresolution->cd(2);
+    ResTOF->GetXaxis()->SetRangeUser(-1000,1000);
+    ResTOF->SetLineWidth(2);
+    ResTOF->SetLineColor(4);
+    ResTOF->Draw();
+
+    TString plotDir(".");
+    if (savePng) cTOFresolution->Print(Form("%s/%i_TOFresolution.png", plotDir.Data(), runNumber));
+    if (saveHisto) {
+      trendFile->cd();
+      ResTOF->Write();      
+    }
 
   //--------------------------------- T0 vs multiplicity plots ----------------------------------//
   TH2F * hT0TOFvsNtracks=(TH2F*)timeZeroList->FindObject("hT0TOFvsNtrk");
@@ -628,7 +675,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   gPad->SetGridx();
   gPad->SetGridy();
   hStartTime->Draw("colz");
-  TString plotDir(".");
+  //TString plotDir(".");
 
   if (savePng) {
     cT0vsMultiplicity->Print(Form("%s/%i_T0vsMultiplicity.png", plotDir.Data(), runNumber));
@@ -651,6 +698,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hStartTimeResProfile->Write();
   }
 
+
+
   //--------------------------------- NSigma PID from TOF QA ----------------------------------//
   TF1 * f = new TF1("f","gaus", RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax);
   TH2F * hSigmaPi=(TH2F*)pidList->FindObject("hTOFpidSigmaPi_all"); 
@@ -668,7 +717,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH2F * hSigmaKa=(TH2F*)pidList->FindObject("hTOFpidSigmaKa_all"); 
   hSigmaKa->GetYaxis()->SetRangeUser(-5.,5.);
   hSigmaKa->GetXaxis()->SetRangeUser(0.2,10.);
-  hSigmaKa->FitSlicesY();
+  hSigmaKa->FitSlicesY(f);
   TH1D * hSigmaKa_1 = (TH1D*)gDirectory->Get("hTOFpidSigmaKa_all_1");
   TH1D * hSigmaKa_2 = (TH1D*)gDirectory->Get("hTOFpidSigmaKa_all_2");
   //hSigmaKaT0->SetName("hSigmaKaT0");
@@ -680,7 +729,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH2F * hSigmaPro=(TH2F*)pidList->FindObject("hTOFpidSigmaPro_all"); 
   hSigmaPro->GetYaxis()->SetRangeUser(-5.,5.);
   hSigmaPro->GetXaxis()->SetRangeUser(0.2,10.);
-  hSigmaPro->FitSlicesY();
+  hSigmaPro->FitSlicesY(f);
   TH1D * hSigmaPro_1 = (TH1D*)gDirectory->Get("hTOFpidSigmaPro_all_1");
   TH1D * hSigmaPro_2 = (TH1D*)gDirectory->Get("hTOFpidSigmaPro_all_2");
   //hSigmaProT0->SetName("hSigmaProT0");
@@ -743,7 +792,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaPiT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_pion");
     hSigmaPiT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaPiT0->GetXaxis()->SetRangeUser(0.2, 5.);
-    hSigmaPiT0->FitSlicesY();
+    hSigmaPiT0->FitSlicesY(f);
     
     TH1D * hSigmaPiT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_1");
     TH1D * hSigmaPiT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_2");
@@ -757,7 +806,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaKaT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_kaon");
     hSigmaKaT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaKaT0->GetXaxis()->SetRangeUser(0.2, 5.);
-    hSigmaKaT0->FitSlicesY();
+    hSigmaKaT0->FitSlicesY(f);
     TH1D * hSigmaKaT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_1");
     TH1D * hSigmaKaT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_2");
     hSigmaKaT0_1->SetLineColor(1);
@@ -769,7 +818,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaProT0 = (TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_proton");
     hSigmaProT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaProT0->GetXaxis()->SetRangeUser(0.2, 5.);
-    hSigmaProT0->FitSlicesY();
+    hSigmaProT0->FitSlicesY(f);
     TH1D * hSigmaProT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_1");
     TH1D * hSigmaProT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_2");
     hSigmaProT0_1->SetLineColor(1);

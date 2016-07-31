@@ -27,6 +27,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliNormalizationCounter.h"
 #include "AliAODMCHeader.h"
+#include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliVertexingHFUtils.h"
 #include "AliVEvent.h"
@@ -46,6 +47,8 @@ public:
     void SetNMassBins(Int_t nbins){fNMassBins=nbins;}
     Int_t GetNMassBins() const{return fNMassBins;}
     Bool_t GetSubtractTrackletsFromDaughters() const {return fSubtractTrackletsFromDau;}
+    Bool_t GetRecomputeSpherocityWithoutDau() const {return fRecomputeSpherocity;}
+    Bool_t GetRemoveD0fromDstar() const {return fRemoveD0fromDstar;}
     
     void SetImpactParameterBinning(Int_t nbins, Double_t dmin, Double_t dmax){
         fNImpParBins=nbins;
@@ -105,7 +108,10 @@ public:
     // Flag to fill THnSparse with MultUncorr and NoPid cases ( 0 = only Mult, 1 = Mult and multUncorr, 2 = NoPid and 3 is All)
     void SetFillSoSparseForMultUncorrNoPid(Int_t flag) { fFillSoSparseChecks=flag; }
     void SetEventShapeParameters(Double_t ptMin, Double_t ptMax, Double_t etaMin, Double_t etaMax, Int_t minMult, Double_t phiStepSizeDeg, Int_t filtbit1, Int_t filtbit2) { fptMin=ptMin; fptMax=ptMax; fetaMin=etaMin; fetaMax=etaMax; fminMult=minMult; fphiStepSizeDeg=phiStepSizeDeg; ffiltbit1=filtbit1; ffiltbit2=filtbit2;}
+    
     void SetCalculationsForSphericity(Bool_t CalSpheri){fCalculateSphericity=CalSpheri;}
+    void SetRecomputeSpherocityWithoutDau(Bool_t RecomputeSphero){fRecomputeSpherocity=RecomputeSphero;}
+    void SetRemoveD0fromDstar(Bool_t RemoveD0fromDstar){fRemoveD0fromDstar=RemoveD0fromDstar;}
     
     Int_t GetUseVZEROParameterizedVertexCorr() { return fDoVZER0ParamVertexCorr; }
     
@@ -136,8 +142,8 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
-    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity);
-    void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel);
+    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t recSpherocity);
+    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel);
     
     TList  *fOutput; //! list send on output slot 1
     TList  *fListCuts; // list of cuts
@@ -151,6 +157,8 @@ private:
     TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
     TH2F* fHistNtrVsSo; //!  hist of ntracklets vs So
     TH2F* fHistNtrCorrVsSo; //!  hist of ntracklets vs So
+    TH2F* fHistNtrVsSpheri; //!  hist of ntracklets vs Spheri
+    TH2F* fHistNtrCorrVsSpheri; //!  hist of ntracklets vs Spheri
     
     TH1F* fHistGenPrimaryParticlesInelGt0; //! hist. of geenrated multiplcity
     TH1F* fHistNtrCorrPSSel; //! hist. of ntracklets for physics selection only selected events
@@ -158,8 +166,11 @@ private:
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
     TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
     
-    THnSparseD *fSparseSpherocity;//! THnSparse histograms for Spherocity studies
-    THnSparseD *fSparseSpherocitywithNoPid;//! THnSparse histograms for Spherocity studies
+    THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
+    THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapePrompt;//! THnSparse histograms for Prompt D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapeFeeddown;//! THnSparse histograms for feeddown D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapePromptFD;//! THnSparse histograms for Both Prompt and feeddown D0 vs. Spherocity
     THnSparseD *fMCAccGenPrompt; //! histo for StepMCGenAcc for D meson prompt
     THnSparseD *fMCAccGenFeeddown; //! histo for StepMCGenAcc for D meson feeddown
     THnSparseD *fMCRecoPrompt; //! histo for StepMCReco for D meson feeddown
@@ -189,7 +200,9 @@ private:
     Bool_t fisPPbData; // flag to run on pPb data (differen histogram bining)
     Bool_t fUseBit;    // flag to use bitmask
     Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
-    Bool_t fCalculateSphericity;
+    Bool_t fCalculateSphericity; // flag for computing Sphericity
+    Bool_t fRecomputeSpherocity; // flag for subtracting D meson daughter contribution to Spherocity calculation
+    Bool_t fRemoveD0fromDstar; // flag for removal of D0 from D* meson
     Int_t fUseNchWeight; // weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
     TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
     TH1F* fHistoMeasNch;  // weight histogram on the true measured multiplicity
@@ -218,7 +231,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,3); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,6); // D vs. mult task
 };
 
 #endif

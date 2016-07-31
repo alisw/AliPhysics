@@ -6,6 +6,8 @@ For users more familiar with the framework, see the [Jet Framework Topics](\ref 
 
 For those who are less familiar, please see the introduction [below](\ref jetFrameworkIntroduction).
 
+An example can be found at <your-path-to-AliPhysics>/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C
+
 # Introduction to the Jet Framework              {#jetFrameworkIntroduction}
 
 ## Framework Philosophy
@@ -81,7 +83,7 @@ For more information, see ``AliAnalysisTaskSE`` and the possible selections in `
 
 #### Necessary Tasks
 
-There are a number of tasks which are required to run before running your analysis in the proper order. These tasks include the EMCal corrections (cell corrections, cluster corrections, hadronic corrections - see [here](\ref READMEclustcorr)) and jet finding. For an up to date task, see ``runEMCalJetAnalysisNew.C``.
+There are a number of tasks which are required to run before running your analysis in the proper order. These tasks include the EMCal corrections (cell corrections, cluster corrections, hadronic corrections - see [here](\ref READMEclustcorr)) and jet finding. For an up to date task, see ``<your-path-to-AliPhysics>/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C``.
 
 ### Additional notes
 
@@ -98,6 +100,14 @@ In general, it is extremely helpful to be familiar with the base classes. It can
 ---------------------
 
 # Jet Framework Topics              {#jetFrameworkTopics}
+
+## Before looking for jets: Track and Cluster selection
+
+Before running any jet finder a proper track and cluster samples have to be set/prepared for use.
+
+To select tracks you can find instructions [here] (\ref READMEtracks).
+
+Clusters require a bit more levels of corrections, see [here] (\ref READMEclustcorr). The different stages of cluster corrections are accessible via different data members of AliVCluster in your task.
 
 ## Basic jet finding
 
@@ -121,8 +131,13 @@ AliEmcalJetTask* AddTaskEmcalJet(
 )
 ~~~
 
+If you use "usedefault" for nTrack and nCluster the AliParticleContainer and AliClusterContainer will be created using the default names, namely "tracks" and "caloClusters" for AOD and "Tracks" and "CaloClusters" for ESD.
+
 ### Charged jets
-For charged jets, running the AliEmcalJetTask is sufficient. The track selection is described [here](\ref READMEtracks).
+For charged jets, take care of your [track selection] (\ref READMEtracks) and run the jet finder e.g. like this:
+~~~
+AliEmcalJetTask* jetFinderCh = AliEmcalJetTask("usedefault", "",  AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet)
+~~~
 
 ### Full jets
 EMCal/DCal cluster corrections have to be applied beforehand as explained [here](\ref READMEclustcorr).
@@ -145,6 +160,14 @@ enum VCluUserDefEnergy_t {
 
 ### Particle level jets (MC)
 For particle level jets it is usually enough to filter primary particles (see \ref READMEtracks).
+
+## Jet containers
+
+For an introduction to containers, see [here](\ref READMEcontainers). The jet container ``AliJetContainer`` allows you to apply a variety of basic cuts to your jet collection.
+
+### Acceptance cut
+
+For example, you can set the geometrical jet acceptance selection you would like to consider -- the allowed options are listed in AliEmcalJet::JetAcceptanceType. The user can select a single type (e.g. kEMCAL), or a bitwise combination (e.g. kEMCAL | kDCAL). The container can be configured via AliJetContainer::SetJetAcceptanceType() or when adding a jet container via one of the AliAnalysisTaskEmcalJet::AddJetContainer functions. The cut is implemented in AliJetContainer by comparing jet's bits (set automatically in the jet finder) to the container's bits (set by user).
 
 ## Utilities (e.g. FJ contribs)
 

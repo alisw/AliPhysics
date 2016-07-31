@@ -31,6 +31,9 @@ Bool_t ConfigPhiPP13TeV_PID
   AliRsnCutSetDaughterParticle* cutSetQ;
   AliRsnCutSetDaughterParticle* cutSetK;
 
+  Int_t MultBins=aodFilterBit/100;
+  aodFilerBit=aodFilterBit%100;
+
   Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
   Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
   if(nsigmaKaTOF<1.e-10) nsigmaKaTOF=-1.;

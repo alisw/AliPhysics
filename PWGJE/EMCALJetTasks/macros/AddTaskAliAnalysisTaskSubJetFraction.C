@@ -77,7 +77,8 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   //task->SetVzRange(-10.,10.);
 
   AliParticleContainer *trackContData=0x0; 
-  AliParticleContainer *trackContDet=0x0;  
+  AliParticleContainer *trackContDet=0x0;
+  AliParticleContainer *trackContTrue=0x0;
 
   if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub){
     trackContData = task->AddParticleContainer(ntracksData);
@@ -87,8 +88,10 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
     trackContData = task->AddTrackContainer(ntracksData);
     trackContDet = task->AddTrackContainer(ntracksDet);
   }
-
-  AliParticleContainer *trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+  if ((jetShapeType==AliAnalysisTaskSubJetFraction::kData || jetShapeType==AliAnalysisTaskSubJetFraction::kSim) && (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub)){
+    trackContTrue = task->AddTrackContainer(ntracksTrue); //Unsubtracted tracks branch
+  }
+  else trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   AliParticleContainer *trackContHybridUs = task->AddParticleContainer(ntracksHybridUs);
   AliParticleContainer *trackContHybridS = task->AddParticleContainer(ntracksHybridS);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
@@ -109,7 +112,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->ConnectClusterContainer(clusterCont);
       JetContTrue->SetPercAreaCut(0.6);
       JetContTrue->SetJetRadius(R);
-      JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
   }
 
@@ -120,9 +123,19 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->ConnectParticleContainer(trackContTrue);
       JetContTrue->ConnectClusterContainer(clusterCont);
       JetContTrue->SetJetRadius(R);
-      JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       JetContTrue->SetPercAreaCut(0.6);
     }
+    if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){                                                                             
+      JetContDet=task->AddJetContainer(njetsDet,strType,R);     //So we can access the unsubtracted particle container                                                                            
+      if(JetContDet) {
+        JetContDet->SetRhoName(nrhoBase);
+        JetContDet->ConnectParticleContainer(trackContDet);
+        JetContDet->SetPercAreaCut(0.6);
+	JetContDet->SetJetRadius(R);
+	JetContDet->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+      }
+    }  
   }
 
   
@@ -135,7 +148,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContDet->ConnectClusterContainer(clusterCont);
       JetContDet->SetPercAreaCut(0.6);
       JetContDet->SetJetRadius(R);
-      JetContDet->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContDet->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
 
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //Particle Level MC
@@ -144,7 +157,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->ConnectParticleContainer(trackContTrue);
       JetContTrue->SetPercAreaCut(0.6);
       JetContTrue->SetJetRadius(R);
-      JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
   }  
 
@@ -156,9 +169,19 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContData->ConnectClusterContainer(clusterCont);
       JetContData->SetPercAreaCut(0.6);
       JetContData->SetJetRadius(R);
-      JetContData->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContData->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) JetContData->SetAreaEmcCut(-2);
-    }    
+    }
+    if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){                                                                             
+      JetContTrue=task->AddJetContainer(njetsTrue,strType,R);     //So we can access the unsubtracted particle container                                                                            
+      if(JetContTrue) {
+        JetContTrue->SetRhoName(nrhoBase);
+        JetContTrue->ConnectParticleContainer(trackContTrue);
+        JetContTrue->SetPercAreaCut(0.6);
+	JetContTrue->SetJetRadius(R);
+	JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+      }
+    }   
   }
   
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart){
@@ -169,7 +192,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContHybridS->ConnectClusterContainer(clusterCont);
       JetContHybridS->SetPercAreaCut(0.6);
       JetContHybridS->SetJetRadius(R);
-      JetContHybridS->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContHybridS->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) JetContHybridS->SetAreaEmcCut(-2); //??????????                                                             
     }
     if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){ //??????????????????????????                                                                                  
@@ -179,7 +202,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
         JetContHybridUs->ConnectParticleContainer(trackContHybridUs);
         JetContHybridUs->SetPercAreaCut(0.6);
 	JetContHybridUs->SetJetRadius(R);
-	JetContHybridUs->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+	JetContHybridUs->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       }
     }
     JetContDet = task->AddJetContainer(njetsDet,strType,R); //Pythia Detector Level                                                                                        
@@ -188,7 +211,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContDet->ConnectParticleContainer(trackContDet);
       JetContDet->SetPercAreaCut(0.6);
       JetContDet->SetJetRadius(R);
-      JetContDet->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContDet->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //Pyhthia Particle Level                                                                                
     if(JetContTrue) {
@@ -196,7 +219,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->ConnectParticleContainer(trackContTrue);
       JetContTrue->SetPercAreaCut(0.6);
       JetContTrue->SetJetRadius(R);
-      JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
+      JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
   }
   

@@ -273,7 +273,8 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	fIsFromMBHeader(kTRUE),
 	fIsMC(kFALSE),
 	fDoTHnSparse(kTRUE),
-	fDoHistoDalitzMassLog(kFALSE)
+	fDoHistoDalitzMassLog(kFALSE),
+    fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
 {
 
 }
@@ -493,7 +494,8 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	fIsFromMBHeader(kTRUE),
 	fIsMC(kFALSE),
 	fDoTHnSparse(kTRUE),
-	fDoHistoDalitzMassLog(kFALSE)
+	fDoHistoDalitzMassLog(kFALSE),
+    fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE)
 {
 	DefineOutput(1, TList::Class());
 }
@@ -2679,7 +2681,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UpdateEventByEventData(){
 //______________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate)
 {
-
 	// Process True Mesons
 	AliStack *MCStack = fMCEvent->Stack();
 	
@@ -2762,9 +2763,16 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 		
 
 		if(  isTruePi0 || isTrueEta ){ // True Pion or Eta
+            
+            
 			if ( virtualGamma == 1 ) { //True Dalitz	
 				Float_t weighted= 1;
 				
+                Float_t weightMatBudget = 1.;       
+                if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetWeightsInitialized ()) {
+                    weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate);
+                }
+              
 				
 				if ( isTruePi0 && fDoMesonQA > 0 ) {
 						
@@ -2811,17 +2819,17 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 					}
 				}
 
-				hESDTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
+				hESDTrueMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget);
 				hESDTrueMotherW0WeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-				hESDTrueMotherDalitzInvMassPt[fiCut]->Fill( TrueVirtualGammaCandidate->M(),Pi0Candidate->Pt(),weighted);
+				hESDTrueMotherDalitzInvMassPt[fiCut]->Fill( TrueVirtualGammaCandidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget);
 
 				if(gammaMotherLabel < MCStack->GetNprimary()){ // Only primary pi0 for efficiency calculation
-					hESDTruePrimaryMotherInvMassPt[fiCut]->Fill( Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
+					hESDTruePrimaryMotherInvMassPt[fiCut]->Fill( Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget);
 					hESDTruePrimaryMotherW0WeightingInvMassPt[fiCut]->Fill( Pi0Candidate->M(), Pi0Candidate->Pt() );
 				
-					hESDTruePrimaryMotherInvMassMCPt[fiCut]->Fill(Pi0Candidate->M(),((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->Pt(),weighted);
+					hESDTruePrimaryMotherInvMassMCPt[fiCut]->Fill(Pi0Candidate->M(),((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->Pt(),weighted*weightMatBudget);
 					if(isTruePi0){ // Only primaries for unfolding
-						hESDTruePrimaryPi0DalitzESDPtMCPt[fiCut]->Fill(Pi0Candidate->Pt(),((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->Pt(),weighted);
+						hESDTruePrimaryPi0DalitzESDPtMCPt[fiCut]->Fill(Pi0Candidate->Pt(),((TParticle*)MCStack->Particle(virtualGammaMotherLabel))->Pt(),weighted*weightMatBudget);
 					}
 				} else { // Secondary Meson
 					Float_t weightedSec= 1;
@@ -2831,9 +2839,15 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 							weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
 						}
 					}
-					hESDTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec); 
+					hESDTrueSecondaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget); 
 				}
 			} else if ( virtualGamma == 0 ){
+                
+                Float_t weightMatBudget = 1.;       
+                if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetWeightsInitialized ()) {
+                    weightMatBudget = ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate) * ((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueVirtualGammaCandidate);
+                }
+                
 				Float_t weighted= 1;
 				if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) {
 					if(((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsParticleFromBGEvent(gammaMotherLabel, fMCStack,fInputEvent)){
@@ -2842,11 +2856,11 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 						}
 					}
 				}
-				hESDTrueMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted); // Pi0 from GG
+				hESDTrueMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget); // Pi0 from GG
 				hESDTrueMotherPi0GGW0WeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
 				
 				if( gammaMotherLabel < MCStack->GetNprimary() ){
-					hESDTruePrimaryMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted);
+					hESDTruePrimaryMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget);
 				} else {
 					Float_t weightedSec= 1;
 					if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoWeights() ) { 
@@ -2855,7 +2869,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
 							weightedSec= ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
 						}
 					}
-					hESDTrueSecondaryMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec);
+					hESDTrueSecondaryMotherPi0GGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weightedSec*weightMatBudget);
 				}
 			}
 		}

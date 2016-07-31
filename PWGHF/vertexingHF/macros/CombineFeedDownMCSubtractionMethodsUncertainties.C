@@ -38,7 +38,7 @@
 //
 //_________________________________________________________________________________________
 
-enum centrality{ kpp7, kpp276, k010, k020, k2040, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp8, kpp7, kpp276, k010, k020, k2040, k4060, k6080, k4080, k80100 };
 
 void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HFPtSpectrum_D0Kpi_method1_221110_newnorm.root",
 						      const char *nbfilename="HFPtSpectrum_D0Kpi_method2_221110_newnorm.root",
@@ -123,6 +123,8 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   AliHFSystErr systematics;
   if( centrality==kpp276 ) {
     systematics.SetIsLowEnergy(true);
+  } else if( centrality==kpp8){
+      systematics.SetRunNumber(12);
   } else if( centrality!=kpp7 )  {
     systematics.SetCollisionType(1);
     if ( centrality == k020 ) {

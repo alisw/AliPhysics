@@ -40,6 +40,7 @@ set(SRCS
     legotrain/AliAnalysisTaskCDPWA.cxx
     legotrain/AliMultiplicitySelectionCPPWA.cxx
     legotrain/AliAnalysisTaskDG.cxx
+    legotrain/AliAnalysisTaskDiffCrossSections.cxx
     QA/AliAnalysisTaskCPQA.cxx
     QA/AliAnalysisTaskCEPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
@@ -59,7 +60,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSrec VZERObase PWGPP)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSbase ITSrec VZERObase PWGPP)
 
 # Generate the ROOT map
 # Dependecies

@@ -716,7 +716,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fListHistCascade->Add(fHistCascadeMultiplicityAfterPhysicsSel);
    }
    if (! fHistCascadeMultiplicityAfterRevertexing) {
-        fHistCascadeMultiplicityAfterRevertexing = new TH1F("fHistCascadeMultiplicityAfterRevertexing", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fHistCascadeMultiplicityAfterRevertexing = new TH1F("fHistCascadeMultiplicityAfterRevertexing", "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterRevertexing);
    }
    if (! fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel) {
@@ -724,11 +724,11 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fListHistCascade->Add(fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel);
    }
    if (! fHistCascadeMultiplicityAfterSPDresolution) {
-        fHistCascadeMultiplicityAfterSPDresolution = new TH1F("fHistCascadeMultiplicityAfterSPDresolution", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fHistCascadeMultiplicityAfterSPDresolution = new TH1F("fHistCascadeMultiplicityAfterSPDresolution", "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterSPDresolution);
    }
    if (! fHistCascadeMultiplicityAfterVerticesProximity) {
-        fHistCascadeMultiplicityAfterVerticesProximity = new TH1F("fHistCascadeMultiplicityAfterVerticesProximity", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fHistCascadeMultiplicityAfterVerticesProximity = new TH1F("fHistCascadeMultiplicityAfterVerticesProximity", "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterVerticesProximity);
    }
    if (! fHistCascadeMultiplicityAfterZprimVtxPosSel) {
@@ -1952,7 +1952,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
               lCurrentParticlePrimary_C = 0x0;  lCurrentParticlePrimary_C = lMCstack->Particle(iCurrentLabelStack_C);
               if (!lCurrentParticlePrimary_C) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
               if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_C)) continue;
-              partEnergy_C = lCurrentParticlePrimary_A->Energy();  partPz_C = lCurrentParticlePrimary_C->Pz();  partPt_C = lCurrentParticlePrimary_C->Pt();  PDGcode_C = lCurrentParticlePrimary_C->GetPdgCode();
+              partEnergy_C = lCurrentParticlePrimary_C->Energy();  partPz_C = lCurrentParticlePrimary_C->Pz();  partPt_C = lCurrentParticlePrimary_C->Pt();  PDGcode_C = lCurrentParticlePrimary_C->GetPdgCode();
          } else if (fAnalysisType == "AOD") {
               lCurrentParticleaod_C = 0x0;  lCurrentParticleaod_C = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_C);
               if (!lCurrentParticleaod_C) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }

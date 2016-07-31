@@ -126,6 +126,9 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   ExecuteUtilities(AliEmcalJet* jet, Int_t ij);
   void                   TerminateUtilities();
   Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
+  UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
+  Bool_t                 IsJetInEmcal(Double_t eta, Double_t phi, Double_t r);
+  Bool_t                 IsJetInDcal(Double_t eta, Double_t phi, Double_t r);
 
   TString                fJetsTag;                // tag of jet collection (usually = "Jets")
 

@@ -607,7 +607,7 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
     // in the isolation conte
     if ( pCandidate->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
     {
-      Int_t  trackID   = TMath::Abs(track->GetID()) ;
+      Int_t  trackID   = GetReader()->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
       Bool_t contained = kFALSE;
       
       for(Int_t i = 0; i < 4; i++) 
@@ -954,12 +954,17 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   coneptsumCluster  = 0;
   
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
-  
+
+  Float_t ptTrig = aodParticle->Pt();
+
   // Recover reference arrays with clusters and tracks
   TObjArray * refclusters = aodParticle->GetObjArray(GetAODObjArrayName()+"Clusters");
-  if(!refclusters) return ;
-  
-  Float_t ptTrig = aodParticle->Pt();
+  if(!refclusters){
+    fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
+    fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
+    
+    return ;
+  }
   
   // Get vertex for cluster momentum calculation
   Double_t vertex[] = {0,0,0} ; //vertex ;
@@ -1089,13 +1094,20 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCo
 void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle,
                                                          Float_t & coneptsumTrack, Float_t & coneptLeadTrack)
 {
+  coneptLeadTrack = 0;
+  coneptsumTrack  = 0;
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyNeutral ) return ;
   
+  Float_t  ptTrig = aodParticle->Pt();
   // Recover reference arrays with clusters and tracks
   TObjArray * reftracks   = aodParticle->GetObjArray(GetAODObjArrayName()+"Tracks");
-  if(!reftracks) return ;
+  if(!reftracks){
+    fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
+    fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
+    
+    return ;
+  }
   
-  Float_t  ptTrig = aodParticle->Pt();
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
   
   Float_t pTtrack       = 0;
@@ -4414,7 +4426,7 @@ Bool_t AliAnaParticleIsolation::IsTriggerTheNearSideEventLeadingParticle(Int_t &
     // in the isolation conte
     if ( pLeading->GetDetectorTag() == AliFiducialCut::kCTS ) // make sure conversions are tagged as kCTS!!!
     {
-      Int_t  trackID   = TMath::Abs(track->GetID()) ;
+      Int_t  trackID   = GetReader()->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
       Bool_t contained = kFALSE;
       
       for(Int_t i = 0; i < 4; i++) 

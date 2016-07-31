@@ -70,7 +70,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 TString       periodNameV0Reader            = "",
                                 Bool_t        doMultiplicityWeighting       = kFALSE,                           //
                                 TString       fileNameInputForMultWeighing  = "Multiplicity.root",              //
-                                TString       periodNameAnchor              = ""
+                                TString       periodNameAnchor              = "",
+                                Bool_t        runLightOutput                = kFALSE                            // switch to run light output (only essential histograms for afterburner)
                           ) {
 
   // ================= Load Librariers =================================
@@ -138,6 +139,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -152,6 +155,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -184,6 +188,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
   // Cut Numbers to use in Analysis
   
   CutHandlerConv cuts;
@@ -326,6 +331,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());    
     if (doEtaShiftIndCuts) {
       analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
@@ -337,6 +344,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     if (trainConfig == 15 || trainConfig==16 || trainConfig==17  || trainConfig==18) {
@@ -349,6 +357,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     if (trainConfig ==13 || trainConfig ==14){
       analysisMesonCuts[i]->SetOpeningAngleCut(0.000);          
     }
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");

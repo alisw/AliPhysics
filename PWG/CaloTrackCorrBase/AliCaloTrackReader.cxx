@@ -694,7 +694,7 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
     parList+=onePar ;
   }
   
-  if(fComparePtHardAndClusterPt)
+  if(fComparePtHardAndJetPt)
   {
     snprintf(onePar,buffersize,"jet pt / pt hard < %2.1f; ",fPtHardAndJetPtFactor);
     parList+=onePar ;
@@ -947,6 +947,19 @@ Int_t AliCaloTrackReader::GetVertexBC(const AliVVertex * vtx)
   else      vertexBC = AliVTrack::kTOFBCNA ;
   
   return vertexBC;
+}
+
+//_____________________________
+/// 
+/// Return track ID, different for ESD and AODs.
+/// See AliCaloTrackAODReader for AOD correspondent
+///
+/// \return track ID
+/// \param track: pointer to track
+//_____________________________
+Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track) 
+{
+  return track->GetID();
 }
 
 //_____________________________
@@ -2994,7 +3007,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
-  if(fComparePtHardAndClusterPt)
+  if(fComparePtHardAndJetPt)
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
   
   if(fComparePtHardAndClusterPt)

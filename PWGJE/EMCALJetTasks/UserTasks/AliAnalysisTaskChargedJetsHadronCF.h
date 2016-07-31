@@ -87,6 +87,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
   AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
+  AliEmcalJet*                fMatchedJet;                              //!<!  jet matched to input jet (calculated event-by-event)
   Int_t                       fAcceptedJets;                            //!<!  number accepted jets (calculated event-by-event)
   Int_t                       fAcceptedTracks;                          //!<!  number accepted tracks (calculated event-by-event)
 
@@ -171,16 +172,16 @@ class AliBasicJetConstituent : public TObject
 class AliBasicJet : public TObject
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fCharge(0), fRadius(0), fArea(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
     AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t bgrd, Long64_t id, Short_t cent)
     : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
-    {
-    }
+    {}
     ~AliBasicJet();
 
     // Basic jet properties
     Bool_t                    IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
     Double_t                  Pt()       { return fpT; }
+    Double_t                  TruePt()  { return fTruepT; }
     Double_t                  Phi()      { return fPhi; }
     Double_t                  Eta()      { return fEta; }
     Short_t                   Charge()   { return fCharge; }
@@ -199,12 +200,14 @@ class AliBasicJet : public TObject
       AddJetConstituent(&c);
     }
     void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }
+    void                      SetTruePt(Double_t val)  {fTruepT = val;}
 
 
   private:
     Float_t   fEta;      ///< eta
     Float_t   fPhi;      ///< phi
     Float_t   fpT;       ///< pT
+    Float_t   fTruepT;   ///< true pT (optional, e.g. from matching)
     Short_t   fCharge;   ///< charge
     Float_t   fRadius;   ///< jet radius
     Float_t   fArea;     ///< jet area
@@ -215,7 +218,7 @@ class AliBasicJet : public TObject
     std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents
 
   /// \cond CLASSIMP
-  ClassDef( AliBasicJet, 2); // very basic jet object
+  ClassDef( AliBasicJet, 3); // very basic jet object
   /// \endcond
 };
 #endif

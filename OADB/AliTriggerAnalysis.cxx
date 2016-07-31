@@ -52,6 +52,8 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fMC(kFALSE),
+fPileupCutsEnabled(kFALSE),
 fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
@@ -79,6 +81,7 @@ fHistTKLAll(0),
 fHistTKLAcc(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
+fHistVIRCln(0),
 fHistBBAflagsAll(0),
 fHistBBAflagsAcc(0),
 fHistBBCflagsAll(0),
@@ -109,8 +112,7 @@ fHistFMDSum(0),
 fHistT0(0),
 fHistOFOvsTKLAcc(0),
 fHistV0MOnVsOfAcc(0),
-fTriggerClasses(new TMap),
-fMC(kFALSE)
+fTriggerClasses(new TMap)
 {
   // constructor
   fHistList->SetName("histos");
@@ -192,8 +194,8 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistFiredBitsSPD    = new TH1F("fHistFiredBitsSPD","SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTklAll  = new TH2F("fHistSPDClsVsTklAll",                  "All events;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
   fHistSPDClsVsTklCln  = new TH2F("fHistSPDClsVsTklCln","Events cleaned by other cuts;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
-  fHistV0C012vsTklAll  = new TH2F("fHistV0C012vsTklAll",                  "All events;n tracklets;V0C012 multiplicity",100,0,100,100,0,500);
-  fHistV0C012vsTklCln  = new TH2F("fHistV0C012vsTklCln","Events cleaned by other cuts;n tracklets;V0C012 multiplicity",100,0,100,100,0,500);
+  fHistV0C012vsTklAll  = new TH2F("fHistV0C012vsTklAll",                  "All events;n tracklets;V0C012 multiplicity",150,0,150,150,0,600);
+  fHistV0C012vsTklCln  = new TH2F("fHistV0C012vsTklCln","Events cleaned by other cuts;n tracklets;V0C012 multiplicity",150,0,150,150,0,600);
   fHistV0MOnVsOfAll    = new TH2F("fHistV0MOnVsOfAll",                  "All events;Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
   fHistV0MOnVsOfCln    = new TH2F("fHistV0MOnVsOfCln","Events cleaned by other cuts;Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
   fHistSPDOnVsOfAll    = new TH2F("fHistSPDOnVsOfAll",                  "All events;Offline FOR;Online FOR",300,0,isLowFlux?300:1200 ,300,0,isLowFlux?300:1200);
@@ -204,6 +206,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistSPDVtxPileupCln = new TH1F("fHistSPDVtxPileupCln",";SPD Vtx pileup",2,0,2);
   fHistVIRvsBCmod4pup  = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
   fHistVIRvsBCmod4acc  = new TH2F("fHistVIRvsBCmod4acc","VIR vs BC%4 for accepted events;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
+  fHistVIRCln          = new TH1F("fHistVIRCln","Events cleaned by other cuts",21,-10.5,10.5);
   fHistBBAflagsAll     = new TH1F("fHistBBAflagsAll",";BBA flags;",33,-0.5,32.5);
   fHistBBAflagsAcc     = new TH1F("fHistBBAflagsAcc",";BBA flags;",33,-0.5,32.5);
   fHistBBCflagsAll     = new TH1F("fHistBBCflagsAll",";BBC flags;",33,-0.5,32.5);
@@ -285,6 +288,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistList->Add(fHistSPDVtxPileupCln);
   fHistList->Add(fHistVIRvsBCmod4pup);
   fHistList->Add(fHistVIRvsBCmod4acc);
+  fHistList->Add(fHistVIRCln);
   fHistList->Add(fHistBBAflagsAll);
   fHistList->Add(fHistBBAflagsAcc);
   fHistList->Add(fHistBBCflagsAll);
@@ -987,7 +991,6 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
   // background flag read from ESD : check in given time interval OrA and OrC were correct but TVDC not
   // 
   // Based on an algorithm by Alla Maevskaya
-  // TODO: implement online and offline selection in AOD
   // TODO: read vtx thresholds from OCDB
   
   if (event->GetDataLayoutType()==AliVEvent::kAOD) {
@@ -997,7 +1000,16 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
       AliError("AliAODTZERO not available");
       return kT0Invalid;
     }
-    if (fMC) if(tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+    if (online) {
+      UInt_t input0TVX = 2; 
+      if (event->GetRunNumber()<229355) input0TVX = 6;
+      if (event->GetRunNumber()<224944) input0TVX = 3;
+      if (event->GetHeader()->GetL0TriggerInputs() & 1<<input0TVX) return kT0BB;
+    } else {
+      if (tzero->GetPileupFlag()) return kT0DecPileup;
+      if (tzero->GetBackgroundFlag()) return kT0DecBG;
+      if (tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+    }
   } 
   else if (event->GetDataLayoutType()==AliVEvent::kESD) {
     // ESD analysis
@@ -1150,9 +1162,9 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
   if (fMC) return kFALSE; // there are no dip events in MC
-  
+  if (event->GetRunNumber()>197692) return kFALSE; // no dip events in run2
   if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-    AliError("IsHVdipTPCEvent method implemented for ESDs only");
+    AliWarning("IsHVdipTPCEvent method implemented for ESDs only");
     return kFALSE;
   }
   const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
@@ -1175,6 +1187,7 @@ Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliVEvent* event){
 Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliVEvent* event, Int_t fillHists){
   // rejects BG based on the cluster vs tracklet correlation
   // returns true if the event is BG
+  if (!fPileupCutsEnabled) return kFALSE;
   const AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) { 
     AliError("No multiplicity object"); 
@@ -1215,9 +1228,14 @@ Bool_t AliTriggerAnalysis::IsV0C012vsTklBG(const AliVEvent* event, Int_t fillHis
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
+    return kFALSE;
+  }
+  if (!vzero->TestBit(AliVVZERO::kTriggerChargeBitsFilled)){
+    if (!fillHists) AliWarning("V0 trigger charge info not found");
     return kFALSE;
   }
   // V0A0 excluded from online V0A charge sum => excluding also from offline sum for consistency
@@ -1232,6 +1250,7 @@ Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Int_t fillH
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) {
     AliError("AliVMultiplicity not available");
@@ -1250,9 +1269,14 @@ Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Int_t fillH
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
+    return kFALSE;
+  }
+  if (!vzero->TestBit(AliVVZERO::kPastFutureFlagsFilled)){
+    if (!fillHists) AliWarning("V0 past future info not found");
     return kFALSE;
   }
 
@@ -1272,7 +1296,7 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
     vir[bc] |= nBBC>=fVIRBBCflags;
     vir[bc] |= nBGA>=fVIRBGAflags;
     vir[bc] |= nBGC>=fVIRBGCflags;
-    if (fillHists) {
+    if (fillHists==1) {
       if (bc==10) continue;
       if (!vir[bc]) continue;
       if (!IsSPDOnVsOfPileup(event) && !IsV0MOnVsOfPileup(event)) continue;
@@ -1285,14 +1309,17 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
   Int_t bcMax = 10 + fNBCsPast   + bcMod4;
   for (Int_t bc=bcMin;bc<=bcMax;bc++) {
     if (bc==10) continue; // skip current bc
+    if (bc < 0) continue;
+    if (bc >20) continue;
     if (vir[bc]) return kTRUE;
   }
 
   if (fillHists) {
     for (Int_t bc=0;bc<=20;bc++) {
-      if (bc==10) continue;
       if (!vir[bc]) continue;
-      fHistVIRvsBCmod4acc->Fill(10-bc,bcMod4);
+      if (fillHists==2) fHistVIRCln->Fill(10-bc);
+      if (bc==10) continue;
+      if (fillHists==1) fHistVIRvsBCmod4acc->Fill(10-bc,bcMod4);
     }
   }
   return kFALSE;
@@ -1301,6 +1328,7 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
 
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsSPDVtxPileup(const AliVEvent* event, Int_t fillHists) {
+  if (!fPileupCutsEnabled) return kFALSE;
   Bool_t pileup = event->IsPileupFromSPD(fVtxMinContributors,fVtxMinZdist,fVtxNSigmaZdist,fVtxNSigmaDiamXY,fVtxNSigmaDiamZ);
   if      (fillHists==1) fHistSPDVtxPileupAll->Fill(pileup);
   else if (fillHists==2) fHistSPDVtxPileupCln->Fill(pileup);
@@ -1375,6 +1403,11 @@ Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Int
     AliError("AliVVZERO not available");
     return kFALSE;
   }
+  if (online && !vzero->TestBit(AliVVZERO::kTriggerChargeBitsFilled)){
+    if (!fillHists) AliWarning("V0 trigger charge info not found");
+    return kFALSE;
+  }
+
   Int_t   on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
   Float_t of = vzero->GetMTotV0A()+vzero->GetMTotV0C();
 
@@ -1439,7 +1472,6 @@ Bool_t AliTriggerAnalysis::TKLTrigger(const AliVEvent* event, Int_t fillHists){
 }
 
 
-
 //-------------------------------------------------------------------------------------------------
 Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   // Merge a list of objects with this (needed for PROOF).
@@ -1464,6 +1496,9 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
 
 //-------------------------------------------------------------------------------------------------
 void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDecision, Bool_t offlineDecision){
+  Bool_t pileupCutsStatus = fPileupCutsEnabled;
+  fPileupCutsEnabled = kTRUE;
+
   SPDFiredChips(event,1,kTRUE,0);
   Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
   Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
@@ -1515,13 +1550,14 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   acceptDefault &= !isV0Casym;
 
   // Fill histograms for cleaned events
-  if (isV0A & isV0C & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsSPDClusterVsTrackletBG(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsV0C012vsTklBG(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isSPDOnVsOfPileup &!isV0Casym) IsV0MOnVsOfPileup(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup &!isV0Casym) IsSPDOnVsOfPileup(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsSPDVtxPileup(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup) IsV0Casym(event,2);
-
+  if (isV0A & isV0C                    & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsSPDClusterVsTrackletBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG                    & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsV0C012vsTklBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG                 & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsV0PFPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup                   & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsSPDVtxPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup                      & !isSPDOnVsOfPileup & !isV0Casym) IsV0MOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup                      & !isV0Casym) IsSPDOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup             ) IsV0Casym(event,2);
+  
   // Fill distributions for events accepted by general cuts
   if (acceptDefault){
     ADTrigger(event, kASide, kFALSE, 2);
@@ -1534,6 +1570,7 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
     SH1Trigger(event,2);
     TKLTrigger(event,2);
   }
+  fPileupCutsEnabled = pileupCutsStatus;
 
 //  TODO: Adjust for AOD
 //  AliESDZDC* zdcData = event->GetESDZDC();

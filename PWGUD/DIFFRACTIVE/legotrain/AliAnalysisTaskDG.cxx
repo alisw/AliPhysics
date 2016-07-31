@@ -25,6 +25,8 @@
 #include "AliESDAD.h"
 #include "AliESDtrackCuts.h"
 
+#include "AliITSsegmentationSPD.h"
+
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliTriggerConfiguration.h"
@@ -57,6 +59,8 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliESDEvent* esdEvent) {
 void AliAnalysisTaskDG::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1;
+  for (Int_t bc=0; bc<21; ++bc)
+    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
 }
 
 void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
@@ -75,9 +79,22 @@ void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnal
   fTime[1] = esdAD->GetADATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
-  for (Int_t ch=0; ch<16; ++ch) {
-    fBB[ch/8] += esdAD->GetBBFlag(ch);
-    fBG[ch/8] += esdAD->GetBGFlag(ch);
+  for (Int_t ch=0; ch<4; ++ch) {
+    fBB[0] += (esdAD->GetBBFlag(ch  ) && esdAD->GetBBFlag(ch+ 4));
+    fBB[1] += (esdAD->GetBBFlag(ch+8) && esdAD->GetBBFlag(ch+12));
+    fBG[0] += (esdAD->GetBGFlag(ch  ) && esdAD->GetBGFlag(ch+ 4));
+    fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
+  }
+
+  for (Int_t bc=0; bc<21; ++bc) {
+    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+    for (Int_t ch=0; ch<4; ++ch) {
+      fPFBBC[bc] += (esdAD->GetPFBBFlag(ch, bc) && esdAD->GetPFBBFlag(ch+4, bc));
+      fPFBGC[bc] += (esdAD->GetPFBGFlag(ch, bc) && esdAD->GetPFBGFlag(ch+4, bc));
+
+      fPFBBA[bc] += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
+      fPFBGA[bc] += (esdAD->GetPFBGFlag(ch+8, bc) && esdAD->GetPFBGFlag(ch+12, bc));
+    }
   }
 }
 void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
@@ -101,8 +118,22 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnal
     fBB[ch/32] += esdV0->GetBBFlag(ch);
     fBG[ch/32] += esdV0->GetBGFlag(ch);
   }
+
+  for (Int_t bc=0; bc<21; ++bc) {
+    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+    for (Int_t ch=0; ch<32; ++ch) {
+      fPFBBC[bc] += esdV0->GetPFBBFlag(ch,    bc);
+      fPFBGC[bc] += esdV0->GetPFBGFlag(ch,    bc);
+      fPFBBA[bc] += esdV0->GetPFBBFlag(ch+32, bc);
+      fPFBGA[bc] += esdV0->GetPFBGFlag(ch+32, bc);
+    }
+  }
 }
 
+void AliAnalysisTaskDG::FMD::Fill(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
+  fA = trigAna.FMDTrigger(esdEvent, AliTriggerAnalysis::kASide);
+  fC = trigAna.FMDTrigger(esdEvent, AliTriggerAnalysis::kCSide);
+}
 
 void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse=NULL) {
   if (NULL == tr || NULL == pidResponse) {
@@ -128,6 +159,24 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
     fNumSigmaTOF[i] = pidResponse->NumberOfSigmasTOF(tr, particleType);
     AliInfo(Form("%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]));
   }
+
+  Int_t   idet=0, status=0;
+  Float_t xloc=0,   zloc=0;
+  const AliITSsegmentationSPD seg;
+  for (Int_t layer=0; layer<2; ++layer) {
+    fChipKey[layer] = -1;
+    const Int_t module = tr->GetITSModuleIndex(layer);
+    if (module < 0)
+      continue;
+
+    tr->GetITSModuleIndexInfo(layer, idet, status, xloc, zloc);
+    if (status == 0)
+      continue;
+
+    Int_t off = seg.GetChipFromLocal(xloc, zloc);
+    off = (layer==0 ? 4-off : off);
+    fChipKey[layer] = 5*module + off;
+  }
 }
 
 AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
@@ -150,7 +199,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fVertexTPC()
   , fVertexTracks()
   , fTOFHeader()
-  , fTriggerIRs("AliTriggerIR", 10)
+  , fTriggerIRs("AliTriggerIR", 3)
   , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTrackSave)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(NULL)
@@ -224,8 +273,11 @@ void AliAnalysisTaskDG::SetBranches(TTree* t) {
 
 void AliAnalysisTaskDG::UserCreateOutputObjects()
 {
-  if (fTrackCutType == "ITSPureSA")
+  if (fTrackCutType == "ITSPureSA") {
     fTrackCuts  = AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE);
+    fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kBoth);
+  }
 
   if (fTrackCutType == "TPCOnly")
     fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -247,8 +299,7 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 
   TDirectory *owd = gDirectory;
   TFile *fSave = OpenFile(1);
-  fTE = new TTree;
-  fTE->SetName(GetTreeName());
+  fTE = new TTree(GetTreeName(), "");
   SetBranches(fTE);
   PostData(2, fTE);
   owd->cd();
@@ -289,6 +340,19 @@ void AliAnalysisTaskDG::NotifyRun()
     }
   }
 }
+
+class TClonesArrayGuard {
+public:
+  TClonesArrayGuard(TClonesArray &a)
+    : fA(a) {}
+  ~TClonesArrayGuard() {
+    fA.Delete();
+  }
+private:
+  TClonesArrayGuard(const TClonesArrayGuard&);
+  TClonesArrayGuard& operator=(const TClonesArrayGuard&);
+  TClonesArray& fA;
+} ;
 
 void AliAnalysisTaskDG::UserExec(Option_t *)
 {
@@ -352,6 +416,10 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   PostData(1, fList);
 
   AliInfo(Form("fUseTriggerMask=%d %lld %lld", fUseTriggerMask, fClassMask, fClassMaskNext50));
+
+  Bool_t cutNotV0    = kFALSE;
+  Bool_t useOnly2Trk = kFALSE;
+
   if (fUseTriggerMask) {
     if (fCDBStorage != "NONE") { // OCDB used
       if ((esdHeader->GetTriggerMask()       & fClassMask)       == 0LL &&
@@ -362,12 +430,29 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	AliInfo(Form("selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
       }
     } else { // no OCDB used
+      // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS2&Only2Trk"
       std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+
       Bool_t selected = kFALSE;
-      for (Int_t i=0, n=split->GetEntries(); i<n && !selected; ++i)
-	selected = esdEvent->GetFiredTriggerClasses().Contains(split->At(i)->GetName());
+      Int_t sumCutNotV0(0);
+      Int_t sumUseOnly2Trk(0);
       
-      AliInfo(Form("selected: %d %s", selected, esdEvent->GetFiredTriggerClasses().Data()));
+      Int_t counter=0;
+      for (Int_t i=0, n=split->GetEntries(); i<n; ++i) {
+	TString tcName(split->At(i)->GetName());
+	std::unique_ptr<const TObjArray> s(tcName.Tokenize("&"));
+	if (esdEvent->GetFiredTriggerClasses().Contains(s->At(0)->GetName())) {
+	  sumCutNotV0    += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "NotV0");
+	  sumUseOnly2Trk += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "Only2Trk");
+	  ++counter;
+	}
+      }
+      
+      selected    = (counter != 0);
+      cutNotV0    = (counter == sumCutNotV0);
+      useOnly2Trk = (counter == sumUseOnly2Trk);
+
+      AliInfo(Form("selected: %d %d %d %s ", selected, cutNotV0, useOnly2Trk, esdEvent->GetFiredTriggerClasses().Data()));
       if (!selected)
 	return;
     }
@@ -382,15 +467,24 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
+  if (cutNotV0 &&
+      (fTreeData.fV0Info.fDecisionOnline[0] != 0 ||
+       fTreeData.fV0Info.fDecisionOnline[1] != 0))
+    return;
+
   fVertexSPD    = *(esdEvent->GetPrimaryVertexSPD());
   fVertexTPC    = *(esdEvent->GetPrimaryVertexTPC());
   fVertexTracks = *(esdEvent->GetPrimaryVertexTracks());
 
   fTOFHeader    = *(esdEvent->GetTOFHeader());
 
-  fTriggerIRs.Delete();
-  for (Int_t i=0; i<esdHeader->GetTriggerIREntries(); ++i) {
-    new(fTriggerIRs[i]) AliTriggerIR(*(esdHeader->GetTriggerIR(i)));
+  TClonesArrayGuard guardTriggerIR(fTriggerIRs);
+  // store trigger IR for up to +-1 orbits around the event
+  for (Int_t i=0,j=0,n=esdHeader->GetTriggerIREntries(); i<n; ++i) {
+    const AliTriggerIR *ir = esdHeader->GetTriggerIR(i);
+    if (!ir || TMath::Abs(Int_t(ir->GetOrbit()&0xFFFF) - Int_t(fTreeData.fEventInfo.fOrbitID)) > 1)
+      continue;
+    new(fTriggerIRs[j++]) AliTriggerIR(*ir);
   }
 
   fFastOrMap    = mult->GetFastOrFiredChips();
@@ -399,37 +493,44 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fIR1InteractionMap = esdHeader->GetIRInt1InteractionMap();
   fIR2InteractionMap = esdHeader->GetIRInt2InteractionMap();
 
-  fTreeData.fEventInfo.fnTrklet = mult->GetNumberOfTracklets();
+  for (Int_t i=0; i<4; ++i)
+    fTreeData.fEventInfo.fnTrklet[i] = 0;
+  for (Int_t i=0, n=mult->GetNumberOfTracklets(); i<n; ++i) {
+    const Double_t eta = -TMath::Log(TMath::Tan(0.5*mult->GetTheta(i)));
+    fTreeData.fEventInfo.fnTrklet[0] += 1;           // all tracklets
+    fTreeData.fEventInfo.fnTrklet[1] += (eta <  -0.9);
+    fTreeData.fEventInfo.fnTrklet[2] += (eta >= -0.9 && eta <= +0.9);
+    fTreeData.fEventInfo.fnTrklet[3] += (eta >  +0.9);
+  }
 
   std::unique_ptr<const TObjArray> oa(fTrackCuts->GetAcceptedTracks(esdEvent));
   fTreeData.fEventInfo.fnTrk = oa->GetEntries();
   fTreeData.fEventInfo.fCharge = 0;
+
+  if (useOnly2Trk && fTreeData.fEventInfo.fnTrk != 2)
+    return;
+
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
     fTreeData.fEventInfo.fCharge += Int_t(dynamic_cast<AliESDtrack*>(oa->At(i))->GetSign());
 
-  fTrackData.Delete();
+  TClonesArrayGuard guardTrackData(fTrackData);
   if (oa->GetEntries() <= fMaxTrackSave)  {
     for (Int_t i=0, n=TMath::Min(oa->GetEntries(), fMaxTrackSave); i<n; ++i)
       new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)), pidResponse);
   }
 
+  TClonesArrayGuard guardMCTracks(fMCTracks);
   if (fIsMC) {
     AliMCEvent *mcEvent = MCEvent();
     if (NULL == mcEvent)
       AliFatal("NULL ==mcEvent");
 
-    fMCTracks.Delete();
     Int_t counter = 0;
     for(Int_t i=0, n=mcEvent->GetNumberOfTracks(); i<n && counter<2; ++i) {
       AliMCParticle *p = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(i));
       if (NULL == p) continue;
-      p->Print();
-      Printf("A");
-      p->Particle()->Print();
-      Printf("B");
       new(fMCTracks[counter]) TLorentzVector;
       TLorentzVector *v = dynamic_cast<TLorentzVector*>(fMCTracks.At(counter));
-      Printf("B %p", v);
       p->Particle()->Momentum(*v);
       ++counter;
     }

@@ -13,14 +13,23 @@
 //#  Authors:                                               #
 //#   Patrick Reichelt, Uni Ffm / Patrick.Reichelt@cern.ch  #
 //#   Theo Broeker, Uni Ffm / Theo.Broeker@cern.ch          #
-//#   Markus Koehler, GSI / M.Koehler@gsi.de                #
 //#                                                         #
 //###########################################################
 /**
  Fills 3D histograms (mcPt, mcEta, mcPhi) for generated and reconstructed electrons.
  Ratios of these for given acceptance regions give 3D track efficiencies, to be then used in a pair efficiency generator.
  Cut instances are defined by adding AliAnalysisFilters via a Config file. Therefore also an LMEECutLib is supported.
- Additional functionality:
+ ---
+ Additional functionalities:
+ ---
+ Extraction of resolutions for p, pt, eta, theta, phi, opening angle.
+ The cut setting should have wide acceptance cuts (pt, eta), but realistic track quality cuts.
+ The resolutions can be used for smearing in a cocktail generator and to create purely "measureable" efficiencies
+ when running this task again (see below, some post-processing of the resolutions from TH2 to TObjArray is needed...).
+ ---
+ Application of extracted resolutions to the generated quantities so that efficiencies can be computed by consistently
+ using the "measurable" quantities. This is argued to be more correct for the LMEE analysis where no unfolding is used.
+ ---
  Determination of random electron rejection efficiency due to pair-prefiltering (used for photon conversion + Dalitz rejection).
  It is estimated by pairing primary, non-injected, charged pions with the selected electrons (so the pair has no real correlation)
  and applying the prefilter pair cuts to these random pairs. All and rejected pions are stored in 3D histograms.
@@ -88,11 +97,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWriteTree(Bool_t write)                          {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)          {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)          {fRandomizeDaughters=random;}
-  void          SetResolutionP(TObjArray *resArr)                   {fPResArr=resArr;}
-  void          SetResolutionPt(TObjArray *resArr)                  {fPtResArr=resArr;}
+  void          SetResolutionP(TObjArray *resArr, Bool_t b=kFALSE)  {fPResArr=resArr; fUseRelPResolution=b; }
   void          SetResolutionTheta(TObjArray *resArr)               {fThetaResArr=resArr;}
   void          SetResolutionEta(TObjArray *resArr)                 {fEtaResArr=resArr;}
-  void          SetResolutionPhi(TObjArray *resArr)                 {fPhiResArr=resArr;}
+  void          SetResolutionPhi(TObjArray *rEle, TObjArray *rPos=0x0)  {fPhiEleResArr=rEle; if(rPos) fPhiPosResArr=rPos; else fPhiPosResArr=rEle;}
   void          SetCalcEfficiencyRec(Bool_t b)                      {fCalcEfficiencyRec=b;}
   void          SetCalcEfficiencyPoslabel(Bool_t b)                 {fCalcEfficiencyPoslabel=b;}
 
@@ -116,11 +124,13 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetPairCutMee(Double_t cut)                   { fPairCutMee=cut; }
   void          SetPairCutTheta(Double_t cut)                 { fPairCutTheta=cut; }
   void          SetPairCutPhiV(Double_t cut)                  { fPairCutPhiV=cut; }
-  void          SetDeltaMomBinning(Int_t N, Double_t min, Double_t max)   {fDeltaMomNbins=N; fDeltaMomMin=min, fDeltaMomMax=max;}
-  void          SetDeltaEtaBinning(Int_t N, Double_t min, Double_t max)   {fDeltaEtaNbins=N; fDeltaEtaMin=min, fDeltaEtaMax=max;}
-  void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min, fDeltaThetaMax=max;}
-  void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min, fDeltaPhiMax=max;}
-
+  void          SetDeltaMomBinning(Int_t N, Double_t min, Double_t max)   {fDeltaMomNbins=N; fDeltaMomMin=min; fDeltaMomMax=max;}
+  void          SetRelMomBinning(Int_t N, Double_t min, Double_t max)     {fRelMomNbins=N; fRelMomMin=min; fRelMomMax=max;}
+  void          SetDeltaEtaBinning(Int_t N, Double_t min, Double_t max)   {fDeltaEtaNbins=N; fDeltaEtaMin=min; fDeltaEtaMax=max;}
+  void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min; fDeltaThetaMax=max;}
+  void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min; fDeltaPhiMax=max;}
+  void          SetDeltaAngleBinning(Int_t N, Double_t min, Double_t max) {fDeltaAngleNbins=N; fDeltaAngleMin=min; fDeltaAngleMax=max;}
+  
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
   void          CreateSupportHistos();
@@ -200,11 +210,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //std::vector<TH3F*>             fvReco_Pro; // be really careful if you need to implement this (see comments in UserExec).
 
   // histograms with reconstructed observables
-  TH3D*                           fNgen_Rec_Ele;
+  TH3D*                           fNgen1_Rec_Ele;
   TH3D*                           fNgen2_Rec_Ele;
   std::vector<TH3D*>              fvReco_Rec_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3D*>              fvReco_Rec_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
-  TH3D*                           fNgen_Rec_Pos;
+  TH3D*                           fNgen1_Rec_Pos;
   TH3D*                           fNgen2_Rec_Pos;
   std::vector<TH3D*>              fvReco_Rec_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3D*>              fvReco_Rec_Pos_poslabel;
@@ -233,22 +243,35 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH2D*                           fDeltaPhi_MCcharge;
   TH2D*                           fDeltaPhi_charge;
 
-  Int_t fDeltaMomNbins;
-  Double_t fDeltaMomMin;
-  Double_t fDeltaMomMax;
-  Int_t fDeltaEtaNbins;
-  Double_t fDeltaEtaMin;
-  Double_t fDeltaEtaMax;
-  Int_t fDeltaThetaNbins;
-  Double_t fDeltaThetaMin;
-  Double_t fDeltaThetaMax;
-  Int_t fDeltaPhiNbins;
-  Double_t fDeltaPhiMin;
-  Double_t fDeltaPhiMax;
+  Int_t                           fDeltaMomNbins;
+  Double_t                        fDeltaMomMin;
+  Double_t                        fDeltaMomMax;
+  Int_t                           fRelMomNbins;
+  Double_t                        fRelMomMin;
+  Double_t                        fRelMomMax;
+  Int_t                           fDeltaEtaNbins;
+  Double_t                        fDeltaEtaMin;
+  Double_t                        fDeltaEtaMax;
+  Int_t                           fDeltaThetaNbins;
+  Double_t                        fDeltaThetaMin;
+  Double_t                        fDeltaThetaMax;
+  Int_t                           fDeltaPhiNbins;
+  Double_t                        fDeltaPhiMin;
+  Double_t                        fDeltaPhiMax;
+  Int_t                           fDeltaAngleNbins;
+  Double_t                        fDeltaAngleMin;
+  Double_t                        fDeltaAngleMax;
 
-
+  TH1D*                           fPGen;
+  TH1D*                           fPRec;
   TH2D*                           fPGen_DeltaP;
   TH2D*                           fPtGen_DeltaPt;
+  TH2D*                           fPGen_PrecOverPGen; // higher precision at low p than 'fPGen_DeltaP'.
+  TH2D*                           fPtGen_PtRecOverPtGen;
+  TH2D*                           fPGen_DeltaEta;     // momentum dependence.
+  TH2D*                           fPGen_DeltaTheta;
+  TH2D*                           fPGen_DeltaPhi_Ele; // delta phi is charge dependent.
+  TH2D*                           fPGen_DeltaPhi_Pos;
   TH2D*                           fEtaGen_DeltaEta;
   TH2D*                           fThetaGen_DeltaTheta;
   TH2D*                           fPhiGen_DeltaPhi;
@@ -267,12 +290,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   // external resolutions
   TObjArray*                      fPResArr;
-  TObjArray*                      fPtResArr;
+  Bool_t                          fUseRelPResolution;
   TObjArray*                      fThetaResArr;
   TObjArray*                      fEtaResArr;
-  TObjArray*                      fPhiResArr;
-  TH1D*                           fSmearing_Ele[6];
-  TH1D*                           fSmearing_Pos[6];
+  TObjArray*                      fPhiEleResArr;
+  TObjArray*                      fPhiPosResArr;
+
 
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.

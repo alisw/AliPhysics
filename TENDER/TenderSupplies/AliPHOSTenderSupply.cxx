@@ -54,6 +54,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
+  ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
@@ -69,6 +70,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
+   for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
+
 }
 
 //_____________________________________________________
@@ -77,8 +80,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
-  ,fRecoPass(-1)  //to be defined
   ,fRunNumber(-1) //to be defined
+  ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
@@ -93,6 +96,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
+   for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
 }
 
 //_____________________________________________________
@@ -273,9 +277,22 @@ void AliPHOSTenderSupply::InitTender()
           AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
         }
       }
+      //L1phase for Run2
+      if(fRunNumber>209122){ //Run2
+        AliOADBContainer L1Container("phosL1Calibration");
+        L1Container.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSL1Calibrations.root","phosL1Calibration");
+        TNamed* a= (TNamed*)L1Container.GetObject(fRunNumber);
+	if(!a){
+	  AliError(Form("L1phase for run %d was not found, time calibration will be wrong!\n",fRunNumber)) ; 
+          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
+	}
+	else{
+          const char*c=a->GetName();
+          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-1;
+	}
+      }
     }
   }
-  
 }
 
 //_____________________________________________________
@@ -284,7 +301,6 @@ void AliPHOSTenderSupply::ProcessEvent()
   //Choose PHOS clusters and recalibrate them
   //that it recalculate energy, position and distance 
   //to closest track extrapolation	
-
   AliESDEvent *esd = 0x0 ; 
   AliAODEvent *aod = 0x0 ;
   if(fTender){
@@ -332,6 +348,7 @@ void AliPHOSTenderSupply::ProcessEvent()
 
   if(esd){ //To avoid multiple if in loops we made 
            //almost identical pecies of code. Please apply changes to both!!!
+    
     Int_t multClust=esd->GetNumberOfCaloClusters();
     AliESDCaloCells * cells = esd->GetPHOSCells() ;
     
@@ -397,18 +414,32 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetM20(m20) ;               //second moment M2z
       
       //correct distance to track      
-      Double_t dx=0.,dz=0. ;
+      Double_t dx=999.,dz=999. ;
       fPHOSGeo->GlobalPos2RelId(global,relId) ;
       TVector3 locPos;
       fPHOSGeo->Global2Local(locPos,global,mod) ;
 
       Double_t pttrack=0.;
       Int_t charge=0;
-      FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
-      Double_t r=TestCPV(dx, dz, pttrack,charge) ;
+      Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
       clu->SetTrackDistance(dx,dz); 
-     
+      Double_t r=TestCPV(dx, dz, pttrack,charge) ;
       clu->SetEmcCpvDistance(r);    
+      if(itr>=0){ //there is a track
+        const TArrayI * arrT=clu->GetTracksMatched() ;
+        if(arrT->GetSize()>0){
+          if(arrT->At(0)!=itr){ //update track index
+            TArrayI arrayTrackMatched(*arrT);
+	    arrayTrackMatched.AddAt(itr,0) ;
+            clu->AddTracksMatched(arrayTrackMatched);
+	  }
+	}
+	else{ //create new array
+            TArrayI arrayTrackMatched(1);
+	    arrayTrackMatched.AddAt(itr,0) ;
+            clu->AddTracksMatched(arrayTrackMatched);
+	}
+      }  
       
       Double_t tof=EvalTOF(&cluPHOS,cells); 
 //      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
@@ -445,7 +476,10 @@ void AliPHOSTenderSupply::ProcessEvent()
 //      if ( !clu->IsPHOS()) continue;
       if (clu->GetType()!=phosCluSelection) continue;
       
-    
+      Float_t  positionOld[3];
+      clu->GetPosition(positionOld);
+      TVector3 globalOld(positionOld) ;
+
       //Apply re-Calibreation
       AliPHOSAodCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
@@ -466,7 +500,7 @@ void AliPHOSTenderSupply::ProcessEvent()
         continue ;
       }  
       TVector3 locPosOld; //Use it to re-calculate distance to track
-      fPHOSGeo->Global2Local(locPosOld,global,mod) ;
+      fPHOSGeo->Global2Local(locPosOld,globalOld,mod) ;
       
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
       ecore=CorrectNonlinearity(ecore) ;
@@ -522,7 +556,7 @@ void AliPHOSTenderSupply::ProcessEvent()
 
 }
 //___________________________________________________________________________________________________
-void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
+Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 					    Double_t &dx, Double_t &dz,
 					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
@@ -535,7 +569,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   
   if(!esd){
     AliError("ESD is not found") ;
-    return ;
+    return -1;
   }
   Double_t  magF = esd->GetMagneticField();
  
@@ -549,8 +583,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   }
 
   // *** Start the matching
-  Int_t nt=0;
-  nt = esd->GetNumberOfTracks();
+  Int_t nt = esd->GetNumberOfTracks();
   //Calculate actual distance to PHOS module
   TVector3 globaPos ;
   fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
@@ -568,34 +601,36 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 
   Double_t b[3]; 
-
+  Int_t itr=-1 ;
     for (Int_t i=0; i<nt; i++) {
       AliESDtrack *esdTrack=esd->GetTrack(i);
 
       // Skip the tracks having "wrong" status (has to be checked/tuned)
       ULong_t status = esdTrack->GetStatus();
-      if ((status & AliESDtrack::kTPCout)   == 0) continue;
-     
+      if((status & AliESDtrack::kTPCout) == 0) continue;
+
       //Continue extrapolation from TPC outer surface
       const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
       if (!outerParam) continue;
+      
+      Double_t z; 
+      if(!outerParam->GetZAt(rPHOS,bz,z))
+        continue ;
+
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+
       AliExternalTrackParam t(*outerParam);
      
-      t.GetBxByBz(b) ;
       //Direction to the current PHOS module
       Double_t phiMod=kAlpha0-kAlpha*mod ;
-      if(!t.Rotate(phiMod))
-        continue ;
+      if(!t.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
     
       Double_t y;                       // Some tracks do not reach the PHOS
       if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
       
-      Double_t z; 
-      if(!t.GetZAt(rPHOS,bz,z))
-        continue ;
-      if (TMath::Abs(z) > kZmax) 
-        continue; // Some tracks miss the PHOS in Z
       if(TMath::Abs(y) < kYmax){
+        t.GetBxByBz(b) ;
         t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
         //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
         t.GetXYZ(gposTrack) ;
@@ -611,10 +646,12 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 	  minDistance=d2 ;
 	  pt=esdTrack->Pt() ;
 	  charge=esdTrack->Charge() ;
+	  itr=i ;
         }
       }
     }//Scanned all tracks
  
+   return itr ;
 }
 //____________________________________________________________
 Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
@@ -757,8 +794,10 @@ void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
   for(Int_t mod=1;mod<6; mod++){
     snprintf(key,55,"PHOS_BadMap_mod%d",mod) ;
     TH2I * h = (TH2I*)fbm->Get(key) ;
-    if(h)
+    if(h){
        fPHOSBadMap[mod] = new TH2I(*h) ;
+       AliInfo(Form("Force using bad map: Added bad map %s, nch=%f \n",h->GetName(),h->Integral())) ;
+    }
   }
   fbm->Close() ;
   fUsePrivateBadMap=kTRUE ;
@@ -997,7 +1036,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   }
   else{
    t=tMax ; 
-  }  
+  }    
   
   return t ;
      
@@ -1016,6 +1055,20 @@ Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isH
     tof-=fPHOSCalibData->GetTimeShiftEmc(module, column, row);
   else{
     tof-=fPHOSCalibData->GetLGTimeShiftEmc(module, column, row);
+  }
+  //Apply L1phase
+  //First eval DDL
+  const Int_t nmod=5; 
+  Int_t ddl = (nmod-module) * 4 + (row-1)/16 - 6; //convert offline module numbering to online.
+  //L1phase is 0 for Run1
+  if(fRunNumber>209122){ //Run2
+    AliVEvent * event = fTask->InputEvent(); 
+    if(event){
+      UShort_t BC = event->GetBunchCrossNumber();
+      Int_t timeshift = BC%4 - fL1phase[ddl];
+      if(timeshift<0) timeshift += 4; 
+      tof -= timeshift*25e-9;
+    }
   }
   return tof ;
   

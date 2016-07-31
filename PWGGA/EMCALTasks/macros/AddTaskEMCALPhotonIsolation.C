@@ -12,7 +12,7 @@
 AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const char*            periodstr                 = "LHC11c",
                                                                  const char*            ntracks                   = "EmcalTracks",
-                                                                 const char*            nclusters                 = "EmcalClusters",
+                                                                 const char*            nclusters                 = "EmcCaloClusters",
                                                                  const UInt_t           pSel                      = AliVEvent::kEMC7,
                                                                  const TString          dType                     = "ESD",
                                                                  const Bool_t	        bHisto                    = kTRUE,
@@ -35,6 +35,9 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           iSmearingSS               = kFALSE,
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
+                                                                 const Bool_t           iExtraIsoCuts             = kFALSE,
+                                                                 const Bool_t           i_pPb                     = kFALSE,
+                                                                 const Bool_t           isQA                      = kFALSE
                                                                  )
 {
   
@@ -55,7 +58,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   else
     myContName = Form("Analysis_Neutrals");
   
-  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear));
+  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off"));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
@@ -67,7 +70,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
   task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
-  task->SetQA(kTRUE);
+  task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
   task->SetUEMethod(iUEMethod);
@@ -76,12 +79,11 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetM02Smearing(iSmearingSS);
   task->SetWidth4Smear(iWidthSSsmear);
   task->SetMean4Smear(iMean_SSsmear);
-  
-  if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
-  
+  task->SetExtraIsoCuts(iExtraIsoCuts);
+  task->SetAnalysispPb(i_pPb);
   task->SetNLMCut(bNLMCut,NLMCut);
   
-  
+  if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
   TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;
@@ -101,10 +103,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     Printf("Error with Hybrids!!");
   tracksForAnalysis->SetName("filterTracksAna");
   tracksForAnalysis->SetFilterHybridTracks(kTRUE);
-  tracksForAnalysis->SetTrackCutsPeriod(periodstr);
+  if(!bIsMC){
+    tracksForAnalysis->SetTrackCutsPeriod(periodstr);
   tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
-  
-  
+  }
   Printf("Name of Tracks for matching: %s \n Name for Tracks for Isolation: %s",trackCont->GetName(),tracksForAnalysis->GetName());
   
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");

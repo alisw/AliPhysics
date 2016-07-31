@@ -76,6 +76,7 @@
 #include "AliVertexerTracks.h"
 #include "AliEventPoolManager.h"
 #include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
 
 using std::cout;
 using std::endl;
@@ -94,6 +95,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHNTrackletvsZ(0),
+  fHNTrackletCorrvsZ(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
@@ -129,6 +132,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fRunNumber(0),
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
+  fUseCentralitySPDTracklet(kFALSE),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -283,6 +287,27 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoEleXiPtvsRapidityRS(0),
 	fHistoEleXiPtvsRapidityWS(0),
 	fHistoEleXiPtvsRapidityMCS(0),
+	fHistoCorrelationVariablesvsEleXiPt(0),
+	fHistoCorrelationVariablesvsEleXiPtMix(0),
+	fHistoCorrelationVariablesvsEleXiPtMC(0),
+	fHistoCorrelationVariablesvsElePt(0),
+	fHistoCorrelationVariablesvsElePtMix(0),
+	fHistoCorrelationVariablesvsElePtMC(0),
+	fHistoCorrelationVariablesvsXiPt(0),
+	fHistoCorrelationVariablesvsXiPtMix(0),
+	fHistoCorrelationVariablesvsXiPtMC(0),
+	fHistoMassVariablesvsEleXiPt(0),
+	fHistoMassVariablesvsEleXiPtMix(0),
+	fHistoMassVariablesvsEleXiPtMC(0),
+	fHistoMassVariablesvsElePt(0),
+	fHistoMassVariablesvsElePtMix(0),
+	fHistoMassVariablesvsElePtMC(0),
+	fHistoMassVariablesvsXiPt(0),
+	fHistoMassVariablesvsXiPtMix(0),
+	fHistoMassVariablesvsXiPtMC(0),
+	fHistoSingleElectronVariablesvsElePt(0),
+	fHistoSingleElectronVariablesvsElePtMix(0),
+	fHistoSingleElectronVariablesvsElePtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
@@ -304,6 +329,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCXic0Decays(0),
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
+	fRefMult(9.26),
   fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fHistodPhiSdEtaSElectronProtonR125RS(0),
   fHistodPhiSdEtaSElectronProtonR125WS(0),
@@ -317,6 +343,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistodPhiSdEtaSElectronBachelorR125WS(0),
   fHistodPhiSdEtaSElectronBachelorR125RSMix(0),
   fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
+  fDoSingleElectronAnalysis(kTRUE),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
 	fNumberOfEventsForMixing		(5),
@@ -330,7 +357,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fCascadeTracks2(0x0),
   fElectronCutVarsArray(0x0),
   fCascadeCutVarsArray1(0x0),
-  fCascadeCutVarsArray2(0x0)
+  fCascadeCutVarsArray2(0x0),
+  fHistoPoolNumberOfDumps(0),
+  fHistoPoolNumberOfResets(0)
 {
   //
   // Default Constructor. 
@@ -343,6 +372,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
+	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
 
 //___________________________________________________________________________
@@ -357,6 +387,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHNTrackletvsZ(0),
+  fHNTrackletCorrvsZ(0),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
@@ -392,6 +424,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fRunNumber(0),
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
+  fUseCentralitySPDTracklet(kFALSE),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -546,6 +579,27 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoEleXiPtvsRapidityRS(0),
 	fHistoEleXiPtvsRapidityWS(0),
 	fHistoEleXiPtvsRapidityMCS(0),
+	fHistoCorrelationVariablesvsEleXiPt(0),
+	fHistoCorrelationVariablesvsEleXiPtMix(0),
+	fHistoCorrelationVariablesvsEleXiPtMC(0),
+	fHistoCorrelationVariablesvsElePt(0),
+	fHistoCorrelationVariablesvsElePtMix(0),
+	fHistoCorrelationVariablesvsElePtMC(0),
+	fHistoCorrelationVariablesvsXiPt(0),
+	fHistoCorrelationVariablesvsXiPtMix(0),
+	fHistoCorrelationVariablesvsXiPtMC(0),
+	fHistoMassVariablesvsEleXiPt(0),
+	fHistoMassVariablesvsEleXiPtMix(0),
+	fHistoMassVariablesvsEleXiPtMC(0),
+	fHistoMassVariablesvsElePt(0),
+	fHistoMassVariablesvsElePtMix(0),
+	fHistoMassVariablesvsElePtMC(0),
+	fHistoMassVariablesvsXiPt(0),
+	fHistoMassVariablesvsXiPtMix(0),
+	fHistoMassVariablesvsXiPtMC(0),
+	fHistoSingleElectronVariablesvsElePt(0),
+	fHistoSingleElectronVariablesvsElePtMix(0),
+	fHistoSingleElectronVariablesvsElePtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
@@ -567,6 +621,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCXic0Decays(0),
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
+	fRefMult(9.26),
   fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fHistodPhiSdEtaSElectronProtonR125RS(0),
   fHistodPhiSdEtaSElectronProtonR125WS(0),
@@ -580,6 +635,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistodPhiSdEtaSElectronBachelorR125WS(0),
   fHistodPhiSdEtaSElectronBachelorR125RSMix(0),
   fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
+  fDoSingleElectronAnalysis(kTRUE),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
 	fNumberOfEventsForMixing		(5),
@@ -593,7 +649,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fCascadeTracks2(0x0),
   fElectronCutVarsArray(0x0),
   fCascadeCutVarsArray1(0x0),
-  fCascadeCutVarsArray2(0x0)
+  fCascadeCutVarsArray2(0x0),
+  fHistoPoolNumberOfDumps(0),
+  fHistoPoolNumberOfResets(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -608,6 +666,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
+	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,TList::Class());
@@ -761,7 +820,40 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   }
   fCEvents->Fill(2);
 
-  fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+	Int_t countTr=0;
+	Double_t countCorr=0;
+  if(fUseCentralitySPDTracklet)
+  {
+    AliAODTracklets* tracklets=aodEvent->GetTracklets();
+    Int_t nTr=tracklets->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=tracklets->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-1.0 && eta<1.0) countTr++;
+    }
+    AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+    Bool_t isVtxOk=kFALSE;
+    if(vtx1){
+      if(vtx1->GetNContributors()>0){
+        fCEvents->Fill(8);
+        isVtxOk=kTRUE;
+      }
+    }
+
+    countCorr=countTr;
+    if(isVtxOk){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+      countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTr,vtx1->GetZ(),fRefMult));
+    }
+  }
+
+
+  if(fUseCentralitySPDTracklet){
+    fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo,countCorr);
+  }else{
+    fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+  }
+
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent);
 
   //------------------------------------------------
@@ -821,6 +913,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   }
   fCEvents->Fill(4);
 
+	fHNTrackletvsZ->Fill(fVtxZ,countTr);
+	fHNTrackletCorrvsZ->Fill(fVtxZ,countCorr);
+
   fIsMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
   fIsSemi=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kSemiCentral)==(AliVEvent::kSemiCentral);
   fIsCent=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kCentral)==(AliVEvent::kCentral); 
@@ -841,6 +936,14 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
 	if(fUseCentralityV0M){
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
+	}else if(fUseCentralitySPDTracklet){
+		if(countCorr>=0 && countCorr<=0) fCentrality = 5.;
+    else if(countCorr>=1 && countCorr<=8) fCentrality = 15.;
+		else if(countCorr>=9 && countCorr<=13) fCentrality = 25.;
+		else if(countCorr>=14 && countCorr<=19) fCentrality = 35.;
+		else if(countCorr>=20 && countCorr<=30) fCentrality = 45.;
+		else if(countCorr>=31 && countCorr<=49) fCentrality = 55.;
+		else fCentrality = 65.;
 	}else{
 		fCentrality = 1.;
 	}
@@ -973,6 +1076,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(8)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  if(fUseCentralitySPDTracklet){
+    fCounter->SetStudyMultiplicity(kTRUE,1.);
+  }
   fCounter->Init();
   PostData(8,fCounter);
 
@@ -1118,15 +1224,133 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
     }
   }
 
+  if(fDoSingleElectronAnalysis){
+    //------------------------------------------------
+    // track loop 
+    //------------------------------------------------
+    for (Int_t itrk = 0; itrk<nTracks; itrk++) {
+      if(!seleTrkFlags[itrk]) continue;
+      AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
+
+      //TPC only track (BIT 7) does not have PID information 
+      //In addition to that, TPC only tracks does not have good DCA resolution
+      //(according to femtoscopy code)
+      AliAODTrack *trkpid = 0;
+      if(fAnalCuts->GetProdAODFilterBit()==7){
+        trkpid = fGTI[-trk->GetID()-1];
+      }else{
+        trkpid = trk;
+      }
+
+      Int_t nxi_near = 0;
+      Int_t nantixi_near = 0;
+      for (Int_t icasc = 0; icasc<nCascs; icasc++) {
+        if(!seleCascFlags[icasc]) continue;
+        AliAODcascade *casc = aodEvent->GetCascade(icasc);
+        if(!casc) continue;
+        if(!fAnalCuts->IsPeakRegion(casc)) continue;
+
+        AliAODTrack *cptrack =  (AliAODTrack*)(casc->GetDaughter(0));
+        AliAODTrack *cntrack =  (AliAODTrack*)(casc->GetDaughter(1));
+        AliAODTrack *cbtrack =  (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
+
+        Int_t cpid = cptrack->GetID();
+        Int_t cnid = cntrack->GetID();
+        Int_t cbid = cbtrack->GetID();
+        Int_t lpid = trkpid->GetID();
+        if((cpid==lpid)||(cnid==lpid)||(cbid==lpid)) continue;
+
+        Bool_t anti_xi_flag = kFALSE;
+        if(casc->Charge()>0) anti_xi_flag = kTRUE;
+
+        Double_t xipx = casc->MomXiX();
+        Double_t xipy = casc->MomXiY();
+        Double_t xipt = sqrt(xipx*xipx+xipy*xipy);
+        Double_t epx = trk->Px();
+        Double_t epy = trk->Py();
+        Double_t ept = trk->Pt();
+        Double_t cosdphi =  (xipx*epx+xipy*epy)/xipt/ept;
+        Double_t cosdphimin = cos(2.*(0.0690941+0.521911/ept));
+
+        if(cosdphi>cosdphimin){
+          if(anti_xi_flag){
+            nantixi_near++;
+          }else{
+            nxi_near++;
+          }
+        }
+      }
+
+      Double_t cont_se_nd[8];
+      for(Int_t iv=0;iv<8;iv++){
+        cont_se_nd[iv] = -9999.;
+      }
+
+      Double_t d0z0bach[2],covd0z0bach[3];
+      Double_t d0[3],d0err[3];
+      trk->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
+
+      d0[0]= d0z0bach[0];
+      d0err[0] = TMath::Sqrt(covd0z0bach[0]);
+      cont_se_nd[0] = trk->Pt();
+      if(fBzkG>0.)
+        cont_se_nd[1] = d0[0]*trk->Charge();
+      else
+        cont_se_nd[1] = -1.*d0[0]*trk->Charge();
+      cont_se_nd[2] = nxi_near;
+      cont_se_nd[3] = nantixi_near;
+      cont_se_nd[4] = trk->Charge();
+      Double_t minmass_ee = 9999.;
+      Bool_t isconv = fAnalCuts->TagConversions(trk,fGTIndex,aodEvent,aodEvent->GetNumberOfTracks(),minmass_ee);
+      Double_t minmasslike_ee = 9999.;
+      Bool_t isconv_like = fAnalCuts->TagConversionsSameSign(trk,fGTIndex,aodEvent,aodEvent->GetNumberOfTracks(),minmasslike_ee);
+      cont_se_nd[5] = isconv + 2*isconv_like;
+      cont_se_nd[6] = 0;
+      cont_se_nd[7] = fCentrality;
+
+      fHistoSingleElectronVariablesvsElePt->Fill(cont_se_nd);
+
+      if(fUseMCInfo){
+        Int_t pdgarray_ele[100];
+        Int_t labelarray_ele[100];
+        for(Int_t i=0;i<100;i++){
+          pdgarray_ele[i] = -9999;
+          labelarray_ele[i] = -9999;
+        }
+        Int_t ngen_ele = 0;
+
+        Int_t labEle = trk->GetLabel();
+
+        AliAODMCParticle *mcetrk = 0;
+        if(labEle>-1) mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
+
+        if(mcetrk){
+          GetMCDecayHistory(mcetrk,mcArray,pdgarray_ele,labelarray_ele,ngen_ele);
+          if(abs(pdgarray_ele[0])==4122) cont_se_nd[6] = 1;
+          if(abs(pdgarray_ele[0])==4132) cont_se_nd[6] = 2;
+          if(abs(pdgarray_ele[0])==4232) cont_se_nd[6] = 3;
+          if(abs(pdgarray_ele[0])==5122) cont_se_nd[6] = 4;
+          if(abs(pdgarray_ele[0])==5132) cont_se_nd[6] = 5;
+          if(abs(pdgarray_ele[0])==5232) cont_se_nd[6] = 6;
+        }
+
+        fHistoSingleElectronVariablesvsElePtMC->Fill(cont_se_nd);
+      }
+
+    }
+  }
+
   if(fDoEventMixing){
 		fEventInfo->SetString(Form("Ev%d_esd%d_E%d_C%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fElectronTracks->GetEntries(),fCascadeTracks1->GetEntries()+fCascadeTracks2->GetEntries()));
     Int_t ind=GetPoolIndex(fVtxZ,fCentrality);
     if(ind>=0 && ind<fNOfPools){
       if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
 				DoEventMixingWithPools(ind);
-				if(fEventBuffer[ind]->GetEntries() >= 20*fNumberOfEventsForMixing){
+				if(fEventBuffer[ind]->GetEntries() >= 100*fNumberOfEventsForMixing){
 					ResetPool(ind);
+          fHistoPoolNumberOfResets->Fill(ind);
 				}
+        fHistoPoolNumberOfDumps->Fill(ind);
       }
       fEventBuffer[ind]->Fill();
     }
@@ -1489,8 +1713,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   fCandidateVariables[91] = fRunNumber;
 
 
-  if(fWriteVariableTree)
-    fVariablesTree->Fill();
+//  if(fWriteVariableTree)
+//    fVariablesTree->Fill();
 
   Double_t dphis_ele_pr, detas_ele_pr,dphis_ele_pi, detas_ele_pi, dphis_ele_bach, detas_ele_bach;
   dphis_ele_pr = 9999.;detas_ele_pr = 9999.;dphis_ele_pi = 9999.;detas_ele_pi = 9999.;dphis_ele_bach=9999.;detas_ele_bach=9999.;
@@ -1904,33 +2128,41 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
-						fHistoXibMCS->Fill(cont_xib);
-						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
-						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						if(cont[0]<2.5){
+							fHistoXibMCS->Fill(cont_xib);
+							fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+							fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						}
           }
 					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5132){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
-						fHistoXibMCS->Fill(cont_xib);
-						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
-						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						if(cont[0]<2.5){
+							fHistoXibMCS->Fill(cont_xib);
+							fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+							fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						}
           }
 					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5232){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
-						fHistoXibMCS->Fill(cont_xib);
-						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
-						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						if(cont[0]<2.5){
+							fHistoXibMCS->Fill(cont_xib);
+							fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+							fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						}
           }
 					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5232){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
-						fHistoXibMCS->Fill(cont_xib);
-						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
-						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						if(cont[0]<2.5){
+							fHistoXibMCS->Fill(cont_xib);
+							fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+							fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
+						}
           }
         }
       }
@@ -1994,6 +2226,14 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   for(Int_t iv=0;iv<13;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
+	Double_t cont_cor_nd[7];
+  for(Int_t iv=0;iv<7;iv++){
+    cont_cor_nd[iv] = -9999.;
+  }
+	Double_t cont_mass_nd[8];
+  for(Int_t iv=0;iv<8;iv++){
+    cont_mass_nd[iv] = -9999.;
+  }
 
   fCorrelationVariables[0] = sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2));
   fCorrelationVariables[1] = trk->Pt();
@@ -2014,23 +2254,42 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   fCorrelationVariables[11] = exobj->Pt();
   fCorrelationVariables[12] = exobj->InvMass(2,pdgdg);
 
+	cont_cor_nd[0] = exobj->Pt();
+	cont_cor_nd[1] = fAnalCuts->DeltaPhi(casc,trk);
+	cont_cor_nd[2] = 1.;//not used
+	if(trk->Charge()>0){
+		if(casc->ChargeXi()<0) cont_cor_nd[3] = 0;
+		else cont_cor_nd[3] = 2;
+	}else if(trk->Charge()<0){
+		if(casc->ChargeXi()<0) cont_cor_nd[3] = 3;
+		else cont_cor_nd[3] = 1;
+	}
+	cont_cor_nd[4] = fCorrelationVariables[8];
+	cont_cor_nd[5] = 0;
+	cont_cor_nd[6] = fCentrality;
+
   if(fUseMCInfo && FromSemileptonicDecays(mcpdgele_array)>0){
     if(mcxic){
       Int_t pdgcode = mcxic->GetPdgCode();
       if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
         fCorrelationVariables[9] = 1;
+				cont_cor_nd[5] = 1;
       }
       if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5132){
         fCorrelationVariables[9] = 11;
+				cont_cor_nd[5] = 6;
       }
       if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5132){
         fCorrelationVariables[9] = 12;
+				cont_cor_nd[5] = 6;
       }
       if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5232){
         fCorrelationVariables[9] = 13;
+				cont_cor_nd[5] = 6;
       }
       if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5232){
         fCorrelationVariables[9] = 14;
+				cont_cor_nd[5] = 6;
       }
     }
     if(fCorrelationVariables[9]<0){
@@ -2040,24 +2299,68 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
         if(lam_from_bottom) fCorrelationVariables[9] = 1011;
         else if(lam_from_charm) fCorrelationVariables[9] = 1012;
         else  fCorrelationVariables[9] = 1013;
+				cont_cor_nd[5] = 7;
       }
       if(FromSemileptonicDecays(mcpdgele_array)==2){
         if(lam_from_bottom) fCorrelationVariables[9] = 1014;
         else if(lam_from_charm) fCorrelationVariables[9] = 1015;
         else  fCorrelationVariables[9] = 1016;
+				cont_cor_nd[5] = 8;
       }
       if(FromSemileptonicDecays(mcpdgele_array)==1 && HaveBottomInHistory(mcpdgele_array)){
         if(lam_from_bottom) fCorrelationVariables[9] = 1017;
         else if(lam_from_charm) fCorrelationVariables[9] = 1018;
         else  fCorrelationVariables[9] = 1019;
+				cont_cor_nd[5] = 9;
       }
     }
   }
 
   if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(casc))
   {
-    fCorrelationVariablesTree->Fill();
+		if(fWriteVariableTree)
+			fCorrelationVariablesTree->Fill();
+
+		if(fUseMCInfo){
+			if(exobj->InvMass(2,pdgdg)<2.5)
+				fHistoCorrelationVariablesvsEleXiPtMC->Fill(cont_cor_nd);
+			cont_cor_nd[0] = trk->Pt();
+			fHistoCorrelationVariablesvsElePtMC->Fill(cont_cor_nd);
+			cont_cor_nd[0] = sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2));
+			fHistoCorrelationVariablesvsXiPtMC->Fill(cont_cor_nd);
+		}else{
+			if(exobj->InvMass(2,pdgdg)<2.5)
+				fHistoCorrelationVariablesvsEleXiPt->Fill(cont_cor_nd);
+			cont_cor_nd[0] = trk->Pt();
+			fHistoCorrelationVariablesvsElePt->Fill(cont_cor_nd);
+			cont_cor_nd[0] = sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2));
+			fHistoCorrelationVariablesvsXiPt->Fill(cont_cor_nd);
+		}
   }
+
+	cont_mass_nd[0] =  exobj->InvMass(2,pdgdg);
+	cont_mass_nd[1] =  cont_cor_nd[0];
+	cont_mass_nd[4] =  cont_cor_nd[3];
+	cont_mass_nd[5] =  cont_cor_nd[4];
+	cont_mass_nd[6] =  cont_cor_nd[5];
+	cont_mass_nd[7] =  cont_cor_nd[6];
+	if(fAnalCuts->IsPeakRegion(casc)) cont_mass_nd[3] = 1;
+	if(fAnalCuts->IsSideBand(casc)) cont_mass_nd[3] = 0;
+	if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate)) cont_mass_nd[2]=1;
+	if(mexi_flip < 10.&& cosoa < 0.) cont_mass_nd[2]=0;
+	if(fUseMCInfo){
+		fHistoMassVariablesvsEleXiPtMC->Fill(cont_cor_nd);
+		cont_cor_nd[0] = trk->Pt();
+		fHistoMassVariablesvsElePtMC->Fill(cont_cor_nd);
+		cont_cor_nd[0] = sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2));
+		fHistoMassVariablesvsXiPtMC->Fill(cont_cor_nd);
+	}else{
+		fHistoMassVariablesvsEleXiPt->Fill(cont_cor_nd);
+		cont_cor_nd[0] = trk->Pt();
+		fHistoMassVariablesvsElePt->Fill(cont_cor_nd);
+		cont_cor_nd[0] = sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2));
+		fHistoMassVariablesvsXiPt->Fill(cont_cor_nd);
+	}
 
 
   return;
@@ -2135,8 +2438,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 	fCandidateVariables[79] = fVtx1->GetZ();
   fCandidateVariables[88] = fEvNumberCounter;
 
-  if(fWriteVariableTree)
-    fVariablesTree->Fill();
+//  if(fWriteVariableTree)
+//    fVariablesTree->Fill();
 
 	Double_t cont[4];
 	cont[0] = mexi;
@@ -2264,6 +2567,15 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
     fCorrelationVariables[iv] = -9999.;
   }
 
+	Double_t cont_cor_nd[7];
+  for(Int_t iv=0;iv<7;iv++){
+    cont_cor_nd[iv] = -9999.;
+  }
+	Double_t cont_mass_nd[8];
+  for(Int_t iv=0;iv<8;iv++){
+    cont_mass_nd[iv] = -9999.;
+  }
+
   fCorrelationVariables[0] = casc->Pt();
   fCorrelationVariables[1] = trke->Pt();
   fCorrelationVariables[2] = TVector2::Phi_mpi_pi(casc->Phi()-trke->Phi());
@@ -2283,11 +2595,51 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   fCorrelationVariables[11] = sqrt(pxsum*pxsum+pysum*pysum);
   fCorrelationVariables[12] = mexi;
 
+	cont_cor_nd[0] =  sqrt(pxsum*pxsum+pysum*pysum);
+	cont_cor_nd[1] =  TVector2::Phi_mpi_pi(casc->Phi()-trke->Phi());
+	cont_cor_nd[2] = 1.;//not used
+  if(trke->T()>0){
+    if(chargexi<0) cont_cor_nd[3] = 0;
+    else cont_cor_nd[3] = 2;
+  }else if(trke->T()<0){
+    if(chargexi<0) cont_cor_nd[3] = 3;
+    else cont_cor_nd[3] = 1;
+  }
+	cont_cor_nd[4] = fCorrelationVariables[8];
+	cont_cor_nd[5] = 0;
+	if(fabs(fCorrelationVariables[9]-1013)<0.001) cont_cor_nd[5] = 7;
+	if(fabs(fCorrelationVariables[9]-1016)<0.001) cont_cor_nd[5] = 8;
+	if(fabs(fCorrelationVariables[9]-1019)<0.001) cont_cor_nd[5] = 9;
+	cont_cor_nd[6] = fCentrality;
+
   if(fAnalCuts->IsSelected(trke,casc,rdhfcutvars,AliRDHFCuts::kCandidate) &&  fAnalCuts->IsPeakRegion(casc))
   {
-    fCorrelationVariablesTree->Fill();
+		if(fWriteVariableTree)
+			fCorrelationVariablesTree->Fill();
+
+		if(mexi<2.5)
+			fHistoCorrelationVariablesvsEleXiPtMix->Fill(cont_cor_nd);
+		cont_cor_nd[0] = trke->Pt();
+		fHistoCorrelationVariablesvsElePtMix->Fill(cont_cor_nd);
+		cont_cor_nd[0] = casc->Pt();
+		fHistoCorrelationVariablesvsXiPtMix->Fill(cont_cor_nd);
   }
 
+	cont_mass_nd[0] =  mexi;
+	cont_mass_nd[1] =  cont_cor_nd[0];
+	cont_mass_nd[4] =  cont_cor_nd[3];
+	cont_mass_nd[5] =  cont_cor_nd[4];
+	cont_mass_nd[6] =  cont_cor_nd[5];
+	cont_mass_nd[7] =  cont_cor_nd[6];
+	if(fAnalCuts->IsPeakRegion(casc)) cont_mass_nd[3] = 1;
+	if(fAnalCuts->IsSideBand(casc)) cont_mass_nd[3] = 0;
+	if(fAnalCuts->IsSelected(trke,casc,rdhfcutvars,AliRDHFCuts::kCandidate) ) cont_mass_nd[2]=1;
+	if(mexi_flip < 10.&& cosoa < 0.) cont_mass_nd[2]=0;
+	fHistoMassVariablesvsEleXiPtMix->Fill(cont_mass_nd);
+	cont_mass_nd[0] = trke->Pt();
+	fHistoMassVariablesvsElePtMix->Fill(cont_mass_nd);
+	cont_mass_nd[0] = casc->Pt();
+	fHistoMassVariablesvsXiPtMix->Fill(cont_mass_nd);
 
   return;
 }
@@ -2582,6 +2934,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   trackCasc->PropagateToDCA(fVtx1,fBzkG,kVeryBig);
   Double_t momcasc_new[3]={-9999,-9999,-9999.};
   trackCasc->GetPxPyPz(momcasc_new);
+  delete trackCasc;
 
 	if(fDoEventMixing){
 		TLorentzVector *lv = new TLorentzVector();
@@ -3019,11 +3372,20 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineGeneralHistograms() {
   fHTrigger->GetXaxis()->SetBinLabel(13,"kINT7&kEMC7");
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
+	fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
+	fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 
+  fHistoPoolNumberOfDumps = new TH1F("fHistoPoolNumberOfDumps","Number of dumps",1000,-0.5,999.5);
+  fHistoPoolNumberOfDumps->SetBinContent(999,fNumberOfEventsForMixing);
+  fHistoPoolNumberOfResets = new TH1F("fHistoPoolNumberOfResets","Number of resets",1000,-0.5,999.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
+	fOutput->Add(fHNTrackletvsZ);
+	fOutput->Add(fHNTrackletCorrvsZ);
+  fOutput->Add(fHistoPoolNumberOfDumps);
+  fOutput->Add(fHistoPoolNumberOfResets);
 
   return;
 }
@@ -3561,6 +3923,88 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoPi0MCGen);
   fHistoEtaMCGen = new TH1F("fHistoEtaMCGen","",100,0.,20.);
   fOutputAll->Add(fHistoEtaMCGen);
+
+	//Axis 0: Pt
+	//Axis 1: Dphi
+	//Axis 2: proper dl
+	//Axis 3: Sign Type
+	//Axis 4: Conv Type
+	//Axis 5: MC Type
+	//Axis 6: Centrality
+  Int_t bins_cor_nd[7]=	{100 , 20, 20, 4, 3, 10, 10};
+  Double_t xmin_cor_nd[7]={0.,-M_PI,0.,-0.5,-0.5,-0.5,0.};
+  Double_t xmax_cor_nd[7]={20.,M_PI,40.,3.5,2.5,9.5,100.};
+  Double_t xmax_cor_nd2[7]={10.,M_PI,40.,3.5,2.5,9.5,100.};
+  fHistoCorrelationVariablesvsEleXiPt = new THnSparseF("fHistoCorrelationVariablesvsEleXiPt","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
+  fHistoCorrelationVariablesvsEleXiPtMix = new THnSparseF("fHistoCorrelationVariablesvsEleXiPtMix","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
+  fHistoCorrelationVariablesvsEleXiPtMC = new THnSparseF("fHistoCorrelationVariablesvsEleXiPtMC","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
+  fHistoCorrelationVariablesvsElePt = new THnSparseF("fHistoCorrelationVariablesvsElePt","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd2);
+  fHistoCorrelationVariablesvsElePtMix = new THnSparseF("fHistoCorrelationVariablesvsElePtMix","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd2);
+  fHistoCorrelationVariablesvsElePtMC = new THnSparseF("fHistoCorrelationVariablesvsElePtMC","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd2);
+  fHistoCorrelationVariablesvsXiPt = new THnSparseF("fHistoCorrelationVariablesvsXiPt","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
+  fHistoCorrelationVariablesvsXiPtMix = new THnSparseF("fHistoCorrelationVariablesvsXiPtMix","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
+  fHistoCorrelationVariablesvsXiPtMC = new THnSparseF("fHistoCorrelationVariablesvsXiPtMC","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
+
+	//Axis 0: Mass
+	//Axis 1: Pt
+	//Axis 2: Near or Away
+	//Axis 3: peak or Sideband
+	//Axis 4: Sign Type
+	//Axis 5: Conv Type
+	//Axis 6: MC Type
+	//Axis 7: Centrality
+  Int_t bins_mass_nd[8]=	{22,100 , 2, 2, 4, 3, 10, 10};
+  Double_t xmin_mass_nd[8]={1.3,0.,-0.5,-0.5,-0.5,-0.5,-0.5,0.};
+  Double_t xmax_mass_nd[8]={5.7,20.,1.5,1.5,3.5,2.5,9.5,100.};
+  Double_t xmax_mass_nd2[8]={5.7,10.,1.5,1.5,3.5,2.5,9.5,100.};
+  fHistoMassVariablesvsEleXiPt = new THnSparseF("fHistoMassVariablesvsEleXiPt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsEleXiPtMix = new THnSparseF("fHistoMassVariablesvsEleXiPtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsEleXiPtMC = new THnSparseF("fHistoMassVariablesvsEleXiPtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsElePt = new THnSparseF("fHistoMassVariablesvsElePt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd2);
+  fHistoMassVariablesvsElePtMix = new THnSparseF("fHistoMassVariablesvsElePtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd2);
+  fHistoMassVariablesvsElePtMC = new THnSparseF("fHistoMassVariablesvsElePtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd2);
+  fHistoMassVariablesvsXiPt = new THnSparseF("fHistoMassVariablesvsXiPt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsXiPtMix = new THnSparseF("fHistoMassVariablesvsXiPtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsXiPtMC = new THnSparseF("fHistoMassVariablesvsXiPtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+
+	//Axis 0: Pt
+	//Axis 1: DCA
+	//Axis 2: N Xi
+	//Axis 3: N anti-Xi
+	//Axis 4: Sign type
+	//Axis 5: Conv Type
+	//Axis 6: MC type
+	//Axis 7: Centrality 
+  Int_t bins_sev_nd[8]=	{100  ,50   ,10  ,10  ,3,3,10,10};
+  Double_t xmin_sev_nd[8]={0. ,-0.1,-0.5 ,-0.5 ,-1.5,-0.5,-0.5,0.};
+  Double_t xmax_sev_nd[8]={10.,0.1  ,9.5  ,9.5,1.5,2.5,9.5,100.};
+  fHistoSingleElectronVariablesvsElePt = new THnSparseF("fHistoSingleElectronVariablesvsElePt","",8,bins_sev_nd,xmin_sev_nd,xmax_sev_nd);
+  fHistoSingleElectronVariablesvsElePtMix = new THnSparseF("fHistoSingleElectronVariablesvsElePtMix","",8,bins_sev_nd,xmin_sev_nd,xmax_sev_nd);
+  fHistoSingleElectronVariablesvsElePtMC = new THnSparseF("fHistoSingleElectronVariablesvsElePtMC","",8,bins_sev_nd,xmin_sev_nd,xmax_sev_nd);
+
+  fOutputAll->Add(fHistoCorrelationVariablesvsEleXiPt);
+  fOutputAll->Add(fHistoCorrelationVariablesvsEleXiPtMix);
+  fOutputAll->Add(fHistoCorrelationVariablesvsEleXiPtMC);
+  fOutputAll->Add(fHistoCorrelationVariablesvsElePt);
+  fOutputAll->Add(fHistoCorrelationVariablesvsElePtMix);
+  fOutputAll->Add(fHistoCorrelationVariablesvsElePtMC);
+  fOutputAll->Add(fHistoCorrelationVariablesvsXiPt);
+  fOutputAll->Add(fHistoCorrelationVariablesvsXiPtMix);
+  fOutputAll->Add(fHistoCorrelationVariablesvsXiPtMC);
+
+  fOutputAll->Add(fHistoMassVariablesvsEleXiPt);
+  fOutputAll->Add(fHistoMassVariablesvsEleXiPtMix);
+  fOutputAll->Add(fHistoMassVariablesvsEleXiPtMC);
+  fOutputAll->Add(fHistoMassVariablesvsElePt);
+  fOutputAll->Add(fHistoMassVariablesvsElePtMix);
+  fOutputAll->Add(fHistoMassVariablesvsElePtMC);
+  fOutputAll->Add(fHistoMassVariablesvsXiPt);
+  fOutputAll->Add(fHistoMassVariablesvsXiPtMix);
+  fOutputAll->Add(fHistoMassVariablesvsXiPtMC);
+
+  fOutputAll->Add(fHistoSingleElectronVariablesvsElePt);
+  fOutputAll->Add(fHistoSingleElectronVariablesvsElePtMix);
+  fOutputAll->Add(fHistoSingleElectronVariablesvsElePtMC);
 
   return;
 }
@@ -4337,6 +4781,95 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
 			//delete c2array1;
 		}//event loop
 	}//track loop
+
+  if(fDoSingleElectronAnalysis){
+    for (Int_t i=0; i<nEle; i++)
+    {
+      TLorentzVector* trke=(TLorentzVector*) fElectronTracks->At(i);
+      if(!trke)continue;
+      TVector *elevarsarray = (TVector*)fElectronCutVarsArray->At(i);
+
+      Double_t epx = trke->Px();
+      Double_t epy = trke->Py();
+      Double_t ept = trke->Pt();
+
+      for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
+        fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
+
+        Int_t nCasc1=c1array->GetEntries();
+        Int_t nCasc2=c2array->GetEntries();
+
+        Int_t nxi_near = 0;
+        for(Int_t iTr1=0; iTr1<nCasc1; iTr1++){
+          TLorentzVector* casc1=(TLorentzVector*) c1array->At(iTr1);
+          if(!casc1) continue;
+          if(!fAnalCuts->IsPeakRegion(casc1)) continue;
+          TVector *cascvarsarray = (TVector*) c1varsarray->At(iTr1);
+
+          Double_t xipx = casc1->Px();
+          Double_t xipy = casc1->Py();
+          Double_t xipt = casc1->Pt();
+          Double_t cosdphi =  (xipx*epx+xipy*epy)/xipt/ept;
+          Double_t cosdphimin = cos(2.*(0.0690941+0.521911/ept));
+
+          if(cosdphi>cosdphimin) nxi_near++;
+        }//casc loop
+
+        Int_t nantixi_near = 0;
+        for(Int_t iTr2=0; iTr2<nCasc2; iTr2++){
+          TLorentzVector* casc2=(TLorentzVector*) c2array->At(iTr2);
+          if(!casc2) continue;
+          if(!fAnalCuts->IsPeakRegion(casc2)) continue;
+          TVector *cascvarsarray = (TVector*) c2varsarray->At(iTr2);
+
+          Double_t xipx = casc2->Px();
+          Double_t xipy = casc2->Py();
+          Double_t xipt = casc2->Pt();
+          Double_t cosdphi =  (xipx*epx+xipy*epy)/xipt/ept;
+          Double_t cosdphimin = cos(2.*(0.0690941+0.521911/ept));
+
+          if(cosdphi>cosdphimin) nantixi_near++;
+        }//casc loop
+
+        Double_t cont_se_nd[8];
+        for(Int_t iv=0;iv<8;iv++){
+          cont_se_nd[iv] = -9999.;
+        }
+
+        cont_se_nd[0] = trke->Pt();
+        if(fBzkG>0.)
+          cont_se_nd[1] = (*elevarsarray)[5]*trke->T();
+        else
+          cont_se_nd[1] = -1.*(*elevarsarray)[5]*trke->T();
+        cont_se_nd[2] = nxi_near;
+        cont_se_nd[3] = nantixi_near;
+        cont_se_nd[4] = trke->T();
+        cont_se_nd[5] = (*elevarsarray)[6];
+        cont_se_nd[6] = 0;
+        cont_se_nd[7] = fCentrality;
+
+        fHistoSingleElectronVariablesvsElePtMix->Fill(cont_se_nd);
+      }//event loop
+    }//track loop
+  }
+
+  delete eventInfo;
+  if(c1array) c1array->Delete();
+  delete c1array;
+  if(c2array) c2array->Delete();
+  delete c2array;
+  if(c1varsarray) c1varsarray->Delete();
+  delete c1varsarray;
+  if(c2varsarray) c2varsarray->Delete();
+  delete c2varsarray;
+
+  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &fVtxZ);
+  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &fCentrality);
+  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&fEventInfo);
+  fEventBuffer[poolIndex]->SetBranchAddress("c1array", &fCascadeTracks1);
+  fEventBuffer[poolIndex]->SetBranchAddress("c2array", &fCascadeTracks2);
+  fEventBuffer[poolIndex]->SetBranchAddress("c1varsarray", &fCascadeCutVarsArray1);
+  fEventBuffer[poolIndex]->SetBranchAddress("c2varsarray", &fCascadeCutVarsArray2);
 }
 //_________________________________________________________________
 Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
@@ -4894,4 +5427,23 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::HaveBottomInHistory(Int_t *histo
     if(abs(history[ih])==5332) return kTRUE;
   }
   return kFALSE;
+}
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskSEXic2eleXifromAODtracks::GetEstimatorHistogram(const AliVEvent* event){
+	/// Get Estimator Histogram from period event->GetRunNumber();
+	///
+	/// If you select SPD tracklets in |eta|<1 you should use type == 1
+	///
+
+	Int_t runNo  = event->GetRunNumber();
+	Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+
+	if(runNo>114930 && runNo<117223) period = 0;
+	if(runNo>119158 && runNo<120830) period = 1;
+	if(runNo>122373 && runNo<126438) period = 2;
+	if(runNo>127711 && runNo<130851) period = 3;
+	if(period<0 || period>3) return 0;
+
+
+	return fMultEstimatorAvg[period];
 }

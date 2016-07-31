@@ -111,6 +111,10 @@ public:
  Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
  void SetUsePhiEtaWeights(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeights = uPhiEtaW;};
  Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
+  void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
+  Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
+  void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
+  Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
  
  // Event weights:
  void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -162,8 +166,12 @@ public:
   Bool_t GetCalculateEbEFlow() const {return this->fCalculateEbEFlow;};
  void SetCRC2nEtaBins(Int_t NB) {this->fCRC2nEtaBins = NB;};
  Int_t GetCRC2nEtaBins() {return this->fCRC2nEtaBins;};
- void SetCalculateFlow(Bool_t const cCRC) {this->fCalculateFlow = cCRC;};
- Bool_t GetCalculateFlow() const {return this->fCalculateFlow;};
+  void SetCalculateFlowQC(Bool_t const cCRC) {this->fCalculateFlowQC = cCRC;};
+  Bool_t GetCalculateFlowQC() const {return this->fCalculateFlowQC;};
+  void SetCalculateFlowZDC(Bool_t const cCRC) {this->fCalculateFlowZDC = cCRC;};
+  Bool_t GetCalculateFlowZDC() const {return this->fCalculateFlowZDC;};
+  void SetCalculateFlowVZ(Bool_t const cCRC) {this->fCalculateFlowVZ = cCRC;};
+  Bool_t GetCalculateFlowVZ() const {return this->fCalculateFlowVZ;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -191,6 +199,8 @@ public:
  Int_t GetnCenBin() const {return this->fnCenBin;};
   void SetFlowQCCenBin(Int_t const TL) {this->fFlowQCCenBin = TL;};
   Int_t GetFlowQCCenBin() const {return this->fFlowQCCenBin;};
+  void SetFlowQCDeltaEta(Double_t const TL) {this->fFlowQCDeltaEta = TL;};
+  Double_t GetFlowQCDeltaEta() const {return this->fFlowQCDeltaEta;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
  Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
  void SetDataSet(TString const n) {this->fDataSet = n;};
@@ -203,8 +213,12 @@ public:
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
  void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
  TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
-  void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
-  TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
+ void SetZDCESEMultWeightsHist(TH2F* const n, Int_t h) {this->fZDCESEMultWeightsHist[h] = n;};
+ TH2F* GetZDCESEMultWeightsHist(Int_t h) const {return this->fZDCESEMultWeightsHist[h];};
+  void SetZDCESESpecWeightsHist(TH2F* const n, Int_t h) {this->fZDCESESpecWeightsHist[h] = n;};
+  TH2F* GetZDCESESpecWeightsHist(Int_t h) const {return this->fZDCESESpecWeightsHist[h];};
+ void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
+ TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
  void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
  Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
  void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
@@ -253,6 +267,8 @@ private:
  Bool_t fUseEtaWeights;              // use eta weights
  Bool_t fUseTrackWeights;            // use track weights (e.g. VZERO sector weights)
  Bool_t fUsePhiEtaWeights;           // use phi,eta weights
+ Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
+ Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE mult. weights
  TList *fWeightsList;                // list with weights
  // Event weights:
  TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
@@ -278,7 +294,9 @@ private:
   Bool_t fCalculateCRCZDC;
   Bool_t fCalculateEbEFlow;
  Int_t fCRC2nEtaBins; // CRC2 n eta bins
- Bool_t fCalculateFlow;
+  Bool_t fCalculateFlowQC;
+  Bool_t fCalculateFlowZDC;
+  Bool_t fCalculateFlowVZ;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
@@ -291,6 +309,7 @@ private:
  Double_t fCRCEtaMax;
  Int_t fnCenBin;
  Int_t fFlowQCCenBin;
+ Double_t fFlowQCDeltaEta;
  Double_t fCenBinWidth;
  TString fDataSet;
  TString fCorrWeight;
@@ -301,11 +320,13 @@ private:
  TH1D* fPtWeightsHist[10];
  TH1D* fEtaWeightsHist[10][21][2];
  TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
+ TH2F* fZDCESEMultWeightsHist[5];
+ TH2F* fZDCESESpecWeightsHist[5];
  Bool_t fQAZDCCuts;
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 5);
+ ClassDef(AliAnalysisTaskCRC, 7);
 };
 
 //================================================================================================================
