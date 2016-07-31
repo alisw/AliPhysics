@@ -29,6 +29,7 @@ fCutTPCdEdx(3.0)
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F("fHisto","", 20,0,100, 200,0,2, 100,0,10);
+    fHisto->Sumw2();
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title):
@@ -54,6 +55,7 @@ fCutTPCdEdx(3.0)
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto->Sumw2();
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const AliV0Result& lCopyMe)
@@ -79,6 +81,7 @@ fCutTPCdEdx(lCopyMe.fCutTPCdEdx)
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto->Sumw2();
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(AliV0Result *lCopyMe)
@@ -106,6 +109,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto->Sumw2();
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
@@ -150,6 +154,26 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto->Sumw2();
     
     return *this;
+}
+
+//________________________________________________________________
+Long64_t AliV0Result::Merge(TCollection *hlist)
+//Merging function to allow for usage as analysis output
+{
+    
+    if (!hlist) return 0;
+    if (hlist->IsEmpty()) return (Long64_t) GetHistogram()->GetEntries();
+    
+    if (hlist) {
+        AliV0Result *xh = 0;
+        TIter nxh(hlist);
+        while (xh == (AliV0Result *) nxh()) {
+            // Add this histogram
+            GetHistogram()->Add(xh->GetHistogram());
+        }
+    }
+    return (Long64_t) GetHistogram()->GetEntries();
 }

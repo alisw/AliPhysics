@@ -27,6 +27,8 @@ public:
     
     AliV0Result& operator=(const AliV0Result& lCopyMe);
     
+    Long64_t Merge(TCollection *hlist);
+    
     void SetCutV0Radius       ( Double_t lCut ) { fCutV0Radius         = lCut; }
     void SetCutDCANegToPV     ( Double_t lCut ) { fCutDCANegToPV       = lCut; }
     void SetCutDCAPosToPV     ( Double_t lCut ) { fCutDCAPosToPV       = lCut; }
