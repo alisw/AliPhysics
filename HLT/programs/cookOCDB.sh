@@ -66,12 +66,14 @@ $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGE
 #Fetch CTP Aliases to make offline reco work with trigger class filter
 $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="GRP/CTP/Aliases" sourceRun=$SOURCE_RUN
 
+#Create TPC Fast transform object
 rm -f $ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform/*
 aliroot -l -q -b $ALICE_SOURCE/HLT/TPCLib/macros/makeTPCFastTransformOCDBObject.C"(\"local://$TARGET\", $SOURCE_RUN, $SOURCE_RUN)"
 SRCFILE=`ls $ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform | tail -n 1`
 aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform/$SRCFILE\", \"local://$TARGET\", 0)"
 rm -f $ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform/*
 
+#Use all TPC Compression objects from cvmfs, to have correct behavior for all runs
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressor/*
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/*
 cp $SOURCE//HLT/ConfigTPC/TPCDataCompressor/* $TARGET/HLT/ConfigTPC/TPCDataCompressor
