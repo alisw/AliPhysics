@@ -1000,7 +1000,8 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
       eMax=elist[iDigit] ;
     }
   }
-  
+  return tMax ;
+/*  
    //Try to improve accuracy 
   //Do not account time of soft cells:
   //  const Double_t part=0.5 ;
@@ -1038,7 +1039,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
    t=tMax ; 
   }    
   
-  return t ;
+  return t ;*/
      
 } 
 //________________________________________________________________________
