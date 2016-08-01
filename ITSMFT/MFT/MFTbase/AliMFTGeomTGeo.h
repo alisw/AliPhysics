@@ -15,9 +15,10 @@ public:
   AliMFTGeomTGeo(const AliMFTGeomTGeo &src);
   ~AliMFTGeomTGeo();
   
-  virtual TGeoPNEntry* GetPNEntry(Int_t index) const {};
-  virtual Bool_t GetOrigMatrix(Int_t index, TGeoHMatrix &m) const {};
-  virtual TGeoHMatrix* ExtractMatrixSens(Int_t index) const {};
+  virtual TGeoPNEntry* GetPNEntry(Int_t index) const { return NULL; };
+  virtual Bool_t GetOrigMatrix(Int_t index, TGeoHMatrix &m) const { 
+    return kFALSE; };
+  virtual TGeoHMatrix* ExtractMatrixSens(Int_t index) const { return NULL; };
 
   const Int_t GetNDisks() { return AliMFTConstants::kNDisks; }
 

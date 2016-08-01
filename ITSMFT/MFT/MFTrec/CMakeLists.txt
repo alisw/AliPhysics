@@ -23,6 +23,8 @@ include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/MFT/${MODULE})
 # Additional include folders in alphabetical order except ROOT
 include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/MFT/MFTbase
                     ${AliRoot_SOURCE_DIR}/ITSMFT/MFT/MFTsim
+                    ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
+                    ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTRec
                     ${AliRoot_SOURCE_DIR}/MUON/MUONbase
                     ${AliRoot_SOURCE_DIR}/MUON/MUONcore
                     ${AliRoot_SOURCE_DIR}/MUON/MUONevaluation
