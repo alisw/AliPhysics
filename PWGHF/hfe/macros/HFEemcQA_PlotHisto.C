@@ -71,6 +71,7 @@ void HFEemcQA_PlotHisto()
   TH2F *M02 = QA1->FindObject("fM02");
   TH2F *M02EovP = QA1->FindObject("fM02EovP");
   TH2F *M20EovP = QA1->FindObject("fM20EovP");
+  THnSparse *electron = QA1->FindObject("Electron");  
   TH1F *cent = QA1->FindObject("fCent");
 
   cout << "No of events with NTrk > 2, ZVtx < 10 cm = " << NEvents->GetBinContent(3) <<endl;
@@ -102,6 +103,7 @@ void HFEemcQA_PlotHisto()
   TrigMulti->GetXaxis()->SetBinLabel(11,"kEMCEGA & EG2"); 
   TrigMulti->Draw("COLZ");
   gPad->SetLogz();
+  //c3->Print(file,"pdf");
 
 
   TCanvas *c10 = new TCanvas("EMCClusEtaPhi", "EMCAL cluster eta and phi distribution",50,50,700,500);
@@ -130,6 +132,7 @@ void HFEemcQA_PlotHisto()
   ClusE->Rebin(10);
   gPad->SetLogy();
   ClusE->Draw();
+  //c9->Print(file + ")","pdf");
   c9->Print(file,"pdf");
 
   TCanvas *ncls = new TCanvas("EMC_NCls", "Number of clusters in event",50,50,700,500);
@@ -175,6 +178,9 @@ void HFEemcQA_PlotHisto()
   leg->AddEntry(EMCTrkMatchPt,"EMC matched track","pl");
   leg->AddEntry(EMCTrkPt,"EMCAL selected track","pl");
   c11->Print(file,"pdf");
+
+  TCanvas *c11_1 = new TCanvas("TrackPt", "TrackPt",50,50,700,500);
+  EMCTrkMatchPt->Draw("colz");
 
   TCanvas *c12 = new TCanvas("TrackEta", "Track eta distribution",50,50,700,500);
   Trketa->SetTitle("Track #eta ditribution");
@@ -253,6 +259,10 @@ void HFEemcQA_PlotHisto()
   EMCDeltaR->ProjectionY()->Draw();
   c18->Print(file,"pdf");
 
+  //TCanvas *c18_1 = new TCanvas("EMCdeltaR","Distance of EMC cluster to its closest track",50,50,700,500);
+  //EMCDeltaR->Draw("colz");
+
+
   TCanvas *ClsPE = new TCanvas("ClusEtaPhi_AftMat", "EMCAL cluster eta and phi distribution aft trk matching",50,50,700,500);
   ProcessHisto2D(ClsEAftTrkMatch);
   ClsEAftTrkMatch->GetXaxis()->SetRangeUser(-0.7,0.7);
@@ -328,6 +338,11 @@ void HFEemcQA_PlotHisto()
   M20EovP->Draw("colz");
   c26->Print(file + ")","pdf");
 
+  //TFile *fout = new TFile("Electrons.root","recreate");
+  TFile *fout = new TFile("ElectronsMB.root","recreate");
+  electron->Write("eArray");
+  ClusEcent->Write("clE");
+  cent->Write("Cent");
 }
 //----------------------------------------
 void ProcessHisto(TH1 *h, Double_t size=1.4, Int_t col=1, Int_t style=20)
@@ -375,6 +390,13 @@ void ProcessLegend(TLegend *leg)
 
 void SetTrigQA(char *name0, char *name1)
 {
+
+  int iEMC;
+  cout << "select EMCal or DCal" << endl;
+  cout << "EMCal:0" << endl;
+  cout << "DCal:1" << endl;
+  cin >> iEMC;
+
   int itrig;
   cout << "select event selection" << endl;
   cout << "INT7 0" << endl;  //change for different triggers
@@ -386,27 +408,38 @@ void SetTrigQA(char *name0, char *name1)
   cin >> itrig;
 
 
-  if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_EMC"); //change for different triggers
-  if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_EMC");  //HFEemcQAINT8_woTender
-  if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_EMC");  //HFEemcQAEMC7_woTender
-  if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_EMC");  //HFEemcQAEMC8_woTender
-  if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_EMC");  //HFEemcQATrigGA_woTender
-  if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_EMC");  //HFEemcQATrigJE_woTender
-  /*
-  if(itrig==0)sprintf(name1,"HFEemcQAINT7_wTender"); //change for different triggers
-  if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender");
-  if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender");
-  if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender");
-  if(itrig==4)sprintf(name1,"HFEemcQATrigGA_wTender");
-  if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender");
-  */
-  if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
-  if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
-  if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
-  if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
-  if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_EMC");
-  if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_EMC");
+  if(iEMC==0)
+    {
+    if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_EMC"); //change for different triggers
+    if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_EMC");  //HFEemcQAINT8_woTender
+    if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_EMC");  //HFEemcQAEMC7_woTender
+    if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_EMC");  //HFEemcQAEMC8_woTender
+    if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_EMC");  //HFEemcQATrigGA_woTender
+    if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_EMC");  //HFEemcQATrigJE_woTender
 
-  cout << "Selection: " << name0 << endl;
-  //cout << "+++++++++++++++++++ " << name1 << endl;
+    if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
+    if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
+    if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
+    if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
+    if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_EMC");
+    if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_EMC");
+   }
+ else
+   {
+    if(itrig==0)sprintf(name0,"PWGHF_hfeHFEemcQAINT7_DCAL"); //change for different triggers
+    if(itrig==1)sprintf(name0,"PWGHF_hfeHFEemcQAINT8_DCAL");  //HFEemcQAINT8_woTender
+    if(itrig==2)sprintf(name0,"PWGHF_hfeHFEemcQAEMC7_DCAL");  //HFEemcQAEMC7_woTender
+    if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_DCAL");  //HFEemcQAEMC8_woTender
+    if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_DCAL");  //HFEemcQATrigGA_woTender
+    if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_DCAL");  //HFEemcQATrigJE_woTender
+
+    if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_DCAL"); //change for different triggers
+    if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_DCAL");
+    if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_DCAL");
+    if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_DCAL");
+    if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_DCAL");
+    if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_DCAL");
+
+
+   }
 }
