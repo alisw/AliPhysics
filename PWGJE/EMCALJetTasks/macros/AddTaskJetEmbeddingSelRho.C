@@ -13,7 +13,8 @@ AliJetEmbeddingSelRhoTask* AddTaskJetEmbeddingSelRho(
 	const Double_t  maxPhi       = TMath::Pi() * 2,
 	const Int_t     nTracks      = 1,
 	const Int_t     nClus        = 0,
-	const Bool_t    copyArray    = kFALSE
+	const Bool_t    copyArray    = kFALSE,
+	const char     *subwagonname = ""
 	) 
 {
 	
@@ -38,6 +39,7 @@ AliJetEmbeddingSelRhoTask* AddTaskJetEmbeddingSelRho(
 	//-------------------------------------------------------
 	// Init the task and do settings
 	//-------------------------------------------------------
+	idname+=subwagonname;
 	
 	TString taskName = Form("TaskEmb%sSel%s_%.0f_%.0f", idname, rhoname, minrho*10., maxrho*10.);
 	
