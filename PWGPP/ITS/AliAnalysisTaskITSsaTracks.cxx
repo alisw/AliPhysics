@@ -94,7 +94,7 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
     fHistPt[ij]=0x0;
     fHistPtGood[ij]=0x0;
     fHistPtFake[ij]=0x0;
-    for(Int_t ij=0; ij<7; ij++) fHistEtaPhiLay[ij]=0x0;
+    for(Int_t ik=0; ik<7; ik++) fHistEtaPhiLay[ij*7+ik]=0x0;
     fHistEtaPhi[ij]=0x0;
     fHistEtaPhiGood[ij]=0x0;
     fHistEtaPhiFake[ij]=0x0;
@@ -152,7 +152,7 @@ AliAnalysisTaskITSsaTracks::~AliAnalysisTaskITSsaTracks(){
       delete fHistPt[iType];
       delete fHistPtGood[iType];
       delete fHistPtFake[iType];
-      for(Int_t ij=0; ij<7; ij++) delete fHistEtaPhiLay[ij];
+      for(Int_t ik=0; ik<7; ik++) delete fHistEtaPhiLay[iType*7+ik];
       delete fHistEtaPhi[iType];
       delete fHistEtaPhiGood[iType];
       delete fHistEtaPhiFake[iType];
@@ -308,15 +308,15 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistPtFake[iType]);
 
     fHistEtaPhiLay[7*iType]=new TH2F(Form("hEtaPhiTracksNoLaySel%s",tit[iType].Data()),"",50,-1.,1.,200,0.,2.*TMath::Pi());
-  fHistEtaPhiLay[0]->SetMinimum(7*iType);
-  fOutput->Add(fHistEtaPhiLay[7*iType]);
-  for(Int_t iLay=1; iLay<=6; iLay++){
-    fHistEtaPhiLay[7*iType+iLay]=new TH2F(Form("hEtaPhiTracksLay%d%s",iLay,tit[iType].Data()),"",50,-1.,1.,200,0.,2.*TMath::Pi());
-    fHistEtaPhiLay[7*iType+iLay]->SetMinimum(0);
-    fOutput->Add(fHistEtaPhiLay[7*iType+iLay]);
-  }
-
-  fHistEtaPhi[iType] = new TH2F(Form("hEtaPhi%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
+    fHistEtaPhiLay[7*iType]->SetMinimum(0);
+    fOutput->Add(fHistEtaPhiLay[7*iType]);
+    for(Int_t iLay=1; iLay<=6; iLay++){
+      fHistEtaPhiLay[7*iType+iLay]=new TH2F(Form("hEtaPhiTracksLay%d%s",iLay,tit[iType].Data()),"",50,-1.,1.,200,0.,2.*TMath::Pi());
+      fHistEtaPhiLay[7*iType+iLay]->SetMinimum(0);
+      fOutput->Add(fHistEtaPhiLay[7*iType+iLay]);
+    }
+    
+    fHistEtaPhi[iType] = new TH2F(Form("hEtaPhi%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
     //fHistEtaPhi[iType]->Sumw2();
     fOutput->Add(fHistEtaPhi[iType]);
     fHistEtaPhiGood[iType] = new TH2F(Form("hEtaPhiGood%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
