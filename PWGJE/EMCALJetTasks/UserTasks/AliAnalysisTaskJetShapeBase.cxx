@@ -47,10 +47,10 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fUseSumw2(0),
   fOverlap(0),
   fRadius(0.4),
-  fTreeJetBkg(),
-  fJet1Vec(new TLorentzVector()),
-  fJet2Vec(new TLorentzVector()),
-  fJetSubVec(new TLorentzVector()),
+  fTreeJetBkg(0),
+  fJet1Vec(),
+  fJet2Vec(),
+  fJetSubVec(),
   fArea(0),
   fAreaPhi(0),
   fAreaEta(0),
@@ -133,9 +133,9 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fOverlap(0),
   fRadius(0.4),
   fTreeJetBkg(0),
-  fJet1Vec(new TLorentzVector()),
-  fJet2Vec(new TLorentzVector()),
-  fJetSubVec(new TLorentzVector()),
+  fJet1Vec(),
+  fJet2Vec(),
+  fJetSubVec(),
   fArea(0),
   fAreaPhi(0),
   fAreaEta(0),
@@ -218,8 +218,8 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
+  //Bool_t oldStatus = TH1::AddDirectoryStatus();
+  //TH1::AddDirectory(kFALSE);
 
   if(!fPathTreeinputFile.IsNull()){
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
@@ -406,24 +406,31 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
     }
   }
 
-  TH1::AddDirectory(oldStatus);
+  //TH1::AddDirectory(oldStatus);
 
   // Create a tree.
-  if(fCreateTree) {
+  //if(fCreateTree) {
+  	  fJet1Vec   = new TLorentzVector();
+  	  fJet2Vec   = new TLorentzVector();
+  	  fJetSubVec = new TLorentzVector();
+  	  Printf("Creating tree");
     fTreeJetBkg = new TTree("fTreeJetSubConst", "fTreeJetSubConst");
-    fTreeJetBkg->Branch("fJet1Vec","TLorentzVector",&fJet1Vec);
-    fTreeJetBkg->Branch("fJet2Vec","TLorentzVector",&fJet2Vec);
-    fTreeJetBkg->Branch("fJetSubVec","TLorentzVector",&fJetSubVec);
+    fTreeJetBkg->Branch("fJet1Vec.",fJet1Vec);
+    fTreeJetBkg->Branch("fJet2Vec.",fJet2Vec);
+    fTreeJetBkg->Branch("fJetSubVec.",fJetSubVec);
     fTreeJetBkg->Branch("fArea",&fArea,"fArea/F");
     fTreeJetBkg->Branch("fAreaPhi",&fAreaPhi,"fAreaPhi/F");
     fTreeJetBkg->Branch("fAreaEta",&fAreaEta,"fAreaEta/F");
     fTreeJetBkg->Branch("fRho",&fRho,"fRho/F");
     fTreeJetBkg->Branch("fRhoM",&fRhoM,"fRhoM/F");
     fTreeJetBkg->Branch("fMatch",&fMatch,"fMatch/I");
-  }
+    fTreeJetBkg->Branch("fNConst",&fNConst, "fNConst/I");
+    
+  //}
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-  if(fCreateTree) PostData(2, fTreeJetBkg);
+  //if(fCreateTree) 
+  PostData(2, fTreeJetBkg);
 }
 
 //________________________________________________________________________
