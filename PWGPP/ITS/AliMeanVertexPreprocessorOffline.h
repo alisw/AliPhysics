@@ -22,6 +22,9 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 	void  ProcessOutput(const char *filename, AliCDBStorage *db, Int_t runNb);
 	Int_t GetStatus();
 
+	void SetShowPlots(Bool_t showPlots){fShowPlots = showPlots;}
+	
+
   private:
 	AliMeanVertexPreprocessorOffline(const AliMeanVertexPreprocessorOffline & proc); // copy constructor	
 	AliMeanVertexPreprocessorOffline& operator=(const AliMeanVertexPreprocessorOffline&); //operator
@@ -39,8 +42,9 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 
 	Int_t fStatus; /* status code */
 	static const Char_t *fgkStatusCodeName[kNStatusCodes];
+	Bool_t fShowPlots; /* status code */
 	
-	ClassDef(AliMeanVertexPreprocessorOffline, 2);
+	ClassDef(AliMeanVertexPreprocessorOffline, 3);
 };
 
 #endif
