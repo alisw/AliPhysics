@@ -134,6 +134,9 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistdEdxEop(0),
   fHistNsigEop(0),
   fHistEop(0),
+  fHistEop_Most(0),
+  fHistEop_Semi(0),
+  fHistEop_Peri(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -236,6 +239,9 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistdEdxEop(0),
   fHistNsigEop(0),
   fHistEop(0),
+  fHistEop_Most(0),
+  fHistEop_Semi(0),
+  fHistEop_Peri(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -447,6 +453,15 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
   fOutputList->Add(fHistEop);
+
+  fHistEop_Most = new TH2F("fHistEop_Most", "E/p distribution (0-10%);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+  fOutputList->Add(fHistEop_Most);
+
+  fHistEop_Semi = new TH2F("fHistEop_Semi", "E/p distribution (20-40%);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+  fOutputList->Add(fHistEop_Semi);
+
+  fHistEop_Peri = new TH2F("fHistEop_Peri", "E/p distribution (60-80%);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+  fOutputList->Add(fHistEop_Peri);
 
   fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
   fOutputList->Add(fHistdEdxEop);
@@ -968,13 +983,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       m20 =clustMatch->GetM20();
       sqm02m20 = sqrt(pow(m02,2)+pow(m20,2));
 
-      if(track->Pt()>1.0){
+      if(track->Pt()>3.0){
         fHistdEdxEop->Fill(eop,dEdx);
         fHistNsigEop->Fill(eop,fTPCnSigma);
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
-      fHistEop->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
@@ -1004,6 +1018,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
         fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
         fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
+
+        fHistEop->Fill(track->Pt(),eop);
+        if(centrality>=0 && centrality<=10)fHistEop_Most->Fill(track->Pt(),eop);
+        if(centrality>=20 && centrality<=40)fHistEop_Semi->Fill(track->Pt(),eop);
+        if(centrality>=60 && centrality<=80)fHistEop_Peri->Fill(track->Pt(),eop);
 
         Int_t fITSncls=0;
         for(Int_t l=0;l<6;l++) {
