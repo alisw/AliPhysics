@@ -318,16 +318,26 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 fhAreaJet ->Fill(jet1->Area());
       }
       
-      if(fCreateTree) {      
-      	 fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-      	 if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
-      	 else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
-      	 fArea = (Float_t)jet1->Area();
-      	 fAreaPhi = (Float_t)jet1->AreaPhi();
-      	 fAreaEta = (Float_t)jet1->AreaEta();
-      	 fRho  = (Float_t)jetCont->GetRhoVal();
-      	 fRhoM = (Float_t)jetCont->GetRhoMassVal();
-      	 fNConst = (Int_t)jet1->GetNumberOfTracks();
+      if(fCreateTree) {
+      	  //perhaps the setbranch address is not needed
+      	  fTreeJetBkg->SetBranchAddress("fJet1Vec.",&fJet1Vec);
+      	  fTreeJetBkg->SetBranchAddress("fJetSubVec.",&fJetSubVec);
+      	  fTreeJetBkg->SetBranchAddress("fArea",&fArea);
+      	  fTreeJetBkg->SetBranchAddress("fAreaPhi",&fAreaPhi);
+      	  fTreeJetBkg->SetBranchAddress("fAreaEta",&fAreaEta);
+      	  fTreeJetBkg->SetBranchAddress("fRho",&fRho);
+      	  fTreeJetBkg->SetBranchAddress("fRhoM",&fRhoM);
+      	  fTreeJetBkg->SetBranchAddress("fNConst",&fNConst);
+
+      	  fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
+      	  if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
+      	  else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
+      	  fArea = (Float_t)jet1->Area();
+      	  fAreaPhi = (Float_t)jet1->AreaPhi();
+      	  fAreaEta = (Float_t)jet1->AreaEta();
+      	  fRho  = (Float_t)jetCont->GetRhoVal();
+      	  fRhoM = (Float_t)jetCont->GetRhoMassVal();
+      	  fNConst = (Int_t)jet1->GetNumberOfTracks();
       	 fTreeJetBkg->Fill();
       }
     } //jet1 loop

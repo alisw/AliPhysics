@@ -117,8 +117,8 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
   AliAnalysisTaskJetShapeBase::UserCreateOutputObjects();
 
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
+  //Bool_t oldStatus = TH1::AddDirectoryStatus();
+  //TH1::AddDirectory(kFALSE);
 
   const Int_t nBinsPt  = 200;
   const Double_t minPt = -50.;
@@ -236,7 +236,14 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fh2NConstSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,200.);
     fOutput->Add(fh2NConstSubFacV2[i]);
   }
+  
+  fTreeJetBkg->Branch("fM1st", &fM1st, "fM1st/F");
+  fTreeJetBkg->Branch("fM2nd", &fM2nd, "fM2nd/F");
+  fTreeJetBkg->Branch("fDeriv1st", &fDeriv1st, "fDeriv1st/F");
+  fTreeJetBkg->Branch("fDeriv2nd", &fDeriv2nd, "fDeriv2nd/F");
+  
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+  PostData(2,fTreeJetBkg);
 }
 
 //________________________________________________________________________
@@ -465,17 +472,26 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       fhnDeltaMassAndBkgInfo->Fill(varsp2);
     }
     
-    if(fCreateTree) {      
-      fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-      fArea = (Float_t)jet1->Area();
-      fAreaPhi = (Float_t)jet1->AreaPhi();
-      fAreaEta = (Float_t)jet1->AreaEta();
-      fNConst = (Int_t)jet1->GetNumberOfTracks();
-      fM1st   = (Float_t)jet1->GetShapeProperties()->GetFirstOrderSubtracted();
-      fM2nd   = (Float_t)jet1->GetShapeProperties()->GetSecondOrderSubtracted();
-      fDeriv1st = (Float_t)jet1->GetShapeProperties()->GetFirstDerivative();
-      fDeriv2nd = (Float_t)jet1->GetShapeProperties()->GetSecondDerivative();
-      fTreeJetBkg->Fill();
+    if(fCreateTree) {
+    	fTreeJetBkg->SetBranchAddress("fJet1Vec.",&fJet1Vec);
+    	fTreeJetBkg->SetBranchAddress("fJetSubVec.",&fJetSubVec);
+    	fTreeJetBkg->SetBranchAddress("fArea",&fArea);
+    	fTreeJetBkg->SetBranchAddress("fAreaPhi",&fAreaPhi);
+    	fTreeJetBkg->SetBranchAddress("fAreaEta",&fAreaEta);
+    	fTreeJetBkg->SetBranchAddress("fRho",&fRho);
+    	fTreeJetBkg->SetBranchAddress("fRhoM",&fRhoM);
+    	fTreeJetBkg->SetBranchAddress("fNConst",&fNConst);
+    	
+    	fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
+    	fArea = (Float_t)jet1->Area();
+    	fAreaPhi = (Float_t)jet1->AreaPhi();
+    	fAreaEta = (Float_t)jet1->AreaEta();
+    	fNConst = (Int_t)jet1->GetNumberOfTracks();
+    	fM1st   = (Float_t)jet1->GetShapeProperties()->GetFirstOrderSubtracted();
+    	fM2nd   = (Float_t)jet1->GetShapeProperties()->GetSecondOrderSubtracted();
+    	fDeriv1st = (Float_t)jet1->GetShapeProperties()->GetFirstDerivative();
+    	fDeriv2nd = (Float_t)jet1->GetShapeProperties()->GetSecondDerivative();
+    	fTreeJetBkg->Fill();
     }
   }
   return kTRUE;
