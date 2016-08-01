@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <iostream>
 
-const int sort_method = 1; //0 No sorting, 1 sort after pad, 2 sort after time
+const int sort_method = 1; //0 No sorting, 1 sort after pad, 2 sort after time, 3/4 mixed methods favoring pad / time
 const int slice_diff = 1;
 const int row_diff = 1;
 const int pad_diff = 1;
@@ -30,8 +30,19 @@ const int separate_slices = 0;
 const int separate_patches = 0;
 const int separate_sides = 0;
 const int full_row_numbers = 1;
+const int distinguish_rows = 0;
+const int optimized_negative_values = 1;
 
 const int print_clusters = 0;
+
+const char* file = "clusters-pbpb.dump";
+const int max_clusters = 2000000;
+
+const int truncate_sigma = 3;
+const int truncate_charge = 4;
+
+const int sort_pad_mixed_bins = 100;
+const int sort_time_mixed_bins = 400;
 
 #define EVENT 0
 #define SLICE 1
@@ -58,10 +69,19 @@ const int print_clusters = 0;
 #define ROW_TRACK_FIRST 22
 #define ROW_TRACK 23
 
-const unsigned int field_bits[]       = {0, 6, 0, 8, 14, 15, 8, 8, 10, 16, 2, 0, 14, 15, 16, 10, 26, 16, 8, 8, 16, 26, 8, 8};
-const unsigned int significant_bits[] = {0, 6, 0, 8, 14, 15, 4, 4,  5,  5, 2, 0, 14, 15,  5,  5, 26, 16, 4, 4, 16, 26, 8, 8};
+#define PAD_80 24
+#define PAD_92 25
+#define PAD_104 26
+#define PAD_116 27
+#define PAD_128 28
+#define PAD_140 29
+
+const int rr = optimized_negative_values && 0 ? 13 : 14; //We can make them all 14 for convenience, the encoding will handle it
+
+const unsigned int field_bits[]       = {0, 6, 0, 8, 14, 15, 8, 8, 10, 16, 2, 0, 14, 15, 16, 10, 26, 16, 8, 8, 16, 26, 8, 8, rr, rr,rr, rr, rr, 14};
+const unsigned int significant_bits[] = {0, 6, 0, 8, 14, 15, truncate_sigma, truncate_sigma, truncate_charge, truncate_charge, 2, 0, 14, 15, truncate_charge, truncate_charge, 26, 16, truncate_sigma, truncate_sigma, 16, 26, 8, 8, rr, rr, rr, rr, rr, 14};
 const int nFields = sizeof(field_bits) / sizeof(field_bits[0]);
-const char* field_names[] = {"event", "slice", "patch", "row", "pad", "time", "sigmaPad", "sigmaTime", "qmax", "qtot", "flagPadTime", "trackID", "resTrackPad", "resTrackTime", "trackQTot", "trackQMax", "qmaxtot", "sigmapadtime", "diffsigmapad", "diffsigmatime", "diffsigmapadtime", "tracktotmax", "trackfirstrow", "trackrow"};
+const char* field_names[] = {"event", "slice", "patch", "row", "pad", "time", "sigmaPad", "sigmaTime", "qmax", "qtot", "flagPadTime", "trackID", "resTrackPad", "resTrackTime", "trackQTot", "trackQMax", "qmaxtot", "sigmapadtime", "diffsigmapad", "diffsigmatime", "diffsigmapadtime", "tracktotmax", "trackfirstrow", "trackrow", "pad_80", "pad_92", "pad_104", "pad_116", "pad_128", "pad_140"};
 
 union cluster_struct
 {
@@ -76,6 +96,33 @@ union cluster_struct
 
 int fgRows[6][2] = {{0,30},{30,62},{63,90},{90,116},{117,139},{139,158}}; 
 int fgNRows[6] = {31,33,28,27,23,20};
+
+int fgNPads[159] =
+    {68,  68,  68,  68,  70,  70,  70,  72,  72,  72,  74,  74,  74,  76,  76,
+     76,  78,  78,  78,  80,  80,  80,  82,  82,  82,  84,  84,  84,  86,  86,
+     86,  88,  88,  88,  90,  90,  90,  92,  92,  92,  94,  94,  94,  96,  96,
+     96,  98,  98,  98,  100, 100, 100, 102, 102, 102, 104, 104, 104, 106, 106,
+     106, 108, 108, 74,  76,  76,  76,  76,  78,  78,  78,  80,  80,  80,  80,
+     82,  82,  82,  84,  84,  84,  86,  86,  86,  86,  88,  88,  88,  90,  90,
+     90,  90,  92,  92,  92,  94,  94,  94,  96,  96,  96,  96,  98,  98,  98,
+     100, 100, 100, 100, 102, 102, 102, 104, 104, 104, 106, 106, 106, 106, 108,
+     108, 108, 110, 110, 110, 110, 112, 112, 114, 114, 114, 116, 116, 118, 118,
+     120, 120, 122, 122, 122, 124, 124, 126, 126, 128, 128, 130, 130, 130, 132,
+     132, 134, 134, 136, 136, 138, 138, 138, 140};
+
+int fgNPadsMod[159] =
+    {80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,
+     80,  80,  80,  80,  80,  80,  80,  92,  92,  92,  92,  92,  92,  92,  92,
+     92,  92,  92,  92,  92,  92,  92,  92,  92,  92,  104,  104,  104,  104,  104,
+     104,  104,  104,  104,  104, 104, 104, 104, 104, 104, 104, 104, 104, 116, 116,
+     116, 116, 116, 80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,  80,
+     92,  92,  92,  92,  92,  92,  92,  92,  92,  92,  92,  92,  92,  92,  92,
+     92,  92,  92,  92,  92,  104,  104,  104,  104,  104,  104,  104,  104,  104,  104,
+     104, 104, 104, 104, 104, 104, 104, 104, 104, 104, 116, 116, 116, 116, 116,
+     116, 116, 116, 116, 116, 116, 116, 116, 116, 116, 116, 116, 116, 128, 128,
+     128, 128, 128, 128, 128, 128, 128, 126, 126, 128, 128, 140, 140, 140, 140,
+     140, 134, 134, 140, 140, 140, 140, 140, 140};
+
 
 // ---------------------------------- HUFFMAN TREE
 
@@ -173,16 +220,33 @@ bool clustercompare_timepad(cluster_struct a, cluster_struct b)
 	return(a.time < b.time || (a.time == b.time && a.pad < b.pad));
 }
 
+bool clustercompare_padtime_mixed(cluster_struct a, cluster_struct b)
+{
+	return(a.pad / sort_pad_mixed_bins < b.pad / sort_pad_mixed_bins || (a.pad / sort_pad_mixed_bins == b.pad / sort_pad_mixed_bins && a.time < b.time));
+}
+
+bool clustercompare_timepad_mixed(cluster_struct a, cluster_struct b)
+{
+	return(a.time / sort_time_mixed_bins < b.time / sort_time_mixed_bins || (a.time / sort_time_mixed_bins == b.time / sort_time_mixed_bins && a.pad < b.pad));
+}
+
 bool clustercompare_inevent(cluster_struct a, cluster_struct b)
 {
 	return(a.slice < b.slice || (a.slice == b.slice && a.patch < b.patch) || (a.slice == b.slice && a.patch == b.patch && a.row < b.row));
 }
 
-void do_diff(unsigned int& val, int& last, unsigned int bits)
+void do_diff(unsigned int& val, int& last, unsigned int bits, unsigned int maxval = 0)
 {
 	int tmp = val;
 	val -= last;
-	val &= (1 << bits) - 1;
+	if (maxval && optimized_negative_values)
+	{
+		while ((signed) val < 0) val += maxval;
+	}
+	else
+	{
+		val &= (1 << bits) - 1;
+	}
 	last = tmp;
 }
 
@@ -211,7 +275,7 @@ int main(int argc, char** argv)
 		return(1);
 	}
 
-	if (!(fp = fopen("clusters.dump", "rb")))
+	if (!(fp = fopen(file, "rb")))
 	{
 		printf("Error opening file\n");
 		return(1);
@@ -222,6 +286,7 @@ int main(int argc, char** argv)
 	fseek(fp, 0, SEEK_SET);
 
 	size_t nClusters = nFileSize / sizeof(cluster_struct);
+	if (max_clusters && nClusters > max_clusters) nClusters = max_clusters;
 
 	cluster_struct* clusters = new cluster_struct[nClusters];
 	if (clusters == NULL)
@@ -264,20 +329,16 @@ int main(int argc, char** argv)
 		{
 			int currow;
 			if (i == nClusters) currow = -1;
-			else if (clusters[i].trackID != -1) currow = -2;
+			else if (track_based && clusters[i].trackID != -1) currow = -2;
 			else currow = clusters[i].row;
 			if (currow != startrow && startrow != -2)
 			{
 				if (i - 1 > starti)
 				{
-					if (sort_method == 1)
-					{
-						std::sort(clusters + starti, clusters + i - 1, clustercompare_padtime);
-					}
-					else if (sort_method == 2)
-					{
-						std::sort(clusters + starti, clusters + i - 1, clustercompare_timepad);
-					}
+					if (sort_method == 1) std::sort(clusters + starti, clusters + i - 1, clustercompare_padtime);
+					else if (sort_method == 2) std::sort(clusters + starti, clusters + i - 1, clustercompare_timepad);
+					else if (sort_method == 3) std::sort(clusters + starti, clusters + i - 1, clustercompare_padtime_mixed);
+					else if (sort_method == 4) std::sort(clusters + starti, clusters + i - 1, clustercompare_timepad_mixed);
 				}
 				starti = i;
 				startrow = currow;
@@ -320,7 +381,9 @@ int main(int argc, char** argv)
 
 		for (size_t i = 0;i < nClusters;i++)
 		{
+			const cluster_struct& cluster_org = clusters[i];
 			cluster_struct cluster = clusters[i];
+			if (cluster.pad >= 32768) printf("%d\n", cluster.pad);
 
 			if ((separate_slices && cluster.slice != islice) || (separate_patches && cluster.patch != ipatch)) continue;
 			if (separate_sides && !(cluster.slice < 18 ^ islice < 18)) continue;
@@ -367,8 +430,8 @@ int main(int argc, char** argv)
 				}
 				else if (track_separate_sigma)
 				{
-					dSigmaPad = cluster.sigmaPad;
-					dSigmaTime = cluster.sigmaTime;
+					dSigmaPad = truncate(SIGMA_PAD, cluster.sigmaPad);
+					dSigmaTime = truncate(SIGMA_TIME, cluster.sigmaTime);
 				}
 			}
 
@@ -376,8 +439,8 @@ int main(int argc, char** argv)
 			if (row_diff) do_diff(cluster.row, lastRow, field_bits[ROW]);
 			else lastRow = cluster.row;
 
-			if (pad_diff && (cluster.trackID == -1 || !track_based)) do_diff(cluster.pad, lastPad, field_bits[PAD]);
-			if (time_diff && (cluster.trackID == -1 ||  !track_based)) do_diff(cluster.time, lastTime, field_bits[TIME]);
+			if (pad_diff && (cluster.trackID == -1 || !track_based)) do_diff(cluster.pad, lastPad, field_bits[PAD], (distinguish_rows ? fgNPadsMod[cluster_org.row  + fgRows[cluster.patch][0]] : 140) * 60);
+			if (time_diff && (cluster.trackID == -1 ||  !track_based)) do_diff(cluster.time, lastTime, field_bits[TIME], 1024 * 25);
 
 			if (approximate_qtot && (!track_based || cluster.trackID == -1 || (track_avgtot == 0 && track_diffqtot == 0)))
 			{
@@ -426,7 +489,7 @@ int main(int argc, char** argv)
 
 				if (track_based && cluster.trackID != -1 && !newTrack)
 				{
-					if (j == PAD || j == TIME) continue;
+					if (j == PAD || j == TIME || (j >= PAD_80 && j <= PAD_140)) continue;
 					if (j == RES_PAD || j == RES_TIME)
 					{
 						cluster.vals[j] &= (1 << field_bits[j]) - 1;
@@ -436,13 +499,13 @@ int main(int argc, char** argv)
 
 				if ((track_avgtot || track_diffqtot || track_separate_q) && cluster.trackID != -1)
 				{
-					if (j == QTOT && !newTrack) continue;
-					if (j == AVG_TOT && (track_avgtot || !newTrack)) forceStore = true;
+					if (j == QTOT && (!newTrack || (track_avgtot == 0 && track_diffqtot == 0))) continue;
+					if (j == AVG_TOT && (track_diffqtot == 0 || !newTrack)) forceStore = true;
 				}
 				if ((track_avgmax || track_diffqmax || track_separate_q) && cluster.trackID != -1)
 				{
-					if (j == QMAX && !newTrack) continue;
-					if (j == AVG_MAX && (track_avgmax || !newTrack)) forceStore = true;
+					if (j == QMAX && (!newTrack || (track_avgmax == 0 && track_diffqmax == 0))) continue;
+					if (j == AVG_MAX && (track_diffqmax == 0 || !newTrack)) forceStore = true;
 				}
 
 				if ((track_diffsigma || track_separate_sigma) && cluster.trackID != -1)
@@ -473,9 +536,9 @@ int main(int argc, char** argv)
 
 				if (j <= FLAG_PADTIME || forceStore)
 				{
-					if (cluster.vals[j] > (1 << field_bits[j]))
+					if (cluster.vals[j] >= (1 << field_bits[j]))
 					{
-						printf("Cluster value %d/%s out of bit range %d > %d\n", j, field_names[j], cluster.vals[j], (1 << field_bits[i]));
+						printf("Cluster value %d/%s out of bit range %d > %d\n", j, field_names[j], cluster.vals[j], (1 << field_bits[j]));
 					}
 					else
 					{
@@ -483,13 +546,13 @@ int main(int argc, char** argv)
 						counts[j]++;
 					}
 				}
-				else if (j == QMAX_QTOT && (!track_based || cluster.trackID == -1 || (track_avgmax == 0 && track_avgtot == 0 && track_diffqmax == 0 && track_diffqtot == 0 && track_separate_q == 0) || newTrack))
+				else if (j == QMAX_QTOT && (!track_based || cluster.trackID == -1 || (((track_avgmax == 0 && track_avgtot == 0 && track_diffqmax == 0 && track_diffqtot == 0) || newTrack) && track_separate_q == 0)))
 				{
 					int val = (cluster.qtot << field_bits[QMAX]) | cluster.qmax;
 					histograms[j][val]++;
 					counts[j]++;
 				}
-				else if ((track_avgmax || track_avgtot || track_diffqmax || track_diffqtot || track_separate_q) && !newTrack && cluster.trackID != -1 && j == AVG_TOT_MAX)
+				else if (((track_avgmax || track_avgtot || track_diffqmax || track_diffqtot) && !newTrack || track_separate_q) && cluster.trackID != -1 && j == AVG_TOT_MAX)
 				{
 					int val = (cluster.avgtot << field_bits[QMAX]) | cluster.avgmax;
 					histograms[j][val]++;
@@ -506,6 +569,24 @@ int main(int argc, char** argv)
 					int val = (dSigmaPad << field_bits[SIGMA_PAD]) | dSigmaTime;
 					histograms[j][val]++;
 					counts[j]++;
+				}
+				else if (distinguish_rows && j >= PAD_80 && j <= PAD_140)
+				{
+					int myj = fgNPads[cluster_org.row + fgRows[cluster.patch][0]];
+					myj = (myj - (80 - 11)) / 12;
+					myj += PAD_80;
+					if (myj == j)
+					{
+						if (cluster.pad >= (1 << field_bits[j]))
+						{
+							printf("Cluster value %d/%s out of bit range %d > %d\n", j, field_names[j], cluster.vals[j], (1 << field_bits[j]));
+						}
+						else
+						{
+							histograms[j][cluster.pad]++;
+							counts[j]++;
+						}
+					}
 				}
 			}
 			nClustersUsed++;
@@ -567,6 +648,8 @@ int main(int argc, char** argv)
 			if (combine_sigmapadtime && (i == SIGMA_PAD || i == SIGMA_TIME)) continue;
 			if ((track_diffsigma || track_separate_sigma) && combine_sigmapadtime && (i == DIFF_SIGMA_PAD || i == DIFF_SIGMA_TIME)) continue;
 
+			if (distinguish_rows && i == PAD) continue;
+
 			if (i <= FLAG_PADTIME ||
 				(combine_maxtot && i == QMAX_QTOT) ||
 				(combine_maxtot && (track_avgmax || track_avgtot || track_diffqmax || track_diffqtot || track_separate_q) && combine_maxtot && i == AVG_TOT_MAX) ||
@@ -576,7 +659,8 @@ int main(int argc, char** argv)
 				((track_avgtot || track_diffqtot || track_separate_q) && !combine_maxtot && i == AVG_TOT) ||
 				((track_avgmax || track_diffqmax || track_separate_q) && !combine_maxtot && i == AVG_MAX) ||
 				((track_diffsigma || track_separate_sigma) && (i == DIFF_SIGMA_PAD || i == DIFF_SIGMA_TIME)) ||
-				(track_based && row_diff && (i == ROW_TRACK || i == ROW_TRACK_FIRST))
+				(track_based && row_diff && (i == ROW_TRACK || i == ROW_TRACK_FIRST)) ||
+				(distinguish_rows && i >= PAD_80 && i <= PAD_140)
 			)
 			{
 				entroTotal += entropies[i] * counts[i];
@@ -587,6 +671,7 @@ int main(int argc, char** argv)
 		for (int i = SLICE;i < nFields;i++)
 		{
 			if (field_bits[i] == 0) continue;
+			if (counts[i] == 0) continue;
 			printf("Field %2d/%16s (count %10lld / used %1d) rawBits %2d huffman %9.6f entropy %9.6f\n", i, field_names[i], counts[i], used[i], field_bits[i], huffmanSizes[i], entropies[i]);
 		}
 		rawBits = 79; //Override incorrect calculation: Row is only 6 bit in raw format, and slice is not needed!
