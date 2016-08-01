@@ -26,5 +26,6 @@
 #pragma link C++ class  AliMFTLadder+;
 #pragma link C++ class  AliMFTSupport+;
 #pragma link C++ class  AliMFTVSegmentation+;
+#pragma link C++ class  AliMFTGeomTGeo+;
 
 #endif

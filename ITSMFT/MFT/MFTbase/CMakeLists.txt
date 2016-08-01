@@ -26,6 +26,8 @@ include_directories(${AliRoot_SOURCE_DIR}/MUON/MUONbase
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT
+  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
                    )
 
 # Sources in alphabetical order
@@ -50,6 +52,7 @@ set(SRCS
     AliMFTSegmentation.cxx
     AliMFTSupport.cxx
     AliMFTVSegmentation.cxx
+    AliMFTGeomTGeo.cxx
    )
 
 # Headers from sources
@@ -62,7 +65,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Dependencies
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist Matrix Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase STEER AOD MUONbase MUONrec)
+set(ALIROOT_DEPENDENCIES COMMONITSMFTBase STEERBase STEER AOD MUONbase MUONrec)
 
 # Generate the ROOT map
 # Dependecies

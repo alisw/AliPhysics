@@ -69,7 +69,8 @@ fDensitySupportOverSi(0.036),
 fFileNameForUnderyingEvent(0),
 fFileNameForPileUpEvents(0),
 fNPileUpEvents(0),
-fUnderlyingEventID(-1)
+fUnderlyingEventID(-1),
+fGeomTGeo(0)
 {
   
   // default constructor
@@ -98,7 +99,8 @@ fDensitySupportOverSi(0.036),
 fFileNameForUnderyingEvent(0),
 fFileNameForPileUpEvents(0),
 fNPileUpEvents(0),
-fUnderlyingEventID(-1)
+fUnderlyingEventID(-1),
+fGeomTGeo(0)
 {
   
   for (Int_t iPileUp=0; iPileUp<AliMFTConstants::fNMaxPileUpEvents; iPileUp++) fPileUpEventsIDs[iPileUp] = -1;
@@ -106,8 +108,6 @@ fUnderlyingEventID(-1)
   fNameGeomFile = "AliMFTGeometry.root";
   
   SetGeometry();
-  
-  Init();
   
 }
 
@@ -139,8 +139,6 @@ fUnderlyingEventID(-1)
   
   SetGeometry();
   
-  Init();
-  
 }
 
 //====================================================================================================================================================
@@ -150,9 +148,19 @@ AliMFT::~AliMFT() {
   if (fSDigitsPerPlane)   { fSDigitsPerPlane->Delete();    delete fSDigitsPerPlane;   }
   if (fDigitsPerPlane)    { fDigitsPerPlane->Delete();     delete fDigitsPerPlane;    }
   if (fRecPointsPerPlane) { fRecPointsPerPlane->Delete();  delete fRecPointsPerPlane; }
-  
+
+  delete fGeomTGeo;  
+
 }
 
+//====================================================================================================================================================
+
+void AliMFT::Init() {
+
+  fGeomTGeo = new AliMFTGeomTGeo();
+
+}
+  
 //====================================================================================================================================================
 
 void AliMFT::CreateMaterials() {
@@ -381,6 +389,8 @@ void AliMFT::CreateGeometry() {
   
   if (fNStepForChargeDispersion) fSingleStepForChargeDispersion = fChargeDispersion/Double_t(fNStepForChargeDispersion);
   
+  Init();
+
 }
 
 //====================================================================================================================================================
