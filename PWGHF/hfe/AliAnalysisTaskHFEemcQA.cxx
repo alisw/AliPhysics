@@ -149,6 +149,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fEleCanSPD2(0),
   fEleCanSPDBoth(0),
   fEleCanSPDOr(0),
+  fITShitPhi(0), 
   fInvmassULS(0),
   fInvmassLS(0),
   fMCcheckMother(0),
@@ -254,6 +255,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fEleCanSPD2(0),
   fEleCanSPDBoth(0),
   fEleCanSPDOr(0),
+  fITShitPhi(0), 
   fInvmassULS(0),
   fInvmassLS(0),
   fMCcheckMother(0), 
@@ -504,6 +506,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fEleCanSPDOr = new TH2F("fEleCanSPDOr","Tracks with hits on both SPD layer;p_{T} (GeV/c);Hit",200,0,20,1,0,1);
   fOutputList->Add(fEleCanSPDOr);
+
+  fITShitPhi = new TH2F("fITShitPhi","ITS Hit in #phi",4,-0.5,3.5,200,0,6.3);
+  fOutputList->Add(fITShitPhi);
 
   fInvmassLS = new TH1F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
   fOutputList->Add(fInvmassLS);
@@ -849,6 +854,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       if(atrack->GetITSNcls() < 3) continue;
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
+  
+         double phiMatchIts = atrack->Phi();
+         if(atrack->HasPointOnITSLayer(0))fITShitPhi->Fill(0.0,phiMatchIts);
+         if(atrack->HasPointOnITSLayer(1))fITShitPhi->Fill(1.0,phiMatchIts);
 
       if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;

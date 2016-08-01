@@ -158,6 +158,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fEleCanSPD2;//!ele cand hit SPD layer 2
     TH2F        *fEleCanSPDBoth;//!ele cand SPD both layer
     TH2F        *fEleCanSPDOr;//!ele cand SPD or
+    TH2F        *fITShitPhi;//!ele cand SPD or
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
     TH1F        *fMCcheckMother;
