@@ -170,7 +170,7 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
     if (hlist) {
         AliV0Result *xh = 0;
         TIter nxh(hlist);
-        while (xh == (AliV0Result *) nxh()) {
+        while ((xh = (AliV0Result *) nxh())) {
             // Add this histogram
             GetHistogram()->Add(xh->GetHistogram());
         }

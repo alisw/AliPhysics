@@ -627,7 +627,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     fHistEventCounter->Fill(1.5);
     
     //Event-level fill
-    fTreeEvent->Fill() ;
+    if ( fkSaveEventTree ) fTreeEvent->Fill() ;
 
     //STOP HERE if skipping event selections (no point in doing the rest...)
     
