@@ -19,6 +19,7 @@
 
 class THnSparse;
 class TList;
+class AliAODMCParticle;
 
 /**
  * @class AliDxHFEParticleSelectionMCEl
@@ -82,6 +83,8 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
     kNrBackground=9
   };
 
+  Bool_t IsFromBGEventAOD(Int_t Index,  const AliVEvent* event);
+  Int_t GetPrimary(Int_t id, TClonesArray *mcArray);
 
  protected:
 
@@ -112,9 +115,9 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Bool_t fRemoveSecondary;             // whether or not to remove secondary tracks
   Bool_t fUseGenerator;                // whether or not to check generator for particle
   Int_t fGenerator;                    // which generator was used to produce particle
+  Bool_t fUseHIJINGOnly;               // Selecing only tracks generated from HIJING (used eg for LHC13d3)
 
-
-  ClassDef(AliDxHFEParticleSelectionMCEl, 5);
+  ClassDef(AliDxHFEParticleSelectionMCEl, 6);
 };
 
 #endif

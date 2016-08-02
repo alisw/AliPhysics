@@ -36,6 +36,10 @@
 #include <cerrno>
 #include <memory>
 
+#include "AliGenHijingEventHeader.h"
+#include "AliVEvent.h"
+#include "AliAODMCHeader.h"
+#include "TClonesArray.h"
 using namespace std;
 using std::vector;
 
@@ -61,6 +65,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fRemoveSecondary(kFALSE)
   , fUseGenerator(kFALSE)
   , fGenerator(-1)
+  , fUseHIJINGOnly(kFALSE)
 {
   // constructor
   // 
@@ -181,7 +186,7 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
     // TODO: Redo binning of distributions more?
     //     		              0    1      2     3              4             5
     // 	 	                      Pt   Phi   Eta   mother       generator    CutstepInfo
-    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,nrMotherEl+1,      4,        kNCutLabels-1 };
+    int    thnBinsExt[thnSizeExt] = { 50,  100, 100,nrMotherEl+1,      4,        kNCutLabels-1 };
     double thnMinExt [thnSizeExt] = {   0,    0, -1.,  -1.5,        -1.5,    kRecKineITSTPC-0.5};
     double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,nrMotherEl-0.5, 2.5,       kSelected-0.5};
     const char* thnNamesExt[thnSizeExt]={
@@ -202,7 +207,7 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
     // TODO: Redo binning of distributions more?
     //     		       0       1      2     3           4 
     // 	 	               Pt     Phi   Eta   mother     generator 
-    int    thnBins[thnSize] = { 100,  50, 100, nrMotherEl+1,      4  };
+    int    thnBins[thnSize] = { 50,  100, 100, nrMotherEl+1,      4  };
     double thnMin [thnSize] = {   0,    0, -1.,  -1.5    ,     -1.5 };
     double thnMax [thnSize] = {  10, 2*Pi,  1.,nrMotherEl-0.5,  2.5};
     const char* thnNames[thnSize]={
@@ -461,7 +466,36 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
       fGenerator=2;
     }
   }
-
+  //Remove tracks that are not from the HIJING generator, e.g., in LHC13d3 which has an enhaced sample from PYTHIA. 
+  //Selecting only HIJING lets the sample be used as a minimum bias sample
+  //Be vary of how this is set for D0 as well
+ 
+  if(fUseHIJINGOnly){
+    AliAODMCHeader* mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    AliAODMCParticle *mcpart=dynamic_cast<AliAODMCParticle*>(p);
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(p);
+    TClonesArray *mcArray = dynamic_cast<TClonesArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    
+    
+    if(fUseKine){ //Kine
+      Bool_t fromhijing = kFALSE;
+      Int_t Prim = GetPrimary((mcpart->GetLabel()), mcArray);
+      AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)mcArray->At(Prim);
+      Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle
+      if(IsFromBGEventAOD(trkIndexPrim, pEvent)) fromhijing = kTRUE;//check if the particle comes from hijing or from enhanced event
+      if(!fromhijing){return 0;}
+    }else{ //Reco
+      Bool_t MCElectron=kFALSE;
+      Int_t trkLabel = TMath::Abs(p->GetLabel());
+      AliAODMCParticle *MCtrack = (AliAODMCParticle*)mcArray->At(trkLabel);
+      Int_t PrimElectron = GetPrimary(trkLabel, mcArray);
+      AliAODMCParticle *AODMCElectron = (AliAODMCParticle*)mcArray->At(PrimElectron);
+      Int_t trkIndexElectron = AODMCElectron->GetLabel();//gives index of the particle in original MCparticle array
+      MCElectron = IsFromBGEventAOD(trkIndexElectron, pEvent);//check if the particle comes from hijing or from enhanced event
+      if(!MCElectron){return 0;}
+    }  
+  }
+  
   return 1;
 }
 
@@ -473,10 +507,8 @@ void AliDxHFEParticleSelectionMCEl::Clear(const char* option)
 
 AliVParticle *AliDxHFEParticleSelectionMCEl::CreateParticle(AliVParticle* track)
 {
-
-  //  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother,fGenerator);
-  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother);//Removed ",fGenerator);" as there doesn't seem to be such an AliReduced Particle version. [FIXME] Re-implement properly
-
+  //AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother,fGenerator);
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother);
   return part;
 
 }
@@ -580,7 +612,11 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
       AliInfo("Select source also based on generator");
       fUseGenerator=kTRUE;	    
       continue;
-
+    }
+    if(argument.BeginsWith("useHIJINGOnly")){
+      AliInfo("Select source also based on generator");
+      fUseHIJINGOnly=kTRUE;	    
+      continue;
     }
     // forwarding of single argument works, unless key-option pairs separated
     // by blanks are introduced
@@ -588,4 +624,43 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
   }
   
   return 0;
+}
+
+//___________________________________________________________________________
+Bool_t AliDxHFEParticleSelectionMCEl::IsFromBGEventAOD(Int_t Index,  const AliVEvent* aodEvent)
+{
+  //    AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
+    //Check if the particle is from Hijing or Enhanced event
+    AliAODMCHeader *mcHeader;
+    Int_t fNBG =-1;
+    
+    mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!mcHeader) {
+        AliError("Could not find MC Header in AOD");
+        return (0);
+    }
+    
+    TList *List = mcHeader->GetCocktailHeaders();
+    //        List->Print();
+    AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(List->FindObject("Hijing UE_1"));
+    if (!hijingH){
+        AliError("no GenHijing header");
+        return (0);
+    }
+    fNBG = hijingH->NProduced();
+    
+    return (Index < fNBG);
+}
+Int_t AliDxHFEParticleSelectionMCEl::GetPrimary(Int_t id, TClonesArray *mcArray){
+    
+    // Return number of primary that has generated track
+    int current, parent;
+    parent=id;
+    while (1) {
+        current=parent;
+        AliAODMCParticle *Part = (AliAODMCParticle*)mcArray->At(current);
+        parent=Part->GetMother();
+        //  cout << "GetPartArr momid :"  << parent << endl;
+        if(parent<0) return current;
+    }
 }
