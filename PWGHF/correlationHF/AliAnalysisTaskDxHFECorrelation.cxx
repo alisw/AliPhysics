@@ -404,10 +404,42 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   //  AliRDHFCutsD0toKpi* cutsd0=dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2);
   if (!cutsd0) return; // Fatal thrown already in initialization
 
-  if(!cutsd0->IsEventSelected(pEvent)) {
-    // TODO: Fill histograms based on why the event is rejected
-    AliDebug(2,"rejected at IsEventSelected");
-    return;
+  // Retrieving process from the AODMCHeader. 
+  // TODO: Move it somewhere else? (keep it here for the moment since only need to read once pr event)
+  if(fUseMC){
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    AliAODEvent* aod=dynamic_cast<AliAODEvent*>(pEvent);
+    if (!mcHeader) {
+      AliError("Could not find MC Header in AOD");
+      return;
+    }
+    Int_t eventType = mcHeader->GetEventType();
+    fCorrelation->SetEventType(eventType);
+    if(fUseKine || fReqD0InEvent){
+      fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(fUseMC && !fMCArray){
+	AliError("Array of MC particles not found");
+	return;
+      }
+    }
+
+    if(!fUseKine && !cutsd0->IsEventSelected(pEvent)) { //Using different approach for fUseKine
+      // TODO: Fill histograms based on why the event is rejected
+      AliDebug(2,"rejected at IsEventSelected");
+      return;
+    }
+    //On Kine, instead of IsEventSelected just select on zVtx and trigger mask in pPb
+    if(fUseKine){
+      Double_t zVtxMC = mcHeader->GetVtxZ();
+      if(TMath::Abs(zVtxMC)>10) return;
+      if(aod->GetTriggerMask()==0 && (aod->GetRunNumber()>=195344 && aod->GetRunNumber()<=195677)) return;
+    }
+  }else{
+    if(!cutsd0->IsEventSelected(pEvent)) { //Using different approach for fUseKine
+      // TODO: Fill histograms based on why the event is rejected
+      AliDebug(2,"rejected at IsEventSelected");
+      return;
+    }
   }
 
   if(fSystem==1){
@@ -439,28 +471,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
       pidObj->SetPIDResponse(fpidResponse);
     }
   }
-
-
-  // Retrieving process from the AODMCHeader. 
-  // TODO: Move it somewhere else? (keep it here for the moment since only need to read once pr event)
-  if(fUseMC){
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    
-    if (!mcHeader) {
-      AliError("Could not find MC Header in AOD");
-      return;
-    }
-    Int_t eventType = mcHeader->GetEventType();
-    fCorrelation->SetEventType(eventType);
-    if(fUseKine || fReqD0InEvent){
-      fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(fUseMC && !fMCArray){
-	AliError("Array of MC particles not found");
-	return;
-      }
-    }
-  }
-
+  
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
   ((TProfile*)fQASelection->FindObject("numD0EvtRnCan"))->Fill(runNumber, nInD0toKpi);
 
