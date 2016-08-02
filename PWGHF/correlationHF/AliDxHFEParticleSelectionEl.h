@@ -168,10 +168,15 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Bool_t        fUseTOFonlyWhenPresent; // use tof only when it's there
   Bool_t        fStopAfterFilterBit; // Stop selection after checking filterbits
   Bool_t        fCutLS;              // Cut also electrons from LS distribution (set to false by default)
-
+  Double_t fTPCnSigmaPRej;           // +/- nsigma value for proton rejection in TPC
+  Double_t fTPCnSigmaPiRej;          // +/- nsigma value for pion rejection in TPC
+  Double_t fPRejPMin;                // Minimum momentum where Proton rejection by TPC PID nSigma is used
+  Double_t fPRejPMax;                // Maximum momentum where Proton rejection by TPC PID nSigma is used
+  Double_t fPiRejPMin;               // Minimum momentum where Pion rejection by TPC PID nSigma is used
+  Double_t fPiRejPMax;               // Maximum momentum where Pion rejection by TPC PID nSigma is used
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
   
-  ClassDef(AliDxHFEParticleSelectionEl, 7); 
+  ClassDef(AliDxHFEParticleSelectionEl, 8); 
 };
 
 #endif
