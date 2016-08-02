@@ -101,6 +101,12 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fUseTOFonlyWhenPresent(false)
   , fStopAfterFilterBit(false)
   , fCutLS(kFALSE)
+  , fTPCnSigmaPRej(3)
+  , fTPCnSigmaPiRej(3.5)
+  , fPRejPMin(1.3)
+  , fPRejPMax(2.6)
+  , fPiRejPMin(1.0)
+  , fPiRejPMax(999)
 {
   // constructor
   // 
@@ -598,7 +604,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   Bool_t useCombinedPID=kTRUE;
   Bool_t okTOF = CheckTOFPIDStatus(track);
   if(okTOF){
-    if((pPart<fMaxPTOFWhenPresent && fMaxPTOFWhenPresent>-1) || fMaxPtCombinedPID){ //If the momentum is within either of the two regions, use TOF PID
+    if((pPart<fMaxPTOFWhenPresent && fMaxPTOFWhenPresent>-1) || pPart<fMaxPtCombinedPID){ //If the momentum is within either of the two regions, use TOF PID
       useCombinedPID=kTRUE;
     } else {//If not within the range where tof is to be used
       useCombinedPID=kFALSE; //Do not use combined pid (tof + tpc)
@@ -751,32 +757,31 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   // Rejection of pions and protons based on 3. nsigma cut in tpc
   Double_t nsigmaTPCpi=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kPion);
   Double_t nsigmaTPCp=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kProton);
-  Double_t fTPCnSigmaPRejMin=-3;
-  Double_t fTPCnSigmaPRejMax=3;
-  Double_t fTPCnSigmaPiRejMin=-4;
-  Double_t fTPCnSigmaPiRejMax=4;
 
   //Pion rejection
-  if(nsigmaTPCpi>fTPCnSigmaPiRejMin && nsigmaTPCpi<fTPCnSigmaPiRejMax && pPart>=1.){ //Only applied above 1GeV
-    // Track within pion identification range. Reject
-    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejPi);
-    return 0; 
-  }else{
-    ((TH2D*)fHistoList->FindObject("fdEdxRejPi"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    ((TH2D*)fHistoList->FindObject("fnSigTPCRejPi"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejPi"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-  }
+  if(fTPCnSigmaPiRej>0){ //Pion rejection on by default, but can be turned off by setting fTPCnSigmaPiRej to -1
+    if(TMath::Abs(nsigmaTPCpi)<fTPCnSigmaPiRej && pPart>fPiRejPMin && pPart<fPiRejPMax){ //Only applied above between given P() limits 
+      // Track within pion identification range. Reject
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejPi);
+      return 0; 
+    }else{
+      ((TH2D*)fHistoList->FindObject("fdEdxRejPi"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCRejPi"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejPi"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    }
+  }  
   
   //Proton rejection
-  
-  if(nsigmaTPCp>fTPCnSigmaPRejMin && nsigmaTPCp<fTPCnSigmaPRejMax && pPart>=1.){ //Only applied above 1GeV
-    // Track within proton identification range. Reject
-    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejProton);
-    return 0;
-  }else{
-    ((TH2D*)fHistoList->FindObject("fdEdxRejProton"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    ((TH2D*)fHistoList->FindObject("fnSigTPCRejProton"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejProton"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  if(fTPCnSigmaPRej>0){ //Proton rejection on by default, but can be turned off by setting fTPCnSigmaPRej to -1
+    if(TMath::Abs(nsigmaTPCp)<fTPCnSigmaPRej && pPart>fPRejPMin && pPart<fPRejPMax){ //Only applied above 1GeV
+      // Track within proton identification range. Reject
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejProton);
+      return 0;
+    }else{
+      ((TH2D*)fHistoList->FindObject("fdEdxRejProton"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCRejProton"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejProton"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    }
   }
   
   //Removing electrons based on invariant mass method
@@ -1048,6 +1053,42 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
     if(argument.BeginsWith("cutLS")){
       AliInfo("Cut also on LS distribution of electron pairs");
       fCutLS=kTRUE;
+      continue;
+    }
+    if(argument.BeginsWith("RejP=")){ //Disable proton rejection by setting to -1
+      argument.ReplaceAll("RejP=", "");
+      fTPCnSigmaPRej=argument.Atof();
+      AliInfo(Form("Using proton rejection in TPC, nsigma+/-: %f",fTPCnSigmaPRej));
+      continue;   
+    }
+    if(argument.BeginsWith("Rejpi=")){ //Disable pion rejection by setting to -1
+      argument.ReplaceAll("Rejpi=", "");
+      fTPCnSigmaPiRej=argument.Atof();
+      AliInfo(Form("Using pion rejection in TPC, nsigma+/-: %f",fTPCnSigmaPiRej));
+      continue;   
+    }
+    if(argument.BeginsWith("minPRejP=")){
+      argument.ReplaceAll("minPRejP=", "");
+      fPRejPMin=argument.Atof();
+      AliInfo(Form("Lower p limit for use of Proton rejection: %f GeV/c",fPRejPMin));
+      continue;
+    }
+    if(argument.BeginsWith("maxPRejP=")){
+      argument.ReplaceAll("maxPRejP=", "");
+      fPRejPMax=argument.Atof();
+      AliInfo(Form("Upper p limit for use of Proton rejection: %f GeV/c",fPRejPMax));
+      continue;
+    }
+    if(argument.BeginsWith("minPRejpi=")){
+      argument.ReplaceAll("minPRejpi=", "");
+      fPiRejPMin=argument.Atof();
+      AliInfo(Form("Lower p limit for use of Pion rejection: %f GeV/c",fPiRejPMin));
+      continue;
+    }
+    if(argument.BeginsWith("maxPRejpi=")){
+      argument.ReplaceAll("maxPRejpi=", "");
+      fPiRejPMax=argument.Atof();
+      AliInfo(Form("Upper p limit for use of Pion rejection: %f GeV/c",fPiRejPMax));
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated
