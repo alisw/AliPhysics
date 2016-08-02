@@ -229,6 +229,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fCascadeCuts[5] =   0.999; // min allowed cosine of the cascade pointing angle
   fCascadeCuts[6] =   0.9  ; // min radius of the fiducial volume
   fCascadeCuts[7] = 100.   ; // max radius of the fiducial volume
+  DefineInput(1,TBits::Class());	//Bit field for pcm v0s  OfflineV0Finder
+  DefineInput(2,TBits::Class());	//Bit field for pcm v0s  On-FlyV0Finder
 }
 
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter()
@@ -892,7 +894,13 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
   Double_t momPosAtV0vtx[3]={0.};
   Double_t momNegAtV0vtx[3]={0.};
   Int_t    tofLabel[3] = {0};
+  
+  TBits *bitfieldPCMv0sA = (TBits*) GetInputData(1);
+  TBits *bitfieldPCMv0sB = (TBits*) GetInputData(2);
+  UInt_t convertInt;
+  
   for (Int_t nV0 = 0; nV0 < esd.GetNumberOfV0s(); ++nV0) {
+    convertInt = (UInt_t) nV0;
     if (fUsedV0[nV0]) continue; // skip if already added to the AOD
     
     AliESDv0 *v0 = esd.GetV0(nV0);
@@ -910,8 +918,21 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
     v0objects.AddAt(esdV0Neg,                2);
     v0objects.AddAt(esdVtx,                  3);
     UInt_t selectV0 = 0;
+    
+    //Add PCM V0s
+    if(bitfieldPCMv0sA){
+      if(bitfieldPCMv0sA->TestBitNumber(convertInt) && convertInt<= bitfieldPCMv0sA->GetNbits()){
+	selectV0 = 2;
+      }
+    }
+    if(bitfieldPCMv0sB){
+      if(bitfieldPCMv0sB->TestBitNumber(convertInt) && convertInt<= bitfieldPCMv0sB->GetNbits()){
+	selectV0 = 2;
+      }
+    }
+    
     if (fV0Filter) {
-      selectV0 = fV0Filter->IsSelected(&v0objects);
+      selectV0 |= fV0Filter->IsSelected(&v0objects);
       // this is a little awkward but otherwise the 
       // list wants to access the pointer (delete it) 
       // again when going out of scope

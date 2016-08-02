@@ -132,6 +132,29 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    mgr->ConnectInput  (esdfilter,  0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (esdfilter,  0, mgr->GetCommonOutputContainer());
    mgr->ConnectInput  (esdmuonfilter, 0, mgr->GetCommonInputContainer());
+   
+   if (useV0Filter && !isMuonCaloPass){
+     TObjArray *allContainers = mgr->GetContainers();
+     Int_t containersSize = allContainers->GetSize();
+     TString containerName;
+     AliAnalysisDataContainer* cinputPCMv0sA;
+     AliAnalysisDataContainer* cinputPCMv0sB;
+     for (Int_t i=0;i<containersSize;i++){
+       if (allContainers->At(i)){
+	 containerName = allContainers->At(i)->GetName();
+	 if (containerName.CompareTo("PCM v0 containerA")==0){
+	   cinputPCMv0sA = allContainers->At(i);
+	 }
+	 if (containerName.CompareTo("PCM v0 containerB")==0){
+	   cinputPCMv0sB = allContainers->At(i);
+	 }
+       }
+     }
+     mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
+     mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
+   } 
+   
+   
    if (useKineFilter) {
       mgr->ConnectInput  (kinefilter,  0, mgr->GetCommonInputContainer());
       mgr->ConnectOutput (kinefilter,  0, mgr->GetCommonOutputContainer());
