@@ -51,14 +51,14 @@ ClassImp(AliRDHFCutsDplustoK0spi);
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoK0spi::AliRDHFCutsDplustoK0spi(const char* name) :
 AliRDHFCuts(name)
-   , fExcludedCut(0)
+   , fExcludedCut(-1)
    , fV0Type(0)
    , fV0daughtersCuts(0)
 {
    //
    /// Default Constructor
    //
-   
+
    const Int_t nvars = 16;
    SetNVars(nvars);
    TString varNames[nvars] = { "Inv. Mass D+ -> K0s+pi [GeV/c2]",                //  0
@@ -126,14 +126,14 @@ AliRDHFCuts(name)
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoK0spi::AliRDHFCutsDplustoK0spi(const AliRDHFCutsDplustoK0spi& source) :
 AliRDHFCuts(source)
-   , fExcludedCut(0)
-   , fV0Type(0)
+   , fExcludedCut(source.fExcludedCut)
+   , fV0Type(source.fV0Type)
    , fV0daughtersCuts(0)
 {
    //
    /// Standard constructor
    //
-   
+
    if (source.fV0daughtersCuts) AddTrackCutsV0daughters(source.fV0daughtersCuts);
    else fV0daughtersCuts = new AliESDtrackCuts();
 }
@@ -147,18 +147,18 @@ AliRDHFCutsDplustoK0spi &AliRDHFCutsDplustoK0spi::operator=(const AliRDHFCutsDpl
    //
    /// Assignment operator
    //
-   
+
    if (this != &source) {
-      
+
       AliRDHFCuts::operator = (source);
       fV0Type      = source.fV0Type;
       fExcludedCut = source.fExcludedCut;
-      
+
       delete fV0daughtersCuts;
       fV0daughtersCuts = new AliESDtrackCuts(*(source.fV0daughtersCuts));
-      
+
    }
-   
+
    return *this;
 }
 
@@ -171,7 +171,7 @@ AliRDHFCutsDplustoK0spi::~AliRDHFCutsDplustoK0spi()
    //
    ///  Default destructor
    //
-   
+
    if (fV0daughtersCuts) { delete fV0daughtersCuts; fV0daughtersCuts=0; }
 }
 
@@ -229,14 +229,14 @@ void AliRDHFCutsDplustoK0spi::GetCutVarsForOpt(AliAODRecoDecayHF* obj, Float_t* 
       }
    }
 
-   
+
    Int_t iter=-1;
 
    if (fVarsForOpt[0]) {
       iter++;
       if (TMath::Abs(pdgdaughters[0]==411)) vars[iter] = TMath::Abs(d->InvMassDplustoK0spi()-mDplusPDG);
    }
-   
+
 
    //___ K0s reconstruction  _________________________
    //_________________________________________________
@@ -286,7 +286,7 @@ void AliRDHFCutsDplustoK0spi::GetCutVarsForOpt(AliAODRecoDecayHF* obj, Float_t* 
       iter++;
       vars[iter] = bachelorTrack->Pt();
    }
-   
+
    // - Cut on V0 pT
    if (fVarsForOpt[8]) {
       iter++;
@@ -351,31 +351,31 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
       AliFatal("Cut matrice not inizialized. Exit...");
       return 0;
    }
-   
-   
+
+
    AliAODRecoCascadeHF *d = (AliAODRecoCascadeHF*) obj;
    if (!d) {
       AliDebug(2, "AliAODRecoCascadeHF null");
       return 0;
    }
-   
+
    if (!d->GetSecondaryVtx()) {
       AliDebug(2, "No secondary vertex for cascade");
       return 0;
    }
-   
+
    if (d->GetNDaughters() != 2) {
       AliDebug(2, Form("No 2 daughters for current cascade (nDaughters=%d)", d->GetNDaughters()));
       return 0;
    }
-   
-   
+
+
 
    //___ 1./ Check daughter tracks  __________________
    //_________________________________________________
    AliAODv0    *v0            = (AliAODv0*)    d->Getv0();
    AliAODTrack *bachelorTrack = (AliAODTrack*) d->GetBachelor();
-   
+
 
    if (!v0 || !bachelorTrack) {
       AliDebug(2, "Missing V0 or missing bachelor for the current cascade");
@@ -387,37 +387,37 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
       AliDebug(2, "Wrong V0 status (offline or on-the-fly)");
       return 0;
    }
-   
+
    if (bachelorTrack->GetID()<0) {
       AliDebug(2, Form("Bachelor has negative ID %d", bachelorTrack->GetID()));
       return 0;
    }
-   
+
    if (!v0->GetSecondaryVtx()) {
       AliDebug(2, "No secondary vertex for V0 by cascade");
       return 0;
    }
-   
+
    if (v0->GetNDaughters()!=2) {
       AliDebug(2, Form("More than 2 daughters for V0 of current cascade (onTheFly=%d, nDaughters=%d)", v0->GetOnFlyStatus(), v0->GetNDaughters()));
       return 0;
    }
-   
-   
+
+
    // - Get the V0 daughter tracks
    AliAODTrack *v0positiveTrack = (AliAODTrack*) d->Getv0PositiveTrack();
    AliAODTrack *v0negativeTrack = (AliAODTrack*) d->Getv0NegativeTrack();
-   
+
    if (!v0positiveTrack || !v0negativeTrack) {
       AliDebug(2, "No V0 daughters' objects");
       return 0;
    }
-   
+
    if (v0positiveTrack->GetID()<0 || v0negativeTrack->GetID()<0) {
       AliDebug(2, Form("At least one of V0 daughters has negative ID %d %d", v0positiveTrack->GetID(), v0negativeTrack->GetID()));
       return 0;
    }
-   
+
    if (fUseTrackSelectionWithFilterBits && d->HasBadDaughters()) {
       AliDebug(2, "Check on the bachelor FilterBit: no BIT(4). Candidate rejected.");
       return 0;
@@ -438,14 +438,14 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
    // - Selection on candidate
    if (selectionLevel == AliRDHFCuts::kAll ||
        selectionLevel == AliRDHFCuts::kCandidate) {
-      
-      
+
+
       Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
       Double_t mk0sPDG   = TDatabasePDG::Instance()->GetParticle(310)->Mass();
 
       Double_t  mDplus = d->InvMassDplustoK0spi();
       Double_t  mk0s   = v0->MassK0Short();
-      
+
 
       Double_t pt = d->Pt();
       Int_t ptbin = PtBin(pt);
@@ -463,7 +463,7 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
             return 0;
          }
       }
-      
+
 
       if (fUseMCVertex) {
          if (d->GetOwnPrimaryVtx()) origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
@@ -472,7 +472,7 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
             return 0;
          }
       }
-      
+
 
 
       //___ Invariant mass compatibility  _______________
@@ -573,7 +573,7 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
          CleanOwnPrimaryVtx(d, aod, origownvtx);
          return 0;
       }
-      
+
 
       // - Cut on V0 transverse impact parameter d0(xy)
       if (TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(10,ptbin)] && fExcludedCut!=10) {
@@ -590,14 +590,14 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
          return 0;
       }
 
-      
+
       // - Cut on cascade cosPointingAngle (3D) wrt PV
       if (d->CosPointingAngle() < fCutsRD[GetGlobalIndex(12,ptbin)] && fExcludedCut!=12) {
          AliDebug(4, " Cascade cosPointingAngle (3D) doesn't pass the cut");
          CleanOwnPrimaryVtx(d, aod, origownvtx);
          return 0;
       }
-      
+
       // - Cut on cascade cosPointingAngle (xy) wrt PV
       if (TMath::Abs(d->CosPointingAngleXY()) < fCutsRD[GetGlobalIndex(13,ptbin)] && fExcludedCut!=13) {
          AliDebug(4, " Cascade cosPointingAngle (xy) doesn't pass the cut");
@@ -616,7 +616,7 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
 
       // Unset recalculated primary vertex when not needed any more
       CleanOwnPrimaryVtx(d, aod, origownvtx);
-      
+
    } // end if (kAll || kCandidate)
 
 
@@ -631,10 +631,10 @@ Int_t AliRDHFCutsDplustoK0spi::IsSelected(TObject* obj, Int_t selectionLevel, Al
        selectionLevel == AliRDHFCuts::kCandidate ||
        selectionLevel == AliRDHFCuts::kPID)
    { returnvaluePID = IsSelectedPID(d); }
-   
-   
+
+
    Int_t returnvalueTot = returnvalueTopo & returnvaluePID;
-   
+
    return returnvalueTot;
 }
 
@@ -684,12 +684,12 @@ Bool_t AliRDHFCutsDplustoK0spi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
    //
    /// Checking if the cascade is in the fiducial acceptance region
    //
-   
+
    if (fMaxRapidityCand > -998.) {
       if (TMath::Abs(y) > fMaxRapidityCand) return kFALSE;
       else return kTRUE;
    }
-   
+
    if (pt > 5.) {
       // applying cut for pt > 5 GeV
       AliDebug(2,Form("pt of cascade = %f (> 5), cutting at |y| < 0.8", pt));
@@ -701,7 +701,7 @@ Bool_t AliRDHFCutsDplustoK0spi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
       AliDebug(2,Form("pt of cascade = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n", pt, minFiducialY, maxFiducialY));
       if (y < minFiducialY || y > maxFiducialY) return kFALSE;
    }
-   
+
    return kTRUE;
 }
 
@@ -778,7 +778,7 @@ Bool_t AliRDHFCutsDplustoK0spi::AreDtoK0sDaughtersSelected(AliAODRecoDecayHF *rd
 
    // Condition on nTPCclusters
    if (fV0daughtersCuts->GetMinNClusterTPC()>0) {
-      if ( ((v0positiveTrack->GetTPCClusterInfo(2,1)) < fV0daughtersCuts->GetMinNClusterTPC()) || 
+      if ( ((v0positiveTrack->GetTPCClusterInfo(2,1)) < fV0daughtersCuts->GetMinNClusterTPC()) ||
            ((v0negativeTrack->GetTPCClusterInfo(2,1)) < fV0daughtersCuts->GetMinNClusterTPC()) ) return kFALSE;
    }
 
@@ -836,7 +836,7 @@ Int_t AliRDHFCutsDplustoK0spi::GetV0Type()
    const Int_t nvars = this->GetNVars() ;
    fV0Type = (this->GetCuts())[nvars-1];
    TString *sVarNames = GetVarNames();
-   
+
    if (sVarNames[nvars-1].Contains("V0 type")) {
       return (Int_t)fV0Type;
    } else {
