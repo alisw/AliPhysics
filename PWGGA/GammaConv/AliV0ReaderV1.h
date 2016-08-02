@@ -58,6 +58,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
                                                                      return NULL;}
 
     // Set Options
+    void	       SetAddv0sInESDFilter(Bool_t addv0s)	{kAddv0sInESDFilter = addv0s;}
     void               CountTracks();
     void               SetConversionCuts(const TString cut);
     void               SetConversionCuts(AliConversionPhotonCuts *cuts) {fConversionCuts=cuts; return;}
@@ -133,7 +134,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t               GetConversionPoint(const AliExternalTrackParam *pparam, const AliExternalTrackParam *nparam, Double_t convpos[3], Double_t dca[2]);
     Bool_t               GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2]);
     Double_t             GetPsiPair(const AliESDv0* v0, const AliExternalTrackParam *positiveparam, const AliExternalTrackParam *negativeparam) const;
-
+    
+    Bool_t 	   kAddv0sInESDFilter; 	          // Add PCM v0s to AOD created in ESD filter
+    TBits		     *fPCMv0BitField;	  // Pointer to bitfield of PCM v0s
     AliConversionPhotonCuts  *fConversionCuts;    // Pointer to the ConversionCut Selection
     AliConvEventCuts         *fEventCuts;         // Pointer to the ConversionCut Selection
     TClonesArray             *fConversionGammas;  // TClonesArray holding the reconstructed photons
