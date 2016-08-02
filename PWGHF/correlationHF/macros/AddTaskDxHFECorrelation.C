@@ -892,8 +892,8 @@ int AddTaskDxHFECorrelation(Bool_t bUseMC, TString analysisName)
 //[TODO] Make these values dependent on "system" parameter
 
 //2013 pPb values
-const Int_t    nofMBins=3;
-const Double_t MBins[nofMBins+1]={0,20,50,150};
+const Int_t    nofMBins=2;
+const Double_t MBins[nofMBins+1]={0,50,500};
 const Double_t * MultiplicityBins = MBins;
 const Int_t    nofZBins=3;
 const Double_t ZBins[nofZBins+1]={-10,-2.5,2.5,10};

@@ -109,21 +109,21 @@ THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
 
   // here is the only place to change the dimension
   const int thnSize2 = 6;
-  InitTHnSparseArray(thnSize2);
+  const int thnSize3 = 5;
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
 
   if(2==fSystem){//Reduced binning for p-Pb
-    // 			             0     1      2       3        4     5
-    // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  mother 
-    int         thnBins [thnSize2] = {80, 100,   15,     100,     125,  10  };
-    double      thnMin  [thnSize2] = {   0,  0,     0,    1.5648,   -1., -1.5  };
-    double      thnMax  [thnSize2] = { 16, 2*Pi,  14,    2.1648,    1.,  8.5  };
-    const char* thnNames[thnSize2] = {
+    InitTHnSparseArray(thnSize3);
+    // 			             0     1        3        4     5
+    // 	 	                     Pt   Phi   D0InvMass  Eta  mother 
+    int         thnBins [thnSize3] = {28, 100,    150,     100,  10  };
+    double      thnMin  [thnSize3] = {   2,  0,  1.5848,   -1., -1.5  };
+    double      thnMax  [thnSize3] = { 16, 2*Pi, 2.1848,    1.,  8.5  };
+    const char* thnNames[thnSize3] = {
       "Pt",
       "Phi",
-      "Ptbin", 
       "D0InvMass", 
       "Eta",
       "Mother of D0"  // Bin -1 = not MC truth D0, rest OK
@@ -132,9 +132,10 @@ THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
     // TODO: Add it to the TList of D0 main class
     fPDGnotMCD0= new TH1F("fPDGnotMCD0","PDG of track not MC truth D0",1002,-2.5,999.5);
     AddControlObject(fPDGnotMCD0);
-    return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+    return CreateControlTHnSparse(name,thnSize3,thnBins,thnMin,thnMax,thnNames);
   }
   else{
+    InitTHnSparseArray(thnSize2);
     // 			             0     1      2       3        4     5
     // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  mother 
     int         thnBins [thnSize2] = {1000, 200,   15,     200,     500,  10  };
@@ -220,7 +221,7 @@ int AliDxHFEParticleSelectionMCD0::FillParticleProperties(AliVParticle* p, Doubl
   }
   data[i++]=track->Pt();
   data[i++]=track->Phi();
-  data[i++]=AliDxHFEParticleSelectionMCD0::GetPtBin(); 
+  if(fSystem!=2) data[i++]=AliDxHFEParticleSelectionMCD0::GetPtBin(); 
   data[i++]=AliDxHFEParticleSelectionMCD0::GetInvMass();
   data[i++]=track->Eta();
   data[i++]=fOriginMother; // at the moment not included background. Should expand

@@ -36,6 +36,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
+#include "AliRDHFCutsD0toKpi.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
@@ -62,6 +63,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fCorrProperties(NULL)
   , fhEventControlCorr(NULL)
   , fCuts(NULL)
+  , fCutsD0(NULL)
   , fUseMC(kFALSE)
   , fCorrelator(NULL)
   , fUseEventMixing(kFALSE)
@@ -78,6 +80,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fUseD0Efficiency(kFALSE)
   , fRunMode(kReducedMode)
   , fUseCentrality(0)
+  , fPoolBin(-1)
 {
   // default constructor
   // 
@@ -114,6 +117,7 @@ AliDxHFECorrelation::~AliDxHFECorrelation()
 
   // NOTE: the external object is deleted elsewhere
   fCuts=NULL;
+  fCutsD0=NULL;
 }
 
 int AliDxHFECorrelation::Init(const char* arguments)
@@ -127,6 +131,7 @@ int AliDxHFECorrelation::Init(const char* arguments)
   //----------------------------------------------
   // Setting up THnSparse 
   fCorrProperties=DefineTHnSparse();
+  fCorrProperties->Sumw2();
   AddControlObject(fCorrProperties);
 
   //----------------------------------------------
@@ -169,7 +174,15 @@ int AliDxHFECorrelation::Init(const char* arguments)
     return -EINVAL;
   }
   cuts->Print("");
-  fCorrelator = new AliHFCorrelator("Correlator", cuts, fUseCentrality); 
+  // Fetching out the RDHF-cut objects for D0 to store in output stream
+  TObject *obj2=NULL;
+  TIter next2(fCutsD0);
+  obj2 = next2();
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2));
+  if(!copyfCuts){
+    AliFatal(Form("cut object is of incorrect type %s, expecting AliRDHFCutsD0toKpi", obj2->ClassName()));
+  }
+  fCorrelator = new AliHFCorrelator("Correlator", cuts, fUseCentrality, copyfCuts); 
   fCorrelator->SetDeltaPhiInterval(fMinPhi,fMaxPhi); //Correct Phi Interval
   fCorrelator->SetEventMixing(fUseEventMixing);      // mixing Off/On 
   fCorrelator->SetAssociatedParticleType(AliHFCorrelator::kElectron);
@@ -210,7 +223,7 @@ int AliDxHFECorrelation::Init(const char* arguments)
   Double_t minvalue = CentBins[0];
   Double_t maxvalue = CentBins[NofCentBins];
   Double_t Zminvalue = ZVrtxBins[0];
-  Double_t Zmaxvalue = ZVrtxBins[NofCentBins];
+  Double_t Zmaxvalue = ZVrtxBins[NofZVrtxBins];
 
   const Double_t Nevents[]={0,2*MaxNofEvents/10,4*MaxNofEvents/10,6*MaxNofEvents/10,8*MaxNofEvents/10,MaxNofEvents};
   const Double_t * events = Nevents;
@@ -244,6 +257,10 @@ int AliDxHFECorrelation::Init(const char* arguments)
   EventProps->GetYaxis()->SetTitle("Z vertex [cm]");
   if(fUseEventMixing) AddControlObject(EventProps);
 
+  TH2D * MultvsVtx = new TH2D("MultvsVtx","Mult vs Vtx",501,0,500,200,Zminvalue,Zmaxvalue);
+  MultvsVtx->GetXaxis()->SetTitle("Centrality/multiplicity ");
+  MultvsVtx->GetYaxis()->SetTitle("Z vertex [cm]");
+  AddControlObject(MultvsVtx);
   return 0;
 }
 
@@ -348,6 +365,7 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
     AliDebug(1, "Creating Reduced Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 7;  
+  static const int sizeEventdphipPb = 6;
   static const int sizeEventdphiReduced = 5;  
   InitTHnSparseArray(sizeEventdphi);
   const double pi=TMath::Pi();
@@ -375,19 +393,20 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
   }
   else if(2==fSystem){ //Reduced bins for p-Pb
-    // 			                                   0          1      2       3      4
-    // 			                                D0invmass   PtD0     Pte    dphi   deta   
-    int         binsEventdphiRed[sizeEventdphiReduced] = {   170,      80,   50,   16,    25};
-    double      minEventdphiRed [sizeEventdphiReduced] = { 1.6458,      0,      0,  fMinPhi,  -2};
-    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1558,      16,    10,  fMaxPhi,   2}; 
-    const char* nameEventdphiRed[sizeEventdphiReduced] = {
+    // 			                                   0          1      2       3      4      5    
+    // 			                                D0invmass   PtD0     Pte    dphi   deta  poolbin
+    int         binsEventdphipPb[sizeEventdphipPb] = {   150,      28,   50,   16,          20,     6   };
+    double      minEventdphipPb [sizeEventdphipPb] = { 1.5848,      2,      0,  fMinPhi,    -2,    -0.5  };
+    double      maxEventdphipPb [sizeEventdphipPb] = { 2.1848,      16,    10,  fMaxPhi,     2,    5.5  }; 
+    const char* nameEventdphipPb[sizeEventdphipPb] = {
       "D0InvMass",
       "PtD0",
       "PtEl",
       "#Delta#Phi", 
-      "#Delta#eta"
+      "#Delta#eta",
+      "Poolbin"
     };
-    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiReduced,binsEventdphiRed,minEventdphiRed,maxEventdphiRed,nameEventdphiRed);
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphipPb,binsEventdphipPb,minEventdphipPb,maxEventdphipPb,nameEventdphipPb);
 
   }
   else{
@@ -491,6 +510,8 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
   }
   AliAODEvent *AOD= (AliAODEvent*)(pEvent);
   Double_t multEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AOD,-1.,1.));
+  AliAODVertex *vtx = AOD->GetPrimaryVertex();
+  Double_t zvertex = vtx->GetZ();
 
   fCorrelator->SetAODEvent(dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent))); 
 
@@ -549,6 +570,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 
       // looping on track candidates
       for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ 
+	fPoolBin=-1;
 	Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
 	if(!runcorrelation) continue;
 			
@@ -566,11 +588,26 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	}
 	else if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
 	  if(! TestParticle(assoc,kD)) continue;
+	Int_t multiplicity = -1;
+	Double_t MultipOrCent = -1;
+	AliCentrality *centralityObj = 0;
+	
+	// get the pool for event mixing
+	if(!fUseCentrality){ // pp or pPb
+	  //[FIXME][Old method] multiplicity = AOD->GetNumberOfTracks();
+	  //  fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys,fCutsD0);//fSys=0 use multiplicity, =1 use centrality
+	  //MultipOrCent = multiplicity; // convert from Int_t to Double_t
+	  MultipOrCent=fCorrelator->GetCentrality();
+	}
+	if(fUseCentrality){ // PbPb		
+	  centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
+	  MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
+	  //AliInfo(Form("Centrality is %f", MultipOrCent));
+	}
+	fPoolBin=cuts->GetPoolBin(MultipOrCent, zvertex);
 	
 	Double_t weight =1.;
 	if(fUseTrackEfficiency){
-	  AliAODVertex *vtx = AOD->GetPrimaryVertex();
-	  Double_t zvertex = vtx->GetZ(); // zvertex
 	  if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
 	    weight=cuts->GetTrackWeight(ptrigger->Pt(),ptrigger->Eta(),zvertex);
 	  else
@@ -591,6 +628,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	if(weight!=0){ fCorrProperties->Fill(ParticleProperties(),1./weight);} //Due to possibility of empty regions in eff-map, weights may come out as 0, which crashes the code here.
       } // loop over electron tracks in event
     } // loop over events in pool
+    ((TH2D*)fControlObjects->FindObject("MultvsVtx"))->Fill(multEv,zvertex); // event properties
   } // loop over trigger particle
 
   Bool_t updated = fCorrelator->PoolUpdate(associatedTracks);
@@ -652,6 +690,7 @@ int AliDxHFECorrelation::FillParticleProperties(AliVParticle* tr, AliVParticle *
   }
   data[i++]=GetDeltaPhi();
   data[i++]=GetDeltaEta();
+  if(fSystem==2) data[i++]=fPoolBin;
 
   return i;
 }
@@ -746,8 +785,10 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
 	
   // get the pool for event mixing
   if(!fUseCentrality){ // pp
+    /* Old method
     multiplicity = AOD->GetNumberOfTracks();
-    MultipOrCent = multiplicity; // convert from Int_t to Double_t
+    MultipOrCent = multiplicity; // convert from Int_t to Double_t */
+    MultipOrCent=fCorrelator->GetCentrality();
   }
   if(fUseCentrality){ // PbPb		
     centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
