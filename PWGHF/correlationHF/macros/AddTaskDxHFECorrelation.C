@@ -790,9 +790,11 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	::Fatal("AddTaskDxHFECorrelation", Form("Input file not found for efficiency with feeddown correction! Exiting..."));
 	return 0;
       }
-      TCanvas *c2 = (TCanvas*)fileeffD0FeedDown->Get("c2");
-      if(!c2) {::Fatal("AddTaskDxHFECorrelation", Form("No canvas inside D0 eff map file for feeddown")); return 0;}
-      TH2D *hEff2 = (TH2D*)c2->FindObject("h_Eff");
+      /* Old method. Has been updated to work with new eff-map style
+	TCanvas *c2 = (TCanvas*)fileeffD0FeedDown->Get("c2");
+	if(!c2) {::Fatal("AddTaskDxHFECorrelation", Form("No canvas inside D0 eff map file for feeddown")); return 0;}*/
+      //TH2D *hEff2 = (TH2D*)c2->FindObject("h_Eff");
+      TH2D *hEff2 = (TH2D*)fileeffD0FeedDown->Get("h_Eff");
       if(!hEff2) {::Fatal("AddTaskDxHFECorrelation", Form("No efficiency histo for Feeddown D0")); return 0;}
       poolConfiguration->AliHFAssociatedTrackCuts::SetTriggerEffWeightMapB(hEff2); 
     }
