@@ -255,6 +255,8 @@ public:
   void SetNominalTpcPointPosShifted(AliFemtoThreeVector x);
   void SetNominalTpcPointNegShifted(AliFemtoThreeVector x);
 
+  void SetradiusV0(const double &x);
+
   void SetTPCMomentumPos(double x);
   void SetTPCMomentumNeg(double x);
   double GetTPCMomentumPos() const;
@@ -286,6 +288,7 @@ public:
   float ImpactDprimNeg()const;
   float ImpactDweakNeg()const;
   float ImpactDmatNeg()const;
+  double RadiusV0() const;
 
   void SetprimaryVertex(const AliFemtoThreeVector v);//Gael 24 Sept 02
   /* Th stuff */
@@ -421,6 +424,8 @@ protected:
 
   float fCorrLam;    //corrections for lambda particles
 
+  double fRadiusV0;
+
   /* Th stuff */
   // Fab private : add mutable
   mutable AliFemtoHiddenInfo* fHiddenInfo; //! Hidden info
@@ -521,6 +526,8 @@ inline float AliFemtoV0::PosNSigmaTOFP() const { return  fPosNSigmaTOFP; }
 inline float AliFemtoV0::NegNSigmaTOFK() const { return fNegNSigmaTOFK;  }
 inline float AliFemtoV0::NegNSigmaTOFPi() const { return fNegNSigmaTOFPi;  }
 inline float AliFemtoV0::NegNSigmaTOFP() const { return fNegNSigmaTOFP;  }
+
+inline double AliFemtoV0::RadiusV0() const { return fRadiusV0;  }
 
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcEntrancePointPos() const {return fNominalTpcEntrancePointPos;}
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcExitPointPos() const {return fNominalTpcExitPointPos;}
@@ -661,5 +668,7 @@ inline void AliFemtoV0::SetImpactDmatNeg(const float& x) {fImpactDmatNeg = x;}
 inline float AliFemtoV0::ImpactDprimNeg() const {return fImpactDprimNeg;}
 inline float AliFemtoV0::ImpactDweakNeg() const {return fImpactDweakNeg;}
 inline float AliFemtoV0::ImpactDmatNeg() const {return fImpactDmatNeg;}
+
+inline void AliFemtoV0::SetradiusV0(const double& x) {fRadiusV0 = x;}
 
 #endif

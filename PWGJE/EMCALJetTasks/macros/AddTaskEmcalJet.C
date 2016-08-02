@@ -81,12 +81,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
   AliParticleContainer* partCont = 0;
   if (trackName == "mcparticles") {
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
     partCont = mcpartCont;
   }
   else if (trackName == "tracks" || trackName == "Tracks") {
     AliTrackContainer* trackCont = new AliTrackContainer(trackName);
-    trackCont->SetFilterHybridTracks(kTRUE);
     partCont = trackCont;
   }
   else if (!trackName.IsNull()) {
@@ -101,6 +99,17 @@ AliEmcalJetTask* AddTaskEmcalJet(
     clusCont->SetClusPtCut(0.);
     clusCont->SetClusHadCorrEnergyCut(minClPt);
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+
+  switch (jetType) {
+  case AliJetContainer::kChargedJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kCharged);
+    break;
+  case AliJetContainer::kNeutralJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kNeutral);
+    break;
+  default:
+    break;
   }
 
   TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);

@@ -36,7 +36,7 @@ public:
     enum HijingOr {kHijing,kElse};
     enum EInvSourceType {kPi0,kPi0Both,kEta,kEtaBoth,kGamma,kGammaBoth};
     enum WhichHeavyMeson {kelectronCharm,kelectronBeauty};
-
+    
     AliAnalysisTaskHFEEfficiency();
     AliAnalysisTaskHFEEfficiency(const char *name);
     virtual ~AliAnalysisTaskHFEEfficiency();
@@ -57,10 +57,23 @@ public:
     void SelectPhotonicElectronR_ULSLS(Int_t itrack, AliVTrack *track, Int_t hijing, Double_t weight, Int_t pdg, Int_t source);
     
     Double_t GetMCweightPi0(Double_t mcPi0pT);
+    Double_t GetMCweightPi0tiltUp(Double_t mcPi0pT);
+    Double_t GetMCweightPi0tiltDw(Double_t mcPi0pT);
     Double_t GetMCweightEta(Double_t mcEtapT);
-    Double_t GetMCweightPi0HIJING(Double_t mcPi0pT);
-    Double_t GetMCweightEtaHIJING(Double_t mcEtapT);
-//    Double_t GetMCweightGamma(Double_t mcGammapT);
+    Double_t GetMCweightEtatiltUp(Double_t mcEtapT);
+    Double_t GetMCweightEtatiltDw(Double_t mcEtapT);
+
+    Double_t GetMCweightPi02040(Double_t mcPi0pT);
+    Double_t GetMCweightPi0tiltUp2040(Double_t mcPi0pT);
+    Double_t GetMCweightPi0tiltDw2040(Double_t mcPi0pT);
+    Double_t GetMCweightEta2040(Double_t mcEtapT);
+    Double_t GetMCweightEtatiltUp2040(Double_t mcEtapT);
+    Double_t GetMCweightEtatiltDw2040(Double_t mcEtapT);
+
+    
+    Double_t GiveHFWeight(Double_t HFpt);
+
+    
     Bool_t IsFromBGEventAOD(Int_t Index);
     AliHFEpid *GetPID() const { return fPID; }
     
@@ -77,15 +90,18 @@ public:
     Int_t                                GetPrimary(Int_t id, TClonesArray *mcArray);
     Int_t                                GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArray *mcArray);
     Int_t                                GetElecSourceType(AliAODMCParticle *electron, TClonesArray *mcArray,Double_t &ptm);
+    void                                 SetTiltUpWeights(Bool_t UPWeights){tiltup = UPWeights;};
+    void                                 SetTiltDwWeights(Bool_t DWWeights){tiltdw = DWWeights;};
     
-    void                                 SetCocktailWeights(Bool_t CocktailWeights){fcocktail = CocktailWeights;};
+    void                                 SetCentralWeights(Bool_t mostcentral010){fcentral = mostcentral010;};
+    void                                 SetSemicentralWeights(Bool_t semicentral2040){fsemicentral = semicentral2040;};
+    
     void                                 SetWeights(Bool_t Weights){WeightsForEnhanced = Weights;};
-    
     Bool_t                               FillNumerator(TClonesArray *mcArray,AliVTrack *track, Double_t ForHFEReco[]);
-
     void                                 SetIDCuts(Double_t minTOFnSigma, Double_t maxTOFnSigma, Double_t minITSnsigmalowpt, Double_t maxITSnsigmalowpt,Double_t minITSnsigmahighpt, Double_t maxITSnsigmahighpt, Double_t minTPCnsigmalowpt, Double_t maxTPCnsigmalowpt,Double_t minTPCnsigmahighpt, Double_t maxTPCnsigmahighpt );
     void SetTPCS(Int_t sig) {fTPCS = sig;};
     
+    void                                 SetWeightsHF(Bool_t Weights){WeightsForHF = Weights;};
     
     
     
@@ -110,7 +126,6 @@ private:
     AliHFEpid            *fPID;                  //PID
     AliHFEpidQAmanager   *fPIDqa;    //! PID QA manager
     Bool_t               fRejectKinkMother;      //Reject Kink Mother
-    
     TH1F		*fNoEvents;		//!no of events
     TH1F 	    *fMCPdgmom;		//!MC pdg of elec mother
     TH1F		*fMCElecPtPhoto;	//!MC electron Pt photonic
@@ -144,70 +159,60 @@ private:
     TH1F        	 *fInvmassLSNHFEAllPartn;  //!Inv mass of photo ele LS with all pair
     TH1F                 *fCentralityPass; // ! QA histogram of events that pass centrality cut
     TH1F                 *fCentralityNoPass; //! QA histogram of events that do not pass centrality cut
-    
     THnSparseF           *fPi0EtaSpectra;// ! QA for weights
     THnSparseF           *fHFEDenominator;// ! EFFfor EHFE
-    
     THnSparseF           *fHFENumeratorTRKCUTS_Filt;// ! EFFfor EHFE
     THnSparseF           *fHFENumeratorTRKCUTS_ITSTPC;// ! EFFfor EHFE
-  //  THnSparseF           *fHFENumeratorTRKCUTS_ITStrkCut;// ! EFFfor EHFE
-
-    
+    //  THnSparseF           *fHFENumeratorTRKCUTS_ITStrkCut;// ! EFFfor EHFE
     THnSparseF           *fHFENumeratorTRKCUTS;// ! EFFfor EHFE
     THnSparseF           *fHFENumeratorTOF;// ! EFFfor EHFE
     THnSparseF           *fHFENumeratorITS;// ! EFFfor EHFE
     THnSparseF           *fHFENumerator;// ! EFFfor EHFE
-
-    
     THnSparseF           *fInvMULS;// ! QA for weights
     THnSparseF           *fULS;// ! QA for weights
     THnSparseF           *fLS;// ! QA for weights
     THnSparseF           *fIncl;// ! QA for weights
-    
     Double_t              fCentrality; // event centrality for QA
     Double_t              fCentralityMin; // lower bound of cenrality bin
     Double_t              fCentralityMax; // upper bound of centrality bin
     const char           *fkCentralityMethod; // method used to determine centrality (V0 by default)
-    
-    TH1F     *fVZEROA;//!vezo A multi
-    TH1F     *fVZEROC;//!vezo A multi
-
+    TH1F                 *fVZEROA;//!vezo A multi
+    TH1F                 *fVZEROC;//!vezo A multi
     Int_t                fAssoTPCCluster;//asso tpc cluster
     Bool_t               fAssoITSRefit;//asso its refit
     Double_t             fAssopTMin;//assoptmin
     Bool_t               fStackloop;//wvwe
-    
     TH2F                 *fTPCnsigmaAft;//!TPC n sigma vs p after HFE pid
     TH2F                 *fTPCnsigmaVSptAft;   //!lodviow
     TH2F                 *fTPCnsigmaAftITSTOF;//!TPC n sigma vs p
     TH2F                 *Rconv_pT;//!FAKE ITS HITS
     Double_t              fMassCut;//mass cut on pair
-    
     THnSparseF           *fSparseMassULS;//!ssss
     THnSparseF           *fSparseMassLS;//!ssssss
     TH1F                 *fakepT;//!ve
     TH1F                 *fakepTgraterFive;//!ee
-    
-    Bool_t               fcocktail;//wvwe
-    Bool_t               WeightsForEnhanced;//set the weight
-    
-    TH1F		*fNoEventsStackHFE;		//!no of events
+    Bool_t                WeightsForEnhanced;//set the weigh
+    TH1F                 *fNoEventsStackHFE;		//!no of events
+    Double_t              fminITSnsigmaLowpT;  //ID cuts its
+    Double_t              fmaxITSnsigmaLowpT;  //ID cuts its
+    Double_t              fminITSnsigmaHighpT;  //ID cuts its
+    Double_t              fmaxITSnsigmaHighpT;  //ID cuts its
+    Double_t              fminTPCnsigmaLowpT;  //ID cuts tpc
+    Double_t              fmaxTPCnsigmaLowpT;  //ID cuts tpc
+    Double_t              fminTPCnsigmaHighpT;  //ID cuts tpc
+    Double_t              fmaxTPCnsigmaHighpT;  //ID cuts tpc
+    Double_t              fminTOFnSigma;  //ID cuts tof
+    Double_t              fmaxTOFnSigma;//ID cuts tof
+    Int_t                 fTPCS;//tpc signal cluster
+    //    TH1F                 *fhHFStackBeauty;//!TPC n sigma vs p after HFE pid
+    //    TH1F                 *fhHFStackCharm;//!TPC n sigma vs p after HFE pid
+    Bool_t                tiltup;//tilting for weights
+    Bool_t                tiltdw;//tilting for weights
+    Bool_t                fcentral;//select weights for 010
+    Bool_t                fsemicentral;//select weights for 2040
+    Bool_t                WeightsForHF;//set the weigh
 
     
-    Double_t             fminITSnsigmaLowpT;  //ID cuts its
-    Double_t             fmaxITSnsigmaLowpT;  //ID cuts its
-    Double_t             fminITSnsigmaHighpT;  //ID cuts its
-    Double_t             fmaxITSnsigmaHighpT;  //ID cuts its
-    Double_t             fminTPCnsigmaLowpT;  //ID cuts tpc
-    Double_t             fmaxTPCnsigmaLowpT;  //ID cuts tpc
-    Double_t             fminTPCnsigmaHighpT;  //ID cuts tpc
-    Double_t             fmaxTPCnsigmaHighpT;  //ID cuts tpc
-    Double_t             fminTOFnSigma;  //ID cuts tof
-    Double_t             fmaxTOFnSigma;//ID cuts tof
-    Int_t                fTPCS;//tpc signal cluster
-//    TH1F                 *fhHFStackBeauty;//!TPC n sigma vs p after HFE pid
-//    TH1F                 *fhHFStackCharm;//!TPC n sigma vs p after HFE pid
-
     
     AliAnalysisTaskHFEEfficiency(const AliAnalysisTaskHFEEfficiency&); // not implemented
     AliAnalysisTaskHFEEfficiency& operator=(const AliAnalysisTaskHFEEfficiency&); // not implemented

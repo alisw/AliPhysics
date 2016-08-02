@@ -58,21 +58,23 @@ class CutHandlerConvCalo{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,                  // change different set of cuts
-                                Int_t     isMC                        = 0,               // run MC
-                                Int_t     enableQAMesonTask           = 0,                 // enable QA in AliAnalysisTaskGammaConvV1
-                                Int_t     enableQAPhotonTask          = 0,                 // enable additional QA task
-                                TString   fileNameInputForWeighting   = "MCSpectraInput.root",       // path to file for weigting input
-                                Int_t     doWeightingPart             = 0,                  // enable Weighting
-                                TString   generatorName               = "DPMJET",              // generator Name  
+void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,                    // change different set of cuts
+                                Int_t     isMC                        = 0,                    // run MC
+                                Int_t     enableQAMesonTask           = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
+                                Int_t     enableQAPhotonTask          = 0,                    // enable additional QA task
+                                TString   fileNameInputForWeighting   = "MCSpectraInput.root",// path to file for weigting input
+                                Int_t     doWeightingPart             = 0,                    // enable Weighting
+                                TString   generatorName               = "DPMJET",             // generator Name  
                                 TString   cutnumberAODBranch          = "800000006008400000001500000",  // cutnumber for AOD branch
-                                Int_t     enableExtMatchAndQA         = 0,                // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
-                                Bool_t    isUsingTHnSparse            = kTRUE,               // enable or disable usage of THnSparses for background estimation
-                                Bool_t    enableV0findingEffi         = kFALSE,              // enables V0finding efficiency histograms
-                                Bool_t    enableTriggerMimicking      = kFALSE,              // enable trigger mimicking
-                                Bool_t    enableTriggerOverlapRej     = kFALSE,              // enable trigger overlap rejection                  
-                                Float_t   maxFacPtHard                = 3,                // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader          = ""
+                                Int_t     enableExtMatchAndQA         = 0,                    // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                Bool_t    isUsingTHnSparse            = kTRUE,                // enable or disable usage of THnSparses for background estimation
+                                Bool_t    enableV0findingEffi         = kFALSE,               // enables V0finding efficiency histograms
+                                Bool_t    enableTriggerMimicking      = kFALSE,               // enable trigger mimicking
+                                Bool_t    enableTriggerOverlapRej     = kFALSE,               // enable trigger overlap rejection                  
+                                Float_t   maxFacPtHard                = 3,                    // maximum factor between hardest jet and ptHard generated
+                                TString   periodNameV0Reader          = "",                   // period Name for V0Reader
+                                Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
+                                Bool_t    runLightOutput              = kFALSE                // switch to run light output (only essential histograms for afterburner)
 ) {
 
   // ================= Load Librariers =================================
@@ -146,6 +148,8 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -160,6 +164,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -187,6 +192,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
 
   //create cut handler
   CutHandlerConvCalo cuts;
@@ -382,12 +388,15 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
@@ -395,12 +404,16 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
   
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
+    
     analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
+    analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
@@ -417,6 +430,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers

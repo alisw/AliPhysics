@@ -466,6 +466,10 @@ const AliDielectronEventCuts *GetEventCuts(){
   eventCuts->SetVertexZ(-10.,10.);
   eventCuts->SetMinVtxContributors(1); 
 
+
+  Bool_t isRun2 = kTRUE;
+  eventCuts->SetCentralityRange(0,80,isRun2);
+
   return eventCuts;
 }
 

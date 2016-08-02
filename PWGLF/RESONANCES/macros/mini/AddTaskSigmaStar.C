@@ -21,9 +21,9 @@ enum ERsnCollType_t { kPP=0,
 		      kPPb,
 		      kPbPb};
 
-enum pairYCutSet { kPairDefault, 
-		   kNegative,
-		   kCentral
+enum pairYCutSet { kPairDefault,    // USED ONLY FOR pA
+		   kNegative,       // USED ONLY FOR pA
+		   kCentral         // USED ONLY FOR pA
                  };
 
 enum eventCutSet { kOld = -1, 
@@ -36,34 +36,34 @@ enum eventCutSet { kOld = -1,
                  };
 
 enum eventMixConfig { kDisabled = -1,
-		      kMixDefault,//=0 //10 events, Dvz = 1cm, DC = 10
-		      k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
-		      k5Cent,  //=2 //10 events, Dvz = 1cm, DC = 5
+		      kMixDefault,     //=0 //10 events, Dvz = 1cm, DC = 10
+		      k5Evts,          //=1 //5 events, Dvz = 1cm, DC = 10
+		      k5Cent,          //=2 //10 events, Dvz = 1cm, DC = 5
                     };
 
 AliRsnMiniAnalysisTask *AddTaskSigmaStar
 (
  Bool_t      isMC,
- Int_t      collSyst,
+ Int_t       collSyst,
  Float_t     cutV = 10.0,
  Int_t       evtCutSetID = 0,
  Int_t       pairCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
- Float_t       piPIDCut = 3.0,
- Float_t       pPIDCut = 3.0,
+ Float_t     piPIDCut = 3.0,
+ Float_t     pPIDCut = 3.0,
  Float_t     trackDCAcut = 7.0,
  Float_t     massTol = 0.01,
  Float_t     lambdaDCA = 0.3,
  Float_t     lambdaCosPoinAn = 0.97,
- Float_t     lambdaDaughDCA = 0.5,
+ Float_t     lambdaDaughDCA = 1.5,
  Int_t       NTPCcluster = 70,
  Float_t     maxDiffVzMix = 1.0,
  Float_t     maxDiffMultMix = 10.0,
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "Sigma1385",
-   Int_t       centr = 0
+ Int_t       centr = 0
  )
 {  
   
@@ -72,13 +72,14 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
   // Note that some default values refer to pPb data 2013
   // settings from AddTaskKStarPPB.C by Francesca Bellini
   //-------------------------------------------
+  //
   UInt_t      triggerMask = AliVEvent::kINT7;
-  Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
-  Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
-  Int_t       MinPlpContribSPD = 5; //default value if used
-  Bool_t      useMVPileUpSelection = kFALSE; //
-  Int_t       MinPlpContribMV = 5; //default value if used
-  Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection
+  Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013                              // USED ONLY FOR pA
+  Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013                          // USED ONLY FOR pA
+  Int_t       MinPlpContribSPD = 5; //default value if used                              // USED ONLY FOR pA
+  Bool_t      useMVPileUpSelection = kFALSE; //                                          // USED ONLY FOR pA
+  Int_t       MinPlpContribMV = 5; //default value if used                               // USED ONLY FOR pA
+  Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection   // USED ONLY FOR pA
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
   if (evtCutSetID==eventCutSet::kOld) {
@@ -87,32 +88,28 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
     rejectPileUp = kFALSE;
     useVtxCut2013pA = kFALSE;
   }
-  
-  if (evtCutSetID==eventCutSet::kNoPileUpCut) {
+  else if (evtCutSetID==eventCutSet::kNoPileUpCut) {
     rmFirstEvtChunk = kTRUE;
     rejectPileUp = kFALSE;
   }
-  
-  if (evtCutSetID==eventCutSet::kPileUpMV) {
+  else if (evtCutSetID==eventCutSet::kPileUpMV) {
     useMVPileUpSelection = kTRUE;
     MinPlpContribSPD = 3;
-    //MinPlpContribMV = 5; //already set as default
   }
-  
-  if (evtCutSetID==eventCutSet::kPileUpSPD3) {
+  else if (evtCutSetID==eventCutSet::kPileUpSPD3) {
     MinPlpContribSPD = 3;
   }
-  
-  if (evtCutSetID==eventCutSet::kDefaultVtx8){
+  else if (evtCutSetID==eventCutSet::kDefaultVtx8){
     vtxZcut = 8.0; //cm
   } 
-  
-  if (evtCutSetID==eventCutSet::kDefaultVtx5){
+  else if (evtCutSetID==eventCutSet::kDefaultVtx5){
     vtxZcut = 5.0; //cm
   } 
 
+
+
   //-------------------------------------------
-  //pair cuts
+  // pair cuts
   //-------------------------------------------
   Double_t    minYlab =  -0.5;
   Double_t    maxYlab =  0.5;
@@ -121,36 +118,31 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
     if (pairCutSetID==pairYCutSet::kPairDefault) { //0<y_cm<0.5
       minYlab =  -0.465;  maxYlab =  0.035;
     }
-    
-    if (pairCutSetID==pairYCutSet::kNegative) { //-0.5<y_cm<0.0
+    else if (pairCutSetID==pairYCutSet::kNegative) { //-0.5<y_cm<0.0
       minYlab = -0.965;    maxYlab = -0.465;
     }
-    
-    if (pairCutSetID==pairYCutSet::kCentral) { //|y_cm|<0.3
+    else if (pairCutSetID==pairYCutSet::kCentral) { //|y_cm|<0.3
       minYlab = -0.765;    maxYlab = -0.165;
     }
   } 
   ::Info("AddTaskSigmaStar", Form("Min rapidity = %6.3f, Max rapidity = %6.3f",  minYlab, maxYlab) );
 
+
   //-------------------------------------------
   //mixing settings
   //-------------------------------------------
 
-  Int_t       nmix = 0;
-  //  Float_t     maxDiffVzMix = 1.0;
-  //  Float_t     maxDiffMultMix = 10.0;
-  
+  Int_t       nmix = 10;
   if (mixingConfigID == eventMixConfig::kMixDefault) {
     nmix = 10;
   }
-
-  if (mixingConfigID == eventMixConfig::k5Evts) {
+  else if (mixingConfigID == eventMixConfig::k5Evts) {
     nmix = 5;
-  }
-  
-  if (mixingConfigID == eventMixConfig::k5Cent) {
+  }  
+  else if (mixingConfigID == eventMixConfig::k5Cent) {
     maxDiffMultMix = 5;
   }
+
 
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
@@ -178,34 +170,37 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
      task->SetUseCentralityPatch(aodN==49);
    }
 
-     if(collSyst==kPPb)  task->UseESDTriggerMask(triggerMask);
-     else if(collSyst==kPbPb) {
-       if (centr == 1) { task->UseESDTriggerMask(AliVEvent::kCentral); }
-       else  if (centr == 2) {  task->UseESDTriggerMask(AliVEvent::kSemiCentral);}
-       else  if (centr == 3) {  task->UseESDTriggerMask(AliVEvent::kMB); }
-       else { task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
-     }
 
-   if(collSyst==kPPb) 
-     task->SelectCollisionCandidates(triggerMask); //
-   else if ( collSyst == kPP ) 
-     task->SelectCollisionCandidates(AliVEvent::kMB); //
+   if(collSyst==kPPb)  task->UseESDTriggerMask(triggerMask);
+   else if(collSyst==kPbPb) {
+     
+    if (centr == 1) { task->UseESDTriggerMask(AliVEvent::kCentral); }
+     else  if (centr == 2) {  task->UseESDTriggerMask(AliVEvent::kSemiCentral);}
+     else  if (centr == 3) {  task->UseESDTriggerMask(AliVEvent::kMB); }
+     else { task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+     
+    if(isMC) task->UseESDTriggerMask(AliVEvent::kAnyINT);
+   }
+
+
+   // task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); 
+
+
+
+   if(collSyst==kPPb) task->SelectCollisionCandidates(triggerMask); //
+   else if ( collSyst == kPP ) task->SelectCollisionCandidates(AliVEvent::kMB); //
    else {
-     if (centr == 1) { 
-       task->SelectCollisionCandidates(AliVEvent::kCentral); }
-     if (centr == 2) { 
-       task->SelectCollisionCandidates(AliVEvent::kSemiCentral); }
-     if (centr == 3) { 
-       task->SelectCollisionCandidates(AliVEvent::kMB); }
-     else { 
-       task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+     if (centr == 1) { task->SelectCollisionCandidates(AliVEvent::kCentral); }
+     if (centr == 2) { task->SelectCollisionCandidates(AliVEvent::kSemiCentral); }
+     if (centr == 3) { task->SelectCollisionCandidates(AliVEvent::kMB); }
+     else { task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
    }
  
 
    if ( collSyst == kPP ) 
      task->UseMultiplicity("QUALITY");
    else if(collSyst==kPPb) 
-    task->UseCentrality("V0A");   
+     task->UseCentrality("V0A");   
    else
      task->UseCentrality("V0M");   
 
@@ -278,10 +273,11 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    //event plane (only for PbPb)
    Int_t planeID = task->CreateValue(AliRsnMiniValue::kPlaneAngle, kFALSE);
    AliRsnMiniOutput *outPlane = 0x0; //task->CreateOutput("eventPlane", "HIST", "EVENT");
-   if ( collSyst==kPbPb ){
-     outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
-     outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
-   }
+   //   if ( collSyst==kPbPb ){
+   //   outPlane = (AliRsnMiniOutput*) task->CreateOutput("eventPlane", "HIST", "EVENT");
+   // outPlane = task->CreateOutput("eventPlane", "HIST", "EVENT");
+   //  outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
+   // }
    
 
    //
@@ -297,6 +293,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigmaStar.C");
+   //gROOT->LoadMacro("./ConfigSigmaStar.C");
    if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
        

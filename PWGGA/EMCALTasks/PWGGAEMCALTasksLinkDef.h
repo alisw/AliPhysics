@@ -24,13 +24,14 @@
 #pragma link C++ class AliAnalysisTaskEMCALPi0V2ShSh+;
 #pragma link C++ class AliAnalysisTaskEMCALIsolation+;
 #pragma link C++ class AliAnalysisTaskEMCALPhotonIsolation+;
+#pragma link C++ class AliAnalysisTaskEMCALPhotonTagged+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDM+;
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDMpPb+;
 #pragma link C++ class AliAnalysisTaskSDMGammaMC+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0Gamma+;
+#pragma link C++ class AliAnalysisTaskEMCALDirGamma+;
 #pragma link C++ class EmcEvent+;
 #pragma link C++ class EmcHit+;
-#pragma link C++ class V0Hit+;
 #pragma link C++ class AliAnalysisTaskNeutralMesons+;
 #pragma link C++ class AliAnalysisTaskGammaHadron+;
 

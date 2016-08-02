@@ -56,17 +56,22 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
   void   SelectCharmtoD0toKpi();
   void   SelectCharmtoDStartoKpipi();
   
-  Bool_t          AcceptMCParticle(AliAODMCParticle* vp);
-  Bool_t          AcceptMCParticle(Int_t i);
+  virtual Bool_t AcceptMCParticle(const AliAODMCParticle *vp, UInt_t &rejectionReason) const;
+  virtual Bool_t AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const;
+
+  Bool_t IsSpecialPDGFound() const;
+
+  void SetHistOrigin(TH1* h) { fHistOrigin = h; }
 
  protected:
-  Bool_t          IsSpecialPDGDaughter(AliAODMCParticle* part) const;
-  Bool_t          IsSpecialPDGDaughter(Int_t iPart) const;
- 
+  Bool_t          IsSpecialPDGDaughter(const AliAODMCParticle* part) const;
+  Bool_t          IsSpecialPDG(const AliAODMCParticle* part, TH1* histOrigin = 0) const;
+
   Int_t           fSpecialPDG;             ///<  include particles with this PDG code even if they are not primary particles (and exclude their daughters)
   UInt_t          fRejectedOrigin;         ///<  Bit mask with D meson origins that are rejected
   UInt_t          fAcceptedDecay;          ///<  Bit mask with D meson decays that are accepted
-  
+  TH1*            fHistOrigin;             //!<! Book-keeping histogram with origin of special PDG particles
+
  private:
   AliHFAODMCParticleContainer(const AliHFAODMCParticleContainer&);            // not implemented
   AliHFAODMCParticleContainer &operator=(const AliHFAODMCParticleContainer&); // not implemented

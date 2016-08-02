@@ -313,11 +313,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
       	if(!foundEVS) continue;
       	ttreeEVS->GetEntry(irunFound);
       }
-      
-      if(triggerChargeChannel[0] == 1023)continue;
-      //if(runNumber == 238940 || runNumber == 238941 || runNumber == 238621 || runNumber == 233613)continue;
-      //if(fillNumber == 4555)continue;
-      
+            
       //----------------------Bad runs------------------------------------
       if(invalidInput==1 || qaNotFound==1 || adActive==1 || adQANotfound==1 || noEntries==1){
       	hInvalidInput->SetBins(badrun+1,0,badrun+1);	  
@@ -401,7 +397,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	for(Int_t i=0; i<16; i++) hMeanChargeChannelTime->SetBinContent(i+1,goodrun+1,meanChargeChannelTime[i]);
 	hMeanChargeChannelTime->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 	
-	if(showLumi){
+	if(LHCstate == 3){ //Gain mon only for Stable beams runs
+	  if(showLumi){
 		hTriggerChargeChannel->SetBins(17,channelBins,goodrun+1,lumiInt);
 		for(Int_t i=0; i<16; i++) hTriggerChargeChannel->SetBinContent(i+1,goodrun+1,triggerChargeChannel[i]/MPV[i]);
 		hTriggerChargeChannel->GetXaxis()->SetTitle("Integrated lumi [#mub]");
@@ -426,7 +423,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 		for(Int_t i=0; i<16; i++) hIntegratedChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,integratedChargeChannel_Weighted[i]/MPV[i]);
 		hIntegratedChargeChannel_Weighted->GetXaxis()->SetTitle("Integrated lumi [#mub]");
 		}
-	else{	
+	  else{	
 		hTriggerChargeChannel->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
 		for(Int_t i=0; i<16; i++) hTriggerChargeChannel->SetBinContent(i+1,goodrun+1,triggerChargeChannel[i]/MPV[i]);
 		hTriggerChargeChannel->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
@@ -451,7 +448,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 		for(Int_t i=0; i<16; i++) hIntegratedChargeChannel_Weighted->SetBinContent(i+1,goodrun+1,integratedChargeChannel_Weighted[i]/MPV[i]);
 		hIntegratedChargeChannel_Weighted->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 		}
-	
+	  }
 	hMeanTimeADA->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTimeADA->SetBinContent(goodrun+1,meanTimeADA);
 	hMeanTimeADA->SetBinError(goodrun+1,meanTimeErrADA);
@@ -655,6 +652,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   TH1D *hChannelSliceBlue;
   TH1D *hChannelSliceRed;
   
+  Int_t fitStatus;
+  
   TF1 *linFitBlue = new TF1("linFitBlue","pol1",0,10e6);
   linFitBlue->SetLineWidth(1);
   linFitBlue->SetLineStyle(kDashed);
@@ -689,12 +688,16 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	hChannelSliceRed = hIntegratedChargeChannel_Weighted->ProjectionY("hChannelSliceRed",i+1,i+1);
 	hChannelSliceBlue->SetLineColor(kBlue);
 	hChannelSliceRed->SetLineColor(kRed);
-	hChannelSliceBlue->Fit(linFitBlue);
-	hFitIntegrated->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
-	hFitIntegrated->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
-	hChannelSliceRed->Fit(linFitRed);
-	hFitIntegrated_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
-	hFitIntegrated_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+	fitStatus = hChannelSliceBlue->Fit(linFitBlue);
+	if(fitStatus ==0 && linFitBlue->GetParameter(0) != 0 && linFitBlue->GetParameter(1) != 0){
+		hFitIntegrated->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
+		hFitIntegrated->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
+		}
+	fitStatus = hChannelSliceRed->Fit(linFitRed);
+	if(fitStatus ==0 && linFitRed->GetParameter(0) != 0 && linFitRed->GetParameter(1) != 0){
+		hFitIntegrated_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
+		hFitIntegrated_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+		}
 	myHistSetUp(hChannelSliceBlue);
 	hChannelSliceBlue->SetLineWidth(1);
 	myScaleSetUp(hChannelSliceBlue,hChannelSliceRed);
@@ -739,12 +742,16 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	hChannelSliceRed = hTriggerChargeChannel_Weighted->ProjectionY("hChannelSliceRed",i+1,i+1);
 	hChannelSliceBlue->SetLineColor(kBlue);
 	hChannelSliceRed->SetLineColor(kRed);
-	hChannelSliceBlue->Fit(linFitBlue);
-	hFitTrigger->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
-	hFitTrigger->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
-	hChannelSliceRed->Fit(linFitRed);
-	hFitTrigger_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
-	hFitTrigger_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+	fitStatus = hChannelSliceBlue->Fit(linFitBlue);
+	if(fitStatus ==0 && linFitBlue->GetParameter(0) != 0 && linFitBlue->GetParameter(1) != 0){
+		hFitTrigger->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
+		hFitTrigger->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
+		}
+	fitStatus = hChannelSliceRed->Fit(linFitRed);
+	if(fitStatus ==0 && linFitRed->GetParameter(0) != 0 && linFitRed->GetParameter(1) != 0){
+		hFitTrigger_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
+		hFitTrigger_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+		}
 	myHistSetUp(hChannelSliceBlue);
 	hChannelSliceBlue->SetLineWidth(1);
 	myScaleSetUp(hChannelSliceBlue,hChannelSliceRed);
@@ -789,11 +796,16 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	hChannelSliceBlue->SetLineColor(kBlue);
 	hChannelSliceRed->SetLineColor(kRed);
 	hChannelSliceBlue->Fit(linFitBlue);
-	hFitTail->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
-	hFitTail->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
-	hChannelSliceRed->Fit(linFitRed);
-	hFitTail_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
-	hFitTail_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+	fitStatus = hChannelSliceBlue->Fit(linFitBlue);
+	if(fitStatus ==0 && linFitBlue->GetParameter(0) != 0 && linFitBlue->GetParameter(1) != 0){
+		hFitTail->SetBinContent(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0));
+		hFitTail->SetBinError(i+1,linFitBlue->GetParameter(1)/linFitBlue->GetParameter(0) * (linFitBlue->GetParError(1)/linFitBlue->GetParameter(1)+linFitBlue->GetParError(0)/linFitBlue->GetParameter(0)));
+		}
+	fitStatus = hChannelSliceRed->Fit(linFitRed);
+	if(fitStatus ==0 && linFitRed->GetParameter(0) != 0 && linFitRed->GetParameter(1) != 0){
+		hFitTail_Weighted->SetBinContent(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0));
+		hFitTail_Weighted->SetBinError(i+1,linFitRed->GetParameter(1)/linFitRed->GetParameter(0) * (linFitRed->GetParError(1)/linFitRed->GetParameter(1)+linFitRed->GetParError(0)/linFitRed->GetParameter(0)));
+		}
 	myHistSetUp(hChannelSliceBlue);
 	hChannelSliceBlue->SetLineWidth(1);
 	myScaleSetUp(hChannelSliceBlue,hChannelSliceRed);
@@ -940,7 +952,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   myLegend02->Draw();
   
   c104->Print(Form("%s/GainMon_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
-  
+ 
   	
   TCanvas *c2 = new TCanvas("MeanTime"," ",800,400); 
   c2->Draw();						

@@ -21,6 +21,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -39,6 +40,7 @@ set(SRCS
     legotrain/AliAnalysisTaskCDPWA.cxx
     legotrain/AliMultiplicitySelectionCPPWA.cxx
     legotrain/AliAnalysisTaskDG.cxx
+    legotrain/AliAnalysisTaskDiffCrossSections.cxx
     QA/AliAnalysisTaskCPQA.cxx
     QA/AliAnalysisTaskCEPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
@@ -46,6 +48,7 @@ set(SRCS
     xsAndTwoProng/AliCDMesonBase.cxx
     xsAndTwoProng/AliCDMesonTracks.cxx
     xsAndTwoProng/AliCDMesonUtils.cxx
+    DGTrigger/AliTriggerStudy0STP.cxx
    )
 
 # Headers from sources
@@ -57,7 +60,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSrec VZERObase PWGPP)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSbase ITSrec VZERObase PWGPP)
 
 # Generate the ROOT map
 # Dependecies

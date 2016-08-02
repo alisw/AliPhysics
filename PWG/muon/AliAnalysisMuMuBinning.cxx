@@ -372,7 +372,7 @@ Double_t* AliAnalysisMuMuBinning::CreateBinArrayY() const
   if ( !(minY < maxY))
   {
     std::cout << "No 2D binning" << std::endl;
-    delete binsY;
+    delete[] binsY;
     delete binArray;
     return 0x0;
   }

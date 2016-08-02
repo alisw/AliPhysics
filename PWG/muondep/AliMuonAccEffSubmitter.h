@@ -31,6 +31,9 @@ public:
   void UseExternalConfig(const char* externalConfigFullFilePath);
   
   void UseAODMerging(Bool_t flag);
+
+  void SetupPythia6 ( const char *version );
+  void SetupPythia8 ( const char *version, const char* configStrings = "" );
   
   Bool_t Merge(Int_t stage, Bool_t dryRun=kTRUE);
 

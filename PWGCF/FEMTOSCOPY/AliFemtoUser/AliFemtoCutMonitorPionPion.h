@@ -114,7 +114,11 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fChiTpcIts;
     TH2F *fdEdX;
     TH2F *fImpact;
-    TH1F *fMinv;
+
+    TH1F *fMC_mass;
+    TH2F *fMC_pt;
+    TH1I *fMC_type;
+    TH2I *fMC_parent;
   };
 
   /// \class AliFemtoCutMonitorPionPion::Pair
@@ -139,7 +143,7 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fQinvDphiStar;
 
     TH2F *fMCTrue_minv;
-    TH2F *fMCTrue_kstar;
+    TH2F *fMCTrue_qinv;
   };
 };
 

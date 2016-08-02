@@ -1,10 +1,9 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1.)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Bool_t fillTrees=kFALSE, Double_t fractAccME=100., Double_t minDPt=2.)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
   // invariant mass histogram and association with MC truth 
   // (using MC info in AOD) and cut variables distributions
-  // C.Bianchin  chiara.bianchin@pd.infn.it
   // F.Colamaria fabio.colamaria@ba.infn.it
 
 
@@ -16,7 +15,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",inname="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="",out9name="",inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
   filename+="D0InvMass";
@@ -50,6 +49,15 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   out7name ="cutsTracks";
   if(flagD0D0bar==1)out7name+="D0";
   if(flagD0D0bar==2)out7name+="D0bar";
+  //D0 tree
+  out8name ="TreeD0";
+  if(flagD0D0bar==1)out8name+="D0";
+  if(flagD0D0bar==2)out8name+="D0bar";
+  //Assoc track tree
+  out9name ="TreeTracks";
+  if(flagD0D0bar==1)out9name+="D0";
+  if(flagD0D0bar==2)out9name+="D0bar";
+
   inname="cinputmassD0_0";
   if(flagD0D0bar==1)inname+="D0";
   if(flagD0D0bar==2)inname+="D0bar";
@@ -62,6 +70,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   out5name += finDirname.Data();
   out6name += finDirname.Data();
   out7name += finDirname.Data();
+  out8name += finDirname.Data();
+  out9name += finDirname.Data();
   inname += finDirname.Data();
 
     //setting my cut values
@@ -175,6 +185,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   out5name+=centr;
   out6name+=centr;
   out7name+=centr;
+  out8name+=centr;
+  out9name+=centr;
   inname+=centr;
 
   // Aanalysis task    
@@ -192,6 +204,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetMEAxisThresh(MEthresh);
   massD0Task->SetUseDeff(useDeff); 
   massD0Task->SetUseTrackeff(useTrackeff); 
+  massD0Task->SetMinDPt(minDPt);
+  massD0Task->SetFillTrees(fillTrees,fractAccME);
   if(analyszeKaon) massD0Task->SetKaonCorrelations(kTRUE);
 
 //*********************
@@ -284,6 +298,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //correlations
   AliAnalysisDataContainer *coutputmassD06 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //MC study plots (for corrs)
   AliAnalysisDataContainer *coutputmassD07 = mgr->CreateContainer(out7name,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts for tracks/K0
+  AliAnalysisDataContainer *coutputmassD08 = mgr->CreateContainer(out8name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //TTree D0
+  AliAnalysisDataContainer *coutputmassD09 = mgr->CreateContainer(out9name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //TTree Tracks
 
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
@@ -294,6 +310,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   mgr->ConnectOutput(massD0Task,5,coutputmassD05);
   mgr->ConnectOutput(massD0Task,6,coutputmassD06);
   mgr->ConnectOutput(massD0Task,7,coutputmassD07);
+  mgr->ConnectOutput(massD0Task,8,coutputmassD08);
+  mgr->ConnectOutput(massD0Task,9,coutputmassD09);
 
   return massD0Task;
 }

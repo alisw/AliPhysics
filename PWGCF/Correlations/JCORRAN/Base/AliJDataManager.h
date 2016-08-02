@@ -26,9 +26,9 @@
 
 class TClonesArray;
 class TList;
-class AliJHistos;
+class AliJHistogramInterface;
 class AliJCard;
-class AliJCorrelations;
+class AliJCorrelationInterface;
 class AliJDataManager;
 class AliJRunHeader;
 class AliJTrackCut;
@@ -40,7 +40,7 @@ class AliJDataManager  {
 
 public:
   enum  { kTrackCutDefault=0, kTrackCutJFG=1, kTrackCutHBT=2,  kTrackCutRaa=3, kTrackCutHybrid=4, kTrackCutpp=5 };
-  AliJDataManager(AliJCard *inCard, AliJHistos *fhistos, AliJCorrelations *corrin, Bool_t execLocal);
+  AliJDataManager(AliJCard *inCard, AliJHistogramInterface *fhistos, AliJCorrelationInterface *corrin, Bool_t execLocal);
 
   virtual ~AliJDataManager();                        //destructor
   AliJDataManager();
@@ -96,8 +96,8 @@ public:
 	protected:
   TChain * fChain; // comment me
   AliJCard * fCard; // comment me
-  AliJHistos *fhistos; // comment me
-  AliJCorrelations* fcorrelations; // comment me
+  AliJHistogramInterface *fhistos; // comment me
+  AliJCorrelationInterface* fcorrelations; // comment me
 
   // Alice specific
   AliJRunHeader *fRunHeader;  // comment me

@@ -318,6 +318,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     Double_t ptjet1 = jet1->Pt()-fRho*jet1->Area();
     Double_t ptUnsubjet1 = jet1->Pt();
     Double_t var = mjet1;
+    
     if(fJetMassVarType==kRatMPt) {
       if(ptjet1>0. || ptjet1<0.) var = mjet1/ptjet1;
       else var = -999.;
@@ -443,10 +444,10 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       if(fFromTree){
-      	 Double_t varsp[6] = {var,var2,ptjet1,ptJetR, fVecD->M(), fVecD->Pt()};
+      	 Double_t varsp[10] = {var,var2,ptjet1,ptJetR, fVecD->M(), fVecD->Pt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
       	 fhnMassResponse[fCentBin]->Fill(varsp);
       } else {
-      	 Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
+      	 Double_t varsp[9] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
       	 fhnMassResponse[fCentBin]->Fill(varsp);
       }
       Double_t varsp1[6];
@@ -457,10 +458,10 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       varsp1[4] = ptjet1;
       varsp1[5] = ptJetR;
 
-      fhnDeltaMass[fCentBin]->Fill(varsp1);
+      //fhnDeltaMass[fCentBin]->Fill(varsp1);
       
-      //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-      Double_t varsp2[8] = {var-var2, ptjet1-ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
+      //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+      Double_t varsp2[10] = {var-var2, ptjet1-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
       fhnDeltaMassAndBkgInfo->Fill(varsp2);
     }
     

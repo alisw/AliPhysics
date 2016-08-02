@@ -30,6 +30,7 @@
 #include <AliAODHandler.h>
 #include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
+#include <climits>
 #else
 class AliAODTracklet;
 class AliVEvent;
@@ -176,7 +177,7 @@ protected:
   /** 
    * Initialize the worker 
    */
-  Bool_t WorkerInit();
+  virtual Bool_t WorkerInit();
   /** 
    * Make sure CDB is initialized 
    * 
@@ -802,7 +803,7 @@ private:
   /* 
    * Initialize the worker 
    */
-  // Bool_t WorkerInit();
+  Bool_t WorkerInit();
   /** 
    * Process a single event
    * 
@@ -909,6 +910,72 @@ private:
   ClassDef(AliTrackletAODMCTask,1); 
 };
 
+#define ADDP(P,M,L,Q) \
+  db->AddParticle("p" #P, "p" #P,M,false,L,Q,"Baryon",P); \
+  db->AddAntiParticle("p" #P "_bar", -P)
+
+//____________________________________________________________________
+Bool_t AliTrackletAODMCTask::WorkerInit()
+{
+  if (!AliTrackletAODTask::WorkerInit()) return false;
+  
+  // Register additional particles from EPOS-LHC 
+  TDatabasePDG* db  = TDatabasePDG::Instance();
+  db->GetParticle(2212);
+  db->AddParticle("deut","deut",1.876560,false,0.000000,3,"Baryon",1000010020);
+  db->AddAntiParticle("deut_bar",-1000010020);
+  db->AddParticle("trit","trit",2.816700,false,0.000000,3,"Baryon",1000010030);
+  db->AddAntiParticle("trit_bar",-1000010030);
+  db->AddParticle("alph","alph",3.755000,false,0.000000,6,"Baryon",1000020040);
+  db->AddAntiParticle("alph_bar",-1000020040);
+  ADDP(32224,  1.524000,0.145000,6);
+  ADDP(12224,  1.816000,0.350000,6);
+  ADDP(12222,  2.108000,0.350000,6);
+  ADDP(12212,  1.525720,0.145000,3);
+  ADDP(2124,   1.819440,0.150000,3);
+  ADDP(32214,  2.113160,0.150000,3);
+  ADDP(32212,  2.406880,0.145000,3);
+  ADDP(12214,  2.700600,0.300000,3);
+  ADDP(22124,  2.994320,0.150000,3);
+  ADDP(12122,  3.288040,0.300000,3);
+  ADDP(13222,  1.575200,0.080000,3);
+  ADDP(23222,  1.768100,0.100000,3);
+  ADDP(13226,  1.961000,0.170000,3);
+  ADDP(12112,  1.524430,0.350000,0);
+  ADDP(1214,   1.816860,0.150000,0);
+  ADDP(32114,  2.109290,0.150000,0);
+  ADDP(32112,  2.401720,0.145000,0);
+  ADDP(12114,  2.694150,0.300000,0);
+  ADDP(21214,  2.986579,0.150000,0);
+  ADDP(11212,  3.279010,0.300000,0);
+  ADDP(13122,  1.761000,0.040000,0);
+  ADDP(3124,   1.950500,0.016000,0);
+  ADDP(23122,  2.140000,0.090000,0);
+  ADDP(13212,  2.329500,0.080000,0);
+  ADDP(23212,  2.519000,0.100000,0);
+  ADDP(43122,  2.708500,0.145000,0);
+  ADDP(13216,  2.898000,0.170000,0);
+  ADDP(31114,  1.524000,0.145000,-3);
+  ADDP(11114,  1.816000,0.350000,-3);
+  ADDP(11112,  2.108000,0.350000,-3);
+  ADDP(13112,  1.577600,0.080000,-3);
+  ADDP(23112,  1.767700,0.100000,-3);
+  ADDP(13116,  1.957800,0.170000,-3);
+  ADDP(9900110,0.000000,0.000000,0);
+  ADDP(9900210,0.000000,0.000000,0);
+  ADDP(9900220,0.000000,0.000000,0);
+  ADDP(9900330,0.000000,0.000000,0);
+  ADDP(9900440,0.000000,0.000000,0);
+  ADDP(9902210,0.000000,0.000000,0);
+  ADDP(9902110,0.000000,0.000000,0);
+  ADDP(88,     0.000000,0.000000,0);
+  ADDP(90,     0.000000,0.000000,0);
+  ADDP(990,    0.000000,0.000000,0);
+  ADDP(99999,  0.000000,0.000000,0);
+
+  return true;
+}  
+
 //____________________________________________________________________
 Bool_t AliTrackletAODMCTask::ProcessEvent()
 {
@@ -939,6 +1006,10 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
     }
     
     TParticlePDG* pdg = particle->GetPDG();
+    if (!pdg) {
+      ::Warning("GetPDG", "Unknown PDG code: %d", particle->GetPdgCode());
+      // continue; // Unknown particle
+    }
     // if (pdg->Charge() == 0) {
     // Uncharged - don't care
     // continue;
@@ -952,6 +1023,11 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
 		  TMath::RadToDeg()*theta);    
       continue;
     }
+    Double_t eta = -TMath::Log(TMath::ATan(theta/2));
+    // If the pseudorapidity is way beyond the SPD acceptance, do not
+    // write down this generated "tracklet" - to save space.
+    if (TMath::Abs(eta) > 3) continue;
+    
     Double_t          phi      = particle->Phi();
     AliAODTracklet*   tracklet = MakeTracklet(false);
     AliAODMCTracklet* mc       = static_cast<AliAODMCTracklet*>(tracklet);
@@ -963,7 +1039,7 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
     mc->SetDelta (0);
     mc->SetParentPdg(particle->GetPdgCode());
     mc->SetParentPt (particle->Pt());
-    if (pdg->Charge() == 0) mc->SetNeutral();
+    if (pdg && pdg->Charge() == 0) mc->SetNeutral();
   }
   return true;
 }

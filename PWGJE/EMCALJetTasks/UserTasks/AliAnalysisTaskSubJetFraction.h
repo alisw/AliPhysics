@@ -17,7 +17,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-
+const Int_t nVar = 18;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -51,24 +51,24 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void                                Terminate(Option_t *option);
 
   //Setters
-  void SetJetContainer(Int_t c)                             { fContainer     = c   ; }
-  void SetMinFractionShared(Double_t f)                     { fMinFractionShared = f   ; }
-  void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
-  void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
-  void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
-  void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
+  void SetJetContainer(Int_t c)                             { fContainer     = c   ;}
+  void SetMinFractionShared(Double_t f)                     { fMinFractionShared = f   ;}
+  void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ;}
+  void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ;}
+  void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ;}
+  void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ;}
   void SetJetRadius(Double_t JetRadius)                     {fJetRadius=JetRadius;}
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
-  void SetPtTriggerSelections(Float_t minpT, Float_t maxpT) { fminpTTrig = minpT; fmaxpTTrig = maxpT; }
-  void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
-  Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
-  Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
+  void SetPtTriggerSelections(Float_t PtMin, Float_t PtMax) { fPtMinTriggerHadron = PtMin; fPtMaxTriggerHadron = PtMax;}
+  void SetAngularWindowRecoilJet (Float_t Window)                {fRecoilAngularWindow = Window; }
+  Float_t GetMinPtTriggerSelection()                        {return fPtMinTriggerHadron;}
+  Float_t GetMaxPtTriggerSelection()                        {return fPtMaxTriggerHadron;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
-  void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
-  void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
+  void SetMinCentrality(Float_t t)                          { fCentMin = t ;}
+  void SetMaxCentrality(Float_t t)                          { fCentMax = t ;}
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
-  void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
-  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
+  void SetHolePos(Float_t poshole)                        { fHolePos = poshole;}
+  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth;}
   void SetSubJetAlgorithm(Int_t SubJetAlgorithm)        {fSubJetAlgorithm=SubJetAlgorithm;}
   void SetSubJetRadius(Float_t SubJetRadius)            {fSubJetRadius=SubJetRadius;}
   void SetSubJetMinPt(Float_t SubJetMinPt)              {fSubJetMinPt=SubJetMinPt;}
@@ -82,8 +82,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Bool_t                              Run();
   Bool_t                              FillHistograms();
 
-  Int_t                               SelectTrigger(Float_t minpT, Float_t maxpT);
-  // Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
+  Int_t                               SelectTriggerHadron(Float_t PtMin, Float_t PtMax);
   Double_t                            RelativePhi(Double_t Phi1, Double_t Phi2);
   Double_t                            Angularity(AliEmcalJet *Jet, Int_t JetContNb);
   Double_t                            PTD(AliEmcalJet *Jet, Int_t JetContNb);
@@ -97,14 +96,14 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
-  JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Double_t                            *fShapesVar;                  // jet shapes used for the tagging
+  JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
+  Double_t                            fShapesVar[nVar];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
 
-  Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
-  Float_t                             fmaxpTTrig;
-  Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
+  Float_t                             fPtMinTriggerHadron;                   //min - max pT for trigger particle in case of recoil jet  
+  Float_t                             fPtMaxTriggerHadron;
+  Float_t                             fRecoilAngularWindow;             //angular window for btb recoil analysis 
   Int_t                               fSemigoodCorrect;             //if==1 we run over semigood runs
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
   Float_t                             fHoleWidth;                       //width of the hole in radians 
@@ -122,7 +121,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Int_t                               fDerivSubtrOrder;
   Bool_t                              fFullTree;
   
-
+  TH1F                                *fhPtTriggerHadron;
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPt_1;
   TH1F                                *fhJetPt_2;
@@ -138,10 +137,6 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhJetRadius;
   TH1F                                *fhJetRadius_1;
   TH1F                                *fhJetRadius_2;
-  TH1F                                *fhJetAngularity;
-  TH2F                                *fhJetAngularityJetPt;
-  TH1F                                *fhJetPTD;
-  TH2F                                *fhJetPTDJetPt;
   TH1F                                *fhJetCounter;
   TH1F                                *fhJetCounter_1;
   TH1F                                *fhJetCounter_2;
@@ -163,27 +158,12 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhNumberOfSubJetTracks;
   TH1F                                *fhNumberOfSubJetTracks_1;
   TH1F                                *fhNumberOfSubJetTracks_2;
-  TH1F                                *fhSubJetPtFrac;
-  TH1F                                *fhSubJetPtFrac2;
-  TH1F                                *fhSubJetPtLoss;
-  TH1F                                *fhSubJetPtLoss2;
-  TH1F                                *fhSubJetEnergyFrac;
-  TH1F                                *fhSubJetEnergyFrac2;
-  TH1F                                *fhSubJetEnergyLoss;
-  TH1F                                *fhSubJetEnergyLoss2;
-  TH1F                                *fhSubJetiness1;
-  TH2F                                *fhSubJetiness1JetPt;
-  TH1F                                *fhSubJetiness2;
-  TH2F                                *fhSubJetiness2JetPt;
-  TH1F                                *fh2to1SubJetinessRatio;
-  TH2F                                *fh2to1SubJetinessRatioJetPt;
   TH1F                                *fhEventCounter;
   TH1F                                *fhEventCounter_1;
   TH1F                                *fhEventCounter_2;
-  TH2F                                *fhJetPtJetEta;
-  TH2F                                *fhSubJetiness2Distance;
-  TH2F                                *fh2PtRatio;
-  TH2D                                *fh2JetTracksEtaPhiPt;
+  TH1F                                *fhPhiTriggerHadronJet;
+  TH2F                                *fh2PtTriggerHadronJet;
+  TH2F                                *fh2PtRatio; 
   TH2D                                *fhSubJettiness1CheckRatio_FJ_AKT;
   TH2D                                *fhSubJettiness1CheckRatio_FJ_KT;
   TH2D                                *fhSubJettiness1CheckRatio_FJ_CA;
@@ -206,6 +186,17 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_WTA_KT;
   TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_WTA_CA;
   TH2D                                *fhSubJettiness2CheckRatio_FJ_MIN;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_AKT;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_KT;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_CA;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_WTA_KT;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_WTA_CA;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_OP_AKT;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_OP_KT;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_OP_CA;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA;
+  TH2D                                *fhSubJettiness2to1CheckRatio_FJ_MIN;
   TH1D                                *fhSubJettiness1_FJ_AKT;
   TH1D                                *fhSubJettiness1_FJ_KT;
   TH1D                                *fhSubJettiness1_FJ_CA;
@@ -227,7 +218,18 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1D                                *fhSubJettiness2_FJ_OP_CA;
   TH1D                                *fhSubJettiness2_FJ_OP_WTA_KT;
   TH1D                                *fhSubJettiness2_FJ_OP_WTA_CA;
-  TH1D                                *fhSubJettiness2_FJ_MIN; 
+  TH1D                                *fhSubJettiness2_FJ_MIN;
+  TH1D                                *fhSubJettiness2to1_FJ_AKT;
+  TH1D                                *fhSubJettiness2to1_FJ_KT;
+  TH1D                                *fhSubJettiness2to1_FJ_CA;
+  TH1D                                *fhSubJettiness2to1_FJ_WTA_KT;
+  TH1D                                *fhSubJettiness2to1_FJ_WTA_CA;
+  TH1D                                *fhSubJettiness2to1_FJ_OP_AKT;
+  TH1D                                *fhSubJettiness2to1_FJ_OP_KT;
+  TH1D                                *fhSubJettiness2to1_FJ_OP_CA;
+  TH1D                                *fhSubJettiness2to1_FJ_OP_WTA_KT;
+  TH1D                                *fhSubJettiness2to1_FJ_OP_WTA_CA;
+  TH1D                                *fhSubJettiness2to1_FJ_MIN; 
   TTree                               *fTreeResponseMatrixAxis;  //Tree with tagging variables subtracted MC or true MC or raw 
 
  private:

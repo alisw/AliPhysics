@@ -38,13 +38,13 @@
 //
 //_________________________________________________________________________________________
 
-enum centrality{ kpp7, kpp276, k010, k020, k2040, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp8, kpp7, kpp276, k010, k020, k2040, k4060, k6080, k4080, k80100 };
 
 void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HFPtSpectrum_D0Kpi_method1_221110_newnorm.root",
 						      const char *nbfilename="HFPtSpectrum_D0Kpi_method2_221110_newnorm.root",
 						      const char *outfilename="HFPtSpectrum_D0Kpi_combinedFD.root",
 						      const char *thfilename="D0DplusDstarPredictions_y05.root",
-						      Int_t decay=1, Int_t centrality=kpp7)
+						      Int_t decay=1, Int_t centrality=kpp7, Bool_t useFC=kTRUE)
 {
   
   // 
@@ -74,13 +74,13 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   //
   // Get the predictions input
   TFile *thfile = new TFile(thfilename,"read");
-  TGraphAsymmErrors * thD0KpifromBprediction = (TGraphAsymmErrors*)thfile->Get("D0Kpiprediction");
+  TGraphAsymmErrors * thD0Kpiprediction = (TGraphAsymmErrors*)thfile->Get("D0Kpiprediction");
   TGraphAsymmErrors * thDpluskpipiprediction = (TGraphAsymmErrors*)thfile->Get("Dpluskpipiprediction");
   TGraphAsymmErrors * thDstarD0piprediction = (TGraphAsymmErrors*)thfile->Get("DstarD0piprediction");
   TGraphAsymmErrors * thDsKKpiprediction = (TGraphAsymmErrors*)thfile->Get("DsKkpiprediction");
 
-  thD0KpifromBprediction->SetLineColor(4);
-  thD0KpifromBprediction->SetFillColor(kAzure+9);
+  thD0Kpiprediction->SetLineColor(4);
+  thD0Kpiprediction->SetFillColor(kAzure+9);
   thDpluskpipiprediction->SetLineColor(4);
   thDpluskpipiprediction->SetFillColor(kAzure+9);
   thDstarD0piprediction->SetLineColor(4);
@@ -123,6 +123,8 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   AliHFSystErr systematics;
   if( centrality==kpp276 ) {
     systematics.SetIsLowEnergy(true);
+  } else if( centrality==kpp8){
+      systematics.SetRunNumber(12);
   } else if( centrality!=kpp7 )  {
     systematics.SetCollisionType(1);
     if ( centrality == k020 ) {
@@ -203,6 +205,10 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
     Double_t maximum[2] = { (valFc + valFcErryfdh), (valNb + valNbErryfdh) };
     avErryfdl = average - TMath::MinElement(2,minimum);
     avErryfdh = TMath::MaxElement(2,maximum) - average;
+    if(!useFC){
+      avErryfdl = average - (valNb - valNbErryfdl);
+      avErryfdh = (valNb + valNbErryfdh) - average;
+    }
     avErryfdlPC = avErryfdl / average ; // in percentage
     avErryfdhPC = avErryfdh / average ; // in percentage
 //     cout << " fc : val " << valFc << " + " << valFcErryfdh <<" - " << valFcErryfdl <<endl;
@@ -336,11 +342,11 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   TCanvas *finalresults = new TCanvas("finalresults","show all combined results");
   //
   if ( decay==1 ) {
-    thD0KpifromBprediction->SetLineColor(kGreen+2);
-    thD0KpifromBprediction->SetLineWidth(3);
-    thD0KpifromBprediction->SetFillColor(kGreen-6);
-    thD0KpifromBprediction->Draw("3CA");
-    thD0KpifromBprediction->Draw("CX");
+    thD0Kpiprediction->SetLineColor(kGreen+2);
+    thD0Kpiprediction->SetLineWidth(3);
+    thD0Kpiprediction->SetFillColor(kGreen-6);
+    thD0Kpiprediction->Draw("3CA");
+    thD0Kpiprediction->Draw("CX");
   }
   else if ( decay==2 ) {
     thDpluskpipiprediction->SetLineColor(kGreen+2);
@@ -378,7 +384,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   leg->SetLineColor(0);
   leg->SetFillColor(0);
   leg->SetTextFont(42);
-  if ( decay==1 ) leg->AddEntry(thD0KpifromBprediction,"FONLL ","fl");
+  if ( decay==1 ) leg->AddEntry(thD0Kpiprediction,"FONLL ","fl");
   else if ( decay==2 ) leg->AddEntry(thDpluskpipiprediction,"FONLL ","fl");
   else if ( decay==3 ) leg->AddEntry(thDstarD0piprediction,"FONLL ","fl");
   else if ( decay==4 ) leg->AddEntry(thDsKKpiprediction,"FONLL ","fl");

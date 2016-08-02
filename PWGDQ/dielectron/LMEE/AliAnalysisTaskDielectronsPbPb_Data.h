@@ -71,9 +71,10 @@ public:
         fnsigmaTPC_max = nsigmaTPC_max;
     }
     
-    void SetPrefilterCuts (Double_t MassLim, Double_t PhivLim)  {
+    void SetPrefilterCuts (Double_t MassMin, Double_t MassMax, Double_t PhivLim)  {
         
-        fMassLim = MassLim;
+        fMassMin = MassMin;
+        fMassMax = MassMax;
         fPhivLim = PhivLim;
     }
     
@@ -152,7 +153,8 @@ private:
     Double_t fnsigmaITS_max;//
     Double_t fnsigmaTPC_min;//
     Double_t fnsigmaTPC_max;//
-    Double_t fMassLim;//
+    Double_t fMassMin;//
+    Double_t fMassMax;//
     Double_t fPhivLim;//
     Double_t fPtMin;//
     Double_t fPtMax;//

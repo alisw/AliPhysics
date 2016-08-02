@@ -158,6 +158,23 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
   maker->SwitchOffDataControlHistograms();
   if(rejectEMCTrig) maker->SwitchOnDataControlHistograms();
 
+  if(simulation)
+  {
+    // Calculate the cross section weights, apply them to all histograms 
+    // and fill xsec and trial histo. Sumw2 must be activated.
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+    //maker->SwitchOnSumw2Histograms();
+
+    // For recent productions where the cross sections and trials are not stored in separate file
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    
+    // Just fill cross section and trials histograms.
+    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // Add control histogram with pT hard to control aplication of weights 
+    maker->SwitchOnPtHardHistogram();
+  }
+
   if(printSettings) maker->Print("");
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, calorimeter.Data());
@@ -225,6 +242,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   reader->SetDebug(debug);//10 for lots of messages
   
+  reader->SetControlHistogramEnergyBinning(80,0, 40) ; // Energy and pt histograms
   //
   // MC settings
   //
@@ -276,6 +294,12 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SetCTSPtMin(0.2);
   reader->SetCTSPtMax(1000);
 
+//  reader->SetEMCALNCellsCut(1); 
+//  reader->SetPHOSNCellsCut(2); 
+//  
+//  reader->SetEMCALBadChannelMinDist(2);
+//  reader->SetPHOSBadChannelMinDist(2);
+  
   reader->SwitchOffRecalculateVertexBC();
   reader->SwitchOffVertexBCEventSelection();
   
@@ -627,8 +651,8 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     printf(">>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
   
   // Number of particle type MC histograms
-  ana->FillNOriginHistograms (14); // 14 max
-  ana->FillNPrimaryHistograms(6); // 6 max
+  ana->FillNOriginHistograms (14); // 18 max
+  ana->FillNPrimaryHistograms(4); // 7 max
       
   return ana;
 }
@@ -738,7 +762,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   AliHistogramRanges* histoRanges = ana->GetHistogramRanges();
   
-  histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
+  histoRanges->SetHistoPtRangeAndNBins(0, 40, 80) ; // Energy and pt histograms
     
   if(calorimeter=="EMCAL")
   {
@@ -750,7 +774,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
     }
     else if ( year < 2014 )
     {           
-      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      histoRanges->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 104) ;
       histoRanges->SetHistoXRangeAndNBins(-460,90,200); // QA
       histoRanges->SetHistoYRangeAndNBins(100,450,100); // QA   
     }
@@ -781,13 +805,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
   
   // check if time calibration is on
-  histoRanges->SetHistoTimeRangeAndNBins(0.,1000,1000);
+  histoRanges->SetHistoTimeRangeAndNBins(-1000,1000,1000);
   //histoRanges->SetHistoTimeRangeAndNBins(-400.,400,400);
   histoRanges->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
   // track-cluster residuals
-  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.15,0.15,300);
-  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,300);
+  histoRanges->SetHistoTrackResidualEtaRangeAndNBins(-0.05,0.05,100);
+  histoRanges->SetHistoTrackResidualPhiRangeAndNBins(-0.05,0.05,100);
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged

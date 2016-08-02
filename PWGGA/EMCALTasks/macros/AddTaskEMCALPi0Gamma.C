@@ -21,7 +21,9 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       Double_t centMin = 0,
                                       Double_t centMax = 100,
                                       const char cent[] = "V0M",
-                                      Bool_t doCalibRun = 0)
+                                      Bool_t doCalibRun = 0,
+                                      Bool_t doManualBadmap = 0,
+                                      TString badMapName = "defaultTender")
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -60,6 +62,18 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
     mgr->ConnectInput (clusterize, 0, cinput);  //connect input
   }
   
+  // settings
+  
+  TString pathToBadMap;
+  
+  if (badMapName !="defaultTender") {
+    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/b/bsahlmul/%s.root .",badMapName.Data()));
+    pathToBadMap = Form("%s/",gSystem->pwd());
+    pathToBadMap += badMapName;
+    pathToBadMap += ".root";
+  }
+
+  
   // Create the task and configure it.
   //===========================================================================
   AliAnalysisTaskEMCALPi0Gamma* task = new  AliAnalysisTaskEMCALPi0Gamma("Pi0GammaTask");
@@ -82,6 +96,28 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetDataPeriod(dataPeriod);
   task->SetCentrality(cent);
   task->SetCentralityRange(centMin,centMax);
+  task->SetManualBadMap(doManualBadmap);
+  
+  if(doManualBadmap) {
+    if (badMapName == "defaultTender")
+      cout << "Cannot apply default tender bad map in task, now applying empty bad map. Specify own bad map to fix it." << endl;
+    else {
+      TFile *fBadMap = TFile::Open(pathToBadMap.Data());
+      
+      if(fBadMap->IsOpen()){
+        printf("\n\n...Adding bad channel map (MANUALY) \n") ;
+        gROOT->cd();
+        Char_t key[55] ;
+        sprintf(key,"hBadMapDCal") ;
+        TH1D * h = (TH1D*)fBadMap->Get(key) ;
+        if(h)
+          task->SetBadMap(h) ;
+        fBadMap->Close() ;
+      }
+    }
+  }
+
+  
   mgr->AddTask(task);
   
   char name[256];

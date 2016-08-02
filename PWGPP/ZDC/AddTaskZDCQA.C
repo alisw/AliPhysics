@@ -20,8 +20,8 @@ AliAnalysisTaskSE* AddTaskZDCQA()
   
    // Configure analysis
    //===========================================================================
-   //AliAnalysisTaskZDCpp* task = new AliAnalysisTaskZDCpp("AliAnaZDCQA");
-   AliAnalysisTaskZDCPbPb* task = new AliAnalysisTaskZDCPbPb("AliAnaZDCQA");
+   AliAnalysisTaskZDCpp* task = new AliAnalysisTaskZDCpp("AliAnaZDCQA");
+   //AliAnalysisTaskZDCPbPb* task = new AliAnalysisTaskZDCPbPb("AliAnaZDCQA");
    //AliAnalysisTaskZDCpA* task = new AliAnalysisTaskZDCpA("AliAnaZDCQA");
    mgr->AddTask(task);
   

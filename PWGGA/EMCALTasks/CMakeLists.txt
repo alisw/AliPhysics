@@ -26,17 +26,20 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
 # Sources in alphabetical order
 set(SRCS
+    AliAnalysisTaskEMCALDirGamma.cxx
     AliAnalysisTaskEMCALIsolation.cxx
     AliAnalysisTaskEMCALIsoPhoton.cxx
     AliAnalysisTaskEMCALMesonGGSDM.cxx
     AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
     AliAnalysisTaskEMCALPhoton.cxx
     AliAnalysisTaskEMCALPhotonIsolation.cxx
+    AliAnalysisTaskEMCALPhotonTagged.cxx
     AliAnalysisTaskEMCALPi0Gamma.cxx
     AliAnalysisTaskEMCALPi0PbPb.cxx
     AliAnalysisTaskEMCALPi0V2ShSh.cxx

@@ -1883,7 +1883,7 @@ void AliTrackletAODUtils::PdgAttr(Int_t pdg, TString& nme,
   case 3122: 	  c=kCyan   +2; s=26; nme="#Lambda"; 	     break;
   case 3212: 	  c=kCyan   +2; s=27; nme="#Sigma^{0}";      break;
   case 3214: 	  c=kCyan   +2; s=28; nme="#Sigma^{*0}";     break;
-  case 3322: 	  c=kCyan   +2; s=29; nme="#Xi_{0}"; 	     break;
+  case 3322: 	  c=kCyan   +2; s=29; nme="#Xi^{0}"; 	     break;
   case 3324: 	  c=kCyan   +2; s=30; nme="#Xi^{*0}"; 	     break;
   case 4214: 	  c=kYellow +2; s=20; nme="#Sigma^{*+}_{c}"; break;
   case 4224: 	  c=kYellow +2; s=21; nme="#Sigma^{*++}_{c}";break;
@@ -1927,6 +1927,7 @@ const TAxis& AliTrackletAODUtils::PdgAxis()
     // axis->SetBinLabel(i, name.Data());
   }
   axis->SetBinLabel(size+1, "-1");
+  FixAxis(*axis);
   return *axis;
 }
     

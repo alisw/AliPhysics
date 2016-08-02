@@ -26,6 +26,7 @@
 #include "AliVTrack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliCalorimeterUtils.h"
+#include "AliFiducialCut.h" // detector enum definition
 #include "AliVEvent.h"
 #include "AliLog.h"
 
@@ -728,8 +729,8 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Get the 2 max indeces and do inv mass
   //---------------------------------------------------------------------
   
-  Int_t  calorimeter = AliCalorimeterUtils::kEMCAL;
-  if(cluster->IsPHOS()) calorimeter = AliCalorimeterUtils::kPHOS;
+  Int_t  calorimeter = AliFiducialCut::kEMCAL;
+  if(cluster->IsPHOS()) calorimeter = AliFiducialCut::kPHOS;
 
   if     ( nMax == 2 )
   {
@@ -1074,67 +1075,67 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
   Int_t nMatches = cluster->GetNTracksMatched();
   AliVTrack * track = 0;
   
-  if(nMatches > 0)
+  // At least one match
+  //
+  if(nMatches <= 0) return kFALSE;
+  
+  // Select the track, depending on ESD or AODs
+  //
+  //In case of ESDs, 
+  //by default without match one entry with negative index, no match, reject.
+  //
+  if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
   {
-    //In case of ESDs, by default without match one entry with negative index, no match, reject.
-    if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
+    Int_t iESDtrack = ((AliESDCaloCluster*)cluster)->GetTracksMatched()->At(0); //cluster->GetTrackMatchedIndex();
+    
+    if(iESDtrack >= 0) track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
+    else return kFALSE;
+    
+    if (!track)
     {
-      Int_t iESDtrack = ((AliESDCaloCluster*)cluster)->GetTracksMatched()->At(0); //cluster->GetTrackMatchedIndex();
-      
-      if(iESDtrack >= 0) track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
-      else return kFALSE;
-      
-      if (!track)
-      {
-        AliWarning(Form("Null matched track in ESD for index %d",iESDtrack));
-        return kFALSE;
-      }
+      AliWarning(Form("Null matched track in ESD for index %d",iESDtrack));
+      return kFALSE;
     }
-    else
-    { // AOD
-      track = dynamic_cast<AliVTrack*> (cluster->GetTrackMatched(0));
-      if (!track)
-      {
-        AliWarning("Null matched track in AOD!");
-        return kFALSE;
-      }
+  }    // ESDs
+  else
+  {    // AODs
+    track = dynamic_cast<AliVTrack*> (cluster->GetTrackMatched(0));
+    if (!track)
+    {
+      AliWarning("Null matched track in AOD!");
+      return kFALSE;
     }
+  }   // AODs
+  
+  Float_t dZ  = cluster->GetTrackDz();
+  Float_t dR  = cluster->GetTrackDx();
+  
+  // Comment out, new value already set in AliCalorimeterUtils::RecalculateClusterTrackMatching()
+  // when executed in the reader.
+  //    // if track matching was recalculated
+  //    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn())
+  //    {
+  //      dR = 2000., dZ = 2000.;
+  //      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
+  //      //AliDebug(2,"Residuals, (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n", cluster->GetTrackDz(),dZ,cluster->GetTrackDx(),dR));
+  //    }
+  
+  if(cluster->IsPHOS())
+  {
+    Int_t charge = track->Charge();
+    Double_t mf  = event->GetMagneticField();
+    if(TestPHOSChargedVeto(dR, dZ, track->Pt(), charge, mf ) < fPHOSRCut) return kTRUE;
+    else                                                                  return kFALSE;
     
-    Float_t dZ  = cluster->GetTrackDz();
-    Float_t dR  = cluster->GetTrackDx();
+  }    // PHOS
+  else // EMCAL
+  {
+    AliDebug(1,Form("EMCAL dR %f < %f, dZ %f < %f ",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut));
     
-    // Comment out, new value already set in AliCalorimeterUtils::RecalculateClusterTrackMatching()
-    // when executed in the reader.
-//    // if track matching was recalculated
-//    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn())
-//    {
-//      dR = 2000., dZ = 2000.;
-//      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
-//      //AliDebug(2,"Residuals, (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n", cluster->GetTrackDz(),dZ,cluster->GetTrackDx(),dR));
-//    }
-    
-    if(cluster->IsPHOS())
-    {
-      Int_t charge = track->Charge();
-      Double_t mf  = event->GetMagneticField();
-      if(TestPHOSChargedVeto(dR, dZ, track->Pt(), charge, mf ) < fPHOSRCut) return kTRUE;
-      else                                                                  return kFALSE;
-      
-    }//PHOS
-    else //EMCAL
-    {
-      
-      AliDebug(1,Form("EMCAL dR %f < %f, dZ %f < %f ",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut));
-      
-      if(TMath::Abs(dR) < fEMCALDPhiCut &&
-         TMath::Abs(dZ) < fEMCALDEtaCut)   return kTRUE;
-      else                                 return kFALSE;
-      
-    }//EMCAL cluster
-    
-    
-  } // more than 1 match, at least one track in array
-  else return kFALSE;
+    if(TMath::Abs(dR) < fEMCALDPhiCut &&
+       TMath::Abs(dZ) < fEMCALDEtaCut)   return kTRUE;
+    else                                 return kFALSE;
+  }// EMCAL cluster
 }
 
 //___________________________________________________________________________________________________

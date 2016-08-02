@@ -133,6 +133,11 @@ public:
   void ReadFastORBadChannelFromStream(std::istream& stream);
 
   /**
+   * Clear FastOR bad channel list
+   */
+  void ClearFastORBadChannels();
+
+  /**
    * Read the FastOR bad channel map from a text file
    * @param fname Path and name of the file
    */
@@ -157,6 +162,11 @@ public:
   void ReadOfflineBadChannelFromFile(const char* fname);
 
   /**
+   * Clear offline bad channel list.
+   */
+  void ClearOfflineBadChannels();
+
+  /**
    * Read the FastOR pedestals from a standard stream
    * @param stream A reference to a standard stream to read from (can be a file stream)
    */
@@ -179,6 +189,19 @@ public:
    * Reset the FastOR pedestal array
    */
   void ResetFastORPedestal() { fFastORPedestal.Reset(); }
+
+  /**
+   * Set the maximum time of the cell allowed to contribute to an offline
+   * trigger patch.
+   * @param[in] maxCellTime Maximum accepted value of the absolute cell time
+   */
+  void SetMaxAbsCellTime(Double_t maxCellTime) { fMaxAbsCellTime = maxCellTime; }
+
+  /**
+   * Set cut on the minimum
+   * @param minamp
+   */
+  void SetMinFEEAmplitude(Double_t minamp) { fMinCellAmplitude = minamp; }
 
   /**
    * Reset data grids
@@ -315,6 +338,8 @@ protected:
   Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
   Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
+  Double_t                                  fMaxAbsCellTime;              ///< Maximum allowed abs cell time (default - 1)
+  Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)

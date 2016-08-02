@@ -146,6 +146,13 @@ class AliAnalysisVertexingHF : public TNamed {
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
     fTrackFilterSoftPi = trackF; 
   }
+  void SetTrackFilterBachelor(AliAnalysisFilter* trackF) { 
+    /// switch off the TOF selection that cannot be applied with AODTracks
+    TList *l = (TList*)trackF->GetCuts();
+    AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
+    if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
+    fTrackFilterBachelor = trackF; 
+  }
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter; }
   AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
   void SetCutsD0toKpi(AliRDHFCutsD0toKpi* cuts) { fCutsD0toKpi = cuts; }
@@ -232,7 +239,7 @@ class AliAnalysisVertexingHF : public TNamed {
   //
  private:
   //
-  enum { kBitDispl = 0, kBitSoftPi = 1, kBit3Prong = 2, kBitPionCompat = 3, kBitKaonCompat = 4, kBitProtonCompat = 5};
+  enum { kBitDispl = 0, kBitSoftPi = 1, kBit3Prong = 2, kBitPionCompat = 3, kBitKaonCompat = 4, kBitProtonCompat = 5, kBitBachelor = 6};
 
   Bool_t fInputAOD; /// input from AOD (kTRUE) or ESD (kFALSE)
   Int_t fAODMapSize; /// size of fAODMap
@@ -292,6 +299,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAnalysisFilter *fTrackFilter2prongCentral; ///  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 2 prong (D0->Kpi)
   AliAnalysisFilter *fTrackFilter3prongCentral; ///  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 3 prong (D+, Ds, Lc)
   AliAnalysisFilter *fTrackFilterSoftPi; ///  Track Filter for D* soft pion
+  AliAnalysisFilter *fTrackFilterBachelor; ///  Track Filter for bachelor
   // candidates cuts
   AliRDHFCutsD0toKpi *fCutsD0toKpi; /// D0->Kpi cuts
   AliRDHFCutsJpsitoee *fCutsJpsitoee; /// J/psi->ee cuts
@@ -395,7 +403,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   UChar_t *seleFlags,Int_t *evtNumber);
   void SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const;
   
-  Bool_t SingleTrkCuts(AliESDtrack *trk,Float_t centralityperc, Bool_t &okDisplaced,Bool_t &okSoftPi, Bool_t &ok3prong) const;
+  Bool_t SingleTrkCuts(AliESDtrack *trk,Float_t centralityperc, Bool_t &okDisplaced,Bool_t &okSoftPi, Bool_t &ok3prong, Bool_t &okBachelor) const;
 
   void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);
 
@@ -403,7 +411,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisVertexingHF,25);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,26);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 

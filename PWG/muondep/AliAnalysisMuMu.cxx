@@ -2040,7 +2040,7 @@ void AliAnalysisMuMu::ComputeRelativeValueAndSESystematics(const char* quantity,
     AliError("No histogram created to store the results");
     return;
   }
-  delete axis;
+  delete[] axis;
        //_________________________________
 
   TString binName("");
@@ -5115,7 +5115,7 @@ void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, cons
 
   }
   
-  delete axis;
+  delete[] axis;
 
   Double_t systMptInt[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0}; //FIXME: find a way to give this as input
   Double_t systMptBin[12] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};

@@ -38,7 +38,7 @@ ClassImp(AliAnalysisTaskResolution)
 //________________________________________________________________________
 AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
 	fV0Reader(NULL),
-    fV0ReaderName("V0ReaderV1"),
+  fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fEventCuts(NULL),
 	fConversionCuts(NULL),
@@ -109,6 +109,7 @@ Bool_t AliAnalysisTaskResolution::Notify()
     } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
       fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
     }  
+    return kTRUE;
 }
 
 //________________________________________________________________________

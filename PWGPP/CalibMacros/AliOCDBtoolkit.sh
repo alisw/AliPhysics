@@ -3,7 +3,7 @@
 # Shell script to compare content of the OCDB entries.
 # Usage:
 # 1) source functios 
-# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh 
+# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh -h
 
 # ocdbMakeTable() 
 #       Usage: bash $inputFile $flag $outputFile
@@ -22,15 +22,29 @@
 #     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable AliESDs_Barrel.root "esd" OCDBrec.list )
 #     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable galice.root MC OCDBsim.list)
 #
-# 3.) Dump the content of the OCDB entry in human readable format as an XML:
-#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0 ); 
+# 3.a) Dump the content of the OCDB entry in human readable format as an XML:
+#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.xml ); 
 #
-# 4.) Dump a summary of the OCDB entry in human readable format as provided by object Print: 
-#     TO BE IMPLEMENTED   
+# 3b.) Dump a summary of the OCDB entry in human readable format as provided by object obj->Print resp. ob->Dump(): 
+#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "pocdb0"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.print ); 
+#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "docdb"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.dump ); 
 
 
 # Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
  
+if [ "$1" == "-h" ]; then
+  echo Usage: 
+  echo '(source$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh <action> <par0> <par1> ... '
+  echo "==============================="
+  echo Example usage ocdbMakeTable
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $esdFile   "esd" OCDBrec.list )'
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $mcGalice  MC $outputDir/OCDBsim.list )'
+  #
+  echo "==============================="
+  echo Example usage ocdbDiffTable
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC 2)'
+  exit 0
+fi
 
 ocdbMakeTable(){
 #
@@ -71,6 +85,9 @@ HEREDOC
 
     aliroot -l -q -b ${tmpscript} 
     sleep 60 && rm ${tmpscript} &
+    echo Filtering alien cache part 
+    cat ${outFile} | sed -e s_"alien://?User=?DBFolder="_"alien://"_g -e s_"?SE=default?CacheFolder=?OperateDisconnected=1?CacheSize=1073741824?CleanupInterval=0"__g > ${outFile}.tmp
+    cp  ${outFile}.tmp ${outFile}
     return 1
 }
 
@@ -81,12 +98,13 @@ dumpObject(){
 #  Input:
 #    $1 path
 #    $2 obj name 
-#    $3 type of the dump (XML or MI recursive dump )
+#    $3 type of the dump (Print, Dump, XML or MI recursive dump )
 #  Output:
 #    $4 output file name   
     export ALIROOT_FORCE_COREDUMP=1
+    declare -a dumpOptions=("docdb" "xml" "pocdb" "mi")  # supported options. options are converted into lower case
     if [ $# -lt 4 ] ; then
-        echo "Usage: $0 \$inputFile \$object_name \$dump_type [XML/MI] \$outfile"
+        echo "Usage: $0 \$inputFile \$object_name \$dump_type [POCDB/DOCDB/XML/MI] \$outfile"
         return 1
     fi
     local inFile=${1}
@@ -94,25 +112,28 @@ dumpObject(){
     local ftype=${3}
     local outFile=${4}
     shift 4
-#    if [ ! -f ${inFile} ] ; then 
-#        echo ${inFile} not found!
-#        return 1
-#    fi
-    if [ -f ${outFile} ] ; then 
-        >${outFile}
-    fi
-    if [ ${ftype} = "XML" ] ; then
-        isXML=kTRUE
-    elif [ ${ftype} = "MI" ] ; then
-        isXML=kFALSE
-    else
-        echo "option ${ftype} not recognized! Use \"XML\" or \"MI\"!"
-        return 1
-    fi
+    # check if type is in list supported dump options
+    ftypeLower=`echo $ftype | tr '[:upper:]' '[:lower:]'`
+    arraylength=${#dumpOptions[@]};
+    isOK=0;    
+    for (( i=1; i<${arraylength}+1; i++ )); 
+      do if [[ $ftypeLower == *"${dumpOptions[$i-1]}"* ]];  then 
+	  isOK=1; 
+	  echo match ${dumpOptions[$i-1]};  
+      fi;       
+    done;
+    # exit if not supported option
+    if [ $isOK == 0 ]; then
+	echo Not supported format $ftype;
+	echo Please Use;
+	for (( i=1; i<${arraylength}+1; i++ )); do echo $i " / " ${arraylength} " : " ${dumpOptions[$i-1]}; done;
+        return 1;
+    fi;
+
     tmpscript=$(mktemp)
     cat > ${tmpscript} <<HEREDOC
         {
-            AliOCDBtoolkit::DumpOCDBFile("${inFile}","${outFile}",1,${isXML});
+            AliOCDBtoolkit::DumpOCDBFile("${inFile}","${outFile}",1,"${ftype}");
         }
 HEREDOC
 
@@ -245,4 +266,66 @@ diffConfig(){
     cat $file2 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g   >${file2}_ocdbstripped
     diff  ${file1}_ocdbstripped  ${file2}_ocdbstripped  > ${file1}_ocdbstrippeddiff
 
+} 
+
+
+ocdbDiffTable(){
+    #
+    # Make a diff between the 2 OCDB tables
+    # example usage : (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC 2)
+    # 
+    file1=$1
+    file2=$2
+    mask=$3
+    filterType=$4
+    nparam=$#
+    if [ $nparam -lt 4 ] ; then
+	echo "Error - The total length of all arguments is: $nparam: ";
+	echo "Oputput dumped to the stdout"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask $filterType; ) > mydiff.txt"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask 1 ) > ocdbDiffObject.JIRA"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask 2 ) > ocdbDiffTable.JIRA"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask 4 ) > ocdbDiffTable.html"
+        return 0;
+    fi;
+    # JIRA diffs for 2 XML OCDB object dumps
+    diff  -W 1000 -y  --suppress-common-lines $file1  $file2 | grep $mask> ocdbDiffTable.tmp
+    if [ $filterType -eq 1 ] ; then
+        #  diff y already properly formatted - add | at the beginning and at the end of the line
+	cat ocdbDiffTable.tmp  | sed   -e "s/\([\t ,.]\)\1*/\ /g" -e "s_^_|_g"  -e 's_$_|_g'
+    fi;
+    # JIRA diffs for the OCDB table dump
+    if [ $filterType -eq 2 ] ; then	
+        # header
+	echo "|Entry|Path0|Path1|Entry0|Entry1|Size0|Size1|Hash0|Hash1|"
+        # different content print
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -v "<" | grep -v ">" |
+	while read CMD; do echo $CMD | gawk '{print "|"$1"|"$2"|"$7"|"$3"|"$8"|"$4"|"$9"|"$5"|"$10"|" }'; done
+        # mising content print
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  ">" |
+	while read CMD; do echo $CMD | gawk '{print "|"$2"|-|"$3"|-|"$4"|-|"$5"|-|"$6"|" }'; done
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  "<" |
+	while read CMD; do echo $CMD | gawk '{print "|"$1"|-|"$2"|-|"$3"|-|"$4"|-|"$5"|" }'; done
+    fi;
+    # HTML  diffs for 2 XML OCDB object dumps NOT YET 
+    if [ $filterType -eq 3 ] ; then
+        #  diff y already properly formatted - add | at the beginning and at the end of the line
+	cat ocdbDiffTable.tmp  | sed   -e "s/\([\t ,.]\)\1*/\ /g" -e "s_^_|_g"  -e 's_$_|_g'
+    fi;
+    # HTML diffs for the OCDB table dump
+    if [ $filterType -eq 4 ] ; then
+        # header
+	echo '<table style="width:100%">'
+	echo "<tr><th>Entry</th><th>Path0</th><th>Path1</th><th>Entry0</th><th>Entry1</th><th>Size0</th><th>Size1</th><th>Hash0</th><th>Hash1</th><th></tr>"
+        # different content print
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -v "<" | grep -v ">" |
+	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$1"</td><td>"$2"</td><td>"$7"</td><td>"$3"</td><td>"$8"</td><td>"$4"</td><td>"$9"</td><td>"$5"</td><td>"$10"</td></tr>" }'; done
+        # mising content print
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  ">" |
+	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$2"</td><td>-</td><td>"$3"</td><td>-</td><td>"$4"</td><td>-</td><td>"$5"</td><td>-</td><td>"$6"</td></tr>" }'; done
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  "<" |
+	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$1"</td><td>-</td><td>"$2"</td><td>-</td><td>"$3"</td><td>-</td><td>"$4"</td><td>-</td><td>"$5"</td></tr>" }'; done
+	echo '</table>'
+   fi;
+   rm ocdbDiffTable.tmp
 }

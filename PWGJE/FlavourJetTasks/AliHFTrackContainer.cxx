@@ -60,12 +60,9 @@ AliHFTrackContainer::AliHFTrackContainer(const char *name) :
 /// \param i Index of the particle to be checked.
 ///
 /// \return kTRUE if the particle is accepted, kFALSE otherwise.
-Bool_t AliHFTrackContainer::AcceptTrack(AliVTrack* vp)
+Bool_t AliHFTrackContainer::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const
 {
-  // Determine whether the MC particle is accepted.
-  UInt_t rejectionReason = 0;
-
-  AliAODTrack* part = static_cast<AliAODTrack*>(vp);
+  const AliAODTrack* part = static_cast<const AliAODTrack*>(vp);
 
   if (IsDMesonDaughter(part)) {
     rejectionReason = kHFCut;
@@ -73,46 +70,18 @@ Bool_t AliHFTrackContainer::AcceptTrack(AliVTrack* vp)
   }
 
   // Not a daughter of the D meson. Apply regular cuts.
-  return AliTrackContainer::AcceptTrack(vp, rejectionReason);
-}
-
-/// First check whether the particle is a daughter of the
-/// D meson candidate (in which case the particle is rejected);
-/// then calls the base class AcceptTrack(Int_t i) method.
-///
-/// \param i Index of the particle to be checked.
-///
-/// \return kTRUE if the particle is accepted, kFALSE otherwise.
-Bool_t AliHFTrackContainer::AcceptTrack(Int_t i)
-{
-  // Determine whether the MC particle is accepted.
-  UInt_t rejectionReason = 0;
-
-  AliAODTrack* part = static_cast<AliAODTrack*>(fClArray->At(i));
-
-  if (IsDMesonDaughter(part)) {
-    rejectionReason = kHFCut;
-    return kFALSE;  // daughter the D meson candidate
-  }
-
-  // Not a daughter of the D meson. Apply regular cuts.
-  return AliTrackContainer::AcceptTrack(i, rejectionReason);
+  return AliTrackContainer::ApplyTrackCuts(vp, rejectionReason);
 }
 
 /// Check if particle it's a daughter of the D meson candidate
 /// \param track Pointer to a valid AliAODTrack object
 ///
 /// \result kTRUE if it is a daughter of the D meson candidate, kFALSE otherwise
-Bool_t AliHFTrackContainer::IsDMesonDaughter(AliAODTrack* track)
+Bool_t AliHFTrackContainer::IsDMesonDaughter(const AliAODTrack* track) const
 {
   if (!fDMesonCandidate) return kFALSE;
 
-  TObject* obj = fDaughterList.FindObject(track);
-
-  if (obj) {
-    fDaughterList.Remove(obj);
-    return kTRUE;
-  }
+  if (fDaughterList.FindObject(track)) return kTRUE;
 
   return kFALSE;
 }
@@ -137,7 +106,7 @@ void AliHFTrackContainer::GenerateDaughterList()
 // Add all the daughters of a D meson candidate in a TObjArray. Follows all the decay cascades.
 ///
 /// \param cand A pointer to an AliAODRecoDecay object
-void AliHFTrackContainer::AddDaughters(AliAODRecoDecay* cand)
+void AliHFTrackContainer::AddDaughters(const AliAODRecoDecay* cand)
 {
   if (!cand) return;
 

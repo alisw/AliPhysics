@@ -109,12 +109,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseFlowAfterBurner = kTRUE;
   }
 
+  void IncludeSecondariesInMCgen()  {fIncludeSecondariesInMCgen = kTRUE;}
   void ExcludeSecondariesInMC()  {fExcludeSecondariesInMC = kTRUE;}
   void ExcludeWeakDecaysInMC() {fExcludeWeakDecaysInMC = kTRUE;}
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
   void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
   void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
+  void IncludeResonancePDGInMC(Double_t pdgValue) {fIncludeResonancePDGInMC = pdgValue;}
 
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
@@ -378,14 +380,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
 
+  Bool_t fIncludeSecondariesInMCgen;//flag to include the secondaries from material and weak decays in the MC analysis (needed for fIncludeResonancePDGInMC)
   Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis
   Bool_t fExcludeWeakDecaysInMC;//flag to exclude the weak decay products (if not done by IsPhysicalPrimary) from the MC analysis
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
-  Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
-  Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
+  Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC and MCAODrec
+  Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
+  Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   

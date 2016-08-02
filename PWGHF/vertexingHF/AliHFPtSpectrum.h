@@ -96,6 +96,14 @@ class AliHFPtSpectrum: public TNamed
     fGlobalEfficiencyUncertainties[0] = globalEffUnc;
     fGlobalEfficiencyUncertainties[1] = globalBCEffRatioUnc;
   }
+  /// Setter to switch on the pt dependent efficiency correction uncertainty (feed-down calculation)
+  void SetUsePtDependentEffUncertainty(Bool_t flag) {
+    fGlobalEfficiencyPtDependent = flag;
+  }
+  void SetSystematicUncertainty(AliHFSystErr *syst){
+    if(fSystematics) { delete fSystematics; fSystematics=NULL; }
+    fSystematics = syst;
+  }
   /// Set the normalization factors
   void SetNormalization(Double_t normalization){
     fLuminosity[0]=normalization;
@@ -195,7 +203,8 @@ class AliHFPtSpectrum: public TNamed
 
   /// Compute the systematic uncertainties
   ///   taking as input the AliHFSystErr uncertainties
-  void ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown);
+//    void ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown);
+    void ComputeSystUncertainties(Bool_t combineFeedDown);
   ///
   /// Drawing the corrected spectrum comparing to theoretical prediction
   void DrawSpectrum(TGraphAsymmErrors *gPrediction);
@@ -230,7 +239,9 @@ class AliHFPtSpectrum: public TNamed
   /// Correct the yield for feed-down correction via fc-method
   void CalculateFeedDownCorrectedSpectrumFc();
   /// Correct the yield for feed-down correction via Nb-method
-  void CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Double_t branchingRatioBintoFinalDecay); 
+  void CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Double_t branchingRatioBintoFinalDecay);
+  /// Calculate the efficiency pt-dependent uncertainty
+  Double_t CalculateEfficiencyPtDepedentUncertainty(Double_t pt, Bool_t useOnlyCutVar);
 
   /// Check histograms consistency function
   Bool_t CheckHistosConsistency(TH1D *h1, TH1D *h2);
@@ -262,7 +273,10 @@ class AliHFPtSpectrum: public TNamed
   Double_t fLuminosity[2];           /// analyzed luminosity & uncertainty
   Double_t fTrigEfficiency[2];       /// trigger efficiency & uncertainty
   Double_t fGlobalEfficiencyUncertainties[2]; /// uncertainties on the efficiency [0]=c, b, [1]=b/c
+  Bool_t fGlobalEfficiencyPtDependent;/// use a pt-dependent efficiency uncertainty (Nb method unc.)
   Double_t fTab[2];                   /// Tab parameter and its uncertainty
+  //
+  AliHFSystErr *fSystematics;          /// Systematic uncertainy on the raw yields
 
   //
   /// Output spectra
@@ -311,7 +325,7 @@ class AliHFPtSpectrum: public TNamed
   TH1D *fhStatUncEffbFD;          /// Uncertainty on the feed-down correction due to the feed-down efficiency statistical uncertainty
 
   /// \cond CLASSIMP     
-    ClassDef(AliHFPtSpectrum,6); /// Class for Heavy Flavor spectra corrections
+    ClassDef(AliHFPtSpectrum,7); /// Class for Heavy Flavor spectra corrections
   /// \endcond
 };
 

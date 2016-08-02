@@ -66,6 +66,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetsTreeBuffer(0),
   fExtractionPercentage(0),
   fExtractionMinPt(0),
+  fExtractionMaxPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -74,7 +75,6 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTrackParticleArrayName(""),
   fJetMatchingArrayName(""),
   fRandom(0),
-  fRejectionFunction(0),
   fJetOutputMode(0),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
@@ -83,8 +83,10 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fEventCriteriumMaxBackground(0),
   fEventCriteriumMinLeadingJetPt(0),
   fEventCriteriumMinSubleadingJetPt(0),
-  fLeadingJet(),
-  fSubleadingJet(),
+  fEventCriteriumMinJetDeltaPhi(0),
+  fLeadingJet(0),
+  fSubleadingJet(0),
+  fMatchedJet(0),
   fAcceptedJets(0),
   fAcceptedTracks(0)
 {
@@ -103,6 +105,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetsTreeBuffer(0),
   fExtractionPercentage(0),
   fExtractionMinPt(0),
+  fExtractionMaxPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -111,7 +114,6 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTrackParticleArrayName(""),
   fJetMatchingArrayName(""),
   fRandom(0),
-  fRejectionFunction(0),
   fJetOutputMode(0),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
@@ -120,8 +122,10 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fEventCriteriumMaxBackground(0),
   fEventCriteriumMinLeadingJetPt(0),
   fEventCriteriumMinSubleadingJetPt(0),
-  fLeadingJet(),
-  fSubleadingJet(),
+  fEventCriteriumMinJetDeltaPhi(0),
+  fLeadingJet(0),
+  fSubleadingJet(0),
+  fMatchedJet(0),
   fAcceptedJets(0),
   fAcceptedTracks(0)
 {
@@ -220,6 +224,9 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "LEGO2", 500, 0., 5000., fNumberOfCentralityBins, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
   AddHistogram2D<TH2D>("hJetCount", "Number of jets in acceptance vs. centrality", "LEGO2", 100, 0., 100., fNumberOfCentralityBins, 0, 100, "N Jets","Centrality", "dN^{Events}/dN^{Jets}");
   AddHistogram2D<TH2D>("hFakeFactor", "Fake factor distribution", "LEGO2", 1000, 0., 100., fNumberOfCentralityBins, 0, 100, "Fake factor","Centrality", "dN^{Jets}/df");
+  AddHistogram2D<TH2D>("hFakeFactorJetPt_Cent0_100", "Fake factor distribution vs. jet p_{T}", "LEGO2", 1000, 0., 100., 400, -100., 300., "Fake factor","Jet p_{T} (GeV/c)", "dN^{Jets}/df");
+  AddHistogram2D<TH2D>("hFakeFactorJetPt_Cent0_10",  "Fake factor distribution vs. jet p_{T}", "LEGO2", 1000, 0., 100., 400, -100., 300., "Fake factor","Jet p_{T} (GeV/c)", "dN^{Jets}/df");
+
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 150, 0., 150., fNumberOfCentralityBins, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
   AddHistogram2D<TH2D>("hBackgroundPtJetPt_Cent0_100", "Background p_{T} distribution vs. jet p_{T}", "", 150, 0., 150.,  400, -100., 300., "Background p_{T} (GeV/c)", "Jet p_{T} (GeV/c)", "dN^{Events}/dp_{T}");
   AddHistogram2D<TH2D>("hBackgroundPtJetPt_Cent0_10", "Background p_{T} distribution vs. jet p_{T}", "", 150, 0., 150.,  400, -100., 300., "Background p_{T} (GeV/c)", "Jet p_{T} (GeV/c)", "dN^{Events}/dp_{T}");
@@ -297,7 +304,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventCriteriumFulfilled()
     {
       if(fLeadingJet)
       {
-        if(fLeadingJet->Pt() - fJetsCont->GetRhoVal()*fLeadingJet->Area() <= fEventCriteriumMinLeadingJetPt)
+        if(fLeadingJet->Pt() - fJetsCont->GetRhoVal()*fLeadingJet->Area() < fEventCriteriumMinLeadingJetPt)
         {
           fHistEventRejection->Fill("JetCrit", 1);
           return kFALSE;
@@ -308,11 +315,21 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventCriteriumFulfilled()
     {
       if(fLeadingJet && fSubleadingJet)
       {
-        if((fLeadingJet->Pt() - fJetsCont->GetRhoVal()*fLeadingJet->Area() <= fEventCriteriumMinLeadingJetPt) || (fSubleadingJet->Pt() - fJetsCont->GetRhoVal()*fSubleadingJet->Area() <= fEventCriteriumMinSubleadingJetPt))
+        if((fLeadingJet->Pt() - fJetsCont->GetRhoVal()*fLeadingJet->Area() < fEventCriteriumMinLeadingJetPt)            || 
+           (fSubleadingJet->Pt() - fJetsCont->GetRhoVal()*fSubleadingJet->Area() < fEventCriteriumMinSubleadingJetPt))
         {
           fHistEventRejection->Fill("JetCrit", 1);
           return kFALSE;
-      }
+        }
+        else // dijet pT fulfilled, check back-to-back criterium
+        {
+          Double_t deltaPhi = TMath::Min(TMath::Abs(fLeadingJet->Phi()-fSubleadingJet->Phi()),TMath::TwoPi() - TMath::Abs(fLeadingJet->Phi()-fSubleadingJet->Phi()));
+          if(deltaPhi <= fEventCriteriumMinJetDeltaPhi)
+          {
+            fHistEventRejection->Fill("JetCrit", 1);
+            return kFALSE;
+          }
+        }
       }
     }
   return kTRUE;
@@ -321,53 +338,68 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventCriteriumFulfilled()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
 {
-  if( (fJetOutputMode==1) || (fJetOutputMode==3) ) // output the leading jet
+  if(fJetOutputMode==3) // output leading&subleading jet
+  {
+    if((jet!=fLeadingJet) && (jet!=fSubleadingJet))
+      return kFALSE;
+  }
+  else if(fJetOutputMode==1) // output the leading jet
+  {
     if(jet!=fLeadingJet)
       return kFALSE;
-
-  if( (fJetOutputMode==2) || (fJetOutputMode==3) ) // output the subleading jet
+  }
+  else if(fJetOutputMode==2) // output the subleading jet
+  {
     if(jet!=fSubleadingJet)
       return kFALSE;
-
-  // Fake jet rejection (0810.1219)
+  }
 /*
   if(fFakeFactorCutProfile)
   {
-    Double_t fakeFactor = CalculateFakeFactor(jet);
-    FillHistogram("hFakeFactor", fakeFactor, fCent);
     if( (fakeFactor >= fMinFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
       return kFALSE;
   }
 */
 
-  // Poor man's fake jet rejection (according to jet const.)
-  if(fRejectionFunction)
-  {
-    if( jet->GetNumberOfTracks() <  fRejectionFunction->Eval(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()) )
-      return kFALSE;
-  }
-
   // Jet matching. Only done if SetJetMatchingArrayName() called
   Bool_t matchedFound = kFALSE;
+  fMatchedJet = 0;
   if(fJetsInput)
   {
-    // Go through all jets and check if the matching condition is fulfiled by at least one jet
-    Double_t bestMatchDeltaR = 999.;
+    // Search leading jet (in acceptance)
+    AliEmcalJet* leadingJet = 0;
+    Double_t leadingPt = -999.;
     for(Int_t i=0; i<fJetsInput->GetEntries(); i++)
     {
-      AliEmcalJet* matchJet = static_cast<AliEmcalJet*>(fJetsInput->At(i));
-      Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-matchJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-matchJet->Phi()));
-      Double_t deltaEta = TMath::Abs(jet->Eta() - matchJet->Eta());
+      AliEmcalJet* tmpJet = static_cast<AliEmcalJet*>(fJetsInput->At(i));
+      UInt_t dummy = 0;
+      if(!fJetsCont->AcceptJet(tmpJet , dummy))
+        continue;
+
+      if(tmpJet->Pt() > leadingPt)
+      {
+        leadingJet = tmpJet;
+        leadingPt  = tmpJet->Pt();
+      }
+    }
+
+    if(leadingJet)
+    {
+      Double_t bestMatchDeltaR = 999.;
+      Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-leadingJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-leadingJet->Phi()));
+      Double_t deltaEta = TMath::Abs(jet->Eta() - leadingJet->Eta());
       Double_t deltaR   = TMath::Sqrt((deltaPhi*deltaPhi) + (deltaEta*deltaEta));
 
       if(deltaR < bestMatchDeltaR)
-      {
         bestMatchDeltaR = deltaR;
-      }
+
+      // Check if a matching jet is found.
+      if(bestMatchDeltaR < 0.9*fJetsCont->GetJetRadius())
+        matchedFound = kTRUE;
+
+      if(matchedFound)
+        fMatchedJet = leadingJet;
     }
-    // Check if a matching jet is found.
-    if(bestMatchDeltaR < 0.9*fJetsCont->GetJetRadius())
-      matchedFound = kTRUE;
   }
 
   if(fJetOutputMode==4) // matching jets only
@@ -396,6 +428,14 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet)
     FillHistogram("hBackgroundPtJetPt_Cent0_100",  fJetsCont->GetRhoVal(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
     if( (fCent >= 0) && (fCent < 10) )
       FillHistogram("hBackgroundPtJetPt_Cent0_10",  fJetsCont->GetRhoVal(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
+
+    // Fake jet rejection (0810.1219)
+    Double_t fakeFactor = CalculateFakeFactor(jet);
+    FillHistogram("hFakeFactor", fakeFactor, fCent);
+    FillHistogram("hFakeFactorJetPt_Cent0_100",  fakeFactor, jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
+    if( (fCent >= 0) && (fCent < 10) )
+      FillHistogram("hFakeFactorJetPt_Cent0_10",  fakeFactor, jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
+
 
     // Leading jet plots
     if(jet==fLeadingJet)
@@ -486,7 +526,7 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
 void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
 {
   // Check pT threshold
-  if( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt )
+  if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionMaxPt) )
     return;
 
   // Discard jets statistically
@@ -502,6 +542,9 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
     if(!particle) continue;
     basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
   }
+  if(fMatchedJet) // set the true pT from the matched jets
+    basicJet.SetTruePt(fMatchedJet->Pt());
+
   fJetsTreeBuffer = &basicJet;
   fJetsTree->Fill();
 }
@@ -603,8 +646,7 @@ inline Bool_t AliAnalysisTaskChargedJetsHadronCF::IsTrackInCone(AliVParticle* tr
 void AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()
 {
   // Calculate leading + subleading jet
-  fLeadingJet    = fJetsCont->GetLeadingJet("rho");
-  fSubleadingJet = GetSubleadingJet("rho");
+  GetLeadingJets("rho", fLeadingJet, fSubleadingJet);
 }
 
 //________________________________________________________________________
@@ -646,46 +688,53 @@ void AliAnalysisTaskChargedJetsHadronCF::SetEventCriteriumSelection(Int_t type)
 
 
 //________________________________________________________________________
-AliEmcalJet* AliAnalysisTaskChargedJetsHadronCF::GetSubleadingJet(const char* opt)
+void AliAnalysisTaskChargedJetsHadronCF::GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading)
 {
   // Customized from AliJetContainer::GetLeadingJet()
-  // Get the subleading jet; if opt contains "rho" the sorting is according to pt-A*rho
+  // Get the leading+subleading jet; if opt contains "rho" the sorting is according to pt-A*rho
 
   TString option(opt);
   option.ToLower();
 
-  AliEmcalJet *jetLeading = fJetsCont->GetLeadingJet(opt);
-  AliEmcalJet *jetSubLeading = 0;
+  jetLeading = 0;
+  jetSubLeading = 0;
 
   fJetsCont->ResetCurrentID();
-  AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
-  Double_t     tmpPt = 0;
+  Double_t     tmpLeadingPt = 0;
+  Double_t     tmpSubleadingPt = 0;
 
   if (option.Contains("rho")) {
-    while ((jet = fJetsCont->GetNextAcceptJet())) {
-      if(jet == jetLeading)
-        continue;
-      else if ( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) > tmpPt )
+    while (AliEmcalJet* jet = fJetsCont->GetNextAcceptJet()) {
+      if      ( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) > tmpLeadingPt )
+      {
+        jetSubLeading = jetLeading;
+        jetLeading = jet;
+        tmpSubleadingPt = tmpLeadingPt;
+        tmpLeadingPt = jet->Pt()-jet->Area()*fJetsCont->GetRhoVal();
+      }
+      else if ( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) > tmpSubleadingPt )
       {
         jetSubLeading = jet;
-        tmpPt = jet->Pt()-jet->Area()*fJetsCont->GetRhoVal();
+        tmpSubleadingPt = jet->Pt()-jet->Area()*fJetsCont->GetRhoVal();
       }
-
     }
   }
   else {
-    while ((jet = fJetsCont->GetNextAcceptJet())) {
-      if(jet == jetLeading)
-        continue;
-      else if ( jet->Pt() > tmpPt )
+    while (AliEmcalJet* jet = fJetsCont->GetNextAcceptJet()) {
+      if      ( (jet->Pt()) > tmpLeadingPt )
+      {
+        jetSubLeading = jetLeading;
+        jetLeading = jet;
+        tmpSubleadingPt = tmpLeadingPt;
+        tmpLeadingPt = jet->Pt();
+      }
+      else if ( (jet->Pt()) > tmpSubleadingPt )
       {
         jetSubLeading = jet;
-        tmpPt = jet->Pt();
+        tmpSubleadingPt = jet->Pt();
       }
     }
   }
-
-  return jetSubLeading;
 }
 
 //________________________________________________________________________

@@ -55,12 +55,17 @@ DrawCorrSecMap2(const char* fname, const char* option="colz")
   pname.ReplaceAll(".root", ".png");
   pname = gSystem->BaseName(pname);
 
-  const char* objName = 
-    AliForwardCorrectionManager::Instance()
-    .GetObjectName(AliForwardCorrectionManager::kSecondaryMap);
+  const char* objName = "AliFMDCorrSecondaryMap";
+  // AliForwardCorrectionManager::Instance()
+  // .GetObjectName(AliForwardCorrectionManager::kSecondaryMap);
   AliFMDCorrSecondaryMap* corr = 
     static_cast<AliFMDCorrSecondaryMap*>(file->Get(objName));
-  if (!corr) { 
+  if (!corr) {
+    TList* l = static_cast<TList*>(file->Get("ForwardCorrResults"));
+    if (l) 
+      corr = static_cast<AliFMDCorrSecondaryMap*>(l->FindObject(objName));
+  }
+  if (!corr) {
     Error("DrawCorrSecMap", "Object '%s' not found in %s", objName, fname);
     return;
   }
@@ -95,7 +100,7 @@ DrawCorrSecMap2(const char* fname, const char* option="colz")
   Int_t ipad = 0;
   for (UShort_t v=1; v <= nVtx; v++) { 
     ipad++;
-    if (ipad == 1 || ipad == 12) ipad++;
+    if (nVtx == 10 && (ipad == 1 || ipad == 12)) ipad++;
     
     TVirtualPad* p = c->cd(ipad);
     p->SetFillColor(kWhite);

@@ -57,6 +57,8 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fL0Threshold(0),
   fIsMC(kFALSE),
   fDebugLevel(0),
+  fMaxAbsCellTime(1.),
+  fMinCellAmplitude(0.),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
   fPatchADCSimple(NULL),
@@ -344,7 +346,10 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
       continue;
     }
 
-    Double_t amp = cells->GetAmplitude(iCell);
+    Double_t amp = cells->GetAmplitude(iCell),
+             celltime = cells->GetTime(iCell);
+    if(TMath::Abs(celltime) > fMaxAbsCellTime) continue;
+    if(amp < fMinCellAmplitude) continue;
     // get position
     Int_t absId=-1;
     fGeometry->GetFastORIndexFromCellIndex(cellId, absId);
@@ -502,6 +507,14 @@ AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::C
   }
   if (nvalid == 4) result = kLevel0Fired;
   return result;
+}
+
+void AliEmcalTriggerMakerKernel::ClearFastORBadChannels(){
+  fBadChannels.clear();
+}
+
+void AliEmcalTriggerMakerKernel::ClearOfflineBadChannels() {
+  fOfflineBadChannels.clear();
 }
 
 Bool_t AliEmcalTriggerMakerKernel::IsGammaPatch(const AliEMCALTriggerRawPatch &patch) const {

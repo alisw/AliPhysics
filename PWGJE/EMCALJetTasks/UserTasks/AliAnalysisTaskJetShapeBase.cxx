@@ -69,7 +69,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0),
+  //fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -99,7 +99,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
-  fhnDeltaMass             = new THnSparse*[fNcentBins];
+  //fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -110,7 +110,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
-    fhnDeltaMass[i]             = 0;
+    //fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -154,7 +154,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0),
+  //fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -184,7 +184,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
-  fhnDeltaMass             = new THnSparse*[fNcentBins];
+  //fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -195,7 +195,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
-    fhnDeltaMass[i]             = 0;
+    //fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
@@ -279,17 +279,17 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   Double_t maxRhom = 1.;
 
   //Binning for THnSparse
-  const Int_t nBinsSparse0 = 5;
-  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead};
+  const Int_t nBinsSparse0 = 9;
+  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead, nBinsRho, nBinsRhom, nBinsM, nBinsPt};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead, minRho, minRhom, minM, minPt};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead, maxRho, maxRhom, maxM, maxPt};
 
-  const Int_t nBinsSparse0b = 6;
-  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
-  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt};
-  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt};
-  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt};
+  const Int_t nBinsSparse0b = 10;
+  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}; Mass unsub; #it{p}_{T,unsub}
+  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt, nBinsRho, nBinsRhom, nBinsM, nBinsPt};
+  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt, minRho, minRhom, minM, minPt};
+  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt, maxRho, maxRhom, maxM, maxPt};
   
   const Int_t nBinsSparse1 = 7;
   // #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
@@ -297,11 +297,11 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt, minPt};
   const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxPt};
 
-  const Int_t nBinsSparse2 = 8;
-  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
-  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
-  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
+  const Int_t nBinsSparse2 = 10;
+  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
+  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
+  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
 
   TString histName = "";
   TString histTitle = "";
@@ -345,28 +345,27 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
     fOutput->Add(fh3PtTrueDeltaMRelLeadPt[i]);
 
     histName = Form("fhnMassResponse_%d",i);
-    Printf("What is fFromTree ? %d", fFromTree);
     if(fFromTree) {
-       histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}", i, varName.Data(),varName.Data(), varName.Data());
+       histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m}; %s unsub; #it{p}_{T,unsub}", i, varName.Data(),varName.Data(), varName.Data(),varName.Data());
        fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0b, nBins0b, xmin0b, xmax0b);
 
     } else{
-       histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}",i,varName.Data(),varName.Data());
-       fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0,nBins0,xmin0,xmax0);
+       histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk};  #rho; #rho_{m}",i,varName.Data(),varName.Data());
+       fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(), nBinsSparse0, nBins0, xmin0, xmax0);
     }
     fOutput->Add(fhnMassResponse[i]);
     
-    histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
-    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
-    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
-    fOutput->Add(fhnDeltaMass[i]);
+    //histName = Form("fhnDeltaMass_%d", i);
+    //histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
+    //Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    //fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    //fOutput->Add(fhnDeltaMass[i]);
 
   }
 
   //Chiara's histograms: rho and rhom correlation with pT and mass at reco level with no subtraction
   histName = "fhnDeltaMassAndBkgInfo";
-  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
+  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
   
   fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
   fOutput->Add(fhnDeltaMassAndBkgInfo);
@@ -392,7 +391,6 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   fOutput->Add(fhpTTracksJet1);
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
-
   
 
   if(fUseSumw2) {
@@ -514,6 +512,8 @@ void AliAnalysisTaskJetShapeBase::SetTreeFromFile(TString filename, TString tree
 
    return;
 }
+
+
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetShapeBase::RetrieveEventObjects() {
   //

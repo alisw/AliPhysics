@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                    )
 
 # Sources in alphabetical order
@@ -59,7 +60,7 @@ set(SRCS
     AliJetRandomizerTask.cxx
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
-    Tracks/AliAnalysisTaskLEDCheck.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerPosition.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx
@@ -107,7 +108,6 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
-    Tracks/AliAnalysisTaskEMCALDCALTrigger2015.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
     Tracks/AliAnalysisTaskParticleInJet.cxx
@@ -128,10 +128,10 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
+    UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
-    UserTasks/AliAnalysisTaskEmcalJetCDFUE.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
     UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
@@ -147,6 +147,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
+    UserTasks/AliAnalysisTaskEmcalRun2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
     UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
@@ -168,11 +169,16 @@ set(SRCS
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
+    UserTasks/AliAnalysisTaskSoftDrop.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx  
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
-    UserTasks/AliAnalysisTaskEmcalJetTree.cxx)
+    UserTasks/AliAnalysisTaskEmcalJetTree.cxx
+    UserTasks/AliJetEmbeddingSelRhoTask.cxx
+    UserTasks/AliTrackContainerV0.cxx
+    UserTasks/AliTrackContainerToyModel.cxx
+    UserTasks/AliMCParticleContainerToyModel.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
@@ -180,13 +186,13 @@ if(FASTJET_FOUND)
         AliEmcalJetUtility.cxx
         AliEmcalJetUtilityGenSubtractor.cxx
         AliEmcalJetUtilityConstSubtractor.cxx
+        AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
 	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
-        UserTasks/AliAnalysisTaskFullpAJets_Eli_Mod.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
@@ -212,7 +218,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCALbase PWGEMCALtrigger PWGJETFW)
+set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)

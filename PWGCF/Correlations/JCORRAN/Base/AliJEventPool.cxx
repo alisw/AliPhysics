@@ -14,8 +14,8 @@
 #include  "AliJPiZero.h"
 
 #include  "AliJCard.h"
-#include  "AliJCorrelations.h"
-#include  "AliJHistos.h"
+#include  "AliJCorrelationInterface.h"
+#include  "AliJHistogramInterface.h"
 
 
 // event mixing
@@ -24,7 +24,7 @@
 // blah
 // blah
 
-AliJEventPool::AliJEventPool(AliJCard *cardin, AliJHistos *histosin, AliJCorrelations *coin, particleType particle ) :
+AliJEventPool::AliJEventPool(AliJCard *cardin, AliJHistogramInterface *histosin, AliJCorrelationInterface *coin, particleType particle ) :
   fcard(cardin),
   fcorrelations(coin),
   fhistos(histosin),

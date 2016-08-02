@@ -68,6 +68,7 @@ class AliJEbeHistos {
 
 		//Unfolding
 		AliJTH1D  fhVnObsVector;
+		AliJTH1D  fhVnObsVectorAfterSelection;
 		AliJTH2D  fhResponseDist;
 		AliJTH1D  fhMultiCount;
 		AliJTH1D  fhVnObsEP;

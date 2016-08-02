@@ -127,17 +127,11 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
          TH1F *fHistCascadeMultiplicityAfterPileupRej;
          TH1F *fHistCascadeMultiplicityAfterPhysicsSel;
+         TH1F *fHistCascadeMultiplicityAfterRevertexing;
          TH1F *fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel;
+         TH1F *fHistCascadeMultiplicityAfterSPDresolution;
+         TH1F *fHistCascadeMultiplicityAfterVerticesProximity;
          TH1F *fHistCascadeMultiplicityAfterZprimVtxPosSel;
-         // Tracks multiplicity plots
-         TH1F *fHistTrackMultiplicityBeforeAnySel;
-         TH1F *fHistTrackMultiplicityAfterSDDstatusSel;
-         TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
-         TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
-         TH1F *fHistTrackMultiplicityAfterPileupRej;
-         TH1F *fHistTrackMultiplicityAfterPhysicsSel;
-         TH1F *fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel;
-         TH1F *fHistTrackMultiplicityAfterZprimVtxPosSel;
          TH1F *fHistnXiPlusPerEvTot;                  // After any event selections, in all the eta and pt range
          TH1F *fHistnXiMinusPerEvTot;                 // After any event selections, in all the eta and pt range
          TH1F *fHistnOmegaPlusPerEvTot;               // After any event selections, in all the eta and pt range
@@ -161,39 +155,55 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F   *fHistPosV0TPCClusters;                                //! TPC clusters distribution for Positive V0 daughter track
          TH1F   *fHistNegV0TPCClusters;                                //! TPC clusters distribution for Negative V0 daughter track
          TH1F   *fHistBachTPCClusters;                                 //! TPC clusters distribution for Bachelor V0 daughter track
-         // - Plots before Physics Selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_A;    // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_A;       // Before any event selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_A;     // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_A;        // Before any event selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_A; // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_A;    // Before any event selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_A;  // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_A;     // Before any event selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_B;    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup 
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_B;       // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_B;     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_B;        // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_B; // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_B;    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_B;  // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_B;     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_C;    // After physics selection
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_C;       // After physics selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_C;     // After physics selection
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_C;        // After physics selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_C; // After physics selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_C;    // After physics selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_C;  // After physics selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_C;     // After physics selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_D;    // After all event selections 
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_D;       // After all event selections
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_D;     // After all event selections
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_D;        // After all event selections 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_D; // After all event selections 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_D;    // After all event selections 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_D;  // After all event selections 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_D;     // After all event selections 
+         // - Plots for the efficiency denominator + checks on the event selection
+            // - Step A) filled before all the selections 
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_A;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_A;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_A;  
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_A;   
+            // - Step B) filled after the pre-trigger selection (DAQ incomplete, SPD background, Pile-up) --> Needed for the efficiency calculation in method 1
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_B;    
+         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_B;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_B;     
+         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_B;        
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_B; 
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_B;    
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_B;  
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_B;     
+            // - Step C) filled after the trigger selection (Physics selection)
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_C;    
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_C;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_C;  
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_C;   
+            // - Step D) filled after the revertexing of the V0 and cascades
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_D;    
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_D;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_D; 
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_D;  
+            // - Step E) filled after the request of the presence of the vertex SPD and not only the one from the tracks
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_E;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_E;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_E;   
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_E;   
+            // - Step F) filled after the request on the vertex resolution and dispersion
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_F;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_F;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_F;   
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_F;    
+            // - Step G) filled after the request on the vertices proximity
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_G;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_G;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_G;  
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_G;   
+            // - Step H) filled after the request on |Zpv| < 10 cm that means after all the event selections
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_H;     
+         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_H;       
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_H;     
+         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_H;         
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_H;  
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_H;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_H;   
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_H;      
          // - Generated cascade plots
          // After all the event selections 
          //Xi-
@@ -204,6 +214,10 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistThetaBachXiMinus;                 // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaMesDghterXiMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaBarDghterXiMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaLambdaXiMinus;               // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBachXiMinus;                 // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaMesDghterXiMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBarDghterXiMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBachXiMinus;                    // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtMesDghterXiMinus;               // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBarDghterXiMinus;               // In the detector acceptance and over a pt minimum (Findable particle)
@@ -215,6 +229,10 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistThetaBachXiPlus;                  // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaMesDghterXiPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaBarDghterXiPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaLambdaXiPlus;                // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBachXiPlus;                  // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaMesDghterXiPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBarDghterXiPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBachXiPlus;                     // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtMesDghterXiPlus;                // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBarDghterXiPlus;                // In the detector acceptance and over a pt minimum (Findable particle)
@@ -226,6 +244,10 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistThetaBachOmegaMinus;              // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaMesDghterOmegaMinus;         // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaBarDghterOmegaMinus;         // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaLambdaOmegaMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBachOmegaMinus;              // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaMesDghterOmegaMinus;         // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBarDghterOmegaMinus;         // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBachOmegaMinus;                 // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtMesDghterOmegaMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBarDghterOmegaMinus;            // In the detector acceptance and over a pt minimum (Findable particle)
@@ -237,27 +259,16 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistThetaBachOmegaPlus;               // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaMesDghterOmegaPlus;          // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistThetaBarDghterOmegaPlus;          // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaLambdaOmegaPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBachOmegaPlus;               // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaMesDghterOmegaPlus;          // In the detector acceptance and over a pt minimum (Findable particle)
+         TH1F *fHistEtaBarDghterOmegaPlus;          // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBachOmegaPlus;                  // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtMesDghterOmegaPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBarDghterOmegaPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
-         // - Associated to MC cascade plots
-         TH1F *fHistMassXiMinus;                      // For the Reconstructed-Associated cascades
-         TH1F *fHistMassXiPlus;                       // For the Reconstructed-Associated cascades
-         TH1F *fHistMassOmegaMinus;                   // For the Reconstructed-Associated cascades
-         TH1F *fHistMassOmegaPlus;                    // For the Reconstructed-Associated cascades
-         // Effective mass histos with combined PID
-         TH1F *fHistMassWithCombPIDXiMinus;
-         TH1F *fHistMassWithCombPIDXiPlus;
-         TH1F *fHistMassWithCombPIDOmegaMinus;
-         TH1F *fHistMassWithCombPIDOmegaPlus;
          // PID Probability versus MC Pt(bachelor track)
          TH2F *f2dHistPIDprobaKaonVsMCPtBach; 
          TH2F *f2dHistPIDprobaPionVsMCPtBach;
-         // Effective mass histos with perfect MC PID on the bachelor
-         TH1F *fHistMassWithMcPIDXiMinus; 
-         TH1F *fHistMassWithMcPIDXiPlus;
-         TH1F *fHistMassWithMcPIDOmegaMinus; 
-         TH1F *fHistMassWithMcPIDOmegaPlus;
          // Effective mass histos for the cascade candidates associated with MC
          TH1F *fHistAsMCMassXiMinus;
          TH1F *fHistAsMCMassXiPlus;
@@ -298,10 +309,6 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH2F *f2dHistAsMCptAntiprotonMCptXiPlus;
          TH2F *f2dHistAsMCptProtonMCptOmegaMinus;
          TH2F *f2dHistAsMCptAntiprotonMCptOmegaPlus;
-         // QA plots
-         TH1F *fHistV0toXiCosineOfPointingAngle;
-         TH2F *fHistV0CosineOfPointingAnglevsPtXi;
-         TH2F *fHistV0CosineOfPointingAnglevsPtOmega;
 
          // Containers                       
          AliCFContainer  *fCFContCascadePIDAsXiMinus;

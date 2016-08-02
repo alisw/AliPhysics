@@ -74,6 +74,8 @@ public:
   
   void SetPackages(const char* aliroot, const char* root="", const char* geant3="",
                    const char* api="VO_ALICE@APISCONFIG::V1.1x");
+
+  void SetGeneratorPackage(const char* generator);
   
   Bool_t ShouldOverwriteFiles() const { return fShouldOverwriteFiles; }
 

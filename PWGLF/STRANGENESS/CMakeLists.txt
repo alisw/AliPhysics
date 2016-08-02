@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
@@ -47,6 +48,7 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractV0.cxx
   LambdaK0/AliAnalysisTaskExtractV0pPb.cxx
   LambdaK0/AliAnalysisTaskExtractV0AOD.cxx
+  LambdaK0/AliAnalysisTaskExtractV0AODRun2.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
@@ -54,6 +56,7 @@ set(SRCS
   Cascades/AliAnalysisTaskExtractCascadePbPbRun2.cxx
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
@@ -63,6 +66,7 @@ set(SRCS
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
+  Cascades/Run2/AliV0Result.cxx
   )
 
 # Headers from sources
@@ -124,6 +128,7 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
+install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Run2)
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)

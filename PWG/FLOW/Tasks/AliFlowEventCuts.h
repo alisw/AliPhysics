@@ -17,6 +17,7 @@ class AliVEvent;
 class AliMCEvent;
 class TBrowser;
 class AliAnalysisUtils;
+class AliMultSelection;
 #include "TList.h"
 #include "TH1.h"
 #include "AliTriggerAnalysis.h"
@@ -26,7 +27,7 @@ class AliAnalysisUtils;
 class AliFlowEventCuts : public AliFlowEventSimpleCuts {
 
  public:
-  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kSPD1clusters };
+  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kSPD1clusters, kZDC };
 
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
@@ -115,6 +116,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   AliFlowTrackCuts* fStandardTPCcuts; //Standard TPC cuts
   AliFlowTrackCuts* fStandardGlobalCuts; //StandardGlobalCuts
   AliAnalysisUtils* fUtils;  //! analysis utils object
+  AliMultSelection* fMultSelection; //! new centrality framework
   Bool_t fCutPrimaryVertexX; //cut on x of prim vtx
   Double_t fPrimaryVertexXmax; //max x prim vtx
   Double_t fPrimaryVertexXmin; //min x prim vtx
@@ -144,7 +146,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   TH2F *fhistTPCvsGlobalMult; //!correlation between TPCMult and GlobalMult
   Bool_t fData2011; //2011 data is used
   Bool_t fCheckPileUp; //pile-up
-  ClassDef(AliFlowEventCuts,6)
+  ClassDef(AliFlowEventCuts,8)
 };
 
 #endif

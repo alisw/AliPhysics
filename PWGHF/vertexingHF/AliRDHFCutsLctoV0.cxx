@@ -348,7 +348,7 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
+Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod) {
   //
   // Apply selection
   //
@@ -363,6 +363,10 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     AliDebug(2,"AliAODRecoCascadeHF null");
     return 0;
   }
+
+  Double_t pt=d->Pt();
+  if(pt<fMinPtCand) return 0;
+  if(pt>fMaxPtCand) return 0;
 
   if (!d->GetSecondaryVtx()) {
     AliDebug(2,"No secondary vertex for cascade");
@@ -426,7 +430,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
-    if (!AreLctoV0DaughtersSelected(d)) return 0;
+    if (!AreLctoV0DaughtersSelected(d,aod)) return 0;
 
   }
 
@@ -601,6 +605,89 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   return returnvalueTot;
 
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCutsLctoV0::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack){
+  //
+  // Apply pre-selections, used in the AOD filtering
+  //
+
+  if (!fCutsRD) {
+    AliFatal("Cut matrix not inizialized. Exit...");
+    return 0;
+  }
+
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)obj;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return 0;
+  }
+
+  Double_t pt = d->Pt();
+  Int_t ptbin = PtBin(pt);
+
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+	      (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return 0;
+
+  // cut on V0 pT min
+  if (v0->Pt() < fCutsRD[GetGlobalIndex(15,ptbin)]) return 0;
+
+  // cuts on the minimum pt of the bachelor
+  if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
+
+  Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  Double_t mLPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  
+  // K0S + p
+  Double_t mk0s    = v0->MassK0Short();
+  Double_t mLck0sp = d->InvMassLctoK0sP();
+
+  // Lambda + pi
+  Double_t mlambda  = v0->MassLambda();
+  Double_t malambda = v0->MassAntiLambda();
+  Double_t mLcLpi   = d->InvMassLctoLambdaPi();
+  
+  Bool_t okLck0sp=kTRUE, okLcLpi=kTRUE, okLcLBarpi=kTRUE;
+  Bool_t okK0spipi=kTRUE, okLppi=kTRUE, okLBarpip=kTRUE;
+  Bool_t isNotK0S = kTRUE, isNotLambda = kTRUE, isNotLambdaBar = kTRUE, isNotGamma = kTRUE;
+
+  // cut on Lc mass with K0S+p hypothesis
+  if (TMath::Abs(mLck0sp-mLcPDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okLck0sp = kFALSE;
+  // cuts on the V0 mass: K0S case
+  if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(2,ptbin)]) okK0spipi = kFALSE;
+  // cut on Lc mass with Lambda+pi hypothesis
+  if (TMath::Abs(mLcLpi-mLcPDG) > fCutsRD[GetGlobalIndex(1,ptbin)]) {
+    okLcLpi = kFALSE;
+    okLcLBarpi = kFALSE;
+  }
+
+  // cuts on the V0 mass: Lambda/LambdaBar case
+  if ( TMath::Abs(mlambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)]) okLppi = kFALSE;
+  if ( TMath::Abs(malambda-mLPDG) > fCutsRD[GetGlobalIndex(3,ptbin)]) okLBarpip = kFALSE;
+
+  // cut on K0S invariant mass veto
+  if (TMath::Abs(v0->MassK0Short()-mk0sPDG) < fCutsRD[GetGlobalIndex(12,ptbin)]) isNotK0S=kFALSE;
+  // cut on Lambda/LambdaBar invariant mass veto
+  if (TMath::Abs(v0->MassLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)]) isNotLambda=kFALSE;
+  if (TMath::Abs(v0->MassAntiLambda()-mLPDG) < fCutsRD[GetGlobalIndex(13,ptbin)]) isNotLambdaBar=kFALSE;
+
+  // cut on gamma invariant mass veto
+  if (v0->InvMass2Prongs(0,1,11,11) < fCutsRD[GetGlobalIndex(14,ptbin)]) isNotGamma=kFALSE;
+
+  okLck0sp   = okLck0sp   && okK0spipi && isNotLambda && isNotLambdaBar && isNotGamma;
+  okLcLpi    = okLcLpi    && okLppi    && isNotK0S    && isNotLambdaBar && isNotGamma;
+  okLcLBarpi = okLcLBarpi && okLBarpip && isNotK0S    && isNotLambda    && isNotGamma;
+  
+  if (!okLck0sp && !okLcLpi && !okLcLBarpi) return 0;
+
+
+  // cut on V0 dca (prong-to-prong)
+  if ( TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
+
+
+  return kTRUE;
+ 
 }
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsLctoV0::IsSelectedPID(AliAODRecoDecayHF* obj) {
@@ -919,7 +1006,7 @@ Int_t AliRDHFCutsLctoV0::CombineCuts(Int_t returnvalueTrack, Int_t returnvalue, 
 }
 
 //----------------------------------
-Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex) {
+Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod) {
   //
   // Apply selection on single cut
   //
@@ -995,7 +1082,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
-    if (!AreLctoV0DaughtersSelected(d)) return 0;
+    if (!AreLctoV0DaughtersSelected(d,aod)) return 0;
 
   }
 
@@ -1422,7 +1509,7 @@ Bool_t AliRDHFCutsLctoV0::IsInFiducialAcceptance(Double_t pt, Double_t y) const
   return kTRUE;
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) const{
+Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd, AliAODEvent* aod) const{
   //
   // Daughter tracks selection
   //
@@ -1455,7 +1542,7 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) cons
   Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
   const AliESDVertex vESD(pos,cov,100.,100);
 
-  if (!IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts)) return kFALSE;
+  if (!IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts,aod)) return kFALSE;
 
   if (!fV0daughtersCuts) {
     AliFatal("Cut object is not defined for V0daughters. Candidate accepted.");

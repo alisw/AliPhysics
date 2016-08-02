@@ -58,9 +58,9 @@ class CutHandlerConvCalo{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,                      //change different set of cuts
-                                Int_t     isMC                          = 0,                      //run MC
-                                Int_t     enableQAMesonTask             = 1,                      //enable QA in AliAnalysisTaskGammaConvV1
+void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,                      // change different set of cuts
+                                Int_t     isMC                          = 0,                      // run MC
+                                Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
                                 TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
@@ -72,11 +72,17 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
                                 Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                  = 3.,                     // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader            = "",                     // 
-                                Bool_t    doTreeConvGammaShape          = kFALSE,                 //
-                                Bool_t    doMultiplicityWeighting       = kFALSE,                  //
-                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",    //
-                                TString   periodNameAnchor              = ""
+                                TString   periodNameV0Reader            = "",                     // period Name for V0 Reader 
+                                Bool_t    doTreeConvGammaShape          = kFALSE,                 // enable additional tree for conversion properties for clusters
+                                Bool_t    doMultiplicityWeighting       = kFALSE,                 // enable multiplicity weights
+                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",    // file for multiplicity weights
+                                TString   periodNameAnchor              = "",                     // anchor period name for mult weighting
+                                Bool_t    enableSortingMCLabels         = kTRUE,                  // enable sorting for MC cluster labels
+                                Bool_t    runLightOutput                = kFALSE,                 // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
+                                Double_t  bremSmear                     = 1.,
+                                Double_t  smearPar                      = 0.,                     // conv photon smearing params
+                                Double_t  smearParConst                 = 0.                      // conv photon smearing params
               ) {
   
   Int_t isHeavyIon = 0;
@@ -127,6 +133,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -141,6 +149,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -168,6 +177,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
 
   //create cut handler
   CutHandlerConvCalo cuts;
@@ -688,6 +698,10 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
   // ************************************* EMCAL cuts ****************************************************
   // LHC12
+  } else if (trainConfig == 100){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
   } else if (trainConfig == 101){ // EMCAL clusters 8 TeV LHC12
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
@@ -785,6 +799,43 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200009327000008250402000","1111111063032230000","0163103100000010"); //
     cuts.AddCut("00010113","00200009327000008250403000","1111111063032230000","0163103100000010"); //
 
+  //smearing
+  } else if (trainConfig == 121){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100100010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100100010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100100010"); // smear
+  } else if (trainConfig == 122){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100200010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100200010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100200010"); // smear
+  } else if (trainConfig == 123){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100300010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100300010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100300010"); // smear
+  } else if (trainConfig == 124){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100400010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100400010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100400010"); // smear
+  } else if (trainConfig == 125){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100500010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100500010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100500010"); // smear
+  } else if (trainConfig == 126){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100600010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100600010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100600010"); // smear
+  } else if (trainConfig == 127){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100700010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100700010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100700010"); // smear
+  } else if (trainConfig == 128){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100800010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100800010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100800010"); // smear
+  } else if (trainConfig == 129){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100900010"); // smear
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100900010"); // smear
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100900010"); // smear
 
   //kEMC7
   } else if (trainConfig == 132){ //EMCAL minEnergy variation
@@ -1221,12 +1272,15 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
@@ -1234,16 +1288,20 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
+    analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+    if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -1256,6 +1314,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(doTreeConvGammaShape) task->SetDoTreeConvGammaShowerShape(kTRUE);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 

@@ -30,6 +30,7 @@
 #include "TParameter.h"
 #include "TMap.h"
 #include "TRandom.h"
+#include "TEllipse.h"
 #include "AliTriggerAnalysis.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -51,41 +52,67 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fMC(kFALSE),
+fPileupCutsEnabled(kFALSE),
 fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
 fHistFiredBitsSPD(0),
-fHistSPDClsVsTkl(0),
-fHistV0MOnVsOf(0),
-fHistSPDOnVsOf(0),
-fHistSPDVtxPileup(0),
-fHistV0MOn(0),
+fHistSPDClsVsTklAll(0),
+fHistSPDClsVsTklCln(0),
+fHistV0C012vsTklAll(0),
+fHistV0C012vsTklCln(0),
+fHistV0MOnVsOfAll(0),
+fHistV0MOnVsOfCln(0),
+fHistSPDOnVsOfAll(0),
+fHistSPDOnVsOfCln(0),
+fHistV0C3vs012All(0),
+fHistV0C3vs012Cln(0),
+fHistSPDVtxPileupAll(0),
+fHistSPDVtxPileupCln(0),
+fHistV0MOnAll(0),
+fHistV0MOnAcc(0),
+fHistV0MOnVHM(0),
 fHistV0MOfAll(0),
 fHistV0MOfAcc(0),
-fHistSPDOnOuter(0),
-fHistV0C3vs012(0),
+fHistOFOAll(0),
+fHistOFOAcc(0),
+fHistTKLAll(0),
+fHistTKLAcc(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
-fHistBBAflags(0),
-fHistBBCflags(0),
-fHistBGAflags(0),
-fHistBGCflags(0),
+fHistVIRCln(0),
+fHistBBAflagsAll(0),
+fHistBBAflagsAcc(0),
+fHistBBCflagsAll(0),
+fHistBBCflagsAcc(0),
+fHistBGAflagsAll(0),
+fHistBGAflagsAcc(0),
+fHistBGCflagsAll(0),
+fHistBGCflagsAcc(0),
 fHistAD(0),
-fHistADA(0),
-fHistADC(0),
-fHistV0A(0),
-fHistV0C(0),
+fHistADAAll(0),
+fHistADAAcc(0),
+fHistADCAll(0),
+fHistADCAcc(0),
+fHistV0AAll(0),
+fHistV0AAcc(0),
+fHistV0CAll(0),
+fHistV0CAcc(0),
+fHistTimeZNA(0),
+fHistTimeZNC(0),
 fHistZDC(0),
 fHistTDCZDC(0),
-fHistTimeZDC(0),
+fHistTimeZNSumVsDif(0),
 fHistTimeCorrZDC(0),
 fHistFMDA(0),
 fHistFMDC(0),
 fHistFMDSingle(0),
 fHistFMDSum(0),
 fHistT0(0),
-fTriggerClasses(new TMap),
-fMC(kFALSE)
+fHistOFOvsTKLAcc(0),
+fHistV0MOnVsOfAcc(0),
+fTriggerClasses(new TMap)
 {
   // constructor
   fHistList->SetName("histos");
@@ -93,6 +120,7 @@ fMC(kFALSE)
   fTriggerClasses->SetOwner();
 }
 
+//-------------------------------------------------------------------------------------------------
 void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fZDCCutRefSumCorr     = oadb->GetZDCCutRefSumCorr();
   fZDCCutRefDeltaCorr   = oadb->GetZDCCutRefDeltaCorr();
@@ -102,8 +130,10 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fZDCCutZNATimeCorrMin = oadb->GetZDCCutZNATimeCorrMin();
   fZDCCutZNCTimeCorrMax = oadb->GetZDCCutZNCTimeCorrMax();
   fZDCCutZNCTimeCorrMin = oadb->GetZDCCutZNCTimeCorrMin();
-  fSPDClsVsTklA         = oadb->GetfSPDClsVsTklA();
-  fSPDClsVsTklB         = oadb->GetfSPDClsVsTklB();
+  fSPDClsVsTklA         = oadb->GetSPDClsVsTklA();
+  fSPDClsVsTklB         = oadb->GetSPDClsVsTklB();
+  fV0C012vsTklA         = oadb->GetV0C012vsTklA();
+  fV0C012vsTklB         = oadb->GetV0C012vsTklB();
   fV0MOnVsOfA           = oadb->GetV0MOnVsOfA();
   fV0MOnVsOfB           = oadb->GetV0MOnVsOfB();
   fSPDOnVsOfA           = oadb->GetSPDOnVsOfA();
@@ -120,7 +150,7 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fVIRBBAflags          = oadb->GetVIRBBAflags();
   fVIRBBCflags          = oadb->GetVIRBBCflags();
   fVIRBGAflags          = oadb->GetVIRBGAflags();
-  fVIRBGCflags          = oadb->GSetVIRBGCflags();
+  fVIRBGCflags          = oadb->GetVIRBGCflags();
   fVHMBBAflags          = oadb->GetVHMBBAflags();
   fVHMBBCflags          = oadb->GetVHMBBCflags();
   fVHMBGAflags          = oadb->GetVHMBGAflags();
@@ -130,6 +160,7 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fSPDGFOThreshold      = oadb->GetSPDGFOThreshhold();
   fSH1OuterThreshold    = oadb->GetSH1OuterThreshold();
   fSH2OuterThreshold    = oadb->GetSH2OuterThreshold();
+  fTklThreshold         = oadb->GetTklThreshold();
   fFMDLowCut            = oadb->GetFMDLowThreshold();
   fFMDHitCut            = oadb->GetFMDHitThreshold();
   fTRDptHSE             = oadb->GetTRDptHSE();
@@ -155,95 +186,148 @@ AliTriggerAnalysis::~AliTriggerAnalysis(){
 void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // creates the monitoring histograms 
   // dynamical range of histograms can be adapted for pp and pPb via isLowFlux flag)
-  // TODO check limits
-  
-  Int_t nBinsX = isLowFlux ?  400 :  300;
-  Int_t nBinsY = isLowFlux ? 4000 : 1000;
-  Float_t xMax = isLowFlux ?  400 : 2999.5;
-  Float_t yMax = isLowFlux ? 4000 : 9999.5;
   
   // do not add these hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHistStat           = new TH1F("fHistStat","Accepted events;;",16384,-0.5,16383.5);
-  fHistFiredBitsSPD   = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
-  fHistSPDClsVsTkl    = new TH2F("fHistSPDClsVsTkl", "SPD Clusters vs Tracklets; n tracklets; n clusters", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
-  fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",1000,0,2000,1000,0,10000);
-  fHistSPDOnVsOf      = new TH2F("fHistSPDOnVsOf",";Offline FOR;Online FOR",800,0,800,800,0,800);
-  fHistSPDVtxPileup   = new TH1F("fHistSPDVtxPileup",";SPD Vtx pileup",2,0,2);
-  fHistVIRvsBCmod4pup = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
-  fHistVIRvsBCmod4acc = new TH2F("fHistVIRvsBCmod4acc","VIR vs BC%4 for accepted events;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
-  fHistV0C3vs012      = new TH2F("fHistV0C3vs012",";V0C012 multiplicity;V0C3 multiplicity",800,0,800,300,0,300);
-  fHistBBAflags       = new TH1F("fHistBBAflags",";BBA flags;",33,-0.5,32.5);
-  fHistBBCflags       = new TH1F("fHistBBCflags",";BBC flags;",33,-0.5,32.5);
-  fHistBGAflags       = new TH1F("fHistBGAflags",";BGA flags;",33,-0.5,32.5);
-  fHistBGCflags       = new TH1F("fHistBGCflags",";BGC flags;",33,-0.5,32.5);
-  fHistV0MOn          = new TH1F("fHistV0MOn",";Online V0M;",10000,0,10000);
-  fHistV0MOfAll       = new TH1F("fHistV0MOfAll","All;Offline V0M;",2000,0,2000);
-  fHistV0MOfAcc       = new TH1F("fHistV0MOfAcc","Accepted;Offline V0M;",2000,0,2000);
-  fHistSPDOnOuter     = new TH1F("fHistSPDOnOuter","Online outer FO chips",800,0,800);
-  fHistAD             = new TH2F("fHistAD", "ADC+ADA vs ADC+ADA;ADC-ADA time (ns);ADC+ADA time (ns)", 300, -150, 150, 300, -50, 250);
-  fHistADA            = new TH1F("fHistADA", "ADA;mean time (ns);events", 2000, -100, 100);
-  fHistADC            = new TH1F("fHistADC", "ADC;mean time (ns);events", 2000, -100, 100);
-  fHistV0A            = new TH1F("fHistV0A", "V0A;mean time (ns);events", 400, -100, 100);
-  fHistV0C            = new TH1F("fHistV0C", "V0C;mean time (ns);events", 400, -100, 100);
-  fHistZDC            = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
-  fHistTDCZDC         = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
-  fHistTimeZDC        = new TH2F("fHistTimeZDC", "ZDC;TDC timing C-A;TDC timing C+A", 120,-30,30,120,-600,-540);
-  fHistTimeCorrZDC    = new TH2F("fHistTimeCorrZDC", "ZDC;Corrected TDC timing C-A; Corrected TDC timing C+A", 120,-30,30,260,-100,30);
-  fHistFMDA           = new TH1F("fHistFMDA", "FMDA;combinations above threshold;events", 102, -1.5, 100.5);
-  fHistFMDC           = new TH1F("fHistFMDC", "FMDC;combinations above threshold;events", 102, -1.5, 100.5);
-  fHistFMDSingle      = new TH1F("fHistFMDSingle", "FMD single;multiplicity value;counts", 1000, 0, 10);
-  fHistFMDSum         = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
-  fHistT0             = new TH1F("fHistT0", "T0;time (ns);events", 100, -25, 25);
+  fHistStat            = new TH1F("fHistStat","Accepted events;;",65536,-0.5,65535.5);
+  fHistFiredBitsSPD    = new TH1F("fHistFiredBitsSPD","SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
+  fHistSPDClsVsTklAll  = new TH2F("fHistSPDClsVsTklAll",                  "All events;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
+  fHistSPDClsVsTklCln  = new TH2F("fHistSPDClsVsTklCln","Events cleaned by other cuts;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
+  fHistV0C012vsTklAll  = new TH2F("fHistV0C012vsTklAll",                  "All events;n tracklets;V0C012 multiplicity",150,0,150,150,0,600);
+  fHistV0C012vsTklCln  = new TH2F("fHistV0C012vsTklCln","Events cleaned by other cuts;n tracklets;V0C012 multiplicity",150,0,150,150,0,600);
+  fHistV0MOnVsOfAll    = new TH2F("fHistV0MOnVsOfAll",                  "All events;Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
+  fHistV0MOnVsOfCln    = new TH2F("fHistV0MOnVsOfCln","Events cleaned by other cuts;Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
+  fHistSPDOnVsOfAll    = new TH2F("fHistSPDOnVsOfAll",                  "All events;Offline FOR;Online FOR",300,0,isLowFlux?300:1200 ,300,0,isLowFlux?300:1200);
+  fHistSPDOnVsOfCln    = new TH2F("fHistSPDOnVsOfCln","Events cleaned by other cuts;Offline FOR;Online FOR",300,0,isLowFlux?300:1200 ,300,0,isLowFlux?300:1200);
+  fHistV0C3vs012All    = new TH2F("fHistV0C3vs012All",                  "All events;V0C012 multiplicity;V0C3 multiplicity",200,0,800,300,0,300);
+  fHistV0C3vs012Cln    = new TH2F("fHistV0C3vs012Cln","Events cleaned by other cuts;V0C012 multiplicity;V0C3 multiplicity",200,0,800,300,0,300);
+  fHistSPDVtxPileupAll = new TH1F("fHistSPDVtxPileupAll",";SPD Vtx pileup",2,0,2);
+  fHistSPDVtxPileupCln = new TH1F("fHistSPDVtxPileupCln",";SPD Vtx pileup",2,0,2);
+  fHistVIRvsBCmod4pup  = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
+  fHistVIRvsBCmod4acc  = new TH2F("fHistVIRvsBCmod4acc","VIR vs BC%4 for accepted events;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
+  fHistVIRCln          = new TH1F("fHistVIRCln","Events cleaned by other cuts",21,-10.5,10.5);
+  fHistBBAflagsAll     = new TH1F("fHistBBAflagsAll",";BBA flags;",33,-0.5,32.5);
+  fHistBBAflagsAcc     = new TH1F("fHistBBAflagsAcc",";BBA flags;",33,-0.5,32.5);
+  fHistBBCflagsAll     = new TH1F("fHistBBCflagsAll",";BBC flags;",33,-0.5,32.5);
+  fHistBBCflagsAcc     = new TH1F("fHistBBCflagsAcc",";BBC flags;",33,-0.5,32.5);
+  fHistBGAflagsAll     = new TH1F("fHistBGAflagsAll",";BGA flags;",33,-0.5,32.5);
+  fHistBGAflagsAcc     = new TH1F("fHistBGAflagsAcc",";BGA flags;",33,-0.5,32.5);
+  fHistBGCflagsAll     = new TH1F("fHistBGCflagsAll",";BGC flags;",33,-0.5,32.5);
+  fHistBGCflagsAcc     = new TH1F("fHistBGCflagsAcc",";BGC flags;",33,-0.5,32.5);
+  fHistV0MOnAll        = new TH1F("fHistV0MOnAll",              "All events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOnAcc        = new TH1F("fHistV0MOnAcc",         "Accepted events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOnVHM        = new TH1F("fHistV0MOnVHM","Events with VHM clean up;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOfAll        = new TH1F("fHistV0MOfAll",     "All events;Offline V0M;",isLowFlux?1000:50000,0,isLowFlux?1000:50000);
+  fHistV0MOfAcc        = new TH1F("fHistV0MOfAcc","Accepted events;Offline V0M;",isLowFlux?1000:50000,0,isLowFlux?1000:50000);
+  fHistOFOAll          = new TH1F("fHistOFOAll"  ,     "All events;Online outer FO chips",800,0,800);
+  fHistOFOAcc          = new TH1F("fHistOFOAcc"  ,"Accepted events;Online outer FO chips",800,0,800);
+  fHistTKLAll          = new TH1F("fHistTKLAll"  ,     "All events;n tracklets;",isLowFlux?200:6000,0,isLowFlux?200:6000);
+  fHistTKLAcc          = new TH1F("fHistTKLAcc"  ,"Accepted events;n tracklets;",isLowFlux?200:6000,0,isLowFlux?200:6000);
+  fHistAD              = new TH2F("fHistAD", "ADC+ADA vs ADC+ADA;ADC-ADA time (ns);ADC+ADA time (ns)", 300, -150, 150, 300, -50, 250);
+  fHistADAAll          = new TH1F("fHistADAAll",     "All events;ADA mean time (ns);", 2000, -100, 100);
+  fHistADAAcc          = new TH1F("fHistADAAcc","Accepted events;ADA mean time (ns);", 2000, -100, 100);
+  fHistADCAll          = new TH1F("fHistADCAll",     "All events;ADC mean time (ns);", 2000, -100, 100);
+  fHistADCAcc          = new TH1F("fHistADCAcc","Accepted events;ADC mean time (ns);", 2000, -100, 100);
+  fHistV0AAll          = new TH1F("fHistV0AAll",     "All events;V0A mean time (ns);", 400, -100, 100);
+  fHistV0AAcc          = new TH1F("fHistV0AAcc","Accepted events;V0A mean time (ns);", 400, -100, 100);
+  fHistV0CAll          = new TH1F("fHistV0CAll",     "All events;V0C mean time (ns);", 400, -100, 100);
+  fHistV0CAcc          = new TH1F("fHistV0CAcc","Accepted events;V0C mean time (ns);", 400, -100, 100);
+  fHistZDC             = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
+  fHistTDCZDC          = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
+  fHistTimeZNA         = new TH1F("fHistTimeZNA",";Corrected ZNA time (ns);",200,-10,10);
+  fHistTimeZNC         = new TH1F("fHistTimeZNC",";Corrected ZNC time (ns);",200,-10,10);
+  fHistTimeZNSumVsDif  = new TH2F("fHistTimeZNSumVsDif",";Corrected ZNC-ZNA time (ns);Corrected ZNC+ZNA time (ns)", 100, -5, 5,100,  -5, 5);
+  fHistTimeCorrZDC     = new TH2F("fHistTimeCorrZDC"   ,";Corrected ZNC-ZNA time (ns);Corrected ZNC+ZNA time (ns)", 160,-320,320,160,-320,320);
+  fHistFMDA            = new TH1F("fHistFMDA", "FMDA;combinations above threshold;", 102, -1.5, 100.5);
+  fHistFMDC            = new TH1F("fHistFMDC", "FMDC;combinations above threshold;", 102, -1.5, 100.5);
+  fHistFMDSingle       = new TH1F("fHistFMDSingle", "FMD single;multiplicity value;", 1000, 0, 10);
+  fHistFMDSum          = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
+  fHistT0              = new TH1F("fHistT0", ";T0 time (ns);", 100, -25, 25);
+  fHistOFOvsTKLAcc     = new TH2F("fHistOFOvsTKLAcc","Accepted events; n tracklets; Online outer FO chips",200,0,isLowFlux?200:6000,200,0,isLowFlux?200:800);
+  fHistV0MOnVsOfAcc    = new TH2F("fHistV0MOnVsOfAcc","Accepted events; Offline V0M; Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
 
-  TF1* fFuncSPDClsVsTkl = new TF1("fFuncSPDClsVsTkl","[0]+[1]*x",0,2000);
+  TF1* fFuncSPDClsVsTkl = new TF1("fFuncSPDClsVsTkl","[0]+[1]*x",0,fHistSPDClsVsTklCln->GetXaxis()->GetXmax());
   fFuncSPDClsVsTkl->SetParameters(fSPDClsVsTklA,fSPDClsVsTklB);
-  fHistSPDClsVsTkl->GetListOfFunctions()->Add(fFuncSPDClsVsTkl);
+  fHistSPDClsVsTklCln->GetListOfFunctions()->Add(fFuncSPDClsVsTkl);
 
-  TF1* fFuncV0MOnVsOf = new TF1("fFuncV0MOnVsOf","[0]+[1]*x",0,2000);
+  TF1* fFuncV0C012vsTkl = new TF1("fFuncV0C012vsTkl","[0]+[1]*x",0,6);
+  fFuncV0C012vsTkl->SetParameters(fV0C012vsTklA,fV0C012vsTklB);
+  fHistV0C012vsTklCln->GetListOfFunctions()->Add(fFuncV0C012vsTkl);
+  
+  TF1* fFuncV0MOnVsOf = new TF1("fFuncV0MOnVsOf","[0]+[1]*x",0,fHistV0MOnVsOfCln->GetXaxis()->GetXmax());
   fFuncV0MOnVsOf->SetParameters(fV0MOnVsOfA,fV0MOnVsOfB);
-  fHistV0MOnVsOf->GetListOfFunctions()->Add(fFuncV0MOnVsOf);
+  fHistV0MOnVsOfCln->GetListOfFunctions()->Add(fFuncV0MOnVsOf);
 
-  TF1* fFuncSPDOnVsOf = new TF1("fFuncSPDOnVsOf","[0]+[1]*x",0,800);
+  TF1* fFuncSPDOnVsOf = new TF1("fFuncSPDOnVsOf","[0]+[1]*x",0,fHistSPDOnVsOfCln->GetXaxis()->GetXmax());
   fFuncSPDOnVsOf->SetParameters(fSPDOnVsOfA,fSPDOnVsOfB);
-  fHistSPDOnVsOf->GetListOfFunctions()->Add(fFuncSPDOnVsOf);
+  fHistSPDOnVsOfCln->GetListOfFunctions()->Add(fFuncSPDOnVsOf);
 
-  TF1* fFuncV0C3vs012 = new TF1("fFuncV0C3vs012","[0]+[1]*x",0,800);
+  TF1* fFuncV0C3vs012 = new TF1("fFuncV0C3vs012","[0]+[1]*x",0,fHistV0C3vs012Cln->GetXaxis()->GetXmax());
   fFuncV0C3vs012->SetParameters(fV0CasymA,fV0CasymB);
-  fHistV0C3vs012->GetListOfFunctions()->Add(fFuncV0C3vs012);
+  fHistV0C3vs012Cln->GetListOfFunctions()->Add(fFuncV0C3vs012);
+  
+  TEllipse* ellipse = new TEllipse(fZDCCutRefDeltaCorr,fZDCCutRefSumCorr,fZDCCutSigmaDeltaCorr,fZDCCutSigmaSumCorr);
+  ellipse->SetFillStyle(0);
+  ellipse->SetLineColor(kMagenta);
+  fHistTimeZNSumVsDif->GetListOfFunctions()->Add(ellipse);
   
   fHistList->Add(fHistStat);
   fHistList->Add(fHistFiredBitsSPD);
-  fHistList->Add(fHistSPDClsVsTkl);
-  fHistList->Add(fHistV0MOnVsOf);
-  fHistList->Add(fHistSPDOnVsOf);
-  fHistList->Add(fHistSPDVtxPileup);
+  fHistList->Add(fHistSPDClsVsTklAll);
+  fHistList->Add(fHistSPDClsVsTklCln);
+  fHistList->Add(fHistV0C012vsTklAll);
+  fHistList->Add(fHistV0C012vsTklCln);
+  fHistList->Add(fHistV0MOnVsOfAll);
+  fHistList->Add(fHistV0MOnVsOfCln);
+  fHistList->Add(fHistSPDOnVsOfAll);
+  fHistList->Add(fHistSPDOnVsOfCln);
+  fHistList->Add(fHistV0C3vs012All);
+  fHistList->Add(fHistV0C3vs012Cln);
+  fHistList->Add(fHistSPDVtxPileupAll);
+  fHistList->Add(fHistSPDVtxPileupCln);
   fHistList->Add(fHistVIRvsBCmod4pup);
   fHistList->Add(fHistVIRvsBCmod4acc);
-  fHistList->Add(fHistV0C3vs012);
-  fHistList->Add(fHistBBAflags);
-  fHistList->Add(fHistBBCflags);
-  fHistList->Add(fHistBGAflags);
-  fHistList->Add(fHistBGCflags);
-  fHistList->Add(fHistV0MOn);
+  fHistList->Add(fHistVIRCln);
+  fHistList->Add(fHistBBAflagsAll);
+  fHistList->Add(fHistBBAflagsAcc);
+  fHistList->Add(fHistBBCflagsAll);
+  fHistList->Add(fHistBBCflagsAcc);
+  fHistList->Add(fHistBGAflagsAll);
+  fHistList->Add(fHistBGAflagsAcc);
+  fHistList->Add(fHistBGCflagsAll);
+  fHistList->Add(fHistBGCflagsAcc);
+  fHistList->Add(fHistV0MOnAll);
+  fHistList->Add(fHistV0MOnAcc);
+  fHistList->Add(fHistV0MOnVHM);
   fHistList->Add(fHistV0MOfAll);
   fHistList->Add(fHistV0MOfAcc);
-  fHistList->Add(fHistSPDOnOuter);
+  fHistList->Add(fHistOFOAll);
+  fHistList->Add(fHistOFOAcc);
+  fHistList->Add(fHistTKLAll);
+  fHistList->Add(fHistTKLAcc);
   fHistList->Add(fHistAD);
-  fHistList->Add(fHistADA);
-  fHistList->Add(fHistADC);
-  fHistList->Add(fHistV0A);
-  fHistList->Add(fHistV0C);
+  fHistList->Add(fHistADAAll);
+  fHistList->Add(fHistADAAcc);
+  fHistList->Add(fHistADCAll);
+  fHistList->Add(fHistADCAcc);
+  fHistList->Add(fHistV0AAll);
+  fHistList->Add(fHistV0AAcc);
+  fHistList->Add(fHistV0CAll);
+  fHistList->Add(fHistV0CAcc);
   fHistList->Add(fHistZDC);
   fHistList->Add(fHistTDCZDC);
-  fHistList->Add(fHistTimeZDC);
+  fHistList->Add(fHistTimeZNA);
+  fHistList->Add(fHistTimeZNC);
+  fHistList->Add(fHistTimeZNSumVsDif);
   fHistList->Add(fHistTimeCorrZDC);
   fHistList->Add(fHistFMDA);
   fHistList->Add(fHistFMDC);
   fHistList->Add(fHistFMDSingle);
   fHistList->Add(fHistFMDSum);
   fHistList->Add(fHistT0);
+  fHistList->Add(fHistOFOvsTKLAcc);
+  fHistList->Add(fHistV0MOnVsOfAcc);
   
   TH1::AddDirectory(oldStatus);
 }
@@ -289,6 +373,7 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){
     case kV0CBG :          str = "V0 C BG";                   break;
     case kVHM :            str = "VHM";                       break;
     case kV0M :            str = "V0M";                       break;
+    case kTKL :            str = "TKL";                       break;
     case kSH1 :            str = "SH1";                       break;
     case kSH2 :            str = "SH2";                       break;
     case kZDC :            str = "ZDC";                       break;
@@ -355,6 +440,8 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
       || triggerNoFlags==kV0PFPileup
       || triggerNoFlags==kSPDVtxPileup
       || triggerNoFlags==kV0Casym
+      || triggerNoFlags==kV0C012vsTklBG
+      || triggerNoFlags==kTKL
       || triggerNoFlags==kZDCA
       || triggerNoFlags==kZDCC
       || triggerNoFlags==kZDCTDCA
@@ -404,6 +491,7 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     case kV0PFPileup:      return IsV0PFPileup(event);
     case kSPDVtxPileup:    return IsSPDVtxPileup(event);
     case kV0Casym:         return IsV0Casym(event);
+    case kV0C012vsTklBG:   return IsV0C012vsTklBG(event);
     case kADA:             return ADTrigger(event, kASide, !offline) == kADBB; 
     case kADC:             return ADTrigger(event, kCSide, !offline) == kADBB;
     case kADABG:           return ADTrigger(event, kASide, !offline) == kADBG;
@@ -414,6 +502,7 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     case kV0CBG:           return V0Trigger(event, kCSide, !offline) == kV0BG;
     case kVHM:             return VHMTrigger(event,!offline);
     case kV0M:             return V0MTrigger(event,!offline);
+    case kTKL:             return TKLTrigger(event);
     case kSH1:             return SH1Trigger(event);
     case kSH2:             return SH2Trigger(event);
     case kT0:              return T0Trigger(event, !offline) == kT0BB;
@@ -480,6 +569,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliVEvent* event, Trigger
     case kV0PFPileup:       return IsV0PFPileup(event);
     case kSPDVtxPileup:     return IsSPDVtxPileup(event);
     case kV0Casym:          return IsV0Casym(event);
+    case kV0C012vsTklBG:    return IsV0C012vsTklBG(event);
     case kADA:              return ADTrigger(event, kASide, kFALSE) == kADBB;
     case kADC:              return ADTrigger(event, kCSide, kFALSE) == kADBB;
     case kADABG:            return ADTrigger(event, kASide, kFALSE) == kADBG;
@@ -491,6 +581,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliVEvent* event, Trigger
     case kV0ABG:            return V0Trigger(event, kASide, kFALSE) == kV0BG;
     case kV0CBG:            return V0Trigger(event, kCSide, kFALSE) == kV0BG;
     case kV0M:              return V0MTrigger(event,kFALSE);
+    case kTKL:              return TKLTrigger(event);
     case kZDC:              return ZDCTrigger(event, kASide) || ZDCTrigger(event, kCentralBarrel) || ZDCTrigger(event, kCSide);
     case kZDCA:             return ZDCTrigger(event, kASide);
     case kZDCC:             return ZDCTrigger(event, kCSide);
@@ -533,7 +624,7 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliVEvent* event, Trigger
 
 
 //-------------------------------------------------------------------------------------------------
-Int_t AliTriggerAnalysis::SPDFiredChips(const AliVEvent* event, Int_t origin, Bool_t fillHists, Int_t layer){
+Int_t AliTriggerAnalysis::SPDFiredChips(const AliVEvent* event, Int_t origin, Int_t fillHists, Int_t layer){
   // returns the number of fired chips in the SPD
   //
   // origin = 0 --> event->GetMultiplicity()->GetNumberOfFiredChips() (filled from clusters)
@@ -576,7 +667,7 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliVEvent* event, Int_t origin, Bo
 
 
 //-------------------------------------------------------------------------------------------------
-AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliVEvent* event, AliceSide side, Bool_t online, Bool_t fillHists){
+AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliVEvent* event, AliceSide side, Bool_t online, Int_t fillHists){
   // Returns the AD trigger decision 
   // argument 'online' is used as a switch between online and offline trigger algorithms
   
@@ -600,10 +691,13 @@ AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliVEvent* ev
     if (side==kASide && (bits & 1<< 3)) return kADBG;
     if (side==kCSide && (bits & 1<< 5)) return kADBG;
   } else {
-    if (fillHists) {
-      if (fHistAD) fHistAD->Fill(ad->GetADCTime()-ad->GetADATime(),ad->GetADATime()+ad->GetADCTime());
-      if (side == kASide && fHistADA) fHistADA->Fill(ad->GetADATime());
-      if (side == kCSide && fHistADC) fHistADC->Fill(ad->GetADCTime());
+    if (fillHists==1) {
+      fHistAD->Fill(ad->GetADCTime()-ad->GetADATime(),ad->GetADATime()+ad->GetADCTime());
+      if (side == kASide) fHistADAAll->Fill(ad->GetADATime());
+      if (side == kCSide) fHistADCAll->Fill(ad->GetADCTime());
+    } else if (fillHists==2) {
+      if (side == kASide) fHistADAAcc->Fill(ad->GetADATime());
+      if (side == kCSide) fHistADCAcc->Fill(ad->GetADCTime());
     }
     if      (side == kASide) return (ADDecision) ad->GetADADecision();
     else if (side == kCSide) return (ADDecision) ad->GetADCDecision();
@@ -614,7 +708,7 @@ AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliVEvent* ev
 
 
 //-------------------------------------------------------------------------------------------------
-AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* event, AliceSide side, Bool_t online, Bool_t fillHists){
+AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* event, AliceSide side, Bool_t online, Int_t fillHists){
   // Returns the V0 trigger decision 
   // argument 'online' is used as a switch between online and offline trigger algorithms
   
@@ -643,9 +737,12 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* ev
     for (Int_t i=begin; i<end; i++) if (vzero->GetBBFlag(i)) return kV0BB;
     for (Int_t i=begin; i<end; i++) if (vzero->GetBGFlag(i)) return kV0BG;
   } else {
-    if (fillHists) {
-      if (side == kASide && fHistV0A) fHistV0A->Fill(vzero->GetV0ATime());
-      if (side == kCSide && fHistV0C) fHistV0C->Fill(vzero->GetV0CTime());
+    if (fillHists==1) {
+      if (side == kASide) fHistV0AAll->Fill(vzero->GetV0ATime());
+      if (side == kCSide) fHistV0CAll->Fill(vzero->GetV0CTime());
+    } else if (fillHists==2){
+      if (side == kASide) fHistV0AAcc->Fill(vzero->GetV0ATime());
+      if (side == kCSide) fHistV0CAcc->Fill(vzero->GetV0CTime());
     }
     if      (side == kASide) return (V0Decision) vzero->GetV0ADecision();
     else if (side == kCSide) return (V0Decision) vzero->GetV0CDecision();
@@ -656,15 +753,8 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* ev
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side, Bool_t useZN, Bool_t useZP, Bool_t fillHists) const{
+Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side, Bool_t useZN, Bool_t useZP, Int_t fillHists) const{
   // Returns if ZDC triggered, based on TDC information 
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-//    AliError("ZDCTDCTrigger method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  AliESDZDC *esdZDC = aEsd->GetESDZDC();
   
   Bool_t zdcNA = kFALSE;
   Bool_t zdcNC = kFALSE;
@@ -673,77 +763,93 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side,
   
   if (fMC) { // If it's MC, we use the energy
     Double_t minEnergy = 0;
-    zdcNA = esdZDC->GetZDCN2Energy()>minEnergy;
-    zdcNC = esdZDC->GetZDCN1Energy()>minEnergy;
-    zdcPA = esdZDC->GetZDCP2Energy()>minEnergy;
-    zdcPC = esdZDC->GetZDCP1Energy()>minEnergy;
-  }
-  else {
-    Bool_t tdc[32] = {kFALSE};
-    for(Int_t itdc=0; itdc<32; itdc++){
-      for(Int_t i=0; i<4; i++) tdc[itdc] |= esdZDC->GetZDCTDCData(itdc, i)!=0;
-      if(fillHists && tdc[itdc]) fHistTDCZDC->Fill(itdc);
+    zdcNA = event->GetZDCN2Energy()>minEnergy;
+    zdcNC = event->GetZDCN1Energy()>minEnergy;
+    zdcPA = event->GetZDCP2Energy()>minEnergy;
+    zdcPC = event->GetZDCP1Energy()>minEnergy;
+  } else if (event->GetDataLayoutType()==AliVEvent::kESD){
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
+    for (Int_t i=0;i<4;i++){
+      zdcNA|= esdZDC->GetZDCTDCData(esdZDC->GetZNATDCChannel(),i)!=0;
+      zdcNC|= esdZDC->GetZDCTDCData(esdZDC->GetZNCTDCChannel(),i)!=0;
+      zdcPA|= esdZDC->GetZDCTDCData(esdZDC->GetZPATDCChannel(),i)!=0;
+      zdcPC|= esdZDC->GetZDCTDCData(esdZDC->GetZPCTDCChannel(),i)!=0;
     }
-    zdcNA = tdc[esdZDC->GetZNATDCChannel()];
-    zdcNC = tdc[esdZDC->GetZNCTDCChannel()];
-    zdcPA = tdc[esdZDC->GetZPATDCChannel()];
-    zdcPC = tdc[esdZDC->GetZPCTDCChannel()];
+  } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++){
+      // 999 is set if corresponding esdZDC->GetZDCTDCData(ch,i) is 0
+      zdcNA|= aodZDC->GetZNATDCm(i)<998;
+      zdcNC|= aodZDC->GetZNCTDCm(i)<998;
+      zdcPA|= aodZDC->GetZPATDCm(i)<998;
+      zdcPC|= aodZDC->GetZPCTDCm(i)<998;
+    }
+  } else {
+    return kFALSE;
   }
   
-  if (side == kASide) return ((useZP && zdcPA) || (useZN && zdcNA)); 
-  if (side == kCSide) return ((useZP && zdcPC) || (useZN && zdcNC)); 
+  if (side == kASide) return ((useZP && zdcPA) || (useZN && zdcNA));
+  if (side == kCSide) return ((useZP && zdcPC) || (useZN && zdcNC));
   return kFALSE;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Bool_t fillHists) const {
+Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHists) const {
   // This method implements a selection based on the timing in both sides of zdcN
   // It can be used in order to eliminate parasitic collisions
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-//    AliError("ZDCTimeTrigger method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  AliESDZDC *esdZDC = aEsd->GetESDZDC();
+  // usage of uncorrected timings is deprecated
+  // TODO: implement selection on AOD in MC
   if(fMC) {
-    UInt_t esdFlag =  esdZDC->GetESDQuality();
-    Bool_t znaFired  = (esdFlag & 0x01) == 0x01;
-    Bool_t zncFired  = (esdFlag & 0x10) == 0x10;
-    return znaFired | zncFired;
+    if (event->GetDataLayoutType()==AliVEvent::kESD) {
+      const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+      AliESDZDC *esdZDC = esd->GetESDZDC();
+      UInt_t esdFlag = esdZDC->GetESDQuality();
+      Bool_t znaFired = (esdFlag & 0x01) == 0x01;
+      Bool_t zncFired = (esdFlag & 0x10) == 0x10;
+      return znaFired | zncFired;
+    } else {
+      return kTRUE;
+    }
   }
-  else {
+  
+  Float_t zna[4]={0};
+  Float_t znc[4]={0};
+
+  if (event->GetDataLayoutType()==AliVEvent::kESD) {
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
-    Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
-    
-    if (aEsd->GetRunNumber()>=245726 && aEsd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
-    
-    for(Int_t i=0;i<4;++i) {
-      if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
-      Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(detChZNC,i)-esdZDC->GetZDCTDCData(detChGate,i)); 
-      Float_t tdcCcorr = esdZDC->GetZDCTDCCorrected(detChZNC,i); 
-      for(Int_t j=0;j<4;++j) {
-        if (esdZDC->GetZDCTDCData(detChZNA,j)==0) continue;
-        Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(detChZNA,j)-esdZDC->GetZDCTDCData(detChGate,j));
-        Float_t tdcAcorr = esdZDC->GetZDCTDCCorrected(detChZNA,j);
-        if(fillHists) {
-          fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
-          fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
-        }
-        if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled) && detChZNA == 10) {
-          if (TMath::Power((tdcCcorr-tdcAcorr-123.1)/2.2,2.)+
-              TMath::Power((tdcCcorr+tdcAcorr+123.1)/2.2,2.) < 1.) return kTRUE;
-        } else if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled) && detChZNA!=10) {
-          if (TMath::Power((tdcCcorr-tdcAcorr-fZDCCutRefDeltaCorr)/fZDCCutSigmaDeltaCorr,2.)+
-              TMath::Power((tdcCcorr+tdcAcorr-fZDCCutRefSumCorr  )/fZDCCutSigmaSumCorr,2.) < 1.) return kTRUE;
-        }
-        else {
-          if (TMath::Power((tdcC-tdcA-fZDCCutRefDelta)/fZDCCutSigmaDelta,2.)+
-              TMath::Power((tdcC+tdcA-fZDCCutRefSum  )/fZDCCutSigmaSum,2.  )<1.0) return kTRUE;
-        }
+    if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
+    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+  } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++) zna[i]=aodZDC->GetZNATDCm(i);
+    for (Int_t i=0;i<4;i++) znc[i]=aodZDC->GetZNCTDCm(i);
+  } else {
+    return kFALSE;
+  }
+  
+  if(fillHists) {
+    for (Int_t i=0;i<4;i++) {
+      fHistTimeZNA->Fill(zna[i]);
+      fHistTimeZNC->Fill(znc[i]);
+      for (Int_t j=0;j<4;j++) {
+        fHistTimeCorrZDC->Fill(znc[i]-zna[j],znc[i]+zna[j]);
+        fHistTimeZNSumVsDif->Fill(znc[i]-zna[j],znc[i]+zna[j]);
       }
+    }
+  }
+  
+  for (Int_t i=0;i<4;i++) {
+    for (Int_t j=0;j<4;j++) {
+      if (TMath::Power((znc[i]-zna[j]-fZDCCutRefDeltaCorr)/fZDCCutSigmaDeltaCorr,2)+
+          TMath::Power((znc[i]+zna[j]-fZDCCutRefSumCorr  )/fZDCCutSigmaSumCorr  ,2)<1.0) return kTRUE;
     }
   }
   return kFALSE;
@@ -755,31 +861,34 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliVEvent* event, AliceSide si
   // This method implements a selection based on the timing in zdcN
   // It can be used in order to flag background
   if(fMC) return kFALSE;
+
+  Float_t zna[4]={0};
+  Float_t znc[4]={0};
   
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-//    AliError("ZDCTimeBGTrigger method implemented for ESDs only");
+  if (event->GetDataLayoutType()==AliVEvent::kESD) {
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+  } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++) zna[i] = aodZDC->GetZNATDCm(i);
+    for (Int_t i=0;i<4;i++) znc[i] = aodZDC->GetZNCTDCm(i);
+  } else {
     return kFALSE;
   }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  AliESDZDC* zdcData = aEsd->GetESDZDC();
+  
   Bool_t znabadhit = kFALSE;
   Bool_t zncbadhit = kFALSE;
   
-  Float_t tdcCcorr=999, tdcAcorr=999;
-  
-  Int_t detChZNA  = zdcData->GetZNATDCChannel();
-  Int_t detChZNC  = zdcData->GetZNCTDCChannel();
-
   for(Int_t i = 0; i < 4; ++i) {
-    if (zdcData->GetZDCTDCData(detChZNC,i)==0) continue;
-    tdcCcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(detChZNC,i));
-    if(tdcCcorr<fZDCCutZNCTimeCorrMax && tdcCcorr>fZDCCutZNCTimeCorrMin) zncbadhit = kTRUE;
-  }
-  for(Int_t i = 0; i < 4; ++i) {
-    if (zdcData->GetZDCTDCData(detChZNA,i)==0) continue;
-    tdcAcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(detChZNA,i));
-    if(tdcAcorr<fZDCCutZNATimeCorrMax && tdcAcorr>fZDCCutZNATimeCorrMin) znabadhit = kTRUE;
+    Float_t absZNA = TMath::Abs(zna[i]);
+    Float_t absZNC = TMath::Abs(znc[i]);
+    if(absZNA<fZDCCutZNATimeCorrMax && absZNA>fZDCCutZNATimeCorrMin) znabadhit = kTRUE;
+    if(absZNC<fZDCCutZNCTimeCorrMax && absZNC>fZDCCutZNCTimeCorrMin) zncbadhit = kTRUE;
   }
   
   if (side == kASide) return znabadhit;
@@ -819,7 +928,7 @@ Bool_t AliTriggerAnalysis::ZDCTrigger(const AliVEvent* event, AliceSide side) co
 
 
 //-------------------------------------------------------------------------------------------------
-Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists){
+Int_t AliTriggerAnalysis::FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Int_t fillHists){
   // returns number of hit combinations above threshold
   // Authors: FMD team, Hans Dalsgaard (code merged from FMD/AliFMDOfflineTrigger)
   if (!fDoFMD) return -1;
@@ -872,7 +981,7 @@ Bool_t AliTriggerAnalysis::FMDTrigger(const AliVEvent* event, AliceSide side){
 
 
 //-------------------------------------------------------------------------------------------------
-AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* event, Bool_t online, Bool_t fillHists){
+AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* event, Bool_t online, Int_t fillHists){
   // Returns the T0 TVDC trigger decision
   //  
   // argument 'online' is used as a switch between online and offline trigger algorithms
@@ -882,7 +991,6 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
   // background flag read from ESD : check in given time interval OrA and OrC were correct but TVDC not
   // 
   // Based on an algorithm by Alla Maevskaya
-  // TODO: implement online and offline selection in AOD
   // TODO: read vtx thresholds from OCDB
   
   if (event->GetDataLayoutType()==AliVEvent::kAOD) {
@@ -892,7 +1000,16 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
       AliError("AliAODTZERO not available");
       return kT0Invalid;
     }
-    if (fMC) if(tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+    if (online) {
+      UInt_t input0TVX = 2; 
+      if (event->GetRunNumber()<229355) input0TVX = 6;
+      if (event->GetRunNumber()<224944) input0TVX = 3;
+      if (event->GetHeader()->GetL0TriggerInputs() & 1<<input0TVX) return kT0BB;
+    } else {
+      if (tzero->GetPileupFlag()) return kT0DecPileup;
+      if (tzero->GetBackgroundFlag()) return kT0DecBG;
+      if (tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+    }
   } 
   else if (event->GetDataLayoutType()==AliVEvent::kESD) {
     // ESD analysis
@@ -1020,22 +1137,6 @@ Bool_t AliTriggerAnalysis::EMCALTrigger(const AliVEvent* event, Trigger trigger)
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliVEvent* event, Bool_t fillHists){
-  // rejects BG based on the cluster vs tracklet correlation
-  // returns true if the event is BG
-  const AliVMultiplicity* mult = event->GetMultiplicity();
-  if (!mult) { 
-    AliError("No multiplicity object"); 
-    return kFALSE; 
-  }
-  Int_t nTkl = mult->GetNumberOfTracklets();
-  Int_t nCls = event->GetNumberOfITSClusters(0) + event->GetNumberOfITSClusters(1);
-  if (fillHists) fHistSPDClsVsTkl->Fill(nTkl,nCls);
-  return nCls > fSPDClsVsTklA + nTkl*fSPDClsVsTklB;
-}
-
-
-//-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
   // This function flags noisy TPC events which can happen during laser warm-up.
   Int_t trackCounter = 0;
@@ -1061,9 +1162,9 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
   if (fMC) return kFALSE; // there are no dip events in MC
-  
+  if (event->GetRunNumber()>197692) return kFALSE; // no dip events in run2
   if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-    AliError("IsHVdipTPCEvent method implemented for ESDs only");
+    AliWarning("IsHVdipTPCEvent method implemented for ESDs only");
     return kFALSE;
   }
   const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
@@ -1081,24 +1182,75 @@ Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliVEvent* event){
   return const_cast<AliVEvent*>(event)->IsIncompleteDAQ(); 
 }
 
+
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Bool_t fillHists){
-  if (fMC) return kFALSE;
+Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliVEvent* event, Int_t fillHists){
+  // rejects BG based on the cluster vs tracklet correlation
+  // returns true if the event is BG
+  if (!fPileupCutsEnabled) return kFALSE;
+  const AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) { 
+    AliError("No multiplicity object"); 
+    return kFALSE; 
+  }
+  Int_t nTkl = mult->GetNumberOfTracklets();
+  Int_t nCls = event->GetNumberOfITSClusters(0) + event->GetNumberOfITSClusters(1);
+  if      (fillHists==1) fHistSPDClsVsTklAll->Fill(nTkl,nCls);
+  else if (fillHists==2) fHistSPDClsVsTklCln->Fill(nTkl,nCls);
+  return nCls > fSPDClsVsTklA + nTkl*fSPDClsVsTklB;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::IsV0C012vsTklBG(const AliVEvent* event, Int_t fillHists){
+  // rejects BG based on V0C012 vs tracklet correlation
+  // returns true if the event is BG
+  const AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) { 
+    AliError("AliVMultiplicity not available"); 
+    return kFALSE; 
+  }
+  
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
     return kFALSE;
   }
+
+  Float_t nTkl       = mult->GetNumberOfTracklets();
+  Float_t multV0C012 = vzero->GetMTotV0C()-vzero->GetMRingV0C(3);
+  if      (fillHists==1) fHistV0C012vsTklAll->Fill(nTkl,multV0C012);
+  else if (fillHists==2) fHistV0C012vsTklCln->Fill(nTkl,multV0C012);
+  return nTkl < 6 && multV0C012 > fV0C012vsTklA + nTkl*fV0C012vsTklB;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Int_t fillHists){
+  if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
+  AliVVZERO* vzero = event->GetVZEROData();
+  if (!vzero) {
+    AliError("AliVVZERO not available");
+    return kFALSE;
+  }
+  if (!vzero->TestBit(AliVVZERO::kTriggerChargeBitsFilled)){
+    if (!fillHists) AliWarning("V0 trigger charge info not found");
+    return kFALSE;
+  }
   // V0A0 excluded from online V0A charge sum => excluding also from offline sum for consistency
   Float_t on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
   Float_t of = vzero->GetMTotV0A()-vzero->GetMRingV0A(0)+vzero->GetMTotV0C();  
-  if (fillHists) fHistV0MOnVsOf->Fill(of,on);
+  if      (fillHists==1) fHistV0MOnVsOfAll->Fill(of,on);
+  else if (fillHists==2) fHistV0MOnVsOfCln->Fill(of,on);
   return (on < fV0MOnVsOfA + fV0MOnVsOfB*of);
 }
 
+
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) {
     AliError("AliVMultiplicity not available");
@@ -1108,17 +1260,23 @@ Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Bool_t fill
   TBits ofMap = mult->GetFiredChipMap();
   Int_t on = onMap.CountBits(0);
   Int_t of = ofMap.CountBits(0);
-  if (fillHists) fHistSPDOnVsOf->Fill(of,on);
+  if      (fillHists==1) fHistSPDOnVsOfAll->Fill(of,on);
+  else if (fillHists==2) fHistSPDOnVsOfCln->Fill(of,on);
   return (on < fSPDOnVsOfA + fSPDOnVsOfB*of);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
+    return kFALSE;
+  }
+  if (!vzero->TestBit(AliVVZERO::kPastFutureFlagsFilled)){
+    if (!fillHists) AliWarning("V0 past future info not found");
     return kFALSE;
   }
 
@@ -1138,7 +1296,7 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Bool_t fillHists
     vir[bc] |= nBBC>=fVIRBBCflags;
     vir[bc] |= nBGA>=fVIRBGAflags;
     vir[bc] |= nBGC>=fVIRBGCflags;
-    if (fillHists) {
+    if (fillHists==1) {
       if (bc==10) continue;
       if (!vir[bc]) continue;
       if (!IsSPDOnVsOfPileup(event) && !IsV0MOnVsOfPileup(event)) continue;
@@ -1151,27 +1309,35 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Bool_t fillHists
   Int_t bcMax = 10 + fNBCsPast   + bcMod4;
   for (Int_t bc=bcMin;bc<=bcMax;bc++) {
     if (bc==10) continue; // skip current bc
+    if (bc < 0) continue;
+    if (bc >20) continue;
     if (vir[bc]) return kTRUE;
   }
 
   if (fillHists) {
     for (Int_t bc=0;bc<=20;bc++) {
-      if (bc==10) continue;
       if (!vir[bc]) continue;
-      fHistVIRvsBCmod4acc->Fill(10-bc,bcMod4);
+      if (fillHists==2) fHistVIRCln->Fill(10-bc);
+      if (bc==10) continue;
+      if (fillHists==1) fHistVIRvsBCmod4acc->Fill(10-bc,bcMod4);
     }
   }
   return kFALSE;
 }
 
-Bool_t AliTriggerAnalysis::IsSPDVtxPileup(const AliVEvent* event, Bool_t fillHists) {
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::IsSPDVtxPileup(const AliVEvent* event, Int_t fillHists) {
+  if (!fPileupCutsEnabled) return kFALSE;
   Bool_t pileup = event->IsPileupFromSPD(fVtxMinContributors,fVtxMinZdist,fVtxNSigmaZdist,fVtxNSigmaDiamXY,fVtxNSigmaDiamZ);
-  if (fillHists) fHistSPDVtxPileup->Fill(pileup);
+  if      (fillHists==1) fHistSPDVtxPileupAll->Fill(pileup);
+  else if (fillHists==2) fHistSPDVtxPileupCln->Fill(pileup);
   return pileup;
 }
 
+
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsV0Casym(const AliVEvent* event, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::IsV0Casym(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
@@ -1181,12 +1347,13 @@ Bool_t AliTriggerAnalysis::IsV0Casym(const AliVEvent* event, Bool_t fillHists){
   Float_t multV0C012 = vzero->GetMRingV0C(0)+vzero->GetMRingV0C(1)+vzero->GetMRingV0C(2);
   Float_t multV0C3   = vzero->GetMRingV0C(3);
   
-  if (fillHists) fHistV0C3vs012->Fill(multV0C012,multV0C3);
+  if      (fillHists==1) fHistV0C3vs012All->Fill(multV0C012,multV0C3);
+  else if (fillHists==2) fHistV0C3vs012Cln->Fill(multV0C012,multV0C3);
   return (multV0C3 < fV0CasymA + fV0CasymB*multV0C012);
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::VHMTrigger(const AliVEvent* event, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::VHMTrigger(const AliVEvent* event, Int_t fillHists){
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
@@ -1203,11 +1370,16 @@ Bool_t AliTriggerAnalysis::VHMTrigger(const AliVEvent* event, Bool_t fillHists){
     nBGA += vzero->GetBGFlag(i+32);
     nBGC += vzero->GetBGFlag(i   );
   }
-  if (fillHists){
-    fHistBBAflags->Fill(nBBA);
-    fHistBBCflags->Fill(nBBC);
-    fHistBGAflags->Fill(nBGA);
-    fHistBGCflags->Fill(nBGC);
+  if (fillHists==1){
+    fHistBBAflagsAll->Fill(nBBA);
+    fHistBBCflagsAll->Fill(nBBC);
+    fHistBGAflagsAll->Fill(nBGA);
+    fHistBGCflagsAll->Fill(nBGC);
+  } else if (fillHists==2) {
+    fHistBBAflagsAcc->Fill(nBBA);
+    fHistBBCflagsAcc->Fill(nBBC);
+    fHistBGAflagsAcc->Fill(nBGA);
+    fHistBGCflagsAcc->Fill(nBGC);
   }
   
   Bool_t vhm = 1;
@@ -1215,25 +1387,37 @@ Bool_t AliTriggerAnalysis::VHMTrigger(const AliVEvent* event, Bool_t fillHists){
   vhm *= nBBC>=fVHMBBCflags;
   vhm *= nBGA<=fVHMBGAflags;
   vhm *= nBGC<=fVHMBGCflags;
+  if (fillHists==1 && vhm) {
+    Float_t on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
+    fHistV0MOnVHM->Fill(on);
+  }
   
   return vhm;
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Int_t fillHists){
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
     return kFALSE;
   }
+  if (online && !vzero->TestBit(AliVVZERO::kTriggerChargeBitsFilled)){
+    if (!fillHists) AliWarning("V0 trigger charge info not found");
+    return kFALSE;
+  }
+
   Int_t   on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
   Float_t of = vzero->GetMTotV0A()+vzero->GetMTotV0C();
 
-  if (fillHists) {
-    fHistV0MOn->Fill(on);
-    fHistV0MOfAll->Fill(of);
-    if (of>=fV0MOfThreshold) fHistV0MOfAcc->Fill(of);
+  if (fillHists==1) {
+    if (online) fHistV0MOnAll->Fill(on); 
+    else        fHistV0MOfAll->Fill(of); 
+  } else if (fillHists==2) {
+    if (online) fHistV0MOnAcc->Fill(on);
+    else        fHistV0MOfAcc->Fill(of);
+    if (!online) fHistV0MOnVsOfAcc->Fill(of,on);
   }
   
   return online ? on>=fV0MOnThreshold: of>=fV0MOfThreshold;
@@ -1241,7 +1425,7 @@ Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Boo
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::SH1Trigger(const AliVEvent* event, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::SH1Trigger(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
   AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) {
@@ -1250,13 +1434,14 @@ Bool_t AliTriggerAnalysis::SH1Trigger(const AliVEvent* event, Bool_t fillHists){
   }
   TBits onMap = mult->GetFastOrFiredChips();
   Int_t on = onMap.CountBits(400);
-  if (fillHists) fHistSPDOnOuter->Fill(on);
+  if      (fillHists==1) fHistOFOAll->Fill(on);
+  else if (fillHists==2) fHistOFOAcc->Fill(on);
   return (on>=fSH1OuterThreshold);
 }
 
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::SH2Trigger(const AliVEvent* event, Bool_t fillHists){
+Bool_t AliTriggerAnalysis::SH2Trigger(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
   AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) {
@@ -1265,8 +1450,25 @@ Bool_t AliTriggerAnalysis::SH2Trigger(const AliVEvent* event, Bool_t fillHists){
   }
   TBits onMap = mult->GetFastOrFiredChips();
   Int_t on = onMap.CountBits(400);
-  if (fillHists) fHistSPDOnOuter->Fill(on);
+  if (fillHists) AliWarning("Histograms not filled. Use SH1Trigger for OFO histograms");
   return (on>=fSH2OuterThreshold);
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::TKLTrigger(const AliVEvent* event, Int_t fillHists){
+  if (fMC) return kFALSE;
+  AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) {
+    AliError("AliVMultiplicity not available");
+    return kFALSE;
+  }
+  Int_t nTkl = mult->GetNumberOfTracklets();
+  if      (fillHists==1) fHistTKLAll->Fill(nTkl);
+  else if (fillHists==2) {
+    fHistTKLAcc->Fill(nTkl);
+    fHistOFOvsTKLAcc->Fill(mult->GetFastOrFiredChips().CountBits(400),nTkl);
+  }
+  return (nTkl>=fTklThreshold);
 }
 
 
@@ -1294,39 +1496,82 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
 
 //-------------------------------------------------------------------------------------------------
 void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDecision, Bool_t offlineDecision){
+  Bool_t pileupCutsStatus = fPileupCutsEnabled;
+  fPileupCutsEnabled = kTRUE;
+
   SPDFiredChips(event,1,kTRUE,0);
-  Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, kTRUE);
-  Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, kTRUE);
-  Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, kTRUE);
-  Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, kTRUE);
-  Bool_t isZDCTDCTrigger   = ZDCTDCTrigger(event,kASide,kFALSE,kFALSE,kTRUE);
-  Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event, kTRUE);
-  Bool_t isV0MOnVsOfPileup = IsV0MOnVsOfPileup(event, kTRUE);
-  Bool_t isSPDOnVsOfPileup = IsSPDOnVsOfPileup(event, kTRUE);
-  Bool_t isV0PFPileup      = IsV0PFPileup(event,kTRUE);
-  Bool_t isSPDVtxPileup    = IsSPDVtxPileup(event,kTRUE);
-  Bool_t isV0Casym         = IsV0Casym(event,kTRUE);
-  Bool_t isVHMTrigger      = VHMTrigger(event,kTRUE);
-  Bool_t isV0MTrigger      = V0MTrigger(event,kFALSE,kTRUE);
-  Bool_t isSH1Trigger      = SH1Trigger(event,kTRUE);
+  Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
+  Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
+  Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, 1);
+  Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, 1);
+  Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event,1);
+  Bool_t isV0C012vsTklBG   = IsV0C012vsTklBG(event,1);
+  Bool_t isV0MOnVsOfPileup = IsV0MOnVsOfPileup(event,1);
+  Bool_t isSPDOnVsOfPileup = IsSPDOnVsOfPileup(event,1);
+  Bool_t isV0PFPileup      = IsV0PFPileup(event,1);
+  Bool_t isSPDVtxPileup    = IsSPDVtxPileup(event,1);
+  Bool_t isV0Casym         = IsV0Casym(event,1);
+  Bool_t isVHMTrigger      = VHMTrigger(event,1);
+  Bool_t isV0MOnTrigger    = V0MTrigger(event,kTRUE,1);
+  Bool_t isV0MOfTrigger    = V0MTrigger(event,kFALSE,1);
+  Bool_t isSH1Trigger      = SH1Trigger(event,1);
+  Bool_t isTKLTrigger      = TKLTrigger(event,1);
+  Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
+  Bool_t isV0A             = decisionV0A==kV0BB;
+  Bool_t isV0C             = decisionV0C==kV0BB;
+  
   fHistStat->AddBinContent(1);
   if (onlineDecision)  fHistStat->AddBinContent(2);
   if (offlineDecision) fHistStat->AddBinContent(3);
   if (onlineDecision & offlineDecision) fHistStat->AddBinContent(4);
   Int_t accept = 0;
-  if (decisionV0A==kV0BB) accept |= 1 << 3;
-  if (decisionV0C==kV0BB) accept |= 1 << 4;
+  if (isV0A)              accept |= 1 << 3;
+  if (isV0C)              accept |= 1 << 4;
   if (!isSPDClsVsTklBG)   accept |= 1 << 5;
-  if (!isV0MOnVsOfPileup) accept |= 1 << 6;
-  if (!isSPDOnVsOfPileup) accept |= 1 << 7;
-  if (!isSPDVtxPileup)    accept |= 1 << 8;
-  if (!isV0PFPileup)      accept |= 1 << 9;
-  if (!isV0Casym)         accept |= 1 <<10;
-  if (isVHMTrigger)       accept |= 1 <<11;
-  if (isV0MTrigger)       accept |= 1 <<12;
-  if (isSH1Trigger)       accept |= 1 <<13;
+  if (!isV0C012vsTklBG)   accept |= 1 << 6;
+  if (!isV0MOnVsOfPileup) accept |= 1 << 7;
+  if (!isSPDOnVsOfPileup) accept |= 1 << 8;
+  if (!isSPDVtxPileup)    accept |= 1 << 9;
+  if (!isV0PFPileup)      accept |= 1 <<10;
+  if (!isV0Casym)         accept |= 1 <<11;
+  if (isVHMTrigger)       accept |= 1 <<12;
+  if (isV0MOfTrigger)     accept |= 1 <<13;
+  if (isSH1Trigger)       accept |= 1 <<14;
+  if (isZDCTimeTrigger)   accept |= 1 <<15;
   if (accept) fHistStat->Fill(accept);
   
+  Bool_t acceptDefault = isV0A & isV0C;
+  acceptDefault &= !isSPDClsVsTklBG;
+  acceptDefault &= !isV0C012vsTklBG;
+  acceptDefault &= !isV0PFPileup;
+  acceptDefault &= !isSPDVtxPileup;
+  acceptDefault &= !isV0MOnVsOfPileup;
+  acceptDefault &= !isSPDOnVsOfPileup;
+  acceptDefault &= !isV0Casym;
+
+  // Fill histograms for cleaned events
+  if (isV0A & isV0C                    & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsSPDClusterVsTrackletBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG                    & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsV0C012vsTklBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG                 & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsV0PFPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup                   & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsSPDVtxPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup                      & !isSPDOnVsOfPileup & !isV0Casym) IsV0MOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup                      & !isV0Casym) IsSPDOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup             ) IsV0Casym(event,2);
+  
+  // Fill distributions for events accepted by general cuts
+  if (acceptDefault){
+    ADTrigger(event, kASide, kFALSE, 2);
+    ADTrigger(event, kCSide, kFALSE, 2);
+    V0Trigger(event, kASide, kFALSE, 2);
+    V0Trigger(event, kCSide, kFALSE, 2);
+    VHMTrigger(event, 2);
+    V0MTrigger(event,kTRUE , 2);
+    V0MTrigger(event,kFALSE, 2);
+    SH1Trigger(event,2);
+    TKLTrigger(event,2);
+  }
+  fPileupCutsEnabled = pileupCutsStatus;
+
 //  TODO: Adjust for AOD
 //  AliESDZDC* zdcData = event->GetESDZDC();
 //  if (zdcData)  {
@@ -1420,47 +1665,7 @@ void AliTriggerAnalysis::Browse(TBrowser *b){
    // Browse this object.
    // If b=0, there is no Browse call TObject::Browse(0) instead.
    //         This means TObject::Inspect() will be invoked indirectly
-
-
-  static TObjString * strZDCCutRefSumCorr     =0;    
-  static TObjString * strZDCCutRefDeltaCorr   =0;  
-  static TObjString * strZDCCutSigmaSumCorr   =0;  
-  static TObjString * strZDCCutSigmaDeltaCorr =0;
-  static TObjString * strZDCCutZNATimeCorrMin =0;
-  static TObjString * strZDCCutZNATimeCorrMax =0;
-  static TObjString * strZDCCutZNCTimeCorrMin =0;
-  static TObjString * strZDCCutZNCTimeCorrMax =0;
-
-  if(strZDCCutRefSumCorr     ) delete strZDCCutRefSumCorr     ;
-  if(strZDCCutRefDeltaCorr   ) delete strZDCCutRefDeltaCorr   ;
-  if(strZDCCutSigmaSumCorr   ) delete strZDCCutSigmaSumCorr   ;
-  if(strZDCCutSigmaDeltaCorr ) delete strZDCCutSigmaDeltaCorr ;
-  if(strZDCCutZNATimeCorrMin ) delete strZDCCutZNATimeCorrMin ;
-  if(strZDCCutZNATimeCorrMax ) delete strZDCCutZNATimeCorrMax ;
-  if(strZDCCutZNCTimeCorrMin ) delete strZDCCutZNCTimeCorrMin ;
-  if(strZDCCutZNCTimeCorrMax ) delete strZDCCutZNCTimeCorrMax ;
-  
-  strZDCCutRefSumCorr     = new TObjString(Form("ZDCCutRefSumCorr     %f", fZDCCutRefSumCorr    )); 
-  strZDCCutRefDeltaCorr   = new TObjString(Form("ZDCCutRefDeltaCorr   %f", fZDCCutRefDeltaCorr  )); 
-  strZDCCutSigmaSumCorr   = new TObjString(Form("ZDCCutSigmaSumCorr   %f", fZDCCutSigmaSumCorr  )); 
-  strZDCCutSigmaDeltaCorr = new TObjString(Form("ZDCCutSigmaDeltaCorr %f", fZDCCutSigmaDeltaCorr)); 
-  strZDCCutZNATimeCorrMin = new TObjString(Form("ZDCCutZNATimeCorrMin %f", fZDCCutZNATimeCorrMin));
-  strZDCCutZNATimeCorrMax = new TObjString(Form("ZDCCutZNATimeCorrMax %f", fZDCCutZNATimeCorrMax));
-  strZDCCutZNCTimeCorrMin = new TObjString(Form("ZDCCutZNCTimeCorrMin %f", fZDCCutZNCTimeCorrMin));
-  strZDCCutZNCTimeCorrMax = new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax));
-
-  if (b) {
-    // Creates a folder for each beam type containing the list of corresponding bx ids
-    b->Add(strZDCCutRefSumCorr    );
-    b->Add(strZDCCutRefDeltaCorr  );
-    b->Add(strZDCCutSigmaSumCorr  );
-    b->Add(strZDCCutSigmaDeltaCorr);
-    b->Add(strZDCCutZNATimeCorrMin);
-    b->Add(strZDCCutZNATimeCorrMax);
-    b->Add(strZDCCutZNCTimeCorrMin);
-    b->Add(strZDCCutZNCTimeCorrMax);
-    b->Add(fHistList);
-  }     
-  else
-    TObject::Browse(b);
+  AliOADBTriggerAnalysis::Browse(b);
+  if (b) b->Add(fHistList);
+  else   TObject::Browse(b);
 }

@@ -37,6 +37,14 @@
 //        (david.chinellato@gmail.com)
 //
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+//   IMPORTANT: This is a development version of the task and there are known
+//   problems in it, which are associated to incompatibilities of methods used
+//   in AODs/ESDs. The preferred version of the Extract V0 task is the one
+//   which runs on ESDs ("AliAnalysisTaskExtractV0"). Use this AOD version at
+//   your own risk!
+//
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 class TTree;
 class TParticle;

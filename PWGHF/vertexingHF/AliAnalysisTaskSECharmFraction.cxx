@@ -5681,7 +5681,7 @@ flistTghCutsSignal->Add(hMassTGHCsignSB);
   }
   Printf("AFTER DATA HISTOS CREATION \n");
 
-  delete ptbinlimitsCxyLxy;
+  delete[] ptbinlimitsCxyLxy;
 
 
   PostData(1,fNentries);

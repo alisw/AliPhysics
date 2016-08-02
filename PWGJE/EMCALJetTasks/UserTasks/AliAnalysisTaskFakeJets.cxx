@@ -442,7 +442,7 @@ Float_t AliAnalysisTaskFakeJets::HardTrack(AliEmcalJet *jet, Int_t jetContNb =0 
   AliVParticle *vp1 = 0x0;
 
   std::vector<int> ordindex;
-  ordindex=jet->SortConstituentsPt(jetCont->GetParticleContainer()->GetArray());
+  ordindex=jet->GetPtSortedTrackConstituentIndexes(jetCont->GetParticleContainer()->GetArray());
    if(ordindex.size()<1) return -1;
   
   vp1 = static_cast<AliVParticle*>(jet->TrackAt(ordindex[0], jetCont->GetParticleContainer()->GetArray()));
@@ -482,7 +482,7 @@ Float_t AliAnalysisTaskFakeJets::SecHardTrack(AliEmcalJet *jet, Int_t jetContNb 
   AliVParticle *vp1 = 0x0;
   AliVParticle *vp2 = 0x0;
   std::vector<int> ordindex;
-  ordindex=jet->SortConstituentsPt(jetCont->GetParticleContainer()->GetArray());
+  ordindex=jet->GetPtSortedTrackConstituentIndexes(jetCont->GetParticleContainer()->GetArray());
  
   
   if(ordindex.size()<2) return -1;

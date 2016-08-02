@@ -270,6 +270,17 @@ AliCorrectionManagerBase::CheckCorrections(UInt_t what, Bool_t verbose) const
 }
 
 //____________________________________________________________________
+const char*
+AliCorrectionManagerBase::GetObjectName(Int_t what) const
+{
+  const Correction* c = GetCorrection(what);
+  if (!c) return 0;
+  const TClass* cls = c->TheClass();
+  if (!cls) return 0;
+  return cls->GetName();
+}
+
+//____________________________________________________________________
 void
 AliCorrectionManagerBase::RegisterCorrection(Int_t id, Correction* corr)
 {

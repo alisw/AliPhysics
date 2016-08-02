@@ -27,6 +27,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   Double_t avTime=0., peakTime=0., spreadTime=0., peakTimeErr=0., spreadTimeErr=0.,negTimeRatio=0.,
     avRawTime=0., peakRawTime=0., spreadRawTime=0., peakRawTimeErr=0., spreadRawTimeErr=0., 
     avTot=0., peakTot=0.,spreadTot=0.,  peakTotErr=0.,spreadTotErr=0.,
+    meanResTOF=0., spreadResTOF=0., meanResTOFerr=0., spreadResTOFerr=0.,
     orphansRatio=0., avL=0., negLratio=0.,
     effPt1=0., effPt2=0., matchEffLinFit1Gev=0.,matchEffLinFit1GevErr=0.;
   Double_t avDiffTime=0.,peakDiffTime=0., spreadDiffTime=0.,peakDiffTimeErr=0., spreadDiffTimeErr=0.,avT0fillRes=0.;
@@ -35,6 +36,10 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   Double_t avT0C=0.,peakT0C=0., spreadT0C=0.,peakT0CErr=0., spreadT0CErr=0.;
   Double_t avT0AC=0.,peakT0AC=0., spreadT0AC=0.,peakT0ACErr=0., spreadT0ACErr=0.;
   Double_t avT0res=0.,peakT0res=0., spreadT0res=0.,peakT0resErr=0., spreadT0resErr=0.;
+
+  Double_t StartTime_pBestT0 = 0.0, StartTime_pBestT0Err = 0.0, StartTime_pFillT0 = 0.0, StartTime_pFillT0Err = 0.0, StartTime_pTOFT0 = 0.0, StartTime_pTOFT0Err = 0.0, StartTime_pT0ACT0 = 0.0, StartTime_pT0ACT0Err = 0.0, StartTime_pT0AT0 = 0.0, StartTime_pT0AT0Err = 0.0, StartTime_pT0CT0 = 0.0, StartTime_pT0CT0Err = 0.0;
+  Double_t StartTime_pBestT0_Res = 0.0, StartTime_pFillT0_Res = 0.0, StartTime_pTOFT0_Res = 0.0, StartTime_pT0ACT0_Res = 0.0, StartTime_pT0AT0_Res = 0.0, StartTime_pT0CT0_Res = 0.0;
+
   Float_t avMulti=0;
   Float_t fractionEventsWHits=0.0;
   Double_t goodChannelRatio=0.0;
@@ -79,6 +84,10 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   ttree->SetBranchAddress("spreadPiDiffTime",&spreadDiffTime); //spread of main peak t-texp after fit
   ttree->SetBranchAddress("peakPiDiffTimeErr",&peakDiffTimeErr); //main peak t-texp after fit error
   ttree->SetBranchAddress("spreadPiDiffTimeErr",&spreadDiffTimeErr); //spread of main peak of t-texp after fit error
+  ttree->SetBranchAddress("meanResTOF",&meanResTOF); //mean of t-texp_pi-t0_TOF
+  ttree->SetBranchAddress("spreadResTOF",&spreadResTOF); //spread of t-texp_pi-t0_TOF, ie. resolution
+  ttree->SetBranchAddress("meanResTOFerr",&meanResTOFerr); //error on mean of t-texp_pi-t0_TOF
+  ttree->SetBranchAddress("spreadResTOFerr",&spreadResTOFerr); //error on the spread of t-texp_pi-t0_TOF
   ttree->SetBranchAddress("avT0A",&avT0A); //main peak t0A
   ttree->SetBranchAddress("peakT0A",&peakT0A); // main peak of t0A after fit
   ttree->SetBranchAddress("spreadT0A",&spreadT0A); //spread of main peak of t0A after fit
@@ -101,6 +110,38 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   ttree->SetBranchAddress("spreadT0resErr",&spreadT0resErr); //spread of main peak of t0AC after fit
   ttree->SetBranchAddress("avT0fillRes",&avT0fillRes); //t0 fill res
 
+  ttree->SetBranchAddress("StartTime_pBestT0",&StartTime_pBestT0); //T0Best                                  
+  ttree->SetBranchAddress("StartTime_pFillT0",&StartTime_pFillT0); //T0Fill
+  ttree->SetBranchAddress("StartTime_pTOFT0",&StartTime_pTOFT0); //T0TOF
+  ttree->SetBranchAddress("StartTime_pT0ACT0",&StartTime_pT0ACT0); //T0AC
+  ttree->SetBranchAddress("StartTime_pT0AT0",&StartTime_pT0AT0); //T0A
+  ttree->SetBranchAddress("StartTime_pT0CT0",&StartTime_pT0CT0); //T0C
+  ttree->SetBranchAddress("StartTime_pBestT0_Res",&StartTime_pBestT0_Res); //T0Best                      
+  ttree->SetBranchAddress("StartTime_pFillT0_Res",&StartTime_pFillT0_Res); //T0Fill res
+  ttree->SetBranchAddress("StartTime_pTOFT0_Res",&StartTime_pTOFT0_Res); //T0TOF res
+  ttree->SetBranchAddress("StartTime_pT0ACT0_Res",&StartTime_pT0ACT0_Res); //T0AC res
+  ttree->SetBranchAddress("StartTime_pT0AT0_Res",&StartTime_pT0AT0_Res); //T0A res
+  ttree->SetBranchAddress("StartTime_pT0CT0_Res",&StartTime_pT0CT0_Res); //T0C res
+
+  ttree->SetBranchAddress("StartTime_pBestT0Err",&StartTime_pBestT0Err); //T0Best                                  
+  ttree->SetBranchAddress("StartTime_pFillT0Err",&StartTime_pFillT0Err); //T0Fill
+  ttree->SetBranchAddress("StartTime_pTOFT0Err",&StartTime_pTOFT0Err); //T0TOF
+  ttree->SetBranchAddress("StartTime_pT0ACT0Err",&StartTime_pT0ACT0Err); //T0AC
+  ttree->SetBranchAddress("StartTime_pT0AT0Err",&StartTime_pT0AT0Err); //T0A
+  ttree->SetBranchAddress("StartTime_pT0CT0Err",&StartTime_pT0CT0Err); //T0C
+
+  //Fetch period-integrated PID plots
+  //Pions
+  TH2F * hDiffTimePi=(TH2F*)fin->Get("hExpTimePiVsP_all");  
+  hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
+  //Kaon
+  TH2F * hDiffTimeKa=(TH2F*)fin->Get("hExpTimeKaVsP_all");  
+  hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
+  //Protons
+  TH2F * hDiffTimePro=(TH2F*)fin->Get("hExpTimeProVsP_all"); 
+  hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
+
+  //Create trending plots
   Int_t nRuns=ttree->GetEntries();
   TList lista;
    
@@ -124,6 +165,16 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hSpreadDiffTimeVsRun->SetDrawOption("E1");
   hSpreadDiffTimeVsRun->SetMarkerStyle(20);
   hSpreadDiffTimeVsRun->SetMarkerColor(kBlue);
+
+  TH1F * hMeanTOFResVsRun=new TH1F("hMeanTOFResVsRun","Mean value of t-t_{exp,#pi}-t0_{TOF} (ps);;<t^{TOF}-t_{exp,#pi}-t_{0,TOF}> (ps)",nRuns,0., nRuns);
+  hMeanTOFResVsRun->SetDrawOption("E1");
+  hMeanTOFResVsRun->SetMarkerStyle(20);
+  hMeanTOFResVsRun->SetMarkerColor(kBlue);
+
+  TH1F * hSigmaTOFResVsRun=new TH1F("hSigmaTOFResVsRun","Spread of t-t_{exp,#pi}-t0_{TOF} (ps);;#sigma(t^{TOF}-t_{exp,#pi}-t_{0,TOF}) (ps)",nRuns,0., nRuns);
+  hSigmaTOFResVsRun->SetDrawOption("E1");
+  hSigmaTOFResVsRun->SetMarkerStyle(20);
+  hSigmaTOFResVsRun->SetMarkerColor(kBlue);
 
   TH1F * hAvTimeVsRun=new TH1F("hAvTimeVsRun","<t^{TOF}>;;<t^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
   hAvTimeVsRun->SetDrawOption("E1");
@@ -192,6 +243,90 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
   TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);;t0AC (ps)",nRuns,0., nRuns);
   TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;;t0_spread (ps)",nRuns,0., nRuns);
+
+  TH1F * hT0BestVsRun=new TH1F("hT0BestVsRun","start time by best_t0;;t0 Best (ps)",nRuns,0., nRuns);
+  hT0BestVsRun->SetDrawOption("E1");
+  hT0BestVsRun->SetLineColor(kBlue);
+  hT0BestVsRun->SetLineWidth(2);
+  hT0BestVsRun->SetMarkerStyle(20);
+  hT0BestVsRun->SetMarkerColor(kBlue);
+
+  TH1F * hT0FillVsRun=new TH1F("hT0FillVsRun","start time by fill_t0;;t0 Fill (ps)",nRuns,0., nRuns);
+  hT0FillVsRun->SetDrawOption("E1");
+  hT0FillVsRun->SetLineColor(kBlue);
+  hT0FillVsRun->SetLineWidth(2);
+  hT0FillVsRun->SetMarkerStyle(20);
+  hT0FillVsRun->SetMarkerColor(kBlue);
+
+  TH1F * hT0TOFVsRun=new TH1F("hT0TOFVsRun","start time by TOF_t0;;t0 TOF (ps)",nRuns,0., nRuns);
+  hT0TOFVsRun->SetDrawOption("E1");
+  hT0TOFVsRun->SetLineColor(kBlue);
+  hT0TOFVsRun->SetLineWidth(2);
+  hT0TOFVsRun->SetMarkerStyle(20);
+  hT0TOFVsRun->SetMarkerColor(kBlue);
+
+  TH1F * hT0T0ACVsRun=new TH1F("hT0T0ACVsRun","start time by T0AC;;t0 T0AC (ps)",nRuns,0., nRuns);
+  hT0T0ACVsRun->SetDrawOption("E1");
+  hT0T0ACVsRun->SetLineColor(kRed);
+  hT0T0ACVsRun->SetLineWidth(2);
+  hT0T0ACVsRun->SetMarkerStyle(20);
+  hT0T0ACVsRun->SetMarkerColor(kRed);
+
+  TH1F * hT0T0AVsRun=new TH1F("hT0T0AtVsRun","start time by T0A;;t0 T0A (ps)",nRuns,0., nRuns);
+  hT0T0AVsRun->SetDrawOption("E1");
+  hT0T0AVsRun->SetLineColor(kGreen+2);
+  hT0T0AVsRun->SetLineWidth(2);
+  hT0T0AVsRun->SetMarkerStyle(20);
+  hT0T0AVsRun->SetMarkerColor(kGreen+2);
+
+  TH1F * hT0T0CVsRun=new TH1F("hT0T0CVsRun","start time by T0C;;t0 T0C (ps)",nRuns,0., nRuns);
+  hT0T0CVsRun->SetDrawOption("E1");
+  hT0T0CVsRun->SetLineColor(kMagenta);
+  hT0T0CVsRun->SetLineWidth(2);
+  hT0T0CVsRun->SetMarkerStyle(20);
+  hT0T0CVsRun->SetMarkerColor(kMagenta);
+
+  TH1F * hT0BestVsRunRes=new TH1F("hT0BestVsRunRes","#sigma of best_t0;; #sigma t0 Best (ps)",nRuns,0., nRuns);
+  hT0BestVsRunRes->SetDrawOption("E1");
+  hT0BestVsRunRes->SetLineColor(kBlue);
+  hT0BestVsRunRes->SetLineWidth(2);
+  hT0BestVsRunRes->SetMarkerStyle(20);
+  hT0BestVsRunRes->SetMarkerColor(kBlue);
+
+  TH1F * hT0FillVsRunRes=new TH1F("hT0FillVsRunRes","fill_t0;; #sigmat0 Fill (ps)",nRuns,0., nRuns);
+  hT0FillVsRunRes->SetDrawOption("E1");
+  hT0FillVsRunRes->SetLineColor(kBlue);
+  hT0FillVsRunRes->SetLineWidth(2);
+  hT0FillVsRunRes->SetMarkerStyle(20);
+  hT0FillVsRunRes->SetMarkerColor(kBlue);
+  
+  TH1F * hT0TOFVsRunRes=new TH1F("hT0T0FVsRunRes","TOF_t0;; #sigma t0 TOF (ps)",nRuns,0., nRuns);
+  hT0TOFVsRunRes->SetDrawOption("E1");
+  hT0TOFVsRunRes->SetLineColor(kBlue);
+  hT0TOFVsRunRes->SetLineWidth(2);
+  hT0TOFVsRunRes->SetMarkerStyle(20);
+  hT0TOFVsRunRes->SetMarkerColor(kBlue);
+  
+  TH1F * hT0T0ACVsRunRes=new TH1F("hT0T0ACVsRunRes","T0AC_t0;; #sigma t0 T0AC (ps)",nRuns,0., nRuns);
+  hT0T0ACVsRunRes->SetDrawOption("E1");
+  hT0T0ACVsRunRes->SetLineColor(kRed);
+  hT0T0ACVsRunRes->SetLineWidth(2);
+  hT0T0ACVsRunRes->SetMarkerStyle(20);
+  hT0T0ACVsRunRes->SetMarkerColor(kRed);
+  
+  TH1F * hT0T0AVsRunRes=new TH1F("hT0T0AVsRunRes","T0A_t0;; #sigma t0 T0A (ps)",nRuns,0., nRuns);
+  hT0T0AVsRunRes->SetDrawOption("E1");
+  hT0T0AVsRunRes->SetLineColor(kGreen+2);
+  hT0T0AVsRunRes->SetLineWidth(2);
+  hT0T0AVsRunRes->SetMarkerStyle(20);
+  hT0T0AVsRunRes->SetMarkerColor(kGreen+2);
+  
+  TH1F * hT0T0CVsRunRes=new TH1F("hT0T0CVsRunRes","T0C_t0;; #sigma t0 T0C (ps)",nRuns,0., nRuns);
+  hT0T0CVsRunRes->SetDrawOption("E1");
+  hT0T0CVsRunRes->SetLineColor(kMagenta);
+  hT0T0CVsRunRes->SetLineWidth(2);
+  hT0T0CVsRunRes->SetMarkerStyle(20);
+  hT0T0CVsRunRes->SetMarkerColor(kMagenta);
 	
   TH1F * hGoodChannelsRatio=new TH1F("hGoodChannelsRatio","Fraction of TOF good channels;;fraction of good channels",nRuns, 0., nRuns);//, 100, 0. , 1.);
   hGoodChannelsRatio->SetDrawOption("E");
@@ -205,18 +340,20 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   lista.Add(hSpreadDiffTimeVsRun);
   lista.Add(hAvTimeVsRun);
   lista.Add(hPeakTimeVsRun);
+  lista.Add(hMeanTOFResVsRun);
+  lista.Add(hSigmaTOFResVsRun);
   lista.Add(hSpreadTimeVsRun);
-  lista.Add(  hAvRawTimeVsRun);
-  lista.Add(  hPeakRawTimeVsRun);
-  lista.Add(  hSpreadRawTimeVsRun); 
-  lista.Add(  hAvTotVsRun);
-  lista.Add(  hPeakTotVsRun);
-  lista.Add(  hSpreadTotVsRun);
-  lista.Add(  hNegTimeRatioVsRun);
-  lista.Add(  hOrphansRatioVsRun);
-  lista.Add( hMeanLVsRun);
-  lista.Add(  hNegLRatioVsRun);
-  lista.Add(  hMatchEffVsRun);
+  lista.Add(hAvRawTimeVsRun);
+  lista.Add(hPeakRawTimeVsRun);
+  lista.Add(hSpreadRawTimeVsRun); 
+  lista.Add(hAvTotVsRun);
+  lista.Add(hPeakTotVsRun);
+  lista.Add(hSpreadTotVsRun);
+  lista.Add(hNegTimeRatioVsRun);
+  lista.Add(hOrphansRatioVsRun);
+  lista.Add(hMeanLVsRun);
+  lista.Add(hNegLRatioVsRun);
+  lista.Add(hMatchEffVsRun);
   lista.Add(hMatchEffVsRunNormToGoodCh);
   lista.Add(hMatchEffVsRunNormToGoodChInAcc);
   lista.Add(hPeakT0AVsRun);
@@ -225,7 +362,19 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   lista.Add(hT0fillResVsRun);
   lista.Add(hGoodChannelsRatio);
   lista.Add(hGoodChannelsRatioInAcc);
-
+  lista.Add(hT0BestVsRun);
+  lista.Add(hT0FillVsRun);
+  lista.Add(hT0TOFVsRun);
+  lista.Add(hT0T0ACVsRun);
+  lista.Add(hT0T0AVsRun);
+  lista.Add(hT0T0CVsRun);
+  lista.Add(hT0BestVsRunRes);
+  lista.Add(hT0FillVsRunRes);
+  lista.Add(hT0TOFVsRunRes);
+  lista.Add(hT0T0ACVsRunRes);
+  lista.Add(hT0T0AVsRunRes);
+  lista.Add(hT0T0CVsRunRes);
+ 
   char runlabel[6];
    
   for (Int_t irun=0;irun<nRuns;irun++){
@@ -246,6 +395,15 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     hSpreadDiffTimeVsRun->SetBinContent(irun+1,spreadDiffTime);
     hSpreadDiffTimeVsRun->SetBinError(irun+1,spreadDiffTimeErr);
     hSpreadDiffTimeVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hMeanTOFResVsRun->SetBinContent(irun+1,meanResTOF);
+    hMeanTOFResVsRun->SetBinError(irun+1,meanResTOFerr);
+    hMeanTOFResVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hSigmaTOFResVsRun->SetBinContent(irun+1,spreadResTOF);
+    hSigmaTOFResVsRun->SetBinError(irun+1,spreadResTOFerr);
+    hSigmaTOFResVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
 
     hAvTimeVsRun->SetBinContent(irun+1, avTime);
     hAvTimeVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
@@ -340,6 +498,55 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
 
     hT0fillResVsRun->SetBinContent(irun+1,avT0fillRes);
     hT0fillResVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0BestVsRun->SetBinContent(irun+1,StartTime_pBestT0);
+    hT0BestVsRun->SetBinError(irun+1,StartTime_pBestT0Err);
+    hT0BestVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0FillVsRun->SetBinContent(irun+1,StartTime_pFillT0);
+    hT0FillVsRun->SetBinError(irun+1,StartTime_pFillT0Err);
+    hT0FillVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0TOFVsRun->SetBinContent(irun+1,StartTime_pTOFT0);
+    hT0TOFVsRun->SetBinError(irun+1,StartTime_pTOFT0Err);
+    hT0TOFVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0T0ACVsRun->SetBinContent(irun+1,StartTime_pT0ACT0);
+    hT0T0ACVsRun->SetBinError(irun+1,StartTime_pT0ACT0Err);
+    hT0T0ACVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0T0AVsRun->SetBinContent(irun+1,StartTime_pT0AT0);
+    hT0T0AVsRun->SetBinError(irun+1,StartTime_pT0AT0Err);
+    hT0T0AVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0T0CVsRun->SetBinContent(irun+1,StartTime_pT0CT0);
+    hT0T0CVsRun->SetBinError(irun+1,StartTime_pT0CT0Err);
+    hT0T0CVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
+    
+    hT0BestVsRunRes->SetBinContent(irun+1,StartTime_pBestT0_Res);
+    hT0BestVsRunRes->SetBinError(irun+1, 1.e-5);
+    hT0BestVsRunRes->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0FillVsRunRes->SetBinContent(irun+1,StartTime_pFillT0_Res);
+    hT0FillVsRunRes->SetBinError(irun+1, 1.e-5);   
+    hT0FillVsRunRes->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0TOFVsRunRes->SetBinContent(irun+1,StartTime_pTOFT0_Res);
+    hT0TOFVsRunRes->SetBinError(irun+1, 1.e-5);
+    hT0TOFVsRunRes->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0T0ACVsRunRes->SetBinContent(irun+1,StartTime_pT0ACT0_Res);
+    hT0T0ACVsRunRes->SetBinError(irun+1, 1.e-5);
+    hT0T0ACVsRunRes->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0T0AVsRunRes->SetBinContent(irun+1,StartTime_pT0AT0_Res);
+    hT0T0AVsRunRes->SetBinError(irun+1, 1.e-5);
+    hT0T0AVsRunRes->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
+    hT0T0CVsRunRes->SetBinContent(irun+1,StartTime_pT0CT0_Res);
+    hT0T0CVsRunRes->SetBinError(irun+1, 1.e-5);
+    hT0T0CVsRunRes->GetXaxis()->SetBinLabel(irun+1,runlabel);
+
   }
   
   TFile * fout=new TFile(outfilename,"recreate");
@@ -349,16 +556,29 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     
   gStyle->SetOptStat(10);
 
+  //Plot t-texp trend
   TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,1050, 550);
   hPeakDiffTimeVsRun->GetYaxis()->SetRangeUser(-50.,50.);
   hPeakDiffTimeVsRun->Draw();
   cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
 	
   TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,1050, 550);
-  hSpreadDiffTimeVsRun->GetYaxis()->SetRangeUser(200.,400.);
+  hSpreadDiffTimeVsRun->GetYaxis()->SetRangeUser(0.,400.);
   hSpreadDiffTimeVsRun->Draw();
   cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.png",plotDir.Data()));
-  
+
+  //Plot average of t-texp-t0tof and resolution trend
+  TCanvas* cMeanTOFResVsRun = new TCanvas("cMeanTOFResVsRun","cMeanTOFResVsRun", 50,50,1050, 550);
+  hMeanTOFResVsRun->GetYaxis()->SetRangeUser(-50.,50.);
+  hMeanTOFResVsRun->Draw();
+  cMeanTOFResVsRun->Print(Form("%s/cMeanTOFResVsRun.png",plotDir.Data()));
+       
+  TCanvas* cSigmaTOFResVsRun = new TCanvas("cSigmaTOFResVsRun","cSigmaTOFResVsRun", 50,50,1050, 550);
+  hSigmaTOFResVsRun->GetYaxis()->SetRangeUser(0.,200.);
+  hSigmaTOFResVsRun->Draw();
+  cSigmaTOFResVsRun->Print(Form("%s/cSigmaTOFResVsRun.png",plotDir.Data()));
+
+  //Plot matching efficiency trend
   TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun",50, 50, 1050, 550);
   hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
   hMatchEffVsRun->Draw();
@@ -374,12 +594,75 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hMatchEffVsRunNormToGoodCh->Draw();
   cMatchEffNormToGoodCh->Print(Form("%s/cMatchEffNormToGoodCh.png",plotDir.Data()));
 
+   TLegend *leg = new TLegend(0.5095602,0.1206897,0.8891013,0.3314176,NULL,"brNDC");
+   leg->SetBorderSize(1);
+   leg->SetLineColor(1);
+   leg->SetLineStyle(1);
+   leg->SetLineWidth(1);
+   leg->SetFillColor(0);
+   leg->SetFillStyle(1001);
+   TLegendEntry *entry=leg->AddEntry("hMatchEffVsRun","#epsilon_{match} (linear fit for p_{T}>1.0 GeV/c)","lpf");
+   entry->SetFillStyle(1001);
+
+   ci = TColor::GetColor("#ff0000");
+   entry->SetLineColor(ci);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(2);
+   entry->SetMarkerColor(1);
+   entry->SetMarkerStyle(1);
+   entry->SetMarkerSize(1);
+   entry->SetTextFont(42);
+   entry=leg->AddEntry("hMatchEffVsRunNormToGoodCh","#epsilon_{match} norm. to fraction of TOF good channels","lpf");
+   entry->SetFillStyle(1001);
+
+   ci = TColor::GetColor("#009999");
+   entry->SetLineColor(ci);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(2);
+   entry->SetMarkerColor(1);
+   entry->SetMarkerStyle(1);
+   entry->SetMarkerSize(1);
+   entry->SetTextFont(42);
+   entry=leg->AddEntry("hMatchEffVsRunNormToGoodChInAcc","#epsilon_{match} norm. to fraction of TOF good channels in |#eta|<0.8","lpf");
+   entry->SetFillStyle(1001);
+
+   ci = TColor::GetColor("#0000ff");
+   entry->SetLineColor(ci);
+   entry->SetLineStyle(1);
+   entry->SetLineWidth(2);
+   entry->SetMarkerColor(1);
+   entry->SetMarkerStyle(1);
+   entry->SetMarkerSize(1);
+   entry->SetTextFont(42);
+
   TCanvas* cMatchEffSummary = new TCanvas("cMatchEffSummary","cMatchEffSummary",50, 50,1050, 550);
-  hMatchEffVsRun->GetYaxis()->SetRangeUser(0.,1.);
+  hMatchEffVsRun->GetYaxis()->SetRangeUser(0.4,0.8);
   hMatchEffVsRun->Draw();
   hMatchEffVsRunNormToGoodCh->Draw("same");
   hMatchEffVsRunNormToGoodChInAcc->Draw("same");
+  leg->Draw("same");
   cMatchEffSummary->Print(Form("%s/cMatchEffSummary.png",plotDir.Data()));
+  
+  //Plot start time trend
+  TCanvas* cStartTimeSummary = new TCanvas("cStartTimeSummary","cStartTimeSummary",50, 50,1050, 550);
+  hT0TOFVsRun->GetYaxis()->SetRangeUser(-50.,50.);
+  hT0TOFVsRun->GetYaxis()->SetTitle("Start Time (ps)");
+  hT0TOFVsRun->Draw();
+  hT0T0ACVsRun->Draw("same");
+  hT0T0AVsRun->Draw("same");
+  hT0T0CVsRun->Draw("same");
+  gPad->SetGridy();
+  gPad->SetTitle("Start Time by different methods");
+  cStartTimeSummary->Print(Form("%s/cStartTimeSummary.png",plotDir.Data()));
+
+  TCanvas* cStartTimeResolutionSummary = new TCanvas("cStartTimeResolutionSummary","cStartTimeResolutionSummary",50, 50,1050, 550);
+  hT0TOFVsRunRes->GetYaxis()->SetRangeUser(0.,300.);
+  hT0TOFVsRunRes->GetYaxis()->SetTitle("#sigma Start Time (ps)");
+  hT0TOFVsRunRes->Draw();
+  hT0T0ACVsRunRes->Draw("same");
+  hT0T0AVsRunRes->Draw("same");
+  hT0T0CVsRunRes->Draw("same");
+  cStartTimeResolutionSummary->Print(Form("%s/cStartTimeResolutionSummary.png",plotDir.Data()));
 
   TCanvas* cGoodCh = new TCanvas("cGoodCh","cGoodCh",50, 50,1050, 550);
   hGoodChannelsRatio->GetYaxis()->SetRangeUser(0.75,1.);
@@ -391,6 +674,19 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hGoodChannelsRatioInAcc->Draw();
   cGoodChInAcc->Print(Form("%s/cGoodChInAcc.png",plotDir.Data()));
 
+  TCanvas* cPidPerformance= new TCanvas("cPidPerformance","summary of PID performance", 1200, 500);
+  cPidPerformance->Divide(3,1);
+  cPidPerformance->cd(1);
+  gPad->SetLogz();
+  hDiffTimePi->Draw("colz");
+  cPidPerformance->cd(2);
+  gPad->SetLogz();
+  hDiffTimeKa->Draw("colz");
+  cPidPerformance->cd(3);
+  gPad->SetLogz();
+  hDiffTimePro->Draw("colz");
+  cPidPerformance->Print(Form("%s/cPIDExpTimes.png",plotDir.Data()));
+  
   if (displayAll) {	
     TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,1050, 550);
     hPeakT0AVsRun->Draw();
@@ -408,6 +704,7 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
     hT0fillResVsRun->Draw();
     cT0fillResVsRun->Print(Form("%s/cT0fillResVsRun.png",plotDir.Data()));
 
+    //Plot TOF signal trend
     TCanvas* cAvDiffTimeVsRun = new TCanvas("cAvDiffTimeVsRun","cAvDiffTimeVsRun",50,50,1050, 550);
     gPad->SetGridx();
     gPad->SetGridy();

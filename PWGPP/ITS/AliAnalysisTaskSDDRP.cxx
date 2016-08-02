@@ -78,8 +78,12 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fTrackPLadLay4(0),
   fGoodAnLadLay3(0),
   fGoodAnLadLay4(0),
+  fEtaPhiTracks(0),
+  fEtaPhiTracksLay3(0),
+  fEtaPhiTracksLay4(0),
   fDriftTimeRP(0),
   fDriftTimeTPAll(0),
+  fDriftTimeTPAllMod(0),
   fDriftTimeTPNoExtra(0),
   fDriftTimeTPExtra(0),
   fCluSizAnVsTime(0),
@@ -261,10 +265,25 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fDriftTimeRP->SetMinimum(0.);
   fOutput->Add(fDriftTimeRP);
 
+  fEtaPhiTracks=new TH2F("hEtaPhiTracks","",50,-1.,1.,200,0.,2.*TMath::Pi());
+  fEtaPhiTracks->SetMinimum(0.);
+  fOutput->Add(fEtaPhiTracks);
+
+  fEtaPhiTracksLay3=new TH2F("hEtaPhiTracksLay3","",50,-1.,1.,200,0.,2.*TMath::Pi());
+  fEtaPhiTracksLay3->SetMinimum(0.);
+  fOutput->Add(fEtaPhiTracksLay3);
+
+  fEtaPhiTracksLay4=new TH2F("hEtaPhiTracksLay4","",50,-1.,1.,200,0.,2.*TMath::Pi());
+  fEtaPhiTracksLay4->SetMinimum(0.);
+  fOutput->Add(fEtaPhiTracksLay4);
+
   fDriftTimeTPAll=new TH1F("hDrTimTPAll","Drift Time from Track Points (ns)",640,0.,6400.);
   fDriftTimeTPAll->Sumw2();
   fDriftTimeTPAll->SetMinimum(0.);
   fOutput->Add(fDriftTimeTPAll);
+
+  fDriftTimeTPAllMod=new TH2F("hDrTimTPAllMod","Drift Time from Track Points (ns) vs. mod number lay ",260,239.5,499.5,640,0.,6400.);
+  fOutput->Add(fDriftTimeTPAllMod);
 
   fDriftTimeTPNoExtra=new TH1F("hDrTimTPNoExtra","Drift Time from Track Points (ns)",640,0.,6400.);
   fDriftTimeTPNoExtra->Sumw2();
@@ -336,13 +355,13 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   //
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
   if(!esd) {
-    printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
+    printf("AliAnalysisTaskSDDRP::UserExec(): bad ESD\n");
     return;
   } 
 
 
   if(!ESDfriend()) {
-    printf("AliAnalysisTaskSDDRP::Exec(): bad ESDfriend\n");
+    printf("AliAnalysisTaskSDDRP::UserExec(): bad ESDfriend\n");
     return;
   }
   
@@ -444,12 +463,17 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
     Int_t trstatus=track->GetStatus();
     if(!(trstatus&AliESDtrack::kITSrefit)) accept=kFALSE;
     if(!accept) continue;
-
+    Double_t eta=track->Eta();
+    Double_t phi=track->Phi();
+    
     fHistCluInLay->Fill(-1.); // bin -1 counts accepted tracks
+    fEtaPhiTracks->Fill(eta,phi);
     UChar_t clumap=track->GetITSClusterMap();
     for(Int_t iBit=0; iBit<6; iBit++){
       if(clumap&(1<<iBit)) fHistCluInLay->Fill(iBit);
     }
+    if(clumap&(1<<2)) fEtaPhiTracksLay3->Fill(eta,phi);
+    if(clumap&(1<<3)) fEtaPhiTracksLay4->Fill(eta,phi);
 
 
     Double_t dedx[4];
@@ -504,6 +528,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
       if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
       fTrackPMod->Fill(modId);
       fDriftTimeTPAll->Fill(point.GetDriftTime());
+      fDriftTimeTPAllMod->Fill(modId,point.GetDriftTime());
       if(point.IsExtra()) fDriftTimeTPExtra->Fill(point.GetDriftTime());
       else fDriftTimeTPNoExtra->Fill(point.GetDriftTime());
       Float_t dtime=point.GetDriftTime()-fResp->GetTimeZero(modId);
@@ -590,7 +615,7 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  printf("Number of analyzed events = %.0f\n",fHistNEvents->GetBinContent(1));
+  printf("AliAnalysisTaskSDDRP::Terminate --- Number of analyzed events = %.0f\n",fHistNEvents->GetBinContent(1));
   return;
 }
 

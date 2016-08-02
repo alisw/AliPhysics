@@ -650,7 +650,7 @@ void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key, const
   TObjArray values;
   values.SetOwner(kTRUE);
   
-  values.Add(new TObjString(v1));
+  if ( strlen(v1) > 0 ) values.Add(new TObjString(v1));
   if ( strlen(v2) > 0 ) values.Add(new TObjString(v2));
   if ( strlen(v3) > 0 ) values.Add(new TObjString(v3));
   if ( strlen(v4) > 0 ) values.Add(new TObjString(v4));
@@ -879,6 +879,14 @@ void AliMuonGridSubmitter::SetAliRootVersion(const char* aliroot)
   /// should be set automatically by alien.
   
   SetMapKeyValue("AliRoot",aliroot);
+}
+
+//______________________________________________________________________________
+void AliMuonGridSubmitter::SetGeneratorPackage(const char* generator)
+{
+  /// Set the package to be used by the jobs
+
+  SetMapKeyValue("Generator",generator);
 }
 
 //______________________________________________________________________________

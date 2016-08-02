@@ -759,6 +759,9 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
+                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
+                         @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
+                         @CMAKE_SOURCE_DIR@/PWGCF/FLOW/Documentation/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
                          @CMAKE_SOURCE_DIR@/PWGJE/doc \
@@ -781,6 +784,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtasks \
                          @CMAKE_SOURCE_DIR@/PWG/JETFW \
+                         @CMAKE_SOURCE_DIR@/PWG/Tools \
                          @CMAKE_SOURCE_DIR@/PWGHF \
                          @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF \
                          @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF/macros

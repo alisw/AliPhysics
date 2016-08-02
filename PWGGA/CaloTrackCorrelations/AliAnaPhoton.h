@@ -71,6 +71,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillEMCALRegionSSHistograms()  { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms() { fFillEMCALRegionSSHistograms = kFALSE ; }  
+
+  void         SwitchOnFillConversionVertexHistograms()  { fFillConversionVertexHisto = kTRUE  ; }
+  void         SwitchOffFillConversionVertexHistograms() { fFillConversionVertexHisto = kFALSE ; }  
   
   void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
   void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
@@ -117,11 +120,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   enum mcTypes    { kmcPhoton     =  0,    kmcPi0Decay = 1,       kmcEtaDecay      = 2,  kmcOtherDecay = 3,
                     kmcPi0        =  4,    kmcEta      = 5,       kmcElectron      = 6,
                     kmcConversion =  7,    kmcOther    = 8,       kmcAntiNeutron   = 9,
-                    kmcAntiProton = 10,    kmcPrompt   = 11,      kmcFragmentation = 12,
-                    kmcISR        = 13,    kmcString   = 14  };
+                    kmcAntiProton = 10,    kmcNeutron  = 11,      kmcProton        = 12, kmcChPion = 13, 
+                    kmcPrompt     = 14,    kmcFragmentation = 15,
+                    kmcISR        = 16,    kmcString   = 17  };
 
   /// Total number of cluster MC origin histograms
-  static const Int_t fgkNmcTypes = 15;
+  static const Int_t fgkNmcTypes = 18;
 
   /// For MC histograms in arrays, index in the array corresponds to a MC generated primary particle type
   enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay      = 1,  kmcPEtaDecay = 2,     kmcPOtherDecay = 3,
@@ -159,6 +163,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
+  Bool_t   fFillConversionVertexHisto   ;           ///<  Fill histograms depending on the conversion vertex
+  
   Bool_t   fFillOnlySimpleSSHisto;                  ///<  Fill selected cluster histograms, selected SS histograms
     
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types

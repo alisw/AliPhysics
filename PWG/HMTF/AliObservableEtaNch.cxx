@@ -55,6 +55,10 @@ void AliObservableEtaNch::Fill(AliMCEvent *event, AliStack *stack) {
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
+    // discard unphysical particles from some generators
+    if (track->Pt() == 0 || track->E() <= 0)
+      continue;
+
     // is it a primary particle or a pi0? Else, skip it.
     if (!stack->IsPhysicalPrimary(iTrack)) continue;
 

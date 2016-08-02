@@ -231,6 +231,24 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   
   if(kSimulation) maker->SwitchOffDataControlHistograms();
   
+  if(simulation)
+  {
+    // Calculate the cross section weights, apply them to all histograms 
+    // and fill xsec and trial histo. Sumw2 must be activated.
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+    //maker->SwitchOnSumw2Histograms();
+    
+    // For recent productions where the cross sections and trials are not stored in separate file
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    
+    // Just fill cross section and trials histograms.
+    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // Add control histogram with pT hard to control aplication of weights 
+    maker->SwitchOnPtHardHistogram();
+  }
+
+  
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, kCalorimeter.Data());
  
   // Create task

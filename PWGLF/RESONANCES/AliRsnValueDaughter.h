@@ -50,6 +50,8 @@ public:
       kV0Mass,       // V0 mass 
       kV0P,       // V0 momentum
       kV0Pt,       // V0 transverse momentum
+      kV0NPt,       // transverse momentum of negative V0 daughter
+      kV0PPt,       // transverse momentum of positive V0 daughter
       kDaughterDCA, // DCA of V0 Daughters
       kCosPointAng, // V0 Cosing of Pointing Angle
       kLambdaProtonPIDCut,         //V0 - Lambda number of sigmas proton	   

@@ -21,11 +21,11 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/C2)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+  ${AliPhysics_SOURCE_DIR}/CORRFW
+  ${AliPhysics_SOURCE_DIR}/PWG/Tools
+  ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+  ${AliPhysics_SOURCE_DIR}/OADB
+  ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   )
 
 # Sources - alphabetical order
@@ -34,15 +34,15 @@ set(SRCS
   AliAnalysisC2Utils.cxx
   AliAnalysisTaskC2.cxx
   AliAnalysisTaskC2Base.cxx
-)
+  )
 
 # Headers from sources
-  string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-	generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
@@ -50,7 +50,11 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSISalice OADB)
-	generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
@@ -60,11 +64,11 @@ target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-	set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+  set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-	install(TARGETS ${MODULE} 
-			ARCHIVE DESTINATION lib
-			LIBRARY DESTINATION lib)
+install(TARGETS ${MODULE} 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

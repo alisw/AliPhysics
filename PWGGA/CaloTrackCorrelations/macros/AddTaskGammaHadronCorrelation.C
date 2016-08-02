@@ -264,6 +264,24 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   
   if( simulation || !trigger.Contains("EMC") ) maker->SwitchOffDataControlHistograms();
   
+  if(simulation)
+  {
+    // Calculate the cross section weights, apply them to all histograms 
+    // and fill xsec and trial histo. Sumw2 must be activated.
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+    //maker->SwitchOnSumw2Histograms();
+    
+    // For recent productions where the cross sections and trials are not stored in separate file
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    
+    // Just fill cross section and trials histograms.
+    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // Add control histogram with pT hard to control aplication of weights 
+    maker->SwitchOnPtHardHistogram();
+  }
+
+  
   if(printSettings) maker->Print("");
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, calorimeter.Data());
@@ -737,7 +755,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     printf(">>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
   
   // Number of particle type MC histograms
-  ana->FillNOriginHistograms (14); // 14 max
+  ana->FillNOriginHistograms (17); // 18 max
   ana->FillNPrimaryHistograms(6); // 6 max
   
   return ana;

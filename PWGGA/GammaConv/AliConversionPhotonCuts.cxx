@@ -35,6 +35,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
+#include "TProfile.h"
 #include "AliStack.h"
 #include "AliAODConversionMother.h"
 #include "TObjString.h"
@@ -96,6 +97,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fPIDResponse(NULL),
+  fDoLightOutput(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(200),
   fMinR(0),
@@ -210,7 +212,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
-  fPreSelCut(kFALSE)
+  fPreSelCut(kFALSE),
+  fProfileContainingMaterialBudgetWeights(NULL),
+  fMaterialBudgetWeightsInitialized(kFALSE)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -224,6 +228,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   AliAnalysisCuts(ref),
   fHistograms(NULL),
   fPIDResponse(NULL),
+  fDoLightOutput(ref.fDoLightOutput),
   fV0ReaderName("V0ReaderV1"),
   fMaxR(ref.fMaxR),
   fMinR(ref.fMinR),
@@ -338,7 +343,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
-  fPreSelCut(ref.fPreSelCut)
+  fPreSelCut(ref.fPreSelCut),
+  fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
+  fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -368,7 +375,10 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     delete fFAsymmetryCut;
     fFAsymmetryCut = NULL;
   }
-  
+  if(fProfileContainingMaterialBudgetWeights){
+      delete fProfileContainingMaterialBudgetWeights;
+      fProfileContainingMaterialBudgetWeights = 0x0;
+  }  
 }
 
 //________________________________________________________________________
@@ -431,25 +441,32 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(12,"Photon Quality");
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(13,"out");
   fHistograms->Add(fHistoPhotonCuts);
-
-  if(preCut){
-    fHistoInvMassbefore=new TH1F(Form("InvMass_before %s",GetCutNumber().Data()),"InvMass_before",1000,0,0.3);
-    fHistograms->Add(fHistoInvMassbefore);
-    fHistoArmenterosbefore=new TH2F(Form("Armenteros_before %s",GetCutNumber().Data()),"Armenteros_before",200,-1,1,1000,0,1.);
-    fHistograms->Add(fHistoArmenterosbefore);
-    fHistoEtaDistV0s = new TH1F(Form("Eta_before %s",GetCutNumber().Data()),"Eta_before",2000,-2,2);
-    fHistograms->Add(fHistoEtaDistV0s);
-
-  }
-  fHistoInvMassafter=new TH1F(Form("InvMass_after %s",GetCutNumber().Data()),"InvMass_after",1000,0,0.3);
-  fHistograms->Add(fHistoInvMassafter);
-  fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,250,0,0.25);
-  fHistograms->Add(fHistoArmenterosafter);
-  if(fDoPhotonAsymmetryCut){
-    fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
-    fHistograms->Add(fHistoAsymmetryafter);
-  }
   
+  if (fProfileContainingMaterialBudgetWeights){
+      fProfileContainingMaterialBudgetWeights->SetName("InputMaterialBudgetWeightsPerGamma");
+      fHistograms->Add(fProfileContainingMaterialBudgetWeights);
+  }
+
+  if(!fDoLightOutput){
+    if(preCut){
+      fHistoInvMassbefore=new TH1F(Form("InvMass_before %s",GetCutNumber().Data()),"InvMass_before",1000,0,0.3);
+      fHistograms->Add(fHistoInvMassbefore);
+      fHistoArmenterosbefore=new TH2F(Form("Armenteros_before %s",GetCutNumber().Data()),"Armenteros_before",200,-1,1,1000,0,1.);
+      fHistograms->Add(fHistoArmenterosbefore);
+      fHistoEtaDistV0s = new TH1F(Form("Eta_before %s",GetCutNumber().Data()),"Eta_before",2000,-2,2);
+      fHistograms->Add(fHistoEtaDistV0s);
+
+    }
+    fHistoInvMassafter=new TH1F(Form("InvMass_after %s",GetCutNumber().Data()),"InvMass_after",1000,0,0.3);
+    fHistograms->Add(fHistoInvMassafter);
+    fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,250,0,0.25);
+    fHistograms->Add(fHistoArmenterosafter);
+    if(fDoPhotonAsymmetryCut){
+      fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
+      fHistograms->Add(fHistoAsymmetryafter);
+    }
+  }
+
   fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",11,-0.5,10.5,250,0,50);
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(2,"maxR");
@@ -477,90 +494,90 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistodEdxCuts->GetXaxis()->SetBinLabel(11,"out");
   fHistograms->Add(fHistodEdxCuts);
   
-  TAxis *AxisBeforedEdx = NULL;
-  TAxis *AxisBeforedEdxSig = NULL;
-  TAxis *AxisBeforeTOF = NULL;
-  TAxis *AxisBeforeTOFSig = NULL;
-  TAxis *AxisBeforeITSSig = NULL;
-  if(preCut){
-    fHistoTPCdEdxbefore=new TH2F(Form("Gamma_dEdx_before %s",GetCutNumber().Data()),"dEdx Gamma before" ,150,0.03,20,800,0,200);
-    fHistograms->Add(fHistoTPCdEdxbefore);
-    AxisBeforedEdx = fHistoTPCdEdxbefore->GetXaxis();
-    fHistoTPCdEdxSigbefore=new TH2F(Form("Gamma_dEdxSig_before %s",GetCutNumber().Data()),"dEdx Sigma Gamma before" ,150,0.03,20,400,-10,10);
-    fHistograms->Add(fHistoTPCdEdxSigbefore);
-    AxisBeforedEdxSig = fHistoTPCdEdxSigbefore->GetXaxis();
+  if(!fDoLightOutput){
+    TAxis *AxisBeforedEdx = NULL;
+    TAxis *AxisBeforedEdxSig = NULL;
+    TAxis *AxisBeforeTOF = NULL;
+    TAxis *AxisBeforeTOFSig = NULL;
+    TAxis *AxisBeforeITSSig = NULL;
+    if(preCut){
+      fHistoTPCdEdxbefore=new TH2F(Form("Gamma_dEdx_before %s",GetCutNumber().Data()),"dEdx Gamma before" ,150,0.03,20,800,0,200);
+      fHistograms->Add(fHistoTPCdEdxbefore);
+      AxisBeforedEdx = fHistoTPCdEdxbefore->GetXaxis();
+      fHistoTPCdEdxSigbefore=new TH2F(Form("Gamma_dEdxSig_before %s",GetCutNumber().Data()),"dEdx Sigma Gamma before" ,150,0.03,20,400,-10,10);
+      fHistograms->Add(fHistoTPCdEdxSigbefore);
+      AxisBeforedEdxSig = fHistoTPCdEdxSigbefore->GetXaxis();
 
-    fHistoTOFbefore=new TH2F(Form("Gamma_TOF_before %s",GetCutNumber().Data()),"TOF Gamma before" ,150,0.03,20,11000,-1000,10000);
-    fHistograms->Add(fHistoTOFbefore);
-    AxisBeforeTOF = fHistoTOFbefore->GetXaxis();
-    fHistoTOFSigbefore=new TH2F(Form("Gamma_TOFSig_before %s",GetCutNumber().Data()),"TOF Sigma Gamma before" ,150,0.03,20,400,-6,10);
-    fHistograms->Add(fHistoTOFSigbefore);
-    AxisBeforeTOFSig = fHistoTOFSigbefore->GetXaxis();
-    
-    fHistoITSSigbefore=new TH2F(Form("Gamma_ITSSig_before %s",GetCutNumber().Data()),"ITS Sigma Gamma before" ,150,0.03,20,400,-10,10);
-    fHistograms->Add(fHistoITSSigbefore);
-    AxisBeforeITSSig = fHistoITSSigbefore->GetXaxis();
-    
+      fHistoTOFbefore=new TH2F(Form("Gamma_TOF_before %s",GetCutNumber().Data()),"TOF Gamma before" ,150,0.03,20,11000,-1000,10000);
+      fHistograms->Add(fHistoTOFbefore);
+      AxisBeforeTOF = fHistoTOFbefore->GetXaxis();
+      fHistoTOFSigbefore=new TH2F(Form("Gamma_TOFSig_before %s",GetCutNumber().Data()),"TOF Sigma Gamma before" ,150,0.03,20,400,-6,10);
+      fHistograms->Add(fHistoTOFSigbefore);
+      AxisBeforeTOFSig = fHistoTOFSigbefore->GetXaxis();
 
+      fHistoITSSigbefore=new TH2F(Form("Gamma_ITSSig_before %s",GetCutNumber().Data()),"ITS Sigma Gamma before" ,150,0.03,20,400,-10,10);
+      fHistograms->Add(fHistoITSSigbefore);
+      AxisBeforeITSSig = fHistoITSSigbefore->GetXaxis();
+    }
 
-  }
-  fHistoTPCdEdxSigafter=new TH2F(Form("Gamma_dEdxSig_after %s",GetCutNumber().Data()),"dEdx Sigma Gamma after" ,150,0.03,20,400, -10,10);
-  fHistograms->Add(fHistoTPCdEdxSigafter);
+    fHistoTPCdEdxSigafter=new TH2F(Form("Gamma_dEdxSig_after %s",GetCutNumber().Data()),"dEdx Sigma Gamma after" ,150,0.03,20,400, -10,10);
+    fHistograms->Add(fHistoTPCdEdxSigafter);
 
-  fHistoTPCdEdxafter=new TH2F(Form("Gamma_dEdx_after %s",GetCutNumber().Data()),"dEdx Gamma after" ,150,0.03,20,800,0,200);
-  fHistograms->Add(fHistoTPCdEdxafter);
+    fHistoTPCdEdxafter=new TH2F(Form("Gamma_dEdx_after %s",GetCutNumber().Data()),"dEdx Gamma after" ,150,0.03,20,800,0,200);
+    fHistograms->Add(fHistoTPCdEdxafter);
 
-  fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,0.03,20,100,0,10);
-  fHistograms->Add(fHistoKappaafter);  
-  
-  fHistoTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
-  fHistograms->Add(fHistoTOFSigafter);
+    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,0.03,20,100,0,10);
+    fHistograms->Add(fHistoKappaafter);
 
-  fHistoITSSigafter=new TH2F(Form("Gamma_ITSSig_after %s",GetCutNumber().Data()),"ITS Sigma Gamma after" ,150,0.03,20,400,-10,10);
-  fHistograms->Add(fHistoITSSigafter);
-  
-  fHistoEtaDistV0sAfterdEdxCuts = new TH1F(Form("Eta_afterdEdx %s",GetCutNumber().Data()),"Eta_afterdEdx",2000,-2,2);
-  fHistograms->Add(fHistoEtaDistV0sAfterdEdxCuts);
+    fHistoTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
+    fHistograms->Add(fHistoTOFSigafter);
 
-  fHistoPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
-  fHistograms->Add(fHistoPsiPairDeltaPhiafter);
-  
-  TAxis *AxisAfter = fHistoTPCdEdxSigafter->GetXaxis();
-  Int_t bins = AxisAfter->GetNbins();
-  Double_t from = AxisAfter->GetXmin();
-  Double_t to = AxisAfter->GetXmax();
-  Double_t *newBins = new Double_t[bins+1];
-  newBins[0] = from;
-  Double_t factor = TMath::Power(to/from, 1./bins);
-  for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
-  AxisAfter->Set(bins, newBins);
-  AxisAfter = fHistoTOFSigafter->GetXaxis();
-  AxisAfter->Set(bins, newBins);
-  AxisAfter = fHistoTPCdEdxafter->GetXaxis();
-  AxisAfter->Set(bins, newBins);
-  AxisAfter = fHistoKappaafter->GetXaxis();
-  AxisAfter->Set(bins, newBins);
-  AxisAfter = fHistoITSSigafter->GetXaxis();
-  AxisAfter->Set(bins, newBins);
-  if(fDoPhotonAsymmetryCut){
-    AxisAfter = fHistoAsymmetryafter->GetXaxis();
+    fHistoITSSigafter=new TH2F(Form("Gamma_ITSSig_after %s",GetCutNumber().Data()),"ITS Sigma Gamma after" ,150,0.03,20,400,-10,10);
+    fHistograms->Add(fHistoITSSigafter);
+
+    fHistoEtaDistV0sAfterdEdxCuts = new TH1F(Form("Eta_afterdEdx %s",GetCutNumber().Data()),"Eta_afterdEdx",2000,-2,2);
+    fHistograms->Add(fHistoEtaDistV0sAfterdEdxCuts);
+
+    fHistoPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
+    fHistograms->Add(fHistoPsiPairDeltaPhiafter);
+
+    TAxis *AxisAfter = fHistoTPCdEdxSigafter->GetXaxis();
+    Int_t bins = AxisAfter->GetNbins();
+    Double_t from = AxisAfter->GetXmin();
+    Double_t to = AxisAfter->GetXmax();
+    Double_t *newBins = new Double_t[bins+1];
+    newBins[0] = from;
+    Double_t factor = TMath::Power(to/from, 1./bins);
+    for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
     AxisAfter->Set(bins, newBins);
-  }
-  if(preCut){
-    AxisBeforedEdx->Set(bins, newBins);
-    AxisBeforeTOF->Set(bins, newBins);
-    AxisBeforedEdxSig->Set(bins, newBins);
-    AxisBeforeTOFSig->Set(bins, newBins);
-    AxisBeforeITSSig->Set(bins, newBins);
-  }
-  delete [] newBins;
+    AxisAfter = fHistoTOFSigafter->GetXaxis();
+    AxisAfter->Set(bins, newBins);
+    AxisAfter = fHistoTPCdEdxafter->GetXaxis();
+    AxisAfter->Set(bins, newBins);
+    AxisAfter = fHistoKappaafter->GetXaxis();
+    AxisAfter->Set(bins, newBins);
+    AxisAfter = fHistoITSSigafter->GetXaxis();
+    AxisAfter->Set(bins, newBins);
+    if(fDoPhotonAsymmetryCut){
+      AxisAfter = fHistoAsymmetryafter->GetXaxis();
+      AxisAfter->Set(bins, newBins);
+    }
+    if(preCut){
+      AxisBeforedEdx->Set(bins, newBins);
+      AxisBeforeTOF->Set(bins, newBins);
+      AxisBeforedEdxSig->Set(bins, newBins);
+      AxisBeforeTOFSig->Set(bins, newBins);
+      AxisBeforeITSSig->Set(bins, newBins);
+    }
+    delete [] newBins;
 
-  // Event Cuts and Info
-  if(!preCut){		
-    fHistoEventPlanePhi=new TH1F(Form("EventPlaneMinusPhotonAngle %s",GetCutNumber().Data()),"EventPlaneMinusPhotonAngle",360,-TMath::Pi(),TMath::Pi());
-    fHistograms->Add(fHistoEventPlanePhi);  
+    // Event Cuts and Info
+    if(!preCut){
+      fHistoEventPlanePhi=new TH1F(Form("EventPlaneMinusPhotonAngle %s",GetCutNumber().Data()),"EventPlaneMinusPhotonAngle",360,-TMath::Pi(),TMath::Pi());
+      fHistograms->Add(fHistoEventPlanePhi);
+    }
   }
-  
+
   TH1::AddDirectory(kTRUE);
 }
 
@@ -2279,6 +2296,10 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
     fPIDnSigmaBelowElectronLine=-2;
     fPIDnSigmaAboveElectronLine=3.5;
     break;
+  case 8: // -2.5,3.
+    fPIDnSigmaBelowElectronLine=-2.5;
+    fPIDnSigmaAboveElectronLine=3;
+    break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");
     return kFALSE;
@@ -2721,7 +2742,11 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     fChi2CutConversion = 200.;
     break;
   case 4:
-    fChi2CutConversion = 500.;
+    if (fIsHeavyIon==1){
+      fChi2CutConversion = 7.;
+    } else {
+      fChi2CutConversion = 500.;
+    }
     break;
   case 5:
     fChi2CutConversion = 100000.;
@@ -2772,7 +2797,11 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     fDo2DPsiPairChi2 = kTRUE;
     break;
   case 7:
-    fPsiPairCut = 0.035; //
+    if (fIsHeavyIon==1){
+      fPsiPairCut = 0.07; //
+    } else {
+      fPsiPairCut = 0.035; //
+    }
     fDo2DPsiPairChi2 = kTRUE;
     break;
   case 8:
@@ -2780,15 +2809,15 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     fDo2DPsiPairChi2 = kTRUE; //
     break;
   case 9:
-    if (fIsHeavyIon==1){
+    //   if (fIsHeavyIon==1){ //AM 2016-05-13
       fPsiPairCut = 0.1; //
       fDo2DPsiPairChi2 = kTRUE;
       fIncludeRejectedPsiPair = kTRUE;
       break;
-    } else {
-      fPsiPairCut = 0.5; //
-      break;
-    }
+    // } else {
+    //   fPsiPairCut = 0.5; //
+    //   break;
+    // }
   default:
     AliError(Form("PsiPairCut not defined %d",psiCut));
     return kFALSE;
@@ -3345,3 +3374,46 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityAOD(AliAODConversionPhoto
   }
   return 0;
 }
+
+///__________________________________________________________________________________________
+Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TString filename){
+    
+    TString nameProfile;
+    if      (flag==1){    
+                nameProfile = "profileContainingMaterialBudgetWeights_fewRadialBins";}
+    else if (flag==2){
+                nameProfile = "profileContainingMaterialBudgetWeights_manyRadialBins";}
+    else {
+        AliError(Form("%d not a valid flag for InitMaterialBudgetWeightingOfPi0Candidates()",flag));
+        return kFALSE;
+    }
+    TFile* file = TFile::Open(filename.Data());
+    if (!file) {
+        AliError(Form("File %s for materialbudgetweights not found",filename.Data()));
+        return kFALSE;
+    }
+    fProfileContainingMaterialBudgetWeights = (TProfile*)file->Get(nameProfile.Data());
+    if (!fProfileContainingMaterialBudgetWeights){
+        AliError(Form("Histogram %s not found in file",nameProfile.Data()));
+        return kFALSE;
+    }
+    fProfileContainingMaterialBudgetWeights->SetDirectory(0);
+    file->Close();
+    delete file;
+    
+    fMaterialBudgetWeightsInitialized = kTRUE;
+    AliInfo(Form("MaterialBudgetWeightingOfPi0Candidates initialized with flag %d. This means %d radial bins will be used for the weighting. File used: %s.",flag, fProfileContainingMaterialBudgetWeights->GetNbinsX(), filename.Data()));
+    return kTRUE;
+}
+
+///___________________________________________________________________________________________________
+Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma){
+    
+    Float_t weight = 1.0;
+    Float_t gammaConversionRadius = gamma->GetConversionRadius();
+    Int_t bin = fProfileContainingMaterialBudgetWeights->FindBin(gammaConversionRadius);
+    if (bin > 0 && bin <= fProfileContainingMaterialBudgetWeights->GetNbinsX()){
+        weight = fProfileContainingMaterialBudgetWeights->GetBinContent(bin);
+    }
+    return weight;
+} 

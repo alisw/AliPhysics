@@ -52,6 +52,9 @@
 #include "AliHFSystErr.h"
 #include "AliHFPtSpectrum.h"
 
+using std::cout;
+using std::endl;
+
 /// \cond CLASSIMP
 ClassImp(AliHFPtSpectrum);
 /// \endcond
@@ -74,7 +77,9 @@ AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t opti
   fLuminosity(),
   fTrigEfficiency(),
   fGlobalEfficiencyUncertainties(),
+  fGlobalEfficiencyPtDependent(false),
   fTab(),
+  fSystematics(NULL),
   fhFc(NULL),
   fhFcMax(NULL),
   fhFcMin(NULL),
@@ -141,7 +146,9 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fLuminosity(),
   fTrigEfficiency(),
   fGlobalEfficiencyUncertainties(),
+  fGlobalEfficiencyPtDependent(rhs.fGlobalEfficiencyPtDependent),
   fTab(),
+  fSystematics(rhs.fSystematics),
   fhFc(rhs.fhFc),
   fhFcMax(rhs.fhFcMax),
   fhFcMin(rhs.fhFcMin),
@@ -220,6 +227,8 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
   fhRECpt = source.fhRECpt;
   fgRECSystematics = source.fgRECSystematics;
   fNevts = source.fNevts;
+  fGlobalEfficiencyPtDependent = source.fGlobalEfficiencyPtDependent;
+  fSystematics = source.fSystematics;
   fhFc = source.fhFc;
   fhFcMax = source.fhFcMax;
   fhFcMin = source.fhFcMin;
@@ -627,7 +636,7 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
 
 
   // Print out information
-  printf("\n\n     Correcting the spectra with : \n   luminosity = %2.2e +- %2.2e, trigger efficiency = %2.2e +- %2.2e, \n    delta_y = %2.2f, BR_c = %2.2e, BR_b_decay = %2.2e \n    %2.2f percent uncertainty on the efficiencies, and %2.2f percent uncertainty on the b/c efficiencies ratio \n\n",fLuminosity[0],fLuminosity[1],fTrigEfficiency[0],fTrigEfficiency[1],deltaY,branchingRatioC,branchingRatioBintoFinalDecay,fGlobalEfficiencyUncertainties[0],fGlobalEfficiencyUncertainties[1]);
+  printf("\n\n     Correcting the spectra with : \n   luminosity = %2.2e +- %2.2e, trigger efficiency = %2.2e +- %2.2e, \n    delta_y = %2.2f, BR_c = %2.2e, BR_b_decay = %2.2e \n    %2.2f percent uncertainty on the efficiencies, and %2.2f percent uncertainty on the b/c efficiencies ratio \n    usage of pt-dependent efficiency uncertainty for Nb uncertainy calculation? %1.0d \n\n",fLuminosity[0],fLuminosity[1],fTrigEfficiency[0],fTrigEfficiency[1],deltaY,branchingRatioC,branchingRatioBintoFinalDecay,fGlobalEfficiencyUncertainties[0],fGlobalEfficiencyUncertainties[1],fGlobalEfficiencyPtDependent);
   if (fPbPbElossHypothesis)  printf("\n\n     The considered Tab is  %4.2e +- %2.2e \n\n",fTab[0],fTab[1]);
 
   //
@@ -732,7 +741,10 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
 	: 0. ;
       errvalueMin = errvalueMax;
     }
-    
+    // if(fFeedDownOption==0 && fSystematics) { 
+    //   errvalueMax = value * fSystematics->GetTotalSystErr(fhRECpt->GetBinCenter(ibin));
+    //   errvalueMin = errvalueMax;
+    // }
     //
     // Fill the histograms
     //
@@ -1162,9 +1174,17 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     }
 
 
+      
+      // uncertainy on the feed-down efficiency, which impacts the feed-down estimate
+      //  pt-dependent estimate is 50% of the cut variation uncertainty from HFSystErr
+      Double_t x = fhDirectEffpt->GetBinCenter(ibin);
+      Double_t efficiencyUnc = fGlobalEfficiencyUncertainties[1];
+      if(fGlobalEfficiencyPtDependent) efficiencyUnc = 0.5*CalculateEfficiencyPtDepedentUncertainty(x,true);
+//      cout <<endl<<" mine test: gl-unc="<<fGlobalEfficiencyUncertainties[1]<<" cutvar-unc="<<CalculateEfficiencyPtDepedentUncertainty(x,true)<<" ==> effUnc="<<efficiencyUnc<<endl;
+
     // fc uncertainty from (eff_b/eff_c) = fc^2 * (N_b/N_c) * delta(eff_b/eff_c)
     //  delta(eff_b/eff_c) is a percentage = effRatio * sqrt( fGlobalEfficiencyUncertainties[1]^2 + unc_eff_c ^2 + unc_eff_b ^2 ) 
-    Double_t relEffUnc =  TMath::Sqrt( fGlobalEfficiencyUncertainties[1]*fGlobalEfficiencyUncertainties[1] + 
+    Double_t relEffUnc =  TMath::Sqrt( efficiencyUnc*efficiencyUnc +
 				       (fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) +
 				       (fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin))*(fhDirectEffpt->GetBinError(ibin)/fhDirectEffpt->GetBinContent(ibin)) 
 				       );
@@ -1451,6 +1471,11 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     errvalueExtremeMax = 0.; errvalueExtremeMin = 0.;
     correction=0; correctionMax=0.; correctionMin=0.;
     correctionUncStatEffc=0.; correctionUncStatEffb=0.;
+      
+      // uncertainy on the feed-down efficiency, which impacts the feed-down estimate
+      Double_t x = fhYieldCorr->GetBinCenter(ibin);
+      Double_t efficiencyUnc = fGlobalEfficiencyUncertainties[0];
+      if(fGlobalEfficiencyPtDependent) efficiencyUnc = CalculateEfficiencyPtDepedentUncertainty(x,false);
 
     if(fPbPbElossHypothesis || fCollisionType>0) {
       frac = fTab[0]*fNevts;
@@ -1460,12 +1485,12 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       frac = fLuminosity[0]; 
       errfrac = fLuminosity[1];
     }
-    printf("Tab=%e  events=%d  frac=%f\n",fTab[0],(Int_t)fNevts,frac);
+    // printf("Tab=%e  events=%d  frac=%f\n",fTab[0],(Int_t)fNevts,frac);
     value = ( fhRECpt->GetBinContent(ibin)>0. && fhRECpt->GetBinContent(ibin)!=0. && 
 	      fhFeedDownMCpt->GetBinContent(ibin)>0. && fhFeedDownEffpt->GetBinContent(ibin)>0. ) ?
       fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) )
       : 0. ;
-    printf("%d  raw=%f  after=%f \n",ibin,fhRECpt->GetBinContent(ibin),value);
+    // printf("%d  raw=%f  after=%f \n",ibin,fhRECpt->GetBinContent(ibin),value);
     value /= fhRECpt->GetBinWidth(ibin);
     if (value<0.) value =0.;
 
@@ -1497,8 +1522,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 
       // Systematics but feed-down
       if (fgRECSystematics){
-	errvalueMax = fgRECSystematics->GetErrorYhigh(ibin) / fhRECpt->GetBinWidth(ibin) ;
-	errvalueMin = fgRECSystematics->GetErrorYlow(ibin) / fhRECpt->GetBinWidth(ibin);
+          errvalueMax = fgRECSystematics->GetErrorYhigh(ibin) / fhRECpt->GetBinWidth(ibin) ;
+          errvalueMin = fgRECSystematics->GetErrorYlow(ibin) / fhRECpt->GetBinWidth(ibin);
       }
       else { errvalueMax = 0.; errvalueMin = 0.; }
   
@@ -1507,7 +1532,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       Double_t errCom =  ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) +
 	( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
 	( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
-	( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) ;
+	( (kfactor*efficiencyUnc)*(kfactor*efficiencyUnc) ) ;
       errvalueExtremeMin = TMath::Sqrt( errCom + ( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) ) ) / fhRECpt->GetBinWidth(ibin);
       // max value with the minimum Nb
       errvalueExtremeMax =  TMath::Sqrt( errCom + ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) ) ) / fhRECpt->GetBinWidth(ibin);
@@ -1526,7 +1551,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) +
 					 ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) )  +
 					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	)  +
-					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
+					 ( (kfactor*efficiencyUnc)*(kfactor*efficiencyUnc) )
 					 ) / fhRECpt->GetBinWidth(ibin);
       errvalueExtremeMin =  errvalueExtremeMax ;
     }
@@ -1568,7 +1593,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     // Fill the rest of (asymmetric) histograms
     //
     if (fAsymUncertainties) {
-      Double_t x = fhYieldCorr->GetBinCenter(ibin);
+//      Double_t x = fhYieldCorr->GetBinCenter(ibin);
       fgYieldCorr->SetPoint(ibin,x,value); // i,x,y
       fgYieldCorr->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueMin,errvalueMax); // i,xl,xh,yl,yh
       fhYieldCorrMax->SetBinContent(ibin,value+errvalueMax);
@@ -1598,7 +1623,25 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 
 
 //_________________________________________________________________________________________________________
-void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown) {
+Double_t AliHFPtSpectrum::CalculateEfficiencyPtDepedentUncertainty(Double_t pt, Bool_t useOnlyCutVar){
+    ///
+    /// Function computing the pt-dependent efficiency uncertainty
+    ///  to be used in the Nb feed-down correction uncertainty determination
+    ///  (both tracking and cut variation uncertainties are considered)
+    ///
+    Double_t uncertainty = 0.;
+    Double_t trackingUnc = fSystematics->GetTrackingEffErr(pt);
+    Double_t cutVarUnc = fSystematics->GetCutsEffErr(pt);
+    uncertainty = TMath::Sqrt( trackingUnc*trackingUnc + cutVarUnc*cutVarUnc );
+    cout<<" cutVar="<<cutVarUnc<<" trackUnc="<<trackingUnc<<endl;
+    if(useOnlyCutVar) uncertainty = cutVarUnc;
+    return uncertainty;
+}
+
+//_________________________________________________________________________________________________________
+//void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown) {
+void AliHFPtSpectrum::ComputeSystUncertainties(Bool_t combineFeedDown) {
+
   ///
   /// Function that re-calculates the global systematic uncertainties
   ///   by calling the class AliHFSystErr and combining those
@@ -1624,30 +1667,37 @@ void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t
       grErrFeeddown->SetPoint(i,x,0.);
       grErrFeeddown->SetPointError(i,errx,errx,erryl,erryh); //i, xl, xh, yl, yh
     }
+  }else{
+    nentries = fgSigmaCorr->GetN();
   }
 
   // Draw all the systematics independently
-  systematics->DrawErrors(grErrFeeddown);
-
+//  systematics->DrawErrors(grErrFeeddown);
+    fSystematics->DrawErrors(grErrFeeddown);
   // Set the sigma systematic uncertainties
   // possibly combine with the feed-down uncertainties 
   Double_t errylcomb=0., erryhcomb=0;
-  for(Int_t i=1; i<nentries; i++) {
+  for(Int_t i=0; i<nentries; i++) {
     fgSigmaCorr->GetPoint(i,x,y);
-    errx = grErrFeeddown->GetErrorXlow(i) ;
-    erryl = grErrFeeddown->GetErrorYlow(i);
-    erryh = grErrFeeddown->GetErrorYhigh(i);
-    if (combineFeedDown) {
-      errylcomb = systematics->GetTotalSystErr(x,erryl) * y ;
-      erryhcomb = systematics->GetTotalSystErr(x,erryh) * y ;
+    if (fFeedDownOption!=0 && combineFeedDown) {
+//      errylcomb = systematics->GetTotalSystErr(x,erryl) * y ;
+//        erryhcomb = systematics->GetTotalSystErr(x,erryh) * y ;
+      errx = grErrFeeddown->GetErrorXlow(i) ;
+      erryl = grErrFeeddown->GetErrorYlow(i);
+      erryh = grErrFeeddown->GetErrorYhigh(i);
+      errylcomb = fSystematics->GetTotalSystErr(x,erryl) * y ;
+      erryhcomb = fSystematics->GetTotalSystErr(x,erryh) * y ;
     } else {
-      errylcomb = systematics->GetTotalSystErr(x) * y ;
-      erryhcomb = systematics->GetTotalSystErr(x) * y ;
+//      errylcomb = systematics->GetTotalSystErr(x) * y ;
+//        erryhcomb = systematics->GetTotalSystErr(x) * y ;
+      errylcomb = fSystematics->GetTotalSystErr(x) * y ;
+      erryhcomb = fSystematics->GetTotalSystErr(x) * y ;
     }
     fgSigmaCorr->SetPointError(i,errx,errx,errylcomb,erryhcomb);
     //
     fhSigmaCorrDataSyst->SetBinContent(i,y);
-    erryl = systematics->GetTotalSystErr(x) * y ;
+//      erryl = systematics->GetTotalSystErr(x) * y ;
+    erryl = fSystematics->GetTotalSystErr(x) * y ;
     fhSigmaCorrDataSyst->SetBinError(i,erryl);
   }
 

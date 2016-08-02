@@ -1,8 +1,8 @@
 TString names=(
-               "PID1_SPDfirst_PrefAllm60t100_pt200;"
-               "PID1_SPDorSDD_PrefAllm60t100_pt200;"
-               "PID1_SPDfirst_PrefAllm60t100_pt400;"
-               "PID1_SPDorSDD_PrefAllm60t100_pt400;"
+               "cut16_SPDorSDD14_PID16_pt200;"
+               "cut16_SPDorSDD14_PID16_pt400;"
+               "cut16_SPDorSDD14_PID16_Pref_pt200;"
+               "cut16_SPDorSDD14_PID16_Pref_pt400;"
                );
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
@@ -13,7 +13,7 @@ const TString  RndmPtExpr="exp(-x/3.)";
 const Double_t RndmPtMin=0.2; // pt and eta ranges need to cover at least the kinematic range of final analysis electrons
 const Double_t RndmPtMax=3.5;
 const Double_t RndmEtaMax=0.8;
-const Int_t nTestpartPerEle=100; // number of testparticles used per final analysis electron in an event.
+const Int_t nTestpartPerEle=10; // number of testparticles used per final analysis electron in an event.
 // _____
 const Bool_t randomizeDau=kFALSE;
 
@@ -37,63 +37,44 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   
   //
   // Setup Analysis Selection
-  // __________________________________________________
-  // SOME POSSIBLE SETTINGS
-  // shown together with useful or mandatory cutlib setting
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  // deactivate pairing to check track cuts or run with loose pid cuts:
-  //   die->SetNoPairing();
-  //   LMcutlib->SetIsQATask(kFALSE);
-  // apply correct Pre-Filter scheme, if necessary:
-  //   die->SetPreFilterAllSigns();   LMcutlib->SetDoRejectionStep(kTRUE);
-  //   die->SetPreFilterUnlikeOnly(); LMcutlib->SetDoRejectionStep(kTRUE);
-  //   (prefilter will automatically be deactivated in 'AliAnalysisTaskRandomRejection.cxx')
-  // set up internal train for efficient systematics study:
-  //  in first cutSet do:
-  //   die->SetDontClearArrays(kTRUE); // keep pair arrays for next cutSet(s). they will not be modified by those cutSets!
-  //  in subsequent cutSets do:
-  //   die->SetEventProcess(kFALSE); // use existing pair arrays and study additional cuts. see AliDielectron::FillHistogramsFromPairArray()
-  //  HOWEVER: there must be a bug in the Mixed-Events, where some pair legs cannot be found. Those pair type histograms have much less entries!
-  // --------------------------------------------------
+  //
   cout << endl;
   cout<<"_________________________ "<<"SET UP cutSet NR: "<<cutSet<<" -----> "<<name.Data()<<" _________________________"<<endl;
   
   // --------------------------------------------------
   // common settings:
   // --------------------------------------------------
-  LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
+  LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_00to10;
   // prefilter settings:
-  die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
   LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_TPCITSif_2;
   LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_FilterBit0;
   LMcutlib->selectedKineCutsPre = LMEECutLib::kKineCut_pt50_eta090;
-  LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee60_theta100;
+  LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
   // ana settings:
-  LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_theta20;
+  LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_theta50;
   // post-PID corrections must be done later, because they depend on kine cuts, which may still change.
+  // --------------------------------------------------
+  // settings for THIS CUT VARIATION:
+  // --------------------------------------------------
+  LMcutlib->selectedPIDAna      = LMEECutLib::kCut16;
+  LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;
   //
   // --------------------------------------------------
-  // additional settings:
+  // specific settings for each cutset:
   // --------------------------------------------------
   switch (cutSet) {
     case 0:
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDfirst_1;
       LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
       break;
     case 1:
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDorSDD_1;
-      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
-      break;
-    case 2:
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDfirst_1;
       LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
       break;
+    case 2:
+      die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
+      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
+      break;
     case 3:
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDorSDD_1;
+      die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
       LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
       break;
     default:
@@ -113,7 +94,7 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts() );
   // switch off KF Particle
   die->SetUseKF(kFALSE);
-
+  
   // --------------------------------------------------
   // with Rejection Step (Prefilter)
   // --------------------------------------------------
@@ -122,10 +103,6 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   // --------------------------------------------------
   if (LMcutlib->GetDoRejectionStep() && die->DoEventProcess()) 
   {
-    //if (isESD) { // now done within CutLib
-    //  die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna() );
-    //  die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetESDTrackCutsAna() ); // this is redundant!?
-    //}
     // set initial track filter.
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsPre() );
     
@@ -146,20 +123,13 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   // --------------------------------------------------
 	else 
   {
-    //if (isESD) { // now done within CutLib
-    //  die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna() );
-    //}
 	  die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna() );
 	  die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna() );
 	}
   // --------------------------------------------------
   
+  if (isRandomRej && !(LMcutlib->GetDoRejectionStep())) return 0x0; // avoid adding unneeded cutsets to random rejection task.
   
-  AliDielectronTrackRotator *rot= 0x0;
-  //To save time and as it is not 100% test, rotation switched off
-  /*AliDielectronTrackRotator *rot= LMcutlib->GetTrackRotator();
-   die->SetTrackRotator(rot);
-   */
   AliDielectronMixingHandler *mix=LMcutlib->GetMixingHandler();
   die->SetMixingHandler(mix);
   
@@ -168,9 +138,6 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   // dielectron framework histograms will be filled
   //
   LMcutlib->InitHistograms(die,cutSet);
-  
-  // the last definition uses no cuts and only the QA histograms should be filled!
-  //  LMcutlib->InitCF(die,cutSet);
   
   return die;
 }

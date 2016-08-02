@@ -421,7 +421,7 @@ void AliHFCutVarFDsubAnalysisManager::GetRawYields(Bool_t drawFit/*=kFALSE*/,TSt
       cFitter->SaveAs(Form("%s/Fitter_%d.root",strOutputFolder.Data(),iBin));
       cFitter->Update();
     }
-    delete fitter;
+    delete[] fitter;
     fitter = 0x0;
   }
   if (fRawYields){
