@@ -40,6 +40,9 @@
 #include "TH2.h"
 #include "TCanvas.h"
 #include "THnSparse.h"
+#include "TProfile.h"
+#include <TChain.h>
+#include "TKey.h"
 
 #include "AliHeader.h"  
 #include "AliInputEventHandler.h"  
@@ -65,6 +68,8 @@
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
 #include "AlidNdPtAnalysis.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliMultSelection.h"
 
 using namespace std;
 
@@ -146,7 +151,9 @@ ClassImp(AlidNdPtAnalysis)
   fRecMCEventHist1(0),
   fRecMCEventHist2(0),
   fRecMCEventHist3(0),
-
+  fRecPrimTrackHist(0),
+  fGenPrimTrackHist(0),
+  
   // rec. pt and eta resolution w.r.t MC
   fRecMCTrackHist1(0),
 
@@ -164,6 +171,11 @@ ClassImp(AlidNdPtAnalysis)
   fSPDBGCount(0),
   fMCPrimTrackHist(0),
 
+  //Pythia hard pT bins histograms
+  fHistoTrials(0),
+  fHEvents(0),
+  fProfXsection(0),
+  
   // Candle event histogram
   fRecCandleEventMatrix(0),
   
@@ -188,7 +200,11 @@ ClassImp(AlidNdPtAnalysis)
   
   fTRDTriggerRequiredHQU(kFALSE),
   fTRDTriggerRequiredHJT(kFALSE),
-  fTRDTriggerRequiredHSE(kFALSE)
+  fTRDTriggerRequiredHSE(kFALSE),
+  fNTrials(0),
+  fXsection(0),
+  fPythiaHeader(0),
+  fIsPythia(kFALSE)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -278,7 +294,9 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fRecMCEventHist1(0),
   fRecMCEventHist2(0),
   fRecMCEventHist3(0),
- 
+  fRecPrimTrackHist(0),
+  fGenPrimTrackHist(0),
+  
   // rec. pt and eta resolution w.r.t MC
   fRecMCTrackHist1(0),
 
@@ -296,6 +314,10 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fSPDBGCount(0),
   fMCPrimTrackHist(0),
 
+  //Pythia hard pT bins histograms
+  fHistoTrials(0),
+  fHEvents(0),
+  fProfXsection(0),
   // Candle event histogram
   fRecCandleEventMatrix(0),
   
@@ -320,8 +342,11 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   
   fTRDTriggerRequiredHQU(kFALSE),
   fTRDTriggerRequiredHJT(kFALSE),
-  fTRDTriggerRequiredHSE(kFALSE)
-  
+  fTRDTriggerRequiredHSE(kFALSE),
+  fNTrials(0),
+  fXsection(0),
+  fPythiaHeader(0),
+  fIsPythia(kFALSE)  
 {
   //
   // constructor
@@ -421,7 +446,9 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fRecMCTrackHist1) delete fRecMCTrackHist1; fRecMCTrackHist1=0;
   if(fMCMultRecTrackHist1) delete fMCMultRecTrackHist1; fMCMultRecTrackHist1=0; 
   if(fRecTrackHist2) delete fRecTrackHist2; fRecTrackHist2=0; 
-
+  if(fRecPrimTrackHist) delete fRecPrimTrackHist; fRecPrimTrackHist=0;
+  if(fGenPrimTrackHist) delete fGenPrimTrackHist; fGenPrimTrackHist=0;
+  
   //
   if(fRecEventHist) delete fRecEventHist; fRecEventHist=0; 
   if(fRecTrackHist) delete fRecTrackHist; fRecTrackHist=0; 
@@ -429,6 +456,11 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fPileUpCount) delete fPileUpCount; fPileUpCount=0;
   if(fSPDBGCount) delete fSPDBGCount; fSPDBGCount=0;
   if(fMCPrimTrackHist) delete fMCPrimTrackHist; fMCPrimTrackHist=0;
+
+  //
+  if(fHistoTrials) delete fHistoTrials; fHistoTrials=0;
+  if(fHEvents) delete fHEvents; fHEvents=0;
+  if(fProfXsection) delete fProfXsection; fProfXsection=0;  
 
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
@@ -1020,6 +1052,10 @@ void AlidNdPtAnalysis::Init()
   fRecMCEventHist3->GetAxis(1)->SetTitle("EventType");
   fRecMCEventHist3->Sumw2();
 
+
+  Int_t binsRecTrackHist1[3]={fPtNbins,fEtaNbins,90};
+  Double_t minRecTrackHist1[3]={0.,-1.,0.}; 
+  Double_t maxRecTrackHist1[3]={10.,1.,2.*TMath::Pi()};
   //
   char name[256];
   char title[256];
@@ -1089,9 +1125,9 @@ void AlidNdPtAnalysis::Init()
 
   // 
   
-  Int_t binsRecTrackHist1[3]={fPtNbins,fEtaNbins,90};
-  Double_t minRecTrackHist1[3]={0.,-1.,0.}; 
-  Double_t maxRecTrackHist1[3]={10.,1.,2.*TMath::Pi()};
+  //  Int_t binsRecTrackHist1[3]={fPtNbins,fEtaNbins,90};
+  //  Double_t minRecTrackHist1[3]={0.,-1.,0.}; 
+  //  Double_t maxRecTrackHist1[3]={10.,1.,2.*TMath::Pi()};
   snprintf(name,256,"fRecTrackHist1_%d",i);
   snprintf(title,256,"Pt:Eta:Phi");
   fRecTrackHist1[i] = new THnSparseF(name,title,3,binsRecTrackHist1,minRecTrackHist1,maxRecTrackHist1);
@@ -1114,6 +1150,22 @@ void AlidNdPtAnalysis::Init()
   fRecTrackMultHist1[i]->Sumw2();
   }
 
+  fRecPrimTrackHist = new THnSparseF("fRecPrimTrackHist","pt:eta:phi",3,binsRecTrackHist1,minRecTrackHist1,maxRecTrackHist1);
+  fRecPrimTrackHist->SetBinEdges(0,fBinsPt);
+  fRecPrimTrackHist->SetBinEdges(1,fBinsEta);
+  fRecPrimTrackHist->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+  fRecPrimTrackHist->GetAxis(1)->SetTitle("#eta");
+  fRecPrimTrackHist->GetAxis(2)->SetTitle("#phi (rad)");
+  fRecPrimTrackHist->Sumw2();
+
+  fGenPrimTrackHist = new THnSparseF("fGenPrimTrackHist","pt:eta:phi",3,binsRecTrackHist1,minRecTrackHist1,maxRecTrackHist1);
+  fGenPrimTrackHist->SetBinEdges(0,fBinsPt);
+  fGenPrimTrackHist->SetBinEdges(1,fBinsEta);
+  fGenPrimTrackHist->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+  fGenPrimTrackHist->GetAxis(1)->SetTitle("#eta");
+  fGenPrimTrackHist->GetAxis(2)->SetTitle("#phi (rad)");
+  fGenPrimTrackHist->Sumw2();
+  
   Int_t binsRecMCTrackHist1[4] = {fPtCorrNbins,fEtaNbins,100,100};
   Double_t minRecMCTrackHist1[4]={0.,-1.,-0.5,-0.5}; 
   Double_t maxRecMCTrackHist1[4]={20.,1.,0.5,0.5}; 
@@ -1171,6 +1223,35 @@ void AlidNdPtAnalysis::Init()
   fSPDBGCount = new TH1D("fSPDBGCount","SPD Cluster Vs Tracklet BG",2,-1,1);
   fSPDBGCount->Sumw2();
   
+  if (fIsPythia)
+    {
+      fHistoTrials = new TH1D("fHistTrials","fHistTrials",11,0,11);
+      fHistoTrials->GetXaxis()->SetTitle("p_{T} hard bin");
+      fHistoTrials->GetYaxis()->SetTitle("trials");
+      fHistoTrials->Sumw2();
+      
+      fHEvents = new TH1D("fHistEvents", "fHistEvents", 11, 0, 11);
+      fHEvents->GetXaxis()->SetTitle("p_{T} hard bin");
+      fHEvents->GetYaxis()->SetTitle("total events");
+      fHEvents->Sumw2();
+      
+      fProfXsection = new TProfile("fProfXsection", "fProfXsection", 11, 0, 11);
+      fProfXsection->GetXaxis()->SetTitle("p_{T} hard bin");
+      fProfXsection->GetYaxis()->SetTitle("xsection");
+      fProfXsection->Sumw2();
+      
+      const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+      const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+      
+      for (Int_t i = 1; i < 12; i++) {
+	fHistoTrials->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+	fProfXsection->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+	fHEvents->GetXaxis()->SetBinLabel(i, Form("%d-%d",ptHardLo[i-1],ptHardHi[i-1]));
+      }
+      
+    }
+
+  
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
   // set init flag
@@ -1204,6 +1285,41 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     return;
   }
 
+  // Pythia hard pT bins
+  if (fIsPythia) {
+//     LoadPythiaInfo(mcEvent);
+    
+    if (mcEvent) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
+    }   
+  }
+
+  
+  if (fPythiaHeader) {
+   
+  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+   if (!tree) {
+//       AliError(Form("%s - UserNotify: No current tree!",GetName()));
+//       return kFALSE;
+   }
+  TFile *curfile = tree->GetCurrentFile();
+  TChain *chain = dynamic_cast<TChain*>(tree);
+  if (chain) tree = chain->GetTree();
+
+  Int_t nevents = tree->GetEntriesFast();
+  fXsection = fPythiaHeader->GetXsection();
+  fNTrials = fPythiaHeader->Trials();
+  
+  Float_t ftrials=0;  
+  Int_t   pthardbin   = 0;   
+  PythiaInfoFromFile(curfile->GetName(), ftrials, pthardbin);
+  Bool_t testing=0;
+    
+  fHistoTrials->Fill(pthardbin, fNTrials);
+  fProfXsection->Fill(pthardbin, fXsection);
+  fHEvents->Fill(pthardbin, nevents);
+  }
+  
   // get selection cuts
   AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
   AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
@@ -1884,6 +2000,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          continue;
 
          Double_t vTrackMatrix[3] = {vtxMC[2],particle->Pt(),particle->Eta()}; 
+         Double_t vTrackHist[3] = {particle->Pt(),particle->Eta(),particle->Phi()}; 
 
 	 // all genertated primaries including neutral
          //if( iMc < stack->GetNprimary() ) {
@@ -1912,6 +2029,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	 {
            if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) { 
 	     fGenPrimTrackMatrix->Fill(vTrackMatrix);
+	     fGenPrimTrackHist->Fill(vTrackHist);
 	     Double_t vMCPrimTrackHist[4] = {vtxMC[2],particle->Pt(),particle->Eta(),static_cast<Double_t>(multMCTrueTracks)}; 
 	     fMCPrimTrackHist->Fill(vMCPrimTrackHist);
            }	     
@@ -1950,6 +2068,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
                  
                if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) {
 	         fRecPrimTrackMatrix->Fill(vTrackMatrix);
+		 fRecPrimTrackHist->Fill(vTrackHist);
 	         //AliESDtrack *track = esdEvent->GetTrack(iRec);
                  //if(track && track->GetKinkIndex(0) < 0) 
 		 //  printf("prim kink \n");
@@ -2281,6 +2400,8 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
       fRecTrackHist1[i]->Add(entry->fRecTrackHist1[i]);
       fRecTrackMultHist1[i]->Add(entry->fRecTrackMultHist1[i]);
     }
+    fRecPrimTrackHist->Add(entry->fRecPrimTrackHist);
+    fGenPrimTrackHist->Add(entry->fGenPrimTrackHist);
     fRecMCTrackHist1->Add(entry->fRecMCTrackHist1);
     fMCMultRecTrackHist1->Add(entry->fMCMultRecTrackHist1);
     fRecTrackHist2->Add(entry->fRecTrackHist2);
@@ -2288,6 +2409,13 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
     fPileUpCount->Add(entry->fPileUpCount);
     fSPDBGCount->Add(entry->fSPDBGCount);
     fMCPrimTrackHist->Add(entry->fMCPrimTrackHist);
+
+    if (fIsPythia) {
+      fHistoTrials->Add(entry->fHistoTrials);
+      fHEvents->Add(entry->fHEvents);
+      fProfXsection->Add(entry->fProfXsection);
+    }
+    
 
   count++;
   }
@@ -3154,3 +3282,47 @@ TFolder *folder = 0;
 
   return folder;
 }
+
+//_____________________________________________________________________________
+/**
+ * Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
+ * Get the pt hard bin from the file path
+ * This is to called in Notify and should provide the path to the AOD/ESD file
+ * (Partially copied from AliAnalysisHelperJetTasks)
+ * @param[in] currFile Name of the current ESD/AOD file
+ * @param[out] fTrials Number of trials needed by PYTHIA
+ * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
+ * @return True if parameters were obtained successfully, false otherwise
+ */
+Bool_t AlidNdPtAnalysis::PythiaInfoFromFile(const char* currFile, Float_t &fTrials, Int_t &pthard)
+{
+  TString file(currFile);  
+  
+  if (file.Contains(".zip#")) {
+    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  } else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+  AliDebug(1,Form("File name: %s",file.Data()));
+  
+// Get the pt hard bin
+  TString strPthard(file);
+  strPthard.Remove(strPthard.Last('/'));
+  strPthard.Remove(strPthard.Last('/'));
+  
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
+  strPthard.Remove(0,strPthard.Last('/')+1);
+  
+  if (strPthard.IsDec()) 
+    pthard = strPthard.Atoi();
+  else 
+    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
+
+  
+return kTRUE;
+}
+  
