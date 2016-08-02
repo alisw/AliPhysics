@@ -87,6 +87,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fUseOwnXYZCalculation(kTRUE),
   fUseConstructGamma(kFALSE),
   kUseAODConversionPhoton(kTRUE),
+  kAddv0sInESDFilter(kFALSE),
   fCreateAOD(kFALSE),
   fDeltaAODBranchName("GammaConv"),
   fDeltaAODFilename("AliAODGammaConversion.root"),
@@ -146,11 +147,13 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fImpactParamTree(NULL),
   fVectorFoundGammas(0),
   fCurrentFileName(""),
-  fMCFileChecked(kFALSE)
+  fMCFileChecked(kFALSE),
+  fPCMv0BitField(NULL)
 {
   // Default constructor
 
   DefineInput(0, TChain::Class());
+  DefineOutput(1,TBits::Class());
 }
 
 //________________________________________________________________________
@@ -238,6 +241,9 @@ void AliV0ReaderV1::UserCreateOutputObjects()
   // Create AODs
 
   if(fCreateAOD){
+    if(kAddv0sInESDFilter){
+      fPCMv0BitField = new TBits();
+    }
     if (fEventCuts){
       fDeltaAODBranchName.Append("_");
       fDeltaAODBranchName.Append(fEventCuts->GetCutNumber());
@@ -574,6 +580,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
   //Reset the TClonesArray
   fConversionGammas->Delete();
+  
+  //Clear TBits object with accepted v0s
+  if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
 
   fInputEvent = inputEvent;
   fMCEvent    = mcEvent;
@@ -627,6 +636,7 @@ void AliV0ReaderV1::FillAODOutput()
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
     if(fCreateAOD) {
+      if(kAddv0sInESDFilter){PostData(1, fPCMv0BitField);}
       AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
       if (aodhandler && aodhandler->GetFillAOD()) {
         AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
@@ -711,6 +721,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
           currentConversionPhoton->SetMass(fCurrentMotherKFCandidate->M());
           if (fUseMassToZero) currentConversionPhoton->SetMassToZero();
           currentConversionPhoton->SetInvMassPair(fCurrentInvMassPair);
+	  if(kAddv0sInESDFilter){fPCMv0BitField->SetBitNumber(currentV0Index, kTRUE);}
         } else {
           new((*fConversionGammas)[fConversionGammas->GetEntriesFast()]) AliKFConversionPhoton(*fCurrentMotherKFCandidate);
         }
@@ -719,6 +730,7 @@ Bool_t AliV0ReaderV1::ProcessESDV0s()
         fCurrentMotherKFCandidate=NULL;
       }
     }
+    if(kAddv0sInESDFilter){fPCMv0BitField->Compact();}
   }
   return kTRUE;
 }

@@ -47,6 +47,7 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     fV0Reader->SetCreateAODs(kTRUE);
 	fV0Reader->SetUseOwnXYZCalculation(kTRUE);
 	fV0Reader->SetUseAODConversionPhoton(kTRUE);
+	fV0Reader->SetAddv0sInESDFilter(kTRUE);
 //     fV0Reader->CheckAODConsistency();
 
 	AliV0ReaderV1 *fV0ReaderB=new AliV0ReaderV1("ConvGammaAODProductionB");
@@ -54,6 +55,7 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
 	fV0ReaderB->SetCreateAODs(kTRUE);
 	fV0ReaderB->SetUseOwnXYZCalculation(kTRUE);
 	fV0ReaderB->SetUseAODConversionPhoton(kTRUE);
+	fV0ReaderB->SetAddv0sInESDFilter(kTRUE);
 //     fV0ReaderB->CheckAODConsistency();
 
 	AliConvEventCuts *fEventCutsA=NULL;
@@ -97,6 +99,10 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
 	//            find input container
 	//below the trunk version
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+	AliAnalysisDataContainer *coutputPCMv0sA = mgr->CreateContainer("PCM v0 containerA", TBits::Class(),AliAnalysisManager::kExchangeContainer);
+	AliAnalysisDataContainer *coutputPCMv0sB = mgr->CreateContainer("PCM v0 containerB", TBits::Class(),AliAnalysisManager::kExchangeContainer);
+	mgr->ConnectOutput(fV0Reader,1,coutputPCMv0sA);
+	mgr->ConnectOutput(fV0ReaderB,1,coutputPCMv0sB);
 
 	// connect input V0Reader
 	mgr->AddTask(fV0Reader);
