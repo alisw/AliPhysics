@@ -59,6 +59,7 @@ class AliAODv0;
 #include "TFile.h"
 #include "THnSparse.h"
 #include "TVector3.h"
+#include "TRandom3.h"
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TLegend.h"
@@ -102,10 +103,14 @@ using std::endl;
 ClassImp(AliAnalysisTaskExtractCascadePbPbRun2)
 
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2()
-: AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
+: AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
 fkRunVertexers ( kFALSE ),
-fkSaveTree ( kTRUE ), 
-fkSaveRawdEdxSignals ( kFALSE ), 
+fkSaveTree ( kTRUE ),
+fkSaveAllMomenta ( kFALSE ),
+fkSaveRawdEdxSignals ( kFALSE ),
+fkSwitchCharges( kFALSE ),
+fkDownScale( kFALSE ),
+fScaleFactor( 0.01 ),
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
@@ -158,6 +163,17 @@ fTreeCascVarNegdEdx(0),
 fTreeCascVarPosdEdx(0),
 fTreeCascVarBachdEdx(0),
 
+//All momenta
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -167,17 +183,27 @@ fHistCentrality(0),
 fHistdEdx(0), 
 fHistdEdxPionsFromLambda(0), 
 fHistdEdxProtonsFromLambda(0), 
-fHistdEdxPionsFromK0s(0)
+fHistdEdxPionsFromK0s(0),
+
+//Central Output
+f3dHist_CentVsMassVsPt_XiMinus(0),
+f3dHist_CentVsMassVsPt_XiPlus(0),
+f3dHist_CentVsMassVsPt_OmegaMinus(0),
+f3dHist_CentVsMassVsPt_OmegaPlus(0)
 {
     // Dummy Constructor
 }
 
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2(const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
+: AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
 fkRunVertexers ( kFALSE ),
-fkSaveTree ( kTRUE ), 
-fkSaveRawdEdxSignals ( kFALSE ), 
+fkSaveTree ( kTRUE ),
+fkSaveAllMomenta ( kFALSE ),
+fkSaveRawdEdxSignals ( kFALSE ),
+fkSwitchCharges( kFALSE ),
 fkSelectCentrality (kFALSE),
+fkDownScale( kFALSE ),
+fScaleFactor( 0.01 ),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
 fLowPtCutoff(0.0),
@@ -229,6 +255,17 @@ fTreeCascVarNegdEdx(0),
 fTreeCascVarPosdEdx(0),
 fTreeCascVarBachdEdx(0),
 
+//All momenta
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -238,7 +275,13 @@ fHistCentrality(0),
 fHistdEdx(0), 
 fHistdEdxPionsFromLambda(0), 
 fHistdEdxProtonsFromLambda(0), 
-fHistdEdxPionsFromK0s(0)
+fHistdEdxPionsFromK0s(0),
+
+//Central Output
+f3dHist_CentVsMassVsPt_XiMinus(0),
+f3dHist_CentVsMassVsPt_XiPlus(0),
+f3dHist_CentVsMassVsPt_OmegaMinus(0),
+f3dHist_CentVsMassVsPt_OmegaPlus(0)
 
 {
     // Constructor
@@ -246,7 +289,8 @@ fHistdEdxPionsFromK0s(0)
     //Set Variables for re-running the cascade vertexers (as done for MS paper)
     if ( lExtraOptions.Contains("dEdx") )   fkSaveRawdEdxSignals = kTRUE;  
     if ( lExtraOptions.Contains("NoTree") ) fkSaveTree = kFALSE;  
-  
+    if ( lExtraOptions.Contains("AllMomenta") ) fkSaveAllMomenta = kTRUE;
+    
     // New Loose : 1st step for the 7 TeV pp analysis
     
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
@@ -265,6 +309,20 @@ fHistdEdxPionsFromK0s(0)
     fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+    
+    //Initialize values for quick analysis (use setters to change if needed)
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_V0Radius    [iPart]      = 1.2;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_CascRadius  [iPart]      = 0.6;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_V0Mass      [iPart]      = 0.008;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_V0CosPA     [iPart]      = 0.99;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_CascCosPA   [iPart]      = 0.998;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_DCANegToPV  [iPart]      = 0.03;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_DCAPosToPV  [iPart]      = 0.03;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_DCABachToPV [iPart]      = 0.04;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_DCAV0Daughters [iPart]   = 1.5;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_DCACascDaughters [iPart] = 1.3;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_DCAV0ToPV [iPart]        = 0.06;
+    for(Int_t iPart=0; iPart<4; iPart++) fCut_CTau [iPart]             = 15; //cm
     
     // Output slot #0 writes into a TList container (Cascade)
     DefineOutput(1, TList::Class());
@@ -294,6 +352,10 @@ AliAnalysisTaskExtractCascadePbPbRun2::~AliAnalysisTaskExtractCascadePbPbRun2()
     if (fUtils){
         delete fUtils;
         fUtils = 0x0;
+    }
+    if (fRand){
+        delete fRand;
+        fRand = 0x0;
     }
     
 }
@@ -359,6 +421,19 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarPosInDistortedRegion",&fTreeCascVarPosInDistortedRegion,"fTreeCascVarPosInDistortedRegion/O");   
     fTreeCascade->Branch("fTreeCascVarBachInDistortedRegion",&fTreeCascVarBachInDistortedRegion,"fTreeCascVarBachInDistortedRegion/O");   
     
+        if ( fkSaveAllMomenta ){
+            //--------All Momenta of all Daughters-----------
+            fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+            fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+            fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+            fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+            fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+            fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+            fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+            fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+            fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+        }
+        
     //-----------TPC-DEDX-INFO------------------------
     if ( fkSaveRawdEdxSignals ){ 
       fTreeCascade->Branch("fTreeCascVarPosInnerP",&fTreeCascVarPosInnerP,"fTreeCascVarPosInnerP/F");  
@@ -395,6 +470,15 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
         fUtils = new AliAnalysisUtils();
     }
     
+    if(! fRand ){
+        fRand = new TRandom3();
+    
+        // From TRandom3 reference:
+        // if seed is 0 (default value) a TUUID is generated and
+        // used to fill the first 8 integers of the seed array.
+        fRand->SetSeed(0);
+    }
+    
     //------------------------------------------------
     // V0 Multiplicity Histograms
     //------------------------------------------------
@@ -415,8 +499,14 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
 	fHistEventCounter->GetXaxis()->SetBinLabel(2, "Selected");
         fListHist->Add(fHistEventCounter);
     }
+    
+    //Definition of a crazy hack ...
+    
+    if( fkDownScale ){
+        fHistEventCounter->SetTitle(Form("Execution Scale Factor (candidates): %.5f",fScaleFactor));
+    }
 
-    if (fkSaveRawdEdxSignals) { 
+    if (fkSaveRawdEdxSignals) {
       if(! fHistdEdx) {
 	  fHistdEdx = new TH2F("fHistdEdx", ";Momentum at Inner Wall;TPC Signal", 400,0,4,500,0,500);
 	  fListHist->Add(fHistdEdx);
@@ -433,6 +523,37 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
 	  fHistdEdxPionsFromK0s = new TH2F("fHistdEdxPionsFromK0s", ";Momentum at Inner Wall;TPC Signal", 400,0,4,500,0,500);
 	  fListHist->Add(fHistdEdxPionsFromK0s);
       } 
+    }
+    
+    //____________________________________________________
+    //Superlight analysis output for cross-checking
+    if(! f3dHist_CentVsMassVsPt_XiMinus) {
+        f3dHist_CentVsMassVsPt_XiMinus = new TH3F("f3dHist_CentVsMassVsPt_XiMinus","",
+                                                  20,0,100,
+                                                  200,1.321-0.100,1.321+0.100,
+                                                  100,0,10);
+        fListHist->Add(f3dHist_CentVsMassVsPt_XiMinus);
+    }
+    if(! f3dHist_CentVsMassVsPt_XiPlus) {
+        f3dHist_CentVsMassVsPt_XiPlus = new TH3F("f3dHist_CentVsMassVsPt_XiPlus","",
+                                                 20,0,100,
+                                                 200,1.321-0.100,1.321+0.100,
+                                                 100,0,10);
+        fListHist->Add(f3dHist_CentVsMassVsPt_XiPlus);
+    }
+    if(! f3dHist_CentVsMassVsPt_OmegaMinus) {
+        f3dHist_CentVsMassVsPt_OmegaMinus = new TH3F("f3dHist_CentVsMassVsPt_OmegaMinus","",
+                                                     20,0,100,
+                                                     200,1.672-0.100,1.672+0.100,
+                                                     100,0,10);
+        fListHist->Add(f3dHist_CentVsMassVsPt_OmegaMinus);
+    }
+    if(! f3dHist_CentVsMassVsPt_OmegaPlus) {
+        f3dHist_CentVsMassVsPt_OmegaPlus = new TH3F("f3dHist_CentVsMassVsPt_OmegaPlus","",
+                                                    20,0,100,
+                                                    200,1.672-0.100,1.672+0.100,
+                                                    100,0,10);
+        fListHist->Add(f3dHist_CentVsMassVsPt_OmegaPlus);
     }
     
     
@@ -481,7 +602,6 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
     Float_t lPercentile = 300; //not acquired
     Int_t lEvSelCode = 300;
     AliMultSelection *MultSelection = 0x0;
-    MultSelection = (AliMultSelection * ) lESDevent->FindListObject("MultSelection");
     MultSelection = (AliMultSelection * ) lESDevent->FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -548,6 +668,9 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         
         AliLightV0vertexer lV0vtxer;
         AliLightCascadeVertexer lCascVtxer;
+        
+        //Do wrong charge combination (experimental!)
+        lCascVtxer.SetSwitchCharges( fkSwitchCharges );
         
         lV0vtxer.SetDefaultCuts(fV0VertexerSels);
         lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
@@ -844,6 +967,17 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
         xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
         
+        //Save all momentum information
+        fTreeCascVarNegPx = lNMom[0];
+        fTreeCascVarNegPy = lNMom[1];
+        fTreeCascVarNegPz = lNMom[2];
+        fTreeCascVarPosPx = lPMom[0];
+        fTreeCascVarPosPy = lPMom[1];
+        fTreeCascVarPosPz = lPMom[2];
+        fTreeCascVarBachPx = lBMom[0];
+        fTreeCascVarBachPy = lBMom[1];
+        fTreeCascVarBachPz = lBMom[2];
+
         //------------------------------------------------
         // TPC dEdx information
         //------------------------------------------------
@@ -918,7 +1052,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         // - II.Step 4 : around effective masses (ESD)
         // ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
 		
-        if( bachTrackXi->Charge() < 0 )	{
+        if( (!fkSwitchCharges && bachTrackXi->Charge() < 0) || (fkSwitchCharges && bachTrackXi->Charge() > 0) )	{
             lV0quality = 0.;
             xi->ChangeMassHypothesis(lV0quality , 3312);
             // Calculate the effective mass of the Xi- candidate.
@@ -936,7 +1070,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         }// end if negative bachelor
         
         
-        if( bachTrackXi->Charge() >  0 ){
+        if( (!fkSwitchCharges && bachTrackXi->Charge() >  0) || (fkSwitchCharges && bachTrackXi->Charge() < 0 ) ){
             lV0quality = 0.;
             xi->ChangeMassHypothesis(lV0quality , -3312);
             // Calculate the effective mass of the Xi+ candidate.
@@ -1028,46 +1162,189 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
                 (fTreeCascVarMassAsOmega<1.672+fCascadeMassWindow&&fTreeCascVarMassAsOmega>1.672-fCascadeMassWindow) ) {
             //This cascade is useless until proven otherwise
             Bool_t lSaveThisCascade = kFALSE;
-
+            
             //Extra selections in case this is supposed to be super-filtered
             //Inspired on tricks used for the V0 analysis in Pb-Pb
             if (TMath::Abs(fTreeCascVarNegEta) < 0.8 &&
-                    TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
-                    TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
-                    fTreeCascVarPt > fLowPtCutoff) { //beware ptMC and ptreco differences
-
+                TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
+                TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+                fTreeCascVarPt > fLowPtCutoff) { //beware ptMC and ptreco differences
+                
                 //Extra selections applied on a case-by-case basis:
                 // (1) XiMinus
                 if( fTreeCascVarCharge == -1 &&
-                        TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
                 // (2) XiPlus
                 if( fTreeCascVarCharge == +1 &&
-                        TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaPion  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaProton) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
                 // (3) OmegaMinus
                 if( fTreeCascVarCharge == -1 &&
-                        TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapOmega       ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaKaon ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapOmega       ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
                 // (4) OmegaPlus
                 if( fTreeCascVarCharge == +1 &&
-                        TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapOmega         ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaPion    ) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaProton  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaKaon   ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapOmega         ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
             }
+            
+            //Skip a fraction of all candidates: Downscaling!
+            if(fkDownScale && ( fRand->Uniform() > fScaleFactor )) lSaveThisCascade = kFALSE;
+            
             if (lSaveThisCascade && fkSaveTree ) fTreeCascade -> Fill() ;
         }
-
+        
         //------------------------------------------------
         // Fill tree over.
         //------------------------------------------------
+        
+        //------------------------------------------------
+        // Superlight mode!
+        //------------------------------------------------
+        
+        //______________________________________
+        // XiMinus
+        if (
+            //Acceptance Limitation
+            TMath::Abs(fTreeCascVarNegEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarPosEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+            //Configurable Topological selections (XiMinus)
+            fTreeCascVarV0Radius                      >= fCut_V0Radius[0] &&
+            fTreeCascVarCascRadius                    >= fCut_CascRadius[0] &&
+            TMath::Abs(fTreeCascVarV0Mass - 1.116)    <= fCut_V0Mass[0] &&
+            fTreeCascVarV0CosPointingAngle            >= fCut_V0CosPA[0] &&
+            fTreeCascVarCascCosPointingAngle          >= fCut_CascCosPA[0] &&
+            fTreeCascVarDCANegToPrimVtx               >= fCut_DCANegToPV[0] &&
+            fTreeCascVarDCAPosToPrimVtx               >= fCut_DCAPosToPV[0] &&
+            fTreeCascVarDCABachToPrimVtx              >= fCut_DCABachToPV[0] &&
+            fTreeCascVarDCAV0Daughters                <= fCut_DCAV0Daughters[0] &&
+            fTreeCascVarDCACascDaughters              <= fCut_DCACascDaughters[0] &&
+            fTreeCascVarDCAV0ToPrimVtx                >= fCut_DCAV0ToPV[0] &&
+            fTreeCascVarDistOverTotMom*1.321 < fCut_CTau[0] &&
+            //General XiMinus selections
+            fTreeCascVarCharge == -1 &&
+            TMath::Abs(fTreeCascVarRapXi)<0.5 &&
+            TMath::Abs( fTreeCascVarNegNSigmaPion   ) < 4 &&
+            TMath::Abs( fTreeCascVarPosNSigmaProton ) < 4 &&
+            TMath::Abs( fTreeCascVarBachNSigmaPion  ) < 4
+            ){
+                f3dHist_CentVsMassVsPt_XiMinus -> Fill ( fTreeCascVarCentrality , fTreeCascVarMassAsXi , fTreeCascVarPt );
+        }
+        //______________________________________
+        // XiPlus
+        if (
+            //Acceptance Limitation
+            TMath::Abs(fTreeCascVarNegEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarPosEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+            //Configurable Topological selections (XiMinus)
+            fTreeCascVarV0Radius                      >= fCut_V0Radius[1] &&
+            fTreeCascVarCascRadius                    >= fCut_CascRadius[1] &&
+            TMath::Abs(fTreeCascVarV0Mass - 1.116)    <= fCut_V0Mass[1] &&
+            fTreeCascVarV0CosPointingAngle            >= fCut_V0CosPA[1] &&
+            fTreeCascVarCascCosPointingAngle          >= fCut_CascCosPA[1] &&
+            fTreeCascVarDCANegToPrimVtx               >= fCut_DCANegToPV[1] &&
+            fTreeCascVarDCAPosToPrimVtx               >= fCut_DCAPosToPV[1] &&
+            fTreeCascVarDCABachToPrimVtx              >= fCut_DCABachToPV[1] &&
+            fTreeCascVarDCAV0Daughters                <= fCut_DCAV0Daughters[1] &&
+            fTreeCascVarDCACascDaughters              <= fCut_DCACascDaughters[1] &&
+            fTreeCascVarDCAV0ToPrimVtx                >= fCut_DCAV0ToPV[1] &&
+            fTreeCascVarDistOverTotMom*1.321 < fCut_CTau[1] &&
+            //General XiMinus selections
+            fTreeCascVarCharge == +1 &&
+            TMath::Abs(fTreeCascVarRapXi)<0.5 &&
+            TMath::Abs( fTreeCascVarNegNSigmaProton   ) < 4 &&
+            TMath::Abs( fTreeCascVarPosNSigmaPion     ) < 4 &&
+            TMath::Abs( fTreeCascVarBachNSigmaPion    ) < 4
+            ){
+            f3dHist_CentVsMassVsPt_XiPlus -> Fill ( fTreeCascVarCentrality , fTreeCascVarMassAsXi , fTreeCascVarPt );
+        }
+        //______________________________________
+        // OmegaMinus
+        if (
+            //Acceptance Limitation
+            TMath::Abs(fTreeCascVarNegEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarPosEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+            //Configurable Topological selections (XiMinus)
+            fTreeCascVarV0Radius                      >= fCut_V0Radius[2] &&
+            fTreeCascVarCascRadius                    >= fCut_CascRadius[2] &&
+            TMath::Abs(fTreeCascVarV0Mass - 1.116)    <= fCut_V0Mass[2] &&
+            fTreeCascVarV0CosPointingAngle            >= fCut_V0CosPA[2] &&
+            fTreeCascVarCascCosPointingAngle          >= fCut_CascCosPA[2] &&
+            fTreeCascVarDCANegToPrimVtx               >= fCut_DCANegToPV[2] &&
+            fTreeCascVarDCAPosToPrimVtx               >= fCut_DCAPosToPV[2] &&
+            fTreeCascVarDCABachToPrimVtx              >= fCut_DCABachToPV[2] &&
+            fTreeCascVarDCAV0Daughters                <= fCut_DCAV0Daughters[2] &&
+            fTreeCascVarDCACascDaughters              <= fCut_DCACascDaughters[2] &&
+            fTreeCascVarDCAV0ToPrimVtx                >= fCut_DCAV0ToPV[2] &&
+            fTreeCascVarDistOverTotMom*1.321 < fCut_CTau[2] &&
+            //General XiMinus selections
+            fTreeCascVarCharge == -1 &&
+            TMath::Abs(fTreeCascVarRapOmega)<0.5 &&
+            TMath::Abs( fTreeCascVarNegNSigmaPion   ) < 4 &&
+            TMath::Abs( fTreeCascVarPosNSigmaProton ) < 4 &&
+            TMath::Abs( fTreeCascVarBachNSigmaKaon  ) < 4
+            ){
+            f3dHist_CentVsMassVsPt_OmegaMinus -> Fill ( fTreeCascVarCentrality , fTreeCascVarMassAsOmega , fTreeCascVarPt );
+        }
+        //______________________________________
+        // OmegaPlus
+        if (
+            //Acceptance Limitation
+            TMath::Abs(fTreeCascVarNegEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarPosEta)  < 0.8 &&
+            TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+            //Configurable Topological selections (XiMinus)
+            fTreeCascVarV0Radius                      >= fCut_V0Radius[3] &&
+            fTreeCascVarCascRadius                    >= fCut_CascRadius[3] &&
+            TMath::Abs(fTreeCascVarV0Mass - 1.116)    <= fCut_V0Mass[3] &&
+            fTreeCascVarV0CosPointingAngle            >= fCut_V0CosPA[3] &&
+            fTreeCascVarCascCosPointingAngle          >= fCut_CascCosPA[3] &&
+            fTreeCascVarDCANegToPrimVtx               >= fCut_DCANegToPV[3] &&
+            fTreeCascVarDCAPosToPrimVtx               >= fCut_DCAPosToPV[3] &&
+            fTreeCascVarDCABachToPrimVtx              >= fCut_DCABachToPV[3] &&
+            fTreeCascVarDCAV0Daughters                <= fCut_DCAV0Daughters[3] &&
+            fTreeCascVarDCACascDaughters              <= fCut_DCACascDaughters[3] &&
+            fTreeCascVarDCAV0ToPrimVtx                >= fCut_DCAV0ToPV[3] &&
+            fTreeCascVarDistOverTotMom*1.321 < fCut_CTau[2] &&
+            //General XiMinus selections
+            fTreeCascVarCharge == +1 &&
+            TMath::Abs(fTreeCascVarRapOmega)<0.5 &&
+            TMath::Abs( fTreeCascVarNegNSigmaProton   ) < 4 &&
+            TMath::Abs( fTreeCascVarPosNSigmaPion     ) < 4 &&
+            TMath::Abs( fTreeCascVarBachNSigmaKaon    ) < 4
+            ){
+            f3dHist_CentVsMassVsPt_OmegaPlus -> Fill ( fTreeCascVarCentrality , fTreeCascVarMassAsOmega , fTreeCascVarPt );
+        }
+        
+        //------------------------------------------------
+        // End superlight mode.
+        //------------------------------------------------
+        
     }// end of the Cascade loop (ESD or AOD)
     
     // Post output data.

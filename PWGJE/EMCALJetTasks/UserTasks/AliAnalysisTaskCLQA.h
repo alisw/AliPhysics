@@ -1,8 +1,6 @@
 #ifndef ALIANALYSISTASKCLQA_H
 #define ALIANALYSISTASKCLQA_H
 
-// $Id $
-
 class TClonesArray;
 class TString;
 class TH1;
@@ -15,6 +13,7 @@ class TTree;
 
 #include "AliAnalysisTaskEmcal.h"
 
+class AliNtupHetInfo;
 class AliNtupCumInfo;
 class AliNtupZdcInfo;
 
@@ -31,6 +30,8 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   void                        SetDoMuonTracking(Bool_t b)       { fDoMuonTracking  = b; }
   void                        SetDoTracking(Bool_t b)           { fDoTracking      = b; }
   void                        SetDo2013VertexCut(Bool_t b)      { fDo2013VertexCut = b; }
+  void                        SetHetParams(Double_t Etmin);
+  void                        SetDoHet(Bool_t b)                { fDoHet           = b; }
 
   void                        UserCreateOutputObjects();
 
@@ -39,23 +40,28 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
   void                        RunCumulants(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
+  void                        RunHet(Double_t Etmin);
 
   Bool_t                      fDo2013VertexCut;  // if true then use 2013 pA vertex check (only if 2013 pPb run)
   Bool_t                      fDoTracking;       // if true run tracking analysis
   Bool_t                      fDoMuonTracking;   // if true run muon tracking analysis
   Bool_t                      fDoCumulants;      // if true run cumulant analysis
-  Bool_t                      fDoCumNtuple;      // if true then save cumulant ntuple
+  Bool_t                      fDoCumNtuple;      // if true save cumulant ntuple
+  Bool_t                      fDoHet;            // if true run het analysis
   Double_t                    fCumPtMin;         // minimum pt for cumulants
   Double_t                    fCumPtMax;         // maximum pt for cumulants
   Double_t                    fCumEtaMin;        // minimum eta for cumulants
   Double_t                    fCumEtaMax;        // maximum eta for cumulants
   Double_t                    fCumMmin;          // minimum number of tracks for cumulants 
   Int_t                       fCumMbins;         // number of bins for M
+  Double_t                    fHetEtmin;         // minimum et cut for het
   TH1F                       *fCentCL1In;        // input for MC based CL1 centrality
   TH1F                       *fCentV0AIn;        // input for MC based V0A centrality
   TTree                      *fNtupCum;          //!ntuple for cumulant analysis
   AliNtupCumInfo             *fNtupCumInfo;      //!object holding cumulant results
   AliNtupZdcInfo             *fNtupZdcInfo;      //!object holding zdc info
+  TTree                      *fNtupHet;          //!ntuple for het analysis
+  AliNtupHetInfo             *fNtupHetInfo;      //!object holding het info
   TH1                        *fHists[1000];      //!pointers to histograms
 
  private:
@@ -65,7 +71,24 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 6) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 7) // Constantin's Task
+};
+
+class AliNtupHetInfo {
+ public:
+  AliNtupHetInfo() : fTrig(0), fRun(0), fVz(0), fIsFEC(0), fIsVSel(0), fIsP(0)
+                     {;}
+  virtual ~AliNtupHetInfo() {;}
+
+ public:
+  UInt_t        fTrig;         // trigger bits
+  Int_t         fRun;          // run number
+  Double32_t    fVz;           //[-32,32,8] vertex z
+  Bool_t        fIsFEC;        // is first event in chunk
+  Bool_t        fIsVSel;       // is vertex selected
+  Bool_t        fIsP;          // is SPD pileup
+
+  ClassDef(AliNtupHetInfo,3) // High energy cluster info
 };
 
 class AliNtupCumInfo {

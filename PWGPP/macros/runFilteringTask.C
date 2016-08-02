@@ -1,13 +1,13 @@
 void runFilteringTask( const char* esdList,   
-        Float_t scalingTracks,
-        Float_t scalingV0,
-        const char* ocdb = "local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB/" ,
-        Int_t nFiles = 1000000,  
-        Int_t firstFile=0, 
-        Int_t nEvents=30000000, 
-        Int_t firstEvent =0,
-        const char* esdFileName="AliESDs.root",
-        Bool_t mc=kFALSE)
+		       Float_t scalingTracks,
+		       Float_t scalingV0,
+		       const char* ocdb = "cvmfs://", //local:///cvmfs/alice.gsi.de/alice/data/2010/OCDB/" ,
+		       Int_t nFiles = 1000000,  
+		       Int_t firstFile=0, 
+		       Int_t nEvents=30000000, 
+		       Int_t firstEvent =0,
+		       const char* esdFileName="AliESDs.root",
+		       Bool_t mc=kFALSE)
 {
     TStopwatch timer;
     timer.Start();
@@ -74,6 +74,9 @@ void runFilteringTask( const char* esdList,
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);
     task->SetUseESDfriends(kTRUE);
+    Info("runFilteringTask","Dumping task setup AliAnalysisTaskFilteredTree::Dump() \n");
+    task->Dump();
+
 
     // Init
     if (!mgr->InitAnalysis()) 

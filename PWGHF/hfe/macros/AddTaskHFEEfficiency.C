@@ -15,33 +15,37 @@ class AliAnalysisDataContainer;
 class AliHFEextraCuts;
 
 AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
-                                                          TString uniqueID = "",
-                                                          Float_t centrMin,
-                                                          Float_t centrMax,
-                                                          Bool_t Weights = kTRUE,
-                                                          Bool_t CocktailWeights = kTRUE,
-                                                          Bool_t SetSTACK = kFALSE,
-                                                          Int_t minTPCCluster,
-                                                          AliHFEextraCuts::ITSPixel_t pixel,
-                                                          Double_t minTOFnSigma,
-                                                          Double_t maxTOFnSigma,
-                                                          Double_t minITSnsigmaLowpT,
-                                                          Double_t maxITSnsigmaLowpT,
-                                                          Double_t minITSnsigmaHighpT,
-                                                          Double_t maxITSnsigmaHighpT,
-                                                          Double_t minTPCnsigmaLowpT,
-                                                          Double_t maxTPCnsigmaLowpT,
-                                                          Double_t minTPCnsigmaHighpT,
-                                                          Double_t maxTPCnsigmaHighpT,
-                                                          Int_t TPCS,
-                                                          Double_t MassCut = 0.07,
-                                                          Int_t TPCClusterforAsso = 80,
-                                                          Bool_t AssoITSref = kTRUE,
-                                                          Double_t pTminAssoTrack = 0.0,
-                                                          //const char *Cent = "V0M",
-                                                          Bool_t shrinkSP = kTRUE,
-                                                          Bool_t debug = kFALSE
-                                                          )
+                                                    TString uniqueID = "",
+                                                    Float_t centrMin,
+                                                    Float_t centrMax,
+                                                    Bool_t WeightsHF = kTRUE,
+                                                    Bool_t Weights = kTRUE,
+                                                    Bool_t CentralWeights = kTRUE,
+                                                    Bool_t SemicentralWeights = kFALSE,
+                                                    Bool_t UpWeights = kFALSE,
+                                                    Bool_t DwWeights = kFALSE,
+                                                    Bool_t SetSTACK = kFALSE,
+                                                    Int_t minTPCCluster,
+                                                    AliHFEextraCuts::ITSPixel_t pixel,
+                                                    Double_t minTOFnSigma,
+                                                    Double_t maxTOFnSigma,
+                                                    Double_t minITSnsigmaLowpT,
+                                                    Double_t maxITSnsigmaLowpT,
+                                                    Double_t minITSnsigmaHighpT,
+                                                    Double_t maxITSnsigmaHighpT,
+                                                    Double_t minTPCnsigmaLowpT,
+                                                    Double_t maxTPCnsigmaLowpT,
+                                                    Double_t minTPCnsigmaHighpT,
+                                                    Double_t maxTPCnsigmaHighpT,
+                                                    Int_t TPCS,
+                                                    Double_t MassCut = 0.07,
+                                                    Int_t TPCClusterforAsso = 80,
+                                                    Bool_t AssoITSref = kTRUE,
+                                                    Double_t pTminAssoTrack = 0.0,
+                                                    //const char *Cent = "V0M",
+                                                    Bool_t shrinkSP = kTRUE,
+                                                    Bool_t debug = kFALSE
+                                                    )
 
 {
     
@@ -70,7 +74,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
     }
-   
+    
     
     // Set centrality percentiles and method V0M, FMD, TRK, TKL, CL0, CL1, V0MvsFMD, TKLvsV0M, ZEMvsZDC
     taskHFE->SetCentralityParameters(centrMin, centrMax, "V0M");
@@ -82,17 +86,21 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     taskHFE->SetStackLoop(SetSTACK);
     taskHFE->SetMassCut(MassCut);
     taskHFE->SetWeights(Weights);
-    taskHFE->SetCocktailWeights(CocktailWeights);
-
-
+    taskHFE->SetWeightsHF(WeightsHF);
+    taskHFE->SetCentralWeights(CentralWeights);
+    taskHFE->SetSemicentralWeights(SemicentralWeights);
+   
+    taskHFE->SetTiltUpWeights(UpWeights);
+    taskHFE->SetTiltDwWeights(DwWeights);
+    
     //set RP cuts for flow package analysis
-   // TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
+    // TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
     
     mgr->ConnectInput(taskHFE,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskHFE,1,coutput3);
     mgr->AddTask(taskHFE);
-
+    
     
     return taskHFE;
     
@@ -140,7 +148,7 @@ AliAnalysisTaskHFEEfficiency* ConfigHFEEff(Bool_t useMC,Int_t minTPCCulster,AliH
     task->SetHFECuts(hfecuts);
     
     //   task->SetInvariantMassCut(0.05);
-      task->SetRejectKinkMother(kTRUE);
+    task->SetRejectKinkMother(kTRUE);
     //  task->SetRemovePileUp(kTRUE);
     
     // Define PID

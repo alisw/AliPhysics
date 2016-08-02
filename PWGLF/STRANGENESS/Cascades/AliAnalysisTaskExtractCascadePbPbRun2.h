@@ -31,6 +31,7 @@ class TH2F;
 class TH3F;
 class TVector3;
 class THnSparse;
+class TRandom3; 
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -92,6 +93,24 @@ public:
     void SetCascVertexerCascadeMinRadius     ( Double_t lParameter ){ fCascadeVertexerSels[6] = lParameter; }
     void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ){ fCascadeVertexerSels[7] = lParameter; }
     //---------------------------------------------------------------------------------------
+    //Setters for SuperLight analysis
+    void SetSuperLightV0Radius               ( Int_t iPart, Double_t lParameter ){ fCut_V0Radius[iPart]   = lParameter;         }
+    void SetSuperLightCascRadius             ( Int_t iPart, Double_t lParameter ){ fCut_CascRadius[iPart] = lParameter;         }
+    void SetSuperLightV0Mass                 ( Int_t iPart, Double_t lParameter ){ fCut_V0Mass[iPart]     = lParameter;         }
+    void SetSuperLightV0CosPA                ( Int_t iPart, Double_t lParameter ){ fCut_V0CosPA[iPart]    = lParameter;         }
+    void SetSuperLightCascCosPA              ( Int_t iPart, Double_t lParameter ){ fCut_CascCosPA[iPart]  = lParameter;         }
+    void SetSuperLightDCANegToPV             ( Int_t iPart, Double_t lParameter ){ fCut_DCANegToPV[iPart] = lParameter;         }
+    void SetSuperLightDCAPosToPV             ( Int_t iPart, Double_t lParameter ){ fCut_DCAPosToPV[iPart] = lParameter;         }
+    void SetSuperLightDCABachToPV            ( Int_t iPart, Double_t lParameter ){ fCut_DCABachToPV[iPart] = lParameter;        }
+    void SetSuperLightDCAV0Daughters         ( Int_t iPart, Double_t lParameter ){ fCut_DCAV0Daughters[iPart] = lParameter;     }
+    void SetSuperLightDCACascDaughters       ( Int_t iPart, Double_t lParameter ){ fCut_DCACascDaughters[iPart] = lParameter;   }
+    void SetSuperLightDCAV0ToPV              ( Int_t iPart, Double_t lParameter ){ fCut_DCAV0ToPV[iPart]  = lParameter;         }
+    void SetSuperLightCTau                   ( Int_t iPart, Double_t lParameter ){ fCut_CTau[iPart]       = lParameter;         }
+    //---------------------------------------------------------------------------------------
+    void SetDownScale (Bool_t lOption = kTRUE, Float_t lValue = 0.01) { fkDownScale = lOption; fScaleFactor = lValue; }
+    //---------------------------------------------------------------------------------------
+    void SetSwitchCharges (Bool_t lOption) { fkSwitchCharges = lOption; }
+    //---------------------------------------------------------------------------------------
     
     //---------------------------------------------------------------------------------------
 private:
@@ -106,6 +125,9 @@ private:
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for pA vertex selection)
     
+    //Helper for random number generation
+    TRandom3 *fRand; // for random number generation
+    
     //Objects Controlling Task Behaviour
     // (have to be streamed too or configuration is lost)
     //Objects Controlling Task Behaviour: has to be streamed!
@@ -114,7 +136,11 @@ private:
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
     
     Bool_t fkSaveTree; // if true, saves TTree object
+    Bool_t fkSaveAllMomenta; // save momentum info 
     Bool_t fkSaveRawdEdxSignals; // if true, will save raw dEdx signals for later use
+    Bool_t fkSwitchCharges; //if true, do 'like-sign' combination in cascade vertexers
+    Bool_t fkDownScale; //if true, save only a fraction of the cascades
+    Double_t fScaleFactor; //fraction of cascades to be saved, if downscale on
     
     Bool_t fkSelectCentrality; // if true, perform cut on centrality 
     Double_t fCentSel_Low;
@@ -173,6 +199,17 @@ private:
 	Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
     
+    //All momenta
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+    
     //Debugging information, if requested
     //Part A: EbyE info, Run number
     Int_t     fTreeCascVarRunNumber; //!
@@ -190,7 +227,32 @@ private:
     TH2F *fHistdEdxProtonsFromLambda;  //! Histogram filled only with what looks like protons from Lambda decays
     TH2F *fHistdEdxPionsFromK0s;       //! Histogram filled only with what looks like pions from K0s decays
     
-        
+    //=======================================================
+    //     --- Superlight Output Mode - Experimental ---
+    //=======================================================
+    
+    //Selection criteria for superlight analysis
+    Double_t fCut_V0Radius[4];
+    Double_t fCut_CascRadius[4];
+    Double_t fCut_V0Mass[4];
+    Double_t fCut_V0CosPA[4];
+    Double_t fCut_CascCosPA[4];
+    Double_t fCut_DCANegToPV[4];
+    Double_t fCut_DCAPosToPV[4];
+    Double_t fCut_DCABachToPV[4];
+    Double_t fCut_DCAV0Daughters[4];
+    Double_t fCut_DCACascDaughters[4];
+    Double_t fCut_DCAV0ToPV[4];
+    Double_t fCut_CTau[4];
+    
+    //---> Super-lightweight histogram output (rebinnable)
+
+    //Histograms for Standard Output
+    TH3F *f3dHist_CentVsMassVsPt_XiMinus;
+    TH3F *f3dHist_CentVsMassVsPt_XiPlus;
+    TH3F *f3dHist_CentVsMassVsPt_OmegaMinus;
+    TH3F *f3dHist_CentVsMassVsPt_OmegaPlus;
+    
     //=======================================================
     //     --- Superlight Output Mode - Experimental ---
     //=======================================================

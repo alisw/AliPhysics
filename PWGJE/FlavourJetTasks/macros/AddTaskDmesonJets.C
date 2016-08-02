@@ -10,6 +10,7 @@ AliAnalysisTaskDmesonJets* AddTaskDmesonJets(
     const char *ntracks    = "usedefault",
     const char *nclusters  = "usedefault",
     const char *nMCpart    = "",
+    Int_t       nMaxTrees  = 2,
     const char *suffix     = ""
 )
 {  
@@ -88,7 +89,7 @@ AliAnalysisTaskDmesonJets* AddTaskDmesonJets(
     name += TString::Format("_%s", suffix);
   }
 
-  AliAnalysisTaskDmesonJets* jetTask = new AliAnalysisTaskDmesonJets(name);
+  AliAnalysisTaskDmesonJets* jetTask = new AliAnalysisTaskDmesonJets(name, nMaxTrees);
   jetTask->SetVzRange(-10,10);
 
   if (!trackName.IsNull()) {
@@ -97,7 +98,8 @@ AliAnalysisTaskDmesonJets* AddTaskDmesonJets(
   }
 
   if (!mcPartName.IsNull()) {
-    AliParticleContainer* partCont = new AliHFAODMCParticleContainer(mcPartName);
+    AliMCParticleContainer* partCont = new AliHFAODMCParticleContainer(mcPartName);
+    partCont->SetEtaLimits(-1.5, 1.5);
     jetTask->AdoptParticleContainer(partCont);
   }
 
@@ -108,17 +110,24 @@ AliAnalysisTaskDmesonJets* AddTaskDmesonJets(
   //-------------------------------------------------------
   
   mgr->AddTask(jetTask);
-  
+
   // Create containers for input/output
   AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
   TString contname1(name);
   contname1 += "_histos";
   AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname1.Data(), 
-							    TList::Class(), AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s", AliAnalysisManager::GetCommonFileName()));
 
   mgr->ConnectInput(jetTask, 0, cinput1);
   mgr->ConnectOutput(jetTask, 1, coutput1);
-  
+
+  for (Int_t i = 0; i < nMaxTrees; i++) {
+    TString contname = TString::Format("%s_tree_%d", name.Data(), i);
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(contname.Data(),
+        TTree::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput(jetTask, 2+i, coutput);
+  }
   return jetTask;
 }

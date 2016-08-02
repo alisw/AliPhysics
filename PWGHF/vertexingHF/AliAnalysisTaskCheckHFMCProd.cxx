@@ -9,7 +9,9 @@
 #include "AliMCEvent.h"
 #include "AliHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
 #include "AliGenerator.h"
 #include "AliVertexingHFUtils.h"
 #include "AliMultiplicity.h"
@@ -55,10 +57,13 @@ ClassImp(AliAnalysisTaskCheckHFMCProd);
 /// \endcond
 
 //______________________________________________________________________________
-AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE("HFMCChecks"), 
+AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : 
+  AliAnalysisTaskSE("HFMCChecks"), 
   fOutput(0),
   fHistoNEvents(0),
   fHistoPhysPrim(0),
+  fHistoPhysPrimPiKPi09(0),
+  fHistoPhysPrimPiKPi09vsb(0),
   fHistoTracks(0),
   fHistoSelTracks(0),
   fHistoTracklets(0),
@@ -83,6 +88,7 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE
   fHistBSpecies(0),
   fHistLcDecayChan(0),
   fHistNcollHFtype(0),
+  fHistNinjectedvsb(0),
   fHistEtaPhiPtGenEle(0),
   fHistEtaPhiPtGenPi(0),
   fHistEtaPhiPtGenK(0),
@@ -138,7 +144,6 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fOutput->SetName("OutputHistos");
 
   fHistoNEvents = new TH1F("hNEvents", "Number of processed events",3,-0.5,2.5);
-  fHistoNEvents->Sumw2();
   fHistoNEvents->SetMinimum(0);
   fOutput->Add(fHistoNEvents);
 
@@ -146,56 +151,45 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   if(fSystem==1) maxMult=10000.;
   if(fSystem==2) maxMult=500.;
   fHistoPhysPrim = new TH1F("hPhysPrim","",100,-0.5,maxMult-0.5);
-  fHistoPhysPrim->Sumw2();
   fOutput->Add(fHistoPhysPrim);
+  fHistoPhysPrimPiKPi09 = new TH1F("hPhysPrimPiKPi09","",100,-0.5,maxMult-0.5);
+  fOutput->Add(fHistoPhysPrimPiKPi09);
+  fHistoPhysPrimPiKPi09vsb = new TH2F("hPhysPrimPiKPi09vsb","",50,0.,20.,100,-0.5,maxMult-0.5);
+  fOutput->Add(fHistoPhysPrimPiKPi09vsb);
+
   fHistoTracks = new TH1F("hTracks","",100,-0.5,maxMult*2-0.5);
-  fHistoTracks->Sumw2();
   fOutput->Add(fHistoTracks);
   fHistoSelTracks = new TH1F("hSelTracks","",100,-0.5,maxMult-0.5);
-  fHistoSelTracks->Sumw2();
   fOutput->Add(fHistoSelTracks);
   fHistoTracklets = new TH1F("hTracklets","",100,-0.5,maxMult-0.5);
-  fHistoTracklets->Sumw2();
   fOutput->Add(fHistoTracklets);
   fHistoTrackletsEta1 = new TH1F("hTrackletsEta1","",100,-0.5,maxMult-0.5);
-  fHistoTrackletsEta1->Sumw2();
   fOutput->Add(fHistoTrackletsEta1);
   fHistoPtPhysPrim = new TH1F("hPtPhysPrim","",100,0.,20.);
-  fHistoPtPhysPrim->Sumw2();
   fOutput->Add(fHistoPtPhysPrim);
   fHistoEtaPhysPrim = new TH1F("hEtaPhysPrim","",100,-10.,10.);
-  fHistoEtaPhysPrim->Sumw2();
   fOutput->Add(fHistoEtaPhysPrim);
 
   fHistoSPD3DVtxX = new TH1F("hSPD3DvX","",100,-1.,1.);
-  fHistoSPD3DVtxX->Sumw2();
   fOutput->Add(fHistoSPD3DVtxX);
   fHistoSPD3DVtxY = new TH1F("hSPD3DvY","",100,-1.,1.);
-  fHistoSPD3DVtxY->Sumw2();
   fOutput->Add(fHistoSPD3DVtxY);
   fHistoSPD3DVtxZ = new TH1F("hSPD3DvZ","",100,-15.,15.);
-  fHistoSPD3DVtxZ->Sumw2();
   fOutput->Add(fHistoSPD3DVtxZ);
 
   fHistoSPDZVtxX = new TH1F("hSPDZvX","",100,-1.,1.);
-  fHistoSPDZVtxX->Sumw2();
   fOutput->Add(fHistoSPDZVtxX);
   fHistoSPDZVtxY = new TH1F("hSPDZvY","",100,-1.,1.);
-  fHistoSPDZVtxY->Sumw2();
   fOutput->Add(fHistoSPDZVtxY);
   fHistoSPDZVtxZ = new TH1F("hSPDZvZ","",100,-15.,15.);
-  fHistoSPDZVtxZ->Sumw2();
   fOutput->Add(fHistoSPDZVtxZ);
 
 
   fHistoTRKVtxX = new TH1F("hTRKvX","",100,-1.,1.);
-  fHistoTRKVtxX->Sumw2();
   fOutput->Add(fHistoTRKVtxX);
   fHistoTRKVtxY = new TH1F("hTRKvY","",100,-1.,1.);
-  fHistoTRKVtxY->Sumw2();
   fOutput->Add(fHistoTRKVtxY);
   fHistoTRKVtxZ = new TH1F("hTRKvZ","",100,-15.,15.);
-  fHistoTRKVtxZ->Sumw2();
   fOutput->Add(fHistoTRKVtxZ);
 
   Int_t nBinscb=11;
@@ -203,10 +197,8 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   if(fSystem==2) nBinscb=21;
   Double_t maxncn=nBinscb-0.5;
   fHistoNcharmed = new TH2F("hncharmed","",100,-0.5,maxMult-0.5,nBinscb,-0.5,maxncn);
-  fHistoNcharmed->Sumw2();
   fOutput->Add(fHistoNcharmed);
   fHistoNbVsNc = new TH2F("hnbvsnc","",nBinscb,-0.5,maxncn,nBinscb,-0.5,maxncn);
-  fHistoNbVsNc->Sumw2();
   fOutput->Add(fHistoNbVsNc);
 
   fHistYPtPrompt[0] = new TH2F("hyptD0prompt","D0 - Prompt",40,0.,40.,20,-2.,2.);
@@ -247,22 +239,16 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistYPtFeeddown[4] = new TH2F("hyptLcfeedown","Lc - Feeddown",40,0.,40.,20,-2.,2.);
 
   for(Int_t ih=0; ih<5; ih++){
-    fHistBYPtAllDecay[ih]->Sumw2();
     fHistBYPtAllDecay[ih]->SetMinimum(0);
     fOutput->Add(fHistBYPtAllDecay[ih]);
-    fHistYPtAllDecay[ih]->Sumw2();
     fHistYPtAllDecay[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtAllDecay[ih]);
-    fHistYPtPromptAllDecay[ih]->Sumw2();
     fHistYPtPromptAllDecay[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtPromptAllDecay[ih]);
-    fHistYPtFeeddownAllDecay[ih]->Sumw2();
     fHistYPtFeeddownAllDecay[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtFeeddownAllDecay[ih]);
-    fHistYPtPrompt[ih]->Sumw2();
     fHistYPtPrompt[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtPrompt[ih]);
-    fHistYPtFeeddown[ih]->Sumw2();
     fHistYPtFeeddown[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtFeeddown[ih]);
   }
@@ -277,26 +263,20 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
 
   for(Int_t ih=0; ih<2; ih++){
 
-    fHistYPtD0byDecChannel[ih]->Sumw2();
     fHistYPtD0byDecChannel[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtD0byDecChannel[ih]);
-    fHistYPtDplusbyDecChannel[ih]->Sumw2();
     fHistYPtDplusbyDecChannel[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtDplusbyDecChannel[ih]);
-    fHistYPtDsbyDecChannel[ih]->Sumw2();
     fHistYPtDsbyDecChannel[ih]->SetMinimum(0);
     fOutput->Add(fHistYPtDsbyDecChannel[ih]);
   }
-  fHistYPtDplusbyDecChannel[2]->Sumw2();
   fHistYPtDplusbyDecChannel[2]->SetMinimum(0);
   fOutput->Add(fHistYPtDplusbyDecChannel[2]);
 
   fHistOriginPrompt=new TH1F("hOriginPrompt","",100,0.,0.5);
-  fHistOriginPrompt->Sumw2();
   fHistOriginPrompt->SetMinimum(0);
   fOutput->Add(fHistOriginPrompt);
   fHistOriginFeeddown=new TH1F("hOriginFeeddown","",100,0.,0.5);
-  fHistOriginFeeddown->Sumw2();
   fHistOriginFeeddown->SetMinimum(0);
   fOutput->Add(fHistOriginFeeddown);
   fHistMotherID=new TH1F("hMotherID","",1000,-1.5,998.5);
@@ -343,6 +323,8 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
 
   fHistNcollHFtype=new TH2F("hNcollHFtype","",5,-1.5,3.5,30,-0.5,29.5);
   fOutput->Add(fHistNcollHFtype);
+  fHistNinjectedvsb=new TH2F("hNinjectedvsb","",50,0.,20.,140,-0.5,139.5);
+  fOutput->Add(fHistNinjectedvsb);
 
   Double_t binseta[11]={-1.0,-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8,1.0};
   const Int_t nBinsPhi=40;
@@ -447,6 +429,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
   }
 
   AliStack* stack=0;
+
   if(fReadMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
@@ -474,6 +457,8 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     //    cout<<h<<endl;
     TString genname=mcEvent->GenEventHeader()->ClassName();
     Int_t nColl=-1;
+    Double_t imppar=-999.;
+    Int_t nInjected=0;
     Int_t typeHF=-1;
     TList* lgen=0x0;
     if(genname.Contains("CocktailEventHeader")){
@@ -482,13 +467,31 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       for(Int_t ig=0; ig<lgen->GetEntries(); ig++){
 	AliGenerator* gen=(AliGenerator*)lgen->At(ig);
 	TString title=gen->GetName();
-	if(title.Contains("bchadr")) typeHF=1;
-	else if(title.Contains("chadr")) typeHF=0;
-	else if(title.Contains("bele")) typeHF=3;
- 	else if(title.Contains("cele")) typeHF=2;
+	if(title.Contains("bchadr")){ 
+	  typeHF=1;
+	  nInjected++;
+	}else if(title.Contains("chadr")) {
+	  typeHF=0;
+	  nInjected++;
+	}else if(title.Contains("bele")){ 
+	  typeHF=3;
+	  nInjected++;
+	}else if(title.Contains("cele")){
+	  typeHF=2;
+	  nInjected++;
+	}else if(title.Contains("pythiaHF")){ 
+	  nInjected++;
+	}else if(title.Contains("hijing") || title.Contains("Hijing")){
+	  AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lgen->At(ig);
+	  imppar=hijh->ImpactParameter();
+	}
       }
       nColl=lgen->GetEntries();
       fHistNcollHFtype->Fill(typeHF,nColl);
+      fHistNinjectedvsb->Fill(imppar,nInjected);
+    }else if(genname.Contains("HijingEventHeader")){
+      AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)mcEvent->GenEventHeader();
+      imppar=hijh->ImpactParameter();
     }else{
       TString genTitle=mcEvent->GenEventHeader()->GetTitle();
       if(genTitle.Contains("bchadr")) typeHF=1;
@@ -502,6 +505,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     Int_t nb = 0, nc=0;
     Int_t nCharmed=0;
     Int_t nPhysPrim=0;
+    Int_t nPiKPeta09=0;
     for (Int_t i=0;i<nParticles;i++){
       TParticle* part = (TParticle*)stack->Particle(i);
       Int_t absPdg=TMath::Abs(part->GetPdgCode());
@@ -522,14 +526,15 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	}
 	if(TMath::Abs(eta)<0.9){
 	  fHistoPtPhysPrim->Fill(part->Pt());
+	  if(absPdg==211 || absPdg==321 || absPdg==2212){
+	    nPiKPeta09++;
+	  }
 	}
       }
       Float_t rapid=-999.;
       if (part->Energy() != TMath::Abs(part->Pz())){
 	rapid=0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
       }
-
-       
       Int_t iPart=-1;
       Int_t iType=0;
       Int_t iSpecies=-1;
@@ -650,6 +655,8 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     fHistoNcharmed->Fill(dNchdy,nCharmed);
     fHistoNbVsNc->Fill(nc,nb);
     fHistoPhysPrim->Fill(nPhysPrim);
+    fHistoPhysPrimPiKPi09->Fill(nPiKPeta09);
+    fHistoPhysPrimPiKPi09vsb->Fill(imppar,nPiKPeta09);
   }
 
   PostData(1,fOutput);

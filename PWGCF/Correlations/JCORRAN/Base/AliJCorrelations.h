@@ -18,9 +18,9 @@
 #include <stdio.h>
 #include <TRandom3.h>  //FK//
 
-#include  <AliJConst.h>
 #include "AliJHistos.h"
 #include "AliJAcceptanceCorrection.h"
+#include "AliJCorrelationInterface.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ class AliJHistos;
 class AliJBaseTrack;
 class AliJCard;
 
-class AliJCorrelations {
+class AliJCorrelations : public AliJCorrelationInterface{
   
 public:
   
@@ -112,15 +112,11 @@ private:
   
   void FillPairPtAndCosThetaStarHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2);
   void FillXeHistograms(fillType fTyp);
-  void FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2, bool fill2DBackground);
   void FillDeltaEtaHistograms(fillType fTyp, int zBin);
   void FillDeltaPhiHistograms(fillType fTyp);
-  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp);
+  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp, int zBin);
   void FillPtaHistograms(fillType fTyp);
   void FillIAAAndMoonHistograms(fillType fTyp, int zBin);
-  void FillJtDistributionHistograms(fillType fTyp, int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hDistribution, AliJTH1D &hDistributionLikeSign, AliJTH1D &hDistributionUnlikeSign, AliJTH1D &hInvariantMass, AliJTH1D &hInvariantMassLikeSign, AliJTH1D &hInvariantMassUnlikeSign);
-  void FillJtBackgroundHistograms(int assocType, int gapType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hBackground, AliJTH1D &hBackgroundLikeSign, AliJTH1D &hBackgroundUnlikeSign, AliJTH1D &hPtAssoc, AliJTH2D &hBackground2D, bool fill2DBackground);
-  int GetBinIndex(int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc);
 };
 
 #endif

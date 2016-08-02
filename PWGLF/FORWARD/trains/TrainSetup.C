@@ -768,6 +768,21 @@ protected:
 			     ":%s", gROOT->GetMacroPath()));
     AliAnalysisTaskSE* task = CoupleSECar("AddTaskMultSelection.C","false");
     FromOption(task, "AlternateOADBforEstimators", "cent-oadb", "");
+    if (fOptions.Has("cent-oadb")) {
+      TString centOADB = fOptions.AsString("cent-oadb");
+      if (centOADB.EndsWith(".root")) {
+	TString base(gSystem->BaseName(centOADB.Data()));
+	TString per(base);
+	per.ReplaceAll("OADB-","");
+	per.ReplaceAll(".root","");
+	SetOnTask(task, "AlternateOADBforEstimators", per);
+	fRailway->LoadAux(centOADB);
+	if (mc)
+	  SetOnTask(task, "AlternateOADBFullManualBypassMC", base);
+	else
+	  SetOnTask(task, "AlternateOADBFullManualBypas", base);
+      }
+    }
     if (!task->HasBranches()) {
       // Everything except tracks since that slows does things and is
       // really only needed for reference multiplicities

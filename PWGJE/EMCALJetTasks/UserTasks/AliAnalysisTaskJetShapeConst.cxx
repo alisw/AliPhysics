@@ -126,6 +126,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
      
   } else fRhoM = rhomParam->GetVal();
   
+  
   Int_t njet1 = 0, ntagjet2 = 0;
   
   AliDebug(11,Form("NJets  Incl: %d  Csub: %d",jetCont->GetNJets(),jetContS->GetNJets()));
@@ -175,6 +176,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       Double_t var = mjetS;
       //Double_t ptjetSMinusEmbTrpt = ptjetS;
       Double_t ptjetSMinusEmbTrpt = ptUnsubjet1;
+      
       if(fJetMassVarType==kRatMPt) {
       	 if(ptjetS>0. || ptjetS<0.) var = mjetS/ptjetS;
       	 else var = -999.;
@@ -288,10 +290,11 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       	 //M sub;M true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
       	 if(fFromTree){
-      	    Double_t varsp[6] = {var,var2,ptjetS,ptJetR, fVecD->M(), fVecD->Pt()};
+      	 	// Mass sub; Mass true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m};
+      	    Double_t varsp[10] = {var,var2,ptjetS,ptJetR, fVecD->M(), fVecD->Pt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
       	    fhnMassResponse[fCentBin]->Fill(varsp);
       	 } else {
-      	    Double_t varsp[5] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt()};
+      	    Double_t varsp[9] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
       	    fhnMassResponse[fCentBin]->Fill(varsp);
       	 }
       	 Double_t varsp1[8];
@@ -305,10 +308,10 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 varsp1[6] = ptjet1;
       	 varsp1[7] = ptjet1 - ptJetR;
       	 
-      	 fhnDeltaMass[fCentBin]->Fill(varsp1);
+      	 //fhnDeltaMass[fCentBin]->Fill(varsp1);
       	 
-      	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-      	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
+      	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+      	 Double_t varsp2[10] = {var-var2, ptjetS-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
       	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
       	 
       	 fhNconstit->Fill(jet1->GetNumberOfConstituents());

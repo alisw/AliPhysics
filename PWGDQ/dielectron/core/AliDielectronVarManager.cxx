@@ -31,7 +31,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Py",                     "#it{p}_{y}",                                         "(GeV/#it{c})"},
   {"Pz",                     "#it{p}_{z}",                                         "(GeV/#it{c})"},
   {"Pt",                     "#it{p}_{T}",                                         "(GeV/#it{c})"},
-  {"PtMC",                   "#it{p}_{T} (MC)",                                    "(GeV/#it{c})"},  
+  {"PtMC",                   "#it{p}_{T} (MC)",                                    "(GeV/#it{c})"},
   {"PtSq",                   "#it{p}_{T}^{2}",                                     "((GeV/#it{c})^{2})"},
   {"P",                      "#it{p}",                                             "(GeV/#it{c})"},
   {"PMC",                    "#it{p} (MC)",                                        "(GeV/#it{c})"},
@@ -50,10 +50,13 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MMC",                    "m_{inv} (MC)",                                       "(GeV/#it{c^{2}})"},
   {"Charge",                 "q",                                                  "(e)"},
   {"NclsITS",                "N_{cls}^{ITS}",                                      ""},
+  {"ITSFakeFlag",            "ITS Fake Flag",                                      ""},
   {"ITSchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{ITS}",                          ""},
   {"NclsTPC",                "N_{cls}^{TPC}",                                      ""},
   {"NclsSTPC",               "N_{shar.cls}^{TPC}",                                 ""},
   {"NclsSFracTPC",           "N_{shar.cls}^{TPC}/^{}N_{cls}^{TPC}",                ""},
+  {"NclsSITS",               "N_{shar.cls}^{ITS}",                                 ""},
+  {"NclsSFracITS",           "N_{shar.cls}^{ITS}/^{}N_{cls}^{ITS}",                ""},
   {"NclsTPCiter1",           "N_{1st.iter.cls}^{TPC}",                             ""},
   {"NFclsTPC",               "N_{find.cls}^{TPC}",                                 ""},
   {"NFclsTPCrobust",         "N_{cross.rows}^{TPC}",                               ""},
@@ -68,12 +71,12 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPCclsORO",              "N_{clsORO}^{TPC}",                                   ""},
   {"TPCactiveLength",        "active length^{TPC}",                                ""},
   {"TPCGeomLength",          "geom. length_{pTdependent}^{TPC}",                   ""},
-  
-  
-  
+
+
+
   {"TrackStatus",            "TrackStatus",                                        ""},
   {"FilterBit",              "AOD filter bit",                                     ""},
-    
+
   {"NclsTRD",                "N_{cls}^{TRD}",                                      ""},
   {"TRDntracklets",          "N_{trkl}^{TRD}",                                     ""},
   {"TRDpidQuality",          "N_{PID.trkl}^{TRD}",                                 ""},
@@ -99,7 +102,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
   {"TrackLength",            "#it{l}_{track}",                                     "(cm)"},
-  
+
   {"PdgCode",                "PDG code",                                           ""},
   {"PdgCodeMother",          "mothers PDG code",                                   ""},
   {"PdgCodeGrandMother",     "grand mothers PDG code",                             ""},
@@ -112,7 +115,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NumberOfJPsisIncl",      "N_{incl. J/^{}#psi}",                                ""},
   {"NumberOfJPsisPrompt",    "N_{prompt J/^{}#psi}",                               ""},
   {"NumberOfJPsisNPrompt",   "N_{non prompt J/^{}#psi}",                           ""},
-  
+
   {"ITS_signal",             "ITS d#it{E}/d#it{x}",                                "(keV/^{}300#mum)"},//TODO: check units
   {"SSD1_signal",            "SSD 1st layer d#it{E}/d#it{x}",                      "(keV/^{}300#mum)"},
   {"SSD2_signal",            "SSD 2nd layer d#it{E}/d#it{x}",                      "(keV/^{}300#mum)"},
@@ -162,7 +165,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"OneOverEffLeg",          "(A#times#varepsilon)^{-1}",                             ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
-  
+
   {"TRDonlineA",             "trans. offset from nominal pr. vtx.",           "(cm?)"},
   {"TRDonlineLayerMask",     "TRD online Layer Mask",                              ""},
   {"TRDonlineFirstLayer",    "1st tracklet layer assoc. to online trk.",     "(layer)"},
@@ -174,13 +177,16 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDolineFlagsTiming",    "TRD online timing flags",                            ""},
   {"TRDonlineLabel",         "TRD online track label",                              ""},
   {"TRDonlineNTracklets",    "N. of tracklets assoc. to TRD online trk.",           ""},
- 
+
 
   //
   {"Chi2NDF",                "#chi^{2}/^{}ndf",                                    ""},
   {"DecayLength",            "l_{decay}",                                          "(cm)"},
   {"R",                      "d(#vec{x}_{vtx},#vec{x}_{part.})",                   "(cm)"},
   {"OpeningAngle",           "#varphi",                                            "(rad.)"},
+  {"OpeningAngleXY",         "#varphi in XY",                                      "(rad.)"},
+  {"OpeningAngleRZ",         "#varphi in RZ",                                      "(rad.)"},
+  {"TriangularConversionCut","#Phi_{v}^{pair} - 21M",                              ""},
   {"CosPointingAngle",       "cos(#theta)",                                        "(rad.)"},
   {"ArmAlpha",               "#alpha^{arm}",                                       ""},
   {"ArmPt",                  "#it{p}_{T}^{arm}",                                   "(GeV/#it{c})"},
@@ -238,6 +244,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"LegDistanceXY",          "d^{legs}_{xy}",                                      "(cm)"},
   {"DeltaEta",               "#Delta #eta",                                        ""},
   {"DeltaPhi",               "#Delta #phi",                                        ""},
+  {"DeltaPhiChargeOrdered",  "#Delta #phi_{charge ordered}",                       ""},
   {"Merr",                   "m_{inv} error",                                      "(GeV/#it{c}^{2})"},
   {"DCA",                    "#it{dca}",                                           "(cm)"},
   {"PairType",               "PairType",                                           ""},
@@ -441,7 +448,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"NaccTrckltsCorr",        "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.6}",        ""},
   {"NaccTrcklts10Corr",      "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.0}",        ""},
   {"NaccTrcklts0916Corr",    "N_{acc. trkl}^{corr.} #cbar_{-1.6<#eta<-0.9}^{0.9<#eta<1.6}",""},
-  
+
   {"NaccTrckltsEsd05",       "N_{acc. trkl} #cbar_{#||{#eta}<0.5} (SPD)",          ""},
   {"NaccTrckltsEsd10",       "N_{acc. trkl} #cbar_{#||{#eta}<1.0} (SPD)",          ""},
   {"NaccTrckltsEsd16",       "N_{acc. trkl} #cbar_{#||{#eta}<1.6} (SPD)",          ""},
@@ -480,9 +487,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0minus05",       "centrality_{V0M AP -0.5%}",                     "(%)"},
   {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
-  
 
-  
+
+
   {"TriggerInclONL",         "online trigger bit (inclusive)",                     ""},
   {"TriggerInclOFF",         "offline trigger bit (inclusive)",                    ""},
   {"TriggerExclOFF",         "offline trigger bit (exclusive)",                    ""},
@@ -544,10 +551,10 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
       fgMultEstimatorAvg[i][j] = 0x0;
   for(Int_t i=0; i<10; ++i)
     for(Int_t j=0; j<4; ++j)
-      fgTRDpidEff[i][j] = 0x0;  
+      fgTRDpidEff[i][j] = 0x0;
   for(Int_t i=0; i<64; ++i) fgVZEROCalib[i] = 0x0;
   for(Int_t i=0; i<2; ++i)
-    for(Int_t j=0; j<2; ++j) 
+    for(Int_t j=0; j<2; ++j)
       fgVZERORecentering[i][j] = 0x0;
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j) fgZDCRecentering[i][j] = 0x0;
@@ -567,12 +574,12 @@ AliDielectronVarManager::~AliDielectronVarManager()
       if(fgMultEstimatorAvg[i][j]) delete fgMultEstimatorAvg[i][j];
   for(Int_t i=0; i<10; ++i)
     for(Int_t j=0; j<4; ++j)
-      if(fgTRDpidEff[i][j]) delete fgTRDpidEff[i][j];    
-  for(Int_t i=0; i<64; ++i) 
+      if(fgTRDpidEff[i][j]) delete fgTRDpidEff[i][j];
+  for(Int_t i=0; i<64; ++i)
     if(fgVZEROCalib[i]) delete fgVZEROCalib[i];
   for(Int_t i=0; i<2; ++i)
-    for(Int_t j=0; j<2; ++j) 
-      if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j]; 
+    for(Int_t j=0; j<2; ++j)
+      if(fgVZERORecentering[i][j]) delete fgVZERORecentering[i][j];
   for(Int_t i=0; i<3; ++i)
     for(Int_t j=0; j<2; ++j)
       if(fgZDCRecentering[i][j]) delete fgZDCRecentering[i][j];

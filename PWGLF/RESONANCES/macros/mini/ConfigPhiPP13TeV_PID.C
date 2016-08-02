@@ -31,6 +31,9 @@ Bool_t ConfigPhiPP13TeV_PID
   AliRsnCutSetDaughterParticle* cutSetQ;
   AliRsnCutSetDaughterParticle* cutSetK;
 
+  Int_t MultBins=aodFilterBit/100;
+  aodFilerBit=aodFilterBit%100;
+
   Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
   Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
   if(nsigmaKaTOF<1.e-10) nsigmaKaTOF=-1.;
@@ -166,9 +169,21 @@ Bool_t ConfigPhiPP13TeV_PID
     outps->SetMotherPDG(333);
     outps->SetMotherMass(1.019461);
     outps->SetPairCuts(cutsPair);
-    outps->AddAxis(fdpt,50,0.,5.);
-    outps->AddAxis(sdpt,50,0.,5.);
+    outps->AddAxis(fdpt,100,0.,10.);
+    outps->AddAxis(sdpt,100,0.,10.);
     outps->AddAxis(ptID,200,0.,20.);
+
+    AliRsnMiniOutput* outpsf=task->CreateOutput(Form("phi_phaseSpaceFine%s", suffix),"HIST","TRUE");
+    outpsf->SetDaughter(0,AliRsnDaughter::kKaon);
+    outpsf->SetDaughter(1,AliRsnDaughter::kKaon);
+    outpsf->SetCutID(0,iCutK);
+    outpsf->SetCutID(1,iCutK);
+    outpsf->SetMotherPDG(333);
+    outpsf->SetMotherMass(1.019461);
+    outpsf->SetPairCuts(cutsPair);
+    outpsf->AddAxis(fdpt,30,0.,3.);
+    outpsf->AddAxis(sdpt,30,0.,3.);
+    outpsf->AddAxis(ptID,300,0.,3.);
 
     //get reflections
     if(checkReflex){

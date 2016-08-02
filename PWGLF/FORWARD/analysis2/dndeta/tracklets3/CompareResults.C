@@ -77,9 +77,21 @@ struct Compare
     TDirectory* newSubDir = GetD(newDir, name);
     TDirectory* oldSubDir = GetD(oldDir, name);
     if (!newSubDir || !oldSubDir) return 0;
+    Int_t newDim = 0;
+    if      (TString(newDir->GetName()).Contains("etaipz")) newDim = 3;
+    else if (TString(newDir->GetName()).Contains("eta"))    newDim = 2;
+    else if (TString(newDir->GetName()).Contains("const"))  newDim = 1;
+    Int_t oldDim = 0;
+    if      (TString(oldDir->GetName()).Contains("etaipz")) oldDim = 3;
+    else if (TString(oldDir->GetName()).Contains("eta"))    oldDim = 2;
+    else if (TString(oldDir->GetName()).Contains("const"))  oldDim = 1;
 
-    TH1* newRes = GetH1(newSubDir, "dndeta");
-    TH1* oldRes = GetH1(oldSubDir, "dndeta");
+    TDirectory* newSubSubDir = GetD(newSubDir, Form("results%dd",newDim));
+    TDirectory* oldSubSubDir = GetD(oldSubDir, Form("results%dd",oldDim));
+    if (!newSubSubDir || !oldSubSubDir) return 0;
+
+    TH1* newRes = GetH1(newSubSubDir, "result");
+    TH1* oldRes = GetH1(oldSubSubDir, "result");
     if (!newRes || !oldRes) return 0;
 
     TH1* ratio = static_cast<TH1*>(newRes->Clone(name));

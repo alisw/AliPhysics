@@ -440,7 +440,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
+    if(!AreDaughtersSelected(d,aod)) return 0;
   }
  
   //  cout<<"Pid = "<<returnvaluePID<<endl;

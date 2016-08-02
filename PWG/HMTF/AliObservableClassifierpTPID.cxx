@@ -90,6 +90,10 @@ void AliObservableClassifierpTPID::Fill(AliMCEvent *event, AliStack *stack) {
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
+    // discard unphysical particles from some generators
+    if (track->Pt() == 0 || track->E() <= 0)
+      continue;
+
     // We only want primaries and pi0's!
     if (!(stack->IsPhysicalPrimary(iTrack) ||
 	  AliIsPi0PhysicalPrimary(iTrack, stack))) {

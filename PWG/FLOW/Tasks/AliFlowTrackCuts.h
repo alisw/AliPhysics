@@ -79,7 +79,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kUserA, // reserved for custom cuts
                             kUserB, // reserved for custom cuts
                             kBetaVZERO, // temporary enum for beta testing of new vzero calibration
-                            kDeltaVZERO // temporary enum for beta testing of new vzero calibration
+                            kDeltaVZERO, // temporary enum for beta testing of new vzero calibration
+                            kKappaVZERO // permanent enum for beta testing of new vzero calibration
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 

@@ -38,14 +38,16 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
+enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
-enum particularity{ kTopological, kLowPt };
+enum particularity{ kTopological, kLowPt, kPass4 };
 
-void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
+void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
+		    const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
@@ -54,35 +56,14 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    Int_t ccestimator = kV0M,
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
 		    Int_t rapiditySlice=kdefault,
-		    Int_t analysisSpeciality=kTopological) {
+		    Int_t analysisSpeciality=kTopological,
+		    Bool_t setUsePtDependentEffUncertainty=true) {
 
 
   //  gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
-
-  // Set the meson/baryon and decay
-  // (only D0 -> K pi, D+--> K pi pi, D* --> D0 pi, D+s -->KKpi, Lc+ --> pKpi & Lc+ --> pK0S implemented here)
-  Bool_t isD0Kpi = true;
-  Bool_t isDplusKpipi = false;
-  Bool_t isDstarD0pi = false;
-  Bool_t isDsKKpi = false;
-  Bool_t isLctopKpi = false;
-  Bool_t isLcK0Sp = false;
-
-  Int_t shouldBeOne=0;
-  if(isD0Kpi) shouldBeOne++;
-  if(isDplusKpipi) shouldBeOne++;
-  if(isDstarD0pi) shouldBeOne++;
-  if(isDsKKpi) shouldBeOne++;
-  if(isLctopKpi) shouldBeOne++;
-  if(isLcK0Sp) shouldBeOne++;
-  
-  if (shouldBeOne!=1) {
-    cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
-    return;
-  }
 
   Int_t option=3;
   if (fdMethod==kfc) option=1;
@@ -199,7 +180,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //
   Int_t decay=0;
   TFile * mcfile = new TFile(mcfilename,"read");
-  if (isD0Kpi){
+  if (decayChan==kD0Kpi){
     decay = 1;
     hDirectMCpt = (TH1D*)mcfile->Get("hD0Kpipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hD0KpifromBpred_central_corr");
@@ -209,7 +190,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hD0KpifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("D0Kpiprediction");
   }
-  else if (isDplusKpipi){
+  else if (decayChan==kDplusKpipi){
     decay = 2;
     hDirectMCpt = (TH1D*)mcfile->Get("hDpluskpipipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hDpluskpipifromBpred_central_corr");
@@ -219,7 +200,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDpluskpipifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("Dpluskpipiprediction");
   }
-  else if(isDstarD0pi){
+  else if(decayChan==kDstarD0pi){
     decay = 3;
     hDirectMCpt = (TH1D*)mcfile->Get("hDstarD0pipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hDstarD0pifromBpred_central_corr");
@@ -229,7 +210,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDstarD0pifromBpred_min_corr");
     //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("DstarD0piprediction");
   }
-  else if (isDsKKpi){
+  else if (decayChan==kDsKKpi){
     decay = 4;
     hDirectMCpt = (TH1D*)mcfile->Get("hDsPhipitoKkpipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_central_corr");
@@ -238,7 +219,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_max_corr");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDsPhipitoKkpifromBpred_min_corr");
   }
-  else if (isLctopKpi){
+  else if (decayChan==kLctopKpi){
     decay = 5;
     hDirectMCpt = (TH1D*)mcfile->Get("hLcpkpipred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hLcpkpifromBpred_central_corr");
@@ -247,7 +228,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hLcpkpifromBpred_max_corr");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hLcpkpifromBpred_min_corr");
   }
-  else if (isLcK0Sp){
+  else if (decayChan==kLcK0Sp){
     decay = 6;
     hDirectMCpt = (TH1D*)mcfile->Get("hLcK0sppred_central");
     hFeedDownMCpt = (TH1D*)mcfile->Get("hLcK0spfromBpred_central_corr");
@@ -372,6 +353,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   // Set flag on whether to additional PbPb Eloss hypothesis have to be computed
   spectra->SetComputeElossHypothesis(PbPbEloss);
 
+  spectra->SetUsePtDependentEffUncertainty(setUsePtDependentEffUncertainty);
+
   // Feed the input histograms
   //  reconstructed spectra
   cout << " Setting the reconstructed spectrum,";
@@ -402,37 +385,33 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if(isRaavsEP>0.) spectra->SetIsEventPlaneAnalysis(kTRUE);
 
   // Set the global uncertainties on the efficiencies (in percent)
-  Double_t globalEffUnc = 0.15; 
-  Double_t globalBCEffRatioUnc = 0.15;
+  Double_t globalEffUnc = 0.05;
+  Double_t globalBCEffRatioUnc = 0.05;
+  if(analysisSpeciality==kLowPt) globalBCEffRatioUnc = 0.;
   spectra->SetAccEffPercentageUncertainty(globalEffUnc,globalBCEffRatioUnc);
 
   // Set if the yield is for particle+anti-particle or only one type
   spectra->SetIsParticlePlusAntiParticleYield(isParticlePlusAntiParticleYield);
 
   // Set the Tab parameter and uncertainties
-  if ( (cc != kpp7) && (cc != kpp276) ) {
+  if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276)  ) {
     spectra->SetTabParameter(tab,tabUnc);
   }
   if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     spectra->SetCollisionType(2);
-  } else if ( !( cc==kpp7 || cc==kpp276 ) ) {
+  } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 ) ) {
     spectra->SetCollisionType(1);
   }
   
-  // Do the calculations
-  cout << " Doing the calculation... "<< endl;
-  Double_t deltaY = 1.0;
-  Double_t branchingRatioC = 1.0;
-  Double_t branchingRatioBintoFinalDecay = 1.0; // this is relative to the input theoretical prediction
-  spectra->ComputeHFPtSpectrum(deltaY,branchingRatioC,branchingRatioBintoFinalDecay);
-  cout << "   ended the calculation, getting the histograms back " << endl;
-
   // Set the systematics externally
   
   Bool_t combineFeedDown = true;
   AliHFSystErr *systematics = new AliHFSystErr();
   if( cc==kpp276 ) {
     systematics->SetIsLowEnergy(true);
+  }
+  else if (cc==kpp8){
+    systematics->SetRunNumber(12);
   }
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
@@ -502,10 +481,23 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if(analysisSpeciality==kLowPt){
     systematics->SetIsLowPtAnalysis(true);
   }
+  else if(analysisSpeciality==kPass4){
+    systematics->SetIsPass4Analysis(kTRUE);
+  }
   //
   systematics->Init(decay);
+  spectra->SetSystematicUncertainty(systematics);
 
-  spectra->ComputeSystUncertainties(systematics,combineFeedDown);
+  // Do the calculations
+  cout << " Doing the calculation... "<< endl;
+  Double_t deltaY = 1.0;
+  Double_t branchingRatioC = 1.0;
+  Double_t branchingRatioBintoFinalDecay = 1.0; // this is relative to the input theoretical prediction
+  spectra->ComputeHFPtSpectrum(deltaY,branchingRatioC,branchingRatioBintoFinalDecay);
+  spectra->ComputeSystUncertainties(combineFeedDown);
+  cout << "   ended the calculation, getting the histograms back " << endl;
+
+
 
   //
   // Get the output histograms

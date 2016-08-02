@@ -31,6 +31,8 @@ public:
   {
     fOptions.Set("type", "ESD");
     fOptions.Add("eff", "Effective SPD correction", false);
+    fOptions.Add("satellite", "Set-up for satellite-main", false);
+    fOptions.Add("reweigh","MODE","Whether to reweigh","");
     fOptions.Add("max-strips", "NUMBER", 
                  "Maximum consequtive strips", 2); 
   }
@@ -54,7 +56,13 @@ protected:
   
     // --- Options ---------------------------------------------------
     Bool_t   spdEffective = fOptions.Has("eff");
+    Bool_t   satellite    = fOptions.AsBool("satellite");
+    TString  reweigh      = fOptions.AsString("reweigh","");
     UShort_t maxStrips    = fOptions.AsInt("max-strips");
+    UShort_t rflags       = 0;
+    if (reweigh.Contains("track")) rflags |= 0x1;
+    if (reweigh.Contains("prim"))  rflags |= 0x2;
+    if (reweigh.Contains("real"))  rflags |= 0x4;
 
     // --- Check if this is MC ---------------------------------------
     if (!mgr->GetMCtruthEventHandler()) return;
@@ -64,10 +72,12 @@ protected:
 
     UInt_t mask = AliVEvent::kAny;
     // --- Add the task ----------------------------------------------
-    CoupleSECar("AddTaskForwardMCCorr.C",Form("%d", maxStrips), mask); 
+    CoupleSECar("AddTaskForwardMCCorr.C",
+		Form("%d,0x%x,%d", satellite, rflags, maxStrips), mask); 
 
     // --- Add the task ----------------------------------------------
-    CoupleSECar("AddTaskCentralMCCorr.C", Form("%d", spdEffective), mask);
+    CoupleSECar("AddTaskCentralMCCorr.C",
+		Form("%d,%d", satellite, spdEffective), mask);
   }
   //__________________________________________________________________
   /** 
@@ -80,7 +90,7 @@ protected:
 			      AliAnalysisManager* mgr)
   {
     TrainSetup::CreatePhysicsSelection(mc, mgr);
-
+#if 0
     // --- Get input event handler -----------------------------------
     AliInputEventHandler* ih =
       dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
@@ -96,6 +106,7 @@ protected:
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
+#endif 
   }
   //__________________________________________________________________
   /** 
@@ -196,7 +207,8 @@ protected:
       << "{\n"
       << "  const char* fwd=\"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/corrs/DrawCorrSecMap.C\",fwd));\n"
-      << "  DrawCorrSecMap(999,0,0,999,\"fmd_corrections.root\",details);\n"
+      << "  DrawCorrSecMap(999,0,0,999," << fOptions.Has("satellite")
+      << ",\"fmd_corrections.root\",details);\n"
       << "}\n"
       << "// EOF" << std::endl;
     f.close();

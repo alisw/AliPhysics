@@ -91,6 +91,7 @@ public:
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
   void SetBetaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
   void SetDeltaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
+  void SetKappaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
 
   virtual void ClearFast();
   virtual void ClearCachedRun();

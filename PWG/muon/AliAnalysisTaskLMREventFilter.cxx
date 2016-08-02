@@ -197,20 +197,25 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD-> FindListObject("MultSelection");
 
-  if (!MultSelection) 
+  // all multiplicity are initialized at 166 and is used for error code of multselection non actived 
+  Double_t Multiplicity_V0M          = 166.;
+  Double_t Multiplicity_ADM          = 166.;
+  Double_t Multiplicity_SPDTracklets = 166.;
+  Double_t Multiplicity_SPDClusters  = 166.;
+  Double_t Multiplicity_RefMult05    = 166.;
+  Double_t Multiplicity_RefMult08    = 166.;
+
+  if (MultSelection) 
     {
-      printf ("No reconstructed activity found\n");
-      return;
+      Multiplicity_V0M          = MultSelection->GetMultiplicityPercentile("V0M");
+      Multiplicity_ADM          = MultSelection->GetMultiplicityPercentile("ADM");
+      Multiplicity_SPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+      Multiplicity_SPDClusters  = MultSelection->GetMultiplicityPercentile("SPDClusters");
+      Multiplicity_RefMult05    = MultSelection->GetMultiplicityPercentile("RefMult05");
+      Multiplicity_RefMult08    = MultSelection->GetMultiplicityPercentile("RefMult08");
     }
   
   
-  Double_t Multiplicity_V0M          = MultSelection->GetMultiplicityPercentile("V0M");
-  Double_t Multiplicity_ADM = MultSelection->GetMultiplicityPercentile("ADM");
-  Double_t Multiplicity_SPDTracklets = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-  Double_t Multiplicity_SPDClusters = MultSelection->GetMultiplicityPercentile("SPDClusters");
-  Double_t Multiplicity_RefMult05 = MultSelection->GetMultiplicityPercentile("RefMult05");
-  Double_t Multiplicity_RefMult08 = MultSelection->GetMultiplicityPercentile("RefMult08");
-
   AliAODVertex *vert = fAOD->GetPrimaryVertex();
   if (!vert) {
     printf ("No vertex found\n");

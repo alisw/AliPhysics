@@ -5,7 +5,7 @@
 
 #include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoEvent.h"
-#include "../../../OADB/COMMON/MULTIPLICITY/AliMultSelection.h"  // "AliMultSelection.h"
+#include "AliMultSelection.h"
 
 AliFemtoEvent* AliFemtoEventReaderAODMultSelection::CopyAODtoFemtoEvent()
 {

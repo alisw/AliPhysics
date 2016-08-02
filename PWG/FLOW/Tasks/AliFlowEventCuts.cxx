@@ -43,6 +43,7 @@
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisUtils.h"
+#include "AliMultSelection.h"
 #include <iostream>
 using namespace std;
 
@@ -66,6 +67,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fStandardTPCcuts(NULL),
   fStandardGlobalCuts(NULL),
   fUtils(NULL),
+  fMultSelection(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -117,6 +119,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fStandardTPCcuts(AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010()),
   fStandardGlobalCuts(AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()),
   fUtils(NULL),
+  fMultSelection(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -168,6 +171,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fStandardTPCcuts(NULL),
   fStandardGlobalCuts(NULL),
   fUtils(NULL),
+  fMultSelection(NULL),
   fCutPrimaryVertexX(that.fCutPrimaryVertexX),
   fPrimaryVertexXmax(that.fPrimaryVertexXmax),
   fPrimaryVertexXmin(that.fPrimaryVertexXmin),
@@ -269,7 +273,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
       fUtils->SetUseMVPlpSelection(kTRUE);
       fUtils->SetUseOutOfBunchPileUp(kTRUE);
   }
-
+  
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
   fPrimaryVertexXmin=that.fPrimaryVertexXmin;
@@ -382,8 +386,12 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     }
     if(fCutTPCmultiplicityOutliersAOD) 
     {
-      if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
-      else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+      if(event->GetRunNumber() < 209122) {
+        if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
+        else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+      } else {
+        if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (279.46+1.45*multGlobal)) pass = kFALSE;
+      }
     }
   }
 
@@ -410,6 +418,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
       pass=kFALSE;
   }
+  
+  // Handles ESD event
   if (fCutCentralityPercentile&&esdevent)
   {
    if(!fUseNewCentralityFramework)
@@ -436,8 +446,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
    } // if(!fUseNewCentralityFramework)
    else
    {
-    AliMultSelection *MultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
-    Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    fMultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
+    Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
     if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
     {
       pass=kFALSE;
@@ -484,25 +494,40 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
       if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
     }
-    AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
-    if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
-      Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
-      Double_t trkCentr = centr->GetCentralityPercentile("TRK"); 
-      if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+    if(!fUseNewCentralityFramework) {
+      AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
+      if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
+        Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
+        Double_t trkCentr = centr->GetCentralityPercentile("TRK");
+        if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+      }
+      if (fCutCentralityPercentile) {
+        if (fUseCentralityUnchecked) {
+          if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+                                                        fCentralityPercentileMax,
+                                                        CentrMethName(fCentralityPercentileMethod) )) {
+            pass = kFALSE;
+          }
+        } else {
+          if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+                                               fCentralityPercentileMax,
+                                               CentrMethName(fCentralityPercentileMethod) )) {
+            pass = kFALSE;
+          }
+        }
+      }
     }
-    if (fCutCentralityPercentile) {
-      if (fUseCentralityUnchecked) {
-	if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
-						       fCentralityPercentileMax,
-						       CentrMethName(fCentralityPercentileMethod) )) {
-	  pass = kFALSE;
-	}
-      } else {
-	if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
-					      fCentralityPercentileMax,
-					      CentrMethName(fCentralityPercentileMethod) )) {
-	  pass = kFALSE;
-	}
+    else {
+      if (fCutCentralityPercentile) {
+        fMultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
+        Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+        if(!fMultSelection){
+          AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+        }
+        if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
+        {
+          pass=kFALSE;
+        }
       }
     }
   }
@@ -576,14 +601,18 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
   {
    if (esdEvent)
    {
-    AliMultSelection *MultSelection = (AliMultSelection *) esdEvent->FindListObject("MultSelection");
-    Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    fMultSelection = (AliMultSelection *) esdEvent->FindListObject("MultSelection");
+    Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
     centrality = lPercentile;
    }
    else if (aodEvent)
    {
-    cout<<"New centrality framework not tested yet for AODs..."<<endl;
-    exit(0);
+     fMultSelection = (AliMultSelection *) aodEvent->FindListObject("MultSelection");
+     Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+     if(!fMultSelection){
+       AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+     }
+     centrality = lPercentile;
    } // else if (aodEvent)
   } // else // if(!fUseNewCentralityFramework)
 
@@ -605,6 +634,8 @@ const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
       return "TRK";
     case kVZERO:
       return "V0M";
+    case kZDC:
+      return "ZDC";
     default:
       return "";
   }
@@ -684,8 +715,8 @@ void AliFlowEventCuts::DefineHistograms()
   fQA->Add(after);
   before->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
   after->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
-  before->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500));//1
-  after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500));//1
+  before->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
+  after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
   TH1::AddDirectory(adddirstatus);
 }
 

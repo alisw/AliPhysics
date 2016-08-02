@@ -74,6 +74,9 @@ export driftSigmaT=600;     # smoothing  sigma for drift calibration
 export targetOCDBDir="local://`pwd`"
 targetOCDBDir=${ALIEN_JDL_TARGETOCDBDIR-$targetOCDBDir}
 
+#use of TOF BC or not
+export useTOFBC
+useTOFBC=${ALIEN_JDL_USETOFBC-$useTOFBC}
 #
 # 1.) Submit query  to get  time dependent info
 #
@@ -100,6 +103,10 @@ done
 #
 alilog_info "BEGIN: Define time bins"
 timeDelta=2400 # the width of the time bin will be at minimum 600 s, and at maximum 1200 s 
+timeDeltaMinFrac="0.7"  # if possible, try to avoid time-bins smaller than timeDelta*timeDeltaMinFrac
+
+
+timeDeltaMin=`echo "($timeDelta*$timeDeltaMinFrac)/1" | bc`
 
 timeBinsFile="timeBins.log"
 
@@ -112,6 +119,14 @@ for arun in `cat $runList`; do
     # define number of bins with approx timeDelta duration
     nTimeBins=$(( (gmaxTime-gminTime)/timeDelta+1 ))
     timeDeltaRun=$(( (gmaxTime-gminTime)/nTimeBins ))
+
+    if (( $timeDeltaRun < $timeDeltaMin )) ; then # try to avoid too short time intervals
+	if (( $nTimeBins > 1 )) ; then
+	    ((nTimeBins--)) ;
+	    timeDeltaRun=$(( (gmaxTime-gminTime)/nTimeBins )) ;
+	fi
+    fi
+
     alilog_info "BEGIN: Processing run $arun"
     alilog_info "Split run $arun ($gminTime : $gmaxTime) to $nTimeBins of $timeDeltaRun duration"
 

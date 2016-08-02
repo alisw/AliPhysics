@@ -1205,8 +1205,8 @@ void AliV0ReaderV1::CountTracks(){
     // Using standard function for setting Cuts
     Int_t runNumber = fInputEvent->GetRunNumber();
     AliESDtrackCuts *EsdTrackCuts = 0x0;
-    // if LHC11a or earlier or if LHC13g -> use 2010 cuts
-    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) ){
+    // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
       EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
     // else if run2 data use 2015 PbPb cuts
     }else if (runNumber>=209122){

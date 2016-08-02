@@ -31,7 +31,7 @@ class AliAnalysisTaskResolution : public AliAnalysisTaskSE{
 		virtual void   UserExec(Option_t *option);
 		virtual void   Terminate(Option_t *);
 
-        void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader){fV0Reader=v0Reader;}
 		void SetConversionCuts(AliConversionPhotonCuts* conversionCuts,Int_t IsHeavyIon ){
 			fConversionCuts=conversionCuts;

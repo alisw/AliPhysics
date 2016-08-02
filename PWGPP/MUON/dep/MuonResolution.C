@@ -21,8 +21,9 @@
 #include <TGrid.h>
 #include <TEnv.h>
 #include <TROOT.h>
-#include "TAxis.h"
-#include "THashList.h"
+#include <TAxis.h>
+#include <THashList.h>
+#include <TFileCollection.h>
 #include <TAlienCollection.h>
 #include <TGridCollection.h>
 #include <TGridResult.h>
@@ -84,7 +85,7 @@ Bool_t  GetChamberResolution(Int_t iStep, Double_t clusterResNB[10], Double_t cl
 			     Double_t clusterResNBErr[10], Double_t clusterResBErr[10]);
 Bool_t  AddHalfChShift(Int_t iStep, Double_t halfChShiftNB[20], Double_t halfChShiftB[20], Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20]);
 Bool_t  AddDEShift(Int_t iStep, Double_t deShiftNB[200], Double_t deShiftB[200]);
-void    AddMCHViews(TFile* file);
+void    AddMCHViews(TString smode, TFile* file);
 AliMUONTrackerData* ConvertGraph(TGraphErrors& g, const char* name);
 Int_t   GetMode(TString smode, TString input);
 TChain* CreateChainFromCollection(const char *xmlfile);
@@ -189,8 +190,15 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
   
   // Create input object
   TObject* inputObj = 0x0;
-  if (mode == kProof) inputObj = new TObjString(inputFileName);
-  else inputObj = CreateChain(mode, inputFileName);
+  if (mode == kProof) {
+    if (inputFileName.EndsWith(".root")) {
+      TFile *inFile = TFile::Open(inputFileName.Data(),"READ");
+      if (inFile && inFile->IsOpen()) {
+        inputObj = dynamic_cast<TFileCollection*>(inFile->FindObjectAny("dataset"));
+        inFile->Close();
+      }
+    } else inputObj = new TObjString(inputFileName);
+  } else inputObj = CreateChain(mode, inputFileName);
   if (!inputObj) return;
   
   // loop over step
@@ -211,8 +219,11 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
-      if (mode == kProof) mgr->StartAnalysis("proof", static_cast<TObjString*>(inputObj)->GetName(), nevents);
-      else mgr->StartAnalysis("local", static_cast<TChain*>(inputObj), nevents);
+      if (mode == kProof) {
+        if (inputObj->IsA() == TFileCollection::Class())
+          mgr->StartAnalysis("proof", static_cast<TFileCollection*>(inputObj), nevents);
+        else mgr->StartAnalysis("proof", static_cast<TObjString*>(inputObj)->GetName(), nevents);
+      } else mgr->StartAnalysis("local", static_cast<TChain*>(inputObj), nevents);
     }
     
     // save the summary canvases and mchview display
@@ -221,7 +232,7 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
       if (outFile && outFile->IsOpen()) {
 	outFile->cd();
 	muonResolution->GetCanvases()->Write();
-	AddMCHViews(outFile);
+	AddMCHViews(smode, outFile);
 	outFile->Close();
 	delete outFile;
       }
@@ -438,19 +449,29 @@ void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVer
   else gProof->Close("s");
   
   // connect
-  TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster2.in2p3.fr"; //"localhost:1093"
-  TString nWorkers = (aaf == "caf") ? "workers=80" : ""; //"workers=3x"
-  TString user = (gSystem->Getenv("alien_API_USER") == NULL) ? "" : Form("%s@",gSystem->Getenv("alien_API_USER"));
-  TProof::Mgr(Form("%s%s",user.Data(), location.Data()))->SetROOTVersion(Form("VO_ALICE@ROOT::%s",rootVersion.Data()));
-  TProof::Open(Form("%s%s/?N",user.Data(), location.Data()), nWorkers.Data());
+  if (aaf == "saf3") TProof::Open("pod://");
+  else {
+    TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster2.in2p3.fr"; //"localhost:1093"
+    TString nWorkers = (aaf == "caf") ? "workers=80" : ""; //"workers=3x"
+    TString user = (gSystem->Getenv("alien_API_USER") == NULL) ? "" : Form("%s@",gSystem->Getenv("alien_API_USER"));
+    TProof::Mgr(Form("%s%s",user.Data(), location.Data()))->SetROOTVersion(Form("VO_ALICE@ROOT::%s",rootVersion.Data()));
+    TProof::Open(Form("%s%s/?N",user.Data(), location.Data()), nWorkers.Data());
+  }
   if (!gProof) return;
   
   // set environment and load libraries on workers
   TList* list = new TList();
-  list->Add(new TNamed("ALIROOT_MODE", ""));
-  gProof->EnablePackage(Form("VO_ALICE@AliPhysics::%s",aliphysicsVersion.Data()), list, kTRUE);
+  list->Add(new TNamed("ALIROOT_MODE", "base"));
+  list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
+  if (aaf == "saf3") {
+    TString home = gSystem->Getenv("HOME");
+    gProof->UploadPackage(Form("%s/AliceVaf.par", home.Data()));
+    gProof->EnablePackage(Form("%s/AliceVaf.par", home.Data()), list, (iStep!=0));
+  } else gProof->EnablePackage(Form("VO_ALICE@AliPhysics::%s",aliphysicsVersion.Data()), list, kTRUE);
 //  gProof->UploadPackage("$ALICE_PHYSICS/PARfiles/PWGPPMUONdep.par");
 //  gProof->EnablePackage("$ALICE_PHYSICS/PARfiles/PWGPPMUONdep.par", kTRUE);
+//  gProof->UploadPackage("PWGPPMUONdep.par");
+//  gProof->EnablePackage("PWGPPMUONdep.par", kTRUE);
   
 }
 
@@ -467,6 +488,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   // Create the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("MuonResolutionAnalysis");
   //mgr->SetNSysInfo(100);
+  //mgr->SetDebugLevel(3);
   
   // ESD input handler
   AliESDInputHandler* esdH = new AliESDInputHandler();
@@ -479,17 +501,19 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   UInt_t eventSelectionMask = 0;
   if (selectPhysics) {
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    if (!gROOT->ProcessLineFast(TString::Format("AddTaskPhysicsSelection(%d)", isMC))) {
+    AliPhysicsSelectionTask* physicsSelection = reinterpret_cast<AliPhysicsSelectionTask*>(gROOT->ProcessLineSync(TString::Format("AddTaskPhysicsSelection(%d)", isMC)));
+    if (!physicsSelection) {
       Error("CreateAnalysisTrain","AliPhysicsSelectionTask not created!");
       return 0x0;
     }
+    //if (!isMC) physicsSelection->GetPhysicsSelection()->SetUseBXNumbers(kFALSE); // Needed to merge runs with different running scheme
     eventSelectionMask |= AliMuonEventCuts::kPhysicsSelected;
   }
   if (selectTrigger) eventSelectionMask |= AliMuonEventCuts::kSelectedTrig;
   
-  // centrality selection
-  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-  if (!gROOT->ProcessLineFast("AddTaskCentrality()")) {
+  // multiplicity/centrality selection
+  gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+  if (!gROOT->ProcessLineFast("AddTaskMultSelection()")) {
     Error("CreateAnalysisTrain","AliCentralitySelectionTask not created!");
     return 0x0;
   }
@@ -503,15 +527,17 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     return 0x0;
   }
   /*if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  else */muonResolution->SetDefaultStorage("raw://");
+  else muonResolution->SetDefaultStorage("raw://");*/
+  muonResolution->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
   if (mode != kProof) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
   muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
 //  muonResolution->FitResiduals(kFALSE);
 //  muonResolution->ImproveTracks(kTRUE);
-//  muonResolution->ReAlign("", -1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC12_ReAlign_new_0");
-//  muonResolution->SetAlignStorage("alien://folder=/alice/simulation/2008/v4-15-Release/Residual", 5);
+//  muonResolution->ReAlign("", -1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC15_realign_all_4");
+//  muonResolution->ReAlign("", 6, -1, "");
+//  muonResolution->SetAlignStorage("", 5);
   
   if (shiftHalfCh) {
     muonResolution->SetHalfChShift(halfChShiftNB, halfChShiftB);
@@ -528,6 +554,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     AliMuonEventCuts eventCuts("muEventCuts", "muEventCuts");
     eventCuts.SetFilterMask(eventSelectionMask);
     if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kAny);
+//    if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kMuonUnlikeLowPt7);
     if (selectTrigger) eventCuts.SetTrigClassPatterns(eventCuts.GetDefaultTrigClassPatterns());
     muonResolution->SetMuonEventCuts(eventCuts);
   }
@@ -657,14 +684,15 @@ Bool_t AddDEShift(Int_t iStep, Double_t deShiftNB[200], Double_t deShiftB[200])
 }
 
 //______________________________________________________________________________
-void AddMCHViews(TFile* file)
+void AddMCHViews(TString smode, TFile* file)
 {
   /// Get from the file the graphs containing data per DE, convert them into mchview objects and save them
   
   if (  ! AliMpDDLStore::Instance(false) )
   {
     Warning("AddMCHViews","mapping was not loaded. Loading it from $ALICE_ROOT/OCDB");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    if (smode == "saf3") AliCDBManager::Instance()->SetDefaultStorage("raw://");
+    else AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
     AliCDBManager::Instance()->SetRun(999999999);
   }
   
@@ -754,7 +782,7 @@ Int_t GetMode(TString smode, TString input)
     if ( input.EndsWith(".xml") ) return kInteractif_xml;
     else if ( input.EndsWith(".txt") ) return kInteractif_ESDList;
     else if ( input.EndsWith(".root") ) return kLocal;    
-  } else if (smode == "caf" || smode == "saf") return kProof;
+  } else if (smode == "caf" || smode == "saf" || smode == "saf3") return kProof;
   return -1;
 }
 

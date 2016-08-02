@@ -65,6 +65,10 @@ export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPASS0_GAINCALIBTYPE-$TPC_CPass0
 
 echo "TPC_CPass0_GainCalibType=${TPC_CPass0_GainCalibType}" | tee -a calib.log
 
+export TPC_GainCalib_minSignalN=${ALIEN_JDL_TPC_GAINCALIB_MINSIGNALN-$TPC_GainCalib_minSignalN}
+
+echo "TPC_GainCalib_minSignalN=${TPC_GainCalib_minSignalN}" | tee -a calib.log
+
 if [ -f Run0_999999999_v3_s0.root ]; then
     mkdir -p TPC/Calib/Correction
     mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
@@ -108,10 +112,11 @@ echo "* Run number: $runNum"
 echo "* nEvents: $nEvents"
 echo "* ocdbPath: $ocdbPath"
 echo "* triggerAlias: $triggerAlias"
+echo "* additionalRecOptions: $additionalRecOptions"
 echo ""
 
-echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")"
-time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")" &> rec.log
+echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\", \"$additionalRecOptions\")"
+time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\", \"$additionalRecOptions\")" &> rec.log
 
 exitcode=$?
 

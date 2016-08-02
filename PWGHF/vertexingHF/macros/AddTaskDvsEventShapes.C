@@ -5,7 +5,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        TString finDirname="Loose",
                                                        TString filename="",
                                                        TString finAnObjname="AnalysisCuts",
-                                                       Bool_t CalculateSphericity=kFALSE, // set true to calculate sphericity
+                                                       Bool_t CalculateSphericity=kFALSE, // Add Sphericity calculations
                                                        Int_t SoSparseChecks=0,/*0 mult, 1 multUncorr, 2 NoPid, 3 All*/
                                                        Double_t ptMin=0.15,
                                                        Double_t ptMax=10.,
@@ -18,6 +18,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        TString estimatorFilename="",
                                                        Double_t refMult=9.26,
                                                        Bool_t subtractDau=kFALSE,
+                                                       Bool_t subtractDauFromSphero=kFALSE, //Subtract D0 dau track from Sphero calculation
+                                                       Bool_t RemoveD0fromDstar=kFALSE, //remove D0 from Dstar
                                                        Int_t NchWeight=0,
                                                        Int_t recoEstimator = AliAnalysisTaskSEDvsEventShapes::kNtrk10,
                                                        Int_t MCEstimator = AliAnalysisTaskSEDvsEventShapes::kEta10,
@@ -76,19 +78,21 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
         Name="DStar";
     }
     
-    AliAnalysisTaskSEDvsEventShapes *dMultTask = new AliAnalysisTaskSEDvsEventShapes("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
-    dMultTask->SetReadMC(readMC);
-    dMultTask->SetDebugLevel(0);
-    dMultTask->SetUseBit(kTRUE);
-    dMultTask->SetDoImpactParameterHistos(kFALSE);
-    dMultTask->SetFillSoSparseForMultUncorrNoPid(SoSparseChecks); //Set Fill THnSparse for Spherocity
-    dMultTask->SetEventShapeParameters(ptMin, ptMax, etaMin, etaMax, minMult, phiStepSizeDeg, filtbit1, filtbit2); //parameters to calculate Sphero(i)city
-    dMultTask->SetCalculationsForSphericity(CalculateSphericity);
-    dMultTask->SetSubtractTrackletsFromDaughters(subtractDau);
-    dMultTask->SetMultiplicityEstimator(recoEstimator);
-    dMultTask->SetMCPrimariesEstimator(MCEstimator);
-    dMultTask->SetMCOption(MCOption);
-    if(isPPbData) dMultTask->SetIsPPbData();
+    AliAnalysisTaskSEDvsEventShapes *dEvtShapeTask = new AliAnalysisTaskSEDvsEventShapes("dEvtShapeAnalysis",pdgMeson,analysiscuts,isPPbData);
+    dEvtShapeTask->SetReadMC(readMC);
+    dEvtShapeTask->SetDebugLevel(0);
+    dEvtShapeTask->SetUseBit(kTRUE);
+    dEvtShapeTask->SetDoImpactParameterHistos(kFALSE);
+    dEvtShapeTask->SetFillSoSparseForMultUncorrNoPid(SoSparseChecks); //Set Fill THnSparse for Spherocity
+    dEvtShapeTask->SetEventShapeParameters(ptMin, ptMax, etaMin, etaMax, minMult, phiStepSizeDeg, filtbit1, filtbit2); //parameters to calculate Sphero(i)city
+    dEvtShapeTask->SetCalculationsForSphericity(CalculateSphericity);
+    dEvtShapeTask->SetSubtractTrackletsFromDaughters(subtractDau);
+    dEvtShapeTask->SetRecomputeSpherocityWithoutDau(subtractDauFromSphero);
+    dEvtShapeTask->SetRemoveD0fromDstar(RemoveD0fromDstar);
+    dEvtShapeTask->SetMultiplicityEstimator(recoEstimator);
+    dEvtShapeTask->SetMCPrimariesEstimator(MCEstimator);
+    dEvtShapeTask->SetMCOption(MCOption);
+    if(isPPbData) dEvtShapeTask->SetIsPPbData();
     
     if(NchWeight){
         TH1F *hNchPrimaries = NULL;
@@ -99,24 +103,24 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
             }
             else hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
             if(hNchPrimaries) {
-                dMultTask->UseMCNchWeight(NchWeight);
-                dMultTask->SetHistoNchWeight(hNchPrimaries);
+                dEvtShapeTask->UseMCNchWeight(NchWeight);
+                dEvtShapeTask->SetHistoNchWeight(hNchPrimaries);
             } else {
                 AliFatal("Histogram for Nch multiplicity weights not found");
                 return 0x0;
             }
             hMeasNchPrimaries = (TH1F*)filecuts->Get("hMeasNtrUnCorrEvWithD"); // data distribution
             if(hMeasNchPrimaries) {
-                dMultTask->SetMeasuredNchHisto(hMeasNchPrimaries);
+                dEvtShapeTask->SetMeasuredNchHisto(hMeasNchPrimaries);
             }
         }
         else if(NchWeight==2){
             hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithDWeight"); // MC distribution
             hMeasNchPrimaries = (TH1F*)filecuts->Get("hMeasNtrUnCorrEvWithD"); // data distribution
             if(hNchPrimaries && hMeasNchPrimaries) {
-                dMultTask->UseMCNchWeight(NchWeight);
-                dMultTask->SetHistoNchWeight(hNchPrimaries);
-                dMultTask->SetMeasuredNchHisto(hMeasNchPrimaries);
+                dEvtShapeTask->UseMCNchWeight(NchWeight);
+                dEvtShapeTask->SetHistoNchWeight(hNchPrimaries);
+                dEvtShapeTask->SetMeasuredNchHisto(hMeasNchPrimaries);
             } else {
                 AliFatal("Histogram for Ntrk multiplicity weights not found");
                 return 0x0;
@@ -126,9 +130,9 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     
     
     if(pdgMeson==421) {
-        dMultTask->SetMassLimits(1.5648,2.1648);
-        dMultTask->SetNMassBins(200);
-    }else if(pdgMeson==411)dMultTask->SetMassLimits(pdgMeson,0.2);
+        dEvtShapeTask->SetMassLimits(1.5648,2.1648);
+        dEvtShapeTask->SetNMassBins(200);
+    }else if(pdgMeson==411)dEvtShapeTask->SetMassLimits(pdgMeson,0.2);
     
     if(estimatorFilename.EqualTo("") ) {
         printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
@@ -140,7 +144,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
             return;
         }
         
-        dMultTask->SetReferenceMultiplcity(refMult);
+        dEvtShapeTask->SetReferenceMultiplcity(refMult);
         
         const Char_t* profilebasename="SPDmult10";
         if(recoEstimator==AliAnalysisTaskSEDvsEventShapes::kVZEROA || recoEstimator==AliAnalysisTaskSEDvsEventShapes::kVZEROAEq) profilebasename="VZEROAmult";
@@ -158,8 +162,8 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                     return;
                 }
             }
-            dMultTask->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
-            dMultTask->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
+            dEvtShapeTask->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
+            dEvtShapeTask->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
         }
         else {
             const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
@@ -171,13 +175,13 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                     return;
                 }
             }
-            dMultTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-            dMultTask->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-            dMultTask->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-            dMultTask->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+            dEvtShapeTask->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            dEvtShapeTask->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            dEvtShapeTask->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            dEvtShapeTask->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
         }
     }
-    mgr->AddTask(dMultTask);
+    mgr->AddTask(dEvtShapeTask);
     
     // Create containers for input/output
     
@@ -204,25 +208,24 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     
     TString outputfile = AliAnalysisManager::GetCommonFileName();
-    if(CalculateSphericity){ outputfile += ":PWG3_D2H_DSpheri_";}
-    else{ outputfile += ":PWG3_D2H_DSphero_";}
-    outputfile += Name.Data();
-    outputfile += finDirname.Data();
+    outputfile += ":PWG3_D2H_DEvtShape_";
+    outputfile += Name.Data(); 
+    outputfile += finDirname.Data(); 
     
     AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     if(readMC) AliAnalysisDataContainer *coutputEffCorr = mgr->CreateContainer(effname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+
     
+    mgr->ConnectInput(dEvtShapeTask,0,mgr->GetCommonInputContainer());
     
-    mgr->ConnectInput(dMultTask,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(dEvtShapeTask,1,coutput);
+    mgr->ConnectOutput(dEvtShapeTask,2,coutputCuts);
+    mgr->ConnectOutput(dEvtShapeTask,3,coutputNorm);
+    mgr->ConnectOutput(dEvtShapeTask,4,coutputProf);
+    if(readMC) mgr->ConnectOutput(dEvtShapeTask,5,coutputEffCorr);
     
-    mgr->ConnectOutput(dMultTask,1,coutput);
-    mgr->ConnectOutput(dMultTask,2,coutputCuts);
-    mgr->ConnectOutput(dMultTask,3,coutputNorm);
-    mgr->ConnectOutput(dMultTask,4,coutputProf);
-    if(readMC) mgr->ConnectOutput(dMultTask,5,coutputEffCorr);
-    
-    return dMultTask;
+    return dEvtShapeTask;
 }

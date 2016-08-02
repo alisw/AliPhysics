@@ -30,6 +30,8 @@ bool DEFAULT_DO_KT = kFALSE;
 struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
+  float qinv_bin_size_MeV;
+  float qinv_max_GeV;
   bool do_qinv_cf;
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
@@ -67,6 +69,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
   macro_config.do_ylm_cf = false;
+  macro_config.qinv_bin_size_MeV = 5.0f;
+  macro_config.qinv_max_GeV = 1.0f;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -174,7 +178,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_qinv_cf) {
         TString cf_title = TString("_qinv_") + pair_type_str;
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), 100, 0.0, 1.2);
+        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
         analysis->AddCorrFctn(cf);
       }
 
@@ -185,17 +190,25 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_qinv) {
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
-        binned->AddKtRange(0.2, 0.4);
-        binned->AddKtRange(0.4, 0.6);
-        binned->AddKtRange(0.6, 1.0);
+        binned->AddKtRange(0.2, 0.3);
+        binned->AddKtRange(0.3, 0.4);
+        binned->AddKtRange(0.4, 0.5);
+        binned->AddKtRange(0.5, 0.6);
+        binned->AddKtRange(0.6, 0.7);
+        binned->AddKtRange(0.7, 0.8);
+        binned->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(binned);
       }
 
       if (macro_config.do_kt_q3d) {
         AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", new AliFemtoCorrFctn3DLCMSSym(TString("q3D_") + pair_type_str, 72, 1.1));
-        kt_q3d->AddKtRange(0.2, 0.4);
-        kt_q3d->AddKtRange(0.4, 0.6);
-        kt_q3d->AddKtRange(0.6, 1.0);
+        kt_q3d->AddKtRange(0.2, 0.3);
+        kt_q3d->AddKtRange(0.3, 0.4);
+        kt_q3d->AddKtRange(0.4, 0.5);
+        kt_q3d->AddKtRange(0.5, 0.6);
+        kt_q3d->AddKtRange(0.6, 0.7);
+        kt_q3d->AddKtRange(0.7, 0.8);
+        kt_q3d->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(kt_q3d);
       }
 

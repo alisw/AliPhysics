@@ -52,7 +52,7 @@
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
 #include <AliOADBContainer.h>
-//#include <AliVEventHandler.h>
+//#include <AliMultSelection.h>
 #include <AliInputEventHandler.h>
 // emcal jet framework includes
 #include <AliPicoTrack.h>
@@ -782,10 +782,10 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         fHistJetEtaPhiBC[i] = BookTH2F("fHistJetEtaPhiBC", "#eta", "#phi", 100, etaMin, etaMax, 100, phiMin, phiMax, i);
         fHistJetPtAreaBC[i] = BookTH2F("fHistJetPtAreaBC", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.3, i);
     }
-    fHistQxV0aBC = BookTH2F("fHistQxV0aBC", "Q_{x} V0A", "centrality class", 100, -500, 500, 10, -.5, 9.5);
-    fHistQyV0aBC = BookTH2F("fHistQyV0aBC", "Q_{y} V0A", "centrality class", 100, -500, 500, 10, -.5, 9.5);
-    fHistQxV0cBC = BookTH2F("fHistQxV0cBC", "Q_{x} V0C", "centrality class", 100, -500, 500, 10, -.5, 9.5);
-    fHistQyV0cBC = BookTH2F("fHistQyV0cBC", "Q_{y} V0C", "centrality class", 100, -500, 500, 10, -.5, 9.5);
+    fHistQxV0aBC = BookTH2F("fHistQxV0aBC", "Q_{x} V0A", "centrality class", 140, -700, 700, 10, -.5, 9.5);
+    fHistQyV0aBC = BookTH2F("fHistQyV0aBC", "Q_{y} V0A", "centrality class", 140, -700, 700, 10, -.5, 9.5);
+    fHistQxV0cBC = BookTH2F("fHistQxV0cBC", "Q_{x} V0C", "centrality class", 140, -700, 700, 10, -.5, 9.5);
+    fHistQyV0cBC = BookTH2F("fHistQyV0cBC", "Q_{y} V0C", "centrality class", 140, -700, 700, 10, -.5, 9.5);
     fHistQxV0a = BookTH2F("fHistQxV0a", "Q_{x} V0A", "centrality class", 100, -10, 10, 10, -.5, 9.5);
     fHistQyV0a = BookTH2F("fHistQyV0a", "Q_{y} V0A", "centrality class", 100, -10, 10, 10, -.5, 9.5);
     fHistQxV0c = BookTH2F("fHistQxV0c", "Q_{x} V0C", "centrality class", 100, -10, 10, 10, -.5, 9.5);
@@ -3218,3 +3218,17 @@ void AliAnalysisTaskJetV2::DoSimpleSimulation(Int_t nEvents, Float_t v2, Float_t
    dNdphi4->SetTitle("v_{4}");
    dNdphi4->DrawCopy("same");
 }
+//_____________________________________________________________________________
+//Float_t AliAnalysisTaskJetV2::GetCentrality() const
+//{
+//   // return centrality percentile using new framework
+//    // return -1 when something goes wrong
+//    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+//        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+//    #endif
+//    AliMultSelection *multSelection = 0x0; 
+//    if(!InputEvent()) return -1.;
+//    multSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+//    if(multSelection) multSelection->GetMultiplicityPercentile("V0M");
+//    return -1.;
+//}

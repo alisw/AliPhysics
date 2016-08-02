@@ -171,7 +171,8 @@ add_target_parfile(${MODULE}
   "${SRCS}"
   "${HDRS}"
   "${MODULE}LinkDef.h"
-  "${LIBDEPS}")
+  "${LIBDEPS}"
+  "analysis2")
 
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)

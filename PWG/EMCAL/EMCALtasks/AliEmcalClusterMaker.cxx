@@ -204,6 +204,8 @@ Bool_t AliEmcalClusterMaker::Run()
       }
 
       oc->SetE(clus->GetNonLinCorrEnergy());
+      oc->SetNonLinCorrEnergy(clus->GetNonLinCorrEnergy());
+      oc->SetHadCorrEnergy(0);//just to make sure that in this container version there is no hadronic correction applied - can be set at a later stage
       clusCount++;
     }
   }

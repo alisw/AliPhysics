@@ -21,7 +21,7 @@ public:
   AliFemtoModelCorrFctnTrueQ(const char *title, Int_t aNbins, Double_t aQinvLo, Double_t aQinvHi);
   AliFemtoModelCorrFctnTrueQ(const AliFemtoModelCorrFctnTrueQ& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnTrueQ();
-  
+
   AliFemtoModelCorrFctnTrueQ& operator=(const AliFemtoModelCorrFctnTrueQ& aCorrFctn);
 
   virtual AliFemtoString Report();
@@ -38,7 +38,7 @@ protected:
 
   TH1D *fTrueNum;           // Numerator in true q
   TH1D *fTrueDen;           // Denominator in true q
- 
+
 private:
 
 #ifdef __ROOT__

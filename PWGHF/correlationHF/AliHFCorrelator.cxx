@@ -374,7 +374,7 @@ Bool_t AliHFCorrelator::ProcessAssociatedTracks(Int_t EventLoopIndex, const TObj
       fAssociatedTracks->SetOwner(kTRUE);
     }	
     if(fselect==kElectron && associatedTracks) {
-      fAssociatedTracks=new TObjArray(*associatedTracks);// Maybe better to call the copy constructor
+      fAssociatedTracks=(TObjArray*)associatedTracks->Clone();// Maybe better to call the copy constructor
       fAssociatedTracks->SetOwner(kFALSE);
     }
     

@@ -19,7 +19,7 @@ public:
     enum { S_ITSNCLS, S_MINNTRACKS, S_PTTRACK, S_DECAYLENGTH, S_TRANSVERSEIP, S_TRACKCHI2, S_MAXDCAJETTRACK,S_MAXDCAZ };
 
     AliHFJetTaggingIP();
-    ~AliHFJetTaggingIP();
+    virtual ~AliHFJetTaggingIP();
     void SetImpactParameterThreshold(Double_t threshold);
     void SetImpactParameterThreshold(TF1* threshld_fct);
     void SetEvent(AliVEvent* bEvent)

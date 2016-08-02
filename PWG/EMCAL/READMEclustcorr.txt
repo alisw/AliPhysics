@@ -106,7 +106,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(const UInt_t nonLinFunct   = AliE
 )
 ~~~
 
-<strong>Suggested parameter list</strong>: AliEMCALRecoUtils::kBeamTestCorrected, kTRUE, 0, "", 0.
+<strong>Suggested parameter list</strong>: AliEMCALRecoUtils::kBeamTestCorrectedv3, kTRUE, 0, "", 0.
 
 Non-linearity correction and "exotic" cluster removal are performed in the cluster "maker". Non-linearity correction to the cluster energy is necessary because the response of the calorimeter is not linear for very low momentum particles or very high momentum (shower leakage). "Exotic" cluster are energetic clusters where most energy deposition is concentrated in one single cell. This clusters are not reproduced in MC simulations and are believed to arise from neutrons showering directly into the APD. This clusters need to be flagged, so that they can be easily rejected during the analysis.
 

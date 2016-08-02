@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include <TString.h>
+#include <TCustomBinning.h>
 
 class TArrayD;
 class TClonesArray;
@@ -62,9 +63,6 @@ public:
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
 
 protected:
-  void                        CreateOldPtBinning(TArrayD &binning) const;
-  void                        CreateNewPtBinning(TArrayD &binning) const;
-
   void                        FillTrackHistos(const char *eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
   void                        FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
 
@@ -96,6 +94,18 @@ protected:
   Double_t                        fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
 
 private:
+
+  class OldPtBinning : public TCustomBinning{
+  public:
+    OldPtBinning();
+    virtual ~OldPtBinning() {}
+  };
+  class NewPtBinning : public TCustomBinning{
+  public:
+    NewPtBinning();
+    virtual ~NewPtBinning() {}
+  };
+
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);
   AliAnalysisTaskChargedParticlesRefMC &operator=(const AliAnalysisTaskChargedParticlesRefMC &);
 

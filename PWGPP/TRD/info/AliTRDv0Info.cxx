@@ -781,8 +781,8 @@ Bool_t AliTRDv0Info::Armenteros(const AliESDv0 *esdv0, Int_t decay){
   TVector3 vecP(mp[0],mp[1],mp[2]);
   TVector3 vecM(mm[0],mm[1],mm[2]);
   
-  Double_t thetaP = acos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
-  Double_t thetaN = acos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
+  Double_t thetaP = TMath::ACos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
+  Double_t thetaN = TMath::ACos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
   
   Double_t alfa = ((vecP.Mag())*cos(thetaP)-(vecN.Mag())*cos(thetaN))/
     ((vecP.Mag())*cos(thetaP)+(vecN.Mag())*cos(thetaN)) ;

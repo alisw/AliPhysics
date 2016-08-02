@@ -250,12 +250,13 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
  * @param[in] radius Resolution parameter (0.2, 0.4, ...)
- * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (kTPC, kEMCAL, kDCAL, ...),
+ * or a combination using bitwise OR: For example, (kEMCAL | kDCAL) will select all jets in either EMCal or DCal.
  * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
-    JetAcceptanceType accType, TString tag)
+    UInt_t accType, TString tag)
 {
   AliParticleContainer* partCont = GetParticleContainer(0);
   AliClusterContainer* clusCont = GetClusterContainer(0);
@@ -269,13 +270,14 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJ
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
  * @param[in] radius Resolution parameter (0.2, 0.4, ...)
- * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (kTPC, kEMCAL, kDCAL, ...),
+ * or a combination using bitwise OR: For example, (kEMCAL | kDCAL) will select all jets in either EMCal or DCal.
  * @param[in] partCont Particle container of the objects used to generate the jets
  * @param[in] clusCont Cluster container of the objects used to generate the jets
  * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
  * @return Pointer to the new jet container
  */
-AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, JetAcceptanceType accType,
+AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, UInt_t accType,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
 {
   AliJetContainer *cont = new AliJetContainer(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag);
@@ -288,11 +290,12 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJ
 /**
  * Create new jet container and attach it to the task. This method is usually called in the add task macro.
  * @param[in] n Name of the jet branch
- * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (kTPC, kEMCAL, kDCAL, ...),
+ * or a combination using bitwise OR: For example, (kEMCAL | kDCAL) will select all jets in either EMCal or DCal.
  * @param[in] radius Resolution parameter (0.2, 0.4, ...)
  * @return Pointer to the new jet container
  */
-AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType, Float_t jetRadius)
+AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius)
 {
   if (TString(n).IsNull()) return 0;
 
@@ -318,30 +321,30 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString
 
   if(TString(n).IsNull()) return 0;
 
-  AliJetContainer::JetAcceptanceType acc = AliJetContainer::kUser;
+  UInt_t acc = AliEmcalJet::kUser;
 
   defaultCutType.ToUpper();
 
   if (defaultCutType.IsNull() || defaultCutType.EqualTo("USER")) {
-    acc = AliJetContainer::kUser;
+    acc = AliEmcalJet::kUser;
   }
   else if(defaultCutType.EqualTo("TPC")) {
-    acc = AliJetContainer::kTPC;
+    acc = AliEmcalJet::kTPC;
   }
   else if(defaultCutType.EqualTo("TPCFID")) {
-    acc = AliJetContainer::kTPCfid;
+    acc = AliEmcalJet::kTPCfid;
   }
   else if(defaultCutType.EqualTo("EMCAL")) {
-    acc = AliJetContainer::kEMCAL;
+    acc = AliEmcalJet::kEMCAL;
   }
   else if(defaultCutType.EqualTo("EMCALFID")) {
-    acc = AliJetContainer::kEMCALfid;
+    acc = AliEmcalJet::kEMCALfid;
   }
   else if(defaultCutType.EqualTo("DCAL")) {
-    acc = AliJetContainer::kDCAL;
+    acc = AliEmcalJet::kDCAL;
   }
   else if(defaultCutType.EqualTo("DCALFID")) {
-    acc = AliJetContainer::kDCALfid;
+    acc = AliEmcalJet::kDCALfid;
   }
   else {
     AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),defaultCutType.Data()));
@@ -377,7 +380,7 @@ void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(UInt_t t, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
   if (cont) {
-    cont->SetJetAcceptanceType((AliJetContainer::JetAcceptanceType)t);
+    cont->SetJetAcceptanceType(t);
   }
   else {
     AliError(Form("%s in SetJetAcceptanceType(...): container %d not found!",GetName(),c));
@@ -396,13 +399,13 @@ void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(TString cutType, Int_t c)
 
   if(!cutType.IsNull() && !cutType.EqualTo("USER")) {
     if(cutType.EqualTo("TPC"))
-     cont->SetJetAcceptanceType(AliJetContainer::kTPC);
+     cont->SetJetAcceptanceType(AliEmcalJet::kTPC);
     else if(cutType.EqualTo("EMCAL"))
-      cont->SetJetAcceptanceType(AliJetContainer::kEMCAL);
+      cont->SetJetAcceptanceType(AliEmcalJet::kEMCAL);
     else
       AliWarning(Form("%s: default cut type %s not recognized. Not setting cuts.",GetName(),cutType.Data()));
   } else
-    cont->SetJetAcceptanceType(AliJetContainer::kUser);
+    cont->SetJetAcceptanceType(AliEmcalJet::kUser);
 }
 
 void AliAnalysisTaskEmcalJet::SetRhoName(const char *n, Int_t c)

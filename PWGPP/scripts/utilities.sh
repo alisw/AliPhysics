@@ -1196,7 +1196,7 @@ mergeAliSysInfo(){
     #
     counter=0
     desc=`head  -n 1 $inputList  | xargs head -n 1`  
-    echo $desc:line/D:itree/D:nstamps/D:treeName/C  >$outputFile
+    echo $desc:line/D:itree/D:nstamps/D:treeName/C  >$outputFile.tree
     fsize=0
     for afile in `cat  $inputList`; do 
 	fsize=$(wc -l < $afile)
@@ -1208,8 +1208,8 @@ mergeAliSysInfo(){
 	  ((lineCounter++))
 	  echo "$line" $lineCounter $counter $fsize $afile; 
 	done 
-    done >> $outputFile
-    [[ $outputFile =~ .root$ ]] &&  echo "AliSysInfo::MakeTree(\"$outputFile\",\"$outputFile\")" | aliroot -b 
+    done >> $outputFile.tree
+    [[ $outputFile =~ .root$ ]] &&  echo "AliSysInfo::MakeTree(\"$outputFile.tree\",\"$outputFile\")" | aliroot -b 
     alilog_info "mergeAliSysInfo  inputList=$1 outputFile=$2 END"
     return 1;
 }

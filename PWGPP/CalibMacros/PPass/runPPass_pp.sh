@@ -55,6 +55,7 @@ fi
 echo "runNumber=$runNumber"
 echo "ocdbPath=$ocdbPath"
 echo "nEvents=$nEvents"
+echo "additionalRecOptions=$additionalRecOptions"
 
 if [ "${CHUNKNAME:0:1}" = "/" ]; then
     FILENAME=${CHUNKNAME##*/}
@@ -73,9 +74,9 @@ if [ -f "wn.xml" ]; then
     CHUNKNAME="collection://wn.xml"
 fi
 
-echo "aliroot -l -b -q -x rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\") &> >(tee rec.log)"
+echo "aliroot -l -b -q -x rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$additionalRecOptions\") &> >(tee rec.log)"
 echo "rec.C" >&2
-time aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\")" &> >(tee rec.log)
+time aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$additionalRecOptions\")" &> >(tee rec.log)
 mv syswatch.log syswatch_rec.log
 
 exitcode=$?

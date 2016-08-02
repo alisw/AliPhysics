@@ -101,8 +101,6 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fUseTOFonlyWhenPresent(false)
   , fStopAfterFilterBit(false)
   , fCutLS(kFALSE)
-  , fTPCnSigmaPRej(3)
-  , fTPCnSigmaPiRej(3.5)
 {
   // constructor
   // 
@@ -599,7 +597,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   Bool_t useCombinedPID=kTRUE;
   Bool_t okTOF = CheckTOFPIDStatus(track);
   if(okTOF){
-    if((pPart<fMaxPTOFWhenPresent && fMaxPTOFWhenPresent>-1) || pPart<fMaxPtCombinedPID){ //If the momentum is within either of the two regions, use TOF PID
+    if((pPart<fMaxPTOFWhenPresent && fMaxPTOFWhenPresent>-1) || fMaxPtCombinedPID){ //If the momentum is within either of the two regions, use TOF PID
       useCombinedPID=kTRUE;
     } else {//If not within the range where tof is to be used
       useCombinedPID=kFALSE; //Do not use combined pid (tof + tpc)
@@ -615,8 +613,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       if(pPart<fMaxPtCombinedPID){//TOF forced to be used
 	AliDebug(4,"Cut: kStepHFEcutsTOF");
 	((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
-	if(!fStoreCutStepInfo){ return 0;
-	}else{ return 1;} //return 1 because it passed cuts above, but not this (no need to go further)
+	if(!fStoreCutStepInfo){ return 0;}
+      	else {return 1;} //return 1 because it passed cuts above, but not this (no need to go further)
       }else{//Above the pPart region where tof is forced, turn off combined PID
 	AliDebug(2,"Don't use forced TOF anymore, no TOF mathing of the track");
 	useCombinedPID=kFALSE; 
@@ -752,33 +750,34 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   // Rejection of pions and protons based on 3. nsigma cut in tpc
   Double_t nsigmaTPCpi=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kPion);
   Double_t nsigmaTPCp=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kProton);
+  Double_t fTPCnSigmaPRejMin=-3;
+  Double_t fTPCnSigmaPRejMax=3;
+  Double_t fTPCnSigmaPiRejMin=-4;
+  Double_t fTPCnSigmaPiRejMax=4;
 
   //Pion rejection
-  if(fTPCnSigmaPiRej>0){ //Pion rejection on by default, but can be turned off by setting fTPCnSigmaPiRej to -1
-    if(TMath::Abs(nsigmaTPCpi)<fTPCnSigmaPiRej && pPart>1.){ //Only applied above 1GeV
-      // Track within pion identification range. Reject
-      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejPi);
-      return 0; 
-    }else{
-      ((TH2D*)fHistoList->FindObject("fdEdxRejPi"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-      ((TH2D*)fHistoList->FindObject("fnSigTPCRejPi"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-      if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejPi"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-    }
-  }  
-
-  //Proton rejection
-  if(fTPCnSigmaPRej>0){ //Proton rejection on by default, but can be turned off by setting fTPCnSigmaPRej to -1
-    if(TMath::Abs(nsigmaTPCp)<fTPCnSigmaPRej && pPart>1.){ //Only applied above 1GeV
-      // Track within proton identification range. Reject
-      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejProton);
-      return 0;
-    }else{
-      ((TH2D*)fHistoList->FindObject("fdEdxRejProton"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-      ((TH2D*)fHistoList->FindObject("fnSigTPCRejProton"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-      if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejProton"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-    }
+  if(nsigmaTPCpi>fTPCnSigmaPiRejMin && nsigmaTPCpi<fTPCnSigmaPiRejMax && pPart>=1.){ //Only applied above 1GeV
+    // Track within pion identification range. Reject
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejPi);
+    return 0; 
+  }else{
+    ((TH2D*)fHistoList->FindObject("fdEdxRejPi"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+    ((TH2D*)fHistoList->FindObject("fnSigTPCRejPi"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+    if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejPi"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   }
-
+  
+  //Proton rejection
+  
+  if(nsigmaTPCp>fTPCnSigmaPRejMin && nsigmaTPCp<fTPCnSigmaPRejMax && pPart>=1.){ //Only applied above 1GeV
+    // Track within proton identification range. Reject
+    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejProton);
+    return 0;
+  }else{
+    ((TH2D*)fHistoList->FindObject("fdEdxRejProton"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+    ((TH2D*)fHistoList->FindObject("fnSigTPCRejProton"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+    if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejProton"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  }
+  
   //Removing electrons based on invariant mass method
   if(fUseInvMassCut==kInvMassSingleSelected)
     {
@@ -1050,19 +1049,6 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       fCutLS=kTRUE;
       continue;
     }
-    if(argument.BeginsWith("RejP=")){ //Disable proton rejection by setting to -1
-      argument.ReplaceAll("RejP=", "");
-      fTPCnSigmaPRej=argument.Atof();
-      AliInfo(Form("Using proton rejection in TPC, nsigma+/-: %f",fTPCnSigmaPRej));
-      continue;   
-    }
-    if(argument.BeginsWith("Rejpi=")){ //Disable pion rejection by setting to -1
-      argument.ReplaceAll("Rejpi=", "");
-      fTPCnSigmaPiRej=argument.Atof();
-      AliInfo(Form("Using pion rejection in TPC, nsigma+/-: %f",fTPCnSigmaPiRej));
-      continue;   
-    }
-
     // forwarding of single argument works, unless key-option pairs separated
     // by blanks are introduced
     AliDxHFEParticleSelection::ParseArguments(argument);

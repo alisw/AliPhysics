@@ -428,6 +428,7 @@ class AliJHistManager: public AliJNamed{
 
 
     private:
+        TDirectory *fDirectory;
         TString                     fConfigStr;
         std::vector<AliJBin*>       fBin;
         std::vector<AliJTH1*>  fHist;
@@ -436,7 +437,7 @@ class AliJHistManager: public AliJNamed{
         std::vector<TString>        fBinConfigs;
         std::vector<TString>        fHistNames;
         std::vector<TString>        fHistConfigs;
-        TDirectory *fDirectory;
+  
 };
 
 #endif

@@ -74,10 +74,13 @@ set(SRCS
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
       JPSI/AliDielectronSpectrum.cxx
+      LMEE/AliAnalysisTask_Syst_PtDistributionsData.cxx
+      LMEE/AliAnalysisTask_Syst_PtDistributionsMC.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
+      LMEE/AliAnalysisTaskMLTreeMaker.cxx	
       LMEE/AliDielectronReducedTrack.cxx
-   )
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

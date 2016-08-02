@@ -21,4 +21,8 @@ TryBuild()
   gROOT->LoadMacro("AliTrackletAODTask.C+g");
   gROOT->LoadMacro("AliTrackletAODdNdeta.C+g");
   gROOT->LoadMacro("AliTrackletdNdeta.C+g");
+  gROOT->LoadMacro("AliTrackletdNdeta2.C+g");
 }
+//
+// EOF
+//

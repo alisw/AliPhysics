@@ -151,7 +151,7 @@ goCPass2() (
 goCPass()
 (
   umask 0002
-  
+
   targetDirectory=$1
   inputList=$2
   nEvents=$3
@@ -200,14 +200,14 @@ goCPass()
   doneFile="$commonOutputPath/meta/$doneFileBase"
 
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source ${alirootSource}
-  
+
   [[ -n "$ALIROOT_FORCE_COREDUMP" ]] && export ALIROOT_FORCE_COREDUMP && ulimit -c unlimited
 
   # The contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
   # At the QA stage the pass number is guessed from the path stored here.
   # The Format is:
   #   Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;
-  #   LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
+  #   LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear=
   export PRODUCTION_METADATA="OutputDir=cpass${cpass}"
 
   # Check if input list exists. Works both for local and remote cases.
@@ -229,6 +229,15 @@ goCPass()
     *) runpath=$outputDir ;;
   esac
 
+  logOutputDir=$runpath
+  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
+  if [[ -z "$dontRedirectStdOutToLog" ]]; then
+    # Redirect all output to both file and console. Save fd 3 to restore later.
+    exec 3>&1
+    exec &> >(tee ${logOutputDir}/stdout)
+  fi
+  echo "$0 $*"
+
   # TODO: check if this is really for CPass1 only. Asymmetry found when merging CPass0/1.
   # TODO: Used only in MC. Check if this still works.
   if [[ $cpass == 1 ]]; then
@@ -248,17 +257,9 @@ goCPass()
 
   # runCPassX/C expects the raw chunk to be linked in the run dir despite it being accessed by the
   # full path.
+  echo "Making $infile visible in the current directory, $PWD"
   [[ $copyInputData == 0 ]] && ln -s ${infile} ${runpath}/${chunkName} \
-                            || copyFileFromRemote ${infile} ${runpath}/
-
-  logOutputDir=$runpath
-  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  if [[ -z "$dontRedirectStdOutToLog" ]]; then
-    # Redirect all output to both file and console. Save fd 3 to restore later.
-    exec 3>&1
-    exec &> >(tee ${logOutputDir}/stdout)
-  fi
-  echo "$0 $*"
+                            || { maxCopyTries=1 remoteCpTimeout=1800 copyFileFromRemote ${infile} ${runpath}/ || exit 1; }
 
   ##### MC -- TODO: does this still work? is it really needed during CPass0 only?
   if [[ $cpass == 0 && -n $generateMC ]]; then
@@ -271,7 +272,7 @@ goCPass()
     mkdir -p ${simrunpath}
     if cd ${simrunpath}; then
 
-      filesMC=( 
+      filesMC=(
       "${batchWorkingDirectory}/sim.C"
       "${batchWorkingDirectory}/rec.C"
       "${batchWorkingDirectory}/Config.C"
@@ -286,7 +287,7 @@ goCPass()
       [[ ! "${simrunpath}" =~ "${outputDirMC}" ]] && mv * ${outputDirMC} #TODO check if it works
       cd ${olddir}
 
-      ln -s ${outputDirMC}/* ${runpath}/ 
+      ln -s ${outputDirMC}/* ${runpath}/
 
       inputList=${outputDirMC}/galice.root #TODO not valid outside shell !!!
       infile=""
@@ -308,7 +309,7 @@ goCPass()
   echo commonOutputPath      ${commonOutputPath}
   echo doneFile              ${doneFile}
   echo batchWorkingDirectory ${batchWorkingDirectory}
-  echo runpath               ${runpath}  
+  echo runpath               ${runpath}
   echo outputDir             ${outputDir}
   echo PWD                   ${PWD}
   echo ALICE_ROOT            ${ALICE_ROOT}
@@ -324,9 +325,10 @@ goCPass()
                           "${batchWorkingDirectory}/recCPass0.C"
                           "${batchWorkingDirectory}/runCalibTrain.C"
                           "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                          "${batchWorkingDirectory}/localOCDB.tgz"
                           "${batchWorkingDirectory}/OCDB.root" )
        filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" ) ;;
 
     1) filesCPassCustom=( "${batchWorkingDirectory}/runCPass1.sh"
@@ -386,6 +388,11 @@ goCPass()
 
   # If OCDB is found here, then create a macro that configures local OCDB access.
   # This step also decompresses the tarball into $PWD/OCDB.
+
+  # this would be relevant only for cpass0 :
+  # custom initial specific OCDB objects provided by the user at the beginning
+  [[ -f localOCDB.tgz && $cpass == 0 ]] && tar xzvvf localOCDB.tgz
+
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
   [[ -f $ocdbTarball ]] \
     && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
@@ -741,6 +748,7 @@ goMergeCPass()
                                "${batchWorkingDirectory}/${syslogsCalibToMerge}"
                                "${batchWorkingDirectory}/${mergingScript}"
                                "${batchWorkingDirectory}/OCDB.root"
+                               "${batchWorkingDirectory}/localOCDB.tgz"
                                "${batchWorkingDirectory}/localOCDBaccessConfig.C" )
        filesMergeCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
@@ -799,6 +807,10 @@ goMergeCPass()
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   alirootInfo > ALICE_ROOT.log
+
+  # this would be relevant only for cpass0 :
+  # custom initial specific OCDB objects provided by the user at the beginning
+  [[ -f localOCDB.tgz && $cpass == 0 ]] && tar xzvvf localOCDB.tgz
 
   # Configure local OCDB storage (a macro is produced). Only used in MergeCPass1 but could be used
   # in CPass0 too. It's harmless in any case.
@@ -954,7 +966,7 @@ goMergeCPass()
   fi
   echo "dir $outputDir" >> $doneFileTmp
   reportDoneFile syswatchRec syswatch.rec.cpass${cpass}.tree ${outputDir} >> $doneFileTmp
-  reportDoneFile syswatchCalib syswatch.calib.${cpass}.tree ${outputDir} >> $doneFileTmp
+  reportDoneFile syswatchCalib syswatch.calib.cpass${cpass}.tree ${outputDir} >> $doneFileTmp
 
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
@@ -1088,6 +1100,7 @@ goGenerateMakeflow()
   #these files will be made a dependency - will be copied to the working dir of the jobs
   declare -a copyFiles
   inputFiles=( OCDB.root
+               localOCDB.tgz
                localOCDBaccessConfig.C
                QAtrain_duo.C
                runCPass1.sh
@@ -1321,7 +1334,7 @@ goGenerateMakeflow()
   ############################# Summary ##################################
 
   echo "### Summary ###"
-  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]} ${arr_cpass2_merged[*]}"
+  echo "summary.log: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_outputs[*]} ${arr_cpass0_merged[*]} ${arr_cpass1_outputs[*]} ${arr_cpass1_merged[*]} ${arr_cpass2_outputs[*]} ${arr_cpass2_merged[*]}"
   echo -e "\t${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
   echo ; echo
 
@@ -1450,7 +1463,7 @@ goMakeLocalOCDBaccessConfig()
   echo
   echo creating the specific storage script
   echo   localOCDBaccessConfig.C
-  echo   based on OCDB: ${localOCDBaccessConfig}
+  echo   based on OCDB: ${localOCDBpathCPass0}
   echo
 
   local tempLocalOCDB=""

@@ -16,6 +16,9 @@
 #pragma link C++ class AliAnalysisTaskDxHFECorrelation+;
 #pragma link C++ class AliHFAssociatedTrackCuts+;
 #pragma link C++ class AliHFCorrelator+;
+#pragma link C++ class AliHFOfflineCorrelator+;
+#pragma link C++ class AliHFCorrelationBranchD+;
+#pragma link C++ class AliHFCorrelationBranchTr+;
 #pragma link C++ class AliReducedParticle+;
 #pragma link C++ class AliAnalysisTaskDStarCorrelations+;
 #pragma link C++ class AliAnalysisTaskSED0Correlations+;

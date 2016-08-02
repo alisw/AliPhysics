@@ -14,7 +14,10 @@ class AliVParticle;
 #include <TNamed.h>
 #include <TClonesArray.h>
 
-typedef AliEmcalIterableContainerT<TObject> AliEmcalIterableContainer;
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<TObject, EMCALIterableContainer::operator_star_object<TObject> > AliEmcalIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<TObject, EMCALIterableContainer::operator_star_pair<TObject> > AliEmcalIterableMomentumContainer;
+#endif
 
 /**
  * @class AliEmcalContainer
@@ -150,7 +153,7 @@ class AliEmcalContainer : public TObject {
   void                        SetBitMap(UInt_t m)                   { fBitMap = m                       ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
   void                        SortArray()                           { fClArray->Sort()                  ; }
-  UShort_t                    GetRejectionReasonBitPosition(UInt_t rejectionReason) const;
+
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
   virtual void                NextEvent() {;}
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
@@ -172,9 +175,15 @@ class AliEmcalContainer : public TObject {
 
   static Double_t             RelativePhi(Double_t ang1, Double_t ang2);
   static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
+  static UShort_t             GetRejectionReasonBitPosition(UInt_t rejectionReason);
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliEmcalIterableContainer   all() const;
   const AliEmcalIterableContainer   accepted() const;
+
+  const AliEmcalIterableMomentumContainer   all_momentum() const;
+  const AliEmcalIterableMomentumContainer   accepted_momentum() const;
+#endif
 
  protected:
   TString                     fName;                    ///< object name

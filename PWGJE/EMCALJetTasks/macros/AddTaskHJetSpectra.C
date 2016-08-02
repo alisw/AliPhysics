@@ -44,14 +44,16 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            trackEtaWindow          = 0.9,   //pseudorapidity range for tracks
   Bool_t              useVertexCut            = kTRUE,  // vertex cut
   Bool_t              usePileUpCut            = kTRUE, // discard pile up event
-  Double_t            ttLow                   = 8.0,      // trigger hardron low pT
-  Double_t            ttHigh                  = 50.0,     // trigger hadron high pT
-  Int_t               ttType                  = 0,        // 0= single inclusive hadron trigger, else inclusive hadron trigger
+  Double_t            ttLowR                  = 6.0,      // trigger hardron low pT
+  Double_t            ttHighR                 = 7.0,     // trigger hadron high pT
+  Double_t            ttLowS                  = 12.0,      // trigger hardron low pT
+  Double_t            ttHighS                 = 50.0,     // trigger hadron high pT
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
   Int_t               recombscheme            = 5,    //recombination scheme  5=BIpt_scheme  0=E_scheme 
-  Int_t               nRandCones              = 2 
+  Int_t               nRandCones              = 2,
+  const char* suffix = ""                              //SUBWAGON has to be the last parameter
 ){
 
    //ANALYSIS OF REAL DATA
@@ -99,21 +101,27 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString containerNameSuffix("");
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
 
+   //CENTRALITY TASK NEEDS TO BE CALLED EXTERNALY PRIOR MY TASK 
+   //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+   //AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+   //if(typeOfAnal==kEff)  taskCentrality->SetMCInput(); //MC//
+
    TString cntype = centralityType;
  
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
+      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), cntype.Data());
 
+   myContName.Append(suffix);
    //__________________________________________________________________________________
    // #### DEFINE MY ANALYSIS TASK
 
 
-   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
-                                  aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
-                                  TMath::Nint(ttLow),TMath::Nint(ttHigh)));
+   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(myContName.Data());
+                                  //(Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
+                                  //aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
+                                  //TMath::Nint(ttLow),TMath::Nint(ttHigh)));
 
    //inspired by AliAnalysisTaskEmcalQGTagging
    //_____________________________________________
@@ -138,7 +146,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContRec->SetPercAreaCut(acut);//0.6
       jetContRec->SetMinPt(0.15);
       jetContRec->SetMaxTrackPt(1000);
-      jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
    }
 
@@ -148,7 +156,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContRecKT->SetPercAreaCut(acut);//0.6         ?????????   APPLY CUT FOR BG KT JETS
       jetContRecKT->SetMinPt(0.);
       jetContRecKT->SetMaxTrackPt(1000);
-      jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);  // RANGE   
    }
 
@@ -163,8 +171,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetCentralityType(centralityType); 
    task->SetDoubleBinPrecision(binning); 
  
-   task->SetTT(ttLow, ttHigh);
-   task->SetTTType(ttType); 
+   task->SetTT(ttLowR, ttHighR, ttLowS, ttHighS);
    task->SetDphi(dphi); // |Delta phi_jet, trigger|< pi-0.6
 
    task->SetDebugLevel(0); //No debug messages 0
@@ -198,13 +205,15 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            trackEtaWindow          = 0.9,   //pseudorapidity range for tracks
   Bool_t              useVertexCut            = kTRUE,  // vertex cut
   Bool_t              usePileUpCut            = kTRUE, // discard pile up event
-  Double_t            ttLow                   = 8.0,      // trigger hardron low pT
-  Double_t            ttHigh                  = 50.0,     // trigger hadron high pT
-  Int_t               ttType                  = 0,        // 0= single inclusive hadron trigger, else inclusive hadron trigger
+  Double_t            ttLowR                  = 6.0,      // trigger hardron low pT
+  Double_t            ttHighR                 = 7.0,     // trigger hadron high pT
+  Double_t            ttLowS                  = 12.0,      // trigger hardron low pT
+  Double_t            ttHighS                 = 50.0,     // trigger hadron high pT
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
-  Int_t               recombscheme            = 5    //recombination scheme  5=BIpt_scheme  0=E_scheme 
+  Int_t               recombscheme            = 5,    //recombination scheme  5=BIpt_scheme  0=E_scheme 
+  const char* suffix = ""                              //SUBWAGON has to be the last parameter
 ){
 
    //MC DATA EFF
@@ -252,10 +261,11 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString cntype = centralityType;
 
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
+      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS),cntype.Data());
 
+   myContName.Append(suffix);
    //_________________________________________________________________
 
    //_________________________________________________________________
@@ -303,10 +313,10 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    //__________________________________________________________________________________
    // #### DEFINE MY ANALYSIS TASK
 
-   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
-                                  aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
-                                  TMath::Nint(ttLow),TMath::Nint(ttHigh)));
+   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(myContName.Data());
+                                  //(Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
+                                  //aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
+                                  //TMath::Nint(ttLow),TMath::Nint(ttHigh)));
 
    if(typeOfData == kPythia){  //EFF with PYTHIA
       task->SetIsPythia(kTRUE);  //NECESSARY IN ORDER TO FILL XSEC AND TRIALS
@@ -345,7 +355,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContRec->SetPythiaInfoName("PythiaInfo");
       jetContRec->SetMinPt(0.15);
       jetContRec->SetMaxTrackPt(1000);
-      jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
    }
    //AKT JETS GEN ContainerTwo
@@ -356,7 +366,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContTrue->SetPythiaInfoName("PythiaInfo");
       jetContTrue->SetMinPt(0.15);
       jetContTrue->SetMaxTrackPt(1000);
-      jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
    }
 
@@ -368,7 +378,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContRecKT->SetMinPt(0.);
       //jetContRecKT->SetPythiaInfoName("PythiaInfo");
       jetContRecKT->SetMaxTrackPt(1000);
-      jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
    }
    //KT JET CONTAINERS FOR BG GEN ContainerFour
@@ -379,7 +389,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
       jetContTrueKT->SetMinPt(0.);
       jetContTrueKT->SetMaxTrackPt(1000);
-      jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
    }
 
@@ -394,8 +404,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetCentralityType(centralityType); 
    task->SetDoubleBinPrecision(binning); 
  
-   task->SetTT(ttLow, ttHigh);
-   task->SetTTType(ttType); 
+   task->SetTT(ttLowR, ttHighR, ttLowS, ttHighS);
    task->SetDphi(dphi); // |Delta phi_jet, trigger|< pi-0.6
 
    task->SetDebugLevel(0); //No debug messages 0
@@ -425,9 +434,10 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            trackEtaWindow          = 0.9,   //pseudorapidity range for tracks
   Bool_t              useVertexCut            = kTRUE,  // vertex cut
   Bool_t              usePileUpCut            = kTRUE, // discard pile up event
-  Double_t            ttLow                   = 8.0,      // trigger hardron low pT
-  Double_t            ttHigh                  = 50.0,     // trigger hadron high pT
-  Int_t               ttType                  = 0,        // 0= single inclusive hadron trigger, else inclusive hadron trigger
+  Double_t            ttLowR                  = 6.0,      // trigger hardron low pT
+  Double_t            ttHighR                 = 7.0,     // trigger hadron high pT
+  Double_t            ttLowS                  = 12.0,      // trigger hardron low pT
+  Double_t            ttHighS                 = 50.0,     // trigger hadron high pT
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
@@ -438,7 +448,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ptHardMaxEmb            = 1000.,//  pt hard max in embedding
   Double_t            ecmsGeVEmb              = 5020.,//  E cms  in embedding    
   Float_t             ptWeightEmb             = 0.,    //weighting power of the embedded spectrum 
-  Double_t            trackeff                = 1.1   //artificial reduction of tracking efficiency
+  Double_t            trackeff                = 1.1,   //artificial reduction of tracking efficiency
+  const char* suffix = ""                              //SUBWAGON has to be the last parameter
 ){
 
    //typeOfData   
@@ -481,14 +492,28 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
  
    TString containerNameSuffix("");
    if(strcmp(containerSuffix,""))  containerNameSuffix = Form("_%s", containerSuffix);
+
+   //CENTRALITY TASK  NEEDS TO BE CALLED EXTERNAL PRIOR MY TAKS
+   //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+   //AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(1,1);//Bool_t fillHistos=kTRUE, Bool_t aod=kFALSE
+   //if(typeOfAnal==kEff)  taskCentrality->SetMCInput(); //MC//
+   //taskCentrality->SelectCollisionCandidates(trigger);
+    
  
    TString cntype = centralityType;
 
    TString myContName("");
-   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
+   myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_Ptt%d%d_%d%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
-      TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
+      TMath::Nint(10*dphi), TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), cntype.Data());
 
+   if(trackeff<1.0){
+      myContName.Append(Form("_EFF%03d",TMath::Nint(trackeff*100))); 
+   }
+   if(typeOfAnal == kEmb || typeOfAnal == kEmbSingl){
+       myContName.Append(Form("_EMB%.0f%.0f",ptHardMinEmb,ptHardMaxEmb)); 
+   }
+   myContName.Append(suffix);
    //_________________________________________________________________
    TString recoTracks  = ""; //DETECTOR LEVEL TRACKS NAME
    TString mcParticles = ""; //GENERATOR LEVEL PARTICLE NAME
@@ -514,7 +539,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          ptHardMaxEmb,//ptHardMax
          ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
-         Form("JetEmbeddingFromGenTask_TT%d%d_AN%d%d_R%02d_%s",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data()),//taskName
+         Form("JetEmbeddingFromGenTask_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix),//taskName
          0.15, //const Double_t  minPt 
          1000.,//const Double_t  maxPt          
         -0.9, //const Double_t  minEta 
@@ -539,7 +564,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
       AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", 
-                           Form("SigleTrackEmb_TT%d%d_AN%d%d_R%02d_%s",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data()), 
+                           Form("SigleTrackEmb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix), 
                                        ptHardMinEmb, ptHardMaxEmb, //min pT max pT
                                        -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
@@ -550,8 +575,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //FK//?// embSingle->SetMasslessParticles(kTRUE);
 
       embSingle->SetCopyArray(kTRUE);
-      embSingle->SetSuffix(Form("TT%d%d_AN%d%d_R%02d_%s",
-         TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data()));
+      embSingle->SetSuffix(Form("TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
+         TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix));
       kGenPartices = embSingle->GetOutTrackName(); 
    }
  
@@ -560,13 +585,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       // Branch merger  merge reconstructed tracks with embedded pythia generated 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskMergeBranches.C");
       AliJetModelMergeBranches* brmergTask = AddTaskMergeBranches(kTracksName.Data(),kGenPartices.Data(),
-      Form("Emb_TT%d%d_AN%d%d_R%02d_%s",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal,
-         TMath::Nint(10*jetRadius), cntype.Data()),"");
+      Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,
+         TMath::Nint(10*jetRadius), cntype.Data(), ptHardMinEmb,ptHardMaxEmb,suffix),"");
       brmergTask->SetCopyArray(kTRUE);
       brmergTask->SelectCollisionCandidates(trigger);
 
-      recoTracks.Append(Form("Emb_TT%d%d_AN%d%d_R%02d_%s",
-        TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data())); //reconstructed level are  tracks +ebeded tracks
+      recoTracks.Append(Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
+        TMath::Nint(ttLowR), TMath::Nint(ttHighR),  TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix)); //reconstructed level are  tracks +ebeded tracks
       mcParticles = kGenPartices.Data(); //generator level are embedded particles
    }
 
@@ -579,8 +604,11 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
 
    TString apx="";
    if(trackeff<1.0) apx = Form("_EFF%03d",TMath::Nint(trackeff*100)); 
-  
-   TString note = Form("_TT%d%d_AN%d%d_%s%s", TMath::Nint(ttLow), TMath::Nint(ttHigh), typeOfData, typeOfAnal, cntype.Data(), apx.Data());
+   if(typeOfAnal == kEmb || typeOfAnal == kEmbSingl){
+      apx.Append(Form("_PT%.0f%.0f",ptHardMinEmb,ptHardMaxEmb));
+   } 
+
+   TString note = Form("_TT%d%d_%d%d_AN%d%d_%s%s%s", TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, cntype.Data(), apx.Data(), suffix);
  
    //REAL TRACKS - JET CLUSTERIZER 
    AliEmcalJetTask* jetFinderTask = 0x0;
@@ -670,9 +698,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(jetFinderTaskMC) tname = jetFinderTaskMC->GetName();
    if(jetFinderTask)   tname = jetFinderTask->GetName();
 
-   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_%s", 
-                                  tname.Data(), triggerName.Data(), note.Data()));
+   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(myContName.Data());
+                                  //Form("HJetSpectra_%s_%s_%s", 
+                                  //tname.Data(), triggerName.Data(), note.Data()));
 
    if(typeOfAnal == kKine) task->SetNeedEmcalGeom(kFALSE); //KINE
    if(typeOfAnal == kEff && typeOfData == kPythia){  //EFF with PYTHIA
@@ -724,7 +752,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          jetContRec->SetPercAreaCut(acut);//0.6
          jetContRec->SetMinPt(0.150);
          jetContRec->SetMaxTrackPt(1000);
-         jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
 
@@ -734,7 +762,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContRecKT->SetPercAreaCut(acut);//0.6         ?????????   APPLY CUT FOR BG KT JETS
          jetContRecKT->SetMinPt(0.);
          jetContRecKT->SetMaxTrackPt(1000);
-         jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);  // RANGE   
       }
 
@@ -748,7 +776,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContRec->SetPythiaInfoName("PythiaInfo");
          jetContRec->SetMinPt(0.15);
          jetContRec->SetMaxTrackPt(1000);
-         jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
       //AKT JETS GEN ContainerTwo
@@ -759,7 +787,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMinPt(0.15);
          jetContTrue->SetMaxTrackPt(1000);
-         jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
 
@@ -771,7 +799,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContRecKT->SetPythiaInfoName("PythiaInfo");
          jetContRecKT->SetMinPt(0.);
          jetContRecKT->SetMaxTrackPt(1000);
-         jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
       //KT JET CONTAINERS FOR BG GEN ContainerFour
@@ -782,7 +810,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
          jetContTrueKT->SetMinPt(0.);
          jetContTrueKT->SetMaxTrackPt(1000);
-         jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
 
@@ -797,7 +825,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMinPt(0.15);
          jetContTrue->SetMaxTrackPt(1000);
-         jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
       //KT JET CONTAINERS FOR BG GEN  ContainterTwo
@@ -808,7 +836,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
          jetContTrueKT->SetMinPt(0.);
          jetContTrueKT->SetMaxTrackPt(1000);
-         jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
    }
@@ -826,8 +854,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    }
    task->SetDoubleBinPrecision(binning); 
  
-   task->SetTT(ttLow, ttHigh);
-   task->SetTTType(ttType); 
+   task->SetTT(ttLowR, ttHighR,ttLowS, ttHighS);
    task->SetDphi(dphi); // |Delta phi_jet, trigger|< pi-0.6
 
    task->SetDebugLevel(0); //No debug messages 0

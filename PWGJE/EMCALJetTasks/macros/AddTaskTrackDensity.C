@@ -23,7 +23,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
   partcont->SetName("MCParticles");
   densitytask->SetMCParticleContainer("MCParticles");
 
-  AliJetContainer *jetcont = densitytask->AddJetContainer(mcjetcontainername, AliJetContainer::kTPC, 0.4);
+  AliJetContainer *jetcont = densitytask->AddJetContainer(mcjetcontainername, AliEmcalJet::kTPC, 0.4);
   jetcont->SetName("MCJetContainer");
   jetcont->SetJetPtCut(20.);
   jetcont->SetJetEtaLimits(-0.5, 0.5);

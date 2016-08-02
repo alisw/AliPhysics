@@ -27,7 +27,6 @@
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistanceKK.h"
-#include "AliFemtoShareQualityPairCut.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -114,8 +113,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[20];
   //  AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
-  AliFemtoShareQualityPairCut      *sqpcetaphitpc[20];
-  //AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];
+  //AliFemtoShareQualityPairCut      *sqpcetaphitpc[20];
+  AliFemtoPairCutRadialDistanceKK      *sqpcetaphitpc[20];
   AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
   AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[20];
   AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
@@ -141,8 +140,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	if (runch[ichg]) {
 	  aniter = ichg*3+imult;
 
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 50, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(10);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
       
@@ -207,8 +206,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //primary particles: hits in ITS + DCA cut
 	  //dtc1etaphitpc[aniter]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 	  //				 AliESDtrackCuts::kAny);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
-	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(2.4);
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(1.9);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	  //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
@@ -230,14 +229,14 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	  // sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
 	  //sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
-	  sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
-	  sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
-	  sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
+	  //sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
+	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();
+	  //sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
+	  //sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 	  
-	  //sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();
-	  //sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
-          //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+	  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+          sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 
 	  //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.016);
 	  //sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.02);

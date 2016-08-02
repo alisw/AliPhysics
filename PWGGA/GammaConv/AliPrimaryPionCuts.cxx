@@ -1022,6 +1022,10 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
 			fDoMassCut = kTRUE;
 			fMassCut = 0.5;
 			break;
+        case 6: // cut at 0.65 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.65;
+            break;
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;

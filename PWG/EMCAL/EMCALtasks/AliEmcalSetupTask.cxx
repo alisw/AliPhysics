@@ -251,6 +251,7 @@ void AliEmcalSetupTask::Setup(Int_t runno)
   }
 
   // Load geometry from OCDB 
+  TGeoManager *geo(nullptr);
   if (man) {
     if (man->GetRun()!=runno)
       man->SetRun(runno);
@@ -258,28 +259,36 @@ void AliEmcalSetupTask::Setup(Int_t runno)
     AliGRPManager GRPManager;
     GRPManager.ReadGRPEntry();
     GRPManager.SetMagField();
-    AliInfo(Form("Loading geometry from OCDB"));
-    AliGeomManager::LoadGeometry();
-    if (!fObjs.IsNull())
-      AliGeomManager::ApplyAlignObjsFromCDB(fObjs);
+    if(!AliGeomManager::GetGeometry() && man){
+      AliInfo(Form("Loading geometry from OCDB"));
+      AliGeomManager::LoadGeometry();
+      geo = AliGeomManager::GetGeometry();
+      if (!fObjs.IsNull())
+        AliGeomManager::ApplyAlignObjsFromCDB(fObjs);
+      // Lock geometry
+      if (geo) {
+        AliInfo(Form("Locking geometry"));
+        geo->LockGeometry();
+      }
+    }
   }
 
   // Load geometry from file (does not use misalignment of ITS/TPC!)
-  TGeoManager *geo = AliGeomManager::GetGeometry();
+  geo = AliGeomManager::GetGeometry();
   if (!geo && fGeoPath.Length()>0) {
     TString fname(gSystem->ExpandPathName(Form("%s/geometry_%d.root", fGeoPath.Data(), year)));
     if (gSystem->AccessPathName(fname)==0) {
       AliInfo(Form("Loading geometry from file %s (should be avoided!)", fname.Data()));
       AliGeomManager::LoadGeometry(fname);
       geo = AliGeomManager::GetGeometry();
+      // Lock geometry
+      if (geo) {
+        AliInfo(Form("Locking geometry"));
+        geo->LockGeometry();
+      }
     }
   }
 
-  // Lock geometry
-  if (geo) {
-    AliInfo(Form("Locking geometry"));
-    geo->LockGeometry();
-  }
 
   // Construct field map
   if (!TGeoGlobalMagField::Instance()->GetField()) { 

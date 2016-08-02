@@ -69,7 +69,9 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   void         SetLastEvent(Int_t event )         { fLastEvent = event   ; }
   Int_t        GetLastEvent()               const { return fLastEvent    ; }
 
-  
+  void         SwitchOnStoreEventSummary()        { fStoreEventSummary = kTRUE  ; }
+  void         SwitchOffStoreEventSummary()       { fStoreEventSummary = kFALSE ; }
+    
  private:
   
   /// Copy constructor not implemented.
@@ -89,8 +91,10 @@ class AliAnalysisTaskCaloTrackCorrelation : public AliAnalysisTaskSE
   Int_t   fFirstEvent;             //!<! Analyze all the events from this one, for testing.    
   Int_t   fLastEvent;              //!<! Analyze all the events until this one, for testing.    
   
+  Bool_t  fStoreEventSummary;      ///<  Store in output histograms list 2 histograms with event summary, off by default.
+  
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCaloTrackCorrelation, 5) ; 
+  ClassDef(AliAnalysisTaskCaloTrackCorrelation, 6) ; 
   /// \endcond
 
 };

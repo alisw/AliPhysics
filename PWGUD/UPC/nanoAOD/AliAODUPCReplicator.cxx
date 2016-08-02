@@ -55,6 +55,7 @@ fHeader(0x0),
 fTracklets(0x0),
 fZDC(0x0),
 fList(0x0),
+fTOFHeader(0x0),
 fReplicateHeader(replicateHeader),
 fReplicateTracklets(replicateTracklets)
 {
@@ -77,6 +78,7 @@ TList* AliAODUPCReplicator::GetList() const
     if ( fReplicateHeader )
     {
       fHeader = new AliAODHeader;
+      fTOFHeader = new AliTOFHeader;
     }
     
     if ( fReplicateTracklets )
@@ -107,6 +109,7 @@ TList* AliAODUPCReplicator::GetList() const
     fList->Add(fVZERO);
     fList->Add(fZDC);
     fList->Add(fAD);
+    fList->Add(fTOFHeader);
   }
   return fList;
 }
@@ -124,6 +127,10 @@ void AliAODUPCReplicator::ReplicateAndFilter(const AliAODEvent& source)
     AliAODHeader * header = dynamic_cast<AliAODHeader*>(source.GetHeader());
     if(!header) AliFatal("Not a standard AOD");
     *fHeader = *(header);
+    
+    AliTOFHeader * tofheader = (AliTOFHeader*)(source.GetTOFHeader());
+    if(!tofheader) AliFatal("Not a standard AOD");
+    *fTOFHeader = *(tofheader);
   }
 
   if (fReplicateTracklets)

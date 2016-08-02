@@ -206,7 +206,7 @@ set ( SRCS16
   EvTrkSelection/AliSingleTrackEffCuts.cxx
   )
 #file ( GLOB SRCS17 "TRD/TRDPID/*.cxx" )
-set ( SRCS17  
+set ( SRCS17
   TRD/TRDPID/AliTRDPIDTree.cxx
   TRD/TRDPID/AliTRDPIDmatching.cxx
   )
@@ -218,42 +218,43 @@ set ( SRCS18
   AD/ADESDFriendUtils.cxx
   AD/AliAnalysisTaskADCalib.cxx
   AD/AliAnalysisTaskADChargeMonitoring.cxx
-  )  
+  )
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
-set ( SRCS19 
+set ( SRCS19
 #  BeamGasMonitoring/AliAnalysisMBVeto.cxx temporarily commented:sjena
   BeamGasMonitoring/AliAnalysisBGMonitorQA.cxx
   BeamGasMonitoring/AliAnalysisBGMonitorQAHLT.cxx
-  )  
+  BeamGasMonitoring/AliAnalysisBGMonitorQATrain.cxx
+  )
 
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
-set ( SRCS20 
-  HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
-  HMTFqa/AliAnalysisTaskLeadingPt.cxx  
+set ( SRCS20
+  HMTFqa/AliAnalysisMultCorrTaskQA.cxx
+  HMTFqa/AliAnalysisTaskLeadingPt.cxx
   HMTFqa/AliAnalysisMultCorrTaskQAPF.cxx
   )
 
-list ( APPEND SRCS 
-  ${SRCS1} 
-  ${SRCS2} 
-  ${SRCS3} 
-  ${SRCS4} 
-  ${SRCS5} 
-  ${SRCS6} 
-  ${SRCS7} 
-  ${SRCS8} 
-  ${SRCS9} 
-  ${SRCS10} 
-  ${SRCS11} 
-  ${SRCS12} 
-  ${SRCS13} 
+list ( APPEND SRCS
+  ${SRCS1}
+  ${SRCS2}
+  ${SRCS3}
+  ${SRCS4}
+  ${SRCS5}
+  ${SRCS6}
+  ${SRCS7}
+  ${SRCS8}
+  ${SRCS9}
+  ${SRCS10}
+  ${SRCS11}
+  ${SRCS12}
+  ${SRCS13}
   ${SRCS14}
   ${SRCS15}
   ${SRCS16}
   ${SRCS17}
   ${SRCS18}
-  ${SRCS19}	
-  ${SRCS20}	
+  ${SRCS19}
+  ${SRCS20}
   )
 
 ###add_subdirectory(Alignment)
@@ -271,7 +272,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript ADbase)
+set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript ADbase ADrec)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -286,7 +287,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
@@ -307,7 +308,7 @@ install(FILES HMPID/macros/copyHMPQAfiles.C
  	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)
 install(FILES T0/AddTaskT0QA.C
 	      T0/MakeTrendT0.C
-	      T0/drawPerformanceT0QATrends.C 
+	      T0/drawPerformanceT0QATrends.C
 	      DESTINATION PWGPP/T0)
 install(FILES ITS/QA/MakeTrendingITSQA.C
 	      ITS/QA/DrawTrendingITSQA.C
@@ -322,7 +323,7 @@ install(FILES TOF/trending/MakeTrendingTOFQA.C
 install(FILES TOF/AddTaskTOFQA.C DESTINATION PWGPP/TOF)
 install(DIRECTORY TPC/macros DESTINATION PWGPP/TPC PATTERN ".C")
 install(DIRECTORY TPC/CalibMacros DESTINATION PWGPP/TPC PATTERN ".C")
-install(DIRECTORY TPC/CalibMacros DESTINATION PWGPP/TPC PATTERN ".sh")
+install(DIRECTORY TPC/CalibMacros USE_SOURCE_PERMISSIONS DESTINATION PWGPP/TPC PATTERN ".sh")
 install(DIRECTORY TRD/macros DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.C")
 install(FILES TRD/run.C TRD/runQAesds.C TRD/cacheOCDB.C DESTINATION PWGPP/TRD)
 install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
@@ -330,23 +331,23 @@ install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
 DESTINATION PWGPP/TRD/TRDPID/macros)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
 install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
-install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C 
-	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C 	   
-	      ZDC/macros/MakeTrendZDC.C	         
+install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C
+	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C
+	      ZDC/macros/MakeTrendZDC.C
 	      DESTINATION PWGPP/ZDC/macros)
 install(FILES AD/AddTaskADQA.C
-	      AD/AddTaskADVVQA.C 
+	      AD/AddTaskADVVQA.C
 	      AD/AddTaskADPilot.C
 	      AD/AddTaskADCalib.C
 	      AD/AddTaskADChargeMonitoring.C
 	      DESTINATION PWGPP/AD)
-install(FILES AD/trending/DrawTrendingADQA.C 
- 	      AD/trending/MakeTrendingADQA.C 
+install(FILES AD/trending/DrawTrendingADQA.C
+ 	      AD/trending/MakeTrendingADQA.C
 	      DESTINATION PWGPP/AD/trending)
 install(FILES PilotTrain/AddTaskMuonQA.C DESTINATION PWGPP/PilotTrain/ )
 install(FILES VZERO/AddTaskVZEROPbPb.C DESTINATION PWGPP/VZERO/)
-install(FILES VZERO/trending/DrawTrendingV0QA.C 
- 	      VZERO/trending/MakeTrendingV0QA.C 
+install(FILES VZERO/trending/DrawTrendingV0QA.C
+ 	      VZERO/trending/MakeTrendingV0QA.C
 	      DESTINATION PWGPP/VZERO/trending)
 install(DIRECTORY MUON/lite DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
 install(DIRECTORY MUON/dep DESTINATION PWGPP/MUON FILES_MATCHING PATTERN "*.C")
@@ -376,13 +377,15 @@ install(FILES CalibMacros/CPass1/LoadLibraries.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
 	      CalibMacros/CPass1/AddTaskT0Calib.C
-	      CalibMacros/CPass1/AddTaskT0Analysis.C	      
+	      CalibMacros/CPass1/AddTaskT0Analysis.C
 	      CalibMacros/CPass1/AddTaskSDDCalib.C
 	      DESTINATION PWGPP/CalibMacros/CPass1)
 install(FILES CalibMacros/commonMacros/CleanGeom.C
 	      DESTINATION PWGPP/CalibMacros/commonMacros)
 install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
               BeamGasMonitoring/macros/AddTaskBGMonitorQA.C
+              BeamGasMonitoring/macros/AddTaskBGMonitorQAHLT.C
+	      BeamGasMonitoring/macros/AddTaskBGMonitorQATrain.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 
 message(STATUS "PWGPP enabled")

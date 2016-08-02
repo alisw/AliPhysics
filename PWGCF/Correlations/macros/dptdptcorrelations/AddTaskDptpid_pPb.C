@@ -1,35 +1,37 @@
-/* Macro designed for use with the AliAnalysisTaskDptDptCorrelations3 task.
-   Author: Prabhat Pujahari & Claude Pruneau, Wayne State
+/* Macro designed for use with the AlianalysisTaskDptPID task.
+   Author: Prabhat Pujahari
    system:           0, 1, 2 for centrality sets
    singlesOnly:      0 -- full correlations    1 -- singles only
    useWeights:       0 -- no                   1 -- yes
-   centralityMethod: 4 -- V0M  5 -- TPC  4: V0A for pPb
+   centralityMethod: 4 -- V0M  5 -- TPC  7: V0A for pPb
    chargeSet:        0: ++    1: +-    2: -+    3: --
 */
 /////////////////////////////////////////////////////////////////////////////////
-AlianalysisTaskDptPIDpPb *AddTaskDptpid_pPb
+AlianalysisTaskDptPID *AddTaskDptpid_pPb
 (
  int    system                  = 0, 
- int    singlesOnly             = 0,
- int    useWeights              = 1, 
- int    centralityMethod        = 4, 
+ int    singlesOnly             = 1,
+ int    useWeights              = 0, 
+ int    centralityMethod        = 7, 
  int    chargeSet               = 1,
  double zMin                    = -10.0, 
  double zMax                    =  10.0,
- int    trackFilterBit          = 272,
+ int    trackFilterBit          = 1,
  int    nClusterMin             = 80, 
- double eta1Min                 = -0.8,
- double eta1Max                 = 0.8,
- double eta2Min                 = -0.8,
- double eta2Max                 = 0.8,
- double dcaZMin                 = -3.2, 
+ double eta1Min                 = -1.0,
+ double eta1Max                 = 1.0,
+ double eta2Min                 = -1.0,
+ double eta2Max                 = 1.0,
+ double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
- int nCentrality                =  3,
+ double ptMin                   =  0.2,
+ double ptMax                   =  2.0,
+ int nCentrality                =  4,
  Bool_t trigger                 = kTRUE,
  const char* taskname           = "WgtPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/WgtHybdEta8.root")
+ char *inputHistogramFileName   = "alien///alice/cern.ch/Users/pujahari/DataAnalysis/Eta08/MgFN/Calib/weight_MgFN_set1.root")
 {
   // Set Default Configuration of this analysis
   int    debugLevel             = 0;
@@ -39,44 +41,56 @@ AlianalysisTaskDptPIDpPb *AddTaskDptpid_pPb
   
   //----------------------------------------------------  
   //int    nCentrality;
-  double minCentrality[3];
-  double maxCentrality[3];
+  double minCentrality[4];
+  double maxCentrality[4];
   
   if (system==0) // PbPb
     {
-      if (centralityMethod == 4 )
+      if (centralityMethod == 7 )
 	{
 	  minCentrality[0] = 0.0;  maxCentrality[0]   = 10.0; 
-	  minCentrality[1] = 10.0; maxCentrality[1]   = 20.0;
-	  minCentrality[2] = 20.0; maxCentrality[2]   = 40.0;
+	  minCentrality[1] = 10.0; maxCentrality[1]   = 20.0; 
+	  minCentrality[2] = 20.0; maxCentrality[2]   = 30.0;
+	  minCentrality[3] = 30.0; maxCentrality[3]   = 40.0;
 	  
 	}
     }
 
-  if (system==1) 
+  if (system==1) //other centrality
     {
-      if (centralityMethod == 4)
+      if (centralityMethod == 7)
 	{
-	  minCentrality[0] = 40.0; maxCentrality[0]  = 60.0;
-	  minCentrality[1] = 60.0; maxCentrality[1]  = 80.0;
-	  minCentrality[2] = 80.0; maxCentrality[2]  = 100.0;
+	  minCentrality[0] = 40.0;  maxCentrality[0]   = 50.0; 
+	  minCentrality[1] = 50.0; maxCentrality[1]    = 60.0; 
+	  minCentrality[2] = 60.0; maxCentrality[2]    = 70.0;
+	  minCentrality[3] = 70.0; maxCentrality[3]    = 80.0;
 	}
     }
 
-  if (system==3) //other centrality
+  if (system==2)
     {
-      if (centralityMethod == 4)
+      if (centralityMethod == 7)
 	{
-	  minCentrality[0] = 0.0;  maxCentrality[0]  = 20.0;
-	  minCentrality[1] = 20.0; maxCentrality[1]  = 40.0;
-	  minCentrality[2] = 40.0; maxCentrality[2]  = 60.0;
-	  minCentrality[3] = 60.0; maxCentrality[3]  = 80.0;
+	  minCentrality[0] = 0.0;  maxCentrality[0]   = 20.0; 
+	  minCentrality[1] = 20.0; maxCentrality[1]   = 40.0; 
+	  minCentrality[2] = 40.0; maxCentrality[2]   = 60.0;
+	  minCentrality[3] = 60.0; maxCentrality[3]   = 100.0;
+
+	}
+    }
+  if (system==3)
+    {
+      if (centralityMethod == 7)
+	{
+	  minCentrality[0] = 0.0; maxCentrality[0]   = 5.0;
+	  minCentrality[1] = 5.0; maxCentrality[1]   = 10.0;
+	  minCentrality[2] = 20.0; maxCentrality[2]  = 25.0;
+	  minCentrality[3] = 30.0; maxCentrality[3]  = 35.0;
 	}
     }
   
 //----------------------------------------------
-double ptMin                  =  0.2;
-double ptMax                  =  2.0;
+
 double dedxMin                =  0.0;
 double dedxMax                =  20000.0;
 int    requestedCharge1       =  1; //default
@@ -112,11 +126,11 @@ TString outputHistogramFileName;
 
 // Create the task and add subtask.
 // ===========================================================================
-int iTask = 0; // task counter
-  AliAnalysisDataContainer *taskInputContainer;
-AliAnalysisDataContainer *taskOutputContainer;
-AlianalysisTaskDptPIDpPb* task;
-
+ int iTask = 0; // task counter
+ AliAnalysisDataContainer *taskInputContainer;
+ AliAnalysisDataContainer *taskOutputContainer;
+ AlianalysisTaskDptPID* task;
+ 
 for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
   {
     switch (chargeSet)
@@ -154,7 +168,7 @@ for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     TH3F   * weight_2   = 0;
     if (useWeights)
       {
-        TGrid::Connect("alien:"); //for grid input file
+        TGrid::Connect("alien:");
         inputFile = TFile::Open(inputHistogramFileName,"OLD");
         if (!inputFile)
           {
@@ -166,15 +180,18 @@ for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
         if (requestedCharge1 == 1)
           {
 	    nameHisto = nameHistoBase + "_p";
+	    //cout << "Input Histogram named: " << nameHisto << endl;
 	    weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         else
           {
 	    nameHisto = nameHistoBase + "_m";
+	    //cout << "Input Histogram named: " << nameHisto << endl;
 	    weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         if (!weight_1) 
           {
+	    //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
 	    return 0;
           }
         
@@ -184,20 +201,23 @@ for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
 	    if (requestedCharge2 == 1)
 	      {
 		nameHisto = nameHistoBase + "_p";
+		//cout << "Input Histogram named: " << nameHisto << endl;
 		weight_2 = (TH3F *) inputFile->Get(nameHisto);
 	      }
 	    else
 	      {
 		nameHisto = nameHistoBase + "_m";
+		//cout << "Input Histogram named: " << nameHisto << endl;
 		weight_2 = (TH3F *) inputFile->Get(nameHisto);
 	      }
 	    if (!weight_2) 
 	      {
+		//cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
 		return 0;
 	      }
           }  
       }
-    task = new  AlianalysisTaskDptPIDpPb(taskName);
+    task = new  AlianalysisTaskDptPID(taskName);
     //configure my task
     task->SetDebugLevel(          debugLevel      ); 
     task->SetSameFilter(          sameFilter      );

@@ -17,6 +17,8 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TKey.h>
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include "TMatrixD.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
@@ -75,12 +77,11 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
-  fminpTTrig(20.),
-  fmaxpTTrig(50.),
-  fangWindowRecoil(0.6),
+  fPtMinTriggerHadron(20.),
+  fPtMaxTriggerHadron(50.),
+  fRecoilAngularWindow(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
   fHoleWidth(0), 
@@ -95,6 +96,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fSharedFractionPtMin(0.5),
   fDerivSubtrOrder(0),
   fFullTree(kFALSE),
+  fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
   fhJetPt_1(0x0),
   fhJetPt_2(0x0),
@@ -110,10 +112,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhJetRadius(0x0),
   fhJetRadius_1(0x0),
   fhJetRadius_2(0x0),
-  fhJetAngularity(0x0),
-  fhJetAngularityJetPt(0x0),
-  fhJetPTD(0x0),
-  fhJetPTDJetPt(0x0),
   fhJetCounter(0x0),
   fhJetCounter_1(0x0),
   fhJetCounter_2(0x0),
@@ -135,27 +133,12 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhNumberOfSubJetTracks(0x0),
   fhNumberOfSubJetTracks_1(0x0),
   fhNumberOfSubJetTracks_2(0x0),
-  fhSubJetPtFrac(0x0),
-  fhSubJetPtFrac2(0x0),
-  fhSubJetPtLoss(0x0),
-  fhSubJetPtLoss2(0x0),
-  fhSubJetEnergyFrac(0x0),
-  fhSubJetEnergyFrac2(0x0),
-  fhSubJetEnergyLoss(0x0),
-  fhSubJetEnergyLoss2(0x0),
+  fh2PtTriggerHadronJet(0x0),
+  fhPhiTriggerHadronJet(0x0),
   fh2PtRatio(0x0),
-  fhSubJetiness1(0x0),
-  fhSubJetiness1JetPt(0x0),
-  fhSubJetiness2(0x0),
-  fhSubJetiness2JetPt(0x0),
-  fh2to1SubJetinessRatio(0x0),
-  fh2to1SubJetinessRatioJetPt(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
   fhEventCounter_2(0x0),
-  fhJetPtJetEta(0x0),
-  fhSubJetiness2Distance(0x0),
-  fh2JetTracksEtaPhiPt(0x0),
   fhSubJettiness1CheckRatio_FJ_AKT(0x0),
   fhSubJettiness1CheckRatio_FJ_KT(0x0),
   fhSubJettiness1CheckRatio_FJ_CA(0x0),
@@ -178,6 +161,17 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhSubJettiness2CheckRatio_FJ_OP_WTA_KT(0x0),
   fhSubJettiness2CheckRatio_FJ_OP_WTA_CA(0x0),
   fhSubJettiness2CheckRatio_FJ_MIN(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_AKT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_WTA_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_WTA_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_AKT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_MIN(0x0),
   fhSubJettiness1_FJ_AKT(0x0),
   fhSubJettiness1_FJ_KT(0x0),
   fhSubJettiness1_FJ_CA(0x0),
@@ -200,10 +194,26 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhSubJettiness2_FJ_OP_WTA_KT(0x0),
   fhSubJettiness2_FJ_OP_WTA_CA(0x0),
   fhSubJettiness2_FJ_MIN(0x0),
+  fhSubJettiness2to1_FJ_AKT(0x0),
+  fhSubJettiness2to1_FJ_KT(0x0),
+  fhSubJettiness2to1_FJ_CA(0x0),
+  fhSubJettiness2to1_FJ_WTA_KT(0x0),
+  fhSubJettiness2to1_FJ_WTA_CA(0x0),
+  fhSubJettiness2to1_FJ_OP_AKT(0x0),
+  fhSubJettiness2to1_FJ_OP_KT(0x0),
+  fhSubJettiness2to1_FJ_OP_CA(0x0),
+  fhSubJettiness2to1_FJ_OP_WTA_KT(0x0),
+  fhSubJettiness2to1_FJ_OP_WTA_CA(0x0),
+  fhSubJettiness2to1_FJ_MIN(0x0),
   fTreeResponseMatrixAxis(0)
 
 {
+  for(Int_t i=0;i<nVar;i++){
+    fShapesVar[i]=0;
+  }
   SetMakeGeneralHistograms(kTRUE);
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -214,12 +224,11 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
-  fminpTTrig(20.),
-  fmaxpTTrig(50.),
-  fangWindowRecoil(0.6),
+  fPtMinTriggerHadron(20.),
+  fPtMaxTriggerHadron(50.),
+  fRecoilAngularWindow(0.6),
   fSemigoodCorrect(0),
   fHolePos(0),
   fHoleWidth(0), 
@@ -234,6 +243,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fSharedFractionPtMin(0.5),
   fDerivSubtrOrder(0),
   fFullTree(kFALSE),
+  fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
   fhJetPt_1(0x0),
   fhJetPt_2(0x0),
@@ -249,10 +259,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhJetRadius(0x0),
   fhJetRadius_1(0x0),
   fhJetRadius_2(0x0),
-  fhJetAngularity(0x0),
-  fhJetAngularityJetPt(0x0),
-  fhJetPTD(0x0),
-  fhJetPTDJetPt(0x0),
   fhJetCounter(0x0),
   fhJetCounter_1(0x0),
   fhJetCounter_2(0x0),
@@ -274,27 +280,12 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhNumberOfSubJetTracks(0x0),
   fhNumberOfSubJetTracks_1(0x0),
   fhNumberOfSubJetTracks_2(0x0),
-  fhSubJetPtFrac(0x0),
-  fhSubJetPtFrac2(0x0),
-  fhSubJetPtLoss(0x0),
-  fhSubJetPtLoss2(0x0),
-  fhSubJetEnergyFrac(0x0),
-  fhSubJetEnergyFrac2(0x0),
-  fhSubJetEnergyLoss(0x0),
-  fhSubJetEnergyLoss2(0x0),
+  fh2PtTriggerHadronJet(0x0),
+  fhPhiTriggerHadronJet(0x0),
   fh2PtRatio(0x0),
-  fhSubJetiness1(0x0),
-  fhSubJetiness1JetPt(0x0),
-  fhSubJetiness2(0x0),
-  fhSubJetiness2JetPt(0x0),
-  fh2to1SubJetinessRatio(0x0),
-  fh2to1SubJetinessRatioJetPt(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
   fhEventCounter_2(0x0),
-  fhJetPtJetEta(0x0),
-  fhSubJetiness2Distance(0x0),
-  fh2JetTracksEtaPhiPt(0x0),
   fhSubJettiness1CheckRatio_FJ_AKT(0x0),
   fhSubJettiness1CheckRatio_FJ_KT(0x0),
   fhSubJettiness1CheckRatio_FJ_CA(0x0),
@@ -317,6 +308,17 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhSubJettiness2CheckRatio_FJ_OP_WTA_KT(0x0),
   fhSubJettiness2CheckRatio_FJ_OP_WTA_CA(0x0),
   fhSubJettiness2CheckRatio_FJ_MIN(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_AKT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_WTA_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_WTA_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_AKT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA(0x0),
+  fhSubJettiness2to1CheckRatio_FJ_MIN(0x0),
   fhSubJettiness1_FJ_AKT(0x0),
   fhSubJettiness1_FJ_KT(0x0),
   fhSubJettiness1_FJ_CA(0x0),
@@ -339,15 +341,27 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhSubJettiness2_FJ_OP_WTA_KT(0x0),
   fhSubJettiness2_FJ_OP_WTA_CA(0x0),
   fhSubJettiness2_FJ_MIN(0x0),
+  fhSubJettiness2to1_FJ_AKT(0x0),
+  fhSubJettiness2to1_FJ_KT(0x0),
+  fhSubJettiness2to1_FJ_CA(0x0),
+  fhSubJettiness2to1_FJ_WTA_KT(0x0),
+  fhSubJettiness2to1_FJ_WTA_CA(0x0),
+  fhSubJettiness2to1_FJ_OP_AKT(0x0),
+  fhSubJettiness2to1_FJ_OP_KT(0x0),
+  fhSubJettiness2to1_FJ_OP_CA(0x0),
+  fhSubJettiness2to1_FJ_OP_WTA_KT(0x0),
+  fhSubJettiness2to1_FJ_OP_WTA_CA(0x0),
+  fhSubJettiness2to1_FJ_MIN(0x0),
   fTreeResponseMatrixAxis(0)
   
 {
   // Standard constructor.
-  
+  for(Int_t i=0;i<nVar;i++){
+    fShapesVar[i]=0;
+  }
   SetMakeGeneralHistograms(kTRUE);
-
-  DefineOutput(1, TTree::Class());
-
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -365,12 +379,11 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-
+  TH1::AddDirectory(oldStatus);
   //create a tree used for the MC data and making a 4D response matrix
-  fTreeResponseMatrixAxis = new TTree("fTreeJetShape", "fTreeJetShape");
+  const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
+  fTreeResponseMatrixAxis = new TTree(nameoutput, nameoutput);
   if (fFullTree){
-    const Int_t nVar = 18;
-    fShapesVar = new Double_t [nVar]; //shapes used for tagging   
     TString *fShapesVarNames = new TString [nVar];
   
     fShapesVarNames[0] = "Pt";
@@ -397,10 +410,9 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     }
   }
   
-    if (!fFullTree){
-    const Int_t nVar = 12;
-    fShapesVar = new Double_t [nVar]; //shapes used for tagging   
-    TString *fShapesVarNames = new TString [nVar];
+  if (!fFullTree){
+    const Int_t nVarMin = 12; 
+    TString *fShapesVarNames = new TString [nVarMin];
   
     fShapesVarNames[0] = "Pt";
     fShapesVarNames[1] = "Pt_Truth";
@@ -414,13 +426,20 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[9] = "OpeningAngle_Truth";
     fShapesVarNames[10] = "JetMultiplicity";
     fShapesVarNames[11] = "JetMultiplicity_Truth";
-    for(Int_t ivar=0; ivar < nVar; ivar++){
+    for(Int_t ivar=0; ivar < nVarMin; ivar++){
       cout<<"looping over variables"<<endl;
       fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
     }
   }
   
-  
+  if (fJetSelection == AliAnalysisTaskSubJetFraction::kRecoil){
+    fhPtTriggerHadron= new TH1F("fhPtTriggerHadron", "fhPtTriggerHadron",1500,-0.5,149.5);  
+    fOutput->Add(fhPtTriggerHadron);
+    fh2PtTriggerHadronJet= new TH2F("fh2PtTriggerHadronJet", "fh2PtTriggerHadronJet",1500,-0.5,149.5,1500,-0.5,149.5);  
+    fOutput->Add(fh2PtTriggerHadronJet);
+    fhPhiTriggerHadronJet= new TH1F("fhPhiTriggerHadronJet", "fhPhiTriggerHadronJet",360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));  
+    fOutput->Add(fhPhiTriggerHadronJet);
+  }
   if (fJetShapeType==AliAnalysisTaskSubJetFraction::kData || fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
     
     //  fhJetPt= new TH1F("fhJetPt", "Jet Pt", (XBinsJetPtSize)-1, XBinsJetPt);
@@ -453,46 +472,6 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhEventCounter);
   }
   if(fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
-    fhJetAngularity= new TH1F("fhJetAngularity", "Jet Angularity", 400, -2,2);
-    fOutput->Add(fhJetAngularity);
-    fhJetAngularityJetPt= new TH2F("fhJetAngularityJetPt", "Jet Angularity vs Jet Pt", 1500, -0.5, 149.50, 400, -2,2);
-    fOutput->Add(fhJetAngularityJetPt);
-    fhJetPTD= new TH1F("fhJetPTD", "Jet PTD", 400, -2,2);
-    fOutput->Add(fhJetPTD);
-    fhJetPTDJetPt= new TH2F("fhJetPTDJetPt", "Jet PTD vs Jet Pt", 1500, -0.5, 149.50, 400, -2,2);
-    fOutput->Add(fhJetPTDJetPt);
-    fhSubJetPtFrac= new TH1F("fhSubJetPtFrac", "Pt Fraction of Highest Pt Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtFrac);
-    fhSubJetPtFrac2= new TH1F("fhSubJetPtFrac2", "Pt Fraction of Two Highest Pt Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtFrac2);
-    fhSubJetPtLoss= new TH1F("fhSubJetPtLoss", "Pt Difference of Highest Pt Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtLoss);
-    fhSubJetPtLoss2= new TH1F("fhSubJetPtLoss2", "Pt Difference of Two Highest Pt Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtLoss2);
-    fhSubJetEnergyFrac= new TH1F("fhSubJetEnergyFrac", "Energy Fraction of Most Energetic Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyFrac);
-    fhSubJetEnergyFrac2= new TH1F("fhSubJetEnergyFrac2", "Energy Fraction of Two Most Energetic Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyFrac2);
-    fhSubJetEnergyLoss= new TH1F("fhSubJetEnergyLoss", "Energy Difference of Most Energetic Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyLoss);
-    fhSubJetEnergyLoss2= new TH1F("fhSubJetEnergyLoss2", "Pt Difference of Two Most Energetic Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyLoss2);
-    fhSubJetiness1= new TH1F("fhSubjetiness1", "Tau 1 value",101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness1);
-    fhSubJetiness1JetPt= new TH2F("fhSubjetiness1JetPt", "Tau 1 value vs Jet Pt",1500, -0.5, 149.5, 101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness1JetPt);
-    fhSubJetiness2= new TH1F("fhSubjetiness2", "Tau 2 value",101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness2);
-    fhSubJetiness2JetPt= new TH2F("fhSubjetiness2JetPt", "Tau 2 value vs Jet Pt",1500, -0.5, 149.5, 101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness2JetPt);
-    fh2to1SubJetinessRatio= new TH1F("fh2to1SubJetinessRatio", "Ratio of #tau 1 to #tau 2",200, -0.5,1.5);
-    fOutput->Add(fh2to1SubJetinessRatio);
-    fh2to1SubJetinessRatioJetPt= new TH2F("fh2to1SubJetinessRatioJetPt", "Ratio of #tau 1 to #tau 2 vs Jet Pt", 1500, -0.5, 149.5, 200, -0.5,1.5);
-    fOutput->Add(fh2to1SubJetinessRatioJetPt);
-    fhJetPtJetEta = new TH2F("fhJetPtJetEta", "Jet Pt vs Jet Eta", 1500,-0.5,150,Eta_Bins, Eta_Low, Eta_Up);
-    fOutput->Add(fhJetPtJetEta);
-    fhSubJetiness2Distance = new TH2F("fhSubJetiness2Distance", "#tau 2 as a function of distance between subject axis",100,0,10,101,-0.05,1.05);
-    fOutput->Add(fhSubJetiness2Distance);
     fhSubJettiness1_FJ_KT= new TH1D("fhSubJettiness1_FJ_KT","fhSubJettiness1_FJ_KT",400,-2,2);
     fOutput->Add(fhSubJettiness1_FJ_KT);
     fhSubJettiness1_FJ_MIN= new TH1D("fhSubJettiness1_FJ_MIN","fhSubJettiness1_FJ_MIN",400,-2,2);
@@ -501,8 +480,6 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJettiness2_FJ_KT);
     fhSubJettiness2_FJ_MIN= new TH1D("fhSubJettiness2_FJ_MIN","fhSubJettiness2_FJ_MIN",400,-2,2);
     fOutput->Add(fhSubJettiness2_FJ_MIN);
-    fh2JetTracksEtaPhiPt = new TH2D("fh3JetTracksEtaPhiPt","fh3JetTracksEtaPgiPt",Eta_Bins, Eta_Low, Eta_Up,360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
-    fOutput->Add(fh2JetTracksEtaPhiPt);
     fhSubJettiness1CheckRatio_FJ_AKT = new TH2D("fhSubJettiness1CheckRatio_FJ_AKT","fhSubJettiness1CheckRatio_FJ_AKT",400,-2,2,300,-1,2);
     fOutput->Add(fhSubJettiness1CheckRatio_FJ_AKT);
     fhSubJettiness1CheckRatio_FJ_KT= new TH2D("fhSubJettiness1CheckRatio_FJ_KT","fhSubJettiness1CheckRatio_FJ_KT",400,-2,2,300,-1,2);
@@ -547,6 +524,28 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJettiness2CheckRatio_FJ_OP_WTA_CA);
     fhSubJettiness2CheckRatio_FJ_MIN= new TH2D("fhSubJettiness2CheckRatio_FJ_MIN","fhSubJettiness2CheckRatio_FJ_MIN",400,-2,2,300,-1,2);
     fOutput->Add(fhSubJettiness2CheckRatio_FJ_MIN);
+    fhSubJettiness2to1CheckRatio_FJ_AKT = new TH2D("fhSubJettiness2to1CheckRatio_FJ_AKT","fhSubJettiness2to1CheckRatio_FJ_AKT",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_AKT);
+    fhSubJettiness2to1CheckRatio_FJ_KT= new TH2D("fhSubJettiness2to1CheckRatio_FJ_KT","fhSubJettiness2to1CheckRatio_FJ_KT",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_KT);
+    fhSubJettiness2to1CheckRatio_FJ_CA= new TH2D("fhSubJettiness2to1CheckRatio_FJ_CA","fhSubJettiness2to1CheckRatio_FJ_CA",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_CA);
+    fhSubJettiness2to1CheckRatio_FJ_WTA_KT= new TH2D("fhSubJettiness2to1CheckRatio_FJ_WTA_KT","fhSubJettiness2to1CheckRatio_FJ_WTA_KT",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_WTA_KT);
+    fhSubJettiness2to1CheckRatio_FJ_WTA_CA= new TH2D("fhSubJettiness2to1CheckRatio_FJ_WTA_CA","fhSubJettiness2to1CheckRatio_FJ_WTA_CA",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_WTA_CA);
+    fhSubJettiness2to1CheckRatio_FJ_OP_AKT= new TH2D("fhSubJettiness2to1CheckRatio_FJ_OP_AKT","fhSubJettiness2to1CheckRatio_FJ_OP_AKT",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_OP_AKT);
+    fhSubJettiness2to1CheckRatio_FJ_OP_KT= new TH2D("fhSubJettiness2to1CheckRatio_FJ_OP_KT","fhSubJettiness2to1CheckRatio_FJ_OP_KT",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_OP_KT);
+    fhSubJettiness2to1CheckRatio_FJ_OP_CA= new TH2D("fhSubJettiness2to1CheckRatio_FJ_OP_CA","fhSubJettiness2to1CheckRatio_FJ_OP_CA",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_OP_CA);
+    fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT= new TH2D("fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT","fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT);
+    fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA= new TH2D("fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA","fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA);
+    fhSubJettiness2to1CheckRatio_FJ_MIN= new TH2D("fhSubJettiness2to1CheckRatio_FJ_MIN","fhSubJettiness2to1CheckRatio_FJ_MIN",400,-2,2,300,-1,2);
+    fOutput->Add(fhSubJettiness2to1CheckRatio_FJ_MIN);
     fhSubJettiness1_FJ_AKT= new TH1D("fhSubJettiness1_FJ_AKT","fhSubJettiness1_FJ_AKT",400,-2,2);
     fOutput->Add(fhSubJettiness1_FJ_AKT);
     fhSubJettiness1_FJ_CA= new TH1D("fhSubJettiness1_FJ_CA","fhSubJettiness1_FJ_CA",400,-2,2);
@@ -583,6 +582,28 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJettiness2_FJ_OP_WTA_KT);
     fhSubJettiness2_FJ_OP_WTA_CA= new TH1D("fhSubJettiness2_FJ_OP_WTA_CA","fhSubJettiness2_FJ_OP_WTA_CA",400,-2,2);
     fOutput->Add(fhSubJettiness2_FJ_OP_WTA_CA);
+    fhSubJettiness2to1_FJ_KT= new TH1D("fhSubJettiness2to1_FJ_KT","fhSubJettiness2to1_FJ_KT",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_KT);
+    fhSubJettiness2to1_FJ_AKT= new TH1D("fhSubJettiness2to1_FJ_AKT","fhSubJettiness2to1_FJ_AKT",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_AKT);
+    fhSubJettiness2to1_FJ_CA= new TH1D("fhSubJettiness2to1_FJ_CA","fhSubJettiness2to1_FJ_CA",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_CA);
+    fhSubJettiness2to1_FJ_WTA_KT= new TH1D("fhSubJettiness2to1_FJ_WTA_KT","fhSubJettiness2to1_FJ_WTA_KT",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_WTA_KT);
+    fhSubJettiness2to1_FJ_WTA_CA= new TH1D("fhSubJettiness2to1_FJ_WTA_CA","fhSubJettiness2to1_FJ_WTA_CA",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_WTA_CA);
+    fhSubJettiness2to1_FJ_OP_AKT= new TH1D("fhSubJettiness2to1_FJ_OP_AKT","fhSubJettiness2to1_FJ_OP_AKT",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_OP_AKT);
+    fhSubJettiness2to1_FJ_OP_KT= new TH1D("fhSubJettiness2to1_FJ_OP_KT","fhSubJettiness2to1_FJ_OP_KT",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_OP_KT);
+    fhSubJettiness2to1_FJ_OP_CA= new TH1D("fhSubJettiness2to1_FJ_OP_CA","fhSubJettiness2to1_FJ_OP_CA",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_OP_CA);
+    fhSubJettiness2to1_FJ_OP_WTA_KT= new TH1D("fhSubJettiness2to1_FJ_OP_WTA_KT","fhSubJettiness2to1_FJ_OP_WTA_KT",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_OP_WTA_KT);
+    fhSubJettiness2to1_FJ_OP_WTA_CA= new TH1D("fhSubJettiness2to1_FJ_OP_WTA_CA","fhSubJettiness2to1_FJ_OP_WTA_CA",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_OP_WTA_CA);
+    fhSubJettiness2to1_FJ_MIN= new TH1D("fhSubJettiness2to1_FJ_MIN","fhSubJettiness2to1_FJ_MIN",400,-2,2);
+    fOutput->Add(fhSubJettiness2to1_FJ_MIN);
   }
   if(fJetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet){
     fhJetPt_1= new TH1F("fhJetPt_1", "Jet Pt Detector Level",1500,-0.5,149.5 );
@@ -644,9 +665,10 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
     fOutput->Add(fhEventCounter);
   }
-  fOutput->Add(fTreeResponseMatrixAxis);
-  TH1::AddDirectory(oldStatus);
-  PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+  
+  PostData(1,fOutput);
+  PostData(2,fTreeResponseMatrixAxis);
+  // delete [] fShapesVarNames;
 }
 
 //________________________________________________________________________
@@ -681,6 +703,26 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
+
+  AliAODTrack *TriggerHadron = 0x0;
+  if (fJetSelection == kRecoil) {
+    //you have to set a flag and the limits of the pT interval for your trigger
+    Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);    
+    if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
+    AliTrackContainer *PartCont =NULL;
+    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
+    else PartCont = GetTrackContainer(0);
+    TClonesArray *TrackArray = PartCont->GetArray();
+    TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
+    if (!TriggerHadron) return 0;//No trigger hadron with label found   
+    if(fSemigoodCorrect){
+      Double_t HoleDistance=RelativePhi(TriggerHadron->Phi(),fHolePos);
+      if(TMath::Abs(HoleDistance)+fHoleWidth+fJetRadius>TMath::Pi()-fRecoilAngularWindow) return 0;
+    }
+    fhPtTriggerHadron->Fill(TriggerHadron->Pt()); //Needed for per trigger Normalisation
+  }
+
+  
   
   ////////////////////////////////////Embedding////////////////////////////////////////
   if (fJetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart){
@@ -707,12 +749,18 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	else JetPtThreshold=Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
         if ( (!Jet1) || (JetPtThreshold<fPtThreshold)) continue;
         else {
-	  if(fSemigoodCorrect){
-	    Double_t disthole=RelativePhi(Jet1->Phi(),fHolePos);
-	    if(TMath::Abs(disthole)<fHoleWidth){
-	      continue;}
-	  } 	  
-	  if (!EventCounter){
+	  /*  if(fSemigoodCorrect){
+	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
+	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
+	    }*/
+	  Float_t RecoilDeltaPhi = 0.;
+	  if (fJetSelection == kRecoil){
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
+	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
+	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
+	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
+	  }
+   	  if (!EventCounter){
 	    fhEventCounter->Fill(3);
 	    EventCounter=kTRUE;
 	  }
@@ -810,11 +858,17 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  continue;
 	}
 	else {
-	  if(fSemigoodCorrect){
-	    Double_t disthole=RelativePhi(Jet1->Phi(),fHolePos);
-	    if(TMath::Abs(disthole)<fHoleWidth){
-	      continue;}
-	  } 
+	  /* if(fSemigoodCorrect){
+	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
+	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
+	    }*/
+	  Float_t RecoilDeltaPhi = 0.;
+	  if (fJetSelection == kRecoil){
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
+	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
+	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
+	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
+	  }
 	  if (!EventCounter){
 	    fhEventCounter_1->Fill(3);
 	    EventCounter=kTRUE;
@@ -954,11 +1008,17 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  continue;
 	}
 	else {
-	  if(fSemigoodCorrect){
-	    Double_t disthole=RelativePhi(Jet1->Phi(),fHolePos);
-	    if(TMath::Abs(disthole)<fHoleWidth){
-	      continue;}
-	  } 
+	  /* if(fSemigoodCorrect){
+	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
+	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
+	  }*/
+	  Float_t RecoilDeltaPhi = 0.;
+	  if (fJetSelection == kRecoil){
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
+	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
+	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
+	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
+	  }
           if (!EventCounter){
             fhEventCounter->Fill(3);
             EventCounter=kTRUE;
@@ -1043,11 +1103,17 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  continue;
 	}
 	else {
-	  if(fSemigoodCorrect){
-	    Double_t disthole=RelativePhi(Jet1->Phi(),fHolePos);
-	    if(TMath::Abs(disthole)<fHoleWidth){
-	      continue;}
-	  } 
+	  /* if(fSemigoodCorrect){
+	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
+	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
+	  }*/
+	  Float_t RecoilDeltaPhi = 0.;
+	  if (fJetSelection == kRecoil){
+	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
+	    if (TMath::Abs(RecoilDeltaPhi) < (TMath::Pi() - fRecoilAngularWindow)) continue;  //accept the jet only if it overlaps with the recoil phi area of the trigger
+	    fh2PtTriggerHadronJet->Fill(TriggerHadron->Pt(), Jet1->Pt());
+	    fhPhiTriggerHadronJet->Fill(RelativePhi(TriggerHadron->Phi(), Jet1->Phi()));
+	  }
           if (!EventCounter){
             fhEventCounter->Fill(3);
             EventCounter=kTRUE;
@@ -1094,7 +1160,20 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  fhSubJettiness2CheckRatio_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
 	  fhSubJettiness2CheckRatio_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
 	  fhSubJettiness2CheckRatio_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)-fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0));
- 
+
+	  fhSubJettiness2to1CheckRatio_FJ_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,1,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_AKT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,2,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_WTA_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,3,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_WTA_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,4,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,5,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,6,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_AKT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,7,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_KT->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,8,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_OP_WTA_CA->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,9,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1CheckRatio_FJ_MIN->Fill((fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0))-(fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,10,FJ_Beta,0)),fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+
+
 	  fhSubJettiness1_FJ_KT->Fill(fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
 	  fhSubJettiness1_FJ_CA->Fill(fjNSubJettiness(Jet1,0,1,1,FJ_Beta,0));
 	  fhSubJettiness1_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,1,2,FJ_Beta,0));
@@ -1117,6 +1196,18 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  fhSubJettiness2_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0));
 	  fhSubJettiness2_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0));
 	  fhSubJettiness2_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0));
+
+	  fhSubJettiness2to1_FJ_KT->Fill(fjNSubJettiness(Jet1,0,2,0,FJ_Beta,0)/fjNSubJettiness(Jet1,0,1,0,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_CA->Fill(fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,1,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_AKT->Fill(fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,2,FJ_Beta,0)); //because in this case we aren't garantueed to get 2 subjets
+	  fhSubJettiness2to1_FJ_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,3,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,4,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_KT->Fill(fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,5,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_CA->Fill(fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,6,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_AKT->Fill(fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,7,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_WTA_KT->Fill(fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,8,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_OP_WTA_CA->Fill(fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,9,FJ_Beta,0));
+	  fhSubJettiness2to1_FJ_MIN->Fill(fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0)/fjNSubJettiness(Jet1,0,2,10,FJ_Beta,0));
 
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fShapesVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fShapesVar[0]=Jet1->Pt(); 
@@ -1175,6 +1266,37 @@ Double_t AliAnalysisTaskSubJetFraction::RelativePhi(Double_t Phi1, Double_t Phi2
 }
 
 
+//--------------------------------------------------------------------------
+Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
+
+  AliTrackContainer *PartCont = NULL;
+  if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
+  else PartCont = GetTrackContainer(0);
+  TClonesArray *TracksArray = PartCont->GetArray(); 
+  if(!PartCont || !TracksArray) return -99999;
+  AliAODTrack *Track = 0x0;
+  Int_t Trigger_Index[100];
+  for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
+  Int_t Trigger_Counter = 0;
+  for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){  
+    if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+      if (!Track) continue;
+      if(TMath::Abs(Track->Eta())>0.9) continue;
+      if (Track->Pt()<0.15) continue;
+      if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
+	Trigger_Index[Trigger_Counter] = i;
+	Trigger_Counter++;
+      }
+    }
+  }
+  if (Trigger_Counter == 0) return -99999;
+  Int_t RandomNumber = 0, Index = 0 ; 
+  TRandom3* Random = new TRandom3(0); 
+  RandomNumber = Random->Integer(Trigger_Counter);
+  Index = Trigger_Index[RandomNumber];
+  return Index; 
+}
+
 
 //--------------------------------------------------------------------------
 Double_t AliAnalysisTaskSubJetFraction::Angularity(AliEmcalJet *Jet, Int_t JetContNb){
@@ -1231,17 +1353,18 @@ AliEmcalJetFinder *AliAnalysisTaskSubJetFraction::Recluster(AliEmcalJet *Jet, In
   Reclusterer->SetJetAlgorithm(Algorithm); //0 for anti-kt     1 for kt
   Reclusterer->SetJetMaxEta(0.9);
   Reclusterer->SetRecombSheme(0);
-  const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
-  Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-  if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer                            
+  if(fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+    Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+    if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
+  }
+  else{
+    Double_t dVtx[3]={1,1,1};
+    if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
+  }
   return Reclusterer;
+  
 }
-
-
-
-
-
-
 
 
 
@@ -1420,9 +1543,15 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
       JetFinder->SetRecombSheme(0);
       JetFinder->SetJetMinPt(Jet->Pt());
-      const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
-      Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-      return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+      if(fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+	const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+	Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+      }
+      else{
+	Double_t dVtx[3]={1,1,1};
+	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+      }
     }
   }
   else return -2;
@@ -1462,20 +1591,12 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
     fhJetPhi->Scale(Phi_Bins/((Phi_Up-Phi_Low)*((fhEventCounter->GetBinContent(1)))));
     fhJetEta->Scale(Eta_Bins/((Eta_Up-Eta_Low)*((fhEventCounter->GetBinContent(1)))));
     fhJetRadius->Scale(100/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4???? 
-    fhJetAngularity->Scale(100/(fhEventCounter->GetBinContent(4)));
-    fhJetPTD->Scale(100/(fhEventCounter->GetBinContent(4)));
     fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));
-    fhSubJetPtFrac->Scale(100/(fhEventCounter->GetBinContent(8)));
-    fhSubJetPtFrac2->Scale(100/(fhEventCounter->GetBinContent(9)));
-    fhSubJetEnergyFrac->Scale(100/(fhEventCounter->GetBinContent(8)));
-    fhSubJetEnergyFrac2->Scale(100/(fhEventCounter->GetBinContent(9)));
+
     fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?
    
 
  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));
-    fhSubJetiness1->Scale(100/(fhEventCounter->GetBinContent(12)));
-    fhSubJetiness2->Scale(100/(fhEventCounter->GetBinContent(12)));
-    fh2to1SubJetinessRatio->Scale(100/(fhEventCounter->GetBinContent(12)));
 
     */
     /*  
@@ -1485,19 +1606,10 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
   fhJetMass->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                                                     
   fhJetPhi->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                               
   fhJetEta->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                               
-  fhJetRadius->Scale(1.0/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4????                                                        
-  fhJetAngularity->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                                  
-  fhJetPTD->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                                         
-  fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                              
-  fhSubJetPtFrac->Scale(1.0/(fhEventCounter->GetBinContent(8)));                                                                                                                   
-  fhSubJetPtFrac2->Scale(1.0/(fhEventCounter->GetBinContent(9)));                                                                                                                  
-  fhSubJetEnergyFrac->Scale(1.0/(fhEventCounter->GetBinContent(8)));                                                                                                               
-  fhSubJetEnergyFrac2->Scale(1.0/(fhEventCounter->GetBinContent(9)));                                                                                                              
+  fhJetRadius->Scale(1.0/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4????                                                                                                                                                                                                                                           
+  fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                                                                                                                                           
   fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?                                                                     
-  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));                                                                                                            
-  fhSubJetiness1->Scale(1.0/(fhEventCounter->GetBinContent(12)));                                                                                                                  
-  fhSubJetiness2->Scale(1.0/(fhEventCounter->GetBinContent(12)));                                                                                                                  
-  fh2to1SubJetinessRatio->Scale(1.0/(fhEventCounter->GetBinContent(12)));            
+  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));            
     */
   }
   

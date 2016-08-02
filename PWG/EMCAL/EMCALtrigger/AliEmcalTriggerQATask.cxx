@@ -39,7 +39,7 @@ ClassImp(AliEmcalTriggerQATask);
 AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
   AliAnalysisTaskEmcalLight(),
   fTriggerPatchesName("EmcalTriggers"),
-  fEMCALTriggerQA(0),
+  fEMCALTriggerQA(),
   fADCperBin(20),
   fMinAmplitude(0),
   fDCalPlots(kTRUE),
@@ -58,7 +58,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
 AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins, Bool_t online) :
   AliAnalysisTaskEmcalLight(name,kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
-  fEMCALTriggerQA(0),
+  fEMCALTriggerQA(),
   fADCperBin(20),
   fMinAmplitude(0),
   fDCalPlots(kTRUE),
@@ -76,25 +76,25 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
   if (nCentBins == 0) {
     AliInfo("Setting up the task for pp collisions.");
     SetForceBeamType(AliAnalysisTaskEmcalLight::kpp);
-    fEMCALTriggerQA = new TObjArray(1);
+    fEMCALTriggerQA.SetLast(0);
     if (online){
-      fEMCALTriggerQA->AddAt(new AliEMCALTriggerOnlineQAPP(name), 0);
+      fEMCALTriggerQA.AddAt(new AliEMCALTriggerOnlineQAPP(name), 0);
     }
     else {
-      fEMCALTriggerQA->AddAt(new AliEMCALTriggerOfflineQAPP(name), 0);
+      fEMCALTriggerQA.AddAt(new AliEMCALTriggerOfflineQAPP(name), 0);
     }
   }
   else {
     AliInfo("Setting up the task for PbPb collisions.");
     // No offline class for PbPb... yet
     SetForceBeamType(AliAnalysisTaskEmcalLight::kAA);
-    fEMCALTriggerQA = new TObjArray(nCentBins);
+    fEMCALTriggerQA.SetLast(nCentBins-1);
     for (Int_t i = 0; i < nCentBins; i++) {
-      fEMCALTriggerQA->AddAt(new AliEMCALTriggerOnlineQAPbPb(name), 0);
+      fEMCALTriggerQA.AddAt(new AliEMCALTriggerOnlineQAPbPb(name), i);
     }
   }
 
-  fEMCALTriggerQA->SetOwner(kTRUE);
+  fEMCALTriggerQA.SetOwner(kTRUE);
 }
 
 /**
@@ -102,7 +102,6 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
  */
 AliEmcalTriggerQATask::~AliEmcalTriggerQATask()
 {
-  delete fEMCALTriggerQA;
 }
 
 /**
@@ -279,7 +278,7 @@ void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
 {
   fADCperBin = n;
 
-  TIter next(fEMCALTriggerQA);
+  TIter next(&fEMCALTriggerQA);
   AliEMCALTriggerQA* qa = 0;
   while ((qa = static_cast<AliEMCALTriggerQA*>(next()))) {
     qa->SetADCperBin(n);

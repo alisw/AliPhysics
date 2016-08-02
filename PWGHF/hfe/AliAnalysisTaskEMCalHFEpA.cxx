@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: April 12th, 2016.							          //
+	//		version: July 21th, 2016.							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -127,6 +127,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 : AliAnalysisTaskSE(name)
 ,fCorrelationFlag(0)
 ,fIspp(kFALSE)
+,fIsCentralitySys(kFALSE)
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
@@ -158,16 +159,32 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fCentrality(0)
+,fCentrality2(0)
 ,fCentralityMin(0)
 ,fCentralityMax(100)
 ,fHasCentralitySelection(kFALSE)
 ,fCentralityHist(0)
 ,fCentralityHistPass(0)
+
+,fCentralityHist2(0)
+,fCentralityHist_correlation(0)
+,fCentralityHistPass2(0)
+
+,fMultiplicityHist(0)
+,fMultiplicityHistPass(0)
 ,fZvtx(0)
 ,fEstimator(0)
 ,fClus(0)
 //,fClusESD(0)
 ,fNevent(0)
+
+	//centrality
+,fNevent_0(0)
+,fNevent_1(0)
+,fNevent_2(0)
+,fNevent_3(0)
+	//,fNevent_4(0)
+
 ,fNevent2(0)
 ,fPtElec_Inc(0)
 ,fPtPrim(0)
@@ -183,12 +200,37 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtElec_ULS(0)
 ,fPtElec_LS(0)
 
+	//centrality
+,fPtElec_ULS_0(0)
+,fPtElec_LS_0(0)
+,fPtElec_ULS_1(0)
+,fPtElec_LS_1(0)
+,fPtElec_ULS_2(0)
+,fPtElec_LS_2(0)
+,fPtElec_ULS_3(0)
+,fPtElec_LS_3(0)
+	//,fPtElec_ULS_4(0)
+	//fPtElec_LS_4(0)
+
+
 ,fPtElec_ULS_NoPid(0)
 ,fPtElec_LS_NoPid(0)
 ,fPtElec_ULS_MC(0)
 ,fPtElec_ULS_MC_weight(0)
 ,fPtElec_ULS2(0)
 ,fPtElec_LS2(0)
+
+//centrality
+,fPtElec_ULS2_0(0)
+,fPtElec_LS2_0(0)
+,fPtElec_ULS2_1(0)
+,fPtElec_LS2_1(0)
+,fPtElec_ULS2_2(0)
+,fPtElec_LS2_2(0)
+,fPtElec_ULS2_3(0)
+,fPtElec_LS2_3(0)
+	//,fPtElec_ULS2_4(0)
+	//,fPtElec_LS2_4(0)
 
 ,fPtElec_ULS_mc_closure(0)
 ,fPtElec_LS_mc_closure(0)
@@ -199,6 +241,29 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtElec_LS_weight(0)
 ,fPtElec_ULS2_weight(0)
 ,fPtElec_LS2_weight(0)
+
+	//centrality
+,fPtElec_ULS_weight_0(0)
+,fPtElec_LS_weight_0(0)
+,fPtElec_ULS2_weight_0(0)
+,fPtElec_LS2_weight_0(0)
+
+,fPtElec_ULS_weight_1(0)
+,fPtElec_LS_weight_1(0)
+,fPtElec_ULS2_weight_1(0)
+,fPtElec_LS2_weight_1(0)
+
+,fPtElec_ULS_weight_2(0)
+,fPtElec_LS_weight_2(0)
+,fPtElec_ULS2_weight_2(0)
+,fPtElec_LS2_weight_2(0)
+
+,fPtElec_ULS_weight_3(0)
+,fPtElec_LS_weight_3(0)
+,fPtElec_ULS2_weight_3(0)
+,fPtElec_LS2_weight_3(0)
+
+
 ,fTOF01(0)
 ,fTOF02(0)
 ,fTOF03(0)
@@ -238,6 +303,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fEoverP_pt_true_electrons0(0)
 ,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
+
+	//for centrality in just one run
+,fEoverP_pt_0(0)
+,fEoverP_pt_1(0)
+,fEoverP_pt_2(0)
+,fEoverP_pt_3(0)
+	//,fEoverP_pt_4(0)
+
+
 ,fEoverP_pt_highE0(0)
 ,fEoverP_pt_highE1(0)
 ,fEoverP_tpc(0)
@@ -269,6 +343,19 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_pt_2D3(0)
 ,fTPCnsigma_pt_2D4(0)
 ,fTPCnsigma_pt_2D5(0)
+
+	//centrality
+,fTPCnsigma_pt_2D3_0(0)
+,fTPCnsigma_pt_2D3_1(0)
+,fTPCnsigma_pt_2D3_2(0)
+,fTPCnsigma_pt_2D3_3(0)
+
+,fTPCnsigma_pt_2D5_0(0)
+,fTPCnsigma_pt_2D5_1(0)
+,fTPCnsigma_pt_2D5_2(0)
+,fTPCnsigma_pt_2D5_3(0)
+
+
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
 ,fShowerShapeM20_EoverP(0)
@@ -284,6 +371,13 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+
+	//centrality
+,fECluster_pure_0(0)
+,fECluster_pure_1(0)
+,fECluster_pure_2(0)
+,fECluster_pure_3(0)
+
 ,fECluster_highpT0(0)
 ,fECluster_highpT1(0)
 ,fECluster_not_exotic(0)
@@ -361,6 +455,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fnsigma_p_EoverPcut(0)
 
 ,fEoverP_pt_pions2(0)
+
+	//centrality
+,fEoverP_pt_pions2_0(0)
+,fEoverP_pt_pions2_1(0)
+,fEoverP_pt_pions2_2(0)
+,fEoverP_pt_pions2_3(0)
+	//,fEoverP_pt_pions2_4(0)
+
+
 ,fEoverP_pt_pions3(0)
 ,fEoverP_pt_pions2_highE0(0)
 ,fEoverP_pt_pions2_highE1(0)
@@ -418,8 +521,30 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fAssHadronPtMax(2.0)
 ,fPtBackgroundBeforeReco(0)
 ,fPtBackgroundBeforeReco2(0)
+
+	//centrality
+,fPtBackgroundBeforeReco_0(0)
+,fPtBackgroundBeforeReco2_0(0)
+,fPtBackgroundBeforeReco_1(0)
+,fPtBackgroundBeforeReco2_1(0)
+,fPtBackgroundBeforeReco_2(0)
+,fPtBackgroundBeforeReco2_2(0)
+,fPtBackgroundBeforeReco_3(0)
+,fPtBackgroundBeforeReco2_3(0)
+	//,fPtBackgroundBeforeReco_4(0)
+	//,fPtBackgroundBeforeReco2_4(0)
+
 ,fPtBackgroundBeforeReco_weight(0)
 ,fPtBackgroundBeforeReco2_weight(0)
+,fPtBackgroundBeforeReco_weight_0(0)
+,fPtBackgroundBeforeReco2_weight_0(0)
+,fPtBackgroundBeforeReco_weight_1(0)
+,fPtBackgroundBeforeReco2_weight_1(0)
+,fPtBackgroundBeforeReco_weight_2(0)
+,fPtBackgroundBeforeReco2_weight_2(0)
+,fPtBackgroundBeforeReco_weight_3(0)
+,fPtBackgroundBeforeReco2_weight_3(0)
+
 ,fpT_m_electron(0)
 ,fpT_gm_electron(0)
 ,fPtBackgroundAfterReco(0)
@@ -432,11 +557,37 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtMCparticleReco(0)
 ,fPtMCparticleReco_nonPrimary(0)
 ,fPtMCparticleAllHfe1(0)
+
+	//centrality
+,fPtMCparticleAllHfe1_0(0)
+,fPtMCparticleAllHfe1_1(0)
+,fPtMCparticleAllHfe1_2(0)
+,fPtMCparticleAllHfe1_3(0)
+	//,fPtMCparticleAllHfe1_4(0)
+
+
+
 ,fPtMCparticleRecoHfe1(0)
+	//centrality
+,fPtMCparticleRecoHfe1_0(0)
+,fPtMCparticleRecoHfe1_1(0)
+,fPtMCparticleRecoHfe1_2(0)
+,fPtMCparticleRecoHfe1_3(0)
+
 ,fPtMCparticleAllHfe2(0)
 ,fPtMCparticleRecoHfe2(0)
 ,fPtMCelectronAfterAll(0)
 ,fPtMCelectronAfterAll_unfolding(0)
+
+	//centrality
+,fPtMCelectronAfterAll_unfolding_0(0)
+,fPtMCelectronAfterAll_unfolding_1(0)
+,fPtMCelectronAfterAll_unfolding_2(0)
+,fPtMCelectronAfterAll_unfolding_3(0)
+	//,fPtMCelectronAfterAll_unfolding_4(0)
+
+
+
 ,fPtMCelectronAfterAll_nonPrimary(0)
 ,fPtMCelectronAfterAll_Primary(0)
 ,fPtMCpi0(0)
@@ -448,7 +599,23 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtMC_EMCal_All(0)
 ,fPtMC_EMCal_Selected(0)
 ,fPtMC_TPC_All(0)
+
+	//centralidade
+,fPtMC_TPC_All_0(0)
+,fPtMC_TPC_All_1(0)
+,fPtMC_TPC_All_2(0)
+,fPtMC_TPC_All_3(0)
+
+
 ,fPtMC_TPC_Selected(0)
+
+	//centrality
+,fPtMC_TPC_Selected_0(0)
+,fPtMC_TPC_Selected_1(0)
+,fPtMC_TPC_Selected_2(0)
+,fPtMC_TPC_Selected_3(0)
+
+
 ,fPt_track_match_den(0)
 ,fPt_track_match_num(0)
 ,fPtMCWithLabel(0)
@@ -522,6 +689,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEMCalHFEpA")
 ,fCorrelationFlag(0)
 ,fIspp(kFALSE)
+,fIsCentralitySys(kFALSE)
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
@@ -553,16 +721,33 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fCentrality(0)
+,fCentrality2(0)
 ,fCentralityMin(0)
 ,fCentralityMax(100)
 ,fHasCentralitySelection(kFALSE)
 ,fCentralityHist(0)
 ,fCentralityHistPass(0)
+
+,fCentralityHist2(0)
+,fCentralityHist_correlation(0)
+,fCentralityHistPass2(0)
+
+,fMultiplicityHist(0)
+,fMultiplicityHistPass(0)
 ,fZvtx(0)
 ,fEstimator(0)
 ,fClus(0)
 	//,fClusESD(0)
 ,fNevent(0)
+
+	//centrality
+,fNevent_0(0)
+,fNevent_1(0)
+,fNevent_2(0)
+,fNevent_3(0)
+	//,fNevent_4(0)
+
+
 ,fNevent2(0)
 ,fPtElec_Inc(0)
 ,fPtPrim(0)
@@ -577,12 +762,38 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,ftimingEle2(0)
 ,fPtElec_ULS(0)
 ,fPtElec_LS(0)
+	//centrality
+,fPtElec_ULS_0(0)
+,fPtElec_LS_0(0)
+,fPtElec_ULS_1(0)
+,fPtElec_LS_1(0)
+,fPtElec_ULS_2(0)
+,fPtElec_LS_2(0)
+,fPtElec_ULS_3(0)
+,fPtElec_LS_3(0)
+	//,fPtElec_ULS_4(0)
+	//,fPtElec_LS_4(0)
+
+
 ,fPtElec_ULS_NoPid(0)
 ,fPtElec_LS_NoPid(0)
 ,fPtElec_ULS_MC(0)
 ,fPtElec_ULS_MC_weight(0)
 ,fPtElec_ULS2(0)
 ,fPtElec_LS2(0)
+
+	//centrality
+,fPtElec_ULS2_0(0)
+,fPtElec_LS2_0(0)
+,fPtElec_ULS2_1(0)
+,fPtElec_LS2_1(0)
+,fPtElec_ULS2_2(0)
+,fPtElec_LS2_2(0)
+,fPtElec_ULS2_3(0)
+,fPtElec_LS2_3(0)
+	//,fPtElec_ULS2_4(0)
+	//,fPtElec_LS2_4(0)
+
 
 ,fPtElec_ULS_mc_closure(0)
 ,fPtElec_LS_mc_closure(0)
@@ -593,6 +804,29 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtElec_LS_weight(0)
 ,fPtElec_ULS2_weight(0)
 ,fPtElec_LS2_weight(0)
+
+	//centrality
+,fPtElec_ULS_weight_0(0)
+,fPtElec_LS_weight_0(0)
+,fPtElec_ULS2_weight_0(0)
+,fPtElec_LS2_weight_0(0)
+
+,fPtElec_ULS_weight_1(0)
+,fPtElec_LS_weight_1(0)
+,fPtElec_ULS2_weight_1(0)
+,fPtElec_LS2_weight_1(0)
+
+,fPtElec_ULS_weight_2(0)
+,fPtElec_LS_weight_2(0)
+,fPtElec_ULS2_weight_2(0)
+,fPtElec_LS2_weight_2(0)
+
+,fPtElec_ULS_weight_3(0)
+,fPtElec_LS_weight_3(0)
+,fPtElec_ULS2_weight_3(0)
+,fPtElec_LS2_weight_3(0)
+
+
 ,fTOF01(0)
 ,fTOF02(0)
 ,fTOF03(0)
@@ -634,6 +868,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 
 ,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
+
+	//for centrality in just one run
+,fEoverP_pt_0(0)
+,fEoverP_pt_1(0)
+,fEoverP_pt_2(0)
+,fEoverP_pt_3(0)
+	//,fEoverP_pt_4(0)
+
+
 ,fEoverP_pt_highE0(0)
 ,fEoverP_pt_highE1(0)
 ,fEoverP_tpc(0)
@@ -663,6 +906,19 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_pt_2D3(0)
 ,fTPCnsigma_pt_2D4(0)
 ,fTPCnsigma_pt_2D5(0)
+
+	//centrality
+,fTPCnsigma_pt_2D3_0(0)
+,fTPCnsigma_pt_2D3_1(0)
+,fTPCnsigma_pt_2D3_2(0)
+,fTPCnsigma_pt_2D3_3(0)
+
+,fTPCnsigma_pt_2D5_0(0)
+,fTPCnsigma_pt_2D5_1(0)
+,fTPCnsigma_pt_2D5_2(0)
+,fTPCnsigma_pt_2D5_3(0)
+
+
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
 ,fShowerShapeM20_EoverP(0)
@@ -678,6 +934,14 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+
+//centrality
+,fECluster_pure_0(0)
+,fECluster_pure_1(0)
+,fECluster_pure_2(0)
+,fECluster_pure_3(0)
+
+
 ,fECluster_highpT0(0)
 ,fECluster_highpT1(0)
 ,fECluster_not_exotic(0)
@@ -754,6 +1018,14 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 ,fEoverP_pt_pions2(0)
+	//centrality
+,fEoverP_pt_pions2_0(0)
+,fEoverP_pt_pions2_1(0)
+,fEoverP_pt_pions2_2(0)
+,fEoverP_pt_pions2_3(0)
+	//,fEoverP_pt_pions2_4(0)
+
+
 ,fEoverP_pt_pions3(0)
 ,fEoverP_pt_pions2_highE0(0)
 ,fEoverP_pt_pions2_highE1(0)
@@ -810,8 +1082,33 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fAssHadronPtMax(2.0)
 ,fPtBackgroundBeforeReco(0)
 ,fPtBackgroundBeforeReco2(0)
+
+	//centrality
+,fPtBackgroundBeforeReco_0(0)
+,fPtBackgroundBeforeReco2_0(0)
+,fPtBackgroundBeforeReco_1(0)
+,fPtBackgroundBeforeReco2_1(0)
+,fPtBackgroundBeforeReco_2(0)
+,fPtBackgroundBeforeReco2_2(0)
+,fPtBackgroundBeforeReco_3(0)
+,fPtBackgroundBeforeReco2_3(0)
+	//,fPtBackgroundBeforeReco_4(0)
+	//,fPtBackgroundBeforeReco2_4(0)
+
+
 ,fPtBackgroundBeforeReco_weight(0)
 ,fPtBackgroundBeforeReco2_weight(0)
+
+
+,fPtBackgroundBeforeReco_weight_0(0)
+,fPtBackgroundBeforeReco2_weight_0(0)
+,fPtBackgroundBeforeReco_weight_1(0)
+,fPtBackgroundBeforeReco2_weight_1(0)
+,fPtBackgroundBeforeReco_weight_2(0)
+,fPtBackgroundBeforeReco2_weight_2(0)
+,fPtBackgroundBeforeReco_weight_3(0)
+,fPtBackgroundBeforeReco2_weight_3(0)
+
 ,fpT_m_electron(0)
 ,fpT_gm_electron(0)
 ,fPtBackgroundAfterReco(0)
@@ -824,11 +1121,36 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtMCparticleReco(0)
 ,fPtMCparticleReco_nonPrimary(0)
 ,fPtMCparticleAllHfe1(0)
+
+	//centrality
+,fPtMCparticleAllHfe1_0(0)
+,fPtMCparticleAllHfe1_1(0)
+,fPtMCparticleAllHfe1_2(0)
+,fPtMCparticleAllHfe1_3(0)
+	//,fPtMCparticleAllHfe1_4(0)
+
+
 ,fPtMCparticleRecoHfe1(0)
+
+	//centrality
+,fPtMCparticleRecoHfe1_0(0)
+,fPtMCparticleRecoHfe1_1(0)
+,fPtMCparticleRecoHfe1_2(0)
+,fPtMCparticleRecoHfe1_3(0)
+
 ,fPtMCparticleAllHfe2(0)
 ,fPtMCparticleRecoHfe2(0)
 ,fPtMCelectronAfterAll(0)
 ,fPtMCelectronAfterAll_unfolding(0)
+
+	//centrality
+,fPtMCelectronAfterAll_unfolding_0(0)
+,fPtMCelectronAfterAll_unfolding_1(0)
+,fPtMCelectronAfterAll_unfolding_2(0)
+,fPtMCelectronAfterAll_unfolding_3(0)
+	//,fPtMCelectronAfterAll_unfolding_4(0)
+
+
 ,fPtMCelectronAfterAll_nonPrimary(0)
 ,fPtMCelectronAfterAll_Primary(0)
 ,fPtMCpi0(0)
@@ -840,7 +1162,23 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtMC_EMCal_All(0)
 ,fPtMC_EMCal_Selected(0)
 ,fPtMC_TPC_All(0)
+
+	//centralidade
+,fPtMC_TPC_All_0(0)
+,fPtMC_TPC_All_1(0)
+,fPtMC_TPC_All_2(0)
+,fPtMC_TPC_All_3(0)
+
+
 ,fPtMC_TPC_Selected(0)
+
+	//centrality
+,fPtMC_TPC_Selected_0(0)
+,fPtMC_TPC_Selected_1(0)
+,fPtMC_TPC_Selected_2(0)
+,fPtMC_TPC_Selected_3(0)
+
+
 ,fPt_track_match_den(0)
 ,fPt_track_match_num(0)
 ,fPtMCWithLabel(0)
@@ -917,6 +1255,11 @@ AliAnalysisTaskEMCalHFEpA::~AliAnalysisTaskEMCalHFEpA()
 	delete fPIDqa;
 		//added in March 2016 by Cris
 	delete fNonHFE;
+		//added in June 2016 by Cris
+		//if(fTracks_tender) delete fTracks_tender;
+		//if(fCaloClusters_tender)// delete fCaloClusters_tender;
+	
+	
 
 	if(fAnalysisUtils) delete fAnalysisUtils;
 }
@@ -969,10 +1312,24 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		//Store the number of events
 		//Define the histo
 	fNevent = new TH1F("fNevent","Number of Events",30,0,30);
-	fNevent2 = new TH1F("fNevent2","Number of Events 2",30,0,30);
-		//And then, add to the output list
 	fOutputList->Add(fNevent);
-	fOutputList->Add(fNevent2);
+
+	if(fIsCentralitySys){
+		fNevent_0 = new TH1F("fNevent_0","Number of Events",3,0,3);
+		fNevent_1 = new TH1F("fNevent_1","Number of Events",3,0,3);
+		fNevent_2 = new TH1F("fNevent_2","Number of Events",3,0,3);
+		fNevent_3 = new TH1F("fNevent_3","Number of Events",3,0,3);
+			//fNevent_4 = new TH1F("fNevent_4","Number of Events",3,0,3);
+		fOutputList->Add(fNevent_0);
+		fOutputList->Add(fNevent_1);
+		fOutputList->Add(fNevent_2);
+		fOutputList->Add(fNevent_3);
+			//fOutputList->Add(fNevent_4);
+
+	}
+	
+	fNevent2 = new TH1F("fNevent2","Number of Events 2",30,0,30);
+		fOutputList->Add(fNevent2);
 	
 	fpid = new TH1F("fpid","PID flag",5,0,5);
 	fOutputList->Add(fpid);
@@ -989,14 +1346,34 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fPtElec_ULS = new TH1F("fPtElec_ULS","ULS; p_{T} (GeV/c); Count",300,0,30);
 	fPtElec_LS = new TH1F("fPtElec_LS","LS; p_{T} (GeV/c); Count",300,0,30);
 	
+		//centrality
+	if(fIsCentralitySys){
+		
+		fPtElec_ULS_0 = new TH1F("fPtElec_ULS_0","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_0 = new TH1F("fPtElec_LS_0","LS; p_{T} (GeV/c); Count",300,0,30);
+	
+		fPtElec_ULS_1 = new TH1F("fPtElec_ULS_1","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_1 = new TH1F("fPtElec_LS_1","LS; p_{T} (GeV/c); Count",300,0,30);
+	
+		fPtElec_ULS_2 = new TH1F("fPtElec_ULS_2","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_2 = new TH1F("fPtElec_LS_2","LS; p_{T} (GeV/c); Count",300,0,30);
+	
+		fPtElec_ULS_3 = new TH1F("fPtElec_ULS_3","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_3 = new TH1F("fPtElec_LS_3","LS; p_{T} (GeV/c); Count",300,0,30);
+	
+			//fPtElec_ULS_4 = new TH1F("fPtElec_ULS_4","ULS; p_{T} (GeV/c); Count",300,0,30);
+			//fPtElec_LS_4 = new TH1F("fPtElec_LS_4","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+	}
+	
+	
 	fPtElec_ULS_NoPid = new TH1F("fPtElec_ULS_NoPid","ULS; p_{T} (GeV/c); Count",300,0,30);
 	fPtElec_LS_NoPid = new TH1F("fPtElec_LS_NoPid","LS; p_{T} (GeV/c); Count",300,0,30);
 	
 	fPtElec_ULS_MC = new TH1F("fPtElec_ULS_MC","ULS; p_{T} (GeV/c); Count",300,0,30);
 	fPtElec_ULS_MC_weight = new TH1F("fPtElec_ULS_MC_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
 	
-	fPtElec_ULS_weight = new TH1F("fPtElec_ULS_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
-	fPtElec_LS_weight = new TH1F("fPtElec_LS_weight","LS; p_{T} (GeV/c); Count",300,0,30);
+	
 	
 	fTOF01 = new TH2F("fTOF01","",200,-20,20,200,-20,20);
 	fTOF02 = new TH2F("fTOF02","",200,-20,20,200,-20,20);
@@ -1006,8 +1383,52 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fPtElec_ULS2 = new TH1F("fPtElec_ULS2","ULS; p_{T} (GeV/c); Count",300,0,30);
 		fPtElec_LS2 = new TH1F("fPtElec_LS2","LS; p_{T} (GeV/c); Count",300,0,30);
 		
+			//centrality
+		if(fIsCentralitySys){
+			fPtElec_ULS2_0 = new TH1F("fPtElec_ULS2_0","ULS; p_{T} (GeV/c); Count",300,0,30);
+			fPtElec_LS2_0 = new TH1F("fPtElec_LS2_0","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+			fPtElec_ULS2_1 = new TH1F("fPtElec_ULS2_1","ULS; p_{T} (GeV/c); Count",300,0,30);
+			fPtElec_LS2_1 = new TH1F("fPtElec_LS2_1","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+			fPtElec_ULS2_2 = new TH1F("fPtElec_ULS2_2","ULS; p_{T} (GeV/c); Count",300,0,30);
+			fPtElec_LS2_2 = new TH1F("fPtElec_LS2_2","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+			fPtElec_ULS2_3 = new TH1F("fPtElec_ULS2_3","ULS; p_{T} (GeV/c); Count",300,0,30);
+			fPtElec_LS2_3 = new TH1F("fPtElec_LS2_3","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+				//fPtElec_ULS2_4 = new TH1F("fPtElec_ULS2_4","ULS; p_{T} (GeV/c); Count",300,0,30);
+				//fPtElec_LS2_4 = new TH1F("fPtElec_LS2_4","LS; p_{T} (GeV/c); Count",300,0,30);
+		}
+		
+		fPtElec_ULS_weight = new TH1F("fPtElec_ULS_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_weight = new TH1F("fPtElec_LS_weight","LS; p_{T} (GeV/c); Count",300,0,30);		
 		fPtElec_ULS2_weight = new TH1F("fPtElec_ULS2_weight","ULS; p_{T} (GeV/c); Count",300,0,30);
 		fPtElec_LS2_weight = new TH1F("fPtElec_LS2_weight","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+			//0
+		fPtElec_ULS_weight_0 = new TH1F("fPtElec_ULS_weight_0","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_weight_0 = new TH1F("fPtElec_LS_weight_0","LS; p_{T} (GeV/c); Count",300,0,30);		
+		fPtElec_ULS2_weight_0 = new TH1F("fPtElec_ULS2_weight_0","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS2_weight_0 = new TH1F("fPtElec_LS2_weight_0","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+			//1
+		fPtElec_ULS_weight_1 = new TH1F("fPtElec_ULS_weight_1","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_weight_1 = new TH1F("fPtElec_LS_weight_1","LS; p_{T} (GeV/c); Count",300,0,30);		
+		fPtElec_ULS2_weight_1 = new TH1F("fPtElec_ULS2_weight_1","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS2_weight_1 = new TH1F("fPtElec_LS2_weight_1","LS; p_{T} (GeV/c); Count",300,0,30);
+			//2
+		fPtElec_ULS_weight_2 = new TH1F("fPtElec_ULS_weight_2","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_weight_2 = new TH1F("fPtElec_LS_weight_2","LS; p_{T} (GeV/c); Count",300,0,30);		
+		fPtElec_ULS2_weight_2 = new TH1F("fPtElec_ULS2_weight_2","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS2_weight_2 = new TH1F("fPtElec_LS2_weight_2","LS; p_{T} (GeV/c); Count",300,0,30);
+			//3
+		fPtElec_ULS_weight_3 = new TH1F("fPtElec_ULS_weight_3","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS_weight_3 = new TH1F("fPtElec_LS_weight_3","LS; p_{T} (GeV/c); Count",300,0,30);		
+		fPtElec_ULS2_weight_3 = new TH1F("fPtElec_ULS2_weight_3","ULS; p_{T} (GeV/c); Count",300,0,30);
+		fPtElec_LS2_weight_3 = new TH1F("fPtElec_LS2_weight_3","LS; p_{T} (GeV/c); Count",300,0,30);
+		
+		
 		
 			//mc closure
 		fPtElec_ULS_mc_closure = new TH1F("fPtElec_ULS_mc_closure","ULS; p_{T} (GeV/c); Count",300,0,30);
@@ -1029,6 +1450,29 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_pt_2D4 = new TH2F("fTPCnsigma_pt_2D4",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D5 = new TH2F("fTPCnsigma_pt_2D5",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 
+	if(fIsCentralitySys){
+		
+		fTPCnsigma_pt_2D3_0 = new TH2F("fTPCnsigma_pt_2D3_0",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	    fTPCnsigma_pt_2D3_1 = new TH2F("fTPCnsigma_pt_2D3_1",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+		fTPCnsigma_pt_2D3_2 = new TH2F("fTPCnsigma_pt_2D3_2",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+		fTPCnsigma_pt_2D3_3 = new TH2F("fTPCnsigma_pt_2D3_3",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+		
+		fTPCnsigma_pt_2D5_0 = new TH2F("fTPCnsigma_pt_2D5_0",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+		fTPCnsigma_pt_2D5_1 = new TH2F("fTPCnsigma_pt_2D5_1",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+		fTPCnsigma_pt_2D5_2 = new TH2F("fTPCnsigma_pt_2D5_2",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+		fTPCnsigma_pt_2D5_3 = new TH2F("fTPCnsigma_pt_2D5_3",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);	
+		
+		fOutputList->Add(fTPCnsigma_pt_2D3_0);
+		fOutputList->Add(fTPCnsigma_pt_2D3_1);
+		fOutputList->Add(fTPCnsigma_pt_2D3_2);
+		fOutputList->Add(fTPCnsigma_pt_2D3_3);
+		
+		fOutputList->Add(fTPCnsigma_pt_2D5_0);
+		fOutputList->Add(fTPCnsigma_pt_2D5_1);
+		fOutputList->Add(fTPCnsigma_pt_2D5_2);
+		fOutputList->Add(fTPCnsigma_pt_2D5_3);
+	}
+	
 
 	
 	//new histos for TPC signal -> Can be used for any p range
@@ -1050,6 +1494,16 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fCharge_p = new TH1F("fCharge_p","Inclusive Positrons (Positive Charge); p_{t} (GeV/c); Count",200,0,30);
 	
 	fECluster_pure= new TH1F("fECluster_pure", ";ECluster pure",2000,0,100);
+	
+	if(fIsCentralitySys){
+		//centrality
+		fECluster_pure_0= new TH1F("fECluster_pure_0", ";ECluster pure",2000,0,100);
+		fECluster_pure_1= new TH1F("fECluster_pure_1", ";ECluster pure",2000,0,100);
+		fECluster_pure_2= new TH1F("fECluster_pure_2", ";ECluster pure",2000,0,100);
+		fECluster_pure_3= new TH1F("fECluster_pure_3", ";ECluster pure",2000,0,100);
+	}
+	
+	
 	fECluster_not_exotic= new TH1F("fECluster_not_exotic", ";ECluster not exotic - function ",2000,0,100);
 	
 	fECluster_not_exotic1= new TH1F("fECluster_not_exotic1", ";ECluster not exotic Ncells > E/3+1",2000,0,100);
@@ -1112,6 +1566,21 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fPtElec_Inc);
 	fOutputList->Add(fPtElec_ULS);
 	fOutputList->Add(fPtElec_LS);
+		//centrality
+	if(fIsCentralitySys){
+		fOutputList->Add(fPtElec_ULS_0);
+		fOutputList->Add(fPtElec_LS_0);
+		fOutputList->Add(fPtElec_ULS_1);
+		fOutputList->Add(fPtElec_LS_1);
+		fOutputList->Add(fPtElec_ULS_2);
+		fOutputList->Add(fPtElec_LS_2);
+		fOutputList->Add(fPtElec_ULS_3);
+		fOutputList->Add(fPtElec_LS_3);
+			//fOutputList->Add(fPtElec_ULS_4);
+			//fOutputList->Add(fPtElec_LS_4);
+	}
+	
+	
 	fOutputList->Add(fPtElec_ULS_NoPid);
 	fOutputList->Add(fPtElec_LS_NoPid);
 	fOutputList->Add(fPtElec_ULS_MC);
@@ -1124,20 +1593,63 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 
 
 	
-	fOutputList->Add(fPtElec_ULS_weight);
-	fOutputList->Add(fPtElec_LS_weight);
+	
 	
 	if(fFillBackground){
 		fOutputList->Add(fPtElec_ULS2);
 		fOutputList->Add(fPtElec_LS2);
+			//centrality
+				
+		fOutputList->Add(fPtElec_ULS_weight);
+		fOutputList->Add(fPtElec_LS_weight);
 		fOutputList->Add(fPtElec_ULS2_weight);
 		fOutputList->Add(fPtElec_LS2_weight);
+		
+			//0
+		fOutputList->Add(fPtElec_ULS_weight_0);
+		fOutputList->Add(fPtElec_LS_weight_0);
+		fOutputList->Add(fPtElec_ULS2_weight_0);
+		fOutputList->Add(fPtElec_LS2_weight_0);
+		
+			//1
+		fOutputList->Add(fPtElec_ULS_weight_1);
+		fOutputList->Add(fPtElec_LS_weight_1);
+		fOutputList->Add(fPtElec_ULS2_weight_1);
+		fOutputList->Add(fPtElec_LS2_weight_1);
+		
+			//2
+		fOutputList->Add(fPtElec_ULS_weight_2);
+		fOutputList->Add(fPtElec_LS_weight_2);
+		fOutputList->Add(fPtElec_ULS2_weight_2);
+		fOutputList->Add(fPtElec_LS2_weight_2);
+		
+			//3
+		fOutputList->Add(fPtElec_ULS_weight_3);
+		fOutputList->Add(fPtElec_LS_weight_3);
+		fOutputList->Add(fPtElec_ULS2_weight_3);
+		fOutputList->Add(fPtElec_LS2_weight_3);
+		
+		
+		
 		
 		fOutputList->Add(fPtElec_ULS_mc_closure);
 		fOutputList->Add(fPtElec_LS_mc_closure);
 		fOutputList->Add(fPtElec_ULS2_mc_closure);
 		fOutputList->Add(fPtElec_LS2_mc_closure);
 	}
+	if(fIsCentralitySys && fFillBackground){
+		fOutputList->Add(fPtElec_ULS2_0);
+		fOutputList->Add(fPtElec_LS2_0);
+		fOutputList->Add(fPtElec_ULS2_1);
+		fOutputList->Add(fPtElec_LS2_1);
+		fOutputList->Add(fPtElec_ULS2_2);
+		fOutputList->Add(fPtElec_LS2_2);
+		fOutputList->Add(fPtElec_ULS2_3);
+		fOutputList->Add(fPtElec_LS2_3);
+			//fOutputList->Add(fPtElec_ULS2_4);
+			//fOutputList->Add(fPtElec_LS2_4);
+	}
+	
 	
 	
 	fOutputList->Add(fPtTrigger_Inc);
@@ -1162,6 +1674,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fCharge_p);
 	
 	fOutputList->Add(fECluster_pure);
+	
+	if(fIsCentralitySys){		
+		fOutputList->Add(fECluster_pure_0);
+		fOutputList->Add(fECluster_pure_1);
+		fOutputList->Add(fECluster_pure_2);
+		fOutputList->Add(fECluster_pure_3);
+	}
+	
 	fOutputList->Add(fECluster_not_exotic);
 	fOutputList->Add(fECluster_not_exotic1);
 	fOutputList->Add(fECluster_not_exotic2);
@@ -1230,6 +1750,10 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		//Step 3: After PID
 	
 	fEoverP_pt = new TH2F *[3];
+	
+
+	
+	
 	fTPC_p = new TH2F *[3];
 	fTPCnsigma_p = new TH2F *[3];
 	
@@ -1241,7 +1765,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fECluster= new TH1F *[3];
 	fEtaPhi= new TH2F *[3];
 	fVtxZ= new  TH1F *[3];
-	fEtad= new  TH1F *[3];
+	fEtad= new  TH1F *[8];
 	fNTracks= new  TH1F *[3];
 	
 	fNTracks_pt= new  TH2F *[3];
@@ -1355,7 +1879,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
+		
 		fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+	
 		fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
 		fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
 		
@@ -1368,7 +1894,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
 		fEtaPhi[i]= new TH2F(Form("fEtaPhi%d",i),"#eta x #phi Clusters;#phi;#eta",500,0.,5,200,-1.,1.);
 		fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",1000, -50,50);
-		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
+		
 		fNTracks[i]= new  TH1F(Form("fNTracks%d",i),"NTracks",1000, 0,5000);
 		
 		fNTracks_pt[i]= new  TH2F(Form("fNTracks_pt%d",i),"NTracks vs. pt",1000, 0,5000, 1000, 0, 100);
@@ -1382,6 +1908,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 			
 		
 		fOutputList->Add(fEoverP_pt[i]);
+	
+		
+		
 		fOutputList->Add(fTPC_p[i]);
 		fOutputList->Add(fTPCnsigma_p[i]);
 		
@@ -1394,7 +1923,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fECluster[i]);
 		fOutputList->Add(fEtaPhi[i]);
 		fOutputList->Add(fVtxZ[i]);
-		fOutputList->Add(fEtad[i]);
+		
 		fOutputList->Add(fNTracks[i]);
 		
 		fOutputList->Add(fNTracks_pt[i]);
@@ -1404,6 +1933,30 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fNClusters[i]);
 		fOutputList->Add(fTPCNcls_EoverP[i]);
 	}
+	
+	for(Int_t i = 0; i < 8; i++)
+	{
+		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
+		fOutputList->Add(fEtad[i]);
+		
+	}
+	
+    //histo for centrality to run just once
+	if(fIsCentralitySys){
+		fEoverP_pt_0 = new TH2F("fEoverP_pt_0",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+		fEoverP_pt_1 = new TH2F("fEoverP_pt_1",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+		fEoverP_pt_2 = new TH2F("fEoverP_pt_2",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+		fEoverP_pt_3 = new TH2F("fEoverP_pt_3",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+			//fEoverP_pt_4 = new TH2F("fEoverP_pt_4",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+		
+		fOutputList->Add(fEoverP_pt_0);
+		fOutputList->Add(fEoverP_pt_1);
+		fOutputList->Add(fEoverP_pt_2);
+		fOutputList->Add(fEoverP_pt_3);
+			//fOutputList->Add(fEoverP_pt_4);
+	}
+	
+	
 	
 	fEtaPhi_highE0= new TH2F("fEtaPhi_highE0","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
 	fEtaPhi_highE1= new TH2F("fEtaPhi_highE1","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
@@ -1677,6 +2230,16 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
 	
 	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	
+		//centrality
+	if(fIsCentralitySys){
+		fEoverP_pt_pions2_0= new TH2F("fEoverP_pt_pions2_0","fEoverP_pt_pions2_0",1000,0,30,2000,0,2);
+		fEoverP_pt_pions2_1= new TH2F("fEoverP_pt_pions2_1","fEoverP_pt_pions2_1",1000,0,30,2000,0,2);
+		fEoverP_pt_pions2_2= new TH2F("fEoverP_pt_pions2_2","fEoverP_pt_pions2_2",1000,0,30,2000,0,2);
+		fEoverP_pt_pions2_3= new TH2F("fEoverP_pt_pions2_3","fEoverP_pt_pions2_3",1000,0,30,2000,0,2);
+			//fEoverP_pt_pions2_4= new TH2F("fEoverP_pt_pions2_4","fEoverP_pt_pions2_4",1000,0,30,2000,0,2);
+	}
+	
 	fEoverP_pt_pions3= new TH2F("fEoverP_pt_pions3","fEoverP_pt_pions3",1000,0,30,2000,0,2);
 	
 	fEoverP_pt_pions2_highE1= new TH2F("fEoverP_pt_pions2_highE0","fEoverP_pt_pions2",1000,0,30,2000,0,2);
@@ -1695,6 +2258,17 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fnsigma_p_EoverPcut);
 	
 	fOutputList->Add(fEoverP_pt_pions2);
+	
+		//centrality
+	if(fIsCentralitySys){
+		fOutputList->Add(fEoverP_pt_pions2_0);
+		fOutputList->Add(fEoverP_pt_pions2_1);
+		fOutputList->Add(fEoverP_pt_pions2_2);
+		fOutputList->Add(fEoverP_pt_pions2_3);
+			//fOutputList->Add(fEoverP_pt_pions2_4);
+	}
+	
+	
 	fOutputList->Add(fEoverP_pt_pions3);
 	
 	fOutputList->Add(fEoverP_pt_pions2_highE0);
@@ -1719,9 +2293,42 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	if(fIsMC)
 	{
 		fPtBackgroundBeforeReco = new TH1F("fPtBackgroundBeforeReco",";p_{T} (GeV/c);Count",300,0,30);
+			//centrality
+		if(fIsCentralitySys){
+			fPtBackgroundBeforeReco_0 = new TH1F("fPtBackgroundBeforeReco_0",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco_1 = new TH1F("fPtBackgroundBeforeReco_1",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco_2 = new TH1F("fPtBackgroundBeforeReco_2",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco_3 = new TH1F("fPtBackgroundBeforeReco_3",";p_{T} (GeV/c);Count",300,0,30);
+				//fPtBackgroundBeforeReco_4 = new TH1F("fPtBackgroundBeforeReco_4",";p_{T} (GeV/c);Count",300,0,30);
+			
+			fPtBackgroundBeforeReco_weight_0 = new TH1F("fPtBackgroundBeforeReco_weight_0",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco_weight_1 = new TH1F("fPtBackgroundBeforeReco_weight_1",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco_weight_2 = new TH1F("fPtBackgroundBeforeReco_weight_2",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco_weight_3 = new TH1F("fPtBackgroundBeforeReco_weight_3",";p_{T} (GeV/c);Count",300,0,30);
+		}
+		
 		fPtBackgroundBeforeReco_weight = new TH1F("fPtBackgroundBeforeReco_weight",";p_{T} (GeV/c);Count",300,0,30);
-		if(fFillBackground)fPtBackgroundBeforeReco2 = new TH1F("fPtBackgroundBeforeReco2",";p_{T} (GeV/c);Count",300,0,30);
-		if(fFillBackground)fPtBackgroundBeforeReco2_weight = new TH1F("fPtBackgroundBeforeReco2_weight",";p_{T} (GeV/c);Count",300,0,30);
+		if(fFillBackground){
+			fPtBackgroundBeforeReco2 = new TH1F("fPtBackgroundBeforeReco2",";p_{T} (GeV/c);Count",300,0,30);
+			fPtBackgroundBeforeReco2_weight = new TH1F("fPtBackgroundBeforeReco2_weight",";p_{T} (GeV/c);Count",300,0,30);
+			
+				//centrality
+			if(fIsCentralitySys){
+				fPtBackgroundBeforeReco2_0 = new TH1F("fPtBackgroundBeforeReco2_0",";p_{T} (GeV/c);Count",300,0,30);
+				fPtBackgroundBeforeReco2_1 = new TH1F("fPtBackgroundBeforeReco2_1",";p_{T} (GeV/c);Count",300,0,30);
+				fPtBackgroundBeforeReco2_2 = new TH1F("fPtBackgroundBeforeReco2_2",";p_{T} (GeV/c);Count",300,0,30);
+				fPtBackgroundBeforeReco2_3 = new TH1F("fPtBackgroundBeforeReco2_3",";p_{T} (GeV/c);Count",300,0,30);
+					//fPtBackgroundBeforeReco2_4 = new TH1F("fPtBackgroundBeforeReco2_4",";p_{T} (GeV/c);Count",300,0,30);
+				
+				fPtBackgroundBeforeReco2_weight_0 = new TH1F("fPtBackgroundBeforeReco2_weight_0",";p_{T} (GeV/c);Count",300,0,30);
+				fPtBackgroundBeforeReco2_weight_1 = new TH1F("fPtBackgroundBeforeReco2_weight_1",";p_{T} (GeV/c);Count",300,0,30);
+				fPtBackgroundBeforeReco2_weight_2 = new TH1F("fPtBackgroundBeforeReco2_weight_2",";p_{T} (GeV/c);Count",300,0,30);
+				fPtBackgroundBeforeReco2_weight_3 = new TH1F("fPtBackgroundBeforeReco2_weight_3",";p_{T} (GeV/c);Count",300,0,30);
+			}				
+			
+			
+			
+		}
 		fpT_m_electron= new TH2F("fpT_m_electron","fpT_m_electron",1000,0,100,1000,0,100);
 		fpT_gm_electron= new TH2F("fpT_gm_electron","fpT_gm_electron",1000,0,100,1000,0,100);
 		
@@ -1736,12 +2343,51 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fPtMCparticleReco_nonPrimary = new TH1F("fPtMCparticleReco_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);
 		
 		fPtMCparticleAllHfe1 = new TH1F("fPtMCparticleAllHfe1",";p_{t} (GeV/c);Count",200,0,40);
+		
+		//centrality
+		if(fIsCentralitySys){
+			fPtMCparticleAllHfe1_0 = new TH1F("fPtMCparticleAllHfe1_0",";p_{t} (GeV/c);Count",200,0,40);
+			fPtMCparticleAllHfe1_1 = new TH1F("fPtMCparticleAllHfe1_1",";p_{t} (GeV/c);Count",200,0,40);
+			fPtMCparticleAllHfe1_2 = new TH1F("fPtMCparticleAllHfe1_2",";p_{t} (GeV/c);Count",200,0,40);
+			fPtMCparticleAllHfe1_3 = new TH1F("fPtMCparticleAllHfe1_3",";p_{t} (GeV/c);Count",200,0,40);
+				//fPtMCparticleAllHfe1_4 = new TH1F("fPtMCparticleAllHfe1_4",";p_{t} (GeV/c);Count",200,0,40);
+			
+			fPtMCparticleRecoHfe1_0 = new TH1F("fPtMCparticleRecoHfe1_0",";p_{t} (GeV/c);Count",200,0,40);
+			fPtMCparticleRecoHfe1_1 = new TH1F("fPtMCparticleRecoHfe1_1",";p_{t} (GeV/c);Count",200,0,40);
+			fPtMCparticleRecoHfe1_2 = new TH1F("fPtMCparticleRecoHfe1_2",";p_{t} (GeV/c);Count",200,0,40);
+			fPtMCparticleRecoHfe1_3 = new TH1F("fPtMCparticleRecoHfe1_3",";p_{t} (GeV/c);Count",200,0,40);
+			
+		}
+		
+		
 		fPtMCparticleRecoHfe1 = new TH1F("fPtMCparticleRecoHfe1",";p_{t} (GeV/c);Count",200,0,40);
 		fPtMCparticleAllHfe2 = new TH1F("fPtMCparticleAllHfe2",";p_{t} (GeV/c);Count",200,0,40);
 		fPtMCparticleRecoHfe2 = new TH1F("fPtMCparticleRecoHfe2",";p_{t} (GeV/c);Count",200,0,40);
 		
 		fPtMCelectronAfterAll = new TH1F("fPtMCelectronAfterAll",";p_{T} (GeV/c);Count",200,0,40);
 		fPtMCelectronAfterAll_unfolding = new TH1F("fPtMCelectronAfterAll_unfolding",";p_{T} (GeV/c);Count",200,0,40);
+		
+		
+			//centrality
+		if(fIsCentralitySys){
+			fPtMCelectronAfterAll_unfolding_0 = new TH1F("fPtMCelectronAfterAll_unfolding_0",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMCelectronAfterAll_unfolding_1 = new TH1F("fPtMCelectronAfterAll_unfolding_1",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMCelectronAfterAll_unfolding_2 = new TH1F("fPtMCelectronAfterAll_unfolding_2",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMCelectronAfterAll_unfolding_3 = new TH1F("fPtMCelectronAfterAll_unfolding_3",";p_{T} (GeV/c);Count",200,0,40);
+				//fPtMCelectronAfterAll_unfolding_4 = new TH1F("fPtMCelectronAfterAll_unfolding_4",";p_{T} (GeV/c);Count",200,0,40);
+			
+			fPtMC_TPC_All_0= new TH1F("fPtMC_TPC_All_0",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMC_TPC_All_1= new TH1F("fPtMC_TPC_All_1",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMC_TPC_All_2= new TH1F("fPtMC_TPC_All_2",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMC_TPC_All_3= new TH1F("fPtMC_TPC_All_3",";p_{T} (GeV/c);Count",200,0,40);
+			
+			fPtMC_TPC_Selected_0 = new TH1F("fPtMC_TPC_Selected_0",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMC_TPC_Selected_1 = new TH1F("fPtMC_TPC_Selected_1",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMC_TPC_Selected_2 = new TH1F("fPtMC_TPC_Selected_2",";p_{T} (GeV/c);Count",200,0,40);
+			fPtMC_TPC_Selected_3 = new TH1F("fPtMC_TPC_Selected_3",";p_{T} (GeV/c);Count",200,0,40);
+
+		}
+		
 		fPtMCelectronAfterAll_nonPrimary = new TH1F("fPtMCelectronAfterAll_nonPrimary",";p_{T} (GeV/c);Count",200,0,40);
 		fPtMCelectronAfterAll_Primary = new TH1F("fPtMCelectronAfterAll_Primary",";p_{T} (GeV/c);Count",200,0,40);
 		
@@ -1767,10 +2413,46 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fPtIsPhysicaPrimary = new TH1F("fPtIsPhysicaPrimary",";p_{t} (GeV/c);Count",200,0,40);
 		
 		fOutputList->Add(fPtBackgroundBeforeReco);
+		
+		//centrality
+		if(fIsCentralitySys){
+			fOutputList->Add(fPtBackgroundBeforeReco_0);
+			fOutputList->Add(fPtBackgroundBeforeReco_1);
+			fOutputList->Add(fPtBackgroundBeforeReco_2);
+			fOutputList->Add(fPtBackgroundBeforeReco_3);
+				//fOutputList->Add(fPtBackgroundBeforeReco_4);
+			
+			fOutputList->Add(fPtBackgroundBeforeReco_weight_0);
+			fOutputList->Add(fPtBackgroundBeforeReco_weight_1);
+			fOutputList->Add(fPtBackgroundBeforeReco_weight_2);
+			fOutputList->Add(fPtBackgroundBeforeReco_weight_3);
+			
+			
+		}
+		
+		
 		fOutputList->Add(fPtBackgroundBeforeReco_weight);
 		
-		if(fFillBackground) fOutputList->Add(fPtBackgroundBeforeReco2);
-		if(fFillBackground) fOutputList->Add(fPtBackgroundBeforeReco2_weight);
+		if(fFillBackground){
+			fOutputList->Add(fPtBackgroundBeforeReco2);
+			//centrality
+			if(fIsCentralitySys){
+				fOutputList->Add(fPtBackgroundBeforeReco2_0);
+				fOutputList->Add(fPtBackgroundBeforeReco2_1);
+				fOutputList->Add(fPtBackgroundBeforeReco2_2);
+				fOutputList->Add(fPtBackgroundBeforeReco2_3);
+					//fOutputList->Add(fPtBackgroundBeforeReco2_4);
+				
+				fOutputList->Add(fPtBackgroundBeforeReco2_weight_0);
+				fOutputList->Add(fPtBackgroundBeforeReco2_weight_1);
+				fOutputList->Add(fPtBackgroundBeforeReco2_weight_2);
+				fOutputList->Add(fPtBackgroundBeforeReco2_weight_3);
+				
+			}
+			
+			
+			fOutputList->Add(fPtBackgroundBeforeReco2_weight);
+		}
 		
 		fOutputList->Add(fpT_m_electron);
 		fOutputList->Add(fpT_gm_electron);
@@ -1786,11 +2468,47 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fPtMCparticleReco_nonPrimary);
 		
 		fOutputList->Add(fPtMCparticleAllHfe1);
+		
+			//centrality
+		if(fIsCentralitySys){
+			
+			fOutputList->Add(fPtMCparticleAllHfe1_0);
+			fOutputList->Add(fPtMCparticleAllHfe1_1);
+			fOutputList->Add(fPtMCparticleAllHfe1_2);
+			fOutputList->Add(fPtMCparticleAllHfe1_3);
+				//fOutputList->Add(fPtMCparticleAllHfe1_4);
+			
+			fOutputList->Add(fPtMCparticleRecoHfe1_0);
+			fOutputList->Add(fPtMCparticleRecoHfe1_1);
+			fOutputList->Add(fPtMCparticleRecoHfe1_2);
+			fOutputList->Add(fPtMCparticleRecoHfe1_3);
+			
+				//centrality
+			fOutputList->Add(fPtMCelectronAfterAll_unfolding_0);
+			fOutputList->Add(fPtMCelectronAfterAll_unfolding_1);
+			fOutputList->Add(fPtMCelectronAfterAll_unfolding_2);
+			fOutputList->Add(fPtMCelectronAfterAll_unfolding_3);
+				//fOutputList->Add(fPtMCelectronAfterAll_unfolding_4);
+			
+			fOutputList->Add(fPtMC_TPC_All_0);
+			fOutputList->Add(fPtMC_TPC_All_1);
+			fOutputList->Add(fPtMC_TPC_All_2);
+			fOutputList->Add(fPtMC_TPC_All_3);
+			
+			fOutputList->Add(fPtMC_TPC_Selected_0);
+			fOutputList->Add(fPtMC_TPC_Selected_1);
+			fOutputList->Add(fPtMC_TPC_Selected_2);
+			fOutputList->Add(fPtMC_TPC_Selected_3);
+		}
+		
+		
 		fOutputList->Add(fPtMCparticleRecoHfe1);
 		fOutputList->Add(fPtMCparticleAllHfe2);
 		fOutputList->Add(fPtMCparticleRecoHfe2);
 		fOutputList->Add(fPtMCelectronAfterAll);
 		fOutputList->Add(fPtMCelectronAfterAll_unfolding);
+		
+			
 		
 		fOutputList->Add(fPtMCelectronAfterAll_nonPrimary);
 		fOutputList->Add(fPtMCelectronAfterAll_Primary);
@@ -1817,29 +2535,46 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	}
 	
 	if(!fIspp){
-	fCentralityHist = new TH1F("fCentralityHist",";Centrality (%); Count",1000000,0,100);
-	fCentralityHistPass = new TH1F("fCentralityHistPass",";Centrality (%); Count",1000000,0,100);
-	fOutputList->Add(fCentralityHist);
-	fOutputList->Add(fCentralityHistPass);
+		fCentralityHist = new TH1F("fCentralityHist",";Centrality A-side (%); Count",120,0,120);
+		fCentralityHist2 = new TH1F("fCentralityHist2",";Centrality C-side (%); Count",120,0,120);
+		
+		fCentralityHist_correlation = new TH2F("fCentralityHist_corelation",";Centrality (A-side) vs. (C-side) (%); Count",120,0,120,120,0,120);
+		
+		fCentralityHistPass = new TH1F("fCentralityHistPass",";Centrality A-side (%); Count",120,0,120);
+		fCentralityHistPass2 = new TH1F("fCentralityHistPass2",";Centrality C-side (%); Count",120,0,120);
+		
+		fMultiplicityHist = new TH1F("fMultiplicityHist",";Multiplicity; Count",10000,0,10000);
+		fMultiplicityHistPass = new TH1F("fMultiplicityHistPass",";Multiplicity; Count",10000,0,10000);
+		fOutputList->Add(fCentralityHist);
+		fOutputList->Add(fCentralityHistPass);
+		
+		fOutputList->Add(fCentralityHist_correlation);
+		
+		fOutputList->Add(fCentralityHist2);
+		fOutputList->Add(fCentralityHistPass2);
+		
+		fOutputList->Add(fMultiplicityHist);
+		fOutputList->Add(fMultiplicityHistPass);
+
 	
-	//______________________________________________________________________
-	//Mixed event analysis
-	if(fEventMixingFlag)
-	{
-		fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
-		fOutputList->Add(fPoolNevents);
+			//______________________________________________________________________
+			//Mixed event analysis
+		if(fEventMixingFlag)
+		{
+			fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
+			fOutputList->Add(fPoolNevents);
 		
-		Int_t trackDepth = 2000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
-		Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+			Int_t trackDepth = 2000; // number of objects (tracks) kept per event buffer bin. Once the number of stored objects (tracks) is above that limit, the oldest ones are removed.
+			Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
 		
-		Int_t nCentralityBins  = 15;
-		Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
+			Int_t nCentralityBins  = 15;
+			Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
 		
-		Int_t nZvtxBins  = 9;
-		Double_t vertexBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
+			Int_t nZvtxBins  = 9;
+			Double_t vertexBins[] = {-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
 		
-		fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
-	}
+			fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) centralityBins, nZvtxBins, (Double_t*) vertexBins);
+		}
 		
 	}
 		//______________________________________________________________________
@@ -2223,32 +2958,66 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 //______________________________________________________________________
 //Centrality Selection
 if(!fIspp){
-	if(fHasCentralitySelection)
-	{
+		//if(fHasCentralitySelection)
+		//{
 		Float_t centrality = -1;
+		Float_t centrality2 = -1;
 		
 		if(fIsAOD) 
 		{
 				//fCentrality = fAOD->GetHeader()->GetCentralityP();
 			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+				//fCentrality2 = fAOD->GetCentrality();
 		}
 		else
 		{
 			fCentrality = fESD->GetCentrality();
 		}
 		
-		if(fEstimator==1) centrality = fCentrality->GetCentralityPercentile("ZDC");
-		else centrality = fCentrality->GetCentralityPercentile("V0A");
+		if(fEstimator==1){
+			centrality = fCentrality->GetCentralityPercentile("ZNA");//used in the cut
+			centrality2 = fCentrality->GetCentralityPercentile("ZNC");
+		}
+		if(fEstimator==0){
+			centrality = fCentrality->GetCentralityPercentile("V0A");//used in the cut
+			centrality2 = fCentrality->GetCentralityPercentile("V0C");
+		}
+	    if(fEstimator==2){
+			centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+		   centrality2 = fCentrality->GetCentralityPercentile("V0A");
+	    }
+
+		if(fEstimator==3){
+		   centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+		   centrality2 = fCentrality->GetCentralityPercentile("ZNA");
+	    }
+	
 		
-			//cout << "Centrality = " << centrality << " %" << endl;
+			
+		AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+		if(!header) AliFatal("Not a standard AOD");
+		Double_t multiplicity = header->GetRefMultiplicity();
+
 		
-		fCentralityHist->Fill(centrality);
+		fMultiplicityHist->Fill(multiplicity);
+	
+	    fCentralityHist_correlation->Fill(centrality, centrality2);
 		
-		if(centrality<fCentralityMin || centrality>fCentralityMax) return;
+		
+	    fCentralityHist->Fill(centrality);//A-side p-Pb
+	    fCentralityHist2->Fill(centrality2);//C-side Pb-p
+		
+		//	printf("Estimator %d, Multiplicity %f, Centrality A-side %f, Centrality C-side %f \n", fEstimator, multiplicity, centrality, centrality2);
+		
+		if(fHasCentralitySelection){
+			if(centrality<fCentralityMin || centrality>fCentralityMax) return;
+	    }
 		
 		fCentralityHistPass->Fill(centrality);
-	}
-	}
+	    fCentralityHistPass2->Fill(centrality2);
+		fMultiplicityHistPass->Fill(multiplicity);
+		//}
+}
 	//______________________________________________________________________
 	
 	
@@ -2273,8 +3042,15 @@ if(!fIspp){
 	
 	if(fIsMC)
 	{
+		
+				
+		
+		
 		if(fIsAOD)
 		{	
+			
+							
+			
 			fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
 			
 			if(!fMCarray)
@@ -2411,6 +3187,40 @@ if(!fIspp){
 									//denominator for total efficiency and tracking
 									//unfolding: denominator is pt_MC and numerator is pt_reco
 									fPtMCparticleAllHfe1->Fill(fMCparticle->Pt());
+									
+										//centrality
+									if(fIsCentralitySys){
+										
+											Float_t centrality = -1;
+											
+											if(fIsAOD) 
+											{
+													//fCentrality = fAOD->GetHeader()->GetCentralityP();
+												fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+											}
+											else
+											{
+												fCentrality = fESD->GetCentrality();
+											}
+											
+										if(fEstimator==1){
+											centrality = fCentrality->GetCentralityPercentile("ZNA");
+										}
+										if(fEstimator==0){
+
+											centrality = fCentrality->GetCentralityPercentile("V0A");
+										}
+											
+											//printf("fPtMCparticleAllHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
+										
+										if(centrality>=0 && centrality<20)fPtMCparticleAllHfe1_0->Fill(fMCparticle->Pt());
+										if(centrality>=20 && centrality<40)fPtMCparticleAllHfe1_1->Fill(fMCparticle->Pt());
+										if(centrality>=40 && centrality<60)fPtMCparticleAllHfe1_2->Fill(fMCparticle->Pt());
+										if(centrality>=60 && centrality<=95)fPtMCparticleAllHfe1_3->Fill(fMCparticle->Pt());
+											
+									}
+									
+									
 									fEtaPhi_den->Fill(fMCparticle->Phi(),fMCparticle->Eta());
 									
 								
@@ -2550,6 +3360,10 @@ if(!fIspp){
 							{
 								if(fIsHFE1){
 									fPtMCparticleAllHfe1->Fill(fMCtrack->Pt());//denominator for total efficiency and tracking
+									
+										
+									
+									
 									fEtaPhi_den->Fill(fMCtrack->Phi(),fMCtrack->Eta());
 								}
 								if(fIsHFE2){ 
@@ -2570,6 +3384,37 @@ if(!fIspp){
 	
 	fNevent->Fill(0);
 	
+	if(fIsCentralitySys){
+		
+		Float_t centrality = -1;
+		
+		if(fIsAOD) 
+		{
+			//fCentrality = fAOD->GetHeader()->GetCentralityP();
+			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+		}
+		else
+		{
+			fCentrality = fESD->GetCentrality();
+		}
+		
+		if(fEstimator==1){
+			centrality = fCentrality->GetCentralityPercentile("ZNA");
+		}
+		if(fEstimator==0){
+
+			centrality = fCentrality->GetCentralityPercentile("V0A");
+		}
+
+		
+		
+		if(centrality>=0 && centrality<20)fNevent_0->Fill(0);
+		if(centrality>=20 && centrality<40)fNevent_1->Fill(0);
+		if(centrality>=40 && centrality<60)fNevent_2->Fill(0);
+		if(centrality>=60 && centrality<=95)fNevent_3->Fill(0);
+			
+	}
+
 	
 //______________________________________________________________________
 //events in the threshold
@@ -2703,6 +3548,37 @@ if(!fIspp){
 				if(clust && clust->IsEMCAL())
 				{
 					fECluster_pure->Fill(clust->E());
+					
+					if(fIsCentralitySys){
+						
+						Float_t centrality = -1;
+						
+						if(fIsAOD) 
+						{
+								//fCentrality = fAOD->GetHeader()->GetCentralityP();
+							fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+						}
+						else
+						{
+							fCentrality = fESD->GetCentrality();
+						}
+						
+						if(fEstimator==1){
+							centrality = fCentrality->GetCentralityPercentile("ZNA");
+						}
+						if(fEstimator==0){
+							centrality = fCentrality->GetCentralityPercentile("V0A");
+						}
+
+						
+						if(centrality>=0 && centrality<20)fECluster_pure_0->Fill(clust->E());
+						if(centrality>=20 && centrality<40)fECluster_pure_1->Fill(clust->E());
+						if(centrality>=40 && centrality<60)fECluster_pure_2->Fill(clust->E());
+						if(centrality>=60 && centrality<=95)fECluster_pure_3->Fill(clust->E());
+					}
+
+					
+					
 				}
 			}
 		}
@@ -2730,6 +3606,38 @@ if(!fIspp){
 			if(clust && clust->IsEMCAL())
 			{
 				fECluster_pure->Fill(clust->E());
+				
+				
+				if(fIsCentralitySys){
+					
+					Float_t centrality = -1;
+					
+					if(fIsAOD) 
+					{
+							//fCentrality = fAOD->GetHeader()->GetCentralityP();
+						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+					}
+					else
+					{
+						fCentrality = fESD->GetCentrality();
+					}
+					
+					if(fEstimator==1){
+						centrality = fCentrality->GetCentralityPercentile("ZNA");
+					}
+					if(fEstimator==0){
+
+						centrality = fCentrality->GetCentralityPercentile("V0A");
+					}
+
+					
+				
+					if(centrality>=0 && centrality<20)fECluster_pure_0->Fill(clust->E());
+					if(centrality>=20 && centrality<40)fECluster_pure_1->Fill(clust->E());
+					if(centrality>=40 && centrality<60)fECluster_pure_2->Fill(clust->E());
+					if(centrality>=60 && centrality<=95)fECluster_pure_3->Fill(clust->E());
+				}
+				
 			}
 			
 		}
@@ -2753,6 +3661,8 @@ if(!fIspp){
 		//AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
 		AliVParticle* Vtrack = 0x0;
 		if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+		
+	
 		
 		
 		//just a test of pdg information
@@ -2790,6 +3700,12 @@ if(!fIspp){
 		AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
 		AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+		
+	
+
+		
+		
+		
         
         //printf("\n\n Track label of track %d is %d  - after tender \n\n", iTracks, track_tender->GetLabel());
 		
@@ -2824,7 +3740,7 @@ if(!fIspp){
 		Double_t fTPCnSigma0 = -999;
 		Double_t fTPCnSigma_eta_prov = -999;
 		Double_t fTPCnSigma = -999;
-		Double_t fTOFnSigma = -999;
+			//Double_t fTOFnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
 		Double_t fTPCnSigma_kaon = -999;
@@ -2836,8 +3752,7 @@ if(!fIspp){
 		//Etacut test on the begging
 		fEtad[0]->Fill(track->Eta());
 		//if(track->Eta()<fEtaCutMin || track->Eta()>fEtaCutMax) continue;
-		
-			
+	
 		///_____________________________________________________________________________
 		///Fill QA plots without track selection
 		fPt = track->Pt();
@@ -2845,7 +3760,7 @@ if(!fIspp){
 		
 		fTPCsignal = track->GetTPCsignal();
 		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-		fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+			//fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
@@ -2877,11 +3792,12 @@ if(!fIspp){
 				}
 			}
 			
-	//==============================================================================
-	//Eta correction
+		
+			//==============================================================================
+			//Eta correction
 		if(fCalibrateTPC_eta==kTRUE){
 				//printf("\n\n TPC BEFORE correction = %f\n", fTPCnSigma);
-
+			
 			fTPCnSigma_eta_prov = -0.76+1.98*(TMath::Abs(track->Eta()));
 				//printf("\n\n TPC correction = %f\n", fTPCnSigma_eta_prov);
 			fTPCnSigma0 = fTPCnSigma - fTPCnSigma_eta_prov;
@@ -2900,9 +3816,8 @@ if(!fIspp){
 				fTPCnsigma_pt_2D2->Fill(fPt,fTPCnSigma);
 			}
 		}
-	//==============================================================================
-	//end of eta correction
-			
+			//==============================================================================
+			//end of eta correction
 		
 		
 			
@@ -3210,6 +4125,42 @@ if(!fIspp){
 									fPtMCparticleRecoHfe1->Fill(fMCparticle->Pt());//numerator tracking
 									//unfolding
 									fpt_reco_pt_MC_den->Fill(track->Pt(),fMCparticle->Pt());
+										//numerator tracking for centrality
+									
+									if(fIsCentralitySys){
+                                    //===================================================================================
+										Float_t centrality = -1;
+										
+																					
+										if(fIsAOD) 
+										{
+												//fCentrality = fAOD->GetHeader()->GetCentralityP();
+											fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+										}
+										else
+										{
+											fCentrality = fESD->GetCentrality();
+										}
+										
+										if(fEstimator==1){
+											centrality = fCentrality->GetCentralityPercentile("ZNA");
+										}
+										if(fEstimator==0){
+											centrality = fCentrality->GetCentralityPercentile("V0A");
+										}
+									//===================================================================================	
+
+											//printf("fPtMCparticleRecoHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
+										
+										if(centrality>=0 && centrality<20)fPtMCparticleRecoHfe1_0->Fill(fMCparticle->Pt());
+										if(centrality>=20 && centrality<40)fPtMCparticleRecoHfe1_1->Fill(fMCparticle->Pt());
+										if(centrality>=40 && centrality<60)fPtMCparticleRecoHfe1_2->Fill(fMCparticle->Pt());
+										if(centrality>=60 && centrality<=95)fPtMCparticleRecoHfe1_3->Fill(fMCparticle->Pt());
+									
+										
+									}
+									
+									
 
 								}
 								if(fIsHFE2){ 
@@ -3267,6 +4218,41 @@ if(!fIspp){
 			//Calibrated TPCsignal after tracks selection
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 			fTPCnsigma_pt_2D3->Fill(fPt,fTPCnSigma);
+			
+			if(fIsCentralitySys){
+				
+			//===================================================================================
+				Float_t centrality = -1;
+				
+				if(fIsAOD) 
+				{
+						//fCentrality = fAOD->GetHeader()->GetCentralityP();
+					fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+				}
+				else
+				{
+					fCentrality = fESD->GetCentrality();
+				}
+				
+				if(fEstimator==1){
+					centrality = fCentrality->GetCentralityPercentile("ZNA");
+				}
+				if(fEstimator==0){
+
+					centrality = fCentrality->GetCentralityPercentile("V0A");
+				}
+              //===================================================================================	
+				
+					//printf("fTPCnsigma_pt_2D3   Estimator %d, Centrality %f \n", fEstimator, centrality);
+				
+				if(centrality>=0 && centrality<20)  fTPCnsigma_pt_2D3_0->Fill(fPt,fTPCnSigma);
+				if(centrality>=20 && centrality<40) fTPCnsigma_pt_2D3_1->Fill(fPt,fTPCnSigma);
+				if(centrality>=40 && centrality<60) fTPCnsigma_pt_2D3_2->Fill(fPt,fTPCnSigma);
+				if(centrality>=60 && centrality<=95)fTPCnsigma_pt_2D3_3->Fill(fPt,fTPCnSigma);
+			}
+			
+			
+			
 		}
 		
 		if(track->Eta()>-0.6 && track->Eta()<-0.3){
@@ -3312,6 +4298,9 @@ if(!fIspp){
 			
 			if(fClus->IsEMCAL())
 			{
+				
+						
+				
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
 					fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
@@ -3420,6 +4409,41 @@ if(!fIspp){
 						
 						if(fTPCnSigma < -3.5){
 							fEoverP_pt_pions2->Fill(fPt, EoverP);
+							
+							if(fIsCentralitySys){
+								
+								
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+										
+									//printf("fEoverP_pt_pions2   Estimator %d, Centrality %f \n", fEstimator, centrality);
+								
+								
+								if(centrality>=0 && centrality<20) fEoverP_pt_pions2_0->Fill(fPt, EoverP);
+								if(centrality>=20 && centrality<40) fEoverP_pt_pions2_1->Fill(fPt, EoverP);
+								if(centrality>=40 && centrality<60) fEoverP_pt_pions2_2->Fill(fPt, EoverP);
+								if(centrality>=60 && centrality<=95) fEoverP_pt_pions2_3->Fill(fPt, EoverP);
+								
+							}
+							 
+							
 							
 							if(fClus->E()>8.0)fEoverP_pt_pions2_highE1->Fill(fPt, EoverP);
 							if(fClus->E()>12.0)fEoverP_pt_pions2_highE0->Fill(fPt, EoverP);
@@ -3619,6 +4643,38 @@ if(!fIspp){
 						fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 				        if( TMath::Abs(pdg) == 11 && fMCparticleMother->GetPdgCode()!=22 ){
 							if(fIsHFE1) fPtMC_TPC_All->Fill(fMCparticle->Pt());	
+							
+							if(fIsHFE1 && fIsCentralitySys){
+								
+								//===================================================================================
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								//===================================================================================
+								
+								if(centrality>=0 && centrality<20) fPtMC_TPC_All_0->Fill(fMCparticle->Pt());
+								if(centrality>=20 && centrality<40) fPtMC_TPC_All_1->Fill(fMCparticle->Pt());
+								if(centrality>=40 && centrality<60) fPtMC_TPC_All_2->Fill(fMCparticle->Pt());
+								if(centrality>=60 && centrality<=95) fPtMC_TPC_All_3->Fill(fMCparticle->Pt());
+							
+							}
+							 
+							
 				        }
 					}
 				}
@@ -3647,10 +4703,11 @@ if(!fIspp){
 			}
 		}
 		
-		
+		/*
 			if(fPt>1 && fPt<2) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
 			if(fPt>2 && fPt<4) fTOF02->Fill(fTOFnSigma,fTPCnSigma);
 			if(fPt>4 && fPt<6) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
+		*/
 		
 ///________________________________________________________________________
 ///PID
@@ -3666,19 +4723,57 @@ if(!fIspp){
 	    if(pidpassed==0) continue;
 ///________________________________________________________________________		
 		
-		//Should be done only for 13d, which has shifted TPCnsigma
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 			fTPCnsigma_pt_2D4->Fill(fPt,fTPCnSigma);
 		}
 		
+		fEtad[3]->Fill(track->Eta());
+		
+		//Should be done only for 13d, which has shifted TPCnsigma
 		if(fCalibrateTPC==kTRUE){
 			
 			if(fTPCnSigma < fTPCcal_CutMin || fTPCnSigma > fTPCcal_CutMax) continue;
 					
 		} 
 		
+		
+		
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 			fTPCnsigma_pt_2D5->Fill(fPt,fTPCnSigma);
+			
+			if(fIsCentralitySys){
+				
+					//===================================================================================
+				Float_t centrality = -1;
+				
+				if(fIsAOD) 
+				{
+						//fCentrality = fAOD->GetHeader()->GetCentralityP();
+					fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+				}
+				else
+				{
+					fCentrality = fESD->GetCentrality();
+				}
+				
+				if(fEstimator==1){
+					centrality = fCentrality->GetCentralityPercentile("ZNA");
+				}
+				if(fEstimator==0){
+
+					centrality = fCentrality->GetCentralityPercentile("V0A");
+				}
+					//===================================================================================	
+				
+				
+				if(centrality>=0 && centrality<20)  fTPCnsigma_pt_2D5_0->Fill(fPt,fTPCnSigma);
+				if(centrality>=20 && centrality<40) fTPCnsigma_pt_2D5_1->Fill(fPt,fTPCnSigma);
+				if(centrality>=40 && centrality<60) fTPCnsigma_pt_2D5_2->Fill(fPt,fTPCnSigma);
+				if(centrality>=60 && centrality<=95)fTPCnsigma_pt_2D5_3->Fill(fPt,fTPCnSigma);
+			}
+			 
+			
+			
 		}
 		
 		if(track->Eta()>-0.6 && track->Eta()<-0.3){
@@ -3714,7 +4809,39 @@ if(!fIspp){
 					if(MotherFound){
 						fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 				        if( TMath::Abs(pdg) == 11 && fMCparticleMother->GetPdgCode()!=22 ){
-							if(fIsHFE1) fPtMC_TPC_Selected->Fill(fMCparticle->Pt());	
+							if(fIsHFE1) fPtMC_TPC_Selected->Fill(fMCparticle->Pt());
+							
+							if(fIsHFE1 && fIsCentralitySys){
+								
+								//===================================================================================
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								//===================================================================================
+								
+								if(centrality>=0 && centrality<20) fPtMC_TPC_Selected_0->Fill(fMCparticle->Pt());
+								if(centrality>=20 && centrality<40) fPtMC_TPC_Selected_1->Fill(fMCparticle->Pt());
+								if(centrality>=40 && centrality<60)  fPtMC_TPC_Selected_2->Fill(fMCparticle->Pt());
+								if(centrality>=60 && centrality<=95)  fPtMC_TPC_Selected_3->Fill(fMCparticle->Pt());
+							}
+							 
+							
 				        }
 					}
 				}
@@ -3753,8 +4880,8 @@ if(!fIspp){
 			
 			//efficiency without SS cut for TPC only
 			if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
-				//with weight 
-				//	Background(track, iTracks, Vtrack, kTRUE, kTRUE, kFALSE); //IsTPConly=kTRUE, IsWeight=kTRUE
+				//with weight for TPConly
+				//Background(track, iTracks, Vtrack, kTRUE, kTRUE, kFALSE); //IsTPConly=kTRUE, IsWeight=kTRUE
 				//pt bins
 				Background(track, iTracks, Vtrack, kTRUE, kTRUE, kTRUE); //IsTPConly=kTRUE, IsWeight=kTRUE, MassPtBins=kTRUE
 				
@@ -3798,6 +4925,9 @@ if(!fIspp){
 		
 		if(track->GetEMCALcluster()>0)
 		{
+			
+			fEtad[4]->Fill(track->Eta());
+
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//to use tender
@@ -3820,6 +4950,8 @@ if(!fIspp){
 				
 		//________________________________________________________________________		
 				
+				fEtad[5]->Fill(track->Eta());
+
 				
 				//Cluster timing distribution -- for ESD 
 				if(fUseEMCal && !fIsAOD){
@@ -3853,6 +4985,10 @@ if(!fIspp){
 					}
 					
 				}
+				
+				
+				
+				
 				/* not working!
 				//Cluster timing distribution -- for AOD 
 				if(fUseEMCal && fIsAOD){
@@ -3918,6 +5054,10 @@ if(!fIspp){
 				
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
+					
+					fEtad[6]->Fill(track->Eta());
+
+					
 					Float_t Energy	= fClus->E();
 					Float_t EoverP	= Energy/track->P();
 					Float_t M02	= fClus->GetM02();
@@ -3956,8 +5096,44 @@ if(!fIspp){
 					if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 						
 						if(fUseShowerShapeCut){
+							
+							fEtad[7]->Fill(track->Eta());
+
+							
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
+								
+									//centrality
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									
+									if(centrality>=0 && centrality<20) fEoverP_pt_0->Fill(fPt,(fClus->E() / fP));
+									if(centrality>=20 && centrality<40)fEoverP_pt_1->Fill(fPt,(fClus->E() / fP));
+									if(centrality>=40 && centrality<60)fEoverP_pt_2->Fill(fPt,(fClus->E() / fP));
+									if(centrality>=60 && centrality<=95)fEoverP_pt_3->Fill(fPt,(fClus->E() / fP));
+										
+								}
+								
 								fShowerShapeCut->Fill(M02,M20);
 								
 								if(fClus->E()> 8.0)fEoverP_pt_highE1->Fill(fPt,(fClus->E() / fP));
@@ -4383,6 +5559,39 @@ if(!fIspp){
 													//Unfolding   pt_reco/pt_MC  in the efficiency
 													fPtMCelectronAfterAll->Fill(fMCparticle->Pt());
 													fPtMCelectronAfterAll_unfolding->Fill(track->Pt());
+													
+														//centrality
+													if(fIsCentralitySys){
+														
+														Float_t centrality = -1;
+														
+														if(fIsAOD) 
+														{
+																//fCentrality = fAOD->GetHeader()->GetCentralityP();
+															fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+														}
+														else
+														{
+															fCentrality = fESD->GetCentrality();
+														}
+														
+														if(fEstimator==1){
+															centrality = fCentrality->GetCentralityPercentile("ZNA");
+														}
+														if(fEstimator==0){
+
+															centrality = fCentrality->GetCentralityPercentile("V0A");
+														}
+														
+														
+														if(centrality>=0 && centrality<20) fPtMCelectronAfterAll_unfolding_0->Fill(track->Pt());
+														if(centrality>=20 && centrality<40) fPtMCelectronAfterAll_unfolding_1->Fill(track->Pt());
+														if(centrality>=40 && centrality<60) fPtMCelectronAfterAll_unfolding_2->Fill(track->Pt());
+														if(centrality>=60 && centrality<=95) fPtMCelectronAfterAll_unfolding_3->Fill(track->Pt());
+															//if(centrality>80 && centrality<=95) fPtMCelectronAfterAll_unfolding_4->Fill(track->Pt());
+													}
+													
+													
 													fEtaPhi_num->Fill(fMCparticle->Phi(),fMCparticle->Eta());
 													
 													//new histo to estimate how different is pt reco from pt MC 
@@ -4577,7 +5786,11 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 	///_________________________________________________________________
 	///MC analysis
 	//Bool_t IsMCefix=kFALSE; //to make correction on efix, use kTRUE (do not change the efficiency, so I will keep the correction only for d3)
-		
+	
+	
+	
+	
+	
 		if(fIsMC)
 		{
 			if(track->GetLabel() < 0)
@@ -4598,8 +5811,72 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
 				{
 						//Is Background
-					if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco->Fill(track->Pt());
-					if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2->Fill(track->Pt());
+					if(!IsTPConly  && !IsWeight && !MassPtBins){
+						fPtBackgroundBeforeReco->Fill(track->Pt());
+							//centrality
+						if(fIsCentralitySys){
+							
+							Float_t centrality = -1;
+							
+							if(fIsAOD) 
+							{
+									//fCentrality = fAOD->GetHeader()->GetCentralityP();
+								fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+							}
+							else
+							{
+								fCentrality = fESD->GetCentrality();
+							}
+							
+							if(fEstimator==1){
+								centrality = fCentrality->GetCentralityPercentile("ZNA");
+							}
+							if(fEstimator==0){
+
+								centrality = fCentrality->GetCentralityPercentile("V0A");
+							}
+
+							
+							if(centrality>=0 && centrality<20)fPtBackgroundBeforeReco_0->Fill(track->Pt());
+							if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_1->Fill(track->Pt());
+							if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_2->Fill(track->Pt());
+							if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_3->Fill(track->Pt());
+								//if(centrality>80 && centrality<=95)fPtBackgroundBeforeReco_4->Fill(track->Pt());
+						}
+					}
+					if(IsTPConly  && !IsWeight && !MassPtBins){
+						fPtBackgroundBeforeReco2->Fill(track->Pt());
+							//centrality
+						if(fIsCentralitySys){
+							
+							Float_t centrality = -1;
+							
+							if(fIsAOD) 
+							{
+									//fCentrality = fAOD->GetHeader()->GetCentralityP();
+								fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+							}
+							else
+							{
+								fCentrality = fESD->GetCentrality();
+							}
+							
+							if(fEstimator==1){
+								centrality = fCentrality->GetCentralityPercentile("ZNA");
+							}
+							if(fEstimator==0){
+
+								centrality = fCentrality->GetCentralityPercentile("V0A");
+							}
+							
+							if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_0->Fill(track->Pt());
+							if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_1->Fill(track->Pt());
+							if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_2->Fill(track->Pt());
+							if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_3->Fill(track->Pt());
+								//if(centrality>80 && centrality<=95)fPtBackgroundBeforeReco2_4->Fill(track->Pt());
+						}
+						
+					}
 					
 					
 						//October 08th weighted histos
@@ -4628,8 +5905,77 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						//Histo pT mother versus pT electron
 						fpT_m_electron->Fill(mPt, track->Pt());
 						
-						if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./mweight);
-						if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./mweight);
+						if(!IsTPConly  && !IsWeight && !MassPtBins){
+							fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./mweight);
+							
+							if(fIsCentralitySys){
+								
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								
+								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt(), 1./mweight);
+								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt(), 1./mweight);
+								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_weight_2->Fill(track->Pt(), 1./mweight);
+								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt(), 1./mweight);
+									
+							}
+							
+							
+						}
+						if(IsTPConly  && !IsWeight && !MassPtBins){
+							fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./mweight);
+							
+							if(fIsCentralitySys){
+								
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								
+								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt(), 1./mweight);
+								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_weight_1->Fill(track->Pt(), 1./mweight);
+								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_weight_2->Fill(track->Pt(), 1./mweight);
+								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt(), 1./mweight);
+									
+							}
+
+							
+							
+							
+							
+						}
 					}
 					else if(fMCparticleMother->GetMother()>0 && (TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 )){
 						
@@ -4654,12 +6000,145 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						
 						fpT_gm_electron->Fill(gmPt, track->Pt());
 						
-						if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./gmweight);
-						if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./gmweight);
+						if(!IsTPConly  && !IsWeight && !MassPtBins){
+							fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./gmweight);
+							
+							if(fIsCentralitySys){
+								
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								
+								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_weight_2->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt(), 1./gmweight);
+									
+							}
+							
+							
+						}
+						if(IsTPConly  && !IsWeight && !MassPtBins){
+							fPtBackgroundBeforeReco2_weight->Fill(track->Pt(), 1./gmweight);
+							
+							if(fIsCentralitySys){
+								
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								
+								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_weight_1->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_weight_2->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt(), 1./gmweight);
+									
+							}
+							
+
+							
+						}
+						
 					}
 					else{
-						if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco_weight->Fill(track->Pt());
-						if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2_weight->Fill(track->Pt());				
+						if(!IsTPConly  && !IsWeight && !MassPtBins){
+							
+							fPtBackgroundBeforeReco_weight->Fill(track->Pt());
+							if(fIsCentralitySys){
+								
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								
+								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt());
+								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt());
+								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_weight_2->Fill(track->Pt());
+								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt());
+							}
+							
+							
+						}
+						if(IsTPConly  && !IsWeight && !MassPtBins){
+							fPtBackgroundBeforeReco2_weight->Fill(track->Pt());	
+							if(fIsCentralitySys){
+								
+								Float_t centrality = -1;
+								
+								if(fIsAOD) 
+								{
+										//fCentrality = fAOD->GetHeader()->GetCentralityP();
+									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+								}
+								else
+								{
+									fCentrality = fESD->GetCentrality();
+								}
+								
+								if(fEstimator==1){
+									centrality = fCentrality->GetCentralityPercentile("ZNA");
+								}
+								if(fEstimator==0){
+									
+									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								
+								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt());
+								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_weight_1->Fill(track->Pt());
+								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_weight_2->Fill(track->Pt());
+								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt());
+									
+							}
+							
+
+							
+						}
 					}
 				}//particle kind
 			}//IsAOD
@@ -4675,8 +6154,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
 				{
 						//Is Background
-					if(!IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco->Fill(track->Pt());
-					if(IsTPConly && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2->Fill(track->Pt());
+					if(!IsTPConly  && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco->Fill(track->Pt());
+					if(IsTPConly  && !IsWeight && !MassPtBins)fPtBackgroundBeforeReco2->Fill(track->Pt());
 				}
 			}
 		}//IsMC
@@ -4711,12 +6190,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
 	
 		//Electron Information
-	Double_t fPhiE = -999;
-	Double_t fEtaE = -999;
-	Double_t fPtE = -999;
-	fPhiE = track->Phi();
-	fEtaE = track->Eta();
-	fPtE = track->Pt();
+	     Double_t fPhiE = -999;
+		 Double_t fEtaE = -999;
+	     Double_t fPtE = -999;
+	     fPhiE = track->Phi();
+	     fEtaE = track->Eta();
+	     fPtE = track->Pt();
 	
 	
 	
@@ -4743,7 +6222,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		}
 	
 		//to look the Invariant mass in pT bins 
-		if(!IsTPConly && MassPtBins && !IsWeight){
+		if(!IsTPConly &&  MassPtBins && !IsWeight){
 			Double_t fPtBin_trigger2[11] = {1,2,4,6,8,10,12,14,16,18,20};
 			for(Int_t i = 0; i < 10; i++)
 			{
@@ -4878,8 +6357,73 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fNonHFE->IsLS())  mweight2=(fNonHFE->GetNLS())/weight;
 							
 								//fill histos
-							if(fNonHFE->IsULS())fPtElec_ULS_weight->Fill(fPtE, mweight1);
-							if(fNonHFE->IsLS())fPtElec_LS_weight->Fill(fPtE, mweight2);
+							if(fNonHFE->IsULS()){
+								fPtElec_ULS_weight->Fill(fPtE, mweight1);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE, mweight1);
+									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE, mweight1);
+									if(centrality>=40 && centrality<60)fPtElec_ULS_weight_2->Fill(fPtE, mweight1);
+									if(centrality>=60 && centrality<=95)fPtElec_ULS_weight_3->Fill(fPtE, mweight1);
+									
+								}
+								
+							}
+							if(fNonHFE->IsLS()){
+								fPtElec_LS_weight->Fill(fPtE, mweight2);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE, mweight2);
+									if(centrality>=20 && centrality<40)fPtElec_LS_weight_1->Fill(fPtE, mweight2);
+									if(centrality>=40 && centrality<60)fPtElec_LS_weight_2->Fill(fPtE, mweight2);
+									if(centrality>=60 && centrality<=95)fPtElec_LS_weight_3->Fill(fPtE, mweight2);
+									
+								}
+								
+								
+							}
 						}
 						else if(fMCparticleMother->GetMother()>0 && (TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 )){
 							Double_t gmPt=fMCparticleGMother->Pt();
@@ -4911,12 +6455,144 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fNonHFE->IsLS())  gmweight2=(fNonHFE->GetNLS())/weight;
 							
 								//fill histos
-							if(fNonHFE->IsULS())fPtElec_ULS_weight->Fill(fPtE, gmweight1);
-							if(fNonHFE->IsLS())fPtElec_LS_weight->Fill(fPtE, gmweight2);
+							if(fNonHFE->IsULS()){
+								fPtElec_ULS_weight->Fill(fPtE, gmweight1);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE, gmweight1);
+									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE, gmweight1);
+									if(centrality>=40 && centrality<60)fPtElec_ULS_weight_2->Fill(fPtE, gmweight1);
+									if(centrality>=60 && centrality<=95)fPtElec_ULS_weight_3->Fill(fPtE, gmweight1);
+									
+								}
+								
+								
+								
+							}
+							if(fNonHFE->IsLS()){
+								fPtElec_LS_weight->Fill(fPtE, gmweight2);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE, gmweight2);
+									if(centrality>=20 && centrality<40)fPtElec_LS_weight_1->Fill(fPtE, gmweight2);
+									if(centrality>=40 && centrality<60)fPtElec_LS_weight_2->Fill(fPtE, gmweight2);
+									if(centrality>=60 && centrality<=95)fPtElec_LS_weight_3->Fill(fPtE, gmweight2);
+									
+								}
+
+								
+								
+							}
 						}
 						else{
-							if(fNonHFE->IsULS()) fPtElec_ULS_weight->Fill(fPtE,fNonHFE->GetNULS());
-							if(fNonHFE->IsLS()) fPtElec_LS_weight->Fill(fPtE,fNonHFE->GetNLS());				
+							if(fNonHFE->IsULS()){
+								fPtElec_ULS_weight->Fill(fPtE,fNonHFE->GetNULS());
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=40 && centrality<60)fPtElec_ULS_weight_2->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=60 && centrality<=95)fPtElec_ULS_weight_3->Fill(fPtE,fNonHFE->GetNULS());
+									
+								}
+
+								
+								
+							}
+							if(fNonHFE->IsLS()){
+								fPtElec_LS_weight->Fill(fPtE,fNonHFE->GetNLS());
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=20 && centrality<40)fPtElec_LS_weight_1->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=40 && centrality<60)fPtElec_LS_weight_2->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=60 && centrality<=95)fPtElec_LS_weight_3->Fill(fPtE,fNonHFE->GetNULS());									
+								}
+							}
 						}
 						
 						
@@ -4958,8 +6634,74 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fNonHFE->IsLS())  mweight2=(fNonHFE->GetNLS())/weight;
 							
 								//fill histos
-							if(fNonHFE->IsULS())fPtElec_ULS2_weight->Fill(fPtE, mweight1);
-							if(fNonHFE->IsLS())fPtElec_LS2_weight->Fill(fPtE, mweight2);
+							if(fNonHFE->IsULS()){
+								fPtElec_ULS2_weight->Fill(fPtE, mweight1);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE, mweight1);
+									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE, mweight1);
+									if(centrality>=40 && centrality<60)fPtElec_ULS2_weight_2->Fill(fPtE, mweight1);
+									if(centrality>=60 && centrality<=95)fPtElec_ULS2_weight_3->Fill(fPtE, mweight1);
+									
+								}
+								
+								
+							}
+							
+							if(fNonHFE->IsLS()){
+								fPtElec_LS2_weight->Fill(fPtE, mweight2);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE, mweight2);
+									if(centrality>=20 && centrality<40)fPtElec_LS2_weight_1->Fill(fPtE, mweight2);
+									if(centrality>=40 && centrality<60)fPtElec_LS2_weight_2->Fill(fPtE, mweight2);
+									if(centrality>=60 && centrality<=95)fPtElec_LS2_weight_3->Fill(fPtE, mweight2);
+									
+								}
+								
+							}
 							
 				
 							
@@ -4997,8 +6739,73 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fNonHFE->IsLS())  gmweight2=(fNonHFE->GetNLS())/weight;
 							
 								//fill histos
-							if(fNonHFE->IsULS())fPtElec_ULS2_weight->Fill(fPtE, gmweight1);
-							if(fNonHFE->IsLS())fPtElec_LS2_weight->Fill(fPtE, gmweight2);
+							if(fNonHFE->IsULS()){
+								fPtElec_ULS2_weight->Fill(fPtE, gmweight1);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE, gmweight1);
+									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE, gmweight1);
+									if(centrality>=40 && centrality<60)fPtElec_ULS2_weight_2->Fill(fPtE, gmweight1);
+									if(centrality>=60 && centrality<=95)fPtElec_ULS2_weight_3->Fill(fPtE, gmweight1);
+									
+								}
+								
+							}
+							if(fNonHFE->IsLS()){
+								fPtElec_LS2_weight->Fill(fPtE, gmweight2);
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE, gmweight2);
+									if(centrality>=20 && centrality<40)fPtElec_LS2_weight_1->Fill(fPtE, gmweight2);
+									if(centrality>=40 && centrality<60)fPtElec_LS2_weight_2->Fill(fPtE, gmweight2);
+									if(centrality>=60 && centrality<=95)fPtElec_LS2_weight_3->Fill(fPtE, gmweight2);
+									
+								}
+								
+								
+							}
 							
 						
 							
@@ -5007,8 +6814,73 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 					
 							
-							if(fNonHFE->IsULS()) fPtElec_ULS2_weight->Fill(fPtE,fNonHFE->GetNULS());
-							if(fNonHFE->IsLS()) fPtElec_LS2_weight->Fill(fPtE,fNonHFE->GetNLS());
+							if(fNonHFE->IsULS()){
+								fPtElec_ULS2_weight->Fill(fPtE,fNonHFE->GetNULS());
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=40 && centrality<60)fPtElec_ULS2_weight_2->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=60 && centrality<=95)fPtElec_ULS2_weight_3->Fill(fPtE,fNonHFE->GetNULS());
+									
+								}
+								
+							}
+							if(fNonHFE->IsLS()){
+								fPtElec_LS2_weight->Fill(fPtE,fNonHFE->GetNLS());
+								
+								if(fIsCentralitySys){
+									
+									Float_t centrality = -1;
+									
+									if(fIsAOD) 
+									{
+											//fCentrality = fAOD->GetHeader()->GetCentralityP();
+										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+									}
+									else
+									{
+										fCentrality = fESD->GetCentrality();
+									}
+									
+									if(fEstimator==1){
+										centrality = fCentrality->GetCentralityPercentile("ZNA");
+									}
+									if(fEstimator==0){
+										
+										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									
+									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE,fNonHFE->GetNLS());
+									if(centrality>=20 && centrality<40)fPtElec_LS2_weight_1->Fill(fPtE,fNonHFE->GetNLS());
+									if(centrality>=40 && centrality<60)fPtElec_LS2_weight_2->Fill(fPtE,fNonHFE->GetNLS());
+									if(centrality>=60 && centrality<=95)fPtElec_LS2_weight_3->Fill(fPtE,fNonHFE->GetNLS());
+									
+								}
+								
+								
+							}
 							
 							
 							
@@ -5129,22 +7001,131 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 			if(!IsTPConly && !IsWeight && !MassPtBins){
 				if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
 				if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
+				
+				if(fIsCentralitySys){
+					
+					Float_t centrality = -1;
+					
+					if(fIsAOD) 
+					{
+							//fCentrality = fAOD->GetHeader()->GetCentralityP();
+						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+					}
+					else
+					{
+						fCentrality = fESD->GetCentrality();
+					}
+					
+					if(fEstimator==1){
+						centrality = fCentrality->GetCentralityPercentile("ZNA");
+					}
+					if(fEstimator==0){
+
+						centrality = fCentrality->GetCentralityPercentile("V0A");
+					}
+					
+					
+					if(centrality>=0 && centrality<20){
+						if(fNonHFE->IsULS()) fPtElec_ULS_0->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS_0->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+						if(centrality>=20 && centrality<40){
+					if(fNonHFE->IsULS()) fPtElec_ULS_1->Fill(fPtE,fNonHFE->GetNULS());
+							if(fNonHFE->IsLS()) fPtElec_LS_1->Fill(fPtE,fNonHFE->GetNLS());
+					
+						}
+					if(centrality>=40 && centrality<60){
+						if(fNonHFE->IsULS()) fPtElec_ULS_2->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS_2->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					if(centrality>=60 && centrality<=95){
+						if(fNonHFE->IsULS()) fPtElec_ULS_3->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS_3->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					/*
+					if(centrality>80 && centrality<=95){
+						if(fNonHFE->IsULS()) fPtElec_ULS_4->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS_4->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					 */
+					
+				}
+				
+				
 			}
 			
 			if(IsTPConly && !IsWeight && !MassPtBins){
 				if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 				if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
+				
+				
+				if(fIsCentralitySys){
+					
+					Float_t centrality = -1;
+					
+					if(fIsAOD) 
+					{
+							//fCentrality = fAOD->GetHeader()->GetCentralityP();
+						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+					}
+					else
+					{
+						fCentrality = fESD->GetCentrality();
+					}
+					
+					if(fEstimator==1){
+						centrality = fCentrality->GetCentralityPercentile("ZNA");
+					}
+					if(fEstimator==0){
+
+						centrality = fCentrality->GetCentralityPercentile("V0A");
+					}					
+					
+					
+					if(centrality>=0 && centrality<20){
+						if(fNonHFE->IsULS()) fPtElec_ULS2_0->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS2_0->Fill(fPtE,fNonHFE->GetNLS());
+
+					}
+					if(centrality>=20 && centrality<40){
+						if(fNonHFE->IsULS()) fPtElec_ULS2_1->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS2_1->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					if(centrality>=40 && centrality<60){
+						if(fNonHFE->IsULS()) fPtElec_ULS2_2->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS2_2->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					if(centrality>=60 && centrality<=95){
+						if(fNonHFE->IsULS()) fPtElec_ULS2_3->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS2_3->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					/*
+					if(centrality>80 && centrality<=95){
+						if(fNonHFE->IsULS()) fPtElec_ULS2_4->Fill(fPtE,fNonHFE->GetNULS());
+						if(fNonHFE->IsLS()) fPtElec_LS2_4->Fill(fPtE,fNonHFE->GetNLS());
+					
+					}
+					 */
+					
+				}
 			}
 		}
 		
 	//for MC closure test
 	// to be used as data, with MC input
-	if(!IsTPConly && !IsWeight && !MassPtBins){
+	if(!IsTPConly  && !IsWeight && !MassPtBins){
 		if(fNonHFE->IsULS()) fPtElec_ULS_mc_closure->Fill(fPtE,fNonHFE->GetNULS());
 		if(fNonHFE->IsLS()) fPtElec_LS_mc_closure->Fill(fPtE,fNonHFE->GetNLS());
 	}
 	
-	if(IsTPConly && !IsWeight && !MassPtBins){
+	if(IsTPConly  && !IsWeight && !MassPtBins){
 		if(fNonHFE->IsULS()) fPtElec_ULS2_mc_closure->Fill(fPtE,fNonHFE->GetNULS());
 		if(fNonHFE->IsLS()) fPtElec_LS2_mc_closure->Fill(fPtE,fNonHFE->GetNLS());
 	}

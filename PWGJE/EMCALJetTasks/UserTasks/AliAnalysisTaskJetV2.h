@@ -160,6 +160,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayD*                GetCentralityClasses() const                    {return fCentralityClasses;}
+//        Float_t                 GetCentrality() const;
         TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
         TList*                  GetOutputList() const                           {return fOutputList;}
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}

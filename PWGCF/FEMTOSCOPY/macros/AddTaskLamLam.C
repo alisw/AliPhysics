@@ -1,4 +1,4 @@
-AliAnalysisV0Lam *AddTaskLamLam(Int_t sysStudyType, Int_t varCutType, Bool_t flattenCent)
+AliAnalysisV0Lam *AddTaskLamLam(Int_t sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents = 5)
 {
   // Adds the Lambda-Lambda femtoscopy task to the manger
 
@@ -8,7 +8,7 @@ AliAnalysisV0Lam *AddTaskLamLam(Int_t sysStudyType, Int_t varCutType, Bool_t fla
     return NULL;
   }
   
-  AliAnalysisV0Lam *myTask = new AliAnalysisV0Lam("LamLamTask", sysStudyType, varCutType, flattenCent);
+  AliAnalysisV0Lam *myTask = new AliAnalysisV0Lam("LamLamTask", sysStudyType, varCutType, flattenCent, nMixingEvents);
   if(!myTask) return NULL;
   mgr->AddTask(myTask);
 

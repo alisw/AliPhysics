@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: November 13th, 2015.							      //
+	//		version: July 21th, 2016.      							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -90,7 +90,11 @@ public:
 	void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) {fRejectKinkMother = rejectKinkMother;};
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
 	void SetMCanalysis() {fIsMC = kTRUE;};
+	
 	void SetPPanalysis(Bool_t Ispp = kFALSE) {fIspp = Ispp;};
+		//centrality
+	void SetCentralitySys(Bool_t IsCentralitySys = kFALSE) {fIsCentralitySys = IsCentralitySys;};
+	
 	void SetCentrality(Double_t CentralityMin, Double_t CentralityMax) { fCentralityMin = CentralityMin; fCentralityMax = CentralityMax; fHasCentralitySelection = kTRUE; };
 	void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	void SetEventMixing(Bool_t EventMixingFlag) { fEventMixingFlag = EventMixingFlag;};
@@ -124,14 +128,14 @@ public:
 	void SetTPCcal_cut_max(Double_t TPCmax ) {fTPCcal_CutMax = TPCmax; };
 	
 	//TPC calibration for eta dependence
-	void SetTPCCalibration_eta() {fCalibrateTPC_eta=kTRUE;};
+	void SetTPCCalibration_eta(Bool_t CalibrateTPC_eta = kFALSE) {fCalibrateTPC_eta=CalibrateTPC_eta;};
 
 
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
 	void SetEoverPnsigma(Bool_t EoverPnsigma=kFALSE) { fEoverPnsigma=EoverPnsigma;};
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
-	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
+	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = ZNA
 	void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
 	void SetSPDCutForHadrons() {fAssocWithSPD = kTRUE;};
 	
@@ -168,6 +172,7 @@ private:
 	//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIspp;
+	Bool_t				fIsCentralitySys;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
 	Bool_t				fUseTrigger;
@@ -211,11 +216,21 @@ private:
 	
 		//For Centrality Selection
 	AliCentrality			*fCentrality;
+	AliCentrality			*fCentrality2;
 	Double_t				fCentralityMin;
 	Double_t				fCentralityMax;
 	Bool_t					fHasCentralitySelection;
 	TH1F					*fCentralityHist;
 	TH1F					*fCentralityHistPass;
+	
+	TH1F					*fCentralityHist2;
+	TH2F					*fCentralityHist_correlation;
+
+	TH1F					*fCentralityHistPass2;
+	
+	TH1F					*fMultiplicityHist;
+	TH1F					*fMultiplicityHistPass;
+
 	Float_t					fZvtx;	
 	Int_t					fEstimator;
 	
@@ -226,6 +241,13 @@ private:
 	
 		//Histograms
 	TH1F				*fNevent;
+	
+	TH1F				*fNevent_0;
+	TH1F				*fNevent_1;
+	TH1F				*fNevent_2;
+	TH1F				*fNevent_3;
+		//	TH1F				*fNevent_4;
+	
 	TH1F				*fNevent2;
 	TH1F				*fPtElec_Inc;
 	
@@ -246,6 +268,19 @@ private:
 	TH1F				*fPtElec_ULS;
 	TH1F				*fPtElec_LS;
 	
+	//centrality
+	TH1F				*fPtElec_ULS_0;
+	TH1F				*fPtElec_LS_0;
+	TH1F				*fPtElec_ULS_1;
+	TH1F				*fPtElec_LS_1;
+	TH1F				*fPtElec_ULS_2;
+	TH1F				*fPtElec_LS_2;
+	TH1F				*fPtElec_ULS_3;
+	TH1F				*fPtElec_LS_3;
+		//TH1F				*fPtElec_ULS_4;
+		//TH1F				*fPtElec_LS_4;
+	
+	
 	TH1F				*fPtElec_ULS_NoPid;
 	TH1F				*fPtElec_LS_NoPid;
 	
@@ -254,6 +289,19 @@ private:
 	
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
+	
+		//centrality
+	TH1F				*fPtElec_ULS2_0;
+	TH1F				*fPtElec_LS2_0;
+	TH1F				*fPtElec_ULS2_1;
+	TH1F				*fPtElec_LS2_1;
+	TH1F				*fPtElec_ULS2_2;
+	TH1F				*fPtElec_LS2_2;
+	TH1F				*fPtElec_ULS2_3;
+	TH1F				*fPtElec_LS2_3;
+		//TH1F				*fPtElec_ULS2_4;
+		//TH1F				*fPtElec_LS2_4;
+	
 	
 	//mc closure
 	TH1F				*fPtElec_ULS_mc_closure;
@@ -267,6 +315,31 @@ private:
 	TH1F				*fPtElec_LS_weight;
 	TH1F				*fPtElec_ULS2_weight;
 	TH1F				*fPtElec_LS2_weight;
+	
+		//0
+	TH1F				*fPtElec_ULS_weight_0;
+	TH1F				*fPtElec_LS_weight_0;
+	TH1F				*fPtElec_ULS2_weight_0;
+	TH1F				*fPtElec_LS2_weight_0;  
+	
+		//1
+	TH1F				*fPtElec_ULS_weight_1;
+	TH1F				*fPtElec_LS_weight_1;
+	TH1F				*fPtElec_ULS2_weight_1;
+	TH1F				*fPtElec_LS2_weight_1;
+	
+		//2
+	TH1F				*fPtElec_ULS_weight_2;
+	TH1F				*fPtElec_LS_weight_2;
+	TH1F				*fPtElec_ULS2_weight_2;
+	TH1F				*fPtElec_LS2_weight_2;
+	
+		//3
+	TH1F				*fPtElec_ULS_weight_3;
+	TH1F				*fPtElec_LS_weight_3;
+	TH1F				*fPtElec_ULS2_weight_3;
+	TH1F				*fPtElec_LS2_weight_3;
+	
 	
 	//PID Histograms
 	
@@ -310,6 +383,13 @@ private:
 	TH2F				*fEoverP_pt_true_hadrons0;
 	TH2F				**fEoverP_pt;
 	
+	//centrality
+	TH2F				*fEoverP_pt_0;
+	TH2F				*fEoverP_pt_1;
+	TH2F				*fEoverP_pt_2;
+	TH2F				*fEoverP_pt_3;
+		//TH2F				*fEoverP_pt_4;
+	
 	TH2F				*fEoverP_pt_highE0;
 	TH2F				*fEoverP_pt_highE1;
 	
@@ -318,6 +398,8 @@ private:
 	TH2F				**fEoverP_tpc_pt_trigger;
 	TH1F				**fTPC_pt;
 	TH2F				**fTPC_p;
+	
+
 	
 	TH2F				*fTPC_momentum;
 	TH2F				*fTPC_eta;
@@ -344,6 +426,18 @@ private:
 	TH2F				*fTPCnsigma_pt_2D4;
 	TH2F				*fTPCnsigma_pt_2D5;
 	
+		//centrality
+	TH2F				*fTPCnsigma_pt_2D3_0;
+	TH2F				*fTPCnsigma_pt_2D3_1;
+	TH2F				*fTPCnsigma_pt_2D3_2;
+	TH2F				*fTPCnsigma_pt_2D3_3;
+		//centrality
+	TH2F				*fTPCnsigma_pt_2D5_0;
+	TH2F				*fTPCnsigma_pt_2D5_1;
+	TH2F				*fTPCnsigma_pt_2D5_2;
+	TH2F				*fTPCnsigma_pt_2D5_3;
+
+	
 	TH2F				*fShowerShapeCut;
 	TH2F				*fShowerShapeM02_EoverP;
 	TH2F				*fShowerShapeM20_EoverP;
@@ -359,6 +453,12 @@ private:
 	TH2F				*fTPCnsigma_phi;
 	TH1F				**fECluster;
 	TH1F				*fECluster_pure;
+	
+		//centrality
+	TH1F				*fECluster_pure_0;
+	TH1F				*fECluster_pure_1;
+	TH1F				*fECluster_pure_2;
+	TH1F				*fECluster_pure_3;
 	
 	TH1F				*fECluster_highpT0;
 	TH1F				*fECluster_highpT1;
@@ -436,6 +536,14 @@ private:
 	TH2F				*ftpc_p_EoverPcut;
 	TH2F				*fnsigma_p_EoverPcut;
 	TH2F				*fEoverP_pt_pions2;
+		//centrality
+	TH2F				*fEoverP_pt_pions2_0;
+	TH2F				*fEoverP_pt_pions2_1;
+	TH2F				*fEoverP_pt_pions2_2;
+	TH2F				*fEoverP_pt_pions2_3;
+		//TH2F				*fEoverP_pt_pions2_4;
+	
+	
 	TH2F				*fEoverP_pt_pions3;
 	
 	TH2F				*fEoverP_pt_pions2_highE0;
@@ -501,8 +609,33 @@ private:
 	//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
 	TH1F				*fPtBackgroundBeforeReco2;
+		//centrality
+	TH1F				*fPtBackgroundBeforeReco_0;
+	TH1F				*fPtBackgroundBeforeReco2_0;
+	TH1F				*fPtBackgroundBeforeReco_1;
+	TH1F				*fPtBackgroundBeforeReco2_1;
+	TH1F				*fPtBackgroundBeforeReco_2;
+	TH1F				*fPtBackgroundBeforeReco2_2;
+	TH1F				*fPtBackgroundBeforeReco_3;
+	TH1F				*fPtBackgroundBeforeReco2_3;
+		//TH1F				*fPtBackgroundBeforeReco_4;
+		//TH1F				*fPtBackgroundBeforeReco2_4;
+	
+		// 
 	TH1F				*fPtBackgroundBeforeReco_weight;
 	TH1F				*fPtBackgroundBeforeReco2_weight;
+	
+
+	TH1F				*fPtBackgroundBeforeReco_weight_0;
+	TH1F				*fPtBackgroundBeforeReco2_weight_0;
+	TH1F				*fPtBackgroundBeforeReco_weight_1;
+	TH1F				*fPtBackgroundBeforeReco2_weight_1;
+	TH1F				*fPtBackgroundBeforeReco_weight_2;
+	TH1F				*fPtBackgroundBeforeReco2_weight_2;
+	TH1F				*fPtBackgroundBeforeReco_weight_3;
+	TH1F				*fPtBackgroundBeforeReco2_weight_3;
+	
+	
 	TH2F				*fpT_m_electron;
 	TH2F				*fpT_gm_electron;
 	TH1F				*fPtBackgroundAfterReco;
@@ -516,11 +649,37 @@ private:
 	TH1F				*fPtMCparticleReco;
 	TH1F				*fPtMCparticleReco_nonPrimary;
 	TH1F				*fPtMCparticleAllHfe1;
+	
+	//centrality
+	TH1F				*fPtMCparticleAllHfe1_0;
+	TH1F				*fPtMCparticleAllHfe1_1;
+	TH1F				*fPtMCparticleAllHfe1_2;
+	TH1F				*fPtMCparticleAllHfe1_3;
+		//TH1F				*fPtMCparticleAllHfe1_4;
+	
+	
 	TH1F				*fPtMCparticleRecoHfe1;
+	
+		//centrality
+	TH1F				*fPtMCparticleRecoHfe1_0;
+	TH1F				*fPtMCparticleRecoHfe1_1;
+	TH1F				*fPtMCparticleRecoHfe1_2;
+	TH1F				*fPtMCparticleRecoHfe1_3;
+
+	
 	TH1F				*fPtMCparticleAllHfe2;
 	TH1F				*fPtMCparticleRecoHfe2;
 	TH1F				*fPtMCelectronAfterAll;
 	TH1F				*fPtMCelectronAfterAll_unfolding;
+	
+	//centrality
+	TH1F				*fPtMCelectronAfterAll_unfolding_0;
+	TH1F				*fPtMCelectronAfterAll_unfolding_1;
+	TH1F				*fPtMCelectronAfterAll_unfolding_2;
+	TH1F				*fPtMCelectronAfterAll_unfolding_3;
+		//TH1F				*fPtMCelectronAfterAll_unfolding_4;
+	
+	
 	TH1F				*fPtMCelectronAfterAll_nonPrimary;
 	TH1F				*fPtMCelectronAfterAll_Primary;
 	
@@ -534,7 +693,20 @@ private:
 	TH1F				*fPtMC_EMCal_All;
 	TH1F				*fPtMC_EMCal_Selected;
 	TH1F				*fPtMC_TPC_All;
+		//centrality
+		TH1F				*fPtMC_TPC_All_0;
+		TH1F				*fPtMC_TPC_All_1;
+		TH1F				*fPtMC_TPC_All_2;
+		TH1F				*fPtMC_TPC_All_3;
+	
 	TH1F				*fPtMC_TPC_Selected;
+	
+		//centrality
+	TH1F				*fPtMC_TPC_Selected_0;
+	TH1F				*fPtMC_TPC_Selected_1;
+	TH1F				*fPtMC_TPC_Selected_2;
+	TH1F				*fPtMC_TPC_Selected_3;
+	
 	TH1F				*fPt_track_match_den;
 	TH1F				*fPt_track_match_num;
 	

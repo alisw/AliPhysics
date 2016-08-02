@@ -112,7 +112,13 @@ fHistCentrDistr(0x0),
 fCutRatioClsOverCrossRowsTPC(0),
 fCutRatioSignalNOverCrossRowsTPC(0),
 fCutMinCrossedRowsTPCPtDep(""),
-f1CutMinNCrossedRowsTPCPtDep(0x0)
+f1CutMinNCrossedRowsTPCPtDep(0x0),
+fUseCutGeoNcrNcl(kFALSE),
+fDeadZoneWidth(3.),
+fCutGeoNcrNclLength(130.),
+fCutGeoNcrNclGeom1Pt(1.5),
+fCutGeoNcrNclFractionNcr(0.85),
+fCutGeoNcrNclFractionNcl(0.7)
 {
   //
   // Default Constructor
@@ -176,7 +182,13 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutRatioClsOverCrossRowsTPC(source.fCutRatioClsOverCrossRowsTPC),
   fCutRatioSignalNOverCrossRowsTPC(source.fCutRatioSignalNOverCrossRowsTPC),
   fCutMinCrossedRowsTPCPtDep(""),
-  f1CutMinNCrossedRowsTPCPtDep(0x0)
+  f1CutMinNCrossedRowsTPCPtDep(0x0),
+  fUseCutGeoNcrNcl(source.fUseCutGeoNcrNcl),
+  fDeadZoneWidth(source.fDeadZoneWidth),
+  fCutGeoNcrNclLength(source.fCutGeoNcrNclLength),
+  fCutGeoNcrNclGeom1Pt(source.fCutGeoNcrNclGeom1Pt),
+  fCutGeoNcrNclFractionNcr(source.fCutGeoNcrNclFractionNcr),
+  fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl)
 {
   //
   // Copy constructor
@@ -266,6 +278,14 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   if(source.f1CutMinNCrossedRowsTPCPtDep) f1CutMinNCrossedRowsTPCPtDep=new TFormula(*(source.f1CutMinNCrossedRowsTPCPtDep));
   fCutRatioClsOverCrossRowsTPC=source.fCutRatioClsOverCrossRowsTPC;
   fCutRatioSignalNOverCrossRowsTPC=source.fCutRatioSignalNOverCrossRowsTPC;
+
+  fUseCutGeoNcrNcl=source.fUseCutGeoNcrNcl;
+  fDeadZoneWidth=source.fDeadZoneWidth;
+  fCutGeoNcrNclLength=source.fCutGeoNcrNclLength;
+  fCutGeoNcrNclGeom1Pt=source.fCutGeoNcrNclGeom1Pt;
+  fCutGeoNcrNclFractionNcr=source.fCutGeoNcrNclFractionNcr;
+  fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
+
   PrintAll();
 
   return *this;
@@ -629,7 +649,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   return accept;
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const{
+Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d, const AliAODEvent* aod) const{
   //
   // Daughter tracks selection
   // 
@@ -653,7 +673,7 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const{
     if(fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst)
       { if(!dgTrack->HasPointOnITSLayer(0)) { retval = kFALSE; continue; } }
 
-    if(!IsDaughterSelected(dgTrack,&vESD,fTrackCuts)) retval = kFALSE;
+    if(!IsDaughterSelected(dgTrack,&vESD,fTrackCuts,aod)) retval = kFALSE;
   }
   
   return retval;
@@ -696,7 +716,7 @@ void AliRDHFCuts::SetMinCrossedRowsTPCPtDep(const char *rows){
    
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const{
+Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts, const AliAODEvent* aod) const{
   //
   // Convert to ESDtrack, relate to vertex and check cuts
   //
@@ -751,7 +771,19 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
     else return kFALSE;
   }
 
- 
+  // geometrical cut (note uses track at vertex instead of at TPC inner wall)
+  if(fUseCutGeoNcrNcl && aod){
+    Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+    Float_t lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fDeadZoneWidth,220.,aod->GetMagneticField());
+    Double_t cutGeoNcrNclLength=fCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fCutGeoNcrNclGeom1Pt);
+    Bool_t isOK=kTRUE;
+    if (lengthInActiveZoneTPC<cutGeoNcrNclLength) isOK=kFALSE;
+    if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) isOK=kFALSE;
+    if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) isOK=kFALSE;
+    if(!isOK) return kFALSE;
+  }
+
+
   if(fOptPileup==kRejectTracksFromPileupVertex){
     // to be implemented
     // we need either to have here the AOD Event, 

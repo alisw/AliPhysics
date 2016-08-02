@@ -72,10 +72,11 @@ public:
   /** 
    * Add a PDG code to be weighted
    * 
-   * @param pdg Particle code 
+   * @param pdg    Particle code 
    * @param weight The factor 
+   * @param anti   If true, also add for anti-particle 
    */
-  virtual void AddPDGCode(Int_t  pdg, Double_t weight);
+  virtual void AddPDGCode(Int_t  pdg, Double_t weight, Bool_t anti=false);
   /** 
    * Print information 
    * 

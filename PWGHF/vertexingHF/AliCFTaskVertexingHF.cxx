@@ -970,24 +970,24 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     switch (fDecayChannel){
     case 2:{
       charmCandidate = (AliAODRecoDecayHF2Prong*)arrayBranch->At(iCandid);
-      vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate);
+      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate))continue;
       break;
     }
     case 21:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE);//DStar
+      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE))continue;//DStar
       break;
     }
     case 22:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE);//Cascade
+      if(vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE))continue;//Cascade
       break;
     }
     case 31:
     case 32:
     case 33:{
       charmCandidate = (AliAODRecoDecayHF3Prong*)arrayBranch->At(iCandid);
-      vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate);
+      if(vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate))continue;
       break;
     }
     case 4:{
@@ -1086,7 +1086,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
           }
 
           //Number of ITS cluster requirements
-          Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks);
+          Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks, aodEvent);
           if (recoITSnCluster){
             fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
             icountRecoITSClusters++;
@@ -1615,6 +1615,39 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC10f6a(){
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,40.);
   fFuncWeight->SetParameters(1.34412e+01,3.20068e+00,5.14481e+00,2.5,7.59405e-04,7.51821e+00,-3.93811e-01,2.16849e-02,-3.37768e-02,2.40308e+00);
   fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3Lc(){
+	// weight function from the ratio of the LHC13d3 MC
+	// and FONLL calculations for pPb data
+	// using Lc simulated pt distribution
+	if(fFuncWeight) delete fFuncWeight;
+	fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,20.);
+	fFuncWeight->SetParameters(5.94428e+01,1.63585e+01,9.65555e+00,6.71944e+00,8.88338e-02,2.40477e+00,-4.88649e-02,-6.78599e-01,-2.10951e-01);
+	fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC11b2Lc(){
+	// weight function from the ratio of the LHC11b2 MC
+	// and FONLL calculations for pp data
+	// using Lc simulated pt distribution
+	if(fFuncWeight) delete fFuncWeight;
+	fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",1.,20.);
+	fFuncWeight->SetParameters(2.11879e+02,3.73290e+00,2.01235e+01,1.41508e+00,1.06268e-01,1.86285e+00,-4.52956e-02,-9.90631e-01,-1.31615e+00);
+	fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC10f7aLc(){
+	// weight function from the ratio of the LHC10f7a MC
+	// and FONLL calculations for pp data
+	// using Lc simulated pt distribution
+	if(fFuncWeight) delete fFuncWeight;
+	fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",1.,20.);
+	fFuncWeight->SetParameters(2.84268e+02,2.18850e+01,2.36298e+01,7.46144e+00,1.69747e-01,1.66993e+00,-5.54726e-02,-1.53869e+00,-1.18404e+00);
+	fUseWeight=kTRUE;
 }
 
 //_________________________________________________________________________

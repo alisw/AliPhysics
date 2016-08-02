@@ -58,6 +58,8 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH1F* fHistoNEvents;     //!<! histo with N of events
 
   TH1F* fHistoPhysPrim;     //!<! histo of n. of physical primaries in |eta|<0.5
+  TH1F* fHistoPhysPrimPiKPi09; //!<! histo of n. of primary pi, K, p
+  TH2F* fHistoPhysPrimPiKPi09vsb; //!<! histo of n. of primary pi, K, p vs. b
   TH1F* fHistoTracks;       //!<! histo with number of ESD tracks
   TH1F* fHistoSelTracks;    //!<! histo with number of TPC+ITS refit ESD tracks
   TH1F* fHistoTracklets;    //!<! histo with number of SPD tracklets
@@ -95,7 +97,8 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH1F* fHistDSpecies;          //!<! histo of D hadron species
   TH1F* fHistBSpecies;          //!<! histo of B hadron species
   TH1F* fHistLcDecayChan;      //!<! histo of Lc decay modes
-  TH2F* fHistNcollHFtype;      //!<! histo of B hadron species
+  TH2F* fHistNcollHFtype;      //!<! histo of number of injected events vs. type
+  TH2F* fHistNinjectedvsb;     //!<! histo of number of injected events vs. b
   TH3F* fHistEtaPhiPtGenEle;   //!<! histo of generated electrons
   TH3F* fHistEtaPhiPtGenPi;   //!<! histo of generated pions
   TH3F* fHistEtaPhiPtGenK;   //!<! histo of generated kaons
@@ -110,7 +113,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Bool_t fReadMC;
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckHFMCProd,7);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,8);
   /// \endcond
 };
 

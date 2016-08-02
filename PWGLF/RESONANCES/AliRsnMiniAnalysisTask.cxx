@@ -35,6 +35,8 @@
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 
+#include "AliMultSelection.h"
+
 #include "AliRsnCutSet.h"
 #include "AliRsnMiniPair.h"
 #include "AliRsnMiniEvent.h"
@@ -955,6 +957,28 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
             AliWarning("Cannot compute multiplicity with SPD tracklets from AOD");
             return 1E20;
          }
+      } else if (fCentralityType.Contains("AliMultSelection")) {
+	 TObjArray* a=(TObjArray*) fCentralityType.Tokenize("_");
+	 if (!a) {
+            AliWarning("Problem with AliRsnMiniAnalysisTask::fCentralityType string");
+            return 1E20;
+	 }
+
+	 TObjString* o=(TObjString*) a->At(1);
+	 if (!o) {
+            AliWarning("Problem with AliRsnMiniAnalysisTask::fCentralityType string");
+            return 1E20;
+	 }
+
+	 TString s=o->GetString();
+
+	 AliMultSelection *MultSelection = (AliMultSelection*) fInputEvent -> FindListObject("MultSelection");
+	 if (!MultSelection) {
+            AliWarning("Could not find MultSelection object");
+            return 1E20;
+	 }
+
+	 return MultSelection->GetMultiplicityPercentile(s.Data());
       } else {
          AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", fCentralityType.Data()));
          return -1.0;
