@@ -102,6 +102,8 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   ULong64_t triggerMask=AliVEvent::kAnyINT;
   Int_t Particle=AliAnalysisTaskDxHFEParticleSelection::kD0;
   TString extraname="";
+  TString cutFilenameD0="";
+  TString cutFilenameEl="";
 
   // look for configuration arguments
   cout << endl << "===============================================" << endl;
@@ -134,11 +136,19 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    analysisName=" "+argument+"PartSel";
 	    continue;
 	  }
-	  if (argument.BeginsWith("cutFilename=")) { //--------------------//
-	    argument.ReplaceAll("cutFilename=", ""); //   Move this to     //
-	    cutFilename=argument;                    //     cutname?       //
-	    continue;                                //--------------------//
-	  }
+	  if (argument.BeginsWith("cutFilenameD0=")) { 
+	    argument.ReplaceAll("cutFilenameD0=", ""); 
+	    cutFilenameD0=argument;                    
+ 	    continue;
+ 	  } 
+	  //electron cutfile not yet enabled
+	  /*
+	    if (argument.BeginsWith("cutFilenameEl=")) { 
+	    argument.ReplaceAll("cutFilenameEl=", ""); 
+	    cutFilenameEl=argument;                    
+	    continue;
+	    } 
+	  */  
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
 	    bTuneOnData=kTRUE; //Consider separating these, but for now this is default when using mc 
@@ -261,7 +271,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   if (ofilename.IsNull()) ofilename=AliAnalysisManager::GetCommonFileName();
   ofilename+=":"+analysisName;
 
-  if(cutFilename=="")
+  if(cutFilenameD0=="")
     {
       ///______________________________________________________________________
       /// Cuts For D0
@@ -285,14 +295,156 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	RDHFD0toKpi->SetMaxCentrality(10.);// 80.*1.01
       }
       else if (system==2) {
-	RDHFD0toKpi->SetStandardCutsPP2010();
-	RDHFD0toKpi->SetTriggerMask(triggerMask); //pPb
-	RDHFD0toKpi->SetTriggerClass(""); //pPb  
+	//New cuts (from cutfile used to make D0 eff map)
+	//____________________________________________________
+	//Set Centrality
+	Float_t minc=0,maxc=100;
+	
+	// Cuts for D0
+	AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+	RDHFD0toKpi->SetName("D0toKpiCuts");
+	RDHFD0toKpi->SetTitle("Cuts for D0 analysis");
+	
+	// PILE UP REJECTION
+	RDHFD0toKpi->SetOptPileup(1);  	   //per DATI (spegni per MC)		
+	RDHFD0toKpi->ConfigurePileupCuts(5,0.8);  //per DATI (spegni per MC)
+	
+	//Event cuts
+	RDHFD0toKpi->SetMinVtxContr(1);
+	RDHFD0toKpi->SetMaxVtxZ(10.);
+	
+	//Trigger selection
+	RDHFD0toKpi->SetTriggerClass("");
+	RDHFD0toKpi->SetTriggerMask(triggerMask);
+	
+	//Quality tracks for daughters
+	AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+	esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+	esdTrackCuts->SetRequireTPCRefit(kTRUE);
+	esdTrackCuts->SetRequireITSRefit(kTRUE);
+	//esdTrackCuts->SetMinNClustersITS(4); // default is 5
+	//esdTrackCuts->SetMinNClustersTPC(120);
+	esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny); // default is kBoth, otherwise kAny
+	esdTrackCuts->SetMinDCAToVertexXY(0.);
+	esdTrackCuts->SetEtaRange(-0.8,0.8);
+	esdTrackCuts->SetPtRange(0.3,1.e10);
+	
+	RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
+	
+	//D0 selection topological cuts
+	const Int_t nptbins =14;
+	const Double_t ptmax = 9999.;
+	const Int_t nvars=11;
+	Float_t ptbins[nptbins+1];
+	ptbins[0]=0.;
+	ptbins[1]=0.5;	
+	ptbins[2]=1.;
+	ptbins[3]=2.;
+	ptbins[4]=3.;
+	ptbins[5]=4.;
+	ptbins[6]=5.;
+	ptbins[7]=6.;
+	ptbins[8]=7.;
+	ptbins[9]=8.;
+	ptbins[10]=12.;
+	ptbins[11]=16.;
+	ptbins[12]=20.;
+	ptbins[13]=24.;
+	ptbins[14]=ptmax;
+	
+	RDHFD0toKpi->SetGlobalIndex(nvars,nptbins);
+	RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
+	
+	Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-0.000325,0.80,0.,3.2},/* pt<0.5*/
+							{0.400,350.*1E-4,0.8,0.5,0.5,1000.*1E-4,1000.*1E-4,-0.000325,0.80,0.,3.2},/* 0.5<pt<1*/
+							{0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.90,0.,0.},/* 1<pt<2 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.90,0.,0.},/* 2<pt<3 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.90,0.,0.},/* 3<pt<4 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.90,0.,0.},/* 4<pt<5 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.90,0.,0.},/* 5<pt<6 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 6<pt<7 */
+							{0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 7<pt<8 */
+							{0.400,300.*1E-4,0.9,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85,0.,0.},/* 8<pt<12 */
+							{0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 12<pt<16 */
+							{0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 16<pt<20 */
+							{0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.},/* 20<pt<24 */
+							{0.400,300.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,10000.*1E-8,0.85,0.,0.}};/* pt>24 */
+	
+	//CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+	Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+	for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+	
+	for (Int_t ibin=0;ibin<nptbins;ibin++){
+	  for (Int_t ivar = 0; ivar<nvars; ivar++){
+	    cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];      
+	  }
+	}
+	
+	RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+	RDHFD0toKpi->SetUseSpecialCuts(kTRUE);
+	RDHFD0toKpi->SetRemoveDaughtersFromPrim(kTRUE);
+	
+	for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+	delete [] cutsMatrixTransposeStand;
+	cutsMatrixTransposeStand=NULL;
+	
+	//D0 pid settings
+	Bool_t pidflag=kTRUE;
+	RDHFD0toKpi->SetUsePID(pidflag);
+	if(pidflag) cout<<"PID is used"<<endl;
+	else cout<<"PID is not used"<<endl;
+	
+	AliAODPidHF* pidObj=new AliAODPidHF();
+	Int_t mode=1;
+	const Int_t nlims=2;
+	Double_t plims[nlims]={0.6,0.8}; //TPC limits in momentum [GeV/c]
+	Bool_t compat=kTRUE; //effective only for this mode
+	Bool_t asym=kTRUE;
+	Double_t sigmas[5]={2.,1.,0.,3.,0.}; //to be checked and to be modified with new implementation of setters by Rossella
+	pidObj->SetAsym(asym);// if you want to use the asymmetric bands in TPC
+	pidObj->SetMatch(mode);
+	pidObj->SetPLimit(plims,nlims);
+	pidObj->SetSigma(sigmas);
+	pidObj->SetCompat(compat);
+	pidObj->SetPCompatTOF(2.);
+	pidObj->SetSigmaForTPCCompat(3.);
+	pidObj->SetSigmaForTOFCompat(3.);
+	pidObj->SetTPC(kTRUE);
+	pidObj->SetTOF(kTRUE);
+	pidObj->SetOldPid(kFALSE);
+	RDHFD0toKpi->SetPidHF(pidObj);
+	RDHFD0toKpi->SetUsePID(kTRUE);
+	RDHFD0toKpi->SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
+	RDHFD0toKpi->SetLowPt(kFALSE);
+	RDHFD0toKpi->SetMaximumPforPID(999.);
+	
+	//activate pileup rejection (for pp)
+	//  RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+	
+	TString cent="";
+	//[FIXME] needed for pPb?
+	//centrality selection (Pb-Pb)
+	RDHFD0toKpi->SetMinCentrality(minc);
+	RDHFD0toKpi->SetMaxCentrality(maxc);
+	cent=Form("%.0f%.0f",minc,maxc);
+	RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0A); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
       } 
       else {
 	//Warning, no system set.
       }
-
+    }else{ //If there is a cutfile for D0
+    cout<<"Getting D0 cut object from: "<<cutFilenameD0<<endl;
+    TFile *filecuts;
+    //TString finname="Cutlist.root";
+    filecuts=TFile::Open(cutFilenameD0.Data());
+    TString fRDHFcutsObj="D0toKpiCuts";
+    AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
+    RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(fRDHFcutsObj.Data());
+    RDHFD0toKpi->PrintAll();
+  } 
+  
+  if(cutFilenameEl=="")
+    { 
       ///______________________________________________________________________
       /// Cuts for HFE
       AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsTPCTOF","HFE Standard Cuts");
@@ -374,7 +526,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	Cutlist->Add(fPIDOnlyTPC);
       }
     }
-  else //if there is a cutfile
+  else //if there is a cutfile for electrons
     {
       TFile *filecuts;
       TString finname="Cutlist.root";

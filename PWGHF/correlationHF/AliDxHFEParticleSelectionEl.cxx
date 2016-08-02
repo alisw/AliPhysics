@@ -243,7 +243,7 @@ THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse()
     // TODO: Redo binning of distributions more?
     //     		               0    1      2   
     // 	 	                       Pt   Phi   Eta 
-    int    thnBinsExt[thnSizeExt] = { 100,  100, 100,   kNCutLabels-1};
+    int    thnBinsExt[thnSizeExt] = { 50,  100, 100,   kNCutLabels-1};
     double thnMinExt [thnSizeExt] = {   0,    0, -1.,   kRecKineITSTPC-0.5 };
     double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,   kSelected-0.5};
     const char* thnNamesExt[thnSizeExt]={
@@ -262,7 +262,7 @@ THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse()
     // TODO: Redo binning of distributions more?
     //     		       0    1      2    
     // 	 	               Pt   Phi   Eta   
-    int    thnBins[thnSize] = { 100,  100, 100 };
+    int    thnBins[thnSize] = { 50,  100, 100 };
     double thnMin [thnSize] = {   0,    0, -1. };
     double thnMax [thnSize] = {  10, 2*Pi,  1. };
     const char* thnNames[thnSize]={
@@ -282,6 +282,7 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   AliInfo("Electron THnSparse");
   
   fElectronProperties=DefineTHnSparse();
+  fElectronProperties->Sumw2();
   AddControlObject(fElectronProperties);
   
   fHistoList=new TList;

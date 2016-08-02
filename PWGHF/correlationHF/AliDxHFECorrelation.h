@@ -111,6 +111,7 @@ class AliDxHFECorrelation : public TNamed {
   virtual double GetD0Eff(AliVParticle* tr, Double_t evMult);
 
   virtual void SetCuts(AliAnalysisCuts* cuts) {fCuts=cuts;}
+  virtual void SetCutsD0(TList* cuts){fCutsD0=cuts;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   //void SetUseEventMixing(Bool_t useMixing) {fUseEventMixing=useMixing;}
   //void SetSystem(Bool_t system){fSystem=system;}
@@ -125,6 +126,7 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetMaxPhi() const {return fMaxPhi;}
   Double_t GetDeltaPhi() const {return fDeltaPhi;}
   Double_t GetDeltaEta() const {return fDeltaEta;}
+  Int_t GetPoolBin() const {return fDeltaEta;}
   inline int GetDimTHnSparse() const {return fDimThn;}
   AliAnalysisCuts* GetCuts() const {return fCuts;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
@@ -167,6 +169,7 @@ class AliDxHFECorrelation : public TNamed {
   THnSparse* fCorrProperties;    //  the Correlation properties of selected particles
   TH1* fhEventControlCorr;       //! event control histogram (saved via control object list)
   AliAnalysisCuts *fCuts;        //! Cuts 
+  TList *fCutsD0;                //!  Cuts D0 
   Bool_t fUseMC;                 // use MC info
   AliHFCorrelator *fCorrelator;  //! object for correlations
   Bool_t fUseEventMixing;        // Run Event Mixing analysis
@@ -183,8 +186,9 @@ class AliDxHFECorrelation : public TNamed {
   Bool_t fUseD0Efficiency;       // Whether or not to correct for D0 efficiency
   Int_t fRunMode;                // Which mode to run in (bigger thnsparse)
   Short_t fUseCentrality;        // Using centrality or not
+  Int_t fPoolBin;                // Poolbin number
   static const char* fgkEventControlBinNames[];
 
-  ClassDef(AliDxHFECorrelation, 6)
+  ClassDef(AliDxHFECorrelation, 7)
 };
 #endif

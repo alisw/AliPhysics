@@ -88,6 +88,7 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   static const int sizeEventdphi = 10;  
   static const int sizeEventdphiReduced = 5;  
   static const int sizeEventdphiRedMC = 8;  
+  static const int sizeEventdphiRedMCpPb = 8;  
   const double pi=TMath::Pi();
   Double_t minPhi=GetMinPhi();
   Double_t maxPhi=GetMaxPhi();
@@ -123,22 +124,23 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
   }
   else if(fRunMode==kReducedModeFullMCInfo){
     if(2==fSystem){//Reduced bins for pPb due to memory consumption
-      InitTHnSparseArray(sizeEventdphiRedMC);
-      // 			                                       0        1    2     3      4      5       6          7
-      // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl    generatorEl
-      int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   100,    80,   50,  16,     25,   10, nrMotherEl+1,    4 };
-      double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5,       -1.5 };
-      double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    16,    10, maxPhi,  2.0,  8.5, nrMotherEl-0.5,2.5 };
-      const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
+      InitTHnSparseArray(sizeEventdphiRedMCpPb);
+      // 			                                 0        1    2     3        4     5           6       7              8
+      // 			                             D0invmass  PtD0   Pte   dphi    dEta poolbin   OrigD0   origEl        generatorEl
+      int         binsEventdphiRedMC[sizeEventdphiRedMCpPb] = {   150,      28,    50,  16,     20,    6,      10,  nrMotherEl+1};//,       4 };
+      double      minEventdphiRedMC [sizeEventdphiRedMCpPb] = { 1.5848,      2,     0, minPhi, -2.0,   -0.5,  -1.5,    -1.5};//,          -1.5 };
+      double      maxEventdphiRedMC [sizeEventdphiRedMCpPb] = { 2.1848,     16,    10, maxPhi,  2.0,   5.5,    8.5,  nrMotherEl-0.5};//,   2.5 };
+      const char* nameEventdphiRedMC[sizeEventdphiRedMCpPb] = {
 	"D0InvMass",
 	"PtD0",
 	"PtEl",
 	"#Delta#Phi",
 	"#Delta#eta", 
+	"PoolBin",
 	"Origin D0", 
-	"Origin Electron",
+	"Origin Electron"
       };
-      thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMC,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+      thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMCpPb,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
     }
     else{
       InitTHnSparseArray(sizeEventdphiRedMC);
@@ -276,6 +278,7 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
   }
   data[i++]=AliDxHFECorrelation::GetDeltaPhi();
   data[i++]=AliDxHFECorrelation::GetDeltaEta();
+  if(fSystem==2)data[i++]=AliDxHFECorrelation::GetPoolBin();
   if(fRunMode==kFullMode || fRunMode==kReducedModeFullMCInfo){
     if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
       data[i++]=ptrigger->GetOriginMother();

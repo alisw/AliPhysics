@@ -214,6 +214,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fCorrelation=new AliDxHFECorrelationMC;
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
+  fCorrelation->SetCutsD0(fCutsD0);
   iResult=fCorrelation->Init(fOption);
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
@@ -225,6 +226,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     //Correlation only charm===========================================
     fCorrelationCharm=new AliDxHFECorrelationMC("AliDxHFECorrelationMCCharm");
     fCorrelationCharm->SetCuts(fCuts);
+    fCorrelationCharm->SetCutsD0(fCutsD0);
     option=fOption+" storeoriginD=charm storeoriginEl=charm";
     iResult=fCorrelationCharm->Init(option);
     if (iResult<0) {
@@ -234,6 +236,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     //Correlation only beauty==========================================
     fCorrelationBeauty=new AliDxHFECorrelationMC("AliDxHFECorrelationMCBeauty");
     fCorrelationBeauty->SetCuts(fCuts);
+    fCorrelationBeauty->SetCutsD0(fCutsD0);
     option=fOption+" storeoriginD=beauty storeoriginEl=beauty";
     iResult=fCorrelationBeauty->Init(option);
     if (iResult<0) {
@@ -243,6 +246,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     //Correlation nonHFE with c+b Ds====================================
     fCorrelationNonHF=new AliDxHFECorrelationMC("AliDxHFECorrelationMCNonHF");
     fCorrelationNonHF->SetCuts(fCuts);
+    fCorrelationNonHF->SetCutsD0(fCutsD0);
     option=fOption+" storeoriginD=HF storeoriginEl=nonHF";
     iResult=fCorrelationNonHF->Init(option);
     if (iResult<0) {
@@ -252,6 +256,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     //Correlation hadrons with c+b Ds====================================
     fCorrelationHadron=new AliDxHFECorrelationMC("AliDxHFECorrelationMCHadrons");
     fCorrelationHadron->SetCuts(fCuts);
+    fCorrelationHadron->SetCutsD0(fCutsD0);
     option=fOption+" storeoriginD=HF storeoriginEl=hadrons";
     iResult=fCorrelationHadron->Init(option);
     if (iResult<0) {

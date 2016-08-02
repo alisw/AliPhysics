@@ -123,6 +123,7 @@ int AliDxHFEParticleSelectionD0::InitControlObjects()
   /// call AliDxHFEParticleSelection::InitControlObjects() explicitly
 
   fD0Properties=DefineTHnSparse();
+  fD0Properties->Sumw2();
   AddControlObject(fD0Properties);
 
   //Adding control objects for the daughters
@@ -151,20 +152,22 @@ THnSparse* AliDxHFEParticleSelectionD0::DefineTHnSparse()
 
   // here is the only place to change the dimension
   const int thnSize2 = 5;
-  InitTHnSparseArray(thnSize2);
+  const int thnSize3 = 4;
   
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
   if(2==fSystem){//Reduced binning for p-Pb
-    // 			             0     1     2       3         4
-    // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta
-    int         thnBins [thnSize2] = {80, 100,  15,     170,     125};
-    double      thnMin  [thnSize2] = {  0,    0,   0,    1.6458,   -1.};
-    double      thnMax  [thnSize2] = { 16, 2*Pi, 14,    2.1558,    1.};
-    const char* thnNames[thnSize2] = {"Pt", "Phi","Ptbin","D0InvMass","Eta"};
-    return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+    InitTHnSparseArray(thnSize3);
+    // 			             0     1      2         3
+    // 	 	                     Pt   Phi   D0InvMass  Eta
+    int         thnBins [thnSize3] = {28, 100,    150,     100};
+    double      thnMin  [thnSize3] = {  2,  0,  1.5848,   -1.};
+    double      thnMax  [thnSize3] = { 16, 2*Pi,  2.1848,    1.};
+    const char* thnNames[thnSize3] = {"Pt", "Phi","D0InvMass","Eta"};
+    return CreateControlTHnSparse(name,thnSize3,thnBins,thnMin,thnMax,thnNames);
   } else {
+    InitTHnSparseArray(thnSize2);
     // 			             0     1     2       3         4
     // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  
     int         thnBins [thnSize2] = {1000, 200,  15,     200,     500 };
@@ -189,7 +192,7 @@ int AliDxHFEParticleSelectionD0::FillParticleProperties(AliVParticle* p, Double_
   }
   data[i++]=track->Pt();
   data[i++]=track->Phi();
-  data[i++]=fPtBin;
+  if(fSystem!=2) data[i++]=fPtBin;
   data[i++]=fD0InvMass;
   data[i++]=track->Eta();
 
