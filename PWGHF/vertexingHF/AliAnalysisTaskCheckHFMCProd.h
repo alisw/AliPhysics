@@ -107,13 +107,18 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtRecPi;   //!<! histo of generated pions
   TH3F* fHistEtaPhiPtRecK;   //!<! histo of generated kaons
   TH3F* fHistEtaPhiPtRecPro;   //!<! histo of generated protons
+  TH2F* fHistPtRecVsPtGen;   //!<! correlation between rec and gen pt
+  TH2F* fHistPhiRecVsPhiGen;   //!<! correlation between rec and gen pt
+  TH2F* fHistEtaRecVsEtaGen;   //!<! correlation between rec and gen pt
+  TH1F* fHistPtRecGood;   //!<! pt distribution of "good" tracks
+  TH1F* fHistPtRecFake;   //!<! pt distribution of fake tracks
   Bool_t fSearchUpToQuark; /// c/b separation using quarks
   Int_t fSystem;         /// 0=pp, 1=PbPb, 2=pPb
   AliESDtrackCuts *fESDtrackCuts; /// track selection
   Bool_t fReadMC;
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckHFMCProd,8);
+  ClassDef(AliAnalysisTaskCheckHFMCProd,9);
   /// \endcond
 };
 
