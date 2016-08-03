@@ -22,6 +22,7 @@
 #include "TVector.h"
 #include "TSystem.h"
 #include "TProfile.h"
+#include <vector>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -113,8 +114,6 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
 	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
-  void SetSingleElectronAnalysis(Bool_t a){fDoSingleElectronAnalysis=a;}
-
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
@@ -129,7 +128,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 		for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
 	}
   void DoEventMixingWithPools(Int_t index);
-  void ResetPool(Int_t poolIndex);
+  void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t charge_v0pr);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
 
 
@@ -604,10 +603,6 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoMassVariablesvsLambdaPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoMassVariablesvsLambdaPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
-  THnSparse* fHistoSingleElectronVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (MC)
-  THnSparse* fHistoSingleElectronVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (MC)
-  THnSparse* fHistoSingleElectronVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
-
   TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
@@ -669,7 +664,6 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronPionR125WS;//!<! dPhiS vs dEtaS R125 WS
   TH2D *fHistodPhiSdEtaSElectronPionR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronPionR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
-  Bool_t fDoSingleElectronAnalysis; /// flag for event mixing
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -680,19 +674,18 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	Int_t fNCentBins;								/// number of centrality bins
 	Double_t fCentBins[100];						// [fNCentBinsDim]
   Int_t  fNOfPools; /// number of pools
-  TTree** fEventBuffer;   //!<! structure for event mixing
-	TObjString *fEventInfo; ///unique event id for mixed event check
-  TObjArray* fElectronTracks; /// array of electron-compatible tracks
-  TObjArray* fV0Tracks1; /// array of lambda-compatible tracks
-  TObjArray* fV0Tracks2; /// array of antilambda-compatible tracks
-  TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
-  TObjArray* fV0CutVarsArray1; /// array of RDHF cut information
-  TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
-  TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
-  TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
+  Int_t fPoolIndex; /// pool index
+  std::vector<Int_t> nextResVec; //!<! Vector storing next reservoir ID
+  std::vector<Bool_t> reservoirsReady; //!<! Vector storing if the reservoirs are ready
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirE; //!<! reservoir
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirL1; //!<! reservoir
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirL2; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsE; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL1; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,34); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,35); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
