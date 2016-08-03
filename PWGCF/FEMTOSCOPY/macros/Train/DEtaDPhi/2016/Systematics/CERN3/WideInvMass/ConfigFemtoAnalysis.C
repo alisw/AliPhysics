@@ -360,7 +360,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetMaxDcaV0(0.6); //0.5
 					dtc4etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
 					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
-					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(6.0); //60
+					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0044,LambdaMass+0.0044);
 					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 					dtc4etaphitpc[aniter]->SetRadiusV0Min(0.5);
@@ -391,7 +391,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMaxDcaV0(0.6); //0.5
 					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
 					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
-					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(6.0); //60
+					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0044,LambdaMass+0.0044);
 					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 					dtc5etaphitpc[aniter]->SetRadiusV0Min(0.5);
