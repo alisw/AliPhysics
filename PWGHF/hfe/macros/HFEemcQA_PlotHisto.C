@@ -24,7 +24,8 @@ void HFEemcQA_PlotHisto()
   SetTrigQA(dQA0,dQA1);
 
   TString file;
-  file.Form("EMCalQA_Trig.pdf");
+  file.Form("%s.pdf",dQA1);
+  //file.Form("EMC.pdf");
 
   TFile *f1 = new TFile("AnalysisResults.root");
   //PWGHF_hfeHFEemcQAINT7 - QA1
@@ -65,8 +66,9 @@ void HFEemcQA_PlotHisto()
   TH1F *EMCTrkphi = QA1->FindObject("fEMCTrkphi");
   TH2F *ClsEAftTrkMatch = QA1->FindObject("fClsEtaPhiAftMatch");
   TH2F *EMCTrkTPCNsig = QA1->FindObject("fEMCTPCnsig");
-  TH2F *EovP = QA1->FindObject("fHistEop");
-  TH2F *NsigEovP = QA1->FindObject("fHistdEdxEop");
+  //TH2F *EovP = QA1->FindObject("fHistEop");
+  //TH2F *NsigEovP = QA1->FindObject("fHistdEdxEop");
+  TH2F *NsigEovP = QA1->FindObject("fHistNsigEop");
   TH2F *M20 = QA1->FindObject("fM20");
   TH2F *M02 = QA1->FindObject("fM02");
   TH2F *M02EovP = QA1->FindObject("fM02EovP");
@@ -179,9 +181,6 @@ void HFEemcQA_PlotHisto()
   leg->AddEntry(EMCTrkPt,"EMCAL selected track","pl");
   c11->Print(file,"pdf");
 
-  TCanvas *c11_1 = new TCanvas("TrackPt", "TrackPt",50,50,700,500);
-  EMCTrkMatchPt->Draw("colz");
-
   TCanvas *c12 = new TCanvas("TrackEta", "Track eta distribution",50,50,700,500);
   Trketa->SetTitle("Track #eta ditribution");
   gPad->SetLogy();
@@ -229,7 +228,7 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(TPCNsigEta0);
   TPCNsigEta0->Draw("colz");
   nSigE0->Print(file,"pdf");
-
+  /*
   TCanvas *nSigE1 = new TCanvas("TPNnSig_Eta_Pt1","TPC nsigma vs #eta for pT>3",50,50,700,500);
   gPad->SetLogz();
   TPCNsigEta1->SetTitle("TPC Nsigma vs #eta, p_{T} > 3 GeV/c");
@@ -243,6 +242,7 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(TPCNsigEta2);
   TPCNsigEta2->Draw("colz");
   nSigE2->Print(file,"pdf");
+  */
 
   TCanvas *c18 = new TCanvas("EMCdeltaR","Distance of EMC cluster to its closest track",50,50,700,500);
   //EMCDeltaR->GetXaxis()->SetRangeUser(-0.08,0.08);
@@ -271,6 +271,7 @@ void HFEemcQA_PlotHisto()
   ClsPE->Print(file,"pdf");
  
 
+  /*
   TCanvas *c25 = new TCanvas("emcTrkTPCnsig","EMC matched track nsig distribution",50,50,700,500);
   EMCTrkTPCNsig->SetTitle("#phi,#eta distribution of clusters matched to tracks");
   EMCTrkTPCNsig->GetXaxis()->SetRangeUser(0,15);
@@ -278,8 +279,9 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(EMCTrkTPCNsig);
   EMCTrkTPCNsig->Draw("colz");
   c25->Print(file,"pdf");
+  */
 
-  TCanvas *c24 = new TCanvas("nsigEovP","TPCnsig vs E/p distribution",50,50,700,500);
+  TCanvas *c22 = new TCanvas("nsigEovP","TPCnsig vs E/p distribution",50,50,700,500);
   gPad->SetLogz();
   NsigEovP->SetTitle("TPCnsigma vs E/p, p_{T} > 3 GeV/c");
   NsigEovP->GetXaxis()->SetTitle("E/p");
@@ -290,18 +292,23 @@ void HFEemcQA_PlotHisto()
   //NsigEovP->ProjectionX("a",535,700);
   //a->Rebin(2);
   //a->Draw("e");
-  c24->Print(file,"pdf");
-
-  TCanvas *c22 = new TCanvas("EovP","E/p distribution",50,50,700,500);
-  ProcessHisto2D(EovP);
-  EovP->SetTitle("");
-  EovP->GetXaxis()->SetRangeUser(0,15);
-  gPad->SetLogz();
-  EovP->Draw("colz");
-  //EovP->ProjectionY()->Draw();
   c22->Print(file,"pdf");
 
-  TCanvas *24 = new TCanvas("M20","M20 distribution",50,50,700,500);
+  
+  TCanvas *c22_1 = new TCanvas("EovP","E/p distribution",50,50,700,500);
+  //ProcessHisto2D(EovP);
+  TH1D* EovP = NsigEovP->ProjectionX("EovP",110,114);
+  EovP->SetTitle("E/p with -1<n#sigma<3");
+  EovP->GetXaxis()->SetRangeUser(0,15);
+  gPad->SetLogz();
+  EovP->Draw();
+  //EovP->ProjectionY()->Draw();
+  c22_1->Print(file,"pdf");
+
+
+  TCanvas *c24 = new TCanvas("M20","M20 distribution",50,50,700,500);
+  c24->Divide(2,1);
+  c24->cd(1);
   M20->GetXaxis()->SetRangeUser(0,15);
   M20->SetTitle("");
   M20->GetXaxis()->SetTitle("p_{T} GeV/c");
@@ -309,9 +316,16 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(M20);
   gPad->SetLogz();
   M20->Draw("colz");
+  c24->cd(2);
+  M20->ProjectionY("fm20",20,100);
+  fm20->GetXaxis()->SetRangeUser(0.02,1.0);
+  fm20->Draw();
   c24->Print(file,"pdf");
 
+
   TCanvas *c25 = new TCanvas("M02","M02 distribution",50,50,700,500);
+  c25->Divide(2,1);
+  c25->cd(1);
   M02->GetXaxis()->SetRangeUser(0,15);
   M02->SetTitle("");
   M02->GetXaxis()->SetTitle("p_{T} GeV/c");
@@ -319,8 +333,14 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(M02);
   gPad->SetLogz();
   M02->Draw("colz");
-  c25->Print(file,"pdf");
+  c25->cd(2);
+  M02->ProjectionY("fm02",20,100);
+  fm02->GetXaxis()->SetRangeUser(0.02,1);
+  fm02->Draw();
+  //c25->Print(file,"pdf");
+  c25->Print(file + ")","pdf");
 
+  /*
   TCanvas *c26 = new TCanvas("M02EovP","M02 vs E/p distribution",50,50,700,500);
   M02EovP->SetTitle("M02 vs E/p, p_{T} > 1 GeV/c");
   M02EovP->GetXaxis()->SetTitle("E/p");
@@ -337,8 +357,8 @@ void HFEemcQA_PlotHisto()
   ProcessHisto2D(M20EovP);
   M20EovP->Draw("colz");
   c26->Print(file + ")","pdf");
+  */
 
-  //TFile *fout = new TFile("Electrons.root","recreate");
   TFile *fout = new TFile("ElectronsMB.root","recreate");
   electron->Write("eArray");
   ClusEcent->Write("clE");
