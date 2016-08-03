@@ -34,7 +34,8 @@
 #pragma link C++ function TStatToolkit::Reorder(int , short *, const int *);
 #pragma link C++ function TStatToolkit::Reorder(int , char *, const int *);
 #pragma link C++ class std::map<std::string,TTree*>+;
-
+#pragma link C++ class std::map<std::string,TTree*>+;
+#pragma link C++ class std::map<TString, TString>+;
 /*
 // RS At the moment is not recognized by the CINT...
 
