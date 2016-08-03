@@ -22,6 +22,7 @@
 #include "TVector.h"
 #include "TSystem.h"
 #include "TProfile.h"
+#include <vector>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -115,8 +116,6 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
 	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
-  void SetSingleElectronAnalysis(Bool_t a){fDoSingleElectronAnalysis=a;}
-
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
@@ -131,7 +130,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 		for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
 	}
   void DoEventMixingWithPools(Int_t index);
-  void ResetPool(Int_t poolIndex);
+  void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t chargexi);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
 
 
@@ -391,10 +390,6 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoMassVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoMassVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
-  THnSparse* fHistoSingleElectronVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (MC)
-  THnSparse* fHistoSingleElectronVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (MC)
-  THnSparse* fHistoSingleElectronVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
-
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
@@ -440,7 +435,6 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WS;//!<! dPhiS vs dEtaS R125 WS
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
-  Bool_t fDoSingleElectronAnalysis; /// flag for event mixing
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -451,19 +445,18 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	Int_t fNCentBins;								/// number of centrality bins
 	Double_t fCentBins[100];						// [fNCentBinsDim]
   Int_t  fNOfPools; /// number of pools
-  TTree** fEventBuffer;   //!<! structure for event mixing
-	TObjString *fEventInfo; /// unique event id for mixed event check
-  TObjArray* fElectronTracks; /// array of e-compatible tracks
-  TObjArray* fCascadeTracks1; /// array of xi+compatible tracks
-  TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
-  TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
-  TObjArray* fCascadeCutVarsArray1; /// array of RDHF cut information
-  TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
-  TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
-  TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
+  Int_t fPoolIndex; /// pool index
+  std::vector<Int_t> nextResVec; //! Vector storing next reservoir ID
+  std::vector<Bool_t> reservoirsReady; //! Vector storing if the reservoirs are ready
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirE; //!<! reservoir
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirL1; //!<! reservoir
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirL2; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsE; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL1; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,32); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,33); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
