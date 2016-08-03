@@ -17,7 +17,7 @@
 //***************************************************************************************
 //This AddTask is supposed to set up the main task
 //($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskOmegaToPiZeroGamma.cxx) for
-//pp together with all supporting classes
+//pPb together with all supporting classes
 //***************************************************************************************
 
 //***************************************************************************************
@@ -60,29 +60,26 @@ class CutHandlerPiZeroGamma{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,                      // change different set of cuts
-                                Int_t     isMC                          = 0,                      // run MC
-                                Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
-                                Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
-                                TString   cutnumberAODBranch            = "000000006008400001001500000",
-                                Int_t     enableExtMatchAndQA           = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
-                                Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
-                                Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
-                                Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
-                                Float_t   maxFacPtHard                  = 3.,                     // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader            = "",                     // period Name for V0 Reader 
-                                Bool_t    doMultiplicityWeighting       = kFALSE,                 // enable multiplicity weights
-                                TString   fileNameInputForMultWeighing  = "Multiplicity.root",    // file for multiplicity weights
-                                TString   periodNameAnchor              = "",                     // anchor period name for mult weighting
-                                Bool_t    enableSortingMCLabels         = kTRUE,                  // enable sorting for MC cluster labels
-                                Bool_t    runLightOutput                = kFALSE,                 // switch to run light output (only essential histograms for afterburner)
-                                Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
-                                Double_t  bremSmear                     = 1.,
-                                Double_t  smearPar                      = 0.,                     // conv photon smearing params
-                                Double_t  smearParConst                 = 0.                      // conv photon smearing params
-              ) {
-  
-  Int_t isHeavyIon = 0;
+void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1,                    // change different set of cuts
+                                Int_t     isMC                        = 0,                    // run MC
+                                Int_t     enableQAMesonTask           = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
+                                Int_t     enableQAPhotonTask          = 0,                    // enable additional QA task
+                                TString   fileNameInputForWeighting   = "MCSpectraInput.root",// path to file for weigting input
+                                Int_t     doWeightingPart             = 0,                    // enable Weighting
+                                TString   generatorName               = "DPMJET",             // generator Name  
+                                TString   cutnumberAODBranch          = "800000006008400000001500000",  // cutnumber for AOD branch
+                                Int_t     enableExtMatchAndQA         = 0,                    // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                Bool_t    isUsingTHnSparse            = kTRUE,                // enable or disable usage of THnSparses for background estimation
+                                Bool_t    enableV0findingEffi         = kFALSE,               // enables V0finding efficiency histograms
+                                Bool_t    enableTriggerMimicking      = kFALSE,               // enable trigger mimicking
+                                Bool_t    enableTriggerOverlapRej     = kFALSE,               // enable trigger overlap rejection                  
+                                Float_t   maxFacPtHard                = 3,                    // maximum factor between hardest jet and ptHard generated
+                                TString   periodNameV0Reader          = "",                   // period Name for V0Reader
+                                Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
+                                Bool_t    runLightOutput              = kFALSE                // switch to run light output (only essential histograms for afterburner)
+) {
+
+  Int_t isHeavyIon = 2;
 
   // fReconMethod = first digit of trainconfig
   Int_t ReconMethod = trainConfig/100;
@@ -90,27 +87,29 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "No analysis manager found.");
+    Error(Form("AddTask_OmegaToPiZeroGamma_pPb_%i_%i", trainConfig, isMC), "No analysis manager found.");
     return ;
   }
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
-  Bool_t isMCForOtherSettings = 0;
-  if (isMC > 0) isMCForOtherSettings = 1;
+  Bool_t isMCForOtherTasks = kFALSE;
+  if (isMC > 0) isMCForOtherTasks = kTRUE;
+
+  
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMCForOtherSettings);
+    AddTaskPIDResponse(isMCForOtherTasks);
   }
   
   Printf("here \n");
   
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
-  TString cutnumberEvent = "00000003";
-  Bool_t doEtaShift = kFALSE;
+  TString cutnumberPhoton   = "00000008400100001500000000";
+  TString cutnumberEvent    = "80000003";
+  Bool_t doEtaShift         = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -133,6 +132,7 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
@@ -172,7 +172,7 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskOmegaToPiZeroGamma *task=NULL;
-  task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC));
+  task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_%i_%i",trainConfig,isMC));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -184,92 +184,31 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
+  
+  //************************************************ EMCAL clusters **********************************************************
+  if (trainConfig == 3){ // EMCAL clusters standard cuts
+    cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  // ************************************* EMCAL cuts ****************************************************
+  } else if (trainConfig == 103){ // EMCAL clusters standard cuts
+    cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  // 7 TeV
-  // cuts for ReconMethod==0
-  if(trainConfig == 1){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145), last string is not used as of now
+  } else if (trainConfig == 203){ // EMCAL clusters standard cuts
+    cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if(trainConfig == 2){ // std 8TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+  } else if (trainConfig == 303){ // EMCAL clusters standard cuts
+    cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if(trainConfig == 3){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
+  } else if (trainConfig == 403){ // EMCAL clusters standard cuts
+    cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  // cuts for ReconMethod==1
-  } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
-
-  } else if(trainConfig == 102){ // std 8TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-
-  } else if(trainConfig == 103){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
-
-  // cuts for ReconMethod==2
-  } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
-
-  } else if(trainConfig == 202){ // std 8TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-
-  } else if(trainConfig == 203){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
-
-  // cuts for ReconMethod==3
-  } else if(trainConfig == 301){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
-
-  } else if(trainConfig == 302){ // std 8TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-
-  } else if(trainConfig == 303){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
-
-  // cuts for ReconMethod==4
-  } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
-
-  } else if(trainConfig == 402){ // std 8TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-
-  } else if(trainConfig == 403){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
-
-  // cuts for ReconMethod==5
-  } else if(trainConfig == 501){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
-
-  } else if(trainConfig == 502){ // std 8TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
-
-  } else if(trainConfig == 503){ // pPb, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-      // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","00200009117000008260400000","1111100040022030000","0103503100000000","0103503000000000");
+  } else if (trainConfig == 503){ // EMCAL clusters standard cuts
+    cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
 
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
@@ -278,50 +217,32 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     return;
   }
 
-  Int_t numberOfCuts = cuts.GetNCuts();
-
-  TList *EventCutList = new TList();
-  TList *ConvCutList = new TList();
+  TList *EventCutList   = new TList();
+  TList *ConvCutList    = new TList();
   TList *ClusterCutList = new TList();
   TList *neutralPionCutList = new TList();
-  TList *MesonCutList = new TList();
+  TList *MesonCutList   = new TList();
+
+  Int_t numberOfCuts = cuts.GetNCuts();
 
   EventCutList->SetOwner(kTRUE);
-  AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
+  AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
-  AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
+  AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);
-  AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
+  AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
   neutralPionCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisNeutralPionCuts = new AliConversionMesonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
-  AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+  AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-    analysisEventCuts[i] = new AliConvEventCuts();
-    
-    TString dataInputMultHisto  = "";
-    TString mcInputMultHisto    = "";
-    TString triggerString   = cuts.GetEventCut(i);
-    triggerString           = triggerString(3,2);
-    if (triggerString.CompareTo("03")==0) 
-      triggerString         = "00";
-    if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
-      triggerString         = "00";
-
-    dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
-    mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
-   
-    if (doMultiplicityWeighting){
-      cout << "enableling mult weighting" << endl;
-      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
-    }
-              
-    
+    analysisEventCuts[i] = new AliConvEventCuts();   
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
@@ -349,7 +270,6 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);
     analysisNeutralPionCuts[i]->SetFillCutHistograms("");
-    if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
@@ -357,7 +277,6 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
-    if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -373,8 +292,8 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root", trainConfig, isMC));
+    mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i",trainConfig,isMC), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root",trainConfig,isMC));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
