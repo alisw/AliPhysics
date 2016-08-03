@@ -122,7 +122,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
     // Loop over generators and initialize
     while((entry = (AliGenCocktailEntry*)next())) {
 	if (fStack)  entry->Generator()->SetStack(fStack);
-	entry->Generator()->SetSeed(fSeed);
+	if (fSeed)   entry->Generator()->SetSeed(fSeed);
 	entry->Generator()->Init();
     }  
 
