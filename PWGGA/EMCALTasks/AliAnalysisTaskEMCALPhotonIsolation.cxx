@@ -679,13 +679,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fPtvsM02vsSumUE->Sumw2();
         fOutput->Add(fPtvsM02vsSumUE);
        
-        fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
-        fPtvsM02vsSumPi0->Sumw2();
-        fOutput->Add(fPtvsM02vsSumPi0);
+        // fPtvsM02vsSumPi0 = new TH3D("hPtvsM02vsSumPi0 when pi0 rejecting","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0 rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
+        // fPtvsM02vsSumPi0->Sumw2();
+        // fOutput->Add(fPtvsM02vsSumPi0);
         
-        fPtvsM02vsSumEta = new TH3D("hPtvsM02vsSumEta when pi0+eta rejecting","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0+eta rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
-        fPtvsM02vsSumPi0->Sumw2();
-        fOutput->Add(fPtvsM02vsSumEta);
+        // fPtvsM02vsSumEta = new TH3D("hPtvsM02vsSumEta when pi0+eta rejecting","p_{T} vs #lambda_{0}^{2} vs  #Sigma E_{T}^{iso cone}-UE  pi0+eta rejecting distribution for clusters",200,0.,100.,500,0.,5.,200,-10.,90.);
+        // fPtvsM02vsSumPi0->Sumw2();
+        // fOutput->Add(fPtvsM02vsSumEta);
           
         fTrackMultvsSumChargedvsUE = new TH3D("hTrackMultvsSumChargedvsUE","Track Multiplicity vs  #Sigma E_{T}^{iso cone} vs UE charged",100,0.,100.,200,-10.,90.,100,0.,100.);
         fTrackMultvsSumChargedvsUE->Sumw2();
@@ -766,13 +766,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fTestEtaPhiCone->Sumw2();
     fOutput->Add(fTestEtaPhiCone);
  
-    fInvMassM02iso = new TH3D("hInvMassM02iso","Invariant mass vs M02 vs E_{T}^{iso cluster}",100,0.,1.,500,0.,5.,200,0.,100.);
-    fInvMassM02iso->Sumw2();
-    fOutput->Add(fInvMassM02iso);
+    // fInvMassM02iso = new TH3D("hInvMassM02iso","Invariant mass vs M02 vs E_{T}^{iso cluster}",100,0.,1.,500,0.,5.,200,0.,100.);
+    // fInvMassM02iso->Sumw2();
+    // fOutput->Add(fInvMassM02iso);
     
-    fInvMassM02noiso = new TH3D("hInvMassM02noiso","Invariant mass vs M02 vs E_{T}^{no iso cluster}",100,0.,1.,500,0.,5.,200,0.,100.);
-    fInvMassM02noiso->Sumw2();
-    fOutput->Add(fInvMassM02noiso);
+    // fInvMassM02noiso = new TH3D("hInvMassM02noiso","Invariant mass vs M02 vs E_{T}^{no iso cluster}",100,0.,1.,500,0.,5.,200,0.,100.);
+    // fInvMassM02noiso->Sumw2();
+    // fOutput->Add(fInvMassM02noiso);
    
   }
     //   Initialization of all the Common THistos for the Three different outputs
@@ -2553,6 +2553,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
 }
   //__________________________________________________________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation){
+
+  return;
   
   Double_t clustTOF=0, invMass=0;
   
@@ -2596,21 +2598,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
       invMass=(c+nClust).M();
       
       if(fWho==2){
-        if(iso)  fInvMassM02iso -> Fill(invMass,m02COI,c.Et());
-        if(!iso) fInvMassM02noiso -> Fill(invMass,m02COI,c.Et());
+        // if(iso)  fInvMassM02iso -> Fill(invMass,m02COI,c.Et());
+        // if(!iso) fInvMassM02noiso -> Fill(invMass,m02COI,c.Et());
         
-	if(invMass>invMasspi0Min && invMass<invMasspi0Max){
-          fPtvsM02vsSumPi0->Fill(c.Pt(),m02COI,isolation);
-            //  AliError(Form("Passe dans la boucle des pi0"));
-          break;
-        }
+	// if(invMass>invMasspi0Min && invMass<invMasspi0Max){
+        //   fPtvsM02vsSumPi0->Fill(c.Pt(),m02COI,isolation);
+        //     //  AliError(Form("Passe dans la boucle des pi0"));
+        //   break;
+        // }
         
         
-        if(invMass>invMassetaMin && invMass<invMassetaMax){
-          fPtvsM02vsSumEta->Fill(c.Pt(),m02COI,isolation);
-            //   AliError(Form("Passe dans la boucle des pi0 et eta"));
-          break;
-        }
+        // if(invMass>invMassetaMin && invMass<invMassetaMax){
+        //   fPtvsM02vsSumEta->Fill(c.Pt(),m02COI,isolation);
+        //     //   AliError(Form("Passe dans la boucle des pi0 et eta"));
+        //   break;
+        // }
       }
     }
   } // end of clusters loop
