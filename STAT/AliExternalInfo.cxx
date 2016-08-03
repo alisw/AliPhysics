@@ -6,6 +6,7 @@
 #include <ctime>
 
 #include "AliLog.h"
+#include "TROOT.h"
 
 #include "AliExternalInfo.h"
 
@@ -249,6 +250,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
   TString treeName = "";
   TString pathStructure = "";
   TString indexName=""; 
+  TString metadataMacro=fLocationTimeOutMap[type + ".metadataMacro"];
 
   TTree* tree = 0x0;
 
@@ -277,7 +279,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
 
   if (tree != 0x0) {
     AliInfo("-- Successfully read in tree");
-    AddTree(tree, type);
+    BuildIndex(tree, type);
   } else {
     AliError("Error while reading tree");
   }
@@ -292,6 +294,12 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
     }
   }
   if (cache>0) tree->SetCacheSize(cache);
+  //
+
+  if (metadataMacro.Length()>0){  // rename branch  with index if specified in configuration file
+    printf("Processing metadata macro:\n gROOT->ProcessLine(.x %s((TTree*)%p,0);",     metadataMacro.Data(),tree);
+    gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,0);",metadataMacro.Data(),tree).Data());
+  }
 
   return tree;
 }
@@ -417,12 +425,15 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
 /// You can have access to this tree with the GetFriendsTree() function.
 /// @TODO Add 'return false' when adding to the friends tree was not successful
 /// \return kTRUE
-Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
+/// Comment:  function should do only Build index - adding freind tree is not sufficently general
+///           
+Bool_t AliExternalInfo::BuildIndex(TTree* tree, TString type){
   //
   //
   //
   TString indexName= fLocationTimeOutMap[type + ".indexname"];
   TString oldIndexName= fLocationTimeOutMap[type + ".oldindexname"];
+  TString metadataMacro=fLocationTimeOutMap[type + "metadataMacro"];
   //
   if (oldIndexName.Length()>0){  // rename branch  with index if specified in configuration file
     if (tree->GetBranch(oldIndexName.Data())) {
@@ -433,32 +444,33 @@ Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
     if (tree->GetListOfBranches()->FindObject("run"))  indexName="run";    
   }
   if (indexName.Length()<=0) {
-    ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
+    ::Error("AliExternalInfo::BuildIndex","Index %s not avaible for type %s", indexName.Data(), type.Data());
   }  
-  if (TString(tree->GetBranch(indexName.Data())->GetTitle()).Contains("/C")){
+  if (tree->GetBranch(indexName.Data()) && TString(tree->GetBranch(indexName.Data())->GetTitle()).Contains("/C")){
     BuildHashIndex(tree,indexName.Data(),"hashIndex");
   }else{
     tree->BuildIndex(indexName.Data());
   }
   TStatToolkit::AddMetadata(tree,"TTree.indexName",indexName.Data());
 
-  TString name = "";
+ //  TString name = "";
 
-  if(type.Contains("QA")){ // use TPC instead of QA.TPC
-    name = type(3, type.Length()-1);
-  }
-  else if(type.Contains("MonALISA")){
-    name = type(9, type.Length()-1);
-  }
-  else {
-    name = type;
-  }
+//   if(type.Contains("QA")){ // use TPC instead of QA.TPC
+//     name = type(3, type.Length()-1);
+//   }
+//   else if(type.Contains("MonALISA")){
+//     name = type(9, type.Length()-1);
+//   }
+//   else {
+//     name = type;
+//   }
+//   tree->SetName(name);
+//   if (fTree == 0x0) fTree = dynamic_cast<TTree*>(tree->Clone());
 
-  tree->SetName(name);
-  if (fTree == 0x0) fTree = dynamic_cast<TTree*>(tree->Clone());
-  fTree->AddFriend(tree, name);
-
-  AliInfo(TString::Format("Added as friend with the name: %s",name.Data()));
+ 
+//   fTree->AddFriend(tree, name);  
+//  AliInfo(TString::Format("Added as friend with the name: %s",name.Data()));
+  ::Info("AliExternalInfo::BuildIndex", "TreeName:%s;IndexName:%s",tree->GetName(), indexName.Data());
   return kTRUE;
 }
 /// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT

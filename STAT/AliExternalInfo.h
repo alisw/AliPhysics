@@ -100,8 +100,9 @@ public:
 
   static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
   static void BuildHashIndex(TTree* tree, const char *chbranchName,  const char *chindexName);
-private:
-  Bool_t AddTree(TTree* tree, TString type);
+public:
+  //private:
+  Bool_t BuildIndex(TTree* tree, TString type);
   Bool_t AddChain(TString type, TString period, TString pass);
   void SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
                       TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass, TString &indexName);
