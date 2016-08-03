@@ -53,6 +53,7 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALGeometry.h"
 
 #include "AliAnalysisTaskHFEemcQA.h"
 
@@ -67,6 +68,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fESD(0),
   fAOD(0),
   fpidResponse(0),
+  fEMCALGeo(0),
   fFlagSparse(kFALSE),
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
@@ -133,10 +135,10 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fClsEtaPhiAftMatchEMCout(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
+  fHistNsigEop_Most(0),
+  fHistNsigEop_Semi(0),
+  fHistNsigEop_Peri(0),
   fHistEop(0),
-  fHistEop_Most(0),
-  fHistEop_Semi(0),
-  fHistEop_Peri(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -173,6 +175,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fESD(0),
   fAOD(0),
   fpidResponse(0),
+  fEMCALGeo(0),
   fFlagSparse(kFALSE),
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
@@ -239,10 +242,10 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fClsEtaPhiAftMatchEMCout(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
+  fHistNsigEop_Most(0),
+  fHistNsigEop_Semi(0),
+  fHistNsigEop_Peri(0),
   fHistEop(0),
-  fHistEop_Most(0),
-  fHistEop_Semi(0),
-  fHistEop_Peri(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -301,6 +304,8 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     SetESDAnalysis();
   }
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
+
+  fEMCALGeo =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8");
 
   ////////////////
   //Output list//
@@ -380,7 +385,13 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistoTimeEMC = new TH2F("fHistoTimeEMC","EMCAL Time;E (GeV); t(ns)",480,2,50,20000,400,800);
   fOutputList->Add(fHistoTimeEMC);
 
-  fHistoTimeEMCcorr = new TH2F("fHistoTimeEMCcorr","EMCAL Time (tender);E (GeV); t(ns)",480,2,50,20000,-200,200);
+  //fHistoTimeEMCcorr = new TH2F("fHistoTimeEMCcorr","EMCAL Time (tender);E (GeV); t(ns)",480,2,50,20000,-200,200);
+  //fOutputList->Add(fHistoTimeEMCcorr);
+
+  Int_t bincal[3]=      {15,  490, 20000}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
+  Double_t xmincal[3]={-0.5,    1,  -200};
+  Double_t xmaxcal[3]={14.5,   50 ,  200};
+  fHistoTimeEMCcorr = new THnSparseD("fHistoTimeEMCcorr","EMCAL Time (tender);SM;E (GeV); t(ns)",3,bincal,xmincal,xmaxcal);
   fOutputList->Add(fHistoTimeEMCcorr);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
@@ -456,20 +467,22 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
   fOutputList->Add(fHistEop);
 
-  fHistEop_Most = new TH2F("fHistEop_Most", "E/p distribution (0-10%);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-  fOutputList->Add(fHistEop_Most);
-
-  fHistEop_Semi = new TH2F("fHistEop_Semi", "E/p distribution (20-40%);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-  fOutputList->Add(fHistEop_Semi);
-
-  fHistEop_Peri = new TH2F("fHistEop_Peri", "E/p distribution (60-80%);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
-  fOutputList->Add(fHistEop_Peri);
 
   fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
   fOutputList->Add(fHistdEdxEop);
 
   fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig",60, 0.0, 3.0, 200, -10,10);
   fOutputList->Add(fHistNsigEop);
+
+  fHistNsigEop_Most = new TH2F("fHistNsigEop_Most", "E/p distribution (0-10%);p_{T} (GeV/c);E/p", 60, 0.0, 3.0, 200, -10, 10);
+  fOutputList->Add(fHistNsigEop_Most);
+
+  fHistNsigEop_Semi = new TH2F("fHistNsigEop_Semi", "E/p distribution (20-40%);p_{T} (GeV/c);E/p", 60, 0.0, 3.0, 200, -10, 10);
+  fOutputList->Add(fHistNsigEop_Semi);
+
+  fHistNsigEop_Peri = new TH2F("fHistNsigEop_Peri", "E/p distribution (60-80%);p_{T} (GeV/c);E/p", 60, 0.0, 3.0, 200, -10, 10);
+  fOutputList->Add(fHistNsigEop_Peri);
+
 
   fM20 = new TH2F ("fM20","M20 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM20);
@@ -925,6 +938,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
     if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 
+    Short_t NcellsInCluster = clustMatch->GetNCells();
+    int iSM = -1;
+    //cout << "NcellsInCluster = " << NcellsInCluster << endl;
+    for(int icl=0; icl<NcellsInCluster; icl++)
+       {
+        int icell = clustMatch->GetCellAbsId(icl); 
+        iSM = fEMCALGeo->GetSuperModuleNumber(icell);
+        //cout << "iSM = " << iSM << endl;
+       }
+
     Double_t emcphi = -999, emceta=-999;
     fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
     if(clustMatch && clustMatch->IsEMCAL())
@@ -981,8 +1004,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       }
 
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
+      Double_t caloinfo[3];
+      caloinfo[0] = iSM; 
+      caloinfo[1] = clustMatchE; 
+      caloinfo[2] = tof; 
       if(clustMatchE>2.0)fHistoTimeEMC->Fill(clustMatchE,tof);
-      if(clustMatchE>2.0 && fUseTender)fHistoTimeEMCcorr->Fill(clustMatchE,tof);
+      if(clustMatchE>2.0 && fUseTender)fHistoTimeEMCcorr->Fill(caloinfo);
 
       //EMCAL EID info
       Double_t eop = -1.0;
@@ -995,6 +1022,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       if(track->Pt()>3.0){
         fHistdEdxEop->Fill(eop,dEdx);
         fHistNsigEop->Fill(eop,fTPCnSigma);
+        if(centrality>=0 && centrality<=10)fHistNsigEop_Most->Fill(eop,dEdx);
+        if(centrality>=20 && centrality<=40)fHistNsigEop_Semi->Fill(eop,dEdx);
+        if(centrality>=60 && centrality<=80)fHistNsigEop_Peri->Fill(eop,dEdx);
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
@@ -1021,17 +1051,16 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       ////////////////////////////////////////////////
       //Track properties of EMCAL electron cadidates//
       ////////////////////////////////////////////////
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){ //rough cuts
+ 
+      if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
+
+     if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE);
 
         fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
         fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
 
-        fHistEop->Fill(track->Pt(),eop);
-        if(centrality>=0 && centrality<=10)fHistEop_Most->Fill(track->Pt(),eop);
-        if(centrality>=20 && centrality<=40)fHistEop_Semi->Fill(track->Pt(),eop);
-        if(centrality>=60 && centrality<=80)fHistEop_Peri->Fill(track->Pt(),eop);
 
         Int_t fITSncls=0;
         for(Int_t l=0;l<6;l++) {
