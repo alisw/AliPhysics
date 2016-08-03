@@ -87,6 +87,7 @@
 #include "AliTPCRawStreamV3.h"
 #include "AliTPCTransform.h"
 #include "TTreeStream.h"
+#include "AliGRPObject.h"
 
 // for fast TMatrix operator()
 #include "AliFastContainerAccess.h"
@@ -189,9 +190,8 @@ AliTPC::AliTPC(const char *name, const char *title)
   //  Set TPC parameters
   //
 
-
-  if (!strcmp(title,"Ne-CO2") || !strcmp(title,"Ne-CO2-N") || !strcmp(title,"Default") ) {       
-      fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
+  if (!strcmp(title,"Ne-CO2") || !strcmp(title,"Ne-CO2-N") || !strcmp(title,"Default") ) {
+    fTPCParam = AliTPCcalibDB::Instance()->GetParameters();
   } else {
       
     AliWarning("In Config.C you must set non-default parameters.");
@@ -250,7 +250,7 @@ void AliTPC::CreateMaterials()
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
   //-----------------------------------------------------------------
 
-   Int_t iSXFLD=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
+  Int_t iSXFLD=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
   Float_t sXMGMX=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
   Float_t amat[7]; // atomic numbers
@@ -258,7 +258,37 @@ void AliTPC::CreateMaterials()
   Float_t wmat[7]; // proportions
 
   Float_t density;
- 
+  //
+  // get ststuff from the OCDB for gases
+  //
+  AliTPCcalibDB *calibDB=AliTPCcalibDB::Instance();
+  const Int_t run=calibDB->GetRun();
+
+  const AliGRPObject *grp=calibDB->GetGRP(run);
+  const Int_t startTimeGRP = grp?grp->GetTimeStart():0.;
+  const Int_t stopTimeGRP  = grp?grp->GetTimeEnd():0.;
+  const Int_t time=(startTimeGRP+stopTimeGRP)/2; // middel of the run
+  const Double_t temperature = calibDB->GetTemperature(time, run, 0) + 273.15; // in K
+  const Double_t pressure    = calibDB->GetPressure(time, run); // im mbar
+
+
+  //
+  // densities were taken for these values
+  //
+  const Double_t t1 = 293.15; // 20 deg C in absolute scale
+  const Double_t p1 = 1013.25; // 1 atm in mbars
+  //
+  // sanity check - temperature between 10 and 30 deg, pressure between 800 and 1200 mbar
+  //
+
+  Double_t ptcorr=1.;
+  if(TMath::Abs(t1-20.)>10. || TMath::Abs(p1-1000.)>200.){
+    ptcorr = 1.;
+  }
+  else{
+    ptcorr = (pressure*t1)/(p1*temperature);
+  }
+  AliInfoF("Setting gas density correction to: %.2f", ptcorr);
 
 
   //***************** Gases *************************
@@ -282,7 +312,7 @@ void AliTPC::CreateMaterials()
   density=1.842e-3;
 
 
-  AliMixture(10,"CO2",amat,zmat,density,2,wmat);
+  AliMixture(10,"CO2",amat,zmat,density*ptcorr,2,wmat);
   //
   // Air
   //
@@ -297,7 +327,7 @@ void AliTPC::CreateMaterials()
   //
   density=0.001205;
 
-  AliMixture(11,"Air",amat,zmat,density,2,wmat);
+  AliMixture(11,"Air",amat,zmat,density*ptcorr,2,wmat);
   
   //----------------------------------------------------------------
   // drift gases 5 mixtures, 5 materials
@@ -398,9 +428,9 @@ gname3 = gname + "-3";
  }
    
 //
-AliMixture(12,gname1.Data(),amat1,zmat1,density,cnt,wmat1); // nonsensitive
-AliMixture(13,gname2.Data(),amat1,zmat1,density,cnt,wmat1); // sensitive
-AliMixture(40,gname3.Data(),amat1,zmat1,density,cnt,wmat1); //sensitive Kr
+AliMixture(12,gname1.Data(),amat1,zmat1,density*ptcorr,cnt,wmat1); // nonsensitive
+AliMixture(13,gname2.Data(),amat1,zmat1,density*ptcorr,cnt,wmat1); // sensitive
+AliMixture(40,gname3.Data(),amat1,zmat1,density*ptcorr,cnt,wmat1); //sensitive Kr
 
 
 
