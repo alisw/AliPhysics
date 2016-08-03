@@ -11,7 +11,8 @@
   .L $ALICE_ROOT/../src/STAT/test/AliExternalInfoTest.C+
   
 
-  TestMCProduction();
+  TestMCProduction(); 
+  TestProductionAccess();
 */
 
 
@@ -20,12 +21,14 @@
 #include "TMath.h"
 
 void TestMCProduction();
+void TestProductionAccess();
 
 void AliExternalInfoTest(){
   //
   //
   //
   TestMCProduction();
+  TestProductionAccess();
 }
 
 void TestMCProduction(){
@@ -57,4 +60,22 @@ void TestMCProduction(){
   }
   ::Info("AliExternalInfo.TestMCProduction","End");
 
+}
+
+
+void TestProductionAccess(){
+  //
+  // Check availability of the AliExternalInfo
+  //
+  AliExternalInfo info;
+  TTree * tree = info.GetTree("MonALISA.ProductionCycle", "", "");
+  //
+  if (tree->GetEntries()>0){
+    ::Info("AliExternalInfo.TestProductionAccess","Nproductions=%d >0 - OK", tree->GetEntries());
+  }else{
+    ::Error("AliExternalInfo.TestProductionAccess","Nproductions=%d - FAILED", tree->GetEntries());
+    return;
+  };
+  // check and dump some counters
+  tree->Draw("strstr(Description,\"for\")");
 }
