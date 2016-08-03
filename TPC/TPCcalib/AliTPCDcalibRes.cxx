@@ -2850,6 +2850,86 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   //
   AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters(); // just to get Vdrift
   //
+  double vNomSc = param->GetDriftV()/1000000.; // nominal Vdrift (in cm/ms)
+  for (Int_t ipoint=0; ipoint<=1; ipoint++){
+    deltaZ[ipoint]=-(*fVDriftParam)[1];  // unit OK  
+    vdgy[ipoint]=-(*fVDriftParam)[2]*vNomSc/kZLim[0]*100.;   // to match to AliTPCcalibDB::GetVDriftCorrectionGy manipulations
+    t0[ipoint]=-(*fVDriftParam)[0]/vNomSc;       // t0 to be normalized to the ms
+  }
+  //
+  TGraphErrors   *graphDELTAZ=0;
+  TGraphErrors   *graphT0=0;
+  TGraphErrors   *graphVDGY=0;
+  TGraphErrors   *graphDRIFTVD=0;
+  TGraphErrors   *graph=0;
+  //
+  TString grPrefix="ALIGN_ITSB_TPC_";
+  //
+  graphDELTAZ=new TGraphErrors(2, atime, deltaZ);
+  graphDELTAZ->SetName(grPrefix+"DELTAZ");
+  driftArray->AddLast(graphDELTAZ);
+  graphT0=new TGraphErrors(2, atime, t0);
+  graphT0->SetName(grPrefix+"T0");
+  driftArray->AddLast(graphT0);
+  graphVDGY=new TGraphErrors(2, atime, vdgy);
+  graphVDGY->SetName(grPrefix+"VDGY");
+  driftArray->AddLast(graphVDGY);
+  //
+  // drift velocity
+  graph = new TGraphErrors(*fVDriftGraph);
+  graph->SetName(grPrefix+"DRIFTVD");
+  Int_t npoints = graph->GetN();
+  for (Int_t ipoint=0; ipoint<npoints; ipoint++) {
+    graph->GetY()[ipoint]  = -graph->GetY()[ipoint] - (*fVDriftParam)[3];
+  }
+  driftArray->AddLast(graph);
+  //
+  AliCDBStorage* targetStorage = 0x0;
+  if (targetOCDBstorage.Length()==0) {
+    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+  else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
+    targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
+  }
+  else {
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+
+  AliCDBMetaData* metaData = new AliCDBMetaData;
+  metaData->SetObjectClassName("TObjArray");
+  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion(">v5-07-20"); //AliRoot version
+  metaData->SetComment("AliTPCcalibAlignInterpolation Calibration of the time dependence of the drift velocity using Residual trees");
+  AliCDBId id1("TPC/Calib/TimeDrift", fRun, fRun);
+  
+  //now the entry owns the metadata, but NOT the data
+  AliCDBEntry *driftCDBentry=new AliCDBEntry(driftArray,id1,metaData,kFALSE);
+  targetStorage->Put(driftCDBentry); 
+  //
+  delete driftCDBentry;
+}
+
+/*
+//_________________________________________
+void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
+{
+  // write OCDB object for VDrift (simplified copy/paste of AliTPCcalibAlignInterpolation::MakeVDriftOCDB)
+  TObjArray * driftArray = new TObjArray();
+  //
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) InitFieldGeom(kTRUE,kFALSE);
+  Double_t atime[2]={0,0};
+  Double_t deltaZ[2]={0,0};
+  Double_t t0[2]={0,0};
+  Double_t vdgy[2]={0,0};
+  //
+  atime[0] = fVDriftGraph->GetX()[0];
+  atime[1] = fVDriftGraph->GetX()[fVDriftGraph->GetN()-1];
+  //
+  AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters(); // just to get Vdrift
+  //
   for (Int_t ipoint=0; ipoint<=1; ipoint++){
     deltaZ[ipoint]=-(*fVDriftParam)[1];  // unit OK  
     vdgy[ipoint]=-(*fVDriftParam)[2];   // units OK
@@ -2912,6 +2992,8 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   //
   delete driftCDBentry;
 }
+
+*/
 
 //_________________________________________
 void AliTPCDcalibRes::LoadVDrift()
