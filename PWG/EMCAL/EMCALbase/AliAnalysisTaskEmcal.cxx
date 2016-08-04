@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <RVersion.h>
+#include <memory>
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
@@ -567,8 +568,10 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
  */
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
-  if (!fInitialized)
+  if (!fInitialized){
     ExecOnce();
+    UserExecOnce();
+  }
 
   if (!fInitialized)
     return;
@@ -691,42 +694,29 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   strPthard.Remove(strPthard.Last('/'));
   if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
   strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec()) 
-    pthard = strPthard.Atoi();
+  if (strPthard.IsDec()) pthard = strPthard.Atoi();
   else 
     AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); 
+  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
 
   if (!fxsec) {
     // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if (!fxsec) {
-      // not a severe condition but inciate that we have no information
-      return kFALSE;
-    } else {
+    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+    if (!fxsec) return kFALSE; // not a severe condition but inciate that we have no information
+    else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if (!key) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      if (!key) return kFALSE;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      if (!list) return kFALSE;
       fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
-      fxsec->Close();
     }
   } else { // no tree pyxsec.root
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) {
-      fxsec->Close();
-      return kFALSE;
-    }
+    if (!xtree) return kFALSE;
     UInt_t   ntrials  = 0;
     Double_t  xsection  = 0;
     xtree->SetBranchAddress("xsection",&xsection);
@@ -734,7 +724,6 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     xtree->GetEntry(0);
     fTrials = ntrials;
     fXsec = xsection;
-    fxsec->Close();
   }
   return kTRUE;
 }
@@ -1073,7 +1062,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
 
-    TObjArray *arr = fTrigClass.Tokenize("|");
+    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
     if (!arr) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
@@ -1114,7 +1103,6 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
         }
       }
     }
-    delete arr;
     if (!match) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
