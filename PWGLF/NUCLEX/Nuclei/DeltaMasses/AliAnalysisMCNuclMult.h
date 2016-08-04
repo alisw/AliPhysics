@@ -98,13 +98,15 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   
   TH2F *fBetaTOFvspt[2];                          //! beta (TOF) vs pT
   TProfile *hBetaExp[9];                          //! TOF expected beta
+  TH2F *fNsigmaTOF[3][2][18];                     //!
 
   TH1F *hpt[4][3][18];                            //! pT distributions
   
-  TH2F *fptRecoVsTrue[1][18];                     //! pT reco vs. true
-  
-  TH3F *fDca[3][18];                              //! DCAxy vs DCAz
+  TH2F *fptRecoVsTrue[2][18];                     //! pT reco vs. true
+  TF1 *fptCorr[1];                                //! pT corrections for (anti-)deuteron
 
+  TH3F *fDca[3][18];                              //! DCAxy vs DCAz
+  
   void EventSelectionMonitor();
   Bool_t IsInsideMultiplicityBin(Float_t multiplicity);
   
@@ -114,11 +116,13 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   void FillDca(Double_t DCAxy, Double_t DCAz, Double_t t_pt, Int_t kSpec, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
   
   void ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec);
-  
-  void CheckTPCsignal(AliVTrack *track);
-  void CheckTOFsignal(AliVTrack *track);
+  void CheckPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec);
 
-  ClassDef(AliAnalysisMCNuclMult, 4);
+  void CheckTPCsignal(AliVTrack *track);
+  void CheckTOFsignal(AliVTrack *track, Double_t *NsigmaTOF);
+  Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t *NsigmaTOF, Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
+
+  ClassDef(AliAnalysisMCNuclMult, 5);
 };
 
 #endif
