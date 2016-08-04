@@ -957,7 +957,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   if (fGeomName.Length()>0) 
     fGeom = AliEMCALGeometry::GetInstance(fGeomName);
   else
-    fGeom = AliEMCALGeometry::GetInstance();
+    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
   if (!fGeom) {
     AliFatal("Geometry not available!!!");
     return;
