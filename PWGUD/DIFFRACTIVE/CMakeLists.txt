@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -49,6 +50,12 @@ set(SRCS
     xsAndTwoProng/AliCDMesonTracks.cxx
     xsAndTwoProng/AliCDMesonUtils.cxx
     DGTrigger/AliTriggerStudy0STP.cxx
+    CEPdevel/CEPEventBuffer.cxx
+    CEPdevel/CEPTrackBuffer.cxx
+    CEPdevel/AliPBBase.cxx
+    CEPdevel/AliPBTracks.cxx
+    CEPdevel/AliPBUtils.cxx
+    CEPdevel/AliAnalysisTaskPB.cxx
    )
 
 # Headers from sources
