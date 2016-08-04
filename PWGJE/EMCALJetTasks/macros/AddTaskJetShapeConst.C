@@ -125,10 +125,8 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,1,coutput1);
   if(bCreateTree) {
-  	  Printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%sTree",contName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
     mgr->ConnectOutput(task,2,coutput2);
-    Printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&%s", coutput2->GetName());
   }
 
   return task;

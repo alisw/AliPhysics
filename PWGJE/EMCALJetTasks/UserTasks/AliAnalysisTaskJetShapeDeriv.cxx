@@ -117,9 +117,6 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
 
   AliAnalysisTaskJetShapeBase::UserCreateOutputObjects();
 
-  //Bool_t oldStatus = TH1::AddDirectoryStatus();
-  //TH1::AddDirectory(kFALSE);
-
   const Int_t nBinsPt  = 200;
   const Double_t minPt = -50.;
   const Double_t maxPt = 150.;
@@ -236,14 +233,15 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fh2NConstSubFacV2[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,100,0.,200.);
     fOutput->Add(fh2NConstSubFacV2[i]);
   }
-  
-  fTreeJetBkg->Branch("fM1st", &fM1st, "fM1st/F");
-  fTreeJetBkg->Branch("fM2nd", &fM2nd, "fM2nd/F");
-  fTreeJetBkg->Branch("fDeriv1st", &fDeriv1st, "fDeriv1st/F");
-  fTreeJetBkg->Branch("fDeriv2nd", &fDeriv2nd, "fDeriv2nd/F");
-  
+
+  if(fCreateTree) {
+  	  fTreeJetBkg->Branch("fM1st", &fM1st, "fM1st/F");
+  	  fTreeJetBkg->Branch("fM2nd", &fM2nd, "fM2nd/F");
+  	  fTreeJetBkg->Branch("fDeriv1st", &fDeriv1st, "fDeriv1st/F");
+  	  fTreeJetBkg->Branch("fDeriv2nd", &fDeriv2nd, "fDeriv2nd/F");
+  }
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-  PostData(2,fTreeJetBkg);
+  //if(fCreateTree) PostData(2,fTreeJetBkg);
 }
 
 //________________________________________________________________________
@@ -457,30 +455,24 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       	 Double_t varsp[9] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
       	 fhnMassResponse[fCentBin]->Fill(varsp);
       }
-      Double_t varsp1[6];
-      varsp1[0] = var-var2;
-      varsp1[1] = ptjet1-ptJetR;
-      varsp1[2] = var;
-      varsp1[3] = var2;
-      varsp1[4] = ptjet1;
-      varsp1[5] = ptJetR;
-
-      //fhnDeltaMass[fCentBin]->Fill(varsp1);
       
-      //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-      Double_t varsp2[10] = {var-var2, ptjet1-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
-      fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      if(!fCreateTree){
+      	  Double_t varsp1[6];
+      	  varsp1[0] = var-var2;
+      	  varsp1[1] = ptjet1-ptJetR;
+      	  varsp1[2] = var;
+      	  varsp1[3] = var2;
+      	  varsp1[4] = ptjet1;
+      	  varsp1[5] = ptJetR;
+      	  
+      	  //fhnDeltaMass[fCentBin]->Fill(varsp1);
+      	  
+      	  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+      	  Double_t varsp2[10] = {var-var2, ptjet1-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
+      	  fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      }
     }
-    
     if(fCreateTree) {
-    	fTreeJetBkg->SetBranchAddress("fJet1Vec.",&fJet1Vec);
-    	fTreeJetBkg->SetBranchAddress("fJetSubVec.",&fJetSubVec);
-    	fTreeJetBkg->SetBranchAddress("fArea",&fArea);
-    	fTreeJetBkg->SetBranchAddress("fAreaPhi",&fAreaPhi);
-    	fTreeJetBkg->SetBranchAddress("fAreaEta",&fAreaEta);
-    	fTreeJetBkg->SetBranchAddress("fRho",&fRho);
-    	fTreeJetBkg->SetBranchAddress("fRhoM",&fRhoM);
-    	fTreeJetBkg->SetBranchAddress("fNConst",&fNConst);
     	
     	fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
     	fArea = (Float_t)jet1->Area();
