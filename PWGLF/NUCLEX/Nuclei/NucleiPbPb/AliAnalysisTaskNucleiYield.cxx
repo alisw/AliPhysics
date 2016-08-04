@@ -156,7 +156,8 @@ static void BinLogAxis(const TH1 *h) {
   ,fRequireMinCentrality(0.)
   ,fRequireMaxCentrality(80.)
   ,fEnableFlattening(true)
-  ,fTriggerMask(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral) {
+  ,fTriggerMask(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral)
+  ,fEnableLogAxisInPerformancePlots(true) {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -273,11 +274,16 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       tpcElossBins[i] = i * 2.f;
     }
 
+    const int nSigmaBins = 240;
+    float sigmaBins[nSigmaBins + 1];
+    for (int i = 0; i < nSigmaBins; ++i)
+      sigmaBins[i] = -6.f + i * 0.05;
+
     fATOFsignal = new TH3F("fATOFsignal",
         ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
         nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fATPCcounts = new TH2F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); Specific energy loss (a.u)",
-        nCentBins,centBins,nPtBins,pTbins);
+    fATPCcounts = new TH3F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
+        nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
     fMDCAxyTPC = new TH3F("fMDCAxyTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
         nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
     fMDCAzTPC = new TH3F("fMDCAzTPC",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
@@ -289,8 +295,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     fMTOFsignal = new TH3F("fMTOFsignal",
         ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
         nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fMTPCcounts = new TH2F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); Specific energy loss (a.u)",
-        nCentBins,centBins,nPtBins,pTbins);
+    fMTPCcounts = new TH3F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
+        nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
 
 
     fList->Add(fATOFsignal);
@@ -315,13 +321,15 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fList->Add(fATOFphiSignal);
     }
 
-    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
-        800,0,3200);
-    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",200,0.2,10.,
-        800,0,3200);
+    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
+        2400,0,2400);
+    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
+        2400,0,2400);
     if (fEnablePerformance || fRequireMinEnergyLoss > 0.) {
-      BinLogAxis(fMTPCeLoss);
-      BinLogAxis(fATPCeLoss);
+      if (fEnableLogAxisInPerformancePlots) {
+        BinLogAxis(fMTPCeLoss);
+        BinLogAxis(fATPCeLoss);
+      }
       fList->Add(fMTPCeLoss);
       fList->Add(fATPCeLoss);
     }
@@ -480,14 +488,15 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fATPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
       }
       if (!PassesPIDSelection(track)) continue;
+      float tpc_n_sigma = fPID->GetTPCResponse().GetNumberOfSigmas(track, fParticle);
       if (track->Charge() > 0) {
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
         fMDCAzTPC->Fill(centrality, pT, dca[1]);
-        fMTPCcounts->Fill(centrality, pT);
+        fMTPCcounts->Fill(centrality, pT, tpc_n_sigma);
         fMTPCphiCounts->Fill(track->Phi(),pT);
       } else {
         fATPCphiCounts->Fill(track->Phi(),pT);
-        fATPCcounts->Fill(centrality, pT);
+        fATPCcounts->Fill(centrality, pT, tpc_n_sigma);
       }
       if (beta < 1.e-10) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
