@@ -129,6 +129,13 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
 
     // set reconstruction method
     void SetReconMethod                 (Int_t ReconMethod) { fReconMethod = ReconMethod;}
+
+    // set flag for doing pi0-gamma angle cut
+    void SetDoPiZeroGammaAngleCut         (Bool_t DoPiZeroGammaAngleCut){ fDoPiZeroGammaAngleCut = DoPiZeroGammaAngleCut;}
+
+    // set scaling factors for pi0-gamma angle cut
+    void SetlowerFactor                  (Double_t lowerFactor){ flowerFactor = lowerFactor;}
+    void SetupperFactor                  (Double_t upperFactor){ fupperFactor = upperFactor;}
     
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
@@ -156,7 +163,10 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TList*                              fClusterCutArray;       // List with Cluster Cuts
     AliCaloPhotonCuts*                  fCaloPhotonCuts;        // CaloPhotonCutObject
     TList*                              fNeutralPionCutArray;   // List with neutral pion cuts
-    TList*                              fMesonCutArray;          // List with meson cuts
+    TList*                              fMesonCutArray;         // List with meson cuts
+    TF1*                                fmaxfit;                // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
+    Double_t                            flowerFactor;           // factor maxfit is multiplied by to get lower limit for pi0-gamma angle cut
+    Double_t                            fupperFactor;           // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
     
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
@@ -314,12 +324,13 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Int_t                   fReconMethod;                                       // switch for combining photons: PCM-cal,cal = 0; PCM-cal,PCM = 1; cal-cal,cal = 2;
                                                                                 // cal-cal,PCM = 3; PCM-PCM,cal = 4; PCM-PCM,PCM = 5
+    Bool_t                  fDoPiZeroGammaAngleCut;                             // flag for pi0-gamma angle cut
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 4);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 5);
 };
 
 #endif

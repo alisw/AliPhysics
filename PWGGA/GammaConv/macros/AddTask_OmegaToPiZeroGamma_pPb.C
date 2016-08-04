@@ -62,8 +62,11 @@ class CutHandlerPiZeroGamma{
 //***************************************************************************************
 void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1,                    // change different set of cuts
                                 Int_t     isMC                        = 0,                    // run MC
-                                Int_t     enableQAMesonTask           = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
-                                Int_t     enableQAPhotonTask          = 0,                    // enable additional QA task
+                                Int_t     enableQAMesonTask           = 1,                    // enable QA in AliAnalysisTaskGammaConvV1
+                                Int_t     enableQAPhotonTask          = 1,                    // enable additional QA task
+                                Bool_t    DoPiZeroGammaAngleCut       = kFALSE,               // flag for enabling cut on pi0-gamma angle
+                                Double_t  lowerFactor                 = 0.75,                 // scale factor for lower limit in pi0-gamma angle cut
+                                Double_t  upperFactor                 = 2.5,                  // scale factor for upper limit in pi0-gamma angle cut
                                 TString   fileNameInputForWeighting   = "MCSpectraInput.root",// path to file for weigting input
                                 Int_t     doWeightingPart             = 0,                    // enable Weighting
                                 TString   generatorName               = "DPMJET",             // generator Name  
@@ -172,11 +175,14 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskOmegaToPiZeroGamma *task=NULL;
-  task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_%i_%i",trainConfig,isMC));
+  task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_pPb_%i_%i",trainConfig,isMC));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetReconMethod(ReconMethod);
+  task->SetDoPiZeroGammaAngleCut(DoPiZeroGammaAngleCut);
+  task->SetlowerFactor(lowerFactor);
+  task->SetupperFactor(upperFactor);
 
   //create cut handler
   CutHandlerPiZeroGamma cuts;
@@ -186,26 +192,80 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
   
   //************************************************ EMCAL clusters **********************************************************
-  if (trainConfig == 3){ // EMCAL clusters standard cuts
+  if (trainConfig == 1){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if (trainConfig == 103){ // EMCAL clusters standard cuts
+  } else if (trainConfig == 2){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 3){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 4){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 101){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if (trainConfig == 203){ // EMCAL clusters standard cuts
+  } else if (trainConfig == 102){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 103){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 104){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 201){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if (trainConfig == 303){ // EMCAL clusters standard cuts
+  } else if (trainConfig == 202){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 203){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 204){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 301){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if (trainConfig == 403){ // EMCAL clusters standard cuts
+  } else if (trainConfig == 302){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 303){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 304){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 401){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
-  } else if (trainConfig == 503){ // EMCAL clusters standard cuts
+  } else if (trainConfig == 402){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 403){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 404){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 501){ // EMCAL clusters standard cuts
     cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 502){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 503){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
+
+  } else if (trainConfig == 504){ // same as std, for varying angle cut
+  cuts.AddCut("80000113","00200009327000008250400000","1111141053032230000","0163103100000010","0163103100000010");
 
   } else {
-    Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
+    Error(Form("OmegaToPiZeroGamma_pPb_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
 
@@ -269,14 +329,14 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
     analysisNeutralPionCuts[i]->SetRunningMode(2);
     analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);
-    analysisNeutralPionCuts[i]->SetFillCutHistograms("");
+    analysisNeutralPionCuts[i]->SetFillCutHistograms("NeutralPionCuts");
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
-    analysisMesonCuts[i]->SetFillCutHistograms("");
+    analysisMesonCuts[i]->SetFillCutHistograms("MesonCuts");
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -292,8 +352,8 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i",trainConfig,isMC), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root",trainConfig,isMC));
+    mgr->CreateContainer(Form("OmegaToPiZeroGamma_pPb_%i_%i",trainConfig,isMC), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_pPb_%i_%i.root",trainConfig,isMC));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
