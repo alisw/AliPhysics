@@ -305,7 +305,8 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   }
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
 
-  fEMCALGeo =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8");
+  //fEMCALGeo =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8");
+  //fEMCALGeo =  AliEMCALGeometry::GetInstance();
 
   ////////////////
   //Output list//
@@ -818,6 +819,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     }
   } //+++
 
+  if(!fEMCALGeo)fEMCALGeo  = AliEMCALGeometry::GetInstance(); // not work w.o. Tender 
+  //cout << "fEMCALGeo= " << fEMCALGeo << endl;
+
   ///////////////
   //Track loop///
   ///////////////
@@ -944,7 +948,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     for(int icl=0; icl<NcellsInCluster; icl++)
        {
         int icell = clustMatch->GetCellAbsId(icl); 
-        iSM = fEMCALGeo->GetSuperModuleNumber(icell);
+        //cout << "icell = " << icell << endl;
+        //cout << "fEMCALGeo = " << fEMCALGeo << endl;
+        if(fEMCALGeo)
+          {
+           iSM = fEMCALGeo->GetSuperModuleNumber(icell);
+          }
         //cout << "iSM = " << iSM << endl;
        }
 
