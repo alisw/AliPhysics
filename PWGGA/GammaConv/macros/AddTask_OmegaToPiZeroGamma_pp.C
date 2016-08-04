@@ -64,6 +64,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 Int_t     isMC                          = 0,                      // run MC
                                 Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
+                                Int_t     DoPiZeroGammaAngleCut         = kFALSE,                 // flag for enabling cut on pi0-gamma angle
+                                Double_t  lowerFactor                   = 0.75,                   // scale factor for lower limit in pi0-gamma angle cut
+                                Double_t  upperFactor                   = 2.5,                    // scale factor for upper limit in pi0-gamma angle cut
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
                                 Int_t     enableExtMatchAndQA           = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
                                 Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
@@ -177,6 +180,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetReconMethod(ReconMethod);
+  task->SetDoPiZeroGammaAngleCut(DoPiZeroGammaAngleCut);
+  task->SetlowerFactor(lowerFactor);
+  task->SetupperFactor(upperFactor);
 
   //create cut handler
   CutHandlerPiZeroGamma cuts;
@@ -192,7 +198,31 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   if(trainConfig == 1){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145), last string is not used as of now
 
-  } else if(trainConfig == 2){ // std 8TeV
+  } else if(trainConfig == 2){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 3){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 4){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 51){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 52){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 53){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 54){ // same as std 8TeV, for varying angle cut
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
@@ -201,7 +231,31 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
 
-  } else if(trainConfig == 102){ // std 8TeV
+  } else if(trainConfig == 102){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 103){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 104){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 151){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 152){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 153){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 154){ // same as std 8TeV, for varying angle cut
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
@@ -210,7 +264,31 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
 
-  } else if(trainConfig == 202){ // std 8TeV
+  } else if(trainConfig == 202){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 203){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 204){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 251){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 252){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 253){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 254){ // same as std 8TeV, for varying angle cut
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
@@ -219,7 +297,31 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   } else if(trainConfig == 301){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
 
-  } else if(trainConfig == 302){ // std 8TeV
+  } else if(trainConfig == 302){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 303){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 304){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 351){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 352){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 353){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 354){ // same as std 8TeV, for varying angle cut
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
@@ -228,7 +330,31 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
 
-  } else if(trainConfig == 402){ // std 8TeV
+  } else if(trainConfig == 402){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 403){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 404){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 451){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 452){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 453){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 454){ // same as std 8TeV, for varying angle cut
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
@@ -237,7 +363,31 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   } else if(trainConfig == 501){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
 
-  } else if(trainConfig == 502){ // std 8TeV
+  } else if(trainConfig == 502){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 503){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 504){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // same as standard, for varying angle cut
+
+  } else if(trainConfig == 551){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 552){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 553){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+
+  } else if(trainConfig == 554){ // same as std 8TeV, for varying angle cut
     cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
@@ -324,7 +474,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     analysisNeutralPionCuts[i]->SetRunningMode(2);
     analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);
-    analysisNeutralPionCuts[i]->SetFillCutHistograms("");
+    analysisNeutralPionCuts[i]->SetFillCutHistograms("NeutralPionCuts");
     if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
@@ -332,7 +482,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
-    analysisMesonCuts[i]->SetFillCutHistograms("");
+    analysisMesonCuts[i]->SetFillCutHistograms("MesonCuts");
     if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   }
 
