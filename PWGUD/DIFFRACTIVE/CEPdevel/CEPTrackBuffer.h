@@ -2,7 +2,7 @@
 #define CEPTRACKBUFFER
 
 #include <TVector3.h>
-#include </home/pbuehler/alice/sw/slc7_x86-64/AliRoot/0-1/include/AliPID.h>
+#include <AliPID.h>
 
 class CEPTrackBuffer : public TObject {
 
