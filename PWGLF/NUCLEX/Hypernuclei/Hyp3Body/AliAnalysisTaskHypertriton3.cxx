@@ -58,6 +58,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMultiplicity.h"
+#include "AliMultSelection.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPhysicsSelection.h"
@@ -86,6 +87,10 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTrkArray(0x0),
   fMC(kFALSE),
   fFillTree(kFALSE),
+  fRun1PbPb(kFALSE),
+  fRun2PbPb(kTRUE),
+  fEvtSpecie(4),
+  fEvtEmbedSelection(kFALSE),
   fCentrality(0x0),
   fCentralityPercentile(0x0),
   fTriggerConfig(1),
@@ -407,6 +412,100 @@ void AliAnalysisTaskHypertriton3::SetConvertedAODVertices(AliESDVertex *ESDvtxp,
   fVtx2->SetID(ESDvtxs->GetID());
   fVtx2->SetType(AliAODVertex::kUndef);
 
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskHypertriton3::PassTriggerSelection(UInt_t PhysSelMask){
+
+  if(!fRun1PbPb && !fRun2PbPb){
+    AliWarning("WARNING: No Run(1-2) Pb-Pb period selection =====>>> Please choose one!");
+    return kFALSE;
+  }
+
+  if(fRun1PbPb && fRun2PbPb){
+    AliWarning("WARNING: Run1 AND Run2 Pb-Pb period selected =====>>> Please choose only one!");
+    return kFALSE;
+  }
+
+  if(fRun1PbPb){ //trigger for 2011 Pb-Pb analysis
+    Bool_t isSelectedCentral = (PhysSelMask & AliVEvent::kCentral);
+    Bool_t isSelectedSemiCentral = (PhysSelMask & AliVEvent::kSemiCentral);
+    Bool_t isSelectedMB = (PhysSelMask & AliVEvent::kMB);
+
+    if(isSelectedMB) { // Minimum Bias
+      fHistTrigger->Fill(0);
+    }
+    if(isSelectedCentral) { // Central
+      fHistTrigger->Fill(1);
+    }
+    if(isSelectedSemiCentral) { // SemiCentral
+      fHistTrigger->Fill(2);
+    }
+
+    if(fTriggerConfig==1 && !isSelectedMB && !isSelectedCentral && !isSelectedSemiCentral){ //kMB + kCentral + kSemiCentral
+      return kFALSE;
+    }else if(fTriggerConfig==2 && !isSelectedCentral && !isSelectedSemiCentral){ //kCentral + kSemiCentral
+      return kFALSE;
+    }else if(fTriggerConfig==3 && !isSelectedSemiCentral){ //kSemiCentral
+      return kFALSE;
+    }else if(fTriggerConfig == 4 && !isSelectedCentral){ //kCentral
+        return kFALSE;
+    }
+    return kTRUE;
+  } // end of fRun1PbPb
+
+  if(fRun2PbPb){ //trigger for 2015 Pb-Pb analysis
+    Bool_t isSelectedMB = (PhysSelMask & AliVEvent::kINT7); // V0AND minimum bias trigger
+    if(isSelectedMB) { // Minimum Bias
+      fHistTrigger->Fill(0);
+    }
+    
+    if(!isSelectedMB) return kFALSE;
+    return kTRUE;
+  } // end of fRun2PbPb
+
+  return kFALSE;
+
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskHypertriton3::PassCentralitySelection(){
+
+  if(!fRun1PbPb && !fRun2PbPb){
+    AliWarning("WARNING: No Run(1-2) Pb-Pb period selection =====>>> Please choose one!");
+    return kFALSE;
+  }
+
+  if(fRun1PbPb && fRun2PbPb){
+    AliWarning("WARNING: Run1 AND Run2 Pb-Pb period selected =====>>> Please choose only one!");
+    return kFALSE;
+  }
+
+  if(fRun1PbPb){
+    if(fESDevent->GetEventSpecie() == fEvtSpecie){ // Event Specie == 4 == PbPb
+      AliWarning("fRun1PbPb: Centrality task");
+      AliCentrality *centr=fESDevent->GetCentrality();
+      fCentrality = centr->GetCentralityClass10("V0M");
+      fCentralityPercentile = centr->GetCentralityPercentile("V0M");
+    }
+  }
+  if(fRun2PbPb){
+    if(fESDevent->GetEventSpecie() == fEvtSpecie){ // Event Specie == 4 == PbPb
+      AliWarning("fRun2PbPb: Centrality task");
+      AliMultSelection *centr=(AliMultSelection*)fESDevent->FindListObject("MultSelection");
+      if(!centr){
+        AliWarning("AliMultSelection object not found!");
+      }
+      fCentralityPercentile = centr->GetMultiplicityPercentile("V0M",fEvtEmbedSelection);
+    }
+  }
+  cout << "fCentralityPercentile: " << fCentralityPercentile << endl;
+
+  fHistCentralityClass->Fill(fCentrality);
+  fHistCentralityPercentile->Fill(fCentralityPercentile);
+
+  if (fCentralityPercentile < fLowCentrality || fCentralityPercentile > fHighCentrality) return kFALSE;
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -1349,66 +1448,24 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   //==========Trigger class==========
   UInt_t maskPhysSel = handl->IsEventSelected();
-  Bool_t isSelectedCentral = (maskPhysSel & AliVEvent::kCentral);
-  Bool_t isSelectedSemiCentral = (maskPhysSel & AliVEvent::kSemiCentral);
-  Bool_t isSelectedMB = (maskPhysSel & AliVEvent::kMB);
-
-  if(isSelectedMB) { // Minimum Bias
-    fHistTrigger->Fill(0);
+  if(!PassTriggerSelection(maskPhysSel)){
+    PostData(1,fOutput);
+    return;
   }
-
-  if(isSelectedCentral) { // Central
-    fHistTrigger->Fill(1);
-  }
-
-  if(isSelectedSemiCentral) { // SemiCentral
-    fHistTrigger->Fill(2);
-  }
-
-  if(fTriggerConfig == 1){ //kMB + kCentral + kSemiCentral
-    if(!isSelectedMB && !isSelectedCentral && !isSelectedSemiCentral){
-      PostData(1,fOutput);
-      return;
-    }
-  }else if(fTriggerConfig == 2){ //kCentral + kSemiCentral
-    if(!isSelectedCentral && !isSelectedSemiCentral){
-      PostData(1,fOutput);
-      return;
-    }
-  }else if(fTriggerConfig == 3){ //kSemiCentral
-    if(!isSelectedSemiCentral){
-      PostData(1,fOutput);
-      return;
-    }
-  }else if(fTriggerConfig == 4){ //kCentral
-    if(!isSelectedCentral){
-      PostData(1,fOutput);
-      return;
-    }
-  }
-
   fHistCount->Fill(1); // number of events passing the Trigger Selection
 
   //==========Centrality==========
-  if(fESDevent->GetEventSpecie() == 4){ // Event Specie == 4 == PbPb
-    AliCentrality *centr=fESDevent->GetCentrality();
-    fCentrality = centr->GetCentralityClass10("V0M");
-    fCentralityPercentile = centr->GetCentralityPercentile("V0M");
-  }
-
-  fHistCentralityClass->Fill(fCentrality);
-  fHistCentralityPercentile->Fill(fCentralityPercentile);
-
-  if (fCentralityPercentile < fLowCentrality || fCentralityPercentile > fHighCentrality) {
+  printf("====================\n");
+  if (!PassCentralitySelection()) {
     PostData(1,fOutput);
     return; //0 bis 80 %
   }
-
+  cout << "fCentralityPercentile_2: " << fCentralityPercentile << endl;
   Bool_t isCent = kFALSE;
   Bool_t isSemiCent = kFALSE;
 
-  if(isSelectedCentral && fCentralityPercentile >= 0. && fCentralityPercentile < 10.) isCent = kTRUE;
-  if(isSelectedSemiCentral && fCentralityPercentile >= 10. && fCentralityPercentile < 50.) isSemiCent = kTRUE;
+  if(fCentralityPercentile >= 0. && fCentralityPercentile < 10.) isCent = kTRUE;
+  if(fCentralityPercentile >= 10. && fCentralityPercentile < 50.) isSemiCent = kTRUE;
 
   fHistCount->Fill(2); // number of reco events passing Centrality Selection
 
