@@ -57,6 +57,8 @@ public:
   Bool_t UseTRDEtaCorrection() const { return fUseTRDEtaCorrection; };
   void SetUseTRDClusterCorrection(Bool_t useTRDClusterCorrection) { fUseTRDClusterCorrection = useTRDClusterCorrection; };
   Bool_t UseTRDClusterCorrection() const { return fUseTRDClusterCorrection; };
+  void SetUseTRDCentralityCorrection(Bool_t useTRDCentralityCorrection) { fUseTRDCentralityCorrection = useTRDCentralityCorrection; };
+  Bool_t UseTRDCentralityCorrection() const { return fUseTRDCentralityCorrection; };
 
 
   void SetSpecialDetectorResponse(const char* det) { fSpecialDetResponse=det; }
@@ -82,6 +84,7 @@ private:
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
   Bool_t fUseTRDEtaCorrection;          // Use TRD eta correction
   Bool_t fUseTRDClusterCorrection;      // Use TRD cluster correction
+  Bool_t fUseTRDCentralityCorrection;   // Use TRD centrality correction
 
   Int_t  fUserDataRecoPass;            // forced DATA reco pass
   
@@ -91,6 +94,6 @@ private:
   AliAnalysisTaskPIDResponse(const AliAnalysisTaskPIDResponse &other);
   AliAnalysisTaskPIDResponse& operator=(const AliAnalysisTaskPIDResponse &other);
   
-  ClassDef(AliAnalysisTaskPIDResponse,9)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDResponse,10)  // Task to properly set the PID response functions of all detectors
 };
 #endif

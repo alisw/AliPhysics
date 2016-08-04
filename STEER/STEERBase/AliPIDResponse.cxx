@@ -99,6 +99,7 @@ fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
 fUseTRDEtaCorrection(kFALSE),
 fUseTRDClusterCorrection(kFALSE),
+fUseTRDCentralityCorrection(kFALSE),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -174,6 +175,7 @@ fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
 fUseTRDEtaCorrection(other.fUseTRDEtaCorrection),
 fUseTRDClusterCorrection(other.fUseTRDClusterCorrection),
+fUseTRDCentralityCorrection(other.fUseTRDCentralityCorrection),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -239,6 +241,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTRDdEdxParams=NULL;
     fUseTRDEtaCorrection=other.fUseTRDEtaCorrection;
     fUseTRDClusterCorrection=other.fUseTRDClusterCorrection;
+    fUseTRDCentralityCorrection=other.fUseTRDCentralityCorrection;
     fEMCALPIDParams=NULL;
     fTOFtail=0.9;
     fTOFPIDParams=NULL;
@@ -626,6 +629,8 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
 
   // Set centrality percentile for EMCAL
   fEMCALResponse.SetCentrality(fCurrCentrality);
+  // Set centrality percentile for TRD
+  fTRDResponse.SetCentrality(fCurrCentrality);
 
   // switch off some TOF channel according to OADB to match data TOF matching eff
   if (fTuneMConData && ((fTuneMConDataMask & kDetTOF) == kDetTOF) && fTOFPIDParams->GetTOFmatchingLossMC() > 0.01){
@@ -675,6 +680,7 @@ void AliPIDResponse::ExecNewRun()
   SetTRDdEdxParams();
   SetTRDEtaMaps();
   SetTRDClusterMaps();
+  SetTRDCentralityMaps();
   InitializeTRDResponse();
 
   // ===| TOF part |============================================================
@@ -1831,13 +1837,13 @@ void AliPIDResponse::SetTRDEtaMaps()
 void AliPIDResponse::SetTRDClusterMaps()
 {
   //
-  // Load the TRD eta correction map from the OADB
+  // Load the TRD cluster correction map from the OADB
   //
 
     if (fIsMC) fUseTRDClusterCorrection = kFALSE;
     if (fUseTRDClusterCorrection == kFALSE) {
       //  fTRDResponse.SetEtaCorrMap(0,0x0);
-	AliInfo("Request to disable TRD eta correction -> Eta correction has been disabled");
+	AliInfo("Request to disable TRD cluster correction -> Cluster correction has been disabled");
         return;
     }
     TH2D* clusterMap[3];
@@ -1883,6 +1889,62 @@ void AliPIDResponse::SetTRDClusterMaps()
 
 
     }
+
+
+}
+
+//______________________________________________________________________________
+void AliPIDResponse::SetTRDCentralityMaps()
+{
+  //
+  // Load the TRD centrality correction map from the OADB
+  //
+
+    if (fIsMC) fUseTRDCentralityCorrection = kFALSE;
+    if (fUseTRDCentralityCorrection == kFALSE) {
+	AliInfo("Request to disable TRD eta correction -> Centrality correction has been disabled");
+        return;
+    }
+    TH2D* centralityMap[1];
+    centralityMap[0] = 0x0;
+
+
+    const TString containerName = "TRDCorrectionMaps";
+    AliOADBContainer cont(containerName.Data());
+
+    const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxCorrectionMaps.root", fOADBPath.Data());
+
+    const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
+    if (statusCont){
+	AliInfo("Failed initializing TRD Centrality Correction settings from OADB or no correction parameters available");
+        return;
+    }
+    else{
+	AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
+
+	TObject* centralityarray=(TObject*)cont.GetObject(fRun);
+
+	if(centralityarray){
+		centralityMap[0] = (TH2D *)centralityarray->FindObject("TRDCentralityMap");
+		fTRDResponse.SetCentralityCorrMap(0,centralityMap[0]);
+	}
+	else{
+	    AliInfo(Form("TRD Centrality Correction Params not found"));
+	    fUseTRDCentralityCorrection = kFALSE;
+            return;
+	    //fTRDResponse.SetCentralityCorrMap(0,0x0);
+	}
+
+
+
+	if (!centralityMap[0]) {
+	    AliInfo(Form("TRD Centrality Correction Params not found"));
+	    fUseTRDCentralityCorrection = kFALSE;
+            return;
+	}
+
+
+    } 
 
 
 }
@@ -2451,7 +2513,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTRD(const AliVParticle *vtrack, AliPID:
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
 
-  return fTRDResponse.GetNumberOfSigmas(track,type, fUseTRDEtaCorrection, fUseTRDClusterCorrection);
+  return fTRDResponse.GetNumberOfSigmas(track,type, fUseTRDEtaCorrection, fUseTRDClusterCorrection, fUseTRDCentralityCorrection);
 }
 
 //______________________________________________________________________________
@@ -2552,7 +2614,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTRD(const AliVPartic
   // Signal minus expected Signal for TRD
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=fTRDResponse.GetSignalDelta(track,type,ratio,fUseTRDEtaCorrection,fUseTRDClusterCorrection);
+  val=fTRDResponse.GetSignalDelta(track,type,ratio,fUseTRDEtaCorrection,fUseTRDClusterCorrection,fUseTRDCentralityCorrection);
 
   return GetTRDPIDStatus(track);
 }
