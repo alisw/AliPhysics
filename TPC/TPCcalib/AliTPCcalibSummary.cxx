@@ -453,6 +453,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "tempSkirtA.="<<&vecSkirtTempA<< // T Skirt A-Side;Environment;Sector-A
       "tempSkirtC.="<<&vecSkirtTempC;  // T Skirt C-Side;Environment;Sector-C
 
+    ProcessGas(irun, itime);
     ProcessDrift(irun, itime);
     ProcessDriftCE(irun,itime);
     ProcessDriftAll(irun,itime);
@@ -543,7 +544,18 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
 
 
 
+void AliTPCcalibSummary::ProcessGas(Int_t run, Int_t timeStamp)
+{
+  const Int_t nsensors=Int_t(AliTPCcalibDB::kNGasSensor);
+  static TVectorF gasValues(nsensors);
 
+  for (Int_t isen=0; isen<nsensors; ++isen) {
+    gasValues(isen) = fCalibDB->GetGasSensorValue((AliTPCcalibDB::EDcsGasSensor)isen);
+  }
+
+  (*fPcstream)<<"dcs"<<
+    "gasValues.=" << &gasValues;
+}
 
 
 void AliTPCcalibSummary::ProcessDrift(Int_t run, Int_t timeStamp){

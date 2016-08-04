@@ -136,6 +136,7 @@ AliTPCcalibDB* AliTPCcalibDB::fgInstance = 0;
 Bool_t AliTPCcalibDB::fgTerminated = kFALSE;
 TObjArray    AliTPCcalibDB::fgExBArray;    ///< array of ExB corrections
 
+const char* AliTPCcalibDB::fgkGasSensorNames[AliTPCcalibDB::kNGasSensor] = {"TPC_GC_NEON", "TPC_GC_ARGON", "TPC_GC_CO2", "TPC_GC_N2", "TPC_An_L1Sr141_H2O"};
 
 //_ singleton implementation __________________________________________________
 AliTPCcalibDB* AliTPCcalibDB::Instance()
@@ -189,6 +190,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
+  fGasSensorArray(0x0),
   fMaxTimeBinAllPads(-1),
   fHVsensors(),
   fGrRunState(0x0),
@@ -253,6 +255,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fIonTailArray(0),
   fPulserData(0),
   fCEData(0),
+  fGasSensorArray(0x0),
   fMaxTimeBinAllPads(-1),
   fHVsensors(),
   fGrRunState(0x0),
@@ -493,6 +496,14 @@ void AliTPCcalibDB::Update(){
     AliFatal("TPC - Missing calibration entry TPC/Calib/RecoParam");
   }
 
+  //Gas sensor data
+  entry          = GetCDBEntry("TPC/Calib/GasComposition");
+  if (entry){
+    entry->SetOwner(kTRUE);
+    fGasSensorArray=(AliDCSSensorArray*)(entry->GetObject());
+  }else{
+    AliWarning("Missing gas calibration entry");
+  }
 
   //ALTRO configuration data
   entry          = GetCDBEntry("TPC/Calib/AltroConfig");
@@ -2146,6 +2157,23 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
     AliFatal("Something went wrong in the chamber HV status calculation. Check warning messages above. All chambers would be deactivated!");
   }
 }
+Float_t AliTPCcalibDB::GetGasSensorValue(EDcsGasSensor type, Int_t timeStamp/*=-1*/, Int_t sigDigits/*=0*/)
+{
+  /// Get the gas sensor value
+  /// if timeStamp == -1 return the average value in this run
+
+  if (!fGasSensorArray || Int_t(type)<0 || Int_t(type)>=Int_t(kNGasSensor) ) return 0.;
+
+  // ===| Average value |===
+  if (timeStamp==-1){
+    return AliTPCcalibDB::GetDCSSensorMeanValue(fGasSensorArray, fgkGasSensorNames[Int_t(type)], sigDigits);
+  }
+
+  // ===| Value at given time stamp |===
+  TTimeStamp stamp(timeStamp);
+  return AliTPCcalibDB::GetDCSSensorValue(fGasSensorArray, timeStamp, fgkGasSensorNames[Int_t(type)], sigDigits);
+}
+
 
 Float_t AliTPCcalibDB::GetChamberHighVoltage(Int_t run, Int_t sector, Int_t timeStamp, Int_t sigDigits, Bool_t current) {
   /// return the chamber HV for given run and time: 0-35 IROC, 36-72 OROC

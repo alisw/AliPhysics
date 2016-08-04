@@ -25,6 +25,7 @@ public:
   void Process(const char * runList, Int_t first, Int_t last);
   void ProcessRun(Int_t irun, Int_t startTime=0, Int_t endTime=0);
   //
+  void ProcessGas(Int_t run, Int_t timeStamp);
   void ProcessDrift(Int_t run, Int_t timeStamp);
   void ProcessDriftCE(Int_t run, Int_t timeStamp);
   void ProcessDriftAll(Int_t run, Int_t timeStamp);

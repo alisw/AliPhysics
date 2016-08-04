@@ -42,7 +42,9 @@ class AliTPCChebCorr;
 
 class AliTPCcalibDB : public TObject
 {
- public: 
+ public:
+  enum EDcsGasSensor { kNeon=0, kArgon, kCO2, kN2, kH2O, kNGasSensor };
+
   static AliTPCcalibDB* Instance();
   AliTPCcalibDB();
   virtual ~AliTPCcalibDB();
@@ -119,6 +121,12 @@ class AliTPCcalibDB : public TObject
 
   //QA object
   AliTPCdataQA*   GetDataQA() const {return fDataQA;}
+  //
+  // Gas sensor data
+  //
+  AliDCSSensorArray* GetGasSensors() const { return fGasSensorArray; }
+  Float_t GetGasSensorValue(EDcsGasSensor type, Int_t timeStamp=-1, Int_t sigDigits=0);
+
   //
   AliTPCSensorTempArray* GetTemperature() const {return fTemperature;}
   AliTPCParam*  GetParameters() const {return fParam;}
@@ -230,6 +238,12 @@ protected:
   TObjArray * fIonTailArray;      ///< array of graphs with the ion tail
   TObjArray *fPulserData;         ///< Calibration Pulser data
   TObjArray *fCEData;             ///< CE data
+  //
+  // Gas sensor data
+  //
+  static const char* fgkGasSensorNames[kNGasSensor]; ///< DCS gas sensor names
+  AliDCSSensorArray* fGasSensorArray;                ///< Gas sensors
+
   //
   // Defived ALTRO information
   //
