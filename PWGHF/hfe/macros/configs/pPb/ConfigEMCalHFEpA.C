@@ -1,5 +1,4 @@
 
-
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
 										
@@ -140,19 +139,24 @@ Bool_t isCentralitySys 		= kFALSE
 	if(period == "d"){
 		
 			printf("======================================================================================\n ");
-			printf("\n\n Running on 13d period!!! WITHOUT CALIBRATION \n\n  TPC Calibration NOT set !!! \n\n ");
+			printf("\n\n Running on 13d period!!! WITH CALIBRATION \n\n  \n\n ");
 			printf("======================================================================================\n ");
 		
 			task->SetTPCCalibration();
-	        task->SetTPC_mean_sigma(1.02, 1.68);
+	        //task->SetTPC_mean_sigma(1.02, 1.68);
+		    task->SetTPC_mean_sigma(0.63, 1.17);
+
 		    task->SetTPCcal_cut_min(-1);
 		    task->SetTPCcal_cut_max(3);
 			
 	}
 	
 	if(period == "e" || period == "f"){
-		task->SetTPCCalibration_eta(kTRUE);
+			//task->SetTPCCalibration_eta(kTRUE);
+		task->SetTPCCalibration_eta(kFALSE);
 	}
+	 
+	
 	
 	if(configIndex==300){
 		task->SetTPCCalibration_eta(kFALSE);
@@ -264,7 +268,7 @@ Bool_t isCentralitySys 		= kFALSE
 	if(centralityIndex==2) task->SetCentrality(40,60);
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
-	if(centralityIndex==5) task->SetCentrality(0,100);
+		//if(centralityIndex==5) task->SetCentrality(0,100);
 	
 	if(centralityIndex==6) task->SetCentrality(0,10);
 	if(centralityIndex==7) task->SetCentrality(10,20);

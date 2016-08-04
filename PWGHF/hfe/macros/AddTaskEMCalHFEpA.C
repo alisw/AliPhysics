@@ -1,4 +1,4 @@
-AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
+AliAnalysisTask *AddTaskEMCalHFEpA(
 
                         Bool_t  isMC            = kFALSE, 
                         Int_t   triggerIndex    = 0, 
@@ -30,7 +30,7 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //Config Task
         //gROOT->LoadMacro("ConfigEMCalHFEpA.C");
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
-        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender, period, centralityEstimator, isCentralitySys);
+        AliAnalysisTaskEMCalHFEpA2 *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender, period, centralityEstimator, isCentralitySys);
         
         //_______________________
         //Trigger
@@ -55,10 +55,8 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //Create containers for input/output
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	
-	if(centralityEstimator == 0){
+	
         AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
-	}
-	else AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould, centralityEstimator), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
 	
 		
 		
