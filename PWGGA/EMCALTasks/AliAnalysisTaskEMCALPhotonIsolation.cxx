@@ -694,6 +694,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fTrackMultvsPt = new TH2D("hTrackMultvsPt","Track Multiplicity vs  p_{T}-UE distribution for clusters",100,0.,100.,200,0.,100.);
         fTrackMultvsPt->Sumw2();
         fOutput->Add(fTrackMultvsPt);
+
+	if(fIsMC){
+            fphietaPhotons = new TH3D ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
+           fphietaPhotons->Sumw2();
+            fOutput->Add(fphietaPhotons);
+            
+          fphietaOthers = new TH3D ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+            fphietaOthers->Sumw2();
+         fOutput->Add(fphietaOthers);
+           
+           fphietaOthersBis = new TH3D ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+          fphietaOthersBis->Sumw2();
+           fOutput->Add(fphietaOthersBis);
+	}
+
       }
         break;
         
@@ -2547,7 +2562,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
       //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
       //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
     
-    fOutClustMC->Fill(outputvalueMCmix);
+    if(fWho==1) fOutClustMC->Fill(outputvalueMCmix);
   }
   return;
 }
@@ -3358,7 +3373,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         // Mother PDG
         //fill some histograms or a THnSparse or a TTree.
         //	AliError(Form("Fill something in Analize MC"));
-      fOutMCTruth -> Fill(outputValuesMC);
+      if(fWho==1)  fOutMCTruth -> Fill(outputValuesMC);
     }
   }
   else{
