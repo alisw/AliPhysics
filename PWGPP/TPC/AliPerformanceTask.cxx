@@ -187,7 +187,8 @@ void AliPerformanceTask::Exec(Option_t *)
   // Called for each event
   // Decide whether to use HLT or Offline events
   fEvents++;
-  cout <<"Event number "<<fEvents<<endl;
+  static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+  if (showInfo) cout <<"Event number "<<fEvents<<endl;
   //if(fDebug) AliSysInfo::AddStamp("memleak",fEvents);
   
 // Decide whether to use HLT ESD or Offline ESD/AOD
