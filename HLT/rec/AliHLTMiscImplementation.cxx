@@ -132,12 +132,7 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
 
   AliCDBEntry* entry=NULL;
   try {
-    // exceptions for the loading of OCDB objects have been introduced in r61012 on
-    // Feb 20 2013. This allows to reduce this function to try and catch of AliCDBManager::Get
-    AliCDBStorage* storage = man->GetDefaultStorage();
-    if (storage && storage->GetId(path, runNo) ){ // check the path before calling Get() in order to avoid call of AliFatal() in Grid CDB manager
-      entry=man->Get(path, runNo);
-    }
+    entry=man->Get(path, runNo);
   }
   catch (...) {
     // ignore the exception, missing object can be a valid condition, and is handled
