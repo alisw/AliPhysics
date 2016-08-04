@@ -434,7 +434,7 @@ int AliHLTSystem::InitTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
-    HLTError("can not initialize task list, error %d", iResult);
+    HLTFatal("can not initialize task list, error %d", iResult);
   }
 
   return iResult;
