@@ -34,11 +34,11 @@
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::ADV0+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::TreeData+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::MCInfo+;
-#pragma link C++ class AliAnalysisTaskPB.cxx+;
-#pragma link C++ class AliPBBase.cxx+;
-#pragma link C++ class AliPBTracks.cxx+;
-#pragma link C++ class AliPBUtils.cxx+;
-#pragma link C++ class CEPEventBuffer.cxx+;
-#pragma link C++ class CEPTrackBuffer.cxx+;
+#pragma link C++ class AliAnalysisTaskPB+;
+#pragma link C++ class AliPBBase+;
+#pragma link C++ class AliPBTracks+;
+#pragma link C++ class AliPBUtils+;
+#pragma link C++ class CEPEventBuffer+;
+#pragma link C++ class CEPTrackBuffer+;
 
 #endif
