@@ -63,24 +63,21 @@ namespace EMCalTriggerPtAnalysis {
  * Dummy constructor
  */
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
-        AliAnalysisTaskSE(),
-        fTrackCuts(NULL),
-        fAnalysisUtil(NULL),
-        fTriggerSelection(NULL),
-        fHistos(NULL),
-        fGeometry(NULL),
-        fWeightHandler(NULL),
-        fUsePythiaHard(kFALSE),
-        fPtHard(0),
-        fPtHardBin(0),
-        fNTrials(0),
-        fXsection(0),
+        AliAnalysisTaskEmcal(),
+        fTrackCuts(nullptr),
+        fTriggerSelection(nullptr),
+        fHistos(nullptr),
+        fWeightHandler(nullptr),
+        fEventTriggers(),
+        fEventWeight(1.),
         fYshift(0.465),
         fEtaSign(1),
         fEtaLabCut(-0.6, 0.6),
         fEtaCmsCut(-0.13, 0.13),
         fFracPtHard(-1)
 {
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetNeedEmcalGeom(true);
 }
 
 /**
@@ -88,25 +85,21 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
  * @param name Name of the task
  */
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const char* name):
-        AliAnalysisTaskSE(name),
-        fTrackCuts(NULL),
-        fAnalysisUtil(NULL),
-        fTriggerSelection(NULL),
-        fHistos(NULL),
-        fGeometry(NULL),
-        fWeightHandler(NULL),
-        fUsePythiaHard(kFALSE),
-        fPtHard(0),
-        fPtHardBin(0),
-        fNTrials(0),
-        fXsection(0),
+        AliAnalysisTaskEmcal(name, true),
+        fTrackCuts(nullptr),
+        fTriggerSelection(nullptr),
+        fHistos(nullptr),
+        fWeightHandler(nullptr),
+        fEventTriggers(),
+        fEventWeight(1.),
         fYshift(0.465),
         fEtaSign(1),
         fEtaLabCut(-0.6, 0.6),
         fEtaCmsCut(-0.13, 0.13),
         fFracPtHard(-1)
 {
-  DefineOutput(1, TList::Class());
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetNeedEmcalGeom(true);
 }
 
 /**
@@ -114,7 +107,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
  */
 AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
   //if(fTrackCuts) delete fTrackCuts;
-  if(fAnalysisUtil) delete fAnalysisUtil;
   if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
 }
@@ -122,23 +114,14 @@ AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
  * Create the output histograms
  */
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
-  if(!fAnalysisUtil) fAnalysisUtil = new AliAnalysisUtils;
+  if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
   fHistos = new THistManager("Ref");
 
   if(!fTrackCuts) InitializeTrackCuts("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
 
   PtBinning newbinning;
 
-  fHistos->CreateTH1("hNtrials", "Number of trials", 1, 0.5, 1.5);
-  fHistos->CreateTProfile("hCrossSection", "PYTHIA cross section", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hNtrialsNoSelect", "Number of trials (without event selection)", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hNtrialsEvent", "Number of trials (from header, after event selection)", 1, 0.5, 1.5);
-  fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
-  fHistos->CreateTH1("hTriggerJetPtNoCut", "pt of trigger jets wihtout cuts", 1000, 0., 500);
-  fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 1000, 0., 20.);
-  fHistos->CreateTH1("hTriggerJetPtWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
-  fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 1000, 0., 20.);
   TString triggers[7] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   TString species[6] = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
@@ -231,93 +214,67 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
     }
   }
   //fHistos->GetListOfHistograms()->Add(fTrackCuts);
-  PostData(1, fHistos->GetListOfHistograms());
+  for(auto hist : *(fHistos->GetListOfHistograms())){
+    fOutput->Add(hist);
+  }
 }
 
-void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select event
-  if(MCEvent()) return;
-  if(!fGeometry){
-    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
-  }
-  AliGenPythiaEventHeader *pyheader = GetPythiaHeader();
-  if(pyheader){
-    FillTriggerJetHistograms(kFALSE, pyheader);
-    fHistos->FillTH1("hNtrialsNoSelect",1,pyheader->Trials());
-    if(fFracPtHard > 0){
-      // Apply outlier cut in case of a positive fraction of pthard
-      if(IsOutlierJet(pyheader))
-        return;
-    }
-    FillTriggerJetHistograms(kTRUE, pyheader);
+bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
+  AliDebugStream(1) << GetName() << ": Using custom event selection" << std::endl;
+  if(!MCEvent()) return false;
+  if(!fTriggerPatchInfo) return false;
+  fEventWeight = fWeightHandler ? fWeightHandler->GetEventWeight(fPythiaHeader) : 1.;
 
-    if(IsOutlierParticle(pyheader)) return;
+  // Do MC outlier cut
+  if(fIsPythia){
+    if(!CheckMCOutliers()) return false;
   }
 
-  Double_t weight = fWeightHandler ? fWeightHandler->GetEventWeight(pyheader) : 1.;
 
-  //TString triggerstring = GetFiredTriggerClasses(fTriggerPatches);
-  Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
-      isEMC7 = kFALSE, isEJ1 = kFALSE, isEJ2 = kFALSE, isEG1 = kFALSE, isEG2 = kFALSE;
-  TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  if(fTriggerPatches && fTriggerSelection){
-      isEMC7 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches); // triggerstring.Contains("EMC7"),
-      isEJ1 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatches); // triggerstring.Contains("EJ1"),
-      isEJ2 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatches); // triggerstring.Contains("EJ2"),
-      isEG1 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches); // triggerstring.Contains("EG1"),
-      isEG2 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
-
+  // select trigger
+  fEventTriggers.clear();
+  bool isMinBias;
+  if((isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fEventTriggers.push_back("MB");
+  // In simulations triggered events are a subset of min. bias events
+  if(fTriggerPatchInfo && fTriggerSelection){
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatchInfo))
+      fEventTriggers.push_back("EMC7"); // triggerstring.Contains("EMC7"),
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatchInfo))
+      fEventTriggers.push_back("EJ1"); // triggerstring.Contains("EJ1"),
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatchInfo))
+      fEventTriggers.push_back("EJ2"); // triggerstring.Contains("EJ2"),
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatchInfo))
+      fEventTriggers.push_back("EG1"); // triggerstring.Contains("EG1"),
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatchInfo))
+      fEventTriggers.push_back("EG2"); // triggerstring.Contains("EG2");
   }
-  if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
+  if(!fEventTriggers.size()){
+    AliDebugStream(1) << GetName() << ": No trigger selected" << std::endl;
+  }
+
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
-  //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-  if(vtx->GetNContributors() < 1) return;
+  if(vtx->GetNContributors() < 1) return false;
+  if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent)) return false;       // Apply new vertex cut
+  if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;                 // Apply new vertex cut
   // Fill reference distribution for the primary vertex before any z-cut
-  fHistos->FillTH1("hVertexBeforeTrue", vtx->GetZ(), weight);
-  if(isMinBias) fHistos->FillTH1("hVertexBeforeMB", vtx->GetZ(), weight);
-  if(isEMC7) fHistos->FillTH1("hVertexBeforeEMC7", vtx->GetZ(), weight);
-  if(isEJ1) fHistos->FillTH1("hVertexBeforeEJ1", vtx->GetZ(), weight);
-  if(isEJ2) fHistos->FillTH1("hVertexBeforeEJ2", vtx->GetZ(), weight);
-  if(isEG1) fHistos->FillTH1("hVertexBeforeEG1", vtx->GetZ(), weight);
-  if(isEG2) fHistos->FillTH1("hVertexBeforeEG2", vtx->GetZ(), weight);
-  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;                 // Apply new vertex cut
+  fHistos->FillTH1("hVertexBeforeTrue", vtx->GetZ(), fEventWeight);
+  for(const auto &trg : fEventTriggers) fHistos->FillTH1(Form("hVertexBeforeTrue%s"), vtx->GetZ(), fEventWeight);
   // Apply vertex z cut
-  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
+  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return false;
+
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
-  fHistos->FillTH1("hEventCountTrue", 1, weight);
-  fHistos->FillTH1("hVertexAfterTrue", vtx->GetZ(), weight);
-  if(isMinBias){
-    fHistos->FillTH1("hEventCountMB", 1, weight);
-    fHistos->FillTH1("hVertexAfterMB", vtx->GetZ(), weight);
-  }
-  if(isEMC7){
-    fHistos->FillTH1("hEventCountEMC7", 1, weight);
-    fHistos->FillTH1("hVertexAfterEMC7", vtx->GetZ(), weight);
-  }
-  if(isEJ1){
-    fHistos->FillTH1("hEventCountEJ1", 1, weight);
-    fHistos->FillTH1("hVertexAfterEJ1", vtx->GetZ(), weight);
-  }
-  if(isEJ2){
-    fHistos->FillTH1("hEventCountEJ2", 1, weight);
-    fHistos->FillTH1("hVertexAfterEJ2", vtx->GetZ(), weight);
-  }
-  if(isEG1){
-    fHistos->FillTH1("hEventCountEG1", 1, weight);
-    fHistos->FillTH1("hVertexAfterEG1", vtx->GetZ(), weight);
-  }
-  if(isEG2){
-    fHistos->FillTH1("hEventCountEG2", 1, weight);
-    fHistos->FillTH1("hVertexAfterEG2", vtx->GetZ(), weight);
+  fHistos->FillTH1("hEventCountTrue", 1, fEventWeight);
+  fHistos->FillTH1("hVertexAfterTrue", vtx->GetZ(), fEventWeight);
+  for(const auto &trg : fEventTriggers){
+      fHistos->FillTH1(Form("hEventCount%s", trg.c_str()), 1, fEventWeight);
+      fHistos->FillTH1(Form("hVertexAfter%s", trg.c_str()), vtx->GetZ(), fEventWeight);
   }
 
-  // Fill PYTHIA histograms from event header
-  if(pyheader){
-   fHistos->FillTH1("hNtrialsEvent", 1., pyheader->Trials());
-   fHistos->FillProfile("hCrossSectionEvent", 1., pyheader->GetXsection());
-   fHistos->FillTH1("hPtHard", pyheader->GetPtHard());
-  }
+  return true;
+}
+
+bool AliAnalysisTaskChargedParticlesRefMC::Run() {  // Select event
 
   // MonteCarlo Loop
   // Histograms
@@ -359,7 +316,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     };
 
     // Particle selected (do not filter TRD sectors for MC truth)
-    FillTrackHistos("True", weight, truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL, kFALSE, pid);
+    FillTrackHistos("True", fEventWeight, truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL, kFALSE, pid);
   }
 
   // Loop over tracks, fill select particles
@@ -396,7 +353,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
       phiEMCAL = copytrack.GetTrackPhiOnEMCal();
     }
     Int_t supermoduleID = -1;
-    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
+    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
@@ -424,28 +381,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     case kProton: assocpid = "Pr"; break;
     default: assocpid = "Ot"; break;
     };
-
-    // Go through the trigger classes and fill histograms
-    if(isMinBias){
-      FillTrackHistos("MB", weight,  ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-    }
-    if(isEMC7){
-      FillTrackHistos("EMC7", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-    }
-    if(isEJ1){
-      FillTrackHistos("EJ1", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-    }
-    if(isEJ2){
-      FillTrackHistos("EJ2", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-    }
-    if(isEG1){
-      FillTrackHistos("EG1", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-    }
-    if(isEG2){
-      FillTrackHistos("EG2", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-    }
+    for(const auto &trg : fEventTriggers)
+      FillTrackHistos(trg.c_str(), fEventWeight,  ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
   }
-  PostData(1, fHistos->GetListOfHistograms());
+  return true;
 }
 
 /**
@@ -526,154 +465,6 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
   }
 }
 
-/**
- * Fill histogram with pt of all triggering jets
- * @param histname Name of the histogram to fill
- * @param header PYTHIA event header with jet information
- */
-void AliAnalysisTaskChargedParticlesRefMC::FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header){
-  TString ending = aftercut ? "WithCut" : "NoCut";
-  Float_t pbuf[4];
-  TLorentzVector jetvec;
-  TString hnameSpec = "hTriggerJetPt" + ending,
-          hnameptratio = "hRatioPtJetPtHard" + ending;
-  for(int ijet = 0; ijet < header->NTriggerJets(); ijet++){
-    memset(pbuf, 0, sizeof(Float_t) * 4);
-    header->TriggerJet(ijet, pbuf);
-    jetvec.SetPxPyPzE(pbuf[0], pbuf[1], pbuf[2], pbuf[3]);
-    fHistos->FillTH1(hnameSpec.Data(), TMath::Abs(jetvec.Pt()));
-    fHistos->FillTH1(hnameptratio.Data(), TMath::Abs(jetvec.Pt()/header->GetPtHard()));
-  }
-}
-
-/**
- * Perform actions when giles change
- * @return
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::UserNotify()
-{
-  // Called when file changes.
-  if(!fUsePythiaHard) return kTRUE;
-
-  TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-  if (!tree) {
-    AliErrorStream() << GetName() << " - UserNotify: No current tree!" << std::endl;
-    return kFALSE;
-  }
-
-  Float_t xsection    = 0;
-  Float_t trials      = 0;
-  Int_t   pthardbin   = 0;
-
-  TFile *curfile = tree->GetCurrentFile();
-  if (!curfile) {
-    AliErrorStream() << GetName() << " - UserNotify: No current file!" << std::endl;
-    return kFALSE;
-  }
-
-  TChain *chain = dynamic_cast<TChain*>(tree);
-  if (chain) tree = chain->GetTree();
-
-  Int_t nevents = tree->GetEntriesFast();
-
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
-
-  fHistos->FillTH1("hNtrials", 1., trials);
-  fHistos->FillProfile("hCrossSection", 1., xsection);
-  //fHistos->FillTH1(pthardbin, nevents);
-
-  return kTRUE;
-}
-
-/**
- * Get the cross section and the trails either from pyxsec.root or from pysec_hists.root
- * Get the pt hard bin from the file path
- *  This is to called in Notify and should provide the path to the AOD/ESD file
- * (Partially copied from AliAnalysisHelperJetTasks)
- * From AliAnalysisTaskEmcal
- * @param currFile File name with PYTHIA hard cross section
- * @param fXsec Output storage for the cross section
- * @param fTrials Output storage for the number of trials
- * @param pthard Output storage of the pthardbin
- * @return True if reading was successful, false in case of errors
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard) const {
-
-  TString file(currFile);
-  fXsec = 0;
-  fTrials = 1;
-
-  if (file.Contains(".zip#")) {
-    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
-    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
-    file.Replace(pos+1,pos2-pos1,"");
-  } else {
-    // not an archive take the basename....
-    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
-  }
-  AliDebugStream(1) << "File name: " << file << std::endl;
-
-  // Get the pt hard bin
-  TString strPthard(file);
-
-  strPthard.Remove(strPthard.Last('/'));
-  strPthard.Remove(strPthard.Last('/'));
-  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
-  strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec())
-    pthard = strPthard.Atoi();
-  else
-    AliWarningStream() << "Could not extract file number from path " << strPthard << std::endl;
-
-  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
-
-  if (!fxsec) {
-    // next trial fetch the histgram file
-    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
-    if (!fxsec) return kFALSE;// not a severe condition but inciate that we have no information
-    else {
-      // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
-      if (!key) return kFALSE;
-      TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) return kFALSE;
-      fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
-      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
-    }
-  } else { // no tree pyxsec.root
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) return kFALSE;
-    UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-    fTrials = ntrials;
-    fXsec = xsection;
-  }
-  return kTRUE;
-}
-
-/**
- * Access PYTHIA event header
- * @return pythia event header (if existing)
- */
-AliGenPythiaEventHeader *AliAnalysisTaskChargedParticlesRefMC::GetPythiaHeader() const {
-  AliGenPythiaEventHeader *pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-  if (!pythiaHeader) {
-    // Check if AOD
-    AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-    if (aodMCH) {
-      for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-        pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-        if (pythiaHeader) break;
-      }
-    }
-  }
-  return pythiaHeader;
-}
 
 /**
  * Set the track selection
@@ -739,46 +530,6 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::IsPhysicalPrimary(const AliVParticl
     physprim = mcevent->IsPhysicalPrimary(part->GetLabel());
   }
   return physprim;
-}
-
-/**
- * Find outlier jets compared to the pt hard
- * @param header PYTHIA header with trigger jets and pt hard
- * @return True if event has at least one outlier, false otherwise
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOutlierJet(AliGenPythiaEventHeader * const header) const {
-  Bool_t hasOutlier = kFALSE;
-  Float_t pbuf[4];
-  TLorentzVector jetvec;
-  for(int ijet = 0; ijet < header->NTriggerJets(); ijet++){
-    memset(pbuf, 0, sizeof(Float_t) * 4);
-    header->TriggerJet(ijet, pbuf);
-    jetvec.SetPxPyPzE(pbuf[0], pbuf[1], pbuf[2], pbuf[3]);
-    if(TMath::Abs(jetvec.Pt()) >= this->fFracPtHard * header->GetPtHard()){
-      hasOutlier = true;
-      break;
-    }
-  }
-  return hasOutlier;
-}
-
-/**
- * Find outlier events in second category: Events that contain a particle
- * with a higher pt than the pthard
- * @return True if event has at least one outlier, false otherwise
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOutlierParticle(AliGenPythiaEventHeader *const header) const {
-  Bool_t hasOutlier = false;
-  const double pthard = header->GetPtHard();
-  const AliVParticle  *part(nullptr);
-  for(int ipart = 0; ipart < MCEvent()->GetNumberOfTracks(); ipart++){
-    part = MCEvent()->GetTrack(ipart);
-    if(TMath::Abs(part->Pt() > pthard)){
-      hasOutlier = true;
-      break;
-    }
-  }
-  return hasOutlier;
 }
 
 /**
