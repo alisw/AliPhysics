@@ -107,7 +107,14 @@ AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, 
 AliPerformanceDEdx::~AliPerformanceDEdx()
 {
   // destructor
-  if(fDeDxHisto)  delete fDeDxHisto; fDeDxHisto=0; 
+  if(fDeDxHisto)  delete fDeDxHisto; fDeDxHisto=0;
+  if(h_tpc_dedx_mips_0) delete h_tpc_dedx_mips_0; h_tpc_dedx_mips_0 = 0;
+  if(h_tpc_dedx_mipsele_0) delete h_tpc_dedx_mipsele_0; h_tpc_dedx_mipsele_0 = 0;
+  if(h_tpc_dedx_mips_c_0_5) delete h_tpc_dedx_mips_c_0_5; h_tpc_dedx_mips_c_0_5 = 0;
+  if(h_tpc_dedx_mips_a_0_5) delete h_tpc_dedx_mips_a_0_5; h_tpc_dedx_mips_a_0_5 = 0;
+  if(h_tpc_dedx_mips_c_0_1) delete h_tpc_dedx_mips_c_0_1; h_tpc_dedx_mips_c_0_1 = 0;
+  if(h_tpc_dedx_mips_a_0_1) delete h_tpc_dedx_mips_a_0_1; h_tpc_dedx_mips_a_0_1 = 0;
+
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
 }
 
@@ -678,4 +685,20 @@ void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
     if(vDeDxHisto[9] >= 0.5 && vDeDxHisto[9] < 1.)
     if(h_tpc_dedx_mipsele_0) h_tpc_dedx_mipsele_0->Fill(vDeDxHisto[0]);
 
+}
+
+void AliPerformanceDEdx::ResetOutputData(){
+
+    if(fUseSparse){
+        if(fDeDxHisto) fDeDxHisto->Reset("ICE");
+    }
+    else{
+        if(h_tpc_dedx_mips_0) h_tpc_dedx_mips_0->Reset("ICE");
+        if(h_tpc_dedx_mipsele_0) h_tpc_dedx_mipsele_0->Reset("ICE");
+        if(h_tpc_dedx_mips_c_0_5) h_tpc_dedx_mips_c_0_5->Reset("ICE");
+        if(h_tpc_dedx_mips_a_0_5) h_tpc_dedx_mips_a_0_5->Reset("ICE");
+        if(h_tpc_dedx_mips_c_0_1) h_tpc_dedx_mips_c_0_1->Reset("ICE");
+        if(h_tpc_dedx_mips_a_0_1) h_tpc_dedx_mips_a_0_1->Reset("ICE");
+    }
+    
 }
