@@ -41,6 +41,7 @@ aliroot -b << EOF
     param->SetUseCorrectionMap(kFALSE); \
     param->SetAccountDistortions(kFALSE); \
     param->SetUseTOFCorrection(kFALSE); \
+    param->SetUseAlignmentTime(kTRUE); \
     param->SetUseComposedCorrection(kTRUE); \
   }
   man->Put(entry);
