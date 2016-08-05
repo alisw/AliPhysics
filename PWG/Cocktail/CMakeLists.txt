@@ -46,7 +46,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS AOD CORRFW ESD STEERBase ASImage)
+set(LIBDEPS ANALYSIS AOD CORRFW ESD STEER STEERBase ASImage)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
