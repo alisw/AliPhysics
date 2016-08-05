@@ -95,6 +95,8 @@ public :
 
   TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
     
+  void ResetOutputData();
+
 private:
 
   static Bool_t fgMergeTHnSparse;
