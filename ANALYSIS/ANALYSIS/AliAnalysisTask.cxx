@@ -110,6 +110,8 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 
+static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+
 ClassImp(AliAnalysisTask)
 
 //______________________________________________________________________________
@@ -327,7 +329,7 @@ Bool_t AliAnalysisTask::ConnectInput(Int_t islot, AliAnalysisDataContainer *cont
 // Connect an input slot to a data container.
    AliAnalysisDataSlot *input = GetInputSlot(islot);
    if (!input) {
-      Error("ConnectInput","Input slot %i not defined for analysis task %s", islot, GetName());
+      if (showInfo) Error("ConnectInput","Input slot %i not defined for analysis task %s", islot, GetName());
       return kFALSE;
    }
    // Check type matching          
@@ -349,7 +351,7 @@ Bool_t AliAnalysisTask::ConnectOutput(Int_t islot, AliAnalysisDataContainer *con
 // Connect an output slot to a data container.
    AliAnalysisDataSlot *output = GetOutputSlot(islot);
    if (!output) {
-      Error("ConnectOutput","Output slot %i not defined for analysis task %s", islot, GetName());
+      if (showInfo) Error("ConnectOutput","Output slot %i not defined for analysis task %s", islot, GetName());
       return kFALSE;
    }
    // Check type matching          
@@ -396,7 +398,7 @@ TClass *AliAnalysisTask::GetInputType(Int_t islot) const
 // Retreive type of a given input slot.
    AliAnalysisDataSlot *input = GetInputSlot(islot);
    if (!input) {
-      Error("GetInputType","Input slot %d not defined for analysis task %s", islot, GetName());
+      if (showInfo) Error("GetInputType","Input slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (input->GetType());
@@ -408,7 +410,7 @@ TClass *AliAnalysisTask::GetOutputType(Int_t islot) const
 // Retreive type of a given output slot.
    AliAnalysisDataSlot *output = GetOutputSlot(islot);
    if (!output) {
-      Error("GetOutputType","Output slot %d not defined for analysis task %s", islot, GetName());
+      if (showInfo) Error("GetOutputType","Output slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (output->GetType());
@@ -421,7 +423,7 @@ TObject *AliAnalysisTask::GetInputData(Int_t islot) const
 // the object has to be statically cast to the appropriate type.
    AliAnalysisDataSlot *input = GetInputSlot(islot);
    if (!input) {
-      Error("GetInputData","Input slot %d not defined for analysis task %s", islot, GetName());
+      if (showInfo) Error("GetInputData","Input slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (input->GetData()); 
@@ -434,7 +436,7 @@ TObject *AliAnalysisTask::GetOutputData(Int_t islot) const
 // get a valid pointer to data even in case of Proof.
    AliAnalysisDataSlot *output = GetOutputSlot(islot);
    if (!output) {
-      Error("GetOutputData","Input slot %d not defined for analysis task %s", islot, GetName());
+      if (showInfo) Error("GetOutputData","Input slot %d not defined for analysis task %s", islot, GetName());
       return NULL;
    }
    return (output->GetData()); 
@@ -569,11 +571,11 @@ Bool_t AliAnalysisTask::PostData(Int_t iout, TObject *data, Option_t *option)
    fPublishedData = 0;
    AliAnalysisDataSlot *output = GetOutputSlot(iout);
    if (!output) {
-      Error("PostData","Output slot %i not defined for analysis task %s", iout, GetName());
+      if (showInfo) Error("PostData","Output slot %i not defined for analysis task %s", iout, GetName());
       return kFALSE;
    }
    if (!output->IsConnected()) {
-      Error("PostData","Output slot %i of analysis task %s not connected to any data container", iout, GetName());
+      if (showInfo) Error("PostData","Output slot %i of analysis task %s not connected to any data container", iout, GetName());
       return kFALSE;
    }
    if (!fOutputReady) {
