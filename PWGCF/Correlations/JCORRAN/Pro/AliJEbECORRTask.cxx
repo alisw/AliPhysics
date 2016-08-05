@@ -57,6 +57,8 @@ AliJEbECORRTask::AliJEbECORRTask()
 	fHadronSelectionCut(0),
 	fInputList(NULL),
 	fInputListSpectra(NULL),
+	fVnMethod(0),
+	fInputListFlow(NULL),
 	ftriggList(NULL),
 	fassocList(NULL),
 	fcorrelations(NULL),
@@ -93,6 +95,8 @@ AliJEbECORRTask::AliJEbECORRTask(const char *name)
 	fHadronSelectionCut(0),
 	fInputList(0x0),
 	fInputListSpectra(0x0),
+	fVnMethod(0),
+	fInputListFlow(0x0),
 	ftriggList(0x0),
 	fassocList(0x0),
 	fcorrelations(0x0),
@@ -138,6 +142,8 @@ AliJEbECORRTask::AliJEbECORRTask(const AliJEbECORRTask& a):
 	fHadronSelectionCut(a.fHadronSelectionCut),
 	fInputList(a.fInputList),
 	fInputListSpectra(a.fInputListSpectra),
+	fVnMethod(a.fVnMethod),
+	fInputListFlow(a.fInputListFlow),
 	ftriggList(a.ftriggList),
 	fassocList(a.fassocList),
 	fcorrelations(a.fcorrelations),
@@ -196,8 +202,10 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 
 	fInputList  = new TClonesArray("AliJBaseTrack",1500);
 	fInputListSpectra  = new TClonesArray("AliJBaseTrack",1500);
+	fInputListFlow  = new TClonesArray("AliJBaseTrack",1500);
 	fInputList->SetOwner(kTRUE);
 	fInputListSpectra->SetOwner(kTRUE);
+	fInputListFlow->SetOwner(kTRUE);
 	ftriggList  = new TClonesArray("AliJBaseTrack",1500);
 	fassocList  = new TClonesArray("AliJBaseTrack",1500);
 
@@ -233,6 +241,7 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 
 	fHadronSelectionCut = int ( fCard->Get("HadronSelectionCut"));
 	trkfilterBit	= Int_t ( fCard->Get("AODTrackFilterBit"));
+	fVnMethod 	= int (fCard->Get("VnMethod"));
 
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
@@ -241,6 +250,7 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 	fFFlucAna->SetIsSCptdep( kTRUE );
 	fFFlucAna->SetSCwithQC( kTRUE );
 	fFFlucAna->SetEbEWeight( kTRUE ); // << this is important
+	fOutput->cd();
 	fFFlucAna->UserCreateOutputObjects();
 
 	fCard->WriteCard(fOutput);
@@ -376,7 +386,7 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 				track->SetTrackEff( 1./effCorr );
 			} // PhysicalPrimary
 		} // mcArray
-		fInputListSpectra = (TClonesArray*)fInputList->Clone();
+		RegisterList(fInputListSpectra, fInputList, 0.2, 200.);
 	} // read mc track done.
 
 	if( IsMC == kFALSE && IsKinematicOnly == kFALSE ){  
@@ -394,12 +404,11 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 				track->SetCharge(aodtrack->Charge());
 				double ptt = track->Pt();
 				double effCorr = 1./fEfficiency->GetCorrection(ptt, fHadronSelectionCut, fcent);  // here you generate warning if ptt>30
-				fHistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
 				track->SetTrackEff( 1./effCorr );
 			}
 			// Spectra analysis
 			if(aodtrack->TestFilterBit(1024)) {  // Raa Cut for spectra bit 1024 Hardon selection for eff =1  
-				AliJBaseTrack* track = new( (*fInputList)[fInputListSpectra->GetEntriesFast()] ) AliJBaseTrack;
+				AliJBaseTrack* track = new( (*fInputListSpectra)[fInputListSpectra->GetEntriesFast()] ) AliJBaseTrack;
 				track->SetPxPyPzE(aodtrack->Px(), aodtrack->Py(), aodtrack->Pz(), aodtrack->E());
 				track->SetID(fInputListSpectra->GetEntriesFast());
 				track->SetParticleType(kJHadron);
@@ -415,23 +424,32 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	// Run the flow analysis here
 	if(fDebugMode) cout << "Start of RunEbEFlowAnalysis.. FilterBit (AOD,Ntrack)="<< trkfilterBit << ","<< fInputList->GetEntries() <<endl;
 
+	RegisterList(fInputListFlow, fInputList, 0.2, 5.); // this must be done here input for fFFlucAna and RunFlow..
 	double Eta_min=0.4, Eta_max=0.8;
 	double vertex[3] = { 0, 0, zVert};
 	fFFlucAna->Init();
-	fFFlucAna->SetInputList( fInputList );
-	fFFlucAna->SetEventCentrality( cBin );
+	fFFlucAna->SetInputList( fInputListFlow );
+	fFFlucAna->SetEventCentrality( fcent );
 	fFFlucAna->SetEventImpactParameter( GetImpactParFromCentrality(fcent) );
 	fFFlucAna->SetEventVertex ( vertex );
 	fFFlucAna->SetEtaRange( Eta_min, Eta_max);
 	fFFlucAna->UserExec("");
 	// Double_t Get_vn( int ih, int imethod ){ return fSingleVn[ih][imethod]; } // method 0:SP, 1:QC(with eta gap), 2:QC(without eta gap)
 	// ih =2 ,3
-	//for(int i=0;i<3;i++) {	
-	// cout << "v2 from JFluc i="<< i <<"\t"<< fFFlucAna->Get_vn(2,i) << endl;
-	// cout << "v3 from JFluc i="<< i <<"\t"<< fFFlucAna->Get_vn(3,i) << endl;
-	//	}
+	int iMethod = 1;
+	for(int ih=2;ih<=3;ih++) {	
+		fEbeHistos->fhVnObsVectorJFluc[cBin][ih]->Fill(fFFlucAna->Get_vn(ih,iMethod));
+	}
+	double ebeCent = -999;
+	double iH = 3;
 
-	double ebeCent = RunEbEFlowAnalysis(IsKinematicOnly ? mcEvent :  event, fInputList);
+	// 1 is from AliJFFlucAna 0 from RunEbEFlowAnalysis
+	if(fVnMethod == 1) {
+		ebeCent = fEbePercentile->GetEbeFlowPercentile( cBin, iH, fFFlucAna->Get_vn(iH,iMethod) );
+		ebeCent *=100; // make it to a percentile;
+	} else {
+		ebeCent = RunEbEFlowAnalysis(IsKinematicOnly ? mcEvent :  event, fInputListFlow);
+	}
 
 	if(fDebugMode) fEbECentBinBorders->Print();
 	if(fDebugMode) cout << "EbECentBinBorders="<< (*fEbECentBinBorders)[1]<<","<< (*fEbECentBinBorders)[2]<<endl;
@@ -445,6 +463,7 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	if(fDebugMode) cout << "End of RunEbEFlowAnalysis.."<<endl;
 
 	// Spectra Ana
+	if(fDebugMode) cout << "Spectra Ana fInputListSpectra->GetEntriesFast() = "<< fInputListSpectra->GetEntriesFast() << endl;
 	for(int i=0;i<fInputListSpectra->GetEntriesFast();i++) {
 		AliJBaseTrack *track = (AliJBaseTrack*)fInputListSpectra->At(i);
 		double ptt = track->Pt();
@@ -609,7 +628,7 @@ double AliJEbECORRTask::RunEbEFlowAnalysis(AliVEvent *event, TClonesArray* input
 	int counterB = 0;
 	int counterAB = 0;
 	int counterMulti = 0;
-	double lowpTcut = 0.5;// ATLAS paper > 0.5
+	double lowpTcut = 0.2;// ATLAS paper > 0.5
 
 	for(int i=0;i<inputlist->GetEntriesFast();i++) {
 		AliJBaseTrack *track = (AliJBaseTrack*)inputlist->At(i);
@@ -835,4 +854,13 @@ double AliJEbECORRTask::GetImpactParFromCentrality(double cent) {
 		if(centmin[i]<cent&&cent<=centmin[i+1]) {iC=i;  break;}
 	}
 	return (bmin[iC]+bmin[iC+1])/2.;
+}
+
+void AliJEbECORRTask::RegisterList(TClonesArray* listToFill, TClonesArray* listFromToFill,double lpt, double hpt){
+      int count = 0;
+      for(int i=0;i<listFromToFill->GetEntriesFast();i++) {
+	      AliJBaseTrack *track = (AliJBaseTrack*)listFromToFill->At(i);
+	      double ptt = track->Pt();
+	      if(ptt > lpt && ptt<hpt ) new ((*listToFill)[count++]) AliJBaseTrack(*track);
+      }
 }
