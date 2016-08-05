@@ -109,6 +109,8 @@ public :
   void SetUseTOFBunchCrossing(Bool_t tofBunching = kTRUE) { fUseTOFBunchCrossing = tofBunching; }
   Bool_t IsUseTOFBunchCrossing() { return fUseTOFBunchCrossing; }
 
+  virtual void ResetOutputData() { ; }
+    
 protected: 
 
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
