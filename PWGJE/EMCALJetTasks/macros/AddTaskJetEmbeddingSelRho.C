@@ -39,7 +39,7 @@ AliJetEmbeddingSelRhoTask* AddTaskJetEmbeddingSelRho(
 	//-------------------------------------------------------
 	// Init the task and do settings
 	//-------------------------------------------------------
-	idname+=subwagonname;
+	idname = Form("%s%s", idname, subwagonname);
 	
 	TString taskName = Form("TaskEmb%sSel%s_%.0f_%.0f", idname, rhoname, minrho*10., maxrho*10.);
 	
