@@ -111,6 +111,7 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::UserCreateOutputObjects(){
   const std::array<std::string, 6> kSpecies = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
   const std::array<double, 5> kPtCuts = {1., 2., 5., 10., 20.};
   for(const auto &input : kInputs){
+    AliDebugStream(1) << GetName() << ": Creating histograms for case " << input << std::endl;
     fHistos->CreateTH1(Form("hPtEtaAll%s", input.c_str()), Form("Charged particle p_{t} distribution all #eta %s", input.c_str()), newbinning, "s");
     fHistos->CreateTH1(Form("hPtEtaCent%s", input.c_str()), Form("Charged particle p_{t} distribution central #eta  %s", input.c_str()), newbinning, "s");
     fHistos->CreateTH1(Form("hPtEMCALEtaAll%s", input.c_str()), Form("Charged particle in EMCAL p_{t} distribution all #eta trigger %s", input.c_str()), newbinning);
@@ -190,6 +191,9 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::UserCreateOutputObjects(){
 
 
   for(auto hist : *(fHistos->GetListOfHistograms())) fOutput->Add(hist);
+  PostData(1, fOutput);
+
+  AliDebugStream(1) << GetName() << ": Output objects initialized" << std::endl;
 }
 
 /**
@@ -198,9 +202,9 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::UserCreateOutputObjects(){
  * @return Result of the event selection (true if event is selected)
  */
 Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::IsEventSelected(){
-  AliDebugStream(1) << GetName() << "Using custom event selection method" << std::endl;
+  AliDebugStream(1) << GetName() << ": Using custom event selection method" << std::endl;
   if(!fTriggerPatchInfo){
-    AliErrorStream() << GetName() << "Trigger patch container not found but required" << std::endl;
+    AliErrorStream() << GetName() << ": Trigger patch container not found but required" << std::endl;
     return false;
   }
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
@@ -334,7 +338,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
     default: assocpid = "Ot"; break;
     };
 
-    FillTrackHistos("Accepted", weight,  ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, assocpid);
+    FillTrackHistos("Accept", weight,  ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, assocpid);
   }
 
   return true;

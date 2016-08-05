@@ -16,7 +16,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic * AddTaskC
   TString outputfile = mgr->GetCommonFileName();
   outputfile += TString::Format(":ChargedParticleResults_%s", suffix);
 
-  mgr->ConnectInput(triggertask, 1, mgr->GetCommonInputContainer());
+  mgr->ConnectInput(triggertask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(triggertask, 1, mgr->CreateContainer(Form("TrackResults_%s", suffix), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
 
   return triggertask;
