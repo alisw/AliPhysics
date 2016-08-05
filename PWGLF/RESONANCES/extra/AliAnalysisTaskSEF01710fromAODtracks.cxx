@@ -119,6 +119,7 @@ AliAnalysisTaskSEF01710fromAODtracks::AliAnalysisTaskSEF01710fromAODtracks() :
   fHistoA21320MassMCS(0),
   fHistoF21270MassMCGen(0),
   fHistoF21270MassMCS(0),
+  fHistoOthersMassMCS(0),
   fHistoF01710ChargedMass(0),
   fHistoF01710ChargedLikeMass(0),
   fHistoF01710ChargedMassMix(0),
@@ -131,20 +132,37 @@ AliAnalysisTaskSEF01710fromAODtracks::AliAnalysisTaskSEF01710fromAODtracks() :
   fHistoA21320ChargedMassMCS(0),
   fHistoF21270ChargedMassMCGen(0),
   fHistoF21270ChargedMassMCS(0),
+  fHistoOthersChargedMassMCS(0),
   fHistonEvtvsRunNumber(0),
   fHistonKaonvsRunNumber(0),
   fHistonK0vsRunNumber(0),
+  fnSigmaTPCKaMax(2.),
+  fnSigmaTOFKaMax(2.),
+  fUseOnTheFlyV0(kFALSE),
+  fProdV0DaughterTPCClusterMin(70),
+  fProdV0MassTolK0s(0.01),
+  fProdV0MassRejLambda(0.005),
+  fProdV0MassRejPhoton(0.3),
+  fProdV0DcaDaughtersMax(1.5),
+  fProdV0DaughterDcaToPrimVertex(0.06),
+  fProdV0CosPointingAngleToPrimVtxMin(0.97),
+  fProdV0PtMin(0.0),
+  fProdV0DaughterEtaRange(0.8),
+  fProdV0DaughterPtMin(0.10),
+  fProdRfidMinV0(0.50),
+  fProdRfidMaxV0(9000.),
   fDoEventMixing(0),
   fNumberOfEventsForMixing		(5),
   fNzVtxBins					(0), 
   fNCentBins					(0),
   fNOfPools(1),
-  fEventBuffer(0x0),
-  fEventInfo(new TObjString("")),
-  fK0Tracks(0x0),
-  fK0CutVarsArray(0x0),
-  fKaonTracks(0x0),
-  fKaonCutVarsArray(0x0)
+  fPoolIndex(-9999),
+  nextResVec(),
+  reservoirsReady(),
+  m_ReservoirKa(),
+  m_ReservoirK0(),
+  m_ReservoirVarsKa(),
+  m_ReservoirVarsK0()
 {
   //
   // Default Constructor. 
@@ -195,6 +213,7 @@ AliAnalysisTaskSEF01710fromAODtracks::AliAnalysisTaskSEF01710fromAODtracks(const
   fHistoA21320MassMCS(0),
   fHistoF21270MassMCGen(0),
   fHistoF21270MassMCS(0),
+  fHistoOthersMassMCS(0),
   fHistoF01710ChargedMass(0),
   fHistoF01710ChargedLikeMass(0),
   fHistoF01710ChargedMassMix(0),
@@ -207,20 +226,37 @@ AliAnalysisTaskSEF01710fromAODtracks::AliAnalysisTaskSEF01710fromAODtracks(const
   fHistoA21320ChargedMassMCS(0),
   fHistoF21270ChargedMassMCGen(0),
   fHistoF21270ChargedMassMCS(0),
+  fHistoOthersChargedMassMCS(0),
   fHistonEvtvsRunNumber(0),
   fHistonKaonvsRunNumber(0),
   fHistonK0vsRunNumber(0),
+  fnSigmaTPCKaMax(2.),
+  fnSigmaTOFKaMax(2.),
+  fUseOnTheFlyV0(kFALSE),
+  fProdV0DaughterTPCClusterMin(70),
+  fProdV0MassTolK0s(0.01),
+  fProdV0MassRejLambda(0.005),
+  fProdV0MassRejPhoton(0.3),
+  fProdV0DcaDaughtersMax(1.5),
+  fProdV0DaughterDcaToPrimVertex(0.06),
+  fProdV0CosPointingAngleToPrimVtxMin(0.97),
+  fProdV0PtMin(0.0),
+  fProdV0DaughterEtaRange(0.8),
+  fProdV0DaughterPtMin(0.10),
+  fProdRfidMinV0(0.50),
+  fProdRfidMaxV0(9000.),
   fDoEventMixing(0),
   fNumberOfEventsForMixing		(5),
   fNzVtxBins					(0), 
   fNCentBins					(0),
   fNOfPools(1),
-  fEventBuffer(0x0),
-  fEventInfo(new TObjString("")),
-  fK0Tracks(0x0),
-  fK0CutVarsArray(0x0),
-  fKaonTracks(0x0),
-  fKaonCutVarsArray(0x0)
+  fPoolIndex(-9999),
+  nextResVec(),
+  reservoirsReady(),
+  m_ReservoirKa(),
+  m_ReservoirK0(),
+  m_ReservoirVarsKa(),
+  m_ReservoirVarsK0()
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -260,21 +296,26 @@ AliAnalysisTaskSEF01710fromAODtracks::~AliAnalysisTaskSEF01710fromAODtracks() {
     fCandidateVariables = 0;
   }
 
-  if(fK0Tracks) fK0Tracks->Delete();
-  delete fK0Tracks;
-  if(fKaonTracks) fKaonTracks->Delete();
-  delete fKaonTracks;
-
-  if(fK0CutVarsArray) fK0CutVarsArray->Delete();
-  delete fK0CutVarsArray;
-  if(fKaonCutVarsArray) fKaonCutVarsArray->Delete();
-  delete fKaonCutVarsArray;
-
-  if(fEventBuffer){
-    for(Int_t i=0; i<fNOfPools; i++) delete fEventBuffer[i];
-    delete fEventBuffer;
+  for(int i = 0;i<fNOfPools;i++){
+    for(unsigned int j=0;j<fNumberOfEventsForMixing;j++){
+      while(!m_ReservoirKa[i][j].empty()){
+        delete m_ReservoirKa[i][j].back();
+        m_ReservoirKa[i][j].pop_back();
+      }
+      while(!m_ReservoirK0[i][j].empty()){
+        delete m_ReservoirK0[i][j].back();
+        m_ReservoirK0[i][j].pop_back();
+      }
+      while(!m_ReservoirVarsKa[i][j].empty()){
+        delete m_ReservoirVarsKa[i][j].back();
+        m_ReservoirVarsKa[i][j].pop_back();
+      }
+      while(!m_ReservoirVarsK0[i][j].empty()){
+        delete m_ReservoirVarsK0[i][j].back();
+        m_ReservoirVarsK0[i][j].pop_back();
+      }
+    }
   }
-  delete fEventInfo;
 
 }
 
@@ -347,7 +388,7 @@ void AliAnalysisTaskSEF01710fromAODtracks::UserExec(Option_t *)
     // load MC header
     mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (!mcHeader) {
-      AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: MC header branch not found!\n");
+      AliError("AliAnalysisTaskSEF01710fromAODtracks::UserExec: MC header branch not found!\n");
       return;
     }
     fCEvents->Fill(7); // in case of MC events
@@ -495,29 +536,23 @@ void AliAnalysisTaskSEF01710fromAODtracks::UserCreateOutputObjects()
   PostData(3,fOutputAll);
 
   if(fDoEventMixing){
-    fK0Tracks = new TObjArray();
-    fK0Tracks->SetOwner();
-    fK0CutVarsArray = new TObjArray();
-    fK0CutVarsArray->SetOwner();
-    fKaonTracks = new TObjArray();
-    fKaonTracks->SetOwner();
-    fKaonCutVarsArray = new TObjArray();
-    fKaonCutVarsArray->SetOwner();
-
     fNOfPools=fNCentBins*fNzVtxBins;
-    fEventBuffer = new TTree*[fNOfPools];
-    for(Int_t i=0; i<fNOfPools; i++){
-      fEventBuffer[i]=new TTree(Form("EventBuffer_%d",i), "Temporary buffer for event mixing");
-      fEventBuffer[i]->Branch("zVertex", &fVtxZ);
-      fEventBuffer[i]->Branch("centrality", &fCentrality);
-      fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
-      fEventBuffer[i]->Branch("k0array", "TObjArray", &fK0Tracks);
-      fEventBuffer[i]->Branch("k0varsarray", "TObjArray", &fK0CutVarsArray);
-      fEventBuffer[i]->Branch("kaarray", "TObjArray", &fKaonTracks);
-      fEventBuffer[i]->Branch("kavarsarray", "TObjArray", &fKaonCutVarsArray);
+    m_ReservoirKa.resize(fNOfPools,std::vector<std::vector<TLorentzVector *> > (fNumberOfEventsForMixing));
+    m_ReservoirK0.resize(fNOfPools,std::vector<std::vector<TLorentzVector *> > (fNumberOfEventsForMixing));
+    m_ReservoirVarsKa.resize(fNOfPools,std::vector<std::vector<TVector *>  > (fNumberOfEventsForMixing));
+    m_ReservoirVarsK0.resize(fNOfPools,std::vector<std::vector<TVector *>  > (fNumberOfEventsForMixing));
+    nextResVec.resize(fNOfPools,0);
+    reservoirsReady.resize(fNOfPools,kFALSE);
+
+    for(Int_t s=0; s<fNOfPools; s++) {
+      for(Int_t k=0;k<fNumberOfEventsForMixing;k++){
+        m_ReservoirKa[s][k].clear();
+        m_ReservoirK0[s][k].clear();
+        m_ReservoirVarsKa[s][k].clear();
+        m_ReservoirVarsK0[s][k].clear();
+      }
     }
   }
-
 
   return;
 }
@@ -532,10 +567,24 @@ void AliAnalysisTaskSEF01710fromAODtracks::UserCreateOutputObjects()
   // Main analysis part called from UserExec
   //
   if(fDoEventMixing){
-    if(fK0Tracks) fK0Tracks->Delete();
-    if(fK0CutVarsArray) fK0CutVarsArray->Delete();
-    if(fKaonTracks) fKaonTracks->Delete();
-    if(fKaonCutVarsArray) fKaonCutVarsArray->Delete();
+    fPoolIndex=GetPoolIndex(fVtxZ,fCentrality);
+    Int_t nextRes( nextResVec[fPoolIndex] );
+    while(!m_ReservoirKa[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirKa[fPoolIndex][nextRes].back();
+      m_ReservoirKa[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirK0[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirK0[fPoolIndex][nextRes].back();
+      m_ReservoirK0[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirVarsKa[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirVarsKa[fPoolIndex][nextRes].back();
+      m_ReservoirVarsKa[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirVarsK0[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirVarsK0[fPoolIndex][nextRes].back();
+      m_ReservoirVarsK0[fPoolIndex][nextRes].pop_back();
+    }
   }
 
   //------------------------------------------------
@@ -601,17 +650,15 @@ void AliAnalysisTaskSEF01710fromAODtracks::UserCreateOutputObjects()
   }
 
   if(fDoEventMixing){
-    fEventInfo->SetString(Form("Ev%d_esd%d_V%d_K%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fK0Tracks->GetEntries(),fKaonTracks->GetEntries()));
-    Int_t ind=GetPoolIndex(fVtxZ,fCentrality);
-    if(ind>=0 && ind<fNOfPools){
-      if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
-        DoEventMixingWithPools(ind);
-        if(fEventBuffer[ind]->GetEntries() >= 1000*fNumberOfEventsForMixing){
-          ResetPool(ind);
-        }
-      }
-      fEventBuffer[ind]->Fill();
+    DoEventMixingWithPools(fPoolIndex);
+
+    Int_t nextRes( nextResVec[fPoolIndex] );
+    nextRes++;
+    if( nextRes>=fNumberOfEventsForMixing ){
+      nextRes = 0;
+      reservoirsReady[fPoolIndex] = kTRUE;
     }
+    nextResVec[fPoolIndex] = nextRes;
   }
 
 }
@@ -707,14 +754,17 @@ void AliAnalysisTaskSEF01710fromAODtracks::FillROOTObjects(AliAODEvent *aod,AliA
       if(abs(pdgcode)==10331){
         fHistoF01710MassMCS->Fill(cont);
       }
-      if(abs(pdgcode)==335){
+      else if(abs(pdgcode)==335){
         fHistoF21525MassMCS->Fill(cont);
       }
-      if(abs(pdgcode)==115){
+      else if(abs(pdgcode)==115){
         fHistoA21320MassMCS->Fill(cont);
       }
-      if(abs(pdgcode)==225){
+      else if(abs(pdgcode)==225){
         fHistoF21270MassMCS->Fill(cont);
+      }
+      else{
+        fHistoOthersMassMCS->Fill(cont);
       }
     }
   }
@@ -813,14 +863,17 @@ void AliAnalysisTaskSEF01710fromAODtracks::FillROOTObjects_ChargedKaon(AliAODEve
       if(abs(pdgcode)==10331){
         fHistoF01710ChargedMassMCS->Fill(cont);
       }
-      if(abs(pdgcode)==335){
+      else if(abs(pdgcode)==335){
         fHistoF21525ChargedMassMCS->Fill(cont);
       }
-      if(abs(pdgcode)==115){
+      else if(abs(pdgcode)==115){
         fHistoA21320ChargedMassMCS->Fill(cont);
       }
-      if(abs(pdgcode)==225){
+      else if(abs(pdgcode)==225){
         fHistoF21270ChargedMassMCS->Fill(cont);
+      }
+      else{
+        fHistoOthersChargedMassMCS->Fill(cont);
       }
 
     }
@@ -880,6 +933,34 @@ void AliAnalysisTaskSEF01710fromAODtracks::FillMixROOTObjects(TLorentzVector *v0
   }
   cont[3] = fCentrality;
   fHistoF01710MassMix->Fill(cont);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEF01710fromAODtracks::FillMixROOTObjects_ChargedKaon(TLorentzVector *ka1, TLorentzVector *ka2, TVector *ka1vars, TVector *ka2vars) 
+{
+  //
+  // Fill Mix root object
+  //
+  TLorentzVector vf0,vka1,vka2;
+  vka1.SetXYZM(ka1->Px(),ka1->Py(),ka1->Pz(),0.493677);
+  vka2.SetXYZM(ka2->Px(),ka2->Py(),ka2->Pz(),0.493677);
+  vf0 = vka1+vka2;
+
+  Double_t cont[4];
+  cont[0] = vf0.M();
+  cont[1] = vf0.Pt();
+  if(vka1.Pt()>vka2.Pt()){
+    cont[2] = vka2.Pt();
+  }else{
+    cont[2] = vka1.Pt();
+  }
+  cont[3] = fCentrality;
+
+  if(ka1->T()*ka2->T()<0){
+    fHistoF01710ChargedMassMix->Fill(cont);
+  }else{
+    fHistoF01710ChargedLikeMassMix->Fill(cont);
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEF01710fromAODtracks::DefineTreeVariables() 
@@ -1030,18 +1111,22 @@ void  AliAnalysisTaskSEF01710fromAODtracks::DefineAnalysisHistograms()
   fHistoF21525MassMCS = new THnSparseF("fHistoF21525MassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fHistoA21320MassMCS = new THnSparseF("fHistoA21320MassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fHistoF21270MassMCS = new THnSparseF("fHistoF21270MassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
+  fHistoOthersMassMCS = new THnSparseF("fHistoOthersMassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fHistoF01710ChargedMassMCS = new THnSparseF("fHistoF01710ChargedMassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fHistoF21525ChargedMassMCS = new THnSparseF("fHistoF21525ChargedMassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fHistoA21320ChargedMassMCS = new THnSparseF("fHistoA21320ChargedMassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fHistoF21270ChargedMassMCS = new THnSparseF("fHistoF21270ChargedMassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
+  fHistoOthersChargedMassMCS = new THnSparseF("fHistoOthersChargedMassMCS","",4,bins_mcs,xmin_mcs,xmax_mcs);
   fOutputAll->Add(fHistoF01710MassMCS);
   fOutputAll->Add(fHistoF21525MassMCS);
   fOutputAll->Add(fHistoA21320MassMCS);
   fOutputAll->Add(fHistoF21270MassMCS);
+  fOutputAll->Add(fHistoOthersMassMCS);
   fOutputAll->Add(fHistoF01710ChargedMassMCS);
   fOutputAll->Add(fHistoF21525ChargedMassMCS);
   fOutputAll->Add(fHistoA21320ChargedMassMCS);
   fOutputAll->Add(fHistoF21270ChargedMassMCS);
+  fOutputAll->Add(fHistoOthersChargedMassMCS);
 
   Int_t bins_mcgen[3]={200, 20, 1};
   Double_t xmin_mcgen[3]={0., -1., 0.00};
@@ -1113,12 +1198,12 @@ void AliAnalysisTaskSEF01710fromAODtracks::SelectV0( const AliVEvent *event,Int_
       fHistonK0vsRunNumber->Fill(cont_rundep);
 
       if(fDoEventMixing){
+        Int_t nextRes( nextResVec[fPoolIndex] );
         TVector *varvec = new TVector(1);
         (*varvec)[0] = v0->CosPointingAngle(posVtx);
-
         Double_t Ek0s = sqrt(pow(v0->P(),2)+pow(v0->MassK0Short(),2));
-        fK0Tracks->AddLast(new TLorentzVector(v0->Px(),v0->Py(),v0->Pz(),Ek0s));
-        fK0CutVarsArray->AddLast(varvec);
+        m_ReservoirK0[fPoolIndex][nextRes].push_back(new TLorentzVector(v0->Px(),v0->Py(),v0->Pz(),Ek0s));
+        m_ReservoirVarsK0[fPoolIndex][nextRes].push_back(varvec);
       }
     }
   }
@@ -1137,130 +1222,51 @@ Int_t AliAnalysisTaskSEF01710fromAODtracks::GetPoolIndex(Double_t zvert, Double_
   return fNCentBins*theBinZ+theBinM;
 }
 //_________________________________________________________________
-void AliAnalysisTaskSEF01710fromAODtracks::ResetPool(Int_t poolIndex){
-  //
-  // delete the contets of the pool
-  //
-  if(poolIndex<0 || poolIndex>=fNOfPools) return;
-  delete fEventBuffer[poolIndex];
-  fEventBuffer[poolIndex]=new TTree(Form("EventBuffer_%d",poolIndex), "Temporary buffer for event mixing");
-
-  fEventBuffer[poolIndex]->Branch("zVertex", &fVtxZ);
-  fEventBuffer[poolIndex]->Branch("centrality", &fCentrality);
-  fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
-  fEventBuffer[poolIndex]->Branch("k0array", "TObjArray", &fK0Tracks);
-  fEventBuffer[poolIndex]->Branch("k0varsarray", "TObjArray", &fK0CutVarsArray);
-  fEventBuffer[poolIndex]->Branch("kaarray", "TObjArray", &fKaonTracks);
-  fEventBuffer[poolIndex]->Branch("kavarsarray", "TObjArray", &fKaonCutVarsArray);
-
-  return;
-}
-//_________________________________________________________________
 void AliAnalysisTaskSEF01710fromAODtracks::DoEventMixingWithPools(Int_t poolIndex)
 {
   //
   // perform mixed event analysis
   //
+  Int_t nextRes( nextResVec[poolIndex] );
+  Int_t KiddiePool = m_ReservoirKa[poolIndex].size();
+  if( !reservoirsReady[poolIndex] )  KiddiePool = nextRes;
 
-  if(poolIndex<0 || poolIndex>fNzVtxBins*fNCentBins) return;
-  if(fEventBuffer[poolIndex]->GetEntries()<fNumberOfEventsForMixing) return;
-
-  Int_t nK0 = fK0Tracks->GetEntries();
-  Int_t nKaon = fKaonTracks->GetEntries();
-  Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-
-  TObjArray* k0array=0x0;
-  TObjArray* k0varsarray=0x0;
-  TObjArray* kaarray=0x0;
-  TObjArray* kavarsarray=0x0;
-  Float_t zVertex,cent;
-  TObjString* eventInfo=0x0;
-  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
-  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
-  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &cent);
-  fEventBuffer[poolIndex]->SetBranchAddress("k0array", &k0array);
-  fEventBuffer[poolIndex]->SetBranchAddress("k0varsarray", &k0varsarray);
-  fEventBuffer[poolIndex]->SetBranchAddress("kaarray", &kaarray);
-  fEventBuffer[poolIndex]->SetBranchAddress("kavarsarray", &kavarsarray);
-
-  for (Int_t i=0; i<nK0; i++)
+  if( KiddiePool>0 )
   {
-    TLorentzVector* trk=(TLorentzVector*) fK0Tracks->At(i);
-    if(!trk)continue;
-    TVector *varsarray1 = (TVector*)fK0CutVarsArray->At(i);
+    for(Int_t j=0;j<KiddiePool;j++){
+      if( j!=nextRes ){
+        FillBackground(m_ReservoirK0[poolIndex][nextRes],m_ReservoirVarsK0[poolIndex][nextRes],m_ReservoirK0[poolIndex][j],m_ReservoirVarsK0[poolIndex][j],1);
+        FillBackground(m_ReservoirK0[poolIndex][j],m_ReservoirVarsK0[poolIndex][j],m_ReservoirK0[poolIndex][nextRes],m_ReservoirVarsK0[poolIndex][nextRes],1);
+        FillBackground(m_ReservoirKa[poolIndex][nextRes],m_ReservoirVarsKa[poolIndex][nextRes],m_ReservoirKa[poolIndex][j],m_ReservoirVarsKa[poolIndex][j],2);
+        FillBackground(m_ReservoirKa[poolIndex][j],m_ReservoirVarsKa[poolIndex][j],m_ReservoirKa[poolIndex][nextRes],m_ReservoirVarsKa[poolIndex][nextRes],2);
+      }
+    }
+  }
+}
 
-    for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
-      fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
-
-      Int_t nV01=k0array->GetEntries();
-      for(Int_t iTr1=0; iTr1<nV01; iTr1++){
-        TLorentzVector* v0=(TLorentzVector*)k0array->At(iTr1);
-        if(!v0) continue;
-        TVector *varsarray2 = (TVector*) k0varsarray->At(iTr1);
-        FillMixROOTObjects(trk,v0,varsarray1,varsarray2);
-      }//v0 loop
-    }//event loop
-  }//track loop
-
-  for (Int_t i=0; i<nK0; i++)
-  {
-    TLorentzVector* trk=(TLorentzVector*) fKaonTracks->At(i);
-    if(!trk)continue;
-    TVector *varsarray1 = (TVector*)fKaonCutVarsArray->At(i);
-
-    for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
-      fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
-
-      Int_t nV01=kaarray->GetEntries();
-      for(Int_t iTr1=0; iTr1<nV01; iTr1++){
-        TLorentzVector* v0=(TLorentzVector*)kaarray->At(iTr1);
-        if(!v0) continue;
-        TVector *varsarray2 = (TVector*) kavarsarray->At(iTr1);
-
-        Double_t mk0s_pdg = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-        TLorentzVector vf0,vka1,vka2;
-        vka1.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),0.493677);
-        vka2.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),0.493677);
-        vf0 = vka1+vka2;
-
-        Double_t cont[4];
-        cont[0] = vf0.M();
-        cont[1] = vf0.Pt();
-        if(vka1.Pt()>vka2.Pt()){
-          cont[2] = vka2.Pt();
-        }else{
-          cont[2] = vka1.Pt();
-        }
-        cont[3] = fCentrality;
-
-        if(trk->T()*v0->T()<0){
-          fHistoF01710ChargedMassMix->Fill(cont);
-        }else{
-          fHistoF01710ChargedLikeMassMix->Fill(cont);
-        }
-
-
-      }//v0 loop
-    }//event loop
-  }//track loop
-
-  delete eventInfo;
-  if(k0array) k0array->Delete();
-  delete k0array;
-  if(k0varsarray) k0varsarray->Delete();
-  delete k0varsarray;
-  if(kaarray) kaarray->Delete();
-  delete kaarray;
-  if(kavarsarray) kavarsarray->Delete();
-  delete kavarsarray;
-
-  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &fVtxZ);
-  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &fCentrality);
-  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&fEventInfo);
-  fEventBuffer[poolIndex]->SetBranchAddress("k0array", &fK0Tracks);
-  fEventBuffer[poolIndex]->SetBranchAddress("k0varsarray", &fK0CutVarsArray);
-  fEventBuffer[poolIndex]->SetBranchAddress("kaarray", &fKaonTracks);
-  fEventBuffer[poolIndex]->SetBranchAddress("kavarsarray", &fKaonCutVarsArray);
+//_________________________________________________________________
+void AliAnalysisTaskSEF01710fromAODtracks::FillBackground(std::vector<TLorentzVector * > mixTypeK1,std::vector<TVector * > mixTypeK1Vars, std::vector<TLorentzVector * > mixTypeK2, std::vector<TVector * > mixTypeK2Vars, Int_t pairtype)
+{     
+  //
+  // Fill background
+  //
+  int nK1 = mixTypeK1.size();
+  int nK2 = mixTypeK2.size();
+  for(Int_t ie=0;ie<nK1;ie++){
+    TLorentzVector* trk1=mixTypeK1[ie];
+    if(!trk1) continue;
+    TVector *k1vars = mixTypeK1Vars[ie];
+    for(Int_t iv=0;iv<nK2;iv++){
+      TLorentzVector* trk2=mixTypeK2[iv];
+      TVector *k2vars = mixTypeK2Vars[iv];
+      if(!trk2) continue;
+      if(pairtype==1)
+        FillMixROOTObjects(trk1,trk2,k1vars,k2vars);
+      if(pairtype==2)
+        FillMixROOTObjects_ChargedKaon(trk1,trk2,k1vars,k2vars);
+    }
+  }
+  return;
 }
 
 //________________________________________________________________________
@@ -1269,16 +1275,6 @@ Bool_t AliAnalysisTaskSEF01710fromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODVe
   //
   // Single V0 Cut to be applied before object creation
   //
-  Bool_t fUseOnTheFlyV0 = kFALSE;
-  Int_t fProdV0DaughterTPCClusterMin = 70;
-  Double_t fProdV0MassTolK0s = 0.01;
-  Double_t fProdV0MassRejLambda = 0.005;
-  Double_t fProdV0MassRejPhoton = 0.3;
-  Double_t fProdV0DcaDaughtersMax = 1.5;
-  Double_t fProdV0CosPointingAngleToPrimVtxMin = 0.97;
-  Double_t fProdV0PtMin = 0.0;
-  Double_t fProdV0DaughterEtaRange = 0.8;
-  Double_t fProdV0DaughterPtMin = 0.10;
 
   Bool_t onFlyV0 = v0->GetOnFlyStatus(); // on-the-flight V0s
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return kFALSE;
@@ -1317,6 +1313,17 @@ Bool_t AliAnalysisTaskSEF01710fromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODVe
   Double_t mphoton = sqrt(pow(Ee1+Ee2,2)-pow(pxe1+pxe2,2)-pow(pye1+pye2,2)-pow(pze1+pze2,2));
   if(mphoton<fProdV0MassRejPhoton) return kFALSE;
 
+  Double_t dcatoprim1 = v0->DcaPosToPrimVertex();
+  Double_t dcatoprim2 = v0->DcaNegToPrimVertex();
+  if(dcatoprim1<fProdV0DaughterDcaToPrimVertex) return kFALSE;
+  if(dcatoprim2<fProdV0DaughterDcaToPrimVertex) return kFALSE;
+
+  Double_t lPosV0[3];
+  lPosV0[0] = v0->DecayVertexV0X();
+  lPosV0[1] = v0->DecayVertexV0Y();
+  lPosV0[2] = v0->DecayVertexV0Z();
+  Double_t decayvertV0 = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+  if(decayvertV0<fProdRfidMinV0 || decayvertV0>fProdRfidMaxV0) return kFALSE;
 
   if(TMath::Abs(v0->DcaV0Daughters())>fProdV0DcaDaughtersMax) return kFALSE;
   Double_t posVtx[3] = {0.,0.,0.};
@@ -1353,8 +1360,21 @@ Bool_t AliAnalysisTaskSEF01710fromAODtracks::IsEventSelected(AliVEvent *event) {
   Bool_t DoPileUpRejection = kTRUE;
 
   if(fAnalysisType==0){
+    //lhc10bcde
     TriggerClass[0] = "CINT1";
     TriggerMask = AliVEvent::kAnyINT;
+    DoPileUpRejection = kTRUE;
+  }else if(fAnalysisType==1){
+    //lhc13bc
+    TriggerMask = AliVEvent::kINT7;
+    DoPileUpRejection = kTRUE;
+  }else if(fAnalysisType==2){
+    //lhc10h
+    TriggerMask = AliVEvent::kMB;
+    DoPileUpRejection = kTRUE;
+  }else if(fAnalysisType==3){
+    //lhc11h
+    TriggerMask = AliVEvent:: kMB |  AliVEvent::kCentral | AliVEvent::kSemiCentral;
     DoPileUpRejection = kTRUE;
   }
 
@@ -1423,6 +1443,12 @@ Bool_t AliAnalysisTaskSEF01710fromAODtracks::IsEventAcceptedPhysicsSelection(Ali
   ULong64_t TriggerMask = AliVEvent::kAnyINT;
   if(fAnalysisType==0){
     TriggerMask = AliVEvent::kAnyINT;
+  }else if(fAnalysisType==1){
+    TriggerMask = AliVEvent::kINT7;
+  }else if(fAnalysisType==2){
+    TriggerMask = AliVEvent::kMB;
+  }else if(fAnalysisType==3){
+    TriggerMask = AliVEvent:: kMB |  AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
 
   // physics selection requirements
@@ -1769,7 +1795,7 @@ void AliAnalysisTaskSEF01710fromAODtracks::SelectTrack( const AliVEvent *event, 
     nsigma_tofka = fPIDResponse->NumberOfSigmasTOF(aodt,AliPID::kKaon);
 
 
-    if(fabs(nsigma_tpcka)<2 && fabs(nsigma_tofka)<2.){
+    if(fabs(nsigma_tpcka)<fnSigmaTPCKaMax&& fabs(nsigma_tofka)<fnSigmaTOFKaMax){
       seleFlags[i]=1;
       nSeleTrks++;
 
@@ -1790,11 +1816,11 @@ void AliAnalysisTaskSEF01710fromAODtracks::SelectTrack( const AliVEvent *event, 
 
 
       if(fDoEventMixing){
+        Int_t nextRes( nextResVec[fPoolIndex] );
         TVector *varvec = new TVector(1);
         (*varvec)[0] = -9999;
-
-        fKaonTracks->AddLast(new TLorentzVector(aodt->Px(),aodt->Py(),aodt->Pz(),aodt->Charge()));
-        fKaonCutVarsArray->AddLast(varvec);
+        m_ReservoirKa[fPoolIndex][nextRes].push_back(new TLorentzVector(aodt->Px(),aodt->Py(),aodt->Pz(),aodt->Charge()));
+        m_ReservoirVarsKa[fPoolIndex][nextRes].push_back(varvec);
       }
     }
   } // end loop on tracks

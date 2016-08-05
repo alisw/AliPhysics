@@ -1,4 +1,5 @@
 AliAnalysisTaskSEF01710fromAODtracks *AddTaskF01710fromAODtracks(
+    Int_t antype = 0,
     Bool_t theMCon=kFALSE,
     Bool_t writeVariableTree=kFALSE,
     Int_t nTour=0
@@ -17,6 +18,12 @@ AliAnalysisTaskSEF01710fromAODtracks *AddTaskF01710fromAODtracks(
   AliAnalysisTaskSEF01710fromAODtracks *task = new AliAnalysisTaskSEF01710fromAODtracks("AliAnalysisTaskSEF01710fromAODtracks",writeVariableTree);
   task->SetMC(theMCon);
   task->SetDebugLevel(1);
+  task->SetAnalysisType(antype);
+
+  if(antype==2 || antype == 3){
+    task->SetProdV0DaughterDcaToPrimVertex(0.1);
+    task->SetProdRfidMinV0(5.);
+  }
 
   task->SetEventMixingWithPools();
   //task->SetEventMixingOff();

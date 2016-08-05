@@ -22,6 +22,7 @@
 #include "TSystem.h"
 #include "TLorentzVector.h"
 #include "TVector.h"
+#include <vector>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
@@ -55,6 +56,7 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
     void FillROOTObjects(AliAODEvent *aod,AliAODv0 *v01, AliAODv0 *v02,TClonesArray *mcArray);
     void FillROOTObjects_ChargedKaon(AliAODEvent *aod,AliAODTrack *trk1, AliAODTrack *trk2,TClonesArray *mcArray);
     void FillMixROOTObjects(TLorentzVector *v1, TLorentzVector *v2, TVector *v1v, TVector *v2v);
+    void FillMixROOTObjects_ChargedKaon(TLorentzVector *k1, TLorentzVector *k2, TVector *k1v, TVector *k2v);
     void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
     void SetMC(Bool_t ismc){fUseMCInfo=ismc;}
     void SetAnalysisType(Int_t at){fAnalysisType=at;}
@@ -69,6 +71,22 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
     Bool_t IsEventAcceptedPhysicsSelection(AliVEvent *event);
     Bool_t IsEventAcceptedTrigger(AliVEvent *event);
 
+    void SetnSigmaTPCKaMax(Double_t a){fnSigmaTPCKaMax = a;}
+    void SetnSigmaTOFKaMax(Double_t a){fnSigmaTOFKaMax = a;}
+    void SetUseOnTheFlyV0(Bool_t a){fUseOnTheFlyV0 = a;}
+    void SetProdV0DaughterTPCClusterMin(Bool_t a){fProdV0DaughterTPCClusterMin = a;}
+    void SetProdV0MassTolK0s(Double_t a){fProdV0MassTolK0s = a;}
+    void SetProdV0MassRejLambda(Double_t a){fProdV0MassRejLambda = a;}
+    void SetProdV0MassRejPhoton(Double_t a){fProdV0MassRejPhoton = a;}
+    void SetProdV0DcaDaughtersMax(Double_t a){fProdV0DcaDaughtersMax = a;}
+    void SetProdV0DaughterDcaToPrimVertex(Double_t a){fProdV0DaughterDcaToPrimVertex = a;}
+    void SetProdV0CosPointingAngleToPrimVtxMin(Double_t a){fProdV0CosPointingAngleToPrimVtxMin = a;}
+    void SetProdV0PtMin(Double_t a){fProdV0PtMin = a;}
+    void SetProdV0DaughterEtaRange(Double_t a){fProdV0DaughterEtaRange = a;}
+    void SetProdV0DaughterPtMin(Double_t a){fProdV0DaughterPtMin = a;}
+    void SetProdRfidMinV0(Double_t a){fProdRfidMinV0=a;}
+    void SetProdRfidMaxV0(Double_t a){fProdRfidMaxV0=a;}
+
     /// mixing
     void SetEventMixingWithPools(){fDoEventMixing=1;}
     void SetEventMixingOff(){fDoEventMixing=0;}
@@ -82,7 +100,7 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
       for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
     }
     void DoEventMixingWithPools(Int_t index);
-    void ResetPool(Int_t poolIndex);
+    void FillBackground(std::vector<TLorentzVector * > mixType1,std::vector<TVector * > mixType1Vars, std::vector<TLorentzVector * > mixType2, std::vector<TVector * > mixType2Vars, Int_t pairtype);
     Int_t GetPoolIndex(Double_t zvert, Double_t mult);
 
   private:
@@ -94,7 +112,7 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
     void DefineGeneralHistograms();
     void DefineAnalysisHistograms();
 
-    Int_t fAnalysisType; /// Analysis Type 0: pp(lhc10bcde), Type 1(),,,,
+    Int_t fAnalysisType; /// Analysis Type 0: pp(lhc10bcde), Type 1(lhc13bc), Type 2(lhc10h), Type3 (lhc11h)
     Bool_t fUseMCInfo;          /// Use MC info
     TList *fOutput;             //!<! User output slot 1 // general histos
     TList *fOutputAll;          //!<! User output slot 2 // Analysis histos
@@ -136,6 +154,7 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
     THnSparse*  fHistoA21320MassMCS;        //!<! F0 1710 mass spectra
     THnSparse*  fHistoF21270MassMCGen;        //!<! F0 1710 mass spectra
     THnSparse*  fHistoF21270MassMCS;        //!<! F0 1710 mass spectra
+    THnSparse*  fHistoOthersMassMCS;        //!<! other mass spectra
 
     THnSparse*  fHistoF01710ChargedMass;        //!<! F0 1710 mass spectra
     THnSparse*  fHistoF01710ChargedLikeMass;        //!<! F0 1710 mass spectra
@@ -149,10 +168,27 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
     THnSparse*  fHistoA21320ChargedMassMCS;        //!<! F0 1710 mass spectra
     THnSparse*  fHistoF21270ChargedMassMCGen;        //!<! F0 1710 mass spectra
     THnSparse*  fHistoF21270ChargedMassMCS;        //!<! F0 1710 mass spectra
+    THnSparse*  fHistoOthersChargedMassMCS;        //!<! F0 1710 mass spectra
 
     TH1D *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
     THnSparse *fHistonKaonvsRunNumber;//!<! nkaon vs runnumber
     THnSparse *fHistonK0vsRunNumber;//!<! nk0 vs runnumber
+
+    Double_t fnSigmaTPCKaMax; /// nsigma cuts on TPC for kaon
+    Double_t fnSigmaTOFKaMax; /// nsigma cuts on TOF for kaon
+    Bool_t fUseOnTheFlyV0; /// On the fly
+    Int_t fProdV0DaughterTPCClusterMin; /// v0 cut variables
+    Double_t fProdV0MassTolK0s; /// v0 cut variables
+    Double_t fProdV0MassRejLambda; /// v0 cut variables
+    Double_t fProdV0MassRejPhoton; /// v0 cut variables
+    Double_t fProdV0DcaDaughtersMax; /// v0 cut variables
+    Double_t fProdV0DaughterDcaToPrimVertex; /// v0 cut variables
+    Double_t fProdV0CosPointingAngleToPrimVtxMin; /// v0 cut variables
+    Double_t fProdV0PtMin; /// v0 cut variables
+    Double_t fProdV0DaughterEtaRange; /// v0 cut variables
+    Double_t fProdV0DaughterPtMin; /// v0 cut variables
+    Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
+    Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
 
     //Mixing
     Int_t fDoEventMixing; /// flag for event mixing
@@ -162,15 +198,16 @@ class AliAnalysisTaskSEF01710fromAODtracks : public AliAnalysisTaskSE
     Int_t fNCentBins;								/// number of centrality bins
     Double_t fCentBins[100];						// [fNCentBinsDim]
     Int_t  fNOfPools; /// number of pools
-    TTree** fEventBuffer;   //!<! structure for event mixing
-    TObjString *fEventInfo; ///unique event id for mixed event check
-    TObjArray* fK0Tracks; /// array of electron-compatible tracks
-    TObjArray* fK0CutVarsArray; /// array of cut variables
-    TObjArray* fKaonTracks; /// array of electron-compatible tracks
-    TObjArray* fKaonCutVarsArray; /// array of cut variables
+    Int_t fPoolIndex; /// pool index
+    std::vector<Int_t> nextResVec; //!<! Vector storing next reservoir ID
+    std::vector<Bool_t> reservoirsReady; //!<! Vector storing if the reservoirs are ready
+    std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirKa; //!<! reservoir
+    std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirK0; //!<! reservoir
+    std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsKa; //!<! reservoir
+    std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsK0; //!<! reservoir
 
     /// \cond CLASSIMP 
-    ClassDef(AliAnalysisTaskSEF01710fromAODtracks,1); // class for f0(1710)->KK
+    ClassDef(AliAnalysisTaskSEF01710fromAODtracks,2); // class for f0(1710)->KK
     /// \endcond 
 };
 #endif
