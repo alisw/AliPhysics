@@ -81,6 +81,8 @@ public :
   TObjArray* GetHistos() const { return fFolderObj; }
   TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
     
+  void ResetOutputData();
+
 private:
 
   static Bool_t fgMergeTHnSparse;
