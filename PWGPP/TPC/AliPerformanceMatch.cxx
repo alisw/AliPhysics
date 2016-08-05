@@ -114,6 +114,16 @@ AliPerformanceMatch::~AliPerformanceMatch()
   if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
   if(fTPCConstrain) delete fTPCConstrain; fTPCConstrain = 0x0;
   
+  if(h_tpc_match_trackingeff_all_2_3) delete h_tpc_match_trackingeff_all_2_3; h_tpc_match_trackingeff_all_2_3 = 0;
+  if(h_tpc_match_trackingeff_tpc_2_3) delete h_tpc_match_trackingeff_tpc_2_3; h_tpc_match_trackingeff_tpc_2_3 = 0;
+  if(h_tpc_match_pull_2_7) delete h_tpc_match_pull_2_7; h_tpc_match_pull_2_7 = 0;
+  if(h_tpc_match_pull_4_7) delete h_tpc_match_pull_4_7; h_tpc_match_pull_4_7 = 0;
+  if(h_tpc_match_pull_0_7) delete h_tpc_match_pull_0_7; h_tpc_match_pull_0_7 = 0;
+  if(h_tpc_match_pull_1_7) delete h_tpc_match_pull_1_7; h_tpc_match_pull_1_7 = 0;
+  if(h_tpc_match_pull_3_7) delete h_tpc_match_pull_3_7; h_tpc_match_pull_3_7 = 0;
+  if(h_tpc_constrain_tpc_0_2_3) delete h_tpc_constrain_tpc_0_2_3; h_tpc_constrain_tpc_0_2_3 = 0;
+    
+    
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
   if(fFolderObj) delete fFolderObj; fFolderObj=0;
 }
@@ -782,3 +792,25 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
   if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;
 }
+
+void AliPerformanceMatch::ResetOutputData(){
+
+    if(fUseSparse){
+        if(fResolHisto) fResolHisto->Reset("ICE");
+        if(fPullHisto) fPullHisto->Reset("ICE");
+        if(fTrackingEffHisto) fTrackingEffHisto->Reset("ICE");
+        if(fTPCConstrain) fTPCConstrain->Reset("ICE");
+    }
+    else{
+        if(h_tpc_match_trackingeff_all_2_3) h_tpc_match_trackingeff_all_2_3->Reset("ICE");
+        if(h_tpc_match_trackingeff_tpc_2_3) h_tpc_match_trackingeff_tpc_2_3->Reset("ICE");
+        if(h_tpc_match_pull_2_7) h_tpc_match_pull_2_7->Reset("ICE");
+        if(h_tpc_match_pull_4_7) h_tpc_match_pull_4_7->Reset("ICE");
+        if(h_tpc_match_pull_0_7) h_tpc_match_pull_0_7->Reset("ICE");
+        if(h_tpc_match_pull_1_7) h_tpc_match_pull_1_7->Reset("ICE");
+        if(h_tpc_match_pull_3_7) h_tpc_match_pull_3_7->Reset("ICE");
+        if(h_tpc_constrain_tpc_0_2_3) h_tpc_constrain_tpc_0_2_3->Reset("ICE");
+    }
+
+}
+
