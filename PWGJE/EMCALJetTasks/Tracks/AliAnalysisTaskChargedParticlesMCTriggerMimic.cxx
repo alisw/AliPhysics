@@ -79,11 +79,14 @@ AliAnalysisTaskChargedParticlesMCTriggerMimic::AliAnalysisTaskChargedParticlesMC
             fWeightHandler(nullptr),
             fYshift(0.465),
             fEtaSign(1),
+            fEtaLabCut(-0.6, 0.6),
+            fEtaCmsCut(-0.13, 0.13),
             fPatchType(kUndef),
             fEnergyThreshold(0.)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(true);
 }
 
 /**
@@ -96,6 +99,12 @@ AliAnalysisTaskChargedParticlesMCTriggerMimic::~AliAnalysisTaskChargedParticlesM
 
 void AliAnalysisTaskChargedParticlesMCTriggerMimic::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  if(fIsPythia){
+    AliDebugStream(1) << GetName() << ": Running on PYTHIA Hard production" << std::endl;
+  } else {
+    AliDebugStream(1) << GetName() << ": Not running on PYTHIA Hard production" << std::endl;
+  }
 
   if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
   if(!fTrackCuts) InitializeTrackCuts("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
@@ -208,23 +217,37 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::IsEventSelected(){
     return false;
   }
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
+  AliDebugStream(2) << GetName() << "Event is an INT7 event" << std::endl;
 
   // MC outlier cut
   if(fIsPythia){
-    if(!CheckMCOutliers()) return false;
+    if(!CheckMCOutliers()){
+      AliDebugStream(2) << GetName() << ": Event identified as outlier" << std::endl;
+      return false;
+    } else {
+      AliDebugStream(2) << GetName() << ": Not an outlier event" << std::endl;
+    }
   }
 
   // Generall event quality cuts
   // The vertex cut also contains cuts on the number
   // of contributors and the position in z
+  AliDebugStream(2) << GetName() << ": Applying vertex selection" << std::endl;
   if(fAliAnalysisUtils){
     if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return false;
-    if(!fAliAnalysisUtils->IsPileUpEvent(InputEvent())) return false;
+    if(fAliAnalysisUtils->IsPileUpEvent(InputEvent())) return false;
+    AliDebugStream(2) << GetName() << ": Vertex selection passed" << std::endl;
   }
 
+  AliDebugStream(2) << GetName() << ": Applying EMCAL trigger selection" << std::endl;
   if(fPatchType != kUndef){
-    if(!SelectEmcalTrigger(fTriggerPatchInfo)) return false;
+    if(!SelectEmcalTrigger(fTriggerPatchInfo)){
+      AliDebugStream(1) << GetName() << ": Failed trigger selection" << std::endl;
+      return false;
+    }
   }
+
+  AliDebugStream(1) << GetName() << "Event selected" << std::endl;
   return true;
 }
 
@@ -233,10 +256,17 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::IsEventSelected(){
  * @return Always true
  */
 Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
+  AliDebugStream(1) << GetName() << ": Inspecting event" << std::endl;
   Double_t weight = 1.;
   if(fIsPythia){
     weight = fWeightHandler ? fWeightHandler->GetEventWeight(fPythiaHeader) : 1.;
   }
+
+  fHistos->FillTH1("hUserEventCount", 1, weight);
+  const AliVVertex *vtx = InputEvent()->GetPrimaryVertex();
+  fHistos->FillTH1("hUserVertexZ", 1, weight);
+
+  AliDebugStream(2) << GetName() << ": eta-lab cut: " << fEtaLabCut << ", eta-cms cut: " << fEtaCmsCut << std::endl;
 
   AliVParticle *truepart(nullptr);
   Bool_t isEMCAL(kFALSE);
