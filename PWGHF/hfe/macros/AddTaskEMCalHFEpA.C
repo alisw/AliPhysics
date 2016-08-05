@@ -55,10 +55,8 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //Create containers for input/output
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	
-	if(centralityEstimator == 0){
+	
         AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
-	}
-	else AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould, centralityEstimator), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
 	
 		
 		

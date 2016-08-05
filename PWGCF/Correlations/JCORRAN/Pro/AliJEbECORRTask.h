@@ -60,6 +60,7 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
 		Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 		void SetKineOnly (Bool_t iskineonly) {IsKinematicOnly = iskineonly;};
+		void RegisterList(TClonesArray* listToFill, TClonesArray* listFromToFill,double lpt, double hpt);
 		/*
 		   TString MemoryStatus(){
 		   int pid = getpid();
@@ -103,6 +104,8 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 
 		TClonesArray * fInputList;
 		TClonesArray * fInputListSpectra;
+		int fVnMethod; // 0; RunFlow 1 : JFluc
+		TClonesArray * fInputListFlow;
 		TClonesArray * ftriggList;
 		TClonesArray * fassocList;
 

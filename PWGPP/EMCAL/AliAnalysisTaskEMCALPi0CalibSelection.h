@@ -87,6 +87,8 @@ public:
   
   void    SetClusterLambda0Cuts(Float_t min, Float_t max){ fL0max       = max        ;
                                                            fL0min       = min        ; }
+  void    SetClusterLambda0CutsForBkgShapeStudy(Float_t min, Float_t max){ fL0Bkgmax       = max        ;
+    fL0Bkgmin       = min        ; }
   void    SetClusterMinNCells(Int_t n)                   { fMinNCells   = n          ; }
   
   void    SetNCellsGroup(Int_t n)                        { fGroupNCells = n          ; }
@@ -122,6 +124,10 @@ public:
   void    SwitchOffSelectOnlyPhotonsInDifferentSM()       { fSelectOnlyPhotonsInDifferentSM = kFALSE ; }
   
   void    SwitchOnSelectOnlyPhotonsInDifferentSM()        { fSelectOnlyPhotonsInDifferentSM = kTRUE ; }
+  
+  void    SwitchOffChangeBkgShape()                       { fChangeBkgShape = kFALSE ; }
+  
+  void    SwitchOnChangeBkgShape()                        { fChangeBkgShape = kTRUE ; }
 
   // Geometry setters
   
@@ -240,6 +246,9 @@ private:
     
   Float_t             fL0min;            ///<  Minimum cluster L0.
   Float_t             fL0max;            ///<  Maximum cluster L0.
+  
+  Float_t             fL0Bkgmin;            ///<  Minimum cluster L0 for bkg shape study.
+  Float_t             fL0Bkgmax;            ///<  Maximum cluster L0 for bkg shape study.
 
   Float_t             fDTimeCut;         ///<  Maximum difference between time of cluster pairs (ns).
   Float_t             fTimeMax;          ///<  Maximum cluster time (ns).
@@ -263,6 +272,8 @@ private:
   Bool_t              fClusterTopology;  ///< Draw cluster topology histo
   
   Bool_t              fSelectOnlyPhotonsInDifferentSM; ///<Select only pairs of photons that are not in the same SM
+  
+  Bool_t              fChangeBkgShape;  ///< Select clusters with nominal M02 cuts (fL0min,fL0max) plus high M02 clusters (fL0Bkgmin,fL0Bkgmax)
   
   ///< List the masked columns.
   Int_t*              fMaskCellColumns;  //[fNMaskCellColumns]

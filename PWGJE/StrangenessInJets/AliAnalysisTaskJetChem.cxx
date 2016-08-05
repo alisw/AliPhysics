@@ -3939,7 +3939,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if((GetFFMinNTracks()>0) && (jettracklist->GetSize() <= GetFFMinNTracks())) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
       
       //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..) + NJ events
-      if(!isBadJet) {
+      if((!isBadJet)&&(fDebug > 3)) {
 	std::cout<<"Reconstructed Jet - jetPt:"<<jet->Pt()<<"- jetEta: "<<jet->Eta()<<" - jetAreaCharged: "<<jet->EffectiveAreaCharged()<<std::endl;
 	std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
 	std::cout<<"      "<<std::endl;

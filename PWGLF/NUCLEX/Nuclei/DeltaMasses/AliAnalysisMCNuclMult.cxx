@@ -134,7 +134,7 @@ for(Int_t i=0;i<7;i++) {
   htemp = new TH1I("htemp","Number of tracks per event (after cuts on event);N_{tracks}",2100,-100,2000);
     
   hCheckTrackSel = new TH1I("hCheckTrackSel","Number of tracks per event after the track selection",12,0,12);
-  const Char_t *xaxisTitle3[12]={"Ntracks","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca","|DCAxy|<1","|DCAz|<2","|eta|<0.8"};
+  const Char_t *xaxisTitle3[12]={"Ntracks","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca","|DCAxy|<1","|DCAz|<1","|eta|<0.8"};
   for(Int_t i=0;i<12;i++) {
     hCheckTrackSel->Fill(xaxisTitle3[i],0);
   }
@@ -151,17 +151,17 @@ for(Int_t i=0;i<7;i++) {
   heta[0] = new TH1D("heta_0","#eta (before track cuts);#eta",200,-1,1);
   hisPropagatedToDca[0] = new TH1I("hisPropagatedToDca_0","kPropagatedToDca (before track cuts)",2,0,2);
   
-  hnTPCclusters[1] = new TH1I("hnTPCclusters_1","Number of TPC clusters (after track cuts, DCAz cut not yet applied)",200,0,200);
-  hchi2TPC[1] = new TH1D("hchi2TPC_1","#chi^{2} per TPC cluster (after track cuts, DCAz cut not yet applied)",1000,0,100);
-  hisTPCrefit[1] = new TH1I("hisTPCrefit_1","kTPCrefit (after track cuts, DCAz cut not yet applied)",2,0,2);
-  hisITSrefit[1] = new TH1I("hisITSrefit_1","kITSrefit (after track cuts, DCAz cut not yet applied)",2,0,2);
-  hnSPD[1] = new TH1I("hnSPD_1","Number of SPD rec. points (after track cuts, DCAz cut not yet applied)",3,0,3);
-  hnKinkDaughters[1] = new TH1I("hnKinkDaughters_1","Number of Kink Daughters (after track cuts, DCAz cut not yet applied)",40,0,40);
-  hsigmaToVtx[1] = new TH1D("hsigmaToVtx_1","Number of sigma to the vertex (after track cuts, DCAz cut not yet applied)",400,0,40);
-  hchi2ITS[1] = new TH1D("hchi2ITS_1","#chi^{2} per ITS cluster (after track cuts, DCAz cut not yet applied)",1000,0,100);
+  hnTPCclusters[1] = new TH1I("hnTPCclusters_1","Number of TPC clusters (after track cuts)",200,0,200);
+  hchi2TPC[1] = new TH1D("hchi2TPC_1","#chi^{2} per TPC cluster (after track cuts)",1000,0,100);
+  hisTPCrefit[1] = new TH1I("hisTPCrefit_1","kTPCrefit (after track cuts)",2,0,2);
+  hisITSrefit[1] = new TH1I("hisITSrefit_1","kITSrefit (after track cuts)",2,0,2);
+  hnSPD[1] = new TH1I("hnSPD_1","Number of SPD rec. points (after track cuts)",3,0,3);
+  hnKinkDaughters[1] = new TH1I("hnKinkDaughters_1","Number of Kink Daughters (after track cuts)",40,0,40);
+  hsigmaToVtx[1] = new TH1D("hsigmaToVtx_1","Number of sigma to the vertex (after track cuts)",400,0,40);
+  hchi2ITS[1] = new TH1D("hchi2ITS_1","#chi^{2} per ITS cluster (after track cuts)",1000,0,100);
     
-  heta[1] = new TH1D("heta_1","#eta (after track cuts, DCAz cut not yet applied);#eta",200,-1,1);
-  hisPropagatedToDca[1] = new TH1I("hisPropagatedToDca_1","kPropagatedToDca (after track cuts, DCAz cut not yet applied)",2,0,2);
+  heta[1] = new TH1D("heta_1","#eta (after track cuts);#eta",200,-1,1);
+  hisPropagatedToDca[1] = new TH1I("hisPropagatedToDca_1","kPropagatedToDca (after track cuts)",2,0,2);
 
   fdEdxVSp[0] = new TH2F("fdEdxVSp_pos","TPC dE/dx (positive charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);//100,500//500,2000
   fdEdxVSp[1] = new TH2F("fdEdxVSp_neg","TPC dE/dx (negative charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);
@@ -185,86 +185,129 @@ for(Int_t i=0;i<7;i++) {
     snprintf(title_hBetaExp[iS],200,"Expected #beta_{TOF} (%s);p_{T}^{reco.}/|z| (GeV/c); #beta_{TOF}",nameSpec[iS]);
     hBetaExp[iS] = new TProfile(name_hBetaExp[iS],title_hBetaExp[iS],200,0,10,0.4,1.05,"");
   } 
+
+  Char_t name_fNsigmaTOF[18][200];
+  Char_t title_fNsigmaTOF[18][200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fNsigmaTOF[iS],200,"fNsigmaTOF_prim_equalLabel_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTOF[iS],200,"primary %s, TOFlabel == label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fNsigmaTOF[0][0][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
+    else fNsigmaTOF[0][0][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-50,50);
+
+    snprintf(name_fNsigmaTOF[iS],200,"fNsigmaTOF_secMat_equalLabel_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTOF[iS],200,"secondary %s from mat., TOFlabel == label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fNsigmaTOF[1][0][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
+    else fNsigmaTOF[1][0][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-50,50);
+
+    snprintf(name_fNsigmaTOF[iS],200,"fNsigmaTOF_secWeak_equalLabel_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTOF[iS],200,"secondary %s from w.d., TOFlabel == label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fNsigmaTOF[2][0][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
+    else fNsigmaTOF[2][0][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-50,50);
+  }
+  
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fNsigmaTOF[iS],200,"fNsigmaTOF_prim_differentLabel_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTOF[iS],200,"primary %s, TOFlabel != label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fNsigmaTOF[0][1][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
+    else fNsigmaTOF[0][1][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-50,50);
+  
+    snprintf(name_fNsigmaTOF[iS],200,"fNsigmaTOF_secMat_differentLabel_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTOF[iS],200,"secondary %s from mat., TOFlabel != label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fNsigmaTOF[1][1][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
+    else fNsigmaTOF[1][1][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-50,50);
+  
+    snprintf(name_fNsigmaTOF[iS],200,"fNsigmaTOF_secWeak_differentLabel_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTOF[iS],200,"secondary %s from w.d., TOFlabel != label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fNsigmaTOF[2][1][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
+    else fNsigmaTOF[2][1][iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-50,50);
+  }
+
   //-------------
 
   Char_t name_hpt[200];
   Char_t title_hpt[200];
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_gen_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_gen_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of generated primary %s for |y|<0.5.;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[0][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_gen_secMat_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_gen_secMat_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from mat. for |y|<0.5.;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[0][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_gen_secWeak_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_gen_secWeak_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from w.d. for |y|<0.5.;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[0][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
 
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_reco_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_reco_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[1][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_reco_secMat_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_reco_secMat_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat.;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[1][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_reco_secWeak_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_reco_secWeak_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d.;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[1][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
 
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_matchedTof_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_matchedTof_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched at TOF;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[2][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_matchedTof_secMat_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_matchedTof_secMat_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched at TOF;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[2][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_matchedTof_secWeak_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_matchedTof_secWeak_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched at TOF;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[2][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
 
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_goodmatchTof_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_goodmatchTof_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched correctly at TOF;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[3][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_goodmatchTof_secMat_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_goodmatchTof_secMat_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched correctly at TOF;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[3][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_goodmatchTof_secWeak_%s",nameSpec[iS]);
+    snprintf(name_hpt,200,"hpt_goodmatchTof_secWeak_%s",nameSpec[iS]);
     snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched correctly at TOF;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
     else hpt[3][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
-    
+
   Char_t name_fptRecoVsTrue[200];
   Char_t title_fptRecoVsTrue[200];
   for(Int_t iS=0;iS<18;iS++) {
@@ -273,27 +316,40 @@ for(Int_t i=0;i<7;i++) {
     if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);
     else fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
   }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_2_%s",nameSpec[iS]);
+    snprintf(title_fptRecoVsTrue,200,"%s, after pT correction;p_{T}^{reco.}/z (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
+    if(iS==5 || iS==5+9) fptRecoVsTrue[1][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);
+    else fptRecoVsTrue[1][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
+  }
   
+  fptCorr[0] = new TF1("fptCorr_d","[0]-[1]*TMath::Exp(-[2]*x)",0,10);
+  fptCorr[0]->FixParameter(0,-3.97081e-03);
+  fptCorr[0]->FixParameter(1,4.94023e-01);
+  fptCorr[0]->FixParameter(2,3.21308e+00);
+  fptCorr[0]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
+  fptCorr[0]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
+
   Char_t name_fDca[18][200];
   Char_t title_fDca[18][200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fDca[iS],200,"fDca_prim_%s",nameSpec[iS]);
     snprintf(title_fDca[iS],200,"DCA of primary %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,200,-2.0,2.0,100,0,5);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,100,-1.0,1.0,100,0,5);
     else fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
   }
   
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fDca[iS],200,"fDca_secMat_%s",nameSpec[iS]);
     snprintf(title_fDca[iS],200,"DCA of secondary (from material) %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,200,-2.0,2.0,100,0,5);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,100,-1.0,1.0,100,0,5);
     else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
   }
   
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fDca[iS],200,"fDca_secWeak_%s",nameSpec[iS]);
     snprintf(title_fDca[iS],200,"DCA of secondary (from weak decay) %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,200,-2.0,2.0,100,0,5);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,100,-1.0,1.0,100,0,5);
     else fDca[2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
   }
   
@@ -329,23 +385,13 @@ for(Int_t i=0;i<7;i++) {
   for(Int_t i=0;i<2;i++) fList->Add(fBetaTOFvspt[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hBetaExp[i]);
   
-  for(Int_t j=0;j<3;j++) {
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][4+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][5+9*i]);
-    
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][4+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][5+9*i]);
-    
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][4+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][5+9*i]);
-    
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][4+9*i]);
-    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][5+9*i]);
-  }
-  
   for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][4+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][5+9*i]);
 
+  fList->Add(fptCorr[0]);
+
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[1][5+9*i]);
+  
   for(Int_t i=0;i<2;i++) fList->Add(fDca[0][4+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fDca[1][4+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fDca[2][4+9*i]);
@@ -353,7 +399,43 @@ for(Int_t i=0;i<7;i++) {
   for(Int_t i=0;i<2;i++) fList->Add(fDca[0][5+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fDca[1][5+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fDca[2][5+9*i]);
+
+  for(Int_t j=0;j<3;j++) {
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][2+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][3+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][5+9*i]);
+    
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][2+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][3+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][5+9*i]);
   
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][2+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][3+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][5+9*i]);
+  
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][2+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][3+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][5+9*i]);
+  }
+  
+  for(Int_t j=0;j<3;j++) {
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][0][2+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][1][2+9*i]);
+    
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][0][3+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][1][3+9*i]);
+
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][0][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][1][4+9*i]);
+
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][0][5+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[j][1][5+9*i]);
+  }
+
   // Post output data.
   PostData(1, fList);
 
@@ -464,7 +546,7 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
     
     Int_t label = track->GetLabel();
     label=TMath::Abs(label);
-    
+        
     //---------- info on MC true:
     AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(label);
     
@@ -495,13 +577,11 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
     if(!this->AcceptTrack(track, DCAxy, DCAz)) continue;
     
     this->FillDca(DCAxy, DCAz, t_pt, kSpec, isPrimary, isSecMat, isSecWeak);
-
-    if(TMath::Abs(DCAz)>1.0) continue;
     //------------------------- Track cuts (end)
 
     Double_t pt = track->Pt(); //use only on ForPtCorr !
     this->ForPtCorr(pt, t_pt, kSpec);
-
+    
     this->CheckTPCsignal(track);
     
     //reconstructed particles:
@@ -521,13 +601,11 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
     //-------------------------- TOF matching required---------------------
     if(!kTOF) continue;
     
-    Int_t *toflabel = new Int_t[3];
-    ((AliESDtrack *)track)->GetTOFLabel(toflabel);
-    Bool_t isTOFgoodMatch = kFALSE;
-    if(toflabel[0]==label) isTOFgoodMatch = kTRUE;
+    Double_t *NsigmaTOF = new Double_t[9];
+    this->CheckTOFsignal(track, NsigmaTOF);
     
-    this->CheckTOFsignal(track);
-    
+    Bool_t isTOFgoodMatch = this->IsTOFgoodmatching(track, label, NsigmaTOF, kSpec, t_pt, isPrimary, isSecMat, isSecWeak);
+
     if(kSpec>-1) {
       
       if(isPrimary) {
@@ -551,7 +629,7 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
 	  hpt[3][2][kSpec]->Fill(t_pt);
 	}
       }
-    
+      
     }
         
   }//----------------------loop on reconstructed TRACKS (end)
@@ -606,8 +684,6 @@ Bool_t AliAnalysisMCNuclMult::IsInsideMultiplicityBin(Float_t multiplicity) {
 //_____________________________________________________________________________
 Bool_t AliAnalysisMCNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz) {
  
-  //for the moment it checks for std. tracks only
-
   //-----------------where the std. cuts act:
   Int_t nTPCclusters=((AliESDtrack *)track)->GetTPCclusters(0);
   Double_t chi2TPC=-1;
@@ -650,7 +726,7 @@ Bool_t AliAnalysisMCNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Dou
 
   if(TMath::Abs(DCAxy)>1.0) return kFALSE;
 
-  if(TMath::Abs(DCAz)>2.0) return kFALSE;    // temporarily 1cm cut moved in exec !
+  if(TMath::Abs(DCAz)>1.0) return kFALSE;
 
   if(TMath::Abs(eta)>0.8) return kFALSE;
 
@@ -741,9 +817,23 @@ void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec) {
   
   if(kSpec<0) return;
   
+  //The true pt is not divided by the charge Z:
   if(kSpec==7 || kSpec==8 || kSpec==7+9 || kSpec==8+9) t_pt=t_pt/2;
   
   fptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
+  
+  this->CheckPtCorr(pt, t_pt, kSpec);
+
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::CheckPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec) { 
+  
+  if(kSpec!=5 && kSpec!=5+9) return;
+    
+  pt=pt-fptCorr[0]->Eval(pt);
+
+  fptRecoVsTrue[1][kSpec]->Fill(pt,pt-t_pt);
   
   return;
 }
@@ -765,11 +855,13 @@ void AliAnalysisMCNuclMult::CheckTPCsignal(AliVTrack *track) {
   return;
 }
 //_____________________________________________________________________________
-void AliAnalysisMCNuclMult::CheckTOFsignal(AliVTrack *track) {
-  //-------------------------- TOF plots:
-  //To do: p->t_p pt->t_pt, remember that the true variables are not divided by the charge Z!
-  //For the moment I use only the reconstructed variables (are only "QA" plots)!
+void AliAnalysisMCNuclMult::CheckTOFsignal(AliVTrack *track, Double_t *NsigmaTOF) {
     
+  /*
+  I use only the reconstructed p and pt. The reco. p is better than the true p because the first is closer to the mean p.
+  Anyway, this method fills only QA plots.
+  */
+
   Double_t pt = track->Pt();
   Double_t p = track->P();
   Short_t charge = track->Charge();
@@ -784,7 +876,8 @@ void AliAnalysisMCNuclMult::CheckTOFsignal(AliVTrack *track) {
     if(p<1e-12) continue;
     exptimes[iN] = exptimes[4]*exptimes[4]*(massOverZ[iN]*massOverZ[iN]/p/p+1)/(massOverZ[4]*massOverZ[4]/p/p+1);
     exptimes[iN] = TMath::Sqrt(exptimes[iN]);
-  } 
+  }
+  
   for(Int_t iS=0;iS<9;iS++){
     if(exptimes[iS]<1e-12) continue;
     hBetaExp[iS]->Fill(pt,exptimes[0]/exptimes[iS]);
@@ -796,5 +889,53 @@ void AliAnalysisMCNuclMult::CheckTOFsignal(AliVTrack *track) {
   if(charge>0) fBetaTOFvspt[0]->Fill(pt,beta);
   else if(charge<0) fBetaTOFvspt[1]->Fill(pt,beta);
   
+  Double_t tofres[9];
+  for(Int_t iS=0;iS<9;iS++) {
+    tofres[iS] = fPIDResponse->GetTOFResponse().GetExpectedSigma(p, exptimes[iS], (AliPID::EParticleType) iS);  
+  }
+
+  for(Int_t iS=0;iS<9;iS++) {
+    if(tofres[iS]<1e-12) continue;
+    NsigmaTOF[iS] = (tof-exptimes[iS])/tofres[iS];
+  }
+  
   return;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisMCNuclMult::IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t *NsigmaTOF, Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak) {
+
+  /*
+    return ( TOFlabel == label || TMath::Abs(NsigmaTOF)<3 )
+   */
+
+  Int_t *toflabel = new Int_t[3];
+  ((AliESDtrack *)track)->GetTOFLabel(toflabel);
+  Bool_t isTOFgoodMatch = kFALSE;
+  if(toflabel[0]==label) isTOFgoodMatch = kTRUE;
+
+  if(kSpec<0) return isTOFgoodMatch;
+  
+  Int_t kSpec_2=kSpec;
+  if(kSpec_2 > 8) {//e.g. kSpec={5,5+9}->kSpec_2={5}
+    kSpec_2-=9;
+  }  
+ 
+  if(isPrimary) {
+    if(isTOFgoodMatch) fNsigmaTOF[0][0][kSpec]->Fill(t_pt,NsigmaTOF[kSpec_2]);
+    else fNsigmaTOF[0][1][kSpec]->Fill(t_pt,NsigmaTOF[kSpec_2]);
+  }
+  else if(isSecMat) {
+    if(isTOFgoodMatch) fNsigmaTOF[1][0][kSpec]->Fill(t_pt,NsigmaTOF[kSpec_2]);
+    else fNsigmaTOF[1][1][kSpec]->Fill(t_pt,NsigmaTOF[kSpec_2]);
+  }
+  else if(isSecWeak) {
+   if(isTOFgoodMatch) fNsigmaTOF[2][0][kSpec]->Fill(t_pt,NsigmaTOF[kSpec_2]);
+   else fNsigmaTOF[2][1][kSpec]->Fill(t_pt,NsigmaTOF[kSpec_2]);
+  }
+  
+  Bool_t isTOFgoodMatch_2 = isTOFgoodMatch;
+
+  if(TMath::Abs(NsigmaTOF[kSpec_2])<3) isTOFgoodMatch_2 = kTRUE;
+
+  return isTOFgoodMatch_2;
 }

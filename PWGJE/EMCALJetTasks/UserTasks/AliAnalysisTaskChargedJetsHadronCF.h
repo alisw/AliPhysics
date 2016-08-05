@@ -88,6 +88,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
   AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
   AliEmcalJet*                fMatchedJet;                              //!<!  jet matched to input jet (calculated event-by-event)
+  AliEmcalJet*                fInitialPartonMatchedJet1;                //!<!  On PYTHIA data and fJetOutputMode=6, this holds the PDG code of the initial collisions that was matched to this jet
+  AliEmcalJet*                fInitialPartonMatchedJet2;                //!<!  On PYTHIA data and fJetOutputMode=6, this holds the PDG code of the initial collisions that was matched to this jet
   Int_t                       fAcceptedJets;                            //!<!  number accepted jets (calculated event-by-event)
   Int_t                       fAcceptedTracks;                          //!<!  number accepted tracks (calculated event-by-event)
 
@@ -104,6 +106,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // ######### HELPER FUNCTIONS
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
+  void                        GetInitialCollisionJets();
   void                        GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading);
   void                        CalculateEventProperties();
 
@@ -172,9 +175,9 @@ class AliBasicJetConstituent : public TObject
 class AliBasicJet : public TObject
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
-    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t bgrd, Long64_t id, Short_t cent)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fPDGCode(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t partid, Float_t bgrd, Long64_t id, Short_t cent)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fPDGCode(partid), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
     {}
     ~AliBasicJet();
 
@@ -187,6 +190,7 @@ class AliBasicJet : public TObject
     Short_t                   Charge()   { return fCharge; }
     Double_t                  Radius() { return fRadius; }
     Double_t                  Area() { return fArea; }
+    Int_t                     PDGCode() { return fPDGCode; }
     Double_t                  BackgroundDensity() { return fBackgroundDensity; }
     Long64_t                  EventID() { return fEventID; }
     Short_t                   Centrality() { return fCentrality; }
@@ -211,6 +215,7 @@ class AliBasicJet : public TObject
     Short_t   fCharge;   ///< charge
     Float_t   fRadius;   ///< jet radius
     Float_t   fArea;     ///< jet area
+    Int_t     fPDGCode;  ///< PDG code of source particle
     Float_t   fBackgroundDensity; ///< background
     Long64_t  fEventID;  ///< Unique event id
     Short_t   fCentrality; ///< centrality
@@ -218,7 +223,7 @@ class AliBasicJet : public TObject
     std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents
 
   /// \cond CLASSIMP
-  ClassDef( AliBasicJet, 3); // very basic jet object
+  ClassDef( AliBasicJet, 4); // very basic jet object
   /// \endcond
 };
 #endif

@@ -289,45 +289,49 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       	 //M sub;M true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
-      	 if(fFromTree){
-      	 	// Mass sub; Mass true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m};
-      	    Double_t varsp[10] = {var,var2,ptjetS,ptJetR, fVecD->M(), fVecD->Pt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
-      	    fhnMassResponse[fCentBin]->Fill(varsp);
-      	 } else {
-      	    Double_t varsp[9] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
-      	    fhnMassResponse[fCentBin]->Fill(varsp);
+      	 
+      	 if(!fCreateTree){
+      	 	 if(fFromTree){
+      	 	 	 // Mass sub; Mass true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m};
+      	 	 	 Double_t varsp[10] = {var,var2,ptjetS,ptJetR, fVecD->M(), fVecD->Pt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
+      	 	 	 fhnMassResponse[fCentBin]->Fill(varsp);
+      	 	 } else {
+      	 	 	 Double_t varsp[9] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt(), fRho, fRhoM, mUnsubjet1, ptUnsubjet1};
+      	 	 	 fhnMassResponse[fCentBin]->Fill(varsp);
+      	 	 }
+      	 	 
+      	 	 Double_t varsp1[8];
+      	 	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
+      	 	 varsp1[0] = var-var2;
+      	 	 varsp1[1] = ptjetS-ptJetR;
+      	 	 varsp1[2] = var;
+      	 	 varsp1[3] = var2;
+      	 	 varsp1[4] = ptjetS;
+      	 	 varsp1[5] = ptJetR;
+      	 	 varsp1[6] = ptjet1;
+      	 	 varsp1[7] = ptjet1 - ptJetR;
+      	 	 
+      	 	 //fhnDeltaMass[fCentBin]->Fill(varsp1);
+      	 	 
+      	 	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+      	 	 
+      	 	 Double_t varsp2[10] = {var-var2, ptjetS-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
+      	 	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
       	 }
-      	 Double_t varsp1[8];
-      	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
-      	 varsp1[0] = var-var2;
-      	 varsp1[1] = ptjetS-ptJetR;
-      	 varsp1[2] = var;
-      	 varsp1[3] = var2;
-      	 varsp1[4] = ptjetS;
-      	 varsp1[5] = ptJetR;
-      	 varsp1[6] = ptjet1;
-      	 varsp1[7] = ptjet1 - ptJetR;
-      	 
-      	 //fhnDeltaMass[fCentBin]->Fill(varsp1);
-      	 
-      	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-      	 Double_t varsp2[10] = {var-var2, ptjetS-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
-      	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
-      	 
       	 fhNconstit->Fill(jet1->GetNumberOfConstituents());
       	 fhAreaJet ->Fill(jet1->Area());
       }
       
-      if(fCreateTree) {      
-      	 fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
-      	 if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
-      	 else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
-      	 fArea = (Float_t)jet1->Area();
-      	 fAreaPhi = (Float_t)jet1->AreaPhi();
-      	 fAreaEta = (Float_t)jet1->AreaEta();
-      	 fRho  = (Float_t)jetCont->GetRhoVal();
-      	 fRhoM = (Float_t)jetCont->GetRhoMassVal();
-      	 fNConst = (Int_t)jet1->GetNumberOfTracks();
+      if(fCreateTree) {
+      	  fJet1Vec->SetPxPyPzE(jet1->Px(),jet1->Py(),jet1->Pz(),jet1->E());
+      	  if(jetS->Pt()>0.) fJetSubVec->SetPtEtaPhiM(jetS->Pt(),jetS->Eta(),jetS->Phi(),jetS->M());
+      	  else fJetSubVec->SetPtEtaPhiM(0.,0.,0.,0.);
+      	  fArea = (Float_t)jet1->Area();
+      	  fAreaPhi = (Float_t)jet1->AreaPhi();
+      	  fAreaEta = (Float_t)jet1->AreaEta();
+      	  fRho  = (Float_t)jetCont->GetRhoVal();
+      	  fRhoM = (Float_t)jetCont->GetRhoMassVal();
+      	  fNConst = (Int_t)jet1->GetNumberOfTracks();
       	 fTreeJetBkg->Fill();
       }
     } //jet1 loop
