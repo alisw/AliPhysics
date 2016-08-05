@@ -52,11 +52,13 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fRGapBinNear(0),
   fCentralityBin(0),
   fXlongBin(0),
+  fUseKlongBins(false),
   fIsLikeSign(false),
   fUseZVertexBinsAcceptance(false)
 {
   // constructor
-  fmaxEtaRange    = fcard->Get("EtaRange");
+  fmaxEtaRange = fcard->Get("EtaRange");
+  if(fcard->Get("EnableKlongBins") == 1) fUseKlongBins = true;
   
   frandom = new TRandom3(); // Random number generator for background randomization
   frandom->SetSeed(0);
@@ -94,6 +96,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fRGapBinNear(0),
   fCentralityBin(0),
   fXlongBin(0),
+  fUseKlongBins(false),
   fIsLikeSign(false),
   fUseZVertexBinsAcceptance(false)
 {
@@ -130,6 +133,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fRGapBinNear(in.fRGapBinNear),
   fCentralityBin(in.fCentralityBin),
   fXlongBin(in.fXlongBin),
+  fUseKlongBins(in.fUseKlongBins),
   fIsLikeSign(in.fIsLikeSign),
   fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance)
 {
@@ -166,6 +170,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fRGapBinNear = in.fRGapBinNear;
   fCentralityBin = in.fCentralityBin;
   fXlongBin = in.fXlongBin;
+  fUseKlongBins = in.fUseKlongBins;
   fIsLikeSign = in.fIsLikeSign;
   fnReal = in.fnReal;
   fnMix = in.fnMix;
@@ -471,7 +476,7 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
    */
   
   // Fill the jT histograms for klong binning. Require 3D near side
-  if(fNearSide3D) FillJtDistributionHistograms(fTyp,0,&vTrigger,&vAssoc,fhistos->fhJTKlong,fhistos->fhJTKlongLikeSign,fhistos->fhJTKlongUnlikeSign,fhistos->fhInvariantMassKlong,fhistos->fhInvariantMassKlongLikeSign,fhistos->fhInvariantMassKlongUnlikeSign);
+  if(fNearSide3D && fUseKlongBins) FillJtDistributionHistograms(fTyp,0,&vTrigger,&vAssoc,fhistos->fhJTKlong,fhistos->fhJTKlongLikeSign,fhistos->fhJTKlongUnlikeSign,fhistos->fhInvariantMassKlong,fhistos->fhInvariantMassKlongLikeSign,fhistos->fhInvariantMassKlongUnlikeSign);
   
   // Fill the jT histograms for xlong binning. Require 3D near side
   if(fNearSide3D) FillJtDistributionHistograms(fTyp,1,&vTrigger,&vAssoc,fhistos->fhJT,fhistos->fhJTLikeSign,fhistos->fhJTUnlikeSign,fhistos->fhInvariantMassXe,fhistos->fhInvariantMassXeLikeSign,fhistos->fhInvariantMassXeUnlikeSign);
@@ -550,7 +555,7 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
        */
       
       /*
-       * Note: We must accept all the pair for 3D near side calculation.
+       * Note: We must accept all the pairs for 3D near side calculation.
        * The reason for this is that we do not want to bias the DeltaEta and DeltaPhi distributions.
        * For example requiring large eta gap biases DeltaPhi distribution towards small values.
        * Thus more background is seen in the small jT region.
@@ -560,14 +565,19 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
        * to be in the 3D near side.
        */
       
-      // Fill background histograms for klong binning, eta gap
-      FillJtBackgroundHistograms(0,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTKlongBg,fhistos->fhJTKlongBgLikeSign,fhistos->fhJTKlongBgUnlikeSign,fhistos->fhBgAssocKlongEta,fhistos->fhDphiDetaBgKlongEta,fill2DBackground);
-      
-      // Fill background histograms for klong binning, R gap
-      FillJtBackgroundHistograms(0,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTKlongBgR,fhistos->fhJTKlongBgRLikeSign,fhistos->fhJTKlongBgRUnlikeSign,fhistos->fhBgAssocKlongR,fhistos->fhDphiDetaBgKlongR,fill2DBackground);
-      
-      // Fill background histograms for klong binning, phi gap
-      FillJtBackgroundHistograms(0,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTKlongBgPhi,fhistos->fhJTKlongBgPhiLikeSign,fhistos->fhJTKlongBgPhiUnlikeSign,fhistos->fhBgAssocKlongPhi,fhistos->fhDphiDetaBgKlongPhi,fill2DBackground);
+      // Only fill klong bins is enabled from JCard
+      if(fUseKlongBins){
+        
+        // Fill background histograms for klong binning, eta gap
+        FillJtBackgroundHistograms(0,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTKlongBg,fhistos->fhJTKlongBgLikeSign,fhistos->fhJTKlongBgUnlikeSign,fhistos->fhBgAssocKlongEta,fhistos->fhDphiDetaBgKlongEta,fill2DBackground);
+        
+        // Fill background histograms for klong binning, R gap
+        FillJtBackgroundHistograms(0,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTKlongBgR,fhistos->fhJTKlongBgRLikeSign,fhistos->fhJTKlongBgRUnlikeSign,fhistos->fhBgAssocKlongR,fhistos->fhDphiDetaBgKlongR,fill2DBackground);
+        
+        // Fill background histograms for klong binning, phi gap
+        FillJtBackgroundHistograms(0,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTKlongBgPhi,fhistos->fhJTKlongBgPhiLikeSign,fhistos->fhJTKlongBgPhiUnlikeSign,fhistos->fhBgAssocKlongPhi,fhistos->fhDphiDetaBgKlongPhi,fill2DBackground);
+        
+      }
       
       // Fill background histograms for xlong binning, eta gap
       FillJtBackgroundHistograms(1,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTBg,fhistos->fhJTBgLikeSign,fhistos->fhJTBgUnlikeSign,fhistos->fhBgAssocXlongEta,fhistos->fhDphiDetaBgXlongEta,fill2DBackground);
