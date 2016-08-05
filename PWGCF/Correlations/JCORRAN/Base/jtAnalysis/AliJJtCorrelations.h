@@ -83,6 +83,7 @@ protected:
   int fRGapBinNear;  // Bin index for the R gap in the near side
   int fCentralityBin;  // Bin index for the centrality bin
   int fXlongBin;  // Bin index for xlong bin
+  bool fUseKlongBins;  // Flag for filling the klong histograms
 
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
