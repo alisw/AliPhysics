@@ -1846,13 +1846,10 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   }
          
   Int_t tracks[3];
-
   AliDigits *dig = fDigitsArray->GetRow(isec,irow);
-  Int_t gi=-1;
   Float_t fzerosup = zerosup+0.5;
   for(Int_t ip=0;ip<nofPads;ip++){
     for(Int_t it=0;it<nofTbins;it++){
-      gi++;
       // calling our fast "operator(int,int)" of TMatrix
       Float_t q=AliFastContainerAccess::TMatrixFastAt<Float_t>(total, ip, it);
       if(fDigitsSwitch == 0){	
@@ -1882,7 +1879,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
       //
       //  "real" signal or electronic noise (list = -1)?
       //    
-
+      Int_t gi = it * nofPads + ip;
       for(Int_t j1=0;j1<3;j1++){
 	tracks[j1] = (pList[gi]) ?(Int_t)(*(pList[gi]+j1)) : -2;
       }
