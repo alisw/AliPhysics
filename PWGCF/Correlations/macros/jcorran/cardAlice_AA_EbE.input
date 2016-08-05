@@ -11,6 +11,7 @@ zVertBins               -10 10
 #zVertBins               -10 -8 -6 -4 -2 0 2 4 6 8 10
 #maxAbsZVert             8  #(used to be 10)
 #maxMixDZ		1.0 #	cm, allowed maximum ZVert distance for mix (5 for QM)/ neg -> no test
+VnMethod		1 #  1 : JFluc others : RunFlowana
 
 #mixing=========
 maxDCent                1 #   check the mix if cent bin too wide

@@ -7,6 +7,7 @@ AliJEbeHistos::AliJEbeHistos():
     fCentBin(),
     fHarmonicBin(),
     fhVnObsVector(),
+    fhVnObsVectorJFluc(),
     fhVnObsVectorAfterSelection(),
     fhResponseDist(),
     fhMultiCount(),
@@ -39,6 +40,7 @@ AliJEbeHistos::AliJEbeHistos(AliJCard* cardP):
     fCentBin(),
     fHarmonicBin(),
     fhVnObsVector(),
+    fhVnObsVectorJFluc(),
     fhVnObsVectorAfterSelection(),
     fhResponseDist(),
     fhMultiCount(),
@@ -85,6 +87,7 @@ AliJEbeHistos::AliJEbeHistos(const AliJEbeHistos& obj):
     fCentBin(obj.fCentBin),
     fHarmonicBin(obj.fHarmonicBin),
     fhVnObsVector(obj.fhVnObsVector),
+    fhVnObsVectorJFluc(obj.fhVnObsVectorJFluc),
     fhVnObsVectorAfterSelection(obj.fhVnObsVectorAfterSelection),
     fhResponseDist(obj.fhResponseDist),
     fhMultiCount(obj.fhMultiCount),
@@ -174,6 +177,9 @@ void AliJEbeHistos::CreateUnfoldingHistos(){
 
     fhVnObsVector
         << TH1D("hVnObsVector","",bins,lbin,hbin)
+        << fCentBin << fHarmonicBin << "END";
+    fhVnObsVectorJFluc
+        << TH1D("hVnObsVectorJFluc","",bins,lbin,hbin)
         << fCentBin << fHarmonicBin << "END";
     fhVnObsVectorAfterSelection
         << TH1D("hVnObsVectorAfterSelection","",bins,lbin,hbin)
