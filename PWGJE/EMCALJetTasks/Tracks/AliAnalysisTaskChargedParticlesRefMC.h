@@ -3,10 +3,13 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
 #include "AliCutValueRange.h"
 #include <TString.h>
 #include <TCustomBinning.h>
+
+#include <string>
+#include <vector>
 
 class TArrayD;
 class TClonesArray;
@@ -34,7 +37,7 @@ class AliEMCalTriggerWeightHandler;
  * well-tested components. Objects responsible for further problems, i.e. the
  * usage of THnSparse due to memory problems in several places, are forbidden.
  */
-class AliAnalysisTaskChargedParticlesRefMC: public AliAnalysisTaskSE {
+class AliAnalysisTaskChargedParticlesRefMC: public AliAnalysisTaskEmcal {
 public:
   enum BeamDirection_t{
     kpPb = 1,
@@ -48,31 +51,24 @@ public:
   void                        SetRapidityShift(Double_t yshift) { fYshift = yshift; }
   void                        SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
-  void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
+  void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAliAnalysisUtils = util; }
   void                        SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
-  void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
   void                        SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
-  void                        SetUsePythiaHard(Bool_t usePythiaHard) { fUsePythiaHard = usePythiaHard; }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
 
 protected:
-  void                        UserCreateOutputObjects();
-  void                        UserExec(Option_t *);
-  Bool_t                      UserNotify();
-  void                        Terminate(Option_t *) {}
+  virtual void                UserCreateOutputObjects();
+  virtual bool                Run();
+  virtual bool                IsEventSelected();
 
   void                        FillTrackHistos(const char *eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
   void                        FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
 
   TString                     GetFiredTriggerClasses(const TClonesArray * triggerpatches);
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard) const;
-  AliGenPythiaEventHeader    *GetPythiaHeader() const;
   Bool_t                      IsPhysicalPrimary(const AliVParticle *const part, AliMCEvent *const mcevent);
-  Bool_t                      IsOutlierJet(AliGenPythiaEventHeader * const header) const;
-  Bool_t                      IsOutlierParticle(AliGenPythiaEventHeader * const header) const;
 
 private:
 
@@ -86,18 +82,12 @@ private:
   AliAnalysisTaskChargedParticlesRefMC &operator=(const AliAnalysisTaskChargedParticlesRefMC &);
 
   AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
-  AliAnalysisUtils                      *fAnalysisUtil;             ///< Event selection
   AliEmcalTriggerOfflineSelection       *fTriggerSelection;         ///< Offline trigger selection
   THistManager                          *fHistos;                   ///< Histogram manager
-  AliEMCALGeometry                      *fGeometry;                 ///< EMCAL geometry methods
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
 
-  // Monte-Carlo specific information
-  Bool_t                                fUsePythiaHard;             ///< flag whether using PYTHIA Hard
-  Double_t                              fPtHard;                    ///< event pt hard
-  Int_t                                 fPtHardBin;                 ///< event pt hard bin
-  Int_t                                 fNTrials;                   ///< event trials
-  Float_t                               fXsection;                  ///< x-section from pythia header
+  std::vector<std::string>              fEventTriggers;             //!<! Temporary container for selected triggers
+  Double_t                              fEventWeight;               ///< Event weight
 
   Double_t                              fYshift;                    ///< Rapidity shift
   Double_t                              fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
