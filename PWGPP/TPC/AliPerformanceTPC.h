@@ -93,6 +93,9 @@ public :
   Bool_t GetUseHLT() { return fUseHLT; }
   TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
 
+  void ResetOutputData();
+
+    
 private:
 
   static Bool_t fgMergeTHnSparse;

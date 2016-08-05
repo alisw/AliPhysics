@@ -765,7 +765,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       return;
     }
     // TPC only
-    AliFlatESDTrack *flatTrack = dynamic_cast<AliFlatESDTrack*>(vTrack);
     if(!fUseHLT && (GetAnalysisMode() == 0)){
        AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent,iTrack);
         if(!tpcTrack) continue;
@@ -774,13 +773,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
           mult++;
           if(tpcTrack->Charge()>0.) multP++;
           if(tpcTrack->Charge()<0.) multN++;
-      }
-    }
-    else if (!flatTrack) {
-        if(fCutsRC->AcceptVTrack(vTrack) ) {
-          mult++;
-          if(vTrack->Charge()>0.) multP++;
-          if(vTrack->Charge()<0.) multN++;
       }
     }
     else{//Implementing FlatESD cuts
@@ -1032,52 +1024,48 @@ TTree* AliPerformanceTPC::CreateSummary()
     // implementaion removed, switched back to use AliPerformanceSummary (now called in AliPerformanceTask)
     return 0;
 }
-/*
-void AliPerformanceTPC::FillEventHistogram(double *vTPCEvent){
 
-    if(!vTPCEvent) return;
-    
-    if(h_tpc_event_6) h_tpc_event_6->Fill(vTPCEvent[6]);
-    if(vTPCEvent[6]>0.001){
-        if (h_tpc_event_recvertex_0) h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
-        if (h_tpc_event_recvertex_1) h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
-        if (h_tpc_event_recvertex_2) h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
-        if (h_tpc_event_recvertex_3) h_tpc_event_recvertex_3->Fill(vTPCEvent[3]);
-        if (h_tpc_event_recvertex_4) h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
-        if (h_tpc_event_recvertex_5) h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
+void AliPerformanceTPC::ResetOutputData(){
+
+    if(fUseSparse){
+        if(fTPCClustHisto) fTPCClustHisto->Reset("ICE");
+        if(fTPCEventHisto) fTPCEventHisto->Reset("ICE");
+        if(fTPCTrackHisto) fTPCTrackHisto->Reset("ICE");
     }
+    else{
+        //Cluster histograms
+        h_tpc_clust_0_1_2->Reset("ICE");
+        
+        //Event-wise histograms
+        if(h_tpc_event_6) h_tpc_event_6->Reset("ICE");
+        if (h_tpc_event_recvertex_0) h_tpc_event_recvertex_0->Reset("ICE");
+        if (h_tpc_event_recvertex_1) h_tpc_event_recvertex_1->Reset("ICE");
+        if (h_tpc_event_recvertex_2) h_tpc_event_recvertex_2->Reset("ICE");
+        if (h_tpc_event_recvertex_3) h_tpc_event_recvertex_3->Reset("ICE");
+        if (h_tpc_event_recvertex_4) h_tpc_event_recvertex_4->Reset("ICE");
+        if (h_tpc_event_recvertex_5) h_tpc_event_recvertex_5->Reset("ICE");
+
+        //Trackwise histograms
+        if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Reset("ICE");
+        if(h_tpc_track_all_recvertex_0_5_7) h_tpc_track_all_recvertex_0_5_7->Reset("ICE");
+        if(h_tpc_track_pos_recvertex_0_5_7) h_tpc_track_pos_recvertex_0_5_7->Reset("ICE");
+        if(h_tpc_track_neg_recvertex_0_5_7) h_tpc_track_neg_recvertex_0_5_7->Reset("ICE");
+        if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Reset("ICE");
+        if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Reset("ICE");
+        if(h_tpc_track_all_recvertex_3_5_7) h_tpc_track_all_recvertex_3_5_7->Reset("ICE");
+        if(h_tpc_track_pos_recvertex_3_5_7) h_tpc_track_pos_recvertex_3_5_7->Reset("ICE");
+        if(h_tpc_track_neg_recvertex_3_5_7) h_tpc_track_neg_recvertex_3_5_7->Reset("ICE");
+        if(h_tpc_track_all_recvertex_4_5_7) h_tpc_track_all_recvertex_4_5_7->Reset("ICE");
+        if(h_tpc_track_pos_recvertex_4_5_7) h_tpc_track_pos_recvertex_4_5_7->Reset("ICE");
+        if(h_tpc_track_neg_recvertex_4_5_7) h_tpc_track_neg_recvertex_4_5_7->Reset("ICE");
+        if(h_tpc_track_pos_recvertex_3_5_6) h_tpc_track_pos_recvertex_3_5_6->Reset("ICE");
+        if(h_tpc_track_pos_recvertex_4_5_6) h_tpc_track_pos_recvertex_4_5_6->Reset("ICE");
+        if(h_tpc_track_neg_recvertex_3_5_6) h_tpc_track_neg_recvertex_3_5_6->Reset("ICE");
+        if(h_tpc_track_neg_recvertex_4_5_6) h_tpc_track_neg_recvertex_4_5_6->Reset("ICE");
+        if(h_tpc_track_pos_recvertex_2_5_6) h_tpc_track_pos_recvertex_2_5_6->Reset("ICE");
+        if(h_tpc_track_neg_recvertex_2_5_6) h_tpc_track_neg_recvertex_2_5_6->Reset("ICE");
+
+    }
+    
 
 }
-
-void AliPerformanceTPC::FillTrackHistogram(double *vTPCTrackHisto){
-
-    if(!vTPCTrackHisto) return;
-    if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
-    if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    
-    double q = vTPCTrackHisto[8];
-    
-    if (h_tpc_track_all_recvertex_0_5_7) h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0 && h_tpc_track_pos_recvertex_0_5_7) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else if (h_tpc_track_neg_recvertex_0_5_7) h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    
-    if(h_tpc_track_all_recvertex_3_5_7) h_tpc_track_all_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0 && h_tpc_track_pos_recvertex_3_5_7) h_tpc_track_pos_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else if(h_tpc_track_neg_recvertex_3_5_7) h_tpc_track_neg_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    
-    if(h_tpc_track_all_recvertex_4_5_7) h_tpc_track_all_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0 && h_tpc_track_pos_recvertex_4_5_7) h_tpc_track_pos_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else if(h_tpc_track_neg_recvertex_4_5_7) h_tpc_track_neg_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    
-    if(q > 0 && h_tpc_track_pos_recvertex_3_5_6) h_tpc_track_pos_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    else if(h_tpc_track_neg_recvertex_3_5_6) h_tpc_track_neg_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    
-    if(q > 0 && h_tpc_track_pos_recvertex_4_5_6) h_tpc_track_pos_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    else if(h_tpc_track_neg_recvertex_4_5_6) h_tpc_track_neg_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    
-    if(q > 0 && h_tpc_track_pos_recvertex_2_5_6) h_tpc_track_pos_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-    else if(h_tpc_track_neg_recvertex_2_5_6) h_tpc_track_neg_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
-
-}*/
-
