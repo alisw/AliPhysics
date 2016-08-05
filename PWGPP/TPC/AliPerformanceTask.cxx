@@ -69,6 +69,8 @@
 
 using namespace std;
 
+static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+
 ClassImp(AliPerformanceTask)
 
 //_____________________________________________________________________________
@@ -174,8 +176,9 @@ void AliPerformanceTask::CreateOutputObjects()
     fOutput->Add(pObj);
     count++;
   }
-    Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
-  
+
+  if (showInfo) Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
+ 
   PostData(1, fOutput);  
   PostData(0, fOutputSummary);  
 }
@@ -186,7 +189,6 @@ void AliPerformanceTask::Exec(Option_t *)
   // Main loop
   // Called for each event
   fEvents++;
-  static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
   if (showInfo) cout <<"Event number "<<fEvents<<endl;
   //if(fDebug) AliSysInfo::AddStamp("memleak",fEvents);
   
