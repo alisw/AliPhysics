@@ -70,6 +70,8 @@
 
 ClassImp(AliAnalysisTaskHypertriton3)
 
+using std::cout;
+using std::endl;
 using std::vector;
 
 /* $Id$ */
