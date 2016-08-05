@@ -2601,6 +2601,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
   }
   // write HLT ESD
+  if (fFractionHLTESD<1.0 && fhltesd->GetESDRun()->TestBit(AliESDRun::kESDDownscaledOnline)) {
+    AliInfo("HLT ESD online prescaling flag is ON: disabling offline prescaling");
+    fFractionHLTESD = 1.0;
+  }
+  //
   if (fWriteHLTESD) {
     if (gRandom->Rndm()>fFractionHLTESD) {
       AliInfo("HLT ESD for this event will be empty");
