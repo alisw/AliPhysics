@@ -516,6 +516,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
         fHistCentrality = new TH1D( "fHistCentrality", ";Centrality;Event Count",100,0,100);
+        fListHist->Add(fHistCentrality);
     }
 
     //Superlight mode output

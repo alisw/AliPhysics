@@ -48,10 +48,11 @@ fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
-fL0min(0.01),             fL0max(0.5),              
+fL0min(0.01),             fL0max(0.5),
+fL0Bkgmin(1.0),           fL0Bkgmax(3.0),
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
-fLogWeight(4.5),          fSameSM(kFALSE),         
+fLogWeight(4.5),          fSameSM(kFALSE),          fChangeBkgShape(kFALSE),
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
@@ -167,10 +168,11 @@ fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
-fL0min(0.01),             fL0max(0.5),              
+fL0min(0.01),             fL0max(0.5),
+fL0Bkgmin(1.0),           fL0Bkgmax(3.0),
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
-fLogWeight(4.5),          fSameSM(kFALSE),         
+fLogWeight(4.5),          fSameSM(kFALSE),          fChangeBkgShape(kFALSE),
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
@@ -307,6 +309,8 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     else if (e1i > fEmax) continue;
       
     else if (c1->GetNCells() < fMinNCells)                   continue;
+    
+    else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
       
     else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max) continue;
       
@@ -393,7 +397,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
     
     else if (!fRecoUtils->IsGoodCluster(c1,fEMCALGeo,fEMCALCells,bc)) continue;
     
-    else if (c1->GetNCells() < fMinNCells)                        continue; 
+    else if (c1->GetNCells() < fMinNCells)                        continue;
+    
+    else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
     
     else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max)      continue;
     
@@ -485,7 +491,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       
       else if (!fRecoUtils->IsGoodCluster(c2,fEMCALGeo,fEMCALCells,bc))continue;
       
-      else if (c2->GetNCells() < fMinNCells)                       continue; 
+      else if (c2->GetNCells() < fMinNCells)                       continue;
+      
+      else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
       
       else if (c2->GetM02() < fL0min || c2->GetM02() > fL0max)     continue;
       

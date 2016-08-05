@@ -23,7 +23,10 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 
+#include "AliEmcalPythiaInfo.h"
+
 #include "AliVTrack.h"
+#include "AliVHeader.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
@@ -87,6 +90,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fLeadingJet(0),
   fSubleadingJet(0),
   fMatchedJet(0),
+  fInitialPartonMatchedJet1(0),
+  fInitialPartonMatchedJet2(0),
   fAcceptedJets(0),
   fAcceptedTracks(0)
 {
@@ -126,6 +131,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fLeadingJet(0),
   fSubleadingJet(0),
   fMatchedJet(0),
+  fInitialPartonMatchedJet1(0),
+  fInitialPartonMatchedJet2(0),
   fAcceptedJets(0),
   fAcceptedTracks(0)
 {
@@ -353,6 +360,12 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
     if(jet!=fSubleadingJet)
       return kFALSE;
   }
+  else if(fJetOutputMode==6)
+  {
+    if(jet!=fInitialPartonMatchedJet1 && jet!=fInitialPartonMatchedJet2)
+      return kFALSE;
+  }
+
 /*
   if(fFakeFactorCutProfile)
   {
@@ -533,8 +546,24 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
   if(fRandom->Rndm() >= fExtractionPercentage)
     return;
 
-  Long64_t eventID = InputEvent()->GetHeader()->GetEventIdAsLong();
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fJetsCont->GetRhoVal(), eventID, fCent);
+  AliVHeader* eventIDHeader = InputEvent()->GetHeader();
+  Long64_t eventID = 0;
+  if(eventIDHeader)
+    eventID = eventIDHeader->GetEventIdAsLong();
+
+  // if only the two initial collision partons will be added, get PYTHIA info on them
+  Int_t partid = 0;
+  if(fJetOutputMode==6)
+  {
+    if(!fPythiaInfo)
+      AliError("fPythiaInfo object not available. Is it activated with SetGeneratePythiaInfoObject()?");
+    else if(jet==fInitialPartonMatchedJet1)
+      partid = fPythiaInfo->GetPartonFlag6();
+    else if (jet==fInitialPartonMatchedJet2)
+      partid = fPythiaInfo->GetPartonFlag7();
+  }
+
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), eventID, fCent);
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
   {
@@ -574,7 +603,6 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       AddJetToTree(jet);
     AddJetToOutputArray(jet);
   }
-
 
   // ####### Particle loop
   // Throw random cone
@@ -622,6 +650,44 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 // HELPERS
 //########################################################################
 
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::GetInitialCollisionJets()
+{
+  if(!fPythiaInfo)
+    AliError("fPythiaInfo object not available. Is it activated with SetGeneratePythiaInfoObject()?");
+
+  Double_t bestMatchDeltaR1 = 999.;
+  Double_t bestMatchDeltaR2 = 999.;
+
+  fJetsCont->ResetCurrentID();
+  while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
+  {
+    // Check via geometrical matching if jet is connected to the initial collision
+    Double_t deltaEta1 = TMath::Abs(jet->Eta()-fPythiaInfo->GetPartonEta6());
+    Double_t deltaEta2 = TMath::Abs(jet->Eta()-fPythiaInfo->GetPartonEta7());
+    Double_t deltaPhi1 = TMath::Min(TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi6()),TMath::TwoPi() - TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi6()));
+    Double_t deltaPhi2 = TMath::Min(TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi7()),TMath::TwoPi() - TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi7()));
+
+    Double_t deltaR1 = TMath::Sqrt(deltaEta1*deltaEta1 + deltaPhi1*deltaPhi1);
+    Double_t deltaR2 = TMath::Sqrt(deltaEta2*deltaEta2 + deltaPhi2*deltaPhi2);
+
+    if(deltaR1 < bestMatchDeltaR1)
+    {
+      bestMatchDeltaR1 = deltaR1;
+      fInitialPartonMatchedJet1 = jet;
+    }
+    if(deltaR2 < bestMatchDeltaR2)
+    {
+      bestMatchDeltaR2 = deltaR2;
+      fInitialPartonMatchedJet2 = jet;
+    }
+  }
+
+  if(bestMatchDeltaR1 > 0.3)
+    fInitialPartonMatchedJet1 = 0;
+  if(bestMatchDeltaR2 > 0.3)
+    fInitialPartonMatchedJet2 = 0;
+}
 
 //________________________________________________________________________
 inline Bool_t AliAnalysisTaskChargedJetsHadronCF::IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius)
@@ -647,6 +713,8 @@ void AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()
 {
   // Calculate leading + subleading jet
   GetLeadingJets("rho", fLeadingJet, fSubleadingJet);
+  if(fJetOutputMode==6)
+    GetInitialCollisionJets();
 }
 
 //________________________________________________________________________
