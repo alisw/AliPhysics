@@ -53,6 +53,7 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   void ReadOnlyPrimariesV0(bool primaries);
   void ReadPrimariesSecWeakMaterial(bool primaries);
   void ReadPrimariesSecWeakMaterialV0(bool primaries);
+  void IsMisalignment(bool isMisalignment);
 
  protected:
 
@@ -71,6 +72,7 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   bool           fReadOnlyPrimariesV0; // read only primaries, V0 analysis
   bool           fReadPrimariesSecWeakMaterial; //read only primaries, secondaries from weak decays and secondaries from material
   bool           fReadPrimariesSecWeakMaterialV0; //read only primaries, secondaries from weak decays and secondaries from material, V0 analysis
+  bool           fIsMisalignment; //in case of misalignement tracks are duplicated; this setter checks if two consectutive tracks are the same, and throw out the second one if so
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 

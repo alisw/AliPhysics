@@ -229,6 +229,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
   int tNormMult = 0;
   int tV0direction = 0;
+
+  double previousTrackPt = 0;
   for (int i=0;i<nofTracks;i++)
     {
       if(fReadOnlyPrimaries)
@@ -355,6 +357,13 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	//label
 	trackCopy->SetLabel(i);
 
+	if(fIsMisalignment){
+	  if(previousTrackPt==trackCopy->Pt())
+	    continue;
+	  previousTrackPt=trackCopy->Pt();
+
+	}
+
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	//cout<<"Track added: "<<i<<endl;
 
@@ -442,6 +451,10 @@ void AliFemtoEventReaderKinematicsChain::SetRotateToEventPlane(short dorotate)
 void AliFemtoEventReaderKinematicsChain::SetUseMultiplicity(EstEventMult aType)
 {
   fEstEventMult = aType;
+}
+
+void AliFemtoEventReaderKinematicsChain::IsMisalignment(bool isMisalignment){
+  fIsMisalignment = isMisalignment;
 }
 
 Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, double *covar)
