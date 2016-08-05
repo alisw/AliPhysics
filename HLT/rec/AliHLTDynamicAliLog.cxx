@@ -111,7 +111,7 @@ extern "C" int AliDynamicMessage(AliHLTComponentLogSeverity severity,
     AliLog::Message(AliLog::kError, message, "HLT", originClass, originFunc, file, line);
     break;
   case kHLTLogFatal:
-    AliLog::Message(AliLog::kWarning, message, "HLT", originClass, originFunc, file, line);
+    AliLog::Message(AliLog::kFatal, message, "HLT", originClass, originFunc, file, line);
     break;
   case kHLTLogImportant:
     AliLog::Message(AliLog::kInfo, message, "HLT", originClass, originFunc, file, line);
