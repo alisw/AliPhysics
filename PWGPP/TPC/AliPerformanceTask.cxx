@@ -420,49 +420,12 @@ Int_t AliPerformanceTask::CalculateCentralityBin(){
 Bool_t AliPerformanceTask::ResetOutputData(){
 
     AliPerformanceObject* pObj=0;
-    AliPerformanceTPC*  pTPC = 0;
-    AliPerformanceDEdx* pDEdx = 0;
-    AliPerformanceMatch* pMatch = 0;
-    AliPerformanceMatch* pPull = 0;
-    AliPerformanceMatch* pConstrain = 0;
     
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
     TIterator* itOut = fOutput->MakeIterator();
     itOut->Reset();
     
-    while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
-        if (!strcmp(pObj->GetName(),"AliPerformanceTPC"))  {
-            pTPC = dynamic_cast<AliPerformanceTPC*>(pObj);
-            pTPC->GetTPCClustHisto()->Reset("ICE");
-            pTPC->GetTPCEventHisto()->Reset("ICE");
-            pTPC->GetTPCTrackHisto()->Reset("ICE");
-        }
-        if (!strcmp(pObj->GetName(),"AliPerformanceDEdxTPCInner"))  {
-            pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj);
-            pDEdx->GetDeDxHisto()->Reset("ICE");
-        }
-        if (!strcmp(pObj->GetName(),"AliPerformanceMatchTPCITS")) {
-            pMatch = dynamic_cast<AliPerformanceMatch*>(pObj);
-            pMatch->GetResolHisto()->Reset("ICE");
-            pMatch->GetPullHisto()->Reset("ICE");
-            pMatch->GetTrackEffHisto()->Reset("ICE");
-            pMatch->GetTPCConstrain()->Reset("ICE");
-
-        }
-        if (!strcmp(pObj->GetName(),"AliPerformanceMatchITSTPC")) {
-            pPull = dynamic_cast<AliPerformanceMatch*>(pObj);
-            pPull->GetResolHisto()->Reset("ICE");
-            pPull->GetPullHisto()->Reset("ICE");
-            pPull->GetTrackEffHisto()->Reset("ICE");
-            pPull->GetTPCConstrain()->Reset("ICE");
-        }
-        if (!strcmp(pObj->GetName(),"AliPerformanceMatchTPCConstrain")) {
-            pConstrain = dynamic_cast<AliPerformanceMatch*>(pObj);
-            pConstrain->GetResolHisto()->Reset("ICE");
-            pConstrain->GetPullHisto()->Reset("ICE");
-            pConstrain->GetTrackEffHisto()->Reset("ICE");
-            pConstrain->GetTPCConstrain()->Reset("ICE");
-        }
-    }
+    while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) pObj->ResetOutputData();
+    
     return kFALSE;
 }
