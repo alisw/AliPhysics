@@ -501,7 +501,6 @@ Bool_t AliAnalysisTaskHypertriton3::PassCentralitySelection(){
       fCentralityPercentile = centr->GetMultiplicityPercentile("V0M",fEvtEmbedSelection);
     }
   }
-  cout << "fCentralityPercentile: " << fCentralityPercentile << endl;
 
   fHistCentralityClass->Fill(fCentrality);
   fHistCentralityPercentile->Fill(fCentralityPercentile);
@@ -1462,7 +1461,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     PostData(1,fOutput);
     return; //0 bis 80 %
   }
-  cout << "fCentralityPercentile_2: " << fCentralityPercentile << endl;
   Bool_t isCent = kFALSE;
   Bool_t isSemiCent = kFALSE;
 
