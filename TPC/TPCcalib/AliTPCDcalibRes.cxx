@@ -768,6 +768,10 @@ TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const ch
 {
   // init residuals delta file, attach necessary branches
   // 
+  ProcInfo_t procInfo;
+  gSystem->GetProcInfo(&procInfo);
+  AliInfoF("file %s tree %s connect: %d",name,treeName,connect);
+  AliInfoF("Memory: RSS: %3ld VMEM: %3ld",procInfo.fMemResident/1024,procInfo.fMemVirtual/1024);
   static delta_t *delta = &fDeltaStr;
   TString fileNameString(name);
   if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
