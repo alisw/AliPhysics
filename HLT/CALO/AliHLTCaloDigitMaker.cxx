@@ -136,7 +136,7 @@ AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channelDataH
     fMapperPtr->FixCoordinate(coord);
 
     //      fMapperPtr->GetLocalCoord(currentchannel->fChannelID, locCoord);
-    if(UseDigit(coord, currentchannel))
+    if(coord.fX < fCaloConstants->GetNXCOLUMNSMOD() && coord.fZ < fCaloConstants->GetNZROWSMOD() && UseDigit(coord, currentchannel))
     {
       AddDigit(currentchannel, coord);
       //	j++;
