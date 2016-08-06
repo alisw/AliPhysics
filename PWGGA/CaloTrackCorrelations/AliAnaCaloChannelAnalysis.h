@@ -32,6 +32,8 @@
 class TH1;
 class TH1F;
 class TH2F;
+class TFile;
+class TList;
 
 class AliCalorimeterUtils;
 
@@ -72,7 +74,7 @@ protected:
 	  Bool_t CheckDistribution(TH1* ratio, TH1* reference);
 	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
 	  void PlotFlaggedCells2D(Int_t flag1,Int_t flag2=-1,Int_t flag3=-1);
-
+	  void SaveHistoToFile();
 
 	  //Settings for analysed period
 	  Int_t   fCurrentRunNumber;            ///< A run number of an analyzed period. This is important for the AliCalorimeterUtils initialization
@@ -112,20 +114,23 @@ protected:
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs
 
+	  TFile* fRootFile;                     //!<! root file with all histograms from this analysis
 	  TH2F* fCellAmplitude;                 //!<! main histogram for the analysis. Cell ID vs. amplitude, read from the input merged file
 	  TH2F* fCellTime;                      //!<! possible histogram for the analysis. Cell ID vs. time, read from the input merged file
 	  TH1F* fProcessedEvents;               //!<! Stores the number of events in the run
 
-	  TH2F* fBadChannelMap;                 //!<! output visual summary of bad cell map
-	  TH2F* fDeadChannelMap;                //!<! output visual summary of dead cell map
+	  TList* fOutputListBad;                //!<! list with bad channel amplitudes, stored in fRootFile
+	  TList* fOutputListBadRatio;           //!<! list with bad channel amplitude ratios, stored in fRootFile
+	  TList* fOutputListGood;               //!<! list with good channel amplitudes, stored in fRootFile
+	  TList* fOutputListGoodRatio;          //!<! list with good channel amplitude ratios, stored in fRootFile
+	  
+private:
+	  AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
+	  AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
 
 	  TH1F* fAvgNHitPerEvVsCellId;          //!<! being discussed
 	  TH1F* fAvgEngPerHitVsCellId;          //!<! being discussed
 	  
-
-private:
-	AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
-	AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
 	
 	/// \cond CLASSIMP
 	ClassDef(AliAnaCaloChannelAnalysis, 1);

@@ -26,6 +26,7 @@
 #include <TLegend.h>
 #include <TString.h>
 #include <TSystem.h>
+#include <TList.h>
 #include <TLatex.h>
 
 #include <Riostream.h>
@@ -88,7 +89,7 @@ TObject(),
 	fPeriod           = "LHC16h";
 	fPass             = "muon_caloLego";
 	fTrigger          = "AnyINT";
-	fWorkdir          = "./";
+	fWorkdir          = ".";
 	fRunListFileName  = "runList.txt";
 
 	Init();
@@ -98,7 +99,6 @@ TObject(),
 /// Constructor
 ///
 //________________________________________________________________________
-
 AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber, TString workDir, TString listName):
 	TObject(),
 	fCurrentRunNumber(-1),
@@ -125,7 +125,6 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pas
 	fNMaxRowsAbs(),
 	fFlag(),
 	fCaloUtils()
-
 {
 	fCurrentRunNumber = runNumber;
 	fPeriod           = period;
@@ -155,12 +154,15 @@ void AliAnaCaloChannelAnalysis::Init()
 	fMergeOutput    ="ConvertOutput";
 	fAnalysisOutput ="AnalysisOutput";
 	//..Stuff for the convert function
-	gSystem->mkdir(fMergeOutput);
-	gSystem->mkdir(fAnalysisOutput);
-	fMergedFileName= Form("%s/%s_%s_Merged.root", fMergeOutput.Data(), fPeriod.Data(),fPass.Data());
-	fQADirect      = Form("CaloQA_%s",fTrigger.Data());
-	fRunList       = Form("%s/%s/%s/%s", fAnalysisInput.Data(), fPeriod.Data(), fPass.Data(), fRunListFileName.Data());
+	gSystem->mkdir(Form("%s/%s",fWorkdir.Data(),fMergeOutput.Data()));
+	gSystem->mkdir(Form("%s/%s",fWorkdir.Data(),fAnalysisOutput.Data()));
 
+	fMergedFileName= Form("%s/%s/%s_%s_Merged.root",fWorkdir.Data(),fMergeOutput.Data(), fPeriod.Data(),fPass.Data());
+	fRunList       = Form("%s/%s/%s/%s/%s",fWorkdir.Data(), fAnalysisInput.Data(), fPeriod.Data(), fPass.Data(), fRunListFileName.Data());
+	fQADirect      = Form("CaloQA_%s",fTrigger.Data());
+
+	TString fileName = Form("%s/%s/%s_%s_Histograms_V%i.root",fWorkdir.Data(),fAnalysisOutput.Data(), fPeriod.Data(),fPass.Data(),fTrial);
+	fRootFile = new TFile(fileName,"recreate");
 	//.. make sure the vector is empty
 	fAnalysisVector.clear();
 
@@ -174,9 +176,7 @@ void AliAnaCaloChannelAnalysis::Init()
 
     fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
     Int_t nModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
-    
     //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
-
 	cout<<"Called geometry for run number: "<<fCurrentRunNumber<<endl;
 	cout<<"Number of supermod: "<<nModules<<endl;
 	cout<<"Number of cells: "<<fNoOfCells<<endl;
@@ -196,13 +196,30 @@ void AliAnaCaloChannelAnalysis::Init()
 	//fNMaxRows    = 24;  //phi direction
 	fNMaxColsAbs = 2*fNMaxCols;
 	fNMaxRowsAbs = Int_t (nModules/2)*fNMaxRows; //multiply by number of supermodules
+
+
+	//......................................................
+	//..Create TLists to organize the outputfile
+	fOutputListBad       = new TList();
+	fOutputListGood      = new TList();
+	fOutputListBadRatio  = new TList();
+	fOutputListGoodRatio = new TList();
+
+	fOutputListBad     ->SetName("BadCell_Amplitudes");
+	fOutputListGood     ->SetName("GoodCell_Amplitudes");
+	fOutputListBadRatio ->SetName("BadCell_AmplitudeRatios");
+	fOutputListGoodRatio->SetName("GoodCell_AmplitudeRatios");
+
+	//fOutputListGood    ->SetOwner();//ELI instead of delete in destructor??
+	//fOutputListBadRatio    ->SetOwner();
+	//fOutputListGoodRatio    ->SetOwner();
 }
 
 ///
 ///	Main execution method.
 ///
 /// 1)
-/// If no eternal file is provided use MergeRuns() to merge historgrams from a runlist .txt file.
+/// If no external file is provided use MergeRuns() to merge historgrams from a runlist .txt file.
 /// The merged outputfile contains 3 different histograms (hCellAmplitude, hCellTime and hNEventsProcessedPerRun).
 /// 2)
 /// Flags dead cells
@@ -231,7 +248,7 @@ void AliAnaCaloChannelAnalysis::Run()
 	{
 		cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
 		cout<<". . .Start process by loading external file. . . . . . . . . . ."<<endl;
-		fMergedFileName = Form("%s/%s", fMergeOutput.Data(), fExternalFileName.Data());
+		fMergedFileName = Form("%s/%s/%s", fWorkdir.Data(), fMergeOutput.Data(), fExternalFileName.Data());
 	}
 	cout<<". . .Load inputfile with name: "<<fMergedFileName<<" . . . . . . . ."<<endl;
 
@@ -271,6 +288,13 @@ void AliAnaCaloChannelAnalysis::Run()
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	SummarizeResults();
 
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Save histograms to a root file
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	SaveHistoToFile();
+
+	fRootFile->Close();
 	cout<<endl;
 	cout<<". . .End of process . . . . . . . . . . . . . . . . . . . . ."<<endl;
 	cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
@@ -325,7 +349,7 @@ TString AliAnaCaloChannelAnalysis::MergeRuns()
 	//..loop over the amount of run numbers found in the previous text file.
 	for(Int_t i = 0 ; i < nRun ; i++)
 	{
-		base  = Form("%s/%s/%s/%d", fAnalysisInput.Data(), fPeriod.Data(), fPass.Data(), RunId[i]);
+		base  = Form("%s/%s/%s/%s/%d", fWorkdir.Data(), fAnalysisInput.Data(), fPeriod.Data(), fPass.Data(), RunId[i]);
 		if ((fPass=="cpass1_pass2")||(fPass=="cfPass1-2"))
 		{
 			if (fTrigger=="default")
@@ -521,7 +545,7 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterion, Double_t nsigma,
 
 	//..Print the results on the screen and
 	//..write the results in a file
-	output.Form("%s/Criterion%d_Emin-%.2f_Emax-%.2f.txt", fAnalysisOutput.Data(), criterion,emin,emax);
+	output.Form("%s/%s/Criterion%d_Emin-%.2f_Emax-%.2f.txt",fWorkdir.Data(), fAnalysisOutput.Data(), criterion,emin,emax);
 	ofstream file(output, ios::out | ios::trunc);
 	if(!file)
 	{
@@ -579,7 +603,6 @@ TH1F* AliAnaCaloChannelAnalysis::BuildHitAndEnergyMean(Int_t crit, Double_t emin
 	if(crit==1)histogram->SetYTitle("Energy per hit");
 	if(crit==2)histogram->SetYTitle("Number of hits per event");
 	histogram->GetXaxis()->SetNdivisions(505);
-
 	Double_t totalevents = fProcessedEvents->Integral(1, fProcessedEvents->GetNbinsX());
 
 	//..here the average hit per event and the average energy per hit is caluclated for each cell.
@@ -868,7 +891,14 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1* inhisto, Double_t nsi
 			{
 				distrib_DCal ->Fill(inhisto->GetBinContent(cell+1));
 			}
-		}
+
+/*			//find bad FEE's
+//			if(cellRowAbs>85 && cellRowAbs<94 && cellColumnAbs>65 &&cellColumnAbs<70)
+			if(cellRowAbs>61 && cellRowAbs<70 && cellColumnAbs>5 &&cellColumnAbs<10)
+			{
+				cout<<"Bad FEE: "<<cell<<endl;
+			}
+*/		}
 	}
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -988,11 +1018,15 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1* inhisto, Double_t nsi
 	//. . .Save histogram
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	c1->Update();
-	TString name   =Form("%s/criteria-_%d.gif", fAnalysisOutput.Data(), crit);
-	if(crit==1)name=Form("%s/AverageEperHit_%s.gif", fAnalysisOutput.Data(), (const char*)histoName);
-	if(crit==2)name=Form("%s/AverageHitperEvent_%s.gif", fAnalysisOutput.Data(), (const char*)histoName);
+	TString name   =Form("%s/%s/criteria-_%d.gif",fWorkdir.Data(), fAnalysisOutput.Data(), crit);
+	if(crit==1)name=Form("%s/%s/AverageEperHit_%s.gif",fWorkdir.Data(), fAnalysisOutput.Data(), (const char*)histoName);
+	if(crit==2)name=Form("%s/%s/AverageHitperEvent_%s.gif",fWorkdir.Data(), fAnalysisOutput.Data(), (const char*)histoName);
 	c1->SaveAs(name);
 
+	fRootFile->WriteObject(c1,c1->GetName());
+	fRootFile->WriteObject(plot2D,plot2D->GetName());
+	fRootFile->WriteObject(distrib,distrib->GetName());
+	fRootFile->WriteObject(inhisto,inhisto->GetName());
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . . Mark the bad cells in the fFlag array
 	//. . .(2= bad because cell average value lower than min allowed)
@@ -1028,11 +1062,11 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	Int_t cellID, nDCalCells = 0, nEMCalCells = 0;
 	TString cellSummaryFile, deadPdfName, badPdfName, ratioOfBad,goodCells;
 
-	deadPdfName     = Form("%s/%s%sDC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-	badPdfName      = Form("%s/%s%sBC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-	cellSummaryFile = Form("%s/%s%sBC_SummaryResults_V%i.txt", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial); ;
-	ratioOfBad      = Form("%s/%s%sBCRatio_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-	goodCells       = Form("%s/%s%sGoodCells_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+	deadPdfName     = Form("%s/%s/%s%sDC_SummaryResults_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+	badPdfName      = Form("%s/%s/%s%sBC_SummaryResults_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+	cellSummaryFile = Form("%s/%s/%s%sBC_SummaryResults_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial); ;
+	ratioOfBad      = Form("%s/%s/%s%sBCRatio_SummaryResults_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+	goodCells       = Form("%s/%s/%s%sGoodCells_SummaryResults_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
 
 	cout<<"    o Final results o "<<endl;
 	cout<<"    o write results into .txt file: "<<cellSummaryFile<<endl;
@@ -1100,17 +1134,9 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	}
 	file.close();
 
-	//cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
-	//SaveBadCellsToPDF(0,deadPdfName);
-	cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
-	SaveBadCellsToPDF(1,badPdfName) ;
-	SaveBadCellsToPDF(10,ratioOfBad) ; //..Special case
-	if(fTestRoutine==1)SaveBadCellsToPDF(2,goodCells) ;   //..Special case all good cells to check, should all have a flag naming them *Candidate*
-
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Plot some summary canvases
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
 	TCanvas *c1 = new TCanvas("CellProp","summary of cell properties",1000,500);
 	c1->ToggleEventStatus();
 	c1->Divide(2);
@@ -1121,13 +1147,22 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	c1->cd(2);
 	fCellTime->Draw("colz");
 	c1->Update();
-	TString name   =Form("%s/CellProperties.gif", fAnalysisOutput.Data());
+	TString name   =Form("%s/%s/CellProperties.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1->SaveAs(name);
 
 
 	PlotFlaggedCells2D(0);    //..all good cells
 	PlotFlaggedCells2D(1);    //..all dead cells
 	PlotFlaggedCells2D(2,3);  //..all bad cells
+
+
+	//cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
+	//SaveBadCellsToPDF(0,deadPdfName);
+	cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
+	SaveBadCellsToPDF(1,badPdfName) ;
+	SaveBadCellsToPDF(10,ratioOfBad) ; //..Special case
+	if(fTestRoutine==1)SaveBadCellsToPDF(2,goodCells) ;   //..Special case all good cells to check, should all have a flag naming them *Candidate*
+
 }
 
 
@@ -1213,10 +1248,15 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 				}
 				if(version>1)//..These are ratio plots of energy distr. of cell and mean of all good cells
 				{
+					//cout<<"bin nr: "<<ChannelVector.at(i)<<endl;
 					hCell->Divide(hRefDistr);
 					//..Check the distribution whether it looks like a *Candidate* for a miscalibrated warm cell
 					candidate = CheckDistribution(hCell,hRefDistr);
 				}
+				//.. save histograms to file
+				if(version==1) fOutputListBad->Add(hCell);
+				if(version==10)fOutputListBadRatio->Add(hCell);
+				if(version==2) fOutputListGoodRatio->Add(hCell);
 
 				hCell->SetLineColor(kBlue+1);
 				hCell->GetXaxis()->SetTitle("E (GeV)");
@@ -1234,11 +1274,9 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 					if(fTestRoutine==1)                hCell->Draw("hist");  //..In case we are running in QA mode plot all Bad Cell distributions
 				}
 				if(version==1)hRefDistr->Draw("same") ;
-
 				if(version==10 && candidate==1)text->Draw();  //..Draw a marker in the histogram that could be miscalibrated and labelled as warm
-				if(version==2 && candidate==0)text2->Draw();  //..Draw a marker in the histogram that was falsley missed as a good candidate
-
-				if(version==2 && candidate==0)leg->Draw();
+				if(version==2  && candidate==0)text2->Draw(); //..Draw a marker in the histogram that was falsley missed as a good candidate
+				if(version==2  && candidate==0)leg->Draw();
 				if(version<2)leg->Draw();
 			}
 
@@ -1263,6 +1301,11 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 		}
 	}
 	delete hRefDistr;
+	//..Add the subdirectories to the file
+	if(version==1) fRootFile->WriteObject(fOutputListBad,fOutputListBad->GetName());
+	if(version==10)fRootFile->WriteObject(fOutputListBadRatio,fOutputListBadRatio->GetName());
+	if(version==2) fRootFile->WriteObject(fOutputListGoodRatio,fOutputListGoodRatio->GetName());
+
 	cout<<endl;
 }
 ////
@@ -1286,6 +1329,9 @@ TH1* AliAnaCaloChannelAnalysis::BuildMeanFromGood()
 		}
 	}
 	hgoodMean->Scale(1.0/NrGood);
+
+	fRootFile->WriteObject(hgoodMean,hgoodMean->GetName());
+
 	return hgoodMean;
 }
 ///
@@ -1301,7 +1347,7 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 	Double_t percentageOfLast=0.6;
 	Double_t higherThanMean=5;
 	Double_t highestRatio=1000;
-	Double_t cliffSize=2;       //before cliff shouldn't be double as high than after cliff
+	Double_t cliffSize=2;       //height before cliff shouldn't be double as high than after cliff
 
 	//..By default each cell is a candidate for recalibration
 	Bool_t candidate=1;
@@ -1314,7 +1360,6 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 	//..Check the histogram
 	//..Different checks to see whether the
 	//..cell is really bad. Set suspicious to 1.
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..check end of spectrum, should be larger than "percentageOfLast"% of the end of the mean histogram
@@ -1323,6 +1368,7 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 		candidate=0;
 	}
 
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Check maximum of ratio. Cell should not have "highestRatio" times more entries than reference in any bin
 	//ELI check that crieteria carfully - seems to work but not shure about it
 	ratio->GetXaxis()->SetRangeUser(thirdBinCentre,10);//..zoom in to find the  maximum between "not first 2 bins" - 10 GeV
@@ -1330,7 +1376,6 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 	{
 		candidate=0;
 	}
-
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..check whether there are large spikes in the histogram
@@ -1442,7 +1487,21 @@ void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flag1,Int_t flag2,Int_t
 	text->Draw();
 
 	c1->Update();
-	TString name   =Form("%s/2DChannelMap_Flag%d.gif", fAnalysisOutput.Data(), flag1);
+	TString name   =Form("%s/%s/2DChannelMap_Flag%d.gif", fWorkdir.Data(),fAnalysisOutput.Data(), flag1);
 	c1->SaveAs(name);
+
+	fRootFile->WriteObject(plot2D,plot2D->GetName());
+
+}
+///
+/// This function saves all created histograms to a root file
+/// can be used to save all amplitudes
+/// eg. ..... ELI
+///
+//_________________________________________________________________________
+void AliAnaCaloChannelAnalysis::SaveHistoToFile()
+{
+	cout<<"o o o Save histograms to root file o o o"<<endl;
+
 
 }
