@@ -10,12 +10,12 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
 						   Int_t        pSel           = AliVEvent::kAny,
 						   TString      trigClass      = "",
 						   TString      kEmcalTriggers = "",
-						   TString      tag            = "MCMatch",
 						   Bool_t       bCreateTree    = kFALSE,
 						   Bool_t       removeoverlap  = kFALSE,
 						   const char * njetsOverl     = "",
 						   const char * ntmptracksOvlJ = "",
-						   Double_t     sigJetpTCut    = 5.)
+						   Double_t     sigJetpTCut    = 5.,
+						   TString      tag            = "MCMatch")
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
