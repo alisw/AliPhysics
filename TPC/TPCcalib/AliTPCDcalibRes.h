@@ -580,6 +580,7 @@ class AliTPCDcalibRes: public TNamed
   static const float kZLim[2];   // endcap positions
   static const char* kDriftResFileName;
   static const char* kLocalResFileName;
+  static const char* kStatInfoFileName;
   static const char* kClosureTestFileName;
   static const char* kStatOut;
   static const char* kResOut;

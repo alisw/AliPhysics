@@ -37,6 +37,7 @@ const float AliTPCDcalibRes::kZLim[2] = {2.49725e+02,2.49698e+02};
 const char* AliTPCDcalibRes::kDriftResFileName  = "tmpDriftTree";
 const char* AliTPCDcalibRes::kLocalResFileName  = "tmpDeltaSect";
 const char* AliTPCDcalibRes::kClosureTestFileName  = "closureTestSect";
+const char* AliTPCDcalibRes::kStatInfoFileName = "statinfo";
 const char* AliTPCDcalibRes::kStatOut      = "voxelStat";
 const char* AliTPCDcalibRes::kResOut       = "voxelRes";
 const char* AliTPCDcalibRes::kDriftFileName= "fitDrift";
@@ -336,9 +337,17 @@ void AliTPCDcalibRes::CalibrateVDrift()
   }
   fEstTracksPerEvent =  (fUseTOFBC ? statEstBCon:statEstBCoff)/fNEvTot;
   //
-  printf("StatInfo.NTBin\t%d\n",nTimeBins);
-  printf("StatInfo.TBinDuration\t%d\n",int(tbinDuration));
-  printf("StatInfo.TOFBCsel\t%d\n",fUseTOFBC);
+  TString statStr = Form("StatInfo.NTBin\t%d\n"
+			 "StatInfo.TBinDuration\t%d\n"
+			 "StatInfo.TOFBCsel\t%d\n",
+			 nTimeBins,int(tbinDuration),fUseTOFBC);
+  FILE * sFile  = fopen(Form("%s_%09d.txt",kStatInfoFileName,fRun),"a+");
+  if (sFile) {
+    fprintf(sFile,"%s",statStr.Data());
+    fclose(sFile);
+  }
+  printf("%s\n",statStr.Data()); // duplicate to stdout
+
   // select tracks matching to time window and write compact local trees
   //
   CollectData(kVDriftCalibMode);
@@ -886,8 +895,15 @@ Bool_t AliTPCDcalibRes::CollectDataStatistics()
   if (fTMin<tmin) fTMin = tmin;
   if (fTMax>tmax) fTMax = tmax;  
   AliInfoF("%d selected events in %d chunks covering %d<T<%d",fNEvTot,nChunks,tmin,tmax);
-  printf("StatInfo.minTime\t%lld\n",fTMin);
-  printf("StatInfo.maxTime\t%lld\n",fTMax);
+  TString statStr = Form("StatInfo.minTime\t%lld\n"
+			 "StatInfo.maxTime\t%lld\n",
+			 fTMin,fTMax);
+  FILE * sFile  = fopen(Form("%s_%09d.txt",kStatInfoFileName,fRun),"a+");
+  if (sFile) {
+    fprintf(sFile,"%s",statStr.Data());
+    fclose(sFile);
+  }
+  printf("%s\n",statStr.Data()); // duplicate to stdout
   return kTRUE;
 }
 
