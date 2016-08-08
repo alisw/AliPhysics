@@ -117,6 +117,7 @@ public:
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
   Double_t GetConstrainedChi2() const {return fCchi2;}
   Double_t GetChi2TPCConstrainedVsGlobal(const AliESDVertex* vtx) const;
+  Double_t GetCachedChi2TPCConstrainedVsGlobalVal() const {return fCacheChi2TPCConstrainedVsGlobal;}
   //
   
   // global track chi2
@@ -279,7 +280,7 @@ public:
   void    SetTRDsignal(Double_t sig) {fTRDsignal = sig;}
   void    SetTRDNchamberdEdx(UChar_t nch) {fTRDNchamberdEdx = nch;}
   void    SetTRDNclusterdEdx(UChar_t ncls){fTRDNclusterdEdx = ncls;}
-	  
+
 // A.Bercuci
   void    SetTRDntracklets(UChar_t q){fTRDntracklets = q;}
   UChar_t GetTRDntracklets() const {return (fTRDntracklets>>3)&7;}

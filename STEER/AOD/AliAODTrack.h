@@ -294,6 +294,10 @@ class AliAODTrack : public AliVTrack {
   Float_t GetTPCCrossedRows() const {return (Float_t) GetTPCNCrossedRows();}
   Float_t  GetTPCFoundFraction() const { return fTPCNCrossedRows>0 ? float(GetTPCNcls())/fTPCNCrossedRows : 0;}
 
+  /// Golden chi2
+  Double_t GetChi2TPCConstrainedVsGlobal() const { return fChi2TPCConstrainedVsGlobal;}
+  void SetChi2TPCConstrainedVsGlobal(Double_t chi2){ fChi2TPCConstrainedVsGlobal = chi2;}
+
   // Calorimeter Cluster
   Int_t GetEMCALcluster() const {return fCaloIndex;}
   void SetEMCALcluster(Int_t index) {fCaloIndex=index;}
@@ -456,6 +460,7 @@ class AliAODTrack : public AliVTrack {
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
   Double32_t*   fPID;               //! [0.,1.,8] pointer to PID object
 
+  Double32_t    fChi2TPCConstrainedVsGlobal; // chi2 of constrained TPC vs global track (Golden chi2)
   Double32_t    fITSchi2;           // ITS chi2
 
   ULong_t       fFlags;             // reconstruction status flags 

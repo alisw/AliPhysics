@@ -41,6 +41,7 @@ AliAODTrack::AliAODTrack() :
   fChi2perNDF(-999.),
   fChi2MatchTrigger(0.),
   fPID(0),
+  fChi2TPCConstrainedVsGlobal(-1),
   fITSchi2(0),
   fFlags(0),
   fLabel(-999),
@@ -104,6 +105,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fPID(0),
+  fChi2TPCConstrainedVsGlobal(-1),
   fITSchi2(0),
   fFlags(0),
   fLabel(label),
@@ -171,6 +173,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fChi2perNDF(chi2perNDF),
   fChi2MatchTrigger(0.),
   fPID(0),
+  fChi2TPCConstrainedVsGlobal(-1),
   fITSchi2(0),
   fFlags(0),
   fLabel(label),
@@ -235,6 +238,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fChi2perNDF(trk.fChi2perNDF),
   fChi2MatchTrigger(trk.fChi2MatchTrigger),
   fPID(0),
+  fChi2TPCConstrainedVsGlobal(trk.fChi2TPCConstrainedVsGlobal),
   fITSchi2(trk.fITSchi2),
   fFlags(trk.fFlags),
   fLabel(trk.fLabel),
@@ -299,6 +303,7 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
     fChi2perNDF        = trk.fChi2perNDF;
     fChi2MatchTrigger  = trk.fChi2MatchTrigger;
     SetPID( trk.fPID );
+    fChi2TPCConstrainedVsGlobal = trk.fChi2TPCConstrainedVsGlobal;
     fITSchi2           = trk.fITSchi2;
     fFlags             = trk.fFlags;
     fLabel             = trk.fLabel;    
