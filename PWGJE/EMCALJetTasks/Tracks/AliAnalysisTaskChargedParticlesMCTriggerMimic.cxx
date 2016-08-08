@@ -490,7 +490,7 @@ bool AliAnalysisTaskChargedParticlesMCTriggerMimic::SelectEmcalTrigger(const TCl
       break;
     }
   }
-  return true;
+  return selected;
 }
 
 /**
