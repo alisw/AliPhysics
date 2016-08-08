@@ -75,6 +75,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Bool_t GetUseCentralityV0M() const {return fUseCentralityV0M;}
   void SetUseCentralitySPDTracklet(Bool_t centon) {fUseCentralitySPDTracklet = centon;}
   Bool_t GetUseCentralitySPDTracklet() const {return fUseCentralitySPDTracklet;}
+  void SetUseEventPlane(Bool_t rpon) {fUseEventPlane = rpon;}
+  Bool_t GetUseEventPlane() const {return fUseEventPlane;}
   void SetWriteEachVariableTree(Bool_t a) {fWriteEachVariableTree = a;}
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
@@ -163,6 +165,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;                    //!<! Histogram to check selected events
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
+  TH1F *fHEventPlane;                //!<! Histogram to check Centrality
   TH2F *fHNTrackletvsZ;                //!<! Histogram to check N tracklet vs Z
   TH2F *fHNTrackletCorrvsZ;                //!<! Histogram to check N tracklet vs Z
   AliRDHFCutsLctoeleLambdafromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
@@ -197,12 +200,14 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
+  Float_t  fEventPlane;         /// zVertex
   Double_t fBzkG;                 /// magnetic field value [kG]
   Float_t  fCentrality;           /// Centrality
   Int_t  fRunNumber;           /// Run Number
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Bool_t  fUseCentralitySPDTracklet;         /// Stores trigger information
+  Bool_t  fUseEventPlane;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
 	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar
 	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
@@ -685,7 +690,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,35); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,36); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
