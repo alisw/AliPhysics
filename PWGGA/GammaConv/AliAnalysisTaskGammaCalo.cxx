@@ -2283,9 +2283,10 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
             // check if conversion where within acceptance
             if( ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(daughter0,AODMCTrackArray) &&
                 ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(daughter1,AODMCTrackArray)){
-              Int_t source = GetSourceClassification(111,pdgCode);
-              fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
-              
+              if(particle->GetPdgCode() == 111){              
+                Int_t source = GetSourceClassification(111,pdgCode);
+                fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
+              }
             }    
           }
         }
@@ -2459,8 +2460,10 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
             // check if photons where within acceptance
             if( ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter0,fMCStack) &&
                  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter1,fMCStack)){
-              Int_t source = GetSourceClassification(111,pdgCode);
-              fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); 
+              if(particle->GetPdgCode() == 111){
+                Int_t source = GetSourceClassification(111,pdgCode);
+                fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); 
+              }  
             }    
           }
         }

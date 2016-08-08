@@ -3264,8 +3264,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
                 // check acceptance of clusters as well, true if one of them points into the Calo acceptance
               if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(daughter0,AODMCTrackArray) || 
                   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(daughter1,AODMCTrackArray) ){
-                Int_t source = GetSourceClassification(111,pdgCode);
-                fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
+                if (particle->GetPdgCode() == 111){
+                  Int_t source = GetSourceClassification(111,pdgCode);
+                  fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
+                }  
               }
             }    
           }
@@ -3459,7 +3461,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
               Int_t source = GetSourceClassification(111,pdgCode);
               fHistoMCSecPi0PtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
               fHistoMCSecPi0Source[fiCut]->Fill(pdgCode);
-            }else if(particle->GetPdgCode() == 221){
+            } else if(particle->GetPdgCode() == 221){
               fHistoMCSecEtaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Pi0
               fHistoMCSecEtaSource[fiCut]->Fill(pdgCode);
             }
@@ -3472,8 +3474,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
                 // check acceptance of clusters as well, true if one of them points into the Calo acceptance
               if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter0,fMCStack) || 
                     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter1,fMCStack) ){
-                Int_t source = GetSourceClassification(111,pdgCode);
-                fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
+                if ( particle->GetPdgCode() == 111){
+                  Int_t source = GetSourceClassification(111,pdgCode);
+                  fHistoMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); // All MC Pi0
+                }  
               }
             }    
           }
