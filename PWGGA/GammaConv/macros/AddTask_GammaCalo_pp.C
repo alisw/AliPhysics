@@ -530,6 +530,15 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111111063732220000","0163103100000050"); //
     cuts.AddCut("00010113","1111111063932220000","0163103100000050"); //
     
+
+  } else if (trainConfig == 120){ // EMCAL clusters pp 8 TeV - no SPD PileUp
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00010013","1111111063032220000","0163103100000050"); // std - no pileup cut
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00052013","1111111063032220000","0163103100000050"); // std - no pileup cut
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00081013","1111111063032220000","0163103100000050"); // std - no pileup cut
+
     //8 TeV kEMC7 variations
   } else if (trainConfig == 121){ // EMCAL clusters pp 8 TeV, timing variation
     cuts.AddCut("00052113","1111111053032220000","0163103100000050"); // time -50ns_50ns
