@@ -277,12 +277,12 @@ void AliTPC::CreateMaterials()
   //
   const Double_t t1 = 293.15; // 20 deg C in absolute scale
   const Double_t p1 = 1013.25; // 1 atm in mbars
+
   //
   // sanity check - temperature between 10 and 30 deg, pressure between 800 and 1200 mbar
   //
-
   Double_t ptcorr=1.;
-  if(TMath::Abs(t1-20.)>10. || TMath::Abs(p1-1000.)>200.){
+  if(TMath::Abs(temperature-293.15)>10. || TMath::Abs(pressure-1000.)>200.){
     ptcorr = 1.;
   }
   else{
