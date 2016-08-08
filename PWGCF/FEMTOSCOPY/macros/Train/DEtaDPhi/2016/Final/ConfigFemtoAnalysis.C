@@ -666,7 +666,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******	
 					//***without corrections*****
-					cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
+					if(ichg >= 13)
+					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
+					else
+					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),29, 29);
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
 					if(ichg==0 || ichg==1 || ichg==31 || ichg==33) //PP, aPaP, LL, ALAL
                                         {
@@ -681,7 +684,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					//***with corrections****
-					cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
+					if(ichg >= 13)
+					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
+					else
+					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 					if(ichg==0 || ichg==1 || ichg==2)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton);
 					else if(ichg==3 || ichg==4 || ichg==5)
@@ -696,11 +702,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda);
 					}
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
-			
-				
-
-					
-		
+						       							
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
 			}
