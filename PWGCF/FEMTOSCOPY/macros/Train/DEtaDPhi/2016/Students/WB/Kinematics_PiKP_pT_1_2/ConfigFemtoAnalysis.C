@@ -42,7 +42,7 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis() {
+AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	double PionMass = 0.13956995; //masy
 	double KaonMass = 0.493677;
@@ -139,6 +139,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, multmix, multbins[imult], multbins[imult+1]);
                anetaphitpc[aniter]->SetNumEventsToMix(5); //zwiekszamy statystyke w mianowkiku sygnalu korelacji
                anetaphitpc[aniter]->SetMinSizePartCollection(1); //co najmniej jedna czastka na event
+               anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 
                //*** Event cut ***
                mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
