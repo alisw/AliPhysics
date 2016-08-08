@@ -411,6 +411,11 @@ void ProcessLegend(TLegend *leg)
 void SetTrigQA(char *name0, char *name1)
 {
 
+  int iTender;
+  cout << "Not Used Tender : 0" << endl;
+  cout << "Used Tender : 1" << endl;
+  
+
   int iEMC;
   cout << "select EMCal or DCal" << endl;
   cout << "EMCal:0" << endl;
@@ -436,13 +441,25 @@ void SetTrigQA(char *name0, char *name1)
     if(itrig==3)sprintf(name0,"PWGHF_hfeHFEemcQAEMC8_EMC");  //HFEemcQAEMC8_woTender
     if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_EMC");  //HFEemcQATrigGA_woTender
     if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_EMC");  //HFEemcQATrigJE_woTender
-
-    if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
-    if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
-    if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
-    if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
-    if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_EMC");
-    if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_EMC");
+  
+    if(iTender==0)
+      {
+       if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_EMC"); //change for different triggers
+       if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_EMC");
+       if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_EMC");
+       if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_EMC");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_EMC");
+       if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_EMC");
+     }
+    else
+     {
+       if(itrig==0)sprintf(name1,"HFEemcQAINT7_wTender_EMC"); //change for different triggers
+       if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender_EMC");
+       if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender_EMC");
+       if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender_EMC");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_wTender_EMC");
+       if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender_EMC");
+     }
    }
  else
    {
@@ -453,13 +470,23 @@ void SetTrigQA(char *name0, char *name1)
     if(itrig==4)sprintf(name0,"PWGHF_hfeHFEemcQATrigGA_DCAL");  //HFEemcQATrigGA_woTender
     if(itrig==5)sprintf(name0,"PWGHF_hfeHFEemcQATrigJE_DCAL");  //HFEemcQATrigJE_woTender
 
-    if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_DCAL"); //change for different triggers
-    if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_DCAL");
-    if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_DCAL");
-    if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_DCAL");
-    if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_DCAL");
-    if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_DCAL");
-
-
+    if(iTender==0)
+      {
+       if(itrig==0)sprintf(name1,"HFEemcQAINT7_woTender_DCAL"); //change for different triggers
+       if(itrig==1)sprintf(name1,"HFEemcQAINT8_woTender_DCAL");
+       if(itrig==2)sprintf(name1,"HFEemcQAEMC7_woTender_DCAL");
+       if(itrig==3)sprintf(name1,"HFEemcQAEMC8_woTender_DCAL");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_woTender_DCAL");
+       if(itrig==5)sprintf(name1,"HFEemcQATrigJE_woTender_DCAL");
+      }
+      else
+      {
+       if(itrig==0)sprintf(name1,"HFEemcQAINT7_wTender_DCAL"); //change for different triggers
+       if(itrig==1)sprintf(name1,"HFEemcQAINT8_wTender_DCAL");
+       if(itrig==2)sprintf(name1,"HFEemcQAEMC7_wTender_DCAL");
+       if(itrig==3)sprintf(name1,"HFEemcQAEMC8_wTender_DCAL");
+       if(itrig==4)sprintf(name1,"HFEemcQATrigGAEG_wTender_DCAL");
+       if(itrig==5)sprintf(name1,"HFEemcQATrigJE_wTender_DCAL");
+      }
    }
 }
