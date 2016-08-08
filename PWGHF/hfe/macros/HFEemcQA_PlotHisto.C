@@ -414,7 +414,8 @@ void SetTrigQA(char *name0, char *name1)
   int iTender;
   cout << "Not Used Tender : 0" << endl;
   cout << "Used Tender : 1" << endl;
-  
+  cin >> iTender;  
+
 
   int iEMC;
   cout << "select EMCal or DCal" << endl;
