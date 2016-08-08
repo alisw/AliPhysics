@@ -209,20 +209,27 @@ void AliMFT::CreateMaterials() {
   Float_t aEpoxy[3] = {15.9994, 1.00794, 12.0107} ;
   Float_t zEpoxy[3] = {     8.,      1.,      6.} ;
   Float_t wEpoxy[3] = {     3.,     19.,     18.} ;
-  Float_t dEpoxy = 1.8 ;
+  Float_t dEpoxy = 1.23; //  1.8 very high value from ITS! ou 1.23 from eccobond 45 lv datasheet
+
+  //--- Silicone SE4445 Dow Corning  
+  // Si, Al, O, C, H
+  Float_t aSE4445[5] = {28.0855, 26.981538, 15.9994, 12.0107, 1.00794} ;
+  Float_t zSE4445[5] = {    14.,       13.,      8.,      6.,      1.} ;
+  Float_t wSE4445[5] = {  5.531,    45.222,  43.351,   4.717,   1.172} ;
+  Float_t dSE4445 = 2.36; //from LBNL file, priv. comm.
   
   //--- CARBON FIBER CM55J --- from ITS AliITSv11.cxx
   Float_t aCM55J[4]={12.0107,14.0067,15.9994,1.00794};
   Float_t zCM55J[4]={6.,7.,8.,1.};
   Float_t wCM55J[4]={0.908508078,0.010387573,0.055957585,0.025146765};
-  Float_t dCM55J = 1.8;  // 1.63 from AliITSv11Geometry.cxx !?
+  Float_t dCM55J = 1.33; // new value for MFT, from J.M. Buhour infos
 
   // Rohacell mixture
   const Int_t nRohacell = 3;
   Float_t aRohacell[nRohacell] = {1.00794, 12.0107, 15.9994};
   Float_t zRohacell[nRohacell] = {1., 6., 8.};
   Float_t wRohacell[nRohacell] = {0.0858, 0.5964, 0.3178};
-  Float_t dRohacell = 0.075;
+  Float_t dRohacell = 0.032;  // 0.032 g/cm3 rohacell 31, 0.075 g/cm3 rohacell 71;
   
   // Polyimide pipe mixture
   const Int_t nPolyimide = 4;
@@ -345,7 +352,10 @@ void AliMFT::CreateMaterials() {
   AliMixture(++matId, "Epoxy$", aEpoxy, zEpoxy, dEpoxy, -3, wEpoxy);
   AliMedium(kEpoxy,"Epoxy$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMixture(++matId,"C (M55J)$",aCM55J,zCM55J,dCM55J,4,wCM55J);
+  AliMixture(++matId, "SE4445$", aSE4445, zSE4445, dSE4445, -5, wSE4445);
+  AliMedium(kSE4445,"SE4445$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture(++matId,"CarbonFiber$",aCM55J,zCM55J,dCM55J,4,wCM55J);
   AliMedium(kCarbonEpoxy,"CarbonFiber$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMixture(++matId,  "Rohacell", aRohacell, zRohacell, dRohacell, nRohacell, wRohacell);
@@ -369,6 +379,9 @@ void AliMFT::CreateMaterials() {
   AliMixture(++matId, "X7Rweld$",aX7Rweld,zX7Rweld,dX7Rweld,2,wX7Rweld);
   AliMedium(kX7Rw,    "X7Rweld$",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 
+ // Carbon fleece from AliITSSUv2.cxx
+  AliMaterial(++matId,"CarbonFleece$",12.0107,6,0.4,radCarb,absCarb);          // 999,999);  why 999???
+  AliMedium(kCarbonFleece,  "CarbonFleece$",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 
 
   AliDebug(1,"End MFT materials");

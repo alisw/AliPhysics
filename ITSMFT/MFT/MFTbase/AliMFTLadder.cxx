@@ -111,7 +111,8 @@ void AliMFTLadder::CreateSensors() {
   TGeoMedium *medSensorSi  = gGeoManager->GetMedium("MFT_Si$");
   TGeoMedium *medReadoutSi = gGeoManager->GetMedium("MFT_Readout$");
   TGeoMedium *medAir  = gGeoManager->GetMedium("MFT_Air$");
-  TGeoMedium *kMedGlue = gGeoManager->GetMedium("MFT_Epoxy$");  // we assume epoxy glue, the silicone glue has to be defined
+  //TGeoMedium *kMedGlue = gGeoManager->GetMedium("MFT_Epoxy$"); 
+  TGeoMedium *kMedGlue = gGeoManager->GetMedium("MFT_SE4445$"); 
 
   
   AliMFTGeometry * mftGeom = AliMFTGeometry::Instance();
@@ -120,6 +121,11 @@ void AliMFTLadder::CreateSensors() {
                                     mftGeom->GetHalfMFTID(fSegmentation->GetUniqueID()),
                                     mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID()),
                                     mftGeom->GetLadderID(fSegmentation->GetUniqueID()) );
+
+  printf("MFT_S %d %d %d \n",
+	 mftGeom->GetHalfMFTID(fSegmentation->GetUniqueID()),
+	 mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID()),
+	 mftGeom->GetLadderID(fSegmentation->GetUniqueID()));
   
   TGeoVolume * chipVol = gGeoManager->MakeBox(namePrefix.Data(), medAir,AliMFTGeometry::kSensorLength/2.,AliMFTGeometry::kSensorHeight/2.,  AliMFTGeometry::kSensorThickness/2. );
   TGeoVolume * glue = gGeoManager->MakeBox(namePrefix.Data(), kMedGlue, (AliMFTGeometry::kSensorLength-AliMFTGeometry::kGlueEdge)/2., 
