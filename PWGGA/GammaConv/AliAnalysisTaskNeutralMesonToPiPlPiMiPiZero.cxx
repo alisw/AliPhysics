@@ -2583,7 +2583,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::KinematicCut(AliAODConversio
     if(fTolerance == -1) return kTRUE;
     if((omega->Pt())<=5.){
         if((omega->Angle(pospion->Vect()))    < ((2.78715*(TMath::Exp(-0.589934*(omega->Pt()))+0.0519574))*fTolerance) &&
-           (omega->Angle(negpion->Vect()))    < ((5.94216*(TMath::Exp(-0.444428*(omega->Pt()))+0.0574076))*fTolerance) &&
+           (omega->Angle(negpion->Vect()))    < ((5.94216*(TMath::Exp(-0.444428*(omega->Pt()))-0.0574076))*fTolerance) &&
            (omega->Angle(neutpion->Vect()))   < ((2.79529*(TMath::Exp(-0.565999*(omega->Pt()))+0.0413576))*fTolerance) &&
            (pospion->Angle(negpion->Vect()))  < ((3.14446*(TMath::Exp(-0.666433*(omega->Pt()))+0.0964309))*fTolerance) &&
            (pospion->Angle(neutpion->Vect())) < ((3.08241*(TMath::Exp(-0.650657*(omega->Pt()))+0.0997539))*fTolerance) &&
@@ -2597,7 +2597,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::KinematicCut(AliAODConversio
            (omega->Angle(neutpion->Vect()))   < ((0.409766*(TMath::Exp(-0.108566*(omega->Pt()))+0.103594))*fTolerance) &&
            (pospion->Angle(negpion->Vect()))  < ((0.709206*(TMath::Exp(-0.149072*(omega->Pt()))+0.111345))*fTolerance) &&
            (pospion->Angle(neutpion->Vect())) < ((0.662184*(TMath::Exp(-0.123397*(omega->Pt()))+0.104675))*fTolerance) &&
-           (negpion->Angle(neutpion->Vect())) < ((0.730228*(TMath::Exp( 0.120859*(omega->Pt()))+0.105522))*fTolerance)
+           (negpion->Angle(neutpion->Vect())) < ((0.730228*(TMath::Exp(-0.120859*(omega->Pt()))+0.105522))*fTolerance)
            ){
              return kTRUE;
             }
