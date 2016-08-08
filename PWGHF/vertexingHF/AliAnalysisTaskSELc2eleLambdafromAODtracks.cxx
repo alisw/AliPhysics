@@ -99,6 +99,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHEventPlane(0),
   fHNTrackletvsZ(0),
   fHNTrackletCorrvsZ(0),
   fAnalCuts(0),
@@ -133,12 +134,14 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
+  fEventPlane(0),
   fBzkG(0),
   fCentrality(0),
   fRunNumber(0),
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fUseCentralitySPDTracklet(kFALSE),
+  fUseEventPlane(kFALSE),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -605,6 +608,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHEventPlane(0),
   fHNTrackletvsZ(0),
   fHNTrackletCorrvsZ(0),
   fAnalCuts(analCuts),
@@ -639,12 +643,14 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
+  fEventPlane(0),
   fBzkG(0),
   fCentrality(0),
   fRunNumber(0),
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fUseCentralitySPDTracklet(kFALSE),
+  fUseEventPlane(kFALSE),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -1395,6 +1401,18 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 		return;
 	}
   fHCentrality->Fill(fCentrality);
+
+  if(fUseEventPlane){
+    AliEventplane *pl=aodEvent->GetEventplane();
+    if(!pl){
+      AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+      fCEvents->Fill(18);
+      return;
+    }
+    fEventPlane = pl->GetEventplane("V0",aodEvent,2);
+  }
+
+  fHEventPlane->Fill(fEventPlane);
 	fRunNumber = aodEvent->GetRunNumber();
 
 	Int_t runnumber_offset = 0;
@@ -3352,7 +3370,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineSingleTreeVariables()
 
   const char* nameoutput = GetOutputSlot(11)->GetContainer()->GetName();
   fSingleVariablesTree = new TTree(nameoutput,"single variables tree");
-  Int_t nVar = 17;
+  Int_t nVar = 18;
   fCandidateSingleVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -3367,12 +3385,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineSingleTreeVariables()
   fCandidateVariableNames[ 8]="EvNumber";
   fCandidateVariableNames[ 9]="RunNumber";
   fCandidateVariableNames[10]="PdgMother";
-  fCandidateVariableNames[11]="Vars0";
-  fCandidateVariableNames[12]="Vars1";
-  fCandidateVariableNames[13]="Vars2";
+  fCandidateVariableNames[11]="Vars0";//e: dca, L: proper dl
+  fCandidateVariableNames[12]="Vars1";//e: trk ID, L: trk ID (pos)
+  fCandidateVariableNames[13]="Vars2";//e: nSigma TPC, L: trk ID (neg)
   fCandidateVariableNames[14]="LabMother";
   fCandidateVariableNames[15]="PdgGrMother";
   fCandidateVariableNames[16]="LabGrMother";
+  fCandidateVariableNames[17]="EventPlane";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fSingleVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateSingleVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -3516,7 +3535,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
 	for(Int_t i=0;i<26;i++){
 		fCandidateEleVariables[i] = -9999.;
 	}
-	for(Int_t i=0;i<17;i++){
+	for(Int_t i=0;i<18;i++){
 		fCandidateSingleVariables[i] = -9999.;
 	}
   fCandidateSingleVariables[ 0] = trk->Px();
@@ -3529,18 +3548,21 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
   fCandidateSingleVariables[ 7] = fVtxZ;
   fCandidateSingleVariables[ 8] = fEvNumberCounter;
   fCandidateSingleVariables[ 9] = fRunNumber;
-  fCandidateSingleVariables[10] = pdgarray_ele[0];
   fCandidateSingleVariables[11] = d0z0[0];
+  fCandidateSingleVariables[12] = trk->GetID();
   if(fAnalCuts->GetIsUsePID())
   {
 		Double_t nSigmaTPCele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
 		Double_t nSigmaTOFele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
-    fCandidateSingleVariables[12] = nSigmaTPCele;
-    fCandidateSingleVariables[13] = nSigmaTOFele;
+    fCandidateSingleVariables[13] = nSigmaTPCele;
   }
-  fCandidateSingleVariables[14] = labelarray_ele[0];
-  fCandidateSingleVariables[15] = pdgarray_ele[1];
-  fCandidateSingleVariables[16] = labelarray_ele[1];
+  if(fUseMCInfo){
+    fCandidateSingleVariables[10] = pdgarray_ele[0];
+    fCandidateSingleVariables[14] = labelarray_ele[0];
+    fCandidateSingleVariables[15] = pdgarray_ele[1];
+    fCandidateSingleVariables[16] = labelarray_ele[1];
+  }
+  fCandidateSingleVariables[17] = fEventPlane;
 
 	fSingleVariablesTree->Fill();
 
@@ -3855,7 +3877,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 		fCandidateV0Variables[i] = -9999.;
 	}
 
-	for(Int_t i=0;i<17;i++){
+	for(Int_t i=0;i<18;i++){
 		fCandidateSingleVariables[i] = -9999.;
 	}
 
@@ -3880,13 +3902,16 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
   fCandidateSingleVariables[ 8] = fEvNumberCounter;
   fCandidateSingleVariables[ 9] = fRunNumber;
   //fCandidateSingleVariables[10] = v0motherpdgcode;
-  fCandidateSingleVariables[10] = pdgarray_v0[0];
   fCandidateSingleVariables[11] = v0->DecayLengthV0(posVtx)*mlamPDG/ptotlam;
-  fCandidateSingleVariables[12] = v0->DcaPosToPrimVertex();
-  fCandidateSingleVariables[13] = v0->DcaNegToPrimVertex();
-  fCandidateSingleVariables[14] = labelarray_v0[0];
-  fCandidateSingleVariables[15] = pdgarray_v0[1];
-  fCandidateSingleVariables[16] = labelarray_v0[1];
+  fCandidateSingleVariables[12] = cptrack->GetID();
+  fCandidateSingleVariables[13] = cntrack->GetID();
+  if(fUseMCInfo){
+    fCandidateSingleVariables[10] = pdgarray_v0[0];
+    fCandidateSingleVariables[14] = labelarray_v0[0];
+    fCandidateSingleVariables[15] = pdgarray_v0[1];
+    fCandidateSingleVariables[16] = labelarray_v0[1];
+  }
+  fCandidateSingleVariables[17] = fEventPlane;
 
 	fSingleVariablesTree->Fill();
 //  fCandidateV0Variables[ 0] = v0->Px();
@@ -4346,7 +4371,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   /// This is to define general histograms
   //
 
-  fCEvents = new TH1F("fCEvents","conter",18,-0.5,17.5);
+  fCEvents = new TH1F("fCEvents","conter",19,-0.5,18.5);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetBinLabel(1,"X1");
   fCEvents->GetXaxis()->SetBinLabel(2,"Analyzed events");
@@ -4366,6 +4391,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fCEvents->GetXaxis()->SetBinLabel(16,"!IsEventSelected");
   fCEvents->GetXaxis()->SetBinLabel(17,"triggerMask!=kAnyINT || triggerClass!=CINT1");
   fCEvents->GetXaxis()->SetBinLabel(18,Form("zVtxMC<=%2.0fcm",fAnalCuts->GetMaxVtxZ()));
+  fCEvents->GetXaxis()->SetBinLabel(19,"No RP");
   //fCEvents->GetXaxis()->SetTitle("");
   fCEvents->GetYaxis()->SetTitle("counts");
 
@@ -4385,12 +4411,14 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHTrigger->GetXaxis()->SetBinLabel(13,"kINT7&kEMC7");
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
+  fHEventPlane = new TH1F("fHEventPlane","conter",100,-3.14,3.14);
   fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
   fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
+  fOutput->Add(fHEventPlane);
   fOutput->Add(fHNTrackletvsZ);
   fOutput->Add(fHNTrackletCorrvsZ);
 
