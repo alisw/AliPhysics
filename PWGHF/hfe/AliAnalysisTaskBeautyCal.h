@@ -49,6 +49,7 @@ public:
 
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
+    void CalInvmassHF(Int_t itrack, AliVTrack *track, Double_t DCAhf);
     void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
@@ -130,6 +131,8 @@ private:
     TH2F        *fM02EovP;//!M20 vs E/p
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
+    TH2F        *fInvmassHfULS;//!Invmass of ULS
+    TH2F        *fInvmassHfLS;//!Invmass of LS
     TH1F        *fMCcheckMother;
     
     THnSparse  *fSparseElectron;//!Electron info
