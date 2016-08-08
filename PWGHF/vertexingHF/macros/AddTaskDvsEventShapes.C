@@ -19,8 +19,9 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        Double_t refMult=9.26,
                                                        Bool_t subtractDau=kFALSE,
                                                        Bool_t subtractDauFromSphero=kFALSE, //Subtract D0 dau track from Sphero calculation
-                                                       Bool_t RemoveD0fromDstar=kFALSE, //remove D0 from Dstar
+                                                       Bool_t RemoveD0fromDstar=kFALSE, //remove D0 from Dstar: to switch it on, make subtractDauFromSphero = kFALSE
                                                        Int_t NchWeight=0,
+                                                       Bool_t PtWeight=kFALSE,
                                                        Int_t recoEstimator = AliAnalysisTaskSEDvsEventShapes::kNtrk10,
                                                        Int_t MCEstimator = AliAnalysisTaskSEDvsEventShapes::kEta10,
                                                        Bool_t isPPbData=kFALSE)
@@ -127,7 +128,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
             }
         }
     }
-    
+    dEvtShapeTask->UsePtWeight(PtWeight);
     
     if(pdgMeson==421) {
         dEvtShapeTask->SetMassLimits(1.5648,2.1648);
