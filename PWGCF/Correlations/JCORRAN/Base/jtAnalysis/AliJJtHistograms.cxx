@@ -431,15 +431,15 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       
     fhDphiDetaBgXlongEta
         << TH2D( "hDphiDetaBgXlongEta", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-        <<  fCentBin << fEtaGapBin << fPTtBin << fXEBin  << "END";
+        <<  fCentBin << fPTtBin << fXEBin  << "END";
 
     fhDphiDetaBgXlongR
         << TH2D( "hDphiDetaBgXlongR", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-        <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
+        <<  fCentBin << fPTtBin << fXEBin  << "END";
   
     fhDphiDetaBgXlongPhi
         << TH2D( "hDphiDetaBgXlongPhi", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-        <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
+        <<  fCentBin << fPTtBin << fXEBin  << "END";
 
   }
   
@@ -521,15 +521,15 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       
       fhDphiDetaBgKlongEta
           << TH2D( "hDphiDetaBgKlongEta", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-          <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
+          <<  fCentBin << fPTtBin << fKLongBin  << "END";
 
       fhDphiDetaBgKlongR
           << TH2D( "hDphiDetaBgKlongR", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-          <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
+          <<  fCentBin << fPTtBin << fKLongBin  << "END";
   
       fhDphiDetaBgKlongPhi
           << TH2D( "hDphiDetaBgKlongPhi", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-          <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
+          <<  fCentBin << fPTtBin << fKLongBin  << "END";
 
     }
   } // Klong binned histograms
@@ -609,15 +609,15 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       
     fhDphiDetaBgPtaEta
         << TH2D( "hDphiDetaBgPtaEta", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+        <<  fCentBin << fPTtBin << fPTaBin  << "END";
 
     fhDphiDetaBgPtaR
         << TH2D( "hDphiDetaBgPtaR", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+        <<  fCentBin << fPTtBin << fPTaBin  << "END";
   
     fhDphiDetaBgPtaPhi
         << TH2D( "hDphiDetaBgPtaPhi", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+        <<  fCentBin << fPTtBin << fPTaBin  << "END";
       
   }
   
