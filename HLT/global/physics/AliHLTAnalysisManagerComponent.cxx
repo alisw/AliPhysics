@@ -255,7 +255,7 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   }
   if (!fAnalysisInitialized)
   {
-    HLTError("Error initializing analysis task");
+    HLTWarning("Error initializing analysis task");
   }
 
   //Init the CTP data
