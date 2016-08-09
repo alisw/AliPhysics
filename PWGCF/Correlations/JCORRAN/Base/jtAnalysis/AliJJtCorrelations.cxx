@@ -426,7 +426,8 @@ void AliJJtCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, 
     if(jt>1e-3) { //here we used and BgFidCut
       for(int iGap=0; iGap<=maxGap; iGap++){
         hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-        if(fill2DBackground) hBackground2D[fCentralityBin][iGap][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, fTrackPairEfficiency);
+        // To save memory, only save the histogram fro reference gap
+        if(fill2DBackground && iGap == 5) hBackground2D[fCentralityBin][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, fTrackPairEfficiency);
         hPtAssoc[fCentralityBin][iGap][fpttBin][iBin]->Fill(fpta, fTrackPairEfficiency);
         
         // Fill the background histogram for signed pairs
