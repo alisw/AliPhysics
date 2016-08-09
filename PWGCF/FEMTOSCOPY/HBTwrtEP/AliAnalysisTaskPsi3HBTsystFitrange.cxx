@@ -547,7 +547,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserCreateOutputObjects()
   // Called once
 
 	srand((unsigned) time(NULL));
-	cout << "start" << endl;
+	std::cout << "start" << std::endl;
 
 	for (int icharge = 0; icharge < fChargeH; icharge++) {
 		for (int icent = 0; icent < fCentM; icent++ ) {
@@ -558,7 +558,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserCreateOutputObjects()
 			}
 		}
 	}
-	cout << "Mixing flag" << endl;
+	std::cout << "Mixing flag" << std::endl;
 
 	const int fReserve[12] = {1000, 1000, 521, 435, 367, 308, 256, 211, 172, 138, 111, 89};
 
@@ -1106,9 +1106,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
   
 	fNumberE = AliAnalysisManager::GetAnalysisManager()->GetNcalls();
 
-	cout << "-------------------------------------" << endl;
-	cout << "Event : " << fNumberE << " / " << fNEntries << endl;
-	cout << "-------------------------------------" << endl;
+	std::cout << "-------------------------------------" << std::endl;
+	std::cout << "Event : " << fNumberE << " / " << fNEntries << std::endl;
+	std::cout << "-------------------------------------" << std::endl;
 
 
 
@@ -1133,17 +1133,17 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
   
 		if ( !fFileEPCalib ) {
 			printf("Error : %s is NOT Exist!!! \n",path.Data());
-			cout << endl << endl << endl;
+			std::cout << std::endl << std::endl << std::endl;
 			PairCalc_Final();
 			return;
 		}
-		cout << "Calibration file read !" << endl;
+		std::cout << "Calibration file read !" << std::endl;
   
 		fHListEPCalib=0x0;
 		fHListEPCalib = (TList*)fFileEPCalib->Get("EPcaliblist_st1");
 		if ( !fHListEPCalib ) {
 			printf("Error : TList EPcaliblist_CalibStage2 is NOT Exist in %s!!! \n", path.Data());
-			cout << endl << endl << endl;
+			std::cout << std::endl << std::endl << std::endl;
 			PairCalc_Final();
 			return;
 		}
@@ -1207,7 +1207,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 			}	//iside loop
 		}	//itrig loop
   
-		cout << "Calib Param Loading Finish !" << endl;
+		std::cout << "Calib Param Loading Finish !" << std::endl;
   
 		for (int itrig = 0; itrig < fTrigH; itrig++) {
 			for (int iside = 0; iside < fV0s; iside++) {
@@ -1229,7 +1229,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 			}	//iside loop
 		}	//itrig loop
   
-		cout << "Load V0Recentering Param ! " << endl;
+		std::cout << "Load V0Recentering Param ! " << std::endl;
   
 		for (int itrig = 0; itrig < fTrigH; itrig++) {
 			for (int iside = 0; iside < fTPCs; iside++) {
@@ -1270,8 +1270,8 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 				}	//iharm loop
 			}	//iside loop
 		}	//itrig loop
-		cout << "Load TPC and FMD Recentering Param ! " << endl;
-		cout << "Calib Param Loading Finish !" << endl;
+		std::cout << "Load TPC and FMD Recentering Param ! " << std::endl;
+		std::cout << "Calib Param Loading Finish !" << std::endl;
   
 	}	//EPCalib Load
   
@@ -1292,7 +1292,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
   
 	if(!(itrig_Accept)){
 		//if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
-		cout<<" Trigger Selection: event REJECTED ... "<<endl;
+		std::cout<<" Trigger Selection: event REJECTED ... "<<std::endl;
 		PairCalc_Final();
 		return;
 	}
@@ -1353,7 +1353,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 	Vertex[2]=PrimaryVertex_AOD->GetZ();
 	if(Vertex[0]<10e-5 && Vertex[1]<10e-5 &&  Vertex[2]<10e-5) return;
 	if(fabs(Vertex[2]) > 8.0) {
-		cout << "Vertex Cut---- " << endl;
+		std::cout << "Vertex Cut---- " << std::endl;
 		PairCalc_Final();
 		return; // Z-Vertex Cut
 	}
@@ -1363,7 +1363,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 
   Int_t fZvtx = (Int_t) ( ( Vertex[2] + 8.0 ) / 2.0 );
 	if (fZvtx < 0 || fZvtx > 7) {
-		cout << "Z vertex class has unexpected value +++++++ " << endl;
+		std::cout << "Z vertex class has unexpected value +++++++ " << std::endl;
 		PairCalc_Final();
 		return;
 	}
@@ -1437,7 +1437,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 	AliAODVZERO *aodV0 = fAOD -> GetVZEROData();
   
 	if (!aodV0) {
-		cout << "ERROR: aodV0 not available" << endl;
+		std::cout << "ERROR: aodV0 not available" << std::endl;
 		PairCalc_Final();
 		return;
 	}
@@ -1482,9 +1482,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 		}
 		else {
 			fV0flag++;
-			cout << "**********************************"	<< endl;
-			cout << " ERROR: VZERO multiplicity is 0 "		<< endl;
-			cout << "**********************************"	<< endl;
+			std::cout << "**********************************"	<< std::endl;
+			std::cout << " ERROR: VZERO multiplicity is 0 "		<< std::endl;
+			std::cout << "**********************************"	<< std::endl;
 		}
 	}
   
@@ -1499,7 +1499,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 			QyV0[1][iside][iharm] = ( QyV0[0][iside][iharm] - MeanQyV0[fTrig][iside][iharm][fCentCalib] ) / RMSQyV0 [fTrig][iside][iharm][fCentCalib];
 		}	//iharm loop
 	}	//iside loop
-	cout << "V0 recentering finish !" << endl;
+	std::cout << "V0 recentering finish !" << std::endl;
   
 	if (fV0flag == 0) {
 		for (int icor = 0; icor < fCorr; icor++) {
@@ -1513,7 +1513,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 				}	//iharm loop
 			}	//iside loop
 		}	//icor loop
-		cout << "V0 Qvector Fill !" << endl;
+		std::cout << "V0 Qvector Fill !" << std::endl;
   
 		for (int icor = 0; icor < fCorr; icor++) {
 			for (int iside = 0; iside < fV0s; iside++) {
@@ -1542,7 +1542,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 		}
 	}
   
-	cout << "TPC Calibration" << endl;
+	std::cout << "TPC Calibration" << std::endl;
 	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
 		AliAODTrack *ttrack = (AliAODTrack*) (fAOD->GetTracks())->At(iTracks);
 		if (!ttrack->TestFilterBit(1<<(7))) continue;
@@ -1645,7 +1645,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 	else {
 		fTPCflag++;
 	}
-	cout << "TPC Recentering Finish ! " << endl;
+	std::cout << "TPC Recentering Finish ! " << std::endl;
   
 	if (fTPCflag == 0) {
 		for (int icor = 0; icor < fCorr; icor++) {
@@ -1680,15 +1680,15 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 		static_cast<AliAODForwardMult*>(fAOD_FMD->FindListObject("Forward"));
   
 	if (!aodfmult) {
-		cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"	<< endl;
-		cout << "ForwardMult is not available !!!!!!!"	<< endl;
-		cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"	<< endl;
+		std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"	<< std::endl;
+		std::cout << "ForwardMult is not available !!!!!!!"	<< std::endl;
+		std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"	<< std::endl;
 		PairCalc_Final();
 		return;
 	}
   
 	if (!aodfmult->IsTriggerBits(AliAODForwardMult::kOffline)) {
-		cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << endl;
+		std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
 		PairCalc_Final();
 		return;
 	}
@@ -1725,7 +1725,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
   
 				if (RMSQxFMD[fTrig][iside][iharm][fCentCalib] * RMSQyFMD[fTrig][iside][iharm][fCentCalib] == 0.0) {
 					fFMDflag++;
-					cout << "FMD Calibration parameter is ++++ ZERO +++" << endl;
+					std::cout << "FMD Calibration parameter is ++++ ZERO +++" << std::endl;
 					continue	;
 				}
 				//Recentering
@@ -1744,13 +1744,13 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 				}	//icor loop
 			}	//Sval
 			else {
-				cout << "FMD Multiplicity is ++++ ZERO +++" << endl;
+				std::cout << "FMD Multiplicity is ++++ ZERO +++" << std::endl;
 				fFMDflag++;
 			}	//Sval = 0
 		}	//iside loop
 	}	//iharm loop
   
-	cout << "FMD Flattening Param Calc ! " << endl;
+	std::cout << "FMD Flattening Param Calc ! " << std::endl;
   
 	//##############################################################
 	//##############################################################
@@ -1905,7 +1905,7 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
   
 	Nch_label = 0;
   
-	cout << "CentMix : " << fCent << ", ZVtx : " << fZvtx << ", Psi3 : " << fnEP3FMD << ", Mixflag : " << mix_flag[0][fCent][fZvtx][fnEP3FMD] << endl;
+	std::cout << "CentMix : " << fCent << ", ZVtx : " << fZvtx << ", Psi3 : " << fnEP3FMD << ", Mixflag : " << mix_flag[0][fCent][fZvtx][fnEP3FMD] << std::endl;
   
 	// looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
 	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
@@ -2089,9 +2089,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 	}
   
 	if (mix_flag[0][fCent][fZvtx][fnEP3FMD] == fMix) {
-		cout << "*****************************" << endl;
-		cout << "* ++ Real Pair Calculation  *" << endl;
-		cout << "*****************************" << endl;
+		std::cout << "*****************************" << std::endl;
+		std::cout << "* ++ Real Pair Calculation  *" << std::endl;
+		std::cout << "*****************************" << std::endl;
 		for (int ieve = 0; ieve < fMix; ieve++) {
 			for (ULong_t i_loop = 0; i_loop < pion_ppx [fCent][fZvtx][fnEP3FMD][ieve].size()-1; i_loop++) {
 				for (ULong_t j_loop = i_loop+1; j_loop < pion_ppx [fCent][fZvtx][fnEP3FMD][ieve].size(); j_loop++) {
@@ -2195,9 +2195,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 			}	//i_loop
 		}	//ieve
   
-		cout << "***************************" << endl;
-		cout << "* ++ Mix Pair Calculation *" << endl;
-		cout << "***************************" << endl;
+		std::cout << "***************************" << std::endl;
+		std::cout << "* ++ Mix Pair Calculation *" << std::endl;
+		std::cout << "***************************" << std::endl;
   
 		for (int ieve = 0; ieve < fMix-1; ieve++) {
 			for (int jeve = ieve+1; jeve < fMix; jeve++) {
@@ -2303,9 +2303,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 	} //Pos charge Mixing
   
 	if (mix_flag[1][fCent][fZvtx][fnEP3FMD] == fMix) {
-		cout << "*****************************" << endl;
-		cout << "* -- Real Pair Calculation  *" << endl;
-		cout << "*****************************" << endl;
+		std::cout << "*****************************" << std::endl;
+		std::cout << "* -- Real Pair Calculation  *" << std::endl;
+		std::cout << "*****************************" << std::endl;
 		for (int ieve = 0; ieve < fMix; ieve++) {
 			for (ULong_t i_loop = 0; i_loop < pion_mpx [fCent][fZvtx][fnEP3FMD][ieve].size()-1; i_loop++) {
 				for (ULong_t j_loop = i_loop+1; j_loop < pion_mpx [fCent][fZvtx][fnEP3FMD][ieve].size(); j_loop++) {
@@ -2408,9 +2408,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 			}	//i_loop
 		}	//ieve
   
-		cout << "***************************" << endl;
-		cout << "* -- Mix Pair Calculation *" << endl;
-		cout << "***************************" << endl;
+		std::cout << "***************************" << std::endl;
+		std::cout << "* -- Mix Pair Calculation *" << std::endl;
+		std::cout << "***************************" << std::endl;
   
 		for (int ieve = 0; ieve < fMix; ieve++) {
 			for (int jeve = ieve+1; jeve < fMix; jeve++) {
@@ -2942,10 +2942,10 @@ void AliAnalysisTaskPsi3HBTsystFitrange::FillEPCorr(Int_t fV0flag, Int_t fTPCfla
 }
 
 void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
-	//cout << "$$$$$$$$$$$$$$$$$$$$$$" << endl;
-	//cout << "$ Pair Calc Final !! $" << endl;
-	//cout << "$$$$$$$$$$$$$$$$$$$$$$" << endl;
-	//cout << endl << endl << endl << endl << endl;
+	//std::cout << "$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+	//std::cout << "$ Pair Calc Final !! $" << std::endl;
+	//std::cout << "$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+	//std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
 	//Coulomb source size Input
 	Float_t r_inv		[7]	= {11, 10, 9, 8, 7, 6, 5};
 	Float_t r_side	[7]	= {11, 10, 9, 8, 7, 6, 5};
@@ -2953,42 +2953,42 @@ void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
 	Float_t r_long	[7]	= {11, 10, 9, 8, 7, 6, 5};
 
 	if (fNumberE == fNEntries) {
-		cout << "$$$$$$$$$$$$$$$$$$$$$$" << endl;
+		std::cout << "$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
 		for (int tcharge = 0; tcharge < fChargeH; tcharge++) {
 			for (int ftempCent = 0; ftempCent < fCentM; ftempCent++) {
 				for (int ftZvtx = 0; ftZvtx < fZvtxM; ftZvtx++) {
 					for (int ftEP3V0 = 0; ftEP3V0 < fPsi3M; ftEP3V0++) {
 						if (mix_flag[tcharge][ftempCent][ftZvtx][ftEP3V0]) {
-							cout << "Mixing Flag[" << tcharge << "][" << ftempCent << "][" << ftZvtx << "][" << ftEP3V0 << "] : " << mix_flag[tcharge][ftempCent][ftZvtx][ftEP3V0] << endl;
+							std::cout << "Mixing Flag[" << tcharge << "][" << ftempCent << "][" << ftZvtx << "][" << ftEP3V0 << "] : " << mix_flag[tcharge][ftempCent][ftZvtx][ftEP3V0] << std::endl;
 						}	//flag != 0
 					}	//Psi3 loop
 				}	//Zvtx loop
 			}	//Centrality loop
 		}	//charge loop
-		cout << "$$$$$$$$$$$$$$$$$$$$$$" << endl;
-		cout << endl << endl << endl << endl << endl;
+		std::cout << "$$$$$$$$$$$$$$$$$$$$$$" << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
 
 		for (int ftempCent = 0; ftempCent < fCentM; ftempCent++) {
 			Int_t fCent_H = CoulCent(ftempCent);
 			//if (!fCentralAna)	fCent_H = fCent_H-2;
 			if (!fCentralAna) {
 				fCent_H = fCent_H-2;
-				cout << "Centrality Bin : " << fCent_H << endl;
-				cout << "Coulomb Correction : " << r_inv[fCent_H+2] << endl;
+				std::cout << "Centrality Bin : " << fCent_H << std::endl;
+				std::cout << "Coulomb Correction : " << r_inv[fCent_H+2] << std::endl;
 			}
 
 			for (int ftZvtx = 0; ftZvtx < fZvtxM; ftZvtx++) {
 				for (int ftEP3V0 = 0; ftEP3V0 < fPsi3M; ftEP3V0++) {
 					if (mix_flag[0][ftempCent][ftZvtx][ftEP3V0]>0 && mix_flag[1][ftempCent][ftZvtx][ftEP3V0]>0) {
-						cout << "GGGGGGGGGGGGGGGGGGGGGG" << endl;
-						cout << "Mixing Flag[0][" << ftempCent << "][" << ftZvtx << "][" << ftEP3V0 << "] : " <<mix_flag[0][ftempCent][ftZvtx][ftEP3V0] << endl;
-						cout << "Mixing Flag[1][" << ftempCent << "][" << ftZvtx << "][" << ftEP3V0 << "] : " <<mix_flag[1][ftempCent][ftZvtx][ftEP3V0] << endl;
-						cout << endl << endl;
+						std::cout << "GGGGGGGGGGGGGGGGGGGGGG" << std::endl;
+						std::cout << "Mixing Flag[0][" << ftempCent << "][" << ftZvtx << "][" << ftEP3V0 << "] : " <<mix_flag[0][ftempCent][ftZvtx][ftEP3V0] << std::endl;
+						std::cout << "Mixing Flag[1][" << ftempCent << "][" << ftZvtx << "][" << ftEP3V0 << "] : " <<mix_flag[1][ftempCent][ftZvtx][ftEP3V0] << std::endl;
+						std::cout << std::endl << std::endl;
 					}
 					if ( ( mix_flag[0][ftempCent][ftZvtx][ftEP3V0] < 10 ) && ( mix_flag[0][ftempCent][ftZvtx][ftEP3V0] > 1 )) {
-						cout << "*****************************" << endl;
-						cout << "* ++ Real Pair Calculation  *" << endl;
-						cout << "*****************************" << endl;
+						std::cout << "*****************************" << std::endl;
+						std::cout << "* ++ Real Pair Calculation  *" << std::endl;
+						std::cout << "*****************************" << std::endl;
 						for (int ieve = 0; ieve < mix_flag[0][ftempCent][ftZvtx][ftEP3V0]; ieve++) {
 							for (ULong_t i_loop = 0; i_loop < pion_ppx [ftempCent][ftZvtx][ftEP3V0][ieve].size()-1; i_loop++) {
 								for (ULong_t j_loop = i_loop+1; j_loop < pion_ppx [ftempCent][ftZvtx][ftEP3V0][ieve].size(); j_loop++) {
@@ -3092,9 +3092,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
 							}	//i_loop
 						}	//ieve
 
-						cout << "***************************" << endl;
-						cout << "* ++ Mix Pair Calculation *" << endl;
-						cout << "***************************" << endl;
+						std::cout << "***************************" << std::endl;
+						std::cout << "* ++ Mix Pair Calculation *" << std::endl;
+						std::cout << "***************************" << std::endl;
 
 						for (int ieve = 0; ieve < mix_flag[0][ftempCent][ftZvtx][ftEP3V0]-1; ieve++) {
 							for (int jeve = ieve+1; jeve < mix_flag[0][ftempCent][ftZvtx][ftEP3V0]; jeve++) {
@@ -3198,9 +3198,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
 						mix_flag[0][ftempCent][ftZvtx][ftEP3V0]	= 0;
 					} //Pos charge Mixing
 					else if (mix_flag[0][ftempCent][ftZvtx][ftEP3V0] == 1) {
-						cout << "*****************************" << endl;
-						cout << "* ++ Real Pair Calculation  *" << endl;
-						cout << "*****************************" << endl;
+						std::cout << "*****************************" << std::endl;
+						std::cout << "* ++ Real Pair Calculation  *" << std::endl;
+						std::cout << "*****************************" << std::endl;
 						for (int ieve = 0; ieve < 1; ieve++) {
 							for (ULong_t i_loop = 0; i_loop < pion_ppx [ftempCent][ftZvtx][ftEP3V0][ieve].size()-1; i_loop++) {
 								for (ULong_t j_loop = i_loop+1; j_loop < pion_ppx [ftempCent][ftZvtx][ftEP3V0][ieve].size(); j_loop++) {
@@ -3318,9 +3318,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
 						mix_flag[0][ftempCent][ftZvtx][ftEP3V0] = 0;
 					}
 					if (( mix_flag[1][ftempCent][ftZvtx][ftEP3V0] < 10 ) && ( mix_flag[1][ftempCent][ftZvtx][ftEP3V0] > 1 )) {
-						cout << "*****************************" << endl;
-						cout << "* -- Real Pair Calculation  *" << endl;
-						cout << "*****************************" << endl;
+						std::cout << "*****************************" << std::endl;
+						std::cout << "* -- Real Pair Calculation  *" << std::endl;
+						std::cout << "*****************************" << std::endl;
 						for (int ieve = 0; ieve < mix_flag[1][ftempCent][ftZvtx][ftEP3V0]; ieve++) {
 							for (ULong_t i_loop = 0; i_loop < pion_mpx [ftempCent][ftZvtx][ftEP3V0][ieve].size()-1; i_loop++) {
 								for (ULong_t j_loop = i_loop+1; j_loop < pion_mpx [ftempCent][ftZvtx][ftEP3V0][ieve].size(); j_loop++) {
@@ -3424,9 +3424,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
 							}	//i_loop
 						}	//ieve
 
-						cout << "***************************" << endl;
-						cout << "* -- Mix Pair Calculation *" << endl;
-						cout << "***************************" << endl;
+						std::cout << "***************************" << std::endl;
+						std::cout << "* -- Mix Pair Calculation *" << std::endl;
+						std::cout << "***************************" << std::endl;
 
 						for (int ieve = 0; ieve < mix_flag[1][ftempCent][ftZvtx][ftEP3V0]-1; ieve++) {
 							for (int jeve = ieve+1; jeve < mix_flag[1][ftempCent][ftZvtx][ftEP3V0]; jeve++) {
@@ -3531,9 +3531,9 @@ void AliAnalysisTaskPsi3HBTsystFitrange::PairCalc_Final(){
 						mix_flag[1][ftempCent][ftZvtx][ftEP3V0] = 0;
 					} //neg charge Mixing
 					else if (mix_flag[1][ftempCent][ftZvtx][ftEP3V0] == 1) {
-						cout << "*****************************" << endl;
-						cout << "* -- Real Pair Calculation  *" << endl;
-						cout << "*****************************" << endl;
+						std::cout << "*****************************" << std::endl;
+						std::cout << "* -- Real Pair Calculation  *" << std::endl;
+						std::cout << "*****************************" << std::endl;
 						for (int ieve = 0; ieve < 1; ieve++) {
 							for (ULong_t i_loop = 0; i_loop < pion_mpx [ftempCent][ftZvtx][ftEP3V0][ieve].size()-1; i_loop++) {
 								for (ULong_t j_loop = i_loop+1; j_loop < pion_mpx [ftempCent][ftZvtx][ftEP3V0][ieve].size(); j_loop++) {
