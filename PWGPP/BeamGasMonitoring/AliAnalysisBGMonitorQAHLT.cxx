@@ -9,7 +9,7 @@
 // If you have any comment or question of this code,
 // Please send a mail to Bong-Hwi
 //
-// Last update: 2016.05.09 (blim)
+// Last update: 2016.08.09 (blim)
 //
 //#include <Riostream.h>
 #include <iostream>
@@ -19,6 +19,7 @@
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH1D.h>
+#include <TH3F.h>
 #include"TCanvas.h"
 #include"TArrayI.h"
 #include "TString.h"
@@ -50,6 +51,7 @@ fList(0),
 fUseTree(kFALSE),
 fSpdClusters(0),
 fSpdTracklets(0),
+triggerType(0),
 ntracks(0),
 ntr(0),
 nbunch(0),
@@ -69,6 +71,7 @@ fList(0),
 fUseTree(kFALSE),
 fSpdClusters(0),
 fSpdTracklets(0),
+triggerType(0),
 ntracks(0),
 ntr(0),
 nbunch(0),
@@ -98,49 +101,10 @@ void AliAnalysisBGMonitorQAHLT::CreateHistograms(TList*& list, Option_t* /*optio
     list = new TList();
     list->SetOwner(kTRUE);    
   }
-
-  TH2F *hTotalTrkVsClsSPID = new TH2F("hTotalTrkVsClsSPID_CINT7","; Spd : total",140,0,140,500,0,500);
+  TH3F *hTotalTrkVsClsSPID = new TH3F("hTotalTrkVsClsSPID","; Spd : total",140,0,140,500,0,500,10,-0.5,9.5);
   hTotalTrkVsClsSPID->GetXaxis()->SetTitle("Tracklet");
   hTotalTrkVsClsSPID->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
   list->Add(hTotalTrkVsClsSPID);
-  TH2F *hTotalTrkVsClsSPID_PF2 = new TH2F("hTotalTrkVsClsSPID_CINT7_PF2","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_PF2->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_PF2->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_PF2);
-  TH2F *hTotalTrkVsClsSPID_PF10 = new TH2F("hTotalTrkVsClsSPID_CINT7_PF10","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_PF10->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_PF10->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_PF10);
-  //______________________________
-  TH2F *hTotalTrkVsClsSPID_V0M = new TH2F("hTotalTrkVsClsSPID_V0M","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_V0M->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_V0M->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_V0M);
-  TH2F *hTotalTrkVsClsSPID_V0M_PF2 = new TH2F("hTotalTrkVsClsSPID_V0M_PF2","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_V0M_PF2->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_V0M_PF2->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_V0M_PF2);
-  TH2F *hTotalTrkVsClsSPID_V0M_PF10 = new TH2F("hTotalTrkVsClsSPID_V0M_PF10","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_V0M_PF10->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_V0M_PF10->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_V0M_PF10);
-  //______________________________
-  TH2F *hTotalTrkVsClsSPID_SH2 = new TH2F("hTotalTrkVsClsSPID_SH2","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_SH2->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_SH2->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_SH2);
-  TH2F *hTotalTrkVsClsSPID_SH2_PF2 = new TH2F("hTotalTrkVsClsSPID_SH2_PF2","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_SH2_PF2->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_SH2_PF2->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_SH2_PF2);
-  TH2F *hTotalTrkVsClsSPID_SH2_PF10 = new TH2F("hTotalTrkVsClsSPID_SH2_PF10","; Spd : total",140,0,140,500,0,500);
-  hTotalTrkVsClsSPID_SH2_PF10->GetXaxis()->SetTitle("Tracklet");
-  hTotalTrkVsClsSPID_SH2_PF10->GetYaxis()->SetTitle("Cluster (fspdC1+fspdC2)");
-  list->Add(hTotalTrkVsClsSPID_SH2_PF10);
-  //______________________________
-  //histogram for event list(blim)
-  TH1F *hNumEvents  = new TH1F("hNumEvents","total event",10,0,10);
-  list->Add(hNumEvents);
 }
 
 //________________________________________________________________________
@@ -208,15 +172,18 @@ void AliAnalysisBGMonitorQAHLT::Exec(Option_t *)
   }
 
   //--- SPD cluster and tracklets
-  AliMultiplicity tmpMult;
-  AliVMultiplicity* mult = NULL;
-  if (fESD->GetMultiplicity(tmpMult)==0) {
-    mult = &tmpMult;
-  }
+  AliVMultiplicity* mult = fESD->GetMultiplicity();
+  
+  //UNCOMMENT THIS WHEN ALIROOT TAG READY (and comment out the above line)
+  //AliMultiplicity tmpMult;
+  //AliVMultiplicity* mult = NULL;
+  //if (fESD->GetMultiplicity(tmpMult)==0) {
+  //  mult = &tmpMult;
+  //}
 
   //string with fired trigger classes
   std::string firedTriggerClasses = fESD->GetFiredTriggerClasses().Data();
-
+  
   //FILL the histos
   FillHistograms(fList, &firedTriggerClasses, mult, vzero, vzeroFriend);
 }
@@ -282,8 +249,7 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
 
   //--- Trigger classes --//
   UShort_t ntr = 10;
-  Int_t trigger[kMaxUShort];
-  memset(trigger, 0, sizeof(Float_t)*ntr);
+  Int_t triggerType=0;
 
   if( firedTriggers->find("CINT7-B-NOPF-ALLNOTRD")!=std::string::npos ||
       firedTriggers->find("CINT7-S-NOPF-ALLNOTRD")!=std::string::npos ||
@@ -293,7 +259,7 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
       firedTriggers->find("CINT7-B-NOPF-CENT")!=std::string::npos ||
       firedTriggers->find("CINT7-C-NOPF-CENT")!=std::string::npos ||
       firedTriggers->find("CINT7-E-NOPF-CENT")!=std::string::npos) 
-    trigger[0] = 1; // CINT7 trigger
+    triggerType = 1; // CINT7 trigger
 
   if( firedTriggers->find("CVHMV0M-A-NOPF-CENT")!=std::string::npos ||
       firedTriggers->find("CVHMV0M-B-NOPF-CENT")!=std::string::npos ||
@@ -304,7 +270,7 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
       firedTriggers->find("CVHMV0M-B-NOPF-CENTNOTRD")!=std::string::npos ||
       firedTriggers->find("CVHMV0M-C-NOPF-CENTNOTRD")!=std::string::npos ||
       firedTriggers->find("CVHMV0M-E-NOPF-CENTNOTRD")!=std::string::npos)
-    trigger[1] = 1; // VOM trigger
+    triggerType = 4; // VOM trigger
 
   if( firedTriggers->find("CVHMSH2-A-NOPF-CENT")!=std::string::npos ||
       firedTriggers->find("CVHMSH2-B-NOPF-CENT")!=std::string::npos ||
@@ -312,34 +278,14 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
       firedTriggers->find("CVHMSH2-E-NOPF-CENT")!=std::string::npos ||
       firedTriggers->find("CVHMSH2-B-NOPF-ALL")!=std::string::npos ||
       firedTriggers->find("CVHMSH2-B-NOPF-CENTNOTRD")!=std::string::npos )
-    trigger[2] = 1; // SH2 trigger
+    triggerType = 7; // SH2 trigger
 
-  TH1* tmp = NULL;
-  // count total event number (blim)
-  if(trigger[0]==1) {
-    tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
-    if (tmp) tmp->Fill(1);
-  }
-  if(trigger[1]==1) {
-    tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
-    if (tmp) tmp->Fill(2);
-  }
-  if(trigger[2]==1) {
-    tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
-    if (tmp) tmp->Fill(3);
-  }
-
-  if (not (trigger[0] || trigger[1] || trigger[2])) {
+  if (triggerType==0) {
     return;
   }
-
-  TString triggername;
-  if(trigger[0]) triggername.Form("CINT7");
-  if(trigger[1]) triggername.Form("V0M");
-  if(trigger[2]) triggername.Form("SH2");
-
-  tmp = static_cast<TH1*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s",triggername.Data())));
-  if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters); // No PF Selection
+  TH3* tmp = NULL;
+  tmp = static_cast<TH3*>(list->FindObject("hTotalTrkVsClsSPID"));
+  if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters,triggerType); // No PF Selection
   
   Bool_t SelGoodEvent = 0;
   for(Int_t ii=1; ii<33; ii++) {
@@ -378,12 +324,12 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
     //___________
     if(SelGoodEvent) {
       if(ii == 2){
-        tmp = static_cast<TH1*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s_PF2",triggername.Data())));
-        if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters); // PF = 2 Condition
+        tmp = static_cast<TH3*>(list->FindObject("hTotalTrkVsClsSPID"));
+        if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters,triggerType+1); // PF = 2 Condition
       }
       if(ii == 10){
-        tmp = static_cast<TH1*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s_PF10",triggername.Data())));
-        if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters); // PF = 10 Condition
+  tmp = static_cast<TH3*>(list->FindObject("hTotalTrkVsClsSPID"));
+        if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters,triggerType+2); // PF = 10 Condition
       }
     }
   }

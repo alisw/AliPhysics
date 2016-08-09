@@ -31,8 +31,7 @@ class AliAnalysisBGMonitorQAHLT : public AliAnalysisTask {
     AliVfriendEvent* fESDfriend; //! ESDfriend
     TList *fList;             //! list
     Int_t fUseTree;
-    Int_t runNumber;
-    Int_t ftrigger[kMaxUShort];
+    Int_t triggerType;
     Int_t fSpdClusters;
     Int_t fSpdTracklets;
     Int_t ntracks;
