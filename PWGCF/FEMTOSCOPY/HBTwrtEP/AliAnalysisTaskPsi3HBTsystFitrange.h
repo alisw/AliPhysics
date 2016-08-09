@@ -5,10 +5,20 @@
 class TH1F;
 class TH2F;
 class TH3F;
+class TH1D;
+class TH2D;
+class TH3D;
+
+class TProfile;
+class TProfile2D;
+
 class AliAODEvent;
+class AliAODTrack;
+
 
 #include "AliAnalysisTaskSE.h"
 #include <vector>
+#include "TH3.h"
 
 class AliAnalysisTaskPsi3HBTsystFitrange : public AliAnalysisTaskSE {
 	public:
