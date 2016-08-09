@@ -891,6 +891,9 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 
 
 			if( trackpT < trackpT2 ) continue; // select pT_trigg >= pT_assoc
+
+			if( TMath::Abs(trackEta2)>0.8 ) continue;
+
 /*
 			// instead of excluding tracks, switch the information of pTt and pTa (dEta, dPhi, bins and diffTrigEP) 
 			if( trackpT < trackpT2 ) {
@@ -1069,6 +1072,8 @@ void AliAnalysisTaskEPCorrAA::FillMixedHistos(TObjArray* partNew, TObjArray* par
 //        if(((AliAODTrack*)particle->At(targetindex))->TestFilterBit(kTPCOnlyTrackCut)) cout << "first track is TPCOnly" << endl;;
 //		cout << ((AliAODTrack*)particle->At(targetindex))->TestFilterBit(kTPCOnlyTrackCut) << endl;
 
+		if( TMath::Abs(firstEta)>0.8 ) continue;
+
 
 		// find pT bin of first track
 //		float pTBinArray[] = { 0.2, 0.4, 0.6, 0.8, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 15.0 }; // 10 bins
@@ -1116,6 +1121,8 @@ void AliAnalysisTaskEPCorrAA::FillMixedHistos(TObjArray* partNew, TObjArray* par
             secondZv = ((AliCorrReducedTrackAA*)particleMixed->At(is))->Charge();
             secondPID = ((AliCorrReducedTrackAA*)particleMixed->At(is))->GetMyPartID();
 
+
+
 			int pTBinA = -1; // pT bin of associated particles
 			for(int ipTbin = 0; ipTbin<kpTBin; ipTbin++) {
 				if(0 > secondpT) continue;
@@ -1128,6 +1135,9 @@ void AliAnalysisTaskEPCorrAA::FillMixedHistos(TObjArray* partNew, TObjArray* par
 
 
 			if( firstpT < secondpT ) continue; // select pT_trigg >= pT_assoc
+
+			if( TMath::Abs(secondEta)>0.8 ) continue;
+
 /*
 			// instead of excluding tracks, switch the information of pTt and pTa (dEta, dPhi, bins and diffTrigEP) 
 			if( firstpT < secondpT ) {
