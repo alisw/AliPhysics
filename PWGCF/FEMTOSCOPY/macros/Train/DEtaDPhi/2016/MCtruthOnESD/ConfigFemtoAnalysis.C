@@ -384,14 +384,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//**** Correlation functions *******
 
 					if(ichg >= 13)
-					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
+					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 					else
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 
 
-
-
+					const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed",  "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0ALAL","V0LAL" };
+					
 					if(ichg==0 || ichg==1 || ichg==3 || ichg==4 || ichg==6 || ichg==7 || ichg==9 || ichg==10 || ichg==11 || ichg==12 || ichg==17 || ichg==18) //PP, aPaP, LL, ALAL
                                         {
 					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
@@ -403,12 +403,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
                                         }
 
-
-
-
-					
-
-					
+		
 					if (runktdep)
 					{
  					if(ichg<=2){
@@ -439,7 +434,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 							//cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 							//anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
-							cdedpetaphiPt[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ipT%i", chrgs[ichg], imult,ikt),23, 23);
+							cdedpetaphiPt[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ipT%i", chrgs[ichg], imult,ikt),29, 29);
 							cdedpetaphiPt[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 							anetaphitpc[aniter]->AddCorrFctn(cdedpetaphiPt[ktm]);
 
