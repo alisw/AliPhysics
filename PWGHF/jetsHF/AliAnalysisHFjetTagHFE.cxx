@@ -86,6 +86,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistClustDx(0),
   fHistClustDz(0),
   fHistMultCent(0),
+  fHistCent(0),
   fHistTPCnSigma(0),
   fHistEop(0),
   fHistJetOrg(0),
@@ -169,6 +170,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistClustDx(0),
   fHistClustDz(0),
   fHistMultCent(0),
+  fHistCent(0),
   fHistTPCnSigma(0),//my
   fHistEop(0),
   fHistJetOrg(0),
@@ -355,6 +357,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistMultCent = new TH1F("fHistMultCent","centrality distribution",100,0,100);
   fOutput->Add(fHistMultCent);
+
+  fHistCent = new TH1F("fHistCent","centrality distribution",100,0,100);
+  fOutput->Add(fHistCent);
 
   fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigms",100,0.,20.,250,-5.,5.);
   fOutput->Add(fHistTPCnSigma);
@@ -701,6 +706,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   if(fabs(Zvertex)<10.0 && (centrality>fcentMim && centrality<fcentMax)) // event cuts
     {
      //cout << "cent cut = " << centrality << endl; 
+     fHistCent->Fill(centrality);    
 
      // inclusive jet
 
