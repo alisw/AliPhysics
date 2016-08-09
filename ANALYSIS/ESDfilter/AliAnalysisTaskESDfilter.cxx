@@ -624,7 +624,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
       aodTrack->SetTPCNCrossedRows(UShort_t(esdCascadeBach->GetTPCCrossedRows()));
       aodTrack->SetIntegratedLength(esdCascadeBach->GetIntegratedLength());
       aodTrack->SetTOFLabel(tofLabel);
-      aodTrack->SetChi2TPCConstrainedVsGlobal(esdCascadeBach->GetCachedChi2TPCConstrainedVsGlobalVal());
+      CopyChi2TPCConstrainedVsGlobal(esdCascadeBach, aodTrack);      
       CopyCaloProps(esdCascadeBach,aodTrack);
       fAODTrackRefs->AddAt(aodTrack,idxBachFromCascade);
 	    
@@ -708,7 +708,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 	aodTrack->SetTPCNCrossedRows(UShort_t(esdCascadePos->GetTPCCrossedRows()));
 	aodTrack->SetIntegratedLength(esdCascadePos->GetIntegratedLength());
 	aodTrack->SetTOFLabel(tofLabel);
-	aodTrack->SetChi2TPCConstrainedVsGlobal(esdCascadePos->GetCachedChi2TPCConstrainedVsGlobalVal());
+	CopyChi2TPCConstrainedVsGlobal(esdCascadePos, aodTrack);
 	CopyCaloProps(esdCascadePos,aodTrack);
         fAODTrackRefs->AddAt(aodTrack,idxPosFromV0Dghter);
         
@@ -763,7 +763,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 	aodTrack->SetTPCNCrossedRows(UShort_t(esdCascadeNeg->GetTPCCrossedRows()));
 	aodTrack->SetIntegratedLength(esdCascadeNeg->GetIntegratedLength());
 	aodTrack->SetTOFLabel(tofLabel);
-	aodTrack->SetChi2TPCConstrainedVsGlobal(esdCascadeNeg->GetCachedChi2TPCConstrainedVsGlobalVal());
+	CopyChi2TPCConstrainedVsGlobal(esdCascadeNeg, aodTrack);      
 	CopyCaloProps(esdCascadeNeg,aodTrack);
         fAODTrackRefs->AddAt(aodTrack,idxNegFromV0Dghter);
         
@@ -983,7 +983,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 	    aodTrack->SetTPCNCrossedRows(UShort_t(esdV0Pos->GetTPCCrossedRows()));
 	    aodTrack->SetIntegratedLength(esdV0Pos->GetIntegratedLength());
 	    aodTrack->SetTOFLabel(tofLabel);
-	    aodTrack->SetChi2TPCConstrainedVsGlobal(esdV0Pos->GetCachedChi2TPCConstrainedVsGlobalVal());
+	    CopyChi2TPCConstrainedVsGlobal(esdV0Pos, aodTrack);
 	    CopyCaloProps(esdV0Pos,aodTrack);
 	    fAODTrackRefs->AddAt(aodTrack,posFromV0);
 	    if (esdV0Pos->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1033,7 +1033,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
       aodTrack->SetTPCNCrossedRows(UShort_t(esdV0Neg->GetTPCCrossedRows()));
       aodTrack->SetIntegratedLength(esdV0Neg->GetIntegratedLength());
       aodTrack->SetTOFLabel(tofLabel);
-      aodTrack->SetChi2TPCConstrainedVsGlobal(esdV0Neg->GetCachedChi2TPCConstrainedVsGlobalVal());
+      CopyChi2TPCConstrainedVsGlobal(esdV0Neg, aodTrack);
       CopyCaloProps(esdV0Neg,aodTrack);
       fAODTrackRefs->AddAt(aodTrack,negFromV0);
       if (esdV0Neg->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1234,8 +1234,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     aodTrack->SetTPCNCrossedRows(UShort_t(track->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(track->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
-    aodTrack->SetChi2TPCConstrainedVsGlobal(track->GetCachedChi2TPCConstrainedVsGlobalVal());
-
+    CopyChi2TPCConstrainedVsGlobal(track, aodTrack);
     CopyCaloProps(track,aodTrack);
     // do not duplicate PID information 
     //    aodTrack->ConvertAliPIDtoAODPID();
@@ -1373,7 +1372,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
     aodTrack->SetTPCNCrossedRows(UShort_t(esdTrack->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(esdTrack->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
-    aodTrack->SetChi2TPCConstrainedVsGlobal(esdTrack->GetCachedChi2TPCConstrainedVsGlobalVal());
+    CopyChi2TPCConstrainedVsGlobal(esdTrack, aodTrack);
     CopyCaloProps(esdTrack,aodTrack);
     if(isHybridGC){
       // only copy AOD information for hybrid, no duplicate information
@@ -1400,6 +1399,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
   Int_t    tofLabel[3] = {0};
   AliAODTrack* aodTrack(0x0);
   AliAODPid* detpid(0x0);
+
 
   for (Int_t nTrack = 0; nTrack < esd.GetNumberOfTracks(); ++nTrack) 
   {
@@ -1448,8 +1448,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     aodTrack->SetTPCNCrossedRows(UShort_t(esdTrack->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(esdTrack->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
-    aodTrack->SetChi2TPCConstrainedVsGlobal(esdTrack->GetCachedChi2TPCConstrainedVsGlobalVal());
-
+    CopyChi2TPCConstrainedVsGlobal(esdTrack, aodTrack);          
     CopyCaloProps(esdTrack,aodTrack);
     fAODTrackRefs->AddAt(aodTrack, nTrack);
     if (esdTrack->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1783,7 +1782,7 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 	    mother->SetTPCNCrossedRows(UShort_t(esdTrackM->GetTPCCrossedRows()));
 	    mother->SetIntegratedLength(esdTrackM->GetIntegratedLength());
 	    mother->SetTOFLabel(tofLabel);
-	    mother->SetChi2TPCConstrainedVsGlobal(esdTrackM->GetCachedChi2TPCConstrainedVsGlobalVal());
+	    CopyChi2TPCConstrainedVsGlobal(esdTrackM, mother);
 	    CopyCaloProps(esdTrackM,mother);
             fAODTrackRefs->AddAt(mother, imother);
             if (esdTrackM->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1847,7 +1846,7 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
 	    daughter->SetTPCNCrossedRows(UShort_t(esdTrackD->GetTPCCrossedRows()));
 	    daughter->SetIntegratedLength(esdTrackD->GetIntegratedLength());
 	    daughter->SetTOFLabel(tofLabel);
-	    daughter->SetChi2TPCConstrainedVsGlobal(esdTrackD->GetCachedChi2TPCConstrainedVsGlobalVal());
+	    CopyChi2TPCConstrainedVsGlobal(esdTrackD, daughter);
 	    CopyCaloProps(esdTrackD,daughter);
             fAODTrackRefs->AddAt(daughter, idaughter);
             if (esdTrackD->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -2236,7 +2235,7 @@ void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 	  aodTrkMatch->SetTPCPointsF(esdTrkMatch->GetTPCNclsF());
 	  aodTrkMatch->SetTPCNCrossedRows(UShort_t(esdTrkMatch->GetTPCCrossedRows()));
 	  aodTrkMatch->SetIntegratedLength(esdTrkMatch->GetIntegratedLength());
-	  aodTrkMatch->SetChi2TPCConstrainedVsGlobal(esdTrkMatch->GetCachedChi2TPCConstrainedVsGlobalVal());
+	  CopyChi2TPCConstrainedVsGlobal(esdTrkMatch, aodTrkMatch);
 	  CopyCaloProps(esdTrkMatch,aodTrkMatch);
  	  fAODTrackRefs->AddAt(aodTrkMatch,idx);
 	  if (esdTrkMatch->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -2409,6 +2408,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   header->SetRefMultiplicityPos(fNumberOfPositiveTracks);
   header->SetRefMultiplicityNeg(fNumberOfTracks - fNumberOfPositiveTracks);
 
+
   if (fTPCConstrainedFilterMask) ConvertTPCOnlyTracks(*esd);
   if (fGlobalConstrainedFilterMask) ConvertGlobalConstrainedTracks(*esd);  
   if (fArePmdClustersEnabled) ConvertPmdClusters(*esd);
@@ -2422,7 +2422,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   if (fIsADEnabled) ConvertAD(*esd);
   if (fIsHMPIDEnabled) nHmpidRings = ConvertHMPID(*esd); 
   if (fIsTRDEnabled) ConvertTRD(*esd);
-  
+
 
   delete fAODTrackRefs; fAODTrackRefs=0x0;
   delete fAODV0VtxRefs; fAODV0VtxRefs=0x0;
@@ -2587,6 +2587,22 @@ void  AliAnalysisTaskESDfilter::CopyCaloProps(AliESDtrack *tre, AliAODTrack *tra
   tra->SetTrackPhiEtaPtOnEMCal(tre->GetTrackPhiOnEMCal(),tre->GetTrackEtaOnEMCal(),tre->GetTrackPtOnEMCal());
   if (tre->IsEMCAL()) tra->SetEMCALcluster(tre->GetEMCALcluster());
   if (tre->IsPHOS())  tra->SetPHOScluster(tre->GetPHOScluster());
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::CopyChi2TPCConstrainedVsGlobal(AliESDtrack *esdt, AliAODTrack *aodt)
+{
+
+
+  if(esdt->GetCachedChi2TPCConstrainedVsGlobalVal()>-5){ //Golden chi2 is from AliESDtrackCuts
+    aodt->SetChi2TPCConstrainedVsGlobal(esdt->GetCachedChi2TPCConstrainedVsGlobalVal());
+  }else{ //Golden chi2 is not calculated in AliESDtrackCuts. Do calculate here. 
+    const AliESDEvent* esdEvent = esdt->GetESDEvent();
+    const AliESDVertex* vertex = esdEvent ? esdEvent->GetPrimaryVertex() : 0;
+    if ((vertex && vertex->GetStatus())) aodt->SetChi2TPCConstrainedVsGlobal(esdt->GetChi2TPCConstrainedVsGlobal(vertex));
+  }
+
+
 }
 
 //______________________________________________________________________________

@@ -108,6 +108,7 @@ private:
   Int_t ConvertHMPID(const AliESDEvent& esd);
   void ConvertTRD(const AliESDEvent& esd);
   void CopyCaloProps(AliESDtrack *esdt, AliAODTrack *aodt);
+  void CopyChi2TPCConstrainedVsGlobal(AliESDtrack *esdt, AliAODTrack *aodt);
 
   TClonesArray& Tracks();
   TClonesArray& V0s();
