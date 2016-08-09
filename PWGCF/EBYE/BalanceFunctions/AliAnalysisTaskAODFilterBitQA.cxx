@@ -8,9 +8,12 @@
 #include "AliAODTrack.h"
 #include "AliLog.h"
 
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliMCEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliInputEventHandler.h"
+#include "AliMultSelection.h"
 
 
 
@@ -27,6 +30,8 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
   fArrayMC(0x0),
   fListQA(0x0),
   useCentrality(kFALSE),
+  fUseMultSelectionFramework(kFALSE),
+  fUseUncheckedCentrality(kFALSE),
   fillOnlySecondaries(kFALSE),
   fillHFVertexingTracks(kFALSE),
   fHFBranchName("D0toKpi"),
@@ -38,6 +43,7 @@ AliAnalysisTaskAODFilterBitQA::AliAnalysisTaskAODFilterBitQA(const char *name)
   fPtMax(1000),
   fEtaMin(-10),
   fEtaMax(10),
+  fHistEventStats(0),
   fHistTrackStats(0)
 {
 
@@ -78,6 +84,8 @@ void AliAnalysisTaskAODFilterBitQA::UserCreateOutputObjects() {
   fListQA->SetOwner();
 
   // QA histograms
+  fHistEventStats = new TH2D("fHistEventStats","Event statistics;Centrality;EventTriggerBit;N_{events}",104,-2,102,32,0,32);
+  fListQA->Add(fHistEventStats);
   fHistTrackStats = new TH2D("fHistTrackStats","Track statistics;Centrality;TrackFilterBit;N_{events}",100,0,100,gBitMax,0,gBitMax);
   fListQA->Add(fHistTrackStats);
 
@@ -119,7 +127,19 @@ void AliAnalysisTaskAODFilterBitQA::UserExec(Option_t *) {
     
   // check event cuts
   Double_t lMultiplicityVar = -1;
-  if((lMultiplicityVar = IsEventAccepted(event)) < 0){ 
+  lMultiplicityVar = IsEventAccepted(event);
+
+  // event QA
+  Bool_t isSelectedMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelectedMu = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMUON);
+
+  for(Int_t iTriggerBit = 0; iTriggerBit < 32; iTriggerBit++){
+    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (1<<iTriggerBit));
+    
+    fHistEventStats->Fill(lMultiplicityVar,iTriggerBit,isSelected);
+  }
+   
+  if(lMultiplicityVar < 0){ 
     return;
   }
 
@@ -173,10 +193,28 @@ Double_t AliAnalysisTaskAODFilterBitQA::IsEventAccepted(AliVEvent *event){
 
 	      // get the reference multiplicty or centrality (if required)
 	      if(useCentrality){
-	      
-		AliAODHeader *header = (AliAODHeader*) event->GetHeader();
-		gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-		
+
+		// use AliMultSelection framework
+		if (fUseMultSelectionFramework) {
+
+		  AliMultSelection *multSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+		  if (!multSelection)
+		    AliFatal("MultSelection not found in input event");
+		  
+		  if (fUseUncheckedCentrality)
+		    gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kFALSE);
+		  else
+		    gCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
+
+		  // error handling
+		  if (gCentrality > 100)
+		    gCentrality = -1;
+		}
+		else{
+		  AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+		  gCentrality = header->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+		}
+
 		if((gCentrality > fCentralityPercentileMin) && (gCentrality < fCentralityPercentileMax)){		  
 		  return gCentrality;
 		}
