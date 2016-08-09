@@ -29,8 +29,10 @@
 #include "THistManager.h"
 #include "TString.h"
 
+#include <array>
 #include <bitset>
 #include <iostream>
+#include <string>
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMaker)
@@ -67,11 +69,6 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fQAHistos(NULL),
   fDebugLevel(0)
 {
-  fRunTriggerType[kTMEMCalJet] = kTRUE;
-  fRunTriggerType[kTMEMCalGamma] = kTRUE;
-  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
-  fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
-  fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
 }
 
@@ -102,11 +99,6 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fDebugLevel(0)
 {
   // Constructor.
-  fRunTriggerType[kTMEMCalJet] = kTRUE;
-  fRunTriggerType[kTMEMCalGamma] = kTRUE;
-  fRunTriggerType[kTMEMCalLevel0] = kTRUE;
-  fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
-  fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
 }
 
@@ -200,13 +192,13 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
 
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
-    const char *patchtypes[2] = {"Online", "Offline"};
+    std::array<std::string, 3> patchtypes = {"Online", "Offline", "Recalc"};
 
     for(int itype = 0; itype < 5; itype++){
-      for(const char **patchtype = patchtypes; patchtype < patchtypes + 2; ++patchtype){
-        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 104, -0.5, 103.5);
-        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches;#eta;#phi", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 700, 0., 7.);
-        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", *patchtype, fgkTriggerTypeNames[itype].Data()), 2000, 0., 2000, 200, 0., 200);
+      for(const auto & patchtype : patchtypes){
+        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), patchtype.c_str()), Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", patchtype.c_str(), fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), patchtype.c_str()), Form("Center position of the %s %s trigger patches;#eta;#phi", patchtype.c_str(), fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 700, 0., 7.);
+        fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), patchtype.c_str()), Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype.c_str(), fgkTriggerTypeNames[itype].Data()), 2000, 0., 2000, 200, 0., 200);
       }
     }
     fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
@@ -222,8 +214,10 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
  */
 Bool_t AliEmcalTriggerMaker::Run() 
 {
-  AliEMCALTriggerPatchInfo *trigger, *triggerMainJet, *triggerMainGamma, *triggerMainLevel0;
-  AliEMCALTriggerPatchInfo *triggerMainJetSimple, *triggerMainGammaSimple;
+  AliEMCALTriggerPatchInfo  *trigger(nullptr), *triggerMainJet(nullptr),
+                            *triggerMainGamma(nullptr), *triggerMainLevel0(nullptr),
+                            *triggerMainJetSimple(nullptr), *triggerMainGammaSimple(nullptr),
+                            *triggerMainJetRecalc(nullptr), *triggerMainGammaRecalc(nullptr);
 
   // delete patch array, clear setup object
   fCaloTriggersOut->Delete();
@@ -361,64 +355,72 @@ Bool_t AliEmcalTriggerMaker::Run()
   // class is not empty
   if (fCaloTriggers->GetEntries() > 0 ||  fSimpleOfflineTriggers->GetEntries() > 0) {
     fITrigger = 0;
-    triggerMainGamma = 0;
-    triggerMainJet = 0;
-    triggerMainGammaSimple = 0;
-    triggerMainJetSimple = 0;
-    triggerMainLevel0 = 0;
 
     // go throuth the trigger channels, real first, then offline
     Bool_t isOfflineSimple=0;
     while (NextTrigger(isOfflineSimple)) {
-      // process jet
-       if(fRunTriggerType[kTMEMCalJet]){
-        trigger = ProcessPatch(kTMEMCalJet, isOfflineSimple);
+      if(isOfflineSimple){
+        // process jet offline
+        trigger = ProcessPatch(kTMEMCalJet, kTMOffline);
         // save main jet triggers in event
         if (trigger != 0) {
           // check if more energetic than others for main patch marking
-          if (!isOfflineSimple) {
-            if (triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
-              triggerMainJet = trigger;
-          } else {
-            if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
-              triggerMainJetSimple = trigger;
-          }
+          if (triggerMainJetSimple == 0 || (triggerMainJetSimple->GetPatchE() < trigger->GetPatchE()))
+            triggerMainJetSimple = trigger;
         }
-      }
-      
-      // process gamma
-      if(fRunTriggerType[kTMEMCalGamma]){
-        trigger = ProcessPatch(kTMEMCalGamma, isOfflineSimple);
+
+        // process jet recalc
+        trigger = ProcessPatch(kTMEMCalJet, kTMRecalc);
+        // save main jet triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if (triggerMainJetRecalc == 0 || (triggerMainJetRecalc->GetPatchE() < trigger->GetPatchE()))
+            triggerMainJetRecalc = trigger;
+        }
+
+        // process gamma offline
+        trigger = ProcessPatch(kTMEMCalGamma, kTMOffline);
         // save main gamma triggers in event
         if (trigger != 0) {
           // check if more energetic than others for main patch marking
-          if (!isOfflineSimple) {
+          if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
+            triggerMainGammaSimple = trigger;
+        }
+
+        // process gamma recalc
+        trigger = ProcessPatch(kTMEMCalGamma, kTMRecalc);
+        // save main gamma triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if (triggerMainGammaRecalc == 0 || (triggerMainGammaRecalc->GetPatchE() < trigger->GetPatchE()))
+            triggerMainGammaRecalc = trigger;
+        }
+
+      } else {
+        // process jet
+        trigger = ProcessPatch(kTMEMCalJet, kTMOnline);
+        // save main jet triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
+          if(triggerMainJet == 0 || (triggerMainJet->GetPatchE() < trigger->GetPatchE()))
+            triggerMainJet = trigger;
+        }
+
+        trigger = ProcessPatch(kTMEMCalGamma, kTMOnline);
+        // save main gamma triggers in event
+        if (trigger != 0) {
+          // check if more energetic than others for main patch marking
             if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
               triggerMainGamma = trigger;
-          } else {
-            if (triggerMainGammaSimple == 0 || (triggerMainGammaSimple->GetPatchE() < trigger->GetPatchE()))
-              triggerMainGammaSimple = trigger;
-          }
         }
       }
 
-      // level 0 triggers (only in case of online patches)
-      if(!isOfflineSimple){
-        if(fRunTriggerType[kTMEMCalLevel0]){
-          trigger = ProcessPatch(kTMEMCalLevel0, kFALSE);
-          // save main level0 trigger in the event
-          if (trigger) {
-            if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-              triggerMainLevel0 = trigger;
-          }
-        }
+      trigger = ProcessPatch(kTMEMCalLevel0, kTMOnline);
+      // save main level0 trigger in the event
+      if (trigger) {
+        if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+          triggerMainLevel0 = trigger;
       }
-
-      // Recalculated triggers (max patches without threshold)
-      if(fRunTriggerType[kTMEMCalRecalcJet])
-        ProcessPatch(kTMEMCalRecalcJet, isOfflineSimple);
-      if(fRunTriggerType[kTMEMCalRecalcGamma])
-        ProcessPatch(kTMEMCalRecalcGamma, isOfflineSimple);
     } // triggers
     
     // mark the most energetic patch as main
@@ -435,6 +437,12 @@ Bool_t AliEmcalTriggerMaker::Run()
       tBits = tBits | ( 1 << kMainTriggerBitNum );
       triggerMainJetSimple->SetTriggerBits(tBits);
     }
+    if (triggerMainJetRecalc != 0) {
+      Int_t tBits = triggerMainJetRecalc->GetTriggerBits();
+      // main trigger flag
+      tBits = tBits | ( 1 << kMainTriggerBitNum );
+      triggerMainJetRecalc->SetTriggerBits(tBits);
+    }
     if (triggerMainGamma != 0) {
       Int_t tBits = triggerMainGamma->GetTriggerBits();
       // main trigger flag
@@ -446,6 +454,12 @@ Bool_t AliEmcalTriggerMaker::Run()
       // main trigger flag
       tBits = tBits | ( 1 << kMainTriggerBitNum );
       triggerMainGammaSimple->SetTriggerBits( tBits );
+    }
+    if (triggerMainGammaRecalc != 0) {
+      Int_t tBits = triggerMainGammaRecalc->GetTriggerBits();
+      // main trigger flag
+      tBits = tBits | ( 1 << kMainTriggerBitNum );
+      triggerMainGammaRecalc->SetTriggerBits( tBits );
     }
     if(triggerMainLevel0){
       Int_t tBits = triggerMainLevel0->GetTriggerBits();
@@ -478,10 +492,10 @@ Bool_t AliEmcalTriggerMaker::Run()
  * \param isOfflineSimple Switch between online and offline patches
  * \return The new patch (NULL in case of failure)
  */
-AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple)
+AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTriggerType_t type, TriggerMakerPatchSource_t patchSource)
 {
   Int_t tBits=-1;
-  if (!isOfflineSimple)
+  if (patchSource == kTMOnline)
     fCaloTriggers->GetTriggerBits(tBits);
   else
     fSimpleOfflineTriggers->GetTriggerBits(tBits);
@@ -496,9 +510,11 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	
   if ((type == kTMEMCalJet    && !IsEJE( tBits )) || 
       (type == kTMEMCalGamma  && !IsEGA( tBits )) || 
-      (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))) ||
-      (type == kTMEMCalRecalcJet && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit())))==0) ||
-      (type == kTMEMCalRecalcGamma && (tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit())))==0) )
+      (type == kTMEMCalLevel0 && !(CheckForL0(*fCaloTriggers))))
+    return 0;
+
+  if((patchSource == kTMOffline && !IsOfflineSimple(tBits)) ||
+     (patchSource == kTMRecalc && !IsRecalc(tBits)))
     return 0;
 
   // save primary vertex in vector
@@ -508,7 +524,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // get position in global 2x2 tower coordinates
   // A0 left bottom (0,0)
   Int_t globCol=-1, globRow=-1;
-  if (!isOfflineSimple)
+  if (patchSource == kTMOnline)
     fCaloTriggers->GetPosition(globCol,globRow);
   else
     fSimpleOfflineTriggers->GetPosition(globCol, globRow);
@@ -528,7 +544,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   if(fRejectOffAcceptancePatches){
     int patchsize = 2;
     const int kRowsPhi = fGeom->GetNTotalTRU() * 2;
-    if(type == kTMEMCalJet || type == kTMEMCalRecalcJet) patchsize = 16;
+    if(type == kTMEMCalJet) patchsize = 16;
     if((globCol + patchsize >= kColsEta) || (globCol + patchsize >= kRowsPhi)){
       AliError(Form("Invalid patch position for patch type %s: Col[%d], Row[%d] - patch rejected", fgkTriggerTypeNames[type].Data(), globCol, globRow));
       return NULL;
@@ -555,7 +571,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   Float_t cmiRow = 0;
   Int_t adcAmp = 0;
   Double_t adcOfflineAmp = 0;
-  int nfastor = (type == kTMEMCalJet || type == kTMEMCalRecalcJet) ? 16 : 2; // 32x32 cell window for L1 Jet trigger, 4x4 for L1 Gamma or L0 trigger
+  int nfastor = (type == kTMEMCalJet) ? 16 : 2; // 32x32 cell window for L1 Jet trigger, 4x4 for L1 Gamma or L0 trigger
   for (Int_t i = 0; i < nfastor; ++i) {
     for (Int_t j = 0; j < nfastor; ++j) {
       // get the 4 cells composing the trigger channel
@@ -624,11 +640,9 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   Int_t posOffset=-1;
   switch(type){
   case kTMEMCalJet:
-  case kTMEMCalRecalcJet:
     posOffset = 15;
     break;
   case kTMEMCalGamma:
-  case kTMEMCalRecalcGamma:
     posOffset = 1;
     break;
   case kTMEMCalLevel0:
@@ -649,11 +663,9 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // picking two diagonally closest cells from the patches
   switch(type){
   case kTMEMCalJet:
-  case kTMEMCalRecalcJet:
     posOffset = 7;
     break;
   case kTMEMCalGamma:
-  case kTMEMCalRecalcGamma:
     posOffset = 0;
     break;
   case kTMEMCalLevel0:
@@ -670,11 +682,9 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 	
   switch(type){
   case kTMEMCalJet:
-  case kTMEMCalRecalcJet:
     posOffset = 8;
     break;
   case kTMEMCalGamma:
-  case kTMEMCalRecalcGamma:
     posOffset = 1;
     break;
   case kTMEMCalLevel0:
@@ -703,7 +713,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     AliWarning(Form("edge1: [%f|%f|%f]", edge1tmp[0], edge1tmp[1], edge1tmp[2]));
     AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
     AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge1, rowEdge1, absIdEdge1, cellIdEdge1));
-    AliWarning(Form("Offline: %s", isOfflineSimple ? "yes" : "no"));
+    AliWarning(Form("Offline: %s", (patchSource == kTMOffline || patchSource == kTMRecalc) ? "yes" : "no"));
   }
   if(!(edge2[0] || edge2[1] || edge2[2])){
     AliWarning(Form("Inconsistency in patch position for edge2: [%f|%f|%f]", edge2[0], edge2[1], edge2[2]));
@@ -711,7 +721,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     AliWarning(Form("edge2: [%f|%f|%f]", edge2tmp[0], edge2tmp[1], edge2tmp[2]));
     AliWarning(Form("vertex: [%f|%f|%f]", vertex[0], vertex[1], vertex[2]));
     AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge2, rowEdge2, absIdEdge2, cellIdEdge2));
-    AliWarning(Form("Offline: %s", isOfflineSimple ? "yes" : "no"));
+    AliWarning(Form("Offline: %s", (patchSource == kTMOffline || patchSource == kTMRecalc) ? "yes" : "no"));
   }
 
   Int_t isMC = MCEvent() ? 1 : 0;
@@ -720,27 +730,46 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // fix tbits .. remove the unwanted type triggers
   // for Jet and Gamma triggers we remove also the level 0 bit since it will be stored in the level 0 patch
   // for level 0 we remove all gamma and jet trigger bits
-  switch(type){
-  case kTMEMCalJet:
-    tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) |
-        1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()) |
-		       1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetLevel0Bit()) | 1 << (fTriggerBitConfig->GetLevel0Bit()));
-    break;
-  case kTMEMCalGamma:
-    tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) |
-        1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) |
-		       1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetLevel0Bit()) | 1 << (fTriggerBitConfig->GetLevel0Bit()));
-    break;
-  case kTMEMCalLevel0:
-    // Explicitly set the level 0 bit to overcome the masking out
-    tBits |= 1 << (offSet + fTriggerBitConfig->GetLevel0Bit());
-    tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) |
-        1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) |
-        1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) | 1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()));
-    break;
-  default:  // recalculated patches don't need any action
-    break;
-  };
+  if(patchSource == kTMOnline){
+    switch(type){
+    case kTMEMCalJet:
+      tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) |
+            1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()) |
+            1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetLevel0Bit()) | 1 << (fTriggerBitConfig->GetLevel0Bit()));
+      break;
+    case kTMEMCalGamma:
+      tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) |
+            1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) |
+            1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetLevel0Bit()) | 1 << (fTriggerBitConfig->GetLevel0Bit()));
+      break;
+    case kTMEMCalLevel0:
+      // Explicitly set the level 0 bit to overcome the masking out
+      tBits |= 1 << (offSet + fTriggerBitConfig->GetLevel0Bit());
+      tBits = tBits & ~( 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetJetHighBit()) |
+            1 << (fTriggerBitConfig->GetJetLowBit()) | 1 << (fTriggerBitConfig->GetJetHighBit()) | 1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaLowBit()) |
+            1 << (fTriggerBitConfig->GetTriggerTypesEnd() + fTriggerBitConfig->GetGammaHighBit()) | 1 << (fTriggerBitConfig->GetGammaLowBit()) | 1 << (fTriggerBitConfig->GetGammaHighBit()));
+      break;
+    default:  // recalculated patches don't need any action
+      break;
+    };
+  }
+
+  // Remove online bits from offline and recalc patches
+  if(patchSource == kTMRecalc){
+    tBits = tBits & kRecalcBitmask;
+    // remove gamma bits from jet patches && vice versa
+    if(type == kTMEMCalJet)
+      tBits = tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit()) | 1 << (kRecalcOffset + fTriggerBitConfig->GetJetHighBit()));
+    else
+      tBits = tBits & (1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit()) | 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaHighBit()));
+  } else if(patchSource == kTMOffline){
+    tBits = tBits & kOfflineBitmask;
+    // remove gamma bits from jet patches && vice versa
+    if(type == kTMEMCalJet)
+      tBits = tBits & (1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit()) | 1 << (kOfflineOffset + fTriggerBitConfig->GetJetHighBit()));
+    else
+      tBits = tBits & (1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) | 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaHighBit()));
+  }
 
   // save the trigger object
   AliEMCALTriggerPatchInfo *trigger =
@@ -760,10 +789,15 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   trigger->SetEdgeCell(globCol*2, globRow*2); // from triggers to cells
   //if(isOfflineSimple)trigger->SetOfflineSimple();
   if(fDoQA){
-    TString patchtype = isOfflineSimple ? "Offline" : "Online";
+    TString patchtype;
+    switch(patchSource){
+    case kTMOnline: patchtype =  "Online"; break;
+    case kTMOffline: patchtype = "Offline"; break;
+    case kTMRecalc: patchtype = "Recalc"; break;
+    };
     fQAHistos->FillTH2(Form("RCPos%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), globCol, globRow);
     fQAHistos->FillTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), centerGeo.Eta(), centerGeo.Phi());
-    fQAHistos->FillTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), isOfflineSimple ? adcOfflineAmp : adcAmp, trigger->GetPatchE());
+    fQAHistos->FillTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[type].Data(), patchtype.Data()), (patchSource == kTMOffline) ? adcOfflineAmp : adcAmp, trigger->GetPatchE());
     // Redo checking of found trigger bits after masking of unwanted triggers
     for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
       if(tBits & (1 << ibit)){
@@ -785,23 +819,37 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 void AliEmcalTriggerMaker::RunSimpleOfflineTrigger() 
 {
 
+  // @TODO: inefficient implementation: Array needs to be
+  // copied for every new patch
   TArrayI tBitsArray(4), rowArray(4), colArray(4);
   
-  // First entries are for recalculated patches
+  // First entries are for flagging the main patches
+  // Logics:
+  // 0. Recalc jet
+  // 1. Offline jet
+  // 2. Recalc gamma
+  // 3. Offline gamma
+  // Afterwards come all other entries. Attention:
+  // In order to prevent multiple counting the the patch information
+  // is written to the trigger stream only from index 4 on
 
-  tBitsArray[0] = 1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit());
+  // Max Recalc jet bit
+  tBitsArray[0] = 0;
   colArray[0] = -1;
   rowArray[0] = -1;
 
-  tBitsArray[1] = 1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit()) | 1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit());
+  // Max offline jet patch
+  tBitsArray[1] = 0;
   colArray[1] = -1;
   rowArray[1] = -1;
 
-  tBitsArray[2] = 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit());
+  // Max recalc gamma patch
+  tBitsArray[2] = 0;
   colArray[2] = -1;
   rowArray[2] = -1;
 
-  tBitsArray[3] = 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit()) | 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit());
+  // Max offline gamma patch
+  tBitsArray[3] = 0;
   colArray[3] = -1;
   rowArray[3] = -1;
 
@@ -843,15 +891,43 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       }
 
       // check thresholds
-      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetLowSimple())
+      // first we check the offline energy compared to thresholds and set the offline bits accordingly
+      // second we check the recalc energy compared to thresholds and set the recalc bits accordingly
+      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetLowSimple()){
+        // Set the trigger bit for jet low - it is needed by the ProcessPatch function
+        // in order to handle jet patches - for offline and recalc patches these bits will
+        // be removed later
         tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
-      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetHighSimple())
+        // Add offline bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit()) );
+      }
+      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetHighSimple()){
+        // Set the trigger bit for jet high - it is needed by the ProcessPatch function
+        // in order to handle jet patches - for offline and recalc patches these bits will
+        // be removed later
         tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
+        // Add offline bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetJetHighBit()) );
+      }
+      if(tSum > fCaloTriggerSetupOut->GetThresholdJetLowSimple()){
+        // Set the trigger bit for jet low - it is needed by the ProcessPatch function
+        // in order to handle jet patches - for offline and recalc patches these bits will
+        // be removed later
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
+        // Add recalc bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit()) );
+      }
+      if (tSum > fCaloTriggerSetupOut->GetThresholdJetHighSimple()){
+        // Set the trigger bit for jet high - it is needed by the ProcessPatch function
+        // in order to handle jet patches - for offline and recalc patches these bits will
+        // be removed later
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
+        // Add recalc bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetJetHighBit()) );
+      }
       
       // add trigger values
       if (tBits != 0) {
-        // add offline bit
-        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit()) );
         tBitsArray.Set( tBitsArray.GetSize() + 1 );
         colArray.Set( colArray.GetSize() + 1 );
         rowArray.Set( rowArray.GetSize() + 1 );
@@ -862,6 +938,42 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
     }
   } // trigger algo
   
+  // Set trigger bits for the maximum patch
+  if (maxPatchADC > fCaloTriggerSetupOut->GetThresholdJetLowSimple()){
+    // Set the trigger bit for jet low - it is needed by the ProcessPatch function
+    // in order to handle jet patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[0] = tBitsArray[0] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
+    // Add recalc bit - it will be handled by the ProcessPatch function
+    tBitsArray[0] = tBitsArray[0] | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetJetLowBit()) );
+  }
+  if (maxPatchADC > fCaloTriggerSetupOut->GetThresholdJetHighSimple()){
+    // Set the trigger bit for jet high - it is needed by the ProcessPatch function
+    // in order to handle jet patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[0] = tBitsArray[0] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
+    // Add recalc bit - it will be handled by the ProcessPatch function
+    tBitsArray[0] = tBitsArray[0] | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetJetHighBit()) );
+  }
+  if(maxPatchADCoffline > fCaloTriggerSetupOut->GetThresholdJetLowSimple()){
+    // Set the trigger bit for jet low - it is needed by the ProcessPatch function
+    // in order to handle jet patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[1] = tBitsArray[1] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
+    // Add offline bit - it will be handled by the ProcessPatch function
+    tBitsArray[1] = tBitsArray[1] | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetJetLowBit()) );
+  }
+  if (maxPatchADCoffline > fCaloTriggerSetupOut->GetThresholdJetHighSimple()){
+    // Set the trigger bit for jet high - it is needed by the ProcessPatch function
+    // in order to handle jet patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[1] = tBitsArray[1] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
+    // Add offline bit - it will be handled by the ProcessPatch function
+    tBitsArray[1] = tBitsArray[1] | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetJetHighBit()) );
+  }
+
+
+
   // 4x4 trigger algo, stepping by 2 towers (= 1 trigger channel)
   maxPatchADC = -1;
   maxPatchADCoffline = -1;
@@ -892,15 +1004,41 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       }
 
       // check thresholds
-      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaLowSimple())
+      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaLowSimple()){
+        // Set the trigger bit for gamma low - it is needed by the ProcessPatch function
+        // in order to handle gamma patches - for offline and recalc patches these bits will
+        // be removed later
         tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
-      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaHighSimple())
+        // Add offline bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) );
+      }
+      if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaHighSimple()){
+        // Set the trigger bit for gamma high - it is needed by the ProcessPatch function
+        // in order to handle gamma patches - for offline and recalc patches these bits will
+        // be removed later
         tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
+        // Add offline bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaHighBit()) );
+      }
+      if (tSum > fCaloTriggerSetupOut->GetThresholdGammaLowSimple()){
+        // Set the trigger bit for gamma low - it is needed by the ProcessPatch function
+        // in order to handle gamma patches - for offline and recalc patches these bits will
+        // be removed later
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
+        // Add recalc bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) );
+      }
+      if (tSum > fCaloTriggerSetupOut->GetThresholdGammaHighSimple()){
+        // Set the trigger bit for gamma high - it is needed by the ProcessPatch function
+        // in order to handle gamma patches - for offline and recalc patches these bits will
+        // be removed later
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
+        // Add recalc bit - it will be handled by the ProcessPatch function
+        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaHighBit()) );
+      }
       
       // add trigger values
       if (tBits != 0) {
-        // add offline bit
-        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) );
         tBitsArray.Set( tBitsArray.GetSize() + 1 );
         colArray.Set( colArray.GetSize() + 1 );
         rowArray.Set( rowArray.GetSize() + 1 );
@@ -911,12 +1049,50 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
     }
   } // trigger algo
   
+  // Set bits for the maximum patch
+  if (maxPatchADC > fCaloTriggerSetupOut->GetThresholdGammaLowSimple()){
+    // Set the trigger bit for gamma low - it is needed by the ProcessPatch function
+    // in order to handle gamma patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[2] = tBitsArray[2] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
+    // Add recalc bit - it will be handled by the ProcessPatch function
+    tBitsArray[2] = tBitsArray[2] | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit()) );
+  }
+  if (maxPatchADC > fCaloTriggerSetupOut->GetThresholdGammaHighSimple()){
+    // Set the trigger bit for gamma high - it is needed by the ProcessPatch function
+    // in order to handle gamma patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[2] = tBitsArray[2] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
+    // Add recalc bit - it will be handled by the ProcessPatch function
+    tBitsArray[2] = tBitsArray[2] | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaHighBit()) );
+  }
+  if (maxPatchADCoffline > fCaloTriggerSetupOut->GetThresholdGammaLowSimple()){
+    // Set the trigger bit for gamma low - it is needed by the ProcessPatch function
+    // in order to handle gamma patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[3] = tBitsArray[3] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
+    // Add offline bit - it will be handled by the ProcessPatch function
+    tBitsArray[3] = tBitsArray[3] | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) );
+  }
+  if (maxPatchADCoffline > fCaloTriggerSetupOut->GetThresholdGammaHighSimple()){
+    // Set the trigger bit for gamma high - it is needed by the ProcessPatch function
+    // in order to handle gamma patches - for offline and recalc patches these bits will
+    // be removed later
+    tBitsArray[3] = tBitsArray[3] | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
+    // Add offline bit - it will be handled by the ProcessPatch function
+    tBitsArray[3] = tBitsArray[3] | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaHighBit()) );
+  }
+
   // save in object
   fSimpleOfflineTriggers->DeAllocate();
-  fSimpleOfflineTriggers->Allocate(tBitsArray.GetSize());
-  for (Int_t i = 0; i < tBitsArray.GetSize(); ++i){
-    fSimpleOfflineTriggers->Add(colArray[i],rowArray[i], 0, 0, 0, 0, 0, tBitsArray[i]);
+  if(tBitsArray.GetSize() - 4 > 0){
+    fSimpleOfflineTriggers->Allocate(tBitsArray.GetSize() - 4);
+    for (Int_t i = 4; i < tBitsArray.GetSize(); ++i){
+      fSimpleOfflineTriggers->Add(colArray[i],rowArray[i], 0, 0, 0, 0, 0, tBitsArray[i]);
+    }
   }
+
+  // @TODO: Implement QA of the main patches
 }
 
 /**
