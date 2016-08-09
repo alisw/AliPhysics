@@ -149,6 +149,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   //~ // Output slot #0 writes into a TH1 container
 
   fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TH1::Class());
 }
