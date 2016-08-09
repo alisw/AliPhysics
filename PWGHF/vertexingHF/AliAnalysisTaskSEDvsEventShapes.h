@@ -166,7 +166,15 @@ private:
     TH2F* fHistNtrVsSpheri; //!  hist of ntracklets vs Spheri
     TH2F* fHistNtrCorrVsSpheri; //!  hist of ntracklets vs Spheri
     
-    TH1F* fHistGenPrimaryParticlesInelGt0; //! hist. of geenrated multiplcity
+    TH2F* fHistNtrVsNchMC; //!<!  hist of ntracklets vs Nch (Generated)
+    TH2F* fHistNtrCorrVsNchMC; //!<!  hist of ntracklets vs Nch (Generated)
+    TH2F* fHistNtrVsNchMCPrimary; //!<!  hist of ntracklets vs Nch (Primary)
+    TH2F* fHistNtrCorrVsNchMCPrimary; //!<!  hist of ntracklets vs Nch (Primary)
+    TH2F* fHistNtrVsNchMCPhysicalPrimary; //!<!  hist of ntracklets vs Nch (Physical Primary)
+    TH2F* fHistNtrCorrVsNchMCPhysicalPrimary; //!<!  hist of ntracklets vs Nch (Physical Primary)
+    TH1F* fHistGenPrimaryParticlesInelGt0; //!<!hist. of geenrated multiplcity
+    TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //!<! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary)
+
     TH1F* fHistNtrCorrPSSel; //! hist. of ntracklets for physics selection only selected events
     TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
@@ -239,7 +247,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,7); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,8); // D vs. mult task
 };
 
 #endif
