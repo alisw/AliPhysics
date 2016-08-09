@@ -49,6 +49,9 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliTPCParam.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBId.h"
 
 #include "AliComplexCluster.h"
 #include "AliTPCclusterMI.h"
@@ -90,6 +93,8 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fMinMomentumMIP(0),
    fMaxMomentumMIP(0),
    fAlephParameters(),
+   fTimeGainID(),
+   fTimeGainStorage(),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -126,6 +131,8 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fMinMomentumMIP(0),
    fMaxMomentumMIP(0),
    fAlephParameters(),
+   fTimeGainID(),
+   fTimeGainStorage(),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -344,6 +351,17 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
   if (!param)  {
     Printf("ERROR: AliTPCParam not available");
     return;
+  }
+
+  // ===| set TimeGain ID and storage |=========================================
+  if (fTimeGainID.IsNull()) {
+    const TString timeGainPath("TPC/Calib/TimeGain");
+    AliCDBManager* cdbMan = AliCDBManager::Instance();
+    AliCDBEntry*   entry  = cdbMan->Get(timeGainPath);
+    if (entry) {
+      fTimeGainID      = entry->GetId().ToString();
+      fTimeGainStorage = cdbMan->GetURI(timeGainPath);
+    }
   }
 
   // CookdEdxAnalytical requires the time stamp in AliTPCTransform to be set

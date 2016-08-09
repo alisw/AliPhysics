@@ -12,6 +12,7 @@
 #include "THn.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
+#include "TString.h"
 class TH1F;
 class TList;
 class AliESDEvent;
@@ -56,6 +57,9 @@ public:
 
   TGraphErrors* GetGainPerChamber(Int_t padRegion=1, Bool_t plotQA=kFALSE);
   TGraphErrors* GetGainPerChamberRobust(Int_t padRegion=1, Bool_t plotQA=kFALSE, TObjArray *arrQA=0x0, Bool_t normQA=kTRUE);
+  //
+  const TString& GetTimeGainID()      const { return fTimeGainID;      }
+  const TString& GetTimeGainStorage() const { return fTimeGainStorage; }
   //
   void SetMIPvalue(Float_t mip){fMIP = mip;};
   void SetLowerTrunc(Float_t lowerTrunc){fLowerTrunc = lowerTrunc;};
@@ -115,6 +119,11 @@ private:
   Float_t fMaxMomentumMIP;              // maximum momentum of MIP region, e.g. 600 MeV
   Float_t fAlephParameters[5];          // parameters for equalization in MIP window, parameter set should be =1 at MIP
   //
+  // Store timeGain calibration that was used to create this object
+  //
+  TString fTimeGainID;            // ID of timeGain object that was used to create this calibration
+  TString fTimeGainStorage;       // Storage of time gain object
+  //
   // histograms
   //
   TH1F  *fHistNTracks;            //  histogram showing number of ESD tracks per event
@@ -137,7 +146,7 @@ private:
   AliTPCcalibGainMult(const AliTPCcalibGainMult&); 
   AliTPCcalibGainMult& operator=(const AliTPCcalibGainMult&); 
 
-  ClassDef(AliTPCcalibGainMult, 5);
+  ClassDef(AliTPCcalibGainMult, 6);
 };
 
 #endif

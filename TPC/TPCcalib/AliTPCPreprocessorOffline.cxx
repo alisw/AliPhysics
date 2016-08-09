@@ -102,6 +102,8 @@ ClassImp(AliTPCPreprocessorOffline)
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   TNamed("TPCPreprocessorOffline","TPCPreprocessorOffline"),
   fNormaliseQA(kTRUE),
+  fIgnoreTimeGainIDcombinedCalib(kFALSE),
+  fForceTimeGainStorage(kFALSE),
   fGainCalibrationType(kFullGainCalib),  // gain calibration type
   fMinEntries(500),                      // minimal number of entries for fit
   fStartRun(0),                         // start Run - used to make fast selection in THnSparse
@@ -444,22 +446,83 @@ Bool_t AliTPCPreprocessorOffline::SetGainCalibrationType(const TString& type)
 Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
 {
   //
-  // This function will produce the combined calibratin of the objects presently stored in the OCDB
+  // This function will produce the combined calibration of the objects presently stored in the OCDB
   // and the calibration extracted in this calibration
   //
 
-  // ===| write some info |=====================================================
+  // ===| get gain claibration used for full calib |============================
+  const TString timeGainPath("TPC/Calib/TimeGain");
   AliCDBManager *cdbMan = AliCDBManager::Instance();
-  TString calibTimeGainStorage=cdbMan->GetDefaultStorage()->GetURI();
-  const AliCDBEntry *e=cdbMan->Get("TPC/Calib/TimeGain");
-  const TString timeGainID=e->GetId().ToString();
-  if (cdbMan->GetSpecificStorage("TPC/Calib/TimeGain")) {
-    calibTimeGainStorage=cdbMan->GetSpecificStorage("TPC/Calib/TimeGain")->GetURI();
-  }
-  AliInfoF("Using TimeGain '%s','%s' for combined gain calibration", calibTimeGainStorage.Data(), timeGainID.Data());
+  const TString& calibTimeGainStorage=fGainMult->GetTimeGainStorage();
+  const TString& timeGainID          =fGainMult->GetTimeGainID();
+  AliCDBStorage *timeGainStorage = 0x0;
 
-  // ===| get latest gain calibration from OCDB |===============================
-  TObjArray *gainOCDB = AliTPCcalibDB::Instance()->GetTimeGainSplines();
+  if (fIgnoreTimeGainIDcombinedCalib) {
+    AliWarningF("Ignoring the spefic ID for %s: %s (%s)", timeGainPath.Data(), timeGainID.Data(), calibTimeGainStorage.Data());
+  }
+
+  if (!fIgnoreTimeGainIDcombinedCalib && fForceTimeGainStorage
+       && (calibTimeGainStorage.IsNull() && !timeGainID.IsNull()
+           || !calibTimeGainStorage.IsNull() && timeGainID.IsNull())) {
+    AliFatalF("Information form '%s' missing for combined calibration. Either storage (%s) or ID (%s) not set",
+              timeGainPath.Data(), calibTimeGainStorage.Data(), timeGainID.Data()); return kFALSE;
+  }
+
+  // ===| treat storage |=======================================================
+  if (fForceTimeGainStorage && !fIgnoreTimeGainIDcombinedCalib) {
+    AliInfo("Forcing TimeGain storage for combined calibration");
+    if ( !calibTimeGainStorage.IsNull()) {
+      timeGainStorage = cdbMan->GetStorage(calibTimeGainStorage);
+      if (!timeGainStorage) {
+        AliFatalF("Could not get required storage (%s) to retrieve '%s' for combined gain calibration", calibTimeGainStorage.Data(), timeGainPath.Data());
+        return kFALSE;
+      }
+    }
+    else {
+      AliErrorF("No storage set in gainMult for combined calibration of %s although requiring it, falling back to default storage", timeGainPath.Data());
+    }
+  }
+  else {
+    AliInfoF("Using default storage for combined calibration of %s", timeGainPath.Data());
+  }
+
+  if (!timeGainStorage){
+    if (cdbMan->GetSpecificStorage(timeGainPath)) {
+      timeGainStorage=cdbMan->GetSpecificStorage(timeGainPath);
+    }
+    else {
+      timeGainStorage = cdbMan->GetDefaultStorage();
+    }
+  }
+
+  if (!timeGainStorage) {
+    AliFatalF("Could not get a storage to retrieve '%s'", timeGainPath.Data());
+    return kFALSE;
+  }
+
+  // ===| get cdb entry |=======================================================
+  const AliCDBEntry *e=0x0;
+  TString timeGainIDused=timeGainID;
+  if (!fIgnoreTimeGainIDcombinedCalib && !timeGainID.IsNull()) {
+    AliCDBId *cdbIdTimeGain=AliCDBId::MakeFromString(timeGainID);
+    e=timeGainStorage->Get(*cdbIdTimeGain);
+    delete cdbIdTimeGain;
+  }
+  else {
+    e=cdbMan->Get(timeGainPath);
+    timeGainIDused=e->GetId().ToString();
+    AliWarningF("No specifi ID in gainMult for combined calibration of %s, falling back to default ID", timeGainPath.Data());
+  }
+
+  if (!e) {
+    AliFatalF("Could not get '%s' from '%s' for combined gain calibration", timeGainIDused.Data(), timeGainStorage->GetURI().Data());
+    return kFALSE;
+  }
+
+  AliInfoF("Using TimeGain '%s','%s' for combined gain calibration", timeGainStorage->GetURI().Data(), timeGainIDused.Data());
+
+  // ===| get gain calibration from OCDB entry |================================
+  const TObjArray *gainOCDB = static_cast<const TObjArray*>(e->GetObject());
   if (!gainOCDB) {
     AliError("Could not retrieve gain calibration from OCDB. Cannot perform combined calibration.");
     return kFALSE;
@@ -813,7 +876,7 @@ Bool_t AliTPCPreprocessorOffline::GetPointWithError(const TGraphErrors *gr, cons
 
   // ===| 2 and more points |===================================================
   Int_t point = TMath::BinarySearch(npoints, gr->GetX(), xPos);
-  Printf("n, i: %d, %d", npoints, point);
+//   Printf("n, i: %d, %d", npoints, point);
   if (point==-1)        point=0;
   if (point==npoints-1) --point;
 
@@ -823,7 +886,7 @@ Bool_t AliTPCPreprocessorOffline::GetPointWithError(const TGraphErrors *gr, cons
   gr->GetPoint(point+1, x2, y2);
   ey2 = gr->GetErrorY(point+1);
 
-  Printf("%d, (%.2f, %.2f), (%.2f, %.2f)", point, x1, y1, x2, y2);
+//   Printf("%d, (%.2f, %.2f), (%.2f, %.2f)", point, x1, y1, x2, y2);
 
   if ( !(x2>x1) ) {
      AliTPCPreprocessorOffline p;
