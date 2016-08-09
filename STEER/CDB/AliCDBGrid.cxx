@@ -476,8 +476,11 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 
   AliCDBId* dataId = GetEntryId(queryId);
 
+  TString errMessage(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
+
   if (!dataId){
-    AliFatal(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
+    AliError(Form("No file found matching this id!"));
+    throw std::runtime_error(errMessage.Data());
     return NULL;
   }
 
@@ -485,14 +488,18 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
   if (!IdToFilename(*dataId, filename)) {
     AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
     delete dataId;
-    AliFatal(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
+    throw std::runtime_error(errMessage.Data());
+    return NULL;
   }
 
   AliCDBEntry* anEntry = GetEntryFromFile(filename, dataId);
 
   delete dataId;
-  if(!anEntry)
-    AliFatal(TString::Format("No valid CDB object found! request was: %s", queryId.ToString().Data()));
+  if(!anEntry) {
+    AliError(Form("Error getting CDB Entry from file"));
+    throw std::runtime_error(errMessage.Data());
+    return NULL;
+  }
 
   return anEntry;
 }
