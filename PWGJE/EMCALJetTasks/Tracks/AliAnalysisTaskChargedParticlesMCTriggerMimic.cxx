@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <array>
+#include <bitset>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -476,16 +478,28 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::InitializeTrackCuts(TString 
 bool AliAnalysisTaskChargedParticlesMCTriggerMimic::SelectEmcalTrigger(const TClonesArray *triggerpatches){
   bool selected = false;
   AliEMCALTriggerPatchInfo *patch(nullptr);
+  AliDebugStream(1) << GetName() << ": Selecting EMCAL triggered event type (" << (fPatchType == kEMCEGA ? "EGA" : "EJE") << ") using patch energy above threshold" << std::endl;
+  AliDebugStream(1) << GetName() << ": Energy threshold " << fEnergyThreshold << " GeV" << std::endl;
+  AliDebugStream(1) << GetName() << ": Number of reconstructed patches " << triggerpatches->GetEntries() << std::endl;
   for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
     patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
+    AliDebugStream(3) << GetName() << ": Next patch" << std::endl;
     if(!patch->IsOfflineSimple()) continue;
+    AliDebugStream(3) << GetName() << "Patch is an offline simple patch" << std::endl;
+    AliDebugStream(3) << GetName() << ": Trigger bits: " << std::bitset<32>(patch->GetTriggerBits()) << std::endl;
+    AliDebugStream(3) << GetName() << ": J1(" << patch->IsJetHighSimple()  << "), J2(" << patch->IsJetLowSimple()  
+                                   << "), G1(" << patch->IsGammaHighSimple() << ") G2(" << patch->IsGammaLowSimple() << ")" << std::endl;
     if(fPatchType == kEMCEJE){
       if(!patch->IsJetHighSimple()) continue;
+      AliDebugStream(3) << GetName() << ": Patch is jet high simple" << std::endl;
     } else if(fPatchType == kEMCEGA){
       if(!patch->IsGammaHighSimple()) continue;
+      AliDebugStream(3) << GetName() << ": Patch is gamma high simple" << std::endl;
     }
+    AliDebugStream(2) << GetName() << ": Found trigger patch of matching type, now cutting on energy ...." << std::endl;
     if(patch->GetPatchE() > fEnergyThreshold){
       // firing trigger patch found
+      AliDebugStream(1) << GetName() << ": Firing trigger patch found at energy " << std::setprecision(1) << patch->GetPatchE() << std::endl; 
       selected = true;
       break;
     }
