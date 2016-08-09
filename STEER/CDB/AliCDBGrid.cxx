@@ -31,6 +31,7 @@
 #include <TObjString.h>
 #include <TMath.h>
 #include <TRegexp.h>
+#include <stdexcept>
 
 #include "AliLog.h"
 #include "AliCDBEntry.h"
