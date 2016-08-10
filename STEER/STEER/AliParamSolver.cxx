@@ -103,7 +103,7 @@ Bool_t AliParamSolver::SolveGlobals(Bool_t obtainCov)
   //
   if (!TestBit(kBitGloSol)) {
     if (!fMatrix->SolveChol(fRHSGlo, fSolGlo, obtainCov)) {
-      AliError("Solution Failed");
+      AliDebug(2,"Solution Failed");
       return kFALSE;
     }
     SetBit(kBitGloSol);

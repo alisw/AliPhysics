@@ -257,9 +257,8 @@ AliSymMatrix* AliSymMatrix::DecomposeChol()
       for (int k=i-1;k>=0;k--) if (rowi[k]&&rowj[k]) sum -= rowi[k]*rowj[k];
       if (i == j) {
 	if (sum <= 0.0) { // not positive-definite
-	  AliInfo(Form("The matrix is not positive definite [%e]\n"
-		       "Choleski decomposition is not possible",sum));
-	  Print("l");
+	  AliDebugF(2,"The matrix is not positive definite [%e]: Choleski decomposition is not possible",sum);
+	  //Print("l");
 	  return 0;
 	}
 	rowi[i] = TMath::Sqrt(sum);
@@ -340,7 +339,7 @@ Bool_t AliSymMatrix::SolveChol(Double_t *b, Bool_t invert)
   //
   AliSymMatrix *pmchol = DecomposeChol();
   if (!pmchol) {
-    AliInfo("SolveChol failed");
+    AliDebug(2,"SolveChol failed");
     //    Print("l");
     return kFALSE;
   }
@@ -381,7 +380,7 @@ Bool_t AliSymMatrix::SolveCholN(Double_t *bn, int nRHS, Bool_t invert)
   //  
   AliSymMatrix *pmchol = DecomposeChol();
   if (!pmchol) {
-    AliInfo("SolveChol failed");
+    AliDebug(2,"SolveChol failed");
     //    Print("l");
     return kFALSE;
   }
