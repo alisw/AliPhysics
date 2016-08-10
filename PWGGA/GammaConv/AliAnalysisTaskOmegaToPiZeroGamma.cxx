@@ -786,6 +786,13 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
 
     if (fIsMC > 1){
       fHistoPhotonPairInvMassPt[iCut]->Sumw2();
+      fHistoMotherInvMassPt[iCut]->Sumw2();
+      fHistoGammaFromMotherPt[iCut]->Sumw2();
+      if(fReconMethod!=2 && fReconMethod!=5) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      fHistoDiff1Diff2SameBackInvMassPt[iCut]->Sumw2();
+      fHistoDiffSameSameBackInvMassPt[iCut]->Sumw2();
+      if(fReconMethod<2) fHistoSameDiffSameBackInvMassPt[iCut]->Sumw2();
+      fHistoSameSameDiffBackInvMassPt[iCut]->Sumw2();
       if(fReconMethod<2) fHistoPhotonPairMatchedInvMassPt[iCut]->Sumw2();
     }
 
@@ -854,12 +861,12 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoPhotonPairYPt[iCut]->Sumw2();
         fHistoPhotonPairAlphaPt[iCut]->Sumw2();
         fHistoPhotonPairOpenAnglePt[iCut]->Sumw2();
-        fHistoMotherConvPhotonEtaPhi[iCut]->Sumw2();
+        fHistoPhotonPairEtaPhi[iCut]->Sumw2();
+        if(fReconMethod!=2 && fReconMethod!=5) fHistoMotherConvPhotonEtaPhi[iCut]->Sumw2();
         fHistoMotherYPt[iCut]->Sumw2();
         fHistoMotherPi0AnglePt[iCut]->Sumw2();
         fHistoMotherGammaAnglePt[iCut]->Sumw2();
         fHistoPi0GammaAnglePt[iCut]->Sumw2();
-        fHistoGammaFromMotherPt[iCut]->Sumw2();
       }
     }
   }
