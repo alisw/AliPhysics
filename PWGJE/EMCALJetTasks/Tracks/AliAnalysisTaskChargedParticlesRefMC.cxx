@@ -258,7 +258,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
   if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;                 // Apply new vertex cut
   // Fill reference distribution for the primary vertex before any z-cut
   fHistos->FillTH1("hVertexBeforeTrue", vtx->GetZ(), fEventWeight);
-  for(const auto &trg : fEventTriggers) fHistos->FillTH1(Form("hVertexBeforeTrue%s"), vtx->GetZ(), fEventWeight);
+  for(const auto &trg : fEventTriggers) fHistos->FillTH1(Form("hVertexBefore%s", trg.c_str()), vtx->GetZ(), fEventWeight);
   // Apply vertex z cut
   if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return false;
 
