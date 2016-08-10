@@ -413,13 +413,12 @@ Bool_t AliEmcalTriggerMaker::Run()
             if (triggerMainGamma == 0 || (triggerMainGamma->GetPatchE() < trigger->GetPatchE()))
               triggerMainGamma = trigger;
         }
-      }
-
-      trigger = ProcessPatch(kTMEMCalLevel0, kTMOnline);
-      // save main level0 trigger in the event
-      if (trigger) {
-        if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
-          triggerMainLevel0 = trigger;
+        trigger = ProcessPatch(kTMEMCalLevel0, kTMOnline);
+        // save main level0 trigger in the event
+        if (trigger) {
+          if (!triggerMainLevel0 || (triggerMainLevel0->GetPatchE() < trigger->GetPatchE()))
+            triggerMainLevel0 = trigger;
+        }
       }
     } // triggers
     
