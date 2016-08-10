@@ -41,8 +41,9 @@
 #include "AliVParticle.h"
 #include "AliEventplane.h"
 #include "AliInputEventHandler.h"
-#include <vector>
 #include <map>
+#include <vector>
+#include <algorithm>
 
 ClassImp(AliAnalysisTaskGammaCocktailMC)
 
@@ -52,12 +53,19 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
+  fDoLightOutput(kFALSE),
   fHistNEvents(NULL),
   fHistPtYGamma(NULL),
-  fHistPhiGamma(NULL),
-  fHistPhiInput(NULL),
+  fHistPtPhiGamma(NULL),
+  fHistPtPhiGammaSource(NULL),
+  fHistPtPhiInput(NULL),
   fHistPtYInput(NULL),
   fHistPtYGammaSource(NULL),
+  fHistPtAlphaInput(NULL),
+  fHistPtDeltaPhiInput(NULL),
+  fHistDecayChannelsInput(NULL),
+  fHistPtGammaSourceInput(NULL),
+  fHistPhiGammaSourceInput(NULL),
   fHistPtYInputRest(NULL),
   fHistPtYGammaSourceRest(NULL),
   fParticleList(NULL),
@@ -75,12 +83,19 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
+  fDoLightOutput(kFALSE),
   fHistNEvents(NULL),
   fHistPtYGamma(NULL),
-  fHistPhiGamma(NULL),
-  fHistPhiInput(NULL),
+  fHistPtPhiGamma(NULL),
+  fHistPtPhiGammaSource(NULL),
+  fHistPtPhiInput(NULL),
   fHistPtYInput(NULL),
   fHistPtYGammaSource(NULL),
+  fHistPtAlphaInput(NULL),
+  fHistPtDeltaPhiInput(NULL),
+  fHistDecayChannelsInput(NULL),
+  fHistPtGammaSourceInput(NULL),
+  fHistPhiGammaSourceInput(NULL),
   fHistPtYInputRest(NULL),
   fHistPtYGammaSourceRest(NULL),
   fParticleList(NULL),
@@ -118,9 +133,9 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   fHistPtYGamma->Sumw2();
   fOutputContainer->Add(fHistPtYGamma);
   
-  fHistPhiGamma = new TH2F("Pt_Phi_Gamma","Pt_Phi_Gamma", 500,0, 50, 100,0,7);
-  fHistPhiGamma->Sumw2();
-  fOutputContainer->Add(fHistPhiGamma);
+  fHistPtPhiGamma = new TH2F("Pt_Phi_Gamma","Pt_Phi_Gamma", 500,0, 50, 100,0,7);
+  fHistPtPhiGamma->Sumw2();
+  fOutputContainer->Add(fHistPtPhiGamma);
   
 //   "22" Gamma
 //   "111" Pi0
@@ -142,12 +157,34 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   const Int_t nInputParticles = 14;
   Int_t   fParticleList_local[] = {111,221,331,223,113,213,-213,333,443,1114,2114,2214,2224,3212};
   TString fParticleListNames_local[] = {"Pi0","Eta","EtaPrim","omega","rho0","rho+","rho-","phi","J/psi","Delta-","Delta0","Delta+","Delta++","Sigma0"};  
-  fParticleList       = fParticleList_local;
-  fParticleListNames  = fParticleListNames_local;
-  fHistPtYInput       = new TH2F*[nInputParticles];
-  fHistPtYGammaSource = new TH2F*[nInputParticles];
-  fHistPhiInput       = new TH2F*[nInputParticles];
+  fParticleList            = fParticleList_local;
+  fParticleListNames       = fParticleListNames_local;
+  fHistPtYInput            = new TH2F*[nInputParticles];
+  fHistPtYGammaSource      = new TH2F*[nInputParticles];
+  fHistPtAlphaInput        = new TH2F*[nInputParticles];
+  fHistPtDeltaPhiInput     = new TH2F*[nInputParticles];
+  fHistDecayChannelsInput  = new TH1F*[nInputParticles];
+  fHistPtPhiGammaSource    = new TH2F*[nInputParticles];
+  fHistPtPhiInput          = new TH2F*[nInputParticles];
+  fHistPtGammaSourceInput  = new TH2F*[nInputParticles];
+  fHistPhiGammaSourceInput = new TH2F*[nInputParticles];
   
+  // delta phi binning
+  Double_t *binsDeltaPhi = new Double_t[83];
+  binsDeltaPhi[0] = 0;
+  Double_t binWidth = 0.02;
+  for (Int_t i=1; i<83; i++) {
+    if (i<21)
+      binWidth = 0.02;
+    else if (i>=21 && i<43)
+      binWidth = 0.05;
+    else if (i>=43 && i<68)
+      binWidth = 0.1;
+    else
+      binWidth = 0.2;
+    binsDeltaPhi[i] = binsDeltaPhi[i-1]+binWidth;
+  }
+    
   for(Int_t i=0; i<nInputParticles; i++){
     fHistPtYInput[i] = new TH2F(Form("Pt_Y_%s",fParticleListNames[i].Data()),Form("Pt_Y_%s",fParticleListNames[i].Data()), 500,0, 50, 400, -2.0, 2.0);
     fHistPtYInput[i]->Sumw2();
@@ -159,10 +196,48 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistPtYGammaSource[i]);
     
     //phi distributions
-    fHistPhiInput[i] = new TH2F(Form("Pt_Phi_%s",fParticleListNames[i].Data()),Form("Pt_Phi_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
-    fHistPhiInput[i]->Sumw2();
-    fOutputContainer->Add(fHistPhiInput[i]);
+    fHistPtPhiInput[i] = new TH2F(Form("Pt_Phi_%s",fParticleListNames[i].Data()),Form("Pt_Phi_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
+    fHistPtPhiInput[i]->Sumw2();
+    fOutputContainer->Add(fHistPtPhiInput[i]);
+      
+    fHistPtPhiGammaSource[i] = new TH2F(Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
+    fHistPtPhiGammaSource[i]->Sumw2();
+    fOutputContainer->Add(fHistPtPhiGammaSource[i]);
+      
+    // correlation gamma from certain mother to mother
+    fHistPtGammaSourceInput[i] = new TH2F(Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()), 500,0, 50, 500,0, 50);
+    fHistPtGammaSourceInput[i]->Sumw2();
+    fOutputContainer->Add(fHistPtGammaSourceInput[i]);
+
+    fHistPhiGammaSourceInput[i] = new TH2F(Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()), 100,0,7, 100,0,7);
+    fHistPhiGammaSourceInput[i]->Sumw2();
+    fOutputContainer->Add(fHistPhiGammaSourceInput[i]);
+    
+    // lightweight output
+    if (!fDoLightOutput || (fDoLightOutput && (i < 4 || i == 7))) {
+      // decay channels mother
+      fHistDecayChannelsInput[i] = new TH1F(Form("DecayChannels_%s",fParticleListNames[i].Data()),Form("DecayChannels_%s",fParticleListNames[i].Data()), 20, -0.5, 19.5);
+      fHistDecayChannelsInput[i]->Sumw2();
+      InitializeDecayChannelHist(i);
+      fOutputContainer->Add(fHistDecayChannelsInput[i]);
+      
+      // gamma delta phi
+      //fHistPtDeltaPhiInput[i] = new TH2F(Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
+      fHistPtDeltaPhiInput[i] = new TH2F(Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()), 500,0, 50, 82,binsDeltaPhi);
+      fHistPtDeltaPhiInput[i]->Sumw2();
+      fOutputContainer->Add(fHistPtDeltaPhiInput[i]);
+      
+      // alpha mother
+      fHistPtAlphaInput[i] = new TH2F(Form("Pt_Alpha_%s",fParticleListNames[i].Data()),Form("Pt_Alpha_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,1);
+      fHistPtAlphaInput[i]->Sumw2();
+      fOutputContainer->Add(fHistPtAlphaInput[i]);
+    } else {
+      fHistDecayChannelsInput[i] = NULL;
+      fHistPtDeltaPhiInput[i] = NULL;
+      fHistPtAlphaInput[i] = NULL;
+    }
   }
+  delete binsDeltaPhi;
   
   fHistPtYInputRest = new TH1I("Pdg_primary_rest","Pdg_primary_rest", 5000,0, 5000);
   fHistPtYInputRest->Sumw2();
@@ -229,6 +304,9 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     if(hasMother){
       if(motherParticle->GetMother(0)>-1)motherIsPrimary = kTRUE;
     }
+      
+    TParticle* daughter0 = NULL;
+    TParticle* daughter1 = NULL;
 
 //     if (!(abs(particle->GetPdgCode()) == 111 || abs(particle->GetPdgCode()) == 221 || abs(particle->GetPdgCode()) == 331 ||
 //       abs(particle->GetPdgCode()) == 223 || abs(particle->GetPdgCode()) == 211 )  )
@@ -245,49 +323,91 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     if(particle->GetPdgCode()==22 && hasMother==kTRUE){
       if(motherIsPrimary || !IsMotherInList(motherParticle)){
         fHistPtYGamma->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-        fHistPhiGamma->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+        fHistPtPhiGamma->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
         switch(motherParticle->GetPdgCode()){
         case 111:
           fHistPtYGammaSource[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[0]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[0]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 221:
           fHistPtYGammaSource[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[1]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[1]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 331:
           fHistPtYGammaSource[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[2]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[2]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 223:
           fHistPtYGammaSource[3]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[3]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[3]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 113:
           fHistPtYGammaSource[4]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[4]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[4]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 213:
           fHistPtYGammaSource[5]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[5]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[5]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case -213:
           fHistPtYGammaSource[6]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[6]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[6]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 333:
           fHistPtYGammaSource[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[7]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[7]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 443:
           fHistPtYGammaSource[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[8]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[8]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 1114:
           fHistPtYGammaSource[9]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[9]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[9]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 2114:
           fHistPtYGammaSource[10]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[10]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[10]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 2214:
           fHistPtYGammaSource[11]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[11]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[11]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 2224:
           fHistPtYGammaSource[12]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[12]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[12]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 3212:
           fHistPtYGammaSource[13]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourceInput[13]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourceInput[13]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
           default:
             fHistPtYGammaSourceRest->Fill(motherParticle->GetPdgCode());
@@ -298,63 +418,132 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     
 //     fParticleList_local[] = {111,221,331,223,113,213,-213,333,443,1114,2114,2214,2224,3212};
 //     fParticleListNames_local[] = {"Pi0","Eta","EtaPrim","omega","rho0","rho+","rho-","phi","J/psi","Delta-","Delta0","Delta+","Delta++","Sigma0"};
+    Double_t alpha    = -1;
+    Double_t deltaPhi = -1;
     if(particle->GetPdgCode()!=22 && particleIsPrimary){
+        
+      if (particle->GetNDaughters() == 2) {
+        daughter0 = (TParticle*)fMCStack->Particle(particle->GetFirstDaughter());
+        daughter1 = (TParticle*)fMCStack->Particle(particle->GetLastDaughter());
+                
+        if (daughter0->GetPdgCode()==22 || daughter1->GetPdgCode()==22) {
+          alpha    = TMath::Abs((daughter0->Energy() - daughter1->Energy())/(daughter0->Energy() + daughter1->Energy()));
+          deltaPhi = TMath::Abs(daughter0->Phi() - daughter1->Phi());
+        }
+      }
+        
       switch(particle->GetPdgCode()){
         case 111:
           fHistPtYInput[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtAlphaInput[0]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          fHistPtDeltaPhiInput[0]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          fHistDecayChannelsInput[0]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[0]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 221:
           fHistPtYInput[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtAlphaInput[1]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          fHistPtDeltaPhiInput[1]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          fHistDecayChannelsInput[1]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[1]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 331:
           fHistPtYInput[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtAlphaInput[2]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          fHistPtDeltaPhiInput[2]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          fHistDecayChannelsInput[2]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[2]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 223:
           fHistPtYInput[3]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtAlphaInput[3]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          fHistPtDeltaPhiInput[3]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          fHistDecayChannelsInput[3]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[3]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 113:
           fHistPtYInput[4]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[4]) fHistPtAlphaInput[4]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[4]) fHistPtDeltaPhiInput[4]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[4]) fHistDecayChannelsInput[4]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[4]) fHistDecayChannelsInput[4]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 213:
           fHistPtYInput[5]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[5]) fHistPtAlphaInput[5]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[5]) fHistPtDeltaPhiInput[5]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[5]) fHistDecayChannelsInput[5]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[5]) fHistDecayChannelsInput[5]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case -213:
           fHistPtYInput[6]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[6]) fHistPtAlphaInput[6]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[6]) fHistPtDeltaPhiInput[6]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[6]) fHistDecayChannelsInput[6]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[6]) fHistDecayChannelsInput[6]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 333:
           fHistPtYInput[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[7]) fHistPtAlphaInput[7]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[7]) fHistPtDeltaPhiInput[7]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[7]) fHistDecayChannelsInput[7]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[7]) fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 443:
           fHistPtYInput[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[8]) fHistPtAlphaInput[8]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[8]) fHistPtDeltaPhiInput[8]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[8]) fHistDecayChannelsInput[8]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[8]) fHistDecayChannelsInput[8]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 1114:
           fHistPtYInput[9]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[9]) fHistPtAlphaInput[9]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[9]) fHistPtDeltaPhiInput[9]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[9]) fHistDecayChannelsInput[9]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[9]) fHistDecayChannelsInput[9]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 2114:
           fHistPtYInput[10]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[10]) fHistPtAlphaInput[10]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[10]) fHistPtDeltaPhiInput[10]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[10]) fHistDecayChannelsInput[10]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[10]) fHistDecayChannelsInput[10]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 2214:
           fHistPtYInput[11]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[11]) fHistPtAlphaInput[11]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[11]) fHistPtDeltaPhiInput[11]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[11]) fHistDecayChannelsInput[11]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[11]) fHistDecayChannelsInput[11]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 2224:
           fHistPtYInput[12]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[12]) fHistPtAlphaInput[12]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[12]) fHistPtDeltaPhiInput[12]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[12]) fHistDecayChannelsInput[12]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[12]) fHistDecayChannelsInput[12]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 3212:
           fHistPtYInput[13]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
-          fHistPhiInput[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtPhiInput[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          if (fHistPtAlphaInput[13]) fHistPtAlphaInput[13]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (fHistPtDeltaPhiInput[13]) fHistPtDeltaPhiInput[13]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          if (fHistDecayChannelsInput[13]) fHistDecayChannelsInput[13]->Fill(0., particle->GetWeight());
+          if (fHistDecayChannelsInput[13]) fHistDecayChannelsInput[13]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         default:
           fHistPtYInputRest->Fill(particle->GetPdgCode());
@@ -408,4 +597,336 @@ Bool_t AliAnalysisTaskGammaCocktailMC::IsMotherInList(TParticle* mother){
     if(PdgMother==fParticleList[i]) return kTRUE;
   }
   return kFALSE;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist(Int_t inputParticle) {
+  
+  switch (inputParticle) {
+    case 0:
+      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(2,"2#gamma");
+      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(3,"e^{+}e^{-}#gamma");
+      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(4,"2e^{+}2e^{-}");
+      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}");
+      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 1:
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(2,"2#gamma");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(3,"3#pi^{0}");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(4,"#pi^{0}2#gamma");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(5,"#pi^{+}#pi^{-}#gamma");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}#gamma");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(8,"2e^{+}2e^{-}");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(9,"#pi^{+}#pi^{-}2#gamma");
+      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 2:
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#eta");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(3,"#rho^{0}#gamma");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(4,"#pi^{+}#pi^{-}#gamma");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(5,"#omega#gamma");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(6,"2#gamma");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
+      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 3:
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#pi^{0}");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(3,"#pi^{0}#gamma");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(4,"#eta#gamma");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(5,"#pi^{0}e^{+}e^{-}");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(7,"2#pi^{0}#gamma");
+      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 4:
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(2,"2#pi^{0}");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(3,"#pi^{+}#pi^{-}#gamma");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(4,"#pi^{0}#gamma");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(5,"#eta#gamma");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(6,"2#pi^{0}#gamma");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(7,"e^{+}e^{-}");
+      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 5:
+      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{0}");
+      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(3,"#pi^{+}#gamma");
+      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 6:
+      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(2,"#pi^{-}#pi^{0}");
+      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(3,"#pi^{-}#gamma");
+      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 7:
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(2,"K^{+}K^{-}");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(3,"K^{0}_{L}K^{0}_{S}");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(4,"#eta#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(5,"#pi^{0}#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(7,"#eta e^{+}e^{-}");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(8,"#pi^{+}#pi^{-}#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(9,"f_{0}(980)#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(10,"2#pi^{0}#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(11,"#pi^{0}e^{+}e^{-}");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(12,"#pi^{0}#eta#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(13,"a_{0}(980)#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(14,"#eta'#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(15,"#mu^{+}#mu^{-}#gamma");
+      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 8:
+      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(2,"3g");
+      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(3,"2g#gamma");
+      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(4,"e^{+}e^{-}");
+      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}#gamma");
+      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 9:
+      fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(2,"n#pi^{-}");
+      fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 10:
+      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(2,"n#pi^{0}");
+      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(3,"p#pi^{-}");
+      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(4,"n#gamma");
+      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 11:
+      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(2,"n#pi^{+}");
+      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(3,"p#pi^{0}");
+      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(4,"p#gamma");
+      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 12:
+      fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(2,"p#pi^{+}");
+      fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    case 13:
+      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(1,"all");
+      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(2,"#Lambda#gamma");
+      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(3,"#Lambda e^{+}e^{-}");
+      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+    default:
+      break;
+  }
+}
+
+//_________________________________________________________________________________
+Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TParticle* part) {
+    
+  Int_t nDaughters = part->GetNDaughters();
+  if (nDaughters > 10) return 19.;
+  
+  std::vector<Long64_t> *PdgDaughter = new std::vector<Long64_t>(nDaughters);
+  Long64_t tempPdgCode = 0;
+  for (Int_t i=0; i<nDaughters; i++) {
+    tempPdgCode = (Long64_t)((TParticle*)stack->Particle(part->GetFirstDaughter()+i))->GetPdgCode();
+    if (TMath::Abs(tempPdgCode) == 111 || TMath::Abs(tempPdgCode) == 113 || TMath::Abs(tempPdgCode) == 130 || TMath::Abs(tempPdgCode) == 310 || TMath::Abs(tempPdgCode) == 223 || TMath::Abs(tempPdgCode) == 221 || TMath::Abs(tempPdgCode) == 331 || TMath::Abs(tempPdgCode) == 2112 || TMath::Abs(tempPdgCode) == 3122 || TMath::Abs(tempPdgCode) == 9000111 || TMath::Abs(tempPdgCode) == 9010221)
+      tempPdgCode = TMath::Abs(tempPdgCode);
+    PdgDaughter->at(i) = tempPdgCode;
+  }
+  std::sort(PdgDaughter->begin(), PdgDaughter->end());
+  
+  switch (part->GetPdgCode()) {
+    case 111:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
+        return 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22)
+        return 2.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == -11 && PdgDaughter->at(2) == 11 && PdgDaughter->at(3) == 11)
+        return 3.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11)
+        return 4.;
+      else
+        return 19.;
+      break;
+    case 221:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
+        return 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 2.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 111)
+        return 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 211)
+        return 4.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22)
+        return 5.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 22)
+        return 6.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == -11 && PdgDaughter->at(2) == 11 && PdgDaughter->at(3) == 11)
+        return 7.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 211)
+        return 8.;
+      else
+        return 19.;
+      break;
+    case 331:
+      if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211 && PdgDaughter->at(2) == 221)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 113)
+        return 2.;
+      if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 211)
+        return 3.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 223)
+        return 4.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
+        return 5.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 22)
+        return 6.;
+      else
+        return 19.;
+      break;
+    case 223:
+      if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
+        return 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
+        return 4.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11)
+        return 5.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 6.;
+      else
+        return 19.;
+      break;
+    case 113:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111)
+        return 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 211)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111)
+        return 3.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
+        return 4.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 5.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11)
+        return 4.;
+      else
+        return 19.;
+      break;
+    case 213:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 211)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 211)
+        return 2.;
+      else
+        return 19.;
+      break;
+    case -213:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(1) == -211 && PdgDaughter->at(0) == 22)
+        return 2.;
+      else
+        return 19.;
+      break;
+    case 333:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -321 && PdgDaughter->at(1) == 321)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 130 && PdgDaughter->at(1) == 310)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
+        return 3.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111)
+        return 4.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11)
+        return 5.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 221)
+        return 6.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 211)
+        return 7.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 9010221)
+        return 8.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 9.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
+        return 10.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 221)
+        return 11.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 9000111)
+        return 12.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 331)
+        return 13.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 22)
+        return 14.;
+      else
+        return 19.;
+      break;
+    case 443:
+      if (nDaughters == 3 && (PdgDaughter->at(0) == 21 || PdgDaughter->at(0) == 9) && (PdgDaughter->at(1) == 21 || PdgDaughter->at(1) == 9) && (PdgDaughter->at(2) == 21 || PdgDaughter->at(2) == 9))
+        return 1.;
+      else if (nDaughters == 3 && (PdgDaughter->at(0) == 21 || PdgDaughter->at(0) == 9) && (PdgDaughter->at(1) == 21 || PdgDaughter->at(1) == 9) && PdgDaughter->at(2) == 22)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11)
+        return 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22)
+        return 4.;
+      else
+        return 19.;
+      break;
+    case 1114:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2112)
+        return 1.;
+      else
+        return 19.;
+      break;
+    case 2114:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2112)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2212)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 2112)
+        return 3.;
+      else
+        return 19.;
+      break;
+    case 2214:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 2112)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2212)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 2212)
+        return 3.;
+      else
+        return 19.;
+      break;
+    case 2224:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 2212)
+        return 1.;
+      else
+        return 19.;
+      break;
+    case 3212:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 3122)
+        return 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 3122)
+        return 2.;
+      else
+        return 19.;
+      break;
+    default:
+      return -1.;
+      break;
+  }
+
+  delete PdgDaughter;
 }
