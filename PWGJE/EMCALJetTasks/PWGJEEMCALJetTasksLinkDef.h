@@ -95,6 +95,7 @@
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
+#pragma link C++ class AliAnalysisTaskPSHFE+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
