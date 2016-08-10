@@ -92,6 +92,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
  
    ,fRandom(0)
    ,fMatchMode(0)
+   ,fEPAnalysis(0)
    ,fIsNJEventEmb(0)
    ,fAnalysisMC(0)
    ,fDeltaVertexZ(0)
@@ -438,6 +439,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
 
   ,fRandom(0)
   ,fMatchMode(0)
+  ,fEPAnalysis(0)
   ,fIsNJEventEmb(0)
   ,fAnalysisMC(0)
   ,fDeltaVertexZ(0)
@@ -787,6 +789,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   
   ,fRandom(copy.fRandom)
   ,fMatchMode(copy.fMatchMode)
+  ,fEPAnalysis(copy.fEPAnalysis)
   ,fIsNJEventEmb(copy.fIsNJEventEmb)
   ,fAnalysisMC(copy.fAnalysisMC)
   ,fDeltaVertexZ(copy.fDeltaVertexZ)
@@ -1141,6 +1144,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
 
     fRandom                         = o.fRandom;
     fMatchMode                      = o.fMatchMode;
+    fEPAnalysis                     = o.fEPAnalysis;
     fIsNJEventEmb                   = o.fIsNJEventEmb; 
     fAnalysisMC                     = o.fAnalysisMC;
     fDeltaVertexZ                   = o.fDeltaVertexZ;
@@ -2385,8 +2389,10 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     fCommonHistList->Add(fh1EvtAllCent);
     fCommonHistList->Add(fh1Evt);
-    fCommonHistList->Add(fh1EP2);
-    fCommonHistList->Add(fh1EP3);
+    if(fEPAnalysis == kTRUE){
+      fCommonHistList->Add(fh1EP2);
+      fCommonHistList->Add(fh1EP3);
+    }
     fCommonHistList->Add(fh1EvtSelection);
     fCommonHistList->Add(fh1EvtCent);
     fCommonHistList->Add(fh1VertexNContributors);
@@ -2410,7 +2416,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     if(fBranchEmbeddedJets.Length()){
     fCommonHistList->Add(fh1nEmbeddedJets);
     fCommonHistList->Add(fh1IndexEmbedded);
-    fCommonHistList->Add(fh1EmbeddedJetPhiDelta);
+    if(fEPAnalysis == kTRUE){
+      fCommonHistList->Add(fh1EmbeddedJetPhiDelta);
+    }
     //fCommonHistList->Add(fh1PtEmbExtraOnly);
     fCommonHistList->Add(fh1PtEmbBeforeMatch);
     fCommonHistList->Add(fh1PtEmbReject);
@@ -2894,14 +2902,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   fh1EvtSelection->Fill(0.);
   fh1EvtCent->Fill(centPercent);
   
-  
+  Double_t event_plane_2 = -999.;
+  Double_t event_plane_3 = -999.;
+
+  if(fEPAnalysis == kTRUE){
   //Get event plane
   
   Double_t qx2(0), qy2(0), qx3(0), qy3(0);
   
-  Double_t event_plane_2 = -999.;
-  Double_t event_plane_3 = -999.;
-
   // get the q-vectors from AliEventPlane
 
   if(fAOD){//for AOD Input event
@@ -2926,7 +2934,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   fh1EP2->Fill(event_plane_2);
   fh1EP3->Fill(event_plane_3);
-  
+  }//end if fEPAnalysis
   
   //___ get MC information __________________________________________________________________
 
@@ -3016,21 +3024,21 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     fh1nEmbeddedJets->Fill(nEmbeddedJets);
     
     //loop over embedded jets, as crosscheck for in-plane or out-of-plane Embedding
-    
-    if(nEmbeddedJets > 0){ 
-      for(Int_t ij=0; ij<nEmbeddedJets; ++ij){
-	AliAODJet *jet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(ij));
-	if(!jet) continue;
-	Double_t jetPhi = jet->Phi();
-	Double_t phiEP = TMath::Pi()*0.5 - event_plane_2;//change phi EP angle to (0,pi) range, instead of (-pi/2, pi/2)
-
-	Double_t jetPhiDelta = TMath::Abs(jetPhi-phiEP);//absolute difference of event plane and PYTHIA jet phi
-	if(fDebug>3)std::cout<<"JetPhiDelta: "<<jetPhiDelta<<std::endl;
-	
-	fh1EmbeddedJetPhiDelta->Fill(jetPhiDelta);
-      }
-    }else{fh1EmbeddedJetPhiDelta->Fill(-99.);}
-    
+    if(fEPAnalysis == kTRUE){  
+      if(nEmbeddedJets > 0){ 
+	for(Int_t ij=0; ij<nEmbeddedJets; ++ij){
+	  AliAODJet *jet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(ij));
+	  if(!jet) continue;
+	  Double_t jetPhi = jet->Phi();
+	  Double_t phiEP = TMath::Pi()*0.5 - event_plane_2;//change phi EP angle to (0,pi) range, instead of (-pi/2, pi/2)
+	  
+	  Double_t jetPhiDelta = TMath::Abs(jetPhi-phiEP);//absolute difference of event plane and PYTHIA jet phi
+	  if(fDebug>3)std::cout<<"JetPhiDelta: "<<jetPhiDelta<<std::endl;
+	  
+	  fh1EmbeddedJetPhiDelta->Fill(jetPhiDelta);
+	}
+      }else{fh1EmbeddedJetPhiDelta->Fill(-99.);}
+    }//end if fEPAnalysis
 
     Float_t maxDist = 0.3;//starting value, later the real DeltaR cut will be applied
     

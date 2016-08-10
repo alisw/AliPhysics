@@ -208,6 +208,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //--
   TRandom3* fRandom;          // TRandom3 for background estimation 
   Int_t fMatchMode;
+  Bool_t fEPAnalysis;         // get event plane information for Embedding as check
   Bool_t fIsNJEventEmb;
   Bool_t   fAnalysisMC;
   Double_t fDeltaVertexZ;
@@ -273,6 +274,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetCutFractionPtEmbedded(Float_t cut = 0) { fCutFractionPtEmbedded = cut; }
   virtual void   SetCutDeltaREmbedded(Float_t cut) { fCutDeltaREmbedded = cut; }
   void SetMatchMode(Int_t mmode){ fMatchMode = mmode;}
+  void SetEPAnalysisMode(Bool_t EPmode){ fEPAnalysis= EPmode;}
 
  private:
 
