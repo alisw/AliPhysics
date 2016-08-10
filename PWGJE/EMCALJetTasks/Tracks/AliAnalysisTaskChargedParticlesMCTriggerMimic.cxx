@@ -118,6 +118,7 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::UserCreateOutputObjects(){
   // Users should be able to set event weights.
   fHistos->CreateTH1("hUserEventCount", "User event counter", 1, 0.5, 1.5);
   fHistos->CreateTH1("hUserVertexZ", "User vertex distribution after z-cut", 100, -10, 10);
+  fHistos->CreateTH1("hUserPtHard", "User pt-hard distribution", 1000, 0., 300.);
   const std::array<std::string, 2> kInputs = {"True", "Accept"};
   const std::array<std::string, 6> kSpecies = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
   const std::array<double, 5> kPtCuts = {1., 2., 5., 10., 20.};
@@ -213,43 +214,43 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::UserCreateOutputObjects(){
  * @return Result of the event selection (true if event is selected)
  */
 Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::IsEventSelected(){
-  AliDebugStream(1) << GetName() << ": Using custom event selection method" << std::endl;
+  AliDebugStream(2) << GetName() << ": Using custom event selection method" << std::endl;
   if(!fTriggerPatchInfo){
     AliErrorStream() << GetName() << ": Trigger patch container not found but required" << std::endl;
     return false;
   }
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
-  AliDebugStream(2) << GetName() << "Event is an INT7 event" << std::endl;
+  AliDebugStream(3) << GetName() << "Event is an INT7 event" << std::endl;
 
   // MC outlier cut
   if(fIsPythia){
     if(!CheckMCOutliers()){
-      AliDebugStream(2) << GetName() << ": Event identified as outlier" << std::endl;
+      AliDebugStream(3) << GetName() << ": Event identified as outlier" << std::endl;
       return false;
     } else {
-      AliDebugStream(2) << GetName() << ": Not an outlier event" << std::endl;
+      AliDebugStream(3) << GetName() << ": Not an outlier event" << std::endl;
     }
   }
 
   // Generall event quality cuts
   // The vertex cut also contains cuts on the number
   // of contributors and the position in z
-  AliDebugStream(2) << GetName() << ": Applying vertex selection" << std::endl;
+  AliDebugStream(3) << GetName() << ": Applying vertex selection" << std::endl;
   if(fAliAnalysisUtils){
     if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return false;
     if(fAliAnalysisUtils->IsPileUpEvent(InputEvent())) return false;
-    AliDebugStream(2) << GetName() << ": Vertex selection passed" << std::endl;
+    AliDebugStream(3) << GetName() << ": Vertex selection passed" << std::endl;
   }
 
-  AliDebugStream(2) << GetName() << ": Applying EMCAL trigger selection" << std::endl;
+  AliDebugStream(3) << GetName() << ": Applying EMCAL trigger selection" << std::endl;
   if(fPatchType != kUndef){
     if(!SelectEmcalTrigger(fTriggerPatchInfo)){
-      AliDebugStream(1) << GetName() << ": Failed trigger selection" << std::endl;
+      AliDebugStream(3) << GetName() << ": Failed trigger selection" << std::endl;
       return false;
     }
   }
 
-  AliDebugStream(1) << GetName() << "Event selected" << std::endl;
+  AliDebugStream(2) << GetName() << "Event selected" << std::endl;
   return true;
 }
 
@@ -261,14 +262,19 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
   AliDebugStream(1) << GetName() << ": Inspecting event" << std::endl;
   Double_t weight = 1.;
   if(fIsPythia){
-    weight = fWeightHandler ? fWeightHandler->GetEventWeight(fPythiaHeader) : 1.;
+    if(!fPythiaHeader){
+      AliErrorStream() << GetName() << ": PYTHIA event header not found" << std::endl;
+    } else {
+      weight = fWeightHandler ? fWeightHandler->GetEventWeight(fPythiaHeader) : 1.;
+    }
   }
 
   fHistos->FillTH1("hUserEventCount", 1, weight);
   const AliVVertex *vtx = InputEvent()->GetPrimaryVertex();
-  fHistos->FillTH1("hUserVertexZ", 1, weight);
+  fHistos->FillTH1("hUserVertexZ", vtx->GetZ(), weight);
+  fHistos->FillTH1("hUserPtHard", fPtHard);
 
-  AliDebugStream(2) << GetName() << ": eta-lab cut: " << fEtaLabCut << ", eta-cms cut: " << fEtaCmsCut << std::endl;
+  AliDebugStream(3) << GetName() << ": eta-lab cut: " << fEtaLabCut << ", eta-cms cut: " << fEtaCmsCut << std::endl;
 
   AliVParticle *truepart(nullptr);
   Bool_t isEMCAL(kFALSE);
@@ -478,28 +484,28 @@ void AliAnalysisTaskChargedParticlesMCTriggerMimic::InitializeTrackCuts(TString 
 bool AliAnalysisTaskChargedParticlesMCTriggerMimic::SelectEmcalTrigger(const TClonesArray *triggerpatches){
   bool selected = false;
   AliEMCALTriggerPatchInfo *patch(nullptr);
-  AliDebugStream(1) << GetName() << ": Selecting EMCAL triggered event type (" << (fPatchType == kEMCEGA ? "EGA" : "EJE") << ") using patch energy above threshold" << std::endl;
-  AliDebugStream(1) << GetName() << ": Energy threshold " << fEnergyThreshold << " GeV" << std::endl;
-  AliDebugStream(1) << GetName() << ": Number of reconstructed patches " << triggerpatches->GetEntries() << std::endl;
+  AliDebugStream(2) << GetName() << ": Selecting EMCAL triggered event type (" << (fPatchType == kEMCEGA ? "EGA" : "EJE") << ") using patch energy above threshold" << std::endl;
+  AliDebugStream(2) << GetName() << ": Energy threshold " << fEnergyThreshold << " GeV" << std::endl;
+  AliDebugStream(2) << GetName() << ": Number of reconstructed patches " << triggerpatches->GetEntries() << std::endl;
   for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
     patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
-    AliDebugStream(3) << GetName() << ": Next patch" << std::endl;
+    AliDebugStream(4) << GetName() << ": Next patch" << std::endl;
     if(!patch->IsOfflineSimple()) continue;
-    AliDebugStream(3) << GetName() << "Patch is an offline simple patch" << std::endl;
-    AliDebugStream(3) << GetName() << ": Trigger bits: " << std::bitset<32>(patch->GetTriggerBits()) << std::endl;
-    AliDebugStream(3) << GetName() << ": J1(" << patch->IsJetHighSimple()  << "), J2(" << patch->IsJetLowSimple()  
+    AliDebugStream(4) << GetName() << "Patch is an offline simple patch" << std::endl;
+    AliDebugStream(4) << GetName() << ": Trigger bits: " << std::bitset<32>(patch->GetTriggerBits()) << std::endl;
+    AliDebugStream(4) << GetName() << ": J1(" << patch->IsJetHighSimple()  << "), J2(" << patch->IsJetLowSimple()
                                    << "), G1(" << patch->IsGammaHighSimple() << ") G2(" << patch->IsGammaLowSimple() << ")" << std::endl;
     if(fPatchType == kEMCEJE){
       if(!patch->IsJetHighSimple()) continue;
       AliDebugStream(3) << GetName() << ": Patch is jet high simple" << std::endl;
     } else if(fPatchType == kEMCEGA){
       if(!patch->IsGammaHighSimple()) continue;
-      AliDebugStream(3) << GetName() << ": Patch is gamma high simple" << std::endl;
+      AliDebugStream(4) << GetName() << ": Patch is gamma high simple" << std::endl;
     }
-    AliDebugStream(2) << GetName() << ": Found trigger patch of matching type, now cutting on energy ...." << std::endl;
+    AliDebugStream(3) << GetName() << ": Found trigger patch of matching type, now cutting on energy ...." << std::endl;
     if(patch->GetPatchE() > fEnergyThreshold){
       // firing trigger patch found
-      AliDebugStream(1) << GetName() << ": Firing trigger patch found at energy " << std::setprecision(1) << patch->GetPatchE() << std::endl; 
+      AliDebugStream(2) << GetName() << ": Firing trigger patch found at energy " << std::setprecision(1) << patch->GetPatchE() << std::endl;
       selected = true;
       break;
     }
