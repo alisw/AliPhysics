@@ -232,6 +232,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return
    */
   virtual Bool_t              FillHistograms()                  { return kTRUE                 ; }
+
   /**
    * Run function. This is the core function of the analysis and
    * contains the user code. Therefore users have to implement this
