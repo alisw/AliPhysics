@@ -493,11 +493,25 @@ Bool_t AliEmcalTriggerMaker::Run()
  */
 AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTriggerType_t type, TriggerMakerPatchSource_t patchSource)
 {
-  Int_t tBits=-1;
-  if (patchSource == kTMOnline)
+  // get trigger bits and position in global 2x2 tower coordinates
+  // A0 left bottom (0,0)
+  Int_t tBits=-1, globCol=-1, globRow=-1;
+  if (patchSource == kTMOnline){
     fCaloTriggers->GetTriggerBits(tBits);
-  else
+    fCaloTriggers->GetPosition(globCol,globRow);
+  } else {
     fSimpleOfflineTriggers->GetTriggerBits(tBits);
+    fSimpleOfflineTriggers->GetPosition(globCol, globRow);
+  }
+
+  if(globCol < 0 || globRow < 0){
+    TString debugpatchtype;
+    switch(patchSource){
+    case kTMOnline: debugpatchtype = "Online patches"; break;
+    case kTMOffline: debugpatchtype = "Offline patches"; break;
+    };
+    AliErrorStream() << "Invalid patch position(" << globCol << "," << globRow << ") for " << debugpatchtype << std::endl;
+  }
 
   if(fDoQA){
     for(unsigned int ibit = 0; ibit < sizeof(tBits)*8; ibit++) {
@@ -519,14 +533,6 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // save primary vertex in vector
   TVector3 vertex;
   vertex.SetXYZ(fVertex[0], fVertex[1], fVertex[2]);
-
-  // get position in global 2x2 tower coordinates
-  // A0 left bottom (0,0)
-  Int_t globCol=-1, globRow=-1;
-  if (patchSource == kTMOnline)
-    fCaloTriggers->GetPosition(globCol,globRow);
-  else
-    fSimpleOfflineTriggers->GetPosition(globCol, globRow);
 
   // Markus: For the moment reject jet patches with a row larger than 44 to overcome
   // an issue with patches containing inactive TRUs
@@ -1025,7 +1031,7 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
         // be removed later
         tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
         // Add recalc bit - it will be handled by the ProcessPatch function
-        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaLowBit()) );
+        tBits = tBits | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaLowBit()) );
       }
       if (tSum > fCaloTriggerSetupOut->GetThresholdGammaHighSimple()){
         // Set the trigger bit for gamma high - it is needed by the ProcessPatch function
@@ -1033,7 +1039,7 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
         // be removed later
         tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
         // Add recalc bit - it will be handled by the ProcessPatch function
-        tBits = tBits | ( 1 << (kOfflineOffset + fTriggerBitConfig->GetGammaHighBit()) );
+        tBits = tBits | ( 1 << (kRecalcOffset + fTriggerBitConfig->GetGammaHighBit()) );
       }
       
       // add trigger values
