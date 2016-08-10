@@ -1576,12 +1576,18 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    length = aodTrack->GetIntegratedLength();
 	    tof = tofTime*1E-3; // ns		      
 	    if (tof <= 0) {
-	      //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	      Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	      continue;
 	    }
 	    if (length <= 0){
-	      //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
-	      continue;
+	      // in old productions integrated track length is not stored in AODs -> need workaround
+	      Double_t exptime[10];
+	      aodTrack->GetIntegratedTimes(exptime);
+	      length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+	      if (length <= 0){
+		Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+		continue;
+	      }
 	    }	      
 	    length = length*0.01; // in meters
 	    tof = tof*c;
@@ -2214,14 +2220,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  tof = tofTime*1E-3; // ns	
 	  
 	  if (tof <= 0) {
-	    //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	    Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	    continue;
 	  }
 	  if (length <= 0){
-	    //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	    Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
 	    continue;
 	  }
-	  
+
 	  length = length*0.01; // in meters
 	  tof = tof*c;
 	  beta = length/tof;
