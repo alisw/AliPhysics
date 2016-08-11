@@ -43,7 +43,7 @@ Bool_t ConfigPhiPP13TeV_PID
     //Set custom quality cuts for systematic checks
     cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
     //////cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTOF);
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC);
   }else{
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
