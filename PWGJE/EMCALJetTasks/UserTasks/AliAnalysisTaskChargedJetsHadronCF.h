@@ -88,6 +88,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
   AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
   AliEmcalJet*                fMatchedJet;                              //!<!  jet matched to input jet (calculated event-by-event)
+  AliEmcalJet*                fMatchedJetReference;                     //!<!  matching input jet (calculated event-by-event)
   AliEmcalJet*                fInitialPartonMatchedJet1;                //!<!  On PYTHIA data and fJetOutputMode=6, this holds the PDG code of the initial collisions that was matched to this jet
   AliEmcalJet*                fInitialPartonMatchedJet2;                //!<!  On PYTHIA data and fJetOutputMode=6, this holds the PDG code of the initial collisions that was matched to this jet
   Int_t                       fAcceptedJets;                            //!<!  number accepted jets (calculated event-by-event)
@@ -107,6 +108,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
   void                        GetInitialCollisionJets();
+  void                        GetMatchingJets();
+
   void                        GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading);
   void                        CalculateEventProperties();
 
