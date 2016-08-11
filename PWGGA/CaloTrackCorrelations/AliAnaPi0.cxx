@@ -1518,7 +1518,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           (primAOD->E() - primAOD->Pz()) < 1e-3      || 
           (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
       
-      //Photon kinematics
+      // Photon kinematics
       fPi0Mom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
@@ -1575,7 +1575,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       fhPrimEtaYeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
     }
     
-    //Origin of meson
+    // Origin of meson
     if(fFillOriginHisto && TMath::Abs(mesonY) < 0.7)
     {
       Int_t momindex  = -1;
@@ -1666,10 +1666,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
       } // pi0 has mother
     }
     
-    //Check if both photons hit Calorimeter
-    if(nDaught != 2 ) continue; //Only interested in 2 gamma decay
+    // Check if both photons hit calorimeter or a given fiducial region 
+    // only if those settings are specified.
+    if ( !IsFiducialCutOn() && !IsRealCaloAcceptanceOn() ) continue ;
     
-    if(iphot1 < 0 || iphot1 >= nprim || iphot2 < 0 || iphot2 >= nprim) continue ;
+    if ( nDaught != 2 ) continue; //Only interested in 2 gamma decay
+    
+    if ( iphot1 < 0 || iphot1 >= nprim || iphot2 < 0 || iphot2 >= nprim ) continue ;
     
     Int_t pdg1 = 0;
     Int_t pdg2 = 0;
