@@ -1,4 +1,4 @@
-Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage) {
+Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage, Bool_t corr=kTRUE) {
 
   // macro that process a list of files (xml or txt) to produce then the
   // OCDB entry for the TPC SP Distortion calibration; inspired by
@@ -67,6 +67,8 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   TIter next(listoffiles);   
   TObjArray* a = new TObjArray();
   a->SetOwner(kTRUE);
+
+
   Int_t lowStatJobs = 0;
   Int_t nJobs = 0;
   while (nextfile=next()) {
@@ -87,7 +89,11 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     else {
       ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
     }
-    AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
+    AliTPCChebCorr* c = corr ? dcalibRes->GetChebCorrObject() : dcalibRes->GetChebDistObject();
+    if (!c) {
+      ::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+      exit(1);
+    }
     a->Add(c);
   }
   if (lowStatJobs) {
