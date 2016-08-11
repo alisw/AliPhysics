@@ -94,7 +94,7 @@ public :
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }  
 
-  TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
+  TObjArray* GetListOfDrawableObjects() {return fFolderObj; fFolderObj=NULL;}
     
   void ResetOutputData();
 
