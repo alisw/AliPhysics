@@ -2491,7 +2491,7 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
                   ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
                 if(particle->GetPdgCode() == 111){  
                   Int_t source = GetSourceClassification(111,pdgCode);
-                  hMCSecPi0PtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); 
+                  hMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC);
                 }
               }
             }
@@ -2748,7 +2748,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
                 ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
               if(particle->GetPdgCode() == 111){  
                 Int_t source = GetSourceClassification(111,pdgCode);
-                hMCSecPi0PtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC); 
+                hMCSecPi0InAccPtvsSource[fiCut]->Fill(particle->Pt(),source,fWeightJetJetMC);
               }
             }
           }
