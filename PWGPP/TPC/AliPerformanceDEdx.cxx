@@ -175,12 +175,23 @@ void AliPerformanceDEdx::Init()
     else{
     
         h_tpc_dedx_mips_0 = new TH1D("h_tpc_dedx_mips_0","",binsQA[0],xminQA[0],xmaxQA[0]);
+        h_tpc_dedx_mips_0->SetXTitle("dedx (a.u.)");
         h_tpc_dedx_mipsele_0 = new TH1D("h_tpc_dedx_mipsele_0","",binsQA[0],xminQA[0],xmaxQA[0]);
+        h_tpc_dedx_mipsele_0->SetXTitle("dedx (a.u.)");
+        h_tpc_dedx_mipsele_0->SetYTitle("tan#lambda");
         h_tpc_dedx_mips_c_0_5 = new TH2D("h_tpc_dedx_mips_c_0_5","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[5],xminQA[5],xmaxQA[5]);
+        h_tpc_dedx_mips_c_0_5->SetXTitle("dedx (a.u.)");
+        h_tpc_dedx_mips_c_0_5->SetYTitle("tan#lambda");
         h_tpc_dedx_mips_a_0_5 = new TH2D("h_tpc_dedx_mips_a_0_5","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[5],xminQA[5],xmaxQA[5]);
+        h_tpc_dedx_mips_a_0_5->SetXTitle("dedx (a.u.)");
+        h_tpc_dedx_mips_a_0_5->SetYTitle("tan#lambda");
         h_tpc_dedx_mips_c_0_1 = new TH2D("h_tpc_dedx_mips_c_0_1","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[1],xminQA[1],xmaxQA[1]);
+        h_tpc_dedx_mips_c_0_1->SetXTitle("dedx (a.u.)");
+        h_tpc_dedx_mips_c_0_1->SetYTitle("#phi (rad)");
         h_tpc_dedx_mips_a_0_1 = new TH2D("h_tpc_dedx_mips_a_0_1","",binsQA[0],xminQA[0],xmaxQA[0],binsQA[1],xminQA[1],xmaxQA[1]);
-    
+        h_tpc_dedx_mips_a_0_1->SetXTitle("dedx (a.u.)");
+        h_tpc_dedx_mips_a_0_1->SetYTitle("#phi (rad)");
+        
         fFolderObj->Add(h_tpc_dedx_mips_0);
         fFolderObj->Add(h_tpc_dedx_mipsele_0);
         fFolderObj->Add(h_tpc_dedx_mips_c_0_5);

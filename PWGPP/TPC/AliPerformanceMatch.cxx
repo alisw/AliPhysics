@@ -199,10 +199,24 @@ void AliPerformanceMatch::Init(){
       }
       else{
           h_tpc_match_pull_2_7 = new TH2D("h_tpc_match_pull_2_7","",binsPullHisto[2],minPullHisto[2],maxPullHisto[2],binsPullHisto[7],minPullHisto[7],maxPullHisto[7]);
+          h_tpc_match_pull_2_7->SetXTitle("(sin#phi-sin#phi_{ref})/#sigma");
+          h_tpc_match_pull_2_7->SetYTitle("1/p_{Tref} (GeV/c)^{-1}");
+          
           h_tpc_match_pull_4_7 = new TH2D("h_tpc_match_pull_2_7","",binsPullHisto[4],minPullHisto[4],maxPullHisto[4],binsPullHisto[7],minPullHisto[7],maxPullHisto[7]);
+          h_tpc_match_pull_4_7->SetXTitle("(p_{Tref}/p_{T}-1)/#sigma");
+          h_tpc_match_pull_4_7->SetYTitle("1/p_{Tref} (GeV/c)^{-1}");
+
           h_tpc_match_pull_0_7 = new TH2D("h_tpc_match_pull_2_7","",binsPullHisto[0],minPullHisto[0],maxPullHisto[0],binsPullHisto[7],minPullHisto[7],maxPullHisto[7]);
+          h_tpc_match_pull_0_7->SetXTitle("(y-y_{ref})/#sigma");
+          h_tpc_match_pull_0_7->SetYTitle("1/p_{Tref} (GeV/c)^{-1}");
+
           h_tpc_match_pull_1_7 = new TH2D("h_tpc_match_pull_2_7","",binsPullHisto[1],minPullHisto[1],maxPullHisto[1],binsPullHisto[7],minPullHisto[7],maxPullHisto[7]);
+          h_tpc_match_pull_1_7->SetXTitle("1/p_{Tref} (GeV/c)^{-1}");
+          h_tpc_match_pull_1_7->SetYTitle("1/p_{Tref} (GeV/c)^{-1}");
+
           h_tpc_match_pull_3_7 = new TH2D("h_tpc_match_pull_2_7","",binsPullHisto[3],minPullHisto[3],maxPullHisto[3],binsPullHisto[7],minPullHisto[7],maxPullHisto[7]);
+          h_tpc_match_pull_3_7->SetXTitle("(tan#lambda-tan#lambda_{ref})/#sigma");
+          h_tpc_match_pull_3_7->SetYTitle("1/p_{Tref} (GeV/c)^{-1}");
       
           fFolderObj->Add(h_tpc_match_pull_2_7);
           fFolderObj->Add(h_tpc_match_pull_4_7);
@@ -232,7 +246,13 @@ void AliPerformanceMatch::Init(){
       }
       else{
           h_tpc_match_trackingeff_all_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
+          h_tpc_match_trackingeff_all_2_3->SetXTitle("p_{T}");
+          h_tpc_match_trackingeff_all_2_3->SetYTitle("eta");
+          
           h_tpc_match_trackingeff_tpc_2_3 = new TH2D("h_tpc_match_trackingeff_tpc_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
+          h_tpc_match_trackingeff_tpc_2_3->SetXTitle("p_{T}");
+          h_tpc_match_trackingeff_tpc_2_3->SetYTitle("eta");
+          
           fFolderObj->Add(h_tpc_match_trackingeff_all_2_3);
           fFolderObj->Add(h_tpc_match_trackingeff_tpc_2_3);
       }
@@ -258,7 +278,12 @@ void AliPerformanceMatch::Init(){
       }
     else{
         h_tpc_constrain_tpc_0_2_3 = new TH3D("h_tpc_constrain_tpc_0_2_3","",binsTPCConstrain[0],minTPCConstrain[0],maxTPCConstrain[0],binsTPCConstrain[2],minTPCConstrain[2],maxTPCConstrain[2],binsTPCConstrain[3],minTPCConstrain[3],maxTPCConstrain[3]);
+        h_tpc_constrain_tpc_0_2_3->SetXTitle("(#phi-#phi_{ref})/#sigma");
+        h_tpc_constrain_tpc_0_2_3->SetYTitle("p_{T}");
+        h_tpc_constrain_tpc_0_2_3->SetZTitle("eta");
+        
         fFolderObj->Add(h_tpc_constrain_tpc_0_2_3);
+        
     }
   }
 
