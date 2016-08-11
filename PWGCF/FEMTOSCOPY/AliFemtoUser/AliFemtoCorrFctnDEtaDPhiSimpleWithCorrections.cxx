@@ -474,7 +474,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 
 	  double dheta = heta1 - heta2;
 
-	  fDPhiDEtaHiddenNumerator->Fill(dhphi, dheta);
+	  fDPhiDEtaHiddenNumerator->Fill(dhphi, dheta,weight);
 	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
 	    {
 	      fDPhiDEtaHiddenPrimaryNumerator->Fill(dhphi,dheta,weight);
@@ -580,7 +580,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	  double dheta = heta1 - heta2;      
 
 	  
-	  fDPhiDEtaHiddenDenominator->Fill(dhphi, dheta);
+	  fDPhiDEtaHiddenDenominator->Fill(dhphi, dheta,weight);
 	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
 	    {
 	      fDPhiDEtaHiddenPrimaryDenominator->Fill(dhphi,dheta,weight);
