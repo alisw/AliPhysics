@@ -50,6 +50,9 @@
 #include "AliPIDResponse.h"
 #include "AliTRDPIDResponse.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskPSHFE)
 
 //________________________________________________________________________
