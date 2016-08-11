@@ -29,9 +29,9 @@ declare baseStartingDir="$PWD"
 #declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
 export HFCJlocalCodeDir="$PWD"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
-declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Oct30/Templates_pp_28Aug15"
+declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2016Jul18/Templates_pp_12May15_New"
 #/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/MCTemplates/Templates_pp_12May15"
-declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2015Dec18/Templates_pPb_28Aug15"
+declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/MCtemplate/2016Jul18/Templates_pPb_28Aug15"
 #"/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
@@ -39,8 +39,10 @@ declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 declare -a Nmccase=( 6 6 )
 declare -a mccasePP=( 1 1 1 1 0 1 0 1 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
 declare -a mccasePPb=( 1 1 1 1 0 0 1 1 )
-declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC"  "CorrelationPlotsEPOS3PtDzerofromC")
+declare -a isreflectedMC=(0 0 0 0 0 0 0 1 ) # used only to determine the fit range and the transverse region range, it does not however change the results. Only EPOS is already reflected
+declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsEPOS3PtDzerofromC")
 declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC" "CorrelationPlotsEPOS3PtDzerofromC")
+declare -i minptdisplaypPb=5
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
@@ -98,10 +100,14 @@ declare doAverage=1
 declare doNicePlot=1
 declare doCompareMesons=1
 declare dofit=1
-declare doFitResultComparisonPPpPb=1
+declare doDrawFitFigure=1
+declare doFitResultComparisonPPpPb=
 declare dofitMC=1
+declare dofitawayside=0
 declare doFitResultComparisonPPtoMC=1
 declare doFitResultComparisonPPbtoMC=1
+declare doFitResultComparisonPPtoMCawayside=1
+declare doFitResultComparisonPPbtoMCawayside=1
 declare doFitResultComparisonPPtoPPbtoMCPP=0
 declare doCompareWithMC=1
 declare doComparepppPb=1
@@ -454,9 +460,9 @@ if [ ${dofitMC} = 1 ]; then
 	for (( mccase=0; mccase<${Nmccase[${collsyst}]}; mccase++ ))
 	do 
 	    if [ ${collsyst} = 0  ]; then
-		$HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${reflect} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootNamepp[$mccase]}
+		$HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${isreflectedMC[mccase]} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootNamepp[$mccase]} ${dofitawayside}
 	    elif [ ${collsyst} = 1  ]; then
-		$HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${reflect} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootNamepPb[$mccase]}
+		$HFCJlocalCodeDir/DoFitMC.sh ${collsyst} ${isreflectedMC[mccase]} ${averageOpt} ${templateDir[${collsyst}]}  ${templateDir[${collsyst}]}/FitResults/ ${collsystdir[${collsyst}]}${templRootNamepPb[$mccase]} ${dofitawayside}
 	    fi
 	done
 	collsyst=${collsyst}+1
@@ -467,13 +473,13 @@ collsyst=${firstcollsyst}
 if [ ${dofit} = 1 ]; then
     cd ${baseDir}/AllPlots/Averages/FitResults/    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]}
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside}
 	collsyst=${collsyst}+1
     done
 fi
 collsyst=${firstcollsyst}
 
-if [ ${dofit} = 1 ]; then
+if [ ${doDrawFitFigure} = 1 ]; then
   cd ${baseDir}/AllPlots/Averages/FitResults
   mkdir NiceStylePlots
   cd NiceStylePlots
@@ -586,6 +592,8 @@ IncludeModel(5,${mccasePPb[5]})
 IncludeModel(6,${mccasePPb[6]})
 IncludeModel(7,${mccasePPb[7]})
 SetDrawSystMC(kFALSE)
+SetMinPtDisplayData((Double_t)${minptdisplaypPb})
+SetMinPtDisplayMC((Double_t)${minptdisplaypPb})
 CompareFitResultsPPbtoMCUniqueCanvas()
 EOF
 
@@ -594,6 +602,68 @@ collsyst=${firstcollsyst}
 
 ###### LINK PAPER FIGURE ####
 ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC/ComparePPbtoMCnoSystFitResults.* $baseStartingDir/PaperFigures
+fi
+
+
+##### do away side if requested
+
+if [ ${doFitResultComparisonPPtoMCawayside} = 1 ];then
+    collsyst=0
+    mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoMC
+    cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoMC
+
+    root -b <<EOF &> CompareFitResultsPPtoMCuniqueCanvasAwaySide.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
+IncludeModel(0,${mccasePP[0]})
+IncludeModel(1,${mccasePP[1]})
+IncludeModel(2,${mccasePP[2]})
+IncludeModel(3,${mccasePP[3]})
+IncludeModel(4,${mccasePP[4]})
+IncludeModel(5,${mccasePP[5]})
+IncludeModel(6,${mccasePP[6]})
+IncludeModel(7,${mccasePP[7]})
+SetDrawSystMC(kFALSE)
+CompareFitResultsPPtoMCUniqueCanvasAwaySide()
+EOF
+
+
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoMC/ComparePPtoMCnoSystFitResultsAS.* $baseStartingDir/PaperFigures
+
+collsyst=${firstcollsyst}
+
+fi
+
+if [ ${doFitResultComparisonPPbtoMCawayside} = 1 ];then
+    collsyst=1
+    mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC
+    cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC
+
+    root -b <<EOF &> CompareFitResultsPPbtoMCuniqueCanvasAS.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
+IncludeModel(0,${mccasePPb[0]})
+IncludeModel(1,${mccasePPb[1]})
+IncludeModel(2,${mccasePPb[2]})
+IncludeModel(3,${mccasePPb[3]})
+IncludeModel(4,${mccasePPb[4]})
+IncludeModel(5,${mccasePPb[5]})
+IncludeModel(6,${mccasePPb[6]})
+IncludeModel(7,${mccasePPb[7]})
+SetDrawSystMC(kFALSE)
+SetMinPtDisplayData((Double_t)${minptdisplaypPb})
+SetMinPtDisplayMC((Double_t)${minptdisplaypPb})
+CompareFitResultsPPbtoMCUniqueCanvasAwaySide()
+EOF
+
+
+collsyst=${firstcollsyst}
+
+###### LINK PAPER FIGURE ####
+ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC/ComparePPbtoMCnoSystFitResultsAS.* $baseStartingDir/PaperFigures
 fi
 
 

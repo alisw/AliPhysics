@@ -18,18 +18,16 @@ void DoNiceFitPlots() {
 
   TCanvas *cInPP = (TCanvas*)fInPP.Get("cFitting_0");
   TCanvas *cInPPb = (TCanvas*)fInPPb.Get("cFitting_1");
+ gStyle->SetOptStat(0000);
+gStyle->SetOptFit(000);
 
   Int_t indexpp = 2;
   Int_t indexpPb = 2;
 
   TCanvas *cOut1 = ExtractPad(cInPP,2);
-  ModStyle(cOut1,0);
   cOut1->SetName("cNew_pp");
-  cOut1->Draw();
   TCanvas *cOut2 = ExtractPad(cInPPb,2);
-  ModStyle(cOut2,1);
   cOut2->SetName("cNew_pPb");
-  cOut2->Draw();
 
   TCanvas *cUnc_pp = (TCanvas*)fInPP.Get(Form("cFinalCorrelation%d",indexpp-1));
   TCanvas *cUnc_pPb = (TCanvas*)fInPPb.Get(Form("cFinalCorrelation%d",indexpPb-1));
@@ -50,6 +48,11 @@ void DoNiceFitPlots() {
   graph_pPb->SetMarkerColor(kRed);
   graph_pPb->SetFillStyle(0);
   graph_pPb->Draw("E2");
+
+  ModStyle(cOut1,0);
+  cOut1->Draw();
+  ModStyle(cOut2,1);
+  cOut2->Draw();
 
   SaveCanvas(cOut1,Form("%s/NiceStylePlots",inputdirectory.Data()),"cFitOutput_NiceStyle_pp_WeightedAverage_1.0_99.0");
   SaveCanvas(cOut2,Form("%s/NiceStylePlots",inputdirectory.Data()),"cFitOutput_NiceStyle_pPb_WeightedAverage_1.0_99.0");
@@ -82,6 +85,8 @@ c->ls();
   fun3->SetLineWidth(4);
   fun3->SetLineStyle(2);
 
+  TH1D* hSuperimp;
+
   TH1D *h = (TH1D*)c->FindObject("fHist");
   h->GetYaxis()->SetTitleOffset(h->GetYaxis()->GetTitleOffset()+0.3);
   h->GetYaxis()->CenterTitle(kTRUE);
@@ -98,11 +103,14 @@ c->ls();
     h->SetLineColor(kRed);
     h->SetMarkerColor(kRed);
     h->SetMarkerStyle(21);
+    hSuperimp = (TH1D*)h->Clone();
+    hSuperimp->SetMarkerStyle(25);
+    hSuperimp->SetMarkerColor(kRed+1);
   }
 
   TF1 *funfit = (TF1*)(h->GetListOfFunctions()->FindObject("TwoGausPeriodicity"));
   funfit->SetLineWidth(4); 
-  funfit->SetLineColor(kRed+2); 
+  funfit->SetLineColor(kRed+1); 
 
   Double_t max = h->GetBinContent(h->GetMaximumBin());
   h->SetMaximum(TMath::Floor(((max*2)+1)));
@@ -122,11 +130,9 @@ c->ls();
   legend->SetMargin(0.33);
   legend->SetTextSize(0.04);
   legend->SetBorderSize(0);
-  if(system==0) legend->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
-  else legend->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
   legend->AddEntry(funfit,"Total fit","l");
-  legend->AddEntry(fun,"Near-side","l");
-  legend->AddEntry(fun2,"Away-side","l");
+  legend->AddEntry(fun2,"Near side","l");
+  legend->AddEntry(fun,"Away side","l");
   legend->AddEntry(fun3,"Baseline","l");
   legend->Draw("same");
 
@@ -173,12 +179,12 @@ c->ls();
 
   pad->cd();
 
-  TLatex *tl1=new TLatex(0.215,0.87,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+  TLatex *tl1=new TLatex(0.215,0.87,Form("Average D^{0}, D^{+}, D^{*+}"));
   tl1->SetNDC();
   tl1->SetTextSize(0.042);
   tl1->Draw("same");
 
-  TLegend * legend2 = new TLegend(0.20,0.795,0.7,0.85);
+  TLegend * legend2 = new TLegend(0.20,0.795,0.5,0.85);
   legend2->SetFillColor(0);
   legend2->SetMargin(0.3);
   legend2->SetTextSize(0.042);
@@ -186,33 +192,49 @@ c->ls();
   if(system==0) legend2->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
   else legend2->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
   legend2->Draw("same");
+ 
+  if(system==1) {
+    TLegend * legendSuperimp = new TLegend(0.20,0.795,0.5,0.85);
+    legendSuperimp->SetFillStyle(0);
+    legendSuperimp->SetMargin(0.3);
+    legendSuperimp->SetTextSize(0.042);
+    legendSuperimp->SetBorderSize(0);
+    legendSuperimp->AddEntry(hSuperimp,"","lep");
+    legendSuperimp->Draw("same");
+  }
 
-  TLatex *tl2b=new TLatex(0.79,0.87,Form("#bf{ALICE}"));
+
+  TLatex *tl2b=new TLatex(0.79,0.87,Form("ALICE"));
   tl2b->SetNDC();
   tl2b->SetTextSize(0.042);
+  //  tl2b->SetTextFont(42);
   tl2b->Draw("same");
 
   if(system==0) {
-    TLatex *tl3=new TLatex(0.215,0.75,Form("#bf{|#it{y}^{D}| < 0.5, |#Delta#eta| < 1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.75,Form("|#it{y}^{D}_{cms}| < 0.5, |#Delta#eta| < 1"));
     tl3->SetNDC();
     tl3->SetTextSize(0.042);
+    //    tl3->SetTextFont(42);
     tl3->Draw("same");
   } else {
-    TLatex *tl3=new TLatex(0.215,0.75,Form("#bf{-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.75,Form("-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1"));
     tl3->SetNDC();
     tl3->SetTextSize(0.042);
+    //    tl3->SetTextFont(42);
     tl3->Draw("same");
   }
 
   if(system==0) {
-    TLatex *tl4=new TLatex(0.215,0.69,Form("#bf{5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
+    //    tl4->SetTextFont(42);
     tl4->Draw("same");
   } else {
-    TLatex *tl4=new TLatex(0.215,0.69,Form("#bf{8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
+    //    tl4->SetTextFont(42);
     tl4->Draw("same");
   }
 /*
@@ -222,14 +244,16 @@ c->ls();
   tlAlice->SetTextSize(0.038);
 */
   if(system==0) {
-    TLatex *tlUnc=new TLatex(0.35,0.21,Form("#bf{{}^{#plus13%}_{#minus10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus13%s}_{#minus10%s} scale uncertainty","%","%"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.042);
+    //    tlUnc->SetTextFont(42);
     tlUnc->Draw("same");
   } else {
-    TLatex *tlUnc=new TLatex(0.35,0.21,Form("#bf{{}^{#plus10%}_{#minus10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus10%s}_{#minus10%s} scale uncertainty","%","%"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.042);
+    //    tlUnc->SetTextFont(42);
     tlUnc->Draw("same");
   }
 
@@ -244,6 +268,15 @@ c->ls();
   tl6->SetNDC();
   tl6->SetTextSize(0.024);
   tl6->Draw("same");*/
+  if(system==1) {
+    hSuperimp->Draw("same");
+    hSuperimp->GetFunction("TwoGausPeriodicity")->SetBit(TF1::kNotDraw);
+  }
+
+  fun->Draw("same");
+  fun2->Draw("same");
+  fun3->Draw("same");
+  funfit->Draw("same");
 
   return;
 }
