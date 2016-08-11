@@ -1532,6 +1532,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     if (!pTPCgain) return 4;
 
     static TVectorD meanMIPvsSector(36);
+    static TVectorD sigmaRelMIPvsSector(36);
     static TVectorD sector(36);
     static TVectorF fitMIP(7);
     static TVectorF fitEle(7);
@@ -1548,6 +1549,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     TH2* his2D=0;
      
     meanMIPvsSector.Zero();
+    sigmaRelMIPvsSector.Zero();
     //
     // select MIP particles
     //
@@ -1631,7 +1633,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
         his1D = his2D->ProjectionY(); 
         TF1 gausFunc("gausFunc","gaus");
         his1D->Fit(&gausFunc, "QN");
-        meanMIPvsSector(i) = gausFunc.GetParameter(1);
+        const Double_t mean=gausFunc.GetParameter(1);
+        const Double_t res =gausFunc.GetParameter(2);
+        meanMIPvsSector(i) = mean;
+        sigmaRelMIPvsSector(i) = mean>0?res/mean:0.;
         sector(i)=i;
         //removedtotest// delete his1D;
     }
@@ -1655,7 +1660,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
         his1D = his2D->ProjectionY();
         TF1 gausFunc("gausFunc","gaus");
         his1D->Fit(&gausFunc, "QN");
-        meanMIPvsSector(i+18) = gausFunc.GetParameter(1);
+        const Double_t mean=gausFunc.GetParameter(1);
+        const Double_t res =gausFunc.GetParameter(2);
+        meanMIPvsSector(i+18) = mean;
+        sigmaRelMIPvsSector(i+18) = mean>0?res/mean:0.;
         sector(i+18)=i+18;
         //removedtotest// delete his1D;
     }
@@ -1714,6 +1722,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
       "MIPattachSlopeA="<<attachSlopeA<<
       "resolutionMIP="<<resolutionMIP<<
       "meanMIPvsSector.="<<&meanMIPvsSector<<
+      "sigmaRelMIPvsSector.="<<&sigmaRelMIPvsSector<<
       "sector.="<<&sector<<
       "meanMIP="<<meanMIP<<
       "meanMIPele="<<meanMIPele<<
