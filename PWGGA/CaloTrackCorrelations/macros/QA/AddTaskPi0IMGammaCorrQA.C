@@ -470,7 +470,15 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   // Calorimeter settings
   ana->SetCalorimeter(calorimeter);
   
-  //settings for pp collision mixing
+  // Acceptance plots
+  //  ana->SwitchOnFiducialCut(); // Needed to fill acceptance plots with predefined calorimeter acceptances
+  //  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 180) ; 
+  //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
+  
+  ana->SwitchOffFiducialCut();
+  ana->SwitchOnRealCaloAcceptance();
+  
+  // Settings for pp collision mixing
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   
   // Cuts 
