@@ -509,6 +509,7 @@ AliEMCALTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
     switch(patchSource){
     case kTMOnline: debugpatchtype = "Online patches"; break;
     case kTMOffline: debugpatchtype = "Offline patches"; break;
+    case kTMRecalc: debugpatchtype = "Recalc patches"; break;
     };
     AliErrorStream() << "Invalid patch position(" << globCol << "," << globRow << ") for " << debugpatchtype << std::endl;
   }
