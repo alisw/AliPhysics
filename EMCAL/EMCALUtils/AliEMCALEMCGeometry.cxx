@@ -655,13 +655,13 @@ void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Tex
   TString mcTitle = mctitle;
     
   Float_t samplingFactorTranportModel = 1. ;
-  if     (mcName.Contains("Geant3")) samplingFactorTranportModel = 1.;//0.988 // Do nothing
+  if     (mcName.Contains("Geant3")) samplingFactorTranportModel = 1.; //0.988 // Do nothing
   else if(mcName.Contains("Fluka") ) samplingFactorTranportModel = 1.; // To be set
   else if(mcName.Contains("Geant4"))
   {
-    if     ( mcTitle.Contains("EMV-EMCAL") ) samplingFactorTranportModel = 0.86 ; // EMC list but for EMCal 
+    if     ( mcTitle.Contains("EMV-EMCAL") ) samplingFactorTranportModel = 0.821; // EMC list but for EMCal, before 0.86 
     else if( mcTitle.Contains("EMV") )       samplingFactorTranportModel = 1.096; // 0.906, 0.896 (OPT)
-    else                                     samplingFactorTranportModel = 0.86 ; // 1.15 (CHIPS), 1.149 (BERT), 1.147 (BERT_CHIPS) 
+    else                                     samplingFactorTranportModel = 0.821; // 1.15 (CHIPS), 1.149 (BERT), 1.147 (BERT_CHIPS) 
   }      
   
   AliInfo(Form("MC modeler <%s>, Title <%s>: Sampling %2.3f, model fraction with respect to G3 %2.3f, final sampling %2.3f",
