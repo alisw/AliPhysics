@@ -45,7 +45,8 @@ ClassImp(AliMFTHeatExchanger);
 AliMFTHeatExchanger::AliMFTHeatExchanger() : TNamed() {
   fRWater = 0.1/2.;
   fDRPipe = 0.005;
-  fHeatExchangerThickness = 1.618; // instead 1.4 fm august 2016, to get a 13.4 mm thickness for the rohacell...  
+  //fHeatExchangerThickness = 1.618; // to get a 13.4 mm thickness for the rohacell... don't implement this value yet! overlapping issue!
+  fHeatExchangerThickness = 1.4; // initial value
   fCarbonThickness = (0.0290)/2.;  // total thickness of the carbon plate
   InitParameters();
 }
