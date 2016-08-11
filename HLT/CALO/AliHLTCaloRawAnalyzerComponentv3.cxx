@@ -352,7 +352,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	UInt_t xpos = chId&0x3f, zpos = (chId >> 6)&0x3f;
 	if(xpos >= fCaloConstants->GetNXCOLUMNSMOD() || zpos >= fCaloConstants->GetNZROWSMOD())
           HLTError("CaloRawAnalyzerError: Channel out-of-bounds: x[%d, max %d], z[%d, max %d], raised by channel %d/HW address %d in DDL %d", 
-             xpos, fCaloConstants->GetNXCOLUMNSMOD() - 1, zpos,fCaloConstants->GetNZROWSMOD() - 1, chId, altroRawStreamPtr.GetHWAddress(), altroRawStreamPtr.GetDDL()); 
+             xpos, fCaloConstants->GetNXCOLUMNSMOD() - 1, zpos,fCaloConstants->GetNZROWSMOD() - 1, chId, altroRawStreamPtr.GetHWAddress(), altroRawStreamPtr.GetDDLNumber()); 
 
         HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(),
             (chId >> 12)&0x1, xpos, zpos);
