@@ -1077,6 +1077,14 @@ AliAnaPi0* ConfigurePi0Analysis()
   // Calorimeter settings
   ana->SetCalorimeter(kCalorimeter);
   
+  // Acceptance plots
+  //  ana->SwitchOnFiducialCut(); // Needed to fill acceptance plots with predefined calorimeter acceptances
+  //  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 180) ; 
+  //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
+  
+  ana->SwitchOffFiducialCut();
+  ana->SwitchOnRealCaloAcceptance();
+
   // settings for pp collision mixing
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   
