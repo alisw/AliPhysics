@@ -895,7 +895,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
   rohacellPlate -> AddNode(rohacellBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   ty = fSupportYDimensions[disk][0];
-  /*
+  
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
     TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D2_H%d_%d", half,ipart), rohacell, fSupportXDimensions[disk][ipart]/2., fSupportYDimensions[disk][ipart]/2., fRohacellThickness);
@@ -904,7 +904,7 @@ void AliMFTHeatExchanger::CreateHalfDisk2(Int_t half) {
     rohacellPlate -> AddNode(partRohacell, ipart, t);
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
-  */
+  
 //  if (half == kTop) {
 //    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
 //    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1322,7 +1322,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
   rohacellPlate -> AddNode(rohacellBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   ty = fSupportYDimensions[disk][0];
-  /*
+  
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
     TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D3_H%d_%d", half, ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
@@ -1332,7 +1332,7 @@ void AliMFTHeatExchanger::CreateHalfDisk3(Int_t half)  {
     rohacellPlate -> AddNode(partRohacell, ipart, t);
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
-  */
+  
 //  if (half == kTop) {
 //    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
 //    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
@@ -1793,7 +1793,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
   rohacellPlate -> AddNode(rohacellBaseWithHole, 0, new TGeoTranslation(0., 0., fZPlan[disk]));
   
   ty = fSupportYDimensions[disk][0];
-  /*
+  
   for (Int_t ipart=1; ipart<fnPart[disk]; ipart ++) {
     ty += fSupportYDimensions[disk][ipart]/2.;
     TGeoVolume *partRohacell = gGeoManager->MakeBox(Form("partRohacelli_D4_H%d_%d", half, ipart), rohacell, fSupportXDimensions[disk][ipart]/2.,
@@ -1803,7 +1803,7 @@ void AliMFTHeatExchanger::CreateHalfDisk4(Int_t half) {
     rohacellPlate -> AddNode(partRohacell, ipart, t);
     ty += fSupportYDimensions[disk][ipart]/2.;
   }
-  */
+  
 //  if (half == kTop) {
 //    rotation = new TGeoRotation ("rotation", 0., 0., 0.);
 //    transformation = new TGeoCombiTrans(0., 0., 0., rotation);
