@@ -121,11 +121,6 @@ void AliMFTLadder::CreateSensors() {
                                     mftGeom->GetHalfMFTID(fSegmentation->GetUniqueID()),
                                     mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID()),
                                     mftGeom->GetLadderID(fSegmentation->GetUniqueID()) );
-
-  printf("MFT_S %d %d %d \n",
-	 mftGeom->GetHalfMFTID(fSegmentation->GetUniqueID()),
-	 mftGeom->GetHalfDiskID(fSegmentation->GetUniqueID()),
-	 mftGeom->GetLadderID(fSegmentation->GetUniqueID()));
   
   TGeoVolume * chipVol = gGeoManager->MakeBox(namePrefix.Data(), medAir,AliMFTGeometry::kSensorLength/2.,AliMFTGeometry::kSensorHeight/2.,  AliMFTGeometry::kSensorThickness/2. );
   TGeoVolume * glue = gGeoManager->MakeBox(namePrefix.Data(), kMedGlue, (AliMFTGeometry::kSensorLength-AliMFTGeometry::kGlueEdge)/2., 
