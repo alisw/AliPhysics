@@ -352,28 +352,93 @@ void AliPerformanceTPC::Init()
     else{
 
         h_tpc_track_all_recvertex_5_8 = new TH2D("h_tpc_track_all_recvertex_5_8","",binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[8],minTPCTrackHisto[8],maxTPCTrackHisto[8]);
-
+        h_tpc_track_all_recvertex_5_8->SetXTitle("#eta");
+        h_tpc_track_all_recvertex_5_8->SetYTitle("charge");
+        
         h_tpc_track_all_recvertex_0_5_7 = new TH3D("h_tpc_track_all_recvertex_0_5_7","",binsTPCTrackHisto[0],minTPCTrackHisto[0],maxTPCTrackHisto[0],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_all_recvertex_0_5_7->SetXTitle("nClust");
+        h_tpc_track_all_recvertex_0_5_7->SetYTitle("#eta");
+        h_tpc_track_all_recvertex_0_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_pos_recvertex_0_5_7 = new TH3D("h_tpc_track_pos_recvertex_0_5_7","",binsTPCTrackHisto[0],minTPCTrackHisto[0],maxTPCTrackHisto[0],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_pos_recvertex_0_5_7->SetXTitle("nClust");
+        h_tpc_track_pos_recvertex_0_5_7->SetYTitle("#eta");
+        h_tpc_track_pos_recvertex_0_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_neg_recvertex_0_5_7 = new TH3D("h_tpc_track_neg_recvertex_0_5_7","",binsTPCTrackHisto[0],minTPCTrackHisto[0],maxTPCTrackHisto[0],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_neg_recvertex_0_5_7->SetXTitle("nClust");
+        h_tpc_track_neg_recvertex_0_5_7->SetYTitle("#eta");
+        h_tpc_track_neg_recvertex_0_5_7->SetZTitle("p_{T} (GeV/c)");
         
         h_tpc_track_all_recvertex_1_5_7 = new TH3D("h_tpc_track_all_recvertex_1_5_7","",binsTPCTrackHisto[1],minTPCTrackHisto[1],maxTPCTrackHisto[1],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_all_recvertex_1_5_7->SetXTitle("chi2PerClust");
+        h_tpc_track_all_recvertex_1_5_7->SetYTitle("#eta");
+        h_tpc_track_all_recvertex_1_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_all_recvertex_2_5_7 = new TH3D("h_tpc_track_all_recvertex_2_5_7","",binsTPCTrackHisto[2],minTPCTrackHisto[2],maxTPCTrackHisto[2],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_all_recvertex_2_5_7->SetXTitle("nClust/nFindableClust");
+        h_tpc_track_all_recvertex_2_5_7->SetYTitle("#eta");
+        h_tpc_track_all_recvertex_2_5_7->SetZTitle("p_{T} (GeV/c)");
         
         h_tpc_track_all_recvertex_3_5_7 = new TH3D("h_tpc_track_all_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_all_recvertex_3_5_7->SetXTitle("DCAr (cm)");
+        h_tpc_track_all_recvertex_3_5_7->SetYTitle("#eta");
+        h_tpc_track_all_recvertex_3_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_pos_recvertex_3_5_7 = new TH3D("h_tpc_track_pos_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
-        h_tpc_track_neg_recvertex_3_5_7 = new TH3D("h_tpc_track_neg_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_pos_recvertex_3_5_7->SetXTitle("DCAr (cm)");
+        h_tpc_track_pos_recvertex_3_5_7->SetYTitle("#eta");
+        h_tpc_track_pos_recvertex_3_5_7->SetZTitle("p_{T} (GeV/c)");
         
+        h_tpc_track_neg_recvertex_3_5_7 = new TH3D("h_tpc_track_neg_recvertex_3_5_7","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_neg_recvertex_3_5_7->SetXTitle("DCAr (cm)");
+        h_tpc_track_neg_recvertex_3_5_7->SetYTitle("#eta");
+        h_tpc_track_neg_recvertex_3_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_all_recvertex_4_5_7 = new TH3D("h_tpc_track_all_recvertex_4_5_7","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_all_recvertex_4_5_7->SetXTitle("DCAz (cm)");
+        h_tpc_track_all_recvertex_4_5_7->SetYTitle("#eta");
+        h_tpc_track_all_recvertex_4_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_pos_recvertex_4_5_7 = new TH3D("h_tpc_track_pos_recvertex_4_5_7","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_pos_recvertex_4_5_7->SetXTitle("DCAz (cm)");
+        h_tpc_track_pos_recvertex_4_5_7->SetYTitle("#eta");
+        h_tpc_track_pos_recvertex_4_5_7->SetZTitle("p_{T} (GeV/c)");
+
         h_tpc_track_neg_recvertex_4_5_7 = new TH3D("h_tpc_track_neg_recvertex_4_5_7","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[7],minTPCTrackHisto[7],maxTPCTrackHisto[7]);
+        h_tpc_track_neg_recvertex_4_5_7->SetXTitle("DCAz (cm)");
+        h_tpc_track_neg_recvertex_4_5_7->SetYTitle("#eta");
+        h_tpc_track_neg_recvertex_4_5_7->SetZTitle("p_{T} (GeV/c)");
         
         h_tpc_track_pos_recvertex_3_5_6 = new TH3D("h_tpc_track_pos_recvertex_3_5_6","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
+        h_tpc_track_pos_recvertex_3_5_6->SetXTitle("DCAr (cm)");
+        h_tpc_track_pos_recvertex_3_5_6->SetYTitle("#eta");
+        h_tpc_track_pos_recvertex_3_5_6->SetZTitle("#phi (rad)");
+
         h_tpc_track_pos_recvertex_4_5_6 = new TH3D("h_tpc_track_pos_recvertex_4_5_6","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
+        h_tpc_track_pos_recvertex_4_5_6->SetXTitle("DCAz (cm)");
+        h_tpc_track_pos_recvertex_4_5_6->SetYTitle("#eta");
+        h_tpc_track_pos_recvertex_4_5_6->SetZTitle("#phi (rad)");
+
         h_tpc_track_neg_recvertex_3_5_6 = new TH3D("h_tpc_track_neg_recvertex_3_5_6","",binsTPCTrackHisto[3],minTPCTrackHisto[3],maxTPCTrackHisto[3],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
+        h_tpc_track_neg_recvertex_3_5_6->SetXTitle("DCAr (cm)");
+        h_tpc_track_neg_recvertex_3_5_6->SetYTitle("#eta");
+        h_tpc_track_neg_recvertex_3_5_6->SetZTitle("#phi (rad)");
+
         h_tpc_track_neg_recvertex_4_5_6 = new TH3D("h_tpc_track_neg_recvertex_4_5_6","",binsTPCTrackHisto[4],minTPCTrackHisto[4],maxTPCTrackHisto[4],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
+        h_tpc_track_neg_recvertex_4_5_6->SetXTitle("DCAz (cm)");
+        h_tpc_track_neg_recvertex_4_5_6->SetYTitle("#eta");
+        h_tpc_track_neg_recvertex_4_5_6->SetZTitle("#phi (rad)");
+
         h_tpc_track_pos_recvertex_2_5_6 = new TH3D("h_tpc_track_pos_recvertex_2_5_6","",binsTPCTrackHisto[2],minTPCTrackHisto[2],maxTPCTrackHisto[2],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
+        h_tpc_track_pos_recvertex_2_5_6->SetXTitle("nClust/nFindableClust");
+        h_tpc_track_pos_recvertex_2_5_6->SetYTitle("#eta");
+        h_tpc_track_pos_recvertex_2_5_6->SetZTitle("#phi (rad)");
+
         h_tpc_track_neg_recvertex_2_5_6 = new TH3D("h_tpc_track_neg_recvertex_2_5_6","",binsTPCTrackHisto[2],minTPCTrackHisto[2],maxTPCTrackHisto[2],binsTPCTrackHisto[5],minTPCTrackHisto[5],maxTPCTrackHisto[5],binsTPCTrackHisto[6],minTPCTrackHisto[6],maxTPCTrackHisto[6]);
+        h_tpc_track_neg_recvertex_2_5_6->SetXTitle("nClust/nFindableClust");
+        h_tpc_track_neg_recvertex_2_5_6->SetYTitle("#eta");
+        h_tpc_track_neg_recvertex_2_5_6->SetZTitle("#phi (rad)");
 
         
         fFolderObj->Add(h_tpc_track_all_recvertex_5_8);

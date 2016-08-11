@@ -80,7 +80,7 @@ public :
   //
   THnSparse* GetDeDxHisto() const {return fDeDxHisto;}
   TObjArray* GetHistos() const { return fFolderObj; }
-  TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
+  TObjArray* GetListOfDrawableObjects() {return fFolderObj; fFolderObj=NULL;}
     
   void ResetOutputData();
 
