@@ -1648,10 +1648,11 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
   Float_t val=0;
   const TString sensorNameString(sensorName);
   AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
+  if (!sensor) return val;
+
   const Int_t startTime = Int_t(sensor->GetStartTime());
   const Int_t endTime   = Int_t(sensor->GetEndTime());
 
-  if (!sensor) return val;
   //use the dcs graph if possible
   TGraph *gr=sensor->GetGraph();
   if (gr){
@@ -2157,7 +2158,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
     AliFatal("Something went wrong in the chamber HV status calculation. Check warning messages above. All chambers would be deactivated!");
   }
 }
-Float_t AliTPCcalibDB::GetGasSensorValue(EDcsGasSensor type, Int_t timeStamp/*=-1*/, Int_t sigDigits/*=0*/)
+Float_t AliTPCcalibDB::GetGasSensorValue(EDcsGasSensor type, Int_t timeStamp/*=-1*/, Int_t sigDigits/*=-1*/)
 {
   /// Get the gas sensor value
   /// if timeStamp == -1 return the average value in this run

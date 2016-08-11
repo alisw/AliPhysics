@@ -125,7 +125,7 @@ class AliTPCcalibDB : public TObject
   // Gas sensor data
   //
   AliDCSSensorArray* GetGasSensors() const { return fGasSensorArray; }
-  Float_t GetGasSensorValue(EDcsGasSensor type, Int_t timeStamp=-1, Int_t sigDigits=0);
+  Float_t GetGasSensorValue(EDcsGasSensor type, Int_t timeStamp=-1, Int_t sigDigits=-1);
 
   //
   AliTPCSensorTempArray* GetTemperature() const {return fTemperature;}

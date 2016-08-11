@@ -550,7 +550,7 @@ void AliTPCcalibSummary::ProcessGas(Int_t run, Int_t timeStamp)
   static TVectorF gasValues(nsensors);
 
   for (Int_t isen=0; isen<nsensors; ++isen) {
-    gasValues(isen) = fCalibDB->GetGasSensorValue((AliTPCcalibDB::EDcsGasSensor)isen);
+    gasValues(isen) = fCalibDB->GetGasSensorValue((AliTPCcalibDB::EDcsGasSensor)isen, timeStamp);
   }
 
   (*fPcstream)<<"dcs"<<
