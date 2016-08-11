@@ -279,157 +279,207 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   {
     // Pi0
     
-    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",
+                              nptbins,ptmin,ptmax) ;
     fhPrimPi0E   ->SetXTitle("#it{E} (GeV)");
-    fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhPrimPi0E) ;
-    outputContainer->Add(fhPrimPi0AccE) ;
-    
-    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccPtPhotonCuts  = new TH1F("hPrimPi0AccPtPhotonCuts","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+
+    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",
+                               nptbins,ptmin,ptmax) ;
     fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Pt) ;
-    outputContainer->Add(fhPrimPi0AccPt) ;
-    outputContainer->Add(fhPrimPi0AccPtPhotonCuts) ;
-    
+
     Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
-    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",
+                               nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
     fhPrimPi0Y   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Y) ;
     
-    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",
+                                  nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Yeta   ->SetYTitle("#eta");
     fhPrimPi0Yeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Yeta) ;
     
-    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",
+                                      nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0YetaYcut   ->SetYTitle("#eta");
     fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0YetaYcut) ;
     
-    fhPrimPi0AccY   = new TH2F("hPrimPi0AccRapidity","Rapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
-    fhPrimPi0AccY->SetYTitle("Rapidity");
-    fhPrimPi0AccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccY) ;
-    
-    fhPrimPi0AccYeta      = new TH2F("hPrimPi0AccPseudoRapidity","PseudoRapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
-    fhPrimPi0AccYeta   ->SetYTitle("#eta");
-    fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccYeta) ;
-    
     Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
-    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
+    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",
+                               nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
     fhPrimPi0Phi->SetYTitle("#phi (deg)");
     fhPrimPi0Phi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,
-                               nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-    fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
-    fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccPhi) ;
-        
+    if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+    {
+      fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",
+                                nptbins,ptmin,ptmax) ;
+      fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhPrimPi0AccE) ;
+      
+      fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",
+                                 nptbins,ptmin,ptmax) ;
+      fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccPt) ;
+      
+      fhPrimPi0AccPtPhotonCuts  = new TH1F("hPrimPi0AccPtPhotonCuts","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",
+                                           nptbins,ptmin,ptmax) ;
+      fhPrimPi0AccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccPtPhotonCuts) ;
+      
+      fhPrimPi0AccY   = new TH2F("hPrimPi0AccRapidity","Rapidity of primary #pi^{0} with accepted daughters",
+                                 nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
+      fhPrimPi0AccY->SetYTitle("Rapidity");
+      fhPrimPi0AccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccY) ;
+      
+      fhPrimPi0AccYeta      = new TH2F("hPrimPi0AccPseudoRapidity","PseudoRapidity of primary #pi^{0} with accepted daughters",
+                                       nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
+      fhPrimPi0AccYeta   ->SetYTitle("#eta");
+      fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccYeta) ;
+      
+      fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",
+                                 nptbins,ptmin,ptmax,
+                                 nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
+      fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
+      fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccPhi) ;
+    }
+    
     // Eta
     
-    fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",
+                              nptbins,ptmin,ptmax) ;
     fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
-    fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhPrimEtaE) ;
     outputContainer->Add(fhPrimEtaAccE) ;
-    
-    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccPtPhotonCuts  = new TH1F("hPrimEtaAccPtPhotonCuts","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+
+    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",
+                               nptbins,ptmin,ptmax) ;
     fhPrimEtaPt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPt) ;
-    outputContainer->Add(fhPrimEtaAccPt) ;
-    outputContainer->Add(fhPrimEtaAccPtPhotonCuts) ;
     
-    fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",
+                               nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaY->SetYTitle("#it{Rapidity}");
     fhPrimEtaY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaY) ;
     
-    fhPrimEtaYeta      = new TH2F("hPrimEtaPseudoRapidityEta","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYeta      = new TH2F("hPrimEtaPseudoRapidityEta","PseudoRapidity of primary #eta",
+                                  nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaYeta->SetYTitle("#it{Rapidity}");
     fhPrimEtaYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaYeta) ;
     
-    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",
+                                      nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaYetaYcut->SetYTitle("#it{Pseudorapidity}");
     fhPrimEtaYetaYcut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaYetaYcut) ;
-    
-    fhPrimEtaAccY   = new TH2F("hPrimEtaAccRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
-    fhPrimEtaAccY->SetYTitle("#it{Rapidity}");
-    fhPrimEtaAccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccY) ;
-    
-    fhPrimEtaAccYeta  = new TH2F("hPrimEtaAccPseudoRapidity","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
-    fhPrimEtaAccYeta->SetYTitle("#it{Pseudorapidity}");
-    fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccYeta) ;
-    
-    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
+        
+    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",
+                               nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
     fhPrimEtaPhi->SetYTitle("#phi (deg)");
     fhPrimEtaPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPhi) ;
     
-    fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-    fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
-    fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccPhi) ;
-    
+    if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+    {
+      fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",
+                                nptbins,ptmin,ptmax) ;
+      fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhPrimEtaE) ;
+      
+      fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",
+                                 nptbins,ptmin,ptmax) ;
+      fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccPt) ;
+      
+      fhPrimEtaAccPtPhotonCuts  = new TH1F("hPrimEtaAccPtPhotonCuts","Primary eta #it{p}_{T} with both photons in acceptance",
+                                           nptbins,ptmin,ptmax) ;
+      fhPrimEtaAccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccPtPhotonCuts) ;
+      
+      fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",
+                                 nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
+      fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
+      fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccPhi) ;
+      
+      fhPrimEtaAccY   = new TH2F("hPrimEtaAccRapidity","Rapidity of primary #eta",
+                                 nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+      fhPrimEtaAccY->SetYTitle("#it{Rapidity}");
+      fhPrimEtaAccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccY) ;
+      
+      fhPrimEtaAccYeta  = new TH2F("hPrimEtaAccPseudoRapidity","PseudoRapidity of primary #eta",
+                                   nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+      fhPrimEtaAccYeta->SetYTitle("#it{Pseudorapidity}");
+      fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccYeta) ;
+    }
+      
+      
     // Create histograms only for PbPb or high multiplicity analysis analysis
     if( IsHighMultiplicityAnalysisOn() )
     {
       fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
                                            nptbins,ptmin,ptmax, 100, 0, 100) ;
-      fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
-                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
       fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
-      fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
       outputContainer->Add(fhPrimPi0PtCentrality) ;
-      outputContainer->Add(fhPrimPi0AccPtCentrality) ;
-      
-      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
-      fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+
+      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
       fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
-      fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
       outputContainer->Add(fhPrimEtaPtCentrality) ;
-      outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+
       
       fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
                                            nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-      fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
-                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
       fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-      fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
       outputContainer->Add(fhPrimPi0PtEventPlane) ;
-      outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+
       
-      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-      fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
       fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-      fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
       outputContainer->Add(fhPrimEtaPtEventPlane) ;
-      outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+
+      if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+      {
+        fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                             nptbins,ptmin,ptmax, 100, 0, 100) ;
+        fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
+        outputContainer->Add(fhPrimPi0AccPtCentrality) ;
+
+        fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                             nptbins,ptmin,ptmax, 100, 0, 100) ;
+        fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
+        outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+
+        fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
+                                             nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+        fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+        outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+
+        fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",
+                                             nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+        fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+        outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+      }
     }
     
     if(fFillAngleHisto)
@@ -475,7 +525,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
       fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
-      
       
       fhPrimEtaCosOpeningAngle  = new TH2F
       ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
