@@ -90,6 +90,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fLeadingJet(0),
   fSubleadingJet(0),
   fMatchedJet(0),
+  fMatchedJetReference(0),
   fInitialPartonMatchedJet1(0),
   fInitialPartonMatchedJet2(0),
   fAcceptedJets(0),
@@ -131,6 +132,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fLeadingJet(0),
   fSubleadingJet(0),
   fMatchedJet(0),
+  fMatchedJetReference(0),
   fInitialPartonMatchedJet1(0),
   fInitialPartonMatchedJet2(0),
   fAcceptedJets(0),
@@ -279,6 +281,9 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
     if(!fJetsInput)
       AliFatal(Form("Importing jets for matching failed! Array '%s' not found!", fJetMatchingArrayName.Data()));
   }
+  else if(fJetOutputMode==4 || fJetOutputMode==5 || fJetOutputMode==7)
+    AliFatal(Form("fJetMatchingArrayName must be set in jet output mode 4,5, or 7."));
+
 
   // ### Jets tree (optional)
   if(fExtractionPercentage)
@@ -366,59 +371,10 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
       return kFALSE;
   }
 
-/*
-  if(fFakeFactorCutProfile)
-  {
-    if( (fakeFactor >= fMinFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
-      return kFALSE;
-  }
-*/
-
-  // Jet matching. Only done if SetJetMatchingArrayName() called
-  Bool_t matchedFound = kFALSE;
-  fMatchedJet = 0;
-  if(fJetsInput)
-  {
-    // Search leading jet (in acceptance)
-    AliEmcalJet* leadingJet = 0;
-    Double_t leadingPt = -999.;
-    for(Int_t i=0; i<fJetsInput->GetEntries(); i++)
-    {
-      AliEmcalJet* tmpJet = static_cast<AliEmcalJet*>(fJetsInput->At(i));
-      UInt_t dummy = 0;
-      if(!fJetsCont->AcceptJet(tmpJet , dummy))
-        continue;
-
-      if(tmpJet->Pt() > leadingPt)
-      {
-        leadingJet = tmpJet;
-        leadingPt  = tmpJet->Pt();
-      }
-    }
-
-    if(leadingJet)
-    {
-      Double_t bestMatchDeltaR = 999.;
-      Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-leadingJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-leadingJet->Phi()));
-      Double_t deltaEta = TMath::Abs(jet->Eta() - leadingJet->Eta());
-      Double_t deltaR   = TMath::Sqrt((deltaPhi*deltaPhi) + (deltaEta*deltaEta));
-
-      if(deltaR < bestMatchDeltaR)
-        bestMatchDeltaR = deltaR;
-
-      // Check if a matching jet is found.
-      if(bestMatchDeltaR < 0.9*fJetsCont->GetJetRadius())
-        matchedFound = kTRUE;
-
-      if(matchedFound)
-        fMatchedJet = leadingJet;
-    }
-  }
-
-  if(fJetOutputMode==4) // matching jets only
-    return matchedFound;
+  if((fJetOutputMode==4) || (fJetOutputMode==7)) // matching jets only
+    return (jet==fMatchedJet);
   else if(fJetOutputMode==5) // non-matching jets only
-    return !matchedFound;
+    return (jet!=fMatchedJet);
 
   return kTRUE;
 }
@@ -521,7 +477,13 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::AddJetToOutputArray(AliEmcalJet* jet)
 {
-  new ((*fJetsOutput)[fAcceptedJets]) AliPicoTrack(jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Eta(), jet->Phi(), jet->Charge(), 0, 0);
+  Double_t tmpPt = jet->Pt() - fJetsCont->GetRhoVal()*jet->Area();
+  // Special matching jet modus: Change pT to the pt of the input match jet
+  // Note: in mode 7, there are only passed matched jets to this function
+  if(fJetOutputMode==7)
+    tmpPt = fMatchedJetReference->Pt();
+
+  new ((*fJetsOutput)[fAcceptedJets]) AliPicoTrack(tmpPt, jet->Eta(), jet->Phi(), jet->Charge(), 0, 0);
   fAcceptedJets++;
 }
 
@@ -571,8 +533,8 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
     if(!particle) continue;
     basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
   }
-  if(fMatchedJet) // set the true pT from the matched jets
-    basicJet.SetTruePt(fMatchedJet->Pt());
+  if(jet==fMatchedJet) // set the true pT from the matched jets (only possible in modes 4 & 7)
+    basicJet.SetTruePt(fMatchedJetReference->Pt());
 
   fJetsTreeBuffer = &basicJet;
   fJetsTree->Fill();
@@ -690,6 +652,60 @@ void AliAnalysisTaskChargedJetsHadronCF::GetInitialCollisionJets()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
+{
+  fMatchedJet = 0;
+  fMatchedJetReference = 0;
+  // Search leading jet in matching array
+  AliEmcalJet* leadingMatchJet = 0;
+  Double_t leadingPt = -999.;
+  for(Int_t i=0; i<fJetsInput->GetEntries(); i++)
+  {
+    AliEmcalJet* tmpJet = static_cast<AliEmcalJet*>(fJetsInput->At(i));
+    UInt_t   dummy = 0;
+    if(!fJetsCont->AcceptJet(tmpJet , dummy))
+      continue;
+
+    if(tmpJet->Pt() > leadingPt)
+    {
+      leadingMatchJet = tmpJet;
+      leadingPt  = tmpJet->Pt();
+    }
+  }
+
+  if(!leadingMatchJet)
+    return;
+
+  // Loop over all jets and check for jet that matches best
+  Double_t bestMatchDeltaR = 999.;
+  fJetsCont->ResetCurrentID();
+  while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
+  {
+    // Check via geometrical matching if jet is connected to the initial collision
+    Double_t deltaEta = TMath::Abs(jet->Eta()-leadingMatchJet->Eta());
+    Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-leadingMatchJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-leadingMatchJet->Phi()));
+    Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+
+    if(deltaR < bestMatchDeltaR)
+    {
+      bestMatchDeltaR = deltaR;
+      fMatchedJet = jet;
+      fMatchedJetReference = leadingMatchJet;
+    }
+  }
+
+  // Don't accept the best match if it is too far away
+  if(bestMatchDeltaR > 1.3*fJetsCont->GetJetRadius())
+  {
+//    cout << Form("Found NO matching jet. Best guess is R=%f with %f GeV/c (input pT=%f GeV/c)", bestMatchDeltaR, fMatchedJet->Pt()-fMatchedJet->Area()*fJetsCont->GetRhoVal(), fMatchedJetReference->Pt()) << endl;
+    fMatchedJet = 0;
+    fMatchedJetReference = 0;
+  }
+//  else
+//    cout << Form("Found a matching jet (R=%f) with %f GeV/c (input pT=%f GeV/c)", bestMatchDeltaR, fMatchedJet->Pt()-fMatchedJet->Area()*fJetsCont->GetRhoVal(), fMatchedJetReference->Pt()) << endl;
+}
+
+//________________________________________________________________________
 inline Bool_t AliAnalysisTaskChargedJetsHadronCF::IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius)
 {
   // This is to use a full cone in phi even at the edges of phi (2pi -> 0) (0 -> 2pi)
@@ -715,6 +731,8 @@ void AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()
   GetLeadingJets("rho", fLeadingJet, fSubleadingJet);
   if(fJetOutputMode==6)
     GetInitialCollisionJets();
+  else if(fJetOutputMode==4 || fJetOutputMode==5 || fJetOutputMode==7)
+    GetMatchingJets();
 }
 
 //________________________________________________________________________
