@@ -424,7 +424,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       outputContainer->Add(fhPrimEtaAccYeta) ;
     }
       
-      
     // Create histograms only for PbPb or high multiplicity analysis analysis
     if( IsHighMultiplicityAnalysisOn() )
     {
@@ -482,52 +481,60 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
     }
     
-    if(fFillAngleHisto)
+    if(fFillAngleHisto && ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() ) )
     {
       fhPrimPi0OpeningAngle  = new TH2F
-      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}, in acceptance",
+       nptbins,ptmin,ptmax,200,0,0.7);
       fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAngle) ;
 
       fhPrimPi0OpeningAnglePhotonCuts  = new TH2F
-      ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}} in acceptance",
+       nptbins,ptmin,ptmax,200,0,0.7);
       fhPrimPi0OpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAnglePhotonCuts->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAnglePhotonCuts) ;
       
       fhPrimPi0OpeningAngleAsym  = new TH2F
-      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,200,0,0.7);
+      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, in acceptance, #it{p}_{T}>5 GeV/#it{c}",
+       100,0,1,200,0,0.7);
       fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
       fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
       
       fhPrimPi0CosOpeningAngle  = new TH2F
-      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1);
+      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}, in acceptance",
+       nptbins,ptmin,ptmax,100,-1,1);
       fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
       fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
       
       fhPrimEtaOpeningAngle  = new TH2F
-      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
+       nptbins,ptmin,ptmax,200,0,0.7);
       fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAngle) ;
 
       fhPrimEtaOpeningAnglePhotonCuts  = new TH2F
-      ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
+       nptbins,ptmin,ptmax,200,0,0.7);
       fhPrimEtaOpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAnglePhotonCuts->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAnglePhotonCuts) ;
       
       fhPrimEtaOpeningAngleAsym  = new TH2F
-      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,200,0,0.7);
+      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}, in acceptance",
+       100,0,1,200,0,0.7);
       fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
       fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
       
       fhPrimEtaCosOpeningAngle  = new TH2F
-      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
+      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}, in acceptance",
+       nptbins,ptmin,ptmax,100,-1,1);
       fhPrimEtaCosOpeningAngle->SetYTitle("cos (#theta) ");
       fhPrimEtaCosOpeningAngle->SetXTitle("#it{E}_{ #eta} (GeV)");
       outputContainer->Add(fhPrimEtaCosOpeningAngle) ;
@@ -598,7 +605,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       outputContainer->Add(fhPrimEtaProdVertex) ;
     }
     
-    if(fFillArmenterosThetaStar)
+    if(fFillArmenterosThetaStar && ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() ) )
     {
       TString ebin[] = {"8 < E < 12 GeV","12 < E < 16 GeV", "16 < E < 20 GeV", "E > 20 GeV" };
       Int_t narmbins = 400;
