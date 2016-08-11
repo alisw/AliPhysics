@@ -55,10 +55,6 @@ public :
   
   // produce summary
   virtual TTree* CreateSummary();
-
-  //void FillClusterHistogram(double *vTPCClust);
-  //void FillEventHistogram(double *vTPCEvent);
-  //void FillTrackHistogram(double *vTPCTrackHisto);
     
   // Process events
   void ProcessConstrained(AliStack* const stack, AliVTrack *const vTrack, AliVEvent *const vEvent);
@@ -91,7 +87,7 @@ public :
   
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }
-  TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
+  TObjArray* GetListOfDrawableObjects() {return fFolderObj; fFolderObj=NULL;}
 
   void ResetOutputData();
 

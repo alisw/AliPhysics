@@ -185,7 +185,6 @@ void AliPerformanceTask::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-  // Decide whether to use HLT or Offline events
   fEvents++;
   cout <<"Event number "<<fEvents<<endl;
   //if(fDebug) AliSysInfo::AddStamp("memleak",fEvents);
