@@ -124,17 +124,14 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     fOutputContainer          = new TList();
     fOutputContainer->SetOwner(kTRUE);
   }
-  
-  fHistNEvents                = new TH1F("NEvents", "NEvents", 1, 0, 1);
-  fHistNEvents->Sumw2();
+
+  fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1,kTRUE);
   fOutputContainer->Add(fHistNEvents);
   
-  fHistPtYGamma                 = new TH2F("Pt_Y_Gamma","Pt_Y_Gamma", 500,0, 50, 400, -2.0, 2.0);
-  fHistPtYGamma->Sumw2();
+  fHistPtYGamma = (TH2F*)SetHist2D(fHistPtYGamma,"f","Pt_Y_Gamma","#it{p}_{T}","Y",500,0, 50,400,-2.0,2.0,kTRUE);
   fOutputContainer->Add(fHistPtYGamma);
   
-  fHistPtPhiGamma = new TH2F("Pt_Phi_Gamma","Pt_Phi_Gamma", 500,0, 50, 100,0,7);
-  fHistPtPhiGamma->Sumw2();
+  fHistPtPhiGamma = (TH2F*)SetHist2D(fHistPtPhiGamma,"f","Pt_Phi_Gamma","#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
   fOutputContainer->Add(fHistPtPhiGamma);
   
 //   "22" Gamma
@@ -186,50 +183,40 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   }
     
   for(Int_t i=0; i<nInputParticles; i++){
-    fHistPtYInput[i] = new TH2F(Form("Pt_Y_%s",fParticleListNames[i].Data()),Form("Pt_Y_%s",fParticleListNames[i].Data()), 500,0, 50, 400, -2.0, 2.0);
-    fHistPtYInput[i]->Sumw2();
+    
+    fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
     fOutputContainer->Add(fHistPtYInput[i]);
     
     //Gammas from certain mother
-    fHistPtYGammaSource[i] = new TH2F(Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()), 500,0, 50, 400, -2.0, 2.0);
-    fHistPtYGammaSource[i]->Sumw2();
+    fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
     fOutputContainer->Add(fHistPtYGammaSource[i]);
     
     //phi distributions
-    fHistPtPhiInput[i] = new TH2F(Form("Pt_Phi_%s",fParticleListNames[i].Data()),Form("Pt_Phi_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
-    fHistPtPhiInput[i]->Sumw2();
+    fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
     fOutputContainer->Add(fHistPtPhiInput[i]);
-      
-    fHistPtPhiGammaSource[i] = new TH2F(Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
-    fHistPtPhiGammaSource[i]->Sumw2();
+
+    fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
     fOutputContainer->Add(fHistPtPhiGammaSource[i]);
       
     // correlation gamma from certain mother to mother
-    fHistPtGammaSourceInput[i] = new TH2F(Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()), 500,0, 50, 500,0, 50);
-    fHistPtGammaSourceInput[i]->Sumw2();
+    fHistPtGammaSourceInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourceInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",500,0,50,500,0,50,kTRUE);
     fOutputContainer->Add(fHistPtGammaSourceInput[i]);
 
-    fHistPhiGammaSourceInput[i] = new TH2F(Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()), 100,0,7, 100,0,7);
-    fHistPhiGammaSourceInput[i]->Sumw2();
+    fHistPhiGammaSourceInput[i] = (TH2F*)SetHist2D(fHistPhiGammaSourceInput[i],"f",Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",100,0,7,100,0,7,kTRUE);
     fOutputContainer->Add(fHistPhiGammaSourceInput[i]);
     
     // lightweight output
     if (!fDoLightOutput || (fDoLightOutput && (i < 4 || i == 7))) {
       // decay channels mother
-      fHistDecayChannelsInput[i] = new TH1F(Form("DecayChannels_%s",fParticleListNames[i].Data()),Form("DecayChannels_%s",fParticleListNames[i].Data()), 20, -0.5, 19.5);
-      fHistDecayChannelsInput[i]->Sumw2();
-      InitializeDecayChannelHist(i);
+      fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f",Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
       fOutputContainer->Add(fHistDecayChannelsInput[i]);
       
       // gamma delta phi
-      //fHistPtDeltaPhiInput[i] = new TH2F(Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,7);
-      fHistPtDeltaPhiInput[i] = new TH2F(Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()), 500,0, 50, 82,binsDeltaPhi);
-      fHistPtDeltaPhiInput[i]->Sumw2();
+      fHistPtDeltaPhiInput[i] = (TH2F*)SetHist2D(fHistPtDeltaPhiInput[i],"f",Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#Delta#phi_{#gamma_{1}#gamma_{2}}",500,0,50,82,binsDeltaPhi,kTRUE);
       fOutputContainer->Add(fHistPtDeltaPhiInput[i]);
       
       // alpha mother
-      fHistPtAlphaInput[i] = new TH2F(Form("Pt_Alpha_%s",fParticleListNames[i].Data()),Form("Pt_Alpha_%s",fParticleListNames[i].Data()), 500,0, 50, 100,0,1);
-      fHistPtAlphaInput[i]->Sumw2();
+      fHistPtAlphaInput[i] = (TH2F*)SetHist2D(fHistPtAlphaInput[i],"f",Form("Pt_Alpha_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#alpha",500,0,50,100,0,1,kTRUE);
       fOutputContainer->Add(fHistPtAlphaInput[i]);
     } else {
       fHistDecayChannelsInput[i] = NULL;
@@ -237,15 +224,14 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
       fHistPtAlphaInput[i] = NULL;
     }
   }
+  InitializeDecayChannelHist();
   delete binsDeltaPhi;
   
-  fHistPtYInputRest = new TH1I("Pdg_primary_rest","Pdg_primary_rest", 5000,0, 5000);
-  fHistPtYInputRest->Sumw2();
+  fHistPtYInputRest = (TH1I*)SetHist1D(fHistPtYInputRest,"f","Pdg_primary_rest","PDG code","",5000,0,5000,kTRUE);
   fOutputContainer->Add(fHistPtYInputRest);
   
   //Gammas from certain mother
-  fHistPtYGammaSourceRest = new TH1I("Pdg_Gamma_From_rest","Pdg_Gamma_From_rest", 5000,0, 5000);
-  fHistPtYGammaSourceRest->Sumw2();
+  fHistPtYGammaSourceRest = (TH1I*)SetHist1D(fHistPtYGammaSourceRest,"f","Pdg_Gamma_From_rest","PDG code mother","",5000,0,5000,kTRUE);
   fOutputContainer->Add(fHistPtYGammaSourceRest);
 
   PostData(1, fOutputContainer);
@@ -492,10 +478,10 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
         case 333:
           fHistPtYInput[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiInput[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          if (fHistPtAlphaInput[7]) fHistPtAlphaInput[7]->Fill(particle->Pt(), alpha, particle->GetWeight());
-          if (fHistPtDeltaPhiInput[7]) fHistPtDeltaPhiInput[7]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
-          if (fHistDecayChannelsInput[7]) fHistDecayChannelsInput[7]->Fill(0., particle->GetWeight());
-          if (fHistDecayChannelsInput[7]) fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          fHistPtAlphaInput[7]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          fHistPtDeltaPhiInput[7]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          fHistDecayChannelsInput[7]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[7]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           break;
         case 443:
           fHistPtYInput[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
@@ -600,129 +586,112 @@ Bool_t AliAnalysisTaskGammaCocktailMC::IsMotherInList(TParticle* mother){
 }
 
 //_________________________________________________________________________________
-void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist(Int_t inputParticle) {
+void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist() {
+
+  fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(1,"all");
+  fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(2,"2#gamma");
+  fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(3,"e^{+}e^{-}#gamma");
+  fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(4,"2e^{+}2e^{-}");
+  fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}");
+  fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(20,"rest");
+
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(1,"all");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(2,"2#gamma");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(3,"3#pi^{0}");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(4,"#pi^{0}2#gamma");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(5,"#pi^{+}#pi^{-}#gamma");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}#gamma");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(8,"2e^{+}2e^{-}");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(9,"#pi^{+}#pi^{-}2#gamma");
+  fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(20,"rest");
+
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(1,"all");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#eta");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(3,"#rho^{0}#gamma");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(4,"#pi^{+}#pi^{-}#gamma");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(5,"#omega#gamma");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(6,"2#gamma");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
+  fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(20,"rest");
+
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(1,"all");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#pi^{0}");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(3,"#pi^{0}#gamma");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(4,"#eta#gamma");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(5,"#pi^{0}e^{+}e^{-}");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(7,"2#pi^{0}#gamma");
+  fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(20,"rest");
   
-  switch (inputParticle) {
-    case 0:
-      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(2,"2#gamma");
-      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(3,"e^{+}e^{-}#gamma");
-      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(4,"2e^{+}2e^{-}");
-      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}");
-      fHistDecayChannelsInput[0]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 1:
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(2,"2#gamma");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(3,"3#pi^{0}");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(4,"#pi^{0}2#gamma");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(5,"#pi^{+}#pi^{-}#gamma");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}#gamma");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(8,"2e^{+}2e^{-}");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(9,"#pi^{+}#pi^{-}2#gamma");
-      fHistDecayChannelsInput[1]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 2:
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#eta");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(3,"#rho^{0}#gamma");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(4,"#pi^{+}#pi^{-}#gamma");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(5,"#omega#gamma");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(6,"2#gamma");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
-      fHistDecayChannelsInput[2]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 3:
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#pi^{0}");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(3,"#pi^{0}#gamma");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(4,"#eta#gamma");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(5,"#pi^{0}e^{+}e^{-}");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(7,"2#pi^{0}#gamma");
-      fHistDecayChannelsInput[3]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 4:
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(2,"2#pi^{0}");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(3,"#pi^{+}#pi^{-}#gamma");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(4,"#pi^{0}#gamma");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(5,"#eta#gamma");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(6,"2#pi^{0}#gamma");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(7,"e^{+}e^{-}");
-      fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 5:
-      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{0}");
-      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(3,"#pi^{+}#gamma");
-      fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 6:
-      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(2,"#pi^{-}#pi^{0}");
-      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(3,"#pi^{-}#gamma");
-      fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 7:
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(2,"K^{+}K^{-}");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(3,"K^{0}_{L}K^{0}_{S}");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(4,"#eta#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(5,"#pi^{0}#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(7,"#eta e^{+}e^{-}");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(8,"#pi^{+}#pi^{-}#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(9,"f_{0}(980)#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(10,"2#pi^{0}#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(11,"#pi^{0}e^{+}e^{-}");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(12,"#pi^{0}#eta#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(13,"a_{0}(980)#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(14,"#eta'#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(15,"#mu^{+}#mu^{-}#gamma");
-      fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 8:
-      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(2,"3g");
-      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(3,"2g#gamma");
-      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(4,"e^{+}e^{-}");
-      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}#gamma");
-      fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 9:
-      fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(2,"n#pi^{-}");
-      fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 10:
-      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(2,"n#pi^{0}");
-      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(3,"p#pi^{-}");
-      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(4,"n#gamma");
-      fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 11:
-      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(2,"n#pi^{+}");
-      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(3,"p#pi^{0}");
-      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(4,"p#gamma");
-      fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 12:
-      fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(2,"p#pi^{+}");
-      fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    case 13:
-      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(1,"all");
-      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(2,"#Lambda#gamma");
-      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(3,"#Lambda e^{+}e^{-}");
-      fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(20,"rest");
-      break;
-    default:
-      break;
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(1,"all");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(2,"K^{+}K^{-}");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(3,"K^{0}_{L}K^{0}_{S}");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(4,"#eta#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(5,"#pi^{0}#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(7,"#eta e^{+}e^{-}");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(8,"#pi^{+}#pi^{-}#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(9,"f_{0}(980)#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(10,"2#pi^{0}#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(11,"#pi^{0}e^{+}e^{-}");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(12,"#pi^{0}#eta#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(13,"a_{0}(980)#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(14,"#eta'#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(15,"#mu^{+}#mu^{-}#gamma");
+  fHistDecayChannelsInput[7]->GetXaxis()->SetBinLabel(20,"rest");
+
+  if (!fDoLightOutput) {
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(2,"2#pi^{0}");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(3,"#pi^{+}#pi^{-}#gamma");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(4,"#pi^{0}#gamma");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(5,"#eta#gamma");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(6,"2#pi^{0}#gamma");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(7,"e^{+}e^{-}");
+    fHistDecayChannelsInput[4]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{0}");
+    fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(3,"#pi^{+}#gamma");
+    fHistDecayChannelsInput[5]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(2,"#pi^{-}#pi^{0}");
+    fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(3,"#pi^{-}#gamma");
+    fHistDecayChannelsInput[6]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(2,"3g");
+    fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(3,"2g#gamma");
+    fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(4,"e^{+}e^{-}");
+    fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}#gamma");
+    fHistDecayChannelsInput[8]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(2,"n#pi^{-}");
+    fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(2,"n#pi^{0}");
+    fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(3,"p#pi^{-}");
+    fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(4,"n#gamma");
+    fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(2,"n#pi^{+}");
+    fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(3,"p#pi^{0}");
+    fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(4,"p#gamma");
+    fHistDecayChannelsInput[11]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(2,"p#pi^{+}");
+    fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(20,"rest");
+
+    fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(1,"all");
+    fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(2,"#Lambda#gamma");
+    fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(3,"#Lambda e^{+}e^{-}");
+    fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(20,"rest");
   }
 }
 
@@ -930,3 +899,55 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
 
   delete PdgDaughter;
 }
+
+//_________________________________________________________________________________
+TH1* AliAnalysisTaskGammaCocktailMC::SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2) {
+
+  if (histType.CompareTo("f") == 0 || histType.CompareTo("F") == 0)
+    hist = new TH1F(histName, histName, nBinsX, xMin, xMax);
+  if (histType.CompareTo("i") == 0 || histType.CompareTo("I") == 0)
+    hist = new TH1I(histName, histName, nBinsX, xMin, xMax);
+  
+  hist->GetXaxis()->SetTitle(xTitle);
+  hist->GetYaxis()->SetTitle(yTitle);
+  
+  if (optSumw2)
+   hist->Sumw2();
+  
+  return hist;
+}
+
+//_________________________________________________________________________________
+TH2* AliAnalysisTaskGammaCocktailMC::SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t yMin, Double_t yMax, Bool_t optSumw2) {
+
+  if (histType.CompareTo("f") == 0 || histType.CompareTo("F") == 0)
+    hist = new TH2F(histName, histName, nBinsX, xMin, xMax, nBinsY, yMin, yMax);
+  if (histType.CompareTo("i") == 0 || histType.CompareTo("I") == 0)
+    hist = new TH2I(histName, histName, nBinsX, xMin, xMax, nBinsY, yMin, yMax);
+  
+  hist->GetXaxis()->SetTitle(xTitle);
+  hist->GetYaxis()->SetTitle(yTitle);
+  
+  if (optSumw2)
+    hist->Sumw2();
+  
+  return hist;
+}
+
+//_________________________________________________________________________________
+TH2* AliAnalysisTaskGammaCocktailMC::SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t* binsY, Bool_t optSumw2) {
+  
+  if (histType.CompareTo("f") == 0 || histType.CompareTo("F") == 0)
+    hist = new TH2F(histName, histName, nBinsX, xMin, xMax, nBinsY, binsY);
+  if (histType.CompareTo("i") == 0 || histType.CompareTo("I") == 0)
+    hist = new TH2I(histName, histName, nBinsX, xMin, xMax, nBinsY, binsY);
+  
+  hist->GetXaxis()->SetTitle(xTitle);
+  hist->GetYaxis()->SetTitle(yTitle);
+  
+  if (optSumw2)
+    hist->Sumw2();
+  
+  return hist;
+}
+
