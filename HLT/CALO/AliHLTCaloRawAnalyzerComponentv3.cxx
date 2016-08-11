@@ -346,9 +346,16 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
         //fAnalyzerPtr->SetL1Phase(fAltroRawStreamPtr->GetL1Phase());
         AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  altroRawStreamPtr.GetAltroCFG1(),
             altroRawStreamPtr.GetAltroCFG2() );
+	
+	// Make boundary check in x/z. In case the channel is out of bounds, raise an
+	// HLTError with the full information (position, channel ID and HW Address)
+	UInt_t xpos = chId&0x3f, zpos = (chId >> 6)&0x3f;
+	if(xpos >= fCaloConstants->GetNXCOLUMNSMOD() || zpos >= fCaloConstants->GetNZROWSMOD())
+          HLTError("CaloRawAnalyzerError: Channel out-of-bounds: x[%d, max %d], z[%d, max %d], raised by channel %d/HW address %d in DDL %d", 
+             xpos, fCaloConstants->GetNXCOLUMNSMOD() - 1, zpos,fCaloConstants->GetNZROWSMOD() - 1, chId, altroRawStreamPtr.GetHWAddress(), altroRawStreamPtr.GetDDL()); 
 
         HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(),
-            (chId >> 12)&0x1, chId&0x3f, (chId >> 6)&0x3f);
+            (chId >> 12)&0x1, xpos, zpos);
         {
           channelDataPtr->fChannelID =  chId;
           channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
