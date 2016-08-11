@@ -16,6 +16,8 @@ void SetInputDirectory(TString strdir){
 
 //main function
 void DoNiceSpecieComparisonPlot(TString ptD1 ="5to8", TString ptThr1 ="0.3to1.0", TString sys1 = "pp", TString ptD2 ="8to16", TString ptThr2 ="1.0to99.0", TString sys2 = "pPb") {
+  gStyle->SetOptStat(0000);
+gStyle->SetOptFit(000);
 
   TString ptD[2] = {ptD1.Data(),ptD2.Data()};
   TString ptThr[2] = {ptThr1.Data(),ptThr2.Data()};
@@ -96,10 +98,23 @@ void RestylePlot(TPad * pad, Int_t pos){
 
   TLegend *leg = new TLegend(0.35,0.48,0.92,0.72);
   leg->SetLineColor(kWhite);
+
+  TLegend *legSuperimp = new TLegend(0.35,0.48,0.92,0.72);
+  legSuperimp->SetLineColor(kWhite);
+  legSuperimp->SetFillStyle(0);
+
   TString dZeroUnc = "";
   TString dPlusUnc = "";
   TString dStarUnc = "";    
+
+  TH1D *h1;
+  TH1D *h2;
+  TH1D *h3;
   
+  TH1D *h1Superimp;
+  TH1D *h2Superimp;
+  TH1D *h3Superimp;
+
   for(Int_t jl=0;jl<entries;jl++){
     TObject *obj=(TObject*)lc->At(jl);
     TString strName=obj->ClassName();
@@ -110,7 +125,7 @@ void RestylePlot(TPad * pad, Int_t pos){
     if(strName.Contains("TLatex")) {
       TLatex *tl=(TLatex*)obj;
       TString str=tl->GetTitle();
-
+      str.ReplaceAll("#bf","#font[42]");
       if(str.Contains("#it{p}_{T}^{D^{0}}")) {tl->SetTitle(""); continue;}
 
       if(str.Contains("Comparison")) tl->SetTitle("");
@@ -124,11 +139,13 @@ void RestylePlot(TPad * pad, Int_t pos){
 	/*else*/ tl->SetTitle("");
       }
 
+      if(str.Contains("D^{0}"))str.ReplaceAll("D^{0}","D^{0 }");
+      if(str.Contains("D^{+}"))str.ReplaceAll("D^{+}","D^{+ }");
       if(str.Contains("TeV")) {
 	if(str.Contains("pp")) {
 	  syst=0;  //needed to set correctly the y range later
-	  tl->SetTitle("#bf{pp, #sqrt{#it{s}} = 7 TeV}");
-        } else tl->SetTitle("#bf{p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV}");
+	  tl->SetTitle("pp, #sqrt{#it{s}} = 7 TeV");
+        } else tl->SetTitle("p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
 	tl->SetX(tl->GetX()+0.04); 
 	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.08); 
 	tl->SetTextSize(0.045);
@@ -138,6 +155,7 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(tl->GetX()+0.04);
 	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.065); 
 	str.ReplaceAll("GeV/c","GeV/#it{c}");
+	if(pos==0) str.ReplaceAll("^{D}","^{D}_{cms}");
 	tl->SetTitle(str.Data());
 	tl->SetTextSize(0.045);
       }
@@ -146,6 +164,7 @@ void RestylePlot(TPad * pad, Int_t pos){
 	tl->SetX(tl->GetX());
 	/*if(pos!=0)*/ tl->SetY(tl->GetY()-0.065); 
 	str.ReplaceAll("GeV/c","GeV/#it{c}");
+	str.ReplaceAll("1.0","1");
 	tl->SetTitle(str.Data());
 	tl->SetTextSize(0.045);
       }
@@ -203,11 +222,20 @@ void RestylePlot(TPad * pad, Int_t pos){
 	hist->GetYaxis()->SetLabelSize(0.04);
 	hist->SetLineColor(kRed);	
 	hist->SetLineWidth(1);	
-    if(dZeroUnc.CompareTo("")) {
-      TLegendEntry* l1 = leg->AddEntry(hist,Form("#bf{%s}",dZeroUnc.Data()),"elp");
-      l1->SetTextColor(kRed);
-    } 
-    nextMeson=1;  
+        if(dZeroUnc.CompareTo("")) {
+          TLegendEntry* l1 = leg->AddEntry(hist,Form("%s",dZeroUnc.Data()),"elp");
+          l1->SetTextColor(kRed);
+        } 
+	h1 = (TH1D*)hist->Clone();
+        h1Superimp = (TH1D*)hist->Clone();
+        h1Superimp->SetMarkerStyle(kCircle);
+        h1Superimp->SetMarkerColor(kRed+1);
+printf("GetBinContent %f, %f\n",hist->GetBinContent(2),h1Superimp->GetBinContent(2));
+        if(dZeroUnc.CompareTo("")) {
+          TLegendEntry* l1sup = legSuperimp->AddEntry(h1Superimp,"","elp");
+          l1sup->SetTextColor(kRed);          	  
+	}
+        nextMeson=1;  
       }
       if(hist->GetMarkerColor()==kAzure-2) {
 	maxY[1] = hist->GetBinContent(hist->GetMaximumBin());
@@ -215,18 +243,30 @@ void RestylePlot(TPad * pad, Int_t pos){
 	hist->SetMarkerStyle(33);
 	hist->SetLineColor(kAzure-2);
 	hist->SetLineWidth(1);		
+	h2 = (TH1D*)hist->Clone();
+        h2Superimp = (TH1D*)hist->Clone();
+        h2Superimp->SetMarkerStyle(27);
+        h2Superimp->SetMarkerColor(kAzure+3);
 	nextMeson=2;
-    TLegendEntry* l2 = leg->AddEntry(hist,Form("#bf{%s}",dStarUnc.Data()),"elp");
-    l2->SetTextColor(kAzure-2);		
+        TLegendEntry* l2 = leg->AddEntry(hist,Form("%s",dStarUnc.Data()),"elp");
+        l2->SetTextColor(kAzure-2);	
+        TLegendEntry* l2sup = legSuperimp->AddEntry(h2Superimp,"","elp");
+        l2sup->SetTextColor(kAzure-2);    	
       }
       if(hist->GetMarkerColor()==kGreen+3) {
 	maxY[2] = hist->GetBinContent(hist->GetMaximumBin());
 	hist->SetMarkerSize(1.8);
 	hist->SetLineColor(kGreen+3);
-	hist->SetLineWidth(1);			
+	hist->SetLineWidth(1);	
+	h3 = (TH1D*)hist->Clone();	
+        h3Superimp = (TH1D*)hist->Clone();
+        h3Superimp->SetMarkerStyle(25);
+        h3Superimp->SetMarkerColor(kGreen+4);
 	nextMeson=3;
-    TLegendEntry* l3 = leg->AddEntry(hist,Form("#bf{%s}",dPlusUnc.Data()),"elp");
-    l3->SetTextColor(kGreen+3);		
+        TLegendEntry* l3 = leg->AddEntry(hist,Form("%s",dPlusUnc.Data()),"elp");
+        l3->SetTextColor(kGreen+3);		
+        TLegendEntry* l3sup = legSuperimp->AddEntry(h3Superimp,"","elp");
+        l3sup->SetTextColor(kGreen+3);	
       }
 
     } //end of TH1D 'if'
@@ -256,7 +296,7 @@ void RestylePlot(TPad * pad, Int_t pos){
 
   pad->cd();
   if(pos==0 || pos==1){ //write to both panels (IRC comment)
-	TLatex *tlAlice=new TLatex(0.82,0.875,Form("#bf{ALICE}"));
+	TLatex *tlAlice=new TLatex(0.82,0.875,Form("ALICE"));
 	tlAlice->SetNDC();
 	tlAlice->Draw();
 	tlAlice->SetTextSize(0.050);
@@ -279,10 +319,19 @@ void RestylePlot(TPad * pad, Int_t pos){
   maxFinalY = (TMath::Floor(maxFinalY*2)+1)/2.;
 
   /*if(pos==0)*/ leg->Draw("same");
+  legSuperimp->Draw("same");
 
   TH1D *histFin = (TH1D*)pad->FindObject("hDataCorrectedTempl0CentrFpromptReflected");
   histFin->SetMaximum(maxFinalY);
   histFin->GetYaxis()->SetTitleOffset(histFin->GetYaxis()->GetTitleOffset()+0.3);
+
+  h1->Draw("same");
+  h1Superimp->Draw("same");
+  h3->Draw("same");
+  h3Superimp->Draw("same");
+  h2->Draw("same");
+  h2Superimp->Draw("same");
+
 }  
 
 //_______________________________________________________________________

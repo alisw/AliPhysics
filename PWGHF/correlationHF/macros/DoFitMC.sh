@@ -9,6 +9,7 @@ declare inputdir=$4
 declare outputdir=$5
 declare templNameRoot=$6
 declare avstring="Weighted"
+declare saveawayside=$7
 
 if [ ${avopt} = 1 ]; then
     avstring="Arithmetic"
@@ -21,7 +22,8 @@ if [ ${system} = 0 ]; then
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
-SystematicsMC_pp_lowpthad(kFALSE,"$templNameRoot")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pp_lowpthad($refl,"$templNameRoot")
 EOF
 
     root -b &>outFitMCPPhighpthad.log <<EOF
@@ -29,7 +31,8 @@ EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
-SystematicsMC_pp_highpthad(kFALSE,"$templNameRoot")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pp_highpthad($refl,"$templNameRoot")
 EOF
 
 
@@ -38,7 +41,8 @@ EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
-SystematicsMC_pp_integrpthad(kFALSE,"$templNameRoot")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pp_integrpthad($refl,"$templNameRoot")
 EOF
 
     
@@ -48,7 +52,8 @@ elif [ ${system} = 1 ]; then
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
-SystematicsMC_pPb_lowpthad(kFALSE,"$templNameRoot")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_lowpthad($refl,"$templNameRoot")
 EOF
 
     root -b &>outFitMCPPbhighpthad.log <<EOF
@@ -56,7 +61,8 @@ EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
-SystematicsMC_pPb_highpthad(kFALSE,"$templNameRoot")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_highpthad($refl,"$templNameRoot")
 EOF
 
 
@@ -65,7 +71,8 @@ EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
-SystematicsMC_pPb_integrpthad(kFALSE,"$templNameRoot")
+SetSaveAwaySidePlots(${saveawayside})
+SystematicsMC_pPb_integrpthad($refl,"$templNameRoot")
 EOF
   
 fi

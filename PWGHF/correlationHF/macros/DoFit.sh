@@ -9,6 +9,7 @@ declare inputdir=$4
 declare outputdir=$5
 declare avstring="Weighted"
 declare -i includev2=$6
+declare saveawayside=$7
 declare -i plotv2sep=1
 declare -i v2had=10
 declare -i v2D=6
@@ -23,6 +24,7 @@ if [ ${system} = 0 ]; then
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
  Systematics_pp_lowpthad(${refl})
 EOF
 
@@ -31,6 +33,7 @@ root -b &>outFitPPhighpthad.log <<EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
 Systematics_pp_highpthad(${refl})
 EOF
 
@@ -39,6 +42,7 @@ root -b &>outFitPPintegratedpthad.log <<EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
 Systematics_pp_integratedpthad(${refl})
 EOF
 
@@ -48,6 +52,7 @@ elif [ ${system} = 1 ]; then
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had}),0.01*((Double_t)${v2D}),${plotv2sep})
 Systematics_pPb_lowpthad(${refl})
 EOF
@@ -57,6 +62,7 @@ root -b &>outFitPPbhighpthad.log <<EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had}),0.01*((Double_t)${v2D}),${plotv2sep})
 Systematics_pPb_highpthad(${refl})
 EOF
@@ -66,6 +72,7 @@ root -b &>outFitPPbintegratedpthad.log <<EOF
 SetInputPath("${inputdir}")
 SetOutputPath("${outputdir}")
 SetAverageString("${avstring}")
+SetSaveAwaySidePlots(${saveawayside})
 SetV2values(${includev2},0.01*((Double_t)${v2had}),0.01*((Double_t)${v2D}),${plotv2sep})
 Systematics_pPb_integratedpthad(${refl})
 EOF
