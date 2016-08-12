@@ -92,6 +92,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistEtaPhiTPCOnly_MB(0),
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
+    fHistEMC_Had_MB_1Gev(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -416,6 +417,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistEtaPhiTPCOnly_MB(0),
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
+    fHistEMC_Had_MB_1Gev(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -1949,6 +1951,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fHistDPhi5_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
     
+    //Hadron e/p plot
+    fHistEMC_Had_MB_1Gev = new TH1F("fHistEMC_Had_MB_1Gev", "E/p for hadrons with Pt between 1-2Gev", 100, 0, 1.5);
+    fHistEMC_Had_MB_1Gev->GetXaxis()->SetTitle("E/p");
+    fHistEMC_Had_MB_1Gev->GetYaxis()->SetTitle("Cts");
+
     // Eta-Phi distribution for tagged events
     fHistEtaPhiTag_MB = new TH2F("fHistEtaPhiTag_MB", "Eta-Phi distribution of tracks in tagged events", 100, -.9,.9,100,0,2*TMath::Pi());
     fHistEtaPhiTag_MB->GetXaxis()->SetTitle("Eta");
@@ -2167,6 +2174,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistEtaPhi_MB);
     fOutputMB->Add(fHistEtaPhiTag_MB);
     fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
+    fOutputMB->Add(fHistEMC_Had_MB_1Gev);
     for(Int_t i=0; i<6;i++){
         fOutputMB->Add(fHistTPC_TOF_MB[i]);
         fOutputMB->Add(fHistTPC_EMC_MB[i]);
@@ -5049,6 +5057,12 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         }
         }
         
+    if(esdtrack->Pt()<2&&esdtrack->Pt()>1){
+        if(nSigmaTPC<-2&&nSigmaTPC>-8){
+            fHistEMC_Had_MB_1Gev->Fill(EOP);
+        }
+    }
+
         //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
         if(esdtrack->Pt()<6){
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]){

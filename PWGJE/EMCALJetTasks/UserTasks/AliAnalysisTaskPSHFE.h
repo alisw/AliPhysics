@@ -91,6 +91,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_MB[6];
     TH1F            *fHistEMC_TOFTRD_MB[6];
     TH1F            *fHistEMC_TPCTOFTRD_MB[6];
+    TH1F            *fHistEMC_Had_MB_1Gev;
     //TRD nSigma plots
     TH2F            *fHistTRD_TPC_MB[6];
     TH2F            *fHistTRD_TOF_MB[6];
