@@ -89,7 +89,7 @@ public :
   Bool_t GetUseHLT() { return fUseHLT; }
   TObjArray* GetListOfDrawableObjects() {TObjArray* tmp = fFolderObj; fFolderObj = NULL; return tmp;}
 
-  void ResetOutputData();
+  virtual void ResetOutputData();
 
     
 private:
