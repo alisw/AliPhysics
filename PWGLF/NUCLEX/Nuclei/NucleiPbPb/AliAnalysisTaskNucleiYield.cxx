@@ -276,7 +276,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
 
     const int nSigmaBins = 240;
     float sigmaBins[nSigmaBins + 1];
-    for (int i = 0; i < nSigmaBins; ++i)
+    for (int i = 0; i <= nSigmaBins; ++i)
       sigmaBins[i] = -6.f + i * 0.05;
 
     fATOFsignal = new TH3F("fATOFsignal",
