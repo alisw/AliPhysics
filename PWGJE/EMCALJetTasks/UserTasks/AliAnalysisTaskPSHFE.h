@@ -47,6 +47,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     AliESDtrackCuts *comptrackCuts; 
     
     //Physics selection booleans
+    Bool_t          MBtrg;
     Bool_t          EMC7trg;
     Bool_t          EMC8trg;
     Bool_t          EMCJettrg;
