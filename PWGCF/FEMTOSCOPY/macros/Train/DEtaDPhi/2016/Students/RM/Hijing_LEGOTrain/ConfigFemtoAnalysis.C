@@ -42,7 +42,7 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis() {
+AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 //masy czastek w GeV
    double PionMass = 0.13956995;
    double KaonMass = 0.493677;
