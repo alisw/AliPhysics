@@ -16,7 +16,7 @@
 /* $Id$ */
 
 // Script to document the FMD code
-/** @ingroup simple_script
+/** @ingroup FMD_simple_script
  */
 void
 Document()

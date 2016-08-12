@@ -10,7 +10,7 @@
     @brief   Make fake calibration data.
 */
 /** Make fake calibration data 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 Float_t
 AdcPerMip2Gain(Int_t adc) 

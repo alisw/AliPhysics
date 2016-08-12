@@ -35,11 +35,11 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
-/** @defgroup xsec_script X-section script 
+/** @defgroup FMD_xsec_script X-section script 
     @ingroup FMD_script 
 */
 //____________________________________________________________________
-/** @ingroup xsec_script
+/** @ingroup FMD_xsec_script
  */
 struct Mech 
 {
@@ -74,7 +74,7 @@ Mech fgMechs[] =
    { 0, 0, 0, 0, 0}};
 
 //____________________________________________________________________
-/** @ingroup xsec_script
+/** @ingroup FMD_xsec_script
  */
 struct MechValue 
 {
@@ -137,7 +137,7 @@ struct MechValue
 };
 
 //____________________________________________________________________
-/** @ingroup xsec_script
+/** @ingroup FMD_xsec_script
  */
 struct XSections 
 {

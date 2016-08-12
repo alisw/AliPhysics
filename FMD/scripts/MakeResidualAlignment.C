@@ -5,7 +5,7 @@
 // Make fake residual alignment data.
 //
 /** Make fake residual alignment data 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 void
 MakeResidualAlignment()

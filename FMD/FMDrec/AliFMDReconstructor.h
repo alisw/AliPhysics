@@ -39,7 +39,13 @@ class AliFMDRecoParam;
 class TH1;
 
 
-/** @defgroup FMD_rec Reconstruction */
+/** 
+ * @defgroup FMD_rec Reconstruction 
+ *
+ * Classes used for reconstruction of FMD data 
+ *
+ * @ingroup FMD 
+ */
 //____________________________________________________________________
 /** 
  * @brief This is a class that reconstructs AliFMDRecPoint objects

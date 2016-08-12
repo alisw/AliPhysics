@@ -6,7 +6,7 @@
 // Script I used for rapid prototyping of the FMD3 geometry - in
 // particular the support cone 
 //
-/** @defgroup node_geom Simple geometry
+/** @defgroup FMD_node_geom Simple geometry
     @ingroup FMD_script
 */
 #include <TGeometry.h>
@@ -24,7 +24,7 @@
 
 //____________________________________________________________________
 /** @brief A 2D point
-    @ingroup node_geom
+    @ingroup FMD_node_geom
  */
 struct point_t
 {
@@ -35,7 +35,7 @@ struct point_t
 
 //____________________________________________________________________
 /** @brief Shape of a ring
-    @ingroup node_geom
+    @ingroup FMD_node_geom
  */
 struct Ring 
 {
@@ -149,7 +149,7 @@ struct Ring
 
 //____________________________________________________________________
 /** @brief Shape of a detector
-    @ingroup node_geom
+    @ingroup FMD_node_geom
  */
 struct Detector
 {
@@ -182,7 +182,7 @@ struct Detector
 
 //____________________________________________________________________
 /** @brief FMD3 simple node geometry 
-    @ingroup node_geom
+    @ingroup FMD_node_geom
  */
 struct FMD3 : public Detector
 {
@@ -333,7 +333,7 @@ struct FMD3 : public Detector
 
 //____________________________________________________________________
 /** @brief Create a node geometry 
-    @ingroup node_geom
+    @ingroup FMD_node_geom
     @code 
     .x NodeGeometry.C++
     @endcode 

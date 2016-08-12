@@ -6,7 +6,7 @@
 // for testing. 
 //
 /** Convert digits to Raw data
-    @ingroup simple_script
+    @ingroup FMD_simple_script
 */
 void
 Convert2Raw()

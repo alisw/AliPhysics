@@ -5,7 +5,7 @@
 // Make fake alignment data.
 //
 /** Make fake alignment data 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 void
 MakeAlignment()

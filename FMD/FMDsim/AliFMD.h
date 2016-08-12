@@ -12,28 +12,30 @@
     @date    Sun Mar 26 17:59:37 2006
     @brief   Declaration of AliFMD detector driver 
 */
-/** @mainpage ALICE FMD Off-line code 
+/** @page FMD_main ALICE FMD Off-line code 
     
     @b Contents 
-    - @ref intro 
-    - @ref structure 
-      - @ref base     (see also @ref FMD_base)
-      - @ref sim      (see also @ref FMD_sim)
-      - @ref rec      (see also @ref FMD_rec)
-      - @ref flow     (see also @ref FMD_flow)
-      - @ref ana      (see also @ref FMD_ana)
-      - @ref util     (see also @ref FMD_util)
-    - @ref script     (see also @ref FMD_script)
-    - @ref quick
-    - @ref authors
+    - @ref fmd_intro 
+    - @ref fmd_structure 
+      - @ref fmd_base     (see also @ref FMD_base)
+      - @ref fmd_sim      (see also @ref FMD_sim)
+      - @ref fmd_rec      (see also @ref FMD_rec)
+      - @ref fmd_flow     (see also @ref FMD_flow)
+      - @ref fmd_ana      (see also @ref FMD_ana)
+      - @ref fmd_util     (see also @ref FMD_util)
+    - @ref fmd_script     (see also @ref FMD_script)
+    - @ref fmd_quick
+    - @ref fmd_authors
     
-    @section intro Introduction:
+    @section fmd_intro Introduction:
 
     This file contains a short overview of the FMD code.   It is by no 
     means authoritative  - only the code is good for that.  However,
     I'll try to explain things a bit here. 
 
-    @section structure Structure:
+    See also @ref FMD
+
+    @section fmd_structure Structure:
 
     There are 4 libraries build for the FMD.  These are 
 
@@ -56,7 +58,7 @@
       @endcode
     The content of these libraries is detailed more below. 
     
-    @subsection base libFMDbase:
+    @subsection fmd_base libFMDbase:
 
     This currently (18th or March 2006) contains the classes 
 
@@ -90,7 +92,7 @@
 
   
 
-    @subsection sim libFMDsim:
+    @subsection fmd_sim libFMDsim:
 
     This currently (18th or March 2006) contains the classes 
 
@@ -116,7 +118,7 @@
       AliFMDParameters to make the mapping from detector coordinates
       to hardware addresses.
 
-    @subsection rec libFMDrec:
+    @subsection fmd_rec libFMDrec:
 
     This currently (18th or March 2006) contains the classes 
 
@@ -129,17 +131,17 @@
 
     - AliFMDRawReader: Classes to read raw data files. 
 
-    @subsection flow libFMDflow:
+    @subsection fmd_flow libFMDflow:
     
     This library contains flow analysis code that works similar to 
     histograms. 
 
-    @subsection ana libFMDanalysis:
+    @subsection fmd_ana libFMDanalysis:
     
     This library contains analysis code.
 
 
-    @subsection util libFMDutil:
+    @subsection fmd_util libFMDutil:
 
     This currently (18th or March 2006) contains the classes 
 
@@ -159,12 +161,12 @@
       dummy) calibration and alignment 	data. 
 
 
-    @section script Scripts 
+    @section fmd_script Scripts 
     
     Most scripts live in @c FMD/scripts.  The notiable exceptions are 
     @ref Simulate.C, @ref Reconstruct.C, and @ref Config.C 
 
-    @section quick Quick start 
+    @section fmd_quick Quick start 
 
     First, install ROOT.  Then Install TGeant3: 
     @verbatim 
@@ -208,12 +210,18 @@
 
     Now, open the file `AliESDs.root' in AliRoot, and browse through  that. 
 
-    @section authors Authors:
+    @section fmd_authors Authors:
 
     - Alla Maevskaya		<Alla.Maevskaia@cern.ch>	
     - Christian Holm Christensen 	<cholm@nbi.dk>
 */
-/** @defgroup FMD_sim Simulation */
+/** 
+ * @defgroup FMD_sim Simulation 
+ *
+ * Code used for the FMD simulations 
+ *
+ * @ingroup FMD
+ */
 
 //____________________________________________________________________
 //

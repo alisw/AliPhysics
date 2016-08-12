@@ -23,8 +23,18 @@
 #endif
 class AliFMDRing;
 class TGeoMatrix;
-
-/** @defgroup FMD_base Basic classes */
+/** 
+ * @defgroup FMD Forward Multiplicity Detector 
+ *
+ * Code specific for the FMD. 
+ */
+/** 
+ * @defgroup FMD_base Basic classes 
+ *
+ * Data structures and other classes of general use 
+ *
+ * @ingroup FMD
+ */
 //__________________________________________________________________
 /** @brief Base class for the geometry description and parameters of
     the FMD sub detectors FMD1, FMD2, and FMD3.

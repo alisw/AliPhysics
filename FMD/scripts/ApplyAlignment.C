@@ -6,7 +6,7 @@
 // that to the geometry. 
 //
 /** Apply alignment to a geometry 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 void
 ApplyAlignment()

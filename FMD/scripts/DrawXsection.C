@@ -2,7 +2,7 @@
 //
 // Script to draw a X-section, LOSS, or range made with MakeXsection
 //
-/** @ingroup xsec_script
+/** @ingroup FMD_xsec_script
     @param scale 
     @param filename 
     @param var 

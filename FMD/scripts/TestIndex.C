@@ -12,11 +12,11 @@
 #include <iostream>
 #include <TFile.h>
 #endif
-/** @defgroup index_test Test of AliFMDIndex and AliFMDObjIndex 
+/** @defgroup FMD_index_test Test of AliFMDIndex and AliFMDObjIndex 
     @ingroup FMD_script
 */
 /** Write an AliFMDIndex object to output stream
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param o Stream
     @param i Index object 
     @return @a o */
@@ -27,7 +27,7 @@ operator << (std::ostream& o, const AliFMDIndex& i)
 }
 
 /** Do the comparision, and print to standard out
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param lhs Left hand side
     @param rhs Right hand side
     @return @f$ lhs < rhs @f$ */
@@ -44,7 +44,7 @@ cmp(const AliFMDIndex& lhs, const AliFMDIndex& rhs)
     @f[
     lhs \equiv rhs: \not (lhs < rhs \vee rhs < lhs)
     @f]
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param lhs Left hand side 
     @param rhs Right hand side 
     @return @c true if @a lhs and @a rhs are equivilant */
@@ -57,7 +57,7 @@ equiv(const AliFMDIndex& lhs, const AliFMDIndex& rhs)
 }
 
 /** Check that @f$ \not (x < x)@f$
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param x Object to test
     @return @c true if @a x is not less than itself */
 bool
@@ -69,7 +69,7 @@ self(const AliFMDIndex& x)
 }
 
 /** Check if @f$ a \wedge b \Rightarrow c@f$
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param a First condition
     @param b Second condition
     @param c Implication
@@ -85,7 +85,7 @@ imply(bool a, bool b, bool c)
     @f[
     (x < y \wedge y < z) \Rightarrow x < z
     @f]
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param x First object
     @param y Second object
     @param z Third object
@@ -105,7 +105,7 @@ trans(const AliFMDIndex& x, const AliFMDIndex& y, const AliFMDIndex& z)
     @f[ 
     (x \equiv y \wedge y \equiv z) \Rightarrow (x \equiv z)
     @f]
-    @ingroup index_test
+    @ingroup FMD_index_test
     @param x First object
     @param y Second argument
     @param z Third object
@@ -122,7 +122,7 @@ equiv(const AliFMDIndex& x, const AliFMDIndex& y, const AliFMDIndex& z)
 
 
 /** Check if the comparison operator is a @e strictly @e weak @e ordering
-    @ingroup index_test
+    @ingroup FMD_index_test
  */
 void
 TestIndex() 
@@ -171,7 +171,7 @@ TestIndex()
 }
 
 /** Check if the comparison operator is a @e strictly @e weak @e ordering
-    @ingroup index_test
+    @ingroup FMD_index_test
  */
 void
 TestObjIndex() 
@@ -219,7 +219,7 @@ TestObjIndex()
 }
 
 /** Check that we can sort an array of index objects
-    @ingroup index_test
+    @ingroup FMD_index_test
  */
 void
 SortIndex()

@@ -25,6 +25,8 @@
     normal libraries.  The classes are intended to be used as base
     classes for customized class that do some sort of analysis on the
     various types of data produced by the FMD.
+    
+    @ingroup FMD
 */
 #include <TNamed.h>
 #ifndef ROOT_TString

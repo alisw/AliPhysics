@@ -6,7 +6,7 @@
 // that to the geometry. 
 //
 /** Print alignment to a geometry 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 #include <iomanip>
 void

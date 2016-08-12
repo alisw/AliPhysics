@@ -7,8 +7,9 @@
 //
 /** @defgroup FMD_script Scripts
     @brief Scripts for the FMD 
+    @ingroup FMD
 */
-/** @defgroup simple_script Simple scripts
+/** @defgroup FMD_simple_script Simple scripts
     @ingroup FMD_script
     @brief Scripts for the FMD 
 */

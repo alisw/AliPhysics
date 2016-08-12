@@ -6,7 +6,7 @@
 // Script I used for rapid prototyping of the FMD3 geometry - in
 // particular the support cone 
 //
-/** @defgroup geo_geom Simple geometry
+/** @defgroup FMD_geo_geom Simple geometry
     @ingroup FMD_script
 */
 #ifndef __CINT___
@@ -62,7 +62,7 @@
 
 //____________________________________________________________________
 /** @brief Simple geometry 
-    @ingroup geo_geom
+    @ingroup FMD_geo_geom
     @code 
     gSystem->Load("libPhysics");
     gSystem->Load("libGeom");

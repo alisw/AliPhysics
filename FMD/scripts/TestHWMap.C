@@ -4,7 +4,7 @@
 //
 // Check integrety of Hardware2Detector and Detector2Hardware
 //
-/** @defgroup HW_Test Hardware map test
+/** @defgroup FMD_HW_Test Hardware map test
     @ingroup FMD_script 
 */
 //____________________________________________________________________
@@ -43,7 +43,7 @@ Channel2HwAddr(UShort_t b, UShort_t a, UShort_t c)
 /** 
  * Format a hardware addresss
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  * 
  * @param l  DDL ID
  * @param b  Board
@@ -65,7 +65,7 @@ Addr2Str(UInt_t l, UShort_t b, UShort_t a, UShort_t c, UShort_t tb)
 /** 
  * Format a hardware addresss
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  * 
  * @param l  DDL ID
  * @param w  Hardware address
@@ -85,7 +85,7 @@ Addr2Str(UShort_t l, UShort_t w, UShort_t tb)
 /** 
  * Format a detector address 
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  * 
  * @param d Detector
  * @param r Ring 
@@ -107,7 +107,7 @@ Det2Str(UShort_t d, Char_t r, UShort_t s, UShort_t t, UShort_t n)
 /** 
  * Print full transformation
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  *
  * @param d    Detector
  * @param r    Ring
@@ -138,7 +138,7 @@ PrintTrans(UShort_t d,   Char_t r,   UShort_t s,  UShort_t t,  UShort_t n,
 /** 
  * Print full transformation
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  *
  * @param d    Detector
  * @param r    Ring
@@ -172,7 +172,7 @@ PrintTrans(UShort_t d,   Char_t   r,  UShort_t s,  UShort_t t,  UShort_t n,
 /** 
  * Check transformation
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  *
  * @param d    Detector
  * @param r    Ring
@@ -223,7 +223,7 @@ CheckTrans(UShort_t d,  Char_t r,  UShort_t s,  UShort_t t,  UShort_t n,
  * Test hardware address map by converting from detector coordinates
  * to hardware address and then back again.
  * 
- * @ingroup HW_test
+ * @ingroup FMD_HW_test
  *
  * @param useHwAddr Whether to use 12 bit hardware address, or
  *                  board,altro,channel 

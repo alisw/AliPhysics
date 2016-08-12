@@ -2,7 +2,7 @@
 //
 // Script to compare the output of GEANT 3.21 to FLUKA 2. 
 //
-/** @ingroup simple_script
+/** @ingroup FMD_simple_script
  */
 void
 Compare() 

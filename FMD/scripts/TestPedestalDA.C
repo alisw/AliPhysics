@@ -4,7 +4,7 @@
 //
 // Test of AliFMDPedestalDA
 //
-/** @ingroup simple_script
+/** @ingroup FMD_simple_script
  */
 #ifndef __CINT__
 # include <TSystem.h>

@@ -4,7 +4,7 @@
 //
 // Check integrety of Hardware2Detector and Detector2Hardware
 //
-/** @defgroup ALTRO_test ALTRO test
+/** @defgroup FMD_ALTRO_test ALTRO test
     @ingroup FMD_script 
 */
 #ifndef __CINT__
@@ -20,7 +20,7 @@
 bool show_all=false;
 
 //____________________________________________________________________
-/** @ingroup ALTRO_test
+/** @ingroup FMD_ALTRO_test
     @param ddl 
     @param hwaddr 
     @return  */
@@ -36,7 +36,7 @@ Addr2Str(UInt_t ddl, UInt_t hwaddr, UShort_t timebin)
 }
 
 //____________________________________________________________________
-/** @ingroup ALTRO_test
+/** @ingroup FMD_ALTRO_test
     @param det 
     @param ring 
     @param sec 
@@ -51,7 +51,7 @@ Det2Str(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, UShort_t sam)
 }
 
 //____________________________________________________________________
-/** @ingroup ALTRO_test
+/** @ingroup FMD_ALTRO_test
     @param det 
     @param ring 
     @param sec 
@@ -77,7 +77,7 @@ PrintTrans(UShort_t det, Char_t ring, UShort_t sec, Short_t str, UShort_t sam,
 }
 
 //____________________________________________________________________
-/** @ingroup ALTRO_test
+/** @ingroup FMD_ALTRO_test
     @param det 
     @param ring 
     @param sec 
@@ -124,7 +124,7 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, UShort_t sam,
 }
 
 //____________________________________________________________________
-/** @ingroup ALTRO_test
+/** @ingroup FMD_ALTRO_test
  */
 void
 TestAltroMapping(bool sa=false, Int_t min=1, Int_t max=3)

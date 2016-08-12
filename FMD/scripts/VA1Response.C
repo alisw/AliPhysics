@@ -10,7 +10,7 @@
     @param B 
     @param dc 
     @param errors 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
 */
 void 
 VA1Response(Int_t n=2, Float_t B=5, Float_t dc=.01, Bool_t errors=kFALSE) 

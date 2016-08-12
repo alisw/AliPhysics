@@ -4,7 +4,7 @@
 //
 // Test of AliFMDAltro{Reader,Writer}
 //
-/** @ingroup simple_script
+/** @ingroup FMD_simple_script
  */
 UShort_t 
 MakeADC(UShort_t d, UShort_t q, UShort_t s, UShort_t t)

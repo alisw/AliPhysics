@@ -10,7 +10,7 @@
 /** Calculate wafer parameters
     @param c 
     @return  
-    @ingroup simple_script
+    @ingroup FMD_simple_script
 */
 TObjArray*
 WaferParameters(const char c)
@@ -70,7 +70,7 @@ WaferParameters(const char c)
 }
 
 /** Draw wafers
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 void
 Wafer()

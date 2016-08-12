@@ -10,7 +10,7 @@
     @brief   Make fake calibration data.
 */
 /** Make fake calibration data 
-    @ingroup simple_script
+    @ingroup FMD_simple_script
  */
 void
 PrintCalibration(Int_t r=0, const char* what="gain")

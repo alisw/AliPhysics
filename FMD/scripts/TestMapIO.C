@@ -4,11 +4,11 @@
 //
 // Test I/O of ALiFMDMap
 //
-/** @defgroup MAPIO_TEST Map I/O test
+/** @defgroup FMD_MAPIO_TEST Map I/O test
     @ingroup FMD_script 
 */
 //____________________________________________________________________
-/** @ingroup MAPIO_test
+/** @ingroup FMD_MAPIO_test
  */
 void 
 WriteTree()
@@ -24,7 +24,7 @@ WriteTree()
 }
 
 //____________________________________________________________________
-/** @ingroup MAPIO_test
+/** @ingroup FMD_MAPIO_test
  */
 void 
 ReadTree()
@@ -43,7 +43,7 @@ ReadTree()
 
   
 //____________________________________________________________________
-/** @ingroup MAPIO_test
+/** @ingroup FMD_MAPIO_test
  */
 void
 WriteMap() 
@@ -56,7 +56,7 @@ WriteMap()
 }
 
 //____________________________________________________________________
-/** @ingroup MAPIO_test
+/** @ingroup FMD_MAPIO_test
     @return  */
 void
 ReadMap() 
@@ -73,7 +73,7 @@ ReadMap()
 
 
 //____________________________________________________________________
-/** @ingroup MAPIO_test
+/** @ingroup FMD_MAPIO_test
  */
 void
 TestMapIO()
