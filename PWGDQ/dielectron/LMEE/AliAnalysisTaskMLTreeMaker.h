@@ -127,7 +127,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
  Double_t tempEsigITS;
 
   Bool_t hasMC;
-  
+  Bool_t IsHij;
+ 
   std::vector<Double_t> MCpt;
   std::vector<Double_t> MCeta;
   std::vector<Double_t> MCphi;
