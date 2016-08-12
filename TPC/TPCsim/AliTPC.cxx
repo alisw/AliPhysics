@@ -267,7 +267,7 @@ void AliTPC::CreateMaterials()
   const AliGRPObject *grp=calibDB->GetGRP(run);
   const Int_t startTimeGRP = grp?grp->GetTimeStart():0.;
   const Int_t stopTimeGRP  = grp?grp->GetTimeEnd():0.;
-  const Int_t time=(startTimeGRP+stopTimeGRP)/2; // middel of the run
+  const Int_t time=startTimeGRP + (stopTimeGRP-startTimeGRP)/2; // middel of the run
   const Double_t temperature = calibDB->GetTemperature(time, run, 0) + 273.15; // in K
   const Double_t pressure    = calibDB->GetPressure(time, run); // im mbar
 
