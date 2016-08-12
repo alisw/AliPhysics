@@ -129,13 +129,20 @@
 //
 int macroVerbosity=0;
 const char* defaultAnalysisName="myanalysis";
-const char* includePath="-I. -I$ROOTSYS/include -I$ALICE_ROOT/include";
+const char* includePath="-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER/STEER -I$ALICE_PHYSICS/STEER/STEERBase -I$ALICE_PHYSICS/STEER/ESD -I$ALICE_PHYSICS/STEER/AOD -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGPP -g";
 const char* libraryDependencies=
+  "libTree.so "
+  "libGeom.so "
+  "libPhysics.so "
+  "libVMC.so "
+  "libMinuit.so "
   "libSTEERBase.so "
   "libESD.so "
   "libAOD.so "
   "libANALYSIS.so "
+  "libOADB.so "
   "libANALYSISalice.so "
+  "libCORRFW.so "
   ;
 
 TString BuildJDLName(const char* analysisName);
@@ -205,8 +212,9 @@ void run_single_task(const char* mode,
   bool bDefaultOutput=true;
   bool bMergeOnGrid=mergeMode==2?false:true; // default true in all cases but 'collect'
   bool mcData=false;
+  bool makepidresp=false;
   int nTestFiles=10;
-  int nMaxInputFiles=100;
+  int nMaxInputFiles=20; //2010pp: 100 ||| pPb:20(LHC13b), 6-20(LHC13c), MC: 8
   TString strArguments(arguments);
   TString mergeDirs;
   TString strCustomInputHandler;
@@ -234,6 +242,16 @@ void run_single_task(const char* mode,
 	// NOTE: not to be confused with option 'mc' which is propagated to tasks
 	// and switches processing and output modes inside tasks
 	mcData=true;
+	continue;
+      }
+      key="--makepidresp";
+      if (arg.CompareTo(key)==0) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	// switch indicates that the input data is mc data, the run numbers have
+	// a different format in real data
+	// NOTE: not to be confused with option 'mc' which is propagated to tasks
+	// and switches processing and output modes inside tasks
+	makepidresp=true;
 	continue;
       }
       key="--merge=";
@@ -444,6 +462,7 @@ void run_single_task(const char* mode,
     cout << " alienAPIVersion          =" << alienAPIVersion     << endl;
     cout << " alienROOTVersion         =" << alienROOTVersion    << endl;
     cout << " alienAliROOTVersion      =" << alienAliROOTVersion << endl;
+    cout << " alienAliPhysicsersion    =" << alienAliPhysicsVersion << endl;
     cout << " defaultGridDataDir       =" << defaultGridDataDir  << endl;
     cout << " defaultDataPattern       =" << defaultDataPattern  << endl;
     cout << " defaultFriendDataPattern =" << defaultFriendDataPattern  << endl;
@@ -473,7 +492,7 @@ void run_single_task(const char* mode,
   // make the analysis manager
   //
   AliAnalysisManager *pManager=NULL;
-  pManager=new AliAnalysisManager("AnalysisManager");
+  pManager=new AliAnalysisManager("AnalysisManager","AnalysisManager");
   if (!pManager) {
     cerr << "failed to create AnalysisManager" << endl;
     return;
@@ -500,6 +519,12 @@ void run_single_task(const char* mode,
 
   TString ofile=Form("%s.root", analysisName);
 
+  // Add the task for the PID response setting if requested
+  // Activate for singletrack eff running
+  if(makepidresp){
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+    AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(mcData, kTRUE, mcData, 2, kFALSE, "", kTRUE, kFALSE, -1);
+  }
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -622,6 +647,7 @@ void run_single_task(const char* mode,
     alienHandler->SetAPIVersion(alienAPIVersion);
     alienHandler->SetROOTVersion(alienROOTVersion);
     alienHandler->SetAliROOTVersion(alienAliROOTVersion);
+    alienHandler->SetAliPhysicsVersion(alienAliPhysicsVersion);
     }
 
     // using only default output

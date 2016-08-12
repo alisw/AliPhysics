@@ -34,8 +34,32 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   /// histogram event properties
   virtual THnSparse* DefineTHnSparse();
   virtual int FillParticleProperties(AliVParticle* tr, AliVParticle *as, Double_t* data, int dimension) const;
+  // Tests the particle
+  virtual Bool_t TestParticle(AliVParticle* p, Int_t id);
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr, Double_t evMult);
+
+  // parse argument string
+  virtual int ParseArguments(const char* arguments);
 
   virtual void SetEventType(int type){fMCEventType=type;}
+  //virtual void SetStoreOrigin(int D,int el){fStoreOriginD=D; fStoreOriginEl=el;}
+
+  enum{
+    kAll = 0,
+    kC   = 1,
+    kB   = 2,
+    kHF  = 3,
+    kNonHF= 4,
+    kHadrons=5
+  };
+
+
+  enum{
+    kReducedMode=0,
+    kFullMode=1,
+    kReducedModeFullMCInfo=2
+  };
 
  protected:
 
@@ -45,8 +69,11 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   /// assignment operator
   AliDxHFECorrelationMC& operator=(const AliDxHFECorrelationMC& other);
 
-  int  fMCEventType;  // Holds MC Event type, retrieved from MCHeader
-
-  ClassDef(AliDxHFECorrelationMC, 1)
+  int fMCEventType;  // Holds MC Event type, retrieved from MCHeader
+  int fStoreOriginEl;// Which origin to store for electrons
+  int fStoreOriginD; // Which origin to store for Ds
+  Int_t fRunMode;    // Which mode to run in (bigger thnsparse)
+  Short_t fSystem;               // Which system pp/PbPb
+  ClassDef(AliDxHFECorrelationMC, 3)
 };
 #endif

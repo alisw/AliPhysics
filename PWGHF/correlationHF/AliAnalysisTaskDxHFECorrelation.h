@@ -59,7 +59,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   // Keep it for now.
   void SetOption(const char* opt) { fOption = opt; }
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
-  virtual void SetCutsD0(AliAnalysisCuts* cuts){fCutsD0=cuts;}
+  virtual void SetCutsD0(TList* cuts){fCutsD0=cuts;}
   virtual void SetCutsHFE(TList* cuts){fListHFE=cuts;}
 
   void SetCuts(AliAnalysisCuts* cuts){fCuts=cuts;}
@@ -70,6 +70,13 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
   Bool_t GetUseMC() const {return fUseMC;}
+  virtual void SetPIDResponse(const AliPIDResponse* const pidresp){fpidResponse=(AliPIDResponse*)(pidresp);}
+
+  //TODO: Use enums in AliDxHFECorrelation
+  enum {
+    kPrompt=0,
+    kFeedDown=1
+  };
 
  protected:
 
@@ -83,11 +90,16 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   int DefineSlots();
 
   TList* fOutput;                        //! list send on output slot 1
+  TList* fQASelection;                   //! list send on output slot 5
   TString fOption;                       //  option string
   AliDxHFECorrelation* fCorrelation;     //  correlation worker class
+  AliDxHFECorrelation* fCorrelationCharm;//  correlation worker class - kine only store C
+  AliDxHFECorrelation* fCorrelationBeauty; //  correlation worker class - kine only store B
+  AliDxHFECorrelation* fCorrelationNonHF;//  correlation worker class - kine only store NonHF
+  AliDxHFECorrelation* fCorrelationHadron;//  correlation worker class - kine only store hadrons
   AliDxHFEParticleSelection* fD0s;       //  selection of D0s
   AliDxHFEParticleSelection* fElectrons; //  selection of electrons
-  AliAnalysisCuts *fCutsD0;              //  Cuts D0 
+  TList *fCutsD0;                        //  Cuts D0 
   AliAnalysisCuts *fCuts;                // Cuts which holds info for AliHFCorrelator 
   Bool_t fUseMC;                         // use MC info
   Bool_t fUseEventMixing;                // Run Event Mixing analysis
@@ -99,8 +111,12 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   Bool_t fUseKine;                       // To run over MC or reconstructed data
   TObjArray* fMCArray;                   // Array to hold MCarray
   TString fCorrelationArguments;         // String argument for correlation
+  Bool_t fStoreSeparateOrigins;          // Whether to create correlation objects for various origins
+  Bool_t fReqD0InEvent;                  // Whether or not to search for a MC truth D0 in the event
+  AliPIDResponse* fpidResponse;          // PIDResponse
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 6);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 9);
 };
 
 #endif
+

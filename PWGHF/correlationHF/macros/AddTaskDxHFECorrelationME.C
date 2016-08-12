@@ -110,7 +110,7 @@ int AddTaskDxHFECorrelationME(TString configuration="")
 
   if (gSystem->AccessPathName(path)!=0) {
     // first try local macro, than AliRoot default path
-    path="$ALICE_ROOT/PWGHF/correlationHF/macros/AddTaskDxHFECorrelation.C";
+    path="$ALICE_PHYSICS/PWGHF/correlationHF/macros/AddTaskDxHFECorrelation.C";
   }
 
   gROOT->LoadMacro(path);

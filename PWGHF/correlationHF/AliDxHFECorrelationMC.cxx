@@ -34,13 +34,18 @@
 //#include "AliAODRecoDecayHF2Prong.h"   // libPWGHFvertexingHF
 #include "TObjArray.h"
 #include "AliDxHFECorrelation.h"
+#include "AliHFAssociatedTrackCuts.h"
 #include "TMath.h"
 #include "TFile.h"
+#include "TH1.h"
 #include "TCanvas.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "AliReducedParticle.h"
 #include "AliDxHFEParticleSelection.h"
+#include "AliDxHFEParticleSelectionMCD0.h"
+#include "AliDxHFEParticleSelectionMCEl.h"
+#include "AliDxHFEToolsMC.h"
 #include <iostream>
 #include <cerrno>
 #include <memory>
@@ -52,6 +57,10 @@ ClassImp(AliDxHFECorrelationMC)
 AliDxHFECorrelationMC::AliDxHFECorrelationMC(const char* name)
   : AliDxHFECorrelation(name?name:"AliDxHFECorrelationMC")
   , fMCEventType(0)
+  , fStoreOriginEl(kAll)
+  , fStoreOriginD(kAll)
+  , fRunMode(kReducedModeFullMCInfo)
+  , fSystem(0)
 {
   // default constructor
   // 
@@ -65,50 +74,181 @@ AliDxHFECorrelationMC::~AliDxHFECorrelationMC()
   // destructor
   //
   //
-
 }
 
 THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
 {
   //
   // Defines the THnSparse. 
-
-  AliDebug(1, "Creating Corr THnSparse");
+  if(fRunMode==kFullMode)
+    AliDebug(1, "Creating Full Corr THnSparse");
+  else
+    AliDebug(1, "Creating Reduced Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 10;  
-  InitTHnSparseArray(sizeEventdphi);
+  static const int sizeEventdphiReduced = 5;  
+  static const int sizeEventdphiRedMC = 8;  
+  static const int sizeEventdphiRedMCpPb = 8;  
   const double pi=TMath::Pi();
   Double_t minPhi=GetMinPhi();
   Double_t maxPhi=GetMaxPhi();
+  THnSparse* thn=NULL;
+  int nrMotherEl=AliDxHFEToolsMC::kNrOrginMother+AliDxHFEParticleSelectionMCEl::kNrBackground;
 
+  cout << "nrMotherEl:  " << nrMotherEl << "     " <<AliDxHFEToolsMC::kNrOrginMother << "  " <<AliDxHFEParticleSelectionMCEl::kNrBackground<< endl;
   // TODO: Everything here needed for eventmixing? 
-  // 			                        0        1     2      3      4     5       6      7    8      9
-  // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte  dphi    dEta OrigD0 origEl process
-  int         binsEventdphi[sizeEventdphi] = {   200,   1000,  100,  21,   1000, 100,     100,   10,     14,  100 };
-  double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0 , minPhi, -0.9, -1.5,   -1.5, -0.5 };
-  double      maxEventdphi [sizeEventdphi] = { 2.1648,   100, 2*pi,  20,    100, maxPhi,  0.9,  8.5,   12.5, 99.5 };
-  const char* nameEventdphi[sizeEventdphi] = {
-    "D0InvMass",
-    "PtD0",
-    "PhiD0",
-    "PtBinD0",
-    "PtEl",
-    "#Delta#Phi",
-    "#Delta#eta", 
-    "Origin D0", 
-    "Origin Electron",
-    "Original Process"
-};
-
   TString name;
   name.Form("%s info", GetName());
 
+  if(fRunMode==kFullMode){
+    InitTHnSparseArray(sizeEventdphi);
 
-  return CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+    // 			                        0        1     2      3      4      5       6      7    8            9
+    // 			                      D0invmass  PtD0 PhiD0 PtbinD0 Pte   dphi    dEta OrigD0 origEl      process
+    int         binsEventdphi[sizeEventdphi] = {   200,    100,  100,  21,   100,  64,     100,   10,  nrMotherEl+1 ,  100 };
+    double      minEventdphi [sizeEventdphi] = { 1.5648,     0,    0,   0,     0, minPhi, -2.0, -1.5,   -1.5,       -0.5 };
+    double      maxEventdphi [sizeEventdphi] = { 2.1648,    50, 2*pi,  20,    10, maxPhi,  2.0,  8.5,  nrMotherEl-0.5, 99.5 };
+    const char* nameEventdphi[sizeEventdphi] = {
+      "D0InvMass",
+      "PtD0",
+      "PhiD0",
+      "PtBinD0",
+      "PtEl",
+      "#Delta#Phi",
+      "#Delta#eta", 
+      "Origin D0", 
+      "Origin Electron",
+      "Original Process"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+  }
+  else if(fRunMode==kReducedModeFullMCInfo){
+    if(2==fSystem){//Reduced bins for pPb due to memory consumption
+      InitTHnSparseArray(sizeEventdphiRedMCpPb);
+      // 			                                 0        1    2     3        4     5           6       7              8
+      // 			                             D0invmass  PtD0   Pte   dphi    dEta poolbin   OrigD0   origEl        generatorEl
+      int         binsEventdphiRedMC[sizeEventdphiRedMCpPb] = {   150,      28,    50,  16,     20,    6,      10,  nrMotherEl+1};//,       4 };
+      double      minEventdphiRedMC [sizeEventdphiRedMCpPb] = { 1.5848,      2,     0, minPhi, -2.0,   -0.5,  -1.5,    -1.5};//,          -1.5 };
+      double      maxEventdphiRedMC [sizeEventdphiRedMCpPb] = { 2.1848,     16,    10, maxPhi,  2.0,   5.5,    8.5,  nrMotherEl-0.5};//,   2.5 };
+      const char* nameEventdphiRedMC[sizeEventdphiRedMCpPb] = {
+	"D0InvMass",
+	"PtD0",
+	"PtEl",
+	"#Delta#Phi",
+	"#Delta#eta", 
+	"PoolBin",
+	"Origin D0", 
+	"Origin Electron"
+      };
+      thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMCpPb,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+    }
+    else{
+      InitTHnSparseArray(sizeEventdphiRedMC);
+      // 			                                       0        1    2     3      4      5       6          7
+      // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl    generatorEl
+      int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   200,    100,   100,  64,     100,   10, nrMotherEl+1,    4 };
+      double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5,       -1.5 };
+      double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    50,    10, maxPhi,  2.0,  8.5, nrMotherEl-0.5,2.5 };
+      const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
+	"D0InvMass",
+	"PtD0",
+	"PtEl",
+	"#Delta#Phi",
+	"#Delta#eta", 
+	"Origin D0", 
+	"Origin Electron",
+      };
+      thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMC,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+    }
+  }
+  else{
+    InitTHnSparseArray(sizeEventdphiReduced);
+    //           			                    0        1      2    3      4  
+    // 		                	                 D0invmass  PtD0  Pte   dphi    dEta
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,    100,  100,   64,    100 };
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,     0,   0, minPhi, -2.0 };
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,    50,  10, maxPhi,  2.0 };
+    const char* nameEventdphiRed[sizeEventdphiReduced] = {
+      "D0InvMass",
+      "PtD0",
+      "PtEl",
+      "#Delta#Phi",
+      "#Delta#eta" 
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiReduced,binsEventdphiRed,minEventdphiRed,maxEventdphiRed,nameEventdphiRed);
+
+  }
+  return thn;
 
 
 }
 
+Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
+
+  AliReducedParticle *part=(AliReducedParticle*)p;
+  if (!part) return -ENODATA;
+
+  Bool_t selected = kTRUE;
+  Bool_t isCharm=(part->GetOriginMother()==AliDxHFEToolsMC::kOriginCharm || 
+  		  part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonCharm);
+  Bool_t isBeauty=(part->GetOriginMother()==AliDxHFEToolsMC::kOriginBeauty || 
+		   part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonBeauty);
+
+  if(id==kD){
+    if(!(fStoreOriginD==kAll)){
+      if(fStoreOriginD==kC ){
+	// Test if particle really is from C
+	if(!isCharm)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginD==kB ){
+	// Test if particle really is from B
+	if(!isBeauty)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginD==kHF ){
+	// Test if particle really is HF
+	if(!(isCharm || isBeauty))
+	  selected=kFALSE;
+      }
+    }
+  }
+  //TODO add for background from HF
+  // Test to see if test for D/el and whether to do further selection
+  if(id==kElectron){
+    if(!(fStoreOriginEl==kAll)){
+      if(fStoreOriginEl==kC){ // Test if particle really is from C
+	if(!isCharm)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginEl==kB){ // Test if particle really is from B
+
+	if(!isBeauty)
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginEl==kHF){ // Test if particle really is HF	
+	if((!isCharm) || (!isBeauty))
+	  selected=kFALSE;
+      }
+  
+      // Test extra for source of el
+      if(fStoreOriginEl==kNonHF){
+	// Test if particle really is from NonHF
+	if(!((part->GetOriginMother() >= AliDxHFEToolsMC::kOriginNone && part->GetOriginMother()<=AliDxHFEToolsMC::kOriginStrange)
+	     || (part->GetOriginMother() > AliDxHFEToolsMC::kOriginGluonBeauty )))
+	  selected =kFALSE;
+      }
+      else if(fStoreOriginEl==kHadrons){
+	// Test if particle really is from hadrons
+	if(! (part->GetOriginMother()<AliDxHFEToolsMC::kOriginNone))
+	  selected =kFALSE;
+      }
+    }
+  }
+
+  return selected;
+
+}
 
 int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle *as, Double_t* data, int dimension) const
 {
@@ -125,29 +265,37 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
   if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
     data[i++]=ptrigger->GetInvMass();
     data[i++]=ptrigger->Pt();
-    data[i++]=ptrigger->Phi();
-    data[i++]=ptrigger->GetPtBin(); 
+    if(fRunMode==kFullMode)data[i++]=ptrigger->Phi();
+    if(fRunMode==kFullMode) {data[i++]=ptrigger->GetPtBin(); }
     data[i++]=assoc->Pt();
   } 
   else{
     data[i++]=assoc->GetInvMass();
     data[i++]=assoc->Pt();
     data[i++]=assoc->Phi();
-    data[i++]=assoc->GetPtBin(); 
+    if(fRunMode==kFullMode) data[i++]=assoc->GetPtBin(); 
     data[i++]=ptrigger->Pt();
   }
   data[i++]=AliDxHFECorrelation::GetDeltaPhi();
   data[i++]=AliDxHFECorrelation::GetDeltaEta();
-  if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
-    data[i++]=ptrigger->GetOriginMother();
-    data[i++]=assoc->GetOriginMother();
+  if(fSystem==2)data[i++]=AliDxHFECorrelation::GetPoolBin();
+  if(fRunMode==kFullMode || fRunMode==kReducedModeFullMCInfo){
+    if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+      data[i++]=ptrigger->GetOriginMother();
+      data[i++]=assoc->GetOriginMother();
+    }
+    else {
+      data[i++]=assoc->GetOriginMother();
+      data[i++]=ptrigger->GetOriginMother();
+    }
+    if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+      if(fSystem!=2) data[i++]=assoc->GetGeneratorIndex();//[FIXME] This should be "GetGenerator()" once the changes in AliReducedParticle are in place
+    }
+    else {
+      if(fSystem!=2) data[i++]=ptrigger->GetGeneratorIndex();//[FIXME] This should be "GetGenerator()" once the changes in AliReducedParticle are in place
+    }
   }
-  else {
-    data[i++]=assoc->GetOriginMother();
-    data[i++]=ptrigger->GetOriginMother();
-  }
-  data[i++]=fMCEventType;
-  
+  if(fRunMode==kFullMode ) data[i++]=fMCEventType;
   return i;
 }
 
@@ -157,3 +305,95 @@ int AliDxHFECorrelationMC::Fill(const TObjArray* triggerCandidates, TObjArray* a
   return AliDxHFECorrelation::Fill(triggerCandidates,associatedTracks,pEvent);
 }
 
+double AliDxHFECorrelationMC::GetD0Eff(AliVParticle* tr, Double_t evMult){
+
+  Double_t D0eff=1;
+  AliReducedParticle *track=(AliReducedParticle*)tr;
+  if (!track) return -ENODATA;
+  Double_t pt=track->Pt();
+  Double_t origin=track->GetOriginMother();
+
+  //  Bool_t isCharm=(origin==AliDxHFEToolsMC::kOriginCharm || 
+  //		  origin==AliDxHFEToolsMC::kOriginGluonCharm);
+  Bool_t isBeauty=(origin==AliDxHFEToolsMC::kOriginBeauty || 
+		   origin==AliDxHFEToolsMC::kOriginGluonBeauty);
+
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(GetCuts());
+  if (!cuts) {
+    if (GetCuts())
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", cuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+
+  if(isBeauty)
+    D0eff=cuts->GetTrigWeightB(pt,evMult);
+  else
+    D0eff=cuts->GetTrigWeight(pt,evMult);
+
+  return D0eff;
+}
+
+
+int AliDxHFECorrelationMC::ParseArguments(const char* arguments)
+{
+  // parse arguments and set internal flags
+  TString strArguments(arguments);
+  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  if (!tokens.get()) return -ENOMEM;
+  TIter next(tokens.get());
+  TObject* token;
+  while ((token=next())) {
+    TString argument=token->GetName();
+    if (argument.BeginsWith("storeoriginD=")){
+      argument.ReplaceAll("storeoriginD=", "");
+      if (argument.CompareTo("all")==0) { fStoreOriginD=kAll; AliInfo("Store all Ds"); }
+      else if (argument.CompareTo("charm")==0) { fStoreOriginD=kC; AliInfo("Store only D from charm");}
+      else if (argument.CompareTo("beauty")==0){ fStoreOriginD=kB; AliInfo("Store only D from beauty");}
+      else if (argument.CompareTo("HF")==0){ fStoreOriginD=kHF; AliInfo("Store D from HF");}
+      continue;
+    }  
+    if (argument.BeginsWith("storeoriginEl=")){
+      argument.ReplaceAll("storeoriginEl=", "");
+      if (argument.CompareTo("all")==0) { fStoreOriginEl=kAll; AliInfo("Store all electrons"); }
+      else if (argument.CompareTo("charm")==0) { fStoreOriginEl=kC; AliInfo("Store only electrons from charm");}
+      else if (argument.CompareTo("beauty")==0){ fStoreOriginEl=kB; AliInfo("Store only electrons from beauty");}
+      else if (argument.CompareTo("HF")==0){ fStoreOriginEl=kHF; AliInfo("Store electrons from HF");}
+      else if (argument.CompareTo("nonHF")==0){ fStoreOriginEl=kNonHF; AliInfo("Store electrons from nonHF");}
+      else if (argument.CompareTo("hadrons")==0){ fStoreOriginEl=kHadrons; AliInfo("Store electrons candidates from hadrons");}
+      continue;
+    }  
+    if ((argument.CompareTo("reducedMode")==0) || (argument.CompareTo("reducedmode")==0)){
+      fRunMode=kReducedMode;
+      AliInfo("Running in Reduced mode");
+      continue;
+    }
+    if (argument.BeginsWith("FullMode") || argument.BeginsWith("fullmode")){
+      fRunMode=kFullMode;
+      AliInfo("Running in Full mode");
+      continue;
+    }
+    if (argument.BeginsWith("reducedModewithMC") || argument.BeginsWith("reducedmodewithmc")){
+      fRunMode=kReducedModeFullMCInfo;
+      AliInfo("Running in Reduced mode with MC info stored as well");
+      continue;
+    }
+    if (argument.BeginsWith("system=")) {
+      argument.ReplaceAll("system=", "");
+      if (argument.CompareTo("pp")==0) {fSystem=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2;}
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
+      }
+      continue;
+    }
+    //    AliWarning(Form("unknown argument '%s'", argument.Data()));
+    AliDxHFECorrelation::ParseArguments(argument);      
+  }
+
+  return 0;
+}
