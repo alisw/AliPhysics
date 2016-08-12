@@ -165,7 +165,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fAcceptanceParameterization = parameterization;}
 
   //pid
-  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
+  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF, kTPCTOFreq }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
 
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
@@ -180,9 +180,9 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fParticleOfInterest = poi;}
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
-    void SetEventClass(TString receivedEventClass){
-        fEventClass = receivedEventClass;
-    }
+  void SetEventClass(TString receivedEventClass){
+    fEventClass = receivedEventClass;
+  }
     
   void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
 
