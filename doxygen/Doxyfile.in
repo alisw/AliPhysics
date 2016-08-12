@@ -802,6 +802,14 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITORzmq \
                          @CMAKE_SOURCE_DIR@/MONITOR/MONITOR \
                          @CMAKE_SOURCE_DIR@/EMCAL/EMCALTriggerBase \
+                         @CMAKE_SOURCE_DIR@/FMD \
+                         @CMAKE_SOURCE_DIR@/FMD/DA \
+                         @CMAKE_SOURCE_DIR@/FMD/FMDbase \
+                         @CMAKE_SOURCE_DIR@/FMD/FMDrec \
+                         @CMAKE_SOURCE_DIR@/FMD/FMDsim \
+                         @CMAKE_SOURCE_DIR@/FMD/FMDutil \
+                         @CMAKE_SOURCE_DIR@/FMD/scripts
+
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -894,7 +902,8 @@ EXAMPLE_RECURSIVE      = NO
 # \image command).
 
 IMAGE_PATH             = @CMAKE_SOURCE_DIR@/picts \
-                         @CMAKE_SOURCE_DIR@/TPC/TPCbase/imgdoc
+                         @CMAKE_SOURCE_DIR@/TPC/TPCbase/imgdoc \
+                         @CMAKE_SOURCE_DIR@/FMD/pics
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
