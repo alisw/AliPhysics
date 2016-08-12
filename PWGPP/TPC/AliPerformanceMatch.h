@@ -96,7 +96,7 @@ public :
 
   TObjArray* GetListOfDrawableObjects() {TObjArray* tmp = fFolderObj; fFolderObj = NULL; return tmp;}
     
-  void ResetOutputData();
+  virtual void ResetOutputData();
 
 private:
 
