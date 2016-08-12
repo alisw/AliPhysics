@@ -44,8 +44,12 @@
 #include <vector>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskMLTreeMaker.h"
+#include "AliTrackReference.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
-using std::vector;
 
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
 
@@ -96,8 +100,8 @@ AliAnalysisTaskSE(),
   motherlabel(-999.),
   charge(),      
   IsBG(),
-  runn()      
-
+  runn(),      
+  IsHij(kFALSE)    
 {
 
 }
@@ -142,15 +146,16 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   motherlabel(-999.),
   charge(),      
   IsBG(),
-  runn()      
+  runn(), 
+  IsHij(kFALSE)     
 {
   //DefineInput(0, TChainvPt::Class());
 
   //~ // Output slot #0 writes into a TH1 container
 
   fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-
+  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kFirst);
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TH1::Class());
 }
@@ -364,6 +369,7 @@ charge.clear();
 IsBG.clear();
     // Loop over tracks in event
 
+  AliGenCocktailEventHeader* coHeader;
 
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
 //        if(ev!=10) continue;
@@ -404,25 +410,34 @@ IsBG.clear();
       
       
       if(hasMC){ 
+          
       AliMCEvent *mcEvent = MCEvent(); 
-      
-      
       if (!mcEvent) {
         AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
         hasMC=kFALSE;
         continue;
         }
-      
+
+  
       else{
+
+        if(!iTracks){                             //check for first track if Hijing was the event gen
+            coHeader = dynamic_cast<AliGenCocktailEventHeader*> (mcEvent->GenEventHeader());
+            if (!coHeader){
+                        AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
+                        hasMC=kFALSE;
+                        continue;
+                }
+            else{
+                TList* list = coHeader->GetHeaders();
+                if(list->FindObject("Hijing")) IsHij = kTRUE;
+                }
+            }
           
       //reject non Hijing tracks    
 
-//      if (!(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))) IsBG.push_back(1);
+      if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))) continue;
 
-//      else IsBG.push_back(0); 
-
-          
-      if (!(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))) continue;
           
           
       //Fill Tree with MC data
