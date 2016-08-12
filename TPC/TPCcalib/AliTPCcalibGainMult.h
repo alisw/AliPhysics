@@ -58,8 +58,9 @@ public:
   TGraphErrors* GetGainPerChamber(Int_t padRegion=1, Bool_t plotQA=kFALSE);
   TGraphErrors* GetGainPerChamberRobust(Int_t padRegion=1, Bool_t plotQA=kFALSE, TObjArray *arrQA=0x0, Bool_t normQA=kTRUE);
   //
-  const TString& GetTimeGainID()      const { return fTimeGainID;      }
-  const TString& GetTimeGainStorage() const { return fTimeGainStorage; }
+  const TString&   GetTimeGainID()      const { return fTimeGainID;      }
+  const TString&   GetTimeGainStorage() const { return fTimeGainStorage; }
+  const TObjArray* GetTimeGainObjects() const { return fTimeGainObjects; }
   //
   void SetMIPvalue(Float_t mip){fMIP = mip;};
   void SetLowerTrunc(Float_t lowerTrunc){fLowerTrunc = lowerTrunc;};
@@ -123,6 +124,7 @@ private:
   //
   TString fTimeGainID;            // ID of timeGain object that was used to create this calibration
   TString fTimeGainStorage;       // Storage of time gain object
+  TObjArray* fTimeGainObjects;     // Time gain calibration objects used
   //
   // histograms
   //

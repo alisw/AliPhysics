@@ -95,6 +95,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fAlephParameters(),
    fTimeGainID(),
    fTimeGainStorage(),
+   fTimeGainObjects(0x0),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -133,6 +134,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fAlephParameters(),
    fTimeGainID(),
    fTimeGainStorage(),
+   fTimeGainObjects(0x0),
    fHistNTracks(0),
    fHistClusterShape(0),
    fHistQA(0),
@@ -298,6 +300,8 @@ AliTPCcalibGainMult::~AliTPCcalibGainMult(){
   delete fHistdEdxTot;
   delete fdEdxTree;
   if (fBBParam) delete fBBParam;
+
+  delete fTimeGainObjects;
 }
 
 
@@ -361,6 +365,12 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     if (entry) {
       fTimeGainID      = entry->GetId().ToString();
       fTimeGainStorage = cdbMan->GetURI(timeGainPath);
+    }
+
+    TObjArray *arrTimeGain = static_cast<TObjArray*>(entry->GetObject());
+    if (!fTimeGainObjects && arrTimeGain) {
+      fTimeGainObjects = (TObjArray*)arrTimeGain->Clone();
+      fTimeGainObjects->SetOwner();
     }
   }
 

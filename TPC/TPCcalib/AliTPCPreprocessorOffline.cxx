@@ -453,78 +453,33 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
   // ===| get gain claibration used for full calib |============================
   const TString timeGainPath("TPC/Calib/TimeGain");
   AliCDBManager *cdbMan = AliCDBManager::Instance();
-  const TString& calibTimeGainStorage=fGainMult->GetTimeGainStorage();
-  const TString& timeGainID          =fGainMult->GetTimeGainID();
-  AliCDBStorage *timeGainStorage = 0x0;
+  const TString&   calibTimeGainStorage = fGainMult->GetTimeGainStorage();
+  const TString&   timeGainID           = fGainMult->GetTimeGainID();
+  const TObjArray* gainOCDB             = fGainMult->GetTimeGainObjects();
 
-  if (fIgnoreTimeGainIDcombinedCalib) {
-    AliWarningF("Ignoring the spefic ID for %s: %s (%s)", timeGainPath.Data(), timeGainID.Data(), calibTimeGainStorage.Data());
-  }
-
-  if (!fIgnoreTimeGainIDcombinedCalib && fForceTimeGainStorage
-       && (calibTimeGainStorage.IsNull() && !timeGainID.IsNull()
-           || !calibTimeGainStorage.IsNull() && timeGainID.IsNull())) {
-    AliFatalF("Information form '%s' missing for combined calibration. Either storage (%s) or ID (%s) not set",
-              timeGainPath.Data(), calibTimeGainStorage.Data(), timeGainID.Data()); return kFALSE;
-  }
-
-  // ===| treat storage |=======================================================
-  if (fForceTimeGainStorage && !fIgnoreTimeGainIDcombinedCalib) {
-    AliInfo("Forcing TimeGain storage for combined calibration");
-    if ( !calibTimeGainStorage.IsNull()) {
-      timeGainStorage = cdbMan->GetStorage(calibTimeGainStorage);
-      if (!timeGainStorage) {
-        AliFatalF("Could not get required storage (%s) to retrieve '%s' for combined gain calibration", calibTimeGainStorage.Data(), timeGainPath.Data());
-        return kFALSE;
-      }
-    }
-    else {
-      AliErrorF("No storage set in gainMult for combined calibration of %s although requiring it, falling back to default storage", timeGainPath.Data());
-    }
+  if (gainOCDB) {
+    AliInfo("Found gain calibration in CalibObjects.root which will be used for combined calibration");
+    AliInfoF("Orignal object with ID: %s (%s)", timeGainID.Data(), calibTimeGainStorage.Data());
   }
   else {
-    AliInfoF("Using default storage for combined calibration of %s", timeGainPath.Data());
-  }
+    // ---| get cdb entry |-------------------------------------------------------
+    const AliCDBEntry *e=cdbMan->Get(timeGainPath);
 
-  if (!timeGainStorage){
-    if (cdbMan->GetSpecificStorage(timeGainPath)) {
-      timeGainStorage=cdbMan->GetSpecificStorage(timeGainPath);
+    if (!e) {
+      AliFatalF("Could not get '%s' for combined gain calibration", timeGainID.Data());
+      return kFALSE;
     }
-    else {
-      timeGainStorage = cdbMan->GetDefaultStorage();
-    }
+
+    TString timeGainIDused=e->GetId().ToString();
+
+    AliInfoF("Using TimeGain '%s' for combined gain calibration", timeGainIDused.Data());
+
+    // ---| get gain calibration from OCDB entry |--------------------------------
+    gainOCDB = static_cast<const TObjArray*>(e->GetObject());
   }
 
-  if (!timeGainStorage) {
-    AliFatalF("Could not get a storage to retrieve '%s'", timeGainPath.Data());
-    return kFALSE;
-  }
-
-  // ===| get cdb entry |=======================================================
-  const AliCDBEntry *e=0x0;
-  TString timeGainIDused=timeGainID;
-  if (!fIgnoreTimeGainIDcombinedCalib && !timeGainID.IsNull()) {
-    AliCDBId *cdbIdTimeGain=AliCDBId::MakeFromString(timeGainID);
-    e=timeGainStorage->Get(*cdbIdTimeGain);
-    delete cdbIdTimeGain;
-  }
-  else {
-    e=cdbMan->Get(timeGainPath);
-    timeGainIDused=e->GetId().ToString();
-    AliWarningF("No specifi ID in gainMult for combined calibration of %s, falling back to default ID", timeGainPath.Data());
-  }
-
-  if (!e) {
-    AliFatalF("Could not get '%s' from '%s' for combined gain calibration", timeGainIDused.Data(), timeGainStorage->GetURI().Data());
-    return kFALSE;
-  }
-
-  AliInfoF("Using TimeGain '%s','%s' for combined gain calibration", timeGainStorage->GetURI().Data(), timeGainIDused.Data());
-
-  // ===| get gain calibration from OCDB entry |================================
-  const TObjArray *gainOCDB = static_cast<const TObjArray*>(e->GetObject());
   if (!gainOCDB) {
-    AliError("Could not retrieve gain calibration from OCDB. Cannot perform combined calibration.");
+    AliFatal("Could not retrieve gain calibration from CalibObjects or OCDB. Cannot perform combined calibration.");
     return kFALSE;
   }
 
