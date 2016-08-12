@@ -1208,6 +1208,15 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowMergedCut(Int_t selectionCut){
     case 6:   //NLM 2
       fEnableMassCut = kTRUE;
       break;
+    case 7:   //min mass cut around 0
+      fEnableMassCut = kTRUE;
+      break;
+    case 8:   //min mass cut around 0
+      fEnableMassCut = kTRUE;
+      break;
+    case 9:   //min mass cut around 0
+      fEnableMassCut = kTRUE;
+      break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
       return kFALSE;
