@@ -122,7 +122,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    
    int aniter = 0;
    int runmults[numOfMultBins] = {1}; // 1 - wlaczony przedzial
-   int multbins[numOfMultBins+1] = {2, 20000}; // definiujemy przedzialy krotnosci
+   int multbins[numOfMultBins+1] = {0, 523}; // definiujemy przedzialy krotnosci // "Impact Parameter * 100"
     // petla po wszystkich czastkach 
    for (int imult = 0; imult < numOfMultBins; imult++) // petla po krotnosciach
    {
