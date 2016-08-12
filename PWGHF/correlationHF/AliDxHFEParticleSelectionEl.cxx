@@ -37,6 +37,7 @@
 #include "AliHFEcuts.h"
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
@@ -67,6 +68,7 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fPIDTOFTPC(NULL)
   , fPIDTOF(NULL)
   , fPIDTPC(NULL)
+  , fPIDTPCEMCAL(NULL)
   , fElectronProperties(NULL)
   , fHistoList(NULL)
   , fCutPidList(NULL)
@@ -84,7 +86,27 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fEtaCut(0.8)
   , fSurvivedCutStep(kNotSelected)
   , fStoreCutStepInfo(kFALSE)
-
+  , fSetFilterBit(kTRUE)
+  , fBit(0)
+  , fMaxPtCombinedPID(999)
+  , fMaxPTOFWhenPresent(-1)
+  , fUseEMCAL(kFALSE)
+  , fMinM20(0.03)
+  , fMaxM20(0.3)
+  , fMinM02(0.03)
+  , fMaxM02(0.5)
+  , fDispersion(1)
+  , fEovPMin(0.8)
+  , fEovPMax(1.2)
+  , fUseTOFonlyWhenPresent(false)
+  , fStopAfterFilterBit(false)
+  , fCutLS(kFALSE)
+  , fTPCnSigmaPRej(3)
+  , fTPCnSigmaPiRej(3.5)
+  , fPRejPMin(1.3)
+  , fPRejPMax(2.6)
+  , fPiRejPMin(1.0)
+  , fPiRejPMax(999)
 {
   // constructor
   // 
@@ -117,6 +139,7 @@ AliDxHFEParticleSelectionEl::~AliDxHFEParticleSelectionEl()
   fPIDTOFTPC=NULL;
   fPIDTOF=NULL;
   fPIDTPC=NULL;
+  fPIDTPCEMCAL=NULL;
   fCuts=NULL;
   if(fSelNHFE){
     delete fSelNHFE;
@@ -137,6 +160,8 @@ const char* AliDxHFEParticleSelectionEl::fgkCutBinNames[]={
   "kPIDTOF",
   "kPIDTPC",
   "kPIDTPCTOF",
+  "kRejPi",
+  "kRejProton",
   "kINVMASS",
   "Selected e"
 };
@@ -159,18 +184,18 @@ int AliDxHFEParticleSelectionEl::Init()
   fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
   fTrackCuts->SetMinNClustersTPC(80);
   fTrackCuts->SetPtRange(0.3,1e10);
-
+  
   fSelNHFE->SetTrackCuts(-3, 3, fTrackCuts);
   fSelNHFE->SetInvariantMassCut(fInvMassLow);
   fSelNHFE->SetAlgorithm("KF");
   fSelNHFE->SetAODanalysis(kTRUE);
-
-
+  
+  
   // Implicit call to InitControlObjects() before setting up CFM and fCuts
   // (if not there)
   iResult=AliDxHFEParticleSelection::Init();
   if (iResult<0) return iResult;
-
+  
   //--------Initialize correction Framework and Cuts-------------------------
   // Consider moving this, either to separate function or
   // add a set function for AliCFManager
@@ -192,65 +217,84 @@ int AliDxHFEParticleSelectionEl::Init()
     fCuts->CreateStandardCuts();
   }
   // TODO: error handling?
+  fCuts->SetPIDResponse(fPIDResponse);
   fCuts->Initialize(fCFM);
-
-  //Setting up TPC PID
-  //Add settings for asymmetric cut on nSigma TPC
-  //TODO: have this completely set up from addtask 
-  const int paramSize=4;
-  Double_t params[paramSize];
-  memset(params, 0, sizeof(Double_t)*paramSize);
-  params[0]=-1.;
-  fPIDTPC = new AliHFEpid("hfePidTPC");
-  if(!fPIDTPC->GetNumberOfPIDdetectors()) { 
-    fPIDTPC->AddDetector("TPC",1);
-  }
-  fPIDTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
-  fPIDTPC->InitializePID();
 
   if(fUseInvMassCut>kNoInvMass)  AliDebug(2,Form("Setting up with invariant mass cut of %f",fInvMassLow));
   if(fStoreCutStepInfo) AliDebug(2,"will store cut step info");
   AliDebug(2,Form("Stopping selection after step: %d", fFinalCutStep));
   
   return 0;
-
+  
 }
 
 THnSparse* AliDxHFEParticleSelectionEl::DefineTHnSparse()
 {
+  
   //
   // Defines the THnSparse. For now, only calls CreatControlTHnSparse
   // TODO: Add also invariant mass? here and in correlation, to do cut afterwards..
-
+  
   // here is the only place to change the dimension
-  const int thnSize = 3;
-  InitTHnSparseArray(thnSize);
   const double Pi=TMath::Pi();
   TString name;
+  THnSparse* thn=NULL;
   name.Form("%s info", GetName());
-
-  //                                 0    1       2
-  // 	 	                     Pt   Phi    Eta
-  int         thnBins [thnSize] = { 1000,  200, 500};
-  double      thnMin  [thnSize] = {    0,    0, -1.};
-  double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
-  const char* thnNames[thnSize] = { "Pt","Phi","Eta"};
-
-  return CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+  
+  if(fStoreCutStepInfo){
+    const int thnSizeExt =4;
+    
+    InitTHnSparseArray(thnSizeExt);
+    
+    // TODO: Redo binning of distributions more?
+    //     		               0    1      2   
+    // 	 	                       Pt   Phi   Eta 
+    int    thnBinsExt[thnSizeExt] = { 50,  100, 100,   kNCutLabels-1};
+    double thnMinExt [thnSizeExt] = {   0,    0, -1.,   kRecKineITSTPC-0.5 };
+    double thnMaxExt [thnSizeExt] = {  10, 2*Pi,  1.,   kSelected-0.5};
+    const char* thnNamesExt[thnSizeExt]={
+      "Pt",
+      "Phi",
+      "Eta", 
+      "Last survived cut step"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,thnSizeExt,thnBinsExt,thnMinExt,thnMaxExt,thnNamesExt);
+  }
+  else{
+    
+    const int thnSize =3;
+    InitTHnSparseArray(thnSize);
+    
+    // TODO: Redo binning of distributions more?
+    //     		       0    1      2    
+    // 	 	               Pt   Phi   Eta   
+    int    thnBins[thnSize] = { 50,  100, 100 };
+    double thnMin [thnSize] = {   0,    0, -1. };
+    double thnMax [thnSize] = {  10, 2*Pi,  1. };
+    const char* thnNames[thnSize]={
+      "Pt",
+      "Phi",
+      "Eta", 
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+    
+  }
+  return thn;
 }
 
 int AliDxHFEParticleSelectionEl::InitControlObjects()
 {
   /// init control and monitoring objects
   AliInfo("Electron THnSparse");
-
+  
   fElectronProperties=DefineTHnSparse();
+  fElectronProperties->Sumw2();
   AddControlObject(fElectronProperties);
-
+  
   fHistoList=new TList;
   fHistoList->SetName("HFE Histograms");
   fHistoList->SetOwner();
-
+  
   // Histogram storing which cuts have been applied to the tracks
   // TODO: revise the names of the histograms, starting with 'f'
   // confuses the reader to think of class members
@@ -258,50 +302,76 @@ int AliDxHFEParticleSelectionEl::InitControlObjects()
   fHistoList->Add(CreateControlHistogram("fTPCnClAOD","Nr TPC clusters/track for all tracks", 160, 0., 159.));
   fHistoList->Add(CreateControlHistogram("fTPCnClSingleTrackCuts","Nr TPC clusters/track After SingleTrackCuts", 160, 0., 159.));
   fHistoList->Add(CreateControlHistogram("fTPCnClTPCTOFPID","Nr TPC clusters/track After TPCTOF PID", 160, 0., 159.));
-
+  
   double dEdxBins[6]={1000,0.,10.,200,0.,200.};
   double nSigBins[6]={1000,0.,10.,200,-10.,10.};
-
+  double eovpBins[6]={100 ,0.,10.,350,-15.,20.};
+  double eovppTBins[6]={500,0.,20.,300,0.,5.};
+  
   // dEdx plots, TPC signal vs momentum
   fHistoList->Add(CreateControl2DHistogram("fdEdx", "dEdx before cuts", dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fdEdxCut", "dEdx after cuts",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fdEdxPidTOF", "dEdx after TOF pid",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fdEdxPidTPC", "dEdx after TPC pid",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fdEdxPidEMCAL", "dEdx after EMCAL pid",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fdEdxPid", "dEdx after pid",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fdEdxRejPi", "dEdx after pion rejection",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fdEdxRejProton", "dEdx after proton rejection",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fdEdxIM", "dEdx after Inv Mass",dEdxBins,"momentum (GeV/c)","dE/dx in TPC (a.u.)"));
-
+  
   // nSigmaTPC vs momentum
   fHistoList->Add(CreateControl2DHistogram("fnSigTPC", "nSigTPC before cuts",nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTPCCut", "nSigmaTPC after cuts",nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTPCPidTPC", "nSigmaTPC after TPC PID", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCPidEMCAL", "nSigmaTPC after EMCAL PID", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTPCPidTOF", "nSigmaTPC after TOF PID", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTPCPid", "nSigmaTPC after PID", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
-
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCRejPi", "nSigmaTPC after pion rejection", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCRejProton", "nSigmaTPC after proton rejection", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTPCIM", "nSigmaTPC after Inv Mass", nSigBins,"momentum (GeV/c)","nSigma in TPC (a.u.)"));
+  
   // nSigmaTOF vs momentum
   fHistoList->Add(CreateControl2DHistogram("fnSigTOF", "nSigmaTOF before cuts",nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));  
   fHistoList->Add(CreateControl2DHistogram("fnSigTOFCut", "nSigmaTOF after cuts",nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));  
   fHistoList->Add(CreateControl2DHistogram("fnSigTOFPidTOF", "nSigmaTOF after TOF PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTOFPidTPC", "nSigmaTOF after TPC PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFPidEMCAL", "nSigmaTOF after EMCAL PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
   fHistoList->Add(CreateControl2DHistogram("fnSigTOFPid", "nSigmaTOF after PID", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
-
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFRejPi", "nSigmaTOF after pion rejection", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFRejProton", "nSigmaTOF after proton rejection", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("fnSigTOFIM", "nSigmaTOF after Inv Mass", nSigBins,"momentum (GeV/c)","nSigma in TOF (a.u.)"));
+  
+  // E/p vs TPC nSig
+  fHistoList->Add(CreateControl2DHistogram("feopCut", "E/p after single track cuts", eovpBins,"E/p","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("feopEMCAL", "E/p after EMCAL PID", eovpBins,"E/p","nSigma in TPC (a.u.)"));
+  fHistoList->Add(CreateControl2DHistogram("feopTPC", "E/p after TPC PID", eovpBins,"E/p","nSigma in TPC (a.u.)"));
+  
+  // E/p vs pT
+  fHistoList->Add(CreateControl2DHistogram("feoppTCut", "E/p vs pT after single track cuts", eovppTBins,"momentum (GeV/c)","E/p"));
+  fHistoList->Add(CreateControl2DHistogram("feoppTEMCAL", "E/p vs pT after EMCAL PID", eovppTBins,"momentum (GeV/c)","E/p"));
+  fHistoList->Add(CreateControl2DHistogram("feoppTTPC", "E/p vs pT after TPC PID", eovppTBins,"momentum (GeV/c)","E/p"));
+  
   // Invariant mass LS and ULS without cut
   fHistoList->Add(CreateControlHistogram("fInvMassLS", "Invariant mass LS", 1000, 0., 0.5));
   fHistoList->Add(CreateControlHistogram("fInvMassULS", "Invariant mass ULS", 1000, 0., 0.5));
-
+  
   // Invariant mass LS and ULS without cut, extended x-axis
   fHistoList->Add(CreateControlHistogram("fInvMass2SelLS", "Invariant mass two selected particles LS", 1000, 0., 5.));
   fHistoList->Add(CreateControlHistogram("fInvMass2SelULS", "Invariant mass two selected particles ULS", 1000, 0., 5.));
-
+  
   // Invariant mass LS and ULS with cut
   // TODO: Remove if remove first try at invariant mass
   fHistoList->Add(CreateControlHistogram("fInvMass2SelLScut", "Invariant mass two selected particles LS (cut)", 1000, 0., 0.5));
   fHistoList->Add(CreateControlHistogram("fInvMass2SelULScut", "Invariant mass two selected particles ULS (cut)", 1000, 0., 0.5));
 
+  fHistoList->Add(CreateControlHistogram("fPtULScut", "Pt particle cut from ULS ", 100, 0., 10.));
+  fHistoList->Add(CreateControlHistogram("fPtLScut", "Pt particle cut from LS ", 100, 0., 10.));
+
   fSelNHFE->SetHistMass((TH1F*)fHistoList->FindObject("fInvMassULS"));
   fSelNHFE->SetHistMassBack((TH1F*)fHistoList->FindObject("fInvMassLS"));
   
   AddControlObject(fHistoList);
-
+  
   return AliDxHFEParticleSelection::InitControlObjects();
 }
 
@@ -316,7 +386,7 @@ int AliDxHFEParticleSelectionEl::HistogramParticleProperties(AliVParticle* p, in
     FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
     fElectronProperties->Fill(ParticleProperties());
   }
-
+  
   return 0;
 }
 
@@ -326,14 +396,21 @@ int AliDxHFEParticleSelectionEl::FillParticleProperties(AliVParticle* p, Double_
   if (!data) return -EINVAL;
   AliAODTrack *track=(AliAODTrack*)p;
   if (!track) return -ENODATA;
+  
   int i=0;
   if (dimension!=GetDimTHnSparse()) {
     // TODO: think about filling only the available data and throwing a warning
     return -ENOSPC;
   }
+  memset(data, 0, dimension*sizeof(data[0]));
   data[i++]=track->Pt();
   data[i++]=track->Phi();
   data[i++]=track->Eta();
+  if (i<dimension) {
+    if(fStoreCutStepInfo) data[i]=GetLastSurvivedCutsStep();
+    i++; // take out of conditionals to be save
+  }
+  
   return i;
 }
 
@@ -344,17 +421,21 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
   /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
   if (!pEvent) return NULL;
-
+  
   TList* selectedTracks=new TList;
   fSelNHFE->SetPIDresponse(fPIDResponse);
+  // TODO: move out to analysis task
   fPIDTPC->SetPIDResponse(fPIDResponse);
+  //Previously only fPIDTPC had fPIDResponse set.
+  fPIDTOFTPC->SetPIDResponse(fPIDResponse); 
+  fPIDTOF->SetPIDResponse(fPIDResponse);
   TObjArray* finalTracks=new TObjArray;
   if (!finalTracks) return NULL;
   finalTracks->SetOwner(kFALSE); // creating new track objects below
   TObjArray* finalTracksIM=new TObjArray;
   if (!finalTracksIM) return NULL;
   finalTracksIM->SetOwner(kFALSE); // creating new track objects below
-
+  
   int nofTracks=pEvent->GetNumberOfTracks();
   fTrackNum=0;
   int selectionCode=0;
@@ -378,8 +459,7 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
   }
 
   // Calculating invariant mass for electron pairs with same selection criteria
-  // TODO: Could be removed if it is verified that looser cuts is better, but keep
-  // for now
+  // TODO: Remove
   if(selectedTracks->GetSize()>0)
     {
       Bool_t* selTrackIndex=new Bool_t[selectedTracks->GetSize()];
@@ -424,35 +504,35 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     return 0;
   }  
   fSurvivedCutStep=kNotSelected;
-
+  
   AliAODTrack *track=(AliAODTrack*)pEl;
   fCFM->SetRecEventInfo(pEvent);
+  Double_t pPart = track->P();
   
   ((TH2D*)fHistoList->FindObject("fdEdx"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
   ((TH2D*)fHistoList->FindObject("fnSigTPC"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-  ((TH2D*)fHistoList->FindObject("fnSigTOF"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fnSigTOF"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   ((TH1D*)fHistoList->FindObject("fTPCnClAOD"))->Fill(track->GetTPCNcls());
-
-
+  Double_t fClsE = -999, p = -999, fEovP=-999, pt = -999;
+  
   if(fFinalCutStep==kNoCuts){
     Float_t radial=999;
-    //Float_t z=999;
     Bool_t acceptTrack=kFALSE;
-
+    
     //Cut on Eta
     if(TMath::Abs(track->Eta()) < fEtaCut) {
       acceptTrack=kTRUE;
     }
-
+    
     const Double_t kBeampiperadius=fImpactParamCutRadial;
     Double_t dcaD[2]={-999.,-999.}, covD[3]={-999.,-999.,-999.};
-
+    
     AliAODEvent *aodevent = (AliAODEvent*)(pEvent);
     if(!aodevent) {
       AliDebug(1, "No aod event available\n");
       return 0;
     }
-
+    
     AliAODVertex *vtxAODSkip  = aodevent->GetPrimaryVertex();
     if(!vtxAODSkip) return 0;
     AliExternalTrackParam etp; etp.CopyFromVTrack(track);
@@ -460,7 +540,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       radial = dcaD[0];
       //z = dcaD[1];
     }
-
+    
     // Cut on z  
     if(acceptTrack && TMath::Abs(radial) < fImpactParamCutRadial){
       acceptTrack=kTRUE;
@@ -468,16 +548,25 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     
     if(acceptTrack)
       fSurvivedCutStep=kNoCuts;
-
+    
     if(!acceptTrack) return 0;
-
+    
     // Should only return at this point if you only want to store all tracks
     AliDebug(2,"Returns after kNoCuts"); 
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); 
     return 1;
   }
-
+  
   //--------track cut selection-----------------------
+  // Filter Bit:
+  if(fSetFilterBit){
+    if (!track->TestFilterMask(BIT(fBit))){
+      AliDebug(2,Form("cut due to filter bit %d",fBit));
+      return 0;
+    }
+  }
+  if(fStopAfterFilterBit) return 1;
+  
   //Using AliHFECuts:
   // RecKine: ITSTPC cuts  
   if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)){
@@ -487,7 +576,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
   if(fStoreCutStepInfo) fSurvivedCutStep=kRecKineITSTPC;
   if(fFinalCutStep==kRecKineITSTPC) {AliDebug(2,"Returns after kStepRecKineITSTPC"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-
+  
   // RecPrim
   if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) {
     AliDebug(4,"Cut: kStepRecPrim");
@@ -497,27 +586,50 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
   if(fStoreCutStepInfo) fSurvivedCutStep=kRecPrim;
   if(fFinalCutStep==kRecPrim) {AliDebug(2,"Returns after kRecPrim"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-
+  
   // HFEcuts: ITS layers cuts
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) {
     AliDebug(4,"Cut: kStepHFEcutsITS");
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsITS);
     if(!fStoreCutStepInfo) return 0;
     else return 1; //return 1 because it passed cuts above, but not this (no need to go further)
-
+    
   }
   if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsITS;
   if(fFinalCutStep==kHFEcutsITS) {AliDebug(2,"Returns after kHFEcutsITS "); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
+
   
-  // HFE cuts: TOF PID and mismatch flag
-  if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTOF, track)) {
-    AliDebug(4,"Cut: kStepHFEcutsTOF");
-    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
-    if(!fStoreCutStepInfo) return 0;
-    else return 1; //return 1 because it passed cuts above, but not this (no need to go further)
+  // if fMaxPtCombinedPID is set to lower than upper Ptlimit (10GeV/c), will separate
+  // PID into two regions: below fMaxptCombinedPID - both TPC and TOF, above only TPC
+  Bool_t useCombinedPID=kTRUE;
+  Bool_t okTOF = CheckTOFPIDStatus(track);
+  if(okTOF){
+    if((pPart<fMaxPTOFWhenPresent && fMaxPTOFWhenPresent>-1) || pPart<fMaxPtCombinedPID){ //If the momentum is within either of the two regions, use TOF PID
+      useCombinedPID=kTRUE;
+    } else {//If not within the range where tof is to be used
+      useCombinedPID=kFALSE; //Do not use combined pid (tof + tpc)
+    }
   }
-  if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsTOF;
-  if(fFinalCutStep==kHFEcutsTOF) {AliDebug(2,"Returns after kHFEcutsTOF"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
+
+  if(useCombinedPID) AliDebug(2,Form("P: %f, use CombinedPID (fMaxPtCombinedPID= %f)",pPart,fMaxPtCombinedPID));
+  else AliDebug(2,Form("P: %f, use only TPC PID (fMaxPtCombinedPID= %f)",pPart,fMaxPtCombinedPID));
+
+  if(!fUseEMCAL){
+    // HFE cuts: TOF PID and mismatch flag
+    if(useCombinedPID && !okTOF){//Using TOF PID, but okTOF fails
+      if(pPart<fMaxPtCombinedPID){//TOF forced to be used
+	AliDebug(4,"Cut: kStepHFEcutsTOF");
+	((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kHFEcutsTOF);
+	if(!fStoreCutStepInfo){ return 0;}
+      	else {return 1;} //return 1 because it passed cuts above, but not this (no need to go further)
+      }else{//Above the pPart region where tof is forced, turn off combined PID
+	AliDebug(2,"Don't use forced TOF anymore, no TOF mathing of the track");
+	useCombinedPID=kFALSE; 
+      }
+    }
+    if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsTOF;
+    if(fFinalCutStep==kHFEcutsTOF) {AliDebug(2,"Returns after kHFEcutsTOF"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
+  }
   
   // HFE cuts: TPC PID cleanup
   if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)){
@@ -527,20 +639,20 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
     else return 1; //return 1 because it passed cuts above, but not this (no need to go further)
   } 
   if(fStoreCutStepInfo) fSurvivedCutStep=kHFEcutsTPC;
-
+  
   ((TH2D*)fHistoList->FindObject("fdEdxCut"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
   ((TH2D*)fHistoList->FindObject("fnSigTPCCut"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-  ((TH2D*)fHistoList->FindObject("fnSigTOFCut"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  ((TH2D*)fHistoList->FindObject("fnSigTOFCut"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   ((TH1D*)fHistoList->FindObject("fTPCnClSingleTrackCuts"))->Fill(track->GetTPCNcls());
-
+  
   if(fFinalCutStep==kHFEcutsTPC) {AliDebug(2,"Returns after track cuts"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-
-
+  
+  
   //--------PID selection-----------------------
   AliHFEpidObject hfetrack;
   hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
   hfetrack.SetRecTrack(track);
-
+  
   // TODO: configurable colliding system
   // TODO: Check problem with PbPb, for now workaround with setting multiplicity to -1
   if(GetSystem()==1) {
@@ -549,72 +661,165 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }
   else  hfetrack.SetPP();
   //  hfetrack.SetMulitplicity(ncontribVtx);
-
+  
   // TODO: Put this into a while-loop instead, looping over the number of pid objects in the cut-list?
   // This needs a bit of thinking and finetuning (wrt histogramming)
-  if(fPIDTOF && fPIDTOF->IsSelected(&hfetrack)) {
-    ((TH2D*)fHistoList->FindObject("fdEdxPidTOF"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    ((TH2D*)fHistoList->FindObject("fnSigTPCPidTOF"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    ((TH2D*)fHistoList->FindObject("fnSigTOFPidTOF"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-    if(fStoreCutStepInfo){fSurvivedCutStep=kPIDTOF; }
-    if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF");((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
-  }
-  else{
-    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOF);
-  }
 
-  if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF"); return 0;}
-
-
+  //---------EMCAL PID----------//
+  if(fUseEMCAL)
+    {
+      pt = track->Pt();      
+      // Track extrapolation to EMCAL
+      Int_t fClsId = track->GetEMCALcluster();
+      if(fClsId <0) return 0;
+      AliVCluster *cluster = pEvent->GetCaloCluster(fClsId);
+      if(!cluster->IsEMCAL()) return 0;
+      if(TMath::Abs(cluster->GetTrackDx())>0.05 || TMath::Abs(cluster->GetTrackDz())>0.05) return 0;    
+      
+      fClsE = cluster->E();
+      fEovP = fClsE/pPart;
+      
+      //Electron id with shower shape  
+      
+      if(cluster->GetM20()< fMinM20 || cluster->GetM20()> fMaxM20 || 
+	 cluster->GetM02()< fMinM02 || cluster->GetM02()> fMaxM02 || 
+	 cluster->GetDispersion()> fDispersion) return 0;
+      
+      //Electron id with E/p
+      ((TH2D*)fHistoList->FindObject("feopCut"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feoppTCut"))->Fill(pt, fEovP);//track->GetTPCmomentum(), fEovP);
+      if(fEovP < fEovPMin || fEovP > fEovPMax) return 0;
+      ((TH2D*)fHistoList->FindObject("fdEdxPidEMCAL"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCPidEMCAL"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("fnSigTOFPidEMCAL"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feopEMCAL"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feoppTEMCAL"))->Fill(pt, fEovP);//track->GetTPCmomentum(), fEovP);
+    }
+  
+  // TPC PID
   if(fPIDTPC && fPIDTPC->IsSelected(&hfetrack)) {
     ((TH2D*)fHistoList->FindObject("fdEdxPidTPC"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
     ((TH2D*)fHistoList->FindObject("fnSigTPCPidTPC"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    ((TH2D*)fHistoList->FindObject("fnSigTOFPidTPC"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    ((TH2D*)fHistoList->FindObject("fnSigTOFPidTPC"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
     if(fStoreCutStepInfo){fSurvivedCutStep=kPIDTPC; }
     if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTPC"); ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
   }
   else{
     ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTPC);
-    //return 0; //if rejected by TOF, will also be rejected by TPCTOF
+    if(!useCombinedPID) {return 0; }// if only use combined PID, return 0 here (not selected by TPC PID)
+    if(fUseEMCAL) {return 0; }// if use EMCAL and TPC return here
   }
-  if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTTPC"); return 0;}
+  if(fUseEMCAL)
+    { ((TH2D*)fHistoList->FindObject("feopTPC"))->Fill(fEovP, fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("feoppTTPC"))->Fill(pt, fEovP);//track->GetTPCmomentum(), fEovP);
+    }
+  if(fFinalCutStep==kPIDTPC) {AliDebug(2,"Returns at PIDTPC"); return 0;}
+  
 
-  //Combined tof & tpc pid
-  if(fPIDTOFTPC && fPIDTOFTPC->IsSelected(&hfetrack)) {
-    AliDebug(3,"Inside FilldPhi, electron is selected");
-    ((TH2D*)fHistoList->FindObject("fdEdxPid"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
-    ((TH2D*)fHistoList->FindObject("fnSigTPCPid"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
-    ((TH2D*)fHistoList->FindObject("fnSigTOFPid"))->Fill(track->P(), fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
-    ((TH1D*)fHistoList->FindObject("fTPCnClTPCTOFPID"))->Fill(track->GetTPCNcls());
-    // Only do this if 
-    if(fStoreCutStepInfo){
-      fSurvivedCutStep=kPIDTOFTPC;
+  if(!fUseEMCAL && useCombinedPID){
 
+    //TOF PID
+    if(fPIDTOF && fPIDTOF->IsSelected(&hfetrack)) {
+      ((TH2D*)fHistoList->FindObject("fdEdxPidTOF"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCPidTOF"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      ((TH2D*)fHistoList->FindObject("fnSigTOFPidTOF"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+      if(fStoreCutStepInfo){fSurvivedCutStep=kPIDTOF; }
+      if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF");((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected); return 1;}
+    }
+    else{
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOF);
+    }
+    if(fFinalCutStep==kPIDTOF) {AliDebug(2,"Returns at PIDTOF"); return 0;}
+
+    //Combined TOF & TPC PID
+    if(fPIDTOFTPC && fPIDTOFTPC->IsSelected(&hfetrack)) {
+      AliDebug(3,"Inside FilldPhi, electron is selected");
+      if(fStoreCutStepInfo){
+	fSurvivedCutStep=kPIDTOFTPC;
+      }
+    }
+    else{
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOFTPC);
+      AliDebug(4,"Cut: kTPCTOFPID");
+      if(!fStoreCutStepInfo) { return 0;}
+      else if(fStoreCutStepInfo){  return 1; }//return 1 because it passed cuts above, but not this (no need to go further)
     }
   }
-  else{
-    ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kPIDTOFTPC);
-    AliDebug(4,"Cut: kTPCTOFPID");
-    if(!fStoreCutStepInfo) return 0;
-    else { return 1; }//return 1 because it passed cuts above, but not this (no need to go further)
+
+  // Filling histograms with particles passing PID criteria
+  // (Filled here due to the option of separating regions for TPC+TOF and TPC)
+  ((TH2D*)fHistoList->FindObject("fdEdxPid"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  ((TH2D*)fHistoList->FindObject("fnSigTPCPid"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFPid"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+  ((TH1D*)fHistoList->FindObject("fTPCnClTPCTOFPID"))->Fill(track->GetTPCNcls());
+  
+  // [FIXME]: Under development
+  // Rejection of pions and protons based on 3. nsigma cut in tpc
+  Double_t nsigmaTPCpi=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kPion);
+  Double_t nsigmaTPCp=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kProton);
+
+  //Pion rejection
+  if(fTPCnSigmaPiRej>0){ //Pion rejection on by default, but can be turned off by setting fTPCnSigmaPiRej to -1
+    if(TMath::Abs(nsigmaTPCpi)<fTPCnSigmaPiRej && pPart>fPiRejPMin && pPart<fPiRejPMax){ //Only applied above between given P() limits 
+      // Track within pion identification range. Reject
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejPi);
+      return 0; 
+    }else{
+      ((TH2D*)fHistoList->FindObject("fdEdxRejPi"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCRejPi"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejPi"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    }
+  }  
+  
+  //Proton rejection
+  if(fTPCnSigmaPRej>0){ //Proton rejection on by default, but can be turned off by setting fTPCnSigmaPRej to -1
+    if(TMath::Abs(nsigmaTPCp)<fTPCnSigmaPRej && pPart>fPRejPMin && pPart<fPRejPMax){ //Only applied above 1GeV
+      // Track within proton identification range. Reject
+      ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejProton);
+      return 0;
+    }else{
+      ((TH2D*)fHistoList->FindObject("fdEdxRejProton"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      ((TH2D*)fHistoList->FindObject("fnSigTPCRejProton"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejProton"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
+    }
   }
   
+  //Removing electrons based on invariant mass method
   if(fUseInvMassCut==kInvMassSingleSelected)
     {
       AliDebug(4,"invmass check");
+      bool isLS=kFALSE;
+      bool isULS=kFALSE;
       fSelNHFE->FindNonHFE(fTrackNum, track, const_cast<AliVEvent*>(pEvent));
-      if(fSelNHFE->IsLS() || fSelNHFE->IsULS())
+      if(fSelNHFE->IsULS())
 	{
 	  //Not selected
+	  isULS=kTRUE;
+	  ((TH1F*)fHistoList->FindObject("fPtULScut"))->Fill(track->Pt());
+	  ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kINVMASS);
+	  AliDebug(4,"Cut: Invmass");
+	  if(!fStoreCutStepInfo) return 0;
+	  
+	}
+      if(fSelNHFE->IsLS()){
+	((TH1F*)fHistoList->FindObject("fPtLScut"))->Fill(track->Pt());
+	if(fCutLS){
+	  //Not selected
+	  isLS=kTRUE;
 	  ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kINVMASS);
 	  AliDebug(4,"Cut: Invmass");
 	  if(!fStoreCutStepInfo) return 0;
 	}
-      else
-	if(fStoreCutStepInfo) fSurvivedCutStep=kINVMASS;
-
+      }
+      
+      if(fStoreCutStepInfo && !(isLS || isULS)) fSurvivedCutStep=kINVMASS;
+      
     }
+  ((TH2D*)fHistoList->FindObject("fdEdxIM"))->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+  ((TH2D*)fHistoList->FindObject("fnSigTPCIM"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+  if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFIM"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected);
+  
   return 1;
   
 }
@@ -629,7 +834,7 @@ void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
     }
     return;
   }
-
+  
   if (level==kCutPIDTOFTPC) {
     fPIDTOFTPC=dynamic_cast<AliHFEpid*>(cuts);
     if (!fPIDTOFTPC && cuts) {
@@ -637,7 +842,7 @@ void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
     }
     return;
   }
-
+  
   if (level==kCutPIDTOF) {
     fPIDTOF=dynamic_cast<AliHFEpid*>(cuts);
     if (!fPIDTOF && cuts) {
@@ -661,23 +866,23 @@ void AliDxHFEParticleSelectionEl::SetCuts(TObject* cuts, int level)
 	if(iii==1) {
 	  fCuts=dynamic_cast<AliHFEcuts*>(obj);
 	  if (!fCuts) 
-	    AliError(Form("Cut object is not of required type AliHFEcuts but %s", cuts->ClassName()));
+	    AliError(Form("Cut object is not of required type AliHFEcuts but %s", obj->ClassName()));
 	}
 	if(iii==2){
 	  fPIDTOFTPC=dynamic_cast<AliHFEpid*>(obj);
 	  if (!fPIDTOFTPC) 
-	    AliError(Form("(TOFTPC) cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
+	    AliError(Form("(TOFTPC) cuts object is not of required type AliHFEpid but %s", obj->ClassName()));
 	}
 	if(iii==3){ 
 	  fPIDTOF=dynamic_cast<AliHFEpid*>(obj);
 	  if (!fPIDTOF) 
-	    AliError(Form("(TOF) cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
+	    AliError(Form("(TOF) cuts object is not of required type AliHFEpid but %s", obj->ClassName()));
 	}
-	/*if(iii=4){
+	if(iii==4){
 	  fPIDTPC=dynamic_cast<AliHFEpid*>(obj);
 	  if (!fPIDTPC) 
-	    AliError(Form("(TPC) cuts object is not of required type AliHFEpid but %s", cuts->ClassName()));
-	    }*/
+	    AliError(Form("(TPC) cuts object is not of required type AliHFEpid but %s", obj->ClassName()));
+	}
       }
       
     }
@@ -701,7 +906,7 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
   TString strArguments(arguments);
   auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
   if (!tokens.get()) return 0;
-
+  
   AliInfo(strArguments);
   TIter next(tokens.get());
   TObject* token;
@@ -711,15 +916,16 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       argument.ReplaceAll("elreco=", "");
       int selectionStep=kPIDTOFTPC; //Default
       if(argument.CompareTo("alltracks")==0) selectionStep=kNoCuts;      
-      if(argument.CompareTo("afterreckineitstpc")==0) selectionStep=kRecKineITSTPC;
-      if(argument.CompareTo("afterrecprim")==0) selectionStep=kRecPrim;
-      if(argument.CompareTo("afterhfeits")==0) selectionStep=kHFEcutsITS;
-      if(argument.CompareTo("afterhfetof")==0) selectionStep=kHFEcutsTOF;
-      if(argument.CompareTo("afterhfetpc")==0) selectionStep=kHFEcutsTPC;
-      if(argument.CompareTo("aftertrackcuts")==0) selectionStep=kHFEcutsTPC;
-      if(argument.CompareTo("aftertofpid")==0) selectionStep=kPIDTOF;
-      if(argument.CompareTo("aftertpcpid")==0) selectionStep=kPIDTPC;
-      if(argument.CompareTo("afterfullpid")==0) selectionStep=kPIDTOFTPC;
+      else if(argument.CompareTo("afterreckineitstpc")==0) selectionStep=kRecKineITSTPC;
+      else if(argument.CompareTo("afterrecprim")==0) selectionStep=kRecPrim;
+      else if(argument.CompareTo("afterhfeits")==0) selectionStep=kHFEcutsITS;
+      else if(argument.CompareTo("afterhfetof")==0) selectionStep=kHFEcutsTOF;
+      else if(argument.CompareTo("afterhfetpc")==0) selectionStep=kHFEcutsTPC;
+      else if(argument.CompareTo("aftertrackcuts")==0) selectionStep=kHFEcutsTPC;
+      else if(argument.CompareTo("aftertofpid")==0) selectionStep=kPIDTOF;
+      else if(argument.CompareTo("aftertpcpid")==0) selectionStep=kPIDTPC;
+      else if(argument.CompareTo("afterfullpid")==0) selectionStep=kPIDTOFTPC;
+      else AliFatal(Form("unknown argument '%s'", argument.Data()));
       SetFinalCutStep(selectionStep); 
       continue;   
     }
@@ -731,6 +937,48 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
     if(argument.BeginsWith("useinvmasscut")){
       fUseInvMassCut=kInvMassSingleSelected;
       AliInfo("Using Invariant mass cut for single selected particle and looser cuts on partner");
+      continue;   
+    }
+    if(argument.BeginsWith("EMCALPID")){
+      fUseEMCAL=kTRUE;
+      AliInfo("Using EMCAL PID");
+      continue;   
+    }
+    if(argument.BeginsWith("maxPtCombinedPID=")){
+      argument.ReplaceAll("maxPtCombinedPID=", "");
+      fMaxPtCombinedPID=argument.Atof();
+      AliInfo(Form("Using only TPC PID over %f GeV/c",fMaxPtCombinedPID));
+      continue;
+    }
+    if(argument.BeginsWith("maxPTOFWhenPresent=")){
+      argument.ReplaceAll("maxPTOFWhenPresent=", "");
+      fMaxPTOFWhenPresent=argument.Atof();
+      AliInfo(Form("TOF PID used when present up to %f GeV/c",fMaxPTOFWhenPresent));
+      fUseTOFonlyWhenPresent=kTRUE;
+      AliInfo("Using TOF when present");
+      continue;
+    }
+    //v--- [FIXME] Should no longer be used
+    if(argument.BeginsWith("onlyTOFwhenpresent") || argument.BeginsWith("TOFwhenpresent") || argument.BeginsWith("TOFwhenthere")){
+      fUseTOFonlyWhenPresent=kTRUE;
+      AliInfo("Only using TOF when present");
+      continue;
+    }
+    if(argument.BeginsWith("StopFB") || argument.BeginsWith("stopafterfilterbit") || argument.BeginsWith("stopfb")){
+      fStopAfterFilterBit=kTRUE;
+      AliInfo("Only using TOF when present");
+      continue;
+    }
+    if(argument.BeginsWith("notusefilterbit")){
+      fSetFilterBit=kFALSE;
+      AliInfo("Switching off use of Filter Bit");
+      continue;   
+    }
+    if(argument.BeginsWith("filterbit=")){
+      argument.ReplaceAll("filterbit=", "");
+      fBit=argument.Atoi();
+      AliInfo(Form("Using filter bit: %d",fBit));
+      fSetFilterBit=kTRUE;
       continue;   
     }
     if(argument.BeginsWith("invmasscut=")){
@@ -752,9 +1000,95 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
       AliInfo(Form("Using Eta cut: %f",fEtaCut));
       continue;   
     }
+    if(argument.BeginsWith("M20min=")){
+      argument.ReplaceAll("M20min=", "");
+      fMinM20=argument.Atof();
+      AliInfo(Form("Using M20min cut: %f",fMinM20));
+      continue;   
+    }
+    if(argument.BeginsWith("M20max=")){
+      argument.ReplaceAll("M20max=", "");
+      fMaxM20=argument.Atof();
+      AliInfo(Form("Using M20max cut: %f",fMaxM20));
+      continue;   
+    }
+    
+    if(argument.BeginsWith("M02min=")){
+      argument.ReplaceAll("M02min=", "");
+      fMinM02=argument.Atof();
+      AliInfo(Form("Using M02min cut: %f",fMinM02));
+      continue;   
+    }
+    if(argument.BeginsWith("M02max=")){
+      argument.ReplaceAll("M02max=", "");
+      fMaxM02=argument.Atof();
+      AliInfo(Form("Using M02max cut: %f",fMaxM02));
+      continue;   
+    }
+    
+    if(argument.BeginsWith("Dispersion=")){
+      argument.ReplaceAll("Dispersion=", "");
+      fDispersion=argument.Atof();
+      AliInfo(Form("Using Dispersion cut: %f",fDispersion));
+      continue;   
+    }
+    
+    if(argument.BeginsWith("EoPmin=")){
+      argument.ReplaceAll("EoPmin=", "");
+      fEovPMin=argument.Atof();
+      AliInfo(Form("Using E/p min cut: %f",fEovPMin));
+      continue;   
+    }
+    if(argument.BeginsWith("EoPmax=")){
+      argument.ReplaceAll("EoPmax=", "");
+      fEovPMax=argument.Atof();
+      AliInfo(Form("Using E/p max cut: %f",fEovPMax));
+      continue;   
+    }
     if(argument.BeginsWith("storelastcutstep")){
       AliInfo("Stores the last cut step");
       SetStoreLastCutStep(kTRUE);
+      continue;
+    }
+    if(argument.BeginsWith("cutLS")){
+      AliInfo("Cut also on LS distribution of electron pairs");
+      fCutLS=kTRUE;
+      continue;
+    }
+    if(argument.BeginsWith("RejP=")){ //Disable proton rejection by setting to -1
+      argument.ReplaceAll("RejP=", "");
+      fTPCnSigmaPRej=argument.Atof();
+      AliInfo(Form("Using proton rejection in TPC, nsigma+/-: %f",fTPCnSigmaPRej));
+      continue;   
+    }
+    if(argument.BeginsWith("Rejpi=")){ //Disable pion rejection by setting to -1
+      argument.ReplaceAll("Rejpi=", "");
+      fTPCnSigmaPiRej=argument.Atof();
+      AliInfo(Form("Using pion rejection in TPC, nsigma+/-: %f",fTPCnSigmaPiRej));
+      continue;   
+    }
+    if(argument.BeginsWith("minPRejP=")){
+      argument.ReplaceAll("minPRejP=", "");
+      fPRejPMin=argument.Atof();
+      AliInfo(Form("Lower p limit for use of Proton rejection: %f GeV/c",fPRejPMin));
+      continue;
+    }
+    if(argument.BeginsWith("maxPRejP=")){
+      argument.ReplaceAll("maxPRejP=", "");
+      fPRejPMax=argument.Atof();
+      AliInfo(Form("Upper p limit for use of Proton rejection: %f GeV/c",fPRejPMax));
+      continue;
+    }
+    if(argument.BeginsWith("minPRejpi=")){
+      argument.ReplaceAll("minPRejpi=", "");
+      fPiRejPMin=argument.Atof();
+      AliInfo(Form("Lower p limit for use of Pion rejection: %f GeV/c",fPiRejPMin));
+      continue;
+    }
+    if(argument.BeginsWith("maxPRejpi=")){
+      argument.ReplaceAll("maxPRejpi=", "");
+      fPiRejPMax=argument.Atof();
+      AliInfo(Form("Upper p limit for use of Pion rejection: %f GeV/c",fPiRejPMax));
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated
@@ -768,7 +1102,7 @@ int AliDxHFEParticleSelectionEl::ParseArguments(const char* arguments)
 
 void AliDxHFEParticleSelectionEl::InvMassFilter(TList *elList, Bool_t *selIndx)
 {
-
+  
   //Function for getting invariant mass of electron pairs
    
   for(int i=0; i<((elList->GetSize())-1); i++)
@@ -831,4 +1165,17 @@ void AliDxHFEParticleSelectionEl::InvMassFilter(TList *elList, Bool_t *selIndx)
 	    }
 	}
     }
+}
+
+//___________________________________________________________________________
+Bool_t AliDxHFEParticleSelectionEl::CheckTOFPIDStatus(AliAODTrack *track) const{
+  // Borrowed from AliSingleTrackEffCuts.cxx
+  // Check TOC PID status
+  //
+
+  if ((track->GetStatus()&AliESDtrack::kTOFout)==0)   return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTIME)==0)     return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTOFpid)==0)   return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTOFmismatch)!=0) return kFALSE;
+  return kTRUE;
 }

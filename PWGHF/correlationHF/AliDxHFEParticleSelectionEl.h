@@ -29,7 +29,9 @@
 
 #include "AliHFEcuts.h" // need to directly include to avoid compilation error in the dictionary
 #include "AliHFEpid.h"  // need to directly include to avoid compilation error in the dictionary
+#include "AliAODTrack.h"
 
+class AliAODTrack;
 class AliPID;
 class AliPIDResponse;
 class AliHFEvarManager;
@@ -73,6 +75,8 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
     kPIDTOF,
     kPIDTPC,
     kPIDTOFTPC,
+    kRejPi,
+    kRejProton,
     kINVMASS,
     kSelected,
     kNCutLabels
@@ -113,6 +117,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Int_t GetLastSurvivedCutsStep() const{return fSurvivedCutStep;}
 
  protected:
+  Bool_t CheckTOFPIDStatus(AliAODTrack *track) const;
 
  private:
 
@@ -130,6 +135,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   AliHFEpid*    fPIDTOFTPC;          //! the PID object
   AliHFEpid*    fPIDTOF;             //! the PID TOF object
   AliHFEpid*    fPIDTPC;             //! the PID TOF object
+  AliHFEpid*    fPIDTPCEMCAL;             //! the PID TOF object
   THnSparse*    fElectronProperties; // the particle properties of selected particles
   TList*        fHistoList;          // list of histograms
   TList*        fCutPidList;         // list for pid and cut objects
@@ -147,10 +153,30 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Double_t      fEtaCut;             // cut on eta (when storing all tracks)
   Int_t         fSurvivedCutStep;    // Last cutstep it survived
   Bool_t        fStoreCutStepInfo;   // Whether to store which cut step is the effective one
-
+  Bool_t        fSetFilterBit;       // Whether or not to use filter bits 
+  Int_t         fBit;                // Which bit to use
+  Double_t      fMaxPtCombinedPID;   // Max pt for the combined PID of TPC and TOF (default = 999, thus combined for all pt)
+  Double_t      fMaxPTOFWhenPresent; // Max p for using tof when present (without tofmatching requirements). Default -1
+  Bool_t        fUseEMCAL;           // Whether or not to use EMCAL PID
+  Double_t      fMinM20;             // Lower cut value for Shower shape, EMCAL, M20
+  Double_t      fMaxM20;             // Upper cut value for Shower shape, EMCAL, M20
+  Double_t      fMinM02;             // Lower cut value for Shower shape, EMCAL, M02
+  Double_t      fMaxM02;             // Upper cut value for Shower shape, EMCAL, M02
+  Double_t      fDispersion;         // Shower shape dispersion cut
+  Double_t      fEovPMin;            // Lower cut value for E over P, EMCAL
+  Double_t      fEovPMax;            // Upper cut value for E over P, EMCAL
+  Bool_t        fUseTOFonlyWhenPresent; // use tof only when it's there
+  Bool_t        fStopAfterFilterBit; // Stop selection after checking filterbits
+  Bool_t        fCutLS;              // Cut also electrons from LS distribution (set to false by default)
+  Double_t fTPCnSigmaPRej;           // +/- nsigma value for proton rejection in TPC
+  Double_t fTPCnSigmaPiRej;          // +/- nsigma value for pion rejection in TPC
+  Double_t fPRejPMin;                // Minimum momentum where Proton rejection by TPC PID nSigma is used
+  Double_t fPRejPMax;                // Maximum momentum where Proton rejection by TPC PID nSigma is used
+  Double_t fPiRejPMin;               // Minimum momentum where Pion rejection by TPC PID nSigma is used
+  Double_t fPiRejPMax;               // Maximum momentum where Pion rejection by TPC PID nSigma is used
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
-
-  ClassDef(AliDxHFEParticleSelectionEl, 6); 
+  
+  ClassDef(AliDxHFEParticleSelectionEl, 8); 
 };
 
 #endif
