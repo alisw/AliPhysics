@@ -139,7 +139,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int setMostProb3 = atoi(parameter[17]);
 
 	Bool_t ifMonitors=kFALSE; if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
-	Bool_t ifV0Monitors = kTRUE;
+	Bool_t ifV0Monitors = kFALSE;
 	double nSigmaVal2 = atof(parameter[20]); //3.0 (or 2.0)
 
 	printf("*** Connect to AliEn ***\n");
@@ -442,7 +442,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					if(ifMonitors)//ichg>8)
 					  {
-
+/*
 					    if(ifV0Monitors){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
@@ -456,7 +456,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    
 				
 					    }
-
+*/
 					    //FULL
 						if(ichg<2 || ichg==3 || ichg==4 || ichg==6 || ichg==7 /*|| ichg == 9 || ichg == 10*/ || ichg==12 || ichg==13 || ichg==14){ 
 					      cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);
