@@ -17,7 +17,7 @@
 
 /* AliAnalysisTaskPSHFE.cxx
  *
- * Macro for Electron PID for heavy flavour electrons
+ * Macro for analysis of heavy flavour electrons
  * -Patrick Steffanic
  */
 #include "AliAnalysisTaskPSHFE.h"
@@ -89,6 +89,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistEngTag_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
+    fHistEtaPhiTPCOnly_MB(0),
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
 
@@ -412,6 +413,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistEngTag_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
+    fHistEtaPhiTPCOnly_MB(0),
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
 
@@ -1981,6 +1983,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistEtaPhi_EMCJet->GetXaxis()->SetTitle("Eta");
     fHistEtaPhi_EMCJet->GetYaxis()->SetTitle("Phi");
     
+    fHistEtaPhiTPCOnly_MB = new TH2F("fHistEtaPhiTPCOnly_MB", "Eta-Phi distribution of TPC only tracks", 100, -.9,.9,100,0,2*TMath::Pi());
+    fHistEtaPhiTPCOnly_MB->GetXaxis()->SetTitle("Eta");
+    fHistEtaPhiTPCOnly_MB->GetYaxis()->SetTitle("Phi");
+
     // Energy per event histos
     fHistEng_MB = new TH1F("fHistEng_MB", "Energy per event", 500, 0, 500);
     fHistEng_MB->GetXaxis()->SetTitle("Energy");
@@ -2160,6 +2166,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistEngTag_MB);
     fOutputMB->Add(fHistEtaPhi_MB);
     fOutputMB->Add(fHistEtaPhiTag_MB);
+    fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
     for(Int_t i=0; i<6;i++){
         fOutputMB->Add(fHistTPC_TOF_MB[i]);
         fOutputMB->Add(fHistTPC_EMC_MB[i]);
@@ -2556,6 +2563,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(!esdtrack) { 
             AliError(Form("ERROR: Could not retrieve esdtrack %d",i)); 
             continue; 
+        }
+
+        //Fill TPCOnly track eta-phi
+        if(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()->AcceptTrack(esdtrack)){
+            fHistEtaPhiTPCOnly_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
         }
 
         //Do hybrid track cuts

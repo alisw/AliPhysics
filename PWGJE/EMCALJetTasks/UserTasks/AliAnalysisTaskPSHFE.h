@@ -4,11 +4,7 @@
 /* $Id$ */
 /* AliAnalysisTaskPSHFE.h
  *
- * Template task producing a P_t spectrum and pseudorapidity distribution.
- * Includes explanations of physics and primary track selections
  *
- * Based on tutorial example from offline pages
- * Edited by Arvinder Palaha
  */
 #ifndef ALIANALYSISTASKEID_H
 #define ALIANALYSISTASKEID_H
@@ -108,6 +104,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEngTag_MB;
     TH2F            *fHistEtaPhi_MB;
     TH2F            *fHistEtaPhiTag_MB;
+    TH2F            *fHistEtaPhiTPCOnly_MB;
     TH1F            *fHistDPhi300_MB[3];
     TH1F            *fHistDPhi500_MB[3];
     TH1F            *fHistDPhi800_MB[3];
