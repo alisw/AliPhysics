@@ -69,6 +69,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     EMC7trg(0),
     EMC8trg(0),
     EMCJettrg(0),
+    MBtrg(0),
     tagStrong(0),
 
     fHistPIDRejection(0),
@@ -394,6 +395,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     EMC7trg(0),
     EMC8trg(0),
     EMCJettrg(0),
+    MBtrg(0),
     tagStrong(0),
 
     fHistPIDRejection(0),
@@ -2517,7 +2519,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         AliWarning("This is not an EMCal triggered event");
   }
     
-  MBtrg = fSelectMask & AliEvent::kMB;
+  MBtrg = fSelectMask & AliVEvent::kMB;
   EMC7trg = fSelectMask & AliVEvent::kEMC7;
   EMC8trg = fSelectMask & AliVEvent::kEMC8;
   EMCJettrg = fSelectMask & AliVEvent::kEMCEJE;
