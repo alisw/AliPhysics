@@ -101,6 +101,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_MB[6];
     TH2F            *fHistTRD_TOFEMC_MB[6];
     TH2F            *fHistTRD_TPCTOFEMC_MB[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_MB[6];
+    TH2F            *fHistM20_All_MB[6];
+    TH2F            *fHistM02_Elec_MB[6];
+    TH2F            *fHistM20_Elec_MB[6];
     //General Event histos
     TH1F            *fHistEng_MB;
     TH1F            *fHistEngTag_MB;
@@ -161,6 +166,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_EMC7[6];
     TH2F            *fHistTRD_TOFEMC_EMC7[6];
     TH2F            *fHistTRD_TPCTOFEMC_EMC7[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMC7[6];
+    TH2F            *fHistM20_All_EMC7[6];
+    TH2F            *fHistM02_Elec_EMC7[6];
+    TH2F            *fHistM20_Elec_EMC7[6];
     //General Event histos 
     TH1F            *fHistEng_EMC7;
     TH1F            *fHistEngTag_EMC7;
@@ -220,6 +230,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_EMC8[6];
     TH2F            *fHistTRD_TOFEMC_EMC8[6];
     TH2F            *fHistTRD_TPCTOFEMC_EMC8[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMC8[6];
+    TH2F            *fHistM20_All_EMC8[6];
+    TH2F            *fHistM02_Elec_EMC8[6];
+    TH2F            *fHistM20_Elec_EMC8[6];
     //General Event histos
     TH1F            *fHistEng_EMC8;
     TH1F            *fHistEngTag_EMC8;
@@ -279,6 +294,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_EMCJet[6];
     TH2F            *fHistTRD_TOFEMC_EMCJet[6];
     TH2F            *fHistTRD_TPCTOFEMC_EMCJet[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMCJet[6];
+    TH2F            *fHistM20_All_EMCJet[6];
+    TH2F            *fHistM02_Elec_EMCJet[6];
+    TH2F            *fHistM20_Elec_EMCJet[6];
     //General Event histos
     TH1F            *fHistEng_EMCJet;
     TH1F            *fHistEngTag_EMCJet;

@@ -308,6 +308,26 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
         fHistTRD_TPCEMC_EMCJet[i]=0;
         fHistTRD_TOFEMC_EMCJet[i]=0;
         fHistTRD_TPCTOFEMC_EMCJet[i]=0;
+
+        fHistM02_All_MB[i]=0;
+        fHistM02_Elec_MB[i]=0;
+        fHistM20_All_MB[i]=0;
+        fHistM20_Elec_MB[i]=0;
+
+        fHistM02_All_EMC7[i]=0;
+        fHistM02_Elec_EMC7[i]=0;
+        fHistM20_All_EMC7[i]=0;
+        fHistM20_Elec_EMC7[i]=0;
+
+        fHistM02_All_EMC8[i]=0;
+        fHistM02_Elec_EMC8[i]=0;
+        fHistM20_All_EMC8[i]=0;
+        fHistM20_Elec_EMC8[i]=0;
+
+        fHistM02_All_EMCJet[i]=0;
+        fHistM02_Elec_EMCJet[i]=0;
+        fHistM20_All_EMCJet[i]=0;
+        fHistM20_Elec_EMCJet[i]=0;
     }
         
     //Region Histos
@@ -637,6 +657,26 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
         fHistTRD_TPCEMC_EMCJet[i]=0;
         fHistTRD_TOFEMC_EMCJet[i]=0;
         fHistTRD_TPCTOFEMC_EMCJet[i]=0;
+
+        fHistM02_All_MB[i]=0;
+        fHistM02_Elec_MB[i]=0;
+        fHistM20_All_MB[i]=0;
+        fHistM20_Elec_MB[i]=0;
+
+        fHistM02_All_EMC7[i]=0;
+        fHistM02_Elec_EMC7[i]=0;
+        fHistM20_All_EMC7[i]=0;
+        fHistM20_Elec_EMC7[i]=0;
+
+        fHistM02_All_EMC8[i]=0;
+        fHistM02_Elec_EMC8[i]=0;
+        fHistM20_All_EMC8[i]=0;
+        fHistM20_Elec_EMC8[i]=0;
+
+        fHistM02_All_EMCJet[i]=0;
+        fHistM02_Elec_EMCJet[i]=0;
+        fHistM20_All_EMCJet[i]=0;
+        fHistM20_Elec_EMCJet[i]=0;
     }
         
         
@@ -887,6 +927,26 @@ AliAnalysisTaskPSHFE::~AliAnalysisTaskPSHFE()
         delete fHistTRD_TPCEMC_EMCJet[i];
         delete fHistTRD_TOFEMC_EMCJet[i];
         delete fHistTRD_TPCTOFEMC_EMCJet[i];
+
+        delete fHistM02_All_MB[i];
+        delete fHistM02_Elec_MB[i];
+        delete fHistM20_All_MB[i];
+        delete fHistM20_Elec_MB[i];
+
+        delete fHistM02_All_EMC7[i];
+        delete fHistM02_Elec_EMC7[i];
+        delete fHistM20_All_EMC7[i];
+        delete fHistM20_Elec_EMC7[i];
+
+        delete fHistM02_All_EMC8[i];
+        delete fHistM02_Elec_EMC8[i];
+        delete fHistM20_All_EMC8[i];
+        delete fHistM20_Elec_EMC8[i];
+
+        delete fHistM02_All_EMCJet[i];
+        delete fHistM02_Elec_EMCJet[i];
+        delete fHistM20_All_EMCJet[i];
+        delete fHistM20_Elec_EMCJet[i];
     }
     
     //Region Histos
@@ -1740,6 +1800,77 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fHistTRD_TPCTOFEMC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
     }
     
+    //EMC Shower Shape PID Plots
+    for(Int_t i=0; i<6; i++){
+        //MB
+        fHistM02_All_MB[i] = new TH1F(TString::Format("fHistM02_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_MB[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_MB[i] = new TH1F(TString::Format("fHistM20_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_MB[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_MB[i] = new TH1F(TString::Format("fHistM02_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_MB[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_MB[i] = new TH1F(TString::Format("fHistM20_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_MB[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        //EMC7
+        fHistM02_All_EMC7[i] = new TH1F(TString::Format("fHistM02_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_EMC7[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_EMC7[i] = new TH1F(TString::Format("fHistM20_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_EMC7[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_EMC7[i] = new TH1F(TString::Format("fHistM02_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_EMC7[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_EMC7[i] = new TH1F(TString::Format("fHistM20_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_EMC7[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        //EMC8
+        fHistM02_All_EMC8[i] = new TH1F(TString::Format("fHistM02_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_EMC8[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_EMC8[i] = new TH1F(TString::Format("fHistM20_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_EMC8[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_EMC8[i] = new TH1F(TString::Format("fHistM02_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_EMC8[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_EMC8[i] = new TH1F(TString::Format("fHistM20_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_EMC8[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        //EMCJet
+        fHistM02_All_EMCJet[i] = new TH1F(TString::Format("fHistM02_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_EMCJet[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_EMCJet[i] = new TH1F(TString::Format("fHistM20_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_EMCJet[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_EMCJet[i] = new TH1F(TString::Format("fHistM02_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_EMCJet[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_EMCJet[i] = new TH1F(TString::Format("fHistM20_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_EMCJet[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+    }
+
     //DPhi for candidate electrons 2-8 gev and assoc. particles >3gev
     fHistDPhi28_MB = new TH1F("fHistDPhi28_MB", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhi28_MB->GetXaxis()->SetTitle("Delta-Phi");
@@ -2209,6 +2340,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputMB->Add(fHistTRD_TPCEMC_MB[i]);
         fOutputMB->Add(fHistTRD_TOFEMC_MB[i]);
         fOutputMB->Add(fHistTRD_TPCTOFEMC_MB[i]);
+
+        fOutputMB->Add(fHistM02_All_MB[i]);
+        fOutputMB->Add(fHistM20_All_MB[i]);
+        fOutputMB->Add(fHistM02_Elec_MB[i]);
+        fOutputMB->Add(fHistM20_Elec_MB[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputMB->Add(fHistDPhi300_MB[i]);
@@ -2265,6 +2401,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputEMC7->Add(fHistTRD_TPCEMC_EMC7[i]);
         fOutputEMC7->Add(fHistTRD_TOFEMC_EMC7[i]);
         fOutputEMC7->Add(fHistTRD_TPCTOFEMC_EMC7[i]);
+
+        fOutputEMC7->Add(fHistM02_All_EMC7[i]);
+        fOutputEMC7->Add(fHistM20_All_EMC7[i]);
+        fOutputEMC7->Add(fHistM02_Elec_EMC7[i]);
+        fOutputEMC7->Add(fHistM20_Elec_EMC7[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputEMC7->Add(fHistDPhi300_EMC7[i]);
@@ -2321,6 +2462,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputEMC8->Add(fHistTRD_TPCEMC_EMC8[i]);
         fOutputEMC8->Add(fHistTRD_TOFEMC_EMC8[i]);
         fOutputEMC8->Add(fHistTRD_TPCTOFEMC_EMC8[i]);
+
+        fOutputEMC8->Add(fHistM02_All_EMC8[i]);
+        fOutputEMC8->Add(fHistM20_All_EMC8[i]);
+        fOutputEMC8->Add(fHistM02_Elec_EMC8[i]);
+        fOutputEMC8->Add(fHistM20_Elec_EMC8[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputEMC8->Add(fHistDPhi300_EMC8[i]);
@@ -2377,6 +2523,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputEMCJet->Add(fHistTRD_TPCEMC_EMCJet[i]);
         fOutputEMCJet->Add(fHistTRD_TOFEMC_EMCJet[i]);
         fOutputEMCJet->Add(fHistTRD_TPCTOFEMC_EMCJet[i]);
+
+        fOutputEMCJet->Add(fHistM02_All_EMCJet[i]);
+        fOutputEMCJet->Add(fHistM20_All_EMCJet[i]);
+        fOutputEMCJet->Add(fHistM02_Elec_EMCJet[i]);
+        fOutputEMCJet->Add(fHistM20_Elec_EMCJet[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputEMCJet->Add(fHistDPhi300_EMCJet[i]);
@@ -4497,8 +4648,10 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         
         if(isPIDRej){return;}
        
-        
+        //declare emcal cluster PID variables
         Double_t EOP=-1;
+        Double_t M02=-1;
+        Double_t M20=-1;
         Int_t caloId=esdtrack->GetEMCALcluster();
         
         if(caloId==-99999){
@@ -4510,6 +4663,8 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         
         if(tagEMCclus->E()>.5){
         EOP = tagEMCclus->E()/esdtrack->Pt();
+        M02 = tagEMCclus->GetM02();
+        M20 = tagEMCclus->GetM20();
         }
         else{
             return;
@@ -4533,6 +4688,26 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         for(Int_t i=0; i<6; i++){
         if(esdtrack->Pt()>ptLower[i]&&esdtrack->Pt()<ptUpper[i]){
             
+            //Fill general shower shape plots
+            if(MBtrg){
+                    fHistM02_All_MB[i]->Fill(M02, EOP);
+                    fHistM20_All_MB[i]->Fill(M20, EOP);
+                }
+                if(EMC7trg){
+                    fHistM02_All_EMC7[i]->Fill(M02, EOP);
+                    fHistM20_All_EMC7[i]->Fill(M20, EOP);
+                }
+
+                if(EMC8trg){
+                    fHistM02_All_EMC8[i]->Fill(M02, EOP);
+                    fHistM20_All_EMC8[i]->Fill(M20, EOP);
+                }
+
+                if(EMCJettrg){
+                    fHistM02_All_EMCJet[i]->Fill(M02, EOP);
+                    fHistM20_All_EMCJet[i]->Fill(M20, EOP);
+                }
+
         //TPC Plots
             
             //TOF cuts
@@ -4896,6 +5071,26 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                 
                 if(EMCJettrg){
                     fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
+                }
+
+                //Fill the shower shape plots here also
+                if(MBtrg){
+                    fHistM02_Elec_MB[i]->Fill(M02, EOP);
+                    fHistM20_Elec_MB[i]->Fill(M20, EOP);
+                }
+                if(EMC7trg){
+                    fHistM02_Elec_EMC7[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMC7[i]->Fill(M20, EOP);
+                }
+
+                if(EMC8trg){
+                    fHistM02_Elec_EMC8[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMC8[i]->Fill(M20, EOP);
+                }
+
+                if(EMCJettrg){
+                    fHistM02_Elec_EMCJet[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMCJet[i]->Fill(M20, EOP);
                 }
             }
             
