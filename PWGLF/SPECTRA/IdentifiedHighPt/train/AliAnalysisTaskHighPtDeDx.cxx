@@ -942,23 +942,17 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
   Short_t trackmult = 0;
   Short_t nadded    = 0;
   const Int_t nTracksMC = fMCArray->GetEntriesFast();
-  //cout << " debug 2 " << endl;
 
-  //cout << " debug 3 " << endl;
   for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
-    //cout << " debug 31 " << endl;
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
-    //cout << " debug 32 " << endl;
     //Cuts
     if(!(trackMC->IsPhysicalPrimary()))
       continue;
-    //cout << " debug 33 " << endl;
     Double_t chargeMC = trackMC->Charge();
 
     
     if (TMath::Abs(trackMC->Eta()) > fEtaCutStack )
       continue;
-    //cout << " debug 34 " << endl;
     trackmult++;
     
     //   "charge:pt:p:eta:phi:pidCode"
@@ -967,7 +961,6 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     Float_t etaMC     = trackMC->Eta();
     Float_t phiMC     = trackMC->Phi();
     Float_t yMC       = trackMC->Y();
-    //cout << " debug 35 " << endl;
     Int_t pdgCode = trackMC->PdgCode();
     Short_t pidCodeMC = 0;
     pidCodeMC = GetPidCode(pdgCode);
@@ -1009,14 +1002,9 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     if(fTreeOption) {
       
 
-      //cout << " debug 361, nadded =  " << nadded << " fTrackArrayMC" << fTrackArrayMC <<  endl;
       DeDxTrackMC* track = new((*fTrackArrayMC)[nadded]) DeDxTrackMC();
-      //cout << " debug 3611, nadded =  " << nadded <<  endl;
       nadded++;
-      //cout << " debug 3612, nadded =  " << nadded <<  endl;
-      //cout << " debug 362 " << endl;
       track->pMC   = pMC;
-      //cout << " debug 363 " << endl;
       track->ptMC  = ptMC;
       track->etaMC = etaMC;
       track->phiMC = phiMC;
@@ -1024,12 +1012,9 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
       track->qMC   = Short_t(chargeMC);
       track->pidMC = pidCodeMC;
       track->pdgMC = pdgCode;
-      //cout << " debug 364 " << endl;
 
     }
-    //cout << " debug 37 " << endl;
   }//MC track loop
-  //cout << " debug 4 " << endl;
   if(fTreeOption) {
     
     Sort(fTrackArrayMC, kTRUE);
@@ -1040,7 +1025,6 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     //fEvent->spherocityMC         = 0;
 
   }
-  //cout << " debug 5 " << endl;
 }
 
 //_____________________________________________________________________________
