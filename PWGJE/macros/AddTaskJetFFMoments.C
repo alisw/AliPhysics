@@ -4,6 +4,8 @@ AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(Float_t radius = 0.4, Float_t p
 
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius = 0.4, char* bGen = "KINE2B", Int_t ffmPower = 2, char* bRec1 = "KINEDET", char* suffix ="", Int_t bType = -1, Bool_t kReadJetBranch = kFALSE, char* anaJetType="leading", Float_t ptJetCut = 5., Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Char_t *jf = "ANTIKT", Int_t nSkip = 0, Bool_t kRandom = kFALSE)
 
+AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius = 0.4, char* bGen = "KINE2B", Int_t ffmPower = 2, char* bRec1 = "KINEDET", Int_t bType = -1, Bool_t kReadJetBranch = kFALSE, char* anaJetType="leading", Float_t ptJetCut = 5., Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Char_t *jf = "ANTIKT", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix)
+
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, Float_t ptTrackCut, Char_t *jf, Float_t ptJetCut, char* anaJetType,
                                                  Int_t ffmPower, char* bGen, Int_t bType, Double_t bcut1, Double_t bcut2, double mu,
                                                  Int_t nUsedJets, char* jfTask, Int_t nSkip, Bool_t kRandom, char* suffix)
@@ -24,7 +26,15 @@ AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffi
 
 }
 
+AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, char* bGen, Int_t ffmPower,
+                                                 char* bRec1, Int_t bType, Bool_t kReadJetBranch, char* anaJetType, Float_t ptJetCut,
+                                                 Double_t bcut1, Double_t bcut2, double mu,
+                                                 Int_t nUsedJets, char* jfTask,  Char_t *jf, Int_t nSkip, Bool_t kRandom, char* suffix)
+{
 
+AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffix , 0.15, 0.9 , ptJetCut, anaJetType, 10 , ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
+
+}
 
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t filterMask, UInt_t iPhysicsSelectionFlag, 
 						 Char_t *jf, Float_t radius, Int_t nSkip, Bool_t kReadJetBranch, char* suffix, 

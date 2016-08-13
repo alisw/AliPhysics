@@ -407,21 +407,21 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   TH1D*	    fh1RecTracks[3];		                       //! Histos in 0: pt, 1: eta and 2: phi of reconstructed tracks
   TH2D*         fh2PtRecVsGenPrim[3];                             //! Histos in 0: pt, 1: eta and 2: phi of reconstructed tracks associated to Physics Primary
   TH2D*         fh2PtRecVsGenSec[3];                             //! Histos in 0: pt, 1: eta and 2: phi of reconstructed tracks associated to Physics Primary
-  TH1D*         fh1TrackEffPtGen;                                //!
-  TH2D*         fh2TrackEffEtaPhiGen;                            //!
-  TH1D*         fh1TrackEffPtRec;                                //!
-  TH2D*         fh2TrackEffEtaPhiRec;                            //!
-  TF1*          fEffi;                                           //
-  Double_t      fResol;                                          //
-  Int_t         fResolMeth;                                      //
-  Double_t      fEffivar;                                        //
-  Double_t      fResolvar;                                       //
-  TH2D*         fh2TrackResPt;                                   //!
-  TH1D*         fh1TrackResPtInv;                                //!
-  Double_t      fPtHardAndPythiaJetPtFactor;                     //
-  Double_t      fPtHardAndTrackPtFactor;                         //
-  TH2D*         fh2PtHardVsPt[2];                                //!
-  TH2D*         fh2PtHardVsPtCut[2];                             //!
+  TH1D*         fh1TrackEffPtGen;                                //! Single track efficiency (pT Gen)
+  TH2D*         fh2TrackEffEtaPhiGen;                            //! Single track efficiency (eta,phi Gen)
+  TH1D*         fh1TrackEffPtRec;                                //! Single track efficiency (pT Rec)
+  TH2D*         fh2TrackEffEtaPhiRec;                            //! Single track efficiency (eta,phi Rec)
+  TF1*          fEffi;                                           // Efficiency parametrisation (fast mc)
+  Double_t      fResol;                                          // Track resolution
+  Int_t         fResolMeth;                                      // Track resolution smearing method
+  Double_t      fEffivar;                                        // Efficiency shift (%)
+  Double_t      fResolvar;                                       // Track resolution syst (%)
+  TH2D*         fh2TrackResPt;                                   //! Track resolution Histo
+  TH1D*         fh1TrackResPtInv;                                //! Track resolution Histo (1/pT)
+  Double_t      fPtHardAndPythiaJetPtFactor;                     //  Outliers cut : PtHard vs Pythia jets
+  Double_t      fPtHardAndTrackPtFactor;                         //  Outliers cut : PtHard vs Track pt
+  TH2D*         fh2PtHardVsPt[2];                                //! Outliers Histo (jet,track)
+  TH2D*         fh2PtHardVsPtCut[2];                             //! Cut Outliers Histo (jet,track)
   // Jet analysis plots: Aj, jet structure and matching
   TH1F* 	    fh1Njets[fgkFFMNJetBranches];	       //! Number of jets, 0: generated, 1: reconstructed
   TH1F* 	    fh1Asy_DiJets[fgkFFMNJetBranches];  	       //! Aj, 0: generated, 1: reconstructed
