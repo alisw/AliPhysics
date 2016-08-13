@@ -225,7 +225,7 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     }
   }
   InitializeDecayChannelHist();
-  delete binsDeltaPhi;
+  delete[] binsDeltaPhi;
   
   fHistPtYInputRest = (TH1I*)SetHist1D(fHistPtYInputRest,"f","Pdg_primary_rest","PDG code","",5000,0,5000,kTRUE);
   fOutputContainer->Add(fHistPtYInputRest);
