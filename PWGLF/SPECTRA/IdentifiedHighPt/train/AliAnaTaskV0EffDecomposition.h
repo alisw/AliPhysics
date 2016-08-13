@@ -26,7 +26,19 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
 
   Double_t GetVtxCut() { return fVtxCut; }   
-  Double_t GetEtaCut() { return fEtaCut; }     
+  Double_t GetEtaCut() { return fEtaCut; }  
+  //cuts added by tuva   
+  Double_t GetMinPt()  { return fMinPt; }   
+  Double_t GetMinPtV0()  { return fMinPtV0; } 
+  Double_t GetLowPtFraction()  { return fLowPtFraction; }
+  Double_t GetMassCut()  { return fMassCut; }
+  Double_t GetDecayRmax()  { return fDecayRmax; }
+  Double_t GetDecayRmin()  { return fDecayRmin; }  
+  Double_t GetDcaDaugh()  { return fDcaDaugh; }
+  Double_t GetV0pndca()  { return fV0pndca; }
+  Double_t GetCospt()  { return fCospt; }
+
+
 
   virtual void  SetTrigger(UInt_t ktriggerInt) {fTrigBit = ktriggerInt;}
   virtual void  SetTrackFilterBit(UInt_t trackF) {fTrackFilterBit = trackF;}
@@ -37,6 +49,18 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   virtual void  SetPdgV0(Int_t pdg) {fPdgV0 = pdg;}
   virtual void  SetPdgPos(Int_t pdg) {fPdgPos = pdg;}
   virtual void  SetPdgNeg(Int_t pdg) {fPdgNeg = pdg;}
+  //cuts added by tuva:
+  virtual void  SetMinPt(Double_t value) {fMinPt = value;}   
+  virtual void  SetMinPtV0(Double_t value) {fMinPtV0 = value;}
+  virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;}   
+  virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;}
+  virtual void SetDecayRmax(Double_t DecayRmax){fDecayRmax = DecayRmax; }
+  virtual void SetDecayRmin(Double_t DecayRmin){fDecayRmin = DecayRmin; }  
+  virtual void SetDcaDaugh(Double_t DcaDaugh){fDcaDaugh = DcaDaugh; }
+  virtual void SetV0pndca(Double_t V0pndca){fV0pndca = V0pndca; }
+  virtual void SetCospt(Double_t Cospt){fCospt = Cospt; }
+
+
   
  private:
   virtual void ProcessMCTruthAOD();
@@ -63,6 +87,16 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   Int_t        fPdgV0;     // pdg of mother 
   Int_t        fPdgPos;    // pdg of pos daughter 
   Int_t        fPdgNeg;    // pdg of neg daughter 
+  //cuts added by tuva:
+  Double_t fMinPtV0; 
+  Double_t fLowPtFraction;
+  Double_t fMassCut;
+  Double_t fDecayRmax;
+  Double_t fDecayRmin;  
+  Double_t fDcaDaugh;
+  Double_t fV0pndca;
+  Double_t fCospt;
+  //end cuts by tuva
 
   //
   // Output objects
