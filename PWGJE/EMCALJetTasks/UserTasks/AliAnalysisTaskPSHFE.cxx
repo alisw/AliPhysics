@@ -4615,7 +4615,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         //Check validity of PID, TODO: Add a rejection histogram
         if(TOFStatus!=AliPIDResponse::kDetPidOk){
             fHistPIDRejection->Fill(2);
-            isPIDRej=kTRUE;
+            //isPIDRej=kTRUE;
         }
         
         if(TPCStatus!=AliPIDResponse::kDetPidOk){
