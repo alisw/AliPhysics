@@ -2670,7 +2670,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         AliWarning("This is not an EMCal triggered event");
   }
     
-  MBtrg = fSelectMask & AliVEvent::kMB;
+  MBtrg = fSelectMask & AliVEvent::kAnyINT;
   EMC7trg = fSelectMask & AliVEvent::kEMC7;
   EMC8trg = fSelectMask & AliVEvent::kEMC8;
   EMCJettrg = fSelectMask & AliVEvent::kEMCEJE;
@@ -2690,8 +2690,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     
     //Fill the histogram cataloguing # of events vs. events tagged
-    fHistNevents_MB->Fill("Events",1);
-    
+    if(MBtrg){
+        fHistNevents_MB->Fill("Events",1);
+    }
     if(EMC7trg){
             fHistNevents_EMC7->Fill("Events",1);
     }
