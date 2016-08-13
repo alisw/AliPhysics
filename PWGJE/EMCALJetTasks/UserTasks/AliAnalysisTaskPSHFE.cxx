@@ -1803,70 +1803,70 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //EMC Shower Shape PID Plots
     for(Int_t i=0; i<6; i++){
         //MB
-        fHistM02_All_MB[i] = new TH2F(TString::Format("fHistM02_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_MB[i] = new TH2F(TString::Format("fHistM02_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_All_MB[i]->GetXaxis()->SetTitle("M02");
         fHistM02_All_MB[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_All_MB[i] = new TH2F(TString::Format("fHistM20_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_MB[i] = new TH2F(TString::Format("fHistM20_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_All_MB[i]->GetXaxis()->SetTitle("M20");
         fHistM20_All_MB[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM02_Elec_MB[i] = new TH2F(TString::Format("fHistM02_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_MB[i] = new TH2F(TString::Format("fHistM02_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_Elec_MB[i]->GetXaxis()->SetTitle("M02");
         fHistM02_Elec_MB[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_Elec_MB[i] = new TH2F(TString::Format("fHistM20_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_MB[i] = new TH2F(TString::Format("fHistM20_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_Elec_MB[i]->GetXaxis()->SetTitle("M20");
         fHistM20_Elec_MB[i]->GetYaxis()->SetTitle("E/p");
 
         //EMC7
-        fHistM02_All_EMC7[i] = new TH2F(TString::Format("fHistM02_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_EMC7[i] = new TH2F(TString::Format("fHistM02_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_All_EMC7[i]->GetXaxis()->SetTitle("M02");
         fHistM02_All_EMC7[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_All_EMC7[i] = new TH2F(TString::Format("fHistM20_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_EMC7[i] = new TH2F(TString::Format("fHistM20_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_All_EMC7[i]->GetXaxis()->SetTitle("M20");
         fHistM20_All_EMC7[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM02_Elec_EMC7[i] = new TH2F(TString::Format("fHistM02_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_EMC7[i] = new TH2F(TString::Format("fHistM02_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_Elec_EMC7[i]->GetXaxis()->SetTitle("M02");
         fHistM02_Elec_EMC7[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_Elec_EMC7[i] = new TH2F(TString::Format("fHistM20_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_EMC7[i] = new TH2F(TString::Format("fHistM20_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_Elec_EMC7[i]->GetXaxis()->SetTitle("M20");
         fHistM20_Elec_EMC7[i]->GetYaxis()->SetTitle("E/p");
 
         //EMC8
-        fHistM02_All_EMC8[i] = new TH2F(TString::Format("fHistM02_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_EMC8[i] = new TH2F(TString::Format("fHistM02_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_All_EMC8[i]->GetXaxis()->SetTitle("M02");
         fHistM02_All_EMC8[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_All_EMC8[i] = new TH2F(TString::Format("fHistM20_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_EMC8[i] = new TH2F(TString::Format("fHistM20_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_All_EMC8[i]->GetXaxis()->SetTitle("M20");
         fHistM20_All_EMC8[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM02_Elec_EMC8[i] = new TH2F(TString::Format("fHistM02_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_EMC8[i] = new TH2F(TString::Format("fHistM02_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_Elec_EMC8[i]->GetXaxis()->SetTitle("M02");
         fHistM02_Elec_EMC8[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_Elec_EMC8[i] = new TH2F(TString::Format("fHistM20_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_EMC8[i] = new TH2F(TString::Format("fHistM20_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_Elec_EMC8[i]->GetXaxis()->SetTitle("M20");
         fHistM20_Elec_EMC8[i]->GetYaxis()->SetTitle("E/p");
 
         //EMCJet
-        fHistM02_All_EMCJet[i] = new TH2F(TString::Format("fHistM02_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_All_EMCJet[i] = new TH2F(TString::Format("fHistM02_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_All_EMCJet[i]->GetXaxis()->SetTitle("M02");
         fHistM02_All_EMCJet[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_All_EMCJet[i] = new TH2F(TString::Format("fHistM20_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_All_EMCJet[i] = new TH2F(TString::Format("fHistM20_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_All_EMCJet[i]->GetXaxis()->SetTitle("M20");
         fHistM20_All_EMCJet[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM02_Elec_EMCJet[i] = new TH2F(TString::Format("fHistM02_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM02_Elec_EMCJet[i] = new TH2F(TString::Format("fHistM02_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM02_Elec_EMCJet[i]->GetXaxis()->SetTitle("M02");
         fHistM02_Elec_EMCJet[i]->GetYaxis()->SetTitle("E/p");
 
-        fHistM20_Elec_EMCJet[i] = new TH2F(TString::Format("fHistM20_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5);
+        fHistM20_Elec_EMCJet[i] = new TH2F(TString::Format("fHistM20_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
         fHistM20_Elec_EMCJet[i]->GetXaxis()->SetTitle("M20");
         fHistM20_Elec_EMCJet[i]->GetYaxis()->SetTitle("E/p");
     }
