@@ -402,6 +402,9 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPIDRejection;
     TH1F            *fHistBadEMCclusID;
     
+    //Number of tagged electrons per event
+    TH1F            *fHistNElecPerEvent;
+
     //PtSum Histos
     TH2F            *fHistPtSumTransMaxB2B;
     TH2F            *fHistPtSumTransMinB2B;

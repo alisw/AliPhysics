@@ -74,6 +74,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
 
     fHistPIDRejection(0),
     fHistBadEMCclusID(0),
+    fHistNElecPerEvent(0),
     fHistPtSumTransMaxB2B(0),
     fHistPtSumTransMinB2B(0),
     fHistPtSumTransMaxLead(0),
@@ -420,6 +421,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
 
     fHistPIDRejection(0),
     fHistBadEMCclusID(0),
+    fHistNElecPerEvent(0),
     fHistPtSumTransMaxB2B(0),
     fHistPtSumTransMinB2B(0),
     fHistPtSumTransMaxLead(0),
@@ -1105,6 +1107,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistBadEMCclusID->GetXaxis()->SetBinLabel(1, "Bad Clusters");
     fHistBadEMCclusID->GetYaxis()->SetTitle("Cts");
     
+    //Number of electrons per event histo
+    fHistNElecPerEvent = new TH1F("fHistNElecPerEvent", "Number of tagged electrons per event", 5, 1, 5);
+    fHistNElecPerEvent->GetXaxis()->SetTitle("Num. of Electrons");
+    fHistNElecPerEvent->GetYaxis()->SetTitle("Cts");
+
     //Region Histos
     
     for(Int_t i=0;i<4;i++){
@@ -2289,6 +2296,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistBadEMCclusID);
+    fOutputMB->Add(fHistNElecPerEvent);
     //ditto for the pt sum plots
     fOutputMB->Add(fHistPtSumTransMaxB2B);
     fOutputMB->Add(fHistPtSumTransMinB2B);
@@ -2881,6 +2889,8 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     FillRegionHistos(esd, elecIDsSparse, elecCnt);
     
+    //Fill Number of electrons plot
+    fHistNElecPerEvent->Fill(elecCnt);
     
     //Fill the total energy histogram
     if(MBtrg){
