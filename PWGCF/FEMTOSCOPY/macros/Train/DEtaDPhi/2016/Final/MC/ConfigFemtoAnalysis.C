@@ -180,7 +180,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
-	Reader->SetReadMC(kTRUE);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
