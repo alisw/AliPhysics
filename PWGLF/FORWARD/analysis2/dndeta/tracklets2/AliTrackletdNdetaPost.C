@@ -139,8 +139,6 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * Create our canvas 
    * 
    * @param outputName Output file name 
-   * @param landscape  Should it be landscape? 
-   * @param pdf        Should we store in PDF?
    */
   void CreateCanvas(const TString& outputName);
   /** 
@@ -244,6 +242,7 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * 
    * @param pars 
    * @param title 
+   * @param comb  
    */
   void DrawParams(Container* pars, const char* title, Bool_t comb);
   /** 
@@ -251,6 +250,8 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * 
    * @param realSums Real data 
    * @param simSums  simulated data 
+   * @param realComb USe combinatorial background for real data 
+   * @param simComb  USe combinatorial background for simulated data 
    */
   void DrawParams(Container* realSums, Bool_t realComb,
 		  Container* simSums,  Bool_t simComb);
@@ -336,10 +337,11 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
   /** 
    * Draw background estimates in a single bin for a single estimate 
    * 
-   * @param c     Top pad 
-   * @param pad   Sub pad 
-   * @param ress  Results 
-   * @param name  Name of the results 
+   * @param c      Top pad 
+   * @param pad    Sub pad 
+   * @param ress   Results 
+   * @param name   Name of the results 
+   * @param pretty Pretty title 
    *
    * @return Maximum of histograms
    */
@@ -366,10 +368,11 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
   /** 
    * Draw background estimates in a single bin for a single estimate 
    * 
-   * @param c     Top pad 
-   * @param pad   Sub pad 
-   * @param ress  Results 
-   * @param name  Name of the results 
+   * @param c      Top pad 
+   * @param pad    Sub pad 
+   * @param ress   Results 
+   * @param name   Name of the results 
+   * @param pretty Pretty title 
    */
   void DrawAlpha(TVirtualPad* c,
 		 Int_t        pad,
@@ -490,7 +493,10 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * The same expression holds for the case when we use injected
    * clusters to estimate the background in real data.
    *
+   * @f[
    *  (1-\beta)M = (1-B/M)M = M-B
+   *
+   * @f]
    *
    * where @f$ B@f$ has the same meaning as @f$ B\prime@f$ except we use
    * real data. 
@@ -512,7 +518,7 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * @param alt       Set alternative marker set 
    */
   void DrawdNdeta(Container*  realList,
-		  Bool_t      dataComb,
+		  Bool_t      realComb,
 		  Container*  simList,
 		  Bool_t      simComb,
 		  Color_t     color=kBlack,
@@ -530,6 +536,7 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * @param realList Results from real data 
    * @param simList  Results from simulated data 
    * @param stack    Possible stack to add dN/deta to 
+   * @param out      Possible output directory
    */
   void ProcessBin(UInt_t     what,     Int_t       bin,
 		  Double_t   c1,       Double_t    c2,
@@ -542,6 +549,7 @@ struct AliTrackletdNdetaPost : public AliTrackletdNdetaUtils
    * @param dataName File from real data 
    * @param simName  File from simulated data 
    * @param what     Bit mask of processing options 
+   * @param maxBins  Maximum number of cnetrality bins to analyse 
    */
   void Run(UInt_t      what     = kDefault, 
 	   UShort_t    maxBins  = 9,
