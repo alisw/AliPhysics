@@ -1481,10 +1481,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoMCPosKPt[iCut]->Sumw2();
           fHistoMCNegPiPt[iCut]->Sumw2();
           fHistoMCPosPiPt[iCut]->Sumw2();
-          fHistoMCPi0PtAlpha[iCut]->Sumw2();
           fHistoMCSecPi0PtvsSource[iCut]->Sumw2();
           fHistoMCSecPi0InAccPtvsSource[iCut]->Sumw2();
-          fHistoMCEtaPtAlpha[iCut]->Sumw2();
           fHistoMCSecEtaPt[iCut]->Sumw2();
         }
         
@@ -1504,6 +1502,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           SetLogBinningXTH2(fHistoMCEtaPtAlpha[iCut]);
           fMCList[iCut]->Add(fHistoMCEtaPtAlpha[iCut]);
 
+          if (fIsMC == 2){
+            fHistoMCPi0PtAlpha[iCut]->Sumw2();
+            fHistoMCEtaPtAlpha[iCut]->Sumw2();
+          }  
         }
         
         
