@@ -71,8 +71,6 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fMCStack(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
-  fPhotonDCAList(NULL),
-  fGammaERM02(NULL),
   fTrueList(NULL),
   fMCList(NULL),
   fClusterOutputList(NULL),
@@ -91,13 +89,6 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fHistoConvGammaPt(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
-  fTreeConvGammaPtDcazCat(NULL),
-  fPtGamma(0),
-  fDCAzPhoton(0),
-  fRConvPhoton(0),
-  fEtaPhoton(0),
-  fCharCatPhoton(0),
-  fCharPhotonMCInfo(0),
   fHistoPhotonPairInvMassPt(NULL),
   fHistoPhotonPairMatchedInvMassPt(NULL),
   fHistoPhotonPairYPt(NULL),
@@ -196,7 +187,6 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fEventPlaneAngle(-100),
-  fRandom(0),
   fNGammaCandidates(0),
   fUnsmearedPx(NULL),
   fUnsmearedPy(NULL),
@@ -239,8 +229,6 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fMCStack(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
-  fPhotonDCAList(NULL),
-  fGammaERM02(NULL),
   fTrueList(NULL),
   fMCList(NULL),
   fClusterOutputList(NULL),
@@ -259,13 +247,6 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fHistoConvGammaPt(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
-  fTreeConvGammaPtDcazCat(NULL),
-  fPtGamma(0),
-  fDCAzPhoton(0),
-  fRConvPhoton(0),
-  fEtaPhoton(0),
-  fCharCatPhoton(0),
-  fCharPhotonMCInfo(0),
   fHistoPhotonPairInvMassPt(NULL),
   fHistoPhotonPairMatchedInvMassPt(NULL),
   fHistoPhotonPairYPt(NULL),
@@ -364,7 +345,6 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fEventPlaneAngle(-100),
-  fRandom(0),
   fNGammaCandidates(0),
   fUnsmearedPx(NULL),
   fUnsmearedPy(NULL),
@@ -866,6 +846,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoMotherYPt[iCut]->Sumw2();
         fHistoMotherPi0AnglePt[iCut]->Sumw2();
         fHistoMotherGammaAnglePt[iCut]->Sumw2();
+        fHistoMotherAlphaPt[iCut]->Sumw2();
+        fHistoMotherEtaPhi[iCut]->Sumw2();
         fHistoPi0GammaAnglePt[iCut]->Sumw2();
       }
     }
@@ -1000,12 +982,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
 
       fHistoMCGammaFromAllOmegaPt[iCut]    = new TH1F("MC_GammaFromAllOmega_Pt","MC_GammaFromAllOmega_Pt",200,0,20);
       fHistoMCGammaFromAllOmegaPt[iCut]->SetXTitle("p_{T, #gamma}(GeV/c)");
-      fHistoMCGammaFromAllOmegaPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCGammaFromAllOmegaPt[iCut]);
 
       fHistoMCGammaFromOmegaInAccPt[iCut]    = new TH1F("MC_GammaFromOmegaInAcc_Pt","MC_GammaFromOmegaInAcc_Pt",200,0,20);
       fHistoMCGammaFromOmegaInAccPt[iCut]->SetXTitle("p_{T, #gamma}(GeV/c)");
-      fHistoMCGammaFromOmegaInAccPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCGammaFromOmegaInAccPt[iCut]);
 
       fHistoMCOmegaDecayChannels[iCut]     = new TH1F("MC_OmegaDecayChannels","MC_OmegaDecayChannels",3,-0.5,2.5);
@@ -1032,7 +1012,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fHistoMCOmegaInvMassPt[iCut] = new TH2F("MC_OmegaInvMass_Pt","MC_OmegaInvMass_Pt",800,0.4,1.2,200,0,20);
       fHistoMCOmegaInvMassPt[iCut]->SetXTitle("M_{inv,#Omega}(GeV/c^{2})");
       fHistoMCOmegaInvMassPt[iCut]->SetYTitle("#Omega p_{T}(GeV/c)");
-      fHistoMCOmegaInvMassPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCOmegaInvMassPt[iCut]);
 
       fHistoMCOmegaInAccInvMassPt[iCut] = new TH2F("MC_OmegaInAcc_InvMass_Pt","MC_OmegaInAcc_InvMass_Pt",800,0.4,1.2,200,0,20);
@@ -1044,13 +1023,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoMCAllOmegaYPt[iCut] = new TH2F("MC_AllOmega_Y_Pt","MC_AllOmega_Y_Pt",200,0,20,150,-1.5,1.5);
         fHistoMCAllOmegaYPt[iCut]->SetXTitle("p_{T,#Omega}(GeV/c)");
         fHistoMCAllOmegaYPt[iCut]->SetYTitle("Y_{#Omega}");
-        fHistoMCAllOmegaYPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllOmegaYPt[iCut]);
 
         fHistoMCOmegaInAccYPt[iCut] = new TH2F("MC_OmegaInAcc_Y_Pt","MC_OmegaInAcc_Y_Pt",200,0,20,150,-1.5,1.5);
         fHistoMCOmegaInAccYPt[iCut]->SetXTitle("p_{T,#Omega}(GeV/c)");
         fHistoMCOmegaInAccYPt[iCut]->SetYTitle("Y_{#Omega}");
-        fHistoMCOmegaInAccYPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCOmegaInAccYPt[iCut]);
 
         fHistoMCAllOmegaAlphaPt[iCut] = new TH2F("MC_AllOmega_Alpha_Pt","MC_AllOmega_Alpha_Pt",200,0,20,200,-1,1);
@@ -1076,13 +1053,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoMCPi0FromAllOmegaYPt[iCut] = new TH2F("MC_Pi0FromAllOmega_Y_Pt","MC_Pi0FromAllOmega_Y_Pt",200,0,20,150,-1.5,1.5);
         fHistoMCPi0FromAllOmegaYPt[iCut]->SetXTitle("p_{T,#pi^{0}}(GeV/c)");
         fHistoMCPi0FromAllOmegaYPt[iCut]->SetYTitle("Y_{#pi^{0}}");
-        fHistoMCPi0FromAllOmegaYPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0FromAllOmegaYPt[iCut]);
 
         fHistoMCPi0FromOmegaInAccYPt[iCut] = new TH2F("MC_Pi0FromOmegaInAcc_Y_Pt","MC_Pi0FromOmegaInAcc_Y_Pt",200,0,20,150,-1.5,1.5);
         fHistoMCPi0FromOmegaInAccYPt[iCut]->SetXTitle("p_{T,#pi^{0}}(GeV/c)");
         fHistoMCPi0FromOmegaInAccYPt[iCut]->SetYTitle("Y_{#pi^{0}}");
-        fHistoMCPi0FromOmegaInAccYPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0FromOmegaInAccYPt[iCut]);
 
         fHistoMCPi0FromAllOmegaEtaPhi[iCut] = new TH2F("MC_Pi0FromAllOmega_Eta_Phi","MC_Pi0FromAllOmega_Eta_Phi",600,0,2*TMath::Pi(),200,-1,1);
@@ -1164,8 +1139,30 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         SetLogBinningXTH2(fHistoMCPi0PtAlpha[iCut]);
         fMCList[iCut]->Add(fHistoMCPi0PtAlpha[iCut]);
 
-        if (fIsMC >= 2){
+        if (fIsMC > 1){
           fHistoMCPi0PtAlpha[iCut]->Sumw2();
+          fHistoMCAllOmegaYPt[iCut]->Sumw2();
+          fHistoMCOmegaInAccYPt[iCut]->Sumw2();
+          fHistoMCAllOmegaAlphaPt[iCut]->Sumw2();
+          fHistoMCOmegaInAccAlphaPt[iCut]->Sumw2();
+          fHistoMCPi0FromAllOmegaAlphaPt[iCut]->Sumw2();
+          fHistoMCPi0FromOmegaInAccAlphaPt[iCut]->Sumw2();
+          fHistoMCPi0FromAllOmegaYPt[iCut]->Sumw2();
+          fHistoMCPi0FromOmegaInAccYPt[iCut]->Sumw2();
+          fHistoMCPi0FromAllOmegaEtaPhi[iCut]->Sumw2();
+          fHistoMCPi0FromOmegaInAccEtaPhi[iCut]->Sumw2();
+          fHistoMCAllOmegaEtaPhi[iCut]->Sumw2();
+          fHistoMCOmegaInAccEtaPhi[iCut]->Sumw2();
+          fHistoMCAllOmegaPiZeroAnglePt[iCut]->Sumw2();
+          fHistoMCAllPiZeroGammaAnglePt[iCut]->Sumw2();
+          fHistoMCAllOmegaGammaAnglePt[iCut]->Sumw2();
+          fHistoMCInAccOmegaPiZeroAnglePt[iCut]->Sumw2();
+          fHistoMCInAccPiZeroGammaAnglePt[iCut]->Sumw2();
+          fHistoMCInAccOmegaGammaAnglePt[iCut]->Sumw2();
+          fHistoMCAllOmegaPtPi0Pt[iCut]->Sumw2();
+          fHistoMCInAccOmegaPtPi0Pt[iCut]->Sumw2();
+          fHistoMCAllOmegaPtGammaPt[iCut]->Sumw2();
+          fHistoMCInAccOmegaPtGammaPt[iCut]->Sumw2();
         }
       }
 
@@ -1174,6 +1171,14 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoMCPi0WOWeightInAccPt[iCut]->Sumw2();
         fHistoMCPi0WOEvtWeightPt[iCut]  = new TH1F("MC_Pi0_WOEventWeights_Pt","MC_Pi0_WOEventWeights_Pt",400,0,40);
         fMCList[iCut]->Add(fHistoMCPi0WOEvtWeightPt[iCut]);
+        fHistoMCGammaFromAllOmegaPt[iCut]->Sumw2();
+        fHistoMCGammaFromOmegaInAccPt[iCut]->Sumw2();
+        fHistoMCOmegaInAccInvMassPt[iCut]->Sumw2();
+        fHistoMCOmegaInvMassPt[iCut]->Sumw2();
+        fHistoMCAllOmegaInvMassPt[iCut]->Sumw2();
+        fHistoMCPi0FromAllOmegaInvMassPt[iCut]->Sumw2();
+        fHistoMCPi0FromOmegaInAccInvMassPt[iCut]->Sumw2();
+        fHistoMCOmegaDecayChannels[iCut]->Sumw2();
 
         if (fDoMesonQA > 0 && fIsMC == 2){
           fHistoMCPi0PtJetPt[iCut]      = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",300,0.03,30.,200,0,200);
@@ -1206,19 +1211,16 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTrueOmegaYPt[iCut] = new TH2F("True_Omega_Y_Pt","True_Omega_Y_Pt",200,0,20,150,-1.5,1.5);
         fHistoTrueOmegaYPt[iCut]->SetXTitle("p_{T,#Omega}(GeV/c)");
         fHistoTrueOmegaYPt[iCut]->SetYTitle("Y_{#Omega}");
-        fHistoTrueOmegaYPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueOmegaYPt[iCut]);
 
         fHistoTrueOmegaAlphaPt[iCut] = new TH2F("True_Omega_Alpha_Pt","True_Omega_Alpha_Pt",200,0,20,200,-1,1);
         fHistoTrueOmegaAlphaPt[iCut]->SetXTitle("p_{T,#Omega}(GeV/c)");
         fHistoTrueOmegaAlphaPt[iCut]->SetYTitle("#alpha_{#Omega}");
-        fHistoTrueOmegaAlphaPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueOmegaAlphaPt[iCut]);
 
         fHistoTruePi0FromOmegaYPt[iCut] = new TH2F("True_Pi0FromOmega_Y_Pt","True_Pi0FromOmega_Y_Pt",200,0,20,150,-1.5,1.5);
         fHistoTruePi0FromOmegaYPt[iCut]->SetXTitle("p_{T,pi^{0}}(GeV/c)");
         fHistoTruePi0FromOmegaYPt[iCut]->SetYTitle("Y_{#pi^{0}}");
-        fHistoTruePi0FromOmegaYPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTruePi0FromOmegaYPt[iCut]);
 
         fHistoTruePi0FromOmegaAlphaPt[iCut] = new TH2F("True_Pi0FromOmega_Alpha_Pt","MC_Pi0FromOmega_Alpha_Pt",200,0,20,200,-1,1);
@@ -1265,6 +1267,22 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTrueOmegaPtGammaPt[iCut]->SetXTitle("#Omega p_{T}(GeV/c)");
         fHistoTrueOmegaPtGammaPt[iCut]->SetYTitle("#gamma p_{T}(GeV/c)");
         fTrueList[iCut]->Add(fHistoTrueOmegaPtGammaPt[iCut]);
+
+        if (fIsMC > 1){
+          fHistoTruePi0FromOmegaAlphaPt[iCut]->Sumw2();
+          fHistoTruePi0FromOmegaYPt[iCut]->Sumw2();
+          fHistoTruePi0FromOmegaEtaPhi[iCut]->Sumw2();
+          fHistoTruePi0FromOmegaOpenAnglePt[iCut]->Sumw2();
+          fHistoTrueOmegaPi0AnglePt[iCut]->Sumw2();
+          fHistoTrueOmegaGammaAnglePt[iCut]->Sumw2();
+          fHistoTruePi0GammaAnglePt[iCut]->Sumw2();
+          fHistoTrueOmegaYPt[iCut]->Sumw2();
+          fHistoTrueOmegaAlphaPt[iCut]->Sumw2();
+          fHistoTrueOmegaEtaPhi[iCut]->Sumw2();
+          fHistoTrueOmegaPtPi0Pt[iCut]->Sumw2();
+          fHistoTrueOmegaPtGammaPt[iCut]->Sumw2();
+          fHistoTrueOmegaYPt[iCut]->Sumw2();
+        }
       }
 
       fHistoMultipleCountTruePi0[iCut]            = new TH1F("ESD_TrueMultipleCountPi0","ESD_TrueMultipleCountPi0",10,1,11);
@@ -1272,6 +1290,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
 
       if (fIsMC > 1){
         fHistoMultipleCountTruePi0[iCut]->Sumw2();
+        fHistoTrueOmegaInvMassPt[iCut]->Sumw2();
+        fHistoTruePi0FromOmegaInvMassPt[iCut]->Sumw2();
+        fHistoTrueGammaFromOmegaPt[iCut]->Sumw2();
       }
     }
   }
@@ -1502,16 +1523,16 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserExec(Option_t *)
     fHistoNClusterCandidates[iCut]->Fill(fClusterCandidates->GetEntries(),fWeightJetJetMC);
     fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries(),fWeightJetJetMC);
     if(fClusterCandidates->GetEntries()>1 && fGammaCandidates->GetEntries()>0){
-      fHistoNEventsMinGamma[iCut]->Fill(0);
+      fHistoNEventsMinGamma[iCut]->Fill(0.,fWeightJetJetMC);
     }
     if(fClusterCandidates->GetEntries()>0 && fGammaCandidates->GetEntries()>1){
-      fHistoNEventsMinGamma[iCut]->Fill(1);
+      fHistoNEventsMinGamma[iCut]->Fill(1,fWeightJetJetMC);
     }
     if(fClusterCandidates->GetEntries()>2){
-      fHistoNEventsMinGamma[iCut]->Fill(2);
+      fHistoNEventsMinGamma[iCut]->Fill(2,fWeightJetJetMC);
     }
     if(fGammaCandidates->GetEntries()>2){
-      fHistoNEventsMinGamma[iCut]->Fill(3);
+      fHistoNEventsMinGamma[iCut]->Fill(3,fWeightJetJetMC);
     }
 
     // Meson Analysis
@@ -2030,7 +2051,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
         if(posPion && negPion && neutPion) DecaysToPiPlPiMiPiZero = kTRUE;
 
         if(DecaysToPiPlPiMiPiZero){
-          fHistoMCOmegaDecayChannels[fiCut]->Fill(0);
+          fHistoMCOmegaDecayChannels[fiCut]->Fill(0.,fWeightJetJetMC);
         } else if (particle->GetNDaughters()==2){
           TParticle *gamma2 = 0x0;
           TParticle *pi0 = 0x0;
@@ -2048,7 +2069,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
           }
 
           if(gamma2 && pi0){
-            fHistoMCOmegaDecayChannels[fiCut]->Fill(1);
+            fHistoMCOmegaDecayChannels[fiCut]->Fill(1,fWeightJetJetMC);
             fHistoMCAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((particle->Energy())*(particle->Energy())-(particle->P())*(particle->P())),particle->Pt(),fWeightJetJetMC);
             fHistoMCGammaFromAllOmegaPt[fiCut]->Fill(gamma2->Pt(),fWeightJetJetMC);
             fHistoMCPi0FromAllOmegaInvMassPt[fiCut]->Fill(TMath::Sqrt((pi0->Energy())*(pi0->Energy())-(pi0->P())*(pi0->P())),pi0->Pt(),fWeightJetJetMC);
@@ -2083,9 +2104,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
               TVector3 omegavector = TVector3(particle->Px(),particle->Py(),particle->Pz());
               TVector3 pi0vector = TVector3(pi0->Px(),pi0->Py(),pi0->Pz());
               TVector3 gamma2vector = TVector3(gamma2->Px(),gamma2->Py(),gamma2->Pz());
-              fHistoMCAllOmegaPiZeroAnglePt[fiCut]->Fill(particle->Pt(),TMath::Pi() - pi0vector.Angle(omegavector));
-              fHistoMCAllPiZeroGammaAnglePt[fiCut]->Fill(particle->Pt(),pi0vector.Angle(gamma2vector));
-              fHistoMCAllOmegaGammaAnglePt[fiCut]->Fill(particle->Pt(),TMath::Pi() - omegavector.Angle(gamma2vector));
+              fHistoMCAllOmegaPiZeroAnglePt[fiCut]->Fill(particle->Pt(),TMath::Pi() - pi0vector.Angle(omegavector),fWeightJetJetMC);
+              fHistoMCAllPiZeroGammaAnglePt[fiCut]->Fill(particle->Pt(),pi0vector.Angle(gamma2vector),fWeightJetJetMC);
+              fHistoMCAllOmegaGammaAnglePt[fiCut]->Fill(particle->Pt(),TMath::Pi() - omegavector.Angle(gamma2vector),fWeightJetJetMC);
 
               //check whether pi0 decayed into two gammas
               if (pi0->GetNDaughters()==2){
@@ -2100,10 +2121,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
               }
             }
           } else{
-            fHistoMCOmegaDecayChannels[fiCut]->Fill(2);
+            fHistoMCOmegaDecayChannels[fiCut]->Fill(2,fWeightJetJetMC);
           }
         } else{
-          fHistoMCOmegaDecayChannels[fiCut]->Fill(2);
+          fHistoMCOmegaDecayChannels[fiCut]->Fill(2,fWeightJetJetMC);
         }
       }
 
@@ -2208,9 +2229,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
               fHistoMCOmegaInAccEtaPhi[fiCut]->Fill(particle->Phi(),particle->Eta(),fWeightJetJetMC);
               fHistoMCOmegaInAccYPt[fiCut]->Fill(particle->Pt(),OmegaY,fWeightJetJetMC);
               fHistoMCOmegaInAccAlphaPt[fiCut]->Fill(particle->Pt(),OmegaAlpha,fWeightJetJetMC);
-              fHistoMCInAccOmegaPiZeroAnglePt[fiCut]->Fill(particle->Pt(),OmegaPiZeroAngle);
-              fHistoMCInAccPiZeroGammaAnglePt[fiCut]->Fill(particle->Pt(),PiZeroGammaAngle);
-              fHistoMCInAccOmegaGammaAnglePt[fiCut]->Fill(particle->Pt(),OmegaGammaAngle);
+              fHistoMCInAccOmegaPiZeroAnglePt[fiCut]->Fill(particle->Pt(),OmegaPiZeroAngle,fWeightJetJetMC);
+              fHistoMCInAccPiZeroGammaAnglePt[fiCut]->Fill(particle->Pt(),PiZeroGammaAngle,fWeightJetJetMC);
+              fHistoMCInAccOmegaGammaAnglePt[fiCut]->Fill(particle->Pt(),OmegaGammaAngle,fWeightJetJetMC);
               fHistoMCPi0FromOmegaInAccAlphaPt[fiCut]->Fill(neutPion->Pt(),Pi0Alpha,fWeightJetJetMC);
               fHistoMCPi0FromOmegaInAccYPt[fiCut]->Fill(neutPion->Pt(),Pi0Y,fWeightJetJetMC);
               fHistoMCPi0FromOmegaInAccEtaPhi[fiCut]->Fill(particle->Phi(),particle->Eta(),fWeightJetJetMC);
@@ -2717,9 +2738,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
 //______________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConversionMother *OmegaCandidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, AliAODConversionPhoton *TrueGammaCandidate2)
 {
-  Bool_t isTruePi0 = kFALSE;
-  Bool_t isTrueOmega = kFALSE;
-
   switch (fReconMethod){
     // pcm-cal,cal
     case 0:
@@ -2749,8 +2767,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
       }
 
       // check if mother of gamma0 and gamma1 is really a pi0
-      if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel && ((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
-        isTruePi0=kTRUE;
+      if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel && ((TParticle*)fMCStack->Particle(gamma0MotherLabel))->GetPdgCode() == 111){
 
         // fill pi0 histograms here if necessary
 
@@ -2772,10 +2789,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         //get pi0MotherLabel
         Int_t pi0MotherLabel = fMCStack->Particle(gamma0MotherLabel)->GetMother(0);
         // check if mother of pi0 and mother of gamma2 are the same particle and that it is an omega
-        if(gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
-          isTrueOmega = kTRUE;
-        }
-        if(isTrueOmega){ // also need to consider matching cluster of conversion positron to pcm tracks, not yet implemented
+        if(pi0MotherLabel>=0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
           fHistoTrueOmegaInvMassPt[fiCut]->Fill(OmegaCandidate->M(),OmegaCandidate->Pt(),fWeightJetJetMC);
           // create pi0 candidate and fill histograms
           AliAODConversionMother *TruePi0 = new AliAODConversionMother(TrueGammaCandidate0, TrueGammaCandidate1);
@@ -2830,7 +2844,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
 
       // check if mother of gamma0 and gamma1 is really a pi0
       if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel && ((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
-        isTruePi0=kTRUE;
 
         // fill pi0 histograms here if necessary
 
@@ -2846,10 +2859,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         // get pi0MotherLabel
         Int_t pi0MotherLabel = fMCStack->Particle(gamma0MotherLabel)->GetMother(0);
         // check if mother of pi0 and mother of gamma2 are the same particle and that it is an omega
-        if(gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
-          isTrueOmega = kTRUE;
-        }
-        if(isTrueOmega){ // also need to consider matching cluster of conversion positron to pcm tracks, not yet implemented
+        if(pi0MotherLabel>=0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
           fHistoTrueOmegaInvMassPt[fiCut]->Fill(OmegaCandidate->M(),OmegaCandidate->Pt(),fWeightJetJetMC);
           // create pi0 candidate and fill histograms
           AliAODConversionMother *TruePi0 = new AliAODConversionMother(TrueGammaCandidate0, TrueGammaCandidate1);
@@ -2912,7 +2922,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
 
       // check if mother of gamma0 and gamma1 is really a pi0
       if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel && ((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
-        isTruePi0=kTRUE;
 
         // fill pi0 histograms here if necessary
 
@@ -2934,10 +2943,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         //get pi0MotherLabel
         Int_t pi0MotherLabel = fMCStack->Particle(gamma0MotherLabel)->GetMother(0);
         // check if mother of pi0 and mother of gamma2 are the same particle and that it is an omega
-        if(isTruePi0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
-          isTrueOmega = kTRUE;
-        }
-        if(isTrueOmega){
+        if(pi0MotherLabel>=0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
           fHistoTrueOmegaInvMassPt[fiCut]->Fill(OmegaCandidate->M(),OmegaCandidate->Pt(),fWeightJetJetMC);
           // create pi0 candidate and fill histograms
           AliAODConversionMother *TruePi0 = new AliAODConversionMother(TrueGammaCandidate0, TrueGammaCandidate1);
@@ -3000,7 +3006,6 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
 
       // check if mother of gamma0 and gamma1 is really a pi0
       if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel && ((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
-        isTruePi0=kTRUE;
 
         // fill pi0 histograms here if necessary
 
@@ -3016,10 +3021,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         // get pi0MotherLabel
         Int_t pi0MotherLabel = fMCStack->Particle(gamma0MotherLabel)->GetMother(0);
         // check if mother of pi0 and mother of gamma2 are the same particle and that it is an omega
-        if(isTruePi0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
-          isTrueOmega = kTRUE;
-        }
-        if(isTrueOmega){ // also need to consider matching cluster of conversion positron to pcm tracks, not yet implemented
+        if(pi0MotherLabel>=0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
           fHistoTrueOmegaInvMassPt[fiCut]->Fill(OmegaCandidate->M(),OmegaCandidate->Pt(),fWeightJetJetMC);
           // create pi0 candidate and fill histograms
           AliAODConversionMother *TruePi0 = new AliAODConversionMother(TrueGammaCandidate0, TrueGammaCandidate1);
@@ -3067,9 +3069,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
       }
 
       // check if mother of gamma0 and gamma1 is really a pi0
-      if(gamma0MotherLabel>=0 && gamma1MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel &&
+      if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel &&
          ((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
-        isTruePi0=kTRUE;
 
         // fill pi0 histograms here if necessary
 
@@ -3091,10 +3092,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         //get pi0MotherLabel
         Int_t pi0MotherLabel = fMCStack->Particle(gamma0MotherLabel)->GetMother(0);
         // check if mother of pi0 and mother of gamma2 are the same particle and that it is an omega
-        if(isTruePi0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
-          isTrueOmega = kTRUE;
-        }
-        if(isTrueOmega){ // also need to consider matching cluster of conversion positron to pcm tracks, not yet implemented
+        if(pi0MotherLabel>=0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
           fHistoTrueOmegaInvMassPt[fiCut]->Fill(OmegaCandidate->M(),OmegaCandidate->Pt(),fWeightJetJetMC);
           // create pi0 candidate and fill histograms
           AliAODConversionMother *TruePi0 = new AliAODConversionMother(TrueGammaCandidate0, TrueGammaCandidate1);
@@ -3142,9 +3140,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
       }
 
       // check if mother of gamma0 and gamma1 is really a pi0
-      if(gamma0MotherLabel>=0 && gamma1MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel &&
+      if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel &&
          ((TParticle*)fMCStack->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
-        isTruePi0=kTRUE;
 
         // fill pi0 histograms here if necessary
 
@@ -3159,10 +3156,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidates(AliAODConvers
         //get pi0MotherLabel
         Int_t pi0MotherLabel = fMCStack->Particle(gamma0MotherLabel)->GetMother(0);
         // check if mother of pi0 and mother of gamma2 are the same particle and that it is an omega
-        if(isTruePi0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
-          isTrueOmega = kTRUE;
-        }
-        if(isTrueOmega){ // also need to consider matching cluster of conversion positron to pcm tracks, not yet implemented
+        if(pi0MotherLabel>=0 && gamma2MotherLabel==pi0MotherLabel && ((TParticle*)fMCStack->Particle(pi0MotherLabel))->GetPdgCode() == 223){
           fHistoTrueOmegaInvMassPt[fiCut]->Fill(OmegaCandidate->M(),OmegaCandidate->Pt(),fWeightJetJetMC);
           // create pi0 candidate and fill histograms
           AliAODConversionMother *TruePi0 = new AliAODConversionMother(TrueGammaCandidate0, TrueGammaCandidate1);
