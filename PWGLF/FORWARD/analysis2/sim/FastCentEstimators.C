@@ -298,6 +298,15 @@ struct BCentEstimator : public Fast1DCentEstimator
       // fBvsC(0),
       fkFactor(1000)
   {}
+  /** 
+   * 
+   * 
+   * @param out 
+   * @param tree 
+   * @param sNN 
+   * @param tgtA 
+   * @param projA 
+   */
   virtual void Setup(TCollection* out, TTree* tree, UShort_t sNN,
 		     Bool_t tgtA, Bool_t projA)
   {

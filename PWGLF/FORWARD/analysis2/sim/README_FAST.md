@@ -1,4 +1,4 @@
-# Fast simulations anchored in Runs
+# Fast simulations anchored in Runs {#pwglf_fwd_fastsim}
 
 Christian Holm Christensen
 <cholm@nbi.dk>
