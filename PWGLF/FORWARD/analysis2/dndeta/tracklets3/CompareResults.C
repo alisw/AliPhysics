@@ -1,9 +1,9 @@
 /**
- * @file   CompareResults.C
+ * @file   PWGLF/FORWARD/analysis2/dndeta/tracklets3/CompareResults.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Apr 27 16:51:29 2016
  * 
- * @brief  
+ * @brief  Compare different results 
  * 
  * @ingroup pwglf_forward_tracklets
  * 
