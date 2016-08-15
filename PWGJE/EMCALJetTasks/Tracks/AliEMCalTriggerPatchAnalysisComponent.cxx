@@ -293,12 +293,12 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
 Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory::IsPatchOfType(
     const AliEMCALTriggerPatchInfo* const patch, TString patchtype) const {
   Bool_t result = false;
-  std::auto_ptr<AliEmcalTriggerPatchHandler> myhandler(NULL);
-  if (patchtype == "JetHigh") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
-  else if (patchtype == "JetLow") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
-  else if (patchtype == "GammaHigh") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerJetHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
-  else if (patchtype == "GammaLow") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerJetLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
-  else if (patchtype == "Level0") myhandler = std::auto_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerLevel0(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  std::unique_ptr<AliEmcalTriggerPatchHandler> myhandler;
+  if (patchtype == "JetHigh") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "JetLow") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerGammaLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "GammaHigh") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerJetHigh(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "GammaLow") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerJetLow(fSwapThresholdsOnline, fSwapThresholdsOffline));
+  else if (patchtype == "Level0") myhandler = std::unique_ptr<AliEmcalTriggerPatchHandler>(new AliEmcalTriggerPatchHandlerLevel0(fSwapThresholdsOnline, fSwapThresholdsOffline));
   if(!myhandler.get()) return false;
   return myhandler->IsOfType(patch);
 }

@@ -39,10 +39,10 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       return NULL;
     }
 
-  TString wagonName = Form("JetQGTaggings_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
-
+  TString wagonName1 = Form("JetQGTaggings_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
+  TString wagonName2 = Form("JetQGTaggings_%s_TC%s%sTree",njetsBase,trigClass.Data(),tag.Data());
   //Configure jet tagger task
-  AliAnalysisTaskEmcalQGTagging *task = new AliAnalysisTaskEmcalQGTagging(wagonName.Data());
+  AliAnalysisTaskEmcalQGTagging *task = new AliAnalysisTaskEmcalQGTagging(wagonName1.Data());
 
   //task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
@@ -194,7 +194,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
 
   //Connect output
-  TString contName1(wagonName);
+  TString contName1(wagonName1);
+  TString contName2(wagonName2);
 
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kMCTrue) contName1 += "_MCTrue";
   if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kData) contName1 += "_Data"; 
@@ -212,12 +213,32 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   }
 
 
+    if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kMCTrue) contName2 += "_MCTrue";
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kData) contName2 += "_Data"; 
+ 
+  if (jetShapeType == AliAnalysisTaskEmcalQGTagging::kPythiaDef) contName2 +="_PythiaDef";
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kNoSub) contName2 += "_NoSub"; 
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kConstSub) contName2 += "_ConstSub"; 
+  if (jetShapeSub == AliAnalysisTaskEmcalQGTagging::kDerivSub) contName2 += "_DerivSub";
+  
+  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kInclusive) contName2 += "_Incl";
+  if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) {
+
+  TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
+  contName2 += recoilTriggerString;
+  }
+
+
+
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-    
-  mgr->ConnectOutput(task,1,coutput1);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+   mgr->ConnectOutput(task,1,coutput1);
 
+
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  mgr->ConnectOutput(task,2,coutput2);
+   
   return task;  
 
 }

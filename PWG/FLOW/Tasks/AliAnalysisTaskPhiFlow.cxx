@@ -47,6 +47,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskVnV0.h"
 #include "AliEventPoolManager.h"
+#include "AliMultSelection.h"
 
 class AliFlowTrackCuts;
 
@@ -389,7 +390,14 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
    // Check if event is within the set centrality range. Falls back to V0 centrality determination if no method is set
    if(fDebug > 0) cout << " *** CheckCentrality() *** " << endl;
    if (!fkCentralityMethodA) AliFatal("No centrality method set! FATAL ERROR!");
-   fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodA);
+
+   // check if the AliMultSelection object is present. If so, we should invoke the
+   // new centrality framework
+
+   AliMultSelection *multSelection = 0x0; 
+   multSelection = static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+   if(multSelection) fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+   else  fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodA);
    Double_t cenB(-999);
    // if a second centrality estimator is requited, set it
    (fkCentralityMethodB) ? cenB = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodB) : cenB = fCentrality;

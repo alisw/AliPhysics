@@ -28,7 +28,10 @@
 //___________________________________________________________________________________________
 AliDhCorrelationExtraction::AliDhCorrelationExtraction():
 // default constructor
-fFile(0x0),
+fFileMass(0x0),
+fFileSE(0x0),
+fFileME(0x0),
+fDirMass(0x0),
 fDirSE(0x0),
 fDirME(0x0),
 fMassList(0x0),
@@ -39,17 +42,19 @@ fDmesonSpecies(kD0toKpi),
 fSandBextraction(kBfromBinCount),
 fSBscaling(kBinCountScaling),
 fDmesonLabel(""),
-fFileName(""), 
+fFileNameMass(""),
+fFileNameSE(""), 
+fFileNameME(""),
+fDirNameMass(""),
+fListNameMass(""),
 fDirNameSE(""), 
 fListNameSE(""), 
 fDirNameME(""), 
 fListNameME(""),
-fListMassName(""),
 fMassHistoName(""),
 fSECorrelHistoName(""),
 fSECorrelHistoName_DstarBkg(""),
 fMEsuffix(""),
-fReadMassesOnly(kFALSE),
 fRebinMassPlots(1),    
 fNpTbins(3),
 fFirstpTbin(1),
@@ -57,6 +62,8 @@ fLastpTbin(3),
 fNumberOfSigmasFitter(3),
 fCorrectPoolsSeparately(kTRUE),
 fNpools(9),
+fReadTreeSE(kFALSE),
+fReadTreeME(kFALSE),
 fDmesonFitterSignal(0x0),
 fDmesonFitterSignalError(0x0),
 fDmesonFitterBackground(0x0),
@@ -98,7 +105,10 @@ fMassHisto(0x0)
 //___________________________________________________________________________________________
 AliDhCorrelationExtraction::AliDhCorrelationExtraction(const AliDhCorrelationExtraction &source):
 // copy constructor
-fFile(source.fFile),
+fFileMass(source.fFileMass),
+fFileSE(source.fFileSE),
+fFileME(source.fFileME),
+fDirMass(source.fDirMass),
 fDirSE(source.fDirSE),
 fDirME(source.fDirME),
 fMassList(source.fMassList),
@@ -109,17 +119,19 @@ fDmesonSpecies(source.fDmesonSpecies),
 fSandBextraction(source.fSandBextraction),
 fSBscaling(source.fSBscaling),
 fDmesonLabel(source.fDmesonLabel),
-fFileName(source.fFileName), 
+fFileNameMass(source.fFileNameMass),
+fFileNameSE(source.fFileNameSE), 
+fFileNameME(source.fFileNameME),
+fDirNameMass(source.fDirNameMass),
+fListNameMass(source.fListNameMass),
 fDirNameSE(source.fDirNameSE), 
 fListNameSE(source.fListNameSE), 
 fDirNameME(source.fDirNameME), 
 fListNameME(source.fListNameME),
-fListMassName(source.fListMassName),
 fMassHistoName(source.fMassHistoName),
 fSECorrelHistoName(source.fSECorrelHistoName),
 fSECorrelHistoName_DstarBkg(source.fSECorrelHistoName_DstarBkg),
 fMEsuffix(source.fMEsuffix),
-fReadMassesOnly(source.fReadMassesOnly),
 fRebinMassPlots(source.fRebinMassPlots),    
 fNpTbins(source.fNpTbins),
 fFirstpTbin(source.fFirstpTbin),
@@ -127,6 +139,8 @@ fLastpTbin(source.fLastpTbin),
 fNumberOfSigmasFitter(source.fNumberOfSigmasFitter),
 fCorrectPoolsSeparately(source.fCorrectPoolsSeparately),
 fNpools(source.fNpools),
+fReadTreeSE(source.fReadTreeSE),
+fReadTreeME(source.fReadTreeME),
 fDmesonFitterSignal(source.fDmesonFitterSignal),
 fDmesonFitterSignalError(source.fDmesonFitterSignalError),
 fDmesonFitterBackground(source.fDmesonFitterBackground),
@@ -189,54 +203,71 @@ Bool_t AliDhCorrelationExtraction::SetDmesonSpecie(DMesonSpecies k){
 //___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::ReadInputs(){
 
-  fFile = TFile::Open(fFileName.Data());
-  if(!fFile->IsOpen()){
-    std::cout << "File " << fFileName << " cannot be opened! check your file path!"; return kFALSE;
+  fFileMass = TFile::Open(fFileNameMass.Data());
+  if(!fFileMass){
+    std::cout << "File " << fFileNameMass << " cannot be opened! check your file path!"; return kFALSE;
   }
 
-  fDirSE = (TDirectoryFile*)fFile->Get(fDirNameSE.Data());
-  if(!fReadMassesOnly ) fDirME = (TDirectoryFile*)fFile->Get(fDirNameME.Data());
+  fFileSE = TFile::Open(fFileNameSE.Data());
+  if(!fFileSE){
+    std::cout << "File " << fFileNameSE << " cannot be opened! check your file path!"; return kFALSE;
+  }
+
+  fFileME = TFile::Open(fFileNameME.Data());
+  if(!fFileME){
+    std::cout << "File " << fFileNameME << " cannot be opened! check your file path!"; return kFALSE;
+  }
+
+  fDirMass = (TDirectoryFile*)fFileMass->Get(fDirNameMass.Data());  
+  if(!fReadTreeSE) fDirSE = (TDirectoryFile*)fFileSE->Get(fDirNameSE.Data());
+  if(!fReadTreeME) fDirME = (TDirectoryFile*)fFileME->Get(fDirNameME.Data());
     
   std::cout << "=================== " <<std::endl;
   std::cout << "Read inputs " <<std::endl;
+  std::cout << "TDir Mass  = " << fDirNameMass <<std::endl;
   std::cout << "TDir SE    = " << fDirNameSE <<std::endl;
   std::cout << "TDir ME    = " << fDirNameME <<std::endl;
   std::cout << "TList SE   = " << fListNameSE <<std::endl;
   std::cout << "TList ME   = " << fListNameME <<std::endl;
-  std::cout << "TList mass = " << fListMassName <<std::endl;
+  std::cout << "TList mass = " << fListNameMass <<std::endl;
   std::cout << "=================== " <<std::endl;
   std::cout << " " <<std::endl;
     
-  if(!fDirSE) {
-    std::cout << "Cannot open the TDirectory for SE" << "\n" << "Your input: " << fDirNameSE << "\n" << "File content " << std::endl;
-    fFile->ls();
+  if(!fDirMass) {
+    std::cout << "Cannot open the TDirectory for Mass" << "\n" << "Your input: " << fDirNameMass << "\n" << "File content " << std::endl;
+    fFileMass->ls();
     return kFALSE;
   }
-    
-  if(!fDirME && !fReadMassesOnly) {
-    std::cout << "Cannot open the TDirectory for ME" << "\n" << "Your input: " << fDirNameME << "\n" << "File content " << std::endl;
 
-    fFile->ls();
+  if(!fReadTreeSE && !fDirSE) {
+    std::cout << "Cannot open the TDirectory for SE" << "\n" << "Your input: " << fDirNameSE << "\n" << "File content " << std::endl;
+    fFileSE->ls();
     return kFALSE;
   }
     
-  fMassList = (TList*)fDirSE->Get(fListMassName);
-  if(!fReadMassesOnly)   fSECorrelationList = (TList*)fDirSE->Get(fListNameSE);
-  if(!fReadMassesOnly)    fMECorrelationList = (TList*)fDirME->Get(fListNameME);
+  if(!fReadTreeME && !fDirME) {
+    std::cout << "Cannot open the TDirectory for ME" << "\n" << "Your input: " << fDirNameME << "\n" << "File content " << std::endl;
+    fFileME->ls();
+    return kFALSE;
+  }
+    
+  fMassList = (TList*)fDirMass->Get(fListNameMass);
+  if(!fReadTreeSE) fSECorrelationList = (TList*)fDirSE->Get(fListNameSE);
+  if(!fReadTreeME) fMECorrelationList = (TList*)fDirME->Get(fListNameME);
     
   if(!fMassList) {
-    std::cout << "Cannot open the TList for Mass" << "\n" << "Your input: " << fListMassName << "\n" << "TDirectory content " << std::endl;
+    std::cout << "Cannot open the TList for Mass" << "\n" << "Your input: " << fListNameMass << "\n" << "TDirectory content " << std::endl;
     fDirSE->ls();
     return kFALSE;
   }
     
-  if(!fSECorrelationList && !fReadMassesOnly) {
+  if(!fReadTreeSE && !fSECorrelationList) {
     std::cout << "Cannot open the TList for SE correlation" << "\n" << "Your input: " << fListNameSE << "\n" << "TDirectory content " << std::endl;
     fDirSE->ls();
     return kFALSE;
   }
     
-  if(!fMECorrelationList && !fReadMassesOnly) {
+  if(!fReadTreeME && !fMECorrelationList) {
     std::cout << "Cannot open the TList for ME correlation" << "\n" << "Your input: " << fListNameME << "\n" << "TDirectory content " << std::endl;
     fDirME->ls();
     return kFALSE;
@@ -276,6 +307,7 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   if(nbinsDraw == 10 || nbinsDraw == 11 || nbinsDraw == 12) {cDMass = new TCanvas("cDMass","Dmeson invariant mass in pt bins",0,0,1200,1000);
     cDMass->Divide(3,4);
   }
+
   if(!cDMass){std::cout << "Cannot create canvas " <<std::endl; return kFALSE;}
 
   // define arrays containing the outputs of the d meson fits - the last member contains the output of the merged ptbin
@@ -437,14 +469,16 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   cDMass->SaveAs(Form("Output_png/InvMassDistributions_%s_Bins%dto%d.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
   cDMass->SaveAs(Form("Output_Root/InvMassDistributions_%s_Bins%dto%d.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
 
-   //HERE WE SHALL DELETE ALL DYNAMIC OBJECTS (ARRAYS, FUNCTIONS...)
-
-
   return kTRUE;
 }
 
 //___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t thrMax) {
+
+  if(!fCorrectPoolsSeparately && (fReadTreeSE || fReadTreeME)) {
+    printf("SE/ME correction after pool integration is not supported when reading from TTree the SE or ME correlations. Exiting...\n");
+    return kFALSE;
+  }
 
   if(!fCorrectPoolsSeparately) fNpools = 1; //single histogram with integrated pools
 
@@ -761,22 +795,68 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t
 
 
 //___________________________________________________________________________________________
+void AliDhCorrelationExtraction::MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEorME, Int_t SorSB, Int_t pool, Double_t thrMin, Double_t thrMax) {
+
+  switch(fDmesonSpecies) {
+
+    case (kD0toKpi): { //take 1st pT bin
+      if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstpTbin,thrMin,thrMax,pool))->Clone();
+      if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstpTbin,thrMin,thrMax,pool))->Clone();
+      for(int iBin=1; iBin<fNpTbins; iBin++) { //now add other bins
+        if(SEorME==kSE) h3D->Add((TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",iBin+fFirstpTbin,thrMin,thrMax,pool)));
+        if(SEorME==kME) h3D->Add((TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",iBin+fFirstpTbin,thrMin,thrMax,pool)));
+      }  
+      break;
+    } //end case D0
+
+    case (kDplusKpipi): {  //take 1st pT bin 
+      if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstpTbin,thrMin,thrMax,pool))->Clone();
+      if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstpTbin,thrMin,thrMax,pool))->Clone();
+      for(int iBin=1; iBin<fNpTbins; iBin++) { //now add other bins
+        if(SEorME==kSE) h3D->Add((TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",iBin+fFirstpTbin,thrMin,thrMax,pool)));
+        if(SEorME==kME) h3D->Add((TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",iBin+fFirstpTbin,thrMin,thrMax,pool)));
+      }  
+      break;
+    } //end case D+
+
+    case (kDStarD0pi): {  //take 1st pT bin 
+      if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstpTbin,thrMin,thrMax,pool))->Clone();
+      if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",fFirstpTbin,thrMin,thrMax,pool))->Clone();
+      for(int iBin=1; iBin<fNpTbins; iBin++) { //now add other bins
+        if(SEorME==kSE) h3D->Add((TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",iBin+fFirstpTbin,thrMin,thrMax,pool)));
+        if(SEorME==kME) h3D->Add((TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",iBin+fFirstpTbin,thrMin,thrMax,pool)));
+      }  
+      break;
+    } //end case D*
+
+    default:    
+      printf("Error! Wrong setting in the D meson specie - Returning...\n");
+      return; 
+  } 
+
+  return;
+}
+
+//___________________________________________________________________________________________
 TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
 
   switch(fDmesonSpecies) {
 
     case (kD0toKpi): {
-      return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
       break;
     } //end case D0
 
     case (kDplusKpipi): {
-      return GetCorrelHistoDplus(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDplusTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      else return GetCorrelHistoDplus(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
       break;
     } //end case D+
 
     case (kDStarD0pi): {
-      return GetCorrelHistoDstar(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDstarTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      else return GetCorrelHistoDstar(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
       break;
     } //end case D*
 
@@ -948,6 +1028,115 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB,
   }
   h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
   h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
+  return h2D;
+}
+
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+//For TTree case, no need to differentiate the code btw SE and ME cases (histograms names and structures is the same, the only difference is the input file)
+
+  TH2D* h2D = new TH2D(); //pointer to be returned
+
+  TH3D* h3D; //for projecting the TH2Sparse onto
+  if(!fIntegratePtBins) {
+    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+  } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
+  Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
+  Int_t etaHighBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMax-0.01));
+  if(etaHighBin > h3D->GetYaxis()->GetNbins()) etaHighBin = h3D->GetYaxis()->GetNbins();
+  if(etaLowBin < 1) etaLowBin = 1;
+  h3D->GetYaxis()->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+  //now restrict to signal or to sidebands
+  if(SorSB==kSign) {
+    h3D->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    h2D = (TH2D*)h3D->Project3D("yx");
+  } else if (SorSB==kSideb) {
+    TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
+    h3Da->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+    h3D->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+    TH2D* h2Da = (TH2D*)h3Da->Project3D("yx"); 
+    h2D = (TH2D*)h3D->Project3D("yx"); 
+    h2D->Add(h2Da);
+  }
+  h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
+  h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
+
+  return h2D;
+}
+
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDplusTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+//For TTree case, no need to differentiate the code btw SE and ME cases (histograms names and structures is the same, the only difference is the input file)
+
+  TH2D* h2D = new TH2D(); //pointer to be returned
+
+  TH3D* h3D; //for projecting the TH2Sparse onto
+  if(!fIntegratePtBins) {
+    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+  } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
+  Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
+  Int_t etaHighBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMax-0.01));
+  if(etaHighBin > h3D->GetYaxis()->GetNbins()) etaHighBin = h3D->GetYaxis()->GetNbins();
+  if(etaLowBin < 1) etaLowBin = 1;
+  h3D->GetYaxis()->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+  //now restrict to signal or to sidebands
+  if(SorSB==kSign) {
+    h3D->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    h2D = (TH2D*)h3D->Project3D("yx");
+  } else if (SorSB==kSideb) {
+    TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
+    h3Da->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+    h3D->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+    TH2D* h2Da = (TH2D*)h3Da->Project3D("yx"); 
+    h2D = (TH2D*)h3D->Project3D("yx"); 
+    h2D->Add(h2Da);
+  }
+  h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
+  h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
+
+  return h2D;
+}
+
+
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstarTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+//For TTree case, no need to differentiate the code btw SE and ME cases (histograms names and structures is the same, the only difference is the input file)
+
+  TH2D* h2D = new TH2D(); //pointer to be returned
+
+  TH3D* h3D; //for projecting the TH2Sparse onto
+  if(!fIntegratePtBins) {
+    if(SEorME==kSE) h3D = (TH3D*)fFileSE->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+    if(SEorME==kME) h3D = (TH3D*)fFileME->Get(Form("h3DCorrelations_Bin%d_%1.1fto%1.1f_p%d",pTbin+fFirstpTbin,thrMin,thrMax,pool));
+  } else MergeCorrelPlotsVsPtTTree(h3D,SEorME,SorSB,pool,thrMin,thrMax);
+  Int_t etaLowBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMin+0.01));
+  Int_t etaHighBin = (Int_t)(h3D->GetYaxis()->FindBin(fDeltaEtaMax-0.01));
+  if(etaHighBin > h3D->GetYaxis()->GetNbins()) etaHighBin = h3D->GetYaxis()->GetNbins();
+  if(etaLowBin < 1) etaLowBin = 1;
+  h3D->GetYaxis()->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+  //now restrict to signal or to sidebands
+  if(SorSB==kSign) {
+    h3D->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    h2D = (TH2D*)h3D->Project3D("xy");
+  } else if (SorSB==kSideb) { //only one sideband for the D* meson
+    h3D->GetZaxis()->SetRange(h3D->GetZaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("SB range bins: %d-%d\n",h3D->GetZaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetZaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+    h2D = (TH2D*)h3D->Project3D("xy");
+  }
+  h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
+  h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
+
   return h2D;
 }
 

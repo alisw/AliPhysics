@@ -35,18 +35,47 @@ public:
   void SetParticle1Type(ParticleType partType);
   void SetParticle2Type(ParticleType partType);
 
+  void SetReadHiddenInfo(bool read);
+
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
   
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
+  TH2D *fDPhiDEtaHiddenNumerator;          // Numerator of dEta dPhi function from MC
+  TH2D *fDPhiDEtaHiddenDenominator;        // Denominator of dEta dPhi function from MC
 
+  TH2D *fDPhiDEtaHiddenPrimaryNumerator;          // Numerator of dEta dPhi function from MC, physical primaries
+  TH2D *fDPhiDEtaHiddenPrimaryDenominator;        // Denominator of dEta dPhi function from MC, physical primaries
+
+  TH2D *fDPhiDEtaHiddenSecWeakNumerator;          // Numerator of dEta dPhi function from MC, secondaries from weak decays
+  TH2D *fDPhiDEtaHiddenSecWeakDenominator;        // Denominator of dEta dPhi function from MC, secondaries from weak decays
+
+  TH2D *fDPhiDEtaHiddenSecMatNumerator;          // Numerator of dEta dPhi function from MC, secondaries from material
+  TH2D *fDPhiDEtaHiddenSecMatDenominator;        // Denominator of dEta dPhi function from MC, secondaries from material
+
+  TH2D *fDPhiDEtaHiddenPrimaryNumeratorData;          // Numerator of dEta dPhi function from MC, physical primaries, filled with data values
+  TH2D *fDPhiDEtaHiddenPrimaryDenominatorData;        // Denominator of dEta dPhi function from MC, physical primaries, filled with data values
+
+  TH2D *fDPhiDEtaHiddenSecWeakNumeratorData;          // Numerator of dEta dPhi function from MC, secondaries from weak decays, filled with data values
+  TH2D *fDPhiDEtaHiddenSecWeakDenominatorData;        // Denominator of dEta dPhi function from MC, secondaries from weak decays, filled with data values
+
+  TH2D *fDPhiDEtaHiddenSecMatNumeratorData;          // Numerator of dEta dPhi function from MC, secondaries from material, filled with data values
+  TH2D *fDPhiDEtaHiddenSecMatDenominatorData;        // Denominator of dEta dPhi function from MC, secondaries from material, filled with data values
+    
   double fphiL;
   double fphiT;
+
+  int fEtaBins;
+  int fPhiBins;
+
+  char *ftitle;
   
   ParticleType part1;
   ParticleType part2;
+
+  bool fReadHiddenInfo;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections, 1)

@@ -147,39 +147,40 @@ AliFemtoModelCorrFctn& AliFemtoModelCorrFctn::operator=(const AliFemtoModelCorrF
   if (this == &aCorrFctn)
     return *this;
 
-  if (aCorrFctn.fNumeratorTrue)
-    fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
-  else
-    fNumeratorTrue = 0;
-  if (aCorrFctn.fNumeratorFake)
-    fNumeratorFake = new TH1D(*(aCorrFctn.fNumeratorFake));
-  else
-    fNumeratorFake = 0;
-  if (aCorrFctn.fDenominator)
-    fDenominator = new TH1D(*(aCorrFctn.fDenominator));
-  else
-    fDenominator = 0;
+  delete fNumeratorTrue;
+  fNumeratorTrue = aCorrFctn.fNumeratorTrue
+                 ? new TH1D(*aCorrFctn.fNumeratorTrue)
+                 : nullptr;
 
-  if (aCorrFctn.fQgenQrec)
-    fQgenQrec = new TH2D(*(aCorrFctn.fQgenQrec));
-  else
-    fQgenQrec = 0;
+  delete fNumeratorFake;
+  fNumeratorFake = (aCorrFctn.fNumeratorFake)
+                 ? new TH1D(*aCorrFctn.fNumeratorFake)
+                 : nullptr;
 
-  fManager = aCorrFctn.fManager;
+  delete fDenominator;
+  fDenominator = (aCorrFctn.fDenominator)
+               ? new TH1D(*aCorrFctn.fDenominator)
+               : nullptr;
 
+  delete fQgenQrec;
+  fQgenQrec = (aCorrFctn.fQgenQrec)
+            ? new TH2D(*aCorrFctn.fQgenQrec)
+            : nullptr;
 
-  if (aCorrFctn.fNumeratorTrueIdeal)
-    fNumeratorTrueIdeal = new TH1D(*(aCorrFctn.fNumeratorTrueIdeal));
-  else
-    fNumeratorTrueIdeal = 0;
-  if (aCorrFctn.fNumeratorFakeIdeal)
-    fNumeratorFakeIdeal = new TH1D(*(aCorrFctn.fNumeratorFakeIdeal));
-  else
-    fNumeratorFake = 0;
-  if (aCorrFctn.fDenominatorIdeal)
-    fDenominatorIdeal = new TH1D(*(aCorrFctn.fDenominatorIdeal));
-  else
-    fDenominatorIdeal = 0;
+  delete fNumeratorTrueIdeal;
+  fNumeratorTrueIdeal = (aCorrFctn.fNumeratorTrueIdeal)
+                      ? new TH1D(*aCorrFctn.fNumeratorTrueIdeal)
+                      : nullptr;
+
+  delete fNumeratorFakeIdeal;
+  fNumeratorFakeIdeal = (aCorrFctn.fNumeratorFakeIdeal)
+                      ? new TH1D(*aCorrFctn.fNumeratorFakeIdeal)
+                      : nullptr;
+
+  delete fDenominatorIdeal;
+  fDenominatorIdeal = (aCorrFctn.fDenominatorIdeal)
+                    ? new TH1D(*aCorrFctn.fDenominatorIdeal)
+                    : nullptr;
 
   fManager = aCorrFctn.fManager;
 

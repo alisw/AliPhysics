@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,7 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <cstring>
+#include <sstream>
 #include <string>
+#include <exception>
 #include <vector>
 #include <TArrayD.h>
 #include <TAxis.h>
@@ -27,15 +29,13 @@
 #include <TProfile.h>
 #include <TString.h>
 
+#include "TBinning.h"
 #include "THistManager.h"
 
 /// \cond CLASSIMP
 ClassImp(THistManager)
 /// \endcond
 
-/**
- * Default constructor, only initialising pointers with 0
- */
 THistManager::THistManager():
 		TNamed(),
 		fHistos(NULL),
@@ -43,11 +43,6 @@ THistManager::THistManager():
 {
 }
 
-/**
- * Main constructor, creating also a list for the histograms
- *
- * @param name Name of the object (list named accordingly)
- */
 THistManager::THistManager(const char *name):
 		TNamed(name, Form("Histogram container %s", name)),
 		fHistos(NULL),
@@ -58,21 +53,10 @@ THistManager::THistManager(const char *name):
 	fHistos->SetOwner();
 }
 
-/**
- * Destructor, deletes the list of histograms if it is the owner
- */
 THistManager::~THistManager(){
 	if(fHistos && fIsOwner) delete fHistos;
 }
 
-/**
- * Create a new group of histograms within a parent group. Groups are represented as list. The default parent is
- * always the top list. List name structure accouding to unix paths (i.e. top list /, hirarchies separated by /).
- *
- * \param groupname Name of the new group
- * \param parent (default "/") Name of the parent group
- * \throw HistoContainerContentException
- */
 THashList* THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
 	THashList *parentgroup = FindGroup(parent);
 	if(!parentgroup){
@@ -85,17 +69,6 @@ THashList* THistManager::CreateHistoGroup(const char *groupname, const char *par
 	return childgroup;
 }
 
-/**
- * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param nbins number of bins
- * \param xmin min. value of the range
- * \param xmax max. value of the range
- * \param opt Additonal options (s for sumw2)
- */
 TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -116,16 +89,6 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, dou
 	return h;
 }
 
-/**
- * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param nbins number of bins
- * \param xbins array of bin limits
- * \param opt Additonal options (s for sumw2)
- */
 TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, const double *xbins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
@@ -146,15 +109,6 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, con
 	return h;
 }
 
-/**
- * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param xbins array of bin limits (contains also number of bins)
- * \param opt Additonal options (s for sumw2)
- */
 TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD &xbins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
@@ -175,19 +129,16 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD 
 	return h;
 }
 
-/**
- * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param nbinsx number of bins in x-direction
- * \param xmin min. value of the range in x-direction
- * \param xmax max. value of the range in x-direction
- * \param nbinsy number of bins in y-direction
- * \param ymin min. value of the range in y-direction
- * \param ymax max. value of the range in y-direction
- */
+TH1* THistManager::CreateTH1(const char *name, const char *title, const TBinning &xbin, Option_t *opt){
+  TArrayD myxbins;
+  try{
+    xbin.CreateBinEdges(myxbins);
+  } catch(std::exception &e){
+    Fatal("THistManager::CreateTH1", "Exception raised: %s", e.what());
+  }
+  return CreateTH1(name, title, myxbins, opt);
+}
+
 TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -208,17 +159,6 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, do
 	return h;
 }
 
-/**
- * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param nbinsx number of bins in x-direction
- * \param xbins array of bin limits in x-direction
- * \param nbinsy number of bins in y-direction
- * \param ybins array of bin limits in y-direction
- */
 TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -239,15 +179,6 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, co
 	return h;
 }
 
-/**
- * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param xbins array of bin limits in x-direction (contains also the number of bins)
- * \param ybins array of bin limits in y-direction (contains also the number of bins)
- */
 TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -268,20 +199,22 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD 
 	return h;
 }
 
-/**
- * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param nbinsx number of bins in x-direction
- * \param xmin min. value of the range in x-direction
- * \param xmax max. value of the range in x-direction
- * \param nbinsy number of bins in y-direction
- * \param ymin min. value of the range in y-direction
- * \param ymax max. value of the range in y-direction
- * \param nbinsz number of bins in z-direction
- * \param zmin min. value of the range in z-direction
- * \param zmax max. value of the range in z-direction
- */
+TH2* THistManager::CreateTH2(const char *name, const char *title, const TBinning &xbins, const TBinning &ybins, Option_t *opt){
+  TArrayD myxbins, myybins;
+  try{
+    xbins.CreateBinEdges(myxbins);
+  } catch (std::exception &e) {
+    Fatal("THistManager::CreateTH2 (x-dir)", "Exception raised: %s", e.what());
+  }
+  try{
+    ybins.CreateBinEdges(myybins);
+  } catch (std::exception &e) {
+    Fatal("THistManager::CreateTH2 (y-dir)", "Exception raised: %s", e.what());
+  }
+
+  return CreateTH2(name, title, myxbins, myybins, opt);
+}
+
 TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -302,19 +235,6 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, do
 	return h;
 }
 
-/**
- * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param nbinsx number of bins in x-direction
- * \param xbins array of bin limits in x-direction
- * \param nbinsy number of bins in y-direction
- * \param ybins array of bin limits in y-direction
- * \param nbinsz number of bins in z-direction
- * \param zbins array of bin limits in z-direction
- */
 TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, const double* xbins, int nbinsy, const double* ybins, int nbinsz, const double* zbins, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -335,16 +255,6 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, co
 	return h;
 }
 
-/**
- * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param xbins array of bin limits in x-direction (contains also the number of bins)
- * \param ybins array of bin limits in y-direction (contains also the number of bins)
- * \param zbins array of bin limits in z-direction (contains also the number of bins)
- */
 TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD& xbins, const TArrayD& ybins, const TArrayD& zbins, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -365,17 +275,27 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD&
 	return h;
 }
 
-/**
- * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param ndim Number of dimensions
- * \param nbins Number of bins per dimension
- * \param min min. value of the range for each dimension
- * \param max max. value of the range for each dimension
- */
+TH3* THistManager::CreateTH3(const char *name, const char *title, const TBinning &xbins, const TBinning &ybins, const TBinning &zbins, Option_t *opt){
+  TArrayD myxbins, myybins, myzbins;
+  try{
+    xbins.CreateBinEdges(myxbins);
+  } catch (std::exception &e) {
+    Fatal("THistManager::CreateTH2 (x-dir)", "Exception raised: %s",  e.what());
+  }
+  try{
+    ybins.CreateBinEdges(myybins);
+  } catch (std::exception &e) {
+    Fatal("THistManager::CreateTH2 (y-dir)", "Exception raised: %s", e.what());
+  }
+  try{
+    zbins.CreateBinEdges(myzbins);
+  } catch (std::exception &e) {
+    Fatal("THistManager::CreateTH2 (z-dir)", "Exception raised: %s", e.what());
+  }
+
+  return CreateTH3(name, title, myxbins, myybins, myzbins);
+}
+
 THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -396,15 +316,6 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 	return h;
 }
 
-/**
- * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param title Title of the histogram
- * \param ndim Number of dimensions
- * \param axes Array of pointers to TAxis for containing the axis definition for each dimension
- */
 THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -435,17 +346,6 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 	return hsparse;
 }
 
-/**
- * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the profile histogram
- * \param title Title of the profile histogram
- * \param nbinsX Number of bins in x-direction
- * \param xmin min. value in x-direction
- * \param xmax max. value in x-direction
- * \param opt Further options
- */
 void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, double xmin, double xmax, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
@@ -457,16 +357,6 @@ void THistManager::CreateTProfile(const char* name, const char* title, int nbins
   parent->Add(hist);
 }
 
-/**
- * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the profile histogram
- * \param title Title of the profile histogram
- * \param nbinsX Number of bins in x-direction
- * \param xmbins binning in x-direction
- * \param opt Further options
- */
 void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, const double* xbins, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
@@ -478,16 +368,6 @@ void THistManager::CreateTProfile(const char* name, const char* title, int nbins
   parent->Add(hist);
 }
 
-/**
- * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the profile histogram
- * \param title Title of the profile histogram
- * \param nbinsX Number of bins in x-direction
- * \param xmbins binning in x-direction
- * \param opt Further options
- */
 void THistManager::CreateTProfile(const char* name, const char* title, const TArrayD& xbins, Option_t *opt){
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
@@ -499,11 +379,16 @@ void THistManager::CreateTProfile(const char* name, const char* title, const TAr
   parent->Add(hist);
 }
 
-/**
- * Set a new group into the container into the parent group
- *
- * \param o the object ot be included
- */
+void THistManager::CreateTProfile(const char *name, const char *title, const TBinning &xbins, Option_t *opt){
+  TArrayD myxbins;
+  try{
+    xbins.CreateBinEdges(myxbins);
+  } catch (std::exception &e){
+    Fatal("THistManager::CreateProfile", "Exception raised: %s", e.what());
+  }
+  CreateTProfile(name, title, myxbins, opt);
+}
+
 void THistManager::SetObject(TObject * const o, const char *group) {
 	THashList *parent(FindGroup(group));
 	if(!parent){
@@ -521,15 +406,7 @@ void THistManager::SetObject(TObject * const o, const char *group) {
 	fHistos->Add(o);
 }
 
-/**
- * Fill a 1D histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param x x-coordinate
- * \param weight optional weight of the entry (default 1)
- */
-void THistManager::FillTH1(const char *name, double x, double weight) {
+void THistManager::FillTH1(const char *name, double x, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -541,10 +418,18 @@ void THistManager::FillTH1(const char *name, double x, double weight) {
 		Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
 	}
+	TString optionstring(opt);
+	if(optionstring.Contains("w")){
+	  // use bin width as weight
+	  Int_t bin = hist->GetXaxis()->FindBin(x);
+	  // check if not overflow or underflow bin
+	  if(bin != 0 && bin != hist->GetXaxis()->GetNbins())
+	    weight = 1./hist->GetXaxis()->GetBinWidth(bin);
+	}
 	hist->Fill(x, weight);
 }
 
-void THistManager::FillTH1(const char *name, const char *label, double weight) {
+void THistManager::FillTH1(const char *name, const char *label, double weight, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname.Data()));
   if(!parent){
@@ -556,19 +441,19 @@ void THistManager::FillTH1(const char *name, const char *label, double weight) {
     Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
     return;
   }
+	TString optionstring(opt);
+	if(optionstring.Contains("w")){
+	  // use bin width as weight
+	  // get bin for label
+	  Int_t bin = hist->GetXaxis()->FindBin(label);
+	  // check if not overflow or underflow bin
+	  if(bin != 0 && bin != hist->GetXaxis()->GetNbins())
+	    weight = 1./hist->GetXaxis()->GetBinWidth(bin);
+	}
   hist->Fill(label, weight);
 }
 
-/**
- * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param x x-coordinate
- * \param y y-coordinate
- * \param weight optional weight of the entry (default 1)
- */
-void THistManager::FillTH2(const char *name, double x, double y, double weight) {
+void THistManager::FillTH2(const char *name, double x, double y, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -580,18 +465,20 @@ void THistManager::FillTH2(const char *name, double x, double y, double weight) 
 		Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
 	}
-	hist->Fill(x, y, weight);
+	TString optstring(opt);
+	Double_t myweight = optstring.Contains("w") ? 1. : weight;
+	if(optstring.Contains("wx")){
+	  Int_t binx = hist->GetXaxis()->FindBin(x);
+	  if(binx != 0 && binx != hist->GetXaxis()->GetNbins()) myweight *= 1./hist->GetXaxis()->GetBinWidth(binx);
+	}
+	if(optstring.Contains("wy")){
+	  Int_t biny = hist->GetYaxis()->FindBin(y);
+	  if(biny != 0 && biny != hist->GetYaxis()->GetNbins()) myweight *= 1./hist->GetYaxis()->GetBinWidth(biny);
+	}
+	hist->Fill(x, y, myweight);
 }
 
-/**
- * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param point coordinates of the data
- * \param weight optional weight of the entry (default 1)
- */
-void THistManager::FillTH2(const char *name, double *point, double weight) {
+void THistManager::FillTH2(const char *name, double *point, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -602,21 +489,21 @@ void THistManager::FillTH2(const char *name, double *point, double weight) {
 	if(!hist){
 		Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
+	}
+	TString optstring(opt);
+	Double_t myweight = optstring.Contains("w") ? 1. : weight;
+	if(optstring.Contains("wx")){
+	  Int_t binx = hist->GetXaxis()->FindBin(point[0]);
+	  if(binx != 0 && binx != hist->GetXaxis()->GetNbins()) myweight *= 1./hist->GetXaxis()->GetBinWidth(binx);
+	}
+	if(optstring.Contains("wy")){
+	  Int_t biny = hist->GetYaxis()->FindBin(point[1]);
+	  if(biny != 0 && biny != hist->GetYaxis()->GetNbins()) myweight *= 1./hist->GetYaxis()->GetBinWidth(biny);
 	}
 	hist->Fill(point[0], point[1], weight);
 }
 
-/**
- * Fill a 3D histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param x x-coordinate
- * \param y y-coordinate
- * \param z z-coordinate
- * \param weight optional weight of the entry (default 1)
- */
-void THistManager::FillTH3(const char* name, double x, double y, double z, double weight) {
+void THistManager::FillTH3(const char* name, double x, double y, double z, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -627,19 +514,25 @@ void THistManager::FillTH3(const char* name, double x, double y, double z, doubl
 	if(!hist){
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
+	}
+	TString optstring(opt);
+	Double_t myweight = optstring.Contains("w") ? 1. : weight;
+	if(optstring.Contains("wx")){
+	  Int_t binx = hist->GetXaxis()->FindBin(x);
+	  if(binx != 0 && binx != hist->GetXaxis()->GetNbins()) myweight *= 1./hist->GetXaxis()->GetBinWidth(binx);
+	}
+	if(optstring.Contains("wy")){
+	  Int_t biny = hist->GetYaxis()->FindBin(y);
+	  if(biny != 0 && biny != hist->GetYaxis()->GetNbins()) myweight *= 1./hist->GetYaxis()->GetBinWidth(biny);
+	}
+	if(optstring.Contains("wz")){
+	  Int_t binz = hist->GetZaxis()->FindBin(z);
+	  if(binz != 0 && binz != hist->GetZaxis()->GetNbins()) myweight *= 1./hist->GetZaxis()->GetBinWidth(binz);
 	}
 	hist->Fill(x, y, z, weight);
 }
 
-/**
- * Fill a 3D histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param point 3D-coordinate (x,y,z) of the point to be filled
- * \param weight optional weight of the entry (default 1)
- */
-void THistManager::FillTH3(const char* name, const double* point, double weight) {
+void THistManager::FillTH3(const char* name, const double* point, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -651,41 +544,49 @@ void THistManager::FillTH3(const char* name, const double* point, double weight)
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
 	}
+	TString optstring(opt);
+	Double_t myweight = optstring.Contains("w") ? 1. : weight;
+	if(optstring.Contains("wx")){
+	  Int_t binx = hist->GetXaxis()->FindBin(point[0]);
+	  if(binx != 0 && binx != hist->GetXaxis()->GetNbins()) myweight *= 1./hist->GetXaxis()->GetBinWidth(binx);
+	}
+	if(optstring.Contains("wy")){
+	  Int_t biny = hist->GetYaxis()->FindBin(point[1]);
+	  if(biny != 0 && biny != hist->GetYaxis()->GetNbins()) myweight *= 1./hist->GetYaxis()->GetBinWidth(biny);
+	}
+	if(optstring.Contains("wz")){
+	  Int_t binz = hist->GetZaxis()->FindBin(point[2]);
+	  if(binz != 0 && binz != hist->GetZaxis()->GetNbins()) myweight *= 1./hist->GetZaxis()->GetBinWidth(binz);
+	}
 	hist->Fill(point[0], point[1], point[2], weight);
 }
 
-/**
- * Fill a  nD histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the histogram
- * \param x coordinates of the data
- * \param weight optional weight of the entry (default 1)
- */
-void THistManager::FillTHnSparse(const char *name, const double *x, double weight) {
+void THistManager::FillTHnSparse(const char *name, const double *x, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
-		Fatal("THistManager::FillTH3", "Parent group %s does not exist", dirname.Data());
+		Fatal("THistManager::FillTHnSparse", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
 	THnSparseD *hist = dynamic_cast<THnSparseD *>(parent->FindObject(hname.Data()));
 	if(!hist){
-		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+		Fatal("THistManager::FillTHnSparse", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
 	}
+	TString optstring(opt);
+	Double_t myweight = optstring.Contains("w") ? 1. : weight;
+	for(Int_t iaxis = 0; iaxis < hist->GetNdimensions(); iaxis++){
+	  std::stringstream weighthandler;
+	  weighthandler << "w" << iaxis;
+	  if(optstring.Contains(weighthandler.str().c_str())){
+	    Int_t bin = hist->GetAxis(iaxis)->FindBin(x[iaxis]);
+	    if(bin != 0 && bin != hist->GetAxis(iaxis)->GetNbins()) myweight *= hist->GetAxis(iaxis)->GetBinWidth(bin);
+	  }
+	}
+
 	hist->Fill(x, weight);
 }
 
-/**
- * Fill a profile histogram within the container. The histogram name also contains the parent group(s) according to the common
- * group notation.
- *
- * \param name Name of the profile histogram
- * \param x x-coordinate
- * \param y y-coordinate
- * \param weight optional weight of the entry (default 1)
- */
 void THistManager::FillProfile(const char* name, double x, double y, double weight){
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname.Data()));
@@ -697,13 +598,6 @@ void THistManager::FillProfile(const char* name, double x, double y, double weig
   hist->Fill(x, y, weight);
 }
 
-/**
- * Find an object inside the container. The object can also be within a
- * histogram group. For this the name has to follow the common notation
- *
- * \param name Name of the object to find inside the container
- * \return pointer to the object (NULL if not found)
- */
 TObject *THistManager::FindObject(const char *name) const {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -711,13 +605,6 @@ TObject *THistManager::FindObject(const char *name) const {
 	return parent->FindObject(hname);
 }
 
-/**
- * Find and object inside the container. The object name is expected to contain the
- * full path of the histogram object, including parent groups
- *
- * \param obj the object to find
- * \return pointer to the object (NULL if not found)
- */
 TObject* THistManager::FindObject(const TObject* obj) const {
 	TString dirname(basename(obj->GetName())), hname(histname(obj->GetName()));
 	THashList *parent(FindGroup(dirname.Data()));
@@ -725,12 +612,6 @@ TObject* THistManager::FindObject(const TObject* obj) const {
 	return parent->FindObject(hname);
 }
 
-/**
- * Find histogram group. Name is using common notation
- *
- * \param dirname Path of the group (treat empty path as top node
- * \return TList of objects (NULL if group does not exist)
- */
 THashList *THistManager::FindGroup(const char *dirname) const {
 	if(!strlen(dirname) || !strcmp(dirname, "/")) return fHistos;
 	std::vector<std::string> tokens;
@@ -743,13 +624,6 @@ THashList *THistManager::FindGroup(const char *dirname) const {
 	return currentdir;
 }
 
-/**
- * Tokenizes a string. Results are stored inside the vector listoftokens
- *
- * \param name string to be tokenised
- * \param delim delimiter string
- * \param listoftokens list of tokens (C++ strings)
- */
 void THistManager::TokenizeFilename(const char *name, const char *delim, std::vector<std::string> &listoftokens) const {
 	TString s(name);
 	TObjArray *arr = s.Tokenize(delim);
@@ -761,12 +635,6 @@ void THistManager::TokenizeFilename(const char *name, const char *delim, std::ve
 	delete arr;
 }
 
-/**
- * Helper function extracting the basename from a given histogram path.
- *
- * \param path histogram path
- * \return basename extracted
- */
 TString THistManager::basename(const char *path) const {
 	TString s(path);
 	int index = s.Last('/');
@@ -774,53 +642,11 @@ TString THistManager::basename(const char *path) const {
 	return TString(s(0, index)).Data();
 }
 
-/**
- * Helper function extracting the histogram name from a given histogram path.
- *
- * \param path histogram path
- * \return basename extracted
- */
 TString THistManager::histname(const char *path) const {
 	TString s(path);
 	int index = s.Last('/');
 	if(index < 0) return path;    // no directory structure
 	return TString(s(index+1, s.Length() - (index+1))).Data();
-}
-
-/**
- * Create forward iterator starting at the beginning of the
- * container
- * \return Forward iterator at the beginning of the container
- */
-THistManager::iterator THistManager::begin() const {
-  return iterator(this, 0, iterator::kTHMIforward);
-}
-
-/**
- * Create backward iterator starting at the end of the
- * container
- * \return Backward iterator after the end of the container
- */
-THistManager::iterator THistManager::rbegin() const {
-  return iterator(this, fHistos->GetEntries()-1, iterator::kTHMIbackward);
-}
-
-/**
- * Create forward iterator starting behind the end of the container.
- * Used to terminate the iteration.
- * \return Forward iterator behind the end of the histogram manager
- */
-THistManager::iterator THistManager::end() const {
-  return iterator(this, fHistos->GetEntries(), iterator::kTHMIforward);
-}
-
-/**
- * Create backward iterator starting before the beginning of the container.
- * Used to terminate the iteration.
- * \return Backward iterator starting before the beginning of the histogram manager
- */
-THistManager::iterator THistManager::rend() const {
-  return iterator(this, -1, iterator::kTHMIbackward);
 }
 
 //////////////////////////////////////////////////////////
@@ -829,13 +655,6 @@ THistManager::iterator THistManager::rend() const {
 ///                                                    ///
 //////////////////////////////////////////////////////////
 
-/**
- * Constructor. Initializing the histogram manager to be iterated over, the starting
- * position for the iteration, and the direction of the iteration.
- * \param[in] hmgr Histogram manager to be iterated over, containing the data
- * \param[in] currentpos Starting position for the iteration
- * \param[in] dir Direction of the iteration
- */
 THistManager::iterator::iterator(const THistManager * hmgr, Int_t currentpos, THMIDirection_t dir):
     fkArray(hmgr),
     fCurrentPos(),
@@ -843,11 +662,6 @@ THistManager::iterator::iterator(const THistManager * hmgr, Int_t currentpos, TH
     fDirection(dir)
 {}
 
-/**
- * Copy constructor. Initializing all
- * values from the reference.
- * \param[in] ref Reference for the copy
- */
 THistManager::iterator::iterator(const THistManager::iterator &ref):
     fkArray(ref.fkArray),
     fCurrentPos(ref.fCurrentPos),
@@ -855,12 +669,6 @@ THistManager::iterator::iterator(const THistManager::iterator &ref):
     fDirection(ref.fDirection)
 {}
 
-/**
- * Assignment operator. Initializing all
- * values from the reference.
- * \param[in] ref
- * \return iterator after assignment.
- */
 THistManager::iterator &THistManager::iterator::operator=(const THistManager::iterator &ref){
   if(this != &ref){
     fkArray = ref.fkArray;
@@ -871,22 +679,10 @@ THistManager::iterator &THistManager::iterator::operator=(const THistManager::it
   return *this;
 }
 
-/**
- * Comparison operator for unequalness. The comparison is
- * performed based on the current position of the iterator.
- * \param other iterator to compare to
- * \return True if the iterators are not equal
- */
 bool THistManager::iterator::operator!=(const THistManager::iterator &other) const{
   return fCurrentPos == other.fCurrentPos;
 }
 
-/**
- * Prefix increment operator. Incrementing / decrementing
- * the current position of the iterator based on the
- * direction.
- * \return State after incrementation
- */
 THistManager::iterator &THistManager::iterator::operator++(){
   if(fDirection == kTHMIforward)
     fCurrentPos++;
@@ -895,24 +691,12 @@ THistManager::iterator &THistManager::iterator::operator++(){
   return *this;
 }
 
-/**
- * Postfix increment operator. Incrementing / decrementing
- * the current position of the iterator based on the
- * direction, but returning the state before iteration
- * \return State before incrementation
- */
 THistManager::iterator THistManager::iterator::operator++(int){
   iterator tmp(*this);
   operator++();
   return tmp;
 }
 
-/**
- * Prefix decrement operator. Decrementing / incrementing
- * the current position of the iterator based on the
- * direction.
- * \return State after decrementation
- */
 THistManager::iterator &THistManager::iterator::operator--(){
   if(fDirection == kTHMIforward)
     fCurrentPos--;
@@ -921,25 +705,12 @@ THistManager::iterator &THistManager::iterator::operator--(){
   return *this;
 };
 
-/**
- * Postfix decrement operator. Decrementing / incrementing
- * the current position of the iterator based on the
- * direction, but returning the state before iteration
- * \return State before decrementation
- */
 THistManager::iterator THistManager::iterator::operator--(int){
   iterator tmp(*this);
   operator--();
   return tmp;
 };
 
-/**
- * Dereferncing operator. Providing access to the object
- * connected to the current state of the iterator. Objects
- * might be histograms or THashLists in case of wheter groups
- * are defined or not.
- * @return Object connected ot the current state of the iterator
- */
 TObject *THistManager::iterator::operator*() const{
   if(fCurrentPos >=0 && fCurrentPos < fkArray->GetListOfHistograms()->GetEntries())
     return fkArray->GetListOfHistograms()->At(fCurrentPos);

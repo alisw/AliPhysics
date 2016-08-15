@@ -45,7 +45,7 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisTaskMuonResolution.h"
-#include "AliCentrality.h"
+#include "AliMultSelection.h"
 
 // MUON includes
 #include "AliMUONCDB.h"
@@ -434,7 +434,8 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
   if (fMuonEventCuts && !fMuonEventCuts->IsSelected(fInputHandler)) return;
   
   // get the centrality
-  Float_t centrality = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
+  AliMultSelection *multSelection = static_cast<AliMultSelection*>(esd->FindListObject("MultSelection"));
+  Float_t centrality = multSelection ? multSelection->GetMultiplicityPercentile("V0M") : -1.;
   
   // get tracker to refit
   AliMUONVTrackReconstructor* tracker = AliMUONESDInterface::GetTracker();
@@ -703,6 +704,22 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskMuonResolution::UserNotify()
+{
+  /// setup OCDB default storage
+  
+  // do it only once
+  if (fOCDBLoaded) return kTRUE;
+  
+  // set OCDB location
+  AliCDBManager* cdbm = AliCDBManager::Instance();
+  cdbm->SetDefaultStorage(fDefaultStorage.Data());
+  
+  return kTRUE;
+  
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskMuonResolution::NotifyRun()
 {
   /// load necessary data from OCDB corresponding to the first run number and initialize analysis
@@ -710,7 +727,6 @@ void AliAnalysisTaskMuonResolution::NotifyRun()
   if (fOCDBLoaded) return;
   
   AliCDBManager* cdbm = AliCDBManager::Instance();
-  cdbm->SetDefaultStorage(fDefaultStorage.Data());
   cdbm->SetRun(fCurrentRunNumber);
   
   if (!AliMUONCDB::LoadField()) return;

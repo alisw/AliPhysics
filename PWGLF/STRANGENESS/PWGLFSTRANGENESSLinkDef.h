@@ -18,6 +18,7 @@
 #pragma link C++ class AliAnalysisTaskExtractV0+;
 #pragma link C++ class AliAnalysisTaskExtractV0pPb+;
 #pragma link C++ class AliAnalysisTaskExtractV0AOD+;
+#pragma link C++ class AliAnalysisTaskExtractV0AODRun2+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceV0+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceV0pPb+;
 #pragma link C++ class AliAnalysisTaskLK0Spectra+;
@@ -25,6 +26,7 @@
 #pragma link C++ class AliAnalysisTaskExtractCascadePbPbRun2+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceCascade+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicity+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskPPVsMultCrossCheckMC+;
 #pragma link C++ class AliAnalysisTaskpANormalizationCheckMC+;
@@ -36,4 +38,5 @@
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp+;
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
+#pragma link C++ class AliV0Result+;
 #endif

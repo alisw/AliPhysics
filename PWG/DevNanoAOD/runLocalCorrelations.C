@@ -28,7 +28,7 @@ class AliAnalysisGrid;
 //______________________________________________________________________________
 void runLocalCorrelations(
 			  const int iMCtruth = 2, 
-			  const char * addTaskString = ".x AddTaskNanoAODFilter.C(%d,1)" // 
+			  const char * addTaskString = ".x AddTaskNanoAODFilter.C(%d,0)" // 
 			  )
 {
   LoadLibs();
@@ -43,9 +43,9 @@ void runLocalCorrelations(
   aodOutputHandler->SetOutputFileName("AliAOD.NanoAOD.root");
   mgr->SetOutputEventHandler(aodOutputHandler);
   
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(iMCtruth);
-  taskPID->SetUseTPCEtaCorrection(kTRUE); 
+//   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+//   AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(iMCtruth);
+//   taskPID->SetUseTPCEtaCorrection(kTRUE); 
 
   // create task
   cout << "Macro: "<< addTaskString << " " << Form(addTaskString, iMCtruth) << endl;
@@ -54,13 +54,12 @@ void runLocalCorrelations(
 
   // Set Track event and vertex cuts here!
   AliAnalysisNanoAODTrackCuts* trk = new AliAnalysisNanoAODTrackCuts;
-  //  trk->SetBitMask((1 << 4) | (1 << 8)); // hybrid 2010
-  trk->SetBitMask((1 << 9)); // ???
+  trk->SetBitMask((1 << 4) | (1 << 8)); // hybrid 2010
   trk->SetMaxEta(0.9);
-  trk->SetMinPt(0.5);
+  trk->SetMinPt(0.2);
 
   AliAnalysisNanoAODEventCuts* evt = new AliAnalysisNanoAODEventCuts;
-  evt->SetVertexRange(7);
+  evt->SetVertexRange(10);
 
   task->SetTrkCuts(trk);
   task->SetEvtCuts(evt);
@@ -70,8 +69,6 @@ void runLocalCorrelations(
 
   task->SelectCollisionCandidates(AliVEvent::kMB);
 
-
-  //task->SelectCollisionCandidates(AliVEvent::kMB);// FIXME
   // enable debug printouts
   mgr->SetDebugLevel(10);
   //    mgr->SetNSysInfo(100);

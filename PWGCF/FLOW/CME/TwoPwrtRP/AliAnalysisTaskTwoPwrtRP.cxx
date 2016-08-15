@@ -5,7 +5,7 @@
 #include "TChain.h"
 #include <AliQnCorrectionsQnVector.h>
 #include <AliQnCorrectionsAxes.h>
-#include <AliQnCorrectionsSteps.h>
+// #include <AliQnCorrectionsSteps.h> /* taken out by Qn vector Corrections framework new version */
 #include <AliHistogramManager.h>
 #include "AliCMEVarManager.h"
 //#include "AliCMEReducedVarManager.h"

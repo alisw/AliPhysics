@@ -19,10 +19,10 @@
 #include "TObject.h"
 #include "TParameter.h"
 #include "TMath.h"
+#include "AliFlowVector.h"
 class TTree;
 class TF1;
 class TF2;
-class AliFlowVector;
 class AliFlowTrackSimple;
 class AliFlowTrackSimpleCuts;
 
@@ -124,16 +124,20 @@ class AliFlowEventSimple: public TObject {
   virtual void SetVertexPosition(Double_t* pos);
   virtual void GetVertexPosition(Double_t* pos);
 
-  void SetCentrality(Double_t c) {fCentrality=c;}
-  Double_t GetCentrality() const {return fCentrality;}
-  void SetCentralityCL1(Double_t c) {fCentralityCL1=c;}
-  Double_t GetCentralityCL1() const {return fCentralityCL1;}
-  void SetNITSCL1(Double_t c) {fNITSCL1=c;}
-  Double_t GetNITSCL1() const {return fNITSCL1;}
-  void SetCentralityTRK(Double_t c) {fCentralityTRK=c;}
-  Double_t GetCentralityTRK() const {return fCentralityTRK;}
+  void SetCentrality(Double_t c) {fCentrality=c;};
+  Double_t GetCentrality() const {return fCentrality;};
+  void SetCentralityCL1(Double_t c) {fCentralityCL1=c;};
+  Double_t GetCentralityCL1() const {return fCentralityCL1;};
+  void SetNITSCL1(Double_t c) {fNITSCL1=c;};
+  Double_t GetNITSCL1() const {return fNITSCL1;};
+  void SetCentralityTRK(Double_t c) {fCentralityTRK=c;};
+  Double_t GetCentralityTRK() const {return fCentralityTRK;};
   void SetRun(Int_t const run) {fRun = run;};
   Int_t GetRun() const {return fRun;};
+  void SetZNCEnergy(Double_t const en) {fZNCM = en;};
+  Double_t GetZNCEnergy() const {return fZNCM;};
+  void SetZNAEnergy(Double_t const en) {fZNAM = en;};
+  Double_t GetZNAEnergy() const {return fZNAM;};
 
  protected:
   virtual void Generate( Int_t nParticles,
@@ -173,17 +177,17 @@ class AliFlowEventSimple: public TObject {
   Double_t                fNITSCL1;                   // number of clusters in ITS layer 1
   Double_t                fCentralityTRK;             // centrality (TRK)
   Int_t                   fRun;                       // run number
-  Double_t                fZNCQ[2];                   // Q_1 vector from ZDCN-C
-  Double_t                fZNAQ[2];                   // Q_1 vector from ZDCN-A
-  Double_t                fZNCM;                      // total energy from ZDCN-C
-  Double_t                fZNAM;                      // total energy from ZDCN-A
+  AliFlowVector           fZNCQ;                      // Q_1 vector from ZNC-C
+  AliFlowVector           fZNAQ;                      // Q_1 vector from ZNC-A
+  Double_t                fZNCM;                      // total energy from ZNC-C
+  Double_t                fZNAM;                      // total energy from ZNC-A
   Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)
  
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
-  ClassDef(AliFlowEventSimple,5)
+  ClassDef(AliFlowEventSimple,6)
 };
 
 #endif

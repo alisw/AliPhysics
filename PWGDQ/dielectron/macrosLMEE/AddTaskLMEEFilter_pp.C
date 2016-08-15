@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskLMEEFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
+AliAnalysisTask *AddTaskLMEEFilter_pp(TString cfg="ConfigLMEE_nano_pp.C",
 				      Bool_t gridconf=kFALSE,
 				      ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
 				      TString period="",

@@ -88,6 +88,7 @@ void AliAnalysisTaskFilteredTest( const char* esdList,
     task->SetLowPtV0DownscaligF(scalingV0);
     task->SetFriendDownscaling(scalingFriend);
     task->SetUseESDfriends(kTRUE);
+    task->Dump();
     // Init
     if (!mgr->InitAnalysis()) 
         mgr->PrintStatus();

@@ -145,7 +145,7 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
   // add CDB task
   if(run>=0){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect("raw://", run);
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect("cvmfs://", run);
     if (!taskCDB) return;
     //taskCDB->SetRunNumber(run);
   } else {

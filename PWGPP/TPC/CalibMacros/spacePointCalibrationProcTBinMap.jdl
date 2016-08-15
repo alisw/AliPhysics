@@ -1,0 +1,48 @@
+Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/procTBinMap.sh";
+
+Packages = {
+"VO_ALICE@jemalloc::v3.6.0",
+"VO_ALICE@AliPhysics::v5-08-12-01-1"
+};
+
+Jobtag={
+    "comment:extraction of TPC SP distortion maps - processing of one time bin"
+};
+
+LegoResubmitZombies="1";
+
+TTL="86000";
+Price="20";
+
+Validationcommand="/alice/validation/validation.sh";
+
+JDLVariables={
+    "Packages", 
+    "OutputDir",
+    "filesToCheck"
+};
+
+Workdirectorysize={"20000MB"}; 
+
+# The 3 values in timeBins.log
+Arguments="$1 $2 $3";
+
+InputFile={
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/$3/alitpcdcalibres.root",
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/validation_merge.rc"
+};
+
+Output={
+    "log_archive.zip:*.log@disk=2",
+    "root_archive.zip:alitpcdcalibres.root,voxelResTree.root,voxelStat.root@disk=2"
+};
+
+OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_20160607/$3/$1_$2";
+
+OutputErrorE={
+    "log_archive.zip:*.log@disk=2",
+    "root_archive.zip:alitpcdcalibres.root,voxelResTree.root,voxelStat.root@disk=2"
+};
+
+filesToCheck="voxelResTree.root alitpcdcalibres.root";
+

@@ -1,123 +1,136 @@
 AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
-  const char              *outfilename                  = "AnalysisResults.root",
-  const char              *nJets                        = "Jets",
-  const char              *nClusters                    = "CaloClustersCorr",
-  UInt_t                  type                          = 0, //AliAnalysisTaskEmcal::kTPC,
-  const char              *nrho                         = "rhoChEm",
-  const Double_t          minPhi                        = 1.8,
-  const Double_t          maxPhi                        = 2.74,
-  const Double_t          minEta                        = -0.3,
-  const Double_t          maxEta                        = 0.3,
-  const Double_t          minArea                       = 0.4,
-  const char              *nPicoTracks                  = "PicoTracks",
-  const Double_t          hiPTjet                       = 50.0,
-  const Double_t          trptcut                       = 2.0,
-  const Double_t          trketa                        = 0.9,
-  const Int_t             trkQAcut                      = 10041006,
-  Bool_t                  isESD                         = 0,
-  Bool_t                  GlobalQA                      = 0,
-  const char              *typeDET                      = "EMCAL",
-  Double_t                jetradius                     = 0.2,
-  Bool_t                  FillHistos                    = 0,
-  Bool_t                  JetHFPID                      = 0,
-  const char              *tag	                        = ""
-)
+                                             const char *ntracks                        = "usedefault",
+                                             const char *nclusters                      = "usedefault",
+                                             const char* ncells                         = "usedefault",
+                                             const char *suffix                         = "",
+                                             const char *tag                            = "JetTag"
+                                             )
 {
-  //=======================================================================================
-  // Get the pointer to the existing analysis manager via the static access method.
-  //=======================================================================================
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr)
-  {
-    Error("AddTaskEmcalJetHF", "No analysis manager to connect to.");
-    return NULL;
-  }
-  //=======================================================================================
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //=======================================================================================
-  AliVEventHandler *evhand = mgr->GetInputEventHandler();
-  //if (!mgr->GetInputEventHandler())
-  if (!evhand) {
-    Error("AddTaskEmcalJetHadEPpid", "This task requires an input event handler");
-    return NULL;
-  }
-  TString nTracks;
-  // check on type of event
-  TString dType("ESD");
-  if (!evhand->InheritsFrom("AliESDInputHandler"))
-    dType = "AOD";
-    if (dType == "AOD"){
-      nTracks = "AODFilterTracks";
-      isESD = 0;
+    // Get the pointer to the existing analysis manager via the static access method.
+    //==============================================================================
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr)
+    {
+        ::Error("AddTaskEmcalJetHF", "No analysis manager to connect to.");
+        return 0;
     }
-  if (dType == "ESD") nTracks = "ESDFilterTracks";
-  //ESD Trk Cuts
-  if(isESD > 0){
-  AliESDtrackCuts *esdTrackCuts = 0x0;
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  esdTrackCuts = CreateTrackCutsPWGJE(trkQAcut);
-  }
-  //=======================================================================================
-  // Init the task and do settings
-  //=======================================================================================
-  //TString name(Form("Spectra_%s", nJets));
-  TString name(Form("Spectra_%s_%s%s", nJets, nrho, tag));
-  AliAnalysisTaskEmcalJetHF *spectratask = new AliAnalysisTaskEmcalJetHF(name);
-  spectratask->AddJetContainer(nJets);
-  spectratask->AddClusterContainer(nClusters);
-  spectratask->SetAnaType(type);
-  spectratask->SetRhoName(nrho);
-  spectratask->SetJetPhi(minPhi,maxPhi);
-  spectratask->SetJetEta(minEta,maxEta);
-  spectratask->SetJetAreaCut(minArea);
-  spectratask->AddParticleContainer(nTracks);
-  spectratask->SetJetPt(hiPTjet); 
-  spectratask->SetTrackPtCut(trptcut);
-  spectratask->SetTrackEta(trketa);
-  spectratask->SetTrackQACut(trkQAcut);
-  spectratask->SetGlobalQA(GlobalQA);
-  spectratask->SetFillHistograms(FillHistos);
-  spectratask->SetFillJetPID(JetHFPID);
-  if(isESD > 0) spectratask->SetTrackCuts(esdTrackCuts);
-  //spectratask->SetDataType(isESD);
-  TString     kEmcalTriggers      = "EmcalTriggers";
-  spectratask->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
-  // =================== set up containers ================================================
-  AliParticleContainer *trackCont     = spectratask->AddParticleContainer(nTracks);
-  if(trackCont){
-    trackCont->SetClassName("AliVTrack");
-    trackCont->SetParticleEtaLimits(-0.9,0.9);
-    trackCont->SetParticlePhiLimits(1.4,3.2);
-  }
-  AliClusterContainer  *clusterCont   = spectratask->AddClusterContainer(nClusters);
-  AliParticleContainer *trackJetCont  = spectratask->AddParticleContainer(nTracks);
-  if(trackJetCont){
-    trackJetCont->SetClassName("AliVTrack");
-    trackJetCont->SetParticleEtaLimits(-0.9,0.9);
-    //trackJetCont->SetParticlePhiLimits(1.4,3.2);
-  }
-  AliClusterContainer *clusterJetCont = spectratask->AddClusterContainer(nClusters);
-  TString strType(typeDET);
-  AliJetContainer *jetCont = spectratask->AddJetContainer(nJets,strType,jetradius);
-  if(jetCont) {
-    //jetCont->SetRhoName(nrho);
-    //jetCont->ConnectParticleContainer(trackJetCont);
-    //jetCont->ConnectClusterContainer(clusterJetCont);
-    //jetCont->ConnectParticleContainer(trackCont);
-    //jetCont->ConnectClusterContainer(clusterCont);
-    //jetCont->SetZLeadingCut(0.98,0.98);
-    //jetCont->SetPercAreaCut(jetareacut); // 0.6
-    //jetCont->SetJetPtCut(jetptcut);
-  }
-  //=======================================================================================
-  // Final settings, pass to manager and set the containers
-  //=======================================================================================
-  // Create containers for input/output
-  mgr->AddTask(spectratask);
-  mgr->ConnectInput (spectratask, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer *cospectra = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
-  mgr->ConnectOutput(spectratask,1,cospectra);
 
-  return spectratask;
+    // Check the analysis type using the event handlers connected to the analysis manager.
+    //==============================================================================
+    AliVEventHandler* handler = mgr->GetInputEventHandler();
+    if (!handler)
+    {
+        ::Error("AddTaskEmcalJetHF", "This task requires an input event handler");
+        return 0;
+    }
+
+    enum EDataType_t {
+        kUnknown,
+        kESD,
+        kAOD
+    };
+
+    EDataType_t dataType = kUnknown;
+
+    if (handler->InheritsFrom("AliESDInputHandler")) {
+        dataType = kESD;
+    }
+    else if (handler->InheritsFrom("AliAODInputHandler")) {
+        dataType = kAOD;
+    }
+
+    //-------------------------------------------------------
+    // Init the task and do settings
+    //-------------------------------------------------------
+
+    TString trackName(ntracks);
+    TString clusName(nclusters);
+    TString cellName(ncells);
+
+    if (trackName == "usedefault") {
+        if (dataType == kESD) {
+            trackName = "Tracks";
+        }
+        else if (dataType == kAOD) {
+            trackName = "tracks";
+        }
+        else {
+            trackName = "";
+        }
+    }
+
+    if (clusName == "usedefault") {
+        if (dataType == kESD) {
+            clusName = "CaloClusters";
+        }
+        else if (dataType == kAOD) {
+            clusName = "caloClusters";
+        }
+        else {
+            clusName = "";
+        }
+    }
+
+    if (cellName == "usedefault") {
+        if (dataType == kESD) {
+            cellName = "EMCALCells";
+        }
+        else if (dataType == kAOD) {
+            cellName = "emcalCells";
+        }
+        else {
+            cellName = "";
+        }
+    }
+
+    TString name("AliAnalysisTaskEmcalJetHF");
+    if (!trackName.IsNull()) {
+        name += "_";
+        name += trackName;
+    }
+    if (!clusName.IsNull()) {
+        name += "_";
+        name += clusName;
+    }
+    if (!cellName.IsNull()) {
+        name += "_";
+        name += cellName;
+    }
+    if (strcmp(suffix,"") != 0) {
+        name += "_";
+        name += suffix;
+    }
+
+    AliAnalysisTaskEmcalJetHF* HFTask = new AliAnalysisTaskEmcalJetHF(name);
+    HFTask->SetCaloCellsName(cellName);
+    HFTask->SetVzRange(-10,10);
+
+    if (trackName == "mcparticles") {
+        AliMCParticleContainer* mcpartCont = HFTask->AddMCParticleContainer(trackName);
+    }
+    else if (trackName == "tracks" || trackName == "Tracks") {
+        AliTrackContainer* trackCont = HFTask->AddTrackContainer(trackName);
+    }
+    else if (!trackName.IsNull()) {
+        HFTask->AddParticleContainer(trackName);
+    }
+    HFTask->AddClusterContainer(clusName);
+
+    //-------------------------------------------------------
+    // Final settings, pass to manager and set the containers
+    //-------------------------------------------------------
+
+    mgr->AddTask(HFTask);
+
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+    TString contname(name);
+    contname += "_histos";
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
+                                                              TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                              Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectInput  (HFTask, 0,  cinput1 );
+    mgr->ConnectOutput (HFTask, 1, coutput1 );
+
+    return HFTask;
 }
-

@@ -56,18 +56,20 @@ class CutHandlerCalo{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,                  // change different set of cuts
-                              Int_t     isMC                      = 0,                  // run MC
-                              Int_t     enableQAMesonTask         = 0,                 // enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t     enableQAClusterTask       = 0,                 // enable additional QA task
-                              TString   fileNameInputForWeighting = "MCSpectraInput.root",       // path to file for weigting input
-                              Int_t     headerSelectionInt        = 0,                  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,                    // change different set of cuts
+                              Int_t     isMC                      = 0,                    // run MC
+                              Int_t     enableQAMesonTask         = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
+                              Int_t     enableQAClusterTask       = 0,                    // enable additional QA task
+                              TString   fileNameInputForWeighting = "MCSpectraInput.root",// path to file for weigting input
+                              Int_t     headerSelectionInt        = 0,                    // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                               TString   cutnumberAODBranch        = "111110006008400000001500000",
-                              TString   periodName                = "LHC13d2",              // name of the period for added signals and weighting
-                              Bool_t    doWeighting               = kFALSE,                // enable Weighting
-                              Bool_t    isUsingTHnSparse          = kTRUE,               // enable or disable usage of THnSparses for background estimation
-                              Int_t     enableExtMatchAndQA       = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
-                              TString   periodNameV0Reader        = ""
+                              TString   periodName                = "LHC13d2",            // name of the period for added signals and weighting
+                              Bool_t    doWeighting               = kFALSE,               // enable Weighting
+                              Bool_t    isUsingTHnSparse          = kTRUE,                // enable or disable usage of THnSparses for background estimation
+                              Int_t     enableExtMatchAndQA       = 0,                    // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                              TString   periodNameV0Reader        = "",                   // name of period for V0Reader
+                              Bool_t    enableSortingMCLabels     = kTRUE,                // enable sorting for MC cluster labels
+                              Bool_t    runLightOutput            = kFALSE                // switch to run light output (only essential histograms for afterburner)
                 ) {
 
   // ================= Load Librariers =================================
@@ -135,6 +137,8 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -149,6 +153,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -177,6 +182,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
 
   //create cut handler
   CutHandlerCalo cuts;
@@ -253,6 +259,20 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     cuts.AddCut("55910113","1111100000022220000","0163103100000050"); // 50-90
     cuts.AddCut("50010113","1111100000022220000","0163103100000050"); // 0-100
     
+  } else if (trainConfig == 203){ // EMCAL clusters - change opening angle
+    cuts.AddCut("50110113","1111100000022220000","0163103100000040"); // 0-10
+    cuts.AddCut("51210113","1111100000022220000","0163103100000040"); // 10-20
+    cuts.AddCut("52510113","1111100000022220000","0163103100000040"); // 20-50
+    cuts.AddCut("55910113","1111100000022220000","0163103100000040"); // 50-90
+    cuts.AddCut("50010113","1111100000022220000","0163103100000040"); // 0-100
+  } else if (trainConfig == 204){ // EMCAL clusters - timing cut
+    cuts.AddCut("50110113","1111100060022220000","0163103100000050"); // 0-10
+    cuts.AddCut("51210113","1111100060022220000","0163103100000050"); // 10-20
+    cuts.AddCut("52510113","1111100060022220000","0163103100000050"); // 20-50
+    cuts.AddCut("55910113","1111100060022220000","0163103100000050"); // 50-90
+    cuts.AddCut("50010113","1111100060022220000","0163103100000050"); // 0-100
+    
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -310,6 +330,8 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]    = new AliConvEventCuts();   
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -317,12 +339,14 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     analysisClusterCuts[i]  = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i]    = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
@@ -333,9 +357,10 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonAnalysis(kTRUE);
-  task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-  task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-    task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetDoMesonQA(enableQAMesonTask);        //Attention new switch for Pi0 QA
+  task->SetDoClusterQA(enableQAClusterTask);    //Attention new switch small for Cluster QA
+  task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers

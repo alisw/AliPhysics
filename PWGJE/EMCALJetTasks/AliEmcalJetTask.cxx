@@ -213,39 +213,25 @@ Int_t AliEmcalJetTask::FindJets()
 
   AliDebug(2,Form("Jet type = %d", fJetType));
 
-  AliTLorentzVector mom;
-
   Int_t iColl = 1;
   TIter nextPartColl(&fParticleCollArray);
   AliParticleContainer* tracks = 0;
   while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
     AliDebug(2,Form("Tracks from collection %d: '%s'.", iColl-1, tracks->GetName()));
-    tracks->ResetCurrentID();
-    AliVParticle* t = 0;
-    while ((t = tracks->GetNextAcceptParticle())) {
-      tracks->GetMomentum(mom, tracks->GetCurrentID());
-      if (((fJetType & AliJetContainer::kChargedJet) != 0) && (t->Charge() == 0)) {
-        AliDebug(2,Form("Skipping track %d because it is neutral.", tracks->GetCurrentID()));
-        continue;
-      }
-
-      if (((fJetType & AliJetContainer::kNeutralJet) != 0) && (t->Charge() != 0)) {
-        AliDebug(2,Form("Skipping track %d because it is charged.", tracks->GetCurrentID()));
-        continue;
-      }
-
+    AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
+    for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
       // artificial inefficiency
       if (fTrackEfficiency < 1.) {
         Double_t rnd = gRandom->Rndm();
         if (fTrackEfficiency < rnd) {
-          AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", tracks->GetCurrentID()));
+          AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
           continue;
         }
       }
 
-      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", tracks->GetCurrentID(), t->GetLabel(), t->Pt()));
-      Int_t uid = tracks->GetCurrentID() + fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(mom.Px(), mom.Py(), mom.Pz(), mom.E(), uid);
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f)", it.current_index(), it->second->GetLabel(), it->first.Pt()));
+      Int_t uid = it.current_index() + fgkConstIndexShift * iColl;
+      fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
     }
     iColl++;
   }
@@ -255,22 +241,11 @@ Int_t AliEmcalJetTask::FindJets()
   AliClusterContainer* clusters = 0;
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
     AliDebug(2,Form("Clusters from collection %d: '%s'.", iColl-1, clusters->GetName()));
-    clusters->ResetCurrentID();
-    AliVCluster* c = 0;
-    while ((c = clusters->GetNextAcceptCluster())) {
-      clusters->GetMomentum(mom, clusters->GetCurrentID());
-      Double_t cEta = mom.Eta();
-      Double_t cPhi = mom.Phi_0_2pi();
-      Double_t cPt  = mom.Pt();
-      Double_t cPx  = mom.Px();
-      Double_t cPy  = mom.Py();
-      Double_t cPz  = mom.Pz();
-
-      Double_t e = TMath::Sqrt(cPx*cPx+cPy*cPy+cPz*cPz);
-
-      AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", clusters->GetCurrentID(), c->GetLabel(), e));
-      Int_t uid = -clusters->GetCurrentID() - fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(cPx, cPy, cPz, e, uid);
+    AliClusterIterableMomentumContainer itcont = clusters->accepted_momentum();
+    for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+      AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", it.current_index(), it->second->GetLabel(), it->first.E()));
+      Int_t uid = -it.current_index() - fgkConstIndexShift * iColl;
+      fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
     }
     iColl++;
   }
@@ -318,6 +293,7 @@ void AliEmcalJetTask::FillJetBranch()
     jet->SetAreaEta(area.eta());
     jet->SetAreaPhi(area.phi());
     jet->SetAreaE(area.E());
+    jet->SetJetAcceptanceType(FindJetAcceptanceType(jet->Eta(), jet->Phi_0_2pi(), fRadius));
 
     // Fill constituent info
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper.GetJetConstituents(ij));
@@ -370,8 +346,6 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
  */
 void AliEmcalJetTask::ExecOnce()
 {
-  SetNeedEmcalGeom(kFALSE);
-
   if (fTrackEfficiency < 1.) {
     if (gRandom) delete gRandom;
     gRandom = new TRandom3(0);
@@ -801,4 +775,75 @@ fastjet::RecombinationScheme AliEmcalJetTask::ConvertToFJRecoScheme(ERecoScheme_
     ::Error("AliEmcalJetTask::ConvertToFJRecoScheme", "Recombination scheme %d not recognized!!!", reco);
     return fastjet::external_scheme;
   }
+}
+
+/**
+ * Finds which geometrical acceptance types the jet satisfies.
+ * @return bitwise jet acceptance type
+ */
+UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r) {
+  
+  //This method has to be called after the run number is known because it needs the EMCal geometry object.
+  
+  UInt_t jetAcceptanceType = AliEmcalJet::kUser; // all jets satify the "no acceptance cut" condition
+  
+  // Check if TPC
+  if( eta < 0.9 && eta > -0.9 ) {
+    jetAcceptanceType |= AliEmcalJet::kTPC;
+    // Check if TPCfid
+    if (eta < 0.9 - r && eta > -0.9 + r)
+      jetAcceptanceType |= AliEmcalJet::kTPCfid;
+  }
+    
+  // Check if EMCAL
+  if( IsJetInEmcal(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kEMCAL;
+    // Check if EMCALfid
+    if( IsJetInEmcal(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kEMCALfid;
+  }
+  
+  // Check if DCAL
+  if( IsJetInDcal(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kDCAL;
+    // Check if DCALfid
+    if( IsJetInDcal(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kDCALfid;
+  }
+ 
+  return jetAcceptanceType;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in EMCal.
+ */
+Bool_t AliEmcalJetTask::IsJetInEmcal(Double_t eta, Double_t phi, Double_t r)
+{
+  if (!fGeom) return kFALSE;
+
+  if ( eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
+    if(fRunNumber >= 177295 && fRunNumber <= 197470) {//small SM masked in 2012 and 2013
+      if ( phi < 3.135 - r && phi > 1.405 + r )
+        return kTRUE;
+    }
+    else {
+      if ( phi < fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetArm1PhiMin() * TMath::DegToRad() + r)
+        return kTRUE;
+    }
+  }
+
+  return kFALSE;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in DCal.
+ */
+Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
+{
+  if (!fGeom) return kFALSE;
+  if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
+    if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r)
+      return kTRUE;
+  }
+  return kFALSE;
 }

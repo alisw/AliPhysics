@@ -1104,22 +1104,22 @@ void  AlianalysisTaskDptPID::UserExec(Option_t */*option*/)
 	case 6: centrality = _mult6; break;
 	case 7: centrality = _mult4a; break;
 	}
-            
+      
+      /*     if ( centrality < _centralityMin ||  
+	     centrality > _centralityMax ||
+	     fabs(v0Centr-trkCentr)>5.0)
+	     {
+	     return;
+	     }*/
+      //Only when use VO as centrality estimatator
+      
       if ( centrality < _centralityMin ||  
-	   centrality > _centralityMax ||
-	   fabs(v0Centr-trkCentr)>5.0)
+	   centrality > _centralityMax )
 	{
 	  return;
 	}
-      /* //Only when use VO as centrality estimatator
-
-       if ( centrality < _centralityMin ||  
-	    centrality > _centralityMax )
-	{
-	  return;
-	  }*/
-       
-       
+      
+      
       _eventAccounting->Fill(2);// count all events with right centrality
   
       // filter on z and xy vertex

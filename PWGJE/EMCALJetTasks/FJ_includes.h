@@ -28,6 +28,7 @@
 #include <fastjet/contrib/Nsubjettiness.hh>
 #include <fastjet/contrib/Njettiness.hh>
 #include <fastjet/contrib/NjettinessPlugin.hh>
+#include <fastjet/contrib/SoftDrop.hh>
 #endif
 #endif
 

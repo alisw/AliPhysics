@@ -35,7 +35,7 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
 
   virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
   void SetMCInput() {fIsMCInput = kTRUE;}
- 
+
  private:
 
   Int_t    fDebug;		//  Debug flag
@@ -60,15 +60,16 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH1F    *fhZPApmc;		//! calibrated ZPA PMCs
   TH2F    *fhZNCCentroid;       //! ZNC centroid
   TH2F    *fhZNACentroid;       //! ZNA centroid
+  TH1F    *fhPMCZNCemdUncalib;  //! ZNC PMC low gain chain
+  TH1F    *fhPMCZNAemdUncalib;  //! ZNA PMC low gain chain
   TH1F    *fhPMCZNCemd;      	//! ZNC PMC low gain chain
   TH1F    *fhPMCZNAemd;      	//! ZNA PMC low gain chain
   TH2F    *fDebunch;            //! TDC sum vs. diff
-  TH1F    *fhTDCZNC;		//! ZNC TDC 
-  TH1F    *fhTDCZNA;		//! ZNC TDC 
- 
-  ClassDef(AliAnalysisTaskZDCPbPb,4); 
+  TH1F    *fhTDCZNC;		//! ZNC TDC
+  TH1F    *fhTDCZNA;		//! ZNC TDC
+
+  ClassDef(AliAnalysisTaskZDCPbPb,5);
 
 };
 
 #endif
-

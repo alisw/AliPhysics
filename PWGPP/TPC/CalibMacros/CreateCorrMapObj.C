@@ -8,38 +8,34 @@
 
 #endif
 
-void CreateCorrMapObjRef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="local://")
-{
-  /*
-    Create reference maps OCDB object from array of Cheb.maps for different fields
-    Example of creation of the object for ++ and -- polarities:
-    .L CreateCorrMapObj.C+
-    f0 = TFile::Open("proj244918_row/voxelResTree.root");
-    chP = run244918_0_9999999999;
-    chP->GetName();
-    chP->SetTitle("ref map for ++ field from PbPb2015");
-    chP->SetFieldType(AliTPCChebCorr::kFieldPos);
-    
-    f1 = TFile::Open("proj246392_row/voxelResTree.root");
-    chM = run246392_0_9999999999;
-    chM->SetTitle("ref map for -- field from PbPb2015");
-    chM->SetFieldType(AliTPCChebCorr::kFieldNeg);
-    TObjArray ar;
-    ar.Add(chP);
-    ar.Add(chM);
-    CreateCorrMapObjRef(&ar);
+const char* GetObjPath(Bool_t correction, Bool_t ref);
 
-  */
+
+//___________________________________________________
+const char* GetObjPath(Bool_t correction, Bool_t ref) 
+{
+  // create object path
+  return Form("TPC/Calib/%sMap%s",correction ? "Correction":"Distortion", ref ? "Ref":"");
+}
+
+//_________________________________________________________________________________________________
+void CreateCorrMapObjRef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+{
+  // create reference maps 
   int nmap = mapArr->GetEntriesFast();
   TObjArray* arr = new TObjArray();
   int nAdd = 0;
+  int run = -1;
+  Bool_t isCorrection = kTRUE;
   for (int i=0;i<nmap;i++) {
     AliTPCChebCorr* map = (AliTPCChebCorr*)mapArr->At(i); 
     if (!map) continue;
+    isCorrection = map->IsCorrection(); // is this correction or distortion?
+    if (run<0) run = map->GetRun();
     for (int j=0;j<nAdd;j++) { // check if the map of given type is unique
       AliTPCChebCorr* map0 = (AliTPCChebCorr*)arr->At(j); 
       if (map->GetFieldType()==map0->GetFieldType()) {
-	printf("Error: the maps of fieldType %d was already added, check input array\n",map->GetFieldType());
+	printf("Error: the map of fieldType %d was already added, check input array\n",map->GetFieldType());
 	exit(1);
       }
     }
@@ -56,21 +52,66 @@ void CreateCorrMapObjRef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const 
   AliCDBManager* man = AliCDBManager::Instance();
   //
   man->UnsetDefaultStorage();
-  man->SetDefaultStorage("local://");
-  man->SetSpecificStorage("TPC/Calib/CorrectionMapsRef",dest);
+  man->SetDefaultStorage(dest);
+  man->SetRun(run);
   //
   AliCDBMetaData* md = new AliCDBMetaData();
   md->SetResponsible("Ruben Shahoyan");
-  md->SetComment("Test Cheb.Correction map instead of ComposedCorrection");
-  AliCDBId id("TPC/Calib/CorrectionMapsRef",firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  //AliCDBStorage* st = man->GetStorage("local//.");
+  md->SetComment(Form("Cheb. %s reference map",isCorrection ? "Correction":"Distortion"));
+  AliCDBId id(GetObjPath(isCorrection,kTRUE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
   man->Put(arr,id,md); 
   printf("Created an object with single time independent map\n");
   //
 }
 
+//_________________________________________________________________________________________________
+void CreateCorrMapObjDef(TObjArray* mapArr,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+{
+  // create default maps 
+  int nmap = mapArr->GetEntriesFast();
+  TObjArray* arr = new TObjArray();
+  int nAdd = 0;
+  int run = -1;
+  Bool_t isCorrection = kTRUE;
+  for (int i=0;i<nmap;i++) {
+    AliTPCChebCorr* map = (AliTPCChebCorr*)mapArr->At(i); 
+    if (!map) continue;
+    isCorrection = map->IsCorrection(); // is this correction or distortion?
+    if (run<0) run = map->GetRun();
+    for (int j=0;j<nAdd;j++) { // check if the map of given type is unique
+      AliTPCChebCorr* map0 = (AliTPCChebCorr*)arr->At(j); 
+      if (map->GetFieldType()==map0->GetFieldType()) {
+	printf("Error: the map of fieldType %d was already added, check input array\n",map->GetFieldType());
+	exit(1);
+      }
+    }
+    //
+    map->SetTimeStampStart(0);
+    map->SetTimeStampEnd(0xffffffff);  
+    map->SetTimeDependent(kFALSE);
+    arr->Add(map);
+    printf("Adding map for field type %d at slot %d\n",map->GetFieldType(),nAdd);
+    nAdd++;
+  }
+  //
+  printf("Added default maps for %d field types\n",nAdd);
+  AliCDBManager* man = AliCDBManager::Instance();
+  //
+  man->UnsetDefaultStorage();
+  man->SetDefaultStorage(dest);
+  man->SetRun(run);
+  //
+  AliCDBMetaData* md = new AliCDBMetaData();
+  md->SetResponsible("Ruben Shahoyan");
+  md->SetComment(Form("Cheb. %s default map",isCorrection ? "Correction":"Distortion"));
+  AliCDBId id(GetObjPath(isCorrection,kFALSE), firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
+  man->Put(arr,id,md); 
+  printf("Created an object with single time independent map\n");
+  //
+}
 
-void CreateCorrMapObjRef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="local://")
+//_________________________________________________________________________________________________
+void CreateCorrMapObjDef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   map->SetTimeStampStart(0);
   map->SetTimeStampEnd(0xffffffff);  
@@ -79,22 +120,22 @@ void CreateCorrMapObjRef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, cons
   arr->Add(map);
   AliCDBManager* man = AliCDBManager::Instance();
   //
+  Bool_t isCorrection = map->IsCorrection(); // is this correction or distortion?
   man->UnsetDefaultStorage();
-  man->SetDefaultStorage("local://");
-  man->SetSpecificStorage("TPC/Calib/CorrectionMapsRef",dest);
+  man->SetDefaultStorage(dest);
+  man->SetRun(map->GetRun());
   //
   AliCDBMetaData* md = new AliCDBMetaData();
   md->SetResponsible("Ruben Shahoyan");
-  md->SetComment("Test Cheb.Correction map instead of ComposedCorrection");
-  AliCDBId id("TPC/Calib/CorrectionMapsRef",firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  //AliCDBStorage* st = man->GetStorage("local//.");
+  md->SetComment(Form("Cheb. %s default map",isCorrection ? "Correction":"Distortion"));
+  AliCDBId id(GetObjPath(isCorrection,kFALSE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
   man->Put(arr,id,md); 
   printf("Created an object with single time independent map\n");
   //
 }
 
-
-void CreateCorrMapObj(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="local://")
+//_________________________________________________________________________________________________
+void CreateCorrMapObjRef(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   map->SetTimeStampStart(0);
   map->SetTimeStampEnd(0xffffffff);  
@@ -103,21 +144,46 @@ void CreateCorrMapObj(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const c
   arr->Add(map);
   AliCDBManager* man = AliCDBManager::Instance();
   //
+  Bool_t isCorrection = map->IsCorrection(); // is this correction or distortion?
   man->UnsetDefaultStorage();
-  man->SetDefaultStorage("local://");
-  man->SetSpecificStorage("TPC/Calib/CorrectionMaps",dest);
+  man->SetDefaultStorage(dest);
+  man->SetRun(map->GetRun());
   //
   AliCDBMetaData* md = new AliCDBMetaData();
   md->SetResponsible("Ruben Shahoyan");
-  md->SetComment("Test Cheb.Correction map instead of ComposedCorrection");
-  AliCDBId id("TPC/Calib/CorrectionMaps",firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  //AliCDBStorage* st = man->GetStorage("local//.");
+  md->SetComment(Form("Cheb. %s reference map",isCorrection ? "Correction":"Distortion"));
+  AliCDBId id(GetObjPath(isCorrection,kTRUE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
   man->Put(arr,id,md); 
   printf("Created an object with single time independent map\n");
   //
 }
 
-void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const char* dest="local://")
+//_________________________________________________________________________________________________
+void CreateCorrMapObj(AliTPCChebCorr* map,int firstrun=0,int lastrun=-1, const char* dest="raw://")
+{
+  map->SetTimeStampStart(0);
+  map->SetTimeStampEnd(0xffffffff);  
+  map->SetTimeDependent(kFALSE);
+  TObjArray* arr = new TObjArray();
+  arr->Add(map);
+  AliCDBManager* man = AliCDBManager::Instance();
+  //
+  Bool_t isCorrection = map->IsCorrection(); // is this correction or distortion?
+  man->UnsetDefaultStorage();
+  man->SetDefaultStorage(dest);
+  man->SetRun(map->GetRun());
+  //
+  AliCDBMetaData* md = new AliCDBMetaData();
+  md->SetResponsible("Ruben Shahoyan");
+  md->SetComment(Form("Cheb. %s map",isCorrection ? "Correction":"Distortion"));
+  AliCDBId id(GetObjPath(isCorrection,kFALSE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
+  man->Put(arr,id,md); 
+  printf("Created an object with single time independent map\n");
+  //
+}
+
+//_________________________________________________________________________________________________
+void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const char* dest="raw://")
 {
   // emulate time dependent object
   //
@@ -128,11 +194,14 @@ void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const
     return;
   }
   //
+  int run = -1;
+  Bool_t isCorrection = kTRUE;
   for (int im0=0;im0<nmap;im0++) {
     AliTPCChebCorr* map0 = (AliTPCChebCorr*)arrMap->At(im0);
+    if (run<0) run = map0->GetRun();
     map0->SetTimeDependent(kTRUE);
+    isCorrection = map0->IsCorrection(); // is this correction or distortion?
   }
-  //
   // make sure time stamps are ordered
   for (int im0=0;im0<nmap;im0++) {
     AliTPCChebCorr* map0 = (AliTPCChebCorr*)arrMap->At(im0);
@@ -169,15 +238,13 @@ void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const
   AliCDBManager* man = AliCDBManager::Instance();
   //
   man->UnsetDefaultStorage();
-  man->SetDefaultStorage("local://");
-  man->SetSpecificStorage("TPC/Calib/CorrectionMaps",dest);
-  //  man->SetRun(run);
+  man->SetDefaultStorage(dest);
+  man->SetRun(run);
   //
   AliCDBMetaData* md = new AliCDBMetaData();
   md->SetResponsible("Ruben Shahoyan");
-  md->SetComment("Test Cheb.Correction map instead of ComposedCorrection");
-  AliCDBId id("TPC/Calib/CorrectionMaps",firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
-  //AliCDBStorage* st = man->GetStorage("local//.");
+  md->SetComment(Form("Cheb. %s maps array",isCorrection ? "Correction":"Distortion"));
+  AliCDBId id(GetObjPath(isCorrection,kFALSE),firstrun,lastrun<0 ? (AliCDBRunRange::Infinity()) : lastrun);
   man->Put(arrMap,id,md); 
   printf("Created an object with %d time dependent maps\n",nmap);
   //

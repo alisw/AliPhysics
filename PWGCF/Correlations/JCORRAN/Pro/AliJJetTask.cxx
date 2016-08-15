@@ -146,10 +146,8 @@ void AliJJetTask::UserCreateOutputObjects()
   fJetsCont.resize( fNJetFinder ); 
   //fCaloClustersCont.resize( fNJetFinder ); 
 
-  cout << "Debug 1" << endl;
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  cout << "Debug 2" << endl;
 
   fJetFinderString.clear();
 
@@ -177,6 +175,8 @@ Bool_t AliJJetTask::FillHistograms()
     for (int itrack = 0; itrack<tracksCont->GetNParticles(); itrack++){
       AliVTrack *track = static_cast<AliVTrack*>(tracksCont->GetParticle(itrack));
       new (fJTracks[itrack]) AliJBaseTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
+      AliJBaseTrack * particle = static_cast<AliJBaseTrack*>(fJTracks[itrack]);
+      particle->SetLabel(track->GetLabel());
     }     
   }
 
@@ -204,6 +204,7 @@ Bool_t AliJJetTask::FillHistograms()
         particle->SetPrimary();
       }
       particle->SetPdgCode(track->GetPdgCode());
+      //cout << "Track label: " << track->GetLabel() << endl;
       particle->SetLabel(track->GetLabel());
     }     
     if(debug > 0){

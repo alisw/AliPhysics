@@ -236,38 +236,6 @@ void AliJetEmbeddingTask::Run()
        	     	countWhile++;
        	     }
        	  }
-       	  // exclude a fraction of the entries -- doesn't work very well
-       	  //if(fRandomEntry){
-          //
-     	  //   if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	  //   else {
-       	  //   	fCurrentEntry = 0;
-       	  //   	AliWarning("Starting from first entry again");
-       	  //   	fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	  //   }
-       	  //   pTemb = jetDet->Pt();
-       	  //   
-       	  //   Float_t downscl = GetDownscalinigFactor();
-       	  //   Float_t random = gRandom->Rndm();
-       	  //   
-       	  //   while (random > downscl){
-       	  //   	fCurrentEntry++;
-       	  //   	random = gRandom->Rndm();
-       	  //   	if(fCurrentEntry < nentries) fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	  //   	else {
-       	  //   	   fCurrentEntry = 0;
-       	  //   	   AliWarning("Starting from first entry again");
-       	  //   	   fTreeJet4Vect->GetEntry(fCurrentEntry);
-       	  //   	}
-       	  //   	pTemb = jetDet->Pt();
-       	  //   	if(pTemb < fPtRanges[fCurrentBin]) {
-       	  //   	   random = gRandom->Rndm();
-       	  //   	   
-       	  //   	}
-       	  //   	   
-       	  //   }
-       	  //   
-       	  //}
 
        	  fhTreeEntriesUsed->Fill(fCurrentEntry);
        	  // Add the track that complies with the settings 
@@ -383,7 +351,7 @@ void AliJetEmbeddingTask::SetRejection(Float_t* rej) {
 }
 
 
-void AliJetEmbeddingTask::Terminate(){
+void AliJetEmbeddingTask::Terminate(Option_t *option){
    Printf("fGoBack = %d", fGoBack);
 }
 

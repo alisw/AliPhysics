@@ -26,8 +26,10 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAODHandler.h"
+#include "AliParticleContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
+#include "AliJMCTrack.h"
 #include "AliJJetJtTask.h" 
 #include "AliJCard.h"
 #include "AliJetContainer.h"
@@ -52,6 +54,7 @@ AliJJetJtTask::AliJJetJtTask() :
     zVert(-999),
     fAnaUtils(NULL),
     fRunTable(NULL),
+  fJMCTracks(NULL),
     fEventHist(NULL)
     
 {
@@ -77,6 +80,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
     zVert(-999),
     fAnaUtils(NULL),
     fRunTable(NULL),
+  fJMCTracks(NULL),
     fEventHist(NULL)
 {
   // Constructor
@@ -102,6 +106,7 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
     NRandom(1),
     moveJet(0),
     zVert(-999),
+  fJMCTracks(ap.fJMCTracks),
     fAnaUtils(ap.fAnaUtils),
     fRunTable(ap.fRunTable),
     fEventHist(ap.fEventHist)
@@ -180,6 +185,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
    }
    fJJetJtAnalysis->SetJTracks(fJetTask->GetJTracks());
    if(fDoMC){
+     fJMCTracks = fJetTask->GetMCJTracks();
 	   fJJetJtAnalysis->SetMCJTracks(fJetTask->GetMCJTracks());
    }
    fFirstEvent = kTRUE;
@@ -232,29 +238,73 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 	fJJetJtAnalysis->SetZVertex( zVert );
 
 
+  if(fDoMC){
+    AliMCParticleContainer * mcTracksCont = fJetTask->GetMCParticleContainer("mcparticles");
+    if(mcTracksCont){
+      TClonesArray * jets = new TClonesArray("AliJJet",1000); // just alias for AliJJet array
+      for(int itrack = 0; itrack<mcTracksCont->GetNParticles(); itrack++){
+        AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
+        if(TMath::Abs(track->Eta()) > 1.0) continue;
+        if(track->Pt() > 5){
+          if(track->GetNDaughters() > 1){
+            /*cout << "Mother: " << endl;
+            cout << "Track " << itrack << " Px: " << track->Px() << " Py: " << track->Py() << " Pz: " << track->Pz() << " charge: " << track->Charge() << endl;
+            cout << "pT " << track->Pt() << " eta: " << track->Eta() << endl;
+            track->Print();
+            cout << "Daughters: " << endl;*/
+            AliJJet *jet = new AliJJet(track->Px(),track->Py(),track->Pz(), track->E(),track->GetLabel(),0,0);
+            FindDaughters(jet,track,mcTracksCont);
+            //cout << "Jet pT: " << jet->Pt() << " Eta: " << jet->Eta() << " Phi: " << jet->Phi() << " Constituents: " << jet->GetNConstituents() << endl;
+          }
+          // If .... new (jets[iJet]) AliJJet(jet->Px(),jet->Py(), jet->Pz(), jet->E(), jet->GetLabel(),0,0);
+        }
+      }
+    }
+  }
 
-	fJJetJtAnalysis->UserExec();
-	PostData(1, fOutput );
-	//PostData(1, fJJetJtAnalysis->GetHistogramsDirectory());
+  fJJetJtAnalysis->UserExec();
+  PostData(1, fOutput );
+  //PostData(1, fJJetJtAnalysis->GetHistogramsDirectory());
 
-	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
+  if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
+
+}
+
+void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCParticleContainer *mcTracksCont){
+  
+  for(int id = track->GetFirstDaughter(); id <= track->GetLastDaughter() ; id++){
+    AliAODMCParticle *daughter = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(id));
+    if(daughter->GetNDaughters() > 0){
+      FindDaughters(jet,daughter,mcTracksCont);
+    }
+    if(daughter->IsPrimary() && daughter->Charge() != 0){
+      /*cout << "Add constituent" << endl;
+      cout << "Track " << id << " Px: " << daughter->Px() << " Py: " << daughter->Py() << " Pz: " << daughter->Pz() << " charge: " << daughter->Charge() << endl;
+      cout << "pT " << daughter->Pt() << " eta: " << daughter->Eta() << endl;
+      daughter->Print();*/
+      AliJMCTrack * particle = (AliJMCTrack*)fJMCTracks->At(id);
+      //cout << "Add Constituent: " << id << " pT: " << particle->Pt() << " Eta: " << particle->Eta() << " Phi: " << particle->Phi() << endl;
+      //jet->AddConstituent(&fJetTask->GetMCJTracks()[id]);
+      jet->AddConstituent(particle);
+    }
+  }
 
 }
 
 //______________________________________________________________________________
 void AliJJetJtTask::Init()
 {
-	// Intialisation of parameters
-	AliInfo("Doing initialization") ; 
-	//fJJetJtAnalysis->Init();
+  // Intialisation of parameters
+  AliInfo("Doing initialization") ; 
+  //fJJetJtAnalysis->Init();
 }
 
 
 void AliJJetJtTask::FinishTaskOutput(){
 
-	//TFile::Open("a.root","recreate");
-	OpenFile(1);
-	fJJetJtAnalysis->WriteHistograms();
+  //TFile::Open("a.root","recreate");
+  OpenFile(1);
+  fJJetJtAnalysis->WriteHistograms();
 
 }
 
@@ -262,46 +312,46 @@ void AliJJetJtTask::FinishTaskOutput(){
 //________________________________________________________________________
 bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
 
-	if(fRunTable->IsPP() && fAnaUtils->IsPileUpEvent(event)) {
-		return kFALSE;
-	} else {
-		Bool_t triggeredEventMB = kFALSE; //init
+  if(fRunTable->IsPP() && fAnaUtils->IsPileUpEvent(event)) {
+    return kFALSE;
+  } else {
+    Bool_t triggeredEventMB = kFALSE; //init
 
-		fEventHist->Fill( 0 );
+    fEventHist->Fill( 0 );
 
-		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+    Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
 
-		if( triggerkMB ){
-			triggeredEventMB = kTRUE;  //event triggered as minimum bias
-			fEventHist->Fill( 1 );
-		}
-		//--------------------------------------------------------------
-		// check reconstructed vertex
-		int ncontributors = 0;
-		Bool_t goodRecVertex = kFALSE;
-		const AliVVertex *vtx = event->GetPrimaryVertex();
-		if(vtx){
-			ncontributors = vtx->GetNContributors();
-			if(ncontributors > 0){
-				zVert = vtx->GetZ();
-				//cout<<zVert<<endl;
-				fEventHist->Fill( 2 );
-				if(fCard->VertInZRange(zVert)) {
-					goodRecVertex = kTRUE;
-					fEventHist->Fill( 3 );
-					zBin  = fCard->GetBin(kZVertType, zVert);
-				}
-			}
-		}
-		return goodRecVertex;
-	}
-	//---------------------------------
+    if( triggerkMB ){
+      triggeredEventMB = kTRUE;  //event triggered as minimum bias
+      fEventHist->Fill( 1 );
+    }
+    //--------------------------------------------------------------
+    // check reconstructed vertex
+    int ncontributors = 0;
+    Bool_t goodRecVertex = kFALSE;
+    const AliVVertex *vtx = event->GetPrimaryVertex();
+    if(vtx){
+      ncontributors = vtx->GetNContributors();
+      if(ncontributors > 0){
+        zVert = vtx->GetZ();
+        //cout<<zVert<<endl;
+        fEventHist->Fill( 2 );
+        if(fCard->VertInZRange(zVert)) {
+          goodRecVertex = kTRUE;
+          fEventHist->Fill( 3 );
+          zBin  = fCard->GetBin(kZVertType, zVert);
+        }
+      }
+    }
+    return goodRecVertex;
+  }
+  //---------------------------------
 }
 
 
 //______________________________________________________________________________
 void AliJJetJtTask::Terminate(Option_t *)
 {
-	//fJJetJtAnalysis->WriteHistograms();
+  //fJJetJtAnalysis->WriteHistograms();
 
 }

@@ -40,6 +40,7 @@ public:
   
   virtual void   UserCreateOutputObjects() {}
   virtual void   UserExec(Option_t *) {}
+  virtual Bool_t UserNotify();
   virtual void   NotifyRun();
   virtual void   Terminate(Option_t *) {}
   

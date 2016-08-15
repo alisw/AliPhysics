@@ -23,7 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemtoUser)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
-  )
+)
 
 # Sources - alphabetical order
 set(SRCS
@@ -34,23 +34,25 @@ set(SRCS
   AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
+  AliFemtoKKTrackCutFull.cxx
   AliFemtoKpmTrackCut.cxx
   AliFemtoKpm45TrackCut.cxx
   AliFemtoKtBinnedCorrFunc.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
   AliFemtoModelAllHiddenInfo.cxx
-  AliFemtoModelCorrFctnSource.cxx
-  AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelBPLCMSCorrFctn.cxx
   AliFemtoModelBPLCMSCorrFctnKK.cxx
   AliFemtoModelGausRinvFreezeOutGenerator.cxx
-  AliFemtoModelCorrFctnKStar.cxx
-  AliFemtoModelCorrFctnTrueQ.cxx
-  AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
+  AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelCorrFctnDirectYlm.cxx
+  AliFemtoModelCorrFctnSource.cxx
+  AliFemtoModelCorrFctnKStar.cxx
+  AliFemtoModelCorrFctnNonIdDR.cxx
+  AliFemtoModelCorrFctnQinv.cxx
+  AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoNSigmaFilter.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
@@ -106,10 +108,17 @@ set(SRCS
   AliFemtoV0TrackCutNSigmaFilter.cxx
   AliFemtoCutMonitorEventPartCollSize.cxx
   Faddeeva.cxx
-)
+  )
+
+
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Additional headers
+set(HDRS ${HDRS}
+  AliFemtoPairCutDetaDphi.h
+  )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

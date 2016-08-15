@@ -75,10 +75,10 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 	hESDConversionMappingRPhi(NULL),
 	hESDConversionMappingRZ(NULL),
 	hESDConversionR(NULL),
-        hESDConversionRInBins(NULL),
-        hESDConversionPhiInBins(NULL),
 	hESDConversionAsymP(NULL),
 	hESDConversionMidPtR(NULL),
+        hESDConversionRInBins(NULL),
+        hESDConversionPhiInBins(NULL),
 	hESDConversionEta(NULL),
 	hESDConversionMidPtEta(NULL),
 	hESDConversionPt(NULL),
@@ -171,10 +171,10 @@ fConversionCutArray(NULL),
 	hESDConversionMappingRPhi(NULL),
 	hESDConversionMappingRZ(NULL),
 	hESDConversionR(NULL),
-        hESDConversionRInBins(NULL),
-        hESDConversionPhiInBins(NULL),
 	hESDConversionAsymP(NULL),
 	hESDConversionMidPtR(NULL),
+        hESDConversionRInBins(NULL),
+        hESDConversionPhiInBins(NULL),
 	hESDConversionEta(NULL),
 	hESDConversionMidPtEta(NULL),
 	hESDConversionPt(NULL),
@@ -788,7 +788,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
  
 
-  for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
     if (gamma==NULL) continue;
 

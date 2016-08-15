@@ -63,20 +63,22 @@
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
 #include "AliPIDCombined.h"
-#include "AliHelperPID.h"
+#include "AliVTrack.h"
+#include "AliVParticle.h"
 
-using namespace AliHelperPIDNameSpace;
 using namespace std;
 
 ClassImp(AliAnalysisTaskPIDBFDptDpt)
 
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
 : AliAnalysisTaskSE(),
+  fNSigmaPID( 2 ),
+  fRemoveTracksT0Fill( 0 ),
+  fHasTOFPID( 0 ),
 fAODEvent(0),
 fESDEvent(0),
 fInputHandler(0),
 fPIDResponse(0x0),
-  fHelperPID(0x0),
 _outputHistoList(0),
 _twoPi         ( 2.0 * 3.1415927),
 _eventCount    ( 0),
@@ -241,8 +243,8 @@ _vertexZ ( 0),
   _ydis_POI_AliHelperPID ( 0),
   _etadis_before_any_cuts ( 0),
 
-  _vZ_y_Pt_POI_AliHelperPID ( 0),
-  _vZ_y_eta_POI_AliHelperPID ( 0),
+//_vZ_y_Pt_POI_AliHelperPID ( 0),
+//_vZ_y_eta_POI_AliHelperPID ( 0),
 
   _y_Pt_AllCh_MCAODTruth ( 0 ),
   _y_Pt_POI_MCAODTruth ( 0 ),
@@ -399,11 +401,13 @@ vsPtVsPt("NA")
 
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
 : AliAnalysisTaskSE(name),
+  fNSigmaPID( 2 ),
+  fRemoveTracksT0Fill( 0 ),
+  fHasTOFPID( 0 ),
 fAODEvent(0),
 fESDEvent(0),
 fInputHandler(0),
 fPIDResponse(0),
-  fHelperPID(0),
 _outputHistoList(0),
 _twoPi         ( 2.0 * 3.1415927),
 _eventCount    ( 0),
@@ -567,8 +571,8 @@ _Ncluster2  ( 0),
   _ydis_POI_AliHelperPID ( 0),
   _etadis_before_any_cuts ( 0),
 
-  _vZ_y_Pt_POI_AliHelperPID ( 0),
-  _vZ_y_eta_POI_AliHelperPID ( 0),
+  //_vZ_y_Pt_POI_AliHelperPID ( 0),
+  //_vZ_y_eta_POI_AliHelperPID ( 0),
 
   _y_Pt_AllCh_MCAODTruth ( 0 ),
   _y_Pt_POI_MCAODTruth ( 0 ),
@@ -717,6 +721,11 @@ vsEta("NA"),
 vsEtaPhi("NA"),
 vsPtVsPt("NA")
 {
+  // Au-Au added this block of code to use his own PID functions
+  for( Int_t ipart = 0; ipart < 4; ipart++ )
+    for( Int_t ipid = 0; ipid <= 2; ipid++ )
+      fnsigmas[ipart][ipid] = 999.;
+  
     printf("2nd constructor called ");
     
     DefineOutput(0, TList::Class());
@@ -736,7 +745,7 @@ void AliAnalysisTaskPIDBFDptDpt::UserCreateOutputObjects()
     _outputHistoList = new TList();
     _outputHistoList->SetOwner();
     
-    if ( _singlesOnly )   _outputHistoList->Add( fHelperPID->GetOutputList()); // add AliHelperPID object output list to task output list only for singles
+    //if ( _singlesOnly )   _outputHistoList -> Add( fHelperPID -> GetOutputList() ); // add AliHelperPIDBFDptDpt object output list to task output list only for singles
     
     _nBins_M0 = 500; _min_M0   = 0.;    _max_M0    = 5000.;  _width_M0 = (_max_M0-_min_M0)/_nBins_M0;
     _nBins_M1 = 500; _min_M1   = 0.;    _max_M1    = 5000.;  _width_M1 = (_max_M1-_min_M1)/_nBins_M1;
@@ -1010,8 +1019,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "beta_p_AliHelperPID_no_Undefined";   _beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "inverse_beta_p_POI_AliHelperPID";   _inverse_beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
       name = "inverse_beta_p_AliHelperPID_no_Undefined";   _inverse_beta_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
-      name = "vZ_y_Pt_POI_AliHelperPID";        _vZ_y_Pt_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", "y", "p_{T}" );
-      name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
+      //name = "vZ_y_Pt_POI_AliHelperPID";        _vZ_y_Pt_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "zVertex", "y", "p_{T}" );
+      //name = "vZ_y_eta_POI_AliHelperPID";        _vZ_y_eta_POI_AliHelperPID = createHisto3F( name, name, _nBins_vertexZ, _min_vertexZ, _max_vertexZ, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_eta_1, _min_eta_1, _max_eta_1, "zVertex", "y", "#eta" );
       name = "y_Pt_AllCh_MCAODTruth";       _y_Pt_AllCh_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );
       name = "y_Pt_POI_MCAODTruth";        _y_Pt_POI_MCAODTruth = createHisto2F( name, name, _nBins_eta_1, _min_eta_1, _max_eta_1, _nBins_pt_1, _min_pt_1, _max_pt_1, "y", "p_{T}", "counts" );      
      name = n1Name + part_1_Name + vsPt;                         _n1_1_vsPt = createHisto1F( name, name, _nBins_pt_1, _min_pt_1, _max_pt_1, _title_pt_1, _title_AvgN_1 );
@@ -1109,7 +1118,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     
     int    k1,k2;
     int    iPhi, iEta, iEtaPhi, iPt, charge;
-    float  q, phi, pt, eta, y, y_direct, mass, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; //jinjin put p here to make _dedx_p and _beta_p plots. 
+    float  q, phi, pt, eta, y, y_direct, mass, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; // Au-Au put p here to make _dedx_p and _beta_p plots. 
     int    ij;
     int    id_1, q_1, iEtaPhi_1, iPt_1;
     float  pt_1, px_1, py_1, pz_1, corr_1, dedx_1;
@@ -1124,6 +1133,26 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     const  AliAODVertex*	vertex;
     int    nClus;
     bool   bitOK;
+
+    float slope_vZ = 0;
+    float vZ_bin_center = 0;
+    int iVertexZ_plus1 = 0;
+    int iVertexZ_minus1 = 0;
+    int iVertexP1_vZplus1 = 0;
+    int iVertexP1_vZminus1 = 0;
+    int iVertexP2_vZplus1 = 0;
+    int iVertexP2_vZminus1 = 0;
+    int iZEtaPhiPt_vZplus1 = 0;
+    int iZEtaPhiPt_vZminus1 = 0;
+
+    float slope_y = 0;
+    float y_bin_center = 0;
+    int iEta_plus1 = 0;
+    int iEta_minus1 = 0;
+    int iEtaPhi_Etaplus1 = 0;
+    int iEtaPhi_Etaminus1 = 0;
+    int iZEtaPhiPt_Etaplus1 = 0;
+    int iZEtaPhiPt_Etaminus1 = 0;
     
     AliAnalysisManager* manager = AliAnalysisManager::GetAnalysisManager();
     if ( !manager ) { return; }
@@ -1252,8 +1281,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 continue;
             }
 
-            bitOK  = t->TestFilterBit(_trackFilterBit);
-            if (!bitOK) continue;
+            bitOK  = t -> TestFilterBit( _trackFilterBit );
+            if ( !bitOK ) continue;
             
             q      = t -> Charge();
             charge = int( q );
@@ -1266,25 +1295,27 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
             eta    = t -> Eta();
             dedx   = t -> GetTPCsignal();
 	    
-	    const float mpion   = 0.139570; // GeV/c2
-	    const float mkaon   = 0.493677; // GeV/c2
-	    const float mproton = 0.938272; // GeV/c2
-	    if ( particleSpecies == 0 )  mass = mpion;
-	    if ( particleSpecies == 1 )  mass = mkaon;
-	    if ( particleSpecies == 2 )  mass = mproton;
-	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
-	    
 	    // QA for all the particles in the event
 	    if ( _singlesOnly )
 	      {
 		_etadis_before_any_cuts -> Fill( eta );
 		_phidis_before_any_cuts -> Fill( phi );
+
+		CheckTOF( t );
+		if ( fHasTOFPID )
+		  {
+		    _msquare_p -> Fill( p, massSquareCalculation(t) );
+		    _beta_p -> Fill( p, TOFBetaCalculation(t) );
+		  }
+		else
+		  {
+		    _dedx_p -> Fill( p, dedx );    
+		  }
 	      }
 	    
 	    // Kinematics cuts begins:
-	    if(charge == 0) continue;
-            if( pt < _min_pt_1 || pt > _max_pt_1 ) continue;
-	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
+	    if( charge == 0 ) continue;
+	    // if( pt < _min_pt_1 || pt > _max_pt_1 ) continue;
 	    
 	    Double_t pos[3];
 	    t -> GetXYZ(pos);
@@ -1302,13 +1333,19 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    if ( _singlesOnly )    _Ncluster1 -> Fill( nClus );
 	    //_Ncluster2->Fill(nClus);   //_Ncluster2 same with _Ncluster1
 	    
-	    Bool_t TOFPID = fHelperPID -> GetfRequestTOFPID();
-
 	    // PID cuts
-	    Int_t IDrec = fHelperPID -> GetParticleSpecies(t, kTRUE); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
-	    //if ( IDrec == 999 ) continue; // reject undefined particles (including electrons)
+	    Int_t IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
 	    if ( IDrec != particleSpecies ) continue; // select POI	    
 
+	    const float mpion   = 0.139570; // GeV/c2
+	    const float mkaon   = 0.493677; // GeV/c2
+	    const float mproton = 0.938272; // GeV/c2
+	    if ( particleSpecies == 0 )  mass = mpion;
+	    if ( particleSpecies == 1 )  mass = mkaon;
+	    if ( particleSpecies == 2 )  mass = mproton;
+	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
+	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
+	    
 	    // QA for POI
 	    if ( _singlesOnly )
 	      {
@@ -1317,8 +1354,19 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		_etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
 		_ydis_POI_AliHelperPID     -> Fill( y );
 		_phidis_POI_AliHelperPID   -> Fill( phi );
-		_vZ_y_Pt_POI_AliHelperPID  -> Fill( vertexZ, y, pt );
-		_vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
+		//_vZ_y_Pt_POI_AliHelperPID  -> Fill( vertexZ, y, pt );
+		//_vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
+
+		CheckTOF( t );
+		if ( fHasTOFPID )
+		  {
+		    _msquare_p_POI_AliHelperPID -> Fill( p, massSquareCalculation(t) );
+		    _beta_p_POI_AliHelperPID -> Fill( p, TOFBetaCalculation(t) );
+		  }
+		else
+		  {
+		    _dedx_p_POI_AliHelperPID -> Fill( p, dedx );    
+		  }
 	      }
 	    
 	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
@@ -1347,19 +1395,82 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     AliWarning(Form("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
                     continue;
                 }
-                iEtaPhi = iEta*_nBins_phi_1+iPhi;
-                iZEtaPhiPt = iVertexP1 + iEtaPhi*_nBins_pt_1 + iPt;
-                
-                if (_correctionWeight_1)   corr = _correctionWeight_1[iZEtaPhiPt];
+                iEtaPhi = iEta * _nBins_phi_1 + iPhi;
+                iZEtaPhiPt = iVertexP1 + iEtaPhi * _nBins_pt_1 + iPt;
+
+		//#########################################################################################################################################################
+		// This block of code is to correct the weight values for each particle in terms of rapidity y using linear distribution between adjacent y bins
+		// these 2 commented out lines are what I had before the correction
+		/*   if ( _correctionWeight_1 )   corr = _correctionWeight_1[ iZEtaPhiPt ];
+		     else   corr = 1;   */
+		if ( _correctionWeight_1 )
+		{
+		  iEta_plus1 = iEta + 1;
+		  iEtaPhi_Etaplus1 = iEta_plus1 * _nBins_phi_1 + iPhi;
+		  iZEtaPhiPt_Etaplus1 = iVertexP1 + iEtaPhi_Etaplus1 * _nBins_pt_1 + iPt;
+
+		  iEta_minus1 = iEta - 1;
+		  iEtaPhi_Etaminus1 = iEta_minus1 * _nBins_phi_1 + iPhi;
+		  iZEtaPhiPt_Etaminus1 = iVertexP1 + iEtaPhi_Etaminus1 * _nBins_pt_1 + iPt;
+
+		  y_bin_center = _min_eta_1 + _etaWidth * ( iEta + 0.5 );
+
+		  if ( eta > y_bin_center )
+		    {
+		      if ( iEta < ( _nBins_eta_1 - 1 ) )       slope_y = ( _correctionWeight_1[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _etaWidth;
+		      else if ( iEta == ( _nBins_eta_1 - 1) )  slope_y = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
+		    }
+		  else
+		    {
+		      if ( iEta > 0 )                          slope_y = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
+		      else if ( iEta == 0 )                    slope_y = ( _correctionWeight_1[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _etaWidth;
+		    }
+		  corr = _correctionWeight_1[ iZEtaPhiPt ] + ( eta - y_bin_center ) * slope_y;
+		}		               
                 else   corr = 1;
-		
-                if (iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1)
+		//#########################################################################################################################################################
+
+		/*
+		//*********************************************************************************************************************************************************
+		// This block of code is to correct the weight values for each particle in terms of vertexZ using linear distribution between adjacent vZ bins
+		// these 2 commented out lines are what I had before the correction
+		//   if ( _correctionWeight_1 )   corr = _correctionWeight_1[ iZEtaPhiPt ];
+		//   else   corr = 1;
+		if ( _correctionWeight_1 )
+		{
+		  iVertexZ_plus1 = iVertex + 1;
+		  iVertexP1_vZplus1 = iVertexZ_plus1 * _nBins_etaPhiPt_1;
+		  iZEtaPhiPt_vZplus1 = iVertexP1_vZplus1 + iEtaPhi * _nBins_pt_1 + iPt;
+
+		  iVertexZ_minus1 = iVertex - 1;
+		  iVertexP1_vZminus1 = iVertexZ_minus1 * _nBins_etaPhiPt_1;
+		  iZEtaPhiPt_vZminus1 = iVertexP1_vZminus1 + iEtaPhi * _nBins_pt_1 + iPt;
+		  		  		  
+		  vZ_bin_center = _min_vertexZ + _width_vertexZ * ( iVertex + 0.5 ); 
+
+		  if ( vertexZ > vZ_bin_center )
+		    {
+		      if (iVertex < ( _nBins_vertexZ - 1 ))  slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _width_vertexZ;
+		      else if (iVertex==(_nBins_vertexZ-1))  slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
+		    }
+		  else
+		    {
+		      if ( iVertex > 0 )                     slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
+		      else if ( iVertex == 0 )               slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _width_vertexZ;
+		    }
+		  corr = _correctionWeight_1[ iZEtaPhiPt ] + ( vertexZ - vZ_bin_center ) * slope_vZ;
+		}		               
+                else   corr = 1;
+		//*********************************************************************************************************************************************************
+		*/		
+
+                if ( iZEtaPhiPt < 0 || iZEtaPhiPt >= _nBins_zEtaPhiPt_1 )
                 {
                     AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1");
                     continue;
                 }                
                 
-                if (_singlesOnly)
+                if ( _singlesOnly )
                 {
                     __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
                     __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;       
@@ -1422,10 +1533,73 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     AliWarning("AliAnalysisTaskPIDBFDptDpt::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_2");
                     continue;
                 }
-                    
-                if (_correctionWeight_2)   corr = _correctionWeight_2[iZEtaPhiPt];
-                else  corr = 1;
-                
+
+		//#########################################################################################################################################################
+		// This block of code is to correct the weight values for each particle in terms of rapidity y using linear distribution between adjacent y bins
+		// these 2 commented out lines are what I had before the correction
+		//   if ( _correctionWeight_2 )   corr = _correctionWeight_2[ iZEtaPhiPt ];
+		//   else   corr = 1;
+		if ( _correctionWeight_2 )
+		{
+		  iEta_plus1 = iEta + 1;
+		  iEtaPhi_Etaplus1 = iEta_plus1 * _nBins_phi_2 + iPhi;
+		  iZEtaPhiPt_Etaplus1 = iVertexP2 + iEtaPhi_Etaplus1 * _nBins_pt_2 + iPt;
+
+		  iEta_minus1 = iEta - 1;
+		  iEtaPhi_Etaminus1 = iEta_minus1 * _nBins_phi_2 + iPhi;
+		  iZEtaPhiPt_Etaminus1 = iVertexP2 + iEtaPhi_Etaminus1 * _nBins_pt_2 + iPt;
+
+		  y_bin_center = _min_eta_2 + _etaWidth * ( iEta + 0.5 );
+
+		  if ( eta > y_bin_center )
+		    {
+		      if ( iEta < ( _nBins_eta_2 - 1 ) )       slope_y = ( _correctionWeight_2[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _etaWidth;
+		      else if ( iEta == ( _nBins_eta_2 - 1) )  slope_y = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
+		    }
+		  else
+		    {
+		      if ( iEta > 0 )                          slope_y = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
+		      else if ( iEta == 0 )                    slope_y = ( _correctionWeight_2[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _etaWidth;
+		    }
+		  corr = _correctionWeight_2[ iZEtaPhiPt ] + ( eta - y_bin_center ) * slope_y;
+		}		               
+                else   corr = 1;
+		//#########################################################################################################################################################
+		
+		/*
+		//*********************************************************************************************************************************************************
+		// This block of code is to correct the weight values for each particle in terms of vertexZ using linear distribution between adjacent vZ bins
+		// these 2 commented out lines are what I had before the correction
+		//   if ( _correctionWeight_2 )   corr = _correctionWeight_2[ iZEtaPhiPt ];
+		//   else   corr = 1;
+		if ( _correctionWeight_2 )
+		{
+		  iVertexZ_plus1 = iVertex + 1;
+		  iVertexP2_vZplus1 = iVertexZ_plus1 * _nBins_etaPhiPt_2;
+		  iZEtaPhiPt_vZplus1 = iVertexP2_vZplus1 + iEtaPhi * _nBins_pt_2 + iPt;
+
+		  iVertexZ_minus1 = iVertex - 1;
+		  iVertexP1_vZminus1 = iVertexZ_minus1 * _nBins_etaPhiPt_2;
+		  iZEtaPhiPt_vZminus1 = iVertexP1_vZminus1 + iEtaPhi * _nBins_pt_2 + iPt;
+		  		  		  
+		  vZ_bin_center = _min_vertexZ + _width_vertexZ * ( iVertex + 0.5 ); 
+
+		  if ( vertexZ > vZ_bin_center )
+		    {
+		      if (iVertex < ( _nBins_vertexZ - 1 ))  slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _width_vertexZ;
+		      else if (iVertex==(_nBins_vertexZ-1))  slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
+		    }
+		  else
+		    {
+		      if ( iVertex > 0 )                     slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
+		      else if ( iVertex == 0 )               slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _width_vertexZ;
+		    }
+		  corr = _correctionWeight_2[ iZEtaPhiPt ] + ( vertexZ - vZ_bin_center ) * slope_vZ;
+		}		               
+                else   corr = 1;
+		//*********************************************************************************************************************************************************
+		*/		
+
                 if (_singlesOnly)
                 {
                     __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
@@ -2267,7 +2441,7 @@ TProfile * AliAnalysisTaskPIDBFDptDpt::createProfile(const TString &  name,const
     return h;
 }
 
-
+//________________________________________________________________________
 void   AliAnalysisTaskPIDBFDptDpt::addToList(TH1 *h)
 {
     if (_outputHistoList)
@@ -2277,4 +2451,110 @@ void   AliAnalysisTaskPIDBFDptDpt::addToList(TH1 *h)
     else
         AliInfo("addToList(TH1 *h) _outputHistoList is null!!!!! Should abort ship");
     
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskPIDBFDptDpt::CalculateNSigmas( AliVTrack * trk )   //defines data member fnsigmas
+{  
+  // Compute nsigma for each hypthesis
+  AliVParticle * inEvHMain = dynamic_cast < AliVParticle * > ( trk );
+  // --- TPC
+  Double_t nsigmaTPCkProton   = fPIDResponse -> NumberOfSigmasTPC( inEvHMain, AliPID::kProton );
+  Double_t nsigmaTPCkKaon     = fPIDResponse -> NumberOfSigmasTPC( inEvHMain, AliPID::kKaon ); 
+  Double_t nsigmaTPCkPion     = fPIDResponse -> NumberOfSigmasTPC( inEvHMain, AliPID::kPion );
+  Double_t nsigmaTPCkElectron = fPIDResponse -> NumberOfSigmasTPC( inEvHMain, AliPID::kElectron );
+  //set data member fnsigmas
+  fnsigmas[0][0] = nsigmaTPCkPion;
+  fnsigmas[1][0] = nsigmaTPCkKaon;
+  fnsigmas[2][0] = nsigmaTPCkProton;
+  fnsigmas[3][0] = nsigmaTPCkElectron;  
+  
+  // --- TOF
+  Double_t nsigmaTOFkProton = 999., nsigmaTOFkKaon = 999., nsigmaTOFkPion = 999., nsigmaTOFkElectron = 999.;
+
+  CheckTOF( trk ); // check TOF matching
+
+  if( fHasTOFPID )
+    {  // use TOF information when there is TOF matching for a track
+      nsigmaTOFkProton   = fPIDResponse -> NumberOfSigmasTOF( inEvHMain, AliPID::kProton   );
+      nsigmaTOFkKaon     = fPIDResponse -> NumberOfSigmasTOF( inEvHMain, AliPID::kKaon     ); 
+      nsigmaTOFkPion     = fPIDResponse -> NumberOfSigmasTOF( inEvHMain, AliPID::kPion     );
+      nsigmaTOFkElectron = fPIDResponse -> NumberOfSigmasTOF( inEvHMain, AliPID::kElectron );
+
+      //set data member fnsigmas
+      fnsigmas[0][1] = nsigmaTOFkPion;
+      fnsigmas[1][1] = nsigmaTOFkKaon;
+      fnsigmas[2][1] = nsigmaTOFkProton;
+      fnsigmas[3][1] = nsigmaTOFkElectron;
+    }
+}
+
+//________________________________________________________________________________________________________
+void AliAnalysisTaskPIDBFDptDpt::CheckTOF( AliVTrack * trk )     //check if the particle has TOF Matching
+{ 
+  //get the PIDResponse
+  if( fPIDResponse -> CheckPIDStatus( AliPIDResponse::kTOF, trk ) == 0 )   fHasTOFPID = kFALSE;
+  else fHasTOFPID = kTRUE;
+  
+  if( fRemoveTracksT0Fill ) //what does this block of code do???
+    {
+      Int_t startTimeMask = fPIDResponse -> GetTOFResponse().GetStartTimeMask( trk->P() );
+      if ( startTimeMask < 0 )   fHasTOFPID = kFALSE; 
+    }
+}
+
+//________________________________________________________________________________________________________________
+Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //function to determine the particle ID
+{  
+  CalculateNSigmas( trk );
+
+  Double_t nsigmaPion = 999., nsigmaKaon = 999., nsigmaProton = 999., nsigmaElectron = 999.;
+
+  CheckTOF( trk );
+  
+  if( fHasTOFPID )
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][1] ); //Pion_TOF
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][1] ); //Kaon_TOF
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() > 0.2 ) && ( trk->P() < 1.6 ) )	 return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() > 0.2 ) && ( trk->P() < 1.6 ) )    return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->Pt() > 0.4 ) && ( trk->P() < 3.0 ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+    }
+  else
+    {
+      nsigmaPion     =  TMath::Abs( fnsigmas[0][0] ); //Pion_TPC
+      nsigmaKaon     =  TMath::Abs( fnsigmas[1][0] ); //Kaon_TPC
+      nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
+      nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > 1 ) && (  trk->Pt() > 0.2 ) && ( trk->Pt() < 0.6 ) )   return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > 1 ) && (  trk->Pt() > 0.2 ) && ( trk->Pt() < 0.6 ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > 1 ) && (  trk->Pt() > 0.4 ) && ( trk->Pt() < 1.0 ) )   return 2; //Proton
+    }
+
+  // else, return undefined
+  return 999;
+}
+
+//________________________________________________________________________________________________________________
+Double_t AliAnalysisTaskPIDBFDptDpt::TOFBetaCalculation( AliVTrack * track ) const
+{
+  Double_t tofTime = track -> GetTOFsignal();
+  Double_t c = TMath::C() * 1.E-9;// m/ns
+  Float_t startTime = fPIDResponse -> GetTOFResponse().GetStartTime( track->P() );//in ps
+  Double_t length = fPIDResponse -> GetTOFResponse().GetExpectedSignal( track, AliPID::kElectron ) * 1E-3 * c;
+  tofTime -= startTime;      // subtract startTime to the signal
+  Double_t tof = tofTime * 1E-3; // ns, average T0 fill subtracted, no info from T0detector 	 
+  tof = tof * c;
+  return length / tof;
+}
+
+//________________________________________________________________________________________________________________
+Double_t AliAnalysisTaskPIDBFDptDpt::massSquareCalculation( AliVTrack * track ) const
+{
+  Double_t massSquare = track->P() * track->P() * ( 1 / ( TOFBetaCalculation(track) * TOFBetaCalculation(track) ) - 1 ); 
+  return massSquare;
 }

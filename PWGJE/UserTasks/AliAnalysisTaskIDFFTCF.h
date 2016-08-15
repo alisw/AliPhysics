@@ -54,7 +54,10 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
     virtual void FillFF(Float_t trackPt, Float_t trackEta, Float_t jetPt, 
 			Bool_t incrementJetPt, Float_t norm = 0, Bool_t scaleStrangeness = kFALSE, Float_t scaleFacStrangeness = 1.);
 
+    virtual void SetLogPt(Bool_t doLog = kTRUE) { fLogPt = doLog; }
+
     virtual void AddToOutput(TList* list) const;
+
 
   private:
 
@@ -70,7 +73,8 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
     Int_t   fNBinsZ;     // FF histos bins
     Float_t fZMin;       // FF histos limits
     Float_t fZMax;       // FF histos limits
-  
+    Bool_t  fLogPt;      // FF track log pt bins   
+
     TH2F*   fh2TrackPt;   //! FF: track transverse momentum 
     TH2F*   fh2Xi;        //! FF: xi 
     TH2F*   fh2Z;         //! FF: z  
@@ -83,6 +87,66 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
     
     ClassDef(AliFragFuncHistos, 1);
   };
+
+  //----------------------------------------
+  class AliFragFuncHistosMult : public TObject
+  {
+    
+    public:
+    
+    AliFragFuncHistosMult(const char* name = "FFhistos", 
+			  Int_t nJetPt = 0, Float_t jetPtMin = 0, Float_t jetPtMax = 0,
+			  Int_t nPt = 0, Float_t ptMin = 0, Float_t ptMax = 0,
+			  Int_t nXi = 0, Float_t xiMin = 0, Float_t xiMax = 0,
+			  Int_t nZ  = 0, Float_t zMin  = 0, Float_t zMax  = 0,
+			  Int_t nMult = 0, Float_t multMin  = 0, Float_t multMax  = 0);
+    
+    AliFragFuncHistosMult(const AliFragFuncHistosMult& copy);
+    AliFragFuncHistosMult& operator=(const AliFragFuncHistosMult &o);
+    virtual ~AliFragFuncHistosMult();
+    
+    virtual void DefineHistos();
+    virtual void FillFF(Float_t trackPt, Float_t trackEta, Int_t mult, Float_t jetPt,  
+			Bool_t incrementJetPt, Float_t norm = 0, Bool_t scaleStrangeness = kFALSE, Float_t scaleFacStrangeness = 1.);
+
+    virtual void SetLogPt(Bool_t doLog = kTRUE) { fLogPt = doLog; }
+
+    virtual void AddToOutput(TList* list) const;
+
+
+  private:
+
+    Int_t   fNBinsJetPt; // FF histos bins
+    Float_t fJetPtMin;   // FF histos limits
+    Float_t fJetPtMax;   // FF histos limits
+    Int_t   fNBinsPt;    // FF histos bins
+    Float_t fPtMin;      // FF histos limits
+    Float_t fPtMax;      // FF histos limits
+    Int_t   fNBinsXi;    // FF histos bins
+    Float_t fXiMin;      // FF histos limits
+    Float_t fXiMax;      // FF histos limits
+    Int_t   fNBinsZ;     // FF histos bins
+    Float_t fZMin;       // FF histos limits
+    Float_t fZMax;       // FF histos limits
+    Bool_t  fLogPt;      // FF track log pt bins   
+    Int_t   fNBinsMult;  // FF histos bins
+    Float_t fMultMin;    // FF histos limits
+    Float_t fMultMax;    // FF histos limits
+
+  
+    TH3F*   fh3TrackPt;   //! FF: track transverse momentum 
+    TH3F*   fh3Xi;        //! FF: xi 
+    TH3F*   fh3Z;         //! FF: z  
+    TH2F*   fh2JetPt;     //! jet pt 
+
+    TH3F*   fh3TrackPtVsEta;  //! FF: track transverse momentum vs track eta 
+    TH3F*   fh3TrackPVsEta;   //! FF: track momentum vs track eta 
+
+    TString fNameFF;      // histo names prefix
+    
+    ClassDef(AliFragFuncHistosMult, 1);
+  };
+
   
   //----------------------------------------
   class AliFragFuncQAJetHistos : public TObject
@@ -205,6 +269,7 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   virtual void   SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}
   virtual void   SetEventClass(Int_t i){fEventClass = i;}
   virtual void   SetMaxVertexZ(Float_t z){fMaxVertexZ = z;}
+  virtual void   RejectPileupEvents(Bool_t b){fRejectPileup = b;}
   virtual void   UseLeadingJet(Bool_t b){fLeadingJets = b;}
 
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5, 
@@ -219,6 +284,7 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   virtual void   SetQAMode(Int_t qa = 3)      {fQAMode = qa;}
   virtual void   SetFFMode(Int_t ff = 1)      {fFFMode = ff;}
   virtual void   SetEffMode(Int_t eff = 1)    {fEffMode = eff;}
+  virtual void   SetRespMode(Int_t eff = 1)   {fRespMode = eff;}
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
@@ -235,11 +301,15 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   void   SetFFHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
 			Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
 			Int_t nXi = 70, Float_t xiMin = 0., Float_t xiMax = 7.,
-			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1)
+			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1,
+			Int_t nMult = 20, Float_t multMin = 0., Float_t multMax = 20)
   { fFFNBinsJetPt = nJetPt; fFFJetPtMin = jetPtMin; fFFJetPtMax = jetPtMax; 
     fFFNBinsPt = nPt; fFFPtMin = ptMin; fFFPtMax = ptMax;
     fFFNBinsXi = nXi; fFFXiMin = xiMin; fFFXiMax = xiMax;
-    fFFNBinsZ  = nZ;  fFFZMin  = zMin;  fFFZMax  = zMax; }
+    fFFNBinsZ = nZ; fFFZMin = zMin; fFFZMax = zMax;
+    fFFNBinsMult  = nMult;  fFFMultMin  = multMin;  fFFMultMax  = multMax; }
+
+  void  SetFFLogPt(Bool_t doLog = kTRUE) { fFFLogPt = doLog; }
 
   void  SetQAJetHistoBins(Int_t nPt = 300, Float_t ptMin = 0., Float_t ptMax = 300.,
 			  Int_t nEta = 20, Float_t etaMin = -1.0, Float_t etaMax = 1.0,
@@ -285,11 +355,15 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   void     BookFFHistos(TList* list, AliFragFuncHistos** rec = 0, TString strTitRec = "", AliFragFuncHistos** gen = 0, TString strTitGen = "",
 			AliFragFuncHistos** sec = 0, TString strTitSec = "");
 
+  void     BookFFHistosM(TList* list, AliFragFuncHistosMult** rec = 0, TString strTitRec = "", 
+			 AliFragFuncHistosMult** gen = 0, TString strTitGen = "",
+			 AliFragFuncHistosMult** sec = 0, TString strTitSec = "");
+
   Double_t  TrackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc);
   Double_t  TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc);
   Double_t  GetMCStrangenessFactorCMS(AliAODMCParticle* daughter);
-    
-
+  void      FillResponse(AliAODJet* genJet, AliAODJet* recJet);
+  void      GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt);
 
   // Consts
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts,  
@@ -324,6 +398,7 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   UInt_t  fEvtSelectionMask;    // trigger class selection
   Int_t   fEventClass;          // centrality class selection
   Float_t fMaxVertexZ;          // maximum abs(z) position of primiary vertex [cm]
+  Bool_t  fRejectPileup;        // SPD pileup rejection
   Bool_t  fLeadingJets;         // leading/all jets
 
 
@@ -354,6 +429,7 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   Int_t   fQAMode;          // QA mode: 0x00=0 none, 0x01=1 track qa, 0x10=2 track qa, 0x11=3 both
   Int_t   fFFMode;          // fragmentation function mode
   Int_t   fEffMode;         // efficiency mode
+  Int_t   fRespMode;        // response mode
 
   Float_t fAvgTrials;       // average number of trials per event
   
@@ -387,6 +463,13 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosRecCutsIncEl;     //! inclusive FF (all jets) 
   AliFragFuncHistos*  fFFHistosRecCutsIncMu;     //! inclusive FF (all jets) 
 
+  AliFragFuncHistosMult*  fFFHistosMRecCutsInc;       //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMRecCutsIncPi;     //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMRecCutsIncPro;    //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMRecCutsIncK;      //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMRecCutsIncEl;     //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMRecCutsIncMu;     //! inclusive FF (all jets) 
+
   AliFragFuncHistos*  fFFHistosRecLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt (all jets)
 
   AliFragFuncHistos*  fFFHistosGenInc;       //! inclusive FF (all jets) 
@@ -396,6 +479,15 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosGenIncEl;     //! inclusive FF (all jets) 
   AliFragFuncHistos*  fFFHistosGenIncMu;     //! inclusive FF (all jets) 
   AliFragFuncHistos*  fFFHistosGenLeadingTrack; //! FF reconstructed tracks after cuts: leading track pt / jet pt (all jets)
+
+  AliFragFuncHistosMult*  fFFHistosMRecIncMatch;       //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMGenIncMatch;       //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMGenIncMatchPi;     //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMGenIncMatchPro;    //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMGenIncMatchK;      //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMGenIncMatchEl;       //! inclusive FF (all jets) 
+  AliFragFuncHistosMult*  fFFHistosMGenIncMatchMu;     //! inclusive FF (all jets) 
+
 
   Float_t  fQATrackHighPtThreshold;       // track QA high transverse momentum threshold
   
@@ -419,6 +511,12 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   Int_t   fFFNBinsZ;        // FF histos bins
   Float_t fFFZMin;          // FF histos limits
   Float_t fFFZMax;          // FF histos limits
+
+  Int_t   fFFNBinsMult;     // FF histos bins
+  Float_t fFFMultMin;       // FF histos limits
+  Float_t fFFMultMax;       // FF histos limits
+
+  Bool_t fFFLogPt;          // fill FF histos with track log pt
 
   Int_t   fQAJetNBinsPt;    // jet QA histos bins
   Float_t fQAJetPtMin;      // jet QA histos limits
@@ -465,6 +563,14 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt, primaries 
   TH2F  *fh2PtRecVsGenSec;        //! association rec/gen MC: rec vs gen pt, secondaries 
 
+  TH1F* hJetSpecIncRec;           //! jet spec
+  TH1F* hJetSpecIncRecUEsub;      //! jet spec
+  TH1F* hJetSpecIncGen;           //! jet spec
+  TH1F* hJetSpecIncGenUEsub;      //! jet spec
+
+  TH2F* h2UERec;                  //! UE
+  TH2F* h2UEGen;                  //! UE
+
   // tracking efficiency / secondaries
   
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGen;      //! tracking efficiency: generated primaries 
@@ -502,9 +608,6 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncQATrackHistos* fQATrackHistosSecRecProGFLSSc;   //! tracking efficiency: generated primaries 
   AliFragFuncQATrackHistos* fQATrackHistosSecRecKGFLSSc;     //! tracking efficiency: generated primaries 
 
-
-
-
   AliFragFuncHistos*  fFFHistosRecEffRec;                 //! tracking efficiency: FF reconstructed primaries
   AliFragFuncHistos*  fFFHistosSecRec;                    //! secondary contamination: FF reconstructed secondaries 
   AliFragFuncHistos*  fFFHistosSecRecSSc;                 //! secondary contamination: FF reconstructed secondaries 
@@ -533,8 +636,29 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosSecRecProGFLSSc;        //! tracking efficiency: FF reconstructed primaries
   AliFragFuncHistos*  fFFHistosSecRecKGFLSSc;          //! tracking efficiency: FF reconstructed primaries
 
+  THnSparse* fhnResponseJetPt;
+  THnSparse* fhnRespJetPtHistG;
+  THnSparse* fhnRespJetPtHistR;
+  THnSparse* fhnRespJetPtHistM;
+  
+  THnSparse* fhnResponseZ;
+  THnSparse* fhnRespZHistG; 
+  THnSparse* fhnRespZHistR;  
+  THnSparse* fhnRespZHistM;  
+  THnSparse* fhnRespZHistMPrim;  
 
+  THnSparse* fhnResponsePt;
+  THnSparse* fhnRespPtHistG; 
+  THnSparse* fhnRespPtHistR;  
+  THnSparse* fhnRespPtHistM;  
+  THnSparse* fhnRespPtHistMPrim;  
+
+  
   TRandom3*                   fRandom;          // TRandom3 for background estimation 
+
+  TH2F  *fh2EtaPhiUnm;        //!  
+  TH1F  *fh1AreaUnm;          //!  
+  TH1F  *fh1AreaM;            //!  
 
   ClassDef(AliAnalysisTaskIDFFTCF, 1);
 };

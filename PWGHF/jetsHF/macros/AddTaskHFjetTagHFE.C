@@ -130,7 +130,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
     clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
-  AliJetContainer *jetCont = jetTask->AddJetContainer(njets, cutType, jetradius);
+  //AliJetContainer *jetCont = jetTask->AddJetContainer(njets, cutType, jetradius);
+  AliJetContainer* jetCont = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "Jet");
   if (jetCont) {
     jetCont->SetRhoName(nrho);
     jetCont->SetPercAreaCut(jetareacut);

@@ -25,7 +25,7 @@ AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemto
 
 UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
 {
-  assert(low > high);
+  assert(low < high);
 
   // 'index' is the location of the correlation function in the buffer
   const UInt_t index = fCFBuffer.size();

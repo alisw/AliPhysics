@@ -67,7 +67,8 @@ void AliEventPlaneCorrelations::FillCorrelations(Float_t x){
       if(!fEventPlanes[iep]||!fEventPlanes[(iep+1)%3]) continue;
       //cout<<fEventPlanes[iep]->N()<<"   "<<fEventPlanes[iep]->Qx(2)<<endl;
 
-      if(fEventPlanes[iep]->N()==0||fEventPlanes[(iep+1)%3]->N()==0) continue;
+      /* Adapted to the new Qn vector Correction framework */
+      if(fEventPlanes[iep]->GetN()==0||fEventPlanes[(iep+1)%3]->GetN()==0) continue;
 
       //if(iep==1) cout<<CorrelationName()<<"  "<<iep<<"  "<<fEventPlanes[iep]->QxNorm(ih)<<"  "<<fEventPlanes[(iep+1)%3]->QxNorm(ih)<<"   "<<fEPcorrelation[iep][ih-1][0]->GetMean(2)<<endl;
       //cout<<qvecC->N()<<endl;

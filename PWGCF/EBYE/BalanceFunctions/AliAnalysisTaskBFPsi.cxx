@@ -183,6 +183,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fAcceptanceParameterization(0),
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
+  fIncludeSecondariesInMCgen(kFALSE),
   fExcludeSecondariesInMC(kFALSE),
   fExcludeWeakDecaysInMC(kFALSE),
   fExcludeResonancesInMC(kFALSE),
@@ -191,6 +192,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
   fExcludeResonancePDGInMC(-1),
+  fIncludeResonancePDGInMC(-1),
   fEventClass("EventPlane"), 
   fCustomBinning(""),
   fHistVZEROAGainEqualizationMap(0),
@@ -450,6 +452,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   // QA histograms for different cuts
   fList->Add(fBalance->GetQAHistHBTbefore());
   fList->Add(fBalance->GetQAHistHBTafter());
+  fList->Add(fBalance->GetQAHistPhiStarHBTbefore());
+  fList->Add(fBalance->GetQAHistPhiStarHBTafter());
   fList->Add(fBalance->GetQAHistConversionbefore());
   fList->Add(fBalance->GetQAHistConversionafter());
   fList->Add(fBalance->GetQAHistPsiMinusPhi());
@@ -1520,6 +1524,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t nSigmaTPC = 0.;
 	Double_t nSigmaTOF = 0.; 
 	Double_t nSigmaTPCTOF = 0.;
+	Double_t nSigmaTPCTOFreq = 0.;
 	UInt_t detUsedTPC = 0;
 	UInt_t detUsedTOF = 0;
 	UInt_t detUsedTPCTOF = 0;
@@ -1527,9 +1532,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+	nSigmaTPCTOFreq = nSigmaTPCTOF;
 	if (nSigmaTOF == 999 ||  nSigmaTOF == -999){
 	  nSigmaTPCTOF = nSigmaTPC;
 	}
+
 
 	//Decide what detector configuration we want to use
 	switch(fPidDetectorConfig) {
@@ -1554,6 +1561,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
 	  break;
+	case kTPCTOFreq:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPCTOFreq;
+	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPCTOF[iSpecies];
+	  break;
 	default:
 	  break;
 	}//end switch: define detector mask
@@ -1572,12 +1586,18 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    length = aodTrack->GetIntegratedLength();
 	    tof = tofTime*1E-3; // ns		      
 	    if (tof <= 0) {
-	      //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	      Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	      continue;
 	    }
 	    if (length <= 0){
-	      //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
-	      continue;
+	      // in old productions integrated track length is not stored in AODs -> need workaround
+	      Double_t exptime[10];
+	      aodTrack->GetIntegratedTimes(exptime);
+	      length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+	      if (length <= 0){
+		Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+		continue;
+	      }
 	    }	      
 	    length = length*0.01; // in meters
 	    tof = tof*c;
@@ -1758,7 +1778,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  continue;
 	}
 	
-	if(!aodTrack->IsPhysicalPrimary()) continue;   
+	if(!aodTrack->IsPhysicalPrimary()) continue;
 	
 	vCharge = aodTrack->Charge();
 	vEta    = aodTrack->Eta();
@@ -1871,6 +1891,22 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vY      = aodTrack->Y();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+
+      //analyze one set of particles
+      if(fUseMCPdgCode) {
+
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrackForPID = (AliAODMCParticle*) fArrayMC->At(label);
+
+	if(!AODmcTrackForPID){
+	  AliError(Form("No AliAODMCParticle for aodTrack with label %d ... skip",label));
+	  continue;
+	}
+
+	Int_t gPdgCode = AODmcTrackForPID->PdgCode();
+	if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	  continue;
+      }
       
       //===========================use MC information for Kinematics===============================//		    
       if(fUseMCforKinematics){
@@ -2003,17 +2039,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    if(motherTrack) {
 	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
 	      if(pdgCodeOfMother == 113  // rho0
-		 || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
+		 // || pdgCodeOfMother == 213 || pdgCodeOfMother == -213 // rho+
 		 // || pdgCodeOfMother == 221  // eta
 		 // || pdgCodeOfMother == 331  // eta'
 		 // || pdgCodeOfMother == 223  // omega
 		 // || pdgCodeOfMother == 333  // phi
-		 || pdgCodeOfMother == 311  || pdgCodeOfMother == -311 // K0
+		 || pdgCodeOfMother == 310  || pdgCodeOfMother == -310 // K0
 		 // || pdgCodeOfMother == 313  || pdgCodeOfMother == -313 // K0*
 		 // || pdgCodeOfMother == 323  || pdgCodeOfMother == -323 // K+*
 		 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
-		 || pdgCodeOfMother == 111  // pi0 Dalitz
-		 || pdgCodeOfMother == 22   // photon
+		 //|| pdgCodeOfMother == 111  // pi0 Dalitz
+		 //|| pdgCodeOfMother == 22   // photon
 		 ) {
 		kExcludeParticle = kTRUE;
 	      }
@@ -2024,6 +2060,32 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(kExcludeParticle) continue;
       }
 
+      //Include exclusively resonances with a specific PDG value
+      if(fIncludeResonancePDGInMC > -1) {
+	
+	Bool_t kIncludeParticle = kFALSE;
+	
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	
+        if (AODmcTrack){ 
+	  
+	  Int_t gMotherIndex = AODmcTrack->GetMother();
+	  if(gMotherIndex != -1) {
+	    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      if(TMath::Abs(pdgCodeOfMother) == fIncludeResonancePDGInMC) {
+		kIncludeParticle = kTRUE;
+	      }
+	    }
+	  }
+	}	
+	
+	//Exclude from the analysis particle that are not decay products from this resonance
+	if(!kIncludeParticle) continue;
+      }
+      
       //Exclude electrons with PDG
       if(fExcludeElectronsInMC) {
 	
@@ -2126,28 +2188,48 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t probTPCTOF[AliPID::kSPECIES]={0.};
 	
 	Double_t nSigma = 0.;
+	Double_t nSigmaTPC = 0.;
+	Double_t nSigmaTOF = 0.; 
+	Double_t nSigmaTPCTOF = 0.;
+	Double_t nSigmaTPCTOFreq = 0.;
 	UInt_t detUsedTPC = 0;
 	UInt_t detUsedTOF = 0;
 	UInt_t detUsedTPCTOF = 0;
+	
+	nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
+	nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
+	nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+	nSigmaTPCTOFreq = nSigmaTPCTOF;
+	if (nSigmaTOF == 999 ||  nSigmaTOF == -999){
+	  nSigmaTPCTOF = nSigmaTPC;
+	}
 	
 	//Decide what detector configuration we want to use
 	switch(fPidDetectorConfig) {
 	case kTPCpid:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest));
+	  nSigma = nSigmaTPC;
 	  detUsedTPC = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPC[iSpecies];
 	  break;
 	case kTOFpid:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest));
+	  nSigma = nSigmaTOF;
 	  detUsedTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTOF[iSpecies];
 	  break;
 	case kTPCTOF:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPCTOF;
+	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPCTOF[iSpecies];
+	  break;
+	case kTPCTOFreq:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPCTOFreq;
 	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
@@ -2168,14 +2250,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  tof = tofTime*1E-3; // ns	
 	  
 	  if (tof <= 0) {
-	    //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	    Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	    continue;
 	  }
 	  if (length <= 0){
-	    //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	    Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
 	    continue;
 	  }
-	  
+
 	  length = length*0.01; // in meters
 	  tof = tof*c;
 	  beta = length/tof;
@@ -2253,17 +2335,23 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
     AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
     if(gMCEvent) {
+
+
+      Int_t nTracks = gMCEvent->GetNumberOfPrimaries(); // default mode: running over primary particles only 
+      if(fIncludeSecondariesInMCgen){
+	nTracks = gMCEvent->GetNumberOfTracks(); // for weak decay studies, include also secondaries
+      }
+      
       // Loop over tracks in event
-      for (Int_t iTracks = 0; iTracks < gMCEvent->GetNumberOfPrimaries(); iTracks++) {
+      for (Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
 	AliMCParticle* track = dynamic_cast<AliMCParticle *>(gMCEvent->GetTrack(iTracks));
 	if (!track) {
 	  AliError(Form("Could not receive particle %d", iTracks));
 	  continue;
 	}
 	
-	//exclude non stable particles
-	if(!(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
-
+	//exclude non stable particles (only if not secondaries included explicitly)
+	if(!fIncludeSecondariesInMCgen && !(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
 
 	// exclude particles with strange behaviour in AMPT
 	// - mothers that have physical primary daughters
@@ -2400,6 +2488,32 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
+	}
+
+	//Include exclusively resonances with a specific PDG value
+	if(fIncludeResonancePDGInMC > -1) {
+
+	  TParticle *particle = track->Particle();
+	  if(!particle) continue;
+	  
+	  Bool_t kIncludeParticle = kFALSE;
+	  Int_t gMotherIndex = particle->GetFirstMother();
+	  if(gMotherIndex != -1) {
+	    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      TParticle *motherParticle = motherTrack->Particle();
+	      if(motherParticle) {
+
+		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+		if( TMath::Abs(pdgCodeOfMother) == fIncludeResonancePDGInMC ){
+		  kIncludeParticle = kTRUE;
+		}
+	      }
+	    }
+	  }
+	  
+	  //Exclude from the analysis particle that are not decay products from this resonance
+	  if(!kIncludeParticle) continue;
 	}
 
 

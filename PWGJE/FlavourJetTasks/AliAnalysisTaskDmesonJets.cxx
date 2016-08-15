@@ -46,7 +46,41 @@
 
 #include "AliAnalysisTaskDmesonJets.h"
 
+// Definitions of class AliAnalysisTaskDmesonJets::AliJetInfo
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskDmesonJets::AliJetInfo);
+/// \endcond
+
+/// Calculates the distance between this jet and another jet
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \param deta reference where the eta distance will be returned
+/// \param dphi reference where the phi distance will be returned
+/// \return The distance between this jet and the jet reference provided
+Double_t AliAnalysisTaskDmesonJets::AliJetInfo::GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const
+{
+  dphi = TVector2::Phi_mpi_pi(fMomentum.Phi() - jet.Phi());;
+  deta = fMomentum.Eta() - jet.Eta();
+  return TMath::Sqrt(dphi*dphi + deta*deta);
+}
+
+/// Calculates the distance between this jet and another jet
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \return The distance between this jet and the jet reference provided
+Double_t AliAnalysisTaskDmesonJets::AliJetInfo::GetDistance(const AliJetInfo& jet) const
+{
+  Double_t deta = 0;
+  Double_t dphi = 0;
+  return GetDistance(jet, deta, dphi);
+}
+
 // Definitions of class AliAnalysisTaskDmesonJets::AliDmesonJetInfo
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskDmesonJets::AliDmesonJetInfo);
+/// \endcond
 
 /// Reset all fields to their default values
 void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
@@ -54,12 +88,15 @@ void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
   fD.SetPtEtaPhiE(0,0,0,0);
   fSoftPionPt = 0;
   fInvMass2Prong = 0;
-  for (std::map<std::string, AliJetInfo>::iterator it = fJets.begin(); it != fJets.end(); it++) {
-    (*it).second.fMomentum.SetPtEtaPhiE(0,0,0,0);
-    (*it).second.fNConstituents = 0;
-    (*it).second.fNEF = 0;
-    (*it).second.fMaxChargedPt = 0;
-    (*it).second.fMaxNeutralPt = 0;
+  fDmesonParticle = 0;
+  fMCLabel = -1;
+  fReconstructed = kFALSE;
+  for (auto &jet : fJets) {
+    jet.second.fMomentum.SetPtEtaPhiE(0,0,0,0);
+    jet.second.fNConstituents = 0;
+    jet.second.fNEF = 0;
+    jet.second.fMaxChargedPt = 0;
+    jet.second.fMaxNeutralPt = 0;
   }
 }
 
@@ -69,9 +106,9 @@ void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Print() const
   Printf("Printing D Meson Jet object.");
   Printf("D Meson: pT = %.3f, eta = %.3f, phi = %.3f, inv. mass = %.3f", fD.Pt(), fD.Eta(), fD.Phi_0_2pi(), fD.M());
   Printf("Soft pion pT: %.3f. 2-Prong Invariant mass = %.3f", fSoftPionPt, fInvMass2Prong);
-  for (std::map<std::string, AliJetInfo>::const_iterator it = fJets.begin(); it != fJets.end(); it++) {
-    Printf("Jet %s: pT = %.3f, eta = %.3f, phi = %.3f", (*it).first.c_str(), (*it).second.Pt(), (*it).second.Eta(), (*it).second.Phi_0_2pi());
-    Printf("Jet N Consituents = %d", (*it).second.fNConstituents);
+  for (auto &jet : fJets) {
+    Printf("Jet %s: pT = %.3f, eta = %.3f, phi = %.3f", jet.first.c_str(), jet.second.Pt(), jet.second.Eta(), jet.second.Phi_0_2pi());
+    Printf("Jet N Consituents = %d", jet.second.fNConstituents);
   }
 }
 
@@ -107,22 +144,22 @@ Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetZ(std::string n) const
 
 /// Calculates the distance between the D meson and the jet axis
 ///
-/// \param dR reference where the distance will be returned
+/// \param n Name of the jet definition
 /// \param deta reference where the eta distance will be returned
 /// \param dphi reference where the phi distance will be returned
+/// \return The distance between the D meson and the jet axis
 Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(std::string n, Double_t& deta, Double_t& dphi) const
 {
   std::map<std::string, AliJetInfo>::const_iterator it = fJets.find(n);
   if (it == fJets.end()) return 0;
 
-  dphi = TVector2::Phi_mpi_pi(fD.Phi() - (*it).second.Phi());;
-  deta = fD.Eta() - (*it).second.Eta();
-  return TMath::Sqrt(dphi*dphi + deta*deta);
+  return GetDistance((*it).second, deta, dphi);
 }
 
 /// Calculates the distance between the D meson and the jet axis
 ///
-/// \param dR reference where the distance will be returned
+/// \param n Name of the jet definition
+/// \return The distance between the D meson and the jet axis
 Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(std::string n) const
 {
   Double_t deta = 0;
@@ -130,21 +167,55 @@ Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(std::string n)
   return GetDistance(n, deta, dphi);
 }
 
+/// Calculates the distance between the D meson and the jet axis
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \param deta reference where the eta distance will be returned
+/// \param dphi reference where the phi distance will be returned
+/// \return The distance between the D meson and the jet axis
+Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const
+{
+  dphi = TVector2::Phi_mpi_pi(fD.Phi() - jet.Phi());;
+  deta = fD.Eta() - jet.Eta();
+  return TMath::Sqrt(dphi*dphi + deta*deta);
+}
+
+/// Calculates the distance between the D meson and the jet axis
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \return The distance between the D meson and the jet axis
+Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(const AliJetInfo& jet) const
+{
+  Double_t deta = 0;
+  Double_t dphi = 0;
+  return GetDistance(jet, deta, dphi);
+}
+
+/// Find jet info object corresponding a jet definition provided as a string
+///
+/// \param n String containing the jet definition
+/// \return Constant pointer to the jet info object, if the jet definition was found. Null pointer otherwise.
 const AliAnalysisTaskDmesonJets::AliJetInfo* AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet(std::string n) const
 {
   std::map<std::string, AliJetInfo>::const_iterator it = fJets.find(n);
   if (it == fJets.end()) {
-    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!", n.c_str());
+    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!",
+       n.c_str());
     return 0;
   }
   return &((*it).second);
 }
 
+/// Find jet info object corresponding a jet definition provided as a string
+///
+/// \param n String containing the jet definition
+/// \return Pointer to the jet info object, if the jet definition was found. Null pointer otherwise.
 AliAnalysisTaskDmesonJets::AliJetInfo* AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet(std::string n)
 {
   std::map<std::string, AliJetInfo>::iterator it = fJets.find(n);
   if (it == fJets.end()) {
-    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!", n.c_str());
+    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!",
+        n.c_str());
     return 0;
   }
   return &((*it).second);
@@ -196,6 +267,18 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliDmesonJetInfo& s
   fZ = source.GetZ(n);
 }
 
+/// Set the current object using an instance of AliJetInfo as its source
+///
+/// \param source A const reference to a valid AliJetInfo object
+void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliJetInfo& source)
+{
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fR = 0;
+  fZ = 0;
+}
+
 // Definitions of class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary
 
 /// \cond CLASSIMP
@@ -223,6 +306,14 @@ void AliAnalysisTaskDmesonJets::AliDmesonInfoSummary::Set(const AliDmesonJetInfo
   fPhi = source.fD.Phi_0_2pi();
 }
 
+/// Reset the object
+void AliAnalysisTaskDmesonJets::AliDmesonInfoSummary::Reset()
+{
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+}
+
 // Definitions of class AliAnalysisTaskDmesonJets::AliD0InfoSummary
 
 /// \cond CLASSIMP
@@ -238,10 +329,21 @@ AliAnalysisTaskDmesonJets::AliD0InfoSummary::AliD0InfoSummary(const AliDmesonJet
 {
 }
 
+/// Set the current object using an instance of AliDmesonJetInfo as its source
+///
+/// \param source A const reference to a valid AliDmesonJetInfo object
 void AliAnalysisTaskDmesonJets::AliD0InfoSummary::Set(const AliDmesonJetInfo& source)
 {
   fInvMass = source.fD.M();
   AliDmesonInfoSummary::Set(source);
+}
+
+/// Reset the object
+void AliAnalysisTaskDmesonJets::AliD0InfoSummary::Reset()
+{
+  AliDmesonInfoSummary::Reset();
+
+  fInvMass = 0;
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliDStarInfoSummary
@@ -260,11 +362,23 @@ AliAnalysisTaskDmesonJets::AliDStarInfoSummary::AliDStarInfoSummary(const AliDme
 {
 }
 
+/// Set the current object using an instance of AliDmesonJetInfo as its source
+///
+/// \param source A const reference to a valid AliDmesonJetInfo object
 void AliAnalysisTaskDmesonJets::AliDStarInfoSummary::Set(const AliDmesonJetInfo& source)
 {
   f2ProngInvMass = source.fInvMass2Prong;
   fDeltaInvMass = source.fD.M() - source.fInvMass2Prong;
   AliDmesonInfoSummary::Set(source);
+}
+
+/// Reset the object
+void AliAnalysisTaskDmesonJets::AliDStarInfoSummary::Reset()
+{
+  AliDmesonInfoSummary::Reset();
+
+  f2ProngInvMass = 0;
+  fDeltaInvMass = 0;
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliJetDefinition
@@ -280,12 +394,12 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition() :
   fRadius(0),
   fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecoScheme(AliJetContainer::pt_scheme),
-  fAcceptance(AliJetContainer::kUser),
   fMinJetPt(0.),
+  fMaxJetPt(500.),
   fMinJetPhi(0.),
   fMaxJetPhi(0.),
-  fMinJetEta(0.),
-  fMaxJetEta(0.),
+  fMinJetEta(-1.),
+  fMaxJetEta(1.),
   fMinChargedPt(0.),
   fMaxChargedPt(0.),
   fMinNeutralPt(0.),
@@ -305,27 +419,17 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(EJetType_t typ
   fRadius(r),
   fJetAlgo(algo),
   fRecoScheme(reco),
-  fAcceptance(AliJetContainer::kUser),
   fMinJetPt(0.),
+  fMaxJetPt(500.),
   fMinJetPhi(0.),
   fMaxJetPhi(0.),
-  fMinJetEta(0.),
-  fMaxJetEta(0.),
+  fMinJetEta(-1.),
+  fMaxJetEta(1.),
   fMinChargedPt(0.),
   fMaxChargedPt(0.),
   fMinNeutralPt(0.),
   fMaxNeutralPt(0.)
 {
-  // By default set detector fiducial acceptance
-  switch (type) {
-  case AliJetContainer::kFullJet:
-  case AliJetContainer::kNeutralJet:
-    fAcceptance = AliJetContainer::kEMCALfid;
-    break;
-  case AliJetContainer::kChargedJet:
-    fAcceptance = AliJetContainer::kTPCfid;
-    break;
-  }
 }
 
 /// Copy constructor
@@ -337,8 +441,8 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(const AliHFJet
   fRadius(source.fRadius),
   fJetAlgo(source.fJetAlgo),
   fRecoScheme(source.fRecoScheme),
-  fAcceptance(source.fAcceptance),
   fMinJetPt(source.fMinJetPt),
+  fMaxJetPt(source.fMaxJetPt),
   fMinJetPhi(source.fMinJetPhi),
   fMaxJetPhi(source.fMaxJetPhi),
   fMinJetEta(source.fMinJetEta),
@@ -377,7 +481,7 @@ Bool_t AliAnalysisTaskDmesonJets::AliHFJetDefinition::IsJetInAcceptance(const Al
 {
   if (fMinJetEta < fMaxJetEta && (jet.Eta() < fMinJetEta || jet.Eta() > fMaxJetEta)) return kFALSE;
   if (fMinJetPhi < fMaxJetPhi && (jet.Phi() < fMinJetPhi || jet.Phi() > fMaxJetPhi)) return kFALSE;
-  if (jet.Pt() < fMinJetPt) return kFALSE;
+  if (jet.Pt() > fMaxJetPt || jet.Pt() < fMinJetPt) return kFALSE;
   if (jet.fMaxChargedPt < fMinChargedPt || jet.fMaxChargedPt > fMaxChargedPt) return kFALSE;
   if (jet.fMaxNeutralPt < fMinNeutralPt || jet.fMaxNeutralPt > fMaxNeutralPt) return kFALSE;
 
@@ -393,67 +497,6 @@ Bool_t AliAnalysisTaskDmesonJets::AliHFJetDefinition::IsJetInAcceptance(const Al
   const AliJetInfo* jet = dMesonJet.GetJet(n);
   if (!jet) return kFALSE;
   return IsJetInAcceptance((*jet));
-}
-
-/// Sets the eta/phi acceptance of the jets to the detector boundaries
-///
-/// \param geom Const pointer to the EMCal/DCal geometry
-/// \param run  Run number (needed because certain runs in 2012/2013 had the 1/3 EMCal modules off
-void AliAnalysisTaskDmesonJets::AliHFJetDefinition::SetDetectorJetEtaPhiRange(const AliEMCALGeometry* const geom, Int_t run)
-{
-  Double_t r = 0;
-  switch (fAcceptance) {
-  case AliJetContainer::kTPCfid:
-    r = fRadius;
-    // enforce fiducial acceptance
-    /* no break */
-  case AliJetContainer::kTPC:
-    SetJetEtaRange(-0.9 + r, 0.9 - r);
-    SetJetPhiRange(0, 0);  // No cut on phi
-    break;
-
-  case AliJetContainer::kEMCALfid:
-    r = fRadius;
-    // enforce fiducial acceptance
-    /* no break */
-  case AliJetContainer::kEMCAL:
-    if (geom) {
-      SetJetEtaRange(geom->GetArm1EtaMin() + r, geom->GetArm1EtaMax() - r);
-
-      if(run>=177295 && run<=197470) {//small SM masked in 2012 and 2013
-        SetJetPhiRange(1.405 + r,3.135 - r);
-      }
-      else {
-        SetJetPhiRange(geom->GetArm1PhiMin() * TMath::DegToRad() + r, geom->GetEMCALPhiMax() * TMath::DegToRad() - r);
-      }
-    }
-    else {
-      AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
-      SetJetEtaRange(-0.7 + r, 0.7 - r);
-      SetJetPhiRange(1.405 + r, 3.135 - r);
-    }
-    break;
-
-  case AliJetContainer::kDCALfid:
-    r = fRadius;
-    // enforce fiducial acceptance
-    /* no break */
-  case AliJetContainer::kDCAL:
-    if (geom) {
-      SetJetEtaRange(geom->GetArm1EtaMin() + r, geom->GetArm1EtaMax() - r);
-      SetJetPhiRange(geom->GetDCALPhiMin() * TMath::DegToRad() + r, geom->GetDCALPhiMax() * TMath::DegToRad() - r);
-    }
-    else {
-      AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
-      SetJetEtaRange(-0.7 + r, 0.7 - r);
-      SetJetPhiRange(4.538 + r, 5.727 - r);
-    }
-    break;
-
-  case AliJetContainer::kUser:
-    // Nothing to be done
-    break;
-  }
 }
 
 /// Compares 2 jet definitions.
@@ -506,6 +549,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fCandidateName(),
   fCandidatePDG(0),
   fNDaughters(0),
+  fPDGdaughters(),
   fBranchName(),
   fMCMode(kNoMC),
   fNMassBins(0),
@@ -518,6 +562,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -544,18 +589,20 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fCandidateName(),
   fCandidatePDG(0),
   fNDaughters(0),
+  fPDGdaughters(),
   fBranchName(),
   fMCMode(MCmode),
   fNMassBins(nMassBins),
   fMinMass(0),
   fMaxMass(0),
   fRDHFCuts(cuts),
-  fRejectedOrigin(kUnknownQuark | kFromBottom),
+  fRejectedOrigin(kUnknownQuark | kFromDown | kFromUp | kFromStrange | kFromBottom | kFromTop | kFromGluon),
   fAcceptedDecay(kAnyDecay),
   fInhibit(kFALSE),
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -579,6 +626,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fCandidateName(source.fCandidateName),
   fCandidatePDG(source.fCandidatePDG),
   fNDaughters(source.fNDaughters),
+  fPDGdaughters(source.fPDGdaughters),
   fBranchName(source.fBranchName),
   fMCMode(source.fMCMode),
   fNMassBins(source.fNMassBins),
@@ -591,6 +639,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fJetDefinitions(source.fJetDefinitions),
   fPtBinWidth(source.fPtBinWidth),
   fMaxPt(source.fMaxPt),
+  fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -608,7 +657,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
 // Destructor
 AliAnalysisTaskDmesonJets::AnalysisEngine::~AnalysisEngine()
 {
-  if (fRDHFCuts) delete fRDHFCuts;
+  delete fRDHFCuts;
 }
 
 /// Assignement operator
@@ -633,11 +682,8 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::IsAnyJetInAcceptance(const Ali
 }
 
 /// Initialize the analysis engine
-void AliAnalysisTaskDmesonJets::AnalysisEngine::Init(const AliEMCALGeometry* const geom, Int_t runNumber)
+void AliAnalysisTaskDmesonJets::AnalysisEngine::Init(const AliEMCALGeometry* const /*geom*/, Int_t /*runNumber*/)
 {
-  for (Int_t i = 0; i < fJetDefinitions.size(); i++) {
-    fJetDefinitions[i].SetDetectorJetEtaPhiRange(geom, runNumber);
-  }
 }
 
 /// Sets the D meson candidate properties.
@@ -655,7 +701,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[0] = 211;  // pi
     fPDGdaughters[1] = 321;  // K
     fBranchName = "D0toKpi";
-    fAcceptedDecay = kD0toKpi;
+    fAcceptedDecay = kDecayD0toKpi;
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
@@ -673,7 +719,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[1] = 211; // pi fromD0
     fPDGdaughters[2] = 321; // K from D0
     fBranchName = "Dstar";
-    fAcceptedDecay = kDstartoKpipi;
+    fAcceptedDecay = kDecayDStartoKpipi;
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsDStartoKpipi();
       fRDHFCuts->SetStandardCutsPP2010();
@@ -825,19 +871,6 @@ bool operator==(const AliAnalysisTaskDmesonJets::AnalysisEngine& lhs, const AliA
   return true;
 }
 
-/// Extract attributes of the D meson (particle level).
-///
-/// \param part Pointer to a AliAODMCParticle representing the D meson
-/// \param DmesonJet Reference to an AliDmesonJetInfo object where the D meson information will be copied
-/// \param i Either 0 or 1, for the two possible mass hypothesis assignment (since it is particle level it will return kFALSE for i > 0)
-///
-/// \return Always kTRUE on success
-Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractParticleLevelHFAttributes(const AliAODMCParticle* part, AliDmesonJetInfo& DmesonJet)
-{
-  DmesonJet.fD.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), part->M());
-  return kTRUE;
-}
-
 /// Extract attributes of the D meson candidate.
 ///
 /// \param Dcand Pointer to a AliAODRecoDecayHF2Prong representing the D meson candidate
@@ -871,14 +904,26 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
   Double_t invMassD = 0;
 
+  // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
+  // Checks also the origin, and if it matches the rejected origin mask, return false
   if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
+    DmesonJet.fMCLabel = mcLab;
+
+    // Retrieve the generated particle (if exists) and its PDG code
     if (mcLab >= 0) {
       AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
-        if (fRejectedOrigin && fMCMode == kSignalOnly) {
+        // Check origin and return false if it matches the rejected origin mask
+        if (fRejectedOrigin) {
           EMesonOrigin_t origin = CheckOrigin(aodMcPart, fMCContainer->GetArray());
+
+          UInt_t rs = origin;
+          UShort_t p = 0;
+          while (rs >>= 1) { p++; }
+          TString hname = TString::Format("%s/fHistDmesonOrigin", GetName());
+          fHistManager->FillTH1(hname, p);
 
           if ((origin & fRejectedOrigin) == origin) return kFALSE;
         }
@@ -980,12 +1025,19 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const A
 
     Int_t mcLab = DstarCand->MatchToMC(fCandidatePDG, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCContainer->GetArray());
     //AliDebug(2, Form("MC label is %d", mcLab));
+    DmesonJet.fMCLabel = mcLab;
     if (mcLab >= 0) {
       AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
-        if (fRejectedOrigin && fMCMode == kSignalOnly) {
+        if (fRejectedOrigin) {
           EMesonOrigin_t origin = CheckOrigin(aodMcPart, fMCContainer->GetArray());
+
+          UInt_t rs = origin;
+          UShort_t p = 0;
+          while (rs >>= 1) { p++; }
+          TString hname = TString::Format("%s/fHistDmesonOrigin", GetName());
+          fHistManager->FillTH1(hname, p);
 
           if ((origin & fRejectedOrigin) == origin) return kFALSE;
         }
@@ -1018,7 +1070,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const A
 /// \param mcArray Pointer to a TClonesArray object where to look for particles
 ///
 /// \return One of the enum constants of AliAnalysisTaskDmesonJets::EMesonDecayChannel_t (D0->Kpi or D*->D0pi->Kpipi)
-AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray)
+AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray)
 {
   if (!part) return kDecayOther;
   if (!mcArray) return kDecayOther;
@@ -1040,7 +1092,6 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
     Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
 
     if (absPdgPart == 421) { // D0 -> K pi
-
       if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
           (absPdg1 == 321 && absPdg2 == 211)) { // K pi
         decay = kDecayD0toKpi;
@@ -1048,15 +1099,13 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
     }
 
     if (absPdgPart == 413) { // D* -> D0 pi
-
       if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
         Int_t D0decay = CheckDecayChannel(d1, mcArray);
         if (D0decay == kDecayD0toKpi) {
           decay = kDecayDStartoKpipi;
         }
       }
-
-      if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
+      else if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
         Int_t D0decay = CheckDecayChannel(d2, mcArray);
         if (D0decay == kDecayD0toKpi) {
           decay = kDecayDStartoKpipi;
@@ -1074,31 +1123,26 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
 /// \param mcArray Pointer to a TClonesArray object where to look for particles
 ///
 /// \return One of the enum constants of AliAnalysisTaskDmesonJets::EMesonOrigin_t (unknown quark, bottom or charm)
-AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray)
+AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray)
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
 
   if (!part) return kUnknownQuark;
   if (!mcArray) return kUnknownQuark;
 
-  Int_t pdgGranma = 0;
   Int_t mother = part->GetMother();
-  Int_t istep = 0;
-  Int_t abspdgGranma = 0;
-  Bool_t isFromB = kFALSE;
-  Bool_t isQuarkFound = kFALSE;
-
   while (mother >= 0) {
-    istep++;
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
-    if (mcGranma >= 0) {
-      pdgGranma = mcGranma->GetPdgCode();
-      abspdgGranma = TMath::Abs(pdgGranma);
-      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-        isFromB = kTRUE;
-      }
+    if (mcGranma) {
+      Int_t abspdgGranma = TMath::Abs(mcGranma->GetPdgCode());
 
-      if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
+      if (abspdgGranma == 1) return kFromDown;
+      if (abspdgGranma == 2) return kFromUp;
+      if (abspdgGranma == 3) return kFromStrange;
+      if (abspdgGranma == 4) return kFromCharm;
+      if (abspdgGranma == 5) return kFromBottom;
+      if (abspdgGranma == 6) return kFromTop;
+
       mother = mcGranma->GetMother();
     }
     else {
@@ -1107,17 +1151,7 @@ AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEng
     }
   }
 
-  if (isQuarkFound) {
-    if (isFromB) {
-      return kFromBottom;
-    }
-    else {
-      return kFromCharm;
-    }
-  }
-  else {
-    return kUnknownQuark;
-  }
+  return kUnknownQuark;
 }
 
 /// Run the analysis
@@ -1125,12 +1159,110 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunAnalysis()
 {
   fDmesonJets.clear();
 
+  for (auto& jetDef : fJetDefinitions) {
+    jetDef.fJets.clear();
+  }
+
   if (fMCMode == kMCTruth) {
     RunParticleLevelAnalysis();
   }
   else {
     RunDetectorLevelAnalysis();
   }
+}
+
+/// Finds all inclusive jets according to a certain jet definition.
+/// The jets are stored inside the jet definition object.
+///
+/// \param jetDef Reference to a AliHFJetDefinition object
+void AliAnalysisTaskDmesonJets::AnalysisEngine::FindJets(AliHFJetDefinition& jetDef)
+{
+  fFastJetWrapper->Clear();
+  fFastJetWrapper->SetR(jetDef.fRadius);
+  fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+  fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+
+  if (fTrackContainer && jetDef.fJetType != AliJetContainer::kNeutralJet) {
+    fTrackContainer->SetDMesonCandidate(0);
+    AddInputVectors(fTrackContainer, 100);
+  }
+
+  if (fClusterContainer && jetDef.fJetType != AliJetContainer::kChargedJet) {
+    AddInputVectors(fClusterContainer, -100);
+  }
+
+  // run jet finder
+  fFastJetWrapper->Run();
+
+  std::vector<fastjet::PseudoJet> jets_incl = fFastJetWrapper->GetInclusiveJets();
+
+  for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
+    std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
+
+    Double_t maxChPt = 0;
+    Double_t maxNePt = 0;
+    Double_t totalNeutralPt = 0;
+
+    for (UInt_t ic = 0; ic < constituents.size(); ++ic) {
+      if (constituents[ic].user_index() >= 100) {
+        if (constituents[ic].pt() > maxChPt) maxChPt = constituents[ic].pt();
+      }
+      else if (constituents[ic].user_index() <= -100) {
+        totalNeutralPt += constituents[ic].pt();
+        if (constituents[ic].pt() > maxNePt) maxChPt = constituents[ic].pt();
+      }
+    }
+
+    jetDef.fJets.push_back(
+        AliJetInfo(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E(),
+            constituents.size(), totalNeutralPt / jets_incl[ijet].pt(), maxChPt, maxNePt)
+    );
+  }
+}
+
+/// Finds a jet that geometrically matches to a D meson
+///
+/// \param jetDef Reference to a AliHFJetDefinition object
+/// \param dmeson Const reference to a AliDmesonJetInfo object
+/// \param dMax Maximum distance between the D meson and the jet axis
+/// \param applyKinCuts Whether or not kinematic cuts should be applied to the jet
+/// \return Pointer to a matched jet (if found) or a null pointer
+AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair AliAnalysisTaskDmesonJets::AnalysisEngine::FindJetMacthedToGeneratedDMeson(const AliDmesonJetInfo& dmeson, AliHFJetDefinition& jetDef, Double_t dMax, Bool_t applyKinCuts)
+{
+  if (jetDef.fJets.size() == 0) FindJets(jetDef);
+
+  Double_t d_closest = 999;
+  AliJetInfo* jet_closest = 0;
+  const AliJetInfo* truth_jet = 0;
+  try {
+    truth_jet = &(dmeson.fJets.at(jetDef.GetName()));
+  }
+  catch(...) {
+    return jet_distance_pair(0, 999);
+  }
+
+  for (auto& jet : jetDef.fJets) {
+    Double_t d = truth_jet->GetDistance(jet);
+
+    if (d > dMax) continue;
+    if (d < d_closest) {
+      d_closest = d;
+      jet_closest = &jet;
+    }
+  }
+
+  if (jet_closest && applyKinCuts) {
+    if (!jetDef.IsJetInAcceptance(*jet_closest)) jet_closest = 0;
+  }
+
+  if (jet_closest) {
+    AliDebug(2, Form("Found closest jet (pt=%.3f, eta=%.3f, phi=%.3f) to d meson (pt=%.3f, eta=%.3f, phi=%.3f) with d = %.3f",
+        jet_closest->Pt(), jet_closest->Eta(), jet_closest->Phi_0_2pi(),
+        dmeson.fD.Pt(), dmeson.fD.Eta(), dmeson.fD.Phi_0_2pi(),
+        d_closest));
+  }
+
+  return jet_distance_pair(jet_closest, d_closest);
 }
 
 /// Run a detector level analysis
@@ -1166,6 +1298,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
     for (Int_t im = 0; im < 2; im++)  {  // 2 mass hypothesis (when available)
       DmesonJet.Reset();
+      DmesonJet.fDmesonParticle = charmCand;
       if (ExtractRecoDecayAttributes(charmCand, DmesonJet, im)) {
         for (std::vector<AliHFJetDefinition>::iterator itdef = fJetDefinitions.begin(); itdef != fJetDefinitions.end(); itdef++) {
           if (!FindJet(charmCand, DmesonJet, *itdef)) {
@@ -1173,7 +1306,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
                 (*itdef).GetName(), GetName(), DmesonJet.fD.Pt(), DmesonJet.fD.Eta(), DmesonJet.fD.Phi_0_2pi()));
           }
         }
-        fDmesonJets.push_back(DmesonJet);
+        fDmesonJets[icharm] = DmesonJet;
       }
     }
     nAccCharm++;
@@ -1215,11 +1348,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 
     hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", GetName(), jetDef.GetName());
     TH1* histDaughterNotInJet = static_cast<TH1*>(fHistManager->FindObject(hname));
-    const TObjArray daughterNotInJet = fTrackContainer->GetDaughterList();
-    for (Int_t i = 0; i < daughterNotInJet.GetEntriesFast(); i++) {
-      AliVParticle* daughter = static_cast<AliVParticle*>(daughterNotInJet.At(i));
-      if (!daughter) continue;
-      histDaughterNotInJet->Fill(daughter->Pt());
+    const TObjArray& daughters = fTrackContainer->GetDaughterList();
+    for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
+      AliVParticle* daughter = static_cast<AliVParticle*>(daughters.At(i));
+      if (!fTrackContainer->GetArray()->FindObject(daughter)) histDaughterNotInJet->Fill(daughter->Pt());
     }
   }
 
@@ -1274,17 +1406,15 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 /// \param cont Pointer to a valid AliEmcalContainer object
 void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist)
 {
-  AliTLorentzVector part;
-  for (Int_t i = 0; i < cont->GetNEntries(); i++) {
-    cont->GetMomentum(part, i);
+  AliEmcalIterableMomentumContainer itcont = cont->all_momentum();
+  for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
     UInt_t rejectionReason = 0;
-    if (!cont->AcceptObject(i, rejectionReason)) {
-      rejectHist->Fill(cont->GetRejectionReasonBitPosition(rejectionReason), part.Pt());
+    if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
+      if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
     }
-    Int_t uid = offset >= 0 ? i : -i;
-    uid += offset;
-    fFastJetWrapper->AddInputVector(part.Px(), part.Py(), part.Pz(), part.E(), uid);
+    Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
+    fFastJetWrapper->AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
   }
 }
 
@@ -1297,18 +1427,31 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
 
-  std::map<int, AliDmesonJetInfo> dMesonJets;
+  if (!fMCContainer->IsSpecialPDGFound()) return;
 
-  for (std::vector<AliHFJetDefinition>::iterator itdef = fJetDefinitions.begin(); itdef != fJetDefinitions.end(); itdef++) {
-    AliHFJetDefinition* jetDef = &(*itdef);
+  for (auto &jetDef : fJetDefinitions) {
+    switch (jetDef.fJetType) {
+    case AliJetContainer::kFullJet:
+      fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kNoChargeCut);
+      break;
+    case AliJetContainer::kChargedJet:
+      fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
+      break;
+    case AliJetContainer::kNeutralJet:
+      fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kNeutral);
+      break;
+    }
 
     fFastJetWrapper->Clear();
-    fFastJetWrapper->SetR(jetDef->fRadius);
-    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef->fJetAlgo));
-    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef->fRecoScheme));
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
 
-    hname = TString::Format("%s/%s/fHistClusterRejectionReason", GetName(), jetDef->GetName());
+    hname = TString::Format("%s/fHistDmesonOrigin", GetName());
+    fMCContainer->SetHistOrigin(static_cast<TH1*>(fHistManager->FindObject(hname)));
+    hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", GetName(), jetDef.GetName());
     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
+    fMCContainer->SetHistOrigin(0);
 
     fFastJetWrapper->Run();
 
@@ -1326,34 +1469,29 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
           ::Error("AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
           continue;
         }
-        if (part->PdgCode() == fCandidatePDG) {
-          std::map<int, AliDmesonJetInfo>::iterator dMesonJetIt = dMesonJets.find(iPart);
-          if (dMesonJetIt == dMesonJets.end()) {
+        if (TMath::Abs(part->PdgCode()) == fCandidatePDG) {
+          std::map<int, AliDmesonJetInfo>::iterator dMesonJetIt = fDmesonJets.find(iPart);
+          if (dMesonJetIt == fDmesonJets.end()) { // This D meson does not exist yet
             std::pair<int, AliDmesonJetInfo> element;
             element.first = iPart;
             element.second = AliDmesonJetInfo();
-            dMesonJetIt = dMesonJets.insert(element).first;
+            dMesonJetIt = fDmesonJets.insert(element).first;
             (*dMesonJetIt).second.fD.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->E());
+            (*dMesonJetIt).second.fDmesonParticle = part;
           }
 
-          (*dMesonJetIt).second.fJets[jetDef->GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
-          break;
+          (*dMesonJetIt).second.fJets[jetDef.GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
+          (*dMesonJetIt).second.fJets[jetDef.GetName()].fNConstituents = constituents.size();
         }
       }
     }
-  }
-
-  for (std::map<int, AliDmesonJetInfo>::iterator dMesonJetIt = dMesonJets.begin();
-      dMesonJetIt != dMesonJets.end();
-      dMesonJetIt++) {
-    fDmesonJets.push_back((*dMesonJetIt).second);
   }
 }
 
 /// Builds the tree where the output will be posted
 ///
 /// \return Pointer to the new tree
-TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
+TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree(const char* taskName)
 {
   TString classname;
   switch (fCandidateType) {
@@ -1366,8 +1504,9 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
     fCurrentDmesonJetInfo = new AliDStarInfoSummary();
     break;
   }
-  fTree = new TTree(GetName(), GetName());
-  fTree->Branch("DmesonJet", classname, &fCurrentDmesonJetInfo, 32000, 0);
+  TString treeName = TString::Format("%s_%s", taskName, GetName());
+  fTree = new TTree(treeName, treeName);
+  fTree->Branch("DmesonJet", classname, &fCurrentDmesonJetInfo);
   fCurrentJetInfo = new AliJetInfoSummary*[fJetDefinitions.size()];
   for (Int_t i = 0; i < fJetDefinitions.size(); i++) {
     fCurrentJetInfo[i] = new AliJetInfoSummary();
@@ -1386,12 +1525,11 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
-  for (std::vector<AliHFJetDefinition>::const_iterator it = fJetDefinitions.begin(); it != fJetDefinitions.end(); it++) {
-    const AliHFJetDefinition* jetDef = &(*it);
+  for (auto &jetDef : fJetDefinitions) {
 
-    AliDebug(2,Form("Now working on '%s'", jetDef->GetName()));
+    AliDebug(2,Form("Now working on '%s'", jetDef.GetName()));
 
-    Double_t radius = jetDef->fRadius;
+    Double_t radius = jetDef.fRadius;
 
     TString  title[30] = {""};
     Int_t    nbins[30] = {0 };
@@ -1521,7 +1659,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
       dim++;
     }
 
-    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef->GetName());
+    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef.GetName());
     THnSparse* h = fHistManager->CreateTHnSparse(hname,hname,dim,nbins,min,max);
     for (Int_t j = 0; j < dim; j++) {
       h->GetAxis(j)->SetTitle(title[j]);
@@ -1536,12 +1674,12 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
 {
   TString hname;
 
-  for (Int_t id = 0; id < fDmesonJets.size(); id++) {
-    fCurrentDmesonJetInfo->Set(fDmesonJets[id]);
+  for (auto& dmeson_pair : fDmesonJets) {
+    fCurrentDmesonJetInfo->Set(dmeson_pair.second);
     Int_t accJets = 0;
     for (UInt_t ij = 0; ij < fJetDefinitions.size(); ij++) {
       fCurrentJetInfo[ij]->Reset();
-      AliJetInfo* jet = fDmesonJets[id].GetJet(fJetDefinitions[ij].GetName());
+      AliJetInfo* jet = dmeson_pair.second.GetJet(fJetDefinitions[ij].GetName());
       if (!jet) continue;
       if (applyKinCuts && !fJetDefinitions[ij].IsJetInAcceptance(*jet)) {
         hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), fJetDefinitions[ij].GetName());
@@ -1552,7 +1690,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
         fHistManager->FillTH1(hname, jet->Eta());
         continue;
       }
-      fCurrentJetInfo[ij]->Set(fDmesonJets[id], fJetDefinitions[ij].GetName());
+      fCurrentJetInfo[ij]->Set(dmeson_pair.second, fJetDefinitions[ij].GetName());
       accJets++;
     }
     if (accJets > 0) {
@@ -1560,21 +1698,68 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
     }
     else {
       hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
-      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Pt());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Pt());
       hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
-      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Phi_0_2pi());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Phi_0_2pi());
       hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
-      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Eta());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Eta());
       if (fCandidateType == kD0toKpi) {
         hname = TString::Format("%s/fHistRejectedDMesonInvMass", GetName());
-        fHistManager->FillTH1(hname, fDmesonJets[id].fD.M());
+        fHistManager->FillTH1(hname, dmeson_pair.second.fD.M());
       }
       else if (fCandidateType == kDstartoKpipi) {
         hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", GetName());
-        fHistManager->FillTH1(hname, fDmesonJets[id].fInvMass2Prong);
+        fHistManager->FillTH1(hname, dmeson_pair.second.fInvMass2Prong);
 
         hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", GetName());
-        fHistManager->FillTH1(hname, fDmesonJets[id].fD.M() - fDmesonJets[id].fInvMass2Prong);
+        fHistManager->FillTH1(hname, dmeson_pair.second.fD.M() - dmeson_pair.second.fInvMass2Prong);
+      }
+    }
+  }
+  return kTRUE;
+}
+
+/// Fills QA histograms. This method is not used by the AliAnalysisTaskDmesonJets task,
+/// but can be used by derived tasks that have a custom implementation to fill the output objects.
+///
+/// \return Always kTRUE
+Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
+{
+  TString hname;
+
+  for (auto& dmeson_pair : fDmesonJets) {
+    Int_t accJets = 0;
+    for (UInt_t ij = 0; ij < fJetDefinitions.size(); ij++) {
+      AliJetInfo* jet = dmeson_pair.second.GetJet(fJetDefinitions[ij].GetName());
+      if (!jet) continue;
+      if (applyKinCuts && !fJetDefinitions[ij].IsJetInAcceptance(*jet)) {
+        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), fJetDefinitions[ij].GetName());
+        fHistManager->FillTH1(hname, jet->Pt());
+        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), fJetDefinitions[ij].GetName());
+        fHistManager->FillTH1(hname, jet->Phi_0_2pi());
+        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), fJetDefinitions[ij].GetName());
+        fHistManager->FillTH1(hname, jet->Eta());
+        continue;
+      }
+      accJets++;
+    }
+    if (accJets == 0) {
+      hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Pt());
+      hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Phi_0_2pi());
+      hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Eta());
+      if (fCandidateType == kD0toKpi) {
+        hname = TString::Format("%s/fHistRejectedDMesonInvMass", GetName());
+        fHistManager->FillTH1(hname, dmeson_pair.second.fD.M());
+      }
+      else if (fCandidateType == kDstartoKpipi) {
+        hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", GetName());
+        fHistManager->FillTH1(hname, dmeson_pair.second.fInvMass2Prong);
+
+        hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", GetName());
+        fHistManager->FillTH1(hname, dmeson_pair.second.fD.M() - dmeson_pair.second.fInvMass2Prong);
       }
     }
   }
@@ -1588,37 +1773,35 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillHnSparse(Bool_t applyKinCu
 {
   TString hname;
 
-  for (Int_t id = 0; id < fDmesonJets.size(); id++) {
-    if (!IsAnyJetInAcceptance(fDmesonJets[id])) {
+  for (auto& dmeson_pair : fDmesonJets) {
+    if (!IsAnyJetInAcceptance(dmeson_pair.second)) {
       hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
-      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Pt());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Pt());
       hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
-      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Phi_0_2pi());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Phi_0_2pi());
       hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
-      fHistManager->FillTH1(hname, fDmesonJets[id].fD.Eta());
+      fHistManager->FillTH1(hname, dmeson_pair.second.fD.Eta());
     }
   }
 
-  for (std::vector<AliHFJetDefinition>::iterator itdef = fJetDefinitions.begin(); itdef != fJetDefinitions.end(); itdef++) {
+  for (auto &jetDef : fJetDefinitions) {
 
-    AliHFJetDefinition* jetDef = &(*itdef);
-
-    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef->GetName());
+    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef.GetName());
     THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname));
 
-    for (Int_t id = 0; id < fDmesonJets.size(); id++) {
-      const AliJetInfo* jet = fDmesonJets[id].GetJet(jetDef->GetName());
+    for (auto& dmeson_pair : fDmesonJets) {
+      const AliJetInfo* jet = dmeson_pair.second.GetJet(jetDef.GetName());
       if (!jet) continue;
-      if (!jetDef->IsJetInAcceptance(*jet)) {
-        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), jetDef->GetName());
+      if (!jetDef.IsJetInAcceptance(*jet)) {
+        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), jetDef.GetName());
         fHistManager->FillTH1(hname, jet->Pt());
-        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), jetDef->GetName());
+        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), jetDef.GetName());
         fHistManager->FillTH1(hname, jet->Phi_0_2pi());
-        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), jetDef->GetName());
+        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), jetDef.GetName());
         fHistManager->FillTH1(hname, jet->Eta());
         continue;
       }
-      FillHnSparse(h, fDmesonJets[id], (*itdef).GetName());
+      FillHnSparse(h, dmeson_pair.second, jetDef.GetName());
     }
   }
 
@@ -1680,9 +1863,10 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   AliAnalysisTaskEmcalLight(),
   fAnalysisEngines(),
   fEnabledAxis(0),
-  fTreeOutput(kFALSE),
+  fOutputType(kTreeOutput),
   fHistManager(),
   fApplyKinematicCuts(kTRUE),
+  fNOutputTrees(0),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
@@ -1692,17 +1876,21 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
 /// This is the standard named constructor.
 ///
 /// \param name Name of the task
-AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name) :
+AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees) :
   AliAnalysisTaskEmcalLight(name, kTRUE),
   fAnalysisEngines(),
   fEnabledAxis(k2ProngInvMass),
-  fTreeOutput(kFALSE),
+  fOutputType(kTreeOutput),
   fHistManager(name),
   fApplyKinematicCuts(kTRUE),
+  fNOutputTrees(nOutputTrees),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
   SetMakeGeneralHistograms(kTRUE);
+  for (Int_t i = 0; i < nOutputTrees; i++){
+    DefineOutput(2+i, TTree::Class());
+  }
 }
 
 /// This is the standard destructor.
@@ -1822,110 +2010,127 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   TString hname;
   TString htitle;
   TH1* h = 0;
+  Int_t treeSlot = 0;
 
   ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for task '%s' (%lu analysis engines)", GetName(), fAnalysisEngines.size());
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* param = &(*it);
-    ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param->GetName(), param->fJetDefinitions.size());
+  for (auto &param : fAnalysisEngines) {
+    ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param.GetName(), param.fJetDefinitions.size());
 
-    fHistManager.CreateHistoGroup(param->GetName());
+    fHistManager.CreateHistoGroup(param.GetName());
 
-    param->fHistManager = &fHistManager;
+    param.fHistManager = &fHistManager;
 
-    hname = TString::Format("%s/fHistNAcceptedDmesons", param->GetName());
+    hname = TString::Format("%s/fHistNAcceptedDmesons", param.GetName());
     htitle = hname + ";Number of D accepted meson candidates;counts";
     h = fHistManager.CreateTH1(hname, htitle, 51, -0.5, 50.5);
 
-    hname = TString::Format("%s/fHistNDmesons", param->GetName());
+    hname = TString::Format("%s/fHistNDmesons", param.GetName());
     htitle = hname + ";Number of D meson candidates;counts";
     h = fHistManager.CreateTH1(hname, htitle, 101, -0.5, 100.5);
 
-    hname = TString::Format("%s/fHistNEvents", param->GetName());
+    hname = TString::Format("%s/fHistNEvents", param.GetName());
     htitle = hname + ";Event status;counts";
     h = fHistManager.CreateTH1(hname, htitle, 2, 0, 2);
     h->GetXaxis()->SetBinLabel(1, "Accepted");
     h->GetXaxis()->SetBinLabel(2, "Rejected");
 
-    hname = TString::Format("%s/fHistEventRejectionReasons", param->GetName());
+    hname = TString::Format("%s/fHistEventRejectionReasons", param.GetName());
     htitle = hname + ";Rejection reason;counts";
     h = fHistManager.CreateTH1(hname, htitle, 32, 0, 32);
 
-    hname = TString::Format("%s/fHistRejectedDMesonPt", param->GetName());
+    hname = TString::Format("%s/fHistRejectedDMesonPt", param.GetName());
     htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});counts";
     fHistManager.CreateTH1(hname, htitle, 150, 0, 150);
 
-    hname = TString::Format("%s/fHistRejectedDMesonEta", param->GetName());
+    hname = TString::Format("%s/fHistRejectedDMesonEta", param.GetName());
     htitle = hname + ";#it{#eta}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 100, -2, 2);
 
-    hname = TString::Format("%s/fHistRejectedDMesonPhi", param->GetName());
+    hname = TString::Format("%s/fHistRejectedDMesonPhi", param.GetName());
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
 
-    if (param->fCandidateType == kD0toKpi) {
-      hname = TString::Format("%s/fHistRejectedDMesonInvMass", param->GetName());
+    if (param.fCandidateType == kD0toKpi) {
+      hname = TString::Format("%s/fHistRejectedDMesonInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
-      fHistManager.CreateTH1(hname, htitle, param->fNMassBins, param->fMinMass, param->fMaxMass);
+      fHistManager.CreateTH1(hname, htitle, param.fNMassBins, param.fMinMass, param.fMaxMass);
     }
-    else if (param->fCandidateType == kDstartoKpipi) {
+    else if (param.fCandidateType == kDstartoKpipi) {
       Double_t min = 0;
       Double_t max = 0;
 
-      hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", param->GetName());
+      hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
-      CalculateMassLimits(param->fMaxMass - param->fMinMass, 421, param->fNMassBins, min, max);
-      fHistManager.CreateTH1(hname, htitle, param->fNMassBins, min, max);
+      CalculateMassLimits(param.fMaxMass - param.fMinMass, 421, param.fNMassBins, min, max);
+      fHistManager.CreateTH1(hname, htitle, param.fNMassBins, min, max);
 
       Double_t D0mass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-      hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", param->GetName());
+      hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2});counts";
-      CalculateMassLimits(0.20, 413, param->fNMassBins*6, min, max);
-      fHistManager.CreateTH1(hname, htitle, param->fNMassBins*6, min-D0mass, max-D0mass);
+      CalculateMassLimits(0.20, 413, param.fNMassBins*6, min, max);
+      fHistManager.CreateTH1(hname, htitle, param.fNMassBins*6, min-D0mass, max-D0mass);
     }
 
-    for (std::vector<AliHFJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
+    if (param.fMCMode == kBackgroundOnly || param.fMCMode == kSignalOnly || param.fMCMode == kMCTruth) {
+      hname = TString::Format("%s/fHistDmesonOrigin", param.GetName());
+      htitle = hname + ";origin;counts";
+      fHistManager.CreateTH1(hname, htitle, 10, 0, 10);
+    }
+
+    for (std::vector<AliHFJetDefinition>::iterator itdef = param.fJetDefinitions.begin(); itdef != param.fJetDefinitions.end(); itdef++) {
       AliHFJetDefinition* jetDef = &(*itdef);
       ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
 
-      fHistManager.CreateHistoGroup(jetDef->GetName(), param->GetName());
+      fHistManager.CreateHistoGroup(jetDef->GetName(), param.GetName());
 
-      hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/%s/fHistTrackRejectionReason", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistTrackRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/%s/fHistClusterRejectionReason", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistClusterRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Cluster rejection reason;#it{p}_{T,cluster} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{p}_{T,track} (GeV/#it{c});counts";
       fHistManager.CreateTH1(hname, htitle, 200, 0, 100);
 
-      hname = TString::Format("%s/%s/fHistRejectedJetPt", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistRejectedJetPt", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{p}_{T,jet} (GeV/#it{c});counts";
       fHistManager.CreateTH1(hname, htitle, 150, 0, 150);
 
-      hname = TString::Format("%s/%s/fHistRejectedJetEta", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistRejectedJetEta", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{#eta}_{jet};counts";
       fHistManager.CreateTH1(hname, htitle, 100, -2, 2);
 
-      hname = TString::Format("%s/%s/fHistRejectedJetPhi", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistRejectedJetPhi", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{#phi}_{jet};counts";
       fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
     }
-    if (fTreeOutput) {
-      TTree* tree = param->BuildTree();
-      fOutput->Add(tree);
-    }
-    else {
-      param->BuildHnSparse(fEnabledAxis);
+    switch (fOutputType) {
+    case kTreeOutput:
+      param.BuildTree(GetName());
+      if (treeSlot < fNOutputTrees) {
+        param.AssignDataSlot(treeSlot+2);
+        treeSlot++;
+        PostDataFromAnalysisEngine(param);
+      }
+      else {
+        AliError(Form("Number of data output slots %d not sufficient. Tree of analysis engine %s will not be posted!", fNOutputTrees, param.GetName()));
+      }
+      break;
+    case kTHnOutput:
+      param.BuildHnSparse(fEnabledAxis);
+      break;
+    case kNoOutput:
+      break;
     }
   }
 
@@ -1953,57 +2158,56 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
      return;
   }
 
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* params = &(*it);
+  for (auto &params : fAnalysisEngines) {
 
-    params->fAodEvent = fAodEvent;
-    params->fFastJetWrapper = fFastJetWrapper;
-    params->Init(fGeom, fAodEvent->GetRunNumber());
+    params.fAodEvent = fAodEvent;
+    params.fFastJetWrapper = fFastJetWrapper;
+    params.Init(fGeom, fAodEvent->GetRunNumber());
 
-    if (params->fMCMode != kMCTruth) {
-      params->fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(params->fBranchName.Data()));
+    if (params.fMCMode != kMCTruth) {
+      params.fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(params.fBranchName.Data()));
 
-      if (params->fCandidateArray) {
-        if (!params->fCandidateArray->GetClass()->InheritsFrom("AliAODRecoDecayHF2Prong")) {
+      if (params.fCandidateArray) {
+        if (!params.fCandidateArray->GetClass()->InheritsFrom("AliAODRecoDecayHF2Prong")) {
           ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
               "%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!",
-              GetName(), params->fCandidateArray->GetClass()->GetName(), params->fCandidateArray->GetName());
-          params->fCandidateArray = 0;
-          params->fInhibit = kTRUE;
+              GetName(), params.fCandidateArray->GetClass()->GetName(), params.fCandidateArray->GetName());
+          params.fCandidateArray = 0;
+          params.fInhibit = kTRUE;
         }
       }
       else {
         ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
             "Could not find candidate array '%s', skipping the event. Analysis engine '%s' will be disabled!",
-            params->fBranchName.Data(), params->GetName());
-        params->fInhibit = kTRUE;
+            params.fBranchName.Data(), params.GetName());
+        params.fInhibit = kTRUE;
       }
     }
 
-    if (params->fMCMode != kNoMC) {
-      params->fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(0));
+    if (params.fMCMode != kNoMC) {
+      params.fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(0));
 
-      if (!params->fMCContainer) params->fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(1));
+      if (!params.fMCContainer) params.fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(1));
 
-      if (!params->fMCContainer) {
+      if (!params.fMCContainer) {
         ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
             "No MC particle container was provided. Analysis engine '%s' will be disabled!",
-            params->GetName());
-        params->fInhibit = kTRUE;
+            params.GetName());
+        params.fInhibit = kTRUE;
       }
     }
 
-    if (params->fMCMode != kMCTruth) {
-      params->fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(0));
-      if (!params->fTrackContainer) params->fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(1));
+    if (params.fMCMode != kMCTruth) {
+      params.fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(0));
+      if (!params.fTrackContainer) params.fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(1));
 
-      params->fClusterContainer = GetClusterContainer(0);
+      params.fClusterContainer = GetClusterContainer(0);
 
-      if (!params->fTrackContainer && !params->fClusterContainer) {
+      if (!params.fTrackContainer && !params.fClusterContainer) {
         ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
             "No track container and no cluster container were provided. Analysis engine '%s' will be disabled!",
-            params->GetName());
-        params->fInhibit = kTRUE;
+            params.GetName());
+        params.fInhibit = kTRUE;
       }
     }
   }
@@ -2020,20 +2224,27 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
+  // Now adding an entry in teh histogram so as to check that this is actually cutting anything out
+  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) {
+    for (auto &eng : fAnalysisEngines) {
+        if (eng.fInhibit) continue;
+        hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
+        fHistManager.FillTH1(hname, "ESDfilterBug");
+    }
+    return kFALSE;
+  }
 
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* eng = &(*it);
+  for (auto &eng : fAnalysisEngines) {
 
-    if (eng->fInhibit) continue;
+    if (eng.fInhibit) continue;
 
     //Event selection
-    hname = TString::Format("%s/fHistNEvents", eng->GetName());
-    Bool_t iseventselected = eng->fRDHFCuts->IsEventSelected(fAodEvent);
+    hname = TString::Format("%s/fHistNEvents", eng.GetName());
+    Bool_t iseventselected = eng.fRDHFCuts->IsEventSelected(fAodEvent);
     if (!iseventselected) {
       fHistManager.FillTH1(hname, "Rejected");
-      hname = TString::Format("%s/fHistEventRejectionReasons", eng->GetName());
-      UInt_t bitmap = eng->fRDHFCuts->GetEventRejectionBitMap();
+      hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
+      UInt_t bitmap = eng.fRDHFCuts->GetEventRejectionBitMap();
       TString label;
       do {
         label = GetHFEventRejectionReasonLabel(bitmap);
@@ -2048,7 +2259,7 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 
     AliDebug(2, "Event selected");
 
-    eng->RunAnalysis();
+    eng.RunAnalysis();
   }
   return kTRUE;
 }
@@ -2059,16 +2270,16 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 Bool_t AliAnalysisTaskDmesonJets::FillHistograms()
 {
   TString hname;
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* param = &(*it);
+  for (auto &param : fAnalysisEngines) {
 
-    if (param->fInhibit) continue;
+    if (param.fInhibit) continue;
 
-    if (fTreeOutput) {
-      param->FillTree(fApplyKinematicCuts);
+    if (fOutputType == kTreeOutput) {
+      param.FillTree(fApplyKinematicCuts);
+      PostDataFromAnalysisEngine(param);
     }
-    else {
-      param->FillHnSparse(fApplyKinematicCuts);
+    else if (fOutputType == kTHnOutput) {
+      param.FillHnSparse(fApplyKinematicCuts);
     }
   }
   return kTRUE;
@@ -2165,4 +2376,20 @@ const char* AliAnalysisTaskDmesonJets::GetHFEventRejectionReasonLabel(UInt_t& bi
   }
 
   return label.Data();
+}
+
+/// Post the tree of an analysis engine in the data slot (if the tree exists and the data slot has been assigned)
+///
+/// \param eng Constant reference to an analysis engine
+///
+/// \return -1 if unsuccessful, an integer number corresponding to the data slot if successful
+Int_t AliAnalysisTaskDmesonJets::PostDataFromAnalysisEngine(const AnalysisEngine& eng)
+{
+  if (eng.GetDataSlotNumber() >= 0 && eng.GetTree()) {
+    PostData(eng.GetDataSlotNumber(), eng.GetTree());
+    return eng.GetDataSlotNumber();
+  }
+  else {
+    return -1;
+  }
 }

@@ -7,6 +7,7 @@
 #endif
 
 
+class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
 class TArrayI;
@@ -35,6 +36,7 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		AliMultiplicitySelectionCPPWA();
 		~AliMultiplicitySelectionCPPWA();
 
+		void SetInitCuts();
 		void SetCheckReferenceMultiplicity() {fkCheckReferenceMultiplicity = kTRUE;} 
 		void SetTPCnclsS(Int_t n = 3) {fTPCnclsS = n;} 
 		void SetTrackDCAz(Double_t d = 6.) {fTrackDCAz = d;} 
@@ -60,7 +62,7 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		Bool_t AcceptTrack(AliESDtrack *track, Bool_t asPrimary = kFALSE);
 		Bool_t TestFiredChips(AliESDEvent *esd, TArrayI indices);
 
-		void InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2);
+		void InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nSys);
 		void AddPrimaryTrackCut(AliESDtrackCuts *cut);
 
 		void IgnoreV0s(Bool_t k=kFALSE) {fkIgnoreV0s = k;}

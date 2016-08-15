@@ -16,6 +16,7 @@
 //
 
 void ExtractOutput(
+   Bool_t treeSE=kFALSE, Bool_t treeME=kFALSE, //read TH2F from offline correlation framewrks (produced from the TTree) for SE, ME analysis instead of THnSparse
    Int_t specie=AliDhCorrelationExtraction::kD0toKpi, //the D-meson decay channel (check the enumerator for the options)
    Int_t SandB=AliDhCorrelationExtraction::kBfromBinCount, //how to extract S and B (check the enumerator for the options) - kBfromBinCount is the paper approach
    Int_t SBscale=AliDhCorrelationExtraction::kBinCountScaling, //how to renormalize the sidebands (check the enumerator for the options) - kBfromBinCount is the paper approach
@@ -38,8 +39,8 @@ void ExtractOutput(
   plotter->SetSandBextraction(SandB);
   plotter->SetSBscaling(SBscale);
   plotter->SetRebinMassPlots(rebin);
-  plotter->SetFitRanges(leftRng,rightRng); //use 1.7-2.1 for D0 and D+, 0.14-0.16 for D* (--> but 1.695-2.1 for D0 in pp for results before 1/5/2015!)
-  plotter->SetBkgFitFunction(funcBkg); //use kExpo for D0 and D+, kPowEx for D*
+  plotter->SetFitRanges(leftRng,rightRng); //
+  plotter->SetBkgFitFunction(funcBkg); //
   plotter->SetNumberOfSigmasFitter(nsigmaFitter);
   plotter->SetSignalSigmas(nsigmaS);
   plotter->SetAutoSBRange(autoSB,insigma,outsigma);
@@ -47,6 +48,7 @@ void ExtractOutput(
   plotter->SetNpools(npools);
   plotter->SetCorrectPoolsSeparately(poolByPool);
   plotter->SetDeltaEtaRange(deltaEtaMin,deltaEtaMax);
+  plotter->ReadTTreeOutputFiles(treeSE,treeME);
   if(!flagSpecie) return;
 
   plotter->SetDebugLevel(0); //0 = get main results; 1 = get full list of plots; 2 = get debug printouts
@@ -69,12 +71,15 @@ void ExtractOutput(
 //________________________________________
 void SetInputNames(AliDhCorrelationExtraction *plotter){
 
-  plotter->SetInputFilename("./../AnalysisResults_InvMass_ppPass2_SlowTrain.root");
-  plotter->SetListMassName("coutputmassD0MassOutput0100");
+  plotter->SetInputFilenameMass("./AnalysisResults_pp.root");
+  plotter->SetInputFilenameSE("./AnalysisResults_pp.root");
+  plotter->SetInputFilenameME("./AnalysisResults_pp.root");
+  plotter->SetDirNameMass("PWG3_D2H_D0InvMassOutput");
+  plotter->SetListNameMass("coutputmassD0MassOutput0100");
   plotter->SetDirNameSE("PWG3_D2H_D0InvMassOutput");
   plotter->SetListNameSE("correlationsOutput0100");
-  plotter->SetDirNameME("PWG3_D2H_D0InvMassOutput_ME");
-  plotter->SetListNameME("correlationsOutput_ME0100");
+  plotter->SetDirNameME("PWG3_D2H_D0InvMassOutputME");
+  plotter->SetListNameME("correlationsOutputME0100");
 
   plotter->SetMassHistoName("histMass_WeigD0Eff_");
   plotter->SetSECorrelHistoName("hPhi_Charg_Bin");
@@ -145,7 +150,7 @@ void ExtractLowPt(AliDhCorrelationExtraction *plotter){
   printf("*** Extracting correlations in 3<pT(D)<5 GeV/c, 1<pT(assoc)<99 GeV/c ***\n");
   Bool_t corrExtrThr3 = plotter->ExtractCorrelations(1.,99.);
   if(!corrExtrThr1 || !corrExtrThr2 || !corrExtrThr3) {
-    printf("Error in the extraction of the correlcation distributions! Exiting...\n");
+    printf("Error in the extraction of the correlation distributions! Exiting...\n");
     return;
   }
 
@@ -188,7 +193,7 @@ void ExtractMidPt(AliDhCorrelationExtraction *plotter){
   printf("*** Extracting correlations in 5<pT(D)<8 GeV/c, 1<pT(assoc)<99 GeV/c ***\n");
   Bool_t corrExtrThr3 = plotter->ExtractCorrelations(1.,99.);
   if(!corrExtrThr1 || !corrExtrThr2 || !corrExtrThr3) {
-    printf("Error in the extraction of the correlcation distributions! Exiting...\n");
+    printf("Error in the extraction of the correlation distributions! Exiting...\n");
     return;
   }
 
@@ -209,7 +214,6 @@ void ExtractHighPt(AliDhCorrelationExtraction *plotter){
   Double_t LSBUppLim[2] = {1.7528,1.7648};
   Double_t RSBLowLim[2] = {1.9728,1.9768};
   Double_t RSBUppLim[2] = {2.0848,2.0808};
-
   plotter->SetSBRanges(LSBLowLim,LSBUppLim,RSBLowLim,RSBUppLim);
   plotter->IntegratePtBins(kFALSE); //For D+, set it kTRUE; High pT bin (and only it) has to be evaluated merging mass plots and THnSparses for the 5 pT(D+) bins!
 
@@ -231,7 +235,7 @@ void ExtractHighPt(AliDhCorrelationExtraction *plotter){
   printf("*** Extracting correlations in 8<pT(D)<16 GeV/c, 1<pT(assoc)<99 GeV/c ***\n");
   Bool_t corrExtrThr3 = plotter->ExtractCorrelations(1.,99.);
   if(!corrExtrThr1 || !corrExtrThr2 || !corrExtrThr3) {
-    printf("Error in the extraction of the correlcation distributions! Exiting...\n");
+    printf("Error in the extraction of the correlation distributions! Exiting...\n");
     return;
   }
 

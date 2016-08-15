@@ -16,58 +16,21 @@
 #include "AliLog.h"
 #include "AliAnalysisTaskEmcalJetTree.h"
 
-// Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase)
-/// \endcond
-
-/// Constructor that sets the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase::AliEmcalJetInfoSummaryBase(const AliEmcalJetInfo& source) :
-  fPt(0),
-  fEta(0),
-  fPhi(0),
-  fNEF(0),
-  fZLeading(0)
-{
-  Set(source);
-}
-
-/// Reset the object
-void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase::Reset()
-{
-  fPt = 0;
-  fEta = 0;
-  fPhi = 0;
-  fNEF = 0;
-  fZLeading = 0;
-}
-
-/// Set the object copying information from an AliEmcalJetInfo object
-///
-/// \param source Const reference to an AliEmcalJetInfo object to copy from
-void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryBase::Set(const AliEmcalJetInfo& source)
-{
-  fPt = source.Pt();
-  fEta = source.Eta();
-  fPhi = source.Phi_0_2pi();
-  fNEF = source.fNEF;
-  fZLeading = source.fZ;
-}
-
 // Definitions of class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP)
+ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP);
 /// \endcond
 
 /// Constructor that sets the object copying information from an AliEmcalJetInfo object
 ///
 /// \param source Const reference to an AliEmcalJetInfo object to copy from
 AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::AliEmcalJetInfoSummaryPP(const AliEmcalJetInfo& source) :
-  AliEmcalJetInfoSummaryBase(),
+  fPt(0),
+  fEta(0),
+  fPhi(0),
+  fNEF(0),
+  fZLeading(0),
   fNConstituents(0)
 {
   Set(source);
@@ -76,7 +39,11 @@ AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::AliEmcalJetInfoSummar
 /// Reset the object
 void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::Reset()
 {
-  AliEmcalJetInfoSummaryBase::Reset();
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+  fNEF = 0;
+  fZLeading = 0;
   fNConstituents = 0;
 }
 
@@ -85,7 +52,11 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::Reset()
 /// \param source Const reference to an AliEmcalJetInfo object to copy from
 void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP::Set(const AliEmcalJetInfo& source)
 {
-  AliEmcalJetInfoSummaryBase::Set(source);
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fNEF = source.fNEF;
+  fZLeading = source.fZ;
   fNConstituents = Char_t(source.fNConstituents);
 }
 
@@ -99,7 +70,11 @@ ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb)
 ///
 /// \param source Const reference to an AliEmcalJetInfo object to copy from
 AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::AliEmcalJetInfoSummaryPbPb(const AliEmcalJetInfo& source) :
-  AliEmcalJetInfoSummaryBase(),
+  fPt(0),
+  fEta(0),
+  fPhi(0),
+  fNEF(0),
+  fZLeading(0),
   fCent(0),
   fEP(0),
   fArea(0),
@@ -112,7 +87,12 @@ AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::AliEmcalJetInfoSumm
 /// Reset the object
 void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::Reset()
 {
-  AliEmcalJetInfoSummaryBase::Reset();
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+  fNEF = 0;
+  fZLeading = 0;
+  fNConstituents = 0;
   fCent = 0;
   fEP = 0;
   fArea = 0;
@@ -125,7 +105,11 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::Reset()
 /// \param source Const reference to an AliEmcalJetInfo object to copy from
 void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb::Set(const AliEmcalJetInfo& source)
 {
-  AliEmcalJetInfoSummaryBase::Set(source);
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fNEF = source.fNEF;
+  fZLeading = source.fZ;
   fCent = Char_t(source.fCent);
   fEP = source.fEP;
   fArea = source.fArea;
@@ -143,7 +127,16 @@ ClassImp(AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding)
 ///
 /// \param source Const reference to an AliEmcalJetInfo object to copy from
 AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::AliEmcalJetInfoSummaryEmbedding(const AliEmcalJetInfo& source) :
-  AliEmcalJetInfoSummaryPbPb(),
+  fPt(0),
+  fEta(0),
+  fPhi(0),
+  fNEF(0),
+  fZLeading(0),
+  fCent(0),
+  fEP(0),
+  fArea(0),
+  fNConstituents(0),
+  fCorrPt(0),
   fMCPt(0)
 {
   Set(source);
@@ -152,7 +145,17 @@ AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::AliEmcalJetInf
 /// Reset the object
 void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::Reset()
 {
-  AliEmcalJetInfoSummaryPbPb::Reset();
+  fPt = 0;
+  fEta = 0;
+  fPhi = 0;
+  fNEF = 0;
+  fZLeading = 0;
+  fNConstituents = 0;
+  fCent = 0;
+  fEP = 0;
+  fArea = 0;
+  fNConstituents = 0;
+  fCorrPt = 0;
   fMCPt = 0;
 }
 
@@ -161,7 +164,16 @@ void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::Reset()
 /// \param source Const reference to an AliEmcalJetInfo object to copy from
 void AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryEmbedding::Set(const AliEmcalJetInfo& source)
 {
-  AliEmcalJetInfoSummaryPbPb::Set(source);
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fNEF = source.fNEF;
+  fZLeading = source.fZ;
+  fCent = Char_t(source.fCent);
+  fEP = source.fEP;
+  fArea = source.fArea;
+  fNConstituents = Short_t(source.fNConstituents);
+  fCorrPt = source.fCorrPt;
   fMCPt = source.fMCPt;
 }
 

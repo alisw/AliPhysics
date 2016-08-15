@@ -134,6 +134,9 @@ private:
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t pdgExclusion, Bool_t checkBothCharges) const;
   Bool_t CheckIsRadiative(Int_t label) const;
   Bool_t CheckRadiativeDecision(Int_t mLabel, const AliDielectronSignalMC * const signalMC) const;
+  Bool_t MotherIsGrandmother(int labelM1, int labelM2, int labelG1, int labelG2, bool motherIsGrandmother) const;
+  Bool_t CheckStackParticle(Int_t labelPart, Int_t requiredPDG) const;
+  Bool_t CompareDaughterPDG(Int_t labelM, Int_t reqPDG, Bool_t PDGexclusion, Bool_t CheckBothChargesDaughter) const;
 
   ClassDef(AliDielectronMC, 1)
 };

@@ -667,7 +667,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
     if(fSystUseRMSfromFlatDistr==13||fSystUseRMSfromFlatDistr==14){
       TH1D *hRefl=ReflectHisto(hOut);
       TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
-      delete index;
+      delete[] index;
       delete h;
       delete hRefl;      
       delete hOut;
@@ -676,7 +676,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac
       return hBackTo2Pi;
     }
     else{
-      delete index;
+      delete[] index;
       delete h;     
       delete f;
       hOut->SetName("hRelSystFeedDownMin");
@@ -904,7 +904,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
     if(fSystUseRMSfromFlatDistr==13||fSystUseRMSfromFlatDistr==14){
       TH1D *hRefl=ReflectHisto(hOut);
       TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
-      delete index;
+      delete[] index;
       delete h;
       delete hRefl;      
       delete hOut;
@@ -913,7 +913,7 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
       return hBackTo2Pi;
     }
     else{
-      delete index;
+      delete[] index;
       delete h;
       delete f;
       hOut->SetName("hRelSystFeedDownMin");

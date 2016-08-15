@@ -60,7 +60,9 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 				   TString correctionFileName = "",
 			           Int_t nCentralityArrayBinsForCorrection = -1,
 	                           Double_t *gCentralityArrayForCorrections = 0x0,
-                                   Bool_t bMomentumOrdering = kTRUE) {
+                                   Bool_t bMomentumOrdering = kTRUE,
+                                   Bool_t qaCorrection=kFALSE,
+                                   Bool_t rawType=kFALSE) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -143,6 +145,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
+  taskBF->SetQACorrection(qaCorrection);
+  taskBF->SetRawType(rawType);   // rawType partilce in MCAOD reco : 16.06.2016(at ALICE CENTRE , VECC, Kolkata)
   //taskBF->SetCustomBinning("centralityVertex:0,80");
   //taskBF->SetCustomBinning("multiplicity:0,260");
   
@@ -166,9 +170,9 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
   // Efficiency + Contamination corrections
   // If correctionFileName = "", do not use corrections
 
-    if(correctionFileName != "")
+   if(correctionFileName != "")
     taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
-
+    
 
   //+++++++++++++++++++++
 
@@ -233,6 +237,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
+    taskBF->ExcludeElectronsInMC();
    if(kUsePID) {
     taskBF->SetUseNSigmaPID(nSigmaMax);
     taskBF->SetParticleType(ParticleType_);
@@ -242,6 +247,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
+    taskBF->ExcludeElectronsInMC();
 
     // set extra DCA cuts (-1 no extra cut)
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);

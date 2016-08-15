@@ -231,6 +231,24 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data   
   
   if(kSimulation) maker->SwitchOffDataControlHistograms();
   
+  if(simulation)
+  {
+    // Calculate the cross section weights, apply them to all histograms 
+    // and fill xsec and trial histo. Sumw2 must be activated.
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+    //maker->SwitchOnSumw2Histograms();
+    
+    // For recent productions where the cross sections and trials are not stored in separate file
+    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    
+    // Just fill cross section and trials histograms.
+    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // Add control histogram with pT hard to control aplication of weights 
+    maker->SwitchOnPtHardHistogram();
+  }
+
+  
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, kCalorimeter.Data());
  
   // Create task
@@ -1059,6 +1077,14 @@ AliAnaPi0* ConfigurePi0Analysis()
   // Calorimeter settings
   ana->SetCalorimeter(kCalorimeter);
   
+  // Acceptance plots
+  //  ana->SwitchOnFiducialCut(); // Needed to fill acceptance plots with predefined calorimeter acceptances
+  //  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 180) ; 
+  //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
+  
+  ana->SwitchOffFiducialCut();
+  ana->SwitchOnRealCaloAcceptance();
+
   // settings for pp collision mixing
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   

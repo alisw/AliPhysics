@@ -20,8 +20,8 @@ class AliJBaseTrack;
 class AliJPhoton;
 class AliJTrack;
 class AliJCard;
-class AliJCorrelations;
-class AliJHistos;
+class AliJCorrelationInterface;
+class AliJHistogramInterface;
 class TH1D;
 
 #define   MAXNOEVENT 1000    // Maximum no of events in pools (400 used for QM anal.) 
@@ -29,7 +29,7 @@ class TH1D;
 class AliJEventPool {
 
     public:
-      AliJEventPool(AliJCard *cardin, AliJHistos *histosin, AliJCorrelations *coin, particleType particle );
+      AliJEventPool(AliJCard *cardin, AliJHistogramInterface *histosin, AliJCorrelationInterface *coin, particleType particle );
       virtual ~AliJEventPool( );
       AliJEventPool(const AliJEventPool& obj);
       AliJEventPool& operator=(const AliJEventPool& obj);
@@ -40,7 +40,7 @@ class AliJEventPool {
                 corrFillType cFTyp, 
                 float cent, float Z, float thisMult, int iev, bool leadingParticle = false);
 
-       //void MixRNDM( AliJEventPool *cross, void (AliJCorrelations::*fillHisto)(fillType, int, AliJBaseTrack*, AliJBaseTrack*) );
+       //void MixRNDM( AliJEventPool *cross, void (AliJCorrelationInterface::*fillHisto)(fillType, int, AliJBaseTrack*, AliJBaseTrack*) );
 
         void AcceptList(TClonesArray *inList, float cent, float Z, float inMult, int iev);
 
@@ -61,8 +61,8 @@ class AliJEventPool {
 
         TClonesArray   *fLists[kMaxNoCentrBin][MAXNOEVENT]; // mix lists
         AliJCard  *fcard;  // card
-        AliJCorrelations *fcorrelations; // correlation object
-        AliJHistos *fhistos;  // histos
+        AliJCorrelationInterface *fcorrelations; // correlation object
+        AliJHistogramInterface *fhistos;  // histos
         //AliJBaseTrack *ftk; // track
         //AliJBaseTrack *ftk1; // track
         //AliJBaseTrack *ftk2; // track

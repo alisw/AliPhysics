@@ -587,6 +587,11 @@ void PlotMuonEfficiency(TString fileNameData, TString fileNameSave, Bool_t saveE
     effVsCh[0]->SetPoint(0,0.,1.);
     effVsCh[0]->SetPointError(0,0.,0.,1.,0.);
     
+    for (Int_t iSt = 0; iSt < 6; ++iSt) {
+      effVsSt[0]->SetPoint(iSt,iSt+1,1.);
+      effVsSt[0]->SetPointError(iSt,0.,0.,1.,0.);
+    }
+    
     if (saveEdges) {
       
       // lower = 0 ± 0
@@ -596,6 +601,16 @@ void PlotMuonEfficiency(TString fileNameData, TString fileNameSave, Bool_t saveE
       // upper = 1 ± 0
       effVsCh[2]->SetPoint(0,0.,1.);
       effVsCh[2]->SetPointError(0,0.,0.,0.,0.);
+      
+      for (Int_t iSt = 0; iSt < 6; ++iSt) {
+        
+        effVsSt[1]->SetPoint(iSt,iSt+1,0.);
+        effVsSt[1]->SetPointError(iSt,0.,0.,0.,0.);
+        
+        effVsSt[2]->SetPoint(iSt,iSt+1,1.);
+        effVsSt[2]->SetPointError(iSt,0.,0.,0.,0.);
+        
+      }
       
     }
     

@@ -1470,6 +1470,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   Int_t pdg=0;
   Int_t *pdgdaughters=0x0;
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
   if(!aod && AODEvent() && IsStandardAOD()) { 
     // In case there is an AOD handler writing a standard AOD, use the AOD 
@@ -2181,42 +2182,60 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     delete [] pdgdaughters;
     return;
   }
+  //load all the  branches, re-fill the candidates and fill the SelectionBit histo
 
-  // load all the branches and fill the SelectionBit histo
-  if(fUseSelectionBit && !isSimpleMode){
-    
-    //load branches
-    Int_t nCand3Prong = arrayProng3Prong->GetEntriesFast();
-    Int_t nCandD0toKpi = arrayProngD0toKpi->GetEntriesFast();
-    Int_t nCandDstar = arrayProngDstar->GetEntriesFast();
-    
-    // D+, Ds and Lc
-    for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
-      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
+  Int_t nCand3Prong = arrayProng3Prong->GetEntriesFast();
+  Int_t nCandD0toKpi = arrayProngD0toKpi->GetEntriesFast();
+  Int_t nCandDstar = arrayProngDstar->GetEntriesFast();
+  Int_t nCandCasc=0;
+  Int_t n4Prong=0;
+  if(arrayProngCascades)nCandCasc = arrayProngCascades->GetEntriesFast();
+  if(arrayProng4Prong)n4Prong = arrayProng4Prong->GetEntriesFast();
+  // D+, Ds and Lc
+  AliAODRecoDecayHF *d;
+  for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
+    d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
+    vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d);
+
+    if(fUseSelectionBit && !isSimpleMode){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
-	if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
-       	if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) fHisNentriesSelBit->Fill(1.0,ptCand_selBit);
-	if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) fHisNentriesSelBit->Fill(2.0,ptCand_selBit);
-      }
-    }
-    // D0kpi
-    for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
-      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
-      Double_t ptCand_selBit = d->Pt();
-      if(fUseSelectionBit && d->GetSelectionMap()) {
-	if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
-      }     
-    }
-    // Dstar
-    for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
-      AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
-      Double_t ptCand_selBit = d->Pt();
-      if(fUseSelectionBit && d->GetSelectionMap()) {
-       	if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
+        if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
+        if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) fHisNentriesSelBit->Fill(1.0,ptCand_selBit);
+        if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) fHisNentriesSelBit->Fill(2.0,ptCand_selBit);
       }
     }
   }
+  // D0kpi
+  for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
+    d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
+    vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d);
+    if(fUseSelectionBit && !isSimpleMode){
+      Double_t ptCand_selBit = d->Pt();
+      if(fUseSelectionBit && d->GetSelectionMap()) {
+        if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
+      }
+    }
+  }
+  // Dstar
+  for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
+    d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
+    vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE);
+    if(fUseSelectionBit && !isSimpleMode){
+      Double_t ptCand_selBit = d->Pt();
+      if(fUseSelectionBit && d->GetSelectionMap()) {
+        if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
+      }
+    }
+  }
+//   //Cascade
+  if(arrayProngCascades){
+    for (Int_t iCand = 0; iCand < nCandCasc; iCand++) {
+      d=(AliAODRecoDecayHF*)arrayProngCascades->UncheckedAt(iCand);
+      vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kFALSE);
+    }
+  }
+  //end refill
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -2503,7 +2522,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    isGoodTrack++;
 	  }
 
-	  if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts())){
+	  if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts(),aod)){
 	    isSelTrack++;
 	  }//select tracks for our analyses
 
@@ -2527,7 +2546,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
       for (Int_t iCand = 0; iCand < nCand; iCand++) {
 	AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
-	if(fUseSelectionBit && d->GetSelectionMap()) {
+         if(d->GetIsFilled()<1) continue;//0 = not refilled. or refill failed. 1 = standard dAODs. 2 = succesfully refilled
+       	if(fUseSelectionBit && d->GetSelectionMap()) {
 	  if(fDecayChannel==AliAnalysisTaskSEHFQA::kD0toKpi && !d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) continue; //skip the D0 from Dstar
 	  if(fDecayChannel==AliAnalysisTaskSEHFQA::kDplustoKpipi && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue; //skip the 3 prong !D+
 	}
@@ -2738,7 +2758,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       
     }
   } //end if on pid or track histograms
-
+  delete vHF;
   delete tpcres;
   delete [] pdgdaughters;
   PostData(1,fOutputEntries);

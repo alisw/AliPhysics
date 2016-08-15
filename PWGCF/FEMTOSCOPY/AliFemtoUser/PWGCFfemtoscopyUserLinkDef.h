@@ -9,6 +9,7 @@
 #pragma link C++ class AliFemtoESDTrackCut;
 #pragma link C++ class AliFemtoEventCutCentrality+;
 #pragma link C++ class AliFemtoKKTrackCut;
+#pragma link C++ class AliFemtoKKTrackCutFull;
 #pragma link C++ class AliFemtoKpmTrackCut;
 #pragma link C++ class AliFemtoKpm45TrackCut;
 #pragma link C++ class AliFemtoKtBinnedCorrFunc+;
@@ -23,6 +24,7 @@
 #pragma link C++ class AliFemtoModelBPLCMSCorrFctnKK;
 #pragma link C++ class AliFemtoModelGausRinvFreezeOutGenerator;
 #pragma link C++ class AliFemtoModelCorrFctnKStar;
+#pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;

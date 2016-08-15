@@ -191,7 +191,7 @@ void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
+Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod) {
   //
   // Apply selection
   //
@@ -217,7 +217,7 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
+    if(!AreDaughtersSelected(d,aod)) return 0;
   }
 
 

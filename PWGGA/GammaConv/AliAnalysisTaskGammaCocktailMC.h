@@ -23,6 +23,12 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     void SetLogBinningXTH1(TH1* histoRebin);
     void SetLogBinningXTH2(TH2* histoRebin);
     void SetMaxY(Double_t maxy){fMaxY = maxy;}
+    void SetLightOutput(Bool_t flag) {fDoLightOutput = flag;}
+    void InitializeDecayChannelHist();
+    TH1* SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2);
+    TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t yMin, Double_t yMax, Bool_t optSumw2);
+    TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t* binsY, Bool_t optSumw2);
+    Float_t GetDecayChannel(AliStack* stack, TParticle* part);
     Bool_t IsMotherInList(TParticle* mother);
     
   protected:
@@ -34,18 +40,27 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
     
+    Bool_t                fDoLightOutput;             // switch for running light
+    
     // histograms events
     TH1F*                 fHistNEvents;               // number of events histo
 
     // histograms mesons
-    TH2F*                 fHistPtYGamma;              //! histo for Gammas
-    TH2F**                fHistPtYInput;              //! histo for Input particles
-    TH2F**                fHistPtYGammaSource;        //! histo for Input particles
+    TH2F*                 fHistPtYGamma;              //! histo for gammas
+    TH2F**                fHistPtYInput;              //! histo for gammas from input particles
+    TH2F**                fHistPtYGammaSource;        //! histo for input particles
+    TH2F**                fHistPtAlphaInput;          //! histo for asymmetry
+    TH2F**                fHistPtDeltaPhiInput;       //! histo for asymmetry
+    TH1F**                fHistDecayChannelsInput;    //! histo for input particle decay channels
     Int_t                 fIsMC;                      // MC flag
     Double_t              fMaxY;                      // Max y
     
-    TH2F*                 fHistPhiGamma;              //! histo for phi of gamma
-    TH2F**                fHistPhiInput;              //! histo for phi of input particles
+    TH2F*                 fHistPtPhiGamma;            //! histo for phi of gammas
+    TH2F**                fHistPtPhiGammaSource;      //! histo for phi of gammas from input particles
+    TH2F**                fHistPtPhiInput;            //! histo for phi of input particles
+    
+    TH2F**                fHistPtGammaSourceInput;    //! histo for pt correlation of gammas from input particles to source
+    TH2F**                fHistPhiGammaSourceInput;   //! histo for phi correlation of gammas from input particles to source
     
     TH1I*                 fHistPtYInputRest;          //! histo for rest
     TH1I*                 fHistPtYGammaSourceRest;    //! histo for gamma from rest

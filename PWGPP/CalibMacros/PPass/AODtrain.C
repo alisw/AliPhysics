@@ -48,7 +48,7 @@ TChain *CreateChain();
 Int_t run_number = 0;
 
 //______________________________________________________________________________
-void AODtrain(Int_t merge=0, const char* cdbPath="/cvmfs/alice-ocdb.cern.ch/calibration/data", int collisionSystem=0)
+void AODtrain(Int_t merge=0, const char* cdbPath="cvmfs://", int collisionSystem=0)
 {
 // Main analysis train macro.
 // collision system: 0-pp, 1-pbpb
@@ -180,8 +180,8 @@ void AddAnalysisTasks(const char *cdb_location, int collisionSystem=0){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
     if (!taskCDB) return;
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(cdb_location);
+    //    AliCDBManager *cdb = AliCDBManager::Instance(); // RS Never do this: task locks the CDB
+    //    cdb->SetDefaultStorage(cdb_location);
 //    taskCDB->SetRunNumber(run_number);
   }    
  

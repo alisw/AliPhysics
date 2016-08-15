@@ -6,9 +6,9 @@
 //   pp   10:     centralityMethod = 3 (nTracks),   trigger = kFALSE (AliVEvent::kMB).
 /////////////////////////////////////////////////////////////////////////////////
 
-AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
+AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
 (
- TString AnalysisDataType       = "MCAODreco", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb",     // "PbPb", "pPb", "pp"
  int    CentralityGroup         =  1,   // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
@@ -20,7 +20,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  int    nClusterMin             =  70,
  double ptMin                   =  0.2,
- double ptMax                   =  2.0,
+ double ptMax                   =  3.0,
  double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
  double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
@@ -32,11 +32,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
  double dcaXYMax                =  2.4,
  int nCentrality                =  1,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
- double nSigmaCut               =  3.0,
- int pidType                    =  2,   // kNSigmaTPC=0, kNSigmaTOF=1, kNSigmaTPCTOF=2
- Bool_t requestTOFPID           =  1,
- double ptTOFPID                =  0.5,
- Bool_t isMC                    =  1,
+ double nSigmaCut               =  2.0,
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/G86_6vZ24_08y16_Kaon_Cent8_Pos_45runs_S1S2/G86_6vZ24_08y16_Kaon_Cent8_Pos_45runs_S1S2.root" )
 
@@ -52,6 +48,7 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
   int    sameFilter             = 1;
   int    centralityMethod       = 4; 
   Bool_t trigger                = kFALSE;
+  Bool_t remove_Tracks_T0       =  1,
   
   if      ( System == "PbPb" )    { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "pPb" )     { centralityMethod = 7; trigger = kTRUE;  }
@@ -298,16 +295,8 @@ AliAnalysisTaskPIDBFDptDpt *AddTaskPIDBFDptDpt
       task->SetSystemType(          System          );
       task->SetResonancesCut(       NoResonances    );
       task->SetElectronCut(         NoElectron      );
-        
-      // assign initial values to AliHelperPID object
-      AliHelperPID* helperpid = new AliHelperPID();
-      helperpid -> SetNSigmaCut( nSigmaCut );
-      helperpid -> SetPIDType( pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
-      helperpid -> SetfRequestTOFPID( requestTOFPID );
-      helperpid -> SetfPtTOFPID( ptTOFPID );
-      helperpid -> SetisMC( isMC );
-
-      task->SetHelperPID( helperpid );
+      task->SetNSigmaCut( nSigmaCut );
+      task->SetfRemoveTracksT0Fill( remove_Tracks_T0 );
   
       if(trigger) task -> SelectCollisionCandidates(AliVEvent::kINT7); //pPb
       else task -> SelectCollisionCandidates(AliVEvent::kMB); // PbPb & pp

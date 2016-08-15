@@ -41,6 +41,9 @@ void AliEventClassifierMult::CalculateClassifierValue(AliMCEvent *event, AliStac
       Printf("ERROR: Could not receive track %d", iTrack);
       continue;
     }
+    // discard unphysical particles from some generators
+    if (track->Pt() == 0 || track->E() <= 0)
+      continue;
 
     // Only calculate for primaries (Aliroot definition excluding Pi0)
     if (!stack->IsPhysicalPrimary(iTrack)) continue;

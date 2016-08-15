@@ -94,8 +94,12 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TH1F*   fTrackPLadLay4;   //! histo with ladder occupancy on layer4 (TrP)
   TH1F*   fGoodAnLadLay3;   //! histo good anodes per ladder on layer3 
   TH1F*   fGoodAnLadLay4;   //! histo good anodes per ladder on layer4 
+  TH2F*   fEtaPhiTracks;    //! eta,phi distribution of tracks
+  TH2F*   fEtaPhiTracksLay3; //! eta,phi distrib. of tracks with point on Lay3
+  TH2F*   fEtaPhiTracksLay4; //! eta,phi distrib. of tracks with point on Lay4
   TH1F*   fDriftTimeRP;     //! histo with drift time distribution (RecP)
   TH1F*   fDriftTimeTPAll;  //! histo with drift time distribution (TrP)
+  TH2F*   fDriftTimeTPAllMod; //! histo with drift time distribution (TrP) per module
   TH1F*   fDriftTimeTPNoExtra; //! histo with drift time distribution (TrP)
   TH1F*   fDriftTimeTPExtra;//! histo with drift time distribution (TrP)
   TH1F*   fSignalTime[8];   //! histos of dE/dx in time windows
@@ -112,7 +116,7 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   Bool_t  fExcludeBadMod;   // Flag to reject bad modules
   Bool_t fInitCalib;        // Flag to check calib initiatization
  
-  ClassDef(AliAnalysisTaskSDDRP,6);
+  ClassDef(AliAnalysisTaskSDDRP,7);
 };
 
 

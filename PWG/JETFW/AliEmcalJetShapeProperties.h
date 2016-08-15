@@ -153,6 +153,12 @@ public:
   Double_t          GetFirstOrderSubtractedOpeningAngle_kt()            const { return fJetShapeOpeningAnglektFirstSub                   ; }
   Double_t          GetSecondOrderSubtractedOpeningAngle_kt()           const { return fJetShapeOpeningAnglektSecondSub                  ; }
 
+  //SoftDrop
+  void              SetSoftDropZg(Double_t d)                                 { fSoftDropZg = d                      ; }
+  void              SetSoftDropdR(Double_t d)                                 { fSoftDropdR = d                      ; }
+  Double_t          GetSoftDropZg()                                     const { return fSoftDropZg                   ; }
+  Double_t          GetSoftDropdR()                                     const { return fSoftDropdR                   ; }
+
   void              PrintGR() const;
 
 protected:
@@ -216,6 +222,9 @@ protected:
   Double_t          fJetShapeOpeningAnglektSecondDer;        //!<!   result from shape derivatives for jet OpeningAngle_kt: 2nd derivative
   Double_t          fJetShapeOpeningAnglektFirstSub;         //!<!   result from shape derivatives for jet OpeningAngle_kt: 1st order subtracted
   Double_t          fJetShapeOpeningAnglektSecondSub;        //!<!   result from shape derivatives for jet OpeningAngle_kt: 2nd order subtracted
+
+  Double_t          fSoftDropZg;                             //!<!   SoftDrop groomed momentum fraction
+  Double_t          fSoftDropdR;                             //!<!   SoftDrop deltaR
 };
 
 #endif

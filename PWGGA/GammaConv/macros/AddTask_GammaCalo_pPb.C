@@ -63,14 +63,16 @@ void AddTask_GammaCalo_pPb(
                             Int_t      enableQAClusterTask        = 0,                // enable additional QA task
                             TString    fileNameInputForWeighting  = "MCSpectraInput.root",       // path to file for weigting input
                             Int_t      doWeightingPart            = 0,                // enable Weighting
-                            TString    generatorName              = "DPMJET",
+                            TString    generatorName              = "DPMJET",         // generator name for weighting
                             TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
                             Bool_t     isUsingTHnSparse           = kFALSE,           // enable or disable usage of THnSparses for background estimation
                             Int_t      enableExtMatchAndQA        = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
                             Bool_t     enableTriggerMimicking     = kFALSE,           // enable trigger mimicking
                             Bool_t     enableTriggerOverlapRej    = kTRUE,            // enable trigger overlap rejection
                             Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
-                            TString    periodNameV0Reader         = ""
+                            TString    periodNameV0Reader         = "",               // period Name for V0Reader
+                            Bool_t     enableSortingMCLabels      = kTRUE,            // enable sorting for MC cluster labels
+                            Bool_t     runLightOutput             = kFALSE            // switch to run light output (only essential histograms for afterburner)
                            ) {
 
   // ================= Load Librariers =================================
@@ -139,6 +141,8 @@ void AddTask_GammaCalo_pPb(
       fEventCuts = new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -152,6 +156,7 @@ void AddTask_GammaCalo_pPb(
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -178,6 +183,7 @@ void AddTask_GammaCalo_pPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
 
   //create cut handler
   CutHandlerCalo cuts;
@@ -441,6 +447,8 @@ void AddTask_GammaCalo_pPb(
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -448,12 +456,14 @@ void AddTask_GammaCalo_pPb(
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
@@ -467,6 +477,7 @@ void AddTask_GammaCalo_pPb(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers

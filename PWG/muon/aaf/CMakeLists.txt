@@ -15,7 +15,7 @@
 
 #Module
 set(MODULE PWGmuonaaf)
-add_definitions(-D_MODULE_="${MODULE}")
+#add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon/aaf)
@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon/aaf)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
                     )
 
 # Sources - alphabetical order
@@ -51,6 +52,8 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 set(EXE aaf-stage-and-filter)
 
 add_executable(${EXE} ${EXE}.cxx)
+add_executable(aliraw-generate-entrylist aliraw-generate-entrylist.cxx)
+add_executable(aliraw-apply-entrylist aliraw-apply-entrylist.cxx)
 
 # Generate the ROOT map
 # Dependecies
@@ -60,6 +63,8 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 target_link_libraries(${EXE} ${MODULE} Core)
+target_link_libraries(aliraw-generate-entrylist ${MODULE} Core RAWDatarec)
+target_link_libraries(aliraw-apply-entrylist ${MODULE} Core RIO )
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
@@ -77,3 +82,5 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 install(TARGETS ${EXE} RUNTIME DESTINATION bin)
+install(TARGETS aliraw-generate-entrylist RUNTIME DESTINATION bin)
+install(TARGETS aliraw-apply-entrylist RUNTIME DESTINATION bin)

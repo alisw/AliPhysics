@@ -564,6 +564,16 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
         tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
 
+	if(tPart->IsPhysicalPrimary())
+	  tInfo->SetOrigin(0);
+	else if(tPart->IsSecondaryFromWeakDecay())
+	  tInfo->SetOrigin(1);
+	else if(tPart->IsSecondaryFromMaterial())
+	  tInfo->SetOrigin(2);
+	else
+	  tInfo->SetOrigin(-1);
+		
+
         // // fillDCA
         // //if (TMath::Abs(impact[0]) > 0.001) {
         // if (tPart->IsPhysicalPrimary()){
@@ -706,14 +716,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         daughterTrackPos->SetAODEvent(fEvent);
         daughterTrackNeg->SetAODEvent(fEvent);
         if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0) {
-
           // get the MC data for the two daughter particles
           const AliAODMCParticle *mcParticlePos = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackPos->GetLabel())),
                                  *mcParticleNeg = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackNeg->GetLabel()));
 
           // They daughter info MUST exist for both
           if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
-
             // Get the mother ID of the two daughters
             const int motherOfPosID = mcParticlePos->GetMother(),
                       motherOfNegID = mcParticleNeg->GetMother();
@@ -742,6 +750,15 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
                 tInfo->SetTrueMomentum(v0->Px(), v0->Py(), v0->Pz());
                 tInfo->SetEmissionPoint(v0->Xv(), v0->Yv(), v0->Zv(), v0->T());
 
+		if(v0->IsPhysicalPrimary())
+		  tInfo->SetOrigin(0);
+		else if(v0->IsSecondaryFromWeakDecay())
+		  tInfo->SetOrigin(1);
+		else if(v0->IsSecondaryFromMaterial())
+		  tInfo->SetOrigin(2);
+		else
+		  tInfo->SetOrigin(-1);
+		
                 //-----Positive daughter of v0-----
                 tInfo->SetPDGPidPos(mcParticlePos->GetPdgCode());
                 tInfo->SetMassPos(mcParticlePos->GetCalcMass());
@@ -957,6 +974,7 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetmomNegZ(tAODv0->MomNegZ());
   AliFemtoThreeVector momneg(tAODv0->MomNegX(), tAODv0->MomNegY(), tAODv0->MomNegZ());
   tFemtoV0->SetmomNeg(momneg);
+  tFemtoV0->SetradiusV0(tAODv0->RadiusV0());
 
   //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
   //void SettpcHitsPos(const int& i);

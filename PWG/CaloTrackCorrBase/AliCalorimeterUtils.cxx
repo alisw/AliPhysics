@@ -40,6 +40,8 @@
 #include "AliEMCALGeometry.h"
 #include "AliPHOSGeoUtils.h"
 
+#include "AliFiducialCut.h" // Needed for detector flag enum kEMCAL, kPHOS
+
 /// \cond CLASSIMP
 ClassImp(AliCalorimeterUtils) ;
 /// \endcond
@@ -573,7 +575,7 @@ Bool_t AliCalorimeterUtils::AreNeighbours(Int_t calo, Int_t absId1, Int_t absId2
   Int_t nSupMod1 = GetModuleNumberCellIndexes(absId1, calo, icol1, irow1, iRCU1); 
   Int_t nSupMod2 = GetModuleNumberCellIndexes(absId2, calo, icol2, irow2, iRCU2); 
   
-  if(calo==kEMCAL && nSupMod1!=nSupMod2)
+  if(calo==AliFiducialCut::kEMCAL && nSupMod1!=nSupMod2)
   {
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
     // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
@@ -746,8 +748,8 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
   if (!fRemoveBadChannels) return kFALSE;
   
   //printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
-  if(calorimeter == kEMCAL && !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
-  if(calorimeter == kPHOS  && !fPHOSBadChannelMap)  return kFALSE;
+  if(calorimeter == AliFiducialCut::kEMCAL && !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
+  if(calorimeter == AliFiducialCut::kPHOS  && !fPHOSBadChannelMap)  return kFALSE;
   
   Int_t icol = -1;
   Int_t irow = -1;
@@ -755,11 +757,11 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
   for(Int_t iCell = 0; iCell<nCells; iCell++)
   {
     // Get the column and row
-    if ( calorimeter == kEMCAL )
+    if ( calorimeter == AliFiducialCut::kEMCAL )
     {
       return fEMCALRecoUtils->ClusterContainsBadChannel((AliEMCALGeometry*)fEMCALGeo,cellList,nCells);
     }
-    else if ( calorimeter == kPHOS )
+    else if ( calorimeter == AliFiducialCut::kPHOS )
     {
       Int_t    relId[4];
       fPHOSGeo->AbsToRelNumbering(cellList[iCell],relId);
@@ -810,7 +812,7 @@ void AliCalorimeterUtils::GetEMCALSubregion(AliVCluster   * clus, AliVCaloCells 
   
   Int_t absId = GetMaxEnergyCell(cells,clus,clusterFraction);
   
-  Int_t sm    = GetModuleNumberCellIndexes(absId,kEMCAL,icol,irow,iRCU);
+  Int_t sm    = GetModuleNumberCellIndexes(absId,AliFiducialCut::kEMCAL,icol,irow,iRCU);
   
   // Shift by 48 to for impair SM
   if( sm%2 == 1) icol+=AliEMCALGeoParams::fgkEMCALCols;
@@ -874,8 +876,8 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells * cells,
   Int_t    cellAbsId   =-1 , absId =-1 ;
   Int_t    iSupMod     =-1 , ieta  =-1 , iphi = -1, iRCU = -1;
   
-  Int_t             calo = kEMCAL;
-  if(clu->IsPHOS()) calo = kPHOS ;
+  Int_t             calo = AliFiducialCut::kEMCAL;
+  if(clu->IsPHOS()) calo = AliFiducialCut::kPHOS ;
   
   for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) 
   {
@@ -888,8 +890,10 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells * cells,
     
     if(IsRecalibrationOn())
     {
-      if(calo == kEMCAL) recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-      else               recalFactor = GetPHOSChannelRecalibrationFactor (iSupMod,iphi,ieta);
+      if(calo == AliFiducialCut::kEMCAL) 
+        recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+      else               
+        recalFactor = GetPHOSChannelRecalibrationFactor (iSupMod,iphi,ieta);
     }
     
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
@@ -998,7 +1002,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 {	
   Int_t absId = -1;
   
-  if(particle->GetDetectorTag()==kEMCAL)
+  if(particle->GetDetectorTag()==AliFiducialCut::kEMCAL)
   {
     fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
     
@@ -1007,7 +1011,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
     
     return fEMCALGeo->GetSuperModuleNumber(absId) ;
   } // EMCAL
-  else if ( particle->GetDetectorTag() == kPHOS )
+  else if ( particle->GetDetectorTag() == AliFiducialCut::kPHOS )
   {
     // In case we use the MC reader, the input are TParticles,
     // in this case use the corresponing method in PHOS Geometry to get the particle.
@@ -1100,7 +1104,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(Int_t absId, Int_t calo,
   
   if ( absId < 0 ) return -1 ;
   
-  if ( calo == kEMCAL )
+  if ( calo == AliFiducialCut::kEMCAL )
   {
     Int_t iTower = -1, iIphi = -1, iIeta = -1;
     fEMCALGeo->GetCellIndex(absId,imod,iTower,iIphi,iIeta);
@@ -1184,7 +1188,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexesAbsCaloMap(Int_t absId    ,
   //
   // PHOS
   //
-  if(calo == kPHOS) 
+  if(calo == AliFiducialCut::kPHOS) 
   {    
     irowAbs = irow + 64 * imod;
 
@@ -1252,8 +1256,8 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
     simuTotWeight/= eCluster;
   }
   
-  Int_t calorimeter = kEMCAL;
-  if(!cluster->IsEMCAL()) calorimeter = kPHOS;
+  Int_t calorimeter = AliFiducialCut::kEMCAL;
+  if(!cluster->IsEMCAL()) calorimeter = AliFiducialCut::kPHOS;
   
   //printf("cluster : ncells %d \n",nCells);
   
@@ -1410,7 +1414,13 @@ TString AliCalorimeterUtils::GetPass()
     AliInfo("Path contains <calo> or <high-lumi>, set as <pass1>");
     return TString("pass1");
   }
-
+  else if (pass.Contains("LHC14a1a")) 
+  {  
+    AliInfo("Check that Energy calibration was enabled for this MC production in the tender, clusterizer or here!!");
+                        
+    return TString("LHC14a1a"); 
+  }
+  
   // No condition fullfilled, give a default value
   AliInfo("Pass number string not found");
   return TString("");            
@@ -1580,22 +1590,22 @@ void AliCalorimeterUtils::InitPHOSGeometry()
 //______________________________________________________________________________________________
 Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, TParticle* particle)
 {  
-  if(!particle || (calo!=kEMCAL && calo!=kPHOS)) return kFALSE ;
+  if(!particle || (calo!=AliFiducialCut::kEMCAL && calo!=AliFiducialCut::kPHOS)) return kFALSE ;
     
-  if( (!IsPHOSGeoMatrixSet () && calo == kPHOS ) ||
-      (!IsEMCALGeoMatrixSet() && calo == kEMCAL)   )
+  if( (!IsPHOSGeoMatrixSet () && calo == AliFiducialCut::kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == AliFiducialCut::kEMCAL)   )
   {
     AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead",calo));
     return kFALSE ;
   }
 
-  if(calo == kPHOS )
+  if(calo == AliFiducialCut::kPHOS )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     return GetPHOSGeometry()->ImpactOnEmc( particle, mod, z, x);
   }
-  else if(calo == kEMCAL)
+  else if(calo == AliFiducialCut::kEMCAL)
   {
     Int_t absID = 0 ;
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
@@ -1618,10 +1628,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, TPar
 //______________________________________________________________________________________________________
 Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliAODMCParticle* particle)
 {  
-  if(!particle || (calo!=kEMCAL && calo!=kPHOS)) return kFALSE ;
+  if(!particle || (calo!=AliFiducialCut::kEMCAL && calo!=AliFiducialCut::kPHOS)) return kFALSE ;
   
-  if( (!IsPHOSGeoMatrixSet () && calo == kPHOS ) ||
-      (!IsEMCALGeoMatrixSet() && calo == kEMCAL)   )
+  if( (!IsPHOSGeoMatrixSet () && calo == AliFiducialCut::kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == AliFiducialCut::kEMCAL)   )
   {
     AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead",calo));
     return kFALSE ;
@@ -1630,14 +1640,14 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliA
   Float_t phi = particle->Phi();
   if(phi < 0) phi+=TMath::TwoPi();
   
-  if(calo == kPHOS )
+  if(calo == AliFiducialCut::kPHOS )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     Double_t vtx[]={ particle->Xv(), particle->Yv(), particle->Zv() } ;
     return GetPHOSGeometry()->ImpactOnEmc(vtx, particle->Theta(), phi, mod, z, x) ;
   }
-  else if(calo == kEMCAL)
+  else if(calo == AliFiducialCut::kEMCAL)
   {
     Int_t absID = 0 ;
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
@@ -1661,10 +1671,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliA
 Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, Float_t eta, Float_t theta,
                                                                 Float_t phiOrg, Int_t & absID)
 {  
-  if(calo!=kEMCAL && calo!=kPHOS) return kFALSE ;
+  if(calo!=AliFiducialCut::kEMCAL && calo!=AliFiducialCut::kPHOS) return kFALSE ;
   
-  if( (!IsPHOSGeoMatrixSet () && calo == kPHOS ) ||
-      (!IsEMCALGeoMatrixSet() && calo == kEMCAL)   )
+  if( (!IsPHOSGeoMatrixSet () && calo == AliFiducialCut::kPHOS ) ||
+      (!IsEMCALGeoMatrixSet() && calo == AliFiducialCut::kEMCAL)   )
   {
     AliFatal(Form("Careful Geo Matrix for calo <%d> is not set, use AliFidutialCut instead",calo));
     return kFALSE ;
@@ -1673,14 +1683,14 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, Floa
   Float_t phi = phiOrg;
   if(phi < 0) phi+=TMath::TwoPi();
 
-  if(calo == kPHOS )
+  if(calo == AliFiducialCut::kPHOS )
   {
     Int_t mod = 0 ;
     Double_t x = 0, z = 0 ;
     Double_t vtx[]={0,0,0} ;
     return GetPHOSGeometry()->ImpactOnEmc(vtx, theta, phi, mod, z, x) ;
   }
-  else if(calo == kEMCAL)
+  else if(calo == AliFiducialCut::kEMCAL)
   {
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi,absID);
     if(ok)
@@ -1753,7 +1763,7 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, Int_t calo, In
   
   if (IsRecalibrationOn()) 
   {
-    if(calo == kPHOS)
+    if(calo == AliFiducialCut::kPHOS)
     {
       amp *= GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
     }
@@ -1769,7 +1779,7 @@ void AliCalorimeterUtils::RecalibrateCellAmplitude(Float_t & amp, Int_t calo, In
 //____________________________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, Int_t calo, Int_t id, Int_t bc) const
 {  
-  if ( calo == kEMCAL && GetEMCALRecoUtils()->IsTimeRecalibrationOn() ) 
+  if ( calo == AliFiducialCut::kEMCAL && GetEMCALRecoUtils()->IsTimeRecalibrationOn() ) 
   {
     GetEMCALRecoUtils()->RecalibrateCellTime(id,bc,time);
   }
@@ -1781,7 +1791,7 @@ void AliCalorimeterUtils::RecalibrateCellTime(Double_t & time, Int_t calo, Int_t
 //____________________________________________________________________________________________________
 void AliCalorimeterUtils::RecalibrateCellTimeL1Phase(Double_t & time, Int_t calo, Int_t iSM, Int_t bunchCrossNumber) const
 {  
-  if ( calo == kEMCAL && GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn() ) 
+  if ( calo == AliFiducialCut::kEMCAL && GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn() ) 
   {
     GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSM, bunchCrossNumber, time);
   }
@@ -1806,8 +1816,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
     
     Int_t ncells     = cluster->GetNCells();	
     
-    Int_t calo = kEMCAL;
-    if(cluster->IsPHOS()) calo = kPHOS ;
+    Int_t calo = AliFiducialCut::kEMCAL;
+    if(cluster->IsPHOS()) calo = AliFiducialCut::kPHOS ;
     
     // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
     for(Int_t icell = 0; icell < ncells; icell++)
@@ -1856,8 +1866,8 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cl
     
     Int_t ncells     = cluster->GetNCells();
     
-    Int_t calo = kEMCAL;
-    if(cluster->IsPHOS()) calo = kPHOS ;
+    Int_t calo = AliFiducialCut::kEMCAL;
+    if(cluster->IsPHOS()) calo = AliFiducialCut::kPHOS ;
     
     // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
     for(Int_t icell = 0; icell < ncells; icell++)
@@ -2020,10 +2030,10 @@ void AliCalorimeterUtils::SplitEnergy(Int_t absId1, Int_t absId2,
     hCluster2      ->SetYTitle("row");
   }
   
-  Int_t calorimeter = kEMCAL;
+  Int_t calorimeter = AliFiducialCut::kEMCAL;
   if(cluster->IsPHOS())
   {
-    calorimeter=kPHOS;
+    calorimeter = AliFiducialCut::kPHOS;
     AliWarning("Not supported for PHOS yet");
     return;
   }
@@ -2160,7 +2170,7 @@ void AliCalorimeterUtils::SplitEnergy(Int_t absId1, Int_t absId2,
   CorrectClusterEnergy(cluster1) ;
   CorrectClusterEnergy(cluster2) ;
   
-  if(calorimeter==kEMCAL)
+  if(calorimeter==AliFiducialCut::kEMCAL)
   {
     GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster1);
     GetEMCALRecoUtils()->RecalculateClusterPosition(GetEMCALGeometry(), cells, cluster2);

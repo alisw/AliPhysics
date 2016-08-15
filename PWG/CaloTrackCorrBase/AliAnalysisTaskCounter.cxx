@@ -30,6 +30,9 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliMCEvent.h"
+#include "AliAODMCHeader.h"
 
 #include "AliAnalysisTaskCounter.h"
 
@@ -512,11 +515,46 @@ Bool_t AliAnalysisTaskCounter::Notify()
     AliInfo(Form("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__));
     return kFALSE;
   }
+
   
   Bool_t ok = PythiaInfoFromFile(fCurrFileName,xsection,trials);
+
+
+    if(!ok || xsection==0){
+
+    // Try to get the information for the header (AOD) if the pysec histo are not filled
+       AliGenPythiaEventHeader *fPythiaHeader=0;
+        
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+ 
+          if (aodMCH) {
+            for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+              if (fPythiaHeader) break;
+            }
+	  }         
+ 
+ if(!fPythiaHeader){ 
+   AliError(Form("No pythia header found"));
+   return kFALSE;
+}
+
+  Float_t pthard=0;
+
+  pthard = fPythiaHeader->GetPtHard();
+  xsection = fPythiaHeader->GetXsection();
+  trials = fPythiaHeader->Trials();
+
+  fh1Xsec->Fill("<#sigma>",xsection);
+  fh1Trials->Fill("#sum{ntrials}",trials);
   
-  if(!ok) return kFALSE;
-  
+  AliInfo(Form("xs %f, trial %f, pt hard %f\n",xsection,trials, pthard));
+ 
+  return kTRUE;
+    }
+
+    
+
   fh1Xsec->Fill("<#sigma>",xsection);
   
   // average trials per event
@@ -530,7 +568,9 @@ Bool_t AliAnalysisTaskCounter::Notify()
   
   AliDebug(1,Form("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName()));
   
-  return kTRUE;
+  
+ return kTRUE;
+
 }
 
 //_____________________________________________________________________________________________
@@ -543,7 +583,7 @@ Bool_t AliAnalysisTaskCounter::Notify()
 //_____________________________________________________________________________________________
 Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Float_t & trials)
 {
-  xsec   = 0;
+   xsec   = 0;
   trials = 1;
   
   if(file.Contains("root_archive.zip#"))
@@ -611,7 +651,7 @@ Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Fl
     xsec = xsection;
     fxsec->Close();
   }
-  
+   
   return kTRUE;
 }
 

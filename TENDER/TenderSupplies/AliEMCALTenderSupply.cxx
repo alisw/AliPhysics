@@ -511,7 +511,9 @@ void AliEMCALTenderSupply::ProcessEvent()
     Bool_t needTimecalib   = fCalibrateTime   | fReClusterize;
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
-    Bool_t needTimecalibL1Phase = fCalibrateTimeL1Phase;
+    
+    if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
+    Bool_t needTimecalibL1Phase = (fCalibrateTime | fReClusterize) & fCalibrateTimeL1Phase;
 
     // init bad channels
     if (needBadChannels) {
@@ -2101,7 +2103,15 @@ void AliEMCALTenderSupply::GetPass()
     //printf("AliEMCALTenderSupply::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
     fFilepass = TString("pass1");
   }
-  else if (fname.Contains("LHC14a1a")) fFilepass = TString("LHC14a1a");
+  else if (fname.Contains("LHC14a1a"))
+  {
+    fCalibrateEnergy     = kTRUE;
+    fUseAutomaticRecalib = kTRUE;
+    
+    AliInfo("Energy calibration activated for this MC production!");
+    
+    fFilepass = TString("LHC14a1a");
+  }
   else
   {
     AliError(Form("Pass number string not found: %s", fname.Data()));

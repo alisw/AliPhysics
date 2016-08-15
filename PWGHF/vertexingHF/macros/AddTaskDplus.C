@@ -2,6 +2,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Float_t minC=0, Float_t maxC=100,
 				     Int_t storeNtuple=0,
 				     Bool_t doSparse=kFALSE,
+				     Bool_t doTrackVarSparse=kFALSE,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
 				     TString filename="",
@@ -50,6 +51,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   }
   else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
   
+    
   AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,storeNtuple);
   dplusTask->SetReadMC(readMC);
   dplusTask->SetDoLikeSign(kFALSE);
@@ -64,6 +66,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
     dplusTask->SetDoImpactParameterHistos(kTRUE);
   if(doSparse && readMC)
     dplusTask->SetDoMCAcceptanceHistos(kTRUE);
+  if (doTrackVarSparse)
+    dplusTask->SetDoTrackVarHistos(kTRUE);
   if(etaRange==1) dplusTask->SetUseOnlyPositiveEta();
   if(etaRange==-1) dplusTask->SetUseOnlyNegativeEta();
 
@@ -122,5 +126,6 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   if(storeNtuple){
     mgr->ConnectOutput(dplusTask,4,coutputDplus2);
   }
+
   return dplusTask;
 }

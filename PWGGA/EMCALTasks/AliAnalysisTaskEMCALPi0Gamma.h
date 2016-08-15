@@ -31,7 +31,6 @@ class AliMCEvent;
 class AliMCParticle;
 class AliStaHeader;
 class AliStaVertex;
-//class AliV0ReaderV1;
 class AliGenHijingEventHeader;
 class AliGenPythiaEventHeader;
 class AliGenEventHeader;
@@ -60,17 +59,6 @@ public:
   void Print(){Printf("E=%.2f, type=%d, MoID=%d, PID=%d, w=%.3f",thishit.E(),hittype,imo,pid,weight);   }
 };
 
-// class to store v0 hits
-class V0Hit {
-  TLorentzVector thishit;
-
-public:
-  V0Hit();
-  friend class V0Event;
-  friend class AliAnalysisTaskEMCALPi0Gamma;
-};
-
-
 // class to store old events
 class EmcEvent {
   
@@ -79,19 +67,17 @@ class EmcEvent {
 	Float_t TrigPhi; // phi of highest pT hit on EMCal
   Float_t TrigTheta; // eta of highest pT hit ...
   
-  const static int nMaxHit = 700;
+  const static int nMaxHit = 1000;
   
   int nHits;
-  int nV0Hits;
   EmcHit hit[nMaxHit];
-  V0Hit hitv0[nMaxHit];
   
 public:
   EmcEvent();
   EmcEvent(const EmcEvent &obj);
   //virtual ~EmcEvent();
   //    void SetGlobalInfo(const Int_t&, const Int_t&, const Int_t&, const Int_t&, const Double_t&, const Double_t&);
-  void SetGlobalInfo(const Int_t&, const Int_t&, const Float_t&, const Float_t&);
+  void SetGlobalInfo(const Int_t&, const Float_t&, const Float_t&);
   int evsize() {return nHits;}
   void Reset();
   void Print();
@@ -120,7 +106,6 @@ public:
   void         SetDoTrackMatWithGeom(Bool_t b)                { fDoTrMatGeom   = b;         }
   void         SetEmbedMode(Bool_t b)                         { fEmbedMode     = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple      = b;         }
-  void         SetfDoConvAna(Bool_t b)                        { fDoConvAna     = b;         }
   void         SetGeoName(const char *n)                      { fGeoName       = n;         }
   void         SetGeoUtils(AliEMCALGeometry *geo)             { fGeom          = geo;       }
   void         SetIsoDist(Double_t d)                         { fIsoDist       = d;         }
@@ -147,8 +132,17 @@ public:
   void         SetAddedSignal(Bool_t b)                       { fAddedSignal   = b;         }
   void         SetDataPeriod(Int_t b)                         { fDataPeriod   = b;         }
   void         SetDoManualRecal(Bool_t b)                     { fDoManualRecal = b;         }
-  void         SetDoCalibRun(Bool_t b)                     { fCalibRun = b;         }
+  void         SetDoCalibRun(Bool_t b)                        { fCalibRun = b;         }
+  void         SetManualBadMap(Bool_t b)                      { fApplyBadMapManually = b;}
   void         SetDnDpT(Int_t i, Double_t par0, Double_t par1, Double_t par2, Double_t par3, Double_t par4);
+  
+  void SetBadMap(TH1D * h)
+		{
+      if(fBadMap) delete fBadMap;
+      fBadMap=new TH1D(*h) ;
+      printf("Set %s \n",fBadMap->GetName());
+    }
+
   
 protected:
   
@@ -156,15 +150,10 @@ protected:
   virtual void ClusterAfterburner();
   void AddMixEvent(const Int_t, const Int_t, const Int_t, Int_t&, const Float_t&, const Float_t&);
   Double_t FillClusHists(Float_t&, Float_t&);
-  virtual void FillConvHists();
-  virtual void FillConvConv();
   void FillMixHists(const Int_t, const Int_t, const Int_t, const Double_t, const Double_t);
-  void FillMixConv(const Int_t, const Int_t, const Int_t);
-  void FillMixConvConv(const Int_t, const Int_t, const Int_t);
   virtual void FillNtuple();
   virtual void FillOtherHists();
   virtual void FillPionHists();
-  virtual void FillPionConv();
   virtual void FillMcHists();
   virtual void FillTrackHists();
   void         FillVertex(AliStaVertex *v, const AliESDVertex *esdv);
@@ -190,11 +179,14 @@ protected:
   void         ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr);
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
   Int_t        GetModuleNumber(AliVCluster * cluster)                                                     const;
-  void         FillCellQAHists(AliVCluster *);
+  void         FillCellQAHists(AliVCluster *, Bool_t isDcal=0, Bool_t isAfter=0);
   Double_t     PrivateEnergyRecal(Double_t energy, Int_t iCalib);
   // spectral shape
   Double_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
 
+  // bad map
+  TH1D *fBadMap;
+  
   // input members
   TString                fCentVar;                // variable for centrality determination
   Double_t               fCentFrom;               // min centrality (def=0)
@@ -204,7 +196,6 @@ protected:
   Bool_t                 fUseQualFlag;            // if true use quality flag for centrality
   TString                fClusName;               // cluster branch name (def="")
   Bool_t                 fDoNtuple;               // if true write out ntuple
-  Bool_t                 fDoConvAna;              // if true do conversion photon analysis
   Bool_t                 fDoAfterburner;          // if true run after burner
   Double_t               fAsymMax1;                // maximum energy asymmetry (def=1)
   Double_t               fAsymMax2;                // maximum energy asymmetry (def=1)
@@ -240,10 +231,9 @@ protected:
   Bool_t                 fRotateMixed;            // rotates the events before mixing such that the highest pT cluster has same phi as in real event
   Bool_t                 fAddedSignal;            // added signals in MC?
   Int_t                  fDataPeriod;             // which period(s)
-
+  Bool_t                 fApplyBadMapManually;    // manual bad map?
+  
   // derived members (ie with ! after //)
-  //AliV0ReaderV1 	*fV0Reader;               //!v0 reader
-  TClonesArray 		*fReaderGammas;           //!for conversion gammas
   ULong64_t              fNEvs;                   //!accepted events
   TList                 *fOutput;                 //!container of output histograms
   TObjArray             *fTrClassNamesArr;        //!array of trig class names
@@ -286,6 +276,7 @@ protected:
   
   // histogram for cells
   TH2                   *fHCellIndexEnergy;      //!histo for cell energy vs cell number
+  TH2                   *fHCellIndexEnergyAfterCuts;      //!histo for cell energy vs cell number
   
   // histograms for clusters
   TH1                   *fHClusters;                  //!histo for cuts
@@ -294,15 +285,14 @@ protected:
   TH1                   *fHClustAccEvt;            //!histo for number of clusters after cuts in event
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity
   TH2                   *fHClustEtaPhi;           //!histo for cluster eta vs. phi
+  TH2                   *fHClustEtaPhiAll;           //!histo for cluster eta vs. phi
   TH2                   *fHClustEnergyPt;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergyPtDCal;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergySM;         //!histo for cluster energy vs. Supermodule
   TH2                   *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis
-  TH2                   *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
+  TH2                   *fHClustEnergyTime;       //!histo for cluster energy vs. time
   TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n cells vs. energy ratio
   TH2			*fHClustEnergyNCell;      //!histo for cluster energy vs. cluster n cells
-  // histograms for conversion photons
-  TH2                 *fHConvEnergyPt;
   // histograms for primary tracks
   TH1			*fHPrimTrackPt;           //!histo for primary track pt
   TH1			*fHPrimTrackEta;          //!histo for primary track eta
@@ -368,36 +358,18 @@ protected:
   // primary pions
   TH2                   *fHPrimPionInvMasses;       //!histos for invariant mass plots
   TH2                   *fHPrimPionInvMassesAsym;       //!histos for invariant mass plots
-  // conversion
-  TH2                   *fHPionEtaPhiConv;            //!histo for pion eta vs. phi
-  TH2                   *fHPionMggPtConv;             //!histo for pion mass vs. pT
-  TH2                   *fHPionMggAsymConv;           //!histo for pion mass vs. asym
-  TH2                   *fHPionMggDggConv;            //!histo for pion mass vs. opening angle
-  TH1                   *fHPionInvMassesConv;     //!histos for invariant mass plots
-  // mixing
-  TH2                   *fHPionInvMassesConvMix;     //!histos for invariant mass plots
-  // conversion conversion
-  TH2                   *fHPionEtaPhiConvConv;            //!histo for pion eta vs. phi
-  TH2                   *fHPionMggPtConvConv;             //!histo for pion mass vs. pT
-  TH2                   *fHPionMggAsymConvConv;           //!histo for pion mass vs. asym
-  TH2                   *fHPionMggDggConvConv;            //!histo for pion mass vs. opening angle
-  TH2                   *fHPionInvMassesConvConv;     //!histos for invariant mass plots
-  // mixing conv conv
-  TH2                   *fHPionInvMassesConvConvMix;     //!histos for invariant mass plots
   
   // conversion info
-  TH1                   * fHConversionPoint;   //!histo for conversion position in XY
+  //TH1                   * fHConversionPoint;   //!histo for conversion position in XY
   
   // histograms for MC
   TH1                   *fHWgt;         //!histo for weight of particles
   TH1                   *fHPionTruthPt;       //!histo for pT from MC pion
   TH1                   *fHPionTruthPtIn;    //!histo for pT for MC pion in eta range
   TH1                   *fHPionTruthPtAcc;    //!histo for pT for MC pion in acceptance
-  TH1                   *fHPionTruthPtConvAcc;    //!histo for pT for MC pion in acceptance
   TH1                   *fHEtaTruthPt;       //!histo for pT from MC eta
   TH1                   *fHEtaTruthPtIn;    //!histo for pT for MC eta in eta range
   TH1                   *fHEtaTruthPtAcc;    //!histo for pT for MC eta in acceptance
-  TH1                   *fHEtaTruthPtConvAcc;    //!histo for pT for MC eta in acceptance
   TH1                   *fHGamTruthPt;       //!histo for pT from MC gamma
   TH1                   *fHGamTruthPtIn;    //!histo for pT for MC gamma in eta range
   TH1                   *fHGamTruthPtAcc;    //!histo for pT for MC gamma in acceptance
@@ -405,11 +377,9 @@ protected:
   TH1                   *fHPionTruthPtAdd;       //!histo for pT from MC pion
   TH1                   *fHPionTruthPtInAdd;    //!histo for pT for MC pion in eta range
   TH1                   *fHPionTruthPtAccAdd;    //!histo for pT for MC pion in acceptance
-  TH1                   *fHPionTruthPtConvAccAdd;    //!histo for pT for MC pion in acceptance
   TH1                   *fHEtaTruthPtAdd;       //!histo for pT from MC eta
   TH1                   *fHEtaTruthPtInAdd;    //!histo for pT for MC eta in eta range
   TH1                   *fHEtaTruthPtAccAdd;    //!histo for pT for MC eta in acceptance
-  TH1                   *fHEtaTruthPtConvAccAdd;    //!histo for pT for MC eta in acceptance
   //TH1                   *fHGamTruthPtAdd;       //!histo for pT from MC gamma
   //TH1                   *fHGamTruthPtInAdd;    //!histo for pT for MC gamma in eta range
   //TH1                   *fHGamTruthPtAccAdd;    //!histo for pT for MC gamma in acceptance
@@ -445,8 +415,8 @@ protected:
   Int_t ietamin; // first added eta particle index
   Int_t ietamax; // last added eta particle index
   
-  const static int nMulClass =   4;
-  const static int nZClass   =   4;
+  const static int nMulClass =   5;
+  const static int nZClass   =   3;
   const static int nPtClass = 1;
   int iEvt[nMulClass][nZClass][nPtClass];
   const static int nEvt      =   30; // mixing "depth"
@@ -462,7 +432,7 @@ private:
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 14) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 18) // Analysis task for neutral pions in Pb+Pb
 };
 
 

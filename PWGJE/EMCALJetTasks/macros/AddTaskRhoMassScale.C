@@ -44,7 +44,7 @@ AliAnalysisTaskRhoMassScale* AddTaskRhoMassScale(const char *rhomNeutral,
   AliParticleContainer *pcont = task->AddParticleContainer(ntracks);
   pcont->SetParticlePtCut(kMinTrackPt);
   pcont->SetParticleEtaLimits(-0.9,0.9);
-  pcont->SetCharge(1);
+  pcont->SetCharge(AliParticleContainer::kPositiveCharge);
 
   task->SetJetContainerNeutral(0);
   // task->SetJetContainerCharged(1);

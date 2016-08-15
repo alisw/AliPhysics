@@ -87,6 +87,11 @@ public :
   void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj);
   void FillHistograms(TObjArray *const allChargedTracks,Int_t *const labelsAll,Int_t multAll,Int_t *const labelsAcc,Int_t multAcc,Int_t *const labelsRec,Int_t multRec);
 
+  // PYTHIA hard pT bins
+  void                        SetIsPythia(const Bool_t i)    { fIsPythia          = i                              ; }
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fTrials, Int_t &pthard); 
+
+  
   // Getters
   THnSparseF *GetEventMultCorrelationMatrix() const {return fEventMultCorrelationMatrix;}
   THnSparseF *GetTrackPtCorrelationMatrix()   const {return fTrackPtCorrelationMatrix;}
@@ -166,6 +171,10 @@ public :
   THnSparseF *GetRecTrackHist1(Int_t i) const {return fRecTrackHist1[i];}
   THnSparseF *GetRecTrackMultHist1(Int_t i) const {return fRecTrackMultHist1[i];}
 
+  THnSparseF *GetRecPrimTrackHist() const {return fRecPrimTrackHist;}
+  THnSparseF *GetGenPrimTrackHist() const {return fGenPrimTrackHist;}
+
+  
   THnSparseF *GetRecMCTrackHist1() const {return fRecMCTrackHist1;}
   THnSparseF *GetMCMultRecTrackHist1() const {return fMCMultRecTrackHist1;}
 
@@ -181,7 +190,12 @@ public :
   THnSparseF* GetMCPrimTrackHist() const {return fMCPrimTrackHist;}   
 
 //   Bool_t IsRequiredCompleteDAQ() const  { return f2015IsIncompleteDAQ;}
+ 
 
+  TH1D       *GetHistoTrials() const {return fHistoTrials;}
+  TH1D       *GetHEvents() const {return fHEvents;}
+  TProfile   *GetProfileXsection() const {return fProfXsection;}
+  
   
 private:
 
@@ -283,6 +297,10 @@ private:
   THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:multMB
   THnSparseF *fRecMCEventHist3; //-> multRecMult:EventType (ND, DD, SD)
 
+  THnSparseF *fRecPrimTrackHist; // -> pt:eta:phi reconstructed
+  THnSparseF *fGenPrimTrackHist; // -> pt:eta:phi generated
+
+  
   // THnSparse track histograms
   // [0] - after charged track selection, [1] - after acceptance cuts, [2] - after esd track cuts
 
@@ -343,14 +361,22 @@ private:
   Bool_t fTRDTriggerRequiredHSE;
   Bool_t triggerResult;
 //   Bool_t f2015IsIncompleteDAQ;
-  
+
+  // Pythia hard pT bins
+  Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
+  AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
+  Int_t                       fNTrials;                    //!<!event trials
+  Float_t                     fXsection;                   //!<!x-section from pythia header
+  TH1D                       *fHistoTrials;
+  TH1D                       *fHEvents;
+  TProfile                   *fProfXsection;
   // generic function to change binning
   Bool_t CanChangeBins();
 
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,10);
+  ClassDef(AlidNdPtAnalysis,11);
 };
 
 #endif

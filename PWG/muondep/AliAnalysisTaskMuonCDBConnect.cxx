@@ -76,6 +76,23 @@ fOCDBSet(kFALSE)
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskMuonCDBConnect::UserNotify()
+{
+  /// setup OCDB default storage
+  
+  // do it only once
+  if (fOCDBSet) return kTRUE;
+  
+  // set OCDB location
+  AliCDBManager* cdbm = AliCDBManager::Instance();
+  if (!cdbm->IsDefaultStorageSet()) cdbm->SetDefaultStorage(fDefaultStorage.Data());
+  else printf("MuonCDBConnect: CDB default storage already set. Do not change it.\n");
+  
+  return kTRUE;
+  
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskMuonCDBConnect::NotifyRun()
 {
   /// setup OCDB path and load requested data
@@ -83,12 +100,8 @@ void AliAnalysisTaskMuonCDBConnect::NotifyRun()
   // do it only once
   if (fOCDBSet) return;
   
-  // set OCDB location
-  AliCDBManager* cdbm = AliCDBManager::Instance();
-  if (!cdbm->IsDefaultStorageSet()) cdbm->SetDefaultStorage(fDefaultStorage.Data());
-  else printf("MuonCDBConnect: CDB default storage already set. Do not change it.\n");
-  
   // set run number
+  AliCDBManager* cdbm = AliCDBManager::Instance();
   if (cdbm->GetRun() < 0) cdbm->SetRun(fCurrentRunNumber);
   else printf("MuonCDBConnect: run number already set. Do not change it.\n");
   

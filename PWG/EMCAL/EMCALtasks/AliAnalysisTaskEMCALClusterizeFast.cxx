@@ -781,7 +781,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncellsTrue] = digit->GetId();
-      ratios[ncellsTrue] = elist[c]/recpoint->GetEnergy();
+      ratios[ncellsTrue] = elist[c]/digit->GetAmplitude();
       
       if (digit->GetIparent(1) > 0)
         mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
@@ -957,7 +957,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   if (fGeomName.Length()>0) 
     fGeom = AliEMCALGeometry::GetInstance(fGeomName);
   else
-    fGeom = AliEMCALGeometry::GetInstance();
+    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
   if (!fGeom) {
     AliFatal("Geometry not available!!!");
     return;

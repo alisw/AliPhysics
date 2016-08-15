@@ -60,8 +60,10 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet3subjettiness_kt()       const {return fGenSubtractorInfoJet3subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_kt()       const {return fGenSubtractorInfoJetOpeningAngle_kt ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
+  const std::vector<fastjet::PseudoJet>                      GetGroomedJets()            const {return fGroomedJets            ; }
   Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
   Int_t CreateConstituentSub();  // fastjet::contrib::ConstituentSubtractor
+  Int_t CreateSoftDrop();
 #endif
   virtual std::vector<double>                                GetGRNumerator()                     const { return fGRNumerator                    ; }
   virtual std::vector<double>                                GetGRDenominator()                   const { return fGRDenominator                  ; }
@@ -85,7 +87,8 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJet3subjettiness_kt();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
   virtual Int_t DoConstituentSubtraction();
-
+  virtual Int_t DoSoftDrop();
+  
   void SetName(const char* name)        { fName           = name;    }
   void SetTitle(const char* title)      { fTitle          = title;   }
   void SetStrategy(const fastjet::Strategy &strat)                 { fStrategy = strat;  }
@@ -121,6 +124,7 @@ class AliFJWrapper
   std::vector<fastjet::PseudoJet>        fFilteredJets;       //!
   std::vector<double>                    fSubtractedJetsPt;   //!
   std::vector<fastjet::PseudoJet>        fConstituentSubtrJets; //!
+  std::vector<fastjet::PseudoJet>        fGroomedJets;        //!
   fastjet::AreaDefinition               *fAreaDef;            //!
   fastjet::VoronoiAreaSpec              *fVorAreaSpec;        //!
   fastjet::GhostedAreaSpec              *fGhostedAreaSpec;    //!
@@ -151,11 +155,15 @@ class AliFJWrapper
   // extra parameters
   Double_t                               fMedUsedForBgSub;    //!
   Bool_t                                 fUseArea4Vector;     //!
+  // condition to stop the grooming (rejection of soft splitting) z > fZcut theta^fBeta
+  Double_t                               fZcut;               // fZcut = 0.1                
+  Double_t                               fBeta;               // fBeta = 0
 #ifdef FASTJET_VERSION
   fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
   //from contrib package
   fastjet::contrib::GenericSubtractor     *fGenSubtractor;    //!
   fastjet::contrib::ConstituentSubtractor *fConstituentSubtractor;    //!
+  fastjet::contrib::SoftDrop              *fSoftDrop;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRNum;          //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRDen;          //!
@@ -212,6 +220,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fFilteredJets      ( )
   , fSubtractedJetsPt  ( )
   , fConstituentSubtrJets ( )
+  , fSoftDrop          ( )
   , fAreaDef           (0)
   , fVorAreaSpec       (0)
   , fGhostedAreaSpec   (0)
@@ -235,6 +244,8 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fPluginAlgor       (0)
   , fMedUsedForBgSub   (0)
   , fUseArea4Vector    (kFALSE)
+  , fZcut(0.1)
+  , fBeta(0)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
   , fGenSubtractor     (0)
@@ -292,6 +303,7 @@ void AliFJWrapper::ClearMemory()
   if (fBkrdEstimator)          { delete fBkrdEstimator; fBkrdEstimator = NULL; }
   if (fGenSubtractor)          { delete fGenSubtractor; fGenSubtractor = NULL; }
   if (fConstituentSubtractor)  { delete fConstituentSubtractor; fConstituentSubtractor = NULL; }
+  if (fSoftDrop)          { delete fSoftDrop; fSoftDrop = NULL;}
   #endif
 }
 
@@ -315,6 +327,8 @@ void AliFJWrapper::CopySettingsFrom(const AliFJWrapper& wrapper)
   fMeanGhostKt      = wrapper.fMeanGhostKt;
   fPluginAlgor      = wrapper.fPluginAlgor;
   fUseArea4Vector   = wrapper.fUseArea4Vector;
+  fZcut             = wrapper.fZcut;
+  fBeta             = wrapper.fBeta;
   fLegacyMode       = wrapper.fLegacyMode;
   fUseExternalBkg   = wrapper.fUseExternalBkg;
   fRho              = wrapper.fRho;
@@ -1027,6 +1041,45 @@ Int_t AliFJWrapper::DoConstituentSubtraction() {
 #endif
   return 0;
 }
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoSoftDrop() {
+  //Do grooming
+#ifdef FASTJET_VERSION
+  CreateSoftDrop();
+
+  //clear groomed jets
+  fGroomedJets.clear();
+  //fastjet::Subtractor fjsub (fBkrdEstimator);
+  //fSoftDrop->set_subtractor(&fjsub);
+  //fSoftDrop->set_input_jet_is_subtracted(false); //??
+  
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::PseudoJet groomed_jet(0.,0.,0.,0.);
+    if(fInclusiveJets[i].perp()>0.){
+      groomed_jet = (*fSoftDrop)(fInclusiveJets[i]);
+      if(groomed_jet!=0) fGroomedJets.push_back(groomed_jet);
+    }
+    
+  }
+  if(fSoftDrop) { delete fSoftDrop; fSoftDrop = NULL; }
+
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::CreateSoftDrop() {
+  //Do grooming
+  #ifdef FASTJET_VERSION
+  if (fSoftDrop) { delete fSoftDrop; } // protect against memory leaks
+  
+  fSoftDrop   = new fj::contrib::SoftDrop(fBeta,fZcut);
+  
+  #endif
+  return 0;
+}
+
 
 //_________________________________________________________________________________________________
 Int_t AliFJWrapper::CreateGenSub() {

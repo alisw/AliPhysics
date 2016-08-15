@@ -55,6 +55,9 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
+  ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
+  ChargedHadrons/dNdPt/AlimPtMatrix.cxx
+  ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
@@ -88,6 +91,7 @@ set(SRCS
   XtAnalysis/AliXtAnalysis.cxx
   XtAnalysis/AliJXtHistos.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
+  IdentifiedHighPt/train/AliAnaTaskV0EffDecomposition.cxx
   IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
   MultEvShape/AliMESeventInfo.cxx
   MultEvShape/AliMEStrackInfo.cxx
@@ -176,6 +180,7 @@ install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/Charged
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
+install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)

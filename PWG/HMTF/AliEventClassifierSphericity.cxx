@@ -41,8 +41,8 @@ void AliEventClassifierSphericity::CalculateClassifierValue(AliMCEvent *event, A
     // Only calculate for primaries (Aliroot definition excluding Pi0)
     if (!stack->IsPhysicalPrimary(iTrack))
       continue;
-    // Dipsy produces primary particles (mainly protons) with Pt() == 0; calling Eta() still works (~1e30)
-    if (track->Pt() == 0)
+    // discard unphysical particles from some generators
+    if (track->Pt() == 0 || track->E() <= 0)
       continue;
     
     Float_t px = track->Pt() * TMath::Cos( track->Phi() );

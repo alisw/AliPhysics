@@ -195,7 +195,7 @@ Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
  * was rejected.
  * @return
  */
-UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason) const
+UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason)
 { 
   UInt_t rs = rejectionReason;
   UShort_t p = 0;
@@ -277,6 +277,24 @@ const AliEmcalIterableContainer AliEmcalContainer::all() const {
  */
 const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
   return AliEmcalIterableContainer(this, true);
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliEmcalIterableMomentumContainer AliEmcalContainer::all_momentum() const {
+  return AliEmcalIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliEmcalIterableMomentumContainer AliEmcalContainer::accepted_momentum() const {
+  return AliEmcalIterableMomentumContainer(this, true);
 }
 
 /**

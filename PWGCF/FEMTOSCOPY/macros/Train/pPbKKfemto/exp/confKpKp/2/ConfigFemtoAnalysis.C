@@ -206,8 +206,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //primary particles: hits in ITS + DCA cut
 	  //dtc1etaphitpc[aniter]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 	  //				 AliESDtrackCuts::kAny);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
-	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.6);
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(3.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	  //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
@@ -231,8 +231,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //sqpcetaphitpc[aniter] = new AliFemtoShareQualityTPCEntranceSepPairCut();
 	  //sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 	  sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistanceKK();
-	  sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
-	  sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
+	  //sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
+	  //sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 	  
 	  sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);

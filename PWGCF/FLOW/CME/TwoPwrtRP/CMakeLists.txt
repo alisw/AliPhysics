@@ -55,7 +55,7 @@ set(LIBDEPS ANALYSISalice)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
-target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} ${LIBDEPS} PWGPPevcharQn)
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})

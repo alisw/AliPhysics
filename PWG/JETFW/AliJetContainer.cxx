@@ -34,7 +34,7 @@ ClassImp(AliJetContainer);
  */
 AliJetContainer::AliJetContainer():
   AliParticleContainer(),
-  fJetAcceptanceType(kUser),
+  fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
@@ -75,7 +75,7 @@ AliJetContainer::AliJetContainer():
  */
 AliJetContainer::AliJetContainer(const char *name):
   AliParticleContainer(name),
-  fJetAcceptanceType(kUser),
+  fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
@@ -127,7 +127,7 @@ AliJetContainer::AliJetContainer(const char *name):
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
   AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
-  fJetAcceptanceType(kUser),
+  fJetAcceptanceType(0),
   fJetRadius(radius),
   fRhoName(),
   fLocalRhoName(),
@@ -170,61 +170,6 @@ void AliJetContainer::SetArray(const AliVEvent *event)
   // Set jet array
 
   AliEmcalContainer::SetArray(event);
-
-  SetAcceptanceCuts();
-}
-
-/**
- * Set the acceptance cut limits based on the object settings.
- * This has to be executed when the processed run is known, in order
- * to load the correct detector geometry.
- */
-void AliJetContainer::SetAcceptanceCuts()
-{
-  // Set acceptance
-
-  switch (fJetAcceptanceType) {
-  case kTPC:
-    AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
-    SetJetEtaPhiTPC();
-    break;
-  case kTPCfid:
-    AliDebug(2,Form("%s: set TPC acceptance cuts",GetName()));
-    SetJetEtaPhiTPC(fJetRadius);
-    break;
-  case kEMCAL:
-    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
-    SetJetEtaPhiEMCAL();
-  case kEMCALfid:
-    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
-    SetJetEtaPhiEMCAL(fJetRadius);
-    break;
-  case kDCALfid:
-    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
-    SetJetEtaPhiDCAL();
-    break;
-  case kDCAL:
-    AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
-    SetJetEtaPhiDCAL(fJetRadius);
-    break;
-  case kUser:
-    break;
-  }
-}
-
-
-/**
- * Set a pointer to the EMCal geometry object.
- * It assumes that an instance of the object has been already
- * configured.
- */
-void AliJetContainer::SetEMCALGeometry()
-{
-  fGeom = AliEMCALGeometry::GetInstance();
-  if (!fGeom) {
-    AliError(Form("%s: Can not create geometry", GetName()));
-    return;
-  }
 }
 
 /**
@@ -655,6 +600,14 @@ Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet, UInt_t &rejectionRe
     rejectionReason |= kTagStatus;
     return kFALSE;
   }
+  
+  // If user sets acceptance selection type, compare it to jet's acceptance type, bitwise
+  if (fJetAcceptanceType != 0) {
+    UInt_t jetAccType = jet->GetJetAcceptanceType();
+    UInt_t isAccepted = jetAccType & fJetAcceptanceType;
+    if (!isAccepted)
+      return kFALSE;
+  }
 
   return kTRUE;
 }
@@ -796,63 +749,6 @@ Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, const TLorentzVector& mom
   }
 
   return z;
-}
-
-/**
- * Set fiducial acceptance cuts inside the EMCal for a specific jet resolution
- * parameter. This method has to be called after the run number is known because
- * it needs the EMCal geometry object.
- * @param r Jet resolution parameter
- */
-void AliJetContainer::SetJetEtaPhiEMCAL(Double_t r)
-{
-  if (!fGeom) SetEMCALGeometry();
-  if (fGeom) {
-    SetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
-
-    if(fRunNumber >= 177295 && fRunNumber <= 197470) {//small SM masked in 2012 and 2013
-      SetPhiLimits(1.405 + r, 3.135 - r);
-    }
-    else {
-      SetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r);
-    }
-  }
-  else {
-    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
-    SetEtaLimits(-0.7 + r, 0.7 - r);
-    SetPhiLimits(1.405 + r, 3.135 - r);
-  }
-}
-
-/**
- * Set fiducial acceptance cuts inside the DCal for a specific jet resolution
- * parameter. This method has to be called after the run number is known because
- * it needs the EMCal geometry object.
- * @param r Jet resolution parameter
- */
-void AliJetContainer::SetJetEtaPhiDCAL(Double_t r)
-{
-  if (!fGeom) SetEMCALGeometry();
-  if (fGeom) {
-    SetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
-    SetPhiLimits(fGeom->GetDCALPhiMin() * TMath::DegToRad() + r, fGeom->GetDCALPhiMax() * TMath::DegToRad() - r);
-  }
-  else {
-    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
-    SetEtaLimits(-0.7 + r, 0.7 - r);
-    SetPhiLimits(4.538 + r, 5.727 - r);
-  }
-}
-
-/**
- * Set fiducial acceptance cuts inside the TPC for a specific jet resolution
- * parameter.
- * @param r Jet resolution parameter
- */
-void AliJetContainer::SetJetEtaPhiTPC(Double_t r)
-{
-  SetEtaLimits(-0.9 + r, 0.9 - r);
-  SetPhiLimits(0, 0);  // No cut on phi
 }
 
 /**
@@ -1062,6 +958,24 @@ const AliJetIterableContainer AliJetContainer::all() const {
  */
 const AliJetIterableContainer AliJetContainer::accepted() const {
   return AliJetIterableContainer(this, true);
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliJetIterableMomentumContainer AliJetContainer::all_momentum() const {
+  return AliJetIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliJetIterableMomentumContainer AliJetContainer::accepted_momentum() const {
+  return AliJetIterableMomentumContainer(this, true);
 }
 
 /**

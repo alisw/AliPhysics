@@ -19,7 +19,10 @@
 #include "AliAnalysisUtils.h"
 #include "AliJJetTask.h"
 #include "AliJCard.h"
+#include "AliJJet.h"
 #include "AliJRunTable.h"
+#include "AliParticleContainer.h"
+#include "AliAODMCParticle.h"
 
 class AliJJetJtAnalysis;
 class AliJEfficiency;
@@ -53,28 +56,30 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   void SetMC(int mc) {fDoMC = mc;};
   void SetNrandom( int Nrand) { NRandom = Nrand;}
   void SetMoveJet( int move) { moveJet = move;}
+  void FindDaughters(AliJJet * jet, AliAODMCParticle * track, AliMCParticleContainer * mcTracksCont);
 
  private:
-  
-  // TODO new Task - AliJJetTask?
-  AliJJetTask           * fJetTask;
-  AliJJetTask           * fMCJetTask;
-  TString                 fJetTaskName;
-  TString                 fMCJetTaskName;
-  AliJJetJtAnalysis     * fJJetJtAnalysis;
-  TDirectory     * fOutput;
-  AliJCard              * fCard;
-  Bool_t fFirstEvent;
-  int cBin;
-  int zBin;
-  int NRandom;
-  int moveJet;
-  int fDoMC;
-  double zVert;
-  AliAnalysisUtils *fAnaUtils;
-  AliJRunTable *fRunTable;
-  TH1D * fEventHist;
 
-  ClassDef(AliJJetJtTask, 1); 
+    // TODO new Task - AliJJetTask?
+    AliJJetTask           * fJetTask;
+    AliJJetTask           * fMCJetTask;
+    TString                 fJetTaskName;
+    TString                 fMCJetTaskName;
+    AliJJetJtAnalysis     * fJJetJtAnalysis;
+    TClonesArray           *fJMCTracks;
+    TDirectory            * fOutput;
+    AliJCard              * fCard;
+    Bool_t fFirstEvent;
+    int cBin;
+    int zBin;
+    int NRandom;
+    int moveJet;
+    int fDoMC;
+    double zVert;
+    AliAnalysisUtils *fAnaUtils;
+    AliJRunTable *fRunTable;
+    TH1D * fEventHist;
+
+    ClassDef(AliJJetJtTask, 1); 
 };
 #endif // ALIJJETJTTASK_H
