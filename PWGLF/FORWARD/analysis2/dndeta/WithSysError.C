@@ -1,12 +1,14 @@
 /** 
  * 
  * 
- * @param system 
- * @param sNN 
- * @param trigger 
- * @param option 
- * @param rebinned 
- * @param empirical 
+ * @param system    System name 
+ * @param sNN       Collision energy in GeV 
+ * @param trigger   Trigger type 
+ * @param option    Options 
+ * @param rebinned  Rebinning factor 
+ * @param export    Whether to export 
+ * @param empirical Whether to apply empirical correction 
+ * @param alsoLog   Whether to do log scale 
  */
 void
 WithSysError(const TString&  system, 
@@ -245,3 +247,6 @@ WithSysError(const TString&  system,
 }
 
   
+//
+// EOF
+//
