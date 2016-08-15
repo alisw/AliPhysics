@@ -30,9 +30,19 @@ void logbookAddMetadata(TTree*tree, Int_t verbose=0){
     Bool_t isDataBranch= TString(branches->At(ibr)->GetName()).Contains("Data")!=NULL;
     Bool_t isMagnet= TString(branches->At(ibr)->GetName()).Contains("magnetCurrent")!=NULL;
     TString brClass="Logbook";
-    if (isEventBranch) brClass+=" Stat";
-    if (isDataBranch)  brClass+=" Data";
+    if (isEventBranch) {
+      brClass+=" Stat";
+      TStatToolkit::AddMetadata(tree,TString::Format("%s.AxisTitle",branches->At(ibr)->GetName()).Data(),
+				TString::Format("counts",tree->GetTitle()).Data());      
+    }
+
+    if (isDataBranch)  {
+      brClass+=" Data";
+      TStatToolkit::AddMetadata(tree,TString::Format("%s.AxisTitle",branches->At(ibr)->GetName()).Data(),
+				TString::Format("size (By)",tree->GetTitle()).Data());      
+    }
     if (isMagnet) brClass+=" Setup";
+
     
     TStatToolkit::AddMetadata(tree,TString::Format("%s.class",branches->At(ibr)->GetName()).Data(),brClass.Data());    
   }
