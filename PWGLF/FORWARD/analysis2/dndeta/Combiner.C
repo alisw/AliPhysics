@@ -286,6 +286,8 @@ struct Combiner
    * 
    * @param guess   Current guess @f$ x'@f$ 
    * @param chi2    Optional old @f$ \chi^2@f$ from best @f$ x@f$ value 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * 
    * @return @f$ \chi^2(x')@f$
    */
@@ -353,7 +355,8 @@ struct Combiner
    * Find best estimate of @f$ x@f$ 
    * 
    * @param nIter   Number of iterations 
-   * @param data    The data 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * @param lowest  Lower bound 
    * @param highest Upper bound 
    * 
@@ -393,6 +396,8 @@ struct Combiner
   /** 
    * Do the calculation 
    * 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * @param nIter How many iterations to do. 
    * 
    * @return The best estimate of @f$ x@f$ and associated errors 
