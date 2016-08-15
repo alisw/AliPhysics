@@ -8,7 +8,7 @@
  *
  * @section pwglf_fwd_density_intro Introduction 
  *
- * This code uses the AOD produced by the @ref mult_doc code to
+ * This code uses the AOD produced by the @ref pwglf_fwd_mult_doc code to
  * produce results on @f$ 1/N_{ev} dN_{ch}/d\eta@f$ in pp, PbPb, and
  * pPb collisions.
  * 
