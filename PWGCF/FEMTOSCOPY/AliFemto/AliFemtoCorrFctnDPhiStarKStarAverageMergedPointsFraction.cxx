@@ -318,8 +318,8 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( Ali
     for(double irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
       
       // Calculate dPhiStar:
-      double afsi0b = 0.07510020733*chg1*fMagSign*irad/pt1;
-      double afsi1b = 0.07510020733*chg2*fMagSign*irad/pt2;
+      double afsi0b = -0.07510020733*chg1*fMagSign*irad/pt1;
+      double afsi1b = -0.07510020733*chg2*fMagSign*irad/pt2;
       Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
       dphistar = TVector2::Phi_mpi_pi(dphistar);
 
