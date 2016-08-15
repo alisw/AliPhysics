@@ -692,7 +692,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******	
 					//***without corrections*****
-					if(ichg >= 13)
+					if(ichg==0 || ichg==1 || ichg==2 || ichg >= 13)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),29, 29);
@@ -710,7 +710,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					//***with corrections****
-					if(ichg >= 13)
+					if(ichg==0 || ichg==1 || ichg==2 || ichg >= 13)
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
