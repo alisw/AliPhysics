@@ -57,6 +57,7 @@
 #include "AliHFEcuts.h"
 #include "AliHFEtools.h"
 #include "TObject.h"
+#include "TProfile.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "AliReducedParticle.h"
@@ -72,8 +73,13 @@ ClassImp(AliAnalysisTaskDxHFECorrelation)
 AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt)
   : AliAnalysisTaskSE("AliAnalysisTaskDxHFECorrelation")
   , fOutput(0)
+  , fQASelection(0)
   , fOption(opt)
   , fCorrelation(NULL)
+  , fCorrelationCharm(NULL)
+  , fCorrelationBeauty(NULL)
+  , fCorrelationNonHF(NULL)
+  , fCorrelationHadron(NULL)
   , fD0s(NULL)
   , fElectrons(NULL)
   , fCutsD0(NULL)
@@ -88,6 +94,9 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fUseKine(kFALSE)
   , fMCArray(NULL)
   , fCorrelationArguments("")
+  , fStoreSeparateOrigins(kFALSE)
+  , fReqD0InEvent(kFALSE)
+  , fpidResponse(NULL)
 {
   // constructor
   //
@@ -103,6 +112,8 @@ int AliAnalysisTaskDxHFECorrelation::DefineSlots()
   DefineOutput(2,AliRDHFCutsD0toKpi::Class());
   DefineOutput(3,TList::Class());
   DefineOutput(4,AliHFAssociatedTrackCuts::Class());
+  DefineOutput(5, TList::Class());
+
   return 0;
 }
 
@@ -119,12 +130,24 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
     delete fOutput;
     fOutput = 0;
   }
+  if (fQASelection && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fQASelection;
+    fQASelection = 0;
+  }
   if (fD0s) delete fD0s;
   fD0s=NULL;
   if (fElectrons) delete fElectrons;
   fElectrons=NULL;
   if (fCorrelation) delete fCorrelation;
   fCorrelation=NULL;
+  if (fCorrelationCharm) delete fCorrelationCharm;
+  fCorrelationCharm=NULL;
+  if (fCorrelationBeauty) delete fCorrelationBeauty;
+  fCorrelationBeauty=NULL;
+  if (fCorrelationNonHF) delete fCorrelationNonHF;
+  fCorrelationNonHF=NULL;
+  if (fCorrelationHadron) delete fCorrelationHadron;
+  fCorrelationHadron=NULL;
   // external object, do not delete
   fCutsD0=NULL;
   // external object, do not delete
@@ -139,6 +162,8 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   if(fMCArray) delete fMCArray;
   fMCArray=NULL;
 
+  if(fpidResponse) delete fpidResponse;
+  fpidResponse=NULL;
 
 }
 
@@ -154,10 +179,21 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
+  fQASelection = new TList;
+  fQASelection->SetName("QA histos");
+  fQASelection->SetOwner();
+  // Gets the PID response from the input handler
+  fpidResponse = fInputHandler->GetPIDResponse();
+  if(!fpidResponse){
+    // TODO: consider issuing fatal instead of debug in case pidresponse not available
+    AliDebug(1, "Using default PID Response");
+    fpidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+  }
+
   // D0s ===============================================
   if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(fOption);
   else fD0s=new AliDxHFEParticleSelectionD0(fOption);
-  fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutD0);
+  fD0s->SetCuts(fCutsD0,AliDxHFEParticleSelectionD0::kCutList);
   iResult=fD0s->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fD0s failed with error %d", iResult));
@@ -168,6 +204,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl(fOption);
   else fElectrons=new AliDxHFEParticleSelectionEl(fOption);
   fElectrons->SetCuts(fListHFE, AliDxHFEParticleSelectionEl::kCutList);
+  fElectrons->SetPIDResponse(fpidResponse);
   iResult=fElectrons->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", iResult));
@@ -177,9 +214,54 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fCorrelation=new AliDxHFECorrelationMC;
   else fCorrelation=new AliDxHFECorrelation;
   fCorrelation->SetCuts(fCuts);
+  fCorrelation->SetCutsD0(fCutsD0);
   iResult=fCorrelation->Init(fOption);
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+  }
+
+  if(fUseMC && fStoreSeparateOrigins){
+    TString option;
+    
+    //Correlation only charm===========================================
+    fCorrelationCharm=new AliDxHFECorrelationMC("AliDxHFECorrelationMCCharm");
+    fCorrelationCharm->SetCuts(fCuts);
+    fCorrelationCharm->SetCutsD0(fCutsD0);
+    option=fOption+" storeoriginD=charm storeoriginEl=charm";
+    iResult=fCorrelationCharm->Init(option);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
+
+    //Correlation only beauty==========================================
+    fCorrelationBeauty=new AliDxHFECorrelationMC("AliDxHFECorrelationMCBeauty");
+    fCorrelationBeauty->SetCuts(fCuts);
+    fCorrelationBeauty->SetCutsD0(fCutsD0);
+    option=fOption+" storeoriginD=beauty storeoriginEl=beauty";
+    iResult=fCorrelationBeauty->Init(option);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
+
+    //Correlation nonHFE with c+b Ds====================================
+    fCorrelationNonHF=new AliDxHFECorrelationMC("AliDxHFECorrelationMCNonHF");
+    fCorrelationNonHF->SetCuts(fCuts);
+    fCorrelationNonHF->SetCutsD0(fCutsD0);
+    option=fOption+" storeoriginD=HF storeoriginEl=nonHF";
+    iResult=fCorrelationNonHF->Init(option);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
+
+    //Correlation hadrons with c+b Ds====================================
+    fCorrelationHadron=new AliDxHFECorrelationMC("AliDxHFECorrelationMCHadrons");
+    fCorrelationHadron->SetCuts(fCuts);
+    fCorrelationHadron->SetCutsD0(fCutsD0);
+    option=fOption+" storeoriginD=HF storeoriginEl=hadrons";
+    iResult=fCorrelationHadron->Init(option);
+    if (iResult<0) {
+      AliFatal(Form("initialization of worker class instance fCorrelation failed with error %d", iResult));
+    }
   }
 
   // Fix for merging:
@@ -191,6 +273,32 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   TIter next(list);
   while((obj = next())){
     fOutput->Add(obj);
+  }
+  if(fUseMC && fStoreSeparateOrigins){
+    
+    list=(TList*)fCorrelationCharm->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
+
+    list=(TList*)fCorrelationBeauty->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
+
+    list=(TList*)fCorrelationNonHF->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
+
+    list=(TList*)fCorrelationHadron->GetControlObjects();
+    next=TIter(list);
+    while((obj= next())){
+      fOutput->Add(obj);
+    }
   }
 
   list=(TList*)fD0s->GetControlObjects();
@@ -205,25 +313,46 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     fOutput->Add(obj);
 
   if (!fCutsD0) {
-    AliFatal(Form("cut object for D0 missing"));
+    AliFatal(Form("cut object list for D0 missing"));
     return;
   }
- 
-  if (!dynamic_cast<AliRDHFCutsD0toKpi*>(fCutsD0)) {
-    AliFatal(Form("cut object %s is of incorrect type %s, expecting AliRDHFCutsD0toKpi", fCutsD0->GetName(), fCutsD0->ClassName()));
-    return;
+
+  //[FIXME]Under development. At the moment the run ranges are set to the LHC13b and c ranges
+  TProfile * numD0EvtRnAll = new TProfile("numD0EvtRnAll", "Number of D0 per Event vs Run Number, All Events", 400, 195300, 195700, 0, 1000);
+  TProfile * numD0EvtRnCan = new TProfile("numD0EvtRnCan", "Number of D0 per Event vs Run Number, All D0toKpi", 400, 195300, 195700, 0, 1000);
+  TProfile * numD0EvtRnSel = new TProfile("numD0EvtRnSel", "Number of D0 per Event vs Run Number, Selected D0", 400, 195300, 195700, 0, 1000);
+  TProfile * numD0EvtRnCorr = new TProfile("numD0EvtRnCorr", "Number of D0 per Event vs Run Number, Correlated D0", 400, 195300, 195700, 0, 1000);
+
+  TProfile * numElEvtRnSel = new TProfile("numElEvtRnSel", "Number of El per Event vs Run Number, Selected El", 400, 195300, 195700, 0, 1000);
+  TProfile * numElEvtRnTrig = new TProfile("numElEvtRnTrig", "Number of El per Event vs Run Number, Triggered El", 400, 195300, 195700, 0, 1000);
+  TProfile * numElEvtRnCorr = new TProfile("numElEvtRnCorr", "Number of El per Event vs Run Number, Correlated El", 400, 195300, 195700, 0, 1000);
+
+  fQASelection->Add(numD0EvtRnAll);
+  fQASelection->Add(numD0EvtRnCan);
+  fQASelection->Add(numD0EvtRnSel);
+  fQASelection->Add(numD0EvtRnCorr);
+
+  fQASelection->Add(numElEvtRnSel);
+  fQASelection->Add(numElEvtRnTrig);
+  fQASelection->Add(numElEvtRnCorr);
+
+  // Fetching out the RDHF-cut objects for D0 to store in output stream
+  TObject *obj2=NULL;
+  TIter next2(fCutsD0);
+  obj2 = next2();
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2));
+  if(!copyfCuts){
+    AliFatal(Form("cut object is of incorrect type %s, expecting AliRDHFCutsD0toKpi", obj->ClassName()));
   }
-  // that's the copy for the output stream
-  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*fCutsD0));
+
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
   copyfCuts->SetName(nameoutput);
-
   // all tasks must post data once for all outputs
   PostData(1, fOutput);
   PostData(2,copyfCuts);
   PostData(3,fListHFE);
   PostData(4,fCuts);
-
+  PostData(5,fQASelection);
 }
 
 void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
@@ -235,6 +364,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     return;
   }
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
+  Int_t runNumber=pEvent->GetRunNumber();
   TClonesArray *inputArray=0;
 
   fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsAll);
@@ -255,6 +385,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
   } else if(pEvent) {
     inputArray=(TClonesArray*)pEvent->GetList()->FindObject("D0toKpi");
+    ((TProfile*)fQASelection->FindObject("numD0EvtRnAll"))->Fill(runNumber, inputArray->GetEntriesFast());
   }
   if(!inputArray || !pEvent) {
     AliError("Input branch not found!\n");
@@ -266,14 +397,49 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     AliDebug(2,"Rejected at GetPrimaryvertex");
     return;
   }
-
-  AliRDHFCuts* cutsd0=dynamic_cast<AliRDHFCuts*>(fCutsD0);
+  TObject *obj2=NULL;
+  TIter next2(fCutsD0);
+  obj2 = next2();
+  AliRDHFCuts* cutsd0=dynamic_cast<AliRDHFCuts*>(obj2);
+  //  AliRDHFCutsD0toKpi* cutsd0=dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2);
   if (!cutsd0) return; // Fatal thrown already in initialization
 
-  if(!cutsd0->IsEventSelected(pEvent)) {
-    // TODO: Fill histograms based on why the event is rejected
-    AliDebug(2,"rejected at IsEventSelected");
-    return;
+  // Retrieving process from the AODMCHeader. 
+  // TODO: Move it somewhere else? (keep it here for the moment since only need to read once pr event)
+  if(fUseMC){
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    AliAODEvent* aod=dynamic_cast<AliAODEvent*>(pEvent);
+    if (!mcHeader) {
+      AliError("Could not find MC Header in AOD");
+      return;
+    }
+    Int_t eventType = mcHeader->GetEventType();
+    fCorrelation->SetEventType(eventType);
+    if(fUseKine || fReqD0InEvent){
+      fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(fUseMC && !fMCArray){
+	AliError("Array of MC particles not found");
+	return;
+      }
+    }
+
+    if(!fUseKine && !cutsd0->IsEventSelected(pEvent)) { //Using different approach for fUseKine
+      // TODO: Fill histograms based on why the event is rejected
+      AliDebug(2,"rejected at IsEventSelected");
+      return;
+    }
+    //On Kine, instead of IsEventSelected just select on zVtx and trigger mask in pPb
+    if(fUseKine){
+      Double_t zVtxMC = mcHeader->GetVtxZ();
+      if(TMath::Abs(zVtxMC)>10) return;
+      if(aod->GetTriggerMask()==0 && (aod->GetRunNumber()>=195344 && aod->GetRunNumber()<=195677)) return;
+    }
+  }else{
+    if(!cutsd0->IsEventSelected(pEvent)) { //Using different approach for fUseKine
+      // TODO: Fill histograms based on why the event is rejected
+      AliDebug(2,"rejected at IsEventSelected");
+      return;
+    }
   }
 
   if(fSystem==1){
@@ -290,14 +456,6 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
     AliInfo(Form("Centrality is %f", MultipOrCent));
   }
-
-  // Gets the PID response from the analysis manager
-  AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
-  if(!pidResponse){
-    // TODO: consider issuing fatal instead of debug in case pidresponse not available
-    AliDebug(1, "Using default PID Response");
-    pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
-  }
   
   // Fetching the PID objects from the list, checks if the objects are AliHFEpids
   // If so, checks if they are initialized and also sets the pidresponse
@@ -310,34 +468,27 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
 	AliWarning("PID not initialised, get from Run no");
 	pidObj->InitializePID(pEvent->GetRunNumber());
       }
-      pidObj->SetPIDResponse(pidResponse);
+      pidObj->SetPIDResponse(fpidResponse);
     }
   }
-
-  // Also sends the pidresponse to the particle selection class for electron
-  fElectrons->SetPIDResponse(pidResponse); 
-
-  // Retrieving process from the AODMCHeader. 
-  // TODO: Move it somewhere else? (keep it here for the moment since only need to read once pr event)
-  if(fUseMC){
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    
-    if (!mcHeader) {
-      AliError("Could not find MC Header in AOD");
-      return;
-    }
-    Int_t eventType = mcHeader->GetEventType();
-    fCorrelation->SetEventType(eventType);
-    if(fUseKine){
-      fMCArray = dynamic_cast<TObjArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(fUseMC && !fMCArray){
-	AliError("Array of MC particles not found");
-	return;
-      }
-    }
-  }
-
+  
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
+  ((TProfile*)fQASelection->FindObject("numD0EvtRnCan"))->Fill(runNumber, nInD0toKpi);
+
+  //For studies reco/kine ratio -> select only events where there is a MC truth D0
+  if(fUseMC && fReqD0InEvent){
+    TIter itr(fMCArray);
+    TObject* otr=NULL;
+    Bool_t selectEvent=kFALSE;
+    while ((otr=itr())!=NULL) {
+      AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(otr);
+      if(!mcPart) continue;
+      Int_t PDG =TMath::Abs(mcPart->PdgCode()); 
+      if(PDG==421) {selectEvent=kTRUE;}
+    }
+    if(!selectEvent) return;
+
+  }
 
   fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsSel);
 
@@ -355,6 +506,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
 
     nElSelected =  fSelectedElectrons->GetEntriesFast();
+    ((TProfile*)fQASelection->FindObject("numElEvtRnTrig"))->Fill(runNumber, nElSelected);
 
     // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
     if(!fUseEventMixing && nElSelected==0){
@@ -376,6 +528,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     return;
   }
   Int_t nD0Selected = fSelectedD0s->GetEntriesFast();
+  ((TProfile*)fQASelection->FindObject("numD0EvtRnSel"))->Fill(runNumber, nD0Selected);
 
   // When not using EventMixing, no need to go further if no D0s are found.
   // For Event Mixing, need to store all found electrons in the pool
@@ -399,6 +552,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
 
     nElSelected =  fSelectedElectrons->GetEntriesFast();
+    ((TProfile*)fQASelection->FindObject("numElEvtRnSel"))->Fill(runNumber, nElSelected);
 
     // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
     if(!fUseEventMixing && nElSelected==0){
@@ -414,20 +568,36 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   }
   
   AliDebug(4,Form("Number of D0->Kpi Start: %d , End: %d    Electrons Selected: %d\n", nInD0toKpi, nD0Selected, nElSelected));
-
-  if(nD0Selected >0 && nElSelected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsCorrelated);
-
+  if(nD0Selected >0 && nElSelected>0){
+    fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsCorrelated);
+    ((TProfile*)fQASelection->FindObject("numD0EvtRnCorr"))->Fill(runNumber, nD0Selected);
+    ((TProfile*)fQASelection->FindObject("numElEvtRnCorr"))->Fill(runNumber, nElSelected);
+  }
   int iResult=0;
-  if(fTriggerParticle==AliDxHFECorrelation::kD) 
+  if(fTriggerParticle==AliDxHFECorrelation::kD){ 
     fCorrelation->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
-  else 
+    if(fUseMC && fStoreSeparateOrigins){
+      fCorrelationCharm->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+      fCorrelationBeauty->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+      fCorrelationNonHF->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+      fCorrelationHadron->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
+    }
+  }
+  else {
     fCorrelation->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
-
+    if(fUseMC && fStoreSeparateOrigins){
+      fCorrelationCharm->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+      fCorrelationBeauty->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+      fCorrelationNonHF->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+      fCorrelationHadron->Fill(fSelectedElectrons, fSelectedD0s, pEvent);
+    }
+  }
   if (iResult<0) {
     AliFatal(Form("%s processing failed with error %d", fCorrelation->GetName(), iResult));
   }
 
   PostData(1, fOutput);
+  PostData(5, fQASelection);
   return;
 
 }
@@ -455,9 +625,19 @@ int AliAnalysisTaskDxHFECorrelation::ParseArguments(const char* arguments)
       AliInfo("Running on MC data");
       continue;
     }
+    if (argument.BeginsWith("storeseparateorigins")) {
+      fStoreSeparateOrigins=true;
+      AliInfo("Store separate origins");
+      continue;
+    }
     if (argument.BeginsWith("usekine") || argument.BeginsWith("kine")) {
       fUseKine=true;
       AliInfo("Running on MC stack");
+      continue;
+    }
+    if (argument.BeginsWith("reqD0inevent") || argument.BeginsWith("ReqD0InEvent")) {
+      fReqD0InEvent=true;
+      AliInfo("Requiring MC truth D0 in event");
       continue;
     }
     if (argument.BeginsWith("system=")) {

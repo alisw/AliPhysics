@@ -30,6 +30,7 @@
 #include "AliAnaCaloTrackCorrBaseClass.h"
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliLog.h"
+#include "AliGenPythiaEventHeader.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrMaker) ;
@@ -47,12 +48,14 @@ fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fFillDataControlHisto(kTRUE), fSumw2(0),
+fCheckPtHard(0),
 // Control histograms
 fhNEventsIn(0),               fhNEvents(0),
 fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhXVertex(0),                 fhYVertex(0),                       fhZVertex(0),
 fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExotic(0),
+fhPtHard(0),                  fhPtHardWeighted(0),
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
@@ -97,6 +100,7 @@ fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
 fFillDataControlHisto(maker.fFillDataControlHisto),
 fSumw2(maker.fSumw2),
+fCheckPtHard(maker.fCheckPtHard),
 fhNEventsIn(maker.fhNEventsIn),
 fhNEvents(maker.fhNEvents),
 fhNExoticEvents(maker.fhNExoticEvents),
@@ -109,6 +113,8 @@ fhZVertex(maker.fhZVertex),
 fhXVertexExotic(maker.fhXVertexExotic),
 fhYVertexExotic(maker.fhYVertexExotic),
 fhZVertexExotic(maker.fhZVertexExotic),
+fhPtHard(maker.fhPtHard),
+fhPtHardWeighted(maker.fhPtHardWeighted),
 fhPileUpClusterMult(maker.fhPileUpClusterMult),
 fhPileUpClusterMultAndSPDPileUp(maker.fhPileUpClusterMultAndSPDPileUp),
 fhTrackMult(maker.fhTrackMult),
@@ -232,17 +238,36 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity());
   fhCentrality     ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
-  
-  if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
-  {
-    Float_t eventWeight = GetReader()->GetEventWeight();
       
+  if ( fReader->GetWeightUtils()->IsCentralityWeightOn() )
+  {      
+    Float_t eventWeight = fReader->GetEventWeight();
+
     fhNEventsWeighted        ->Fill(0.,                             eventWeight);
     fhTrackMultWeighted      ->Fill(fReader->GetTrackMultiplicity(),eventWeight);
     fhCentralityWeighted     ->Fill(fReader->GetEventCentrality  (),eventWeight);
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
-    
+  
+  // Check the pT hard in MC
+  if ( fCheckPtHard && fReader->GetGenEventHeader()  )
+  {
+    if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+    {
+      AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
+      
+      Float_t pTHard = pygeh->GetPtHard();
+      
+      //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
+      
+      fhPtHard->Fill(pTHard);
+      
+      if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+          !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+        fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+    }
+  }
+  
   if(fFillDataControlHisto)
   {
     if( fReader->IsPileUpFromSPD())
@@ -436,12 +461,17 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 {
+  // Reader cuts
+  TObjString * objstring = fReader->GetListOfParameters();
+  fCuts->Add(objstring);
+  
+  // Analysis wagons cuts
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    TObjString * objstring = ana->GetAnalysisCuts();
+    objstring = ana->GetAnalysisCuts();
     
-    if(objstring)fCuts->Add(objstring);
+    if ( objstring ) fCuts->Add(objstring);
   }
   
   return fCuts ;
@@ -487,7 +517,22 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events", 2000 , 0 , 2000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
-
+  
+  if(fCheckPtHard)
+  {
+    fhPtHard  = new TH1F("hPtHard"," #it{p}_{T}-hard for selected triggers",300,0,300); 
+    fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    fOutputContainer->Add(fhPtHard);
+    
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+    {
+      fhPtHardWeighted  = new TH1F("hPtHardWeighted"," #it{p}_{T}-hard for selected triggers, weighted by cross section",300,0,300); 
+      fhPtHardWeighted->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+      fOutputContainer->Add(fhPtHardWeighted);
+    }
+  }
+  
   if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
   {
     fhNEventsWeighted         = new TH1F("hNEventsWeighted",   "Number of analyzed events weighted by centrality", 1 , 0 , 1  ) ;
@@ -812,15 +857,39 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
       fOutputContainer->Add(templist->At(1));
     }
   }
+  
+  // --------------------------------
+  // Add control histograms in Reader
+  // --------------------------------
+  
+  TList * templist =  fReader->GetCreateControlHistograms();
+  templist->SetOwner(kFALSE); //Owner is fOutputContainer.
     
+  for(Int_t ih = 0; ih < templist->GetEntries() ; ih++)
+  {        
+    //if ( fSumw2 ) ((TH1*) templist->At(ih))->Sumw2();
+    
+    //printf("histo %d %p %s\n",ih,templist->At(ih), templist->At(ih)->GetName());
+    
+    //Add histogram to general container
+    fOutputContainer->Add(templist->At(ih)) ;
+  }
+  
+  delete templist;
+  
+  // ------------------------
+  // Add analysis histograms
+  // ------------------------
+
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
     AliWarning("Analysis job list not initialized!!!");
     return fOutputContainer;
   }
-  
+
   const Int_t buffersize = 255;
   char newname[buffersize];
+
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
@@ -828,7 +897,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     if(fMakeHisto) // Analysis with histograms as output on
     {
       //Fill container with appropriate histograms
-      TList * templist =  ana->GetCreateOutputObjects();
+      templist =  ana->GetCreateOutputObjects();
       templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       
       for(Int_t i = 0; i < templist->GetEntries(); i++)
@@ -857,9 +926,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   // Initialize calorimeters  geometry pointers
   //GetCaloUtils()->InitPHOSGeometry();
   //GetCaloUtils()->InitEMCALGeometry();
-    
-  return fOutputContainer;
   
+  return fOutputContainer;
 }
 
 //___________________________________

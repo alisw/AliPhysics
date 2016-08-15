@@ -60,6 +60,12 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(useExtraTracks)task->SetMatchMode(1);//default = 1: is det.level rec. - det.level PYTHIA matching, '2' is matching from 'det.level rec. extra' jets to 'particle level PYTHIA' jets
   task->SetUseStandardV0s(kTRUE);//fill extra branch also with standard v0s for UE V0 subtraction
 
+  //use A side or use C side (to use both sides set all to kFALSE - default!)
+  task->SetUsePosV0Eta(kFALSE); 
+  task->SetUseNegV0Eta(kFALSE); 
+  task->SetUsePosMCV0Eta(kFALSE); 
+  task->SetUseNegMCV0Eta(kFALSE); 
+
   fJetAreaMin = 0.6*TMath::Pi()*jetradius*jetradius;//calculate jetareamin cut value for FF task
   task->SetJetMinArea(fJetAreaMin);//cut on jet area, applied together with all other jet cuts in jet finding by AliAnalysisTaskFragmentationFunction.cxx
   task->SetCutJetEta(jetEtaCut);
@@ -78,6 +84,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCutDeltaREmbedded(0.); //for standard tracks
   task->SetCutFractionPtEmbedded(1.); //for standard tracks
   task->SetUseNJEvents(kFALSE);//Embedding into all events (kFALSE) or only in no-jet events (kTRUE)
+  task->SetEPAnalysisMode(kFALSE);//get event plane information for Embedding for check
+
 
   if(K0type == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskK0(768);
   if(Latype == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskLa(768);

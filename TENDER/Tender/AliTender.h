@@ -35,6 +35,7 @@ enum ETenderFlags {
 private:
   Int_t                     fRun;            //! Current run
   Bool_t                    fRunChanged;     //! Flag for run change.
+  Bool_t		    fHandleCDB;      ///< Switch on/off OCDB handling
   ULong64_t                 fCDBkey;         //! Key to unlock CDB manager
   TString                   fDefaultStorage; // Default CDB storage
   AliCDBManager            *fCDB;            //! Pointer to CDB manager
@@ -61,6 +62,11 @@ public:
   Bool_t                    RunChanged() const {return fRunChanged;}
   // Configuration
   void                      SetDefaultCDBStorage(const char *dbString="local://$ALICE_ROOT/OCDB");
+  /**
+   * Define whether tender also handles the OCDB (default: false)
+   * @param[in] doHandle If true, then the tender handles also the OCDB connection, otherwise not
+   */
+  void 			    SetHandleOCDB(Bool_t doHandle) { fHandleCDB = doHandle; }
   void SetESDhandler(AliESDInputHandler*esdH) {fESDhandler = esdH;}
 
   // Run control

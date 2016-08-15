@@ -23,8 +23,6 @@
 #include "AliRsnCutEventUtils.h"
 #include "AliRsnCutPrimaryVertex.h"
 
-
-
 class TList;
 
 class AliTriggerAnalysis;
@@ -48,7 +46,7 @@ public:
    void                UseReferenceMultiplicity(const char *type)    {fRefMultiType = type; fRefMultiType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
    void                SetUseCentralityPatchPbPb2011(Int_t centralityPatchPbPb2011) {fUseCentralityPatchPbPb2011 = centralityPatchPbPb2011;}
-   void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
+   void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; if(!fCentralityType.Contains("AliMultSelection")) fCentralityType.ToUpper();}
    void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
    void                UseBinnedMix()                     {fContinuousMix = kFALSE;}
    void                SetNMix(Int_t nmix)                {fNMix = nmix;}

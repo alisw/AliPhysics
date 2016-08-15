@@ -2012,11 +2012,13 @@ THnBase* AliUEHist::GetTrackEfficiencyND(CFStep step1, CFStep step2)
   ResetBinLimits(sourceContainer->GetGrid(step1));
   ResetBinLimits(sourceContainer->GetGrid(step2));
 
-  measured->Divide(measured, generated, 1, 1, "B");
+  THnBase* clone = (THnBase*) measured->Clone();
+
+  clone->Divide(measured, generated, 1, 1, "B");
   
-  delete generated;
+  delete generated; delete measured;
   
-  return measured;
+  return clone;
 }
 
 //____________________________________________________________________

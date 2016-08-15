@@ -464,7 +464,7 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
   else if ( period.BeginsWith("LHC15") )
   {
     lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
-    lumiTriggerCrossSection = 30.0; // FIXME: not from a vdM yet
+    lumiTriggerCrossSection = 30.1; 
     if ( runNumber >= 229398 && ( runNumber != 229409 ) && ( runNumber != 229410 ))
     {
       lumiTriggerClassName = "C0TVX-B-NOPF-MUON";
@@ -500,6 +500,11 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
       lumiTriggerClassName = "C0V0M-B-NOPF-CENTNOTRD";
     }
     
+  }
+  else if ( period.BeginsWith("LHC16"))
+  {
+    lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+    lumiTriggerCrossSection = 30.1; 
   }
   else
   {

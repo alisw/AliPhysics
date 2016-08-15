@@ -126,6 +126,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 	
   void SetTriggerMask(ULong64_t c) { fTriggerMask = c;}	
 	
+  void SetMCNchHisto(TH1F* h){
+    if(fHistoMCNch) delete fHistoMCNch;
+    fHistoMCNch = new TH1F(*h);
+  }
+
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -153,6 +158,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter; //!<! AliNormalizationCounter on output slot 4
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 5
   TList *fListCuts;                  /// list of cuts
+  TList *fListWeight;                /// list of weights
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           /// flag for event selected
 
@@ -264,9 +270,15 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCLcK0SpGenLimAcc;      //!<! histo with MC Lc --> K0S + p
 
   ULong64_t fTriggerMask;			  /// mask to the trigger word returned by the physics selection
+  Int_t fNTracklets;                               /// multiplicity definition with tracklets
+
+  TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
+  TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
+  TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
+  TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 8); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 11); /// class for Lc->p K0
   /// \endcond    
 };
 

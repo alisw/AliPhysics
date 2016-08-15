@@ -10,7 +10,10 @@ class AliTLorentzVector;
 #include "AliAODMCParticle.h"
 #include "AliParticleContainer.h"
 
-typedef AliEmcalIterableContainerT<AliAODMCParticle> AliMCParticleIterableContainer;
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliAODMCParticle, EMCALIterableContainer::operator_star_object<AliAODMCParticle> > AliMCParticleIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliAODMCParticle, EMCALIterableContainer::operator_star_pair<AliAODMCParticle> > AliMCParticleIterableMomentumContainer;
+#endif
 
 /**
  * @class AliMCParticleContainer
@@ -49,18 +52,13 @@ class AliMCParticleContainer : public AliParticleContainer {
 
   const char*                 GetTitle() const;
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliMCParticleIterableContainer      all() const;
   const AliMCParticleIterableContainer      accepted() const;
 
-  AliMCParticleIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
-  AliMCParticleIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
-  AliMCParticleIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
-  AliMCParticleIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
-
-  AliMCParticleIterableContainer::iterator  begin()         const { return all().begin()        ; }
-  AliMCParticleIterableContainer::iterator  end()           const { return all().end()          ; }
-  AliMCParticleIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
-  AliMCParticleIterableContainer::iterator  rend()          const { return all().rend()         ; }
+  const AliMCParticleIterableMomentumContainer      all_momentum() const;
+  const AliMCParticleIterableMomentumContainer      accepted_momentum() const;
+#endif
 
  protected:
   UInt_t                      fMCFlag;                        ///< select MC particles with flags

@@ -106,6 +106,7 @@ set(SRCS
   AliHFEreducedMCParticle.cxx
   AliAnalysisTaskHFEQA.cxx
   AliAnalysisTaskHFEemcQA.cxx
+  AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliHFEhadronicbackground.cxx

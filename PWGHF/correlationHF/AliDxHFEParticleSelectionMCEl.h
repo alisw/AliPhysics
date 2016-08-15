@@ -18,7 +18,8 @@
 #include "AliDxHFEToolsMC.h"
 
 class THnSparse;
-class TH1;
+class TList;
+class AliAODMCParticle;
 
 /**
  * @class AliDxHFEParticleSelectionMCEl
@@ -48,8 +49,42 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   /// check MC criteria
   int CheckMC(AliVParticle* p, const AliVEvent* pEvent);
 
+  /// Return the result on check on initial quark
+  int GetOriginMother() const {return fOriginMother;}
+
   /// clear internal memory
   virtual void Clear(const char* option="");
+
+  enum{
+    kAllPassingSelection=-1,
+    kHadron=0,
+    kNonHFE=1,
+    kHFE=2,
+    kOnlyc=3,
+    kOnlyb=4,
+  };
+
+  enum{
+    kMCFirst=0,
+    kMCLast=1,
+    kMCOnly=2
+  };
+
+  enum{
+    kPi0HF=0,
+    kPi0=1,
+    kEtaHF=2,
+    kEta=3,
+    kGammaHF=4,
+    kGamma=5,
+    kJPsi=6,
+    kOtherHF=7,
+    kOther=8,
+    kNrBackground=9
+  };
+
+  Bool_t IsFromBGEventAOD(Int_t Index,  const AliVEvent* event);
+  Int_t GetPrimary(Int_t id, TClonesArray *mcArray);
 
  protected:
 
@@ -65,8 +100,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   static const char* fgkPDGBinLabels[];
                     
   AliDxHFEToolsMC fMCTools;            // MC selection tools
-  TH1*            fPDGnotMCElectron;   //! PDG of track not MC truth electron
-  TH1*            fPDGNotHFMother;     //! PDG of mother not HF
+  TList*          fHistoList;          // list of histograms
   int fOriginMother;                   //  Holds the origin motherquark (process)
   int fResultMC;                       // Holds information on check on MC
   Bool_t fUseKine;                     // Run over MC stack
@@ -74,9 +108,16 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Bool_t fUseMCReco;                   // Run over all MC reconstructed tracks
   Int_t fSelectionStep;                // Where to stop track selection
   Bool_t          fStoreCutStepInfo;   // Whether to store which cut step is the effective one
+  Int_t fElSelection;                  // If there should be a selection on the electrons
+  Bool_t fStoreOnlyMCElectrons;        // Store only MC truth electrons, discard hadrons
+  Int_t fMCInfo;                       // What to check and in which order
+  Bool_t fRemoveEfromD0;               // Removing electrons decaying from a D0
+  Bool_t fRemoveSecondary;             // whether or not to remove secondary tracks
+  Bool_t fUseGenerator;                // whether or not to check generator for particle
+  Int_t fGenerator;                    // which generator was used to produce particle
+  Bool_t fUseHIJINGOnly;               // Selecing only tracks generated from HIJING (used eg for LHC13d3)
 
-
-  ClassDef(AliDxHFEParticleSelectionMCEl, 4);
+  ClassDef(AliDxHFEParticleSelectionMCEl, 6);
 };
 
 #endif

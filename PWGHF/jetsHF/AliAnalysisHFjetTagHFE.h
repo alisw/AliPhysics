@@ -70,6 +70,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustDz; //!
 
   TH1F                        *fHistMultCent; //!
+  TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
   TH2F                        *fHistEop;
   TH1F                        *fHistJetOrg;
@@ -128,6 +129,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
-  ClassDef(AliAnalysisHFjetTagHFE, 5) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 6) // jet sample analysis task
 };
 #endif

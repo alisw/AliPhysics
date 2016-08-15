@@ -125,6 +125,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos->Add(new TH2F("nCollCent_T1", ";N_{coll};centrality", 2500, 0, 2500, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("nCollCent_all", ";N_{coll};centrality", 2500, 0, 2500, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH2F("nMultCent", ";multiplicity;centrality", 2500, 0, 2500, 201, 0, 100.5));
 
   PostData(1,fListOfHistos);
 
@@ -332,16 +333,21 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     ((TH1F*) fListOfHistos->FindObject("eventStatCent"))->Fill((Double_t)1, centrality);
 
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-
-    //run 1+1 analysis even if the pool is not ready because these events are not used for 
-    Int_t found_1plus1_trigger = fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::k1plus1, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kTRUE, kFALSE, applyEfficiency);//get number of possible away side triggers in the trigger area and outside of it
-
-    ((TH1F*) fListOfHistos->FindObject("nCollCent_all"))->Fill(n_coll, centrality);
-    if(found_1plus1_trigger>0)
-      ((TH1F*) fListOfHistos->FindObject("nCollCent_T1"))->Fill(n_coll, centrality);
-
     if (fRunIfPoolReady && !pool)
 	AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
+
+    Int_t found_1plus1_trigger = 0;
+
+    //run 1+1 analysis even if the pool is not ready because these events are not used for 
+    if(!fRunIfPoolReady || pool->IsReady() || fMixOnlyBiasedEvents){
+      found_1plus1_trigger = fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::k1plus1, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kTRUE, kFALSE, applyEfficiency);//get number of possible away side triggers in the trigger area and outside of it
+
+      ((TH1F*) fListOfHistos->FindObject("nCollCent_all"))->Fill(n_coll, centrality);
+      ((TH1F*) fListOfHistos->FindObject("nMultCent"))->Fill(tracksClone->GetEntriesFast(), centrality);
+      if(found_1plus1_trigger>0)
+	((TH1F*) fListOfHistos->FindObject("nCollCent_T1"))->Fill(n_coll, centrality);
+    }
+
     if (!fRunIfPoolReady || pool->IsReady()){  
       
       if(found_1plus1_trigger>0){//for events without a trigger 1 particle no Same event or Background Same event can be found

@@ -5,8 +5,8 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Bool_t bCentralTrigger = kTRUE,
                                                      Int_t  fistpart = 1,
                                                      Int_t  secondpart = 2,
+                                                     Int_t  xicuts = 0, // kloose, kdefault, ktight, if none of those then reco cuts
                                                      Bool_t kcascadesidebands = kFALSE,
-                                                     Bool_t kcascadetightcuts = kTRUE, 
                                                      Float_t masswincasc = 0.003, // 0.003 2s 0.008 4s, this always for side bands!!!
                                                      Float_t nsigmatpcpidfirst = 3.,
                                                      Float_t nsigmatpctofpidfirst = 3.,
@@ -37,6 +37,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Bool_t kpropagateglobal = kTRUE,
                                                      Bool_t kpropagatefixedr = kFALSE,
                                                      Bool_t kcutonttcprop = kFALSE,
+                                                     Bool_t kapplyshareddaughtercut = kTRUE, 
                                                      const char* outlistsubwagon = ""  // "pXi"
                                                    ) {
 
@@ -95,7 +96,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   task->SetDphisMin(dphismin);
   task->SetDetasMin(detasmin);
   task->SetCascadeSideBands(kcascadesidebands);
-  task->SetCascadeTightCuts(kcascadetightcuts);
+  task->SetXiCuts(xicuts);
   task->SetNEventsToMix(nevmixing);
   task->SetMomentumLimitForTOFPID(momemtumlimitforTOFPID);
   task->SetApplyRatioCrRnFindCut(kusecrrfindratiocut);
@@ -112,6 +113,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   task->SetPropagateGlobal(kpropagateglobal);
   task->SetPropagateAtFixedR(kpropagatefixedr);
   task->SetCutOnttcProp(kcutonttcprop);
+  task->SetApplySharedDaughterCutXi(kapplyshareddaughtercut);
 
   mgr->AddTask(task);
 

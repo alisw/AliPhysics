@@ -66,7 +66,9 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties():
   fJetShapeOpeningAnglektFirstDer(0),
   fJetShapeOpeningAnglektSecondDer(0),
   fJetShapeOpeningAnglektFirstSub(0),
-  fJetShapeOpeningAnglektSecondSub(0)
+  fJetShapeOpeningAnglektSecondSub(0),
+  fSoftDropZg(0),
+  fSoftDropdR(0)
 {
 }
 
@@ -123,7 +125,9 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties(const AliEmcalJetShapePro
   fJetShapeOpeningAnglektFirstDer(jet.fJetShapeOpeningAnglektFirstDer),
   fJetShapeOpeningAnglektSecondDer(jet.fJetShapeOpeningAnglektSecondDer),
   fJetShapeOpeningAnglektFirstSub(jet.fJetShapeOpeningAnglektFirstSub),
-  fJetShapeOpeningAnglektSecondSub(jet.fJetShapeOpeningAnglektSecondSub)
+  fJetShapeOpeningAnglektSecondSub(jet.fJetShapeOpeningAnglektSecondSub),
+  fSoftDropZg(jet.fSoftDropZg),
+  fSoftDropdR(jet.fSoftDropdR)
 
 {
 }
@@ -183,6 +187,8 @@ AliEmcalJetShapeProperties& AliEmcalJetShapeProperties::operator=(const AliEmcal
   fJetShapeOpeningAnglektSecondDer = jet.fJetShapeOpeningAnglektSecondDer;
   fJetShapeOpeningAnglektFirstSub  = jet.fJetShapeOpeningAnglektFirstSub;
   fJetShapeOpeningAnglektSecondSub = jet.fJetShapeOpeningAnglektSecondSub;
+  fSoftDropZg = jet.fSoftDropZg;
+  fSoftDropdR = jet.fSoftDropdR;
 
   return *this;
 }

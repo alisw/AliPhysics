@@ -1,6 +1,8 @@
-AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(char* bGen = "AODMC2b", char* bRec1 = "AOD", UInt_t filterMask = 128, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny, Char_t *jf = "ANTIKT", Float_t radius = 0.4, Int_t nSkip = 0, Bool_t kReadJetBranch = kTRUE, char* suffix ="", Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9, Float_t ptJetCut = 10.,  char* anaJetType = "alljet", Float_t vertexWindow = 10., Int_t ffmPower = 2, Int_t bType = 1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = -25, Int_t nUsedJets = 8, char* jfTask = "clusters", Bool_t kRandom = kFALSE);
+AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(char* bGen = "AODMC2b", char* bRec1 = "AOD", UInt_t filterMask = 128, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny, Char_t *jf = "ANTIKT", Float_t radius = 0.4, Int_t nSkip = 0, Bool_t kReadJetBranch = kTRUE, char* suffix ="", Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9, Float_t ptJetCut = 5.,  char* anaJetType = "leading", Float_t vertexWindow = 10., Double_t ffmPower = 2, Int_t bType = -1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Bool_t kRandom = kFALSE);
 
-AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(Float_t radius = 0.4, Float_t ptTrackCut = 0.15, Char_t *jf = "ANTIKT", Float_t ptJetCut = 10, char* anaJetType = "alljet", Int_t ffmPower = 2, char* bGen = "", Int_t bType = 1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = -25, Int_t nUsedJets = 8, char* jfTask = "clusters", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix);
+AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(Float_t radius = 0.4, Float_t ptTrackCut = 0.15, Char_t *jf = "ANTIKT", Float_t ptJetCut = 5, char* anaJetType = "leading", Double_t ffmPower = 2, char* bGen = "", Int_t bType = -1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix);
+
+AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius = 0.4, char* bGen = "KINE2B", Int_t ffmPower = 2, char* bRec1 = "KINEDET", char* suffix ="", Int_t bType = -1, Bool_t kReadJetBranch = kFALSE, char* anaJetType="leading", Float_t ptJetCut = 5., Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = 25, Int_t nUsedJets = 8, char* jfTask = "clusters", Char_t *jf = "ANTIKT", Int_t nSkip = 0, Bool_t kRandom = kFALSE)
 
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, Float_t ptTrackCut, Char_t *jf, Float_t ptJetCut, char* anaJetType,
                                                  Int_t ffmPower, char* bGen, Int_t bType, Double_t bcut1, Double_t bcut2, double mu,
@@ -11,10 +13,23 @@ AddTaskJetFFMoments(bGen, "AOD", AliAnalysisManager::GetGlobalInt("kHighPtFilter
 
 }
 
+
+AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(Float_t radius, char* bGen, Int_t ffmPower,
+                                                 char* bRec1, char* suffix ,Int_t bType, Bool_t kReadJetBranch, char* anaJetType, Float_t ptJetCut,
+                                                 Double_t bcut1, Double_t bcut2, double mu,
+                                                 Int_t nUsedJets, char* jfTask,  Char_t *jf, Int_t nSkip, Bool_t kRandom)
+{
+
+AddTaskJetFFMoments(bGen, bRec1, 0 , 0 , jf, radius, nSkip,kReadJetBranch, suffix , 0.15, 0.9 , ptJetCut, anaJetType, 10 , ffmPower, bType, bcut1, bcut2, mu, nUsedJets, jfTask, kRandom);
+
+}
+
+
+
 AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t filterMask, UInt_t iPhysicsSelectionFlag, 
 						 Char_t *jf, Float_t radius, Int_t nSkip, Bool_t kReadJetBranch, char* suffix, 
                                                  Float_t ptTrackCut, Float_t etaTrackWindow, Float_t ptJetCut, char* anaJetType,  
-                                                 Float_t vertexWindow, Int_t ffmPower, Int_t bType, Double_t bcut1, Double_t bcut2, double mu, 
+                                                 Float_t vertexWindow, Double_t ffmPower, Int_t bType, Double_t bcut1, Double_t bcut2, double mu,
                                                  Int_t nUsedJets, char* jfTask, Bool_t kRandom)
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -93,24 +108,37 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t
   ffm->SetDoJetReco(!kReadJetBranch); 
   ffm->SetNUsedJets(nUsedJets);
   ffm->SetRparam(radius);
-  ffm->SetGhostEtaMax(1.5);
   ffm->SetGhostArea(0.005);
   ffm->SetGhostEtaMax(etaTrackWindow);
+  ffm->SetFFMAxis(750);
+  ffm->SetTracksInJetMethod(0);
+  ffm->SetAxisForTracks(1000,0,100);
+  ffm->SetJetStructureAxis();
   if(typeGen.Contains("AODMC2b"))      ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackAODMCChargedAcceptance);
   else if(typeGen.Contains("AODMC2"))  ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackAODMCCharged);
   else if(typeGen.Contains("AODMC"))   ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackAODMCAll);
-  else if(typeGen.Contains("KINE2b"))  ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackKineChargedAcceptance);
+  else if(typeGen.Contains("KINE2B"))  ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackKineChargedAcceptance);
   else if(typeGen.Contains("KINE2"))   ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackKineCharged);
   else if(typeGen.Contains("KINE"))    ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackKineAll);
-  else if(typeGen.Contains("AODb"))    ffm->SetTrackTypeGen(AliAnalysisTaskJetFFMoments::kTrackAODCuts);
   else {if(typeGen.Length()) Printf("trackType Gen %s not found", typeGen.Data());}
   if(typeRec1.Contains("AOD"))         ffm->SetTrackTypeRec(AliAnalysisTaskJetFFMoments::kTrackAOD);
+  else if(typeRec1.Contains("KINEDET")) {ffm->SetTrackTypeRec(AliAnalysisTaskJetFFMoments::kTrackKineChargedAcceptanceDet);}
   else {if(typeRec1.Length()) Printf("trackType Rec %s not found", typeRec1.Data());} 
  ffm->SetFFMScalePower(ffmPower);
-  ffm->SetAnaJetType(anaJetType);
-  if(bType==0) ffm->SetFFMBckgTypeAndBounds(bType,bcut1*radius,bcut2*radius,mu); // Calculate ffm bckg from a doughnut 
-  else if(bType==1) ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); // Calculate bckg from a rectangle around jet axis (radius,pi)
-  else ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); // Calculate bckg in an eta window
+ ffm->SetAnaJetType(anaJetType);
+ if(bType==0)       {ffm->SetFFBckgMode(1); // FF: Perp; FFM: Calculate ffm bckg from a doughnut
+                    ffm->SetFFMBckgTypeAndBounds(bType,bcut1*radius,bcut2*radius,mu);}
+ else if(bType==1)  {ffm->SetFFBckgMode(1);  // FF: Perp; FFM: Calculate bckg from a rectangle around jet axis (radius,pi)
+                    ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); }
+ else if(bType==2)  {ffm->SetFFBckgMode(1);  // FF: Perp; FFM:  Calculate bckg in an eta window
+                    ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); }
+ else if(bType==3) {ffm->SetFFBckgMode(1); // FF: perp ; FFM: perpFFM
+                    ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); }
+ else if(bType==4) {ffm->SetFFBckgMode(2); // FF: perp2; FFM: perp2FFM
+                    ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); }
+ else if(bType==5) {ffm->SetFFBckgMode(1); // FF: perp; FFM: RapPhiRange
+                    ffm->SetFFMBckgTypeAndBounds(bType,bcut1,bcut2,mu); }
+ else {ffm->SetFFBckgMode(0); ffm->SetFFMBckgTypeAndBounds(bType);} // switch off bckg calc for FF and FFM
 
   // Define reading branch
   if(kReadJetBranch) { 
@@ -151,7 +179,7 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t
   //define analysis name
   if(typeGen.Length() != 0) {//MC
     if( typeRec1.Length() != 0)         cAdd.ReplaceAll("UndefinedJetType","MC");
-    else                        cAdd.ReplaceAll("UndefinedJetType","Kine");
+    if( typeRec1.Contains("DET"))       cAdd.ReplaceAll("MC","KINE");
   } else {//Data
     ffm->SetHistosLevel(1);// no MC, can not do the correction from MC
     if( typeRec1.Length() != 0)         cAdd.ReplaceAll("UndefinedJetType","Data");
@@ -192,7 +220,7 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t
  AliAnalysisDataContainer *coutput1_ffm = mgr->CreateContainer(Ana_Name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PWGJE_%s", AliAnalysisManager::GetCommonFileName(), Ana_Name.Data()));
 
  mgr->ConnectInput  (ffm, 0, mgr->GetCommonInputContainer());
- mgr->ConnectOutput (ffm, 0, mgr->GetCommonOutputContainer());
+ if(mgr->GetCommonOutputContainer()) mgr->ConnectOutput (ffm, 0, mgr->GetCommonOutputContainer());
  mgr->ConnectOutput (ffm, 1, coutput1_ffm );
  
  return ffm;

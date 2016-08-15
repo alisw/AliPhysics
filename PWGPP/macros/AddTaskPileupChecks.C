@@ -2,11 +2,13 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 						Int_t nContribSPD=3,
 						Double_t zDiffSPD=0.8,
 						Bool_t doTree=kTRUE,
+						Bool_t readMC=kFALSE,
+						Int_t usePhysSel=1,
+						Bool_t usePFprotection=kFALSE,
 						Int_t nContribMV=5,
 						Double_t zDiffMV=15.,
 						Double_t chi2MV=5.,
-						Bool_t flagBCMV=kFALSE,
-						Bool_t readMC=kFALSE
+						Bool_t flagBCMV=kFALSE
 						){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -44,6 +46,9 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
   taskpil->SetFillTree(doTree);
   taskpil->SetCutOnContribToSPDPileupVert(nContribSPD);
   taskpil->SetCutOnSPDZDiff(zDiffSPD);
+  taskpil->SetReadMC(readMC);
+  taskpil->SetPhysicsSelectionOption(usePhysSel);
+  taskpil->SetUsePFProtection(usePFprotection);
   taskpil->ConfigureMultiTrackVertexPileup(nContribMV,zDiffMV,chi2MV,flagBCMV);
   mgr->AddTask(taskpil);
   
@@ -65,12 +70,15 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName );
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("cCounters%s",suffix.Data()),
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("clistMC%s",suffix.Data()),
+							    TList::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFileName );
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(Form("cCounters%s",suffix.Data()),
 							    AliCounterCollection::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName);
-
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(Form("cNtuple%s",suffix.Data()),
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(Form("cNtuple%s",suffix.Data()),
 							    TTree::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName);
@@ -81,5 +89,6 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
   mgr->ConnectOutput(taskpil, 3, coutput3);
   mgr->ConnectOutput(taskpil, 4, coutput4);
   mgr->ConnectOutput(taskpil, 5, coutput5);
+  mgr->ConnectOutput(taskpil, 6, coutput6);
   return taskpil;
 }   

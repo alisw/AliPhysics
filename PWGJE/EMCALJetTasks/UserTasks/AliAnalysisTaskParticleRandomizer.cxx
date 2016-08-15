@@ -20,6 +20,7 @@
 #include <TMath.h>
 #include <TClonesArray.h>
 #include <AliAODTrack.h>
+#include <AliPicoTrack.h>
 #include <AliEmcalJet.h>
 #include <AliRhoParameter.h>
 #include "TH1D.h"
@@ -33,7 +34,7 @@ ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fRandomPsi3(0), fRandom()
+  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fJetEmbeddingArrayName(), fJetEmbeddingArray(0), fRandomPsi3(0), fRandom()
 {
 // constructor
 }
@@ -49,9 +50,9 @@ AliAnalysisTaskParticleRandomizer::~AliAnalysisTaskParticleRandomizer()
 void AliAnalysisTaskParticleRandomizer::UserCreateOutputObjects()
 {
   // Check user input
-  if(fInputArrayName == "")
-    AliFatal(Form("Name of input array not given!"));
-  if(fOutputArrayName == "")
+  if(fInputArrayName.IsNull())
+    AliWarning(Form("Name of input array not given!"));
+  if(fOutputArrayName.IsNull())
     AliFatal(Form("Name of output array not given!"));
 
   fRandom = new TRandom3(0);
@@ -62,7 +63,7 @@ void AliAnalysisTaskParticleRandomizer::ExecOnce()
 {
   // Check if arrays are OK
   fInputArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fInputArrayName.Data())));
-  if(!fInputArray)
+  if(!fInputArrayName.IsNull() && !fInputArray)
     AliFatal(Form("Input array '%s' not found!", fInputArrayName.Data()));
 
   // On demand, load also jets
@@ -73,14 +74,23 @@ void AliAnalysisTaskParticleRandomizer::ExecOnce()
       AliError(Form("Jet array '%s' demanded but not found in event!", fJetRemovalArrayName.Data()));
   }
 
+  // On demand, load array for embedding
+  if(!fJetEmbeddingArrayName.IsNull())
+  {
+    fJetEmbeddingArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fJetEmbeddingArrayName.Data())));
+    if(!fJetEmbeddingArray)
+      AliError(Form("Embedding array '%s' demanded but not found in event!", fJetEmbeddingArrayName.Data()));
+  }
+
   if((InputEvent()->FindListObject(Form("%s", fOutputArrayName.Data()))))
     AliFatal(Form("Output array '%s' already exists in the event! Rename it.", fInputArrayName.Data()));
 
-  if(strcmp(fInputArray->GetClass()->GetName(), "AliAODTrack"))
-    AliError(Form("Track type %s not yet supported. Use AliAODTrack", fInputArray->GetClass()->GetName()));
+  if(fInputArray)
+    if(strcmp(fInputArray->GetClass()->GetName(), "AliAODTrack"))
+      AliError(Form("Track type %s not yet supported. Use AliAODTrack", fInputArray->GetClass()->GetName()));
 
   // Copy the input array to the output array
-  fOutputArray = new TClonesArray(fInputArray->GetClass()->GetName());
+  fOutputArray = new TClonesArray("AliAODTrack");
   fOutputArray->SetName(fOutputArrayName.Data());
   InputEvent()->AddObject(fOutputArray);
 
@@ -95,48 +105,95 @@ Bool_t AliAnalysisTaskParticleRandomizer::Run()
   fRandomPsi5 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi5
 
   Int_t accTracks = 0;
-  for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
-  {
-    if(fJetRemovalArray && IsParticleInJet(iPart))
-      continue;
 
-    // Take only particles from the randomization acceptance
-    AliAODTrack* inputParticle = static_cast<AliAODTrack*>(fInputArray->At(iPart));
-    if(fRandomizeInPhi && (inputParticle->Phi() < fMinPhi  || inputParticle->Phi() >= fMaxPhi) )
-      continue;
-    if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
-      continue;
-
-    new ((*fOutputArray)[accTracks]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
-
-    // Randomize on demand
-    AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(accTracks));
-
-    if(fRandomizeInPhi)
-      particle->SetPhi(fMinPhi + fRandom->Rndm()*(fMaxPhi-fMinPhi));
-    if(fRandomizeInTheta)
+  // Add events in input array
+  if(fInputArray)
+    for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
     {
-      Double_t minTheta = 2.*atan(exp(-fMinEta));
-      Double_t maxTheta = 2.*atan(exp(-fMaxEta));
-      particle->SetTheta(minTheta  + fRandom->Rndm()*(maxTheta-minTheta));
+      // Remove particles contained in jet array (on demand)
+      if(fJetRemovalArray && IsParticleInJet(iPart))
+        continue;
+
+      // Take only particles from the randomization acceptance
+      AliAODTrack* inputParticle = static_cast<AliAODTrack*>(fInputArray->At(iPart));
+      if(fRandomizeInPhi && (inputParticle->Phi() < fMinPhi  || inputParticle->Phi() >= fMaxPhi) )
+        continue;
+      if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
+        continue;
+
+      new ((*fOutputArray)[accTracks]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
+
+      // Randomize on demand
+      AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(accTracks));
+      RandomizeTrack(particle);
+
+      accTracks++;
     }
-    if(fRandomizeInEta)
+  
+  // Add particles for embedding (on demand)
+  if(fJetEmbeddingArray)
+    for(Int_t iPart=0; iPart<fJetEmbeddingArray->GetEntries(); iPart++)
     {
-      Double_t randomEta = fMinEta  + fRandom->Rndm()*(fMaxEta-fMinEta);
-      Double_t randomTheta = 2.*atan(exp(-randomEta));
-      particle->SetTheta(randomTheta);
+      // Take only particles from the randomization acceptance
+      AliPicoTrack* inputParticle = static_cast<AliPicoTrack*>(fJetEmbeddingArray->At(iPart));
+      if(fRandomizeInPhi && (inputParticle->Phi() < fMinPhi  || inputParticle->Phi() >= fMaxPhi) )
+        continue;
+      if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
+        continue;
+
+      new ((*fOutputArray)[accTracks]) AliAODTrack(*(GetAODTrack(inputParticle)));
+
+      // Randomize on demand
+      AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(accTracks));
+      RandomizeTrack(particle);
+
+      accTracks++;
     }
 
-    if(fRandomizeInPt)
-      particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
-
-    if(fDistributionV2 || fDistributionV3 || fDistributionV4 || fDistributionV5)
-      particle->SetPhi(AddFlow(particle->Phi(), particle->Pt()));
-
-    accTracks++;
-  }
-//  std::cout << Form("%i particles from jets removed out of %i tracks. ", fInputArray->GetEntries()-accTracks, fInputArray->GetEntries()) << std::endl;
+ //  std::cout << Form("%i particles from jets removed out of %i tracks. ", fInputArray->GetEntries()-accTracks, fInputArray->GetEntries()) << std::endl;
   return kTRUE;
+}
+
+//_____________________________________________________________________________________________________
+void AliAnalysisTaskParticleRandomizer::RandomizeTrack(AliAODTrack* particle)
+{
+  if(fRandomizeInPhi)
+    particle->SetPhi(fMinPhi + fRandom->Rndm()*(fMaxPhi-fMinPhi));
+  if(fRandomizeInTheta)
+  {
+    Double_t minTheta = 2.*atan(exp(-fMinEta));
+    Double_t maxTheta = 2.*atan(exp(-fMaxEta));
+    particle->SetTheta(minTheta  + fRandom->Rndm()*(maxTheta-minTheta));
+  }
+  if(fRandomizeInEta)
+  {
+    Double_t randomEta = fMinEta  + fRandom->Rndm()*(fMaxEta-fMinEta);
+    Double_t randomTheta = 2.*atan(exp(-randomEta));
+    particle->SetTheta(randomTheta);
+  }
+
+  if(fRandomizeInPt)
+    particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
+
+  if(fDistributionV2 || fDistributionV3 || fDistributionV4 || fDistributionV5)
+    particle->SetPhi(AddFlow(particle->Phi(), particle->Pt()));
+}
+
+//_____________________________________________________________________________________________________
+AliAODTrack* AliAnalysisTaskParticleRandomizer::GetAODTrack(AliPicoTrack* track)
+{
+  AliAODTrack* newTrack = new AliAODTrack();
+  newTrack->SetPt(track->Pt());
+  newTrack->SetTheta(2.*atan(exp(-track->Eta()))); // there is no setter for eta
+  newTrack->SetPhi(track->Phi());
+  newTrack->SetCharge(track->Charge());
+  newTrack->SetLabel(track->GetLabel());
+
+  // Hybrid tracks (compatible with LHC11h)
+  UInt_t filterMap = BIT(8) | BIT(9);
+  newTrack->SetIsHybridGlobalConstrainedGlobal();
+  newTrack->SetFilterMap(filterMap);
+  return newTrack;
 }
 
 //_____________________________________________________________________________________________________

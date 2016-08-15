@@ -28,6 +28,9 @@
   
 class AliIDFFUtils
 {
+
+ friend class AliAnalysisTaskIDFFTCF;
+
  public:
   enum TYPEID{
     kNOTACCEPTED = -3, 

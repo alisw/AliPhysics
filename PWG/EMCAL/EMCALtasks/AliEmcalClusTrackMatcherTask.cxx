@@ -244,6 +244,10 @@ void AliEmcalClusTrackMatcherTask::GenerateEmcalParticles()
   tracks->ResetCurrentID();
   while ((track = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))) {
 
+    // Clears the matching info
+    track->ResetStatus(AliVTrack::kEMCALmatch);
+    track->SetEMCALcluster(-1);
+
     // Propagate tracks if requested
     Bool_t propthistrack = kFALSE;
     if (fDoPropagation) {
@@ -377,12 +381,10 @@ void AliEmcalClusTrackMatcherTask::UpdateTracks()
 
   for (Int_t itrack = 0; itrack < fNEmcalTracks; itrack++) {
     AliEmcalParticle* emcalTrack = static_cast<AliEmcalParticle*>(fEmcalTracks->At(itrack));
-    AliVTrack* track = emcalTrack->GetTrack();
-
-    track->ResetStatus(AliVTrack::kEMCALmatch);
     if (emcalTrack->GetNumberOfMatchedObj() <= 0) continue;
-
     AliEmcalParticle* emcalCluster = static_cast<AliEmcalParticle*>(fEmcalClusters->At(emcalTrack->GetMatchedObjId()));
+
+    AliVTrack* track = emcalTrack->GetTrack();
     track->SetEMCALcluster(emcalCluster->IdInCollection());
     track->SetStatus(AliVTrack::kEMCALmatch);
   }

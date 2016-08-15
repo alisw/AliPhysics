@@ -50,7 +50,7 @@ Double_t
 
 Double_t AliLightCascadeVertexer::fgMaxEta=0.8;        //max |eta|
 Double_t AliLightCascadeVertexer::fgMinClusters=70;   //min clusters (>=)
-  
+Double_t AliLightCascadeVertexer::fgSwitchCharges=kFALSE;   //min clusters (>=)
 
 Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
@@ -110,9 +110,13 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
  	 //Bo:   if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
-         if (bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
-	 AliESDtrack *btrk=event->GetTrack(bidx);
-         if (btrk->GetSign()>0) continue;  // bachelor's charge 
+          if (!fSwitchCharges && bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
+          if ( fSwitchCharges && bidx==v0.GetIndex(1)) continue; //Bo:  consistency 0 for neg
+          
+          AliESDtrack *btrk=event->GetTrack(bidx);
+          
+         if (!fSwitchCharges && btrk->GetSign()>0) continue;  // bachelor's charge
+         if ( fSwitchCharges && btrk->GetSign()<0) continue;  // bachelor's charge
           
     	 AliESDv0 *pv0=&v0;
          AliExternalTrackParam bt(*btrk), *pbt=&bt;
@@ -157,9 +161,13 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
  	 //Bo:   if (bidx==v->GetPindex()) continue; //bachelor and v0's positive tracks must be different
-         if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
-	 AliESDtrack *btrk=event->GetTrack(bidx);
-         if (btrk->GetSign()<0) continue;  // bachelor's charge 
+         if (!fSwitchCharges && bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
+         if ( fSwitchCharges && bidx==v0.GetIndex(0)) continue; //Bo:  consistency 1 for pos
+          
+          AliESDtrack *btrk=event->GetTrack(bidx);
+          
+         if (!fSwitchCharges && btrk->GetSign()<0) continue;  // bachelor's charge
+         if ( fSwitchCharges && btrk->GetSign()>0) continue;  // bachelor's charge
           
 	 AliESDv0 *pv0=&v0;
          AliExternalTrackParam bt(*btrk), *pbt=&bt;

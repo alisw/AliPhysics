@@ -49,6 +49,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   void GetOwnPrimaryVtx(Double_t vtx[3]) const 
     {CheckOwnPrimaryVtx();fOwnPrimaryVtx->GetPosition(vtx);}
   void UnsetOwnPrimaryVtx() {if(fOwnPrimaryVtx) {delete fOwnPrimaryVtx; fOwnPrimaryVtx=0;} return;}
+  void UnsetOwnSecondaryVtx() {if(fOwnSecondaryVtx) {delete fOwnSecondaryVtx; fOwnSecondaryVtx=0;} return;}
   AliAODVertex* GetPrimaryVtx() const { return (GetOwnPrimaryVtx() ? GetOwnPrimaryVtx() : GetPrimaryVtxRef()); }
   AliAODVertex* RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod);  
   void          RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent *aod);

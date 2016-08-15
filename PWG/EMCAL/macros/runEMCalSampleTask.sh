@@ -24,4 +24,10 @@ else
 	NEVENTS="${4}"
 fi
 
-root -b -q -x $ALICE_PHYSICS/PWG/EMCAL/macros/runEMCalSampleTask.C\(\""${DATATYPE}"\",\""${PERIOD}"\",\""${FILELIST}"\","${NEVENTS}"\)
+if [ -z "$5" ]; then
+	DEBUGL="0"
+else
+	DEBUGL="${5}"
+fi
+
+root -b -q -x $ALICE_PHYSICS/PWG/EMCAL/macros/runEMCalSampleTask.C\(\""${DATATYPE}"\",\""${PERIOD}"\",\""${FILELIST}"\","${NEVENTS}","${DEBUGL}"\)

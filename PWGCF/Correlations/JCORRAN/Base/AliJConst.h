@@ -38,9 +38,9 @@
 //
 // for JHisto and PhxJHisto
 #define kMaxNoCentrBin 10   // Maximum no of centrality bins defined in JCard.h
-#define kMaxTriggParticleType 35           // 
-#define kMaxJetType  32          // 
-#define kPtDim 15           // 
+#define kMaxTriggParticleType 35           //
+#define kMaxJetType  32          //
+#define kPtDim 15           //
 #define kMaxNoRuns 100      // Maximum no of runs in a nanoDST file
 #define kMaxNoEPBin 24
 
@@ -57,9 +57,9 @@ enum particleType   {kJHadron, kJPion, kJKaon, kJProton, kJPhoton, kJDecayphoton
 const int kNumberOfParticleTypes = kJNone+1;
 
 const char* const kParticleTypeStrName[kNumberOfParticleTypes] =
-                    {"hadron", "pion", "kaon", "proton", "photon", "decayphoton", "pizero", "eta", "hadronMC", "Cluster", "none"};
+                    {"hadron", "pion", "kaon", "proton", "photon", "decayphoton", "pizero", "eta", "hadronMC", "jet", "Cluster", "none"};
 const char* const kParticleProtoType[kNumberOfParticleTypes] =
-                     {"AliJTrack", "AliJTrack", "AliJTrack", "AliJTrack", "AliJPhoton", "AliJPhoton", "AliJPiZero", "AliJPiZero", "None"};
+                     {"AliJTrack", "AliJTrack", "AliJTrack", "AliJTrack", "AliJPhoton", "AliJPhoton", "AliJPiZero", "AliJPiZero", "None", "None", "None", "None"};
 
 //=======================JCorran trigger table definition===========================
 //internal JCorran trigger mask  TBit=0 is MinBias, TBit=1 HighMultiplicityTrigger
@@ -69,7 +69,7 @@ enum TriggerBitJCorran   {kMinBiasTriggerBitJCorran, kHighMultTriggerBitJCorran,
                           kCentralTriggerBitJCorran,kSemiCentralTriggerBitJCorran,
                           kFastOnlyBitJCorran,
 						  kINT7TriggerBitJCorran, kJNTriggerBit
-                          };  
+                          };
 const int kRangeTriggerTableAlice   = 50;
 const int kRangeTriggerTableJCorran = 16;
 
@@ -77,9 +77,9 @@ const int kRangeTriggerTableJCorran = 16;
 enum fillType { kReal, kMixed, kEtaGap };
 enum corrFillType {kAzimuthFill=0,kPionFill=1};
 enum corrType { kTriggType, kAssocType, kXeType, kLongType, kCentrType, kZVertType, kMassType, kEtaGapType, kDiJetType, kRGapType, kNoType, kNcorrType };
-enum TriggerParticleType { kTriggParticles, kLeadingParticle, kIsolatedParticle }; 
+enum TriggerParticleType { kTriggParticles, kLeadingParticle, kIsolatedParticle };
 
-const char* const kTriggerParticleTypeName[] = 
+const char* const kTriggerParticleTypeName[] =
       {"TriggParticles","LeadingParticle","IsolatedParticle"};
 
 // JETs =====
@@ -91,6 +91,6 @@ const char* const kJetAlgStrName[kNJetAlg] =
 enum EPType { kEPV0A, kEPV0C, kEPV0AC, kNEPType };
 const int kNHarmonics = 5;
 // PHENIX  constants
-enum TEMC {kPbSc, kPbGl}; 
+enum TEMC {kPbSc, kPbGl};
 
 #endif

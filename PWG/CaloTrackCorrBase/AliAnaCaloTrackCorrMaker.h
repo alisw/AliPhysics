@@ -49,7 +49,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    FillTriggerControlHistograms();
   
-  TList * GetListOfAnalysisContainers() { return fAnalysisContainer ; }
+  TList * GetListOfAnalysisContainers()    { return fAnalysisContainer ; }
   
   TList * GetListOfAnalysisCuts();
   
@@ -57,34 +57,39 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   TList * FillAndGetAODBranchList();
   
-  Int_t   GetAnaDebug()           const { return fAnaDebug    ; }
-  void    SetAnaDebug(Int_t d)          { fAnaDebug = d       ; }
+  Int_t   GetAnaDebug()              const { return fAnaDebug      ; }
+  void    SetAnaDebug(Int_t d)             { fAnaDebug = d         ; }
 	
-  Bool_t  AreHistogramsMade()     const { return fMakeHisto   ; }
-  void    SwitchOnHistogramsMaker()     { fMakeHisto = kTRUE  ; }
-  void    SwitchOffHistogramsMaker()    { fMakeHisto = kFALSE ; }
+  Bool_t  AreHistogramsMade()        const { return fMakeHisto     ; }
+  void    SwitchOnHistogramsMaker()        { fMakeHisto = kTRUE    ; }
+  void    SwitchOffHistogramsMaker()       { fMakeHisto = kFALSE   ; }
  
-  Bool_t  AreAODsMade()           const { return fMakeAOD     ; }
-  void    SwitchOnAODsMaker()           { fMakeAOD = kTRUE    ; }
-  void    SwitchOffAODsMaker()          { fMakeAOD = kFALSE   ; }
+  Bool_t  AreAODsMade()              const { return fMakeAOD       ; }
+  void    SwitchOnAODsMaker()              { fMakeAOD = kTRUE      ; }
+  void    SwitchOffAODsMaker()             { fMakeAOD = kFALSE     ; }
   	
   void    SwitchOnDataControlHistograms()  { fFillDataControlHisto = kTRUE  ; }
   void    SwitchOffDataControlHistograms() { fFillDataControlHisto = kFALSE ; }
 
-  void    SwitchOnSumw2Histograms()     { fSumw2 = kTRUE      ; }
-  void    SwitchOffSumw2Histograms()    { fSumw2 = kFALSE     ; }
-  
-  AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
-                                                                        return fReader    ; }
-  void                  SetReader(AliCaloTrackReader * reader)        { fReader = reader  ; }
-  	
-  AliCalorimeterUtils * GetCaloUtils()                                { if(!fCaloUtils) fCaloUtils = new AliCalorimeterUtils(); 
-                                                                        return fCaloUtils      ; }
-  void                  SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
-	
-  void                  SetScaleFactor(Double_t scale)                { fScaleFactor = scale   ; } 
+  void    SwitchOnSumw2Histograms()        { fSumw2 = kTRUE        ; }
+  void    SwitchOffSumw2Histograms()       { fSumw2 = kFALSE       ; }
+
+  void    SwitchOnPtHardHistogram()        { fCheckPtHard = kTRUE  ; }
+  void    SwitchOffPtHardHistogram()       { fCheckPtHard = kFALSE ; }
+
+  void    SetScaleFactor(Double_t scale)   { fScaleFactor = scale  ; } 
+
+  void    SetCaloUtils(AliCalorimeterUtils * cu) { fCaloUtils = cu ; }
+  void    SetReader(AliCaloTrackReader * re)     { fReader = re    ; }
 
   
+  AliCaloTrackReader  * GetReader()        { if (!fReader)    fReader    = new AliCaloTrackReader () ;
+                                             return fReader        ; }
+  	
+  AliCalorimeterUtils * GetCaloUtils()     { if (!fCaloUtils) fCaloUtils = new AliCalorimeterUtils() ; 
+                                             return fCaloUtils     ; }
+	
+
   // Main general methods
   
   void    Init();
@@ -123,6 +128,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
     
+  Bool_t   fCheckPtHard ;                            ///< For MC done in pT-Hard bins, plot specific histogram
+  
   // Control histograms
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
@@ -138,6 +145,9 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhXVertexExotic;                          //!<! X Vertex distribution of exotic event.
   TH1F *   fhYVertexExotic;                          //!<! Y Vertex distribution of exotic event.
   TH1F *   fhZVertexExotic;                          //!<! Z Vertex distribution of exotic event.
+  
+  TH1F *   fhPtHard;                                 //!<! pt of parton, only for MC generation (pythia jet-jet/gamma-jet)
+  TH1F *   fhPtHardWeighted;                         //!<! pt of parton, only for MC generation (pythia jet-jet/gamma-jet), weighted by cross section
   
   TH1F *   fhPileUpClusterMult;                      //!<! N clusters with high time.
   TH1F *   fhPileUpClusterMultAndSPDPileUp;          //!<! N clusters with high time in events tagged as pile-up by SPD.
@@ -190,7 +200,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,24) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,26) ;
   /// \endcond
 
 } ;

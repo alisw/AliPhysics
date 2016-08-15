@@ -7,7 +7,6 @@
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-//#include "AliHelperPID.h"
 
 class AliAODEvent;
 class AliESDEvent;
@@ -25,15 +24,27 @@ class TH2D;
 class TH2D;
 class TH3D;
 class TProfile;
-class AliHelperPID;
 
 class AliAnalysisTaskPIDBFDptDpt : public AliAnalysisTaskSE
 {
 public:
     AliAnalysisTaskPIDBFDptDpt();
     AliAnalysisTaskPIDBFDptDpt(const TString & name);
+ 
+  //PID functions
+  //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
+  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method.
+  void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
+  void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
+  Double_t TOFBetaCalculation( AliVTrack * track ) const;
+  Double_t massSquareCalculation( AliVTrack * track ) const;
     
 private:
+    Double_t fnsigmas[4][2]; //nsigma values
+    Bool_t fHasTOFPID;
+    Double_t fNSigmaPID; // number of sigma for PID cut
+    Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
+    
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
     const AliAnalysisTaskPIDBFDptDpt& operator=(const  AliAnalysisTaskPIDBFDptDpt&);
     
@@ -107,6 +118,7 @@ public:
         _centralityMin = centralityMin;
         _centralityMax = centralityMax;
     }
+    
     virtual     void    SetRequestedCharge_1(int v)     { _requestedCharge_1 = v; }
     virtual     void    SetRequestedCharge_2(int v)     { _requestedCharge_2 = v; }
     virtual     void    SetPtMin1( double v)            { _min_pt_1          = v; }
@@ -130,18 +142,17 @@ public:
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
-    
-    AliHelperPID                   * GetHelperPID()     { return fHelperPID; }
-    //AliHelperPID* helperpid;
  
-    void SetHelperPID(AliHelperPID* pid)                { fHelperPID = pid; }
 
-    void SetParticleSpecies( int species ){ particleSpecies = species; }
+    void SetParticleSpecies( int species )            { particleSpecies = species; }
 
     void SetAnalysisType( const char * analysisType ) { fAnalysisType = analysisType; }
     void SetSystemType( const char * systemType )     { fSystemType = systemType; }
     void SetResonancesCut( Bool_t NoResonances )      { fExcludeResonancesInMC = NoResonances; }
     void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
+
+    void SetNSigmaCut( double nsigma )          { fNSigmaPID = nsigma; }
+    void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
     
 protected:
     
@@ -151,8 +162,6 @@ protected:
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
     AliPIDResponse*          fPIDResponse;
-
-    AliHelperPID* fHelperPID;       // points to class for PID
     
     // Histogram settings
     //TList*              _inputHistoList;
@@ -343,8 +352,8 @@ protected:
 
     TH1F * _ydis_POI_AliHelperPID;
     
-    TH3F * _vZ_y_Pt_POI_AliHelperPID;
-    TH3F * _vZ_y_eta_POI_AliHelperPID;
+    //TH3F * _vZ_y_Pt_POI_AliHelperPID;
+    //TH3F * _vZ_y_eta_POI_AliHelperPID;
 
     TH2F * _y_Pt_AllCh_MCAODTruth;
     TH2F * _y_Pt_POI_MCAODTruth;
@@ -521,7 +530,7 @@ protected:
     TString vsPtVsPt;
     
     
-    ClassDef(AliAnalysisTaskPIDBFDptDpt,2)
+    ClassDef(AliAnalysisTaskPIDBFDptDpt,1)
 }; 
 
 

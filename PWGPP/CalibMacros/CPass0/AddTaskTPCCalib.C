@@ -170,6 +170,24 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
 
   myTask->AddJob(calibGainMult);
 
+  // ===| get reco param                     |==================================
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
+  const Int_t spec = recoParam->GetEventSpecie();
+
+  Float_t minTPCsignalN = spec&AliRecoParam::kLowMult?100.:90.;
+
+  // ===| settings via environment variables |==================================
+  //
+  // ---| minimum number of PID clusters     |----------------------------------
+  const TString sMinTPCsignalN(gSystem->Getenv("TPC_GainCalib_minSignalN"));
+  if (!sMinTPCsignalN.IsNull()) {
+    minTPCsignalN=sMinTPCsignalN.Atof();
+    ::Info("AddTaskTPCCalib","Setting minium number of PID clusters for gain calibration from environment variable TPC_CPass0_GainCalib_minSignalN: %.0f", minTPCsignalN);
+  }
+
+  calibTimeGain->SetMinTPCsignalN(minTPCsignalN);
+  calibGainMult->SetMinTPCsignalN(minTPCsignalN);
 }
 
 //_____________________________________________________________________________
@@ -406,10 +424,12 @@ void ConfigOCDB(Int_t run){
   if (tpcGainCalibType==AliTPCPreprocessorOffline::kFullGainCalib) {
     tpcRecoParam->SetUseGainCorrectionTime(0);
     tpcRecoParam->SetUseRPHICorrection(kFALSE);
-    tpcRecoParam->SetUseTOFCorrection(kFALSE);
     tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
     tpcRecoParam->SetCorrectionHVandPTMode(1);
   }
+
+  // TOF correction should always be on
+  // tpcRecoParam->SetUseTOFCorrection(kFALSE);
 
   // ===| Further specific overwrites for CPass0 |==============================
   //

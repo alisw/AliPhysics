@@ -2091,10 +2091,8 @@ AliAnalysisTaskLambdaStar::ResoBuffer::~ResoBuffer(){
       fEC[iZBin]=0;
     }
   }
-  if(fEC){
-    delete fEC;
-    fEC=0;
-  }
+  delete[] fEC;
+  fEC=0;
 }
 //________________________________________________________________________
 void AliAnalysisTaskLambdaStar::ResoBuffer::ShiftAndAdd(AliAODEvent *evt){

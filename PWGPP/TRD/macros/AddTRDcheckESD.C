@@ -46,24 +46,30 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   //
   Double_t bcLimits[3501]; for(Int_t i=0; i<=3500; ++i) bcLimits[i] = -0.5+Double_t(i);
   //Double_t phiLimits[181]; for(Int_t i=0; i<=180; ++i) phiLimits[i] = 0.0+i*2.0*TMath::Pi()/180.0;
-  Double_t phiParamLimits[181]; for(Int_t i=0; i<=180; ++i) phiParamLimits[i] = -1.0*TMath::Pi()+i*2.0*TMath::Pi()/180.0;
+  //Double_t phiParamLimits[181]; for(Int_t i=0; i<=180; ++i) phiParamLimits[i] = -1.0*TMath::Pi()+i*2.0*TMath::Pi()/180.0;
+  Double_t phiParamLimits[73]; for(Int_t i=0; i<=72; ++i) phiParamLimits[i] = -1.0*TMath::Pi()+i*2.0*TMath::Pi()/72.0;
   Double_t ptLimits[19] = {0.0, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 
                            3.5, 4.0, 4.5,  5.0, 6.0,  7.0, 8.0,  9.0, 10.0};
   Double_t chargeLimits[3] = {-1.5,0.0,1.5};
-  Double_t etaLimits[91]; for(Int_t i=0;i<=90;++i) etaLimits[i] = -0.9+i*1.8/90.;
+  //Double_t etaLimits[91]; for(Int_t i=0;i<=90;++i) etaLimits[i] = -0.9+i*1.8/90.;
+  Double_t etaLimits[43]; for(Int_t i=0;i<=42;++i) etaLimits[i] = -0.9+i*1.8/42.;
   Double_t trdTrkltsLimits[8] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5};
   Double_t trigLimits[AliTRDcheckESD::kNMaxAssignedTriggers+1]; for(Int_t i=0;i<=AliTRDcheckESD::kNMaxAssignedTriggers;++i) trigLimits[i] = 0.5+Double_t(i);
   Double_t evMultLimits[6] = {0.0, 700., 1400., 2100., 2800., 3500.};
   Double_t pLimits[18] = {0.0, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.7, 2.0, 2.5, 
                           3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 9.0, 12.0};
-  Double_t qtotLimits[101]; for(Int_t i=0;i<=100;++i) qtotLimits[i] = 0.0+i*10000./100.;
+  //Double_t qtotLimits[101]; for(Int_t i=0;i<=100;++i) qtotLimits[i] = 0.0+i*10000./100.;
+  Double_t qtotLimits[51]; for(Int_t i=0;i<=50;++i) qtotLimits[i] = 0.0+i*10000./50.;
   Double_t layerLimits[7] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5};
   Double_t sliceLimits[9] = {-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5};
-  Double_t pLossLimits[101]; for(Int_t i=0;i<=100;++i) pLossLimits[i] = -500.+i*1000.0/100.;
+  //Double_t pLossLimits[101]; for(Int_t i=0;i<=100;++i) pLossLimits[i] = -500.+i*1000.0/100.;
+  Double_t pLossLimits[51]; for(Int_t i=0;i<=50;++i) pLossLimits[i] = -500.+i*1000.0/50.;
   Double_t trdClustersLimits[201]; for(Int_t i=0;i<=200;++i) trdClustersLimits[i] = -0.5+i*200.0/200.;
   //Double_t trdQualityLimits[101]; for(Int_t i=0;i<=100;++i) trdQualityLimits[i] = 0.0+i*2.0/100.;
-  Double_t trdBudgetLimits[101]; for(Int_t i=0;i<=100;++i) trdBudgetLimits[i] = 0.0+i*100.0/100.;
-  Double_t trdChi2Limits[101]; for(Int_t i=0;i<=100;++i) trdChi2Limits[i] = 0.0+i*10.0/100.;
+  //Double_t trdBudgetLimits[101]; for(Int_t i=0;i<=100;++i) trdBudgetLimits[i] = 0.0+i*100.0/100.;
+  Double_t trdBudgetLimits[51]; for(Int_t i=0;i<=50;++i) trdBudgetLimits[i] = 0.0+i*100.0/50.;
+  //Double_t trdChi2Limits[101]; for(Int_t i=0;i<=100;++i) trdChi2Limits[i] = 0.0+i*10.0/100.;
+  Double_t trdChi2Limits[26]; for(Int_t i=0;i<=25;++i) trdChi2Limits[i] = 0.0+i*10.0/25.;
   Double_t trackletClustersLimits[31]; for(Int_t i=0;i<=30;++i) trackletClustersLimits[i] = 0.0+i*1.0;
   Double_t trackletClsRowsLimits[31]; for(Int_t i=0;i<=30;++i) trackletClsRowsLimits[i] = 0.0+Double_t(i)*1.0/30.0;
   //Double_t outerParamRadLimits[51]; for(Int_t i=0;i<=50;++i) outerParamRadLimits[i] = 0.0+Double_t(i)*500.0/50.0;
@@ -72,7 +78,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   printf("Container 1 :: BunchCrossingsCF\n");
   Int_t bcSteps[3] = {AliTRDcheckESD::kTPCreference, AliTRDcheckESD::kTRD, AliTRDcheckESD::kTOF};
   UInt_t bcVars[3] = {AliTRDcheckESD::kEventBC, AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackPt};
-  TArrayD bcBinning[3] = {TArrayD(3501, bcLimits), TArrayD(181,phiParamLimits), TArrayD(19,ptLimits)};
+  TArrayD bcBinning[3] = {TArrayD(3501, bcLimits), TArrayD(73,phiParamLimits), TArrayD(19,ptLimits)};
   checkESD->AddCFContainer("BunchCrossingsCF", "Matching vs bunch crossings", 3, bcSteps, 3, bcVars, bcBinning);
   
   // (phi,eta) matching container
@@ -80,7 +86,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   Int_t matchPhiEtaSteps[3] = {AliTRDcheckESD::kTPCreference, AliTRDcheckESD::kTRD, AliTRDcheckESD::kTOF};
   UInt_t matchPhiEtaVars[5] = {AliTRDcheckESD::kTrackCharge,       AliTRDcheckESD::kTrackPhiTRD,    AliTRDcheckESD::kTrackEtaTRD,
                                AliTRDcheckESD::kTrackTrdTracklets, AliTRDcheckESD::kEventTrigger};
-  TArrayD matchPhiEtaBinning[5] = {TArrayD(3,chargeLimits),    TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
+  TArrayD matchPhiEtaBinning[5] = {TArrayD(3,chargeLimits),    TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
                                    TArrayD(8,trdTrkltsLimits), TArrayD(AliTRDcheckESD::kNMaxAssignedTriggers+1, trigLimits)};
   checkESD->AddCFContainer("MatchingPhiEta", "(phi,eta) matching CF", 3, matchPhiEtaSteps, 5, matchPhiEtaVars, matchPhiEtaBinning);
   
@@ -89,7 +95,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   Int_t matchPtSteps[3] = {AliTRDcheckESD::kTPCreference, AliTRDcheckESD::kTRD, AliTRDcheckESD::kTOF};
   UInt_t matchPtVars[6] = {AliTRDcheckESD::kEventMult, AliTRDcheckESD::kTrackCharge,       AliTRDcheckESD::kTrackPhiTRD,
                            AliTRDcheckESD::kTrackPt,   AliTRDcheckESD::kTrackTrdTracklets, AliTRDcheckESD::kEventTrigger};
-  TArrayD matchPtBinning[6] = {TArrayD(6,evMultLimits), TArrayD(3, chargeLimits),    TArrayD(181, phiParamLimits),
+  TArrayD matchPtBinning[6] = {TArrayD(6,evMultLimits), TArrayD(3, chargeLimits),    TArrayD(73, phiParamLimits),
                                TArrayD(19, ptLimits),   TArrayD(8, trdTrkltsLimits), TArrayD(AliTRDcheckESD::kNMaxAssignedTriggers+1, trigLimits)};
   checkESD->AddCFContainer("MatchingPt", "(pt,phi,multiplicity) matching", 3, matchPtSteps, 6, matchPtVars, matchPtBinning);
   
@@ -99,7 +105,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   UInt_t qtotCentVars[3] = {AliTRDcheckESD::kEventMult, AliTRDcheckESD::kTrackP,
                             AliTRDcheckESD::kTrackletQtot};
   TArrayD qtotCentBinning[3] = {TArrayD(6,evMultLimits),
-                                TArrayD(18, pLimits), TArrayD(101, qtotLimits)};
+                                TArrayD(18, pLimits), TArrayD(51, qtotLimits)};
   checkESD->AddCFContainer("CentralityCF", "qtot vs event multiplicity and p", 1, qtotCentSteps, 3, qtotCentVars, qtotCentBinning);
   
   // qtot, vs event multiplicity and p
@@ -116,8 +122,8 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   Int_t qtotSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t qtotVars[4] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                         AliTRDcheckESD::kTrackletQtot, AliTRDcheckESD::kTrackletLayer};
-  TArrayD qtotBinning[4] = {TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
-                            TArrayD(101, qtotLimits), TArrayD(7, layerLimits)};
+  TArrayD qtotBinning[4] = {TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
+                            TArrayD(51, qtotLimits), TArrayD(7, layerLimits)};
   checkESD->AddCFContainer("QtotCF", "qtot vs (phi,eta) and layer", 1, qtotSteps, 4, qtotVars, qtotBinning);
   
   // pulse height vs p and slice
@@ -126,7 +132,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   UInt_t phVars[4] = {AliTRDcheckESD::kEventTrigger, AliTRDcheckESD::kTrackletP, 
                       AliTRDcheckESD::kTrackletPHslice, AliTRDcheckESD::kTrackletSlice};
   TArrayD phBinning[4] = {TArrayD(AliTRDcheckESD::kNMaxAssignedTriggers+1, trigLimits), TArrayD(18,pLimits),
-                          TArrayD(101, qtotLimits), TArrayD(9,sliceLimits)};
+                          TArrayD(51, qtotLimits), TArrayD(9,sliceLimits)};
   checkESD->AddCFContainer("PulseHeightCF", "PH vs p and slice", 1, phSteps, 4, phVars, phBinning);  
     
   // TRD quality
@@ -145,8 +151,8 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   UInt_t trdChi2Vars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD,
                            AliTRDcheckESD::kTrackTrdChi2,
                            AliTRDcheckESD::kTrackPt, AliTRDcheckESD::kTrackCharge};
-  TArrayD trdChi2Binning[5] = {TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
-                               TArrayD(101, trdChi2Limits),
+  TArrayD trdChi2Binning[5] = {TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
+                               TArrayD(26, trdChi2Limits),
                                TArrayD(19, ptLimits), TArrayD(3, chargeLimits)};
   checkESD->AddCFContainer("trdChi2", "TRD chi2 vs (phi,eta,pt,charge)", 1, trdChi2Steps, 
 			   5, trdChi2Vars, trdChi2Binning);
@@ -156,8 +162,8 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   Int_t trdBudgetSteps[1] = {AliTRDcheckESD::kTRD};
   UInt_t trdBudgetVars[3] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD,
                              AliTRDcheckESD::kTrackTRDBudget};
-  TArrayD trdBudgetBinning[3] = {TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
-                                 TArrayD(101, trdBudgetLimits)};
+  TArrayD trdBudgetBinning[3] = {TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
+                                 TArrayD(51, trdBudgetLimits)};
   checkESD->AddCFContainer("trdBudget", "TRD budget vs (phi,eta)", 1, trdBudgetSteps, 
 			   3, trdBudgetVars, trdBudgetBinning);
   
@@ -167,8 +173,8 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   UInt_t plossVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                          AliTRDcheckESD::kTrackPlossTRDlayer, AliTRDcheckESD::kTrackletLayer,
                          AliTRDcheckESD::kTrackCharge};
-  TArrayD plossBinning[5] = {TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
-                             TArrayD(101, pLossLimits), TArrayD(7, layerLimits),
+  TArrayD plossBinning[5] = {TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
+                             TArrayD(51, pLossLimits), TArrayD(7, layerLimits),
                              TArrayD(3, chargeLimits)};
   checkESD->AddCFContainer("Ploss", "p loss vs (phi,eta,layer,charge)", 1, plossSteps, 5, plossVars, plossBinning);
 
@@ -178,7 +184,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   UInt_t clustersVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                             AliTRDcheckESD::kTrackletLayer, AliTRDcheckESD::kTrackletClusters,
                             AliTRDcheckESD::kTrackCharge};
-  TArrayD clustersBinning[5] = {TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
+  TArrayD clustersBinning[5] = {TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
                                 TArrayD(7, layerLimits), TArrayD(31, trackletClustersLimits),
                                 TArrayD(3,chargeLimits)};
   checkESD->AddCFContainer("clustersPerTracklet", "tracklet clusters vs (phi,eta,layer,charge)", 1, clustersSteps, 5, clustersVars, clustersBinning);
@@ -189,7 +195,7 @@ void AddCFContainers(AliTRDcheckESD* checkESD) {
   UInt_t clsRowsVars[5] = {AliTRDcheckESD::kTrackPhiTRD, AliTRDcheckESD::kTrackEtaTRD, 
                             AliTRDcheckESD::kTrackletLayer, AliTRDcheckESD::kTrackletClustersVsRows,
                             AliTRDcheckESD::kTrackCharge};
-  TArrayD clsRowsBinning[5] = {TArrayD(181, phiParamLimits), TArrayD(91, etaLimits),
+  TArrayD clsRowsBinning[5] = {TArrayD(73, phiParamLimits), TArrayD(43, etaLimits),
                                 TArrayD(7, layerLimits), TArrayD(31, trackletClsRowsLimits),
                                 TArrayD(3,chargeLimits)};
   checkESD->AddCFContainer("clustersVsRows", "tracklet/rows vs (phi,eta,layer,charge)", 1, clsRowsSteps, 5, clsRowsVars, clsRowsBinning);

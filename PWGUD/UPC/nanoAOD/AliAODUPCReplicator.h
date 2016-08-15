@@ -26,6 +26,7 @@ class AliAODTracklets;
 class AliAODZDC;
 class AliAODAD;
 class AliAODTrack;
+class AliTOFHeader;
 
 class AliAODUPCReplicator : public AliAODBranchReplicator
 {
@@ -53,6 +54,7 @@ private:
   mutable AliAODTracklets* fTracklets; //! internal tracklets object
   mutable AliAODZDC* fZDC; //! internal zdc object
   mutable TList* fList; //! internal list of managed objects (fVertices and fTracks)
+  mutable AliTOFHeader *fTOFHeader; //! internat TOF header object
 
   Bool_t fReplicateHeader; // whether or not the replicate the AOD Header
   Bool_t fReplicateTracklets; // whether or not the replicate the AOD Tracklets
@@ -61,7 +63,7 @@ private:
   AliAODUPCReplicator(const AliAODUPCReplicator&);
   AliAODUPCReplicator& operator=(const AliAODUPCReplicator&);
   
-  ClassDef(AliAODUPCReplicator,1) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODUPCReplicator,2) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

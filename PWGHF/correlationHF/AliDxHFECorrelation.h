@@ -48,11 +48,34 @@ class AliDxHFECorrelation : public TNamed {
     kElectron=1
   } ;
 
+
+  // Probably not needed anymore, since code was changed to THnSparse
+  // but keep here in case we need it later
+  enum {
+    khD0pT,         // TH1F
+    khD0Phi,        // TH1F
+    khD0Eta,        // TH1F
+    khElectronpT,   // TH1F
+    khElectronPhi,  // TH1F
+    khElectronEta,  // TH1F
+    kNofHistograms
+  };
+
+  enum {
+    kPrompt=0,
+    kFeedDown=1
+  };
+
+  enum{
+    kReducedMode=0,
+    kFullMode=1
+  };
+
   // init
   int Init(const char* arguments="");
 
   // parse argument string
-  int ParseArguments(const char* arguments);
+  virtual int ParseArguments(const char* arguments);
 
   /// fill histograms from particles
   int Fill(const TObjArray* candidatesD0, const TObjArray* candidatesElectron, const AliVEvent* pEvent);
@@ -82,14 +105,20 @@ class AliDxHFECorrelation : public TNamed {
   virtual TObject* FindObject(const TObject *obj) const;
   /// overloaded from TObject: save to file
   virtual void     SaveAs(const char *filename="",Option_t *option="") const; // *MENU*
+  // Tests the particle
+  virtual Bool_t TestParticle(AliVParticle* /*as*/, Int_t /*id*/);
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr, Double_t evMult);
 
   virtual void SetCuts(AliAnalysisCuts* cuts) {fCuts=cuts;}
+  virtual void SetCutsD0(TList* cuts){fCutsD0=cuts;}
   virtual void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   //void SetUseEventMixing(Bool_t useMixing) {fUseEventMixing=useMixing;}
   //void SetSystem(Bool_t system){fSystem=system;}
   //void SetPhiRange(Double_t min, Double_t max){fMinPhi=min; fMaxPhi=max;}
   // TODO: SetEventType only needed for MC. How to avoid this?
   virtual void SetEventType(int type){fEventType=type;}
+  void SetRunFullMode(bool fullmode=kTRUE){fRunMode=fullmode;}
 
   Bool_t GetUseMC() const {return fUseMC;}
   const TList* GetControlObjects() const {return fControlObjects;}
@@ -97,24 +126,15 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetMaxPhi() const {return fMaxPhi;}
   Double_t GetDeltaPhi() const {return fDeltaPhi;}
   Double_t GetDeltaEta() const {return fDeltaEta;}
+  Int_t GetPoolBin() const {return fDeltaEta;}
   inline int GetDimTHnSparse() const {return fDimThn;}
+  AliAnalysisCuts* GetCuts() const {return fCuts;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}
+  Int_t RunFullMode() const {return fRunMode;}
 
   void EventMixingChecks(const AliVEvent* pEvent);
 
   AliDxHFECorrelation& operator+=(const AliDxHFECorrelation& other);
-
-  // Probably not needed anymore, since code was changed to THnSparse
-  // but keep here in case we need it later
-  enum {
-    khD0pT,         // TH1F
-    khD0Phi,        // TH1F
-    khD0Eta,        // TH1F
-    khElectronpT,   // TH1F
-    khElectronPhi,  // TH1F
-    khElectronEta,  // TH1F
-    kNofHistograms
-  };
 
  protected:
   /// add control object to list, the base class becomes owner of the object
@@ -149,6 +169,7 @@ class AliDxHFECorrelation : public TNamed {
   THnSparse* fCorrProperties;    //  the Correlation properties of selected particles
   TH1* fhEventControlCorr;       //! event control histogram (saved via control object list)
   AliAnalysisCuts *fCuts;        //! Cuts 
+  TList *fCutsD0;                //!  Cuts D0 
   Bool_t fUseMC;                 // use MC info
   AliHFCorrelator *fCorrelator;  //! object for correlations
   Bool_t fUseEventMixing;        // Run Event Mixing analysis
@@ -161,9 +182,13 @@ class AliDxHFECorrelation : public TNamed {
   Double_t* fCorrArray;          //! filling array for THnSparse
   Int_t fEventType;              // Event type. Only needed for MC (fix)
   Int_t fTriggerParticleType;    // Which particle to trigger on
-
+  Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
+  Bool_t fUseD0Efficiency;       // Whether or not to correct for D0 efficiency
+  Int_t fRunMode;                // Which mode to run in (bigger thnsparse)
+  Short_t fUseCentrality;        // Using centrality or not
+  Int_t fPoolBin;                // Poolbin number
   static const char* fgkEventControlBinNames[];
 
-  ClassDef(AliDxHFECorrelation, 5)
+  ClassDef(AliDxHFECorrelation, 7)
 };
 #endif

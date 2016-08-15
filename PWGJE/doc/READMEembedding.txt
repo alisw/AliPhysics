@@ -10,6 +10,7 @@ There are currently few types of embedding available:
 -# Embedding of AOD events (AliJetEmbeddingFromAODTask and AliJetEmbeddingFromPYTHIATask with additional functionalities for our general productions, e.g. p<sub>T</sub> hard bins)
 -# Embedding of generated PYTHIA events (AliJetEmbeddingFromGenTask)
 -# Embedding of single particles (AliJetEmbeddingTask)
+-# If you need specific features that are not implemented in the available classes, you can write your own class inheriting from AliJetModelBaseTask
 
 _Note_: The Embedding framework in going to be restructured and updated for the use within the new jet framework. It is currently mandatory to use the old jet framwork since there's an explicit use of the AliPicoTrack in AddTrack.
 

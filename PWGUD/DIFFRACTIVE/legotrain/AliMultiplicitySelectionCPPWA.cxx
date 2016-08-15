@@ -41,19 +41,17 @@
 ClassImp(AliMultiplicitySelectionCPPWA)
 
 //Class Constructor
-AliMultiplicitySelectionCPPWA::AliMultiplicitySelectionCPPWA():TObject(),
-	fkCheckReferenceMultiplicity(0)
+AliMultiplicitySelectionCPPWA::AliMultiplicitySelectionCPPWA(): TObject(),
+	fkCheckReferenceMultiplicity(0),
+	fTPCnclsS(3),
+	fTrackDCAz(5),
+	fTrackEtaMin(-0.9),
+	fTrackEtaMax(0.9),
+	fIndicesN(0x0),
+	fIndicesP(0x0),
+	fkIgnoreV0s(0),
+	fTrackCutListPrim(0x0)
 {
-	//TrackCuts
-	fTrackCutListPrim = new TList();
-	fTrackCutListPrim->SetOwner();
-	fTrackCutListPrim->SetName("PrimaryTrackCut");
-
-	//Set basic parameters
-	SetTPCnclsS();
-	SetTrackDCAz();
-	SetTrackEtaRange();
-
 	IgnoreV0s();
 	for(Int_t i = 0; i< fkNtrackMax; i++)
 		fkIsTrackSec[i]= kFALSE;
@@ -69,8 +67,23 @@ AliMultiplicitySelectionCPPWA::~AliMultiplicitySelectionCPPWA()
 	fTrackCutListPrim = 0;
 }
 //Member function
-void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2)
+void AliMultiplicitySelectionCPPWA::SetInitCuts() {
+	if (fTrackCutListPrim) {
+		fTrackCutListPrim->Delete();
+		delete fTrackCutListPrim;
+	}
+	fTrackCutListPrim = new TList();
+	fTrackCutListPrim->SetOwner();
+	fTrackCutListPrim->SetName("PrimaryTrackCut");
+
+}
+void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nSys)
 {
+	//TrackCuts
+	if (fTrackCutListPrim) fTrackCutListPrim = 0x0;
+	fTrackCutListPrim = new TList();
+	fTrackCutListPrim->SetOwner();
+	fTrackCutListPrim->SetName("PrimaryTrackCut");
 	//Important message for 7TeV analysis (LHC10b,c,d,e)
 	/*
 	   Alexander Kalweit 
@@ -127,6 +140,34 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 		if (ITSSACut == kFALSE) {//ITS+TPC
 			AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, clusterCut);
 			fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			if (clusterCut == 1) {
+				if (nSys == 1) fcutITSTPC_P->SetMinNCrossedRowsTPC(70+10);
+				else if (nSys == 2) fcutITSTPC_P->SetMinNCrossedRowsTPC(70-10);
+				else fcutITSTPC_P->SetMinNCrossedRowsTPC(70);
+			}
+			else {
+				if (nSys == 1) fcutITSTPC_P->SetMinNClustersTPC(70+10);
+				else if (nSys == 2) fcutITSTPC_P->SetMinNClustersTPC(70-10);
+				else fcutITSTPC_P->SetMinNClustersTPC(70);
+			}
+			if (nSys == 3) fcutITSTPC_P->SetMaxDCAToVertexZ(2+1);
+			else if (nSys == 4) fcutITSTPC_P->SetMaxDCAToVertexZ(2-1);
+			else fcutITSTPC_P->SetMaxDCAToVertexZ(2);
+
+			if (nSys == 5) fcutITSTPC_P->SetMaxChi2PerClusterTPC(4+1);
+			else if (nSys == 6) fcutITSTPC_P->SetMaxChi2PerClusterTPC(4-1);
+			else fcutITSTPC_P->SetMaxChi2PerClusterTPC(4);
+
+			if (nSys == 7) SetTPCnclsS(2);
+			else if (nSys == 8) SetTPCnclsS(4);
+			else SetTPCnclsS(3);
+
+			if (nSys == 9) SetTrackDCAz(7);
+			else if (nSys == 10) SetTrackDCAz(5);
+			else SetTrackDCAz(6);
+
+			SetTrackEtaRange(-0.9,0.9);
+
 			fcutITSTPC_P->SetName("ITSTPC");
 			AddPrimaryTrackCut(fcutITSTPC_P);
 			AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
@@ -151,6 +192,7 @@ void AliMultiplicitySelectionCPPWA::AddPrimaryTrackCut(AliESDtrackCuts *cut)
 //Member function
 Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd)
 {
+	printf("%d",fTPCnclsS);
 	TArrayI indices;
 	return GetNumberOfITSTPCtracks(esd, indices);
 }
@@ -443,7 +485,7 @@ Bool_t AliMultiplicitySelectionCPPWA::TestFiredChips(AliESDEvent *esd, TArrayI i
 
 	for(Int_t iT = 0; iT< Ntracks; iT++)
 	{
-//		printf("AliMultiplicitySelectionCP1::TestFiredChips:  indices.At(%d) = %d \n", iT, indices.At(iT));
+//		printf("AliMultiplicitySelectionCPPWA::TestFiredChips:  indices.At(%d) = %d \n", iT, indices.At(iT));
 
 		Int_t statusLay;
 		Int_t idet = -1;

@@ -79,6 +79,7 @@ class AliDielectronSignalMC : public TNamed {
     {fMother1 = pdg1; fMother2 = pdg2; fMother1Exclude=exclude1; fMother2Exclude=exclude2;}
   void SetGrandMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)         
     {fGrandMother1 = pdg1; fGrandMother2 = pdg2; fGrandMother1Exclude=exclude1; fGrandMother2Exclude=exclude2;}
+  //both used for niece discrimination, nieces are daughters of the sisters
   void SetLegSources(ESource s1, ESource s2)                       {fLeg1Source = s1;                      fLeg2Source = s2;}
   void SetMotherSources(ESource s1, ESource s2)                    {fMother1Source = s1;                   fMother2Source = s2;}
   void SetGrandMotherSources(ESource s1, ESource s2)               {fGrandMother1Source = s1;              fGrandMother2Source = s2;}
@@ -86,8 +87,13 @@ class AliDielectronSignalMC : public TNamed {
   void SetCheckBothChargesMothers(Bool_t flag1, Bool_t flag2)      {fCheckBothChargesMother1 = flag1;      fCheckBothChargesMother2 = flag2;}
   void SetCheckBothChargesGrandMothers(Bool_t flag1, Bool_t flag2) {fCheckBothChargesGrandMother1 = flag1; fCheckBothChargesGrandMother2 = flag2;}
   void SetMothersRelation(EBranchRelation relation)                {fMothersRelation = relation;}
+  void SetGrandMothersRelation(EBranchRelation relation)           {fGrandMothersRelation = relation;}
   void SetGEANTProcess(TMCProcess processID)                       {fGEANTProcess = processID; fCheckGEANTProcess=kTRUE;}
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
+  void SetCheckMotherGrandmotherRelation(Bool_t CheckMotherIsGrandmother=kTRUE, Bool_t MotherIsGrandmother=kFALSE)
+    {fCheckMotherGrandmother = CheckMotherIsGrandmother; fMotherIsGrandmother = MotherIsGrandmother;}
+  void SetCheckStackForPDG(Bool_t checkStack=kTRUE)                        {fCheckStackForPDG    = checkStack;}
+  void SetPDGforStack(Int_t stackPDG)                                      {fStackPDG            = stackPDG;}
 
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
   Int_t GetMotherPDG(Int_t branch)                     const {return (branch==1 ? fMother1 : fMother2);}
@@ -102,9 +108,14 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t GetCheckBothChargesMothers(Int_t branch)      const {return (branch==1 ? fCheckBothChargesMother1 : fCheckBothChargesMother2);}
   Bool_t GetCheckBothChargesGrandMothers(Int_t branch) const {return (branch==1 ? fCheckBothChargesGrandMother1 : fCheckBothChargesGrandMother2);}
   EBranchRelation GetMothersRelation()                 const {return fMothersRelation;}
+  EBranchRelation GetGrandMothersRelation()            const {return fGrandMothersRelation;}
   TMCProcess GetGEANTProcess()                         const {return fGEANTProcess;}
   Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
   Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
+  Bool_t GetCheckMotherGrandmotherRelation()           const {return fCheckMotherGrandmother;}
+  Bool_t GetMotherIsGrandmother()                      const {return fMotherIsGrandmother;}
+  Bool_t GetCheckStackForPDG()                         const {return fCheckStackForPDG;}
+  Int_t GetStackPDG()                                  const {return fStackPDG;}
 
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
   EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
@@ -116,6 +127,8 @@ class AliDielectronSignalMC : public TNamed {
   Int_t fMother2;                     // mother 2 PDG
   Int_t fGrandMother1;                // grandmother 1 PDG
   Int_t fGrandMother2;                // grandmother 2 PDG
+  Int_t fStackPDG;                    // PDG to exclude from stack
+
 
   // Toggle on/off the use of the PDG codes as inclusion or exclusion
   // Example: if fLeg1=211 and fLeg1Exclude=kTRUE than all codes will be accepted for leg 1 with
@@ -144,9 +157,17 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
   Bool_t fCheckGEANTProcess;            //              GEANT process
   
+  Bool_t fCheckMotherGrandmother;       // check if a mother is also a grandmother to select B -> e D X -> ee X
+  Bool_t fMotherIsGrandmother;          // check if a mother is also a grandmother to select B -> e D X -> ee X
+  Bool_t fCheckStackForPDG;             // check whole stack to exclude a pdg code to get rid of B feeddown in D sample
+
+  EBranchRelation fGrandMothersRelation;   // mother 1&2 relation (same, different or whatever)
+
+
+
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
   TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
-  EJpsiRadiativ fJpsiRadiative;      // check for J/psi radiative decay
+  EJpsiRadiativ fJpsiRadiative;       // check for J/psi radiative decay
   
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
   

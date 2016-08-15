@@ -6,7 +6,7 @@ Packages = {
 };
 
 Jobtag={
-    "comment:extraction of TPC SP calibration - test with devcalib"
+    "comment:extraction of TPC SP calibration"
 };
 
 LegoResubmitZombies="1";
@@ -14,29 +14,34 @@ LegoResubmitZombies="1";
 TTL="86000";
 Price="20";
 
-Validationcommand="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/validationOCDB.sh";
+Validationcommand="/alice/validation/validation.sh";
 
 JDLVariables={
     "Packages", 
     "OutputDir",
-    "targetOCDBDir"
+    "targetOCDBDir",
+    "filesToCheck"
 };
 
-Arguments="inputFileList=$1 startRun=$2 endRun=$2";
+# $1 is the run number, leading zeroes
+Arguments="inputFileList=alitpcdcalibres.xml startRun=$1 endRun=$1";
 
 Workdirectorysize={"6000MB"}; 
 
 InputFile={
-    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$1"
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPCalibration/validation_merge_final.rc"
 };
 
 OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$2/OCDB";
 
 Output={
-    "log_archive.zip:*.log,*.list@disk=1",
-    "root_archive.zip:*.root@disk=1"
+    "log_archive.zip:*.log@disk=2"
 };
 
-OutputErrorE={"log_archive.zip:*.log,*.list@disk=1","root_archive.zip:*.root@disk=1"};
+OutputErrorE={
+    "log_archive.zip:*.log@disk=2"
+};
 
-targetOCDBDir="alien://folder=/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421"
+targetOCDBDir="alien://folder=/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421";
+
+filesToCheck="ocdb.log";

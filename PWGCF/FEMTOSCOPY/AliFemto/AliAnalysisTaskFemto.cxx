@@ -397,11 +397,14 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
                                     ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
 
     AliGenHijingEventHeader *hdh = 0;
+    AliGenCocktailEventHeader *hd = 0;
+    AliGenEventHeader *header = 0;
     if (mctruth) {
       fStack = mctruth->MCEvent()->Stack();
 
-      AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader *>(mctruth->MCEvent()->GenEventHeader());
-
+      hd = dynamic_cast<AliGenCocktailEventHeader *>(mctruth->MCEvent()->GenEventHeader());
+      header = dynamic_cast<AliGenEventHeader *>(mctruth->MCEvent()->Header()->GenEventHeader());
+      
       if (hd) {
 
         //  AliInfo ("Got MC cocktail event header %p\n", (void *) hd);
@@ -447,6 +450,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     if (fkinec) {
       // Process the event with Kine information only
       fkinec->SetStackSource(fStack);
+      fkinec->SetGenEventHeader(header);
       fManager->ProcessEvent();
     }
 

@@ -1,0 +1,74 @@
+# run Flow Qn vector corrections configuration file
+#
+
+# run options
+Run options:
+# grid, local, train
+# when grid is chosen the GRID datafiles are configured in GRIDrealdata.txt or GRIDMCdata.txt if MC is chosen
+# when local is chosen the datafiles are taken from filelist.txt or filelist_mc.txt
+grid
+# real, MC
+real
+
+# SW versions, only valid id grid
+AliPhysicsVersion: vAN-20160629-1
+
+# tasks to incorporate
+# only valid if not in train execution scope
+Use Tender: no
+Use CDB: no
+Use PhysicsSelection: yes
+Use PIDResponse: no
+Use PIDCombinedTask: no
+Use CentralityTask: yes
+Use MultiplicityTask: yes
+
+# Execution conditions
+Use multiplicity: no
+Is 2015 dataset: no
+Use ESD: yes
+Use AOD: no
+
+Task level:
+# We put here the event selection criteria
+Centrality: 00-90
+zvertex: -10.0:10.0
+# Select only events validated for centrality calibration
+# Check information about your runs of interest in
+# https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliMultSelectionCalibStatus
+# Learn more about its usage in
+# https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+Use OnlyCentCalibEvents: yes
+end
+
+Detectors:
+# detectors to use
+Use TPC: yes
+Use SPD: yes
+Use VZERO: yes
+Use TZERO: yes
+Use FMD: yes
+Use rawFMD: no
+Use ZDC: yes
+
+# the corrections file
+Corrections file:
+# source: local, aliensingle, alienmultiple, OADBsingle, OADBmultiple
+# single: one file contains on a per run basis the calibration parameters for the whole runs set
+# multiple: each run has its own calibration parameters file; in this case the filename is built as filename = name.root -> actual filename = name_runno.root
+# source: local
+# path: .
+# filename: CalibrationHistograms.root
+# source: alien
+# path: alien:///alice/cern.ch/user/v/victor/TESTS
+# filename: QnVectorCorrectionsHistograms.root
+source: OADBmultiple
+path: COMMON/EVENTPLANE/framework_v2_data
+filename: CalibrationHistograms.root
+
+# run the Qn vector analysis task
+Use QnVectorAnalysisTask: no
+# correction steps: raw, plain, rec, align, twist, scale, latest
+Expected correction step: align
+Alternative correction step: rec
+

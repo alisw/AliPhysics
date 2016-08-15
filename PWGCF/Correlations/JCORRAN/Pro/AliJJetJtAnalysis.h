@@ -85,7 +85,6 @@ class AliJJetJtAnalysis{
     void ClearBeforeEvent();
     void CreateMCHistograms();
     void FillJtHistogram( TObjArray *Jets, int iContainer , int mc);
-    void FillJtHistogramMC( TObjArray *Jets, int iContainer );
     void FillRandomBackground(TObjArray *Jets , int iContainer, int MC);
     void FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer, int MC);
 
@@ -164,6 +163,7 @@ class AliJJetJtAnalysis{
     TVector *fTrackJt;
     TVector *fTrackPt;
     TVector *fJetPt;
+    TVector *fTrackFound;
     TVector *fBin2;
     TVector *fBin3;
     TVector *fpta;
@@ -233,6 +233,13 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJetConeLogJtWithPtCutWeightBinBin;
     AliJTH1D fhJetConeLogJtWithPtCutWeight2BinBin;
 
+    //Unfolding Background histograms
+    AliJTH1D fhJetConeJtUnfBg;
+    AliJTH1D fhJetConeJtBinUnfBg;
+    AliJTH1D fhJetConeJtWeightBinUnfBg;
+    AliJTH1D fhJetConeLogJtWeightBinUnfBg;
+    AliJTH1D fhJetConeLogJtWeight2BinUnfBg;
+
     AliJTH1D fhJetBgPt ;
     AliJTH1D fhJetBgPtBin;
     AliJTH1D fhBgZ ;
@@ -285,6 +292,7 @@ class AliJJetJtAnalysis{
     AliJTH2D fh2DFullEvsChEdNnot0;
     AliJTH2D fhJetEtaPhi;
     AliJTH2D fhTrackEtaPhi;
+    AliJTH1D fhJetdPt;
 
 
     //double   fJetPtMinCut;

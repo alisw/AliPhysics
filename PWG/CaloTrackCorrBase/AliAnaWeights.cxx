@@ -25,6 +25,7 @@
 // AliRoot
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
+#include "AliGenPythiaEventHeader.h"
 
 #include "AliAnaWeights.h"
 
@@ -36,15 +37,17 @@ ClassImp(AliAnaWeights) ;
 /// Constructor.
 //______________________________________________________________
 AliAnaWeights::AliAnaWeights() 
-: TObject(),
+: TObject(), fDebug(0),
   fhCentralityWeight(0),
   fCentrality(0),
   fUseCentralityWeight(0),
   fCurrFileName(0),
   fCheckMCCrossSection(kFALSE),
+  fJustFillCrossSecHist(0),
   fhXsec(0),
   fhTrials(0),
-  fDebug(0)
+  fPyEventHeader(0),
+  fCheckPythiaEventHeader(0)
 {
 }
 
@@ -107,19 +110,43 @@ Double_t AliAnaWeights::GetWeight()
 
 //_____________________________________________
 //
-/// Implemented Notify() to read the cross sections
-/// and number of trials from pyxsec.root, values stored
-/// in specific histograms.
+/// Read the cross sections and number of trials 
+/// from pyxsec.root (ESD) or pysec_hists.root (AODs), 
+/// values stored in specific histograms-trees.
+/// If no file available, get information from Pythia event header
+///
+/// Fill the control histograms on number of trials and xsection
+/// optionally, with fJustFillCrossSecHist, just do that and do not return a weight.
+/// For cross section obtained from pythia event header, this is already the case.
 //_____________________________________________
 Double_t AliAnaWeights::GetPythiaCrossSection()
 {
-  // Fetch the aod also from the input in,
-  // have todo it in notify
-  
   Float_t xsection  = 0;
   Float_t trials    = 1;
   Float_t avgTrials = 0;
   
+  if ( !fhXsec || !fhTrials ) return 1;
+  
+  // -----------------------------------------------
+  // Check if info is already in Pythia event header
+  // Do not apply the weight per event, too much number of trial variation
+  // -----------------------------------------------
+  if ( fPyEventHeader && fCheckPythiaEventHeader )
+  {
+    fMCWeight =  1 ;
+    
+    AliDebug(fDebug,Form("Pythia event header: xs %2.2e, trial %d", fPyEventHeader->GetXsection(),fPyEventHeader->Trials()));
+    
+    fhXsec  ->Fill("<#sigma>"     ,fPyEventHeader->GetXsection());
+    fhTrials->Fill("#sum{ntrials}",fPyEventHeader->Trials());
+    
+    return  1 ;
+  }
+
+  // -----------------------------------------------
+  // Get cross section from corresponding files
+  // -----------------------------------------------
+
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if ( !tree    ) return 1;
   
@@ -132,13 +159,7 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
   if(fCurrFileName == curfile->GetName()) return fMCWeight;
   
   fCurrFileName = TString(curfile->GetName());
-  
-  if ( !fhXsec || !fhTrials )
-  {
-    AliInfo(Form("%s%d No Histogram fhXsec",(char*)__FILE__,__LINE__));
-    return 1;
-  }
-  
+    
   Bool_t ok = GetPythiaInfoFromFile(fCurrFileName,xsection,trials);
   
   if ( !ok )
@@ -148,7 +169,7 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
   }
     
   fhXsec->Fill("<#sigma>",xsection);
-  
+
   // average number of trials
   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
     
@@ -156,16 +177,20 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
   
   fhTrials->Fill("#sum{ntrials}",avgTrials);
   
-  AliInfo(Form("xs %e, trial %e, avg trials %2.2f, events per file %e",
+  AliInfo(Form("xs %2.2e, trial %e, avg trials %2.2e, events per file %e",
                xsection,trials,avgTrials,nEntries));
   
   AliDebug(1,Form("Reading File %s",curfile->GetName()));
     
   if(avgTrials > 0.)
   {
-      fMCWeight =  xsection / avgTrials ;
-      
-      AliInfo(Form("MC Weight: %e",fMCWeight));
+      if(!fJustFillCrossSecHist) 
+      {
+        fMCWeight =  xsection / avgTrials ;
+        
+        AliInfo(Form("MC Weight: %e",fMCWeight));
+      }
+      else  fMCWeight = 1; // do not add weight to histograms
   }
   else
   {

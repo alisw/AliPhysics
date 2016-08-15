@@ -1,0 +1,2 @@
+export FILESTOCHECK="timeBins.log alitpcdcalibres.root"
+export REMOVEROOTONERROR=""

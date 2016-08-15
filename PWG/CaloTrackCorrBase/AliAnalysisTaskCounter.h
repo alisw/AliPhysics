@@ -47,6 +47,7 @@
 class TH1F;
 class TList;
 class AliESDtrackCuts;
+class AliGenPythiaEventHeader;
 //class AliTriggerAnalysis;
 
 #include "AliAnalysisTaskSE.h"

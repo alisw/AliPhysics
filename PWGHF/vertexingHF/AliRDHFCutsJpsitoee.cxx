@@ -156,7 +156,7 @@ void AliRDHFCutsJpsitoee::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsJpsitoee::IsSelected(TObject* obj,Int_t selectionLevel) {
+Int_t AliRDHFCutsJpsitoee::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod) {
   //
   // Apply selection
   //
@@ -179,7 +179,7 @@ Int_t AliRDHFCutsJpsitoee::IsSelected(TObject* obj,Int_t selectionLevel) {
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
+    if(!AreDaughtersSelected(d,aod)) return 0;
   }
 
 

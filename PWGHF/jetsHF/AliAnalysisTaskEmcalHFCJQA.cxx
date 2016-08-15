@@ -942,7 +942,7 @@ AliAODMCParticle* AliAnalysisTaskEmcalHFCJQA::IsMCJet(TClonesArray *arrayMC,cons
 	parton=(AliAODMCParticle*)arrayMC->At(idx.at(winner));
 	contribution = arrayOfWeights[winner]/jet->PtSub();
   }
-  if(arrayOfWeights)    delete arrayOfWeights;
+  delete[] arrayOfWeights;
 
   return parton;  
 }

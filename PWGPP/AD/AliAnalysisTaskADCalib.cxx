@@ -397,7 +397,6 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
 }
 
 Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, Int_t bc, Double_t &xMax) {
-  Printf("XXX ch=%02d bc=%2d %p %p", ch, bc, h, f);
   if (NULL == h || NULL == f) {
     xMax = -999.9f;
     return kFALSE;

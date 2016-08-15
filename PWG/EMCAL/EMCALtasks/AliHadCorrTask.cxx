@@ -704,6 +704,8 @@ Bool_t AliHadCorrTask::Run()
       }
       ++clusCount;
       oc->SetE(energyclus);
+      oc->SetNonLinCorrEnergy(cluster->GetNonLinCorrEnergy()); //get the non linearity corrected energy of the clusters. Works only if the clustermaker was ran before
+      oc->SetHadCorrEnergy(energyclus); //same as the default energy field of this specific copy of the cluster container
     }
   }
   

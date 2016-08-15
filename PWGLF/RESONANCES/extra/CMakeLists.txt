@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES/extra)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
+		     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
@@ -37,6 +38,8 @@ set(SRCS
   AliXiStar.cxx
   AliXiStarEventCollection.cxx
   AliAnalysisTaskLambdaStar.cxx
+  AliAnalysisTaskSEF01710fromAODtracks.cxx
+  AliRsnf0f2Task.cxx
   )
 
 # Headers from sources

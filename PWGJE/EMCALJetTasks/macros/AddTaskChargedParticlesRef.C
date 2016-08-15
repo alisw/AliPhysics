@@ -17,7 +17,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedPartic
   task->SetOfflineTriggerSelection(
       EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
   );
-  task->SetTrackSelection(
+  task->SetEMCALTrackSelection(
       EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
           cutname,
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()

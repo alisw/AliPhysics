@@ -65,6 +65,8 @@ AliBalancePsi::AliBalancePsi() :
   fHistNN(0),
   fHistHBTbefore(0),
   fHistHBTafter(0),
+  fHistPhiStarHBTbefore(0),
+  fHistPhiStarHBTafter(0),
   fHistConversionbefore(0),
   fHistConversionafter(0),
   fHistPsiMinusPhi(0),
@@ -107,6 +109,8 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistNN(balance.fHistNN),
   fHistHBTbefore(balance.fHistHBTbefore),
   fHistHBTafter(balance.fHistHBTafter),
+  fHistPhiStarHBTbefore(balance.fHistPhiStarHBTbefore),
+  fHistPhiStarHBTafter(balance.fHistPhiStarHBTafter),
   fHistConversionbefore(balance.fHistConversionbefore),
   fHistConversionafter(balance.fHistConversionafter),
   fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
@@ -145,6 +149,8 @@ AliBalancePsi::~AliBalancePsi() {
 
   delete fHistHBTbefore;
   delete fHistHBTafter;
+  delete fHistPhiStarHBTbefore;
+  delete fHistPhiStarHBTafter;
   delete fHistConversionbefore;
   delete fHistConversionafter;
   delete fHistPsiMinusPhi;
@@ -187,7 +193,7 @@ void AliBalancePsi::InitHistograms() {
     "centralityVertex: 0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,75.,80.\n" // Centrality Bins (Vertex Binning)
     "eventPlane: -0.5,0.5,1.5,2.5,3.5\n"                                                    // Event Plane Bins (Psi: -0.5->0.5 (in plane), 0.5->1.5 (intermediate), 1.5->2.5 (out of plane), 2.5->3.5 (rest))
     "deltaEta: -1.6, -1.56, -1.52, -1.48, -1.44, -1.4, -1.36, -1.32, -1.28, -1.24, -1.2, -1.16, -1.12, -1.08, -1.04, -1, -0.96, -0.92, -0.88, -0.84, -0.8, -0.76, -0.72, -0.68, -0.64, -0.6, -0.56, -0.52, -0.48, -0.44, -0.4, -0.36, -0.32, -0.28, -0.24, -0.2, -0.16, -0.12, -0.08, -0.04, 0, 0.04, 0.08, 0.12, 0.16, 0.2, 0.24, 0.28, 0.32, 0.36, 0.4, 0.44, 0.48, 0.52, 0.56, 0.6, 0.64, 0.68, 0.72, 0.76, 0.8, 0.84, 0.88, 0.92, 0.96, 1, 1.04, 1.08, 1.12, 1.16, 1.2, 1.24, 1.28, 1.32, 1.36, 1.4, 1.44, 1.48, 1.52, 1.56, 1.6\n" // Delta Eta Bins
-    "deltaEtaVertex: -1.6, -1.52, -1.44, -1.36, -1.28, -1.2, -1.12, -1.04, -0.96, -0.88, -0.8, -0.72, -0.64, -0.56, -0.48, -0.4, -0.32, -0.24, -0.16, -0.08, 0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64, 0.72, 0.8, 0.88, 0.96, 1.04, 1.12, 1.2, 1.28, 1.36, 1.44, 1.52, 1.6\n" // Delta Eta Bins (Vertex Binning)
+    "deltaEtaVertex: -1.6, -1.52, -1.44, -1.36, -1.28, -1.2, -1.12, -1.04, -0.96, -0.88, -0.8, -0.72, -0.64, -0.56, -0.48, -0.4, -0.32, -0.24,-0.16, -0.08, 0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64, 0.72, 0.8, 0.88, 0.96, 1.04, 1.12, 1.2, 1.28, 1.36, 1.44, 1.52, 1.6\n" // Delta Eta Bins (Vertex Binning)
     "deltaPhi: -1.5708, -1.48353, -1.39626, -1.309, -1.22173, -1.13446, -1.0472, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.0872665, 0, 0.0872665, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.0472, 1.13446, 1.22173, 1.309, 1.39626, 1.48353, 1.5708, 1.65806, 1.74533, 1.8326, 1.91986, 2.00713, 2.0944, 2.18166, 2.26893, 2.35619, 2.44346, 2.53073, 2.61799, 2.70526, 2.79253, 2.87979, 2.96706, 3.05433, 3.14159, 3.22886, 3.31613, 3.40339, 3.49066, 3.57792, 3.66519, 3.75246, 3.83972, 3.92699, 4.01426, 4.10152, 4.18879, 4.27606, 4.36332, 4.45059, 4.53786, 4.62512, 4.71239\n" // Delta Phi Bins
     "pT: 0.2,0.6,1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0,7.0,8.0,10.,12.,15.,20.\n"             // pT Bins
     "pTVertex: 0.2,1.0,2.0,3.0,4.0,8.0,15.0\n"                                              // pT Bins (Vertex Binning)
@@ -380,8 +386,10 @@ void AliBalancePsi::InitHistograms() {
   AliInfo("Finished setting up the AliTHn");
 
   // QA histograms
-  fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,0,2,200,0,2.*TMath::Pi());
-  fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,0,2,200,0,2.*TMath::Pi());
+  fHistHBTbefore        = new TH2D("fHistHBTbefore","before HBT cut",200,-0.5,0.5,200,-0.5,0.5);
+  fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,-0.5,0.5,200,-0.5,0.5);
+  fHistPhiStarHBTbefore = new TH2D("fHistPhiStarHBTbefore","before PhiStarHBT cut",200,-0.5,0.5,200,-0.5,0.5);
+  fHistPhiStarHBTafter  = new TH2D("fHistPhiStarHBTafter","after PhiStarHBT cut",200,-0.5,0.5,200,-0.5,0.5);
   fHistConversionbefore = new TH3D("fHistConversionbefore","before Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistConversionafter  = new TH3D("fHistConversionafter","after Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
@@ -581,10 +589,17 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	
 	Double_t deta = firstEta - secondEta[j];
 	Double_t dphi = firstPhi - secondPhi[j];
+	if(dphi > TMath::Pi())
+	  dphi = secondPhi[j] - firstPhi;
+
+	// for QA: get dphistar in the middle of the TPC R = 1.65
+	Float_t  dphistarMiddle = GetDPhiStar(firstPhi, firstPt, charge1, secondPhi[j], secondPt[j], charge2, 1.65, bSign);
+
 	// VERSION 2 (Taken from DPhiCorrelations)
 	// the variables & cuthave been developed by the HBT group 
 	// see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
 	fHistHBTbefore->Fill(deta,dphi);
+	fHistPhiStarHBTbefore->Fill(deta,dphistarMiddle);
 	
 	// optimization
 	if (TMath::Abs(deta) < fHBTCutValue * 2.5 * 3) //fHBTCutValue = 0.02 [default for dphicorrelations]
@@ -622,6 +637,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	    }
 	  }
 	fHistHBTafter->Fill(deta,dphi);
+	fHistPhiStarHBTafter->Fill(deta,dphistarMiddle);
       }//HBT cut
 	
       // conversions

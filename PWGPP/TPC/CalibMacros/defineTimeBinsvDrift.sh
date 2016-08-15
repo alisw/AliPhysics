@@ -74,6 +74,9 @@ export driftSigmaT=600;     # smoothing  sigma for drift calibration
 export targetOCDBDir="local://`pwd`"
 targetOCDBDir=${ALIEN_JDL_TARGETOCDBDIR-$targetOCDBDir}
 
+#use of TOF BC or not
+export useTOFBC
+useTOFBC=${ALIEN_JDL_USETOFBC-$useTOFBC}
 #
 # 1.) Submit query  to get  time dependent info
 #

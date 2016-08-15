@@ -20,19 +20,19 @@
 #include <vector>
 #include <string>
 
-const char* true_types[] =
+static const char* true_types[] =
 { "Other"     // 0
 , "Primary"   // 1
 , "Xi"        // 2
 , "Xi0"       // 3
 , "Sigma0"    // 4
 , "Omega"     // 5
-, "Lamba_{c}" // 6 
+, "Lamba_{c}" // 6
 , "Sigma_{c}" // 7
 , NULL
 };
 
-const int xi_bin = 2
+static const int xi_bin = 2
         , xi0_bin = 3
         , sigma0_bin = 4
         , omega_bin = 5
@@ -40,7 +40,7 @@ const int xi_bin = 2
         , sigma_c_bin = 7
         ;
 
-const int xi_code = 3312
+static const int xi_code = 3312
         , xi0_code = 3322
         , sigma0_code = 3212
         , omega_code = 3334
@@ -69,7 +69,7 @@ AliFemtoModelCorrFctnKStar::AliFemtoModelCorrFctnKStar():
 
   fTrueDen = new TH2F("true_kstar_den", "KStar - Denominator (True Pairs); k*(GeV);", 200, 0.0, 1.0, true_type_count, -0.5, true_type_count - 0.5);
   fTrueDen->Sumw2();
-  
+
   for (size_t i = 0; i < true_type_count; ++i) {
     fTrueNum->GetYaxis()->SetBinLabel(i+1, true_types[i]);
     fTrueDen->GetYaxis()->SetBinLabel(i+1, true_types[i]);
@@ -184,7 +184,7 @@ bool AliFemtoModelCorrFctnKStar::PairContainsExpectedTypes(
 }
 
 
-int GetTruthBinFrom(const AliFemtoModelHiddenInfo *info)
+static inline int GetTruthBinFrom(const AliFemtoModelHiddenInfo *info)
 {
   switch (abs(info->GetMotherPdgCode())) {
     default: return 0;
@@ -232,4 +232,3 @@ void AliFemtoModelCorrFctnKStar::AddMixedPair(AliFemtoPair* aPair)
   const int truth_bin = GetTruthBinFrom(info1);
   fTrueDen->Fill(kstar, truth_bin);
 }
-

@@ -118,6 +118,8 @@ public:
   Double_t GetKFChi2()            const { return fPair.GetChi2();                               }
   Int_t    GetKFNdf()             const { return fPair.GetNDF();                                }
   Double_t OpeningAngle()         const { return fD1.GetAngle(fD2);                             }
+  Double_t OpeningAngleXY()       const { return fD1.GetAngleXY(fD2);                           }
+  Double_t OpeningAngleRZ()       const { return fD1.GetAngleRZ(fD2);                           }
   Double_t DistanceDaughters()    const { return fD1.GetDistanceFromParticle(fD2);              }
   Double_t DistanceDaughtersXY()  const { return fD1.GetDistanceFromParticleXY(fD2);            }
   Double_t DeviationDaughters()   const { return fD1.GetDeviationFromParticle(fD2);             }

@@ -40,6 +40,7 @@ AliFemtoV0::AliFemtoV0():
   fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
   fImpactDprimPos(-999), fImpactDweakPos(-999), fImpactDmatPos(-999), fImpactDprimNeg(-999), fImpactDweakNeg(-999), fImpactDmatNeg(-999),
   fCorrLam(0.0),
+  fRadiusV0(0.0),
   fHiddenInfo(NULL)
 {
   // Default empty constructor
@@ -107,7 +108,7 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fImpactDprimPos(v.fImpactDprimPos), fImpactDweakPos(v.fImpactDweakPos),
   fImpactDmatPos(v.fImpactDmatPos), fImpactDprimNeg(v.fImpactDprimNeg),
   fImpactDweakNeg(v.fImpactDweakNeg), fImpactDmatNeg(v.fImpactDmatNeg),
-  fCorrLam(v.fCorrLam),
+  fCorrLam(v.fCorrLam), fRadiusV0(v.fRadiusV0),
   fHiddenInfo( v.fHiddenInfo ? v.fHiddenInfo->Clone() : NULL)  /***/
 {
   // copy constructor
@@ -227,6 +228,8 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fImpactDmatNeg = aV0.fImpactDmatNeg;
 
   fCorrLam =  aV0.fCorrLam;
+
+  fRadiusV0 = aV0.fRadiusV0;
 
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : NULL;// GR 11 DEC 02

@@ -60,8 +60,11 @@ public:
     Bool_t SetDmesonSpecie(DMesonSpecies k);
     void SetSandBextraction(SandBextraction k) {fSandBextraction=k;}
     void SetSBscaling(SBscaling k) {fSBscaling=k;}
-    void SetInputFilename(TString filename) {fFileName=filename;}
-    void SetListMassName(TString listMassName) {fListMassName=listMassName;}
+    void SetInputFilenameMass(TString filenameMass) {fFileNameMass=filenameMass;}    
+    void SetInputFilenameSE(TString filenameSE) {fFileNameSE=filenameSE;}
+    void SetInputFilenameME(TString filenameME) {fFileNameME=filenameME;}
+    void SetDirNameMass(TString dirNameMass) {fDirNameMass=dirNameMass;}
+    void SetListNameMass(TString listMassName) {fListNameMass=listMassName;}
     void SetDirNameSE(TString dirNameSE) {fDirNameSE=dirNameSE;}
     void SetListNameSE(TString listNameSE) {fListNameSE=listNameSE;}
     void SetDirNameME(TString dirNameME) {fDirNameME=dirNameME;}
@@ -71,8 +74,8 @@ public:
     void SetSECorrelHistoName_DstarBkg(TString correlName_DstarBkg) {fSECorrelHistoName_DstarBkg=correlName_DstarBkg;}
     void SetMECorrelHistoNameSuffix(TString suffix) {fMEsuffix=suffix;}
     void IntegratePtBins(Bool_t intPt=kFALSE) {fIntegratePtBins=intPt;}
+    void ReadTTreeOutputFiles(Bool_t treeSE, Bool_t treeME) {fReadTreeSE=treeSE; fReadTreeME=treeME;}
 
-    void SetReadMassesOnly(Bool_t readMassOnly) {fReadMassesOnly=readMassOnly;}
     void SetRebinMassPlots(Int_t rebinMassPlots) {fRebinMassPlots=rebinMassPlots;}
     void SetNpTbins(Int_t npt) {fNpTbins=npt;}
     void SetFirstpTbin(Int_t ptFirst) {fFirstpTbin=ptFirst;}
@@ -96,10 +99,14 @@ public:
     TH2D* GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDplus(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHistoDplusTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHistoDstarTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     void NormalizeMEplot(TH2D* &histoME); //normalize ME plots to the average value of the 4 'central' bins
     void RescaleSidebandsInMassBinEdges(Int_t i); //readjust SB scaling factor if single bin is used & ranges passed from outside & ranges don't match bin edges
     void MergeMassPlotsVsPt(); //merge spectra from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
-    void MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t SEorME, Int_t SorSB=0, Int_t pool=0); //merge THnSparse from mass-pT bins in larger correlation-pT bins (as if you have a single pT bin)
+    void MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t SEorME, Int_t SorSB=0, Int_t pool=0); //merge THnSparse from mass-pT bins in correlation-pT bins (as if you have 1 pT bin)
+    void MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEorME, Int_t SorSB, Int_t pool, Double_t thrMin, Double_t thrMax); //as before, but for TTree case
 
     void ClearObjects();
 
@@ -114,8 +121,11 @@ public:
 
 private:
     
-    TFile *fFile; //file containing the analysis output
+    TFile *fFileMass; //file containing the mass histograms
+    TFile *fFileSE; //file containing the analysis output SE
+    TFile *fFileME; //file containing the analysis output ME
     
+    TDirectoryFile *fDirMass; // TDirectory for mass histos
     TDirectoryFile *fDirSE; // TDirectory for SE info
     TDirectoryFile *fDirME; // TDirectory for ME info
     
@@ -128,18 +138,20 @@ private:
     SandBextraction fSandBextraction;
     SBscaling fSBscaling;
     TString fDmesonLabel;
-    TString fFileName; 
+    TString fFileNameMass;
+    TString fFileNameSE;
+    TString fFileNameME;  
+    TString fDirNameMass;
+    TString fListNameMass;
     TString fDirNameSE; 
     TString fListNameSE; 
     TString fDirNameME; 
     TString fListNameME;
-    TString fListMassName;
     TString fMassHistoName;
     TString fSECorrelHistoName;
     TString fSECorrelHistoName_DstarBkg;
     TString fMEsuffix;
 
-    Bool_t fReadMassesOnly;
     Int_t fRebinMassPlots;    
     Int_t fNpTbins;
     Int_t fFirstpTbin;
@@ -147,6 +159,8 @@ private:
     Double_t fNumberOfSigmasFitter;
     Bool_t fCorrectPoolsSeparately;
     Int_t fNpools;
+    Bool_t fReadTreeSE;
+    Bool_t fReadTreeME;
 
     Double_t *fDmesonFitterSignal;
     Double_t *fDmesonFitterSignalError;

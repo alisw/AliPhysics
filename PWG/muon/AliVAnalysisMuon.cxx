@@ -381,18 +381,31 @@ void AliVAnalysisMuon::Terminate(Option_t *)
 Int_t AliVAnalysisMuon::GetParticleType ( AliVParticle* track )
 {
   //
-  /// Get particle type from mathced MC track
+  /// Get particle type from matched MC track
   //
-  
+
+  // CAVEAT: here the order matters
+  // The muon ancestor class tracks the particle up to the first ancestor
+  // So, for example the case
+  // W+ -> b -> mu+ -> pi- (from scattering in absorber) -> mu-
+  // will be flagged as:
+  // - kWbosonMu
+  // - kBeautyMu
+  // - kSecondaryMu
+  // since it is all of them.
+  // The user can have one or the other by changing the order of the if conditions
+  // in the following
+
   if ( fUtilityMuonAncestor->IsUnidentified(track,MCEvent()) ) return kUnidentified;
+  if ( fUtilityMuonAncestor->IsHadron(track,MCEvent()) ) return kRecoHadron;
+  if ( fUtilityMuonAncestor->IsSecondaryMu(track,MCEvent()) ) return kSecondaryMu;
+  if ( fUtilityMuonAncestor->IsDecayMu(track,MCEvent()) ) return kDecayMu;
   if ( fUtilityMuonAncestor->IsBeautyMu(track,MCEvent()) ) return kBeautyMu;
   if ( fUtilityMuonAncestor->IsCharmMu(track,MCEvent()) ) return kCharmMu;
   if ( fUtilityMuonAncestor->IsWBosonMu(track,MCEvent()) ) return kWbosonMu;
   if ( fUtilityMuonAncestor->IsZBosonMu(track,MCEvent()) ) return kZbosonMu;
-  if ( fUtilityMuonAncestor->IsDecayMu(track,MCEvent()) ) return kDecayMu;
   if ( fUtilityMuonAncestor->IsQuarkoniumMu(track,MCEvent()) ) return kQuarkoniumMu;
-  if ( fUtilityMuonAncestor->IsHadron(track,MCEvent()) ) return kRecoHadron;
-  if ( fUtilityMuonAncestor->IsSecondaryMu(track,MCEvent()) ) return kSecondaryMu;
+
   return kDecayMu;
 }
 

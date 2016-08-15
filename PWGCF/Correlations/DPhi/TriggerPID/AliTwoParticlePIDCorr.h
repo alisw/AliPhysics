@@ -180,11 +180,9 @@ fIsAfter2011=IsAfter2011;
     fmineta=mineta;
     fmaxeta=maxeta;
   }
-  void SetDcaCut(Bool_t dcacut,Double_t dcacutvalue)
-  {
-    fdcacut=dcacut;
-    fdcacutvalue=dcacutvalue;
-  }
+
+  void SetDCACut(TFormula* value) { fDCAXYCut = value; }
+
   void SetfillHistQA(Bool_t fillhistQAReco,Bool_t fillhistQATruth)
   {
     ffillhistQAReco=fillhistQAReco;
@@ -385,7 +383,6 @@ fCutDaughterPtV0=CutDaughterPtV0;//switch to cut on the daughter of the V0 parti
     Float_t fmaxeta;
     Bool_t fselectprimaryTruth;
     Bool_t fonlyprimarydatareco;
-    Bool_t fdcacut;
     Double_t fdcacutvalue;
     Bool_t ffillhistQAReco;
     Bool_t ffillhistQATruth;

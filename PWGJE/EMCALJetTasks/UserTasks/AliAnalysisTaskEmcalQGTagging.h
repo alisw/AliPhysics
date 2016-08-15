@@ -98,7 +98,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                            *fShapesVar;                  // jet shapes used for the tagging
+  Float_t                             fShapesVar[14];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Int_t                                 fSelectedShapes;                //chose set of shapes 
@@ -128,7 +128,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhPhi;
   TH2F                                *fNbOfConstvspT;
 
-  TTree           *fTreeObservableTagging;  //Tree with tagging variables subtracted MC or true MC or raw 
+  TTree           *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw 
 
  private:
   AliAnalysisTaskEmcalQGTagging(const AliAnalysisTaskEmcalQGTagging&);            // not implemented

@@ -408,9 +408,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
       fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
     }
 
-    AliEmcalJet* jet = 0;
-    jets->ResetCurrentID();
-    while ((jet = jets->GetNextJet())) {
+    for (auto jet : jets->accepted()) {
 
       UInt_t rejectionReason = 0;
       if (!jets->AcceptJet(jet, rejectionReason)) {

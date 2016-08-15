@@ -37,7 +37,7 @@ AliJEbePercentile::AliJEbePercentile(AliJCard *fcard, TString input):
 	for(int ic = 0; ic<fCard->GetNoOfBins(kCentrType);ic++){
 		for(int ih=2;ih<NH;ih++) {
 			name = "hVnObsVector";
-			vnobs[ih][ic] = (TH1D*)fFile->Get(name.Append(Form("%02d%02d",ic,ih)));
+			vnobs[ic][ih] = (TH1D*)fFile->Get(name.Append(Form("%02d%02d",ic,ih)));
 		}
 	}
 
@@ -47,22 +47,22 @@ AliJEbePercentile::AliJEbePercentile(AliJCard *fcard, TString input):
 
 	for(int ic = 0 ; ic < fCard->GetNoOfBins(kCentrType); ic++){
 		for(int ih = 2; ih < NH ; ih++){
-			vnLimit[ih][ic][0]=1;
-			vnLimit[ih][ic][NBVn-1]=0;
+			vnLimit[ic][ih][0]=1;
+			vnLimit[ic][ih][NBVn-1]=0;
 			for(int ibv = 1 ; ibv < NBVn ; ibv++){
 				found[ibv] = 0;
 			}
 			sum = 0;
-			entr = vnobs[ih][ic]->GetEntries();
+			entr = vnobs[ic][ih]->GetEntries();
 			//cout << "Centrality " << ic << " of " << NC ;
 			//cout << " Harmonic " << ih << " of " << NH << endl;
-			for(int ib = 1; ib < vnobs[ih][ic]->GetNbinsX() +1 ; ib++){
-				sum = sum + vnobs[ih][ic]->GetBinContent(ib);
+			for(int ib = 1; ib < vnobs[ic][ih]->GetNbinsX() +1 ; ib++){
+				sum = sum + vnobs[ic][ih]->GetBinContent(ib);
 				for(int ibv = 1; ibv < NBVn ; ibv++){
 					if( sum/entr > 1- vnPercentile[ibv] && found[ibv] == 0){
 						//cout << "top " << vnpercentile[ibv]*100 << "% limit: " << vnobs[ih][ic]->GetBinCenter(ib) << endl;
 						found[ibv] = 1;
-						vnLimit[ih][ic][ibv] = vnobs[ih][ic]->GetBinCenter(ib);
+						vnLimit[ic][ih][ibv] = vnobs[ic][ih]->GetBinCenter(ib);
 					}
 				}
 
@@ -85,7 +85,7 @@ AliJEbePercentile& AliJEbePercentile::operator=(const AliJEbePercentile& obj){
 double AliJEbePercentile::GetEbeFlowPercentile(int cBin, int ih, double vn){
 	double pecentile = -1;
 	for(int ibv = 0 ; ibv < NBVn ; ibv++){
-		if(vn > vnLimit[cBin][ih][ibv]){
+		if(vn <= vnLimit[cBin][ih][ibv]){
 			pecentile = vnPercentile[ibv];
 		}
 	}

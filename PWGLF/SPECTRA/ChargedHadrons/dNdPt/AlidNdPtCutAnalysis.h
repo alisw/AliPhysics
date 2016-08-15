@@ -58,7 +58,7 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack) const;
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Float_t centralityF) const;
 
   // Getters
   THnSparseF *GetEventCount()   const {return fEventCount;}
@@ -94,6 +94,7 @@ public :
   TH3D *GetFracSharedClustEtaPt() const {return fFracSharedClustEtaPt;}
   TH3D *GetDCAyEtaPt() const {return fDCAyEtaPt;}
   TH3D *GetDCAzEtaPt() const {return fDCAzEtaPt;}
+  TH3D *GetDCAyCenPt() const {return fDCAyCenPt;}
 
   TH3D *GetCrossRowsPhiPt() const {return fCrossRowsPhiPt;} 
   TH3D *GetChi2PerClustPhiPt() const {return fChi2PerClustPhiPt;}
@@ -115,6 +116,7 @@ public :
   TH3D *GetDCAzPhiPtMCPrim() const {return fDCAzPhiPtMCPrim;}
   TH3D *GetDCAyEtaPhiMCPrim() const {return fDCAyEtaPhiMCPrim;}
   TH3D *GetDCAzEtaPhiMCPrim() const {return fDCAzEtaPhiMCPrim;}
+  TH3D *GetDCAyCenPtMCPrim() const {return fDCAyCenPtMCPrim;}
 
   TH3D *GetDCAyEtaPtMCSec() const {return fDCAyEtaPtMCSec;}
   TH3D *GetDCAzEtaPtMCSec() const {return fDCAzEtaPtMCSec;}
@@ -122,6 +124,7 @@ public :
   TH3D *GetDCAzPhiPtMCSec() const {return fDCAzPhiPtMCSec;}
   TH3D *GetDCAyEtaPhiMCSec() const {return fDCAyEtaPhiMCSec;}
   TH3D *GetDCAzEtaPhiMCSec() const {return fDCAzEtaPhiMCSec;}
+  TH3D *GetDCAyCenPtMCSec() const {return fDCAyCenPtMCSec;}
 
   TH3D *GetDCAyEtaPtMCSecDecays() const {return fDCAyEtaPtMCSecDecays;}
   TH3D *GetDCAzEtaPtMCSecDecays() const {return fDCAzEtaPtMCSecDecays;}
@@ -129,6 +132,7 @@ public :
   TH3D *GetDCAzPhiPtMCSecDecays() const {return fDCAzPhiPtMCSecDecays;}
   TH3D *GetDCAyEtaPhiMCSecDecays() const {return fDCAyEtaPhiMCSecDecays;}
   TH3D *GetDCAzEtaPhiMCSecDecays() const {return fDCAzEtaPhiMCSecDecays;}
+  TH3D *GetDCAyCenPtMCSecDecays() const {return fDCAyCenPtMCSecDecays;}
 
   TH3D *GetDCAyEtaPtMCSecDecaysK0s() const {return fDCAyEtaPtMCSecDecaysK0s;}
   TH3D *GetDCAzEtaPtMCSecDecaysK0s() const {return fDCAzEtaPtMCSecDecaysK0s;}
@@ -136,6 +140,7 @@ public :
   TH3D *GetDCAzPhiPtMCSecDecaysK0s() const {return fDCAzPhiPtMCSecDecaysK0s;} 
   TH3D *GetDCAyEtaPhiMCSecDecaysK0s() const {return fDCAyEtaPhiMCSecDecaysK0s;}
   TH3D *GetDCAzEtaPhiMCSecDecaysK0s() const {return fDCAzEtaPhiMCSecDecaysK0s;}
+  TH3D *GetDCAyCenPtMCSecDecaysK0s() const {return fDCAyCenPtMCSecDecaysK0s;}
 
   TH3D *GetDCAyEtaPtMCSecDecaysLambda() const {return fDCAyEtaPtMCSecDecaysLambda;}
   TH3D *GetDCAzEtaPtMCSecDecaysLambda() const {return fDCAzEtaPtMCSecDecaysLambda;}
@@ -143,6 +148,7 @@ public :
   TH3D *GetDCAzPhiPtMCSecDecaysLambda() const {return fDCAzPhiPtMCSecDecaysLambda;}
   TH3D *GetDCAyEtaPhiMCSecDecaysLambda() const {return fDCAyEtaPhiMCSecDecaysLambda;}
   TH3D *GetDCAzEtaPhiMCSecDecaysLambda() const {return fDCAzEtaPhiMCSecDecaysLambda;}
+  TH3D *GetDCAyCenPtMCSecDecaysLambda() const {return fDCAyCenPtMCSecDecaysLambda;}
 
   TH3D *GetDCAyEtaPtMCSecMaterial() const {return fDCAyEtaPtMCSecMaterial;} 
   TH3D *GetDCAzEtaPtMCSecMaterial() const {return fDCAzEtaPtMCSecMaterial;}
@@ -150,6 +156,7 @@ public :
   TH3D *GetDCAzPhiPtMCSecMaterial() const {return fDCAzPhiPtMCSecMaterial;}
   TH3D *GetDCAyEtaPhiMCSecMaterial() const {return fDCAyEtaPhiMCSecMaterial;}
   TH3D *GetDCAzEtaPhiMCSecMaterial() const {return fDCAzEtaPhiMCSecMaterial;}
+  TH3D *GetDCAyCenPtMCSecMaterial() const {return fDCAyCenPtMCSecMaterial;} 
 
 private:
 
@@ -199,6 +206,7 @@ private:
   TH3D *fFracSharedClustEtaPt;      // fracSharedClust:eta:pt
   TH3D *fDCAyEtaPt;                 // DCAy:eta:pt
   TH3D *fDCAzEtaPt;                 // DCAz:eta:pt
+  TH3D *fDCAyCenPt;                 // DCAy:centrality:pt
 
   TH3D *fCrossRowsPhiPt;            // nCrossRows:phi:pt
   TH3D *fChi2PerClustPhiPt;         // chi2PerClust:phi:pt
@@ -220,6 +228,7 @@ private:
   TH3D *fDCAzPhiPtMCPrim;             // DCAz:phi:pt for primary particles
   TH3D *fDCAyEtaPhiMCPrim;            // DCAy:eta:phi for primary particles
   TH3D *fDCAzEtaPhiMCPrim;            // DCAz:eta:phi for primary particles
+  TH3D *fDCAyCenPtMCPrim;             // DCAy:centrality:pt for primary particles
 
   TH3D *fDCAyEtaPtMCSec;             // DCAy:eta:pt for secondary particles
   TH3D *fDCAzEtaPtMCSec;             // DCAz:eta:pt for secondary particles
@@ -227,6 +236,7 @@ private:
   TH3D *fDCAzPhiPtMCSec;             // DCAz:phi:pt for secondary particles
   TH3D *fDCAyEtaPhiMCSec;            // DCAy:eta:phi for secondary particles
   TH3D *fDCAzEtaPhiMCSec;            // DCAz:eta:phi for secondary particles
+  TH3D *fDCAyCenPtMCSec;             // DCAy:centrality:pt for secondary particles
 
   TH3D *fDCAyEtaPtMCSecDecays;     // DCAy:eta:pt for secondary particles from decays in MC
   TH3D *fDCAzEtaPtMCSecDecays;     // DCAz:eta:pt for secondary particles from decays in MC
@@ -234,6 +244,7 @@ private:
   TH3D *fDCAzPhiPtMCSecDecays;     // DCAz:phi:pt for secondary particles from decays in MC
   TH3D *fDCAyEtaPhiMCSecDecays;    // DCAy:eta:phi for secondary particles from decays in MC
   TH3D *fDCAzEtaPhiMCSecDecays;    // DCAz:eta:phi for secondary particles from decays in MC
+  TH3D *fDCAyCenPtMCSecDecays;     // DCAy:centrality:pt for secondary particles from decays in MC
 
   TH3D *fDCAyEtaPtMCSecDecaysK0s;     // DCAy:eta:pt for secondary particles from decays K0s in MC
   TH3D *fDCAzEtaPtMCSecDecaysK0s;     // DCAz:eta:pt for secondary particles from decays K0s in MC
@@ -241,6 +252,7 @@ private:
   TH3D *fDCAzPhiPtMCSecDecaysK0s;     // DCAz:phi:pt for secondary particles from decays K0s in MC
   TH3D *fDCAyEtaPhiMCSecDecaysK0s;    // DCAy:eta:phi for secondary particles from decays K0s in MC
   TH3D *fDCAzEtaPhiMCSecDecaysK0s;    // DCAz:eta:phi for secondary particles from decays K0s in MC
+  TH3D *fDCAyCenPtMCSecDecaysK0s;     // DCAy:centrality:pt for secondary particles from decays K0s in MC
 
   TH3D *fDCAyEtaPtMCSecDecaysLambda;     // DCAy:eta:pt for secondary particles from decays Lambda in MC
   TH3D *fDCAzEtaPtMCSecDecaysLambda;     // DCAz:eta:pt for secondary particles from decays Lambda in MC
@@ -248,6 +260,7 @@ private:
   TH3D *fDCAzPhiPtMCSecDecaysLambda;     // DCAz:phi:pt for secondary particles from decays Lambda in MC
   TH3D *fDCAyEtaPhiMCSecDecaysLambda;    // DCAy:eta:phi for secondary particles from decays Lambda in MC
   TH3D *fDCAzEtaPhiMCSecDecaysLambda;    // DCAz:eta:phi for secondary particles from decays Lambda in MC
+  TH3D *fDCAyCenPtMCSecDecaysLambda;     // DCAy:centrality:pt for secondary particles from decays Lambda in MC
 
   TH3D *fDCAyEtaPtMCSecMaterial;   // DCAy:eta:pt for secondary particles from material in MC
   TH3D *fDCAzEtaPtMCSecMaterial;   // DCAz:eta:pt for secondary particles from material in MC
@@ -255,6 +268,7 @@ private:
   TH3D *fDCAzPhiPtMCSecMaterial;   // DCAz:phi:pt for secondary particles from material in MC
   TH3D *fDCAyEtaPhiMCSecMaterial;  // DCAy:eta:phi for secondary particles from material in MC
   TH3D *fDCAzEtaPhiMCSecMaterial;  // DCAz:eta:phi for secondary particles from material in MC
+  TH3D *fDCAyCenPtMCSecMaterial;   // DCAy:centrality:pt for secondary particles from material in MC
 
   AlidNdPtCutAnalysis(const AlidNdPtCutAnalysis&); // not implemented
   AlidNdPtCutAnalysis& operator=(const AlidNdPtCutAnalysis&); // not implemented

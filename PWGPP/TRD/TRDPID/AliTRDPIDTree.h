@@ -110,7 +110,7 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   void SetupV0qa();
   void FillV0PIDlist();
   void ClearV0PIDlist();
-  Double_t GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t& ar, Double_t& etaar, Double_t& thetaar);
+  Double_t GetPhi(AliESDtrack *const fTrack,Int_t iPl, Double_t& ar, Double_t& thetaar);
   Bool_t PassTrackCuts(AliESDtrack *fESDTrack=0);
   Bool_t HasMissingLayer(const AliVTrack *fESDTrack=0);
   Int_t  GetNTrackletsPID(const AliVTrack *fESDTrack=0) const;
@@ -140,25 +140,24 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   // TTree stuff for PID References
   Int_t frunnumber;                  //! Tree: Run number
   Double_t fcentrality;              //! Tree: Centrality
-  Int_t fTRDNtracklets;              //! Tree: number of tracklets for layers with dE/dx>0
   Double_t fTRDslices[48];           //! Tree: dEdx slices (8 per layer)
   Double_t fTRDMomentum[6];          //! Tree: local track momentum at anode wire
   Int_t fTRDNcls;                    //! Tree: number of clusters
   Int_t fTRDntracklets;              //! Tree: number of tracking tracklets
   Int_t fTRDntrackletsPID;           //! Tree: number of pid tracklets
   Double_t fTRDphi[6];               //! Tree: local track inclination phi (from track extrapol)
-  Double_t fTRDglobalphi;            //! Tree: global track phi
   Double_t fTRDY[6];                 //! Tree: local track y-position (from track extrapol)
-  Double_t fTRDeta[6];               //! Tree: local track eta (from track extrapol)
+  Double_t fTRDtheta;                //! Tree: local track theta in layer 0 (from track extrapol)
   Double_t fTRDthetalayer[6];        //! Tree: local track theta (from track extrapol)
-  Double_t fTRDtheta;                //! Tree: theta track
-  Double_t fTRDsignal;               //! Tree: Truncated mean
-  Int_t fTRDnclsdEdx;                //! Tree: number of clusters dedx
-  Int_t fTRDnch;                     //! Tree: number of chambers dedx
+  Double_t fTRDTPCtgl;               //! Tree: TPC dip angle
+  Double_t fTRDsignal;               //! Tree: Truncated mean signal
+  Int_t fTRDnclsdEdx;                //! Tree: number of clusters dedx (truncated mean method)
+  Int_t fTRDnch;                     //! Tree: number of chambers dedx (truncated mean method)
   Float_t fNSigmaTPC[3];             //! Tree: TPC nsigma ele, pion, proton
   Float_t fNSigmaTOF[3];             //! Tree: TOF nsigma ele, pion, proton
   Int_t fPDG;                        //! Tree: PDG value from V0 identification
   Int_t fPDGTRUE;                    //! Tree: true PDG value (only available in MC)
+  Int_t fTrackCharge;                //! Tree: charge of track
   Float_t fDCA[2];                   //! Tree: DCA
   Float_t fChi2;                     //! Tree: Chi at TRD
   Double_t fsigmaTRD[5];             //! Tree: truncated mean sigma
@@ -167,7 +166,8 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
 
   // Histograms
   TH1F *fhtrackCuts;                 //! Track and Event Cuts - QA
-  TH2F *fhArmenteros;                 //! 2D V0 QA Hist
+  TH1F *fhEventCount;                //! count number of events analysed 
+  TH2F *fhArmenteros;                //! 2D V0 QA Hist
 
   AliTRDPIDTree(const AliTRDPIDTree&); // not implemented
   AliTRDPIDTree& operator=(const AliTRDPIDTree&); // not implemented

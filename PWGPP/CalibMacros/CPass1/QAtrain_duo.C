@@ -88,9 +88,10 @@ Int_t       run_number = 0;
 
 
 void QAtrain_duo(const char *suffix="", Int_t run = 0, 
-             const char *xmlfile   = "wn.xml",
-             Int_t  stage          = 0, /*0 = QA train, 1...n - merging stage*/
-             const char *cdb     = "raw://")
+		 const char *xmlfile   = "wn.xml",
+		 Int_t  stage          = 0, /*0 = QA train, 1...n - merging stage*/
+		 const char *cdb     = "cvmfs://")
+//             const char *cdb     = "raw://")
 //             const char *cdb     = "local://$ALICE_ROOT/OCDB")
 {
   run_number = run;

@@ -320,13 +320,10 @@ void AliAnalyseLeadingTrackUE::RemoveInjectedSignals(TObjArray* tracks, TObject*
     }
     
     if (!mother)
-    {
-      Printf("WARNING: No mother found for particle %d:", part->GetLabel());
-      continue;
-    }
+      AliWarning(Form("WARNING: No mother found for particle %d. Removing it from list.", part->GetLabel()));
 
 //     Printf("%d %d %d", i, part->GetLabel(), mother->GetLabel());
-    if (mother->GetLabel() >= maxLabel)
+    if (!mother || mother->GetLabel() >= maxLabel)
     {
 //       Printf("Removing %d with label %d", i, part->GetLabel()); ((AliMCParticle*)part)->Particle()->Print(); ((AliMCParticle*)mother)->Particle()->Print();
       TObject* object = tracks->RemoveAt(i);
@@ -652,8 +649,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                 else
                 {
                   // if mother not found, accept particle only in case of particleSpecies == 3. To include it in all or no sample is no solution
-                  Printf("WARNING: No mother found for particle %d:", part->GetLabel());
-                  part->Print();
+                  AliWarning(Form("WARNING: No mother found for particle %d:", part->GetLabel()));
+                  //part->Print();
   
                   /*
                   // this code prints the details of the mother that is missing in the AOD

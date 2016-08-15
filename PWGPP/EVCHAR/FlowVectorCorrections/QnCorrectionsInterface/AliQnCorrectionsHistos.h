@@ -27,7 +27,6 @@
 #include <TAxis.h>
 #include <TVector.h>
 #include <TTimeStamp.h>
-#include "AliQnCorrectionsVarManager.h"
 
 
 class TH1;

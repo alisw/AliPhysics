@@ -255,7 +255,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     else return 0;}//Channel is ok by default
 
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
-  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE);
+  static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE, Bool_t justL1phase=kTRUE);
 
   private:
   

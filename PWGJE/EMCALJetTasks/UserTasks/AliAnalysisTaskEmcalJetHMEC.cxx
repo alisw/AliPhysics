@@ -17,6 +17,7 @@
 #include "AliBasicParticle.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
+#include "AliTLorentzVector.h"
 
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
@@ -243,7 +244,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   }
 
   // Retrieve tracks
-  AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
+  AliTrackContainer * tracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracksForCorrelations"));
   if (!tracks) {
     AliError(Form("%s: Unable to retrieve tracks!", GetName()));
     return kTRUE;
@@ -258,7 +259,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
 
   // Used to calculate the angle betwene the jet and the hadron
-  TVector3 jetVector, trackVector;
+  TVector3 jetVector;
   // Get z vertex
   Double_t zVertex=fVertex[2];
   // Flags
@@ -275,18 +276,15 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Determining bins for histogram indices
   Int_t jetPtBin = -1;
   Int_t etaBin = -1;
-  // For the jets below
-  AliEmcalJet * jet = 0;
   // For comparison to the current jet
   AliEmcalJet * leadingJet = jets->GetLeadingJet();
+  // For getting the proper properties of tracks
+  AliTLorentzVector track;
 
   // Determine the trigger for the current event
   UInt_t eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
-  // Just to be certain that we are interating from the start
-  jets->ResetCurrentID();
-  while ((jet = jets->GetNextAcceptJet())) {
-    
+  for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
     if (!(eventTrigger & fTriggerType)) continue;
 
@@ -311,9 +309,11 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     if (jet->Pt() > 15) {
 
-      AliVTrack * track = 0;
-      tracks->ResetCurrentID();
-      while ((track = tracks->GetNextAcceptTrack())) {
+      for (auto trackIter : tracks->accepted_momentum()) {
+
+        // Get proper track proeprties
+        track.Clear();
+        track = trackIter.first;
 
         // Determine relative angles and distances and set the respective variables
         GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
@@ -334,21 +334,20 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
         }
 
         // Fill track properties
-        fHistTrackPt->Fill(track->Pt());
+        fHistTrackPt->Fill(track.Pt());
 
-        trackVector.SetXYZ( track->Px(), track->Py(), track->Pz() );
         if ( (jet->Pt() > 20.) && (jet->Pt() < 60.) ) {
-          fHistJHPsi->Fill(tracks->GetNTracks(), track->Pt(), trackVector.Angle(jetVector) * TMath::RadToDeg() );
+          fHistJHPsi->Fill(tracks->GetNTracks(), track.Pt(), track.Vect().Angle(jetVector) * TMath::RadToDeg() );
         }
 
-        fHistJetH[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track->Pt());
+        fHistJetH[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track.Pt());
         fHistJetHEtaPhi->Fill(deltaEta, deltaPhi);
 
         // Calculate single particle tracking efficiency for correlations
-        efficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorrection);
+        efficiency = EffCorrection(track.Eta(), track.Pt(), fDoEffCorrection);
 
         if (biasedJet == kTRUE) {
-          fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track->Pt());
+          fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track.Pt());
 
           if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
             eventActivity = fCent;
@@ -358,10 +357,10 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
           }
 
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
+            Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           } else { 
-            Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
+            Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
         }
@@ -416,8 +415,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       // check for a trigger jet
       if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
-        jets->ResetCurrentID();
-        while ((jet = jets->GetNextAcceptJet())) {
+        for (auto jet : jets->accepted()) {
+
           // Jet properties
           // Determine if we have the lead jet
           leadJet = kFALSE;
@@ -444,11 +443,15 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
                   AliError(Form("%s:Failed to retrieve tracks from mixed events", GetName()));
                 }
 
+                // Fill into TLorentzVector for use with functions below
+                track.Clear();
+                track.SetPtEtaPhiE(bgTrack->Pt(), bgTrack->Eta(), bgTrack->Phi(), 0);
+
                 // Calculate single particle tracking efficiency of mixed events for correlations
-                efficiency = EffCorrection(bgTrack->Eta(), bgTrack->Pt(), fDoEffCorrection);
+                efficiency = EffCorrection(track.Eta(), track.Pt(), fDoEffCorrection);
 
                 // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
-                GetDeltaEtaDeltaPhiDeltaR(bgTrack, jet, deltaEta, deltaPhi, deltaR);
+                GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
                 if (fBeamType == kAA || fBeamType == kpA) { //pA and AA
                   eventActivity = fCent;
@@ -458,10 +461,10 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
                 }
 
                 if(fDoLessSparseAxes) {  // check if we want all the axis filled
-                  Double_t triggerEntries[6] = {eventActivity, jet->Pt(), bgTrack->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
+                  Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
                   FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), kTRUE);
                 } else {
-                  Double_t triggerEntries[7] = {eventActivity, jet->Pt(), bgTrack->Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
+                  Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
                   FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), kTRUE);
                 }
               }
@@ -500,16 +503,16 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::BiasedJet(AliEmcalJet * jet)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetHMEC::GetDeltaEtaDeltaPhiDeltaR(AliVParticle * particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR)
+void AliAnalysisTaskEmcalJetHMEC::GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR)
 {
   // TODO: Understand order of arguments to DeltaPhi vs DeltaEta
   // Returns deltaPhi in symmetric range so that we can calculate DeltaR.
-  deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne->Phi(), -1.0*TMath::Pi(), TMath::Pi());
-  deltaEta = particleOne->Eta() - particleTwo->Eta();
+  deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne.Phi(), -1.0*TMath::Pi(), TMath::Pi());
+  deltaEta = particleOne.Eta() - particleTwo->Eta();
   deltaR = TMath::Sqrt(deltaPhi*deltaPhi + deltaEta*deltaEta);
 
   // Adjust to the normal range after the DeltaR caluclation
-  deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne->Phi(), -0.5*TMath::Pi(), 3*TMath::Pi()/2.);
+  deltaPhi = DeltaPhi(particleTwo->Phi(), particleOne.Phi(), -0.5*TMath::Pi(), 3*TMath::Pi()/2.);
 }
 
 //________________________________________________________________________
@@ -637,13 +640,10 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
   tracksClone->SetOwner(kTRUE);
 
   // Loop over all tracks
-  AliVParticle * particle = 0;
   AliBasicParticle * clone = 0;
   AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
-  // Ensure that we start from the beginning
-  tracks->ResetCurrentID();
 
-  while ((particle = tracks->GetNextAcceptTrack()))
+  for (auto particle : tracks->accepted())
   {
     // Fill some QA information about the tracks
     Int_t trackPtBin = GetTrackPtBin(particle->Pt());

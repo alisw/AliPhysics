@@ -28,18 +28,18 @@
 #include  "AliJPhoton.h"
 #include  "AliJEventHeader.h"
 // TODO #include  "AliESDVZERO.h"
-#include "AliJHistos.h"
+#include "AliJHistogramInterface.h"
 
 #include  "AliJCard.h"
 #include  "AliJEventPool.h"
 
 #include  "AliJRunHeader.h"
-#include "AliJCorrelations.h"
+#include "AliJCorrelationInterface.h"
 #include "AliJTrackCut.h"
 #include <AliJRunTable.h>
 
 //______________________________________________________________________________
-AliJDataManager::AliJDataManager(AliJCard *inCard, AliJHistos *histin, AliJCorrelations *corrin, Bool_t execLocal ):
+AliJDataManager::AliJDataManager(AliJCard *inCard, AliJHistogramInterface *histin, AliJCorrelationInterface *corrin, Bool_t execLocal ):
     fChain(NULL), 
     fCard(inCard), 
     fhistos(histin), 
@@ -151,7 +151,6 @@ bool AliJDataManager::IsGoodEvent(){
     int  nContributorVtx =  fEventHeader->GetVtxMult();
     double zVert    = fEventHeader->GetZVertex();
     UInt_t triggermaskJCorran = fEventHeader->GetTriggerMaskJCorran();
-    //double ZVertErr = fEventHeader->GetZVertexErr();
     bool goodVertex = kFALSE;
     bool triggerred = (IsSelectedTrigger((int) triggermaskJCorran)); // CUT1
 
@@ -214,9 +213,7 @@ bool AliJDataManager::IsGoodEvent(){
             fhistos->fhVertexZTriggVtx->Fill(nContributorVtx,0.);
         }else{
             fhistos->fhEvents->Fill( 2 );
-            //cout<<zVert << endl; 
-            fhistos->fhZVertRaw->Fill(zVert); 
-            //fhistos->fhZVertRawErr->Fill(ZVertErr);
+            fhistos->fhZVertRaw->Fill(zVert);
             fhistos->fhVertexZTriggVtx->Fill(nContributorVtx,zVert);
             goodVertex = (bool) fCard->VertInZRange(zVert);
 
@@ -326,7 +323,7 @@ void AliJDataManager::ChainInputStream(const char* infileList){
     // chainer
 
     if( fExecLocal ){
-
+      
         // read root nano data files in a list  
         char inFile[200];
         ifstream infiles(infileList);

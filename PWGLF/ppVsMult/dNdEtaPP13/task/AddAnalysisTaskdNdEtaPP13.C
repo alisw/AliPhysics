@@ -9,7 +9,8 @@
 #endif
 
 
-const Double_t centBinsMultV0M[] = {0., 0.01, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+//const Double_t centBinsMultV0M[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+const Double_t centBinsMultV0M[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
 const Double_t centBinsMultRef[] = {0., 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 100., 200.};
 const Double_t centBinsMB[] = {0., 100.};
 
@@ -22,10 +23,10 @@ AliAnalysisTaskdNdEtapp13 *
 AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           const Char_t *listname = "clist",
                           //
-                          Float_t etaMin     =-1,          // min eta range to fill in histos
-                          Float_t etaMax     = 1,          // max eta range to fill in histos
-                          Float_t zMin       = -7,         // process events with Z vertex min
-                          Float_t zMax       =  7,         //                     max positions
+                          Float_t etaMin     =-5,          // min eta range to fill in histos
+                          Float_t etaMax     = 5,          // max eta range to fill in histos
+                          Float_t zMin       = -10,         // process events with Z vertex min
+                          Float_t zMax       =  10,         //                     max positions
                           const char* useCentVar = "V0M",          // centrality variable to use
                           //
                           Float_t cutSigNStd  = 1.5,        // cut on weighed distance used to extract signal
@@ -41,7 +42,7 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           float  injScale    = 1.,//0.7,    // inject injScale*Ncl(Lr1/Lr2) hits
                           Bool_t scaleDTheta = kTRUE,       // scale dTheta by 1/sin^2(theta) in trackleting
                           float  nStdDev     = 25.,         // number of st.dev. for tracklet cut to keep
-                          float  dphi        = 0.06,        // dphi window (sigma of tracklet cut)
+                          float  dphi        = 0.08,        // dphi window (sigma of tracklet cut)
                           float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used with additional cut on |dthetaX|, apart from w.distance
                           float  phishift    = 0.0045,      // bending shift
                           Bool_t remOvl      = kTRUE,
@@ -51,32 +52,32 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           UInt_t trigSel = AliVEvent::kINT7//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
 )
 {
-    
+
     if (cutSigDPhiS<0) cutSigDPhiS = TMath::Sqrt(cutSigNStd)*dphi;
-    
+
     /* init analysis name */
     TString analysisName = "dNdEtapp13";
-    
+
     /* check analysis manager */
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         Error("", "cannot get analysis manager");
         return NULL;
     }
-    
+
     /* check input event handler */
     if (!mgr->GetInputEventHandler()) {
         Error("", "cannot get input event handler");
         return NULL;
     }
-    
+
     /* get common input data container */
     AliAnalysisDataContainer *inputc = mgr->GetCommonInputContainer();
     if (!inputc) {
         Error("", "cannot get common input container");
         return NULL;
     }
-    
+
     /* create output data container */
     AliAnalysisDataContainer *outputc1 = mgr->CreateContainer(listname, TList::Class(), AliAnalysisManager::kOutputContainer, outfilename);
 
@@ -85,29 +86,29 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
         return NULL;
     }
 
-    
+
     /*  create task and connect input/output */
     AliAnalysisTaskdNdEtapp13 *task = new AliAnalysisTaskdNdEtapp13("AliAnalysisTaskdNdEtapp13");
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, inputc);
     mgr->ConnectOutput(task, 1, outputc1);
-    
+
     //__________________________________________________________________
     //__________________________________________________________________
     //__________________________________________________________________
-    
+
     /* configure task */
-    
+
     //__________________________________________________________________
     //__________________________________________________________________
     //__________________________________________________________________
-    
+
     //
     task->SetUseCentralityVar(useCentVar);
-    
+
     const Double_t *centBins = NULL;
     Int_t nCentBins = 0;
-    TString strCentr = useCentVar; 
+    TString strCentr = useCentVar;
     if (strCentr == "MB"){
       centBins = centBinsMB;
       nCentBins = sizeof(centBinsMB) / 8 - 1;
@@ -120,7 +121,7 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
       centBins = centBinsMultRef;
       nCentBins = sizeof(centBinsMultRef) / 8 - 1;
     }
-    
+
     task->SetCentPercentiles(centBins, nCentBins);
     task->SetTriggerSelection(trigSel);
     //
@@ -153,4 +154,3 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     //    task->Dump();
     return task;
 }
-

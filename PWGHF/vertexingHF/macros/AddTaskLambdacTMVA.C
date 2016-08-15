@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t keepLcNoQuark,Bool_t isHijing,
-Int_t syst=0, Int_t bit=0, TString postname="")
+Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0,Int_t storeNtupleReco = 0)
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -32,7 +32,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   analysiscuts->SetMaxPtCandidate(10000.);
 
   // Analysis task                                                                                                                     
-  AliAnalysisTaskSELambdacTMVA *lambdacTask = new AliAnalysisTaskSELambdacTMVA("LambdacAnalysis",storeNtuple,analysiscuts);
+  AliAnalysisTaskSELambdacTMVA *lambdacTask = new AliAnalysisTaskSELambdacTMVA("LambdacAnalysis",storeNtuple,storeNtupleReco,analysiscuts);
   //if(storeNtuple<0 || storeNtuple>2) {AliFatal("Invalid storeNtuple argument - check value");}
   lambdacTask->SetReadMC(readMC);
 	lambdacTask->SetKeepLcNotFromQuark(keepLcNoQuark);
@@ -50,6 +50,27 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   lambdacTask->SetDebugLevel(0);
   mgr->AddTask(lambdacTask);
 
+	if(useNtrkWeight>0){
+		TH1F *hNchPrimaries;
+		if(useNtrkWeight==1) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithD");
+		else if(useNtrkWeight==2) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithCand");
+		else if(useNtrkWeight==3) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvSel");
+		else if(useNtrkWeight==4) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrPSSel");
+		else {
+			AliFatal("useNtrkWeight value not a valid option - choice from 1-4");
+			return 0x0;
+		}
+		if(hNchPrimaries){ 
+			lambdacTask->SetUseNchWeight(kTRUE);
+			lambdacTask->SetMCNchHisto(hNchPrimaries);
+		}
+		else {
+			AliFatal("Histogram for multiplicity weights not found");
+			return 0x0;
+		}
+	}
+
+
   //
   // Create containers for input/output
   TString outputfile = AliAnalysisManager::GetCommonFileName();
@@ -62,6 +83,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   TString normname = "coutputLcNorm";
   TString normnament = "coutputLcNormNt";
   TString ntuplename = "fNtupleLambdac";
+  TString ntuplenamereco = "fNtupleLambdacReco";
   TString nev2 = "coutputNev";
   TString outname2 = "coutputLambdacMC";
   TString aPrioriname = "coutputAPriori";
@@ -82,6 +104,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   normname += postname.Data();
   normnament += postname.Data();
   ntuplename +=  postname.Data();
+  ntuplenamereco +=  postname.Data();
   nev2 +=  postname.Data();
   outname2 +=  postname.Data();
 
@@ -109,15 +132,23 @@ Int_t syst=0, Int_t bit=0, TString postname="")
 
   mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
 
+	TString foutname = Form("InvMassLambdac_nt1.root",postname.Data());
   if (storeNtuple) {
-		TString foutname = Form("InvMassLambdac_nt1.root",postname.Data());
     AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								     AliAnalysisManager::kOutputContainer,foutname);
     coutputLambdac2->SetSpecialOutput();
     mgr->ConnectOutput(lambdacTask,5,coutputLambdac2);    
+
     coutputLambdacNorm = mgr->CreateContainer(normnament,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,foutname);
     mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
-  }
+	}
+	if(storeNtupleReco>0){
+		AliAnalysisDataContainer *coutputLambdac3 = mgr->CreateContainer(ntuplenamereco,TNtuple::Class(),
+				AliAnalysisManager::kOutputContainer,foutname);
+		coutputLambdac3->SetSpecialOutput();
+		mgr->ConnectOutput(lambdacTask,6,coutputLambdac3);    
+	}
+
 
   return lambdacTask;
 }

@@ -6,9 +6,7 @@ ClassImp(AliAnalysisC2Settings)
 //________________________________________________________________________
 AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fDataType(-1),
-  fEtaAcceptanceLowEdge(-0.8),
-  fEtaAcceptanceUpEdge(0.8),
-  fNEtaBins(15),
+  fEtaBinEdges(0),
   fPhiAcceptanceLowEdge(0),
   fPhiAcceptanceUpEdge(2*TMath::Pi()),
   fNPhiBins(26),
@@ -19,7 +17,14 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fNZvtxBins(20),
   fMaxDcaLong(3.0),
   fMaxDcaTang(2.4),
-  fOfflineTrigger("")
+  fMultEstimatorRefMult08("RefMult08"),
+  fMultEstimatorV0M("V0M"),
+  fMultEstimatorValidTracks("ValidTracks"),
+  fMultEstimator(""),
+  fTriggerCint7("CINT7-B-"),
+  fTriggerVhmV0M("CVHMV0M-B-"),
+  fTrigger(""),
+  fIsITSsa(false)
 {
   Double_t _ptbins[] = {3.0, 4.0, 6.0, 8.0, 15.0};
   fPtBinEdges = edgeContainer(_ptbins, _ptbins + sizeof(_ptbins) / sizeof(_ptbins[0]));

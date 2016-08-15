@@ -51,7 +51,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   // Create and connect containers for input/output  
   //TString outputfile = AliAnalysisManager::GetCommonFileName();
   TString outputfile = Form("Lc2K0Sp_tree_pA%s.root", suffixName.Data());
-  TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="";
+  TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="";
 
   output1name = Form("treeList%s", suffixName.Data());
   output2name = Form("Lc2pK0Scounter%s", suffixName.Data());
@@ -59,6 +59,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   output4name = Form("treeSgn%s", suffixName.Data());
   output5name = Form("treeBkg%s", suffixName.Data());
   output6name = Form("listHistoKF%s", suffixName.Data());
+  output7name = Form("weights%s", suffixName.Data());
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(output1name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
@@ -78,6 +79,9 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
   
   AliAnalysisDataContainer *coutput6   = mgr->CreateContainer(output6name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
   mgr->ConnectOutput(task, 6, coutput6);  
+  
+  AliAnalysisDataContainer *coutput7   = mgr->CreateContainer(output7name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // weights
+  mgr->ConnectOutput(task, 7, coutput7);
   
   return task;
   

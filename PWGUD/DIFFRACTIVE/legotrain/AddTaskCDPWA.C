@@ -1,9 +1,8 @@
 AliAnalysisTaskCDPWA *AddTaskCDPWA(
 		Bool_t IsRun2 = kTRUE,//Select Run1/Run2
-		Bool_t IsSaveGap = kFALSE,//Store Gap events
-		Bool_t IsComb = kTRUE,//Store combinatorics
-		Bool_t IsSaveGen = kFALSE,//For DIME/DRgen and PWA
-		Bool_t IsPythia8 = kFALSE//For Pythia8
+		Bool_t IsComb = kFALSE,//Store combinatorics
+		Bool_t IsPythia8 = kFALSE,//For Pythia8
+		Bool_t IsPWAMC = kFALSE//For DRgen, DIME
 		)
 {
 
@@ -31,10 +30,9 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA(
 	AliAnalysisTaskCDPWA *task = new AliAnalysisTaskCDPWA("test");
 	task->SetIsRun2(IsRun2);
 	task->SetIsMC(isMC);
-	task->SetSaveGapEvents(IsSaveGap);
 	task->SetCombinatoricsMode(IsComb);
-	task->SetSaveGenParticle(IsSaveGen);
 	task->SetIsPythia8(IsPythia8);
+	task->SetIsPWAMC(IsPWAMC);
 
 	/* For the local-test
 	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");

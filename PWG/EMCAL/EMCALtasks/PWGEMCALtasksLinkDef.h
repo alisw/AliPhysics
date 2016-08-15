@@ -23,6 +23,7 @@
 #pragma link C++ class  AliEmcalTenderTask+;
 #pragma link C++ class  AliEmcalTrackingQATask+;
 #pragma link C++ class  AliEmcalTrackPropagatorTask+;
+#pragma link C++ class  AliEmcalCellMonitorTask+;
 #pragma link C++ class  AliEsdSkimTask+;
 #pragma link C++ class  AliEsdTrackExt+;
 #pragma link C++ class  AliHadCorrTask+;

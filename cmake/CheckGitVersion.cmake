@@ -14,7 +14,7 @@ set(ALIPHYSICS_SERIAL 0)
 set(ALIPHYSICS_GITREFTYPE "")
 
 # Checks if the sources where cloned as a full git repository
-if(EXISTS ${AliPhysics_SOURCE_DIR}/.git/)
+if((EXISTS ${AliPhysics_SOURCE_DIR}/.git/) OR (EXISTS ${AliPhysics_SOURCE_DIR}/.git))
   # Git installation mandatory
   find_package(Git REQUIRED)
 
@@ -185,9 +185,9 @@ if(EXISTS ${AliPhysics_SOURCE_DIR}/.git/)
     # it does not get here
     message(FATAL_ERROR "Git type error")
   endif()
-else(EXISTS ${AliPhysics_SOURCE_DIR}/.git/)
+else()
     message(WARNING "AliPhysics sources not downloaded from a Version Control System. I can't tell which revision you are using!")
-endif(EXISTS ${AliPhysics_SOURCE_DIR}/.git/)
+endif()
 
 # ALIPHYSICS_VERSION_RPM
 # Replacing -/ with . , normally it should not contain / 

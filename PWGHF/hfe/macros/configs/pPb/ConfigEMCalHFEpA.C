@@ -1,5 +1,4 @@
 
-
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
 										
@@ -13,7 +12,9 @@ Bool_t isEMCal = kFALSE,
 Bool_t isTrigger = kFALSE,
 Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
 Bool_t isTender = kFALSE,
-char* period = "b"											
+char* period = "b",
+Int_t   centralityEstimator = 0,
+Bool_t isCentralitySys 		= kFALSE
 )
 
 {
@@ -51,11 +52,26 @@ char* period = "b"
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
+	
+	
+	
 	if(configIndex==14) hfecuts->SetMinNClustersITS(2);								//Minimum number of clusters on ITS
 	else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
 	else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
 	else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
-	else hfecuts->SetMinNClustersITS(3);								            //Minimum number of clusters on ITS
+	else hfecuts->SetMinNClustersITS(3);	
+		
+	if(!isEMCal){
+		if(configIndex==13) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+		else if(configIndex==82) hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+		else hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);	
+		
+		if(configIndex==14) hfecuts->SetMinNClustersITS(3);								//Minimum number of clusters on ITS
+		else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
+		else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
+		else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
+		else hfecuts->SetMinNClustersITS(4);
+	}//Minimum number of clusters on ITS
 	
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
@@ -88,6 +104,9 @@ char* period = "b"
 	task->SetAODanalysis(isAOD);
 	task->SetEventMixing(kTRUE);
 	
+		//centrality
+	task->SetCentralityEstimator(centralityEstimator);
+	task->SetCentralitySys(isCentralitySys);
 	//in order to use same task in pp analysis
 	task->SetPPanalysis(kFALSE);
 	
@@ -120,24 +139,28 @@ char* period = "b"
 	if(period == "d"){
 		
 			printf("======================================================================================\n ");
-			printf("\n\n Running on 13d period!!! WITHOUT CALIBRATION \n\n  TPC Calibration NOT set !!! \n\n ");
+			printf("\n\n Running on 13d period!!! WITH CALIBRATION \n\n  \n\n ");
 			printf("======================================================================================\n ");
 		
-		
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(0.63, 1.17);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-		
+			task->SetTPCCalibration();
+	        //task->SetTPC_mean_sigma(1.02, 1.68);
+		    task->SetTPC_mean_sigma(0.63, 1.17);
+
+		    task->SetTPCcal_cut_min(-1);
+		    task->SetTPCcal_cut_max(3);
+			
 	}
+	
+	if(period == "e" || period == "f"){
+			//task->SetTPCCalibration_eta(kTRUE);
+		task->SetTPCCalibration_eta(kFALSE);
+	}
+	 
+	
 	
 	if(configIndex==300){
-	
-		if(period == "e" || period == "f"){
-			task->SetTPCCalibration_eta();
-		}
+		task->SetTPCCalibration_eta(kFALSE);
 	}
-	
 	
 	
 			
@@ -245,7 +268,7 @@ char* period = "b"
 	if(centralityIndex==2) task->SetCentrality(40,60);
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
-	if(centralityIndex==5) task->SetCentrality(0,100);
+		//if(centralityIndex==5) task->SetCentrality(0,100);
 	
 	if(centralityIndex==6) task->SetCentrality(0,10);
 	if(centralityIndex==7) task->SetCentrality(10,20);
@@ -342,6 +365,8 @@ char* period = "b"
 				task->SetTPCcal_cut_min(-1);
 			
 		}
+		
+		if(!isEMCal)params[0] = 0;
 	
 	}
 

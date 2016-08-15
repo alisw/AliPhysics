@@ -385,7 +385,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to event class
   histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0,1,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",120,-12.,12.,AliDielectronVarManager::kZvPrim);
-  
+  histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
+
   //add histograms to track class
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","P","P;P [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kP);
@@ -465,6 +466,10 @@ const AliDielectronEventCuts *GetEventCuts(){
   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
   eventCuts->SetVertexZ(-10.,10.);
   eventCuts->SetMinVtxContributors(1); 
+
+
+  Bool_t isRun2 = kTRUE;
+  eventCuts->SetCentralityRange(0,80,isRun2);
 
   return eventCuts;
 }

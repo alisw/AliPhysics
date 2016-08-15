@@ -55,7 +55,7 @@ public:
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
   AliPHOSTenderSupply& operator= (const AliPHOSTenderSupply&c);
-  void   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
+  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
   Float_t CorrectNonlinearity(Float_t en) ;
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
   Double_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
@@ -77,6 +77,7 @@ private:
   AliPHOSGeometry   *fPHOSGeo;               // PHOS geometry
   Double_t fNonlinearityParams[10] ;         // Parameters for non-linearity calculation
   TH2I * fPHOSBadMap[6] ;                    // Bad channels map
+  Int_t fL1phase[15] ;                       // L1phases for PHOS DDLs (run2 only)
   Int_t fRecoPass ;                          // Reconstruction pass
   Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
@@ -90,7 +91,7 @@ private:
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
  
-  ClassDef(AliPHOSTenderSupply, 3); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 4); // PHOS tender task
 };
 
 

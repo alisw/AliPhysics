@@ -173,6 +173,7 @@ void AliJBaseCard::ReadLine( const char * buffer ){
         int nst = csp1.Split(row);
         if( nst!=2 ) continue; // TODO Error or warning
         TString key = csp1[0];
+        key.Remove(TString::EStripType::kTrailing,' ');
         TString val = csp1[1];
         int nc = csp2.Split( val );
 

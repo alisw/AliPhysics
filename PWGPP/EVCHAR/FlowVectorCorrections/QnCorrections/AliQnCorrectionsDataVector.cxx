@@ -3,8 +3,9 @@
  * Package:       FlowVectorCorrections                                                           *
  * Authors:       Jaap Onderwaater, GSI, jacobus.onderwaater@cern.ch                              *
  *                Ilya Selyuzhenkov, GSI, ilya.selyuzhenkov@gmail.com                             *
+ *                Víctor González, UCM, victor.gonzalez@cern.ch                                   *
  *                Contributors are mentioned in the code where appropriate.                       *
- * Development:   2012-2015                                                                       *
+ * Development:   2012-2016                                                                       *
  *                                                                                                *
  * This file is part of FlowVectorCorrections, a software package that corrects Q-vector          *
  * measurements for effects of nonuniform detector acceptance. The corrections in this package    *
@@ -27,54 +28,37 @@
  * either version 3 of the License, or (at your option) any later version.                        *
  *                                                                                                *
  **************************************************************************************************/
-  
+
+/// \file AliQnCorrectionsDataVector.cxx
+/// \brief Implementation of data vector class
 
 #include "AliQnCorrectionsDataVector.h"
-#include "AliQnCorrectionsQnVector.h"
-#include <TClonesArray.h>
-#include <TIterator.h>
 
-ClassImp(AliQnCorrectionsDataVector)
+/// \cond CLASSIMP
+ClassImp(AliQnCorrectionsDataVector);
+/// \endcond
 
+const Float_t AliQnCorrectionsDataVector::fMinimumSignificantValue = 1.e-6;
 
-//_______________________________________________________________________________
-AliQnCorrectionsDataVector::AliQnCorrectionsDataVector() :
-  TObject(),
-  fPhi(0.0),
-  fX(0.0),
-  fY(0.0),
-  fWeight(0.0),
-  fEqualizedWeight(),
-  fId(0),
-  fBin(0)
-{   
-  //
-  // Constructor
-  //
+/// Default constructor
+AliQnCorrectionsDataVector::AliQnCorrectionsDataVector() : TObject() {
+  fPhi = 0.0;
+  fId = -1;
+  fWeight = 1.0;
 }
 
-
-
-//_______________________________________________________________________________
-AliQnCorrectionsDataVector::~AliQnCorrectionsDataVector()
-{
-  //
-  // De-Constructor
-  //
+/// Normal constructor
+/// \param id the id associated with the data vector
+/// \param phi the azimuthal angle
+/// \param weight the data vector weight
+AliQnCorrectionsDataVector::AliQnCorrectionsDataVector(Int_t id, Float_t phi, Float_t weight) : TObject() {
+  fPhi = phi;
+  fId = id;
+  fWeight = weight;
 }
 
-
-
-//_______________________________________________________________________________
-void AliQnCorrectionsDataVector::FillQvector(TClonesArray* dataVectorArray, AliQnCorrectionsQnVector* q, Int_t weight) {
-
-  AliQnCorrectionsDataVector* dataVector=0x0;
-  Float_t w=0.0;
-  
-  for(Int_t idata=0; idata<dataVectorArray->GetEntriesFast(); idata++){
-    dataVector = static_cast<AliQnCorrectionsDataVector*>(dataVectorArray->At(idata));
-    weight==-1 ? w=dataVector->Weight() : w=dataVector->Weight(weight);
-    if(w>1E-6) q->Add(dataVector->Phi(), w );
-  }
+/// Default destructor
+AliQnCorrectionsDataVector::~AliQnCorrectionsDataVector() {
 
 }
+

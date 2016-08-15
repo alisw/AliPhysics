@@ -1,10 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoModelWeightGeneratorBasic -  basic femtoscopic weight generator  ///
-/// only return a simple                                                          ///
-/// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
-///                                                                          ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoModelWeightGeneratorBasic.h
+///
+
 #ifndef AliFemtoModelWeightGeneratorBasic_hh
 #define AliFemtoModelWeightGeneratorBasic_hh
 
@@ -12,9 +9,15 @@
 #include "AliFemtoPair.h"
 #include "AliFemtoModelWeightGenerator.h"
 
-class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator
-{
- public:
+/// \class AliFemtoModelWeightGeneratorBasic
+/// \brief Basic femtoscopic weight generator only return a simple
+/// \author Adam Kisiel kisiel@mps.ohio-state.edu
+///
+class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator {
+public:
+  /// Defaut Constructor - pair type is set to 'None' by default (causes
+  /// type lookup for each pair that is called with GenerateWeight)
+  ///
   AliFemtoModelWeightGeneratorBasic();
   AliFemtoModelWeightGeneratorBasic(const AliFemtoModelWeightGeneratorBasic &aModel);
   virtual ~AliFemtoModelWeightGeneratorBasic();
@@ -26,9 +29,9 @@ class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator
   virtual Int_t    GetPairType() const; 
 
   virtual AliFemtoModelWeightGenerator* Clone() const;
- protected:
+protected:
   
- private:
+private:
   AliFemtoModelWeightGenerator* GetGenerator() const;
 
 #ifdef __ROOT__
@@ -37,7 +40,7 @@ class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator
   /// \endcond
 #endif
 
-    };
+};
   
 #endif
 

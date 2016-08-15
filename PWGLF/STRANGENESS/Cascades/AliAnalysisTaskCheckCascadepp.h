@@ -131,17 +131,11 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         TH1F *fHistCascadeMultiplicityAfterSPDclustervstrackletSel;
         TH1F *fHistCascadeMultiplicityAfterPileupRej;
         TH1F *fHistCascadeMultiplicityAfterPhysicsSel;
+        TH1F *fHistCascadeMultiplicityAfterRevertexing;
         TH1F *fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel;
+        TH1F *fHistCascadeMultiplicityAfterSPDresolution;
+        TH1F *fHistCascadeMultiplicityAfterVerticesProximity;
         TH1F *fHistCascadeMultiplicityAfterZprimVtxPosSel;
-        // Tracks multiplicity plots
-        TH1F *fHistTrackMultiplicityBeforeAnySel;
-        TH1F *fHistTrackMultiplicityAfterSDDstatusSel;
-        TH1F *fHistTrackMultiplicityAfterDAQincompleteEvRej;
-        TH1F *fHistTrackMultiplicityAfterSPDclustervstrackletSel;
-        TH1F *fHistTrackMultiplicityAfterPileupRej;
-        TH1F *fHistTrackMultiplicityAfterPhysicsSel;
-        TH1F *fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel;
-        TH1F *fHistTrackMultiplicityAfterZprimVtxPosSel;
         // Vertex position plots (BestVertex)
         TH1F   *fHistPVx;                                             //! Best primary vertex X position distribution after all evnt selection
         TH1F   *fHistPVy;                                             //! Best primary vertex Y position distribution after all evnt selection

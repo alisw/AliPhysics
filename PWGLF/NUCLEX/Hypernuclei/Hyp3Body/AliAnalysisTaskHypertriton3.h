@@ -60,7 +60,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
+  void SetRunPeriodSelection(Bool_t run1 = kFALSE, Bool_t run2 = kFALSE) {fRun1PbPb = run1; fRun2PbPb = run2;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
+  void SetEvtSpecie(UInt_t evspc = 4){fEvtSpecie = evspc;}
+  void SetEmbedEvtSelection(Bool_t evtSel = kFALSE){fEvtEmbedSelection = evtSel;}
   void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion;}
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
@@ -105,6 +108,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const; //!<! method to set the value for the converted AOD vertices
 
  private:
+  Bool_t PassTriggerSelection(UInt_t PhysSelMask);
+  Bool_t PassCentralitySelection();
   Bool_t HasTOF(AliESDtrack *trk, float &beta_tof);
   Bool_t PassPIDSelection(AliESDtrack *trk, int specie, Bool_t isTOFin); // specie according to AliPID enum: 2-pion, 4-proton, 5-deuteron
   void CombineThreeTracks(Bool_t isMatter, TArrayI arrD, TArrayI arrP, TArrayI arrPi, Bool_t cent0, Bool_t cent1);
@@ -124,6 +129,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   //Variables
   Bool_t             fMC;                          ///< variables for MC selection
   Bool_t             fFillTree;                    ///< variables to fill the Tree
+  Bool_t             fRun1PbPb;                    ///< variables to activate Trigger and Centrality selection for Run1 (2011 Pb-Pb)
+  Bool_t             fRun2PbPb;                    ///< variables to activate Trigger and Centrality selection for Run2 (2015 Pb-Pb)
+  UInt_t             fEvtSpecie;                   ///< ESD event specie: 1-default; 2-lowM; 4-highM; 8-cosmic
+  Bool_t             fEvtEmbedSelection;           ///< kTRUE: embed event selection in centrality estimation; kFALSE(default): event selection done by hand
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration

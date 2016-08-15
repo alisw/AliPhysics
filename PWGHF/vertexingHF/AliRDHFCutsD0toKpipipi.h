@@ -31,7 +31,9 @@ class AliRDHFCutsD0toKpipipi : public AliRDHFCuts
     virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent* aod);
       
   using AliRDHFCuts::IsSelected;
-  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
+                         {return IsSelected(obj,selectionLevel,0);}
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
   virtual Int_t IsSelectedFromPID(AliAODRecoDecayHF4Prong *d, Int_t *hyp1, Int_t *hyp2, Int_t *hyp3, Int_t *hyp4);
   virtual Int_t D01Selected(TObject* obj,Int_t selectionLevel);
   virtual Int_t D02Selected(TObject* obj,Int_t selectionLevel);

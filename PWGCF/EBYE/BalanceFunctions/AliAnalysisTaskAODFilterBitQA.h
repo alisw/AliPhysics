@@ -38,6 +38,8 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
   }
+  void SetUseMultSelectionFramework(Bool_t multFramework) { fUseMultSelectionFramework = multFramework;} 
+  void SetUseUncheckedCentrality(Bool_t unchecked) { fUseUncheckedCentrality = unchecked; }
 
   void SetPtRange(Double_t min, Double_t max){
     fPtMin = min;
@@ -62,6 +64,8 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   TList *fListQA;//output list for QA histograms
 
   Bool_t useCentrality;// use centrality as event class estimator (default = OFF)
+  Bool_t fUseMultSelectionFramework;// use the AliMultSelection framework; default: kFALSE
+  Bool_t fUseUncheckedCentrality; // use unchecked centrality; default: kFALSE
   Bool_t fillOnlySecondaries;//fill only secondary particles (only for MC running)
   Bool_t fillHFVertexingTracks;//fill HF vertexing tracks
 
@@ -77,6 +81,7 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   Double_t fEtaMin;// minimum eta threshold (default = -10)
   Double_t fEtaMax;// maximum eta threshold (default = 10)
 
+  TH2D* fHistEventStats;//QA histogram for event trigger bit statistics vs. centrality
   TH2D* fHistTrackStats;//QA histogram for track filter bit statistics vs. centrality
   TH3D* fHistKinematics[gNCharge][gBitMax];//QA histograms for kinematics (eta, phi, pT) for different filter bits
   TH2D* fHistDCAconstrained[gNCharge][gBitMax];//QA histograms for DCA (xy,z) for different filter bits for constrained tracks (stored in DCA methods)

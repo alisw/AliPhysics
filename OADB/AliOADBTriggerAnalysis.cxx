@@ -22,21 +22,23 @@ fZDCCutRefSum(-568.5),
 fZDCCutRefDelta(-2.1),
 fZDCCutSigmaSum(3.25),
 fZDCCutSigmaDelta(2.25),
-fZDCCutRefSumCorr(-65.5),
-fZDCCutRefDeltaCorr(-2.1),
-fZDCCutSigmaSumCorr(6.0),
-fZDCCutSigmaDeltaCorr(1.2),
-fZDCCutZNATimeCorrMin(0.0),
-fZDCCutZNATimeCorrMax(2.0),
-fZDCCutZNCTimeCorrMin(0.0),
-fZDCCutZNCTimeCorrMax(5.0),
+fZDCCutRefSumCorr(0.),
+fZDCCutRefDeltaCorr(0.),
+fZDCCutSigmaSumCorr(2.),
+fZDCCutSigmaDeltaCorr(2.),
+fZDCCutZNATimeCorrMin(5.0),
+fZDCCutZNATimeCorrMax(100.0),
+fZDCCutZNCTimeCorrMin(5.0),
+fZDCCutZNCTimeCorrMax(100.0),
 fSPDClsVsTklA(65),
 fSPDClsVsTklB(4),
+fV0C012vsTklA(150),
+fV0C012vsTklB(20),
 fV0MOnVsOfA(-145.),
 fV0MOnVsOfB(7.2),
 fSPDOnVsOfA(-4.16),
 fSPDOnVsOfB(0.84),
-fVtxMinContributors(3),
+fVtxMinContributors(5),
 fVtxMinZdist(0.8),
 fVtxNSigmaZdist(3.),
 fVtxNSigmaDiamXY(2.),
@@ -47,17 +49,18 @@ fNBCsPast(4),
 fNBCsFuture(7),
 fVHMBBAflags(-1),
 fVHMBBCflags(-1),
-fVHMBGAflags(-1),
-fVHMBGCflags(-1),
+fVHMBGAflags(33),
+fVHMBGCflags(33),
 fVIRBBAflags(10),
 fVIRBBCflags(10),
 fVIRBGAflags(33),
 fVIRBGCflags(33),
 fV0MOnThreshold(-1),
-fV0MOfThreshold(400),
+fV0MOfThreshold(-1),
 fSPDGFOThreshold(2),
 fSH1OuterThreshold(-1),
 fSH2OuterThreshold(-1),
+fTklThreshold(-1),
 fTRDptHSE(3.),
 fTRDpidHSE(144),
 fTRDptHQU(2.),
@@ -96,6 +99,8 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
   parArray->Add(new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax)));
   parArray->Add(new TObjString(Form("SPDClsVsTklA         %f", fSPDClsVsTklA        )));
   parArray->Add(new TObjString(Form("SPDClsVsTklB         %f", fSPDClsVsTklB        )));
+  parArray->Add(new TObjString(Form("V0C012vsTklA         %f", fV0C012vsTklA        )));
+  parArray->Add(new TObjString(Form("V0C012vsTklB         %f", fV0C012vsTklB        )));
   parArray->Add(new TObjString(Form("V0MOnVsOfA           %f", fV0MOnVsOfA          )));
   parArray->Add(new TObjString(Form("V0MOnVsOfB           %f", fV0MOnVsOfB          )));
   parArray->Add(new TObjString(Form("SPDOnVsOfA           %f", fSPDOnVsOfA          )));
@@ -122,14 +127,15 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
   parArray->Add(new TObjString(Form("SPDGFOThreshold      %i", fSPDGFOThreshold     )));
   parArray->Add(new TObjString(Form("SH1OuterThreshold    %i", fSH1OuterThreshold   )));
   parArray->Add(new TObjString(Form("SH2OuterThreshold    %i", fSH2OuterThreshold   )));
+  parArray->Add(new TObjString(Form("TklThreshold         %i", fTklThreshold        )));
   parArray->Add(new TObjString(Form("TRDptHSE             %f", fTRDptHSE            )));
   parArray->Add(new TObjString(Form("TRDpidHSE            %i", fTRDpidHSE           )));
   parArray->Add(new TObjString(Form("TRDptHQU             %f", fTRDptHQU            )));
   parArray->Add(new TObjString(Form("TRDpidHQU            %i", fTRDpidHQU           )));
   parArray->Add(new TObjString(Form("TRDptHEE             %f", fTRDptHEE            )));
   parArray->Add(new TObjString(Form("TRDpidHEE            %i", fTRDpidHEE           )));
-  parArray->Add(new TObjString(Form("TRDminSectorHEE      %f", fTRDminSectorHEE     )));
-  parArray->Add(new TObjString(Form("TRDmaxSectorHEE      %f", fTRDmaxSectorHEE     )));
+  parArray->Add(new TObjString(Form("TRDminSectorHEE      %i", fTRDminSectorHEE     )));
+  parArray->Add(new TObjString(Form("TRDmaxSectorHEE      %i", fTRDmaxSectorHEE     )));
   parArray->Add(new TObjString(Form("TRDptHJT             %f", fTRDptHJT            )));
   parArray->Add(new TObjString(Form("TRDnHJT              %i", fTRDnHJT             )));
   
@@ -140,57 +146,60 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
 void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   // Print Class contents
   printf("Physics selection cut settings:\n");
-  printf(Form("  FMDLowCut            %f\n", fFMDLowCut           ));
-  printf(Form("  FMDHitCut            %f\n", fFMDHitCut           ));
-  printf(Form("  ZDCCutRefSum         %f\n", fZDCCutRefSum        ));
-  printf(Form("  ZDCCutRefDelta       %f\n", fZDCCutRefDelta      ));
-  printf(Form("  ZDCCutSigmaSum       %f\n", fZDCCutSigmaSum      ));
-  printf(Form("  ZDCCutSigmaDelta     %f\n", fZDCCutSigmaDelta    ));
-  printf(Form("  ZDCCutRefSumCorr     %f\n", fZDCCutRefSumCorr    ));
-  printf(Form("  ZDCCutRefDeltaCorr   %f\n", fZDCCutRefDeltaCorr  ));
-  printf(Form("  ZDCCutSigmaSumCorr   %f\n", fZDCCutSigmaSumCorr  ));
-  printf(Form("  ZDCCutSigmaDeltaCorr %f\n", fZDCCutSigmaDeltaCorr));
-  printf(Form("  ZDCCutZNATimeCorrMin %f\n", fZDCCutZNATimeCorrMin));
-  printf(Form("  ZDCCutZNATimeCorrMax %f\n", fZDCCutZNATimeCorrMax));
-  printf(Form("  ZDCCutZNCTimeCorrMin %f\n", fZDCCutZNCTimeCorrMin));
-  printf(Form("  ZDCCutZNCTimeCorrMax %f\n", fZDCCutZNCTimeCorrMax));
-  printf(Form("  SPDClsVsTklA         %f\n", fSPDClsVsTklA        ));
-  printf(Form("  SPDClsVsTklB         %f\n", fSPDClsVsTklB        ));
-  printf(Form("  V0MOnVsOfA           %f\n", fV0MOnVsOfA          ));
-  printf(Form("  V0MOnVsOfB           %f\n", fV0MOnVsOfB          ));
-  printf(Form("  SPDOnVsOfA           %f\n", fSPDOnVsOfA          ));
-  printf(Form("  SPDOnVsOfB           %f\n", fSPDOnVsOfB          ));
-  printf(Form("  VtxMinContributors   %i\n", fVtxMinContributors  ));
-  printf(Form("  VtxMinZdist          %f\n", fVtxMinZdist         ));
-  printf(Form("  VtxNSigmaZdist       %f\n", fVtxNSigmaZdist      ));
-  printf(Form("  VtxNSigmaDiamXY      %f\n", fVtxNSigmaDiamXY     ));
-  printf(Form("  VtxNSigmaDiamZ       %f\n", fVtxNSigmaDiamZ      ));
-  printf(Form("  V0CasymA             %f\n", fV0CasymA            ));
-  printf(Form("  V0CasymB             %f\n", fV0CasymB            ));
-  printf(Form("  NBCsPast             %i\n", fNBCsPast            ));
-  printf(Form("  NBCsFuture           %i\n", fNBCsFuture          ));
-  printf(Form("  VHMBBAflags          %i\n", fVHMBBAflags         ));
-  printf(Form("  VHMBBCflags          %i\n", fVHMBBCflags         ));
-  printf(Form("  VHMBGAflags          %i\n", fVHMBGAflags         ));
-  printf(Form("  VHMBGCflags          %i\n", fVHMBGCflags         ));
-  printf(Form("  VIRBBAflags          %i\n", fVIRBBAflags         ));
-  printf(Form("  VIRBBCflags          %i\n", fVIRBBCflags         ));
-  printf(Form("  VIRBGAflags          %i\n", fVIRBGAflags         ));
-  printf(Form("  VIRBGCflags          %i\n", fVIRBGCflags         ));
-  printf(Form("  V0MOnThreshold       %i\n", fV0MOnThreshold      ));
-  printf(Form("  V0MOfThreshold       %f\n", fV0MOfThreshold      ));
-  printf(Form("  SPDGFOThreshold      %i\n", fSPDGFOThreshold     ));
-  printf(Form("  SH1OuterThreshold    %i\n", fSH1OuterThreshold   ));
-  printf(Form("  SH2OuterThreshold    %i\n", fSH2OuterThreshold   ));
-  printf(Form("  TRDptHSE             %f\n", fTRDptHSE            ));
-  printf(Form("  TRDpidHSE            %i\n", fTRDpidHSE           ));
-  printf(Form("  TRDptHQU             %f\n", fTRDptHQU            ));
-  printf(Form("  TRDpidHQU            %i\n", fTRDpidHQU           ));
-  printf(Form("  TRDptHEE             %f\n", fTRDptHEE            ));
-  printf(Form("  TRDpidHEE            %i\n", fTRDpidHEE           ));
-  printf(Form("  TRDminSectorHEE      %f\n", fTRDminSectorHEE     ));
-  printf(Form("  TRDmaxSectorHEE      %f\n", fTRDmaxSectorHEE     ));
-  printf(Form("  TRDptHJT             %f\n", fTRDptHJT            ));
-  printf(Form("  TRDnHJT              %i\n", fTRDnHJT             ));
+  printf("  FMDLowCut            %f\n", fFMDLowCut           );
+  printf("  FMDHitCut            %f\n", fFMDHitCut           );
+  printf("  ZDCCutRefSum         %f\n", fZDCCutRefSum        );
+  printf("  ZDCCutRefDelta       %f\n", fZDCCutRefDelta      );
+  printf("  ZDCCutSigmaSum       %f\n", fZDCCutSigmaSum      );
+  printf("  ZDCCutSigmaDelta     %f\n", fZDCCutSigmaDelta    );
+  printf("  ZDCCutRefSumCorr     %f\n", fZDCCutRefSumCorr    );
+  printf("  ZDCCutRefDeltaCorr   %f\n", fZDCCutRefDeltaCorr  );
+  printf("  ZDCCutSigmaSumCorr   %f\n", fZDCCutSigmaSumCorr  );
+  printf("  ZDCCutSigmaDeltaCorr %f\n", fZDCCutSigmaDeltaCorr);
+  printf("  ZDCCutZNATimeCorrMin %f\n", fZDCCutZNATimeCorrMin);
+  printf("  ZDCCutZNATimeCorrMax %f\n", fZDCCutZNATimeCorrMax);
+  printf("  ZDCCutZNCTimeCorrMin %f\n", fZDCCutZNCTimeCorrMin);
+  printf("  ZDCCutZNCTimeCorrMax %f\n", fZDCCutZNCTimeCorrMax);
+  printf("  SPDClsVsTklA         %f\n", fSPDClsVsTklA        );
+  printf("  SPDClsVsTklB         %f\n", fSPDClsVsTklB        );
+  printf("  V0C012vsTklA         %f\n", fV0C012vsTklA        );
+  printf("  V0C012vsTklB         %f\n", fV0C012vsTklB        );
+  printf("  V0MOnVsOfA           %f\n", fV0MOnVsOfA          );
+  printf("  V0MOnVsOfB           %f\n", fV0MOnVsOfB          );
+  printf("  SPDOnVsOfA           %f\n", fSPDOnVsOfA          );
+  printf("  SPDOnVsOfB           %f\n", fSPDOnVsOfB          );
+  printf("  VtxMinContributors   %i\n", fVtxMinContributors  );
+  printf("  VtxMinZdist          %f\n", fVtxMinZdist         );
+  printf("  VtxNSigmaZdist       %f\n", fVtxNSigmaZdist      );
+  printf("  VtxNSigmaDiamXY      %f\n", fVtxNSigmaDiamXY     );
+  printf("  VtxNSigmaDiamZ       %f\n", fVtxNSigmaDiamZ      );
+  printf("  V0CasymA             %f\n", fV0CasymA            );
+  printf("  V0CasymB             %f\n", fV0CasymB            );
+  printf("  NBCsPast             %i\n", fNBCsPast            );
+  printf("  NBCsFuture           %i\n", fNBCsFuture          );
+  printf("  VHMBBAflags          %i\n", fVHMBBAflags         );
+  printf("  VHMBBCflags          %i\n", fVHMBBCflags         );
+  printf("  VHMBGAflags          %i\n", fVHMBGAflags         );
+  printf("  VHMBGCflags          %i\n", fVHMBGCflags         );
+  printf("  VIRBBAflags          %i\n", fVIRBBAflags         );
+  printf("  VIRBBCflags          %i\n", fVIRBBCflags         );
+  printf("  VIRBGAflags          %i\n", fVIRBGAflags         );
+  printf("  VIRBGCflags          %i\n", fVIRBGCflags         );
+  printf("  V0MOnThreshold       %i\n", fV0MOnThreshold      );
+  printf("  V0MOfThreshold       %f\n", fV0MOfThreshold      );
+  printf("  SPDGFOThreshold      %i\n", fSPDGFOThreshold     );
+  printf("  SH1OuterThreshold    %i\n", fSH1OuterThreshold   );
+  printf("  SH2OuterThreshold    %i\n", fSH2OuterThreshold   );
+  printf("  TklThreshold         %i\n", fTklThreshold        );
+  printf("  TRDptHSE             %f\n", fTRDptHSE            );
+  printf("  TRDpidHSE            %i\n", fTRDpidHSE           );
+  printf("  TRDptHQU             %f\n", fTRDptHQU            );
+  printf("  TRDpidHQU            %i\n", fTRDpidHQU           );
+  printf("  TRDptHEE             %f\n", fTRDptHEE            );
+  printf("  TRDpidHEE            %i\n", fTRDpidHEE           );
+  printf("  TRDminSectorHEE      %i\n", fTRDminSectorHEE     );
+  printf("  TRDmaxSectorHEE      %i\n", fTRDmaxSectorHEE     );
+  printf("  TRDptHJT             %f\n", fTRDptHJT            );
+  printf("  TRDnHJT              %i\n", fTRDnHJT             );
 }
 

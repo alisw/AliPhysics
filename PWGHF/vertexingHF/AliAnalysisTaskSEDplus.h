@@ -45,6 +45,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetSystem(Int_t system=0){fSystem=system;}
   void SetCutsDistr(Bool_t cutsDistr=kTRUE){fCutsDistr=cutsDistr;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
+  void SetDoTrackVarHistos(Bool_t doTrackHist=kTRUE){fDoTrackVarHist=doTrackHist;}
   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;}
   void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
     fNImpParBins=nbins;
@@ -72,6 +73,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
+  void CreateTrackVarHistos();
   void CreateMCAcceptanceHistos();
 
   Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
@@ -96,7 +98,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const;
 
   enum {kMaxPtBins=20};
-  enum {kVarForSparse=12,kVarForSparseFD=13};
+  enum {kVarForSparse=12,kVarForSparseFD=13,kVarForTrackSparse=7};
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents; //!<!hist. for No. of events
@@ -125,6 +127,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH2F *fCorreld0Kd0pi[3]; //!<!hist. for d0k*d0pi vs. d0k*d0pi (topol+PID)
   TH2F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
   THnSparseF *fHistMassPtImpPar[5];//!<! histograms for impact parameter and cut variation study
+  THnSparseF *fHistTrackVar; //!<! histograms for track cuts study
   THnSparseF *fMCAccPrompt; //!<!histo for StepMCAcc for Dplus prompt (pt,y,ptB)
   THnSparseF *fMCAccBFeed; //!<!histo for StepMCAcc for Dplus FD (pt,y,ptB)
   TH2F *fPtVsMassNoPid;    //!<! hist. of pt vs. mass (w/o PID)
@@ -151,6 +154,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fUseBit;      /// flag to use bitmask
   Bool_t fCutsDistr;    /// flag to activate cuts distr histos
   Bool_t fDoImpPar;    /// flag to activate impact paramter histos
+  Bool_t fDoTrackVarHist; ///flag to activate track variable cut studies
   Bool_t fStepMCAcc;   /// flag to activate histos for StepMCAcc
   Bool_t fUseQuarkTagInKine; /// flag for quark/hadron level identification of prompt and feeddown
   Int_t  fNImpParBins;   /// nunber of bins in impact parameter histos
@@ -161,7 +165,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fSystem;   /// 0=pp,1=PbPb
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,25); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,26); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

@@ -127,13 +127,15 @@ bool AliAnalysisTaskTrackDensityData::Run(){
     if(!fTrackSelection->IsTrackAccepted(static_cast<AliVTrack *>(jetparticle))) continue;
     fHistos->FillTH1("hTrackPtSelEvent", TMath::Abs(jetparticle->Pt()));
   }
-  for(AliTrackIterableContainer::iterator trackiter = tcont->accept_begin(); trackiter != tcont->accept_end(); ++trackiter){
+  const AliTrackIterableContainer accepted_tracks = tcont->accepted();
+  for(AliTrackIterableContainer::iterator trackiter = accepted_tracks.begin(); trackiter != accepted_tracks.end(); ++trackiter){
     jetparticle = *trackiter;
     if(TMath::Abs(jetparticle->Eta()) > 0.8) continue;
     if(!fTrackSelection->IsTrackAccepted(static_cast<AliVTrack *>(jetparticle))) continue;
     fHistos->FillTH1("hTrackPtSel", TMath::Abs(jetparticle->Pt()));
   }
-  for(AliJetIterableContainer::iterator jetiter = jcont->accept_begin(); jetiter != jcont->accept_end(); ++jetiter){
+  const AliJetIterableContainer accepted_jets = jcont->accepted();
+  for(AliJetIterableContainer::iterator jetiter = accepted_jets.begin(); jetiter != accepted_jets.end(); ++jetiter){
     myjet = *jetiter;
     fHistos->FillTH2("hJetMultiplicity", myjet->Pt(), myjet->GetNumberOfConstituents());
 

@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <RVersion.h>
+#include <memory>
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
@@ -108,6 +109,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
+  fRunNumber(-1),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -215,6 +217,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
+  fRunNumber(-1),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -565,14 +568,21 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
  */
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
-  if (!fInitialized)
+  if (!fInitialized){
     ExecOnce();
+    UserExecOnce();
+  }
 
   if (!fInitialized)
     return;
 
   if (!RetrieveEventObjects())
     return;
+
+  if(InputEvent()->GetRunNumber() != fRunNumber){
+    fRunNumber = InputEvent()->GetRunNumber();
+    RunChanged();
+  }
 
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
@@ -684,42 +694,29 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   strPthard.Remove(strPthard.Last('/'));
   if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
   strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec()) 
-    pthard = strPthard.Atoi();
+  if (strPthard.IsDec()) pthard = strPthard.Atoi();
   else 
     AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); 
+  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
 
   if (!fxsec) {
     // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if (!fxsec) {
-      // not a severe condition but inciate that we have no information
-      return kFALSE;
-    } else {
+    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+    if (!fxsec) return kFALSE; // not a severe condition but inciate that we have no information
+    else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if (!key) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      if (!key) return kFALSE;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      if (!list) return kFALSE;
       fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
-      fxsec->Close();
     }
   } else { // no tree pyxsec.root
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) {
-      fxsec->Close();
-      return kFALSE;
-    }
+    if (!xtree) return kFALSE;
     UInt_t   ntrials  = 0;
     Double_t  xsection  = 0;
     xtree->SetBranchAddress("xsection",&xsection);
@@ -727,7 +724,6 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     xtree->GetEntry(0);
     fTrials = ntrials;
     fXsec = xsection;
-    fxsec->Close();
   }
   return kTRUE;
 }
@@ -816,23 +812,6 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   LoadPythiaInfo(InputEvent());
-
-  if (fIsPythia) {
-    if (MCEvent()) {
-      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-      if (!fPythiaHeader) {
-        // Check if AOD
-        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-
-        if (aodMCH) {
-          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-            if (fPythiaHeader) break;
-          }
-        }
-      }
-    }
-  }
 
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
@@ -1066,7 +1045,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
 
-    TObjArray *arr = fTrigClass.Tokenize("|");
+    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
     if (!arr) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
@@ -1107,7 +1086,6 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
         }
       }
     }
-    delete arr;
     if (!match) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
@@ -1279,8 +1257,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
   if (fPtHardAndClusterPtFactor > 0.) {
     AliClusterContainer* mccluscont = GetClusterContainer(0);
     if ((Bool_t)mccluscont) {
-      for (auto obj : mccluscont->all()) {// Not cuts applied ; use accept for cuts
-        AliVCluster* cluster = static_cast<AliVCluster*>(obj);
+      for (auto cluster : mccluscont->all()) {// Not cuts applied ; use accept for cuts
         Float_t ecluster = cluster->E();
 
         if (ecluster > (fPtHardAndClusterPtFactor * fPtHard)) {
@@ -1294,10 +1271,9 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
   // condition 3 : Reconstructed track pT / pT-hard >factor
   if (fPtHardAndTrackPtFactor > 0.) {
-    AliMCParticleContainer* mcpartcont = GetMCParticleContainer(0);
+    AliMCParticleContainer* mcpartcont = dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(0));
     if ((Bool_t)mcpartcont) {
-      for (auto obj : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
-        AliAODMCParticle* mctrack = static_cast<AliAODMCParticle*>(obj);
+      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
         Float_t trackpt = mctrack->Pt();
         if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
           AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
@@ -1450,6 +1426,23 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   else {
     fCent = 99;
     fCentBin = 0;
+  }
+
+  if (fIsPythia) {
+    if (MCEvent()) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+      if (!fPythiaHeader) {
+        // Check if AOD
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fPythiaHeader) break;
+          }
+        }
+      }
+    }
   }
 
   if (fPythiaHeader) {

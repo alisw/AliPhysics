@@ -114,6 +114,13 @@ public:
   void SetV0InName(const char *name) { fV0InName      = name; }
 
   /**
+   * Set the name of the OADB container providing a list of absolute IDs of FEE channels to
+   * be masked (TObjArray of TParameter<int>)
+   * @param[in] name Name of the container providing masked channel abs IDs
+   */
+  void SetMaskedFEEChannelOADBContainer(const TString &name) { fBadFEEChannelOADB = name; }
+
+  /**
    * Trigger bit configuration to be used in the trigger patch maker.
    * @param bitConfig Type of the trigger bit config (old - 3 bit, new - 5 bit)
    */
@@ -138,13 +145,34 @@ public:
 
 protected:
 
+  /**
+   * Filling basic QA histograms implemented in the trigger maker task for
+   * a given trigger patch which is of a certain patch type. Note that the
+   * patchtype provided here defines the histograms to be filled (a trigger
+   * patch can be of multiple types).
+   * @param[in] patchtype Patchtype of the histograms to be filled
+   * @param[in] recpatch Patch to be monitored
+   */
   void FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch);
+
+  /**
+   * RunChanged method of the trigger maker:
+   * In case of a bad channel container provided, initialize bad channel map
+   * for the new run.
+   */
+  virtual void RunChanged();
+
+  /**
+   * Initialize bad channels from the OADB container. Called by the RunChanged() method.
+   */
+  void InitializeBadFEEChannels();
 
   AliEmcalTriggerMakerKernel              *fTriggerMaker;             ///< The actual trigger maker kernel
   AliVVZERO                               *fV0;                       //!<! VZERO data
 
   TString                                 fCaloTriggersOutName;       ///< name of output track array
   TString                                 fV0InName;                  ///< name of output track array
+  TString                                 fBadFEEChannelOADB;         ///< name of the OADB container containing channels to be masked inside the trigger maker
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
