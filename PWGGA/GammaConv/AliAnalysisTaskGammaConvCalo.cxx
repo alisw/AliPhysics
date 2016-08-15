@@ -1507,9 +1507,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
             fHistoMCEtaPtAlpha[iCut]->Sumw2();
           }  
         }
-        
-        
       }
+      
       fTrueList[iCut]                           = new TList();
       fTrueList[iCut]->SetName(Form("%s_%s_%s_%s True histograms",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
       fTrueList[iCut]->SetOwner(kTRUE);
