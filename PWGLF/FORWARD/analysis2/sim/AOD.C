@@ -228,16 +228,6 @@ Bool_t LoadCommonLibraries()
 /** 
  * Load libraries needed by the train 
  * 
- * @param useTender 
- * @param doCDBconnect 
- * @param iESDfilter 
- * @param iPWGMuonTrain 
- * @param iJETAN 
- * @param iJETANdelta 
- * @param iPWGHFvertexing 
- * @param iPWGHFd2h 
- * @param iPWGDQJPSIfilter 
- * 
  * @return true on success 
  */
 Bool_t LoadAnalysisLibraries()
