@@ -284,6 +284,10 @@ struct PluginRailway : public Railway
     fHandler->SetROOTVersion(root);
     fHandler->SetAliROOTVersion(aliroot);
     fHandler->SetAliPhysicsVersion(aliphysics);
+    // Add AliPhysics include path
+    fHandler->AddIncludePath("-I.");
+    fHandler->AddIncludePath("-I$ALICE_PHYSICS/include");
+    fHandler->AddIncludePath("-I$ALICE_ROOT/include");
     // Execute through interpreter until patch is applied
     fHandler->SetDropToShell(false);
     if (fOptions.Has("mode"))

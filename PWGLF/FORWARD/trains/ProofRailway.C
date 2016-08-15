@@ -367,6 +367,12 @@ struct ProofRailway : public Railway
       return false;
     }
 
+    // --- Possible environment script -------------------------------
+    TString envScript = env;
+    if (!envScript.EndsWith(".C") && !envScript.EndsWith(".sh"))
+      envScript = "";
+    Printf("Environment script: %s", envScript.Data());
+
     // --- Build script does nothing ---------------------------------
     std::ofstream b(Form("%s/PROOF-INF/BUILD.sh",parName.Data()));
     if (!b) { 
@@ -374,17 +380,15 @@ struct ProofRailway : public Railway
 	    "Failed to make BUILD.sh shell script");
       return false;
     }
-    b << "#!/bin/sh\n\n"
-      << "# echo Nothing to do\n"
-      << "exit 0\n"
-      << std::endl;
+    b << "#!/bin/sh\n\n";
+    if (envScript.EndsWith(".sh")) 
+      b << ". PROOF-INF/" << gSystem->BaseName(envScript.Data()) << "\n";
+    else 
+      b << "# echo Nothing to do\n";
+    b << "exit 0\n" << std::endl;
     b.close();
     gSystem->Exec(Form("chmod a+x %s/PROOF-INF/BUILD.sh",parName.Data()));
 
-    // --- Possible environment script -------------------------------
-    TString envScript = env;
-    if (!envScript.EndsWith(".C"))
-      envScript = "";
     if (!envScript.IsNull()) {
       // If an environment script was specified, copy that to the par
       if (gSystem->AccessPathName(envScript.Data()) == 0) { 
@@ -407,11 +411,25 @@ struct ProofRailway : public Railway
 	    "Failed to make SETUP.C ROOT script");
       return false;
     }
+    s << "Bool_t Load(const char* lib) {"
+      << "  TString ln(lib);"
+      << "  if (!ln.BeginsWith(\"lib\")) ln.Prepend(\"lib\");\n"
+      << "  if (!ln.EndsWith(\".so\"))   ln.Append(\".so\");\n"
+      << "  TString w = gSystem->Which(gSystem->GetDynamicPath(),ln);\n"
+      << "  if (w.IsNull()) { \n"
+      << "    Warning(\"Load\",\"%s not found\",ln.Data());"
+      << "    return false; }\n"
+      << "  Info(\"Load\",\"Trying to load %s\",ln.Data());\n"
+      << "  if (gSystem->Load(ln) < 0) return false;\n"
+      << "  return true;\n"
+      << "}\n"
+      << std::endl;
+  
     s << "void SETUP(TList* opts) {\n";
     if (envScript.IsNull()) {
       s << env << std::endl;
     }
-    else { 
+    else if (envScript.EndsWith(".C")) { 
       s << "  gROOT->Macro(\"PROOF-INF/" << gSystem->BaseName(envScript.Data())
 	<< "\");\n";
     }
@@ -475,36 +493,38 @@ struct ProofRailway : public Railway
     TString parName(AliROOTParName());
     TString envScript = fOptions.Get("env");
     if (envScript.EqualTo("-none-", TString::kIgnoreCase) ||
-	!envScript.EndsWith(".C"))
+	!(envScript.EndsWith(".C") || envScript.EndsWith(".sh")))
       envScript = "";
 
+    Printf("Environment script: %s", envScript.Data());
+    
     TString env       = "";
     ExportEnvVar(env, "ALICE");
     ExportEnvVar(env, "ALICE_ROOT");
     
-    TString setup("gSystem->AddDynamicPath(\"$(ALICE_ROOT)/lib\");\n"
-                  "gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");\n"
-		  "// Info(\"SETUP\",\"Loading ROOT libraries\");\n"
-		  "gSystem->Load(\"libTree\");\n"
-		  "gSystem->Load(\"libGeom\");\n"
-		  "gSystem->Load(\"libVMC\");\n"
-		  "gSystem->Load(\"libPhysics\");\n"
-		  "gSystem->Load(\"libMinuit\");\n"
+    TString setup("  gSystem->AddDynamicPath(\"${ALICE_ROOT}/lib\");\n"
+                  "  gSystem->AddIncludePath(\"-I${ALICE_ROOT}/include\");\n"
+		  "  Info(\"SETUP\",\"Loading ROOT libraries\");\n"
+		  "  Load(\"libTree\");\n"
+		  "  Load(\"libGeom\");\n"
+		  "  Load(\"libVMC\");\n"
+		  "  Load(\"libPhysics\");\n"
+		  "  Load(\"libMinuit\");\n"
+		  "  \n"
+		  "  Info(\"SETUP\",\"Parameter list:\");\n"
+		  "  if (!opts) return;\n"
+		  "  //opts->ls();\n"
 		  "\n"
-		  "// Info(\"SETUP\",\"Parameter list:\");\n"
-		  "if (!opts) return;\n"
-		  "//opts->ls();\n"
-		  "\n"
-		  "TObject* par = opts->FindObject(\"ALIROOT_MODE\");\n"
-		  "if (par) {\n"
-		  " //Info(\"SETUP\",\"ALIROOT mode: %s\",par->GetTitle());\n"
-		  "  TString mode(par->GetTitle());mode.ToLower();\n"
-		  "  if (mode.EqualTo(\"default\")) {\n"
-		  "    gSystem->Load(\"libSTEERBase\");\n"
-		  "    gSystem->Load(\"libESD\");\n"
-		  "    gSystem->Load(\"libAOD\");\n"
-		  "    gSystem->Load(\"libANALYSIS\");\n"
-		  "    gSystem->Load(\"libANALYSISalice\");\n"
+		  "  TObject* par = opts->FindObject(\"ALIROOT_MODE\");\n"
+		  "  if (par) {\n"
+		  "    Info(\"SETUP\",\"ALIROOT mode: %s\",par->GetTitle());\n"
+		  "    TString mode(par->GetTitle());mode.ToLower();\n"
+		  "    if (mode.EqualTo(\"default\")) {\n"
+		  "     Load(\"libSTEERBase\");\n"
+		  "     Load(\"libESD\");\n"
+		  "     Load(\"libAOD\");\n"
+		  "     Load(\"libANALYSIS\");\n"
+		  "     Load(\"libANALYSISalice\");\n"
 		  "  }\n"
 		  "  else if (mode.EqualTo(\"aliroot\")) \n"
 		  "    gROOT->Macro(\"$ALICE_ROOT/macros/loadlibs.C\");\n"
@@ -531,7 +551,7 @@ struct ProofRailway : public Railway
 		  "    if (!libName.BeginsWith(\"lib\"))\n"
 		  "      libName.Prepend(\"lib\");\n"
 		  "    // Info(\"SETUP\",\"Loading %s ...\",libName.Data());\n"
-		  "    gSystem->Load(libName.Data());\n"
+		  "    Load(libName.Data());\n"
 		  "  }\n"
 		  "}");
     // Note, the PAR isn't enabled until much later when we've
@@ -680,17 +700,26 @@ struct ProofRailway : public Railway
     // --- Check if we need to clear packages ------------------------
     if (fOptions.Has("clear")) {
       TString pkgs = fOptions.Get("clear");
+      Info("PreSetup", "Clearing (%s)", pkgs.Data());
       if (pkgs.IsNull() || pkgs.EqualTo("all", TString::kIgnoreCase)) { 
 	// No value given, clear all 
 	if (gProof->ClearPackages() != 0) 
-	  Warning("ProofRailway::PreSetup", "Failed to lear all packages");
+	  Warning("ProofRailway::PreSetup", "Failed to clear all packages");
+	Info("PreSetup", "Clearing cache");
+	gProof->ClearCache("*");
       }
       else { 
 	// Tokenize on ',' and clear each package 
 	TObjArray* pars = pkgs.Tokenize(",");
 	TObject*   pkg  = 0;
 	TIter      next(pars); 
-	while ((pkg = next())) { 
+	while ((pkg = next())) {
+	  if (TString(pkg->GetName()).EqualTo("cache")) {
+	    Info("PreSetup", "Clearing cache");
+	    gProof->ClearCache();
+	    continue;
+	  }
+	  Info("PreSetup", "Clearing package %s", pkg->GetName());
 	  if (gProof->ClearPackage(pkg->GetName()) != 0)
 	    Warning("ProofRailway::PreSetup", "Failed to clear package %s", 
 		    pkg->GetName());
@@ -700,6 +729,14 @@ struct ProofRailway : public Railway
     }
     return true;
   }
+  /** 
+   * Enable a special PAR (e.g., AliROOT and AliPhysics)
+   * 
+   * @param parName Name of the par file 
+   * @param prefix  Prefix used 
+   * 
+   * @return true on success 
+   */
   virtual Bool_t EnableSpecial(const TString& parName,
 			       const TString& prefix)
   {
@@ -872,7 +909,13 @@ struct ProofRailway : public Railway
 	      nEvents, off);
       return 0;
     }
-    Long64_t ret = mgr->StartAnalysis(fUrl.GetProtocol(), dsName, nEvents, off);
+    Printf("Running proof analysis on data set %s", dsName.Data());
+    Long64_t ret = 0;
+    TChain* chain = LocalChain();
+    if (chain) 
+      ret = mgr->StartAnalysis(fUrl.GetProtocol(), chain, nEvents, off);
+    else
+      ret = mgr->StartAnalysis(fUrl.GetProtocol(), dsName.Data(), nEvents, off);
 
     TString store = fOptions.Get("storage");
     if (!store.IsNull() && store.EqualTo("auto",TString::kIgnoreCase))
