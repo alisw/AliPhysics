@@ -1,12 +1,10 @@
 #error This is not for compilation 
 /** 
- * @page mult_doc The basic multiplicity code 
+ * @page pwglf_fwd_mult_doc The basic multiplicity code 
  *
  * Module: @ref pwglf_forward_aod
  *
- * @tableofcontents 
- *
- * @section mult_intro Introduction 
+ * @section pwglf_fwd_mult_intro Introduction 
  *
  * The code in this section defines methods to generate a fully
  * corrected 2-dimensional histogram of the charged particle
@@ -25,13 +23,13 @@
  * the SPD clusters on the first layer.  The two analysis are similar
  * in methodology. 
  * 
- * @section mult_structure Structure 
+ * @section pwglf_fwd_mult_structure Structure 
  *
  * There are classes for containing data, classes that represent
  * analysis tasks, and classes that perform calculations, as well as
  * specialized classes for analysis of simulation (MC) output. 
  *
- * @subsection mult_struct_data Data structures 
+ * @subsection pwglf_fwd_mult_struct_data Data structures 
  *
  * The classes AliAODForwardMult and AliAODCentralMult each contain a
  * 2-dimensional @f$(\eta,\phi)@f$ map of the charged particle
@@ -39,7 +37,7 @@
  * acceptance and secondary particle production, though this can be
  * turned off if needed. 
  *
- * @subsection mult_struct_tasks Tasks 
+ * @subsection pwglf_fwd_mult_struct_tasks Tasks 
  * 
  * For the forward analysis, there are two tasks:
  * AliForwardMultiplicityTask and AliForwardMCMultiplicityTask - both
@@ -69,7 +67,7 @@
  * framework.  This task can be added by the ::AddTaskCopyHeader
  * script function. 
  * 
- * @subsection mult_workers Workers 
+ * @subsection pwglf_fwd_mult_workers Workers 
  *
  * <dl>
  *  <dt>AliFMDEventInspector</dt>
@@ -109,9 +107,9 @@
  *  of the event from the FMD data</dd>
  * </dl>
  *
- * @subsection mult_mc_workers MC Workers 
+ * @subsection pwglf_fwd_mult_mc_workers MC Workers 
  *
- * @subsection mult_misc Misc.
+ * @subsection pwglf_fwd_mult_misc Misc.
  *
  */
 //
