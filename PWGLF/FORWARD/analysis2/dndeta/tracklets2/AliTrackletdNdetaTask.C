@@ -132,7 +132,7 @@ public:
     /** 
      * Called on master on merged result. 
      * 
-     * @param results   Output container for results 
+     * @param parent    Output container for results 
      * @param ipz       Histogram of ipZ for normalization 
      * @param deltaCut  Upper cut on @f$\Delta@f$ signal
      * @param deltaTail Lower cut on @f$\Delta@f$ tail 
@@ -271,6 +271,7 @@ public:
      * @param cmax     Largest centrality (exclusive)
      * @param recFlags Reconstruction flags 
      * @param colOff   Color offset for histograms 
+     * @param styOff   Style offset for histograms 
      */
     CentBin(Float_t  cmin,
 	    Float_t  cmax,
@@ -295,6 +296,9 @@ public:
      * @param parent  Parent container 
      * @param etaAxis Eta axis used 
      * @param ipzAxis IPz axis used 
+     * @param deltaAxis   Axis of @f$ \Delta@f$ 
+     * @param dThetaAxis  Axis of @f$ d\theta@f$ 
+     * @param dPhiAxis    Axis of @f$ d\phi@f$ 
      */
     virtual void WorkerInit(Container&       parent,
 			    const TAxis&     etaAxis,
@@ -393,8 +397,6 @@ public:
     /** 
      * Constructor 
      * 
-     * @param cmin Least centrality (inclusive)
-     * @param cmax Largest centrality (exclusive)
      */
     CentBin()
       : SubBase(), 
@@ -849,7 +851,9 @@ protected:
   /** 
    * Find the interaction point location 
    * 
-   * @param event Event 
+   * @param event         Event 
+   * @param maxDispersion Largest spread 
+   * @param maxZError     Largest uncertainty 
    * 
    * @return Pointer to vertex, or null in case of problems 
    */
@@ -879,7 +883,7 @@ protected:
    * Process tracklets from a reconstructon. 
    * 
    * @param toRun Centrality bins to process 
-   * @param mode  Which reconstruction 
+   * @param reco  Reconstructor 
    * @param cent  The centrality 
    * @param ipZ   The Z coordinate of the vertex 
    * @param mult  The tracklet container  
@@ -903,7 +907,7 @@ protected:
    * Fill selected centrality bins with tracklet information 
    * 
    * @param toRun           Selected centrality bins 
-   * @param mode            What we're doing 
+   * @param reco            Reconstructor  
    * @param mult            Container of tracklets 
    * @param trackletNumber  Tracklet number
    * @param isSignal        If this is considered a signal 
@@ -955,6 +959,7 @@ protected:
    * information from tracklets directly.
    * 
    * @param mult Tracklet container 
+   * @param ipZ  Primary interaction point Z coordinate
    */
   virtual void FillClusters(AliMultiplicity* mult, Double_t ipZ);
   /** 
@@ -990,8 +995,9 @@ protected:
    * 
    * @param c1 Low edge 
    * @param c2 High edge 
-   * 
-   * @return 
+   * @param recFlags Reconstruction flags 
+   *
+   * @return  NEw bin 
    */
   virtual CentBin* MakeCentBin(Float_t c1, Float_t c2, UShort_t recFlags)
   {
@@ -2263,9 +2269,12 @@ public:
      * Initialize this object on worker - e.g., called at start of
      * (slave) job
      * 
-     * @param parent  Parent container 
-     * @param etaAxis Eta axis used 
-     * @param ipzAxis IPz axis used 
+     * @param parent     Parent container 
+     * @param etaAxis    Eta axis used 
+     * @param ipzAxis    IPz axis used 
+     * @param deltaAxis  Delta axis used
+     * @param dThetaAxis dTheta axis used
+     * @param dPhiAxis   dPhi axis used
      */
     virtual void WorkerInit(Container&       parent,
 			    const TAxis&     etaAxis,
@@ -2308,6 +2317,7 @@ public:
      * @param pdg        PDG of this particle 
      * @param parentPdg  PDG of parent particle 
      * @param delta      Delta of this particle 
+     * @param weight     Tracklet weight 
      */
     virtual void FillSpecie(Bool_t   primary,
 			    Int_t    pdg,
@@ -2341,7 +2351,6 @@ public:
      * @param title     Title of generated histogram 
      * @param result    Container to add result to 
      * @param primaries Histogram of primaries 
-     * @param data      Histogram of reconstructed tracklets 
      * 
      * @return Histogram containing alpha 
      */
@@ -2380,6 +2389,7 @@ public:
      * 
      * @param parent    Output container for results 
      * @param ipz       Histogram of ipZ for normalization 
+     * @param deltaCut  Cut on delta
      * @param deltaTail Lower cut on @f$\Delta@f$ tail 
      *
      * @return Result container 
@@ -2457,8 +2467,8 @@ public:
    * 
    * @param c1 Low edge 
    * @param c2 High edge 
-   * 
-   * @return 
+   * @param recFlags Reconstruction flags 
+   * @return A new bin 
    */
   virtual AliTrackletdNdetaTask::CentBin*
   MakeCentBin(Float_t c1, Float_t c2, UShort_t recFlags)
@@ -2621,7 +2631,7 @@ protected:
    * Fill selected centrality bins with tracklet information 
    * 
    * @param toRun           Selected centrality bins 
-   * @param mode            What we're doing 
+   * @param reco            Reconstructor 
    * @param mult            Container of tracklets 
    * @param trackletNumber  Tracklet number
    * @param isSignal        If this is considered a signal 
