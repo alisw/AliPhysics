@@ -18,7 +18,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Int_t  muonMCMode = 3  ,
                                            Bool_t useV0Filter=kTRUE,
                                            Bool_t muonWithSPDTracklets=kTRUE,
-                                           Bool_t isMuonCaloPass=kFALSE)
+                                           Bool_t isMuonCaloPass=kFALSE,
+					   Bool_t addPCMv0s=kTRUE)
 {
   // Creates a filter task and adds it to the analysis manager.
    // Get the pointer to the existing analysis manager via the static access method.
@@ -133,7 +134,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    mgr->ConnectOutput (esdfilter,  0, mgr->GetCommonOutputContainer());
    mgr->ConnectInput  (esdmuonfilter, 0, mgr->GetCommonInputContainer());
    
-   if (useV0Filter && !isMuonCaloPass){
+   if (useV0Filter && !isMuonCaloPass && addPCMv0s){
      TObjArray *allContainers = mgr->GetContainers();
      Int_t containersSize = allContainers->GetSize();
      TString containerName;
@@ -142,17 +143,22 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      for (Int_t i=0;i<containersSize;i++){
        if (allContainers->At(i)){
 	 containerName = allContainers->At(i)->GetName();
-	 if (containerName.CompareTo("PCM v0 containerA")==0){
+	 if (containerName.CompareTo("PCM offlineV0Finder container")==0){
 	   cinputPCMv0sA = allContainers->At(i);
 	 }
-	 if (containerName.CompareTo("PCM v0 containerB")==0){
+	 else{
+	   cout << "No container for offline v0s found check that addv0sInESDFilter bool in AddTask_ConversionProduction.C is set to true" << endl;}
+	 if (containerName.CompareTo("PCM onflyV0Finder container")==0){
 	   cinputPCMv0sB = allContainers->At(i);
+	 }
+	 else{
+	   cout << "No container for onfly v0s found check that addv0sInESDFilter bool in AddTask_ConversionProduction.C is set to true" << endl;
 	 }
        }
      }
      mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
      mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
-   } 
+   }
    
    
    if (useKineFilter) {
