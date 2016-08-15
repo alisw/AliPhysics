@@ -1,9 +1,9 @@
 /**
- * @file   ExtractGSE2.C
+ * @file   PWGLF/FORWARD/analysis2/dndeta/tracklets3/ExtractGSE2.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Apr 27 16:51:39 2016
  * 
- * @brief  
+ * @brief  Extract GraphSysErr from results 
  * 
  * 
  * @ingroup pwglf_forward_tracklets
@@ -327,8 +327,8 @@ ExtractGSE2(const char* input, UShort_t sNN=5023)
   if (!gROOT->GetClass("GraphSysErr")) 
     gROOT->LoadMacro("$HOME/GraphSysErr/GraphSysErr.C+g");
 
-  TString base = gSystem->BaseName(input); base.ReplaceAll(".root","");
-  TFile*  file = TFile::Open(input, "READ");
+  TString base = input; //gSystem->DirName(input); base.ReplaceAll(".root","");
+  TFile*  file = TFile::Open(Form("%s/result.root",input), "READ");
   if (!file) return;
 
   Int_t dimen = -1;
@@ -337,20 +337,22 @@ ExtractGSE2(const char* input, UShort_t sNN=5023)
   else if (base.EndsWith("eta"))     dimen = 2;
   else if (base.EndsWith("etaipz"))  dimen = 3;
   if (dimen < 0) {
-    Error("ExtractGSE2", "Don't know how to extract dimension from %s",input);
+    Error("ExtractGSE2", "Don't know how to extract dimension from %s",base);
     return;
   }
-  
-  TH1* cent = GetH1(file, "realCent");
 
-  Bool_t first = true;
-  TList* stack = new TList;
-  TList* truths = new TList;
+  TH1* frame = 0;
+  TH1* cent  = GetH1(file, "realCent");
+
+  Bool_t   first  = true;
+  TList*   stack  = new TList;
+  TList*   truths = new TList;
   for (Int_t i = 1; i <= cent->GetNbinsX(); i++) {
     Double_t c1 = cent->GetXaxis()->GetBinLowEdge(i);
     Double_t c2 = cent->GetXaxis()->GetBinUpEdge(i);
     TObject* g  = MakeGSE(file,  dimen, sNN, c1, c2);
     TObject* t  = MakeTGSE(file, dimen, sNN, c1, c2);
+    Double_t gmin, gmax, tmin, tmax;
     if (!g) continue;
     stack->Add(g);    
     truths->Add(t);    
@@ -358,16 +360,22 @@ ExtractGSE2(const char* input, UShort_t sNN=5023)
     else       g->Draw("quad stat combine");
     if (t)     t->Draw("quad");
     first = false;
+    if (!frame) {
+      GraphSysErr* gse = static_cast<GraphSysErr*>(g);
+      if (gse->GetMulti())
+	frame = gse->GetMulti()->GetHistogram();
+    }
   }
-
-  TString obase(base); obase.Prepend("GSE_");
+  if (frame) frame->SetMinimum(1);
+	       
+  // TString obase(base); obase.Prepend("GSE_");
   
-  std::ofstream out(Form("%s.input", obase.Data()));
+  std::ofstream out(Form("%s/gse.input", base.Data()));
   GraphSysErr::Export(stack, out, "HFC", 2);
   out << "*E" << std::endl;
   out.close();
 
-  TFile* rout = TFile::Open(Form("%s.root", obase.Data()), "RECREATE");
+  TFile* rout = TFile::Open(Form("%s/gse.root", base.Data()), "RECREATE");
   stack->AddAll(truths);
   stack->Write("container", TObject::kSingleKey);
   rout->Write();

@@ -324,6 +324,24 @@ public:
    * @param w Weights to use 
    */
   virtual void SetWeights(AliTrackletWeights* w) {};
+  /** 
+   * Whether to use square root of square (product) weights 
+   * 
+   * @param mode If true, take square root of square (product) weights
+   */
+  virtual void SetWeightCalc(UChar_t mode=0) {}
+  /** 
+   * Set the tracklet type mask to use on weights 
+   * 
+   * @param mask Tracklet type mask 
+   */
+  virtual void SetWeightMask(UChar_t mask=0xFF) {}
+  /** 
+   * Set the tracklet type veto to use on weights 
+   * 
+   * @param veto Tracklet type veto 
+   */
+  virtual void SetWeightVeto(UChar_t veto=0xFF) {}
   /* @} */
   //__________________________________________________________________
   /**
@@ -1037,6 +1055,18 @@ protected:
   TH1* fStatus;    //! 
   /** Histogram of all eta phi */
   TH2* fEtaPhi;    //!
+  /** Average good number of tracklets (weighed) vs total (unweighed) */
+  TProfile* fNBareVsGood;
+  /** Average fake number of tracklets (weighed) vs total (unweighed) */
+  TProfile* fNBareVsFake;
+  /** Average good number of tracklets (weighed) vs total (weighed) */
+  TProfile* fNTrackletVsGood;
+  /** Average fake number of tracklets (weighed) vs total (weighed) */
+  TProfile* fNTrackletVsFake;
+  /** Average good number of tracklets (weighed) vs generated tracks */
+  TProfile* fNGeneratedVsGood;
+  /** Average fake number of tracklets (weighed) vs generated tracks */
+  TProfile* fNGeneratedVsFake;  
   /** Histogram of centrality, nTracklets correlation */
   TProfile* fCentTracklets; //!
   /** Histogram of centrality vs average mult estimator */
@@ -1223,7 +1253,8 @@ public:
   AliTrackletAODWeightedMCdNdeta()
     : AliTrackletAODMCdNdeta(),
       fWeights(0),
-      fEtaWeight(0)
+      fEtaWeight(0),
+      fWeightCorr(0)
   {}
   /** 
    * Named - user - constructor
@@ -1231,7 +1262,8 @@ public:
   AliTrackletAODWeightedMCdNdeta(const char* name)
     : AliTrackletAODMCdNdeta(name),
       fWeights(0),
-      fEtaWeight(0)
+      fEtaWeight(0),
+      fWeightCorr(0)
   {}
   /**
    * Copy constructor 
@@ -1241,7 +1273,8 @@ public:
   AliTrackletAODWeightedMCdNdeta(const AliTrackletAODWeightedMCdNdeta& o)
     : AliTrackletAODMCdNdeta(o),
       fWeights(0),
-      fEtaWeight(0)
+      fEtaWeight(0),
+      fWeightCorr(0)
   {}
   /**
    * Destructor 
@@ -1274,6 +1307,30 @@ public:
    * @param w 
    */
   void SetWeights(AliTrackletWeights* w) { fWeights = w; }
+  /** 
+   * Whether to use square root of square (product) weights 
+   * 
+   * @param mode If true, take square root of square (product) weights
+   */
+  void SetWeightCalc(UChar_t mode=0) {
+    Info("SetWeightCalc", "Use=%d", mode);
+    if (fWeights) fWeights->SetCalc(mode);}
+  /** 
+   * Set the tracklet type mask to use on weights 
+   * 
+   * @param mask Tracklet type mask 
+   */
+  void SetWeightMask(UChar_t mask=0xFF) {
+    Info("SetWeightMask", "mask=0x%x", mask);
+    if (fWeights) fWeights->SetMask(mask); }
+  /** 
+   * Set the tracklet type veto to use on weights 
+   * 
+   * @param veto Tracklet type veto 
+   */
+  void SetWeightVeto(UChar_t veto=0x0) {
+    Info("SetWeightVeto", "veto=0x%x", veto);
+    if (fWeights) fWeights->SetVeto(veto); }
   /* @} */
 protected:
   // -----------------------------------------------------------------
@@ -1313,8 +1370,8 @@ protected:
   /* @} */
   // -----------------------------------------------------------------
   AliTrackletWeights* fWeights;
-  TProfile2D*         fEtaWeight;
-  
+  TProfile2D*         fEtaWeight;  //! 
+  TH2*                fWeightCorr;    //! 
   ClassDef(AliTrackletAODWeightedMCdNdeta,1); 
 };
 
@@ -1327,6 +1384,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fCent(0),
     fStatus(0),
     fEtaPhi(0),
+    fNBareVsGood(0),
+    fNBareVsFake(0),
+    fNTrackletVsGood(0),
+    fNTrackletVsFake(0),
+    fNGeneratedVsGood(0),
+    fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
     fCentMethod(""),
@@ -1353,6 +1416,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
     fCent(0),
     fStatus(0),
     fEtaPhi(0),
+    fNBareVsGood(0),
+    fNBareVsFake(0),
+    fNTrackletVsGood(0),
+    fNTrackletVsFake(0),
+    fNGeneratedVsGood(0),
+    fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
     fCentMethod("V0M"),
@@ -1387,6 +1456,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fCent(0),
     fStatus(0),
     fEtaPhi(0),
+    fNBareVsGood(0),
+    fNBareVsFake(0),
+    fNTrackletVsGood(0),
+    fNTrackletVsFake(0),
+    fNGeneratedVsGood(0),
+    fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
     fCentMethod(o.fCentMethod),
@@ -1605,9 +1680,43 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fContainer->SetName(Form("%sSums", GetName()));
   fContainer->SetOwner();
 
+  Bool_t save = TH1::GetDefaultSumw2();
+  TH1::SetDefaultSumw2();
   fIPz    = Make1D(fContainer, "ipz",  "", kMagenta+2, 20, fIPzAxis);
   fCent   = Make1D(fContainer, "cent", "", kMagenta+2, 20, fCentAxis);
   fEtaPhi = Make2D(fContainer, "etaPhi","",kMagenta+2, 20, fEtaAxis,fPhiAxis);
+
+  TAxis trackletAxis(1000, 0, 10000);
+  FixAxis(trackletAxis, "#it{N}_{tracklets}");
+  fNBareVsGood  = Make1P(fContainer, "nBareVsGood", "Good",
+			 kGreen+2, 20, trackletAxis);
+  fNBareVsFake  = Make1P(fContainer, "nBareVsFake", "Fake",
+			 kRed+2, 20, trackletAxis);
+  fNBareVsGood->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNBareVsFake->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNBareVsGood->SetStats(0);
+  fNBareVsFake->SetStats(0);
+
+  fNTrackletVsGood  = Make1P(fContainer, "nTrackletVsGood", "Good",
+			     kGreen+2, 20, trackletAxis);
+  fNTrackletVsFake  = Make1P(fContainer, "nTrackletVsFake", "Fake",
+			     kRed+2, 20, trackletAxis);
+  fNTrackletVsGood->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNTrackletVsFake->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNTrackletVsGood->SetStats(0);
+  fNTrackletVsFake->SetStats(0);
+  
+  TAxis generatedAxis(1000, 0, 15000);
+  FixAxis(generatedAxis, "#it{N}_{generated,|#eta|<2}");
+  fNGeneratedVsGood = Make1P(fContainer, "nGeneratedVsGood", "Good",
+			     kGreen+2, 24, generatedAxis);
+  fNGeneratedVsFake = Make1P(fContainer, "nGeneratedVsFake", "Fake",
+			     kRed+2, 24, generatedAxis);
+  fNGeneratedVsGood->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNGeneratedVsFake->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNGeneratedVsGood->SetStats(0);
+  fNGeneratedVsFake->SetStats(0);
+
   fCentTracklets = new TProfile("centTracklets",
 				"Mean number of tracklets per centrality",
 				1050, 0, 105);
@@ -1620,6 +1729,7 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fContainer->Add(fCentTracklets);
   fCentEst = Make1P(fContainer,"centEstimator","",kMagenta+2, 20, fCentAxis);
   fCentEst->SetYTitle(Form("#LT%s%GT",fCentMethod.Data()));
+  TH1::SetDefaultSumw2(save);
 
   fStatus = new TH1F("status", "Status of task",
 		     kCompleted, .5, kCompleted+.5);
@@ -1676,9 +1786,13 @@ Bool_t AliTrackletAODWeightedMCdNdeta::WorkerInit()
     AliFatal("No weights set!");
     return false;
   }
-  
+
+  TAxis wAxis(100,0,10);
+  FixAxis(wAxis,"#it{w}_{i}");
   fEtaWeight = Make2P(fContainer, "etaWeight", "#LTw#GT", kYellow+2, 24,
 		      fEtaAxis, fCentAxis);
+  fWeightCorr = Make2D(fContainer, "weightCorr", "w_{1} vs w_{2}",
+		       kCyan+2, 24, wAxis, wAxis);
   fWeights->Store(fContainer);
   return true;
 }
@@ -2204,9 +2318,10 @@ Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
   // AliWarning("No weights defined");
   // return 1;
   // }
-  Double_t w = fWeights->LookupWeight(tracklet, cent);
-  if (tracklet->IsMeasured())
+  Double_t w = fWeights->LookupWeight(tracklet, cent, fWeightCorr);
+  if (tracklet->IsMeasured()) 
     fEtaWeight->Fill(tracklet->GetEta(), cent, w);
+    
   // printf("Looking up weight of tracklet -> %f ", w);
   // tracklet->Print();
   return w;
@@ -2245,17 +2360,37 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
   // If we have no centrality bins  to fill, we return immediately 
   if (nAcc <= 0) return;
 
-  AliAODTracklet* tracklet = 0;
+  Double_t        nBare      = 0;
+  Double_t        nMeasured  = 0;
+  Double_t        nGenerated = 0;
+  Double_t        nGood      = 0;
+  Double_t        nFake      = 0;
+  AliAODTracklet* tracklet   = 0;
   TIter           nextTracklet(tracklets);
   while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
     Double_t weight = LookupWeight(tracklet, cent);
     UShort_t signal = CheckTracklet(tracklet);
     if (signal) fEtaPhi->Fill(tracklet->GetEta(), tracklet->GetPhi());
+    if (tracklet->IsMeasured()) {
+      nMeasured += weight;
+      nBare     ++;
+      if      (tracklet->IsCombinatorics()) nFake += weight;
+      else                                  nGood += weight;
+    }
+    else if (tracklet->IsGenerated() &&
+	     !tracklet->IsNeutral() &&
+	     TMath::Abs(tracklet->GetEta()) <= 2) nGenerated ++; // += weight;
     TIter nextBin(&toRun);
     while ((bin = static_cast<CentBin*>(nextBin()))) {
       bin->ProcessTracklet(tracklet, ip->GetZ(), signal, weight);
     }    
   }
+  fNBareVsFake     ->Fill(nBare,      nFake);
+  fNBareVsGood     ->Fill(nBare,      nGood);
+  fNTrackletVsFake ->Fill(nMeasured,  nFake);
+  fNTrackletVsGood ->Fill(nMeasured,  nGood);
+  fNGeneratedVsFake->Fill(nGenerated, nFake);
+  fNGeneratedVsGood->Fill(nGenerated, nGood);
 }    
 
 //____________________________________________________________________
@@ -2457,12 +2592,21 @@ Bool_t AliTrackletAODWeightedMCdNdeta::MasterFinalize(Container* results)
 
   TObject* o = fContainer->FindObject("etaWeight");
   if (o && o->IsA()->InheritsFrom(TH1::Class())) {
-    TH1* etaWeight = static_cast<TH1*>(o->Clone());
-    etaWeight->SetDirectory(0);
-    results->Add(etaWeight);
+    TH1* h = static_cast<TH1*>(o->Clone());
+    h->SetDirectory(0);
+    results->Add(h);
   }
   else {
     AliWarningF("Object %p (etaWeight) is not a TH1 or not found",o);
+  }
+  o = fContainer->FindObject("weightCorr");
+  if (o && o->IsA()->InheritsFrom(TH1::Class())) {
+    TH1* h = static_cast<TH1*>(o->Clone());
+    h->SetDirectory(0);
+    results->Add(h);
+  }
+  else {
+    AliWarningF("Object %p (weightCorr) is not a TH1 or not found",o);
   }
   if (!fWeights) return true;
 
@@ -2761,6 +2905,7 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   // PArameters of integrals
   Double_t maxDelta = etaDeltaIPz->GetYaxis()->GetXmax();
   Int_t    lowBin   = etaDeltaIPz->GetYaxis()->FindBin(tailDelta);
+  Int_t    sigBin   = etaDeltaIPz->GetYaxis()->FindBin(1.5);
   Int_t    highBin  = TMath::Min(etaDeltaIPz->GetYaxis()->FindBin(tailMax),
 				 etaDeltaIPz->GetYaxis()->GetNbins());  
 
@@ -2781,6 +2926,12 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   etaIPzDeltaTail->Reset();
   etaIPzDeltaTail->SetTitle(etaDeltaTail->GetTitle());
   etaIPzDeltaTail->SetZTitle(etaDelta->GetYaxis()->GetTitle());
+  TH2* etaIPzDeltaMain = static_cast<TH2*>(etaDeltaIPz->Project3D("zx e"));
+  etaIPzDeltaMain->SetName("etaIPzDeltaMain");
+  etaIPzDeltaMain->SetDirectory(0);
+  etaIPzDeltaMain->Reset();
+  etaIPzDeltaMain->SetTitle(etaDeltaTail->GetTitle());
+  etaIPzDeltaMain->SetZTitle(etaDelta->GetYaxis()->GetTitle());
   // Loop over eta
   Double_t intg = 0, eintg = 0;
   for (Int_t i = 1; i <= etaDeltaTail->GetNbinsX(); i++) {
@@ -2794,9 +2945,14 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
       intg = etaDeltaIPz->IntegralAndError(i,i,lowBin,highBin,j,j,eintg);
       etaIPzDeltaTail->SetBinContent(i, j, intg);
       etaIPzDeltaTail->SetBinError  (i, j, eintg);
+
+      intg = etaDeltaIPz->IntegralAndError(i,i,1,sigBin,j,j,eintg);
+      etaIPzDeltaMain->SetBinContent(i, j, intg);
+      etaIPzDeltaMain->SetBinError  (i, j, eintg);
     }
   }
   result->Add(etaIPzDeltaTail);
+  result->Add(etaIPzDeltaMain);
   result->Add(etaDeltaTail);
 
   // Integrate full tail

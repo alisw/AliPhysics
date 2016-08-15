@@ -2162,6 +2162,12 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
   fViz  = viz;
   TFile* dataFile = 0;
   TFile* simFile  = 0;
+  Printf("***************************************************\n"
+	 "  Data file:       %s\n"
+	 "  Simulation file: %s\n"
+	 "  Output file:     %s\n",
+	 dataName, simName, outName);
+  
   if (!(dataFile = OpenFile(dataName))) return;
   if (!(simFile  = OpenFile(simName)))  return;
 
@@ -2170,6 +2176,18 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
   Container*  realRess = GetC(dataFile, Form("%sResults",   base));
   Container*  simSums  = GetC(simFile,  Form("%sMCSums",    base));
   Container*  simRess  = GetC(simFile,  Form("%sMCResults", base));
+  if (!realSums || !realRess) {
+    realSums = GetC(dataFile, Form("%sMCSums",      base));
+    realRess = GetC(dataFile, Form("%sMCResults",   base));
+    if (realSums && realRess)
+      Warning("Run","\n"
+	      "*********************************************\n"
+	      "* Testing MC vs. MC:                        *\n"
+	      "*  'Data' file:      %23s *\n"
+	      "*  Simulation file:  %23s *\n"
+	      "*********************************************\n",
+	      dataName, simName);
+  }
   if (!realSums || !realRess || !simSums || !simRess) return;
 
   Container* params   = GetC(realSums, "parameters");
