@@ -33,7 +33,23 @@ class TString;
 class TChain;
 class TSystemDirectory;
 class TUrl;
+class TFileCollection;
 #endif
+
+//====================================================================  
+struct SuppressGuard
+{
+  Int_t save = 0;
+  SuppressGuard(Int_t lvl=2000)
+  {
+    save = gErrorIgnoreLevel;
+    gErrorIgnoreLevel = lvl;
+  }
+  ~SuppressGuard()
+  {
+    gErrorIgnoreLevel = save;
+  }
+};
 
 // ===================================================================
 /**
@@ -50,7 +66,8 @@ struct ChainBuilder
     kCheck     =  0x8,
     kClean     = 0x10,
     kScan      = 0x20, 
-    kTrRef     = 0x40
+    kTrRef     = 0x40,
+    kRemote    = 0x80
   };
   enum { 
     kInvalid,
@@ -145,16 +162,16 @@ struct ChainBuilder
     TIter       next(tokens);
     while ((token = static_cast<TObjString*>(next()))) {
       const TString& str = token->String();
-      if (str.EqualTo("mc", TString::kIgnoreCase)) 
-	flags |= kMC;
-      else if (str.EqualTo("recursive", TString::kIgnoreCase))
-	flags |= kRecursive;
-      else if (str.EqualTo("verbose", TString::kIgnoreCase)) flags |= kVerbose;
-      else if (str.EqualTo("check", TString::kIgnoreCase))   flags |= kCheck;
-      else if (str.EqualTo("trackref", TString::kIgnoreCase))flags |= kTrRef;
-      else if (str.EqualTo("clean", TString::kIgnoreCase))   flags |= kClean; 
-      else if (str.EqualTo("scan", TString::kIgnoreCase))    flags |= kScan; 
-      else if (str.BeginsWith("pattern=", TString::kIgnoreCase)) { 
+      TString lstr(str); lstr.ToLower();
+      if      (lstr.EqualTo("mc")) 	 flags |= kMC;
+      else if (lstr.EqualTo("recursive"))flags |= kRecursive;
+      else if (lstr.EqualTo("verbose"))  flags |= kVerbose;
+      else if (lstr.EqualTo("check"))    flags |= kCheck;
+      else if (lstr.EqualTo("trackref")) flags |= kTrRef;
+      else if (lstr.EqualTo("clean"))    flags |= kClean; 
+      else if (lstr.EqualTo("scan"))     flags |= kScan;
+      else if (lstr.EqualTo("remote"))   flags |= kRemote;
+      else if (lstr.BeginsWith("pattern=")) { 
 	Int_t eq = str.Index("=");
 	pattern  = str(eq+1, str.Length()-eq-1);
 	pattern.ReplaceAll("@", "#");
@@ -182,6 +199,7 @@ struct ChainBuilder
    * @param checkFiles   If true, check that files can be opened
    * @param removeFiles  If true, remove bad files 
    * @param trackRefs    If true, look for track references too 
+   * @param remote       For remote access 
    * 
    * @return Pointer to newly allocated TChain or null
    */
@@ -193,7 +211,8 @@ struct ChainBuilder
 			Bool_t         verbose=false,
 			Bool_t         checkFiles=false, 
 			Bool_t         removeFiles=false,
-			Bool_t         trackRefs=false)
+			Bool_t         trackRefs=false,
+			Bool_t         remote=false)
   {
     UShort_t flags = 0;
     if (verbose)     flags |= kVerbose;
@@ -202,6 +221,7 @@ struct ChainBuilder
     if (checkFiles)  flags |= kCheck;
     if (removeFiles) flags |= kClean;
     if (trackRefs)   flags |= kTrRef;
+    if (remote)      flags |= kRemote;
 
     TString tmp(src);
     UShort_t type = CheckSource(tmp, flags);
@@ -222,6 +242,7 @@ struct ChainBuilder
    * @param checkFiles   If true, check that files can be opened
    * @param removeFiles  If true, remove bad files 
    * @param trackRefs    If true, look for track references too 
+   * @param remote       For remote access 
    * 
    * @return Pointer to newly allocated TChain or null
    */
@@ -234,7 +255,8 @@ struct ChainBuilder
 			Bool_t         verbose=false,
 			Bool_t         checkFiles=false, 
 			Bool_t         removeFiles=false,
-			Bool_t         trackRefs=false)
+			Bool_t         trackRefs=false,
+			Bool_t         remote=false)
   {
     // Info("ChainBuilder::Create", 
     // "src=%s treeName=%s pattern=%s mc=%s recursive=%s",
@@ -248,6 +270,8 @@ struct ChainBuilder
     if (checkFiles)  flags |= kCheck;
     if (removeFiles) flags |= kClean;
     if (trackRefs)   flags |= kTrRef;
+    if (remote)      flags |= kRemote;
+    
 
     return Create(type, src, treeName, pattern, flags);
   }
@@ -332,14 +356,16 @@ struct ChainBuilder
    * 
    * @param output Output file 
    * @param url    Input url 
+   * @param remote For remote access 
    */
   static void CreateCollection(const TString& output, 
-			       const TUrl&    url)
+			       const TUrl&    url,
+			       const char*    remote=0)
   {
     TChain* chain = Create(url);
     if (!chain) return;
 
-    CreateCollection(output, chain);
+    CreateCollection(output, chain, remote);
   }
   //------------------------------------------------------------------
   /** 
@@ -347,9 +373,11 @@ struct ChainBuilder
    * 
    * @param output Input url 
    * @param chain  Chain to make collection from 
+   * @param remote For remote access 
    */
   static void CreateCollection(const TString& output, 
-			       const TChain* chain)
+			       const TChain*  chain,
+			       const char*    remote=0)
   {
     if (!chain) return;
     TDirectory* savDir = gDirectory;
@@ -382,6 +410,7 @@ struct ChainBuilder
       if (n >= 0) nEntries += n;
       
     }
+    Remotify(collection, remote);
     collection->Update();
     TFileInfoMeta* cMeta = new TFileInfoMeta(chain->GetName(), 
 					     "TTree", nEntries);
@@ -525,11 +554,40 @@ struct ChainBuilder
   static void RemoveFile(const TString& path)
   {
     Info("", "Removing bad file %s", path.Data());
-    gSystem->RedirectOutput("/dev/null", "w");
+    SuppressGuard g;
     // gSystem->Unlink(path);
     gSystem->Rename(path, Form("%s.bad", path.Data()));
-    gSystem->RedirectOutput(0);    
   }
+  //------------------------------------------------------------------
+  static TFileCollection* Remotify(TFileCollection* fc, const char* remote=0)
+  {
+    if (!remote) return fc;
+    
+    TList*           files      = fc->GetList();
+    TFileInfo*       element    = 0;
+    TIter            next(files);
+    while ((element = static_cast<TFileInfo*>(next()))) {
+      element->ResetUrl();
+      TUrl* url  = 0;
+      TUrl* furl = 0;
+      while ((url = element->NextUrl())) {
+	if (TString(url->GetProtocol()).BeginsWith("root")) {
+	  furl = 0;
+	  break;
+	}
+	if (TString(url->GetProtocol()).BeginsWith("file") && furl == 0)
+	  furl = url;	  
+      }
+      if (furl) {
+	TUrl* nurl = static_cast<TUrl*>(furl->Clone());
+	nurl->SetProtocol("rootd");
+	nurl->SetHost(remote);
+	element->AddUrl(nurl->GetUrl(), true);
+      }
+    }
+    return fc;
+  }
+  
   //------------------------------------------------------------------
   /** 
    * Check if we can add a file to the chain 
@@ -543,16 +601,18 @@ struct ChainBuilder
    */
   static Bool_t CheckFile(const TString& path, 
 			  const TString& anchor, 
-			  TChain* chain,
-			  UShort_t flags=0)
+			  TChain*        chain,
+			  UShort_t       flags=0)
   {
     if (flags & kVerbose) Info("", "Checking %s", path.Data());
     TString fn   = path;
     if (!anchor.IsNull()) fn.Append(TString::Format("#%s", anchor.Data()));
 
-    if (!(flags & kVerbose)) gSystem->RedirectOutput("/dev/null", "w");
-    TFile*  test = TFile::Open(fn, "READ");
-    if (!(flags & kVerbose)) gSystem->RedirectOutput(0);
+    TFile* test = 0;
+    {
+      SuppressGuard g((flags & kVerbose) ? 0 : 2000);
+      test = TFile::Open(fn, "READ");
+    }
     if (!test) { 
       Warning("ChainBuilder::CheckFile", "Failed to open %s", fn.Data());
       if (flags & kClean) RemoveFile(path);
@@ -578,8 +638,11 @@ struct ChainBuilder
 					 Form("%s.root", *aux));
 	  else 
 	    t1 = TString::Format("%s#%s.root", path.Data(), *aux);
-	  
-	  TFile* t2 = TFile::Open(t1, "READ");
+	  TFile* t2 = 0;
+	  {
+	    SuppressGuard g2;
+	    t2 = TFile::Open(t1, "READ");
+	  }
 	  if (!t2) { 
 	    Error("", "Needed MC file %s not found", t1.Data());
 	    ok = false;
@@ -589,8 +652,11 @@ struct ChainBuilder
 	  aux++;
 	}
       }
+      // if (flags & kRemote)
+      //   fn.Prepend(Form("root://%s/", gSystem->HostName()));      
       if (ok) chain->Add(fn, kScan ? -1 : TChain::kBigNumber);
     } else if (c) {
+      // chain->AddFileInfoList(Remotify(c, flags & kRemote)->GetList());
       chain->AddFileInfoList(c->GetList());
       ok = true;
     } else {
@@ -607,6 +673,7 @@ struct ChainBuilder
 	  continue;
 	}
 	// Info("", "Adding file collection");
+	// chain->AddFileInfoList(Remotify(c, flags&kRemote)->GetList());
 	chain->AddFileInfoList(c->GetList());
 	ok = true;
       }
