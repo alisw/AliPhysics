@@ -681,6 +681,7 @@ void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist() {
 
     fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(1,"all");
     fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(2,"n#pi^{-}");
+    fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(3,"X#gamma");
     fHistDecayChannelsInput[9]->GetXaxis()->SetBinLabel(20,"rest");
 
     fHistDecayChannelsInput[10]->GetXaxis()->SetBinLabel(1,"all");
@@ -697,6 +698,7 @@ void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist() {
 
     fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(1,"all");
     fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(2,"p#pi^{+}");
+    fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(3,"X#gamma");
     fHistDecayChannelsInput[12]->GetXaxis()->SetBinLabel(20,"rest");
 
     fHistDecayChannelsInput[13]->GetXaxis()->SetBinLabel(1,"all");
@@ -864,6 +866,10 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
         return 19.;
       break;
     case 1114:
+      for (Int_t i=0; i<nDaughters; i++) {
+        if (PdgDaughter->at(i) == 22)
+          return 2.;
+      }
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2112)
         return 1.;
       else
@@ -890,6 +896,10 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
         return 19.;
       break;
     case 2224:
+      for (Int_t i=0; i<nDaughters; i++) {
+        if (PdgDaughter->at(i) == 22)
+          return 2.;
+      }
       if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 2212)
         return 1.;
       else
