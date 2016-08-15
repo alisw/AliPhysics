@@ -1,18 +1,18 @@
 #error This is not for compilation 
 /** 
- * @page density_doc Charge Particle Multiplicity Densities 
+ * @page pwglf_fwd_density_doc Charge Particle Multiplicity Densities 
  *
  * Module: @ref pwglf_forward_dndeta
  *
  * @tableofcontents 
  *
- * @section density_intro Introduction 
+ * @section pwglf_fwd_density_intro Introduction 
  *
  * This code uses the AOD produced by the @ref mult_doc code to
  * produce results on @f$ 1/N_{ev} dN_{ch}/d\eta@f$ in pp, PbPb, and
  * pPb collisions.
  * 
- * @section density_tasks Tasks 
+ * @section pwglf_fwd_density_tasks Tasks 
  *
  * <dl>
  * <dt>AliBasedNdetaTask</dt>
@@ -31,7 +31,7 @@
  * TH2D objects stored in the AOD input.
  * </dl>
  *
- * @section density_scripts Scripts 
+ * @section pwglf_fwd_density_scripts Scripts 
  *
  * <dl>
  * <dt>DrawdNdeta.C</dt>
