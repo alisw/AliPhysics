@@ -575,9 +575,8 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   //Reset the TClonesArray
   fConversionGammas->Delete();
   
-  //Clear TBits object with accepted v0s
-  //if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
-  fPCMv0BitField->Clear();
+  //Clear TBits object with accepted v0s from previous event
+  if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
   
   fInputEvent=inputEvent;
   fMCEvent=mcEvent;
@@ -627,7 +626,6 @@ void AliV0ReaderV1::FillAODOutput()
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
     if(fCreateAOD) {
-      //if(kAddv0sInESDFilter){PostData(1, fPCMv0BitField);}
       PostData(1, fPCMv0BitField);
       AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
       if (aodhandler && aodhandler->GetFillAOD()) {
