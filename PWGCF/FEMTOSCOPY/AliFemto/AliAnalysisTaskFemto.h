@@ -138,8 +138,12 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f1DcorrectionsPions(NULL),
   f1DcorrectionsKaons(NULL),
   f1DcorrectionsProtons(NULL),
+  f1DcorrectionsPionsMinus(NULL),
+  f1DcorrectionsKaonsMinus(NULL),
+  f1DcorrectionsProtonsMinus(NULL),
   f1DcorrectionsAll(NULL),
-  f1DcorrectionsLambdas(NULL)
+  f1DcorrectionsLambdas(NULL),
+  f1DcorrectionsLambdasMinus(NULL),
 {
   /* no-op */
 }
