@@ -131,6 +131,8 @@ public:
 
   float CorrectionLambda() const;
   void SetCorrectionLambdas(const double& x);
+  float CorrectionLambdaMinus() const;
+  void SetCorrectionLambdasMinus(const double& x);
 
   bool OnFlyStatusV0() const;
 
@@ -423,6 +425,7 @@ protected:
   float fImpactDmatNeg;   // impact parameter in xy plane
 
   float fCorrLam;    //corrections for lambda particles
+  float fCorrLamMinus;    //corrections for lambda particles
 
   double fRadiusV0;
 

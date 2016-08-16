@@ -83,8 +83,12 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   f1DcorrectionsPions(0),
   f1DcorrectionsKaons(0),
   f1DcorrectionsProtons(0),
+  f1DcorrectionsPionsMinus(0),
+  f1DcorrectionsKaonsMinus(0),
+  f1DcorrectionsProtonsMinus(0),
   f1DcorrectionsAll(0),
-  f1DcorrectionsLambdas(0)
+  f1DcorrectionsLambdas(0),
+  f1DcorrectionsLambdasMinus(0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -129,8 +133,12 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   f1DcorrectionsPions(aReader.f1DcorrectionsPions),
   f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
   f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
+  f1DcorrectionsPionsMinus(aReader.f1DcorrectionsPionsMinus),
+  f1DcorrectionsKaonsMinus(aReader.f1DcorrectionsKaonsMinus),
+  f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
-  f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas)
+  f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
+  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus)
 
 {
   // copy constructor
@@ -195,8 +203,12 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   f1DcorrectionsPions = aReader.f1DcorrectionsPions;
   f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
   f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
+  f1DcorrectionsPionsMinus = aReader.f1DcorrectionsPionsMinus;
+  f1DcorrectionsKaonsMinus = aReader.f1DcorrectionsKaonsMinus;
+  f1DcorrectionsProtonsMinus = aReader.f1DcorrectionsProtonsMinus;
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
+  f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
 
   return *this;
 }
@@ -941,6 +953,22 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   }
   else tFemtoTrack->SetCorrectionProton(1.0);
 
+  if(f1DcorrectionsPionsMinus){
+    tFemtoTrack->SetCorrectionPionMinus(f1DcorrectionsPionsMinus->GetBinContent(f1DcorrectionsPionsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionPionMinus(1.0);
+
+  if(f1DcorrectionsKaonsMinus){
+    tFemtoTrack->SetCorrectionKaonMinus(f1DcorrectionsKaonsMinus->GetBinContent(f1DcorrectionsKaonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionKaonMinus(1.0);
+
+  if(f1DcorrectionsProtonsMinus){
+    tFemtoTrack->SetCorrectionProtonMinus(f1DcorrectionsProtonsMinus->GetBinContent(f1DcorrectionsProtonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionProtonMinus(1.0);
+  
+
   if(f1DcorrectionsAll){
     tFemtoTrack->SetCorrectionAll(f1DcorrectionsAll->GetBinContent(f1DcorrectionsAll->FindFixBin(tAodTrack->Pt())));
   }
@@ -1013,6 +1041,14 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   else {
     tFemtoV0->SetCorrectionLambdas(1.0);
   }
+
+    if(f1DcorrectionsLambdasMinus){
+    tFemtoV0->SetCorrectionLambdasMinus(f1DcorrectionsLambdasMinus->GetBinContent(f1DcorrectionsLambdasMinus->FindFixBin(tAODv0->Pt())));
+  }
+  else {
+    tFemtoV0->SetCorrectionLambdasMinus(1.0);
+  }
+
 
   tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
   //tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
@@ -1832,6 +1868,21 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsProtons(TH1D *h1)
   f1DcorrectionsProtons = h1;
 }
 
+void AliFemtoEventReaderAOD::Set1DCorrectionsPionsMinus(TH1D *h1)
+{
+  f1DcorrectionsPionsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsKaonsMinus(TH1D *h1)
+{
+  f1DcorrectionsKaonsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsProtonsMinus(TH1D *h1)
+{
+  f1DcorrectionsProtonsMinus = h1;
+}
+
 void AliFemtoEventReaderAOD::Set1DCorrectionsAll(TH1D *h1)
 {
   f1DcorrectionsAll = h1;
@@ -1841,3 +1892,9 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsLambdas(TH1D *h1)
 {
   f1DcorrectionsLambdas = h1;
 }
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
+{
+  f1DcorrectionsLambdasMinus = h1;
+}
+
