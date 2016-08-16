@@ -74,7 +74,8 @@ struct ChainBuilder
     kDirectory, 
     kXML, 
     kAscii, 
-    kROOT
+    kROOT,
+    kZip
   };
   //------------------------------------------------------------------
   static UShort_t CheckSource(TString& src, UShort_t flags)
@@ -112,7 +113,8 @@ struct ChainBuilder
     if      (type.Contains("ROOT"))  ret = kROOT;
     else if (type.Contains("XML"))   ret = kXML;
     else if (type.Contains("ASCII")) ret = kAscii;
-
+    else if (type.Contains("Zip"))   ret = kZip;
+    
     if (ret == kInvalid) {
       Error("ChainBuilder::CheckSource", 
 	    "Do not now how to process %s of type %s", 
@@ -175,6 +177,7 @@ struct ChainBuilder
 	Int_t eq = str.Index("=");
 	pattern  = str(eq+1, str.Length()-eq-1);
 	pattern.ReplaceAll("@", "#");
+	pattern.ReplaceAll(":", "#");
       }
       else 
 	Warning("", "Option %s unknown", str.Data());

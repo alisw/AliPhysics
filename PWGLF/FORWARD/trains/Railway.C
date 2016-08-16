@@ -584,6 +584,7 @@ protected:
     // --- Check possible pattern ------------------------------------
     TString  pattern   = (fOptions.Has("pattern") ?fOptions.Get("pattern") :"");
     pattern.ReplaceAll("@", "#");
+    pattern.ReplaceAll(":", "#");
 
     // --- Get the tree name -----------------------------------------
     TString  treeName  = fUrl.GetAnchor();
