@@ -75,7 +75,7 @@ public:
   void SetMinPlpContribSPD(Int_t minPlpContribSPD) {
     fMinPlpContribSPD = minPlpContribSPD;
   }
-  void SetDCAglobalTrack(Bool_t dcagt);
+  void SetDCAglobalTrack(Int_t dcagt);
 
   bool RejectEventCentFlat(float MagField, float CentPercent);
   void SetCentralityFlattening(Bool_t flat);
@@ -137,7 +137,7 @@ private:
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data
   Int_t fMinPlpContribMV;  ///< no of contributors for multivertex pile-up rejection
   Int_t fMinPlpContribSPD; ///< no of contributors for SPD pile-up rejection
-  Bool_t fDCAglobalTrack;  ///< to get DCA from global tracks instead of TPC-only
+  Int_t fDCAglobalTrack;  ///< to get DCA from global tracks instead of TPC-only
   Bool_t fFlatCent;        ///< Boolean determining if the user should flatten the centrality
   Bool_t fPrimaryVertexCorrectionTPCPoints; ///< Boolean determining if the reader should shift all TPC points to be relative to event vertex
   Double_t fShiftPosition; ///< radius at which the spatial position of the track in the shifted coordinate system is calculated
