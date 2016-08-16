@@ -15,7 +15,7 @@ const char* GetObjPath(Bool_t correction, Bool_t ref);
 const char* GetObjPath(Bool_t correction, Bool_t ref) 
 {
   // create object path
-  return Form("TPC/Calib/%sMap%s",correction ? "Correction":"Distortion", ref ? "Ref":"");
+  return Form("TPC/Calib/%sMaps%s",correction ? "Correction":"Distortion", ref ? "Ref":"");
 }
 
 //_________________________________________________________________________________________________
