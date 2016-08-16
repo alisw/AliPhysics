@@ -124,6 +124,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      esdfilter->SetV0Filter(v0Filter);
    }  
 
+   esdfilter->SetAddPCMv0s(addPCMv0s);
    // Enable writing of Muon AODs
    esdmuonfilter->SetWriteMuonAOD(writeMuonAOD);
    
@@ -133,33 +134,31 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    mgr->ConnectInput  (esdfilter,  0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (esdfilter,  0, mgr->GetCommonOutputContainer());
    mgr->ConnectInput  (esdmuonfilter, 0, mgr->GetCommonInputContainer());
+
    
-   if (useV0Filter && !isMuonCaloPass && addPCMv0s){
-     TObjArray *allContainers = mgr->GetContainers();
-     Int_t containersSize = allContainers->GetSize();
-     TString containerName;
-     AliAnalysisDataContainer* cinputPCMv0sA;
-     AliAnalysisDataContainer* cinputPCMv0sB;
-     for (Int_t i=0;i<containersSize;i++){
-       if (allContainers->At(i)){
-	 containerName = allContainers->At(i)->GetName();
-	 if (containerName.CompareTo("PCM offlineV0Finder container")==0){
-	   cinputPCMv0sA = allContainers->At(i);
-	 }
-	 else{
-	   cout << "No container for offline v0s found check that addv0sInESDFilter bool in AddTask_ConversionProduction.C is set to true" << endl;}
-	 if (containerName.CompareTo("PCM onflyV0Finder container")==0){
-	   cinputPCMv0sB = allContainers->At(i);
-	 }
-	 else{
-	   cout << "No container for onfly v0s found check that addv0sInESDFilter bool in AddTask_ConversionProduction.C is set to true" << endl;
-	 }
-       }
-     }
-     mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
-     mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
-   }
-   
+    TObjArray *allContainers = mgr->GetContainers();
+    Int_t containersSize = allContainers->GetSize();
+    TString containerName;
+    AliAnalysisDataContainer* cinputPCMv0sA;
+    AliAnalysisDataContainer* cinputPCMv0sB;
+    for (Int_t i=0;i<containersSize;i++){
+      if (allContainers->At(i)){
+	containerName = allContainers->At(i)->GetName();
+	if (containerName.CompareTo("PCM offlineV0Finder container")==0){
+	  cinputPCMv0sA = allContainers->At(i);
+	}
+	else{
+	  cout << "No container for offline v0s" << endl;}
+	if (containerName.CompareTo("PCM onflyV0Finder container")==0){
+	  cinputPCMv0sB = allContainers->At(i);
+	}
+	else{
+	  cout << "No container for onfly v0s found" << endl;
+	}
+      }
+    }
+    mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
+    mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
    
    if (useKineFilter) {
       mgr->ConnectInput  (kinefilter,  0, mgr->GetCommonInputContainer());

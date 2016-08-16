@@ -80,6 +80,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void SetRefitVertexTracks(Int_t algo=6, Double_t* cuts=0);
   
   void SetMuonCaloPass();
+  void SetAddPCMv0s(Bool_t addPCMv0s) {fAddPCMv0s=addPCMv0s;}
   
 private:
   AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
@@ -174,6 +175,9 @@ private:
   Int_t              fRefitVertexTracksNCuts;      // number of cut parameters
   Double_t*          fRefitVertexTracksCuts;       //[fRefitVertexTracksNCuts] optional cuts for vertex refit
   Bool_t fIsMuonCaloPass; /// whether or not this filtering is used on a muon_calo ESD
+  Bool_t	     fAddPCMv0s;
+  TBits* fbitfieldPCMv0sA;
+  TBits* fbitfieldPCMv0sB;
   
   ClassDef(AliAnalysisTaskESDfilter, 21); // Analysis task for standard ESD filtering
 };

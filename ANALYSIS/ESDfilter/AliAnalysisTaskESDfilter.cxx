@@ -130,7 +130,10 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
   fRefitVertexTracksCuts(0),
-  fIsMuonCaloPass(kFALSE)
+  fIsMuonCaloPass(kFALSE),
+  fAddPCMv0s(kFALSE),
+  fbitfieldPCMv0sA(NULL),
+  fbitfieldPCMv0sB(NULL)
 {
   // Default constructor
   fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -209,7 +212,10 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
   fRefitVertexTracksCuts(0),
-  fIsMuonCaloPass(kFALSE)
+  fIsMuonCaloPass(kFALSE),
+  fAddPCMv0s(kFALSE),
+  fbitfieldPCMv0sA(NULL),
+  fbitfieldPCMv0sB(NULL)
 {
   // Constructor
 
@@ -894,13 +900,15 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
   Double_t momPosAtV0vtx[3]={0.};
   Double_t momNegAtV0vtx[3]={0.};
   Int_t    tofLabel[3] = {0};
-  
-  TBits *bitfieldPCMv0sA = (TBits*) GetInputData(1);
-  TBits *bitfieldPCMv0sB = (TBits*) GetInputData(2);
+
+  if (fAddPCMv0s){
+    fbitfieldPCMv0sA = (TBits*) GetInputData(1);
+    fbitfieldPCMv0sB = (TBits*) GetInputData(2);
+  }
   UInt_t convertInt;
   
   for (Int_t nV0 = 0; nV0 < esd.GetNumberOfV0s(); ++nV0) {
-    convertInt = (UInt_t) nV0;
+    if (fAddPCMv0s) {convertInt = (UInt_t) nV0;}
     if (fUsedV0[nV0]) continue; // skip if already added to the AOD
     
     AliESDv0 *v0 = esd.GetV0(nV0);
@@ -920,14 +928,16 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
     UInt_t selectV0 = 0;
     
     //Add PCM V0s
-    if(bitfieldPCMv0sA){
-      if(bitfieldPCMv0sA->TestBitNumber(convertInt) && convertInt<= bitfieldPCMv0sA->GetNbits()){
-	selectV0 = 2;
+    if (fAddPCMv0s){
+      if(fbitfieldPCMv0sA){
+	if(fbitfieldPCMv0sA->TestBitNumber(convertInt) && convertInt<= fbitfieldPCMv0sA->GetNbits()){
+	  selectV0 = 2;
+	}
       }
-    }
-    if(bitfieldPCMv0sB){
-      if(bitfieldPCMv0sB->TestBitNumber(convertInt) && convertInt<= bitfieldPCMv0sB->GetNbits()){
-	selectV0 = 2;
+      if(fbitfieldPCMv0sB){
+	if(fbitfieldPCMv0sB->TestBitNumber(convertInt) && convertInt<= fbitfieldPCMv0sB->GetNbits()){
+	  selectV0 = 2;
+	}
       }
     }
     
