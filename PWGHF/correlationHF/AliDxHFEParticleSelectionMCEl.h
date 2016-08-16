@@ -20,6 +20,7 @@
 class THnSparse;
 class TList;
 class AliAODMCParticle;
+class TClonesArray;
 
 /**
  * @class AliDxHFEParticleSelectionMCEl
