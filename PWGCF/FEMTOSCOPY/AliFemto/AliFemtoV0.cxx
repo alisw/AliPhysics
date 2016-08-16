@@ -374,7 +374,7 @@ const AliFmPhysicalHelixD& AliFemtoV0::HelixNeg() const {return fHelixNeg;}// Ga
 
 void AliFemtoV0::SetCorrectionLambdas(const double& x){fCorrLam=x;}
 float AliFemtoV0::CorrectionLambda() const {return fCorrLam;}
-void AliFemtoV0::SetCorrectionLambdasMinus(const double& x){fCorrLam=x;}
+void AliFemtoV0::SetCorrectionLambdasMinus(const double& x){fCorrLamMinus=x;}
 float AliFemtoV0::CorrectionLambdaMinus() const {return fCorrLam;}
 
 void AliFemtoV0::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
