@@ -13,7 +13,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TH2D;
-class TH3D;
+class TH3F;
 class TString;
 class AliAODEvent;
 class AliAODInputHandler;
@@ -163,7 +163,36 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
     fPtBin(100),
     fHistdEdxTPC(0),
     fHistBetaTOF(0),
-    fParticleType_(kPion){
+    fParticleType_(kPion),
+    fHistNsigmaTPCPionBeforePIDCut(0),
+ fHistNsigmaTPCKaonBeforePIDCut(0),
+ fHistNsigmaTPCProtonBeforePIDCut(0),
+ fHistNsigmaTOFPionBeforePIDCut(0),
+ fHistNsigmaTOFKaonBeforePIDCut(0),
+ fHistNsigmaTOFProtonBeforePIDCut(0),
+
+ fHistNsigmaTPCPionAfterPIDCut(0),
+ fHistNsigmaTPCKaonAfterPIDCut(0),
+ fHistNsigmaTPCProtonAfterPIDCut(0),
+ fHistNsigmaTOFPionAfterPIDCut(0),
+ fHistNsigmaTOFKaonAfterPIDCut(0),
+ fHistNsigmaTOFProtonAfterPIDCut(0),
+
+ fHistNsigmaTPCTOFPionBeforePIDCut(0),
+ fHistNsigmaTPCTOFKaonBeforePIDCut(0),
+ fHistNsigmaTPCTOFProtonBeforePIDCut(0),
+ fHistNsigmaTPCTOFPionAfterPIDCut(0),
+ fHistNsigmaTPCTOFKaonAfterPIDCut(0),
+ fHistNsigmaTPCTOFProtonAfterPIDCut(0),
+ fHistdEdxTPCPionAfterPIDCut(0),
+ fHistdEdxTPCKaonAfterPIDCut(0),
+ fHistdEdxTPCProtonAfterPIDCut(0),
+ fHistBetaTOFPionAfterPIDCut(0),
+ fHistBetaTOFKaonAfterPIDCut(0),
+ fHistBetaTOFProtonAfterPIDCut(0),
+ fSigmaIndividually(kFALSE),
+ fSigmaCutMethodOne(kFALSE)
+{
     for(Int_t ipart=0;ipart<3;ipart++)
      for(Int_t ipid=0;ipid<3;ipid++)
       fnsigmas[ipart][ipid]=999.;
@@ -257,6 +286,10 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
      fPtTPCMax = ptmax;
       }
  void SetNSigmaCut(Double_t nsigma) { fNSigmaPID = nsigma; }
+ void SetSigmaIndividually(Bool_t sigmaIndividually){fSigmaIndividually=sigmaIndividually;}
+
+ void SetSigmaCutMethodOne(Bool_t SigmaCutMethodOne){fSigmaCutMethodOne=SigmaCutMethodOne;}
+
 
   Bool_t IsMCParticleCut(AliAODMCParticle* particle);
  
@@ -300,45 +333,45 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
    TH1F *HistPionContaminationInPt; // Contamination Pion in Pt 
    TH1F *HistPionPlusContaminationInPt; // Contamination Pion + in Pt 
    TH1F *HistPionMinusContaminationInPt; // Contamination Pion - in Pt 
-   TH3D *Hist3dPionContamination; // Contamination Pion in Eta , Pt , Phi
-   TH3D *Hist3dPionPlusContamination; // Contamination Pion + in Eta , Pt , Phi
-   TH3D *Hist3dPionMinusContamination; // Contamination Pion - in Eta , Pt , Phi
+   TH3F *Hist3dPionContamination; // Contamination Pion in Eta , Pt , Phi
+   TH3F *Hist3dPionPlusContamination; // Contamination Pion + in Eta , Pt , Phi
+   TH3F *Hist3dPionMinusContamination; // Contamination Pion - in Eta , Pt , Phi
 
    TH1F *HistKaonContaminationInPt; // Contamination Kaon in Pt
    TH1F *HistKaonPlusContaminationInPt; // Contamination Kaon +  in Pt
    TH1F *HistKaonMinusContaminationInPt; // Contamination Kaon - in Pt
-   TH3D *Hist3dKaonContamination; // Contamination Kaon in Eta , Pt , Phi
-   TH3D *Hist3dKaonPlusContamination; // Contamination Kaon + in Eta , Pt , Phi
-   TH3D *Hist3dKaonMinusContamination; // Contamination Kaon - in Eta , Pt , Phi
+   TH3F *Hist3dKaonContamination; // Contamination Kaon in Eta , Pt , Phi
+   TH3F *Hist3dKaonPlusContamination; // Contamination Kaon + in Eta , Pt , Phi
+   TH3F *Hist3dKaonMinusContamination; // Contamination Kaon - in Eta , Pt , Phi
 
    TH1F *HistProtonContaminationInPt; // Contamination Proton in Pt
    TH1F *HistProtonPlusContaminationInPt; // Contamination Proton + in Pt 
    TH1F *HistProtonMinusContaminationInPt; // Contamination Proton - in Pt 
-   TH3D *Hist3dProtonContamination; // Contamination Proton in Eta , Pt , Phi
-   TH3D *Hist3dProtonPlusContamination; // Contamination Proton + in Eta , Pt , Phi
-   TH3D *Hist3dProtonMinusContamination; // Contamination Proton - in Eta , Pt , Phi
+   TH3F *Hist3dProtonContamination; // Contamination Proton in Eta , Pt , Phi
+   TH3F *Hist3dProtonPlusContamination; // Contamination Proton + in Eta , Pt , Phi
+   TH3F *Hist3dProtonMinusContamination; // Contamination Proton - in Eta , Pt , Phi
 
 
    TH1F *HistPionPurityInPt; // Purity Pion in Pt 
    TH1F *HistPionPlusPurityInPt; // Purity Pion + in Pt 
    TH1F *HistPionMinusPurityInPt; // Purity Pion - in Pt 
-   TH3D *Hist3dPionPurity; // Purity Pion in Eta , Pt , Phi
-   TH3D *Hist3dPionPlusPurity; // Purity Pion + in Eta , Pt , Phi
-   TH3D *Hist3dPionMinusPurity; // Purity Pion - in Eta , Pt , Phi
+   TH3F *Hist3dPionPurity; // Purity Pion in Eta , Pt , Phi
+   TH3F *Hist3dPionPlusPurity; // Purity Pion + in Eta , Pt , Phi
+   TH3F *Hist3dPionMinusPurity; // Purity Pion - in Eta , Pt , Phi
 
    TH1F *HistKaonPurityInPt; // Purity Kaon in Pt
    TH1F *HistKaonPlusPurityInPt; // Purity Kaon +  in Pt
    TH1F *HistKaonMinusPurityInPt; // Purity Kaon - in Pt
-   TH3D *Hist3dKaonPurity; // Purity Kaon in Eta , Pt , Phi
-   TH3D *Hist3dKaonPlusPurity; // Purity Kaon + in Eta , Pt , Phi
-   TH3D *Hist3dKaonMinusPurity; // Purity Kaon - in Eta , Pt , Phi
+   TH3F *Hist3dKaonPurity; // Purity Kaon in Eta , Pt , Phi
+   TH3F *Hist3dKaonPlusPurity; // Purity Kaon + in Eta , Pt , Phi
+   TH3F *Hist3dKaonMinusPurity; // Purity Kaon - in Eta , Pt , Phi
 
    TH1F *HistProtonPurityInPt; // Purity Proton in Pt
    TH1F *HistProtonPlusPurityInPt; // Purity Proton + in Pt 
    TH1F *HistProtonMinusPurityInPt; // Purity Proton - in Pt 
-   TH3D *Hist3dProtonPurity; // Purity Proton in Eta , Pt , Phi
-   TH3D *Hist3dProtonPlusPurity; // Purity Proton + in Eta , Pt , Phi
-   TH3D *Hist3dProtonMinusPurity; // Purity Proton - in Eta , Pt , Phi
+   TH3F *Hist3dProtonPurity; // Purity Proton in Eta , Pt , Phi
+   TH3F *Hist3dProtonPlusPurity; // Purity Proton + in Eta , Pt , Phi
+   TH3F *Hist3dProtonMinusPurity; // Purity Proton - in Eta , Pt , Phi
 // Contamination and Purity Histigram 
 
 
@@ -361,11 +394,35 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
    TH1F *h1PionAsKaon;TH1F *h1PionAsProton;TH1F *h1KaonAsPion;TH1F *h1KaonAsProton; TH1F *h1ProtonAsPion;TH1F *h1ProtonAsKaon;
 
    
+   // Nsigma Plot for Pion, Kaon and Proton
 
+TH2F *fHistNsigmaTPCPionBeforePIDCut;
+TH2F *fHistNsigmaTPCKaonBeforePIDCut;
+TH2F *fHistNsigmaTPCProtonBeforePIDCut;
+TH2F *fHistNsigmaTOFPionBeforePIDCut;
+TH2F *fHistNsigmaTOFKaonBeforePIDCut;
+TH2F *fHistNsigmaTOFProtonBeforePIDCut;
 
+TH2F *fHistNsigmaTPCPionAfterPIDCut;
+TH2F *fHistNsigmaTPCKaonAfterPIDCut;
+TH2F *fHistNsigmaTPCProtonAfterPIDCut;
+TH2F *fHistNsigmaTOFPionAfterPIDCut;
+TH2F *fHistNsigmaTOFKaonAfterPIDCut;
+TH2F *fHistNsigmaTOFProtonAfterPIDCut;
 
+TH2F *fHistNsigmaTPCTOFPionBeforePIDCut;
+TH2F *fHistNsigmaTPCTOFKaonBeforePIDCut;
+TH2F *fHistNsigmaTPCTOFProtonBeforePIDCut;
+TH2F *fHistNsigmaTPCTOFPionAfterPIDCut;
+TH2F *fHistNsigmaTPCTOFKaonAfterPIDCut;
+TH2F *fHistNsigmaTPCTOFProtonAfterPIDCut;
 
-
+TH2F *fHistdEdxTPCPionAfterPIDCut;
+TH2F *fHistdEdxTPCKaonAfterPIDCut;
+TH2F *fHistdEdxTPCProtonAfterPIDCut;
+TH2F *fHistBetaTOFPionAfterPIDCut;
+TH2F *fHistBetaTOFKaonAfterPIDCut;
+TH2F *fHistBetaTOFProtonAfterPIDCut;
 
   // QA histograms
   TH1F        *fHistEventStats; //!event stats
@@ -378,37 +435,37 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
   TH2F *fHistBetaTOF;
 
   // output histograms
-  TH3D        *fHistTruthPionPlus;//!
-  TH3D        *fHistTruthKaonPlus;//!
-  TH3D        *fHistTruthProtonPlus;//!
+  TH3F        *fHistTruthPionPlus;//!
+  TH3F        *fHistTruthKaonPlus;//!
+  TH3F        *fHistTruthProtonPlus;//!
   
-  TH3D        *fHistTruthPionMinus;//!
-  TH3D        *fHistTruthKaonMinus;//!
-  TH3D        *fHistTruthProtonMinus;//!
+  TH3F        *fHistTruthPionMinus;//!
+  TH3F        *fHistTruthKaonMinus;//!
+  TH3F        *fHistTruthProtonMinus;//!
 
-  TH3D        *fHistTruthPion;
-  TH3D        *fHistTruthKaon;
-  TH3D        *fHistTruthProton;
+  TH3F        *fHistTruthPion;
+  TH3F        *fHistTruthKaon;
+  TH3F        *fHistTruthProton;
 
-  TH3D        *fHistMCRecoPionPlus;//!
-  TH3D        *fHistMCRecoKaonPlus;//!
-  TH3D        *fHistMCRecoProtonPlus;//!
+  TH3F        *fHistMCRecoPionPlus;//!
+  TH3F        *fHistMCRecoKaonPlus;//!
+  TH3F        *fHistMCRecoProtonPlus;//!
 
-  TH3D        *fHistMCRecoPionMinus;//!
-  TH3D        *fHistMCRecoKaonMinus;//!
-  TH3D        *fHistMCRecoProtonMinus;//!
+  TH3F        *fHistMCRecoPionMinus;//!
+  TH3F        *fHistMCRecoKaonMinus;//!
+  TH3F        *fHistMCRecoProtonMinus;//!
 
-  TH3D        *fHistMCRecoPion;
-  TH3D        *fHistMCRecoKaon;
-  TH3D        *fHistMCRecoProton;
+  TH3F        *fHistMCRecoPion;
+  TH3F        *fHistMCRecoKaon;
+  TH3F        *fHistMCRecoProton;
 
-  TH3D        *fHistMCRecoPionAsKaon;
-  TH3D        *fHistMCRecoPionAsProton;
+  TH3F        *fHistMCRecoPionAsKaon;
+  TH3F        *fHistMCRecoPionAsProton;
  
-  TH3D        *fHistMCRecoProtonAsKaon;
-  TH3D        *fHistMCRecoProtonAsPion;
-  TH3D        *fHistMCRecoKaonAsPion;
-  TH3D        *fHistMCRecoKaonAsProton;
+  TH3F        *fHistMCRecoProtonAsKaon;
+  TH3F        *fHistMCRecoProtonAsPion;
+  TH3F        *fHistMCRecoKaonAsPion;
+  TH3F        *fHistMCRecoKaonAsProton;
 
   Bool_t  fUseCentrality;// Bool_t use centrality or not
   TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
@@ -443,6 +500,9 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
   Int_t fdEtaBin;  //acceptance cuts
   Int_t fPtBin; //acceptance cuts
   Double_t fnsigmas[3][3];
+
+  Bool_t fSigmaIndividually;
+  Bool_t fSigmaCutMethodOne;
  
   AliParticleSpecies_ fParticleType_;
 
