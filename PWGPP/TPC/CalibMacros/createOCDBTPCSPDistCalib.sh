@@ -54,7 +54,7 @@ parseConfig "$@"
 echo ""
 if [[ -z $inputFileList || -z $startRun ]]; then 
     Usage
-    return 0
+    exit 0
 fi
 
 # allowing JDL to overwrite the default folder where to store the calibration 
