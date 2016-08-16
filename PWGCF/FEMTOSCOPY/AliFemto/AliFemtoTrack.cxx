@@ -360,9 +360,9 @@ void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
 void AliFemtoTrack::SetCorrectionPion(const double& x){fCorrPi=x;}
 void AliFemtoTrack::SetCorrectionKaon(const double& x){fCorrK=x;}
 void AliFemtoTrack::SetCorrectionProton(const double& x){fCorrP=x;}
-void AliFemtoTrack::SetCorrectionPionMinus(const double& x){fCorrPi=x;}
-void AliFemtoTrack::SetCorrectionKaonMinus(const double& x){fCorrK=x;}
-void AliFemtoTrack::SetCorrectionProtonMinus(const double& x){fCorrP=x;}
+void AliFemtoTrack::SetCorrectionPionMinus(const double& x){fCorrPiMinus=x;}
+void AliFemtoTrack::SetCorrectionKaonMinus(const double& x){fCorrKMinus=x;}
+void AliFemtoTrack::SetCorrectionProtonMinus(const double& x){fCorrPMinus=x;}
 void AliFemtoTrack::SetCorrectionAll(const double& x){fCorrAll=x;}
 
 short AliFemtoTrack::Charge() const {return fCharge;}
