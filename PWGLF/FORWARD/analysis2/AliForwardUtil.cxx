@@ -375,7 +375,7 @@ Bool_t AliForwardUtil::CheckForTask(const char* clsOrName, Bool_t cls)
 }
 
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, UShort_t value)
 {
   TParameter<int>* ret = new TParameter<int>(name, value);
   ret->SetMergeMode('f');
@@ -383,7 +383,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, Int_t value)
 {
   TParameter<int>* ret = new TParameter<int>(name, value);
   ret->SetMergeMode('f');
@@ -391,7 +391,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, ULong_t value)
 {
   TParameter<Long_t>* ret = new TParameter<Long_t>(name, value);
   ret->SetMergeMode('f');
@@ -399,7 +399,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, Double_t value)
 {
   TParameter<double>* ret = new TParameter<double>(name, value);
   // Float_t v = value;
@@ -409,7 +409,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, Bool_t value)
 {
   TParameter<bool>* ret = new TParameter<bool>(name, value);
   ret->SetMergeMode('f');

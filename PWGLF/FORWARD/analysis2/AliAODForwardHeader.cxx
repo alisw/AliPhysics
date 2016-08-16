@@ -11,7 +11,7 @@
 #include <TObjArray.h>
 #include "AliLog.h"
 ClassImp(AliAODForwardHeader)
-#if 0 // def DOXY_INPUT
+#ifdef DOXY_INPUT
 ; // For Emacs 
 #endif
 

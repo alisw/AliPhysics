@@ -193,13 +193,13 @@ struct Function
    *    \sigma    \rightarrow \sigma_i    = \sqrt{i}\sigma\\
    * @f] 
    * 
+   * @param i        @f$ i@f$
    * @param x        Where to evaluate 
    * @param ipar     Parameter number 
-   * @param dp       @f$ \epsilon\delta p_i@f$ for some value of @f$\epsilon@f$
+   * @param dPar     @f$ \epsilon\delta p_i@f$ for some value of @f$\epsilon@f$
    * @param delta    @f$ \Delta@f$ 
    * @param xi       @f$ \xi@f$ 
    * @param sigma    @f$ \sigma@f$ 
-   * @param i        @f$ i@f$
    * 
    * @return @f$ f_i@f$ evaluated
    */  
@@ -1012,12 +1012,6 @@ struct Generator
     return ret;
   }
   /** 
-   * 
-   * 
-   * @param mpv 
-   * @param xi 
-   * @param sigma 
-   * 
    * @return 
    */
   Double_t Generate1Signal()
@@ -1033,13 +1027,8 @@ struct Generator
     return ret;
   }
   /** 
-   * 
-   * 
    * @param n 
-   * @param mpv 
-   * @param xi 
-   * @param sigma 
-   * 
+   *
    * @return 
    */  
   Double_t GenerateNSignal(Int_t n)
@@ -1127,7 +1116,7 @@ struct Generator
    * 
    * @param x 
    * @param y 
-   * @param intput 
+   * @param input 
    * @param f 
    * @param i 
    */

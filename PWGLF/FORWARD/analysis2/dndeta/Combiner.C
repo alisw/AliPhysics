@@ -306,6 +306,8 @@ struct Combiner
    * Try to find best error 
    * 
    * @param nIter Number of iterations 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * @param sign  Direction (-1 is low, +1 is high)
    * @param best  Current best @f$ x@f$ value 
    * @param chi2  @f$ \chi^2@f$ of current best @f$ x@f$ value 
@@ -313,13 +315,13 @@ struct Combiner
    * 
    * @return The error in the chosen direction
    */
-  double FindError(unsigned short        nIter,
+  double FindError(unsigned short   nIter,
 		   const_iterator&  begin,
 		   const_iterator&  end,
-		   int                   sign,
-		   double                best,
-		   double                chi2,
-		   double                s)
+		   int              sign,
+		   double           best,
+		   double           chi2,
+		   double           s)
   {
     // Step size 
     double delta = 0.1 * sign * s;

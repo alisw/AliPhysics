@@ -4817,6 +4817,8 @@ public:
    * @param y      On return, the y value 
    * @param eyl    On return low error on y
    * @param eyh    On return high error on y
+   * @param seyl   On return low error on y
+   * @param seyh   On return high error on y
    * 
    * @return false in case the point is out side the range 
    */

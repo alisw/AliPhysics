@@ -20,6 +20,12 @@ namespace dNdy {
   {
     TH1* fdNdy; //!
   
+    /** 
+     * 
+     * 
+     * @param verbose  Verbosity flag 
+     * @param monitor  Frequency 
+     */
     Base(Bool_t verbose=false, Int_t monitor=0)
       : FastAnalysis(verbose,monitor), fdNdy(0)
     {}
@@ -120,8 +126,8 @@ namespace dNdy {
     /** 
      * Constructor 
      * 
-     * @param filename File to open 
      * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
      */
     NSD(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose, monitor)
@@ -151,6 +157,7 @@ namespace dNdy {
      * Constructor 
      * 
      * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
      */  
     INEL(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose,monitor)
@@ -175,6 +182,7 @@ namespace dNdy {
      * Constructor 
      * 
      * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
      */  
     INELGt0(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose,monitor)
@@ -203,6 +211,7 @@ namespace dNdy {
      * 
      * @param method   Centrality method 
      * @param verbose  Verbosity flag 
+     * @param monitor  Frequency 
      */
     Cent(const char* method="V0M", Bool_t verbose=true, Int_t monitor=0)
       : Base(verbose,monitor),
@@ -357,8 +366,9 @@ namespace dNdy {
     /** 
      * Constructor. 
      * 
-     * @param filename File to open
+     * @param method   Method to use 
      * @param verbose  Whether to verbose
+     * @param monitor  Frequency 
      */
     Mult(const char* method="RefMult00d80",
 	 Bool_t verbose=false,

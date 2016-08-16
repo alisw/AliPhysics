@@ -173,6 +173,7 @@ AliCentralCorrectionManager::GetVertexAxis() const
 
 #ifndef DOXY_INPUT
 //______________________________________________________________________________
+// @cond 
 void AliCentralCorrectionManager::Streamer(TBuffer &R__b)
 {
   //
@@ -191,6 +192,7 @@ void AliCentralCorrectionManager::Streamer(TBuffer &R__b)
     R__b.WriteClassBuffer(AliCentralCorrectionManager::Class(),this);
   }
 }
+// @endcond
 #endif
 
 //____________________________________________________________________
