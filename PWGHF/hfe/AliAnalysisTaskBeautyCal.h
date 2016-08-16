@@ -157,6 +157,8 @@ private:
     TH2D        *fHistDCAhaSemi;//!ele cand SPD or
     TH1D        *fHistOtherEle;//!ele cand SPD or
 
+    TH2D        *fHisthfeTof;//!ele cand SPD or
+
     TH1D        *fHistHFEcorr;//!ele cand SPD or
 
     AliHFEcuts  *fhfeCuts;

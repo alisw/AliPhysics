@@ -147,6 +147,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
+  fHisthfeTof(0),
   fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
@@ -238,6 +239,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
+  fHisthfeTof(0),
   fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
@@ -483,6 +485,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCAhaSemi = new TH2D("fHistDCAhaSemi", "DCA of hadron; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAhaSemi);
+
+  fHisthfeTof = new TH2D("fHisthfeTof", "hfe vs. Tof; p_{T}(GeV/c); time (ns)", 300,0,30,20000,-200,200);
+  fOutputList->Add(fHisthfeTof);
 
   fHistOtherEle = new TH1D("fHistOtherEle", "remaining X->e", 10000,-0.5,9999.5);
   fOutputList->Add(fHistOtherEle);
@@ -916,8 +921,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
-      //if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
-      if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
+      //if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
@@ -940,8 +945,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      //if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
-      if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
+      //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
         //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
@@ -967,6 +972,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         else // semi-inclusive
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
+          fHisthfeTof->Fill(track->Pt(),tof);
           //----- MC
           if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
@@ -982,7 +988,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
       
         //------
-        if(!fFlagNonHFE && track->Pt()>3.0)CalInvmassHF(iTracks,track,DCAxy);
+        //if(!fFlagNonHFE && track->Pt()>3.0)CalInvmassHF(iTracks,track,DCAxy);
          
 
        } // eID cuts
