@@ -143,7 +143,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f1DcorrectionsProtonsMinus(NULL),
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
-  f1DcorrectionsLambdasMinus(NULL),
+  f1DcorrectionsLambdasMinus(NULL)
 {
   /* no-op */
 }
