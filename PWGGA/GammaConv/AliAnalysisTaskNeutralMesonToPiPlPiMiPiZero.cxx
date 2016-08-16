@@ -2202,6 +2202,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
 		for(Int_t mesonIndex=0; mesonIndex<fNeutralPionCandidates->GetEntries(); mesonIndex++){
 			AliAODConversionMother *neutralPion=dynamic_cast<AliAODConversionMother*>(fNeutralPionCandidates->At(mesonIndex));
 			if (neutralPion==NULL) continue;
+
+            if(fNeutralPionMode == 0 && neutralPion->Pt() < 0.5) continue;
+            else if(fNeutralPionMode == 1 && neutralPion->Pt() < 1.0) continue;
+            else if(fNeutralPionMode == 2 && neutralPion->Pt() < 1.5) continue;
+
 			for(Int_t virtualParticleIndex=0;virtualParticleIndex<fGoodVirtualParticles->GetEntries();virtualParticleIndex++){
 
                 AliAODConversionPhoton *vParticle=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualParticles->At(virtualParticleIndex));
@@ -2283,6 +2288,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 
 		for(Int_t iCurrent=0; iCurrent<fNeutralPionCandidates->GetEntries(); iCurrent++){
 			AliAODConversionMother EventPiZeroGoodMeson = *(AliAODConversionMother*)(fNeutralPionCandidates->At(iCurrent));
+
+            if(fNeutralPionMode == 0 && EventPiZeroGoodMeson.Pt() < 0.5) continue;
+            else if(fNeutralPionMode == 1 && EventPiZeroGoodMeson.Pt() < 1.0) continue;
+            else if(fNeutralPionMode == 2 && EventPiZeroGoodMeson.Pt() < 1.5) continue;
 
 			for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){
 				AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBGPl);
@@ -2431,6 +2440,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 	}else{
 		for(Int_t iCurrent=0; iCurrent<fNeutralPionCandidates->GetEntries(); iCurrent++){
 			AliAODConversionMother EventPiZeroGoodMeson = *(AliAODConversionMother*)(fNeutralPionCandidates->At(iCurrent));
+
+            if(fNeutralPionMode == 0 && EventPiZeroGoodMeson.Pt() < 0.5) continue;
+            else if(fNeutralPionMode == 1 && EventPiZeroGoodMeson.Pt() < 1.0) continue;
+            else if(fNeutralPionMode == 2 && EventPiZeroGoodMeson.Pt() < 1.5) continue;
 
 			for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){
 				AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBGPl);
