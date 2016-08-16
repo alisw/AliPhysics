@@ -45,7 +45,7 @@ class TH1;
  * @endverbatim 
  * and stored in SVN for later use. 
  *
- * @depcrecated 
+ * @deprecated 
  * The class AliFMDELossFitter automatically generates the
  * AliFMDCorrELossFit object.
  *

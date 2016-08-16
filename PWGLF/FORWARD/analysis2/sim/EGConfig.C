@@ -260,9 +260,7 @@ protected:
    * 
    * @param minB    Least impact parameter 
    * @param maxB    Largest impact parameter 
-   * @param quench  If true, enable quenching 
-   * @param slowN   If true, make a cocktail with slow neutrons 
-   * @param ptHard  Hard pT cut-off 
+   * @param rt      Sub configurations 
    * 
    * @return Generator 
    */
@@ -369,6 +367,8 @@ protected:
   /** 
    * Make a DPMJet generator for pp, AA, pA, or Ap. 
    * 
+   * @param minB      Least impact parameter
+   * @param maxB      Largest impact parameter
    * @param fragments If true, make fragments 
    * 
    * @return Generator 
@@ -406,6 +406,10 @@ protected:
   /** 
    * Make an AMPT generator for AA collisions 
    * 
+   * @param minB      Least impact parameter
+   * @param maxB      Largest impact parameter
+   * @param rt        Sub-type
+   *
    * @return Generator 
    */
   AliGenerator* Ampt(Float_t minB, Float_t maxB, const TString& rt)
@@ -488,6 +492,9 @@ protected:
   /** 
    * Make an HydJet generator for A-A
    * 
+   * @param minB      Least impact parameter
+   * @param maxB      Largest impact parameter
+   * 
    * @return Generator 
    */
   AliGenerator* Hydjet(Float_t minB, Float_t maxB)
@@ -513,6 +520,9 @@ protected:
   /** 
    * Make an Epos=LHC generator for p-p, A-A, p-A, or A-p
    * 
+   * @param minB      Least impact parameter
+   * @param maxB      Largest impact parameter
+   *
    * @return Generator 
    */
   AliGenerator* EposLHC(Float_t minB, Float_t maxB)
@@ -577,7 +587,7 @@ protected:
   /** 
    * Greate a lego event generator 
    * 
-   * @param tune Possible tune 
+   * @param variant Possible tune 
    * 
    * @return newly allocated generator or null
    */
@@ -642,6 +652,8 @@ protected:
    * Make a heavy flavour cocktail 
    * 
    * @param base Underlying event. 
+   * @param minB      Least impact parameter
+   * @param maxB      Largest impact parameter
    * 
    * @return Generator 
    */

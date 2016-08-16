@@ -73,6 +73,7 @@ struct SysErrorAdder
    * @param id    Identifier 
    * @param fill  Fill style 
    * @param l     Legend 
+   * @param off   Off-set 
    */
   void ModError(GraphSysErr* gse, Int_t id, Style_t fill,
 		TLegend* l, UShort_t off=64) const
@@ -224,7 +225,10 @@ struct SysErrorAdder
   /** 
    * Create a graph 
    * 
-   * @param h histogram 
+   * @param h    histogram 
+   * @param l    Option Legend to add to 
+   * @param eff  Efficiency 
+   * @param verb Be verbose 
    * 
    * @return Graph 
    */  
@@ -349,6 +353,8 @@ struct INELAdder : public SysErrorAdder
    * 
    * @param sys Collision system 
    * @param sNN Collision energy
+   * @param low  Low trigger uncertainty 
+   * @param high High trigger uncertainty 
    */
   INELAdder(const TString& sys, UShort_t sNN, Double_t low=-1, Double_t high=-1)
     : SysErrorAdder(sys, sNN, "INEL"), fLow(low), fHigh(high)
@@ -432,8 +438,9 @@ struct NSDAdder : public SysErrorAdder
   /** 
    * Constructor 
    * 
-   * @param sys Collision system 
-   * @param sNN Collision energy
+   * @param sys   Collision system 
+   * @param sNN   Collision energy
+   * @param value Value of uncertainty 
    */
   NSDAdder(const TString& sys, UShort_t sNN, Double_t value=-1)
     : SysErrorAdder(sys, sNN, "NSD"), fValue(value)

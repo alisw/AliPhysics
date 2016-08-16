@@ -127,8 +127,8 @@ namespace dNdeta {
     /** 
      * Constructor 
      * 
-     * @param filename File to open 
      * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
      */
     NSD(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose, monitor)
@@ -158,6 +158,7 @@ namespace dNdeta {
      * Constructor 
      * 
      * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
      */  
     INEL(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose,monitor)
@@ -182,6 +183,7 @@ namespace dNdeta {
      * Constructor 
      * 
      * @param verbose  Whether to be verbose 
+     * @param monitor  Frequency 
      */  
     INELGt0(Bool_t verbose=false, Int_t monitor=0)
       : Base(verbose,monitor)
@@ -210,6 +212,7 @@ namespace dNdeta {
      * 
      * @param method   Centrality method 
      * @param verbose  Verbosity flag 
+     * @param monitor  Frequency 
      */
     Cent(const char* method="V0M", Bool_t verbose=true, Int_t monitor=0)
       : Base(verbose,monitor),
@@ -365,7 +368,8 @@ namespace dNdeta {
     /** 
      * Constructor. 
      * 
-     * @param filename File to open
+     * @param method   Method 
+     * @param monitor  Frequency 
      * @param verbose  Whether to verbose
      */
     Mult(const char* method="RefMult00d80",

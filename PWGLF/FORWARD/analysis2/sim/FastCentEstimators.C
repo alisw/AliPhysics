@@ -206,8 +206,6 @@ struct Fast1DCentEstimator : public FastCentEstimator
    * 
    * @param l Output list
    * @param tree Tree to add branch to 
-   * @param tgtA  True if target is a nucleus 
-   * @param projA True if projectile is a nucleus 
    */
   void Setup(TCollection* l, TTree* tree, UShort_t,
 	     Bool_t, Bool_t)
@@ -549,6 +547,7 @@ struct V0CentEstimator : public FastNchCentEstimator
    * Constructor 
    * 
    * @param mode Mode: Negative, use C side, positive use A side, otherwise sum 
+   * @param onlyPrimary IF true, only investigate primaries  
    */
   V0CentEstimator(Short_t mode=0, Bool_t onlyPrimary=false) 
     : FastNchCentEstimator(Form("%s%s", 
@@ -664,7 +663,7 @@ struct RefMultEstimator : public FastNchCentEstimator
   /** 
    * Constructor 
    * 
-   * @param mode Mode: Negative, use C side, positive use A side, otherwise sum 
+   * @param etaCut Cut on eta 
    */
   RefMultEstimator(Double_t etaCut=0.8) 
     : FastNchCentEstimator(Form("RefMult%02dd%02d",
@@ -678,6 +677,8 @@ struct RefMultEstimator : public FastNchCentEstimator
    * @param l Output list
    * @param tree Tree to add branch to 
    * @param sNN   Collision energy in GeV
+   * @param tgtA  Target atomic weight 
+   * @param projA Projectile atomic weight 
    */
   void Setup(TCollection* l, TTree* tree, UShort_t sNN,
 	     Bool_t tgtA, Bool_t projA)
@@ -747,6 +748,9 @@ struct ZNCentEstimator : public Fast1DCentEstimator
    * Constructor 
    * 
    * @param mode Mode: Negative, use C side, positive use A side, otherwise sum 
+   * @param neutrons 
+   * @param spectators 
+   * @param primary 
    */
   ZNCentEstimator(Short_t mode=0,
 		  Bool_t neutrons=true,
