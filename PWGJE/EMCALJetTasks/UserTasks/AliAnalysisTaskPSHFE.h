@@ -4,11 +4,7 @@
 /* $Id$ */
 /* AliAnalysisTaskPSHFE.h
  *
- * Template task producing a P_t spectrum and pseudorapidity distribution.
- * Includes explanations of physics and primary track selections
  *
- * Based on tutorial example from offline pages
- * Edited by Arvinder Palaha
  */
 #ifndef ALIANALYSISTASKEID_H
 #define ALIANALYSISTASKEID_H
@@ -51,6 +47,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     AliESDtrackCuts *comptrackCuts; 
     
     //Physics selection booleans
+    Bool_t          MBtrg;
     Bool_t          EMC7trg;
     Bool_t          EMC8trg;
     Bool_t          EMCJettrg;
@@ -95,6 +92,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_MB[6];
     TH1F            *fHistEMC_TOFTRD_MB[6];
     TH1F            *fHistEMC_TPCTOFTRD_MB[6];
+    TH1F            *fHistEMC_Had_MB_1Gev;
     //TRD nSigma plots
     TH2F            *fHistTRD_TPC_MB[6];
     TH2F            *fHistTRD_TOF_MB[6];
@@ -103,11 +101,17 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_MB[6];
     TH2F            *fHistTRD_TOFEMC_MB[6];
     TH2F            *fHistTRD_TPCTOFEMC_MB[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_MB[6];
+    TH2F            *fHistM20_All_MB[6];
+    TH2F            *fHistM02_Elec_MB[6];
+    TH2F            *fHistM20_Elec_MB[6];
     //General Event histos
     TH1F            *fHistEng_MB;
     TH1F            *fHistEngTag_MB;
     TH2F            *fHistEtaPhi_MB;
     TH2F            *fHistEtaPhiTag_MB;
+    TH2F            *fHistEtaPhiTPCOnly_MB;
     TH1F            *fHistDPhi300_MB[3];
     TH1F            *fHistDPhi500_MB[3];
     TH1F            *fHistDPhi800_MB[3];
@@ -162,6 +166,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_EMC7[6];
     TH2F            *fHistTRD_TOFEMC_EMC7[6];
     TH2F            *fHistTRD_TPCTOFEMC_EMC7[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMC7[6];
+    TH2F            *fHistM20_All_EMC7[6];
+    TH2F            *fHistM02_Elec_EMC7[6];
+    TH2F            *fHistM20_Elec_EMC7[6];
     //General Event histos 
     TH1F            *fHistEng_EMC7;
     TH1F            *fHistEngTag_EMC7;
@@ -221,6 +230,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_EMC8[6];
     TH2F            *fHistTRD_TOFEMC_EMC8[6];
     TH2F            *fHistTRD_TPCTOFEMC_EMC8[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMC8[6];
+    TH2F            *fHistM20_All_EMC8[6];
+    TH2F            *fHistM02_Elec_EMC8[6];
+    TH2F            *fHistM20_Elec_EMC8[6];
     //General Event histos
     TH1F            *fHistEng_EMC8;
     TH1F            *fHistEngTag_EMC8;
@@ -280,6 +294,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistTRD_TPCEMC_EMCJet[6];
     TH2F            *fHistTRD_TOFEMC_EMCJet[6];
     TH2F            *fHistTRD_TPCTOFEMC_EMCJet[6];
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMCJet[6];
+    TH2F            *fHistM20_All_EMCJet[6];
+    TH2F            *fHistM02_Elec_EMCJet[6];
+    TH2F            *fHistM20_Elec_EMCJet[6];
     //General Event histos
     TH1F            *fHistEng_EMCJet;
     TH1F            *fHistEngTag_EMCJet;
@@ -383,6 +402,9 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPIDRejection;
     TH1F            *fHistBadEMCclusID;
     
+    //Number of tagged electrons per event
+    TH1F            *fHistNElecPerEvent;
+
     //PtSum Histos
     TH2F            *fHistPtSumTransMaxB2B;
     TH2F            *fHistPtSumTransMinB2B;

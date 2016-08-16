@@ -162,7 +162,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runtype = 0; // Types 0 - global, 1 - ITS only, 2 - TPC Inner	//global tracks ->mfit ITS+TPC
 	int owncuts = 0; 
-	int owndca = 0;
+	int owndca = 1;
 
 	int gammacut = 1;	// cut na ee z gamma 
 	
