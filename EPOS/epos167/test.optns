@@ -1,3 +1,0 @@
-output epos
-record event nevt nptl b endrecord
-record particle i p1 p2 p3 p4 p5 x1 x2 x3 x4 id st ty endrecord
