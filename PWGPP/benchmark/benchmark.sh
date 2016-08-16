@@ -1037,9 +1037,9 @@ goSubmitMakeflow()
   for scr in "${sourceUtilities[@]}"; do
     [[ -e $scr ]] || printExec cp -v $ALICE_PHYSICS/PWGPP/scripts/$scr .
   done
- 
+
   self=$0
-  
+
   # For reference copy the setup to the output dir.
   copyFileToRemote $self $commonOutputPath
   copyFileToRemote $configFile $commonOutputPath
@@ -1053,17 +1053,17 @@ goSubmitMakeflow()
                        commonOutputPath=$commonOutputPath > benchmark.makeflow
     copyFileToRemote benchmark.makeflow $commonOutputPath
     makeflow $makeflowOptions benchmark.makeflow
-  else 
+  else
     echo "no makeflow!"
   fi
-  
-  # Summarize the run based on the makeflow log, append it to summary.log.
-  awk '/STARTED/   {startTime=$3} 
-       /COMPLETED/ {endTime=$3} 
+  xCopy -f -C -d $PWD $commonOutputPath/benchmark.makeflow.makeflowlog  # do not copy if it exists locally
+  awk '/STARTED/   {startTime=$3}
+       /COMPLETED/ {endTime=$3}
        END         {print "makeflow running time: "(endTime-startTime)/1000000/3600" hours"}' \
-      benchmark.makeflow.makeflowlog | tee -a summary.log
-  copyFileToRemote summary.log $commonOutputPath
-
+      benchmark.makeflow.makeflowlog > running_time
+  cat running_time >> summary.log
+  cat running_time >> summary_full.log
+  xCopy -f -d $commonOutputPath summary.log summary_full.log running_time
   return 0
 }
 
@@ -2253,7 +2253,7 @@ goMakeSummary()
   # will appear in the submission dir.
 
   #some defaults:
-  log=summary.log
+  log=summary_full.log
   jsonLog=summary.json
   productionID=qa
   alilog_info "[BEGIN] goMakeSummary() with following parameters $*"
@@ -2295,6 +2295,14 @@ goMakeSummary()
   # json header: open array of objects
   echo '[' > "$jsonLogTmp"
 
+  # Report simple summary (as opposed to a bloated log) to a separated file.
+  #  * Full log will be on summary_full.log.
+  #  * Simplified log will be on summary.log.
+  rm -f summary.log
+
+  { # Begin summary.log
+
+  # This is the "old style" summary
   goSummarizeMetaFiles "$metadir"
 
   echo "total numbers for the production:"
@@ -2444,6 +2452,18 @@ EOF
   # json footer: close array of objects
   echo ']' >> "${jsonLogTmp}"
 
+  } | tee -a summary.log # End summary.log
+
+  if [[ $simplifiedSummary == 1 ]]; then
+    maxCopyTries=1 remoteCpTimeout=120 xCopy -f -d $PWD $commonOutputPath/running_time
+    { [[ -e running_time ]] && cat running_time || echo "No running time info available."; } | tee -a summary.log
+    alilog_info "[END] goMakeSummary() (stopping after simplified summary) with following parameters $*"
+    exec 1>&3 3>&-
+    exec 2>&1
+    xCopy -f -d $commonOutputPath summary.log summary_full.log
+    return 0
+  fi
+
   #make file lists - QA, trending, stacktraces, filtering and calibration
   ### wait for the merging of all runs to be over ###
   goPrintValues qafile remote.cpass1.qa.list "$metadir"/merge.cpass1.run*.done &>/dev/null
@@ -2541,7 +2561,7 @@ EOF
   echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"
   exec 1>&3 3>&-
   exec 2>&1
-  copyFileToRemote $log $outputDir
+  xCopy -f -d $commonOutputPath/ summary.log summary_full.log
 
   alilog_info "[END] goMakeSummary() with following parameters $*"
   return 0

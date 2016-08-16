@@ -17,7 +17,7 @@
 
 /* AliAnalysisTaskPSHFE.cxx
  *
- * Macro for Electron PID for heavy flavour electrons
+ * Macro for analysis of heavy flavour electrons
  * -Patrick Steffanic
  */
 #include "AliAnalysisTaskPSHFE.h"
@@ -69,10 +69,12 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     EMC7trg(0),
     EMC8trg(0),
     EMCJettrg(0),
+    MBtrg(0),
     tagStrong(0),
 
     fHistPIDRejection(0),
     fHistBadEMCclusID(0),
+    fHistNElecPerEvent(0),
     fHistPtSumTransMaxB2B(0),
     fHistPtSumTransMinB2B(0),
     fHistPtSumTransMaxLead(0),
@@ -89,8 +91,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistEngTag_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
+    fHistEtaPhiTPCOnly_MB(0),
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
+    fHistEMC_Had_MB_1Gev(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -305,6 +309,26 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
         fHistTRD_TPCEMC_EMCJet[i]=0;
         fHistTRD_TOFEMC_EMCJet[i]=0;
         fHistTRD_TPCTOFEMC_EMCJet[i]=0;
+
+        fHistM02_All_MB[i]=0;
+        fHistM02_Elec_MB[i]=0;
+        fHistM20_All_MB[i]=0;
+        fHistM20_Elec_MB[i]=0;
+
+        fHistM02_All_EMC7[i]=0;
+        fHistM02_Elec_EMC7[i]=0;
+        fHistM20_All_EMC7[i]=0;
+        fHistM20_Elec_EMC7[i]=0;
+
+        fHistM02_All_EMC8[i]=0;
+        fHistM02_Elec_EMC8[i]=0;
+        fHistM20_All_EMC8[i]=0;
+        fHistM20_Elec_EMC8[i]=0;
+
+        fHistM02_All_EMCJet[i]=0;
+        fHistM02_Elec_EMCJet[i]=0;
+        fHistM20_All_EMCJet[i]=0;
+        fHistM20_Elec_EMCJet[i]=0;
     }
         
     //Region Histos
@@ -392,10 +416,12 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     EMC7trg(0),
     EMC8trg(0),
     EMCJettrg(0),
+    MBtrg(0),
     tagStrong(0),
 
     fHistPIDRejection(0),
     fHistBadEMCclusID(0),
+    fHistNElecPerEvent(0),
     fHistPtSumTransMaxB2B(0),
     fHistPtSumTransMinB2B(0),
     fHistPtSumTransMaxLead(0),
@@ -412,8 +438,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistEngTag_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
+    fHistEtaPhiTPCOnly_MB(0),
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
+    fHistEMC_Had_MB_1Gev(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -631,6 +659,26 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
         fHistTRD_TPCEMC_EMCJet[i]=0;
         fHistTRD_TOFEMC_EMCJet[i]=0;
         fHistTRD_TPCTOFEMC_EMCJet[i]=0;
+
+        fHistM02_All_MB[i]=0;
+        fHistM02_Elec_MB[i]=0;
+        fHistM20_All_MB[i]=0;
+        fHistM20_Elec_MB[i]=0;
+
+        fHistM02_All_EMC7[i]=0;
+        fHistM02_Elec_EMC7[i]=0;
+        fHistM20_All_EMC7[i]=0;
+        fHistM20_Elec_EMC7[i]=0;
+
+        fHistM02_All_EMC8[i]=0;
+        fHistM02_Elec_EMC8[i]=0;
+        fHistM20_All_EMC8[i]=0;
+        fHistM20_Elec_EMC8[i]=0;
+
+        fHistM02_All_EMCJet[i]=0;
+        fHistM02_Elec_EMCJet[i]=0;
+        fHistM20_All_EMCJet[i]=0;
+        fHistM20_Elec_EMCJet[i]=0;
     }
         
         
@@ -881,6 +929,26 @@ AliAnalysisTaskPSHFE::~AliAnalysisTaskPSHFE()
         delete fHistTRD_TPCEMC_EMCJet[i];
         delete fHistTRD_TOFEMC_EMCJet[i];
         delete fHistTRD_TPCTOFEMC_EMCJet[i];
+
+        delete fHistM02_All_MB[i];
+        delete fHistM02_Elec_MB[i];
+        delete fHistM20_All_MB[i];
+        delete fHistM20_Elec_MB[i];
+
+        delete fHistM02_All_EMC7[i];
+        delete fHistM02_Elec_EMC7[i];
+        delete fHistM20_All_EMC7[i];
+        delete fHistM20_Elec_EMC7[i];
+
+        delete fHistM02_All_EMC8[i];
+        delete fHistM02_Elec_EMC8[i];
+        delete fHistM20_All_EMC8[i];
+        delete fHistM20_Elec_EMC8[i];
+
+        delete fHistM02_All_EMCJet[i];
+        delete fHistM02_Elec_EMCJet[i];
+        delete fHistM20_All_EMCJet[i];
+        delete fHistM20_Elec_EMCJet[i];
     }
     
     //Region Histos
@@ -1039,6 +1107,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistBadEMCclusID->GetXaxis()->SetBinLabel(1, "Bad Clusters");
     fHistBadEMCclusID->GetYaxis()->SetTitle("Cts");
     
+    //Number of electrons per event histo
+    fHistNElecPerEvent = new TH1F("fHistNElecPerEvent", "Number of tagged electrons per event", 5, 1, 5);
+    fHistNElecPerEvent->GetXaxis()->SetTitle("Num. of Electrons");
+    fHistNElecPerEvent->GetYaxis()->SetTitle("Cts");
+
     //Region Histos
     
     for(Int_t i=0;i<4;i++){
@@ -1734,6 +1807,77 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fHistTRD_TPCTOFEMC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
     }
     
+    //EMC Shower Shape PID Plots
+    for(Int_t i=0; i<6; i++){
+        //MB
+        fHistM02_All_MB[i] = new TH2F(TString::Format("fHistM02_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_All_MB[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_MB[i] = new TH2F(TString::Format("fHistM20_All_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_All_MB[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_MB[i] = new TH2F(TString::Format("fHistM02_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_Elec_MB[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_MB[i] = new TH2F(TString::Format("fHistM20_Elec_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_Elec_MB[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_MB[i]->GetYaxis()->SetTitle("E/p");
+
+        //EMC7
+        fHistM02_All_EMC7[i] = new TH2F(TString::Format("fHistM02_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_All_EMC7[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_EMC7[i] = new TH2F(TString::Format("fHistM20_All_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_All_EMC7[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_EMC7[i] = new TH2F(TString::Format("fHistM02_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_Elec_EMC7[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_EMC7[i] = new TH2F(TString::Format("fHistM20_Elec_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_Elec_EMC7[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_EMC7[i]->GetYaxis()->SetTitle("E/p");
+
+        //EMC8
+        fHistM02_All_EMC8[i] = new TH2F(TString::Format("fHistM02_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_All_EMC8[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_EMC8[i] = new TH2F(TString::Format("fHistM20_All_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_All_EMC8[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_EMC8[i] = new TH2F(TString::Format("fHistM02_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_Elec_EMC8[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_EMC8[i] = new TH2F(TString::Format("fHistM20_Elec_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_Elec_EMC8[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_EMC8[i]->GetYaxis()->SetTitle("E/p");
+
+        //EMCJet
+        fHistM02_All_EMCJet[i] = new TH2F(TString::Format("fHistM02_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_All_EMCJet[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_All_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_All_EMCJet[i] = new TH2F(TString::Format("fHistM20_All_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for tracks with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_All_EMCJet[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_All_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM02_Elec_EMCJet[i] = new TH2F(TString::Format("fHistM02_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M02(semi-major axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM02_Elec_EMCJet[i]->GetXaxis()->SetTitle("M02");
+        fHistM02_Elec_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+
+        fHistM20_Elec_EMCJet[i] = new TH2F(TString::Format("fHistM20_Elec_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p vs M20(semi-minor axis) for electron candidates with Pt between %s",ptRangesPID[i].Data()), 100, 0, 1.5, 300, 0, 2);
+        fHistM20_Elec_EMCJet[i]->GetXaxis()->SetTitle("M20");
+        fHistM20_Elec_EMCJet[i]->GetYaxis()->SetTitle("E/p");
+    }
+
     //DPhi for candidate electrons 2-8 gev and assoc. particles >3gev
     fHistDPhi28_MB = new TH1F("fHistDPhi28_MB", "Delta-Phi for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2);
     fHistDPhi28_MB->GetXaxis()->SetTitle("Delta-Phi");
@@ -1947,6 +2091,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fHistDPhi5_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
     
+    //Hadron e/p plot
+    fHistEMC_Had_MB_1Gev = new TH1F("fHistEMC_Had_MB_1Gev", "E/p for hadrons with Pt between 1-2Gev", 100, 0, 1.5);
+    fHistEMC_Had_MB_1Gev->GetXaxis()->SetTitle("E/p");
+    fHistEMC_Had_MB_1Gev->GetYaxis()->SetTitle("Cts");
+
     // Eta-Phi distribution for tagged events
     fHistEtaPhiTag_MB = new TH2F("fHistEtaPhiTag_MB", "Eta-Phi distribution of tracks in tagged events", 100, -.9,.9,100,0,2*TMath::Pi());
     fHistEtaPhiTag_MB->GetXaxis()->SetTitle("Eta");
@@ -1981,6 +2130,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistEtaPhi_EMCJet->GetXaxis()->SetTitle("Eta");
     fHistEtaPhi_EMCJet->GetYaxis()->SetTitle("Phi");
     
+    fHistEtaPhiTPCOnly_MB = new TH2F("fHistEtaPhiTPCOnly_MB", "Eta-Phi distribution of TPC only tracks", 100, -.9,.9,100,0,2*TMath::Pi());
+    fHistEtaPhiTPCOnly_MB->GetXaxis()->SetTitle("Eta");
+    fHistEtaPhiTPCOnly_MB->GetYaxis()->SetTitle("Phi");
+
     // Energy per event histos
     fHistEng_MB = new TH1F("fHistEng_MB", "Energy per event", 500, 0, 500);
     fHistEng_MB->GetXaxis()->SetTitle("Energy");
@@ -2143,6 +2296,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistBadEMCclusID);
+    fOutputMB->Add(fHistNElecPerEvent);
     //ditto for the pt sum plots
     fOutputMB->Add(fHistPtSumTransMaxB2B);
     fOutputMB->Add(fHistPtSumTransMinB2B);
@@ -2160,6 +2314,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistEngTag_MB);
     fOutputMB->Add(fHistEtaPhi_MB);
     fOutputMB->Add(fHistEtaPhiTag_MB);
+    fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
+    fOutputMB->Add(fHistEMC_Had_MB_1Gev);
     for(Int_t i=0; i<6;i++){
         fOutputMB->Add(fHistTPC_TOF_MB[i]);
         fOutputMB->Add(fHistTPC_EMC_MB[i]);
@@ -2192,6 +2348,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputMB->Add(fHistTRD_TPCEMC_MB[i]);
         fOutputMB->Add(fHistTRD_TOFEMC_MB[i]);
         fOutputMB->Add(fHistTRD_TPCTOFEMC_MB[i]);
+
+        fOutputMB->Add(fHistM02_All_MB[i]);
+        fOutputMB->Add(fHistM20_All_MB[i]);
+        fOutputMB->Add(fHistM02_Elec_MB[i]);
+        fOutputMB->Add(fHistM20_Elec_MB[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputMB->Add(fHistDPhi300_MB[i]);
@@ -2248,6 +2409,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputEMC7->Add(fHistTRD_TPCEMC_EMC7[i]);
         fOutputEMC7->Add(fHistTRD_TOFEMC_EMC7[i]);
         fOutputEMC7->Add(fHistTRD_TPCTOFEMC_EMC7[i]);
+
+        fOutputEMC7->Add(fHistM02_All_EMC7[i]);
+        fOutputEMC7->Add(fHistM20_All_EMC7[i]);
+        fOutputEMC7->Add(fHistM02_Elec_EMC7[i]);
+        fOutputEMC7->Add(fHistM20_Elec_EMC7[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputEMC7->Add(fHistDPhi300_EMC7[i]);
@@ -2304,6 +2470,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputEMC8->Add(fHistTRD_TPCEMC_EMC8[i]);
         fOutputEMC8->Add(fHistTRD_TOFEMC_EMC8[i]);
         fOutputEMC8->Add(fHistTRD_TPCTOFEMC_EMC8[i]);
+
+        fOutputEMC8->Add(fHistM02_All_EMC8[i]);
+        fOutputEMC8->Add(fHistM20_All_EMC8[i]);
+        fOutputEMC8->Add(fHistM02_Elec_EMC8[i]);
+        fOutputEMC8->Add(fHistM20_Elec_EMC8[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputEMC8->Add(fHistDPhi300_EMC8[i]);
@@ -2360,6 +2531,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         fOutputEMCJet->Add(fHistTRD_TPCEMC_EMCJet[i]);
         fOutputEMCJet->Add(fHistTRD_TOFEMC_EMCJet[i]);
         fOutputEMCJet->Add(fHistTRD_TPCTOFEMC_EMCJet[i]);
+
+        fOutputEMCJet->Add(fHistM02_All_EMCJet[i]);
+        fOutputEMCJet->Add(fHistM20_All_EMCJet[i]);
+        fOutputEMCJet->Add(fHistM02_Elec_EMCJet[i]);
+        fOutputEMCJet->Add(fHistM20_Elec_EMCJet[i]);
     }
     for(Int_t i=0; i<3;i++){
     fOutputEMCJet->Add(fHistDPhi300_EMCJet[i]);
@@ -2502,7 +2678,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         AliWarning("This is not an EMCal triggered event");
   }
     
-  
+  MBtrg = fSelectMask & AliVEvent::kAnyINT;
   EMC7trg = fSelectMask & AliVEvent::kEMC7;
   EMC8trg = fSelectMask & AliVEvent::kEMC8;
   EMCJettrg = fSelectMask & AliVEvent::kEMCEJE;
@@ -2522,8 +2698,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     
     //Fill the histogram cataloguing # of events vs. events tagged
-    fHistNevents_MB->Fill("Events",1);
-    
+    if(MBtrg){
+        fHistNevents_MB->Fill("Events",1);
+    }
     if(EMC7trg){
             fHistNevents_EMC7->Fill("Events",1);
     }
@@ -2558,6 +2735,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             continue; 
         }
 
+        //Fill TPCOnly track eta-phi
+        if(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()->AcceptTrack(esdtrack)){
+            fHistEtaPhiTPCOnly_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+        }
+
         //Do hybrid track cuts
         if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){continue;}
         
@@ -2568,7 +2750,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         Eta[i]=esdtrack->Eta();
         Phi[i]=esdtrack->Phi();
         
-        fHistEtaPhi_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+        if(MBtrg){
+            fHistEtaPhi_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+        }
         if(EMC7trg){
                 fHistEtaPhi_EMC7->Fill(esdtrack->Eta(),esdtrack->Phi());
         }
@@ -2580,10 +2764,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         
         //do Cut level histograms
-        if(esdtrack->GetTPCncls()>0){
+        if(MBtrg){
+            if(esdtrack->GetTPCncls()>0){
             fHistTPCNClus_MB->Fill(esdtrack->GetTPCncls());}
-        fHistITSNClus_MB->Fill(esdtrack->GetNcls(0));
-        
+            fHistITSNClus_MB->Fill(esdtrack->GetNcls(0));
+        }
         if(EMC7trg){
                 if(esdtrack->GetTPCncls()>0){
                     fHistTPCNClus_EMC7->Fill(esdtrack->GetTPCncls());}
@@ -2603,8 +2788,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         
         //Fill histogram for TPC resolution
-        fHistTPCSig_MB->Fill(esdtrack->GetTPCsignalSigma());
-        
+        if(MBtrg){
+            fHistTPCSig_MB->Fill(esdtrack->GetTPCsignalSigma());
+        }
         if(EMC7trg){
                 fHistTPCSig_EMC7->Fill(esdtrack->GetTPCsignalSigma());
         }
@@ -2623,8 +2809,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         
         esdtrack->GetImpactParameters(xy, z);
         
-        fHistImpPar_MB->Fill(xy);
-        
+        if(MBtrg){
+            fHistImpPar_MB->Fill(xy);
+        }
         if(EMC7trg){
                 fHistImpPar_EMC7->Fill(xy);
         }
@@ -2647,8 +2834,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
         
         //Fill histogram for TPC resolution
-        fHistTPCSigCut_MB->Fill(esdtrack->GetTPCsignalSigma());
-        
+        if(MBtrg){
+            fHistTPCSigCut_MB->Fill(esdtrack->GetTPCsignalSigma());
+        }
         if(EMC7trg){
                 fHistTPCSigCut_EMC7->Fill(esdtrack->GetTPCsignalSigma());
         }
@@ -2672,8 +2860,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             elecCnt+=1;
             
             //Fill impact parameter plots
-            fHistImpParTag_MB->Fill(xy);
-        
+            if(MBtrg){
+                fHistImpParTag_MB->Fill(xy);
+            }
             if(EMC7trg){
                     fHistImpParTag_EMC7->Fill(xy);
             }
@@ -2700,9 +2889,13 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     FillRegionHistos(esd, elecIDsSparse, elecCnt);
     
+    //Fill Number of electrons plot
+    fHistNElecPerEvent->Fill(elecCnt);
     
     //Fill the total energy histogram
+    if(MBtrg){
         fHistEng_MB->Fill(Ene);
+    }
         if(EMC7trg){
                 fHistEng_EMC7->Fill(Ene);
         }
@@ -2713,7 +2906,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 fHistEng_EMCJet->Fill(Ene);
         }
     if(tagEvt){
-        fHistEngTag_MB->Fill(Ene);
+        if(MBtrg){
+            fHistEngTag_MB->Fill(Ene);
+        }
         if(EMC7trg){
             fHistEngTag_EMC7->Fill(Ene);
         }
@@ -2727,8 +2922,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     //Fill Nevent histos
     if(tagEvt){
-    fHistNevents_MB->Fill("Events containing candidates",1);
-                
+        if(MBtrg){
+            fHistNevents_MB->Fill("Events containing candidates",1);
+        }
                 if(EMC7trg){
                         fHistNevents_EMC7->Fill("Events containing candidates",1);
                 }
@@ -2743,7 +2939,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     //Fill the Eta Phi histograms
 if(tagEvt){
     for(Int_t i=0;i<ntracks;i++){
-        fHistEtaPhiTag_MB->Fill(Eta[i],Phi[i]);
+        if(MBtrg){
+            fHistEtaPhiTag_MB->Fill(Eta[i],Phi[i]);
+        }
         if(EMC7trg){
                 fHistEtaPhiTag_EMC7->Fill(Eta[i],Phi[i]);
         }
@@ -2872,8 +3070,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
                     
-                    fHistTrkPtTag_MB[0]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTag_MB[0]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTag_EMC7[0]->Fill(esdtrack->Pt());
                     }
@@ -2890,9 +3089,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkPtTag_MB[1]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTag_MB[1]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTag_EMC7[1]->Fill(esdtrack->Pt());
                     }
@@ -2909,9 +3108,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkPtTag_MB[2]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTag_MB[2]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTag_EMC7[2]->Fill(esdtrack->Pt());
                     }
@@ -2928,9 +3127,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkPtTag_MB[3]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTag_MB[3]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTag_EMC7[3]->Fill(esdtrack->Pt());
                     }
@@ -2949,9 +3148,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistDeDxPtTag_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTag_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTag_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -2968,9 +3167,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistDeDxPtTag_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTag_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTag_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -2987,9 +3186,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistDeDxPtTag_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTag_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTag_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3006,9 +3205,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistDeDxPtTag_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTag_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTag_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3033,9 +3232,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkPtAway_MB[0]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtAway_MB[0]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtAway_EMC7[0]->Fill(esdtrack->Pt());
                     }
@@ -3052,9 +3251,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkPtAway_MB[1]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtAway_MB[1]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtAway_EMC7[1]->Fill(esdtrack->Pt());
                     }
@@ -3071,9 +3270,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkPtAway_MB[2]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtAway_MB[2]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtAway_EMC7[2]->Fill(esdtrack->Pt());
                     }
@@ -3090,9 +3289,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkPtAway_MB[3]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtAway_MB[3]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtAway_EMC7[3]->Fill(esdtrack->Pt());
                     }
@@ -3111,9 +3310,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistDeDxPtAway_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtAway_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtAway_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3130,9 +3329,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistDeDxPtAway_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtAway_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtAway_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3149,9 +3348,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistDeDxPtAway_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtAway_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtAway_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3168,9 +3367,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistDeDxPtAway_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtAway_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtAway_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3212,9 +3411,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
         //tag side
         //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkMultTag_MB[0]->Fill(tag_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTag_MB[0]->Fill(tag_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTag_EMC7[0]->Fill(tag_Mult);
                     }
@@ -3231,9 +3430,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkMultTag_MB[1]->Fill(tag_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTag_MB[1]->Fill(tag_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTag_EMC7[1]->Fill(tag_Mult);
                     }
@@ -3250,9 +3449,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkMultTag_MB[2]->Fill(tag_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTag_MB[2]->Fill(tag_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTag_EMC7[2]->Fill(tag_Mult);
                     }
@@ -3269,9 +3468,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkMultTag_MB[3]->Fill(tag_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTag_MB[3]->Fill(tag_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTag_EMC7[3]->Fill(tag_Mult);
                     }
@@ -3289,9 +3488,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
         //away side
         //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkMultAway_MB[0]->Fill(away_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultAway_MB[0]->Fill(away_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultAway_EMC7[0]->Fill(away_Mult);
                     }
@@ -3308,9 +3507,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkMultAway_MB[1]->Fill(away_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultAway_MB[1]->Fill(away_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultAway_EMC7[1]->Fill(away_Mult);
                     }
@@ -3327,9 +3526,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkMultAway_MB[2]->Fill(away_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultAway_MB[2]->Fill(away_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultAway_EMC7[2]->Fill(away_Mult);
                     }
@@ -3346,9 +3545,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkMultAway_MB[3]->Fill(away_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultAway_MB[3]->Fill(away_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultAway_EMC7[3]->Fill(away_Mult);
                     }
@@ -3375,9 +3574,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
             //left side
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkMultTransMax_MB[0]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[0]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[0]->Fill(left_Mult);
                     }
@@ -3394,9 +3593,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkMultTransMax_MB[1]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[1]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[1]->Fill(left_Mult);
                     }
@@ -3413,9 +3612,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkMultTransMax_MB[2]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[2]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[2]->Fill(left_Mult);
                     }
@@ -3432,9 +3631,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkMultTransMax_MB[3]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[3]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[3]->Fill(left_Mult);
                     }
@@ -3452,9 +3651,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 //right side
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkMultTransMin_MB[0]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[0]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[0]->Fill(right_Mult);
                     }
@@ -3471,9 +3670,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkMultTransMin_MB[1]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[1]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[1]->Fill(right_Mult);
                     }
@@ -3490,9 +3689,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkMultTransMin_MB[2]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[2]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[2]->Fill(right_Mult);
                     }
@@ -3509,9 +3708,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkMultTransMin_MB[3]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[3]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[3]->Fill(right_Mult);
                     }
@@ -3544,9 +3743,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkPtTransMax_MB[0]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[0]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[0]->Fill(esdtrack->Pt());
                     }
@@ -3563,9 +3762,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkPtTransMax_MB[1]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[1]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[1]->Fill(esdtrack->Pt());
                     }
@@ -3582,9 +3781,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkPtTransMax_MB[2]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[2]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[2]->Fill(esdtrack->Pt());
                     }
@@ -3601,9 +3800,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkPtTransMax_MB[3]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[3]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[3]->Fill(esdtrack->Pt());
                     }
@@ -3622,9 +3821,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistDeDxPtTransMax_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3641,9 +3840,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistDeDxPtTransMax_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3660,9 +3859,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistDeDxPtTransMax_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3679,9 +3878,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistDeDxPtTransMax_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3703,9 +3902,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkPtTransMin_MB[0]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[0]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[0]->Fill(esdtrack->Pt());
                     }
@@ -3722,9 +3921,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkPtTransMin_MB[1]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[1]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[1]->Fill(esdtrack->Pt());
                     }
@@ -3741,9 +3940,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkPtTransMin_MB[2]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[2]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[2]->Fill(esdtrack->Pt());
                     }
@@ -3760,9 +3959,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkPtTransMin_MB[3]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[3]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[3]->Fill(esdtrack->Pt());
                     }
@@ -3781,9 +3980,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistDeDxPtTransMin_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3800,9 +3999,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistDeDxPtTransMin_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3819,9 +4018,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistDeDxPtTransMin_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3838,9 +4037,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistDeDxPtTransMin_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -3866,9 +4065,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
             //left side
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkMultTransMin_MB[0]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[0]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[0]->Fill(left_Mult);
                     }
@@ -3885,9 +4084,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkMultTransMin_MB[1]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[1]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[1]->Fill(left_Mult);
                     }
@@ -3904,9 +4103,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkMultTransMin_MB[2]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[2]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[2]->Fill(left_Mult);
                     }
@@ -3923,9 +4122,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkMultTransMin_MB[3]->Fill(left_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMin_MB[3]->Fill(left_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMin_EMC7[3]->Fill(left_Mult);
                     }
@@ -3943,9 +4142,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 //right side
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkMultTransMax_MB[0]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[0]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[0]->Fill(right_Mult);
                     }
@@ -3962,9 +4161,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkMultTransMax_MB[1]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[1]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[1]->Fill(right_Mult);
                     }
@@ -3981,9 +4180,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkMultTransMax_MB[2]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[2]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[2]->Fill(right_Mult);
                     }
@@ -4000,9 +4199,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkMultTransMax_MB[3]->Fill(right_Mult);
-                    
+                    if(MBtrg){
+                        fHistTrkMultTransMax_MB[3]->Fill(right_Mult);
+                    }
                     if(EMC7trg){
                         fHistTrkMultTransMax_EMC7[3]->Fill(right_Mult);
                     }
@@ -4038,9 +4237,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkPtTransMin_MB[0]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[0]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[0]->Fill(esdtrack->Pt());
                     }
@@ -4057,9 +4256,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkPtTransMin_MB[1]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[1]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[1]->Fill(esdtrack->Pt());
                     }
@@ -4076,9 +4275,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkPtTransMin_MB[2]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[2]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[2]->Fill(esdtrack->Pt());
                     }
@@ -4095,9 +4294,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkPtTransMin_MB[3]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMin_MB[3]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMin_EMC7[3]->Fill(esdtrack->Pt());
                     }
@@ -4116,9 +4315,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistDeDxPtTransMin_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4135,9 +4334,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistDeDxPtTransMin_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4154,9 +4353,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistDeDxPtTransMin_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4173,9 +4372,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistDeDxPtTransMin_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMin_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMin_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4197,9 +4396,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistTrkPtTransMax_MB[0]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[0]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[0]->Fill(esdtrack->Pt());
                     }
@@ -4216,9 +4415,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistTrkPtTransMax_MB[1]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[1]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[1]->Fill(esdtrack->Pt());
                     }
@@ -4235,9 +4434,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistTrkPtTransMax_MB[2]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[2]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[2]->Fill(esdtrack->Pt());
                     }
@@ -4254,9 +4453,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistTrkPtTransMax_MB[3]->Fill(esdtrack->Pt());
-                    
+                    if(MBtrg){
+                        fHistTrkPtTransMax_MB[3]->Fill(esdtrack->Pt());
+                    }
                     if(EMC7trg){
                         fHistTrkPtTransMax_EMC7[3]->Fill(esdtrack->Pt());
                     }
@@ -4275,9 +4474,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 1<Pt<2
                 if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    fHistDeDxPtTransMax_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4294,9 +4493,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 2<Pt<4
                 if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    
-                    fHistDeDxPtTransMax_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4313,9 +4512,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track 4<Pt<6
                 if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    
-                    fHistDeDxPtTransMax_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4332,9 +4531,9 @@ void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, In
                 
                 //tagged track Pt>6
                 if(elecTrk->Pt()>6){
-                    
-                    fHistDeDxPtTransMax_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    
+                    if(MBtrg){
+                        fHistDeDxPtTransMax_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
+                    }
                     if(EMC7trg){
                         fHistDeDxPtTransMax_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
                     }
@@ -4426,7 +4625,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         //Check validity of PID, TODO: Add a rejection histogram
         if(TOFStatus!=AliPIDResponse::kDetPidOk){
             fHistPIDRejection->Fill(2);
-            isPIDRej=kTRUE;
+            //isPIDRej=kTRUE;
         }
         
         if(TPCStatus!=AliPIDResponse::kDetPidOk){
@@ -4460,8 +4659,10 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         
         if(isPIDRej){return;}
        
-        
+        //declare emcal cluster PID variables
         Double_t EOP=-1;
+        Double_t M02=-1;
+        Double_t M20=-1;
         Int_t caloId=esdtrack->GetEMCALcluster();
         
         if(caloId==-99999){
@@ -4473,6 +4674,8 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         
         if(tagEMCclus->E()>.5){
         EOP = tagEMCclus->E()/esdtrack->Pt();
+        M02 = tagEMCclus->GetM02();
+        M20 = tagEMCclus->GetM20();
         }
         else{
             return;
@@ -4496,13 +4699,33 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         for(Int_t i=0; i<6; i++){
         if(esdtrack->Pt()>ptLower[i]&&esdtrack->Pt()<ptUpper[i]){
             
+            //Fill general shower shape plots
+            if(MBtrg){
+                    fHistM02_All_MB[i]->Fill(M02, EOP);
+                    fHistM20_All_MB[i]->Fill(M20, EOP);
+                }
+                if(EMC7trg){
+                    fHistM02_All_EMC7[i]->Fill(M02, EOP);
+                    fHistM20_All_EMC7[i]->Fill(M20, EOP);
+                }
+
+                if(EMC8trg){
+                    fHistM02_All_EMC8[i]->Fill(M02, EOP);
+                    fHistM20_All_EMC8[i]->Fill(M20, EOP);
+                }
+
+                if(EMCJettrg){
+                    fHistM02_All_EMCJet[i]->Fill(M02, EOP);
+                    fHistM20_All_EMCJet[i]->Fill(M20, EOP);
+                }
+
         //TPC Plots
             
             //TOF cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
-                
-                fHistTPC_TOF_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_TOF_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_TOF_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4519,9 +4742,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //EMC cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTPC_EMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_EMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_EMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4538,9 +4761,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TRD cuts
             if(elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistTPC_TRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_TRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_TRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4557,9 +4780,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TOF+EMC cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTPC_TOFEMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_TOFEMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_TOFEMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4576,9 +4799,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TOF+TRD cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistTPC_TOFTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_TOFTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_TOFTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4595,9 +4818,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //EMC+TRD cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistTPC_EMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_EMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_EMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4614,9 +4837,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TOF+EMC+TRD cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
                 //tagStrong=kTRUE;
-                
-                fHistTPC_TOFEMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                
+                if(MBtrg){
+                    fHistTPC_TOFEMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
+                }
                 if(EMC7trg){
                     fHistTPC_TOFEMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
@@ -4635,9 +4858,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut){
                 
-                
-                fHistTOF_TPC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_TPC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_TPC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4654,9 +4877,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //EMC cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTOF_EMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_EMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_EMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4673,9 +4896,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TRD cuts
             if(elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistTOF_TRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_TRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_TRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4692,9 +4915,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+EMC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTOF_TPCEMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_TPCEMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_TPCEMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4711,9 +4934,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+TRD cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistTOF_TPCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_TPCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_TPCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4730,9 +4953,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //EMC+TRD cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistTOF_EMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_EMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_EMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4749,9 +4972,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+EMC+TRD cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
                 //tagStrong=kTRUE;
-                
-                fHistTOF_TPCEMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                
+                if(MBtrg){
+                    fHistTOF_TPCEMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
+                }
                 if(EMC7trg){
                     fHistTOF_TPCEMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
                 }
@@ -4770,9 +4993,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut){
                 
-                
-                fHistEMC_TPC_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TPC_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TPC_EMC7[i]->Fill(EOP);
                 }
@@ -4789,9 +5012,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TOF cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
                 
-                
-                fHistEMC_TOF_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TOF_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TOF_EMC7[i]->Fill(EOP);
                 }
@@ -4808,9 +5031,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TRD cuts
             if(elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistEMC_TRD_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TRD_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TRD_EMC7[i]->Fill(EOP);
                 }
@@ -4827,9 +5050,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+TOF cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
                 
-                
-                fHistEMC_TPCTOF_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TPCTOF_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TPCTOF_EMC7[i]->Fill(EOP);
                 }
@@ -4846,9 +5069,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+TRD cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistEMC_TPCTRD_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TPCTRD_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
                 }
@@ -4860,14 +5083,34 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                 if(EMCJettrg){
                     fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
                 }
+
+                //Fill the shower shape plots here also
+                if(MBtrg){
+                    fHistM02_Elec_MB[i]->Fill(M02, EOP);
+                    fHistM20_Elec_MB[i]->Fill(M20, EOP);
+                }
+                if(EMC7trg){
+                    fHistM02_Elec_EMC7[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMC7[i]->Fill(M20, EOP);
+                }
+
+                if(EMC8trg){
+                    fHistM02_Elec_EMC8[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMC8[i]->Fill(M20, EOP);
+                }
+
+                if(EMCJettrg){
+                    fHistM02_Elec_EMCJet[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMCJet[i]->Fill(M20, EOP);
+                }
             }
             
             //TOF+TRD cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut){
                 
-                
-                fHistEMC_TOFTRD_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TOFTRD_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TOFTRD_EMC7[i]->Fill(EOP);
                 }
@@ -4884,9 +5127,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+TOF+TRD cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut){
                 //tagStrong=kTRUE;
-                
-                fHistEMC_TPCTOFTRD_MB[i]->Fill(EOP);
-                
+                if(MBtrg){
+                    fHistEMC_TPCTOFTRD_MB[i]->Fill(EOP);
+                }
                 if(EMC7trg){
                     fHistEMC_TPCTOFTRD_EMC7[i]->Fill(EOP);
                 }
@@ -4905,9 +5148,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut){
                 
-                
-                fHistTRD_TPC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_TPC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_TPC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -4924,9 +5167,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TOF cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
                 
-                
-                fHistTRD_TOF_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_TOF_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_TOF_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -4943,9 +5186,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //EMC cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTRD_EMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_EMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_EMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -4962,9 +5205,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+TOF cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
                 
-                
-                fHistTRD_TPCTOF_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_TPCTOF_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_TPCTOF_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -4981,9 +5224,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+EMC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTRD_TPCEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_TPCEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_TPCEMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -5000,9 +5243,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TOF+EMC cuts
             if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
-                
-                fHistTRD_TOFEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_TOFEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_TOFEMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -5019,9 +5262,9 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             //TPC+TOF+EMC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 //tagStrong=kTRUE;
-                
-                fHistTRD_TPCTOFEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                
+                if(MBtrg){
+                    fHistTRD_TPCTOFEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
+                }
                 if(EMC7trg){
                     fHistTRD_TPCTOFEMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
@@ -5036,7 +5279,13 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
             }
         }
         }
-        
+    if(MBtrg){
+    if(esdtrack->Pt()<2&&esdtrack->Pt()>1){
+        if(nSigmaTPC<-2&&nSigmaTPC>-8){
+            fHistEMC_Had_MB_1Gev->Fill(EOP);
+        }
+    }
+    }
         //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
         if(esdtrack->Pt()<6){
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]){
@@ -5097,7 +5346,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     
                 //300MeV
                 if(esdtrackassoc->Pt()>.3){
-                    fHistDPhi300_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi300_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi300_EMC7[0]->Fill(DPhi);
                     }
@@ -5111,7 +5362,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //500MeV
                 if(esdtrackassoc->Pt()>.5){
-                fHistDPhi500_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi500_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi500_EMC7[0]->Fill(DPhi);
                     }
@@ -5125,7 +5378,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //800MeV
                 if(esdtrackassoc->Pt()>.8){
-                    fHistDPhi800_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi800_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi800_EMC7[0]->Fill(DPhi);
                     }
@@ -5139,7 +5394,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //1GeV
                 if(esdtrackassoc->Pt()>1){
-                    fHistDPhi1_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi1_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi1_EMC7[0]->Fill(DPhi);
                     }
@@ -5153,7 +5410,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //2GeV
                 if(esdtrackassoc->Pt()>2){
-                    fHistDPhi2_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi2_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi2_EMC7[0]->Fill(DPhi);
                     }
@@ -5167,7 +5426,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //3GeV
                 if(esdtrackassoc->Pt()>3){
-                    fHistDPhi3_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi3_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi3_EMC7[0]->Fill(DPhi);
                     }
@@ -5181,7 +5442,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //5GeV
                 if(esdtrackassoc->Pt()>5){
-                    fHistDPhi5_MB[0]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi5_MB[0]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi5_EMC7[0]->Fill(DPhi);
                     }
@@ -5199,7 +5462,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     
                 //300MeV
                 if(esdtrackassoc->Pt()>.3){
-                    fHistDPhi300_MB[1]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi300_MB[1]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi300_EMC7[1]->Fill(DPhi);
                     }
@@ -5213,7 +5478,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //500MeV
                 if(esdtrackassoc->Pt()>.5){
-                    fHistDPhi500_MB[1]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi500_MB[1]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi500_EMC7[1]->Fill(DPhi);
                     }
@@ -5227,7 +5494,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //800MeV
                 if(esdtrackassoc->Pt()>.8){
-                    fHistDPhi800_MB[1]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi800_MB[1]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi800_EMC7[1]->Fill(DPhi);
                     }
@@ -5241,7 +5510,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //1GeV
                 if(esdtrackassoc->Pt()>1){
-                    fHistDPhi1_MB[1]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi1_MB[1]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi1_EMC7[1]->Fill(DPhi);
                     }
@@ -5255,9 +5526,11 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //2GeV
                 if(esdtrackassoc->Pt()>2){
-                    fHistDPhi2_MB[1]->Fill(DPhi);
-                    fHistDPhi28_MB->Fill(DPhi);
-                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    if(MBtrg){
+                        fHistDPhi2_MB[1]->Fill(DPhi);
+                        fHistDPhi28_MB->Fill(DPhi);
+                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    }
                     if(EMC7trg){
                             fHistDPhi2_EMC7[1]->Fill(DPhi);
                             fHistDPhi28_EMC7->Fill(DPhi);
@@ -5277,7 +5550,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //3GeV
                 if(esdtrackassoc->Pt()>3){
-                    fHistDPhi3_MB[1]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi3_MB[1]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi3_EMC7[1]->Fill(DPhi);
                     }
@@ -5291,7 +5566,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //5GeV
                 if(esdtrackassoc->Pt()>5){
-                    fHistDPhi5_MB[1]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi5_MB[1]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi5_EMC7[1]->Fill(DPhi);
                     }
@@ -5309,7 +5586,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     
                 //300MeV
                 if(esdtrackassoc->Pt()>.3){
-                    fHistDPhi300_MB[2]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi300_MB[2]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi300_EMC7[2]->Fill(DPhi);
                     }
@@ -5323,7 +5602,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //500MeV
                 if(esdtrackassoc->Pt()>.5){
-                   fHistDPhi500_MB[2]->Fill(DPhi);
+                    if(MBtrg){
+                           fHistDPhi500_MB[2]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi500_EMC7[2]->Fill(DPhi);
                     }
@@ -5337,7 +5618,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //800MeV
                 if(esdtrackassoc->Pt()>.8){
-                    fHistDPhi800_MB[2]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi800_MB[2]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi800_EMC7[2]->Fill(DPhi);
                     }
@@ -5351,7 +5634,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //1GeV
                 if(esdtrackassoc->Pt()>1){
-                    fHistDPhi1_MB[2]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi1_MB[2]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi1_EMC7[2]->Fill(DPhi);
                     }
@@ -5365,9 +5650,11 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //2GeV
                 if(esdtrackassoc->Pt()>2){
-                    fHistDPhi2_MB[2]->Fill(DPhi);
-                    fHistDPhi28_MB->Fill(DPhi);
-                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    if(MBtrg){
+                        fHistDPhi2_MB[2]->Fill(DPhi);
+                        fHistDPhi28_MB->Fill(DPhi);
+                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    }
                     if(EMC7trg){
                             fHistDPhi2_EMC7[2]->Fill(DPhi);
                             fHistDPhi28_EMC7->Fill(DPhi);
@@ -5387,7 +5674,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //3GeV
                 if(esdtrackassoc->Pt()>3){
-                    fHistDPhi3_MB[2]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi3_MB[2]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi3_EMC7[2]->Fill(DPhi);
                     }
@@ -5401,7 +5690,9 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 
                 //5GeV
                 if(esdtrackassoc->Pt()>5){
-                    fHistDPhi5_MB[2]->Fill(DPhi);
+                    if(MBtrg){
+                        fHistDPhi5_MB[2]->Fill(DPhi);
+                    }
                     if(EMC7trg){
                             fHistDPhi5_EMC7[2]->Fill(DPhi);
                     }

@@ -514,6 +514,7 @@ void AliAnalysisTaskJetFFMoments::LocalInit()
     printf("TRACK PARAMETERS:   FilterMask: %d	 pt_min: %.3f GeV/c	eta min max: [%.2f,%.2f]  extra cut type: %d\n", fFilterMask, fTrackPtMin, fTrackEtaMin, fTrackEtaMax, fExtTrackCutType); 
     printf(" JET   PARAMETERS:   Algorithm: %d	 R: %.2f                eta min max: [%.2f,%.2f]  pt_min: %.3f \n", fAlgorithm, fRparam, fJetEtaMin, fJetEtaMax,fJetPtMin);
     if(fTrackType[0]>0) printf(" Efficiency Params: GenJetType: %d EffJetType: %d\n", fkGenJetType,fkEffJetType);
+    if(fTrackType[1] < kTrackAOD) printf(" FastSim Mode ON (Toy MC - KINE): TrackResolution %.3f (method %d)  Systematics: TrackResolution %.1f %% Efficiency %.1f", fResol, fResolMeth ,fEffivar, fResolvar);
     printf(" TRACKS IN JETS:   Method: %d\n",fTracksInJetMethod);
     if(fFFBckgMode)     printf("FF Background Mode %d\n",fFFBckgMode);
     if(fkDoJetMatching) printf("Jet matching ON with parameters, distance: %.2f, energy fraction: %.3f\n", fJetMatchedDistMax, fJetMatchingFractionMin);
@@ -522,8 +523,6 @@ void AliAnalysisTaskJetFFMoments::LocalInit()
   if( fkDoJetMatching == kFALSE) {
     fJetMatchedDistMax = 0.; fJetMatchingFractionMin = 0.;
   }
-
- if(fTrackType[1] < kTrackAOD) printf("FastSim Mode (KINE): TrackResolution %.3f Systematics: TrackResolution %.1f %% Efficiency %.1f", fResol, fEffivar, fResolvar);
 
   if((!fJetBranch[0].Contains("MC") && !fkDoJetReco) || (fkDoJetReco && !(fTrackType[0] == kTrackAODMCCharged || fTrackType[0] ==  kTrackAODMCChargedAcceptance  || fTrackType[0] == kTrackAODMCextra || fTrackType[0] == kTrackAODMCextraonly || fTrackType[0]< kTrackAOD))){
     AliWarning("Warning! You are running with the reconstructed data only. Both axis of the correlation plots will be filled with the reconstructed information.");
@@ -1160,15 +1159,6 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
 	    continue;
 	  }
 
-
-	if (0)
-        {
-            AssociateGenRec(jettracklistGener, jettracklistReconstructed, inAOD, inMC, inTEST, NULL);
-
-            CalcFFAndFFMFromTracksInJet(uGenJet, jettracklistGener, 0, 0, inAOD, 0 ,0 ,kFALSE,  fh2AssociatedTracksInJets[0],  fp2AssociatedTracksJetFFM[0]);
-            CalcFFAndFFMFromTracksInJet(uRecJet, jettracklistReconstructed, 0, 0, inAOD, 0, 0 ,kFALSE, fh2AssociatedTracksInJets[iJetBranch],fp2AssociatedTracksJetFFM[iJetBranch]);
-        }
-
 	    CalcFFAndFFMFromTracksInJet(uEffJet, jettracklistGenPrim, fTracksAODMCCharged, fTracksRecQualityCuts, indexAODTr, isGenPrim,jettracklistRec,kFALSE,fh2AssociatedTracksInJets[iJetBranch],fp2AssociatedTracksJetFFM[iJetBranch]);
 
 	    // secondaries: use jet pt from primaries
@@ -1540,21 +1530,19 @@ Int_t  AliAnalysisTaskJetFFMoments::GetListOfTracks(TList *list,Int_t type)
 	list->Add(part);
 	iCount++;
       }
-      else if(type == kTrackKineCharged || type == kTrackKineChargedAcceptance  || type == kTrackKineChargedAcceptanceDet || kTrackKineAcceptance || kTrackKineAcceptanceDet){
 
+      else if(type == kTrackKineCharged || type == kTrackKineChargedAcceptance  || type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptance ||  type == kTrackKineAcceptanceDet){
         if (type == kTrackKineCharged || type == kTrackKineChargedAcceptance  || type == kTrackKineChargedAcceptanceDet) {
          if(part->Particle()->GetPDG()->Charge()==0)continue;
         }
 
-        if((type == kTrackKineChargedAcceptance || type == kTrackKineChargedAcceptanceDet || kTrackKineAcceptance || kTrackKineAcceptanceDet) &&
+        if((type == kTrackKineChargedAcceptance || type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptance || type == kTrackKineAcceptanceDet) &&
            (       part->Eta() < fTrackEtaMin
                 || part->Eta() > fTrackEtaMax
                 || part->Phi() < fTrackPhiMin
                 || part->Phi() > fTrackPhiMax
                 || part->Pt()  < fTrackPtMin)) continue;
-
-
-        if(type == kTrackKineChargedAcceptanceDet || kTrackKineAcceptanceDet)
+        if(type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptanceDet)
           {
 
          fh1TrackEffPtGen->Fill(part->Pt());
@@ -1596,11 +1584,10 @@ Int_t  AliAnalysisTaskJetFFMoments::GetListOfTracks(TList *list,Int_t type)
             newpart = TLorentzVector(px, py, pz,e);
             Float_t ptSmeared= pt * gRandom->Gaus(1.0,fResol*(1+fResolvar/100.));
             newpart.SetPerp(ptSmeared);
-
        }
-            part->Particle()->SetMomentum(newpart);
             fh2TrackResPt->Fill(part->Pt(),100*(TMath::Abs(part->Pt()-newpart.Pt())/part->Pt()));
             fh1TrackResPtInv->Fill(100. * (TMath::Abs(1/newpart.Pt()) - 1./part->Pt()) * part->Pt());
+            part->Particle()->SetMomentum(newpart);
            }
 
           if (fEffi &&  (gRandom->Rndm()  > (1+fEffivar/100.)*(fEffi->Eval(part->Pt())))) continue;
@@ -3191,7 +3178,6 @@ Bool_t AliAnalysisTaskJetFFMoments::IsOutlier(AliGenPythiaEventHeader * const he
     if ( fPtHardAndPythiaJetPtFactor > 0.) {
      Float_t pbuf[4];
      TLorentzVector jetvec;
-     if(fDebug>10) std::cout<< header->NTriggerJets()<<" ";
      for(int ijet = 0; ijet < header->NTriggerJets(); ijet++){
       memset(pbuf, 0, sizeof(Float_t) * 4);
        header->TriggerJet(ijet, pbuf);

@@ -146,9 +146,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliMCEvent*                         fMCEvent;               // corresponding MC event
     AliStack*                           fMCStack;               // stack belonging to MC event
     TList**                             fCutFolder;             // Array of lists for containers belonging to cut
-    TList**                             fESDList;               // Array of lists with histograms with reconstructed properties   
-    TList**                             fPhotonDCAList;         // Array of lists with photon dca trees
-    TList**                             fGammaERM02;            // Array of lists with conv photon shower shape trees
+    TList**                             fESDList;               // Array of lists with histograms with reconstructed properties
     TList**                             fTrueList;              // Array of lists with histograms with MC validated reconstructed properties
     TList**                             fMCList;                // Array of lists with histograms with pure MC information
     TList**                             fClusterOutputList;     //!Array of lists of output histograms for cluster photons
@@ -172,13 +170,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
     TH1F**                  fHistoConvGammaR;                   //! histogram conversion photon R
     TH1F**                  fHistoConvGammaEta;                 //! histogram conversion photon Eta
-    TTree**                 fTreeConvGammaPtDcazCat;            //! tree with dca for conversions
-    Float_t                 fPtGamma;                           //! pt of conversion for tree
-    Float_t                 fDCAzPhoton;                        //! dcaz of conversion for tree
-    Float_t                 fRConvPhoton;                       //! R of conversion for tree
-    Float_t                 fEtaPhoton;                         //! eta of conversion for tree
-    UChar_t                 fCharCatPhoton;                     //! category of conversion for tree
-    UChar_t                 fCharPhotonMCInfo;                  //! MC info of conversion for tree
                       // 0: garbage,
                       // 1: background
                       // 2: secondary photon not from eta or k0s,
@@ -300,7 +291,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
 
     // additional variables
     Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
-    TRandom3                fRandom;                                            // random 
     Int_t                   fNGammaCandidates;                                  // number of gamma candidates in event
     Double_t*               fUnsmearedPx;                                       //[fNGammaCandidates]
     Double_t*               fUnsmearedPy;                                       //[fNGammaCandidates]
@@ -330,7 +320,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 5);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 6);
 };
 
 #endif

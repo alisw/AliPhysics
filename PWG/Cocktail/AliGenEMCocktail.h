@@ -23,14 +23,15 @@ public:
 
   AliGenEMCocktail();
   enum GeneratorIndex_t { kPizero=0, kEta, kRho0, kOmega, kEtaprime, kPhi, kJpsi, kSigma0, kK0s, kDeltaPlPl, kDeltaPl, kDeltaMi, kDeltaZero, kRhoPl, kRhoMi, kK0star, kDirectRealGamma, kDirectVirtGamma, kGENs };
-  enum ParticleGenerator_t { kGenPizero = 0x00001, kGenEta = 0x00002, kGenRho0 = 0x00004, kGenOmega = 0x00008, 
-			     kGenEtaprime = 0x00010, kGenPhi = 0x00020, kGenJpsi = 0x00040, 
-			     kGenDirectRealGamma = 0x00100, kGenDirectVirtGamma = 0x00200, kGenSigma0 = 0x00400, kGenK0s = 0x00800,
-			     kGenDeltaPlPl = 0x01000, kGenDeltaPl = 0x02000, kGenDeltaMi = 0x04000, kGenDeltaZero = 0x08000, 
-			     kGenRhoPl = 0x10000, kGenRhoMi = 0x20000, kGenK0star = 0x40000,  
-			     kGenHadrons = 0x0007f, kGenGammas = 0x00300 };
+  enum ParticleGenerator_t { kGenPizero = 0x00001, kGenEta = 0x00002, kGenRho0 = 0x00004, kGenOmega = 0x00008,
+    kGenEtaprime = 0x00010, kGenPhi = 0x00020, kGenJpsi = 0x00040,
+    kGenSigma0 = 0x00080, kGenK0s = 0x00100,
+    kGenDeltaPlPl = 0x00200, kGenDeltaPl = 0x00400, kGenDeltaMi = 0x00800, kGenDeltaZero = 0x01000,
+    kGenRhoPl = 0x02000, kGenRhoMi = 0x04000, kGenK0star = 0x08000,
+    kGenDirectRealGamma = 0x10000, kGenDirectVirtGamma = 0x20000,
+    kGenHadrons = 0x0007f, kGenGammas = 0x00300};
 
-  virtual ~AliGenEMCocktail();    
+  virtual ~AliGenEMCocktail();
   virtual void Init();
   virtual void CreateCocktail();
   virtual void Generate();    
