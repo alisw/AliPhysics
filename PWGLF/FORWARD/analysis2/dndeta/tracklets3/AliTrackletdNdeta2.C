@@ -711,31 +711,33 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 };
 
 //====================================================================
-/** 
- * A guard to suppress messages 
- */
-struct SuppressGuard
-{
-  /** The previous message level */
-  Int_t save = 0;
+namespace {
   /** 
-   * Constructor 
-   * 
-   * @param lvl Level to suppress to 
+   * A guard to suppress messages 
    */
-  SuppressGuard(Int_t lvl=2000)
+  struct SuppressGuard2
   {
-    save = gErrorIgnoreLevel;
-    gErrorIgnoreLevel = lvl;
-  }
-  /** 
-   * Destructor 
-   */
-  ~SuppressGuard()
-  {
-    gErrorIgnoreLevel = save;
-  }
-};
+    /** The previous message level */
+    Int_t save = 0;
+    /** 
+     * Constructor 
+     * 
+     * @param lvl Level to suppress to 
+     */
+    SuppressGuard2(Int_t lvl=2000)
+    {
+      save = gErrorIgnoreLevel;
+      gErrorIgnoreLevel = lvl;
+    }
+    /** 
+     * Destructor 
+     */
+    ~SuppressGuard2()
+    {
+      gErrorIgnoreLevel = save;
+    }
+  };
+}
 
 //====================================================================
 AliTrackletdNdeta2::AliTrackletdNdeta2()
@@ -1802,7 +1804,7 @@ void AliTrackletdNdeta2::CreateCanvas(const TString& outputName)
   fCanvas->SetBorderMode(0);
 
   if (fViz & kPDF) {
-    SuppressGuard g;    
+    SuppressGuard2 g;    
     fCanvas->Print(Form("%s/summary.pdf[", outputName.Data()),
 		   Form("pdf %s", (fViz & kLandscape) ? "Landscape" : ""));
   }
@@ -1846,7 +1848,7 @@ void AliTrackletdNdeta2::CreateCanvas(const TString& outputName)
 void AliTrackletdNdeta2::CloseCanvas()
 {
   if ((fViz & kPDF) && fCanvas) {
-    SuppressGuard g;
+    SuppressGuard2 g;
     fCanvas->Print(Form("%s/summary.pdf]", fCanvas->GetTitle()),
 		   Form("pdf %s Title:%s",
 			(fViz & kLandscape) ? "Landscape" : "",
@@ -1876,12 +1878,12 @@ void AliTrackletdNdeta2::PrintCanvas(const char* title,
     tit.Form("pdf %s Title:%s", (fViz & kLandscape) ? "Landscape" : "",
 	     title);
     // Suppress prints
-    SuppressGuard g;
+    SuppressGuard2 g;
     fCanvas->Print(Form("%s/summary.pdf",fCanvas->GetTitle()), tit);
   }
   static Int_t cnt = 1;
   if (fViz & kPNG) {
-    SuppressGuard g;
+    SuppressGuard2 g;
     fCanvas->Print(Form("%s/%03d_%s.png",fCanvas->GetTitle(),cnt,shortTitle));
     cnt++;
   }

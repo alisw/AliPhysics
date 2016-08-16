@@ -626,20 +626,22 @@ AliTrackletdNdeta::AliTrackletdNdeta()
     fAlphaMin(0),
     fAlphaMax(2.5)    
 {}
-//====================================================================  
-struct SuppressGuard
-{
-  Int_t save = 0;
-  SuppressGuard(Int_t lvl=2000)
+//====================================================================
+namespace { 
+  struct SuppressGuard
   {
-    save = gErrorIgnoreLevel;
-    gErrorIgnoreLevel = lvl;
-  }
-  ~SuppressGuard()
-  {
-    gErrorIgnoreLevel = save;
-  }
-};
+    Int_t save = 0;
+    SuppressGuard(Int_t lvl=2000)
+    {
+      save = gErrorIgnoreLevel;
+      gErrorIgnoreLevel = lvl;
+    }
+    ~SuppressGuard()
+    {
+      gErrorIgnoreLevel = save;
+    }
+  };
+}
 
 //____________________________________________________________________
 void AliTrackletdNdeta::ClearCanvas()
