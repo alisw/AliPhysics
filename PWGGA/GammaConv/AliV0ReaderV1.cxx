@@ -238,9 +238,8 @@ void AliV0ReaderV1::UserCreateOutputObjects()
   // Create AODs
 
   if(fCreateAOD){
-    if(kAddv0sInESDFilter){
-      fPCMv0BitField = new TBits();
-    }
+    fPCMv0BitField = new TBits();
+    
     if (fEventCuts){
       fDeltaAODBranchName.Append("_");
       fDeltaAODBranchName.Append(fEventCuts->GetCutNumber());
@@ -578,8 +577,9 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   fConversionGammas->Delete();
   
   //Clear TBits object with accepted v0s
-  if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
-
+  //if (kAddv0sInESDFilter){fPCMv0BitField->Clear();}
+  fPCMv0BitField->Clear();
+  
   fInputEvent=inputEvent;
   fMCEvent=mcEvent;
 
@@ -628,7 +628,8 @@ void AliV0ReaderV1::FillAODOutput()
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
     if(fCreateAOD) {
-      if(kAddv0sInESDFilter){PostData(1, fPCMv0BitField);}
+      //if(kAddv0sInESDFilter){PostData(1, fPCMv0BitField);}
+      PostData(1, fPCMv0BitField);
       AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
       if (aodhandler && aodhandler->GetFillAOD()) {
         AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
