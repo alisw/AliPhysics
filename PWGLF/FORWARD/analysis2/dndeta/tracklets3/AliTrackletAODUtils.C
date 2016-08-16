@@ -24,6 +24,7 @@
 # include <TProfile.h>
 # include <TProfile2D.h>
 # include <TDatabasePDG.h>
+# include <THStack.h>
 #else
 class TList;
 class TH1;
@@ -34,6 +35,7 @@ class TProfile2D;
 class TAxis;
 class TDirectory;
 class TDatabasePDG; // Auto-load
+class THStack;
 #endif
 
 /**
@@ -243,6 +245,16 @@ public:
    */
   static TH1* GetH1(Container* parent, const char* name, Bool_t verb=true);
   /** 
+   * Get a 1D histogram from a directory 
+   * 
+   * @param parent Container 
+   * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH1* GetH1(TDirectory* parent, const char* name, Bool_t verb=true);
+  /** 
    * Get a 1D profile from a container 
    * 
    * @param parent Container 
@@ -316,6 +328,16 @@ public:
    * @return Pointer to container or null 
    */
   static Container* GetC(TDirectory* parent, const char* name,Bool_t verb=true);
+  /** 
+   * Get a directory from a directory 
+   * 
+   * @param parent Container 
+   * @param name   Name of container 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to container or null 
+   */
+  static TDirectory* GetT(TDirectory* parent, const char* name,Bool_t verb=true);
   /** 
    * Get a double-precision value from a container 
    * 
@@ -734,6 +756,31 @@ public:
   static Double_t RatioE2(Double_t n, Double_t e2n,
 			  Double_t d, Double_t e2d,
 			  Double_t& e2r);
+  /** 
+   * Divide one histogram with another 
+   * 
+   * @param num    Numerator 
+   * @param denom  Denominator 
+   * @param name   (optional) name of new histogram
+   * 
+   * @return Newly allocated histogram with ratio, or null
+   */
+  static TH1* RatioH(const TH1* num, const TH1* denom, const char* name=0);
+  /** 
+   * Fix min/max value of histogram based on content and errors. 
+   * 
+   * @param h           Histogram to fix up
+   * @param ignoreZero  If true, ignore zero bins 
+   */
+  static void FixMinMax(TH1* h, Bool_t ignoreZero=true);
+  /** 
+   * Fix min/max value of a histogram stack based on content and errors. 
+   * 
+   * @param h           Histogram to fix up
+   * @param ignoreZero  If true, ignore zero bins 
+   */
+  static void FixMinMax(THStack* h, Bool_t ignoreZero=true);
+  
   /* @} */
   /** 
    * Get attributes corresponding to a PDG code 
@@ -1006,6 +1053,11 @@ TH1* AliTrackletAODUtils::GetH1(Container* parent, const char* name, Bool_t v)
   return static_cast<TH1*>(GetO(parent, name, TH1::Class(), v));
 }
 //____________________________________________________________________
+TH1* AliTrackletAODUtils::GetH1(TDirectory* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH1*>(GetO(parent, name, TH1::Class(), v));
+}
+//____________________________________________________________________
 TH2* AliTrackletAODUtils::GetH2(Container* parent, const char* name, Bool_t v)
 {
   return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
@@ -1038,6 +1090,18 @@ AliTrackletAODUtils::Container*
 AliTrackletAODUtils::GetC(TDirectory* parent, const char* name, Bool_t v)
 {
   return static_cast<Container*>(GetO(parent, name, Container::Class(), v));
+}
+//____________________________________________________________________
+TDirectory*
+AliTrackletAODUtils::GetT(TDirectory* parent, const char* name, Bool_t v)
+{
+  TDirectory* d = parent->GetDirectory(name);
+  if (!d) {
+    if (v) ::Warning("GetO", "Directory \"%s\" not found in \"%s\"",
+			name, parent->GetName());
+    return 0;
+  }
+  return d;
 }
 //____________________________________________________________________
 Double_t AliTrackletAODUtils::GetD(Container*  parent,
@@ -1614,6 +1678,7 @@ TH3* AliTrackletAODUtils::ScaleDelta(TH3* h, TH2* etaIPzScale)
   return h;
 }
 //____________________________________________________________________
+// @cond
 TH2* AliTrackletAODUtils::ProjectEtaDelta(TH3* h)
 {
   TH2* etaDelta = static_cast<TH2*>(h->Project3D("yx e"));
@@ -1656,9 +1721,14 @@ TH2* AliTrackletAODUtils::ProjectEtaDelta(TH3* h)
 #endif 
   return etaDelta;
 }
+// @endcond
 //____________________________________________________________________
 TH1* AliTrackletAODUtils::ProjectDelta(TH2* h)
 {
+  if (!h) {
+    Warning("ProjectDelta", "No histogram passed");
+    return 0;
+  }
   TH1* delta = h->ProjectionY("delta");
   delta->SetDirectory(0);
   delta->SetTitle(h->GetTitle());
@@ -1669,6 +1739,10 @@ TH1* AliTrackletAODUtils::ProjectDelta(TH2* h)
 //____________________________________________________________________
 TH1* AliTrackletAODUtils::ProjectDeltaFull(TH3* h)
 {
+  if (!h) {
+    Warning("ProjectDelta", "No histogram passed");
+    return 0;
+  }
   TH2* tmp   = ProjectEtaDelta(h);  
   TH1* delta = ProjectDelta(tmp);
   delta->SetDirectory(0);
@@ -1828,6 +1902,67 @@ Double_t AliTrackletAODUtils::RatioE2(Double_t n, Double_t e2n,
   r   = n/d;
   e2r = (e2n/n/n + e2d/d/d);
   return r;
+}
+//____________________________________________________________________
+TH1* AliTrackletAODUtils::RatioH(const TH1* num,
+				 const TH1* denom,
+				 const char* name)
+{
+  if (!num || !denom) {
+    ::Warning("RatioH", "Numerator (%p) or denominator (%p) missing",
+	      num, denom);
+    return 0;
+  }
+  if (!CheckConsistency(num, denom)) return 0;
+  
+  TH1* ratio = static_cast<TH1*>(num->Clone(name ? name : num->GetName()));
+  ratio->SetDirectory(0);
+  ratio->SetMinimum(-1111);
+  ratio->SetMaximum(-1111);
+  ratio->GetListOfFunctions()->Clear();
+  ratio->Divide(denom);
+  ratio->SetYTitle(Form("%s / %s",
+			num  ->GetYaxis()->GetTitle(), 
+			denom->GetYaxis()->GetTitle()));
+  ratio->SetTitle(Form("%s / %s", num  ->GetTitle(), denom->GetTitle()));
+  FixMinMax(ratio, true);
+  
+  return ratio;
+}
+//____________________________________________________________________
+void AliTrackletAODUtils::FixMinMax(TH1* h, Bool_t ignoreZero)
+{
+  Double_t min = +1e99;
+  Double_t max = -1e99;
+  for (Int_t ix = 1; ix <= h->GetNbinsX(); ix++) {
+    for (Int_t iy = 1; iy <= h->GetNbinsY(); iy++) {
+      for (Int_t iz = 1; iz <= h->GetNbinsZ(); iz++) {
+	Int_t    bin = h->GetBin(ix,iy,iz);
+	Double_t c   = h->GetBinContent(bin);
+	Double_t e   = h->GetBinError  (bin);
+	if (c == 0 && ignoreZero) continue;
+	min          = TMath::Min(min, c-e);
+	max          = TMath::Max(max, c+e);
+      }
+    }
+  }
+  h->SetMinimum(min);
+  h->SetMaximum(max);
+}
+//____________________________________________________________________
+void AliTrackletAODUtils::FixMinMax(THStack* stack, Bool_t ignoreZero)  
+{
+  Double_t min = +1e99;
+  Double_t max = -1e99;
+  TIter    next(stack->GetHists());
+  TH1*     h = 0;
+  while ((h = static_cast<TH1*>(next()))) {
+    FixMinMax(h, ignoreZero);
+    min = TMath::Min(min, h->GetMinimum());
+    max = TMath::Max(max, h->GetMaximum());
+  }
+  stack->SetMinimum(min);
+  stack->SetMaximum(max);
 }
 
 //____________________________________________________________________

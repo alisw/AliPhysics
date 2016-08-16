@@ -531,6 +531,13 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    */
   void VisualizeFinal(TDirectory* outDir, Int_t i);
   /** 
+   * Visualize the closure test
+   * 
+   * @param outDir Output directory 
+   * @param i      Bin number 
+   */
+  void VisualizeClosure(TDirectory* outDir, Int_t i);
+  /** 
    * Visualize a centrality bin 
    * 
    * @param c1       Lowest centrality limit 
@@ -866,7 +873,7 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
     Double_t bins[] = { 0., 5., 10., 20., 30., 40., 50., 60., 70., 80.,  };
     Double_t vals[] = { 1948, 1590, 1180, 786, 512, 318, 183, 96.3, 44.9, };
     Double_t errs[] = {   38,   32,   31,  20,  15,  12,   8,  5.8,  3.4, };
-    publ            = new TH1D("published", "dNch/deta in |eta|<0.5",
+    publ            = new TH1D("published", "PRL116,222302 (2016)",
 			       nbin, bins);
     publ->SetMarkerStyle(24);
     publ->SetMarkerColor(kBlack);
@@ -891,6 +898,11 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
     THStack* full = new THStack("full","");
     dd->cd();
     full->Write();
+
+    if (fRealIsSim) {
+      THStack* clos = new THStack("closure","");
+      clos->Write();
+    }
     outDir->cd();
   }
 
@@ -973,7 +985,7 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
     return false;
   }
 
-  TDirectory* final = outTop->GetDirectory(Form("final%dd", dimen));
+  TDirectory* final = GetT(outTop,Form("final%dd", dimen));
   if (!final) {
     Warning("ProcessBin", "Failed on results for %f - %f", c1, c2);
     return false;
@@ -1001,7 +1013,7 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 
   mid->SetBinContent(b, f->GetParameter(0));
   mid->SetBinError  (b, f->GetParError (0));
-  
+
   const Color_t cc[] = { kMagenta+2, // 0
 			 kBlue+2,    // 1
 			 kAzure-1,   // 2 // 10,
@@ -1022,6 +1034,19 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   full->Add(copy);
   final->cd();
   full->Write(full->GetName(), TObject::kOverwrite);
+
+  THStack* clos = static_cast<THStack*>(GetO(final, "closure"));
+  TH1*     clss = GetH1(GetT(outDir, Form("results%dd",dimen)), "closure");
+  if (clos && clss) {
+    copy = static_cast<TH1*>(clss->Clone(outDir->GetName()));
+    copy->SetDirectory(0);
+    copy->GetListOfFunctions()->Clear();
+    copy->SetTitle(Form("%5.1f#minus%5.1f%%", c1, c2));
+    SetAttr(copy, tc);
+    clos->Add(copy);
+    clos->Write(clos->GetName(), TObject::kOverwrite);
+  }
+    
   
   return true;
 }
@@ -1729,7 +1754,20 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
 	 rM.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),	 
 	 rR.h->GetBinContent(mi,mj),   // p->GetBinContent(mb));
 	 rG.h ? rG.h->GetBinContent(mi,mj) : -1);
-	 
+
+  if (rG.p) {
+    TH1* ratio = RatioH(dndeta, rG.p, "closure");
+    ratio->SetYTitle("Closure test");
+    ratio->SetDirectory(outDir);
+  }
+
+  THStack* ratios  = new THStack("ratios", "");
+  ratios->Add(RatioH(rM.p, sM.p, "rMeaured"));
+  ratios->Add(RatioH(rC.p, sC.p, "rBackground"));
+  ratios->Add(RatioH(rS.p, sS.p, "rSignal"));
+  ratios->Add(RatioH(rR.p, sG.p, "rResult"));
+  ratios->Add(AverageOverIPz(scale, scale->GetName(), 1, realZ,  0));
+  
   TF1* tmp = new TF1("mid", "pol0", -.5, +.5);
   dndeta->Fit(tmp, "Q0R+");
   TLatex* ltx = new TLatex(0,tmp->GetParameter(0)/2,
@@ -1749,11 +1787,12 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
     
   outDir->cd();
   all->Write();
+  ratios->Write();
   realB   ->SetDirectory(full);
   simB    ->SetDirectory(full);
   simA    ->SetDirectory(full);
   fiducial->SetDirectory(full);
-  
+
   outParent->cd();
 
   return dndeta;
@@ -1902,6 +1941,10 @@ TLegend* AliTrackletdNdeta2::DrawInPad(TVirtualPad* c,
   }
   TLegend*     l = 0;
   TVirtualPad* p = c->cd(pad);
+  if (!p) {
+    Warning("DrawInPad", "Sub-pad %d does not exist", pad);
+    return 0;
+  }
   TString option(opt);
   option.ToLower();
   if (option.Contains("logx")) { p->SetLogx(); option.ReplaceAll("logx",""); }
@@ -2004,6 +2047,7 @@ Bool_t AliTrackletdNdeta2::Visualize(Container*  realSums,
   for (Int_t i = 0; i < 4; i++) {
     if ((fProc & (1 << i)) == 0) continue;
     VisualizeFinal(outDir, i);
+    VisualizeClosure(outDir, i);
   }
   for (Int_t i = 1; i <= realCent->GetNbinsX() && i <= maxBins ; i++) {
     Double_t c1 = realCent->GetXaxis()->GetBinLowEdge(i);
@@ -2231,9 +2275,9 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   THStack* all = static_cast<THStack*>(GetO(dd, "full"));
   TH1*     mid = static_cast<TH1*>    (GetO(dd, "mid"));
   TH1*     pub = static_cast<TH1*>    (GetO(outDir, "published"));
+  if (mid->GetMinimum() <= 0) mid->SetMinimum(all->GetMinimum("nostack"));
   Double_t max = TMath::Max(all->GetMaximum("nostack"),mid->GetMaximum());
   Double_t min = TMath::Min(all->GetMinimum("nostack"),mid->GetMinimum());
-
   all->SetMinimum(.9*min);
   mid->SetMinimum(.9*min);
   all->SetMaximum(1.2*max);
@@ -2267,8 +2311,13 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
 
   
   DrawInPad(p1,0, mid, "logy grid");
-  DrawInPad(p1,0, pub, "logy grid same");
-  TLegend* l = DrawInPad(p2,0, all, "nostack logy grid leg");
+  TLegend* l = DrawInPad(p1,0, pub, "logy grid same leg");
+  ModLegend(p1, l, .4, .90, .99, .99);
+  l->SetMargin(0.2);
+  l->SetEntrySeparation(0.1);
+  l->SetTextSize(0.04);
+	    
+  l = DrawInPad(p2,0, all, "nostack logy grid leg");
   all->GetHistogram()->SetXTitle("#eta");
 
   ModLegend(p2, l, right, .15, .99, .99);
@@ -2283,6 +2332,38 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
 		      i == 2 ? "d^{2}N/(d#Deltad#eta)" :
 		      i == 1 ? "dN/d#Delta" : "dN/d#Delta (k#equiv1)");
   PrintCanvas(Form("Results #topbar %s", what), "results");
+}
+
+//____________________________________________________________________
+void AliTrackletdNdeta2::VisualizeClosure(TDirectory* outDir, Int_t i)
+{
+  TDirectory* dd  = outDir->GetDirectory(Form("final%dd", i));
+  if (!dd) return;
+
+  THStack* all = static_cast<THStack*>(GetO(dd, "closure"));
+  if (!all) return;
+  
+  Double_t max = all->GetMaximum("nostack");
+  Double_t min = all->GetMinimum("nostack");
+  all->SetMinimum(.95*min);
+  all->SetMaximum(1.05*max);
+  
+  ClearCanvas();
+  Double_t right = .3;
+  fBody->SetRightMargin(right);
+  TLegend* l = DrawInPad(fBody,0, all, "grid nostack leg");
+  ModLegend(fBody, l, 1-right+.01, fBody->GetBottomMargin(), .99,
+	    1-fBody->GetTopMargin());
+  l->SetMargin(0.2);
+  l->SetEntrySeparation(0.1);
+  l->SetTextSize(0.04);
+  l->SetBorderSize(0);
+  fBody->Modified();
+  
+  const char* what = (i == 3 ? "d^{3}N/(d#Deltad#etadIP_{z})" :
+		      i == 2 ? "d^{2}N/(d#Deltad#eta)" :
+		      i == 1 ? "dN/d#Delta" : "dN/d#Delta (k#equiv1)");
+  PrintCanvas(Form("Closure #topbar %s", what), "closure");
 }
 
 //====================================================================
@@ -2806,16 +2887,37 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   }
 
   ClearCanvas();
+  Double_t tbase = 0.03;
   Double_t yr = .2;
-  fBody->SetTopMargin(yr);
-  fBody->SetRightMargin(0.01);
-  fBody->SetLeftMargin(0.15);
+  Double_t yf = .2;
+  TPad* p1 = new TPad("p1","p1",0,yf,1,1);
+  p1->SetTopMargin(yr);
+  p1->SetRightMargin(0.01);
+  p1->SetLeftMargin(0.15);
+  p1->SetBottomMargin(0);
+  p1->SetTicks();
+  fBody->cd();
+  p1->Draw();
+  p1->SetNumber(1);
 
+  TPad* p2 = new TPad("p2","p2",0,0,1,yf);
+  p2->SetTopMargin(0.01);
+  p2->SetRightMargin(.01);
+  p2->SetLeftMargin(0.15);
+  p2->SetBottomMargin(0.20);
+  p2->SetTicks();
+  fBody->cd();
+  p2->Draw();
+  p2->SetNumber(2);
+  
   THStack* all = static_cast<THStack*>(GetO(outDir, "all"));
-  TLegend* l = DrawInPad(fBody,0,all, "nostack leg2");
+  TLegend* l = DrawInPad(fBody,1,all, "nostack leg2");
   all->GetHistogram()->SetXTitle("#eta");
   all->GetHistogram()->SetYTitle(ObsTitle());
   all->GetHistogram()->GetYaxis()->SetTitleOffset(1.7);
+  all->GetHistogram()->GetYaxis()->SetTitleSize(tbase/(1-yf));
+  all->GetHistogram()->GetYaxis()->SetLabelSize(tbase/(1-yf));
+  all->GetHistogram()->GetYaxis()->SetNdivisions(205);
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   l->SetMargin(0.12);
@@ -2823,8 +2925,22 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   l->SetHeader("R=G'/(M'-C')#times(M-C) #kern[2]{ } [C=kC'/M'#timesM]");
   // l->SetTextSize(0.04);
   // l->SetTextAlign(12);
-  ModLegend(fBody, l, fBody->GetLeftMargin()-.01, 1-yr,
-	    1-fBody->GetRightMargin(), .99);
+  ModLegend(p1, l, p1->GetLeftMargin()-.01, 1-yr,
+	    1-p2->GetRightMargin(), .99);
+
+  THStack* ratios = static_cast<THStack*>(GetO(outDir, "ratios"));
+  FixMinMax(ratios, true);
+  DrawInPad(fBody,2,ratios, "nostack");
+  ratios->GetHistogram()->SetXTitle("#eta");
+  ratios->GetHistogram()->SetYTitle("Ratios");
+  ratios->GetHistogram()->GetYaxis()->SetTitleOffset(.45);
+  ratios->GetHistogram()->GetXaxis()->SetTitleOffset(.7);
+  ratios->GetHistogram()->GetYaxis()->SetTitleSize(tbase/yr);
+  ratios->GetHistogram()->GetYaxis()->SetLabelSize(tbase/yr);
+  ratios->GetHistogram()->GetXaxis()->SetTitleSize(tbase/yr);
+  ratios->GetHistogram()->GetXaxis()->SetLabelSize(tbase/yr);
+  ratios->GetHistogram()->GetYaxis()->SetNdivisions(205);
+  
   fBody->Modified();
   // fBody->GetListOfPrimitives()->Print();
   

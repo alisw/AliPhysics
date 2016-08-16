@@ -9,6 +9,7 @@
  * 
  */
 #include <AliAnalysisTaskSE.h>
+#include <TParameter.h>
 #ifndef __CINT__
 #include "AliAODTracklet.C"
 #include "AliVVertex.h"
@@ -348,6 +349,8 @@ protected:
   AliITSMultRecBg* fReco; //!
   /** Whether to remove clusters corresponding to K_S^0 primary parents */
   Bool_t fFilterK0S;
+  /** Fraction of K^0_S clusters removed */
+  TParameter<double>* fK0SLoss; //! 
   
   ClassDef(AliTrackletAODTask,1); 
 };
@@ -364,7 +367,8 @@ AliTrackletAODTask::AliTrackletAODTask()
     fPhiOverlapCut(0.005),
     fZEtaOverlapCut(0.05),
     fReco(0),
-    fFilterK0S(false)
+    fFilterK0S(false),
+    fK0SLoss(0)
 {}
 //____________________________________________________________________
 AliTrackletAODTask::AliTrackletAODTask(const char*)
@@ -379,7 +383,8 @@ AliTrackletAODTask::AliTrackletAODTask(const char*)
     fPhiOverlapCut(0.005),
     fZEtaOverlapCut(0.05),
     fReco(0),
-    fFilterK0S(false)
+    fFilterK0S(false),
+    fK0SLoss(0)
 {
   // DefineOutput(1,TList::Class());
 }
@@ -396,7 +401,8 @@ AliTrackletAODTask::AliTrackletAODTask(const AliTrackletAODTask& other)
     fPhiOverlapCut(other.fPhiOverlapCut),
     fZEtaOverlapCut(other.fZEtaOverlapCut),
     fReco(0),
-    fFilterK0S(other.fFilterK0S)
+    fFilterK0S(other.fFilterK0S),
+    fK0SLoss(0)
 {}
 //____________________________________________________________________
 Bool_t AliTrackletAODTask::Connect()
@@ -529,6 +535,11 @@ Bool_t AliTrackletAODTask::InitBranch()
   // AliAODEvent* aod = ah->GetAOD();
   // aod->Print();
   // ah->GetTree()->Print();
+
+  if (fFilterK0S) {
+    fK0SLoss = new TParameter<double>("k0Loss", 0);
+    ah->AddBranch("TParameter<double>", &fK0SLoss);
+  }
   return true;
 }
 
@@ -1032,6 +1043,7 @@ Bool_t AliTrackletAODMCTask::WorkerInit()
 //____________________________________________________________________
 TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
 {
+  if (fK0SLoss) fK0SLoss->SetVal(0);
   if (!t || !fFilterK0S) return t;
 
   const Double_t weight = 1.52233299626516083e+00; // K^0_S weight
@@ -1098,9 +1110,12 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
     // Printf("Kept %d out of %d clusters", outN, inN);
     copy->Fill();
   }
-  if (nTotal > 0) 
+  if (nTotal > 0)  {
+    Double_t loss = 1-Float_t(nKept)/nTotal;
     Printf("Kept %d out of %d clusters from K^0_S (%4.1f%%)",
-	   nKept, nTotal, 100.*(1-Float_t(nKept)/nTotal));
+	   nKept, nTotal, 100.*loss);
+    if (fK0SLoss) fK0SLoss->SetVal(loss);
+  }
   savDir->cd();
   return copy;
 }
