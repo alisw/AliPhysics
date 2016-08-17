@@ -132,13 +132,18 @@ Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
  * Make a GraphSysErr object
  * 
  * @param d   Directory 
+ * @param dimen Dimension 
  * @param sNN Collision energy in GeV
  * @param c1  Least centrality 
  * @param c2  Largest centrality 
  * 
  * @return Newly created GraphSysErr
  */
-TObject* MakeGSE(TDirectory* d, Int_t dimen, UShort_t sNN, Double_t c1, Double_t c2)
+TObject* MakeGSE(TDirectory* d,
+		 Int_t dimen,
+		 UShort_t sNN,
+		 Double_t c1,
+		 Double_t c2)
 {
   if (!gROOT->GetClass("GraphSysErr")) return 0;
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
@@ -215,13 +220,18 @@ TObject* MakeGSE(TDirectory* d, Int_t dimen, UShort_t sNN, Double_t c1, Double_t
  * Make a GraphSysErr object for simulations 
  * 
  * @param d   Directory 
+ * @param dimen Dimension 
  * @param sNN Collision energy in GeV
  * @param c1 Least centrality 
  * @param c2 Largest centrality 
  * 
  * @return Newly created GraphSysErr
  */
-TObject* MakeTGSE(TDirectory* d, Int_t dimen, UShort_t sNN,  Double_t c1, Double_t c2)
+TObject* MakeTGSE(TDirectory* d,
+		  Int_t dimen,
+		  UShort_t sNN,
+		  Double_t c1,
+		  Double_t c2)
 {
   if (!gROOT->GetClass("GraphSysErr")) return 0;
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",

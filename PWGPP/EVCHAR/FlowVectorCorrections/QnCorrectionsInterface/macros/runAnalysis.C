@@ -70,10 +70,12 @@ AliMultSelectionTask *AddTaskMultSelection(
 using std::cout;
 using std::endl;
 
-void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE) {
+void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const char *configpath = ".") {
 
-  gROOT->LoadMacro("loadRunOptions.C");
-  loadRunOptions();
+  /* strange way of including the header file is for lego train scenarios */
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C");
+  loadRunOptions(kFALSE, configpath);
 
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
 
@@ -116,7 +118,7 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE) {
     }
 
     if(bGRIDPlugin) {
-      gROOT->LoadMacro("CreateAlienHandler.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/CreateAlienHandler.C");
       alienHandler = CreateAlienHandler(sRunMode,gridMerge);
       if (!alienHandler) return;
 

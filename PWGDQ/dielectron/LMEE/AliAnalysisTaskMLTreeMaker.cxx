@@ -99,7 +99,6 @@ AliAnalysisTaskSE(),
   tempdca(),
   motherlabel(-999.),
   charge(),      
-  IsBG(),
   runn(),      
   IsHij(kFALSE)    
 {
@@ -145,19 +144,20 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   tempdca(),
   motherlabel(-999.),
   charge(),      
-  IsBG(),
   runn(), 
   IsHij(kFALSE)     
 {
   //DefineInput(0, TChainvPt::Class());
 
-  //~ // Output slot #0 writes into a TH1 container
-
+  //~ // Output slot #0 writes into a TH1 container   
+    
   fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kFirst);
-  DefineOutput(1, TTree::Class());
-  DefineOutput(2, TH1::Class());
+//  DefineOutput(1, TTree::Class());
+//  DefineOutput(2, TH1::Class());
+  
+  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -208,7 +208,6 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("eta", &eta);
   fTree->Branch("phi", &phi);
   fTree->Branch("charge", &charge);
-  fTree->Branch("ISBG", &IsBG);   
   fTree->Branch("RunNumber", &runn);
   fTree->Branch("EsigTPC", &EsigTPC);
   fTree->Branch("EsigITS", &EsigITS);
@@ -366,24 +365,71 @@ pdgmother.clear();
 hasmother.clear();
 motherlabel.clear();
 charge.clear();
-IsBG.clear();
     // Loop over tracks in event
 
   AliGenCocktailEventHeader* coHeader;
-
+  AliMCEvent *mcEvent;
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
-//        if(ev!=10) continue;
+
 
       AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(iTracks));
-//   AliESDtrack* fixesdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(14));
-
-     
       if (!esdTrack) {
 	AliError(Form("Could not receive ESD track %d", iTracks));
 	continue;
       }
+      
+      fQAHist->Fill("After ESD check, bef. MC",1); 
+      
+      
+      
+      
+      
+      if(hasMC){ 
+          
+      mcEvent = MCEvent(); 
+      if (!mcEvent) {
+        AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
+        hasMC=kFALSE;
+        continue;
+        }
+      
 
-    fQAHist->Fill("Tracks_selected_before_Track_Cuts",1);   
+      else{
+          
+      fQAHist->Fill("After MC check, bef. Hij",1); 
+      IsHij=kFALSE;
+      
+        if(!iTracks){                             //check for first track if Hijing was the event gen
+            coHeader = dynamic_cast<AliGenCocktailEventHeader*> (mcEvent->GenEventHeader());
+            if (!coHeader){
+                        AliError(Form("Could not receive coHeader -> IsHij set to kFALSE!! no rejection of enhanced sources!!"));
+//                        continue;
+                }
+            else{
+                TList* list = coHeader->GetHeaders();
+                if(list->FindObject("Hijing")) IsHij = kTRUE;
+                }
+            }
+      
+      //reject non-Hijing BG tracks    
+
+      if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))){
+          AliError(Form("Reject track!!"));
+          continue;
+            }
+              
+        }
+      
+      }
+    
+      
+      
+      
+    fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1);  
+     
+
+
+ 
     if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
       
 
@@ -408,41 +454,12 @@ IsBG.clear();
       if (tempEsigITS<-4. || tempEsigITS > 1.) continue;  
       if (tempEsigTPC<-1.5 || tempEsigTPC > 3.) continue;
       
-      
-      if(hasMC){ 
-          
-      AliMCEvent *mcEvent = MCEvent(); 
-      if (!mcEvent) {
-        AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
-        hasMC=kFALSE;
-        continue;
-        }
-
-  
-      else{
-
-        if(!iTracks){                             //check for first track if Hijing was the event gen
-            coHeader = dynamic_cast<AliGenCocktailEventHeader*> (mcEvent->GenEventHeader());
-            if (!coHeader){
-                        AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
-                        hasMC=kFALSE;
-                        continue;
-                }
-            else{
-                TList* list = coHeader->GetHeaders();
-                if(list->FindObject("Hijing")) IsHij = kTRUE;
-                }
-            }
-          
-      //reject non Hijing tracks    
-
-      if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))) continue;
-
-          
-          
+      fQAHist->Fill("Selected tracks",1);  
       //Fill Tree with MC data
 
-          
+     
+      if(hasMC){ 
+   
       AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
 
       pdg.push_back( mcTrack->PdgCode());
@@ -476,8 +493,7 @@ IsBG.clear();
               motherlabel.push_back(-9999);
             }
 
-        }
-      }
+        }  
       
     //Fill Tree with non MC data
 
@@ -547,7 +563,7 @@ IsBG.clear();
       // count tracks
 
       acceptedTracks++;
-      fQAHist->Fill("Tracks_selected",1);  
+
     }
 
     

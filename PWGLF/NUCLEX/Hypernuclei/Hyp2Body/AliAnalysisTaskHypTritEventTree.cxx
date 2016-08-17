@@ -10,12 +10,9 @@
 #include "TRandom2.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-#include "AliCentrality.h"
 #include "AliMultSelection.h"
-
 #include "AliInputEventHandler.h"
 #include "AliESDInputHandler.h"
-
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
 #include "AliESDpid.h"
@@ -24,13 +21,11 @@
 #include "AliESDv0.h"
 #include "AliESDVertex.h"
 #include "AliVertexerTracks.h"
-
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCVertex.h"
 #include "AliStack.h"
 #include "TPDGCode.h"
-
 #include "AliAnalysisTaskHypTritEventTree.h"
 #include "AliReducedHypTritEvent.h"
 
@@ -38,111 +33,89 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskHypTritEventTree)
 
-
 // Default Constructor
 AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
-    : AliAnalysisTaskSE("AliAnalysisTaskHypTritEventTree"),
-    fEvent(0),
-    fInputHandler(0),
-    fTrackCutsV0(0),
-    fPID(0),
-    fMCtrue(0),
-    fHistdEdx(0),
-    fHistdEdxDeuteron(0),
-    fHistdEdxTriton(0),
-    fHistdEdxHelium3(0),
-    fHistdEdxHypTriton(0),
-    fHistdEdxHypTritonAnti(0),
-    fHistInvMassHypTriton(0),
-    fHistInvMassHypTritonMC(0),
-    fHistInvMassHypTritonMCAssoc(0),
-    fHistPtHypTriton(0),
-    fHistPtHypTritonMC(0),
-    fHistctHypTritonMC(0),
-    fHistCentrality(0),
-    fHistTrigger(0),
-    fHistPtHypTritonMCAssoc(0),
-    fHistdEdxHelium3NSigma(0),
-    fTree(0),
-    fTreeMCGen(0),
-    fReducedEvent(0),
-    fReducedEventMCGen(0),
-    fPosVx(0),
-    fPosVy(0),
-    fPosVz(0),
-    fMCGenRec(),
-    fMCGenRecArray(),
-    fOutputContainer(NULL) {
+  :AliAnalysisTaskSE("AliAnalysisTaskHypTritEventTree"),
+  fEvent(0),
+  fInputHandler(0),
+  fTrackCutsV0(0),
+  fPID(0),
+  fMCtrue(0),
+  fHistdEdx(0),
+  fHistdEdxDeuteron(0),
+  fHistdEdxTriton(0),
+  fHistdEdxHelium3(0),
+  fHistdEdxHypTriton(0),
+  fHistdEdxHypTritonAnti(0),
+  fHistInvMassHypTriton(0),
+  fHistCentrality(0),
+  fHistTrigger(0),
+  fHistNumEvents(0),
+  fTree(0),
+  fTreeMCGen(0),
+  fReducedEvent(0),
+  fReducedEventMCGen(0),
+  fPosVx(0),
+  fPosVy(0),
+  fPosVz(0),
+  fMCGenRec(),
+  fMCGenRecArray(),
+  fHistogramList(NULL) {
 }
 
 // Constructor
 AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *name)
-    : AliAnalysisTaskSE(name),
-    fEvent(0),
-    fInputHandler(0),
-    fTrackCutsV0(0),
-    fPID(0),
-    fMCtrue(0),
-    fHistdEdx(0),
-    fHistdEdxDeuteron(0),
-    fHistdEdxTriton(0),
-    fHistdEdxHelium3(0),
-    fHistdEdxHypTriton(0),
-    fHistdEdxHypTritonAnti(0),
-    fHistInvMassHypTriton(0),
-    fHistInvMassHypTritonMC(0),
-    fHistInvMassHypTritonMCAssoc(0),
-    fHistPtHypTriton(0),
-    fHistPtHypTritonMC(0),
-    fHistctHypTritonMC(0),
-    fHistCentrality(0),
-    fHistTrigger(0),
-    fHistPtHypTritonMCAssoc(0),
-    fHistdEdxHelium3NSigma(0),
-    fTree(0),
-    fTreeMCGen(0),
-    fReducedEvent(0),
-    fReducedEventMCGen(0),
-    fPosVx(0),
-    fPosVy(0),
-    fPosVz(0),
-    fMCGenRec(),
-    fMCGenRecArray(),
-    fOutputContainer(NULL) {
+  :AliAnalysisTaskSE(name),
+  fEvent(0),
+  fInputHandler(0),
+  fTrackCutsV0(0),
+  fPID(0),
+  fMCtrue(0),
+  fHistdEdx(0),
+  fHistdEdxDeuteron(0),
+  fHistdEdxTriton(0),
+  fHistdEdxHelium3(0),
+  fHistdEdxHypTriton(0),
+  fHistdEdxHypTritonAnti(0),
+  fHistInvMassHypTriton(0),
+  fHistCentrality(0),
+  fHistTrigger(0),
+  fHistNumEvents(0),
+  fTree(0),
+  fTreeMCGen(0),
+  fReducedEvent(0),
+  fReducedEventMCGen(0),
+  fPosVx(0),
+  fPosVy(0),
+  fPosVz(0),
+  fMCGenRec(),
+  fMCGenRecArray(),
+  fHistogramList(NULL) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
   DefineOutput(3, TTree::Class());
-
-  // Define ESDTrack cuts for V0s
   fTrackCutsV0 = new AliESDtrackCuts("AlitrackCutsV0", "AlitrackCutsV0");
   fTrackCutsV0->SetEtaRange(-0.9,0.9);
   fTrackCutsV0->SetAcceptKinkDaughters(kFALSE);
   fTrackCutsV0->SetRequireTPCRefit(kTRUE);
   fTrackCutsV0->SetMaxChi2PerClusterTPC(5);
   fTrackCutsV0->SetMinNClustersTPC(60);
-
   fMCtrue = kTRUE;
-
   for (int i = 0; i < 40; i++) {
     fMCGenRec[i] = 0;
   }
-
-  }
+}
 
 // Destructor
 AliAnalysisTaskHypTritEventTree::~AliAnalysisTaskHypTritEventTree() {
-
   if (fTrackCutsV0) delete fTrackCutsV0;
-
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Creates histograms and output containers. Called once before main loop. //
 /////////////////////////////////////////////////////////////////////////////
 void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
-
-  // Creates inputhandler and PID before eventloop.
   fInputHandler = dynamic_cast<AliESDInputHandler*>
     (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if(!fInputHandler) {
@@ -154,92 +127,38 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
     AliError("Could not get PID response.\n");
     return;
   }
-  // Define Histograms
-  fHistdEdx = new TH2F("fHistdEdX", "dE/dx", 400, -4.0, 4.0, 500, 0.0, 1500);
-  fHistdEdx->GetYaxis()->SetTitle("TPC Signal (a.u.)");
-  fHistdEdx->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-  fHistdEdxDeuteron = new TH2F("fHistdEdXDeutron", "dE/dx Deuterons",
-                               400, -4.0, 4.0, 500, 0.0, 1500);
-  fHistdEdxDeuteron->GetYaxis()->SetTitle("TPC Signal (a.u.)");
-  fHistdEdxDeuteron->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-  fHistdEdxTriton = new TH2F("fHistdEdXTriton", "dE/dx Triton",
-                             400, -4.0, 4.0, 500, 0.0, 1500);
-  fHistdEdxTriton->GetYaxis()->SetTitle("TPC Signal (a.u.)");
-  fHistdEdxTriton->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-  fHistdEdxHelium3 = new TH2F("fHistdEdXHelium3", "dE/dx Helium3",
-                              400, -4.0, 4.0, 500, 0.0, 1500);
-  fHistdEdxHelium3->GetYaxis()->SetTitle("TPC Signal (a.u.)");
-  fHistdEdxHelium3->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-  fHistdEdxHypTriton = new TH2F("fHistdEdXHypTriton", "dE/dx HypTriton Daughters",
-                                400, -4.0, 4.0, 500, 0.0, 1500);
-  fHistdEdxHypTriton->GetYaxis()->SetTitle("TPC Signal (a.u.)");
-  fHistdEdxHypTriton->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-  fHistdEdxHypTritonAnti = new TH2F("fHistdEdXHypTritonAnti",
-                                    "dE/dx HypTriton Daughters", 400, -4.0, 4.0,
-                                    500, 0.0, 1500);
-  fHistdEdxHypTritonAnti->GetYaxis()->SetTitle("TPC Signal (a.u.)");
-  fHistdEdxHypTritonAnti->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-  fHistInvMassHypTriton = new TH1F("fHistInvMassHypTriton", "Inv. Mass",
-                                   100, 2.9, 3.1);
-  fHistInvMassHypTriton->GetXaxis()->SetTitle("Invariant Mass (GeV/#it{c}^{2})");
-  fHistInvMassHypTritonMC = new TH1F("fHistInvMassHypTritonMCGen",
-                                     "Inv. Mass MC Generated", 100, 2.9, 3.1);
-  fHistInvMassHypTritonMC->GetXaxis()->SetTitle("Invariant Mass (GeV/#it{c}^{2})");
-  fHistPtHypTriton = new TH1F("fHistPtHypTriton", "p_{#it{T}}", 100, 0, 20);
-  fHistPtHypTriton->GetXaxis()->SetTitle("transverse Momentum (GeV/#it{c})");
-  fHistPtHypTritonMC = new TH1F("fHistPtHypTritonMCGen", "p_{#it{T}} MC Generated",
-                                100, 0, 20);
-
-  fHistctHypTritonMC = new TH1F("fHistctHypTritonMCGen", "c#tau MC Generated",
-                                100, 0, 40);
-  fHistPtHypTritonMC->GetXaxis()->SetTitle("transverse Momentum (GeV/#it{c})");
-  fHistInvMassHypTritonMCAssoc = new TH1F("fHistInvMassHypTritonMCAssoc",
-                                          "p_{#it{T}} MC associated",
-                                          100, 2.9, 3.1);
-  fHistInvMassHypTritonMCAssoc->GetXaxis()->SetTitle("m_{inv} (GeV/#it{c}^{2})");
-  fHistCentrality = new TH1F("fHistCentrality", "Centrality; Centrality; Counts",
-                             101, -1, 100);
-  fHistTrigger = new TH1F("fHistTrigger", "fired Triggers; Trigger; number of Events",
-                          3, 0, 3);
-  fHistPtHypTritonMCAssoc = new TH1F("fHistPtHypTritonMCAssoc", "pt associated ; p_{#it{T}}; Counts",
-                          100, 0, 20);
-  fHistdEdxHelium3NSigma = new TH2F("fHistdEdxHelium3NSigma", "dE/dx Helium3",
-                              400, -4.0, 4.0, 500, -3, 3);
-  fHistdEdxHelium3NSigma->GetYaxis()->SetTitle("TPC Signal NSigma");
-  fHistdEdxHelium3NSigma->GetXaxis()->SetTitle("#frac{#it{p}}{z} (GeV/#it{c})");
-
-  // fTreeMCGen = new TTree("mcTree","fTreeMCGen");
-  // Creates output v0 tree.
-  fTree = new TTree("tree", "fTree");
+  fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistdEdxDeuteron = new TH2F("fHistdEdXDeutron","dE/dx Deuterons;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistdEdxTriton = new TH2F("fHistdEdXTriton","dE/dx Triton;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistdEdxHelium3 = new TH2F("fHistdEdXHelium3","dE/dx Helium3;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistdEdxHypTriton = new TH2F("fHistdEdXHypTriton","dE/dx HypTriton Daughters;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistdEdxHypTritonAnti = new TH2F("fHistdEdXHypTritonAnti","dE/dx HypTriton Daughters;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistInvMassHypTriton = new TH1F("fHistInvMassHypTriton","Inv. Mass;Invariant Mass (GeV/#it{c}^{2})",100,2.9,3.1);
+  fHistCentrality = new TH1F("fHistCentrality","Centrality; Centrality; Counts",101,-1,100);
+  fHistTrigger = new TH1F("fHistTrigger","fired Triggers; Trigger; number of Events",3,0,3);
+  fHistNumEvents = new TH1F("fHistNumEvents","Number of Events",2,0,2);
+  fHistNumEvents->GetXaxis()->SetBinLabel(1,"before PhysSel");
+  fHistNumEvents->GetXaxis()->SetBinLabel(2,"after PhysSel");
+  fHistogramList = new TList();
+  fHistogramList->SetOwner(kTRUE);
+  fHistogramList->SetName(GetName());
+  fHistogramList->Add(fHistdEdx);
+  fHistogramList->Add(fHistdEdxDeuteron);
+  fHistogramList->Add(fHistdEdxTriton);
+  fHistogramList->Add(fHistdEdxHelium3);
+  fHistogramList->Add(fHistdEdxHypTriton);
+  fHistogramList->Add(fHistdEdxHypTritonAnti);
+  fHistogramList->Add(fHistInvMassHypTriton);
+  fHistogramList->Add(fHistCentrality);
+  fHistogramList->Add(fHistTrigger);
+  fHistogramList->Add(fHistNumEvents);
+  fTree = new TTree("tree","fTree");
   fReducedEvent = new AliReducedHypTritEvent();
-  fTree->Branch("event", "AliReducedHypTritEvent",&fReducedEvent, 32000, 99);
-
-  fTreeMCGen = new TTree("tree_mc_gen", "fTreeMCGen");
+  fTree->Branch("event","AliReducedHypTritEvent",&fReducedEvent,32000,99);
+  fTreeMCGen = new TTree("tree_mc", "fTreeMCGen");
   fReducedEventMCGen = new AliReducedHypTritEvent();
-  fTreeMCGen->Branch("event", "AliReducedHypTritEvent",&fReducedEventMCGen, 32000, 99);
-
-  // Adds histograms to outputcontainer.
-  fOutputContainer = new TList();
-  fOutputContainer->SetOwner(kTRUE);
-  fOutputContainer->SetName(GetName());
-  fOutputContainer->Add(fHistdEdx);
-  fOutputContainer->Add(fHistdEdxDeuteron);
-  fOutputContainer->Add(fHistdEdxTriton);
-  fOutputContainer->Add(fHistdEdxHelium3);
-  fOutputContainer->Add(fHistdEdxHypTriton);
-  fOutputContainer->Add(fHistdEdxHypTritonAnti);
-  fOutputContainer->Add(fHistInvMassHypTriton);
-  fOutputContainer->Add(fHistInvMassHypTritonMC);
-  fOutputContainer->Add(fHistInvMassHypTritonMCAssoc);
-  fOutputContainer->Add(fHistPtHypTriton);
-  fOutputContainer->Add(fHistPtHypTritonMC);
-  fOutputContainer->Add(fHistctHypTritonMC);
-  fOutputContainer->Add(fHistCentrality);
-  fOutputContainer->Add(fHistTrigger);
-  fOutputContainer->Add(fHistPtHypTritonMCAssoc);
-  fOutputContainer->Add(fHistdEdxHelium3NSigma);
-
-  PostData(1, fOutputContainer);
+  fTreeMCGen->Branch("event","AliReducedHypTritEvent",&fReducedEventMCGen,32000,99);
+  PostData(1, fHistogramList);
   PostData(2, fTree);
   PostData(3, fTreeMCGen);
 }
@@ -249,8 +168,6 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
 ///////////////////////////////////////////////////
 void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   // MC
-  // 1. Initialization
-  // Creates MonteCarloHandler and checks for MC truth.
   AliMCEventHandler *mcEventHandler = dynamic_cast<AliMCEventHandler*>
       (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!mcEventHandler) {
@@ -262,15 +179,11 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   if (!mcEvent) {
     if (fMCtrue) return;
   }
-
-  // 2. Analysis MC stack loop.
     if (fMCtrue) {
     stack = mcEvent->Stack();
     if (!stack) return;
   }
-
   // Data
-  // 1. Initialization
   fEvent = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fEvent) {
     AliError("Could not get ESD Event.\n");
@@ -280,33 +193,24 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     AliError("Could not get PID response.\n");
     return;
   }
-
   for (int i = 0; i < 40; i++) {
     fMCGenRec[i] = -1;
   }
-
-  // physics selection and primary vertex < 10 cm cut.
+  fHistNumEvents->Fill(0);
+  // Physics selection and primary vertex < 10 cm cut.
   const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
     if (vertex->GetNContributors() < 1) {
       vertex = fEvent->GetPrimaryVertexSPD();
       if (vertex->GetNContributors() < 1) {
-        PostData(1,fOutputContainer);
+        PostData(1,fHistogramList);
         return;
       }
     }
-
-  // Z Vertex Cut
   if (TMath::Abs(vertex->GetZ()) > 10) {
-    PostData(1, fOutputContainer);
+    PostData(1, fHistogramList);
     return;
   }
-
   TriggerSelection();
-
-  // old Centrality selection
-  // Float_t centrality = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
-
-  // new centrality selection
   AliMultSelection *multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
   Float_t centrality = -1;
   if ( multSelection ){
@@ -314,28 +218,26 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   }else{
     AliInfo("Didn't find MultSelection.");
   }
-
   Int_t runNumber = fEvent->GetRunNumber();
-
-  fHistCentrality->Fill(centrality);
   if(!fMCtrue){
-    if (centrality < 0. || centrality > 80. ) {
+    if (centrality < 0.0 || centrality > 100.0 ) {
       return;
     }
   }
-
-  // Fills event information into the tree.
-  Double_t magneticField=fEvent->GetMagneticField();
-  Double_t xPrimaryVertex=vertex->GetX();
-  Double_t yPrimaryVertex=vertex->GetY();
-  Double_t zPrimaryVertex=vertex->GetZ();
+  fHistNumEvents->Fill(1);
+  fHistCentrality->Fill(centrality);
+  fReducedEvent->fCentrality = centrality;
+  Double_t magneticField  = fEvent->GetMagneticField();
+  Double_t xPrimaryVertex = vertex->GetX();
+  Double_t yPrimaryVertex = vertex->GetY();
+  Double_t zPrimaryVertex = vertex->GetZ();
   TVector3 primaryVertex(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+  fReducedEvent->fVertexPosition = primaryVertex;
+  fReducedEvent->fRunNumber = runNumber;
   Int_t mcGenRecCounter = 0;
   TClonesArray *v0Array = (TClonesArray*) fReducedEvent->fV0s;
   Int_t nV0Cand = 0;
   fMCGenRecArray = new TObjArray();
-
-  // 2. Analysis
   // Loops over V0s.
   for (Int_t ivertex = 0; ivertex < fEvent->GetNumberOfV0s(); ivertex++) {
     AliESDv0 *v0 = fEvent->GetV0(ivertex);
@@ -354,16 +256,12 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       trackP = fEvent->GetTrack(v0->GetIndex(0));
       v0ChargeCorrect = kFALSE;
     }
-    // Checks if both tracks pass V0 trackcuts.
     if (!fTrackCutsV0->AcceptTrack(trackN)) continue;
     if (!fTrackCutsV0->AcceptTrack(trackP)) continue;
-    //Momentum of negative and positive tracks.
     Double_t momentumN = trackN->GetInnerParam()->GetP();
     Double_t momentumP = trackP->GetInnerParam()->GetP();
-    // Fills dEdx for all Particles.
     fHistdEdx->Fill(momentumP*trackP->GetSign(), trackP->GetTPCsignal());
     fHistdEdx->Fill(momentumN*trackN->GetSign(), trackN->GetTPCsignal());
-
     // Identifies particle of trackN and trackP using specific energyloss in TPC.
     // Distinguishes charge of particle.
     Bool_t pionPositive     = kFALSE;
@@ -376,10 +274,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     Bool_t tritonNegative   = kFALSE;
     Bool_t helium3Positive  = kFALSE;
     Bool_t helium3Negative  = kFALSE;
-
     Double_t piondedxsigma = -1;
     Double_t hededxsigma = -1;
-
     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kPion)) < 3
         && trackP->GetSign() > 0) {
       pionPositive = kTRUE;
@@ -430,10 +326,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
        fHistdEdxHelium3->Fill(momentumP*trackP->GetSign(), trackP->GetTPCsignal());
        hededxsigma = TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kHe3));
      }
-
     // Checks if Charge of V0 was assigned correctly and sets the momenta of
     // daughter particles. Factor 2 because momentum * charge is measured.
-    //
     TVector3       momentumVector(0,0,0);
     TLorentzVector momentumPion(0,0,0,0);
     TLorentzVector momentumNucleon(0,0,0,0);
@@ -442,27 +336,26 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       v0->GetPPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
       momentumPion.SetVect(momentumVector);
       v0->GetNPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
-      momentumNucleon.SetVect(2* momentumVector);
+      momentumNucleon.SetVect(2*momentumVector);
       if (!v0ChargeCorrect) {
         v0->GetNPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
         momentumPion.SetVect(momentumVector);
         v0->GetPPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
-        momentumNucleon.SetVect(2* momentumVector);
+        momentumNucleon.SetVect(2*momentumVector);
       }
     }
     if (helium3Positive) {
       v0->GetNPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
-      momentumPion.SetVect( momentumVector);
+      momentumPion.SetVect(momentumVector);
       v0->GetPPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
-      momentumNucleon.SetVect(2* momentumVector);
+      momentumNucleon.SetVect(2*momentumVector);
       if (!v0ChargeCorrect) {
         v0->GetPPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
         momentumPion.SetVect(momentumVector);
         v0->GetNPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
-        momentumNucleon.SetVect(2* momentumVector);
+        momentumNucleon.SetVect(2*momentumVector);
       }
     }
-
     // Calculates invariant Mass and momentum of (Anti-)HyperTriton using
     // TLorentzVectors. Fills information into histograms and tree.
     if ((helium3Negative && pionPositive) || (helium3Positive && pionNegative)) {
@@ -474,21 +367,17 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       Double_t hypTritPt      = (momentumNucleon + momentumPion).Pt();
       Double_t hypTritP       = (momentumNucleon + momentumPion).P();
       Double_t rapidity       = (momentumNucleon + momentumPion).Rapidity();
-      //if (hypTritInvMass > 3.1) continue;
       AliReducedHypTritV0 *reducedV0 = (AliReducedHypTritV0*)v0Array->ConstructedAt(nV0Cand);
       nV0Cand = nV0Cand + 1;
       AliReducedHypTritTrack *reducedPi = reducedV0->Pi();
       AliReducedHypTritTrack *reducedHe = reducedV0->He();
       TVector3 secondaryVertex(v0->Xv(), v0->Yv(), v0->Zv());
-      Int_t associated = 0;
+      Int_t mctruth = 0;
       reducedV0->fCharge = 1;
       if (helium3Negative) reducedV0->fCharge = -1;
       reducedHe->fP = momentumNucleon;
       reducedPi->fP = momentumPion;
       reducedV0->fPosition = secondaryVertex;
-      fReducedEvent->fVertexPosition = primaryVertex;
-      fReducedEvent->fRunNumber = runNumber;
-      fReducedEvent->fCentrality = centrality;
       reducedPi->fDedxSigma = piondedxsigma;
       reducedHe->fDedxSigma = hededxsigma;
       if (helium3Negative) {
@@ -521,39 +410,28 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       secondaryVertex = secondaryVertex - primaryVertex;
       Double_t decayLength = secondaryVertex.Mag() * hypTritInvMass / hypTritP;
       reducedV0->fDecayLength = decayLength;
-      reducedV0->fMCTruth = associated;
+      reducedV0->fMCTruth = mctruth;
       reducedV0->fRapidity = rapidity;
-
       fHistInvMassHypTriton->Fill(hypTritInvMass);
-      fHistPtHypTriton->Fill(hypTritPt);
-
-      //Looks at MC truth information to identify mother when using MC.
       if (fMCtrue) {
         Int_t labelP = trackP->GetLabel();
         Int_t labelN = trackN->GetLabel();
         TParticle *daughterParticleP = stack->Particle(TMath::Abs(labelP));
         TParticle *daughterParticleN = stack->Particle(TMath::Abs(labelN));
-        TParticle *particleMotherP = stack->Particle(TMath::Abs(
-            daughterParticleP->GetFirstMother()));
-        TParticle *particleMotherN = stack->Particle(TMath::Abs(
-            daughterParticleN->GetFirstMother()));
+        TParticle *particleMotherP = stack->Particle(TMath::Abs(daughterParticleP->GetFirstMother()));
+        TParticle *particleMotherN = stack->Particle(TMath::Abs(daughterParticleN->GetFirstMother()));
         Int_t labelMotherP = daughterParticleP->GetFirstMother();
         Int_t labelMotherN = daughterParticleN->GetFirstMother();
-        if (((particleMotherN->GetPdgCode() == 1010010030 &&
-             particleMotherP->GetPdgCode() == 1010010030) ||
-            (particleMotherN->GetPdgCode() == -1010010030 &&
-             particleMotherP->GetPdgCode() == -1010010030)) &&
+        if (((particleMotherN->GetPdgCode() == 1010010030 && particleMotherP->GetPdgCode() == 1010010030)   ||
+            (particleMotherN->GetPdgCode() == -1010010030 && particleMotherP->GetPdgCode() == -1010010030)) &&
             (labelMotherN == labelMotherP)) {
-          associated = 1;
-          reducedV0->fMCTruth = associated;
+          mctruth = 1;
+          reducedV0->fMCTruth = mctruth;
           fMCGenRecArray->AddAtAndExpand(reducedV0, mcGenRecCounter);
           fMCGenRec[mcGenRecCounter] = (Double_t) labelMotherP;
           mcGenRecCounter++;
-          fHistInvMassHypTritonMCAssoc->Fill(hypTritInvMass);
-          fHistPtHypTritonMCAssoc->Fill(hypTritPt);
         }
       }
-
       if (helium3Positive && pionNegative) {
         fHistdEdxHypTriton->Fill(momentumP*trackP->GetSign(), trackP->GetTPCsignal());
         fHistdEdxHypTriton->Fill(momentumN*trackN->GetSign(), trackN->GetTPCsignal());
@@ -574,15 +452,17 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     fPosVz = mcVertex->GetZ();
     MCStackLoop(stack);
   }
-  PostData(1, fOutputContainer);
+  PostData(1, fHistogramList);
   PostData(2, fTree);
   PostData(3, fTreeMCGen);
 }
-
-// Called once at the end of the query.
+//////////////////////////////////////////
+// Called once at the end of the query. //
+//////////////////////////////////////////
 void AliAnalysisTaskHypTritEventTree::Terminate(const Option_t*) {
   if (!GetOutputData(0)) return;
 }
+
 //////////////////////////////////////////////////////////////////////////////
 // Loops over MC stack to find Hypertritons and Antihypertritons and fills  //
 // them in the histograms for MC generated particles.                       //
@@ -598,10 +478,8 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
       TLorentzVector momentumDaughter2;
       Int_t labelSecondDaughter = tparticleMother->GetDaughter(1);
       Int_t labelFirstDaughter  = labelSecondDaughter - 1;
-      TParticle *daughterparticle1 = stack->
-          Particle(TMath::Abs(labelFirstDaughter));
-      TParticle *daughterparticle2 = stack->
-          Particle(TMath::Abs(labelSecondDaughter));
+      TParticle *daughterparticle1 = stack->Particle(TMath::Abs(labelFirstDaughter));
+      TParticle *daughterparticle2 = stack->Particle(TMath::Abs(labelSecondDaughter));
       if ((daughterparticle1->GetPdgCode() == 1000020030  /*Helium3*/     &&
           daughterparticle2->GetPdgCode() == -211)        /*PionMinus*/   ||
           (daughterparticle1->GetPdgCode() == -1000020030 /*AntiHelium3*/ &&
@@ -613,8 +491,6 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
         AliReducedHypTritV0 *reducedV0 = (AliReducedHypTritV0*)v0Array->ConstructedAt(nV0Gen);
         AliReducedHypTritTrack *reducedPi = reducedV0->Pi();
         AliReducedHypTritTrack *reducedHe = reducedV0->He();
-        fHistInvMassHypTritonMC->Fill((momentumDaughter1 + momentumDaughter2).M());
-        fHistPtHypTritonMC->Fill((momentumDaughter1 + momentumDaughter2).Pt());
         Double_t posx = daughterparticle1->Vx();
         Double_t posy = daughterparticle1->Vy();
         Double_t posz = daughterparticle1->Vz();
@@ -626,7 +502,6 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
         reducedV0->fP = tparticleMother->P();
         reducedV0->fPt = tparticleMother->Pt();
         reducedV0->fDecayLength = distance * tparticleMother->GetCalcMass() / tparticleMother->P();
-        fHistctHypTritonMC->Fill(tparticleMother->GetCalcMass() * distance / tparticleMother->P());
         reducedV0->fMCTruth = 0;
         for(Int_t ii = 0; ii < 40; ii++) {
           if (fMCGenRec[ii] == istack) {
@@ -651,7 +526,6 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
         }
       }
     }
-  // cout << "no crash" << endl;
   fReducedEventMCGen->fNumberV0s = nV0Gen;
   fTreeMCGen->Fill();
   fReducedEventMCGen->ClearEvent();
@@ -666,9 +540,7 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
   if ((fInputHandler->IsEventSelected() & AliVEvent::kMB)) fReducedEvent->fTrigger = 1;
   if ((fInputHandler->IsEventSelected() & AliVEvent::kCentral)) fReducedEvent->fTrigger = 2;
   if ((fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fReducedEvent->fTrigger =  3;
-
   Bool_t isTriggered = kTRUE;
   if (fReducedEvent->fTrigger == 0) isTriggered = kFALSE;
-
   return isTriggered;
 }

@@ -1,5 +1,5 @@
 /**
- * @file   Config.C
+ * @file   PWGLF/FORWARD/analysis2/sim/Config.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Oct 15 13:03:28 2014
  * 

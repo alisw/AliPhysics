@@ -153,19 +153,19 @@ parts of the simulation.
     
     Options:
     	-h,--help		     This help
-    	-t|--tag     TAG	 Job tag (pp)
-    	-i|--id      NAME	 Name of production 
-    	-R|--run     RUN_NO  Run number 
-    	-c|--copy		     Copy files to AliEn
-    	-n|--jobs    JOBS	 Set number of jobs[**] (2)
-    	-m|--events  EVENTS	 Set events/job[**] (1)
-    	-s|--stage   STAGE	 Set the stage[***] (0)
-    	-o|--output  DIR	 Set base output directory[*] ($ALIEN_HOME/test)
-    	-d|--data    DIR     Set data directory ($ALIEN_HOME/mc)
-    	-b|--bin     DIR	 Set base bin directory[*] ($ALIEN_HOME/bin)
-    	-a|--aliroot RELEASE Set AliROOT release [*] (v5-04-Rev-20)
-    	-r|--root    RELEASE Set ROOT release [*] ()
-    	-g|--geant   RELEASE Set GEANT3 release [*] ()
+    	-t,--tag     TAG	 Job tag (pp)
+    	-i,--id      NAME	 Name of production 
+    	-R,--run     RUN_NO  Run number 
+    	-c,--copy		     Copy files to AliEn
+    	-n,--jobs    JOBS	 Set number of jobs[**] (2)
+    	-m,--events  EVENTS	 Set events/job[**] (1)
+    	-s,--stage   STAGE	 Set the stage[***] (0)
+    	-o,--output  DIR	 Set base output directory[*] ($ALIEN_HOME/test)
+    	-d,--data    DIR     Set data directory ($ALIEN_HOME/mc)
+    	-b,--bin     DIR	 Set base bin directory[*] ($ALIEN_HOME/bin)
+    	-a,--aliroot RELEASE Set AliROOT release [*] (v5-04-Rev-20)
+    	-r,--root    RELEASE Set ROOT release [*] ()
+    	-g,--geant   RELEASE Set GEANT3 release [*] ()
     
     [*] Only make sense with option -c 
     [**] Only make sense for stage 0

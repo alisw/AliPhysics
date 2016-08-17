@@ -174,7 +174,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fkGenJetType(0),
   fTracksInJetMethod(0),
   fFFBckgMode(0),
-  fFFJtValue(1),
+  fFFJtValue(0),
   fFFMNMin(-0.75),
   fFFMNMax(6.0),
   fFFMMomMax(28),
@@ -368,7 +368,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fkGenJetType(0),
   fTracksInJetMethod(0),
   fFFBckgMode(0),
-  fFFJtValue(1),
+  fFFJtValue(0),
   fFFMNMin(-0.75),
   fFFMNMax(6.0),
   fFFMMomMax(28),
@@ -3185,7 +3185,7 @@ Bool_t AliAnalysisTaskJetFFMoments::IsOutlier(AliGenPythiaEventHeader * const he
        fh2PtHardVsPt[0]->Fill(header->GetPtHard(),jetvec.Pt());
        if(TMath::Abs(jetvec.Pt()) >= fPtHardAndPythiaJetPtFactor * header->GetPtHard()){
        fh2PtHardVsPtCut[0]->Fill(header->GetPtHard(),jetvec.Pt());
-        if(fDebug)  AliInfo(Form("Reject : pythia jet %2.2f, factor %2.2f, ptHard %f", jetvec.Pt(), fPtHardAndTrackPtFactor, header->GetPtHard()));
+        if(fDebug)  Printf("Reject : pythia jet %2.2f, factor %2.2f, ptHard %f", jetvec.Pt(), fPtHardAndPythiaJetPtFactor, header->GetPtHard());
         hasOutlier = true;
         break;
       }
@@ -3211,18 +3211,18 @@ Bool_t AliAnalysisTaskJetFFMoments::IsOutlier(AliGenPythiaEventHeader * const he
        part =  dynamic_cast<AliVParticle*> (tca->At(it));
        } else {
        part =  dynamic_cast<AliVParticle*> (MCEvent()->GetTrack(it));
+       }
        Float_t trackpt = part->Pt();
 
        fh2PtHardVsPt[1]->Fill(header->GetPtHard(),trackpt);
        if (TMath::Abs(trackpt) >= (fPtHardAndTrackPtFactor * header->GetPtHard())) {
         fh2PtHardVsPtCut[1]->Fill(header->GetPtHard(),trackpt);
-        if(fDebug) AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, header->GetPtHard()));
+        if(fDebug) Printf("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, header->GetPtHard());
         hasOutlier = true;
         break;
         }
       }
      }
-   }
      return hasOutlier;
 }
 

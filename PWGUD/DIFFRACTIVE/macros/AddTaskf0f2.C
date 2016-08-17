@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskf0f2(TString taskName, Bool_t isAOD){
+AliAnalysisTask *AddTaskf0f2(TString taskName, Bool_t isAOD, UInt_t filterbit){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 
@@ -15,8 +15,9 @@ AliAnalysisTask *AddTaskf0f2(TString taskName, Bool_t isAOD){
         //taskCentrality->SetPass(2);
     }
 
-	AliAnalysisTask *task = new AliAnalysisTaskf0f2(taskName.Data(),taskName.Data());
-	mgr->AddTask(task);
+	AliAnalysisTaskf0f2 *task = new AliAnalysisTaskf0f2(taskName.Data(),taskName.Data());
+    task->SetFilterBit(filterbit);
+	mgr->AddTask((AliAnalysisTask*)task);
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
