@@ -53,7 +53,7 @@ AliJEbePercentile::AliJEbePercentile(AliJCard *fcard, TString input):
 				found[ibv] = 0;
 			}
 			sum = 0;
-			entr = vnobs[ic][ih]->GetEntries();
+			entr = vnobs[ic][ih]->Integral();
 			//cout << "Centrality " << ic << " of " << NC ;
 			//cout << " Harmonic " << ih << " of " << NH << endl;
 			for(int ib = 1; ib < vnobs[ic][ih]->GetNbinsX() +1 ; ib++){
