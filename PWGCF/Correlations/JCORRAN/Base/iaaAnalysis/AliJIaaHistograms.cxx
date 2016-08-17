@@ -206,7 +206,7 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 
 //<< TH2D( "hDphiDetaPta", "", 100*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -9./20, 31./20.)
   fhDphiDetaPta
-	  << TH2D( "hDphiDetaPta", "", 20*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 72, -9./20, 31./20.)
+	  << TH2D( "hDphiDetaPta", "", 40*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 72, -9./20, 31./20.)
 	  <<  fTypBin <<  fCentBin << fPTtBin << fPTaBin  << "END";
 
 //  fhDphiDetaPtaRgap
