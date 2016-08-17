@@ -928,7 +928,6 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
   //process passed options
   Int_t nOptions=0;
   aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
-  bool reconfigureZMQ = false;
   for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     const TString& option = i->first;
