@@ -44,16 +44,15 @@ AliAnalysisTaskMLTreeMaker *taskESD = new AliAnalysisTaskMLTreeMaker(taskname);
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
 
   
- AliAnalysisDataContainer *coutESD = mgr->CreateContainer("",  TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
- AliAnalysisDataContainer *coutESD1 = mgr->CreateContainer("QAHist",  TH1::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
- mgr->ConnectInput(taskESD,  0,  mgr->GetCommonInputContainer());
- mgr->ConnectOutput(taskESD,  1,  coutESD);
- mgr->ConnectOutput(taskESD,  2,  coutESD1);
+// AliAnalysisDataContainer *coutESD = mgr->CreateContainer("",  TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
+// AliAnalysisDataContainer *coutESD1 = mgr->CreateContainer("QAHist",  TH1::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
+// mgr->ConnectInput(taskESD,  0,  mgr->GetCommonInputContainer());
+// mgr->ConnectOutput(taskESD,  1,  coutESD);
+// mgr->ConnectOutput(taskESD,  2,  coutESD1);
  
- 
-//  AliAnalysisDataContainer *coutESD = mgr->CreateContainer("output", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-//  mgr->ConnectInput(taskESD, 0, mgr->GetCommonInputContainer());
-//  mgr->ConnectOutput(taskESD, 1, coutESD);
+  AliAnalysisDataContainer *coutESD = mgr->CreateContainer("output", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  mgr->ConnectInput(taskESD, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskESD, 1, coutESD);
  
  return taskESD;
  }
