@@ -124,7 +124,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int minPlpContribSPD = atoi(parameter[3]); //3
 	int multbino = atoi(parameter[4]); //30
 	int zvertbino = atoi(parameter[5]); //10
-	Bool_t ifGlobalTracks=kFALSE; if(atoi(parameter[6]))ifGlobalTracks=kTRUE;//kTRUE 
+	int ifGlobalTracks = atoi(parameter[6]); //0 - off, 1 - on, 2 - PropagateToDCA 
 	double shareQuality = atof(parameter[7]); //0.00
 	double shareFraction = atof(parameter[8]); //0.05
 	bool ifElectronRejection = atoi(parameter[9]); //true
@@ -166,7 +166,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int gammacut = 1;	// cut na ee z gamma 
 	
-	double shqmax = 1.0; 
+	double shqmax = 1.0;
 	int nbinssh = 100;
 
 	//AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
