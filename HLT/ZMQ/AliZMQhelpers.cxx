@@ -36,6 +36,8 @@
 
 using namespace AliZMQhelpers;
 
+using namespace AliZMQhelpers;
+
 //init the shared context to null
 void* AliZMQhelpers::gZMQcontext = NULL;
 

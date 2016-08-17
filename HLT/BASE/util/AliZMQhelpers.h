@@ -4,16 +4,17 @@
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 // some of it might be inspired by czmq.h
 
-namespace AliZMQhelpers {
-  extern void* gZMQcontext; //a global ZMQ context
-}
-
 #include <string>
 #include <map>
 #include "TString.h"
 struct zmq_msg_t;
 struct AliHLTDataTopic;
 class TVirtualStreamerInfo;
+
+namespace AliZMQhelpers
+{
+
+extern void* gZMQcontext; //a global ZMQ context
 
 //convenience typedefs:
 //define a map of strings
@@ -114,4 +115,7 @@ std::string GetParamString(const std::string param, const std::string paramstrin
 
 //load ROOT libraries specified in comma separated string
 int LoadROOTlibs(std::string libstring, bool verbose=false);
+
+}  //end namespace AliZMQhelpers
+
 #endif

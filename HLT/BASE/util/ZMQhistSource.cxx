@@ -30,6 +30,8 @@
 
 using namespace AliZMQhelpers;
 
+using namespace AliZMQhelpers;
+
 void* fZMQout = NULL;
 void* fZMQcontext = NULL;
 TString fZMQconfigOUT = "PUSH>tcp://localhost:60210";

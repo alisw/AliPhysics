@@ -19,6 +19,8 @@
 
 using namespace AliZMQhelpers;
 
+using namespace AliZMQhelpers;
+
 class AliHLTZMQsink : public AliHLTComponent, public AliOptionParser {
 public:
 
