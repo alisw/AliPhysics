@@ -1528,8 +1528,8 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   }
   else if(fDCAglobalTrack==2)
     {
-      Double_t DCAXY;
-      Double_t DCAZ;
+      Double_t DCAXY = -999;
+      Double_t DCAZ = -999;
       
       //DCA for TPC only - from PropagateToDCA method
       AliExternalTrackParam aliextparam;
