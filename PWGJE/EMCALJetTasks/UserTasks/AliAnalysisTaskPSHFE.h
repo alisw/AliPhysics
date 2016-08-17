@@ -4,7 +4,7 @@
 /* $Id$ */
 /* AliAnalysisTaskPSHFE.h
  *
- *
+ * 
  */
 #ifndef ALIANALYSISTASKEID_H
 #define ALIANALYSISTASKEID_H
@@ -32,6 +32,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     virtual void     FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, Int_t elecCnt);
     virtual void     FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse);
     virtual void     FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrack, Int_t i);
+    void             FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i);
     void             SetTrackCuts(AliESDtrackCuts *gtrkCuts, AliESDtrackCuts *ctrkCuts);
     void             SetElectronTrackCuts(Bool_t trkCutBool);
     virtual void     Terminate(Option_t *);
@@ -122,6 +123,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistDPhi28_MB;
     TH2F            *fHistDPhiDEta28_MB;
     TH1F            *fHistNevents_MB;
+    TH1F            *fHistInvMassElecLike_MB;
+    TH1F            *fHistOpAngElecLike_MB;
+    TH1F            *fHistInvMassElecUnLike_MB;
+    TH1F            *fHistOpAngElecUnLike_MB;
     
     
     //EMC7 Histos
@@ -186,6 +191,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistDPhi28_EMC7;
     TH2F            *fHistDPhiDEta28_EMC7;
     TH1F            *fHistNevents_EMC7;
+    TH1F            *fHistInvMassElecLike_EMC7;
+    TH1F            *fHistOpAngElecLike_EMC7;
+    TH1F            *fHistInvMassElecUnLike_EMC7;
+    TH1F            *fHistOpAngElecUnLike_EMC7;
     
     
     //EMC8 Histos
@@ -250,6 +259,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistDPhi28_EMC8;
     TH2F            *fHistDPhiDEta28_EMC8;
     TH1F            *fHistNevents_EMC8;
+    TH1F            *fHistInvMassElecLike_EMC8;
+    TH1F            *fHistOpAngElecLike_EMC8;
+    TH1F            *fHistInvMassElecUnLike_EMC8;
+    TH1F            *fHistOpAngElecUnLike_EMC8;
     
     
     //EMCJet Histos
@@ -314,6 +327,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistDPhi28_EMCJet;
     TH2F            *fHistDPhiDEta28_EMCJet;
     TH1F            *fHistNevents_EMCJet;
+    TH1F            *fHistInvMassElecLike_EMCJet;
+    TH1F            *fHistOpAngElecLike_EMCJet;
+    TH1F            *fHistInvMassElecUnLike_EMCJet;
+    TH1F            *fHistOpAngElecUnLike_EMCJet;
     
     //Region Histos
     
@@ -404,7 +421,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     
     //Number of tagged electrons per event
     TH1F            *fHistNElecPerEvent;
-
+    
     //PtSum Histos
     TH2F            *fHistPtSumTransMaxB2B;
     TH2F            *fHistPtSumTransMinB2B;
