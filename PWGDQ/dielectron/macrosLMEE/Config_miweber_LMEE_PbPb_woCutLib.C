@@ -159,21 +159,21 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
 
   if(cutDefinition == 0){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.35, 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3., 3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2., 2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutDefinition == 1){
+  else if(cutDefinition == 1){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.35, 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3., 3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2., 2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   else if(cutDefinition == 2){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.35, 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3., 3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2., 2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   else if(cutDefinition == 3){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
@@ -239,6 +239,7 @@ AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition){
   }
   else if(cutDefinition==1){
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-5.,5.,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -4., 4. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable    ,AliDielectronVarManager::kPt);
   }   
   return pid;
 }
@@ -312,7 +313,7 @@ AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
   AliDielectronTrackCuts* trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
 
   if(cutDefinition==1){
-    trackCutsDiel->SetAODFilterBit(1<<1); // ITSsa cuts 
+    trackCutsDiel->SetAODFilterBit(1<<0|1<<1); // ITSsa cuts + TPC only cuts
     trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   }
   else{
