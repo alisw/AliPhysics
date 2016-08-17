@@ -127,6 +127,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fM02EovP(0),
   fInvmassULS(0),
   fInvmassLS(0),
+  fInvmassHfULS(0),
+  fInvmassHfLS(0),
   fMCcheckMother(0),
   fSparseElectron(0),
   fvalueElectron(0),
@@ -145,6 +147,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
+  fHisthfeTof(0),
+  fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -215,6 +219,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fM02EovP(0),
   fInvmassULS(0),
   fInvmassLS(0),
+  fInvmassHfULS(0),
+  fInvmassHfLS(0),
   fMCcheckMother(0), 
   fSparseElectron(0),
   fvalueElectron(0),
@@ -233,6 +239,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
+  fHisthfeTof(0),
+  fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -412,6 +420,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fInvmassULS = new TH1F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 200,0,0.4);
   fOutputList->Add(fInvmassULS);
 
+  fInvmassHfLS = new TH2F("fInvmassHfLS", "Invmass HF of LS for pt^{e}>3; mass(GeV/c^2); counts;", 4000,-0.2,0.2, 3000,0,6);
+  fOutputList->Add(fInvmassHfLS);
+
+  fInvmassHfULS = new TH2F("fInvmassHfULS", "Invmass HF of ULS for pt^{e}>3; mass(GeV/c^2); counts;", 4000,-0.2,0.2, 3000,0,6);
+  fOutputList->Add(fInvmassHfULS);
+
   fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
   fOutputList->Add(fMCcheckMother);
 
@@ -471,6 +485,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCAhaSemi = new TH2D("fHistDCAhaSemi", "DCA of hadron; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAhaSemi);
+
+  fHisthfeTof = new TH2D("fHisthfeTof", "hfe vs. Tof; p_{T}(GeV/c); time (ns)", 300,0,30,20000,-200,200);
+  fOutputList->Add(fHisthfeTof);
+
+  fHistOtherEle = new TH1D("fHistOtherEle", "remaining X->e", 10000,-0.5,9999.5);
+  fOutputList->Add(fHistOtherEle);
 
   fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
   fOutputList->Add(fHistHFEcorr);
@@ -805,6 +825,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     //if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
     if(pidM==443)continue; // remove enhanced J/psi in MC !
+    if(pidM==-99)continue; // remove e from no mother !
 
     Bool_t pid_eleD = IsDdecay(pidM);
     Bool_t pid_eleB = IsBdecay(pidM);
@@ -900,8 +921,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
-      //if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
-      if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
+      //if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
@@ -924,8 +945,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      //if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
-      if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
+      //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
         //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
@@ -951,6 +972,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         else // semi-inclusive
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
+          fHisthfeTof->Fill(track->Pt(),tof);
+          //----- MC
           if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
@@ -959,11 +982,16 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_ele!=1.0)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
           Bool_t iknown = kFALSE;
           if(pid_eleD || pid_eleB || pid_eleP)iknown = kTRUE;
-          //if(!iknown && pid_ele==1.0)cout << "X->e : " << pidM << endl;
+          if(!iknown && pid_ele==1.0)fHistOtherEle->Fill(pidM);
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
-      } // eID cuts
+      
+        //------
+        //if(!fFlagNonHFE && track->Pt()>3.0)CalInvmassHF(iTracks,track,DCAxy);
+         
+
+       } // eID cuts
 
      if(fTPCnSigma < -4 && eop>0.9 && eop<1.3)fHistDCAhad->Fill(track->Pt(),DCAxy); // hadron contamination
 
@@ -1088,6 +1116,99 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 }
 
 
+void AliAnalysisTaskBeautyCal::CalInvmassHF(Int_t itrack, AliVTrack *track, Double_t DCAhf)
+{
+  ///////////////////////////////////////////
+  //////Non-HFE - Invariant mass method//////
+  ///////////////////////////////////////////
+
+  AliESDtrackCuts* esdTrackCutsAsso = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  esdTrackCutsAsso->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCutsAsso->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsAsso->SetRequireITSRefit(kTRUE);
+  esdTrackCutsAsso->SetEtaRange(-0.9,0.9);
+  esdTrackCutsAsso->SetMaxChi2PerClusterTPC(4);
+  esdTrackCutsAsso->SetMinNClustersTPC(70);
+  esdTrackCutsAsso->SetMaxDCAToVertexZ(3.2);
+  esdTrackCutsAsso->SetMaxDCAToVertexXY(2.4);
+  esdTrackCutsAsso->SetDCAToVertex2D(kTRUE);
+
+  Bool_t flagULSElec = kFALSE;  // ULS
+  Bool_t flagLSElec = kFALSE;   // LS
+
+  Int_t ntracks = -999;
+  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+  if(fUseTender) ntracks = fTracks_tender->GetEntries();
+
+  for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
+    AliVParticle* VAssotrack = 0x0;
+    if(!fUseTender) VAssotrack  = fVevent->GetTrack(jtrack);
+    if(fUseTender) VAssotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+
+    if (!VAssotrack) {
+      printf("ERROR: Could not receive track %d\n", jtrack);
+      continue;
+    }
+
+    AliVTrack *Assotrack = dynamic_cast<AliVTrack*>(VAssotrack);
+    AliESDtrack *eAssotrack = dynamic_cast<AliESDtrack*>(VAssotrack);
+    AliAODTrack *aAssotrack = dynamic_cast<AliAODTrack*>(VAssotrack);
+
+    //------reject same track
+    if(jtrack==itrack) continue;
+
+    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+    Double_t ptAsso=-999., nsigma=-999.0, mass=-999., width = -999;
+    Int_t fPDGe1 = 11; Int_t fPDGe2 = -321;
+
+    nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kKaon);
+    ptAsso = Assotrack->Pt();
+    Int_t chargeAsso = Assotrack->Charge();
+    Int_t charge = track->Charge();
+    if(charge>0) fPDGe1 = -11;
+    if(chargeAsso>0) fPDGe2 = 321;
+    if(charge == chargeAsso) fFlagLS = kTRUE;
+    if(charge != chargeAsso) fFlagULS = kTRUE;
+
+    //------track cuts applied
+    if(fAOD) {
+      if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+      if(aAssotrack->GetTPCNcls() < 70) continue;
+      if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+    }
+    else{
+      if(!esdTrackCutsAsso->AcceptTrack(eAssotrack)) continue;
+    }
+
+    //-------loose cut on partner electron
+    if(ptAsso <0.2) continue;
+    if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
+    if(nsigma < -3 || nsigma > 3) continue;
+
+    //-------define KFParticle to get mass
+    AliKFParticle::SetField(fVevent->GetMagneticField());
+    AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
+    AliKFParticle ge2 = AliKFParticle(*Assotrack, fPDGe2);
+    AliKFParticle recg(ge1, ge2);
+
+    if(recg.GetNDF()<1) continue;
+    Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+    if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+
+    //-------Get mass
+    Int_t MassCorrect;
+    MassCorrect = recg.GetMass(mass,width);
+
+    if(fFlagLS)
+      if(track->Pt()>3) fInvmassHfLS->Fill(DCAhf,mass);
+    if(fFlagULS)
+      if(track->Pt()>3) fInvmassHfULS->Fill(DCAhf,mass);
+  
+  }
+
+}
+
+
 //________________________________________________________________________
 void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
 {
@@ -1130,14 +1251,21 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
     //-------loose cut on partner electron
     if(ptAsso <1.5) continue;
     if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
-    if(nsigma < 0 || nsigma > 3) continue;
+    if(nsigma < -1 || nsigma > 3) continue;
     int ilabelAss = aAssotrack->GetLabel();
     if(ilabelAss<1)continue;
     fMCparticleAss = (AliAODMCParticle*) fMCarray->At(ilabelAss);
     Int_t pdgAss = fMCparticleAss->GetPdgCode();   
     if(abs(pdgAss)!=11)continue;
-    Double_t dphie_tmp = aAssotrack->Phi() - track->Phi();
+          int ilabelMass = 0;
+          int pidMass = 0;
+          FindMother(fMCparticleAss, ilabelMass, pidMass);
+          Bool_t pid_eleDass = IsDdecay(pidMass);
+          Bool_t pid_eleBass = IsBdecay(pidMass);
+
+    Double_t dphie_tmp = track->Phi() - aAssotrack->Phi();
     Double_t dphie = atan2(sin(dphie_tmp),cos(dphie_tmp));
+    //if(track->Pt()>2.5 && (pid_eleDass || pid_eleBass))fHistHFEcorr->Fill(dphie);
     if(track->Pt()>2.5)fHistHFEcorr->Fill(dphie);
   }
 }
@@ -1152,6 +1280,10 @@ void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, in
     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
     pid = partM->GetPdgCode();
    }
+ else
+   {
+    pid = -99;
+   } 
    //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 
@@ -1171,7 +1303,7 @@ Bool_t AliAnalysisTaskBeautyCal::IsDdecay(int mpid)
 Bool_t AliAnalysisTaskBeautyCal::IsBdecay(int mpid)
 {
  int abmpid = fabs(mpid);
- if(abmpid==511 || abmpid==521 || abmpid==513 || abmpid==523 || abmpid==431 || abmpid==533)
+ if(abmpid==511 || abmpid==521 || abmpid==513 || abmpid==523 || abmpid==531 || abmpid==533)
    {
     return kTRUE;
    }

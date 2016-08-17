@@ -222,7 +222,6 @@ set ( SRCS18
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19
 #  BeamGasMonitoring/AliAnalysisMBVeto.cxx temporarily commented:sjena
-  BeamGasMonitoring/AliAnalysisBGMonitorQA.cxx
   BeamGasMonitoring/AliAnalysisBGMonitorQAHLT.cxx
   BeamGasMonitoring/AliAnalysisBGMonitorQATrain.cxx
   )
@@ -383,7 +382,6 @@ install(FILES CalibMacros/CPass1/LoadLibraries.C
 install(FILES CalibMacros/commonMacros/CleanGeom.C
 	      DESTINATION PWGPP/CalibMacros/commonMacros)
 install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
-              BeamGasMonitoring/macros/AddTaskBGMonitorQA.C
               BeamGasMonitoring/macros/AddTaskBGMonitorQAHLT.C
 	      BeamGasMonitoring/macros/AddTaskBGMonitorQATrain.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)

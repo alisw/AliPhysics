@@ -3,9 +3,13 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
+#include "AliCutValueRange.h"
 #include <TString.h>
 #include <TCustomBinning.h>
+
+#include <string>
+#include <vector>
 
 class TArrayD;
 class TClonesArray;
@@ -33,7 +37,7 @@ class AliEMCalTriggerWeightHandler;
  * well-tested components. Objects responsible for further problems, i.e. the
  * usage of THnSparse due to memory problems in several places, are forbidden.
  */
-class AliAnalysisTaskChargedParticlesRefMC: public AliAnalysisTaskSE {
+class AliAnalysisTaskChargedParticlesRefMC: public AliAnalysisTaskEmcal {
 public:
   enum BeamDirection_t{
     kpPb = 1,
@@ -44,70 +48,52 @@ public:
   AliAnalysisTaskChargedParticlesRefMC(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesRefMC();
 
-  void                        UserCreateOutputObjects();
-  void                        UserExec(Option_t *);
-  Bool_t                      UserNotify();
-  void                        Terminate(Option_t *) {}
-
   void                        SetRapidityShift(Double_t yshift) { fYshift = yshift; }
   void                        SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
-  void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
+  void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAliAnalysisUtils = util; }
   void                        SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
-  void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
-  void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
-  void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
+  void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
+  void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
   void                        SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
-  void                        SetUsePythiaHard(Bool_t usePythiaHard) { fUsePythiaHard = usePythiaHard; }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
 
 protected:
+  virtual void                UserCreateOutputObjects();
+  virtual bool                Run();
+  virtual bool                IsEventSelected();
+
   void                        FillTrackHistos(const char *eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
   void                        FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
 
   TString                     GetFiredTriggerClasses(const TClonesArray * triggerpatches);
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard) const;
-  AliGenPythiaEventHeader    *GetPythiaHeader() const;
   Bool_t                      IsPhysicalPrimary(const AliVParticle *const part, AliMCEvent *const mcevent);
-  Bool_t                      IsOutlier(AliGenPythiaEventHeader * const header) const;
-
-
-  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
-  AliAnalysisUtils                      *fAnalysisUtil;             ///< Event selection
-  AliEmcalTriggerOfflineSelection       *fTriggerSelection;         ///< Offline trigger selection
-  THistManager                          *fHistos;                   ///< Histogram manager
-  AliEMCALGeometry                      *fGeometry;                 ///< EMCAL geometry methods
-  const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
-
-  // Monte-Carlo specific information
-  Bool_t                          fUsePythiaHard;             ///< flag whether using PYTHIA Hard
-  Double_t                        fPtHard;                    ///< event pt hard
-  Int_t                           fPtHardBin;                 ///< event pt hard bin
-  Int_t                           fNTrials;                   ///< event trials
-  Float_t                         fXsection;                  ///< x-section from pythia header
-
-  Double_t                        fYshift;                    ///< Rapidity shift
-  Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
-  Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
-  Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
-  Double_t                        fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
 
 private:
 
-  class OldPtBinning : public TCustomBinning{
+  class PtBinning : public TCustomBinning{
   public:
-    OldPtBinning();
-    virtual ~OldPtBinning() {}
-  };
-  class NewPtBinning : public TCustomBinning{
-  public:
-    NewPtBinning();
-    virtual ~NewPtBinning() {}
+    PtBinning();
+    virtual ~PtBinning() {}
   };
 
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);
   AliAnalysisTaskChargedParticlesRefMC &operator=(const AliAnalysisTaskChargedParticlesRefMC &);
+
+  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
+  AliEmcalTriggerOfflineSelection       *fTriggerSelection;         ///< Offline trigger selection
+  THistManager                          *fHistos;                   ///< Histogram manager
+  const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
+
+  std::vector<std::string>              fEventTriggers;             //!<! Temporary container for selected triggers
+  Double_t                              fEventWeight;               ///< Event weight
+
+  Double_t                              fYshift;                    ///< Rapidity shift
+  Double_t                              fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
+  AliCutValueRange<double>              fEtaLabCut;                 ///< Cut applied in Eta Lab frame
+  AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in Eta centre-of-mass frame
+  Double_t                              fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedParticlesRefMC, 1);

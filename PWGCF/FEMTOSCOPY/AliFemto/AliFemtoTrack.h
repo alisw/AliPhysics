@@ -83,6 +83,9 @@ public:
   float CorrectionPion() const;
   float CorrectionKaon() const;
   float CorrectionProton() const;
+  float CorrectionPionMinus() const;
+  float CorrectionKaonMinus() const;
+  float CorrectionProtonMinus() const;
   float CorrectionAll() const;
 
   const TBits& TPCclusters() const;
@@ -175,6 +178,9 @@ public:
   void SetCorrectionPion(const double& x);
   void SetCorrectionKaon(const double& x);
   void SetCorrectionProton(const double& x);
+  void SetCorrectionPionMinus(const double& x);
+  void SetCorrectionKaonMinus(const double& x);
+  void SetCorrectionProtonMinus(const double& x);
   void SetCorrectionAll(const double& x);
 
   void SetTrueMomentum(AliFemtoThreeVector *aMom);
@@ -294,6 +300,11 @@ public:
   float fCorrPi;     //corrections for pion hypothesis
   float fCorrK;      //corrections for kaon hypothesis
   float fCorrP;      //corrections for proton hypothesis
+
+  float fCorrPiMinus;     //corrections for pion hypothesis
+  float fCorrKMinus;      //corrections for kaon hypothesis
+  float fCorrPMinus;      //corrections for proton hypothesis
+  
   float fCorrAll;    //corrections for particles without PID
 
 };

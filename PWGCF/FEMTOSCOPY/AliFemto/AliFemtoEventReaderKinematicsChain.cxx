@@ -29,7 +29,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
-#include "AliVertexerTracks.h"
+//#include "AliVertexerTracks.h"
 
 
 #ifdef __ROOT__
@@ -56,7 +56,11 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
-  fReadOnlyPrimariesV0(true)
+  fReadOnlyPrimariesV0(true),
+  fReadPrimariesSecWeakMaterial(false),
+  fReadPrimariesSecWeakMaterialV0(false),
+  fIsMisalignment(false),
+  fRemoveWeakDecaysInMC(false)
 {
   //constructor with 0 parameters , look at default settings
 }
@@ -74,7 +78,11 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
-  fReadOnlyPrimariesV0(true)
+  fReadOnlyPrimariesV0(true),
+  fReadPrimariesSecWeakMaterial(false),
+  fReadPrimariesSecWeakMaterialV0(false),
+  fIsMisalignment(false),
+  fRemoveWeakDecaysInMC(false)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -86,6 +94,11 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
   fReadOnlyPrimariesV0 = aReader.fReadOnlyPrimariesV0;
+  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
+  fReadPrimariesSecWeakMaterialV0 = aReader.fReadPrimariesSecWeakMaterialV0;
+  fIsMisalignment  = aReader.fIsMisalignment;
+  fRemoveWeakDecaysInMC = aReader.fRemoveWeakDecaysInMC;
+
 }
 //__________________
 AliFemtoEventReaderKinematicsChain::~AliFemtoEventReaderKinematicsChain()
@@ -111,6 +124,10 @@ AliFemtoEventReaderKinematicsChain& AliFemtoEventReaderKinematicsChain::operator
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
   fReadOnlyPrimariesV0 = aReader.fReadOnlyPrimariesV0;
+  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
+  fReadPrimariesSecWeakMaterialV0 = aReader.fReadPrimariesSecWeakMaterialV0;
+  fIsMisalignment  = aReader.fIsMisalignment;
+  fRemoveWeakDecaysInMC = aReader.fRemoveWeakDecaysInMC;
   return *this;
 }
 //__________________
@@ -142,6 +159,16 @@ void AliFemtoEventReaderKinematicsChain::ReadOnlyPrimaries(bool primaries)
 void AliFemtoEventReaderKinematicsChain::ReadOnlyPrimariesV0(bool primaries)
 {
   fReadOnlyPrimariesV0 = primaries;
+}
+
+void AliFemtoEventReaderKinematicsChain::ReadPrimariesSecWeakMaterial(bool primaries)
+{
+  fReadPrimariesSecWeakMaterial = primaries;
+}
+
+void AliFemtoEventReaderKinematicsChain::ReadPrimariesSecWeakMaterialV0(bool primaries)
+{
+  fReadPrimariesSecWeakMaterialV0 = primaries;
 }
 
 
@@ -198,7 +225,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   if (hdh)
     {
       tReactionPlane = hdh->ReactionPlaneAngle();
-      cout << "Got reaction plane " << tReactionPlane << endl;
+      //cout << "Got reaction plane " << tReactionPlane << endl;
     }
 
   hbtEvent->SetReactionPlaneAngle(tReactionPlane);
@@ -211,12 +238,19 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
   int tNormMult = 0;
   int tV0direction = 0;
-  for (int i=0;i<nofTracks;i++)
-    {
+
+  double previousTrackPt = 0;
+  for (int i=0;i<nofTracks;i++)	
+    {	
       if(fReadOnlyPrimaries)
 	{
 	  //take only primaries
 	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	}
+      else if(fReadPrimariesSecWeakMaterial)
+	{
+	  //take only primaries
+	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) {continue;}
 	}
 
       AliFemtoTrack* trackCopy = new AliFemtoTrack();
@@ -226,6 +260,43 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 
 
+      if (fRemoveWeakDecaysInMC)
+	{
+	  // Exclude weak decay products (if not done by IsPhysicalPrimary)
+	  // In order to prevent analyzing daughters from weak decays 
+	  // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
+
+	  //Checking mother
+	
+	  Int_t motherIndex = kinetrack->GetFirstMother();
+	  if (motherIndex != -1){
+	    TParticle *motherParticle = fStack->Particle(motherIndex);
+		if (motherParticle){
+			int pdgcode =  motherParticle->GetPdgCode();
+		
+			const Int_t kNWeakParticles = 7;
+			const Int_t kWeakParticles[kNWeakParticles] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+								  3122, 3112, // Lambda0 Sigma+-
+								  130, 310 // K_L0 K_S0
+			};
+
+			bool fromWeak = false;
+
+			for (Int_t j=0; j != kNWeakParticles; ++j) {
+				if (kWeakParticles[j] == pdgcode) {
+					//std::cout<<Form("Removing particle %d (pdg code mother %d)", i, motherParticle->GetPdgCode())<<std::endl;
+					fromWeak=true;
+				break;
+				}
+			}
+				if(fromWeak) {
+					delete trackCopy;
+					continue;
+				}
+		}
+	  }
+
+	}
 
       //setting multiplicity
         realnofTracks++;//real number of tracks (only primary particles)
@@ -275,8 +346,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
 	{; }
       else {
-	delete trackCopy;
-	continue;
+		delete trackCopy;
+		continue;
       }
 
       trackCopy->SetPidProbElectron(kinepid[0]);
@@ -309,41 +380,77 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       trackCopy->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
 
 
-	if (fRotateToEventPlane) {
-	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
-	  double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
+      if (fRotateToEventPlane) {
+	double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
+	double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
 
-	  pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
-	  pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
-	}
+	pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
+	pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
+      }
 
-	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.Mag() < 0.0001) {
-	  //cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
-	  delete trackCopy;
+      AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+      if (v.Mag() < 0.0001) {
+	//cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
+	delete trackCopy;
+	continue;
+      }
+
+      trackCopy->SetP(v);//setting momentum
+      trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+      const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+      const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+
+      //label
+      trackCopy->SetLabel(i);
+
+      if(fIsMisalignment){
+	if(previousTrackPt==trackCopy->Pt())
 	  continue;
-	}
+	previousTrackPt=trackCopy->Pt();
 
-	trackCopy->SetP(v);//setting momentum
-	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
-	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+      }
 
-	//label
-	trackCopy->SetLabel(i);
-
-	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
-	//cout<<"Track added: "<<i<<endl;
-
-
+      hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
+      //cout<<"Track added: "<<i<<endl;
 
     }
+
+  if(fEstEventMult == kImpactParameter){
+    AliGenEventHeader* eventHeader = 0;
+    AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (fGenHeader);
+    if (cocktailHeader)
+      eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+    else
+      eventHeader = dynamic_cast<AliGenEventHeader *> (fGenHeader);
+
+    if (!eventHeader)
+      {
+	// We avoid AliFatal here, because the AOD productions sometimes have events where the MC header is missing 
+	// (due to unreadable Kinematics) and we don't want to loose the whole job because of a few events
+	std::cout<<"Event header not found. Skipping this event."<<std::endl;
+	return 0;
+      }
+      
+    AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
+    if (!collGeometry)
+      {
+	eventHeader->Dump();
+	std::cout<<"Asking for MC_b centrality, but event header has no collision geometry information"<<std::endl;
+      }
+      
+    tNormMult = 100 * collGeometry->ImpactParameter();
+    //cout<<"Impact: "<<collGeometry->ImpactParameter()<<endl;
+  }
+
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
   if (fEstEventMult == kGlobalCount)
     hbtEvent->SetNormalizedMult(tNormMult);
   else if(fEstEventMult == kVZERO)
     hbtEvent->SetNormalizedMult(tV0direction);
+  else if(fEstEventMult == kImpactParameter)
+    hbtEvent->SetNormalizedMult(tNormMult);
+
   fCurEvent++;
 
 
@@ -356,6 +463,11 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	{
 	  //take only primaries
 	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	}
+      else if(fReadPrimariesSecWeakMaterialV0)
+	{
+	  //take only primaries
+	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) {continue;}
 	}
 
       //getting next track
@@ -415,6 +527,16 @@ void AliFemtoEventReaderKinematicsChain::SetUseMultiplicity(EstEventMult aType)
 {
   fEstEventMult = aType;
 }
+
+void AliFemtoEventReaderKinematicsChain::IsMisalignment(bool isMisalignment){
+  fIsMisalignment = isMisalignment;
+}
+
+void AliFemtoEventReaderKinematicsChain::RemoveWeakDecaysManually(bool removeWeakDecaysInMC){
+  fRemoveWeakDecaysInMC = removeWeakDecaysInMC;
+}
+
+
 
 Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, double *covar)
 {

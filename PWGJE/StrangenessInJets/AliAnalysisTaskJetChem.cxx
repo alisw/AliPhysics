@@ -92,6 +92,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
  
    ,fRandom(0)
    ,fMatchMode(0)
+   ,fEPAnalysis(0)
    ,fIsNJEventEmb(0)
    ,fAnalysisMC(0)
    ,fDeltaVertexZ(0)
@@ -234,6 +235,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fFFIMLaZMax(0)
    ,fh1EvtAllCent(0)
    ,fh1Evt(0)
+   ,fh1EP2(0)
+   ,fh1EP3(0)
    ,fh1K0Mult(0)
    ,fh1dPhiJetK0(0)
    ,fh1LaMult(0)
@@ -247,6 +250,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1nGenJets(0)
    ,fh1IndexEmbedded(0)
    ,fh1IndexEmbeddedMC(0)
+   ,fh1EmbeddedJetPhiDelta(0)
    ,fh1PtEmbBeforeMatch(0)
    ,fh1PtEmbExtraOnly(0)
    ,fh1PtEmbReject(0)
@@ -435,6 +439,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
 
   ,fRandom(0)
   ,fMatchMode(0)
+  ,fEPAnalysis(0)
   ,fIsNJEventEmb(0)
   ,fAnalysisMC(0)
   ,fDeltaVertexZ(0)
@@ -577,6 +582,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fFFIMLaZMax(0)
   ,fh1EvtAllCent(0)
   ,fh1Evt(0)
+  ,fh1EP2(0)
+  ,fh1EP3(0)
   ,fh1K0Mult(0)
   ,fh1dPhiJetK0(0) 
   ,fh1LaMult(0)
@@ -590,6 +597,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1nGenJets(0)
   ,fh1IndexEmbedded(0)
   ,fh1IndexEmbeddedMC(0)
+  ,fh1EmbeddedJetPhiDelta(0)
   ,fh1PtEmbBeforeMatch(0)
   ,fh1PtEmbExtraOnly(0)
   ,fh1PtEmbReject(0)
@@ -781,6 +789,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   
   ,fRandom(copy.fRandom)
   ,fMatchMode(copy.fMatchMode)
+  ,fEPAnalysis(copy.fEPAnalysis)
   ,fIsNJEventEmb(copy.fIsNJEventEmb)
   ,fAnalysisMC(copy.fAnalysisMC)
   ,fDeltaVertexZ(copy.fDeltaVertexZ)
@@ -923,6 +932,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fFFIMLaZMax(copy.fFFIMLaZMax) 
   ,fh1EvtAllCent(copy.fh1EvtAllCent)
   ,fh1Evt(copy.fh1Evt)
+  ,fh1EP2(copy.fh1EP2)
+  ,fh1EP3(copy.fh1EP3)
   ,fh1K0Mult(copy.fh1K0Mult)
   ,fh1dPhiJetK0(copy.fh1dPhiJetK0)
   ,fh1LaMult(copy.fh1LaMult)
@@ -936,6 +947,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh1nGenJets(copy.fh1nGenJets)
   ,fh1IndexEmbedded(copy.fh1IndexEmbedded)
   ,fh1IndexEmbeddedMC(copy.fh1IndexEmbeddedMC)
+  ,fh1EmbeddedJetPhiDelta(copy.fh1EmbeddedJetPhiDelta)
   ,fh1PtEmbBeforeMatch(copy.fh1PtEmbBeforeMatch)
   ,fh1PtEmbExtraOnly(copy.fh1PtEmbExtraOnly)
   ,fh1PtEmbReject(copy.fh1PtEmbReject)
@@ -1132,6 +1144,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
 
     fRandom                         = o.fRandom;
     fMatchMode                      = o.fMatchMode;
+    fEPAnalysis                     = o.fEPAnalysis;
     fIsNJEventEmb                   = o.fIsNJEventEmb; 
     fAnalysisMC                     = o.fAnalysisMC;
     fDeltaVertexZ                   = o.fDeltaVertexZ;
@@ -1268,6 +1281,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fFFIMLaZMax                     = o.fFFIMLaZMax;
     fh1EvtAllCent                   = o.fh1EvtAllCent;
     fh1Evt                          = o.fh1Evt;
+    fh1EP2                          = o.fh1EP2;
+    fh1EP3                          = o.fh1EP3;
     fh1K0Mult                       = o.fh1K0Mult;
     fh1dPhiJetK0                    = o.fh1dPhiJetK0;
     fh1LaMult                       = o.fh1LaMult;
@@ -1281,6 +1296,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1nGenJets                     = o.fh1nGenJets; 
     fh1IndexEmbedded                = o.fh1IndexEmbedded;
     fh1IndexEmbeddedMC              = o.fh1IndexEmbeddedMC;
+    fh1EmbeddedJetPhiDelta          = o.fh1EmbeddedJetPhiDelta;
     fh1PtEmbBeforeMatch             = o.fh1PtEmbBeforeMatch;
     fh1PtEmbExtraOnly               = o.fh1PtEmbExtraOnly;
     fh1PtEmbReject                  = o.fh1PtEmbReject;
@@ -1825,6 +1841,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
  
   fh1EvtAllCent	                = new TH1F("fh1EvtAllCent","before centrality selection",100,0.,100.);
   fh1Evt                        = new TH1F("fh1Evt", "All events runned over", 3, 0.,1.);
+  fh1EP2                        = new TH1F("fh1EP2","2nd order harmonic event plane distribution ESD events",200,-2.,2.);
+  fh1EP3                        = new TH1F("fh1EP3","3rd order harmonic event plane distribution ESD events",200,-2.,2.);
   fh1EvtMult 	                = new TH1F("fh1EvtMult","multiplicity",240,0.,240.);
   fh1K0Mult 	                = new TH1F("fh1K0Mult","K0 multiplicity",100,0.,100.);//500. all
   fh1dPhiJetK0                  = new TH1F("fh1dPhiJetK0","",64,-1,5.4);
@@ -1845,6 +1863,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1nGenJets                   = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
   fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
   fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
+  fh1EmbeddedJetPhiDelta        = new TH1F("fh1EmbeddedJetPhiDelta","Delta: 2nd order harmonic Eventplane - jetphi",120,-6.,6.);
 
   fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
   fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
@@ -2370,6 +2389,10 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
     fCommonHistList->Add(fh1EvtAllCent);
     fCommonHistList->Add(fh1Evt);
+    if(fEPAnalysis == kTRUE){
+      fCommonHistList->Add(fh1EP2);
+      fCommonHistList->Add(fh1EP3);
+    }
     fCommonHistList->Add(fh1EvtSelection);
     fCommonHistList->Add(fh1EvtCent);
     fCommonHistList->Add(fh1VertexNContributors);
@@ -2393,6 +2416,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     if(fBranchEmbeddedJets.Length()){
     fCommonHistList->Add(fh1nEmbeddedJets);
     fCommonHistList->Add(fh1IndexEmbedded);
+    if(fEPAnalysis == kTRUE){
+      fCommonHistList->Add(fh1EmbeddedJetPhiDelta);
+    }
     //fCommonHistList->Add(fh1PtEmbExtraOnly);
     fCommonHistList->Add(fh1PtEmbBeforeMatch);
     fCommonHistList->Add(fh1PtEmbReject);
@@ -2875,7 +2901,41 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   fh1EvtSelection->Fill(0.);
   fh1EvtCent->Fill(centPercent);
+  
+  Double_t event_plane_2 = -999.;
+  Double_t event_plane_3 = -999.;
+
+  if(fEPAnalysis == kTRUE){
+  //Get event plane
+  
+  Double_t qx2(0), qy2(0), qx3(0), qy3(0);
+  
+  // get the q-vectors from AliEventPlane
+
+  if(fAOD){//for AOD Input event
+    event_plane_2 = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 10, 2, qx2, qy2); // returns V0 2nd order EP (EP phi)
+    event_plane_3 = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 10,  3, qx3, qy3);  // return V0 3rd order EP (EP phi)
     
+    if(fDebug>3) std::cout<<"2nd order harmonic EP - qx2: "<<qx2<<" , qy2: "<<qy2<<std::endl;
+    if(fDebug>3) std::cout<<"3rd order harmonic EP - qx3: "<<qx3<<" , qy3: "<<qy3<<std::endl;
+    if(fDebug>3) std::cout<<"event_plane_2: "<<event_plane_2<<" , event_plane_3: "<<event_plane_3<<std::endl;
+  }
+  
+  if(fESD){//for ESD Input event
+    event_plane_2 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10, 2, qx2, qy2); // returns V0 2nd order EP (EP phi)
+    event_plane_3 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10,  3, qx3, qy3);  // return V0 3rd order EP (EP phi)
+    
+    if(fDebug>3) std::cout<<"2nd order harmonic EP - qx2: "<<qx2<<" , qy2: "<<qy2<<std::endl;
+    if(fDebug>3) std::cout<<"3rd order harmonic EP - qx3: "<<qx3<<" , qy3: "<<qy3<<std::endl;
+    if(fDebug>3) std::cout<<"event_plane_2: "<<event_plane_2<<" , event_plane_3: "<<event_plane_3<<std::endl;
+  }
+
+  //std::cout<<"PbPb vertex z coordinate: "<<primVertex->GetZ()<<std::endl;
+  
+  fh1EP2->Fill(event_plane_2);
+  fh1EP3->Fill(event_plane_3);
+  }//end if fEPAnalysis
+  
   //___ get MC information __________________________________________________________________
 
  
@@ -2963,8 +3023,25 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     if(nJEmbedded != nEmbeddedJets) Printf("%s:%d Mismatch Selected Embedded Jets: %d %d",(char*)__FILE__,__LINE__,nJEmbedded,nEmbeddedJets);
     fh1nEmbeddedJets->Fill(nEmbeddedJets);
     
-    Float_t maxDist = 0.3;//starting value, later the real DeltaR cut will be applied
+    //loop over embedded jets, as crosscheck for in-plane or out-of-plane Embedding
+    if(fEPAnalysis == kTRUE){  
+      if(nEmbeddedJets > 0){ 
+	for(Int_t ij=0; ij<nEmbeddedJets; ++ij){
+	  AliAODJet *jet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(ij));
+	  if(!jet) continue;
+	  Double_t jetPhi = jet->Phi();
+	  Double_t phiEP = TMath::Pi()*0.5 - event_plane_2;//change phi EP angle to (0,pi) range, instead of (-pi/2, pi/2)
+	  
+	  Double_t jetPhiDelta = TMath::Abs(jetPhi-phiEP);//absolute difference of event plane and PYTHIA jet phi
+	  if(fDebug>3)std::cout<<"JetPhiDelta: "<<jetPhiDelta<<std::endl;
+	  
+	  fh1EmbeddedJetPhiDelta->Fill(jetPhiDelta);
+	}
+      }else{fh1EmbeddedJetPhiDelta->Fill(-99.);}
+    }//end if fEPAnalysis
 
+    Float_t maxDist = 0.3;//starting value, later the real DeltaR cut will be applied
+    
     iEmbeddedMatchIndex.Set(nEmbeddedJets); 
     iRecMatchIndex.Set(nRecJetsCuts);
     fRecMatchPtFraction.Set(nRecJetsCuts);
@@ -2980,6 +3057,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     if(fDebug>2)std::cout<<"nEmbeddedJets: "<<nEmbeddedJets<<std::endl;
 
 
+    //loop over embedded jets, fetch jet phi and difference to 2nd order harmonic event plane
+
+
     AliAnalysisHelperJetTasks::GetClosestJets(fJetsEmbedded, nEmbeddedJets, 
 					      fJetsRecCuts, nRecJetsCuts, 
                                               iRecMatchIndex,iEmbeddedMatchIndex,
@@ -2989,7 +3069,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     //std::cout<<"Hallo!"<<std::endl;
 
 
-    // embedded pt fracion
+    // embedded pt fraction
     for(Int_t i=0; i<nRecJetsCuts; i++){
       AliAODJet* recJet = (AliAODJet*) fJetsRecCuts->At(i);
       if(!recJet) continue; 
@@ -3867,7 +3947,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if((GetFFMinNTracks()>0) && (jettracklist->GetSize() <= GetFFMinNTracks())) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
       
       //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..) + NJ events
-      if(!isBadJet) {
+      if((!isBadJet)&&(fDebug > 3)) {
 	std::cout<<"Reconstructed Jet - jetPt:"<<jet->Pt()<<"- jetEta: "<<jet->Eta()<<" - jetAreaCharged: "<<jet->EffectiveAreaCharged()<<std::endl;
 	std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
 	std::cout<<"      "<<std::endl;

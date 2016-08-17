@@ -78,7 +78,7 @@ class AliDxHFEParticleSelection : public TNamed {
   /// create selection from the array of particles,
   /// array contains only pointers but does not own the objects
   /// object array needs to be deleted by caller
-  virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+  virtual TObjArray* Select(TObjArray* particles, AliVEvent* pEvent);
 
   virtual void SetPIDResponse(const AliPIDResponse* /*const pidresp*/){}
 
@@ -170,6 +170,9 @@ class AliDxHFEParticleSelection : public TNamed {
   
   Int_t GetSystem() const {return fSystem;}
 
+  virtual void SetEffMap(TH1* /*eff*/, int /*whichMap*/){}
+
+
  protected:
   /// add control object to list, the base class becomes owner of the object
   int AddControlObject(TObject* pObj);
@@ -211,7 +214,7 @@ class AliDxHFEParticleSelection : public TNamed {
   static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
   static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
 
-  ClassDef(AliDxHFEParticleSelection, 5);
+  ClassDef(AliDxHFEParticleSelection, 6);
 
 };
 

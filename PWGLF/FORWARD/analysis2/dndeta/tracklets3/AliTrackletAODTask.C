@@ -168,6 +168,13 @@ public:
    * @param x Value
    */
   void SetZEtaOverlapCut(Double_t x=0.05) { fZEtaOverlapCut = x; }
+  /** 
+   * Whether to filter @f$ K^0_S@f$ clusters 
+   */
+  /** 
+   * Whether to filter @f$ K^0_S@f$ clusters 
+   */
+  virtual void SetFilterK0S(Bool_t filter) { fFilterK0S = filter; }
   /* @} */
 protected:
   /** 
@@ -234,6 +241,18 @@ protected:
    * @return Pointer to tree or null
    */
   TTree* FindClusters();
+  /** 
+   * Pre-process clusters.  This can remove clusters, etc. 
+   *
+   * @param t Tree of clusters
+   */
+  virtual TTree* FilterClusters(TTree* t) { return t; }
+  /** 
+   * Clean up possible copy of tree of clusters 
+   * 
+   * @param t 
+   */
+  virtual void CleanClusters(TTree*& t) {};
   /** 
    * Get the event 
    * 
@@ -327,6 +346,8 @@ protected:
   Double_t   fZEtaOverlapCut;
   /** Pointer to current reconstruction object */
   AliITSMultRecBg* fReco; //!
+  /** Whether to remove clusters corresponding to K_S^0 primary parents */
+  Bool_t fFilterK0S;
   
   ClassDef(AliTrackletAODTask,1); 
 };
@@ -342,7 +363,8 @@ AliTrackletAODTask::AliTrackletAODTask()
     fDPhiWindow(0.06),
     fPhiOverlapCut(0.005),
     fZEtaOverlapCut(0.05),
-    fReco(0)
+    fReco(0),
+    fFilterK0S(false)
 {}
 //____________________________________________________________________
 AliTrackletAODTask::AliTrackletAODTask(const char*)
@@ -356,7 +378,8 @@ AliTrackletAODTask::AliTrackletAODTask(const char*)
     fDPhiWindow(0.06),
     fPhiOverlapCut(0.005),
     fZEtaOverlapCut(0.05),
-    fReco(0)
+    fReco(0),
+    fFilterK0S(false)
 {
   // DefineOutput(1,TList::Class());
 }
@@ -372,7 +395,8 @@ AliTrackletAODTask::AliTrackletAODTask(const AliTrackletAODTask& other)
     fDPhiWindow(other.fDPhiWindow),
     fPhiOverlapCut(other.fPhiOverlapCut),
     fZEtaOverlapCut(other.fZEtaOverlapCut),
-    fReco(0)
+    fReco(0),
+    fFilterK0S(other.fFilterK0S)
 {}
 //____________________________________________________________________
 Bool_t AliTrackletAODTask::Connect()
@@ -408,6 +432,7 @@ void AliTrackletAODTask::Print(Option_t*) const
   Printf(" %22s: %f",   "Delta phi window",	   fDPhiWindow);
   Printf(" %22s: %f",   "phi overlap cut",	   fPhiOverlapCut);
   Printf(" %22s: %f",   "z-eta overlap cut",	   fZEtaOverlapCut);
+  Printf(" %22s: %s",   "Filter K^0_S",            fFilterK0S ? "yes" : "no");
 }
 
 //____________________________________________________________________
@@ -545,7 +570,11 @@ Bool_t AliTrackletAODTask::ProcessEvent()
   if (!(clusters = FindClusters())) return false;
   if (!(ip       = FindIP(event)))  return false;
 
-  return Reconstruct(clusters, ip);
+  Bool_t ret = Reconstruct(clusters, ip);
+
+  CleanClusters(clusters);
+
+  return ret;
 }
 
 //____________________________________________________________________
@@ -593,7 +622,7 @@ TTree* AliTrackletAODTask::FindClusters()
     AliError("Tree of clusters (rec.points) not found");
     return 0;
   }
-  return tree;
+  return FilterClusters(tree);
 }
 
 //____________________________________________________________________
@@ -752,6 +781,9 @@ AliTrackletAODTask::ProcessTracklet(Bool_t            normal,
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
+#include <AliITSgeomTGeo.h>
+#include <TRandom.h>
+#include <TROOT.h>
 #else
 class TParticlePDG; 
 class TParticle;
@@ -775,7 +807,9 @@ public:
    * 
    * @param name Name of the task 
    */  
-  AliTrackletAODMCTask(const char* name) : AliTrackletAODTask(name) {}
+  AliTrackletAODMCTask(const char* name)
+    : AliTrackletAODTask(name)
+  {}
   /** 
    * Copy constructor 
    * 
@@ -804,6 +838,18 @@ private:
    * Initialize the worker 
    */
   Bool_t WorkerInit();
+  /** 
+   * Pre-process clusters.  This can remove clusters, etc. 
+   *
+   * @param t Tree of clusters
+   */
+  virtual TTree* FilterClusters(TTree* t);
+  /** 
+   * Clean up possible copy of tree of clusters 
+   * 
+   * @param t 
+   */
+  virtual void CleanClusters(TTree*& t);
   /** 
    * Process a single event
    * 
@@ -864,6 +910,10 @@ private:
 					  Int_t            no);
   /* @} */
   /** 
+   * @{ 
+   * @name Investigating primary parents 
+   */
+  /** 
    * Find first primary parent of particle identified by passed label
    * 
    * @param label Label particle to search for primary parent of 
@@ -907,6 +957,9 @@ private:
    * @return Index of common parent of @a label and those in @a fill 
    */
   Int_t CommonParent(Int_t label, const TArrayI& fill) const;
+  /* @} */
+  
+  
   ClassDef(AliTrackletAODMCTask,1); 
 };
 
@@ -975,6 +1028,91 @@ Bool_t AliTrackletAODMCTask::WorkerInit()
 
   return true;
 }  
+
+//____________________________________________________________________
+TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
+{
+  if (!t || !fFilterK0S) return t;
+
+  const Double_t weight = 1.52233299626516083e+00; // K^0_S weight
+  const Double_t chance = 1 - 1 / weight; // chance is 1 minus inverse 
+  const Int_t    type   = 310;         // PDG code of K^0_S (K_S0)
+  TDirectory*    savDir = gDirectory;
+  gDirectory            = gROOT;
+  TTree*         copy   = new TTree("TreeR", "TreeR");
+  TClonesArray*  in     = new TClonesArray("AliITSRecPoint");
+  TClonesArray*  out    = new TClonesArray("AliITSRecPoint");
+  Int_t          outN   = 0;
+  copy->Branch("ITSRecPoints", &out);
+  copy->SetAutoFlush(0);// Keep in memory 
+  t->SetBranchAddress("ITSRecPoints", &in);
+
+  Printf("Filtering clusters from K^0_S (%d), with %4.1f%%",
+	 type, 100*chance);
+
+  Int_t min1   = AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t max1   = AliITSgeomTGeo::GetModuleIndex(2,1,1);
+  Int_t min2   = AliITSgeomTGeo::GetModuleIndex(2,1,1);
+  Int_t max2   = AliITSgeomTGeo::GetModuleIndex(3,1,1);
+  Int_t nTotal = 0;
+  Int_t nKept  = 0;
+  
+  // Loop over the modules of the SPD 
+  for (Int_t i = 0; i < max2; i++) {
+    in->Clear();
+    out->Clear();
+    outN = 0;
+
+    // Read in module data 
+    t->GetEntry(i);
+
+    // Loop over all clusters in the module 
+    Int_t inN = in->GetEntries();
+    for (Int_t j = 0; j < inN; j++) {
+      AliITSRecPoint* inCl = static_cast<AliITSRecPoint*>(in->At(j));
+      if (!inCl) continue;
+
+      // Loop over labels in the module
+      Bool_t k0s = false;
+      for (Int_t k = 0; k < 3; k++) {
+	Int_t label = inCl->GetLabel(k);
+	if (label <= 0) continue;
+
+	// Check primary parent particle type 
+	TParticle* parent = FindPrimaryParent(label);
+	if (!parent ||
+	    (parent->GetPdgCode() != type &&
+	     parent->GetPdgCode() != -type)) continue;
+	// Printf("Parent %d is a K^0_S: %d", k+1, parent->GetPdgCode());
+	// Randomly remove clusters from the right kind of primary
+	// parent particles
+	k0s = true;
+      }
+      if (k0s) {
+	nTotal++;
+	if (gRandom->Uniform() < chance) continue;
+	nKept++;
+      }
+      new ((*out)[outN++]) AliITSRecPoint(*inCl);
+    }
+    // Printf("Kept %d out of %d clusters", outN, inN);
+    copy->Fill();
+  }
+  if (nTotal > 0) 
+    Printf("Kept %d out of %d clusters from K^0_S (%4.1f%%)",
+	   nKept, nTotal, 100.*(1-Float_t(nKept)/nTotal));
+  savDir->cd();
+  return copy;
+}
+
+//____________________________________________________________________
+void AliTrackletAODMCTask::CleanClusters(TTree*& t)
+{
+  if (!t || !fFilterK0S) return;
+
+  delete t;
+  t = 0;
+}
 
 //____________________________________________________________________
 Bool_t AliTrackletAODMCTask::ProcessEvent()

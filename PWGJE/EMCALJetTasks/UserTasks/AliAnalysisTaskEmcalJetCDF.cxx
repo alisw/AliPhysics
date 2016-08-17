@@ -443,7 +443,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       std::vector< int > jet1_sorted_idxvec;
 
       // jet1 : Sorting by p_T jet constituents
-      jet1_sorted_idxvec = jet1->SortConstituentsPt ( fTracksContArray );
+      jet1_sorted_idxvec = jet1->GetPtSortedTrackConstituentIndexes ( fTracksContArray );
 
       Int_t track_idx = -999;            // index variable for tracks
       Double_t jet1_pt = jet1->Pt();
@@ -589,7 +589,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
       // jet : Sorting by p_T jet constituents
       jet_sorted_idxvec.clear();
-      jet_sorted_idxvec = jet->SortConstituentsPt ( fTracksContArray );
+      jet_sorted_idxvec = jet->GetPtSortedTrackConstituentIndexes ( fTracksContArray );
 
       jet_pt = jet->Pt();
       jet_npart = jet->GetNumberOfTracks();

@@ -75,6 +75,9 @@ AliFemtoTrack::AliFemtoTrack():
   fCorrPi(0.0),
   fCorrK(0.0),
   fCorrP(0.0),
+  fCorrPiMinus(0.0),
+  fCorrKMinus(0.0),
+  fCorrPMinus(0.0),
   fCorrAll(0.0)
 {
   // Default constructor
@@ -159,6 +162,9 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fCorrPi(t.fCorrPi),
   fCorrK(t.fCorrK),
   fCorrP(t.fCorrP),
+  fCorrPiMinus(t.fCorrPiMinus),
+  fCorrKMinus(t.fCorrKMinus),
+  fCorrPMinus(t.fCorrPMinus),
   fCorrAll(t.fCorrAll)
  {
    // copy constructor
@@ -246,6 +252,9 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fCorrPi = aTrack.fCorrPi;
   fCorrK = aTrack.fCorrK;
   fCorrP = aTrack.fCorrP;
+  fCorrPiMinus = aTrack.fCorrPiMinus;
+  fCorrKMinus = aTrack.fCorrKMinus;
+  fCorrPMinus = aTrack.fCorrPMinus;
   fCorrAll = aTrack.fCorrAll;
 
   for (int i=0; i<6; i++) {
@@ -351,6 +360,9 @@ void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
 void AliFemtoTrack::SetCorrectionPion(const double& x){fCorrPi=x;}
 void AliFemtoTrack::SetCorrectionKaon(const double& x){fCorrK=x;}
 void AliFemtoTrack::SetCorrectionProton(const double& x){fCorrP=x;}
+void AliFemtoTrack::SetCorrectionPionMinus(const double& x){fCorrPiMinus=x;}
+void AliFemtoTrack::SetCorrectionKaonMinus(const double& x){fCorrKMinus=x;}
+void AliFemtoTrack::SetCorrectionProtonMinus(const double& x){fCorrPMinus=x;}
 void AliFemtoTrack::SetCorrectionAll(const double& x){fCorrAll=x;}
 
 short AliFemtoTrack::Charge() const {return fCharge;}
@@ -396,6 +408,9 @@ float AliFemtoTrack::TOFprotonTime() const{return fTofProtonTime;}
 float AliFemtoTrack::CorrectionPion() const {return fCorrPi;}
 float AliFemtoTrack::CorrectionKaon() const {return fCorrK;}
 float AliFemtoTrack::CorrectionProton() const {return fCorrP;}
+float AliFemtoTrack::CorrectionPionMinus() const {return fCorrPiMinus;}
+float AliFemtoTrack::CorrectionKaonMinus() const {return fCorrKMinus;}
+float AliFemtoTrack::CorrectionProtonMinus() const {return fCorrPMinus;}
 float AliFemtoTrack::CorrectionAll() const {return fCorrAll;}
 
 double AliFemtoTrack::XatDCA() const {return fXatDCA;}

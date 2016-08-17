@@ -9,10 +9,13 @@
 #include "AliGenEventHeader.h"
 #include "AliAnalysisUtils.h"
 #include "AliJEfficiency.h"
+#include "AliJFFlucAnalysis.h"
+#include "AliMCParticle.h"
 
 //#include <fstream>
 
 class AliESDEvent;
+class AliMCEvent;
 class AliESDtrackCuts;
 class AliESDVertex;
 class TClonesArray;
@@ -25,6 +28,7 @@ class AliJEbePercentile;
 class AliJEfficiency;
 class AliJEventPool;
 class AliJRunTable;
+class AliJFFlucAnalysis;
 
 class AliJEbECORRTask : public AliAnalysisTaskSE {
 
@@ -51,6 +55,12 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		void SetEbePercentileInputFileName(TString name) { ebePercentileInputFileName = name; };
 		void SetIsMC( Bool_t ismc){ IsMC = ismc; cout << "Settint IsMC = " << ismc << endl; };
 		void SetEnableCORR( Bool_t runCORR ){ fenableCORR = runCORR; cout << "Settint enableCORR = " << fenableCORR << endl; };
+		double GetCentralityFromImpactPar(double ip);
+		double GetImpactParFromCentrality(double cent);
+		void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
+		Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
+		void SetKineOnly (Bool_t iskineonly) {IsKinematicOnly = iskineonly;};
+		void RegisterList(TClonesArray* listToFill, TClonesArray* listFromToFill,double lpt, double hpt);
 		/*
 		   TString MemoryStatus(){
 		   int pid = getpid();
@@ -77,12 +87,13 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		   ins.close();
 		   return res;
 		   };
-		   */
+		 */
 
 	private:
 		TDirectory           *fOutput;     // Output
 
 		AliAnalysisUtils *fAnaUtils;
+		AliJFFlucAnalysis *fFFlucAna;
 
 		AliJCard * fCard;
 
@@ -92,6 +103,9 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 		int fHadronSelectionCut;
 
 		TClonesArray * fInputList;
+		TClonesArray * fInputListSpectra;
+		int fVnMethod; // 0; RunFlow 1 : JFluc
+		TClonesArray * fInputListFlow;
 		TClonesArray * ftriggList;
 		TClonesArray * fassocList;
 
@@ -113,6 +127,7 @@ class AliJEbECORRTask : public AliAnalysisTaskSE {
 
 		TRandom *fRandom;
 		Bool_t IsMC;
+		Bool_t IsKinematicOnly;
 		Bool_t fenableCORR;
 
 		ClassDef(AliJEbECORRTask, 1); // example of analysis

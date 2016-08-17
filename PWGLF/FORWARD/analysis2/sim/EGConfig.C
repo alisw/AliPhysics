@@ -13,7 +13,7 @@ struct EGCfg : public VirtualEGCfg
   Bool_t  fIsLego;    //
   
   EGCfg() 
-    : hftype(-1), fIsLego(false);
+    : hftype(-1), fIsLego(false)
   {
     hftype = HFType();
   }

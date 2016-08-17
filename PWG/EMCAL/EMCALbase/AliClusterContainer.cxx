@@ -326,12 +326,12 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     return kFALSE;
   }
 
-  if (fMinMCLabel >= 0 && TMath::Abs(clus->GetLabel()) > fMinMCLabel) {
+  if (fMinMCLabel >= 0 && TMath::Abs(clus->GetLabel()) < fMinMCLabel) {
     rejectionReason |= kMCLabelCut;
     return kFALSE;
   }
 
-  if (fMaxMCLabel >= 0 && TMath::Abs(clus->GetLabel()) < fMaxMCLabel) {
+  if (fMaxMCLabel >= 0 && TMath::Abs(clus->GetLabel()) > fMaxMCLabel) {
     rejectionReason |= kMCLabelCut;
     return kFALSE;
   }

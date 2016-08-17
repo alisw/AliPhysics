@@ -32,16 +32,15 @@ class AliAnalysisTaskEmcalJetLight : public AliAnalysisTaskEmcalLight {
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
-  typedef AliJetContainer::JetAcceptanceType JetAcceptanceType;
 
   AliAnalysisTaskEmcalJetLight();
   AliAnalysisTaskEmcalJetLight(const char *name, Bool_t histo=kFALSE);
   virtual ~AliAnalysisTaskEmcalJetLight();
 
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
-      JetAcceptanceType accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
+      UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
-      JetAcceptanceType accType, TString tag = "Jet");
+      UInt_t accType, TString tag = "Jet");
   void                        AdoptJetContainer(AliJetContainer* cont)           { fJetCollArray.Add(cont)  ;}
 
   void                        RemoveJetContainer(Int_t i)                        { fJetCollArray.RemoveAt(i);} 

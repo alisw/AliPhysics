@@ -47,10 +47,10 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fUseSumw2(0),
   fOverlap(0),
   fRadius(0.4),
-  fTreeJetBkg(),
-  fJet1Vec(new TLorentzVector()),
-  fJet2Vec(new TLorentzVector()),
-  fJetSubVec(new TLorentzVector()),
+  fTreeJetBkg(0),
+  fJet1Vec(),
+  fJet2Vec(),
+  fJetSubVec(),
   fArea(0),
   fAreaPhi(0),
   fAreaEta(0),
@@ -69,7 +69,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0),
+  //fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -99,7 +99,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
-  fhnDeltaMass             = new THnSparse*[fNcentBins];
+  //fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -110,11 +110,11 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
-    fhnDeltaMass[i]             = 0;
+    //fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
-  if(fCreateTree) DefineOutput(2, TTree::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -133,9 +133,9 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fOverlap(0),
   fRadius(0.4),
   fTreeJetBkg(0),
-  fJet1Vec(new TLorentzVector()),
-  fJet2Vec(new TLorentzVector()),
-  fJetSubVec(new TLorentzVector()),
+  fJet1Vec(),
+  fJet2Vec(),
+  fJetSubVec(),
   fArea(0),
   fAreaPhi(0),
   fAreaEta(0),
@@ -154,7 +154,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0),
+  //fhnDeltaMass(0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -184,7 +184,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMLeadPt    = new TH3F*[fNcentBins];
   fh3PtTrueDeltaMRelLeadPt = new TH3F*[fNcentBins];
   fhnMassResponse          = new THnSparse*[fNcentBins];
-  fhnDeltaMass             = new THnSparse*[fNcentBins];
+  //fhnDeltaMass             = new THnSparse*[fNcentBins];
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
@@ -195,11 +195,11 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
     fh3PtTrueDeltaMLeadPt[i]    = 0;
     fh3PtTrueDeltaMRelLeadPt[i] = 0;
     fhnMassResponse[i]          = 0;
-    fhnDeltaMass[i]             = 0;
+    //fhnDeltaMass[i]             = 0;
   }
 
   SetMakeGeneralHistograms(kTRUE);
-  if(fCreateTree) DefineOutput(2, TTree::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -217,9 +217,32 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   // Create user output.
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  
+  // Create a tree.
+  // !! Note !! Don't move the creation of the tree, it has to stay just after having opened the output file! Otherwise need to open it again or cd into it
+ 
+  fJet2Vec   = new TLorentzVector();
 
-  Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
+  if(fCreateTree) {
+  	  fJet1Vec   = new TLorentzVector();
+  	  fJetSubVec = new TLorentzVector();
+  	  Printf("Creating tree");
+  	  fTreeJetBkg = new TTree(Form("%sTree", GetName()), Form("%sTree", GetName()));
+  	  fTreeJetBkg->Branch("fJet1Vec.",fJet1Vec);
+  	  fTreeJetBkg->Branch("fJet2Vec.",fJet2Vec);
+  	  fTreeJetBkg->Branch("fJetSubVec.",fJetSubVec);
+  	  fTreeJetBkg->Branch("fArea",&fArea,"fArea/F");
+  	  fTreeJetBkg->Branch("fAreaPhi",&fAreaPhi,"fAreaPhi/F");
+  	  fTreeJetBkg->Branch("fAreaEta",&fAreaEta,"fAreaEta/F");
+  	  fTreeJetBkg->Branch("fRho",&fRho,"fRho/F");
+  	  fTreeJetBkg->Branch("fRhoM",&fRhoM,"fRhoM/F");
+  	  fTreeJetBkg->Branch("fMatch",&fMatch,"fMatch/I");
+  	  fTreeJetBkg->Branch("fNConst",&fNConst, "fNConst/I");
+  }
+  if(fCreateTree) PostData(2, fTreeJetBkg);
+  
+  //Bool_t oldStatus = TH1::AddDirectoryStatus();
+  //TH1::AddDirectory(kFALSE);
 
   if(!fPathTreeinputFile.IsNull()){
      SetTreeFromFile(fPathTreeinputFile, fTreeinputName);
@@ -279,17 +302,17 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   Double_t maxRhom = 1.;
 
   //Binning for THnSparse
-  const Int_t nBinsSparse0 = 7;
+  const Int_t nBinsSparse0 = 9;
   //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}
-  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead, nBinsRho, nBinsRhom};
-  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead, minRho, minRhom};
-  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead, maxRho, maxRhom};
+  const Int_t nBins0[nBinsSparse0] = {nBinsM,nBinsM,nBinsPt,nBinsPt,nBinsPtLead, nBinsRho, nBinsRhom, nBinsM, nBinsPt};
+  const Double_t xmin0[nBinsSparse0]  = { minM, minM, minPt, minPt, minPtLead, minRho, minRhom, minM, minPt};
+  const Double_t xmax0[nBinsSparse0]  = { maxM, maxM, maxPt, maxPt, maxPtLead, maxRho, maxRhom, maxM, maxPt};
 
-  const Int_t nBinsSparse0b = 8;
-  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}
-  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt, nBinsRho, nBinsRhom};
-  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt, minRho, minRhom};
-  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt, maxRho, maxRhom};
+  const Int_t nBinsSparse0b = 10;
+  //Mass sub;Mass true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}; #rho; #rho_{m}; Mass unsub; #it{p}_{T,unsub}
+  const Int_t nBins0b[nBinsSparse0b] = {nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsM, nBinsPt, nBinsRho, nBinsRhom, nBinsM, nBinsPt};
+  const Double_t xmin0b[nBinsSparse0b]  = { minM, minM, minPt, minPt, minM, minPt, minRho, minRhom, minM, minPt};
+  const Double_t xmax0b[nBinsSparse0b]  = { maxM, maxM, maxPt, maxPt, maxM, maxPt, maxRho, maxRhom, maxM, maxPt};
   
   const Int_t nBinsSparse1 = 7;
   // #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
@@ -297,11 +320,11 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt, minPt};
   const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxPt};
 
-  const Int_t nBinsSparse2 = 8;
-  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
-  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
-  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
+  const Int_t nBinsSparse2 = 10;
+  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
+  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
+  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
 
   TString histName = "";
   TString histTitle = "";
@@ -338,38 +361,39 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
     histTitle = Form("fh3PtTrueDeltaMLeadPt_%d;#it{p}_{T,true};#Delta %s",i,varName.Data());
     fh3PtTrueDeltaMLeadPt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsDM,minDM,maxDM,nBinsPtLead,minPtLead,maxPtLead);
     fOutput->Add(fh3PtTrueDeltaMLeadPt[i]);
-
+    
     histName = Form("fh3PtTrueDeltaMRelLeadPt_%d",i);
     histTitle = Form("fh3PtTrueDeltaMRelLeadPt_%d;#it{p}_{T,true};Rel #Delta %s",i,varName.Data());
     fh3PtTrueDeltaMRelLeadPt[i] = new TH3F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,400,-1.,3.,nBinsPtLead,minPtLead,maxPtLead);
     fOutput->Add(fh3PtTrueDeltaMRelLeadPt[i]);
-
-    histName = Form("fhnMassResponse_%d",i);
-    if(fFromTree) {
-       histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m}", i, varName.Data(),varName.Data(), varName.Data());
-       fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0b, nBins0b, xmin0b, xmax0b);
-
-    } else{
-       histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk};  #rho; #rho_{m}",i,varName.Data(),varName.Data());
-       fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(), nBinsSparse0, nBins0, xmin0, xmax0);
+    if(!fCreateTree){
+    	histName = Form("fhnMassResponse_%d",i);
+    	if(fFromTree) {
+    		histTitle = Form("fhnMassResponse_%d; %s sub; %s true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m}; %s unsub; #it{p}_{T,unsub}", i, varName.Data(),varName.Data(), varName.Data(),varName.Data());
+    		fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse0b, nBins0b, xmin0b, xmax0b);
+    		
+    	} else{
+    		histTitle = Form("fhnMassResponse_%d;%s sub;%s true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk};  #rho; #rho_{m}",i,varName.Data(),varName.Data());
+    		fhnMassResponse[i] = new THnSparseF(histName.Data(),histTitle.Data(), nBinsSparse0, nBins0, xmin0, xmax0);
+    	}
+    	fOutput->Add(fhnMassResponse[i]);
+    	
+    	//histName = Form("fhnDeltaMass_%d", i);
+    	//histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
+    	//Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
+    	//fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
+    	//fOutput->Add(fhnDeltaMass[i]);
     }
-    fOutput->Add(fhnMassResponse[i]);
-    
-    histName = Form("fhnDeltaMass_%d", i);
-    histTitle = Form("%s; #it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}",histName.Data());
-    Printf("Nuber of bins %d - write first %d, %f, %f , building %s", nBinsSparse1, nBins1[0], xmin1[0], xmax1[0], histName.Data());
-    fhnDeltaMass[i] = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse1,nBins1,xmin1,xmax1);
-    fOutput->Add(fhnDeltaMass[i]);
-
   }
-
+  
   //Chiara's histograms: rho and rhom correlation with pT and mass at reco level with no subtraction
-  histName = "fhnDeltaMassAndBkgInfo";
-  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
-  
-  fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
-  fOutput->Add(fhnDeltaMassAndBkgInfo);
-  
+  if(!fCreateTree){
+  	  histName = "fhnDeltaMassAndBkgInfo";
+  	  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
+  	  
+  	  fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
+  	  fOutput->Add(fhnDeltaMassAndBkgInfo);
+  }
   if(fOverlap){
      fhRjetTrvspTj = new TH2F("fhRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
      fOutput->Add(fhRjetTrvspTj);
@@ -406,24 +430,11 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
     }
   }
 
-  TH1::AddDirectory(oldStatus);
+  //TH1::AddDirectory(oldStatus);
 
-  // Create a tree.
-  if(fCreateTree) {
-    fTreeJetBkg = new TTree("fTreeJetSubConst", "fTreeJetSubConst");
-    fTreeJetBkg->Branch("fJet1Vec","TLorentzVector",&fJet1Vec);
-    fTreeJetBkg->Branch("fJet2Vec","TLorentzVector",&fJet2Vec);
-    fTreeJetBkg->Branch("fJetSubVec","TLorentzVector",&fJetSubVec);
-    fTreeJetBkg->Branch("fArea",&fArea,"fArea/F");
-    fTreeJetBkg->Branch("fAreaPhi",&fAreaPhi,"fAreaPhi/F");
-    fTreeJetBkg->Branch("fAreaEta",&fAreaEta,"fAreaEta/F");
-    fTreeJetBkg->Branch("fRho",&fRho,"fRho/F");
-    fTreeJetBkg->Branch("fRhoM",&fRhoM,"fRhoM/F");
-    fTreeJetBkg->Branch("fMatch",&fMatch,"fMatch/I");
-  }
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
-  if(fCreateTree) PostData(2, fTreeJetBkg);
+  
 }
 
 //________________________________________________________________________

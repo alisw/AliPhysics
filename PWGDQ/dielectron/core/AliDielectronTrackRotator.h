@@ -45,12 +45,14 @@ public:
   void SetRotationType(ERotationType type) { fRotationType=type; }
   void SetStartAnglePhi(Double_t phi)      { fStartAnglePhi=phi; }
   void SetConeAnglePhi(Double_t phi)       { fConeAnglePhi=phi;  }
+  void SetKeepLocalY(Bool_t keep)          { fKeepLocalY=keep;  }
 
   //Getters
   Int_t GetIterations() const           { return fIterations;    }
   ERotationType GetRotationType() const { return fRotationType;  }
   Double_t GetStartAnglePhi() const     { return fStartAnglePhi; }
   Double_t GetConeAnglePhi() const      { return fConeAnglePhi;  }
+  Bool_t GetKeepLocalY() const          { return fKeepLocalY;  }
 
   void SetEvent(AliVEvent * const ev)   { fEvent = ev;           }
   void SetPdgLegs(Int_t pdfLeg1, Int_t pdfLeg2) { fPdgLeg1=pdfLeg1; fPdgLeg2=pdfLeg2; }
@@ -60,6 +62,7 @@ public:
 
   AliVTrack* GetVTrackP() const {return fVTrackP;}
   AliVTrack* GetVTrackN() const {return fVTrackN;}
+  Bool_t SameTracks() const {return fSameTracks;}
   
 private:
   UInt_t   fIterations;             // number of iterations
@@ -68,6 +71,7 @@ private:
   
   Double_t fStartAnglePhi;          // starting angle for rotation
   Double_t fConeAnglePhi;           // opening angle in phi for multiple rotation
+  Bool_t fKeepLocalY;               // rotate on such an angle that the position wrt TPC chamber borders stays the same
 
   const TObjArray *fkArrTracksP;    //! array of positive tracks
   const TObjArray *fkArrTracksN;    //! array of negative tracks
@@ -86,7 +90,7 @@ private:
   
   Int_t fPdgLeg1;                   //! pdg code leg1
   Int_t fPdgLeg2;                   //! pdg code leg2
-  
+  Bool_t fSameTracks;               //! tracks in both arrays at current position are the same
 
   Bool_t RotateTracks();
   
@@ -94,7 +98,7 @@ private:
   AliDielectronTrackRotator &operator=(const AliDielectronTrackRotator &c);
 
   
-  ClassDef(AliDielectronTrackRotator,1)         // Dielectron TrackRotator
+  ClassDef(AliDielectronTrackRotator,2)         // Dielectron TrackRotator
 };
 
 

@@ -346,16 +346,15 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fNzVtxBins					(0), 
 	fNCentBins					(0),
 	fNOfPools(1),
-	fEventBuffer(0x0),
-	fEventInfo(new TObjString("")),
-	fElectronTracks(0x0),
-	fCascadeTracks1(0x0),
-	fCascadeTracks2(0x0),
-  fElectronCutVarsArray(0x0),
-  fCascadeCutVarsArray1(0x0),
-  fCascadeCutVarsArray2(0x0),
-  fHistoPoolNumberOfDumps(0),
-  fHistoPoolNumberOfResets(0)
+  fPoolIndex(-9999),
+  nextResVec(),
+  reservoirsReady(),
+  m_ReservoirE(),
+  m_ReservoirL1(),
+  m_ReservoirL2(),
+  m_ReservoirVarsE(),
+  m_ReservoirVarsL1(),
+  m_ReservoirVarsL2()
 {
   //
   // Default Constructor. 
@@ -633,17 +632,16 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
 	fNCentBins					(0),
-	fNOfPools(1),
-	fEventBuffer(0x0),
-	fEventInfo(new TObjString("")),
-	fElectronTracks(0x0),
-	fCascadeTracks1(0x0),
-	fCascadeTracks2(0x0),
-  fElectronCutVarsArray(0x0),
-  fCascadeCutVarsArray1(0x0),
-  fCascadeCutVarsArray2(0x0),
-  fHistoPoolNumberOfDumps(0),
-  fHistoPoolNumberOfResets(0)
+  fNOfPools(1),
+  fPoolIndex(-9999),
+  nextResVec(),
+  reservoirsReady(),
+  m_ReservoirE(),
+  m_ReservoirL1(),
+  m_ReservoirL2(),
+  m_ReservoirVarsE(),
+  m_ReservoirVarsL1(),
+  m_ReservoirVarsL2()
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -739,24 +737,34 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::~AliAnalysisTaskSEXic2eleXifromAODtrack
 		fCounter = 0;
 	}
 
-	if(fElectronTracks) fElectronTracks->Delete();
-	delete fElectronTracks;
-	if(fCascadeTracks1) fCascadeTracks1->Delete();
-	delete fCascadeTracks1;
-	if(fCascadeTracks2) fCascadeTracks2->Delete();
-	delete fCascadeTracks2;
-  if(fEventBuffer){
-    for(Int_t i=0; i<fNOfPools; i++) delete fEventBuffer[i];
-    delete fEventBuffer;
+  for(Int_t i = 0;i<fNOfPools;i++){
+    for(Int_t j=0;j<fNumberOfEventsForMixing;j++){
+      while(!m_ReservoirE[i][j].empty()){
+        delete m_ReservoirE[i][j].back();
+        m_ReservoirE[i][j].pop_back();
+      }
+      while(!m_ReservoirL1[i][j].empty()){
+        delete m_ReservoirL1[i][j].back();
+        m_ReservoirL1[i][j].pop_back();
+      }
+      while(!m_ReservoirL2[i][j].empty()){
+        delete m_ReservoirL2[i][j].back();
+        m_ReservoirL2[i][j].pop_back();
+      }
+      while(!m_ReservoirVarsE[i][j].empty()){
+        delete m_ReservoirVarsE[i][j].back();
+        m_ReservoirVarsE[i][j].pop_back();
+      }
+      while(!m_ReservoirVarsL1[i][j].empty()){
+        delete m_ReservoirVarsL1[i][j].back();
+        m_ReservoirVarsL1[i][j].pop_back();
+      }
+      while(!m_ReservoirVarsL2[i][j].empty()){
+        delete m_ReservoirVarsL2[i][j].back();
+        m_ReservoirVarsL2[i][j].pop_back();
+      }
+    }
   }
-  delete fEventInfo;
-
-  if(fElectronCutVarsArray) fElectronCutVarsArray->Delete();
-  delete fElectronCutVarsArray;
-  if(fCascadeCutVarsArray1) fCascadeCutVarsArray1->Delete();
-  delete fCascadeCutVarsArray1;
-  if(fCascadeCutVarsArray2) fCascadeCutVarsArray2->Delete();
-  delete fCascadeCutVarsArray2;
 
   if (fGTI)
     delete[] fGTI;
@@ -929,12 +937,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
 	}else if(fUseCentralitySPDTracklet){
-		if(countCorr>=1 && countCorr<=8) fCentrality = 5.;
-		else if(countCorr>=9 && countCorr<=13) fCentrality = 15.;
-		else if(countCorr>=14 && countCorr<=19) fCentrality = 25.;
-		else if(countCorr>=20 && countCorr<=30) fCentrality = 35.;
-		else if(countCorr>=31 && countCorr<=49) fCentrality = 45.;
-		else fCentrality = 55.;
+		if(countCorr>=0 && countCorr<=0) fCentrality = 5.;
+    else if(countCorr>=1 && countCorr<=8) fCentrality = 15.;
+		else if(countCorr>=9 && countCorr<=13) fCentrality = 25.;
+		else if(countCorr>=14 && countCorr<=19) fCentrality = 35.;
+		else if(countCorr>=20 && countCorr<=30) fCentrality = 45.;
+		else if(countCorr>=31 && countCorr<=49) fCentrality = 55.;
+		else fCentrality = 65.;
 	}else{
 		fCentrality = 1.;
 	}
@@ -1067,35 +1076,33 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(8)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  if(fUseCentralitySPDTracklet){
+    fCounter->SetStudyMultiplicity(kTRUE,1.);
+  }
   fCounter->Init();
   PostData(8,fCounter);
 
 	if(fDoEventMixing){
-		fElectronTracks = new TObjArray();
-		fElectronTracks->SetOwner();
-		fCascadeTracks1 = new TObjArray();
-		fCascadeTracks1->SetOwner();
-		fCascadeTracks2 = new TObjArray();
-		fCascadeTracks2->SetOwner();
-    fElectronCutVarsArray = new TObjArray();
-    fElectronCutVarsArray->SetOwner();
-    fCascadeCutVarsArray1 = new TObjArray();
-    fCascadeCutVarsArray1->SetOwner();
-    fCascadeCutVarsArray2 = new TObjArray();
-    fCascadeCutVarsArray2->SetOwner();
-
 		fNOfPools=fNCentBins*fNzVtxBins;
-		fEventBuffer = new TTree*[fNOfPools];
-		for(Int_t i=0; i<fNOfPools; i++){
-			fEventBuffer[i]=new TTree(Form("EventBuffer_%d",i), "Temporary buffer for event mixing");
-			fEventBuffer[i]->Branch("zVertex", &fVtxZ);
-			fEventBuffer[i]->Branch("centrality", &fCentrality);
-			fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
-			fEventBuffer[i]->Branch("c1array", "TObjArray", &fCascadeTracks1);
-			fEventBuffer[i]->Branch("c2array", "TObjArray", &fCascadeTracks2);
-      fEventBuffer[i]->Branch("c1varsarray", "TObjArray", &fCascadeCutVarsArray1);
-      fEventBuffer[i]->Branch("c2varsarray", "TObjArray", &fCascadeCutVarsArray2);
-		}
+    m_ReservoirE.resize(fNOfPools,std::vector<std::vector<TLorentzVector *> > (fNumberOfEventsForMixing));
+    m_ReservoirL1.resize(fNOfPools,std::vector<std::vector<TLorentzVector *> > (fNumberOfEventsForMixing));
+    m_ReservoirL2.resize(fNOfPools,std::vector<std::vector<TLorentzVector *> > (fNumberOfEventsForMixing));
+    m_ReservoirVarsE.resize(fNOfPools,std::vector<std::vector<TVector *>  > (fNumberOfEventsForMixing));
+    m_ReservoirVarsL1.resize(fNOfPools,std::vector<std::vector<TVector *>  > (fNumberOfEventsForMixing));
+    m_ReservoirVarsL2.resize(fNOfPools,std::vector<std::vector<TVector *>  > (fNumberOfEventsForMixing));
+    nextResVec.resize(fNOfPools,0);
+    reservoirsReady.resize(fNOfPools,kFALSE);
+
+    for(int s=0; s<fNOfPools; s++) {
+      for(unsigned int k=0;k<fNumberOfEventsForMixing;k++){
+        m_ReservoirE[s][k].clear();
+        m_ReservoirL1[s][k].clear();
+        m_ReservoirL2[s][k].clear();
+        m_ReservoirVarsE[s][k].clear();
+        m_ReservoirVarsL1[s][k].clear();
+        m_ReservoirVarsL2[s][k].clear();
+      }
+    }
 	}
 
   fGTI = new AliAODTrack *[fTrackBuffSize]; // Array of pointers 
@@ -1116,11 +1123,34 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
   //------------------------------------------------
   // Select good track before hand to save time
   //------------------------------------------------
-	if(fDoEventMixing && fElectronTracks) fElectronTracks->Delete();
-	if(fDoEventMixing && fCascadeTracks1) fCascadeTracks1->Delete();
-	if(fDoEventMixing && fCascadeTracks2) fCascadeTracks2->Delete();
-	if(fDoEventMixing && fCascadeCutVarsArray1) fCascadeCutVarsArray1->Delete();
-	if(fDoEventMixing && fCascadeCutVarsArray2) fCascadeCutVarsArray2->Delete();
+  if(fDoEventMixing){
+    fPoolIndex=GetPoolIndex(fVtxZ,fCentrality);
+    Int_t nextRes( nextResVec[fPoolIndex] );
+    while(!m_ReservoirE[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirE[fPoolIndex][nextRes].back();
+      m_ReservoirE[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirL1[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirL1[fPoolIndex][nextRes].back();
+      m_ReservoirL1[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirL2[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirL2[fPoolIndex][nextRes].back();
+      m_ReservoirL2[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirVarsE[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirVarsE[fPoolIndex][nextRes].back();
+      m_ReservoirVarsE[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirVarsL1[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirVarsL1[fPoolIndex][nextRes].back();
+      m_ReservoirVarsL1[fPoolIndex][nextRes].pop_back();
+    }
+    while(!m_ReservoirVarsL2[fPoolIndex][nextRes].empty()){
+      delete m_ReservoirVarsL2[fPoolIndex][nextRes].back();
+      m_ReservoirVarsL2[fPoolIndex][nextRes].pop_back();
+    }
+  }
 
   ResetGlobalTrackReference();
   // ..and set it
@@ -1213,19 +1243,15 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
   }
 
   if(fDoEventMixing){
-		fEventInfo->SetString(Form("Ev%d_esd%d_E%d_C%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fElectronTracks->GetEntries(),fCascadeTracks1->GetEntries()+fCascadeTracks2->GetEntries()));
-    Int_t ind=GetPoolIndex(fVtxZ,fCentrality);
-    if(ind>=0 && ind<fNOfPools){
-      if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
-				DoEventMixingWithPools(ind);
-				if(fEventBuffer[ind]->GetEntries() >= 100*fNumberOfEventsForMixing){
-					ResetPool(ind);
-          fHistoPoolNumberOfResets->Fill(ind);
-				}
-        fHistoPoolNumberOfDumps->Fill(ind);
-      }
-      fEventBuffer[ind]->Fill();
+    DoEventMixingWithPools(fPoolIndex);
+
+    Int_t nextRes( nextResVec[fPoolIndex] );
+    nextRes++;
+    if( nextRes>=fNumberOfEventsForMixing ){
+      nextRes = 0;
+      reservoirsReady[fPoolIndex] = kTRUE;
     }
+    nextResVec[fPoolIndex] = nextRes;
   }
 }
 
@@ -2593,8 +2619,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
     (*varvec)[5] = d0z0[0];
     (*varvec)[6] = convtype;
     (*varvec)[7] = mcetype;
-    fElectronTracks->AddLast(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
-    fElectronCutVarsArray->AddLast(varvec);
+
+    Int_t nextRes( nextResVec[fPoolIndex] );
+    m_ReservoirE[fPoolIndex][nextRes].push_back(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
+    m_ReservoirVarsE[fPoolIndex][nextRes].push_back(varvec);
 	}
 
 
@@ -2809,13 +2837,14 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   delete trackCasc;
 
 	if(fDoEventMixing){
+    Int_t nextRes( nextResVec[fPoolIndex] );
 		TLorentzVector *lv = new TLorentzVector();
 		lv->SetXYZM(momcasc_new[0],momcasc_new[1],momcasc_new[2],casc->MassXi());
     Double_t xyzR125pr[3]={9999.,9999.,9999.};
     Double_t xyzR125pi[3]={9999.,9999.,9999.};
     Double_t xyzR125bach[3]={9999.,9999.,9999.};
 		if(casc->ChargeXi()>0){
-			fCascadeTracks1->AddLast(lv);
+      m_ReservoirL1[fPoolIndex][nextRes].push_back(lv);
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.){
         fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pr);
         fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pi);
@@ -2831,9 +2860,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
       (*varvec)[6] = xyzR125bach[0];
       (*varvec)[7] = xyzR125bach[1];
       (*varvec)[8] = xyzR125bach[2];
-      fCascadeCutVarsArray1->AddLast(varvec);
+      m_ReservoirVarsL1[fPoolIndex][nextRes].push_back(varvec);
     }else{
-			fCascadeTracks2->AddLast(lv);
+      m_ReservoirL2[fPoolIndex][nextRes].push_back(lv);
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.){
         fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pr);
         fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pi);
@@ -2849,7 +2878,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
       (*varvec)[6] = xyzR125bach[0];
       (*varvec)[7] = xyzR125bach[1];
       (*varvec)[8] = xyzR125bach[2];
-      fCascadeCutVarsArray2->AddLast(varvec);
+      m_ReservoirVarsL2[fPoolIndex][nextRes].push_back(varvec);
     }
 	}
 
@@ -3247,17 +3276,11 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineGeneralHistograms() {
 	fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 	fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 
-  fHistoPoolNumberOfDumps = new TH1F("fHistoPoolNumberOfDumps","Number of dumps",1000,-0.5,999.5);
-  fHistoPoolNumberOfDumps->SetBinContent(999,fNumberOfEventsForMixing);
-  fHistoPoolNumberOfResets = new TH1F("fHistoPoolNumberOfResets","Number of resets",1000,-0.5,999.5);
-
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
 	fOutput->Add(fHNTrackletvsZ);
 	fOutput->Add(fHNTrackletCorrvsZ);
-  fOutput->Add(fHistoPoolNumberOfDumps);
-  fOutput->Add(fHistoPoolNumberOfResets);
 
   return;
 }
@@ -3838,6 +3861,7 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoMassVariablesvsXiPt = new THnSparseF("fHistoMassVariablesvsXiPt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
   fHistoMassVariablesvsXiPtMix = new THnSparseF("fHistoMassVariablesvsXiPtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
   fHistoMassVariablesvsXiPtMC = new THnSparseF("fHistoMassVariablesvsXiPtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+
 
   fOutputAll->Add(fHistoCorrelationVariablesvsEleXiPt);
   fOutputAll->Add(fHistoCorrelationVariablesvsEleXiPtMix);
@@ -4550,108 +4574,47 @@ Int_t AliAnalysisTaskSEXic2eleXifromAODtracks::GetPoolIndex(Double_t zvert, Doub
   return fNCentBins*theBinZ+theBinM;
 }
 //_________________________________________________________________
-void AliAnalysisTaskSEXic2eleXifromAODtracks::ResetPool(Int_t poolIndex){
-	//
-  // delete the contets of the pool
-	//
-  if(poolIndex<0 || poolIndex>=fNOfPools) return;
-  delete fEventBuffer[poolIndex];
-  fEventBuffer[poolIndex]=new TTree(Form("EventBuffer_%d",poolIndex), "Temporary buffer for event mixing");
-
-	fEventBuffer[poolIndex]->Branch("zVertex", &fVtxZ);
-	fEventBuffer[poolIndex]->Branch("centrality", &fCentrality);
-	fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
-	fEventBuffer[poolIndex]->Branch("c1array", "TObjArray", &fCascadeTracks1);
-	fEventBuffer[poolIndex]->Branch("c2array", "TObjArray", &fCascadeTracks2);
-	fEventBuffer[poolIndex]->Branch("c1varsarray", "TObjArray", &fCascadeCutVarsArray1);
-	fEventBuffer[poolIndex]->Branch("c2varsarray", "TObjArray", &fCascadeCutVarsArray2);
-
-  return;
-}
-//_________________________________________________________________
 void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolIndex)
 {
-	//
+  //
   // perform mixed event analysis
-	//
+  //
+  Int_t nextRes( nextResVec[poolIndex] );
+  Int_t KiddiePool = m_ReservoirE[poolIndex].size();
+  if( !reservoirsReady[poolIndex] )  KiddiePool = nextRes;
 
-  if(poolIndex<0 || poolIndex>fNzVtxBins*fNCentBins) return;
-	if(fEventBuffer[poolIndex]->GetEntries()<fNumberOfEventsForMixing) return;
-
-	Int_t nEle = fElectronTracks->GetEntries();
-  Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
-
-  TObjArray* c1array=0x0;
-  TObjArray* c2array=0x0;
-  TObjArray* c1varsarray=0x0;
-  TObjArray* c2varsarray=0x0;
-  Float_t zVertex,cent;
-  TObjString* eventInfo=0x0;
-  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
-  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
-  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &cent);
-  fEventBuffer[poolIndex]->SetBranchAddress("c1array", &c1array);
-  fEventBuffer[poolIndex]->SetBranchAddress("c2array", &c2array);
-  fEventBuffer[poolIndex]->SetBranchAddress("c1varsarray", &c1varsarray);
-  fEventBuffer[poolIndex]->SetBranchAddress("c2varsarray", &c2varsarray);
-  for (Int_t i=0; i<nEle; i++)
+  if( KiddiePool>0 )
   {
-		TLorentzVector* trke=(TLorentzVector*) fElectronTracks->At(i);
-    if(!trke)continue;
-    TVector *elevarsarray = (TVector*)fElectronCutVarsArray->At(i);
-
-		for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
-			fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
-			//TObjArray* c1array1=(TObjArray*)c1array->Clone();
-			Int_t nCascs1=c1array->GetEntries();
-			//Float_t zVertex1=zVertex;
-			//Float_t mult1=cent;
-//			Int_t evId1,esdId1,ne1,nv1;
-//			sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_E%d_C%d",&evId1,&esdId1,&ne1,&nv1);
-//			if(nv1!=(nCascs1+nCascs2)){ 
-//				printf("AliAnalysisTaskSEXic2eleXifromAODtracks::DoMixingWithPools ERROR: read event does not match to the stored one\n");
-//				delete c1array1;
-//				delete c2array1;
-//				continue;
-//			}
-      for(Int_t iTr1=0; iTr1<nCascs1; iTr1++){
-				TLorentzVector* casc1=(TLorentzVector*) c1array->At(iTr1);
-				if(!casc1) continue;
-        TVector *cascvarsarray = (TVector*) c1varsarray->At(iTr1);
-				FillMixROOTObjects(trke,casc1,elevarsarray,cascvarsarray,1);
-			}//casc loop
-
-			//TObjArray* c2array1=(TObjArray*)c2array->Clone();
-			Int_t nCascs2=c2array->GetEntries();
-      for(Int_t iTr2=0; iTr2<nCascs2; iTr2++){
-				TLorentzVector* casc2=(TLorentzVector*) c2array->At(iTr2);
-				if(!casc2) continue;
-        TVector *cascvarsarray = (TVector*) c2varsarray->At(iTr2);
-				FillMixROOTObjects(trke,casc2,elevarsarray,cascvarsarray,-1);
-			}//casc loop
-
-			//delete c1array1;
-			//delete c2array1;
-		}//event loop
-	}//track loop
-
-  delete eventInfo;
-  if(c1array) c1array->Delete();
-  delete c1array;
-  if(c2array) c2array->Delete();
-  delete c2array;
-  if(c1varsarray) c1varsarray->Delete();
-  delete c1varsarray;
-  if(c2varsarray) c2varsarray->Delete();
-  delete c2varsarray;
-
-  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &fVtxZ);
-  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &fCentrality);
-  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&fEventInfo);
-  fEventBuffer[poolIndex]->SetBranchAddress("c1array", &fCascadeTracks1);
-  fEventBuffer[poolIndex]->SetBranchAddress("c2array", &fCascadeTracks2);
-  fEventBuffer[poolIndex]->SetBranchAddress("c1varsarray", &fCascadeCutVarsArray1);
-  fEventBuffer[poolIndex]->SetBranchAddress("c2varsarray", &fCascadeCutVarsArray2);
+    for(Int_t j=0;j<KiddiePool;j++){
+      if( j!=nextRes ){
+        FillBackground(m_ReservoirE[poolIndex][nextRes],m_ReservoirVarsE[poolIndex][nextRes],m_ReservoirL1[poolIndex][j],m_ReservoirVarsL1[poolIndex][j],1);
+        FillBackground(m_ReservoirE[poolIndex][j],m_ReservoirVarsE[poolIndex][j],m_ReservoirL1[poolIndex][nextRes],m_ReservoirVarsL1[poolIndex][nextRes],1);
+        FillBackground(m_ReservoirE[poolIndex][nextRes],m_ReservoirVarsE[poolIndex][nextRes],m_ReservoirL2[poolIndex][j],m_ReservoirVarsL2[poolIndex][j],-1);
+        FillBackground(m_ReservoirE[poolIndex][j],m_ReservoirVarsE[poolIndex][j],m_ReservoirL2[poolIndex][nextRes],m_ReservoirVarsL2[poolIndex][nextRes],-1);
+      }
+    }
+  }
+}
+//_________________________________________________________________
+void AliAnalysisTaskSEXic2eleXifromAODtracks::FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t charge_xi)
+{     
+  //
+  // Fill background
+  //
+  int nEle = mixTypeE.size();
+  int nCasc = mixTypeL.size();
+  for(Int_t ie=0;ie<nEle;ie++){
+    TLorentzVector* trke=mixTypeE[ie];
+    if(!trke) continue;
+    TVector *elevars = mixTypeEVars[ie];
+    for(Int_t iv=0;iv<nCasc;iv++){
+      TLorentzVector* casc=mixTypeL[iv];
+      TVector *cascvars = mixTypeLVars[iv];
+      if(!casc) continue;
+      FillMixROOTObjects(trke,casc,elevars,cascvars,charge_xi);
+    }
+  }
+  return;
 }
 //_________________________________________________________________
 Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)

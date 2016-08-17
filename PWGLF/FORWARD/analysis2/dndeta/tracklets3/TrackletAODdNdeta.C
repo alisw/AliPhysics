@@ -68,7 +68,10 @@ struct TrackletAODdNdeta : public TrainSetup
     fOptions.Add("mc",                   "For MC data",             false);
     fOptions.Add("multsel",              "Enable MultSelection",    false);
     fOptions.Add("abs-min-cent","PERCENT","Absolute least cent.",   -1);
-    fOptions.Add("reweight",   "FILE",    "File with weights",      "");
+    fOptions.Add("reweigh",    "FILE",   "File with weights",      "");
+    fOptions.Add("reweigh-calc", "MODE", "prod,square,sum",        "prod");
+    fOptions.Add("reweigh-mask", "MASK", "Tracklet mask for weighing", 0xFF);
+    fOptions.Add("reweigh-veto", "VETO", "Tracklet veto for weighing", 0x0);
     fOptions.SetDescription("Analyse AOD for dN/deta from tracklets");
     fOptions.Set("type", "AOD");
   }
@@ -123,13 +126,12 @@ struct TrackletAODdNdeta : public TrainSetup
     if (!mc) mc = fRailway->IsMC();     
     Long_t ret  =
       gROOT->ProcessLine(Form("AliTrackletAODdNdeta::Create(%d,\"%s\")",mc,
-			      fOptions.AsString("reweight")));
+			      fOptions.AsString("reweigh")));
     AliAnalysisTaskSE* task = reinterpret_cast<AliAnalysisTaskSE*>(ret);
     if (!task) return;
     
     // --- Figure out the trigger options ----------------------------
-    TString trg = fOptions.Get("trig");
-    trg.ToUpper();
+    TString trg = fOptions.Get("trig"); trg.ToUpper();
     UInt_t  sel = AliVEvent::kINT7;
     if      (trg.EqualTo("MB"))    sel = AliVEvent::kMB;
     else if (trg.EqualTo("V0AND")) sel = AliVEvent::kINT7;
@@ -137,6 +139,14 @@ struct TrackletAODdNdeta : public TrainSetup
     else if (trg.EqualTo("ANY"))   sel = AliVEvent::kAny;
     task->SelectCollisionCandidates(sel);
 
+    // --- Figure out calculation mode -------------------------------
+    TString calc = fOptions.Get("reweigh-calc"); calc.ToUpper();
+    UChar_t mcal = 0;
+    if      (calc.BeginsWith("PROD")) mcal = 0;
+    else if (calc.BeginsWith("SQ"))   mcal = 1;
+    else if (calc.BeginsWith("SUM"))  mcal = 2;
+    else if (calc.BeginsWith("AV"))   mcal = 3;
+    
     // --- Set various options on task -------------------------------
     const char* defCent = DefaultCentBins();
     FromOption(task, "CentralityMethod","cent", 	    "V0M");
@@ -145,12 +155,15 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "IPzAxis",         "ipz-bins",         "u15");
     FromOption(task, "DeltaCut",	"delta-cut",	    1.5);
     FromOption(task, "TailDelta",	"tail-delta",	    5.);
-    FromOption(task, "TailMax",		"tail-max",	    -1);
+    FromOption(task, "TailMaximum",	"tail-max",	    -1);
     FromOption(task, "MaxDelta",	"max-delta",	    25.);
     FromOption(task, "DPhiShift",	"dphi-shift",	    0.0045);
     FromOption(task, "ShiftedDPhiCut",	"shifted-dphi-cut",-1.);
     FromOption(task, "AbsMinCent",      "abs-min-cent",    -1.);
-
+    FromOption(task, "WeightMask",      "reweigh-mask",     0xFF);
+    FromOption(task, "WeightVeto",      "reweigh-veto",     0x0);
+    SetOnTask (task, "WeightCalc",                          mcal);
+    
     // if (mc && we) {
     //   TUrl wurl(fOptions.AsString("reweight"));
     //   TFile* wfile = TFile::Open(wurl.GetFile());
@@ -176,7 +189,7 @@ struct TrackletAODdNdeta : public TrainSetup
     //   SetOnTaskGeneric(task, "Weights",
     // 		       Form("((AliTrackletWeights*)%p)", wobj));
     // }
-	
+    Printf("Print the generated task");
     task->Print("");    
   }
   /** 

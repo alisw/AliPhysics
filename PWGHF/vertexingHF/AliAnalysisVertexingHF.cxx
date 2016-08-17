@@ -1822,7 +1822,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   if(!inputArrayD0) return kFALSE;
   trackD0=(AliAODRecoDecayHF2Prong*)inputArrayD0->At(rCasc->GetProngID(1)); 
   if(!trackD0)return kFALSE;
-  FillRecoCand(event,trackD0);//fill missing info of the corresponding D0 daughter
+  if(!FillRecoCand(event,trackD0)) return kFALSE; //fill missing info of the corresponding D0 daughter
   
   trackV0 = new AliNeutralTrackParam(trackD0);
 

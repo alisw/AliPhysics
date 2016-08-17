@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTask_Syst_PtDistributionsMC+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Data+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Efficiency+;
+#pragma link C++ class AliAnalysisTaskMLTreeMaker+;
 #pragma link C++ class AliDielectronReducedTrack+;
 
 #endif

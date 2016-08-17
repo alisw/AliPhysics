@@ -144,7 +144,7 @@ ClassImp(AliFemtoKKTrackCut)
   fNsigmaTPC400_450=3.0;
   fNsigmaTPC450_500=3.0;
   fNsigmaTPCge500=3.0;
-
+  
   fNsigmaTOF500_800=3.0;
   fNsigmaTOF800_1000=3.0;
   fNsigmaTOFge1000=3.0;
@@ -954,7 +954,6 @@ bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 /////////////  
   
   
-  
   if(mom>=0.5 && mom<0.8)
     {
       if(TMath::Abs(nsigmaTOFK)<fNsigmaTOF500_800 && TMath::Abs(nsigmaTPCK)<fNsigmaTPCge500) 
@@ -1128,8 +1127,6 @@ void AliFemtoKKTrackCut::SetNsigmaTPCge500(Double_t nsigma)
 {
   fNsigmaTPCge500 = nsigma;
 }
-
-
 
 void AliFemtoKKTrackCut::SetNsigmaTOF500_800(Double_t nsigma)
 {

@@ -108,6 +108,7 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections() {
   }
   eventCuts->Add(new AliQnCorrectionsCutWithin(varForEventMultiplicity,centralityMin,centralityMax));
   taskQnCorrections->SetEventCuts(eventCuts);
+  taskQnCorrections->SetUseOnlyCentCalibEvents(bUseOnlyCentCalibEvents);
 
   /* and the physics selection also */
   if (!b2015DataSet) {

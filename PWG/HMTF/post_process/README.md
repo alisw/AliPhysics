@@ -37,10 +37,11 @@ $ hmtfmc prepare_plots --help
 usage: hmtfmc prepare_plots [-h] input_file
 
 This will download AnalysisResults.root from the given alien path into the
-current directory, prefixing it with the train number. Subsequently, "all"
-plots are created and saved in to the AnalysisResults.root file. This step
-needs to be taken before creating summary or comparison PDFs. This operation
-requrires a valid alien-token!
+current directory. The file name is composed of the train id and generator
+name as given in the trains `env.sh` file. Subsequently, "all" plots are
+created and saved in to the AnalysisResults.root file. This step needs to be
+taken before creating summary or comparison PDFs. This operation requrires a
+valid alien-token!
 
 positional arguments:
   input_file  Path to file containing the input data
@@ -58,34 +59,21 @@ Now, there is a file called 393_AnalysisResults.root (393 being the train number
 Assuming that the previously downloaded file was for "Dipsy 13 TeV Ropes", the following will create the summary slides. Again, `--help` is available.
 
 ``` shell
-$ hmtfmc summary --help
-usage: hmtfmc prepare_plots [-h] input_file
-
-This will download AnalysisResults.root from the given alien path into the
-current directory, prefixing it with the train number. Subsequently, "all"
-plots are created and saved in to the AnalysisResults.root file. This step
-needs to be taken before creating summary or comparison PDFs. This operation
-requrires a valid alien-token!
-
-positional arguments:
-  input_file  Path to file containing the input data
-
-optional arguments:
-  -h, --help  show this help message and exit
-(hmtf) christian@christian-x1:~/hmtf_testground$ hmtfmc summarize --help
-usage: hmtfmc summarize [-h] input_file gen_name
+$ hmtfmc summarize --help
+usage: hmtfmc summarize [-h] [--gen_name GEN_NAME] input_file
 
 Create summary slides for all triggers of a given generator. Remember to use
 quotes if the generator name contains spaces and be careful with special
 characters.
 
 positional arguments:
-  input_file  Path to file containing the input data
-  gen_name    Name of the generator used. Used in the title of the PDF
+  input_file           Path to file containing the input data
 
 optional arguments:
-  -h, --help  show this help message and exit
-  
+  -h, --help           show this help message and exit
+  --gen_name GEN_NAME  Name of the generator and tune. If not given, deduced
+                       from filename
+
 $ hmtfmc summary 393_AnalysisResults.root "Dipsy 13TeV Ropes"
 ```
 
@@ -96,22 +84,10 @@ Two generators and/or tuning can be compared as follows
 
 ```shell
 $ hmtfmc compare --help
-usage: hmtfmc summarize [-h] input_file gen_name
-
-Create summary slides for all triggers of a given generator. Remember to use
-quotes if the generator name contains spaces and be careful with special
-characters.
-
-positional arguments:
-  input_file  Path to file containing the input data
-  gen_name    Name of the generator used. Used in the title of the PDF
-
-optional arguments:
-  -h, --help  show this help message and exit
-(hmtf) christian@christian-x1:~/hmtf_testground$ hmtfmc compare --help
-usage: hmtfmc compare [-h]
-                      input_file1 {Inel,InelGt0,V0AND} generator_name1
-                      input_file2 {Inel,InelGt0,V0AND} generator_name2
+usage: hmtfmc compare [-h] [--generator_name1 GENERATOR_NAME1]
+                      [--generator_name2 GENERATOR_NAME2]
+                      input_file1 {Inel,InelGt0,V0AND} input_file2
+                      {Inel,InelGt0,V0AND}
 
 Compare the 'highlight plots' for of two estimators for two given triggers.
 Requires the plots to have been previously prepared by running
@@ -120,13 +96,15 @@ Requires the plots to have been previously prepared by running
 positional arguments:
   input_file1           Path to the first file to be compared
   {Inel,InelGt0,V0AND}  Trigger of interest in first file
-  generator_name1       Name and tune of first generator
   input_file2           Path to the second file to be compared
   {Inel,InelGt0,V0AND}  Trigger of interest in second file
-  generator_name2       Name and tune of second generator
 
 optional arguments:
   -h, --help            show this help message and exit
+  --generator_name1 GENERATOR_NAME1
+                        Overwrite name and tune of first generator.
+  --generator_name2 GENERATOR_NAME2
+                        Overwrite name and tune of second generator
 
 $ hmtfmc compare 393_AnalysisResults.root Inel "Dipsy INEL" 393_AnalysisResults.root InelGt0 "Dipsy V0AND"
 ```

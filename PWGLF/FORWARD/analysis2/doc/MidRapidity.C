@@ -1,12 +1,12 @@
 #error This is not for compilation 
 /** 
- * @page mid_doc The Mid-rapidity code 
+ * @page pwglf_fwd_mid_doc The Mid-rapidity code 
  *
  * Module: @ref pwglf_forward_tracklets
  *
  * @tableofcontents 
  *
- * @section mid_intro Introduction 
+ * @section pwglf_fwd_mid_intro Introduction 
  *
  * The code in this section defines methods to measure the
  * charged-particle pseudorapidity density over @f$|\eta|<2@f$ using
@@ -17,7 +17,7 @@
  * original code plus modifications from Roberto for reweighing the
  * simulation input.
  * 
- * @section mid_analysis_flow Analysis flow
+ * @section pwglf_fwd_mid_analysis_flow Analysis flow
  *
  * The analysis requires real data and simulated data, anchored to the
  * real data runs being processed.  For both real and simulated data,
@@ -106,13 +106,13 @@
  * Here, @f$ k@f$ is some scaling derived from the 3-dimensional
  * differential @f$\Delta_M@f$ and @f$\Delta_{M'}@f$ distributions .
  *
- * @section mid_structure Structure
+ * @section pwglf_fwd_mid_structure Structure
  *
  * There are classes for containing data, classes that represent
  * analysis tasks, and classes that perform calculations, as well as
  * specialized classes for analysis of simulation (MC) output. 
  *
- * @subsection mid_struct_data Data structures 
+ * @subsection pwglf_fwd_mid_struct_data Data structures 
  *
  * The classes AliAODTracklet and AliAODMCTracklet stores individual
  * tracklet parameters.  The difference between the two are that
@@ -120,7 +120,7 @@
  * momentum (momenta) of the mother primary particle (which may be the
  * particle it self).
  *
- * @subsection mid_struct_tasks Tasks 
+ * @subsection pwglf_fwd_mid_struct_tasks Tasks 
  * 
  * The pass over the ESD is done by the classes AliTrackletAODTask and
  * AliTrackletAODMCTask.  These tasks generated the array of tracklets
@@ -151,7 +151,7 @@
  * for reqeighing the data.
  *
  *
- * @subsection mid_misc Misc.
+ * @subsection pwglf_fwd_mid_misc Misc.
  *
  */
 //

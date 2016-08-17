@@ -26,7 +26,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData *AddTaskTrackDensityData
   trackcont->SetTrackFilterType(AliEmcalTrackSelection::kHybridTracks);
   densitytask->SetNameTrackContainer("trackcontainer");
 
-  AliJetContainer *jetcont = densitytask->AddJetContainer(jetcontainername, AliJetContainer::kTPC, 0.4);
+  AliJetContainer *jetcont = densitytask->AddJetContainer(jetcontainername, AliEmcalJet::kTPC, 0.4);
   jetcont->SetName("jetcontainer");
   jetcont->SetJetPtCut(20.);
   jetcont->SetJetEtaLimits(-0.5, 0.5);

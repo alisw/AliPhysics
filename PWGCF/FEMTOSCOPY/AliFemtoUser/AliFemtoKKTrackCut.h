@@ -75,7 +75,7 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
  void SetNsigmaTPC400_450(Double_t);
  void SetNsigmaTPC450_500(Double_t);
  void SetNsigmaTPCge500(Double_t);
-
+ 
  void SetNsigmaTOF500_800(Double_t);
  void SetNsigmaTOF800_1000(Double_t);
  void SetNsigmaTOFge1000(Double_t);
@@ -105,7 +105,7 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
  Double_t fNsigmaTPC400_450;
  Double_t fNsigmaTPC450_500;
  Double_t fNsigmaTPCge500;
-
+ 
  Double_t fNsigmaTOF500_800;
  Double_t fNsigmaTOF800_1000;
  Double_t fNsigmaTOFge1000;

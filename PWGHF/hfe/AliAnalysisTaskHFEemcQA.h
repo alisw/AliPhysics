@@ -65,6 +65,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
     AliPIDResponse *fpidResponse; //!pid response
+    AliEMCALGeometry *fEMCALGeo;
 
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
@@ -116,7 +117,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoCalCell;//! No of cells per cluster
     TH2F        *fHistoTimeEMC;//! No of cells per cluster
-    TH2F        *fHistoTimeEMCcorr;//! No of cells per cluster
+    THnSparse   *fHistoTimeEMCcorr;//! No of cells per cluster
     TH1F        *fNegTrkIDPt;//!neg track ID
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta
@@ -142,6 +143,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fClsEtaPhiAftMatchEMCout;//!EMC Cluster eta phi distribution after track matching outside EMC phi acceptance
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
+    TH2F        *fHistNsigEop_Most;//!pt vs E/p
+    TH2F        *fHistNsigEop_Semi;//!pt vs E/p
+    TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
@@ -155,6 +159,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fEleCanSPD2;//!ele cand hit SPD layer 2
     TH2F        *fEleCanSPDBoth;//!ele cand SPD both layer
     TH2F        *fEleCanSPDOr;//!ele cand SPD or
+    TH2F        *fITShitPhi;//!ele cand SPD or
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
     TH1F        *fMCcheckMother;

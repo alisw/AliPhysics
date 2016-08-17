@@ -3,14 +3,17 @@
 #include "TObjString.h"
 #include "TSystem.h"
 void runQA(){
-//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16d/manual4/");
-//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16e/manual4/");
-//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16f/manual4/");
-//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16g/manual4/");
-//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16j/manual/");
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2012/LHC12h/manual/");
+
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16d/manual/");
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16e/manual/");
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16f/manual/");
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16g/manual/");
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16h/manual/");
+  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16i/manual/");
   runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16j/manual/");
   runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16k/manual/");
-
+//  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2016/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15f/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15h/manual/");
 //  runQA_period("/afs/cern.ch/work/a/aliqaevs/www/data/2015/LHC15i/manual/");
@@ -32,7 +35,7 @@ void runQA_period(TString path="/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16
     TString statfile = "EventStat_temp.root";
     gSystem->Exec(Form("cp triggerInfo.C %s/000%i/",path.Data(),run));
     gSystem->Exec(Form("cp runLevelEventStatQA.C %s/000%i/",path.Data(),run));
-    gSystem->Exec(Form("cd %s/000%i; aliroot -l -b -q 'runLevelEventStatQA.C\(\"%s\",%i\,\"raw://\")'",path.Data(),run,statfile.Data(),run));
+    gSystem->Exec(Form("cd %s/000%i; aliroot -l -b -q 'runLevelEventStatQA.C\(\"%s\",%i\,\"local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB\")'",path.Data(),run,statfile.Data(),run));
   }
   f.close();
 

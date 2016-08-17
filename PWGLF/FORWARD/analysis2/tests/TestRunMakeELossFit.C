@@ -9,7 +9,7 @@
  *
  * @ingroup pwglf_forward_scripts_tests
  *
- * @depcrecated 
+ * @deprecated
  * The class AliFMDELossFitter automatically generates the
  * AliFMDCorrELossFit object.
  *

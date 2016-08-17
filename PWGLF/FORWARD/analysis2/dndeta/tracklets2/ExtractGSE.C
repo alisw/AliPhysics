@@ -1,3 +1,13 @@
+/**
+ * @file   PWGLF/FORWARD/analysis2/dndeta/tracklets2/ExtractGSE.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Mon Aug 15 09:38:59 2016
+ * 
+ * @brief  
+ * 
+ * 
+ */
+
 #ifndef __CINT__
 # include "GraphSysErr.C"
 # include <TFile.h>
@@ -53,15 +63,42 @@ Int_t MakeP2P(TObject* o, const char* name, Color_t c)
 }
   
 //====================================================================
+/** 
+ * Evaluate a systematic error 
+ * 
+ * @param x    Where 
+ * @param sMin Least error 
+ * @param sMax Largest error 
+ * @param xMax Largest @f$ x@f$ 
+ * 
+ * @return Systematic error 
+ */
 Double_t SysEval(Double_t x, Double_t sMin, Double_t sMax, Double_t xMax)
 {
   return sMin + TMath::Power(x/xMax, 2)*(sMax-sMin);
 }
-
+/** 
+ * Evaluate a centrality dependent systematic error 
+ * 
+ * @param x    Centrality 
+ * @param sMin Least error 
+ * @param sMax Largest error 
+ * 
+ * @return Systematic error 
+ */
 Double_t CSysEval(Double_t x, Double_t sMin, Double_t sMax)
 {
   return SysEval(x, sMin, sMax, 80);
 }
+/** 
+ * Evaluate an @f$ \eta@f$  dependent systematic error 
+ * 
+ * @param x    @f$ \eta@f$ 
+ * @param sMin Least error 
+ * @param sMax Largest error 
+ * 
+ * @return  Systematic error
+ */
 Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
 {
   return SysEval(x, sMin, sMax, 2);
@@ -71,7 +108,7 @@ Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
 /** 
  * Make a GraphSysErr object
  * 
- * @param g  Graph 
+ * @param d  Directory
  * @param c1 Least centrality 
  * @param c2 Largest centrality 
  * 
@@ -147,6 +184,16 @@ TObject* MakeGSE(TDirectory* d, Double_t c1, Double_t c2)
 }
 
 //____________________________________________________________________
+/** 
+ * Get an object from a directory/collection 
+ * 
+ * @param dir  Directory/collection 
+ * @param name Name of object 
+ * @param cls  Optionally, the type 
+ * 
+ * @return Pointer to read object (if type is specified, only if of
+ * the right type), or null
+ */
 TObject*
 GetO(TDirectory* dir, const char* name, TClass* cls=0)
 {
@@ -170,12 +217,28 @@ GetO(TDirectory* dir, const char* name, TClass* cls=0)
   return o;
 }
 //____________________________________________________________________
+/** 
+ * Get a directory from a directory/collection 
+ * 
+ * @param dir  Directory/collection 
+ * @param name Name of object 
+ * 
+ * @return Pointer to read object or null
+ */
 TDirectory* GetD(TDirectory* dir, const char* name)
 {
   return static_cast<TDirectory*>(GetO(dir,name,TDirectory::Class()));
 }
 
 //____________________________________________________________________
+/** 
+ * Get a histogram from a directory/collection 
+ * 
+ * @param dir  Directory/collection 
+ * @param name Name of object 
+ * 
+ * @return Pointer to read object or null
+ */
 TH1* GetH1(TDirectory* dir, const char* name)
 {
   return static_cast<TH1*>(GetO(dir,name,TH1::Class()));
@@ -184,6 +247,7 @@ TH1* GetH1(TDirectory* dir, const char* name)
 /**
  * Steering 
  * 
+ * @param input Input file 
  */
 void
 ExtractGSE(const char* input)
@@ -222,7 +286,11 @@ ExtractGSE(const char* input)
   rout->Write();
   
 }
-
+/** 
+ * Create GSE 
+ * 
+ * @param flags Flags of input file  
+ */
 void
 ExtractGSE(Int_t flags)
 {

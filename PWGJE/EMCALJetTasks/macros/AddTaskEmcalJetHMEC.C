@@ -181,7 +181,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
                                    AliJetContainer::antikt_algorithm,
                                    AliJetContainer::pt_scheme,
                                    jetRadius,
-                                   AliJetContainer::kEMCALfid,
+                                   AliEmcalJet::kEMCALfid,
                                    tracksForJets,
                                    clusterContainer);
   jetContainer->SetJetAreaCut(minJetArea);

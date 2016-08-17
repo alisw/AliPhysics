@@ -3,7 +3,7 @@ AliAnalysisTaskRho* AddTaskRhoNew(
    const char    *nClusters                      = "usedefault",
    const char    *nRho                           = "Rho",
    Double_t       jetradius                      = 0.2,
-   AliJetContainer::JetAcceptanceType acceptance = AliJetContainer::kTPCfid,
+   UInt_t         acceptance                     = AliEmcalJet::kTPCfid,
    AliJetContainer::EJetType_t jetType           = AliJetContainer::kChargedJet,
    const Bool_t   histo                          = kFALSE,
    AliJetContainer::ERecoScheme_t rscheme = AliJetContainer::pt_scheme,

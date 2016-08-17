@@ -72,14 +72,22 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   enum TriggerMakerTriggerType_t {
     kTMEMCalJet = 0,       ///< EMCAL Jet trigger
     kTMEMCalGamma = 1,     ///< EMCAL Gamma trigger
-    kTMEMCalLevel0 = 2,    ///< EMCAL Level0 patches
-    kTMEMCalRecalcJet = 3, ///< EMCAL Jet patches, recalculated
-    kTMEMCalRecalcGamma = 4///< EMCAL Gamma patches, recalculated
+    kTMEMCalLevel0 = 2     ///< EMCAL Level0 patches
+  };
+  enum TriggerMakerPatchSource_t{
+    kTMOnline = 0,
+    kTMOffline = 1,
+    kTMRecalc = 2
   };
   enum TriggerMakerBits_t {
     kMainTriggerBitNum = 15, ///< Trigger bit indicating the main (highest energy) trigger patch of a given type per event
     kRecalcOffset = 16,
     kOfflineOffset = 24
+  };
+
+  enum TriggerMakerBitmasks_t {
+    kRecalcBitmask = 0x00FF0000,      ///< Bitmask for Offline simple patches
+    kOfflineBitmask = 0xFF000000      ///< Bitmask for recalc patches
   };
 
   /***
@@ -110,7 +118,6 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   void SetV0InName(const char *name) { fV0InName      = name; }
   void AddHotFastor(int col, int row) { fBadChannels.AddChannel(col, row); }
 
-  void SetRunTriggerType(TriggerMakerTriggerType_t type, Bool_t doTrigger = kTRUE) { fRunTriggerType[type] = doTrigger; }
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig) { fUseTriggerBitConfig = bitConfig; }
   void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *conf) { fTriggerBitConfig = conf; }
 
@@ -124,6 +131,9 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   inline Bool_t IsEGA(Int_t tBits) const;
   inline Bool_t IsLevel0(Int_t tBits) const;
 
+  inline Bool_t IsOfflineSimple(Int_t tBits) const;
+  inline Bool_t IsRecalc(Int_t tBits) const;
+
  protected:
   static const TString                      fgkTriggerTypeNames[5];       ///< Histogram name tags
   static const int                          kColsEta;                     ///< Number of columns in eta direction
@@ -133,7 +143,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   Bool_t                                    Run();
   void                                      RunSimpleOfflineTrigger();
   Bool_t                                    NextTrigger( Bool_t &isOfflineSimple );
-  AliEMCALTriggerPatchInfo*                 ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple);
+  AliEMCALTriggerPatchInfo*                 ProcessPatch(TriggerMakerTriggerType_t type, TriggerMakerPatchSource_t patchSource);
   Bool_t 					                          CheckForL0(const AliVCaloTrigger &trg) const;
 
   AliEMCALTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
@@ -152,7 +162,6 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   AliEMCALTriggerDataGrid<int>              *fPatchADC;                   //!<! ADC values map
   AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   Int_t                                     fITrigger;                    //!<! trigger counter
-  Bool_t                                    fRunTriggerType[5];           ///< Run patch maker for a given trigger type
   Bool_t                                    fDoQA;                        ///< Fill QA histograms
   Bool_t                                    fRejectOffAcceptancePatches;  ///< Switch for rejection of patches outside the acceptance
   THistManager                              *fQAHistos;                   //!<! Histograms for QA
@@ -170,7 +179,7 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
 
 /**
  * Check whehter trigger is jet patch trigger according to trigger bits
- * @param tBits Trigger bits of the fastor
+ * @param[in] tBits Trigger bits of the fastor
  * @return True if fastor belongs to a jet patch trigger, false otherwise
  */
 Bool_t AliEmcalTriggerMaker::IsEJE(Int_t tBits) const {
@@ -182,7 +191,7 @@ Bool_t AliEmcalTriggerMaker::IsEJE(Int_t tBits) const {
 
 /**
  * Check whether trigger is gamma patch trigger according to trigger bits
- * @param tBits Trigger bits of the fastor
+ * @param[in] tBits Trigger bits of the fastor
  * @return True if fastor belongs to a gamma trigger, false otherwise
  */
 Bool_t AliEmcalTriggerMaker::IsEGA(Int_t tBits) const {
@@ -194,13 +203,31 @@ Bool_t AliEmcalTriggerMaker::IsEGA(Int_t tBits) const {
 
 /**
  * Check whether trigger is level0 trigger according to trigger bits
- * @param tBits Trigger bits of the fastor
+ * @param[in] tBits Trigger bits of the fastor
  * @return True if fastor belongs to a level0 trigger, false otherwise
  */
 Bool_t AliEmcalTriggerMaker::IsLevel0(Int_t tBits) const {
   if( tBits & (1 << (fTriggerBitConfig->GetLevel0Bit() + fTriggerBitConfig->GetLevel0Bit()) | (1 << fTriggerBitConfig->GetLevel0Bit())))
     return kTRUE;
   return kFALSE;
+}
+
+/**
+ * Identify offline simple patches based on the offline bitmask (bits 24 - 31)
+ * @param[in] tBits Trigger bits to check
+ * @return True if trigger bits contain offline simple bits
+ */
+Bool_t AliEmcalTriggerMaker::IsOfflineSimple(Int_t tBits) const {
+  return (tBits & kOfflineBitmask);
+}
+
+/**
+ * Identify recalc patches based on the recalc bitmask (bits 16 - 23)
+ * @param[in] tBits Trigger bits to check
+ * @return True if trigger bits contain recalc bits
+ */
+Bool_t AliEmcalTriggerMaker::IsRecalc(Int_t tBits) const {
+  return (tBits & kRecalcBitmask);
 }
 
 #endif

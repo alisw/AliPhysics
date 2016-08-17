@@ -98,7 +98,8 @@ AliAnalysisTaskDmesonJetsDetectorResponse* AddTaskDmesonJetsDetectorResponse(
   }
 
   if (!mcPartName.IsNull()) {
-    AliParticleContainer* partCont = new AliHFAODMCParticleContainer(mcPartName);
+    AliMCParticleContainer* partCont = new AliHFAODMCParticleContainer(mcPartName);
+    partCont->SetEtaLimits(-1.5, 1.5);
     jetTask->AdoptParticleContainer(partCont);
   }
 

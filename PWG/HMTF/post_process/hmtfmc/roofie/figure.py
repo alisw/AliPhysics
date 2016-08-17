@@ -358,7 +358,8 @@ class Figure(object):
 
                 # the xaxis depends on the type of the plottable :P
                 if isinstance(obj, ROOT.TGraph):
-                    # SetLimit on a TH1 is simply messing up the lables of the axis to fuck over the user!
+                    # SetLimit on a TH1 is simply messing up the
+                    # lables of the axis to screw over the user, presumably...
                     xaxis.SetLimits(xmin, xmax)
                     yaxis.SetLimits(ymin, ymax)  # for unbinned data
                     # 'P' plots the current marker, 'L' would connect the dots with a simple line
@@ -484,8 +485,10 @@ class Figure(object):
         except OSError:
             pass
 
-        # The order of the following is important! First, set paper size, then draw the canvas and then create the pdf
-        # Doin pdf.Range(10, 10) is not sufficient. it just does random shit
+        # The order of the following is important! First, set paper
+        # size, then draw the canvas and then create the pdf Doin
+        # pdf.Range(10, 10) is not sufficient. it just does random
+        # sh...
         # Be careful to reset the global gStyle when we are finished. Yeah! Globals!
         # Ok, Root does not like that either...
         # paper_width, paper_height = ROOT.Double(), ROOT.Double()

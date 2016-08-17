@@ -1176,11 +1176,11 @@ Int_t AliAnalysisTaskGammaConvFlow::GetTemplateID( AliAODConversionPhoton *MCPho
   
   if(pdgCodePos==11 && pdgCodeNeg==11)                                              TemplateID = 0; //signal -> e+ e-
   if(pdgCodePos==211 && pdgCodeNeg==211)                                            TemplateID = 1; //pi pi 211 211
-  if(pdgCodePos==211 && pdgCodeNeg==11 || pdgCodePos==11 && pdgCodeNeg==211)        TemplateID = 2; //pi e 211 11
-  if(pdgCodePos==211 && pdgCodeNeg==321 || pdgCodePos==321 && pdgCodeNeg==211)      TemplateID = 3; //pi K 211 321
-  if(pdgCodePos==211 && pdgCodeNeg==2212 || pdgCodePos==2212 && pdgCodeNeg==211)    TemplateID = 4; //pi p 211 2212
-  if(pdgCodePos==11 && pdgCodeNeg==321 || pdgCodePos==321 && pdgCodeNeg==11)        TemplateID = 5; //e K 11 321
-  if(pdgCodePos==11 && pdgCodeNeg==2212 || pdgCodePos==2212 && pdgCodeNeg==11)      TemplateID = 6; //e p 11 2212
+  if((pdgCodePos==211 && pdgCodeNeg==11) || (pdgCodePos==11 && pdgCodeNeg==211))        TemplateID = 2; //pi e 211 11
+  if((pdgCodePos==211 && pdgCodeNeg==321) || (pdgCodePos==321 && pdgCodeNeg==211))      TemplateID = 3; //pi K 211 321
+  if((pdgCodePos==211 && pdgCodeNeg==2212) || (pdgCodePos==2212 && pdgCodeNeg==211))    TemplateID = 4; //pi p 211 2212
+  if((pdgCodePos==11 && pdgCodeNeg==321) || (pdgCodePos==321 && pdgCodeNeg==11))        TemplateID = 5; //e K 11 321
+  if((pdgCodePos==11 && pdgCodeNeg==2212) || (pdgCodePos==2212 && pdgCodeNeg==11))      TemplateID = 6; //e p 11 2212
   if(pdgCodePos==321 && pdgCodeNeg==321)                                            TemplateID = 7; //K K 321 321
   if(pdgCodePos!=11 && pdgCodeNeg!=11 && TemplateID == -1)                          TemplateID = 8; //hadronic not 11 11
   

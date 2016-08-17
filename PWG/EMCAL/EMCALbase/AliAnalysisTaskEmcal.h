@@ -211,6 +211,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
+
   /**
    * Method exclusively called when the run is changed (new run number differing
    * from old run number). Can be used for run-dependent initializations (i.e.
@@ -219,11 +220,19 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual void                RunChanged()                      {}
 
   /**
+   * Interface for user code executed when the first event is called.
+   * At this step we know run number and data type and can therefore
+   * do proper initializations.
+   */
+  virtual void                UserExecOnce()                    {}
+
+  /**
    * This function optionally fills histograms created by the users. Can
    * access data previously handled by the user Run function.
    * @return
    */
   virtual Bool_t              FillHistograms()                  { return kTRUE                 ; }
+
   /**
    * Run function. This is the core function of the analysis and
    * contains the user code. Therefore users have to implement this

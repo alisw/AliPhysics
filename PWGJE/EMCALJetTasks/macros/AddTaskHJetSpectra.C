@@ -146,7 +146,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContRec->SetPercAreaCut(acut);//0.6
       jetContRec->SetMinPt(0.15);
       jetContRec->SetMaxTrackPt(1000);
-      jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
    }
 
@@ -156,7 +156,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContRecKT->SetPercAreaCut(acut);//0.6         ?????????   APPLY CUT FOR BG KT JETS
       jetContRecKT->SetMinPt(0.);
       jetContRecKT->SetMaxTrackPt(1000);
-      jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);  // RANGE   
    }
 
@@ -355,7 +355,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContRec->SetPythiaInfoName("PythiaInfo");
       jetContRec->SetMinPt(0.15);
       jetContRec->SetMaxTrackPt(1000);
-      jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
    }
    //AKT JETS GEN ContainerTwo
@@ -366,7 +366,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContTrue->SetPythiaInfoName("PythiaInfo");
       jetContTrue->SetMinPt(0.15);
       jetContTrue->SetMaxTrackPt(1000);
-      jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
    }
 
@@ -378,7 +378,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       jetContRecKT->SetMinPt(0.);
       //jetContRecKT->SetPythiaInfoName("PythiaInfo");
       jetContRecKT->SetMaxTrackPt(1000);
-      jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
    }
    //KT JET CONTAINERS FOR BG GEN ContainerFour
@@ -389,7 +389,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
       jetContTrueKT->SetMinPt(0.);
       jetContTrueKT->SetMaxTrackPt(1000);
-      jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+      jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
       jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
    }
 
@@ -752,7 +752,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          jetContRec->SetPercAreaCut(acut);//0.6
          jetContRec->SetMinPt(0.150);
          jetContRec->SetMaxTrackPt(1000);
-         jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
 
@@ -762,7 +762,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContRecKT->SetPercAreaCut(acut);//0.6         ?????????   APPLY CUT FOR BG KT JETS
          jetContRecKT->SetMinPt(0.);
          jetContRecKT->SetMaxTrackPt(1000);
-         jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);  // RANGE   
       }
 
@@ -776,7 +776,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContRec->SetPythiaInfoName("PythiaInfo");
          jetContRec->SetMinPt(0.15);
          jetContRec->SetMaxTrackPt(1000);
-         jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
       //AKT JETS GEN ContainerTwo
@@ -787,7 +787,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMinPt(0.15);
          jetContTrue->SetMaxTrackPt(1000);
-         jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
 
@@ -799,7 +799,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContRecKT->SetPythiaInfoName("PythiaInfo");
          jetContRecKT->SetMinPt(0.);
          jetContRecKT->SetMaxTrackPt(1000);
-         jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
       //KT JET CONTAINERS FOR BG GEN ContainerFour
@@ -810,7 +810,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
          jetContTrueKT->SetMinPt(0.);
          jetContTrueKT->SetMaxTrackPt(1000);
-         jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
 
@@ -825,7 +825,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMinPt(0.15);
          jetContTrue->SetMaxTrackPt(1000);
-         jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
       //KT JET CONTAINERS FOR BG GEN  ContainterTwo
@@ -836,7 +836,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          //jetContTrueKT->SetPythiaInfoName("PythiaInfo");
          jetContTrueKT->SetMinPt(0.);
          jetContTrueKT->SetMaxTrackPt(1000);
-         jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
    }

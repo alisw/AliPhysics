@@ -137,6 +137,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
@@ -258,6 +259,20 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     cuts.AddCut("55910113","1111100000022220000","0163103100000050"); // 50-90
     cuts.AddCut("50010113","1111100000022220000","0163103100000050"); // 0-100
     
+  } else if (trainConfig == 203){ // EMCAL clusters - change opening angle
+    cuts.AddCut("50110113","1111100000022220000","0163103100000040"); // 0-10
+    cuts.AddCut("51210113","1111100000022220000","0163103100000040"); // 10-20
+    cuts.AddCut("52510113","1111100000022220000","0163103100000040"); // 20-50
+    cuts.AddCut("55910113","1111100000022220000","0163103100000040"); // 50-90
+    cuts.AddCut("50010113","1111100000022220000","0163103100000040"); // 0-100
+  } else if (trainConfig == 204){ // EMCAL clusters - timing cut
+    cuts.AddCut("50110113","1111100060022220000","0163103100000050"); // 0-10
+    cuts.AddCut("51210113","1111100060022220000","0163103100000050"); // 10-20
+    cuts.AddCut("52510113","1111100060022220000","0163103100000050"); // 20-50
+    cuts.AddCut("55910113","1111100060022220000","0163103100000050"); // 50-90
+    cuts.AddCut("50010113","1111100060022220000","0163103100000050"); // 0-100
+    
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -316,6 +331,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     analysisEventCuts[i]    = new AliConvEventCuts();   
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);

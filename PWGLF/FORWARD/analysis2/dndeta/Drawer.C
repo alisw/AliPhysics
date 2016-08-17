@@ -71,10 +71,11 @@ struct Drawer {
   /** 
    * Get other data 
    * 
-   * @param system   System
+   * @param sys      System
    * @param sNN      Center of mass energy 
-   * @param trigger  Trigger type 
-   * 
+   * @param trg      Trigger type 
+   * @param exps     Experiments 
+   * @param verbose  Be verbose 
    * @return Pointer to TMultiGraph or null
    */
   static TMultiGraph* GetOther(UShort_t       sys,
@@ -122,6 +123,7 @@ struct Drawer {
    * @param system 
    * @param sNN 
    * @param trigger 
+   * @param verbose  Be verbose 
    * 
    * @return 
    */
@@ -138,6 +140,8 @@ struct Drawer {
    * @param system   System
    * @param sNN      Center of mass energy 
    * @param trigger  Trigger type 
+   * @param exps     Experiments
+   * @param verbose  Be verbose 
    * 
    * @return Pointer to TMultiGraph or null
    */
@@ -284,8 +288,8 @@ struct Drawer {
    * Convert a histogram to a graph 
    * 
    * @param h    Histogram
-   * @param xOff X offset 
-   * @param sign if negative, mirror around this point
+   * @param sA   Systematics for positive X
+   * @param sC   Systematics for negative X
    * 
    * @return Newly created graph 
    */
@@ -410,6 +414,7 @@ struct Drawer {
    * @param g Graph
    * @param l Lower error band on g 
    * @param u Upper error band on g
+   * @param err Calculate errors
    * 
    * @return Ratio
    */
@@ -453,6 +458,9 @@ struct Drawer {
    * 
    * @param num Numerator 
    * @param den Denominator 
+   * @param dlow Low error 
+   * @param dup  High error 
+   * @param dx   Change in X x
    * 
    * @return newly allocated graph 
    */
@@ -712,6 +720,7 @@ struct Drawer {
    * @param system          Collision system
    * @param sNN             Collision energy [GeV]
    * @param trigger         Trigger 
+   * @param option          Draw option 
    * @param rebinned        If to get rebinned result
    * @param empirical       If to get empirical result 
    */
@@ -1205,6 +1214,7 @@ struct Drawer {
    * @param etaShift        Possible eta shift 
    * @param rebinned        If to get rebinned result
    * @param empirical       If to get empirical result 
+   * @param write           Whether to write out 
    */
   static void ScaleBypp(const TString& system, 
 			UShort_t       sNN, 

@@ -138,7 +138,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
   mgr->ConnectOutput(task,9,coutputLc9);
   AliAnalysisDataContainer *coutputLc10 = mgr->CreateContainer(Form("eleLambda_mcv0variables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,10,coutputLc10);
-  AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleLambda_mcgenpairvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  //AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleLambda_mcgenpairvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  //mgr->ConnectOutput(task,11,coutputLc11);
+  AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleLambda_singlevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,11,coutputLc11);
   AliAnalysisDataContainer *coutputLc12 = mgr->CreateContainer(Form("eleLambda_correlationvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,12,coutputLc12);

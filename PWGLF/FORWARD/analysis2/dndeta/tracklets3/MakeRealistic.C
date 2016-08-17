@@ -24,11 +24,11 @@ MakeRealistic()
 		     3212, // Sigma0
 		     3322, // Xi0,
 		     0 };
-  Double_t factors[] = { 2,
+  Double_t factors[] = { 3,
 			 1.5,
 			 1.5,
 			 1.5,
-			 6,
+			 3,
 			 0 };
   Short_t*  pid = pids;
   Double_t* fac = factors;
