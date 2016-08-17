@@ -1,8 +1,25 @@
 #ifndef __AliZMQhelpers__
 #define __AliZMQhelpers__
 
+// a helper library for using ZMQ with ROOT, focussed on multipart messaging
 // blame: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
-// some of it might be inspired by czmq.h
+// some of it might be inspired by czmq.h (http://czmq.zeromq.org)
+
+// Copyright (C) 2015 Goethe University Frankfurt
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 #include <string>
 #include <map>
@@ -119,3 +136,4 @@ int LoadROOTlibs(std::string libstring, bool verbose=false);
 }  //end namespace AliZMQhelpers
 
 #endif
+
