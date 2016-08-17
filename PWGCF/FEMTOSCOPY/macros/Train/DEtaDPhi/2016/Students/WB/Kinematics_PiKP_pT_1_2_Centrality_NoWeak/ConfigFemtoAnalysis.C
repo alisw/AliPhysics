@@ -86,35 +86,35 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    AliFemtoManager* Manager = new AliFemtoManager(); //typowy dla alifemto
    Manager->SetEventReader(Reader);
 	// * Monitory * - histogramy ktore beda wypelniane podczas analizy - wlasciwie klasy generujace histogramy
-   AliFemtoVertexMultAnalysis      *anetaphitpc[640]; //korelujemy eventy tylko podobne w wertexie i multiplicity
-   AliFemtoBasicEventCut             *mecetaphitpc[320]; //podstawowy cut na zderzenia
-   AliFemtoCutMonitorEventMult    *cutPassEvMetaphitpc[320];
-   AliFemtoCutMonitorEventMult    *cutFailEvMetaphitpc[320];
-   AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[320];
-   AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[320];
-   AliFemtoMCTrackCut          *dtc1etaphitpc[320]; // ograniczenia dla konkretnych czastek
-   AliFemtoMCTrackCut          *dtc2etaphitpc[320];
-   AliFemtoMCTrackCut          *dtc3etaphitpc[320];
+   AliFemtoVertexMultAnalysis      *anetaphitpc[numOfMultBins*numOfChTypes]; //korelujemy eventy tylko podobne w wertexie i multiplicity
+   AliFemtoBasicEventCut             *mecetaphitpc[numOfMultBins*numOfChTypes]; //podstawowy cut na zderzenia
+   AliFemtoCutMonitorEventMult    *cutPassEvMetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorEventMult    *cutFailEvMetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoMCTrackCut          *dtc1etaphitpc[numOfMultBins*numOfChTypes]; // ograniczenia dla konkretnych czastek
+   AliFemtoMCTrackCut          *dtc2etaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoMCTrackCut          *dtc3etaphitpc[numOfMultBins*numOfChTypes];
    //AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[320];
    //AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[numOfMultBins*numOfChTypes];
+   //AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[numOfMultBins*numOfChTypes];
    //AliFemtoCutMonitorParticleYPt *cutPass2YPtetaphitpc[320];
    //AliFemtoCutMonitorParticleYPt *cutFail2YPtetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[320];
-   AliFemtoCutMonitorParticleYPt *cutPass3YPtetaphitpc[320];
-   AliFemtoCutMonitorParticleYPt *cutFail3YPtetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutPass3PIDetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutFail3PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[320];
+   AliFemtoCutMonitorParticleYPt *cutPass3YPtetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorParticleYPt *cutFail3YPtetaphitpc[numOfMultBins*numOfChTypes];
+   //AliFemtoCutMonitorParticlePID *cutPass3PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutFail3PIDetaphitpc[320];
    //    AliFemtoShareQualityTPCEntranceSepPairCut         *sqpcetaphitpcsame[320]; //sprawdza jak duzo trackow jest dzielone przez czastki
-   AliFemtoPairCutAntiGamma         *sqpcetaphitpc[320]; //ograniczenia na pary czastek
+   AliFemtoPairCutAntiGamma         *sqpcetaphitpc[numOfMultBins*numOfChTypes]; //ograniczenia na pary czastek
    //AliFemtoPairCutRadialDistance         *sqpcetaphitpc[320];
    //   AliFemtoChi2CorrFctn               *cchiqinvetaphitpc[320];
-   AliFemtoPairCutPt                   *ktpcuts[640];
-   AliFemtoQinvCorrFctn               *cqinvkttpc[320];
-   AliFemtoQinvCorrFctn               *cqinvtpc[320];
-   AliFemtoCorrFctnDEtaDPhi         *cdedpetaphi[640];
+   AliFemtoPairCutPt                   *ktpcuts[numOfMultBins*numOfChTypes*numOfpTbins];
+   AliFemtoQinvCorrFctn               *cqinvkttpc[numOfMultBins*numOfChTypes*numOfpTbins];
+   AliFemtoQinvCorrFctn               *cqinvtpc[numOfMultBins*numOfChTypes*numOfpTbins];
+   AliFemtoCorrFctnDEtaDPhi         *cdedpetaphi[numOfMultBins*numOfChTypes*numOfpTbins];
 
 
    
@@ -122,7 +122,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    
    int aniter = 0;
    int runmults[numOfMultBins] = {1}; // 1 - wlaczony przedzial
-   int multbins[numOfMultBins+1] = {0, 523}; // definiujemy przedzialy krotnosci // "Impact Parameter * 100"
+   int multbins[numOfMultBins+1] = {0, 523}; // definiujemy przedzialy krotnosci // "Impact Parameter * 100" (523)
     // petla po wszystkich czastkach 
    for (int imult = 0; imult < numOfMultBins; imult++) // petla po krotnosciach
    {
@@ -177,7 +177,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 											   
 					dtc1etaphitpc[aniter]->SetPDG(2212); //numer rodzaju czastek
 					dtc2etaphitpc[aniter]->SetPDG(2212);
-					  
+					/*
 					cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),ProtonMass);
 					cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),ProtonMass);
 					
@@ -185,6 +185,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 						dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					if(ichg==1) 
 						dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					 */
 				}
 				if (ichg == 3 ||ichg == 4 ||ichg == 5)//kaons 3-5
 				{
@@ -193,7 +194,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					dtc1etaphitpc[aniter]->SetPDG(321);
 					dtc2etaphitpc[aniter]->SetPDG(321);
-					
+					/*
 					cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),KaonMass);
 					cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),KaonMass);
 					
@@ -201,6 +202,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 						dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					if(ichg==4) 
 						dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					*/
 				}
 				if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
 				{
@@ -209,7 +211,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					dtc1etaphitpc[aniter]->SetPDG(211);
 					dtc2etaphitpc[aniter]->SetPDG(211); 
-					
+					/*
 					cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);
 					cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),PionMass);  
 				
@@ -217,6 +219,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 						dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					if(ichg==7) 
 						dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					*/
 				}
 				if (ichg == 9 || ichg == 10 || ichg == 11){ //lambdy 9-11
 					dtc1etaphitpc[aniter]->SetCharge(0);//ustawiamy ograniczenia na ladunek, zostawi dodatnie
@@ -227,7 +230,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					dtc1etaphitpc[aniter]->SetPDG(3122);
 					dtc2etaphitpc[aniter]->SetPDG(-3122);
-					
+					/*
 					cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),LambdaMass);
 					cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),LambdaMass); 
 				
@@ -235,6 +238,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 						dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					if(ichg==10) 
 						dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					*/
 				}
                 if (ichg == 12)//all
                 {
