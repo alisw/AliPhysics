@@ -12,12 +12,38 @@
 // ROOT includes
 #include <TList.h>
 #include <TH1.h>
-
+#include <bitset>
+#include <TMath.h>
+#include <TParticle.h>
+#include <TFile.h>
 
 // AliRoot includes
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
 #include <AliAnalysisManager.h>
+#include <AliAnalysisFilter.h>
+#include <AliESDInputHandler.h>
+#include <AliESDEvent.h>
+#include <AliESDVertex.h>
+#include <AliLog.h>
+#include <AliExternalTrackParam.h> 
+#include <AliESDtrackCuts.h>
+#include <AliESDVZERO.h>
+#include <AliAODVZERO.h>
+#include <AliStack.h>
+
+#include <AliHeader.h>
+#include <AliGenPythiaEventHeader.h>
+#include <AliGenDPMjetEventHeader.h>
+
+#include "AliCentrality.h" 
+#include <AliESDv0.h>
+#include <AliKFVertex.h>
+#include <AliAODVertex.h>
+
+#include <AliAODTrack.h> 
+#include <AliAODPid.h> 
+#include <AliAODMCHeader.h> 
 
 
 // STL includes

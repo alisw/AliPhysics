@@ -4,6 +4,8 @@
 // ROOT includes
 #include <TList.h>
 #include <TH1.h>
+#include <TRandom.h>
+#include <TObject.h>
 
 // AliRoot includes
 #include <AliAnalysisTaskSE.h>
@@ -13,6 +15,12 @@
 #include <AliGenEventHeader.h>
 #include <AliVHeader.h>
 #include <AliAODMCParticle.h> 
+#include <AliESDEvent.h>
+#include <AliMCEvent.h>
+#include <AliAnalysisFilter.h>
+#include <AliESDtrackCuts.h>
+#include "DebugClassesMultESA2013.h"
+
 
 class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
  public:
