@@ -40,5 +40,7 @@
 #pragma link C++ class AliPBUtils+;
 #pragma link C++ class CEPEventBuffer+;
 #pragma link C++ class CEPTrackBuffer+;
+#pragma link C++ class AliAnalysisTaskf0f2+;
+
 
 #endif

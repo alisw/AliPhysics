@@ -69,7 +69,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 34; //13
 	const int numOfkTbins = 5;
 
-	bool performSharedDaughterCut = false;
+	bool performSharedDaughterCut = true;
 	bool enablePairMonitors = true;
 
 	char *parameter[21];
@@ -597,6 +597,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                         }
 					if(ichg == 17 || ichg == 24 || ichg == 31) //V0LL
 					  {
+					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    //anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetFirstParticleCut(dtc4etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetSecondParticleCut(dtc4etaphitpc[aniter]);
