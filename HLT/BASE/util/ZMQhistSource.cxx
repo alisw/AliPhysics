@@ -102,7 +102,7 @@ int main(int argc, char** argv)
   {
     stringstream ss;
     ss << fHistName.Data();
-    if (i>0) ss << i;
+    ss << i;
     TH1F* hist = new TH1F(ss.str().c_str(), ss.str().c_str(), fHistNBins, fHistRangeLow, fHistRangeHigh);
     hist->SetXTitle("x title");
     fHistograms.push_back(hist);
