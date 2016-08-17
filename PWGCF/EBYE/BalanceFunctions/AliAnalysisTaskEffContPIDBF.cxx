@@ -3,7 +3,7 @@
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3D.h"
+#include "TH3F.h"
 #include "TCanvas.h"
 #include "TParticle.h"
 #include "TObjArray.h"
@@ -174,7 +174,35 @@ AliAnalysisTaskEffContPIDBF::AliAnalysisTaskEffContPIDBF(const char *name)
     fPtBin(100), //=100 (BF)  36
     fHistdEdxTPC(0),
     fHistBetaTOF(0),
-    fParticleType_(kPion)
+    fParticleType_(kPion),
+ fHistNsigmaTPCPionBeforePIDCut(0),
+ fHistNsigmaTPCKaonBeforePIDCut(0),
+ fHistNsigmaTPCProtonBeforePIDCut(0),
+ fHistNsigmaTOFPionBeforePIDCut(0),
+ fHistNsigmaTOFKaonBeforePIDCut(0),
+ fHistNsigmaTOFProtonBeforePIDCut(0),
+
+ fHistNsigmaTPCPionAfterPIDCut(0),
+ fHistNsigmaTPCKaonAfterPIDCut(0),
+ fHistNsigmaTPCProtonAfterPIDCut(0),
+ fHistNsigmaTOFPionAfterPIDCut(0),
+ fHistNsigmaTOFKaonAfterPIDCut(0),
+ fHistNsigmaTOFProtonAfterPIDCut(0),
+
+ fHistNsigmaTPCTOFPionBeforePIDCut(0),
+ fHistNsigmaTPCTOFKaonBeforePIDCut(0),
+ fHistNsigmaTPCTOFProtonBeforePIDCut(0),
+ fHistNsigmaTPCTOFPionAfterPIDCut(0),
+ fHistNsigmaTPCTOFKaonAfterPIDCut(0),
+ fHistNsigmaTPCTOFProtonAfterPIDCut(0),
+ fHistdEdxTPCPionAfterPIDCut(0),
+ fHistdEdxTPCKaonAfterPIDCut(0),
+ fHistdEdxTPCProtonAfterPIDCut(0),
+ fHistBetaTOFPionAfterPIDCut(0),
+ fHistBetaTOFKaonAfterPIDCut(0),
+ fHistBetaTOFProtonAfterPIDCut(0),
+ fSigmaIndividually(kFALSE),
+ fSigmaCutMethodOne(kFALSE)
 { 
 
 for(Int_t ipart=0;ipart<3;ipart++)
@@ -238,12 +266,58 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
   fQAList->Add(fHistVz);
 
   //Electron cuts -> PID QA
-  fHistNSigmaTPCvsPtbeforePID = new TH2F ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore",200, 0, 20, 200, -10, 10); 
+  fHistNSigmaTPCvsPtbeforePID = new TH2F ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore",1000, -10,10,1000, -10, 10); 
   fQAList->Add(fHistNSigmaTPCvsPtbeforePID);
 
-  fHistNSigmaTPCvsPtafterPID = new TH2F ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter",200, 0, 20, 200, -10, 10); 
+  fHistNSigmaTPCvsPtafterPID = new TH2F ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter",1000, -10, 10, 1000, -10, 10); 
   fQAList->Add(fHistNSigmaTPCvsPtafterPID);
 
+ fHistNsigmaTPCPionBeforePIDCut=new TH2F("HistNsigmaTPCvsPtPionBeforePIDCut","NsigmaTPC vs Pt of  Pion BeforePIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCKaonBeforePIDCut=new TH2F("HistNsigmaTPCvsPtKaonBeforePIDCut","NsigmaTPC vs Pt of  Kaon BeforePIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCProtonBeforePIDCut=new TH2F("HistNsigmaTPCvsPtProtonBeforePIDCut","NsigmaTPC vs Pt of  Proton BeforePIDCut",1000, 0,10,1000, -10, 10);
+
+ fHistNsigmaTOFPionBeforePIDCut=new TH2F("HistNsigmaTOFvsPtPionBeforePIDCut","NsigmaTOF vs Pt of  Pion BeforePIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTOFKaonBeforePIDCut=new TH2F("HistNsigmaTOFvsPtKaonBeforePIDCut","NsigmaTOF vs Pt of  Kaon BeforePIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTOFProtonBeforePIDCut=new TH2F("HistNsigmaTOFvsPtProtonBeforePIDCut","NsigmaTOF vs Pt of  Proton BeforePIDCut",1000, 0,10,1000, -10, 10);
+ 
+ fHistNsigmaTPCPionAfterPIDCut=new TH2F("HistNsigmaTPCvsPtPionAfterPIDCut","NsigmaTPC vs Pt of  Pion AfterPIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCKaonAfterPIDCut=new TH2F("HistNsigmaTPCvsPtKaonAfterPIDCut","NsigmaTPC vs Pt of  Kaon AfterPIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCProtonAfterPIDCut=new TH2F("HistNsigmaTPCvsPtProtonAfterPIDCut","NsigmaTPC vs Pt of  Proton AfterPIDCut",1000, 0,10,1000, -10, 10);
+
+ fHistNsigmaTOFPionAfterPIDCut=new TH2F("HistNsigmaTOFvsPtPionAfterPIDCut","NsigmaTOF vs Pt of  Pion AfterPIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTOFKaonAfterPIDCut=new TH2F("HistNsigmaTOFvsPtKaonAfterPIDCut","NsigmaTOF vs Pt of  Kaon AfterPIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTOFProtonAfterPIDCut=new TH2F("HistNsigmaTOFvsPtProtonAfterPIDCut","NsigmaTOF vs Pt of  Proton AfterPIDCut",1000, 0,10,1000, -10, 10);
+
+ fHistNsigmaTPCTOFPionBeforePIDCut=new TH2F("HistNsigmaTPCTOFvsPtPionBeforePIDCut","NsigmaTPCTOF vs Pt of  Pion BeforePIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCTOFKaonBeforePIDCut=new TH2F("HistNsigmaTPCTOFvsPtKaonBeforePIDCut","NsigmaTPCTOF vs Pt of  Kaon BeforePIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCTOFProtonBeforePIDCut=new TH2F("HistNsigmaTPCTOFvsPtProtonBeforePIDCut","NsigmaTPCTOF vs Pt of  Proton BeforePIDCut",1000, 0,10,1000, -10, 10);
+
+ fHistNsigmaTPCTOFPionAfterPIDCut=new TH2F("HistNsigmaTPCTOFvsPtPionAfterPIDCut","NsigmaTPCTOF vs Pt of  Pion AfterPIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCTOFKaonAfterPIDCut=new TH2F("HistNsigmaTPCTOFvsPtKaonAfterPIDCut","NsigmaTPCTOF vs Pt of  Kaon AfterPIDCut",1000, 0,10,1000, -10, 10);
+ fHistNsigmaTPCTOFProtonAfterPIDCut=new TH2F("HistNsigmaTPCTOFvsPtProtonAfterPIDCut","NsigmaTPCTOF vs Pt of  Proton AfterPIDCut",1000, 0,10,1000, -10, 10);
+
+
+
+ fQAList->Add(fHistNsigmaTPCPionBeforePIDCut);
+ fQAList->Add(fHistNsigmaTPCKaonBeforePIDCut);
+ fQAList->Add(fHistNsigmaTPCProtonBeforePIDCut);
+ fQAList->Add(fHistNsigmaTOFPionBeforePIDCut);
+ fQAList->Add(fHistNsigmaTOFKaonBeforePIDCut);
+ fQAList->Add(fHistNsigmaTOFProtonBeforePIDCut);
+
+ fQAList->Add(fHistNsigmaTPCPionAfterPIDCut);
+ fQAList->Add(fHistNsigmaTPCKaonAfterPIDCut);
+ fQAList->Add(fHistNsigmaTPCProtonAfterPIDCut);
+ fQAList->Add(fHistNsigmaTOFPionAfterPIDCut);
+ fQAList->Add(fHistNsigmaTOFKaonAfterPIDCut);
+ fQAList->Add(fHistNsigmaTOFProtonAfterPIDCut);
+
+ fQAList->Add(fHistNsigmaTPCTOFPionBeforePIDCut);
+ fQAList->Add(fHistNsigmaTPCTOFKaonBeforePIDCut);
+ fQAList->Add(fHistNsigmaTPCTOFProtonBeforePIDCut);
+ fQAList->Add(fHistNsigmaTPCTOFPionAfterPIDCut);
+ fQAList->Add(fHistNsigmaTPCTOFKaonAfterPIDCut);
+ fQAList->Add(fHistNsigmaTPCTOFProtonAfterPIDCut);
 
     HistMCTruthPtAll= new TH1F("HistMCTruthPtAll","Pt Distribution Of all  charged Partilces",ptBin,nArrayPt);
     HistMCTruthEtaAll= new TH1F("HistMCTruthEtaAll","Eta Distribution Of all  charged Partilces",etaBin,nArrayEta);
@@ -275,31 +349,31 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
   fOutputList->Add(HistMCTruthPhiProton);
 
   //Contamination and efficiency 
-  fHistTruthPionPlus = new TH3D("fHistTruthPionPlus","TruthPionPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthPionPlus = new TH3F("fHistTruthPionPlus","TruthPionPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthPionPlus);
 
-  fHistTruthPionMinus = new TH3D("fHistTruthPionMinus","TruthPionMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthPionMinus = new TH3F("fHistTruthPionMinus","TruthPionMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthPionMinus);
 
-  fHistTruthKaonPlus = new TH3D("fHistTruthKaonPlus","TruthKaonplus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthKaonPlus = new TH3F("fHistTruthKaonPlus","TruthKaonplus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthKaonPlus);
 
-  fHistTruthKaonMinus = new TH3D("fHistTruthKaonMinus","TruthKaonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthKaonMinus = new TH3F("fHistTruthKaonMinus","TruthKaonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthKaonMinus);
 
-  fHistTruthProtonPlus = new TH3D("fHistTruthProtonPlus","TruthProtonPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthProtonPlus = new TH3F("fHistTruthProtonPlus","TruthProtonPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthProtonPlus);
 
-  fHistTruthProtonMinus = new TH3D("fHistTruthProtonMinus","TruthProtonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthProtonMinus = new TH3F("fHistTruthProtonMinus","TruthProtonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthProtonMinus);
 
-  fHistTruthPion = new TH3D("fHistTruthPion","TruthPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthPion = new TH3F("fHistTruthPion","TruthPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthPion);
   
-  fHistTruthKaon = new TH3D("fHistTruthKaon","TruthKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthKaon = new TH3F("fHistTruthKaon","TruthKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthKaon);
 
-  fHistTruthProton = new TH3D("fHistTruthProton","TruthProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistTruthProton = new TH3F("fHistTruthProton","TruthProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistTruthProton);
 
  
@@ -308,47 +382,47 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
    HistPionContaminationInPt=new TH1F("HistPionContaminationInPt","Pt Distribution of conatmination in Pion", ptBin,nArrayPt);
    HistPionPlusContaminationInPt=new TH1F("HistPionPlusContaminationInPt","Pt Distribution of conatmination in Positive Pion", ptBin,nArrayPt);
    HistPionMinusContaminationInPt=new TH1F("HistPionMinusContaminationInPt","Pt Distribution of conatmination in Negative Pion", ptBin,nArrayPt);
-   Hist3dPionContamination =new TH3D("Hist3dPionContamination","Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dPionPlusContamination =new TH3D("Hist3dPionPlusContamination","Positive Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dPionMinusContamination =new TH3D("Hist3dPionMinusContamination","Negative Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionContamination =new TH3F("Hist3dPionContamination","Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionPlusContamination =new TH3F("Hist3dPionPlusContamination","Positive Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionMinusContamination =new TH3F("Hist3dPionMinusContamination","Negative Pion Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
 
    HistKaonContaminationInPt=new TH1F("HistKaonContaminationInPt","Pt Distribution of conatmination in Kaon", ptBin,nArrayPt);
    HistKaonPlusContaminationInPt=new TH1F("HistKaonPlusContaminationInPt","Pt Distribution of conatmination in Positive Kaon", ptBin,nArrayPt);
    HistKaonMinusContaminationInPt=new TH1F("HistKaonMinusContaminationInPt","Pt Distribution of conatmination in Negative Kaon", ptBin,nArrayPt);
-   Hist3dKaonContamination =new TH3D("Hist3dKaonContamination","Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dKaonPlusContamination =new TH3D("Hist3dKaonPlusContamination","Positive Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dKaonMinusContamination =new TH3D("Hist3dKaonMinusContamination","Negative Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonContamination =new TH3F("Hist3dKaonContamination","Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonPlusContamination =new TH3F("Hist3dKaonPlusContamination","Positive Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonMinusContamination =new TH3F("Hist3dKaonMinusContamination","Negative Kaon Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
 
 
    HistProtonContaminationInPt=new TH1F("HistProtonContaminationInPt","Pt Distribution of conatmination in Proton", ptBin,nArrayPt);
    HistProtonPlusContaminationInPt=new TH1F("HistProtonPlusContaminationInPt","Pt Distribution of conatmination in Positive Proton", ptBin,nArrayPt);
    HistProtonMinusContaminationInPt=new TH1F("HistProtonMinusContaminationInPt","Pt Distribution of conatmination in Negative Proton", ptBin,nArrayPt);
-   Hist3dProtonContamination =new TH3D("Hist3dProtonContamination","Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dProtonPlusContamination =new TH3D("Hist3dProtonPlusContamination","Positive Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dProtonMinusContamination =new TH3D("Hist3dProtonMinusContamination","Negative Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonContamination =new TH3F("Hist3dProtonContamination","Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonPlusContamination =new TH3F("Hist3dProtonPlusContamination","Positive Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonMinusContamination =new TH3F("Hist3dProtonMinusContamination","Negative Proton Contamination;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
 
 
    HistPionPurityInPt=new TH1F("HistPionPurityInPt","Pt Distribution of Purity in Pion", ptBin,nArrayPt);
    HistPionPlusPurityInPt=new TH1F("HistPionPlusPurityInPt","Pt Distribution of Purity in Positive Pion", ptBin,nArrayPt);
    HistPionMinusPurityInPt=new TH1F("HistPionMinusPurityInPt","Pt Distribution of Purity in Negative Pion", ptBin,nArrayPt);
-   Hist3dPionPurity =new TH3D("Hist3dPionPurity","Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dPionPlusPurity =new TH3D("Hist3dPionPlusPurity","Positive Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dPionMinusPurity =new TH3D("Hist3dPionMinusPurity","Negative Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionPurity =new TH3F("Hist3dPionPurity","Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionPlusPurity =new TH3F("Hist3dPionPlusPurity","Positive Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dPionMinusPurity =new TH3F("Hist3dPionMinusPurity","Negative Pion Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
 
    HistKaonPurityInPt=new TH1F("HistKaonPurityInPt","Pt Distribution of Purity in Kaon", ptBin,nArrayPt);
    HistKaonPlusPurityInPt=new TH1F("HistKaonPlusPurityInPt","Pt Distribution of Purity in Positive Kaon", ptBin,nArrayPt);
    HistKaonMinusPurityInPt=new TH1F("HistKaonMinusPurityInPt","Pt Distribution of Purity in Negative Kaon", ptBin,nArrayPt);
-   Hist3dKaonPurity =new TH3D("Hist3dKaonPurity","Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dKaonPlusPurity =new TH3D("Hist3dKaonPlusPurity","Positive Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dKaonMinusPurity =new TH3D("Hist3dKaonMinusPurity","Negative Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonPurity =new TH3F("Hist3dKaonPurity","Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonPlusPurity =new TH3F("Hist3dKaonPlusPurity","Positive Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dKaonMinusPurity =new TH3F("Hist3dKaonMinusPurity","Negative Kaon Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
 
 
    HistProtonPurityInPt=new TH1F("HistProtonPurityInPt","Pt Distribution of Purity in Proton", ptBin,nArrayPt);
    HistProtonPlusPurityInPt=new TH1F("HistProtonPlusPurityInPt","Pt Distribution of Purity in Positive Proton", ptBin,nArrayPt);
    HistProtonMinusPurityInPt=new TH1F("HistProtonMinusPurityInPt","Pt Distribution of Purity in Negative Proton", ptBin,nArrayPt);
-   Hist3dProtonPurity =new TH3D("Hist3dProtonPurity","Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dProtonPlusPurity =new TH3D("Hist3dProtonPlusPurity","Positive Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
-   Hist3dProtonMinusPurity =new TH3D("Hist3dProtonMinusPurity","Negative Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonPurity =new TH3F("Hist3dProtonPurity","Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonPlusPurity =new TH3F("Hist3dProtonPlusPurity","Positive Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+   Hist3dProtonMinusPurity =new TH3F("Hist3dProtonMinusPurity","Negative Proton Purity;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
 
  fOutputList->Add(HistPionContaminationInPt);
  fOutputList->Add(HistPionPlusContaminationInPt);
@@ -391,68 +465,81 @@ void AliAnalysisTaskEffContPIDBF::UserCreateOutputObjects() {
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
-  fHistMCRecoPionPlus = new TH3D("fHistMCRecoPionPlus","MCRecoPionPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoPionPlus = new TH3F("fHistMCRecoPionPlus","MCRecoPionPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoPionPlus);
 
-  fHistMCRecoPionMinus = new TH3D("fHistMCRecoPionMinus","MCRecoPionMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoPionMinus = new TH3F("fHistMCRecoPionMinus","MCRecoPionMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoPionMinus);
 
-  fHistMCRecoKaonPlus = new TH3D("fHistMCRecoKaonPlus","MCRecoKaonplus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoKaonPlus = new TH3F("fHistMCRecoKaonPlus","MCRecoKaonplus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoKaonPlus);
 
-  fHistMCRecoKaonMinus = new TH3D("fHistMCRecoKaonMinus","MCRecoKaonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoKaonMinus = new TH3F("fHistMCRecoKaonMinus","MCRecoKaonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoKaonMinus);
 
-  fHistMCRecoProtonPlus = new TH3D("fHistMCRecoProtonPlus","MCRecoProtonPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoProtonPlus = new TH3F("fHistMCRecoProtonPlus","MCRecoProtonPlus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoProtonPlus);
 
-  fHistMCRecoProtonMinus = new TH3D("fHistMCRecoProtonMinus","MCRecoProtonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoProtonMinus = new TH3F("fHistMCRecoProtonMinus","MCRecoProtonMinus;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoProtonMinus);
 
-  fHistMCRecoPion = new TH3D("fHistMCRecoPion","MCRecoPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoPion = new TH3F("fHistMCRecoPion","MCRecoPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoPion);
   
-  fHistMCRecoKaon = new TH3D("fHistMCRecoKaon","MCRecoKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoKaon = new TH3F("fHistMCRecoKaon","MCRecoKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoKaon);
 
-  fHistMCRecoProton = new TH3D("fHistMCRecoProton","MCRecoProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoProton = new TH3F("fHistMCRecoProton","MCRecoProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoProton);
 
-  fHistMCRecoPionAsKaon = new TH3D("fHistMCRecoPionAsKaon","MCRecoPionAsKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoPionAsKaon = new TH3F("fHistMCRecoPionAsKaon","MCRecoPionAsKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoPionAsKaon);
 
-  fHistMCRecoPionAsProton = new TH3D("fHistMCRecoPionAsProton","MCRecoPionAsProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoPionAsProton = new TH3F("fHistMCRecoPionAsProton","MCRecoPionAsProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoPionAsProton);
 
-  fHistMCRecoKaonAsProton = new TH3D("fHistMCRecoKaonAsProton","MCRecoKaonAsProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoKaonAsProton = new TH3F("fHistMCRecoKaonAsProton","MCRecoKaonAsProton;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoKaonAsProton);
 
-  fHistMCRecoKaonAsPion = new TH3D("fHistMCRecoKaonAsPion","MCRecoKaonAsPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoKaonAsPion = new TH3F("fHistMCRecoKaonAsPion","MCRecoKaonAsPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoKaonAsPion);
 
-  fHistMCRecoProtonAsKaon = new TH3D("fHistMCRecoProtonAsKaon","MCRecoProtonAsKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoProtonAsKaon = new TH3F("fHistMCRecoProtonAsKaon","MCRecoProtonAsKaon;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoProtonAsKaon);
 
-  fHistMCRecoProtonAsPion = new TH3D("fHistMCRecoProtonAsPion","MCRecoProtonAsPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fHistMCRecoProtonAsPion = new TH3F("fHistMCRecoProtonAsPion","MCRecoProtonAsPion;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistMCRecoProtonAsPion);
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-  fHistdEdxTPC = new TH2F("fHistdEdxTPC", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,fMaxPt,500, 0., 500.);
+  fHistdEdxTPC = new TH2F("fHistdEdxTPC", ";p_{T} (GeV/c);dE/dx (au.)",1000,-fMaxPt,fMaxPt,1000, 0., 1000.);
+  fHistdEdxTPCPionAfterPIDCut = new TH2F("fHistdEdxTPCPionAfterPIDCut", ";p_{T} (GeV/c);dE/dx (au.)",1000,-fMaxPt,fMaxPt,1000, 0., 1000.);
+  fHistdEdxTPCKaonAfterPIDCut = new TH2F("fHistdEdxTPCKaonAfterPIDCut", ";p_{T} (GeV/c);dE/dx (au.)",1000,-fMaxPt,fMaxPt,1000, 0., 1000.);
+  fHistdEdxTPCProtonAfterPIDCut = new TH2F("fHistdEdxTPCProtonAfterPIDCut", ";p_{T} (GeV/c);dE/dx (au.)",1000,-fMaxPt,fMaxPt,1000, 0., 1000.);
 fOutputList->Add(fHistdEdxTPC);
-fHistBetaTOF = new TH2F(Form("fHistBetaTOF"), ";p_{T} (GeV/c);v/c",200, 0.0, fMaxPt, 500, 0.1, 1.1);
-  fOutputList->Add(fHistBetaTOF);
+fOutputList->Add(fHistdEdxTPCPionAfterPIDCut);
+fOutputList->Add(fHistdEdxTPCKaonAfterPIDCut);
+fOutputList->Add(fHistdEdxTPCProtonAfterPIDCut);
 
- fHistSigmaTPCVsTOFPionForPionAfterCut=new TH2F("PionForPionAfterCut","Sigma plot for Pion  as a Pion TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFProtonForPionAfterCut=new TH2F("ProtonForPionAfterCut","Sigma plot for Pion  as a Proton TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFKaonForPionAfterCut=new TH2F("KaonForPionAfterCut","Sigma plot for Pion  as a Kaon TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFPionForKaonAfterCut=new TH2F("PionForKaonAfterCut","Sigma plot for Kaon  as a Pion TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFProtonForKaonAfterCut=new TH2F("ProtonForKaonAfterCut","Sigma plot for Kaon  as a Proton TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFKaonForKaonAfterCut=new TH2F("KaonForKaonAfterCut","Sigma plot for Kaon  as a Kaon TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFPionForProtonAfterCut=new TH2F("PionForProtonAfterCut","Sigma plot for Proton   as a Pion TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFProtonForProtonAfterCut=new TH2F("ProtonForProtonAfterCut","Sigma plot for Proton   as a Proton TPC Vs TOF After cut",500,-100,100,500,-100,100);
- fHistSigmaTPCVsTOFKaonForProtonAfterCut=new TH2F("KaonForProtonAfterCut","Sigma plot for Proton   as a Kaon TPC Vs TOF After cut",500,-100,100,500,-100,100);
+fHistBetaTOF = new TH2F("fHistBetaTOF", ";p_{T} (GeV/c);v/c",1000, -fMaxPt, fMaxPt, 1000, 0, 1.2);
+fHistBetaTOFPionAfterPIDCut = new TH2F("fHistBetaTOFPionAfterPIDCut", ";p_{T} (GeV/c);v/c",1000, -fMaxPt, fMaxPt, 1000, 0, 1.2);
+fHistBetaTOFKaonAfterPIDCut = new TH2F("fHistBetaTOFKaonAfterPIDCut", ";p_{T} (GeV/c);v/c",1000, -fMaxPt, fMaxPt, 1000, 0, 1.2);
+fHistBetaTOFProtonAfterPIDCut = new TH2F("fHistBetaTOFProtonAfterPIDCut", ";p_{T} (GeV/c);v/c",1000, -fMaxPt, fMaxPt, 1000, 0, 1.2);
+fOutputList->Add(fHistBetaTOF);
+fOutputList->Add(fHistBetaTOFPionAfterPIDCut);
+fOutputList->Add(fHistBetaTOFKaonAfterPIDCut);
+fOutputList->Add(fHistBetaTOFProtonAfterPIDCut);
+
+ fHistSigmaTPCVsTOFPionForPionAfterCut=new TH2F("PionForPionAfterCut","Sigma plot for Pion  as a Pion TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFProtonForPionAfterCut=new TH2F("ProtonForPionAfterCut","Sigma plot for Pion  as a Proton TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFKaonForPionAfterCut=new TH2F("KaonForPionAfterCut","Sigma plot for Pion  as a Kaon TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFPionForKaonAfterCut=new TH2F("PionForKaonAfterCut","Sigma plot for Kaon  as a Pion TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFProtonForKaonAfterCut=new TH2F("ProtonForKaonAfterCut","Sigma plot for Kaon  as a Proton TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFKaonForKaonAfterCut=new TH2F("KaonForKaonAfterCut","Sigma plot for Kaon  as a Kaon TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFPionForProtonAfterCut=new TH2F("PionForProtonAfterCut","Sigma plot for Proton   as a Pion TPC Vs TOF After cut",1000,-10,100,1000,-10,10);
+ fHistSigmaTPCVsTOFProtonForProtonAfterCut=new TH2F("ProtonForProtonAfterCut","Sigma plot for Proton   as a Proton TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
+ fHistSigmaTPCVsTOFKaonForProtonAfterCut=new TH2F("KaonForProtonAfterCut","Sigma plot for Proton   as a Kaon TPC Vs TOF After cut",1000,-10,10,1000,-10,10);
 
 
  fOutputList->Add(fHistSigmaTPCVsTOFPionForPionAfterCut);
@@ -630,7 +717,7 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 
 
             Int_t pdgCode=((AliAODMCParticle*)currentAODMCParticle)->GetPdgCode();
-//cout<<" PDG CODE MC from label matching is "<<pdgCodeMC<<'\t'<<" PDG Code of MC without label matchiing is "<<pdgCode<<endl; 
+//cout<<" PDG Code of MC without label matchiing is "<<pdgCode<<endl; 
             
              if (TMath::Abs(pdgCode)==11) continue;
 	
@@ -701,6 +788,7 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 		AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));    
 		if(!trackAOD) continue;
 		
+
 		//track cuts
 		if (!trackAOD->TestFilterBit(fAODTrackCutBit)) 
 		  continue;
@@ -801,15 +889,16 @@ void AliAnalysisTaskEffContPIDBF::UserExec(Option_t *) {
 // PID selection start ================================================================================================================================================
 
  Double_t dEdx   = trackAOD -> GetTPCsignal();
- fHistdEdxTPC->Fill(trackAOD->Pt(),dEdx);
+ fHistdEdxTPC->Fill(trackAOD->Pt()*trackAOD->Charge(),dEdx);
  
   if(IsTOFPID(trackAOD))
 {
 Double_t beta = Beta(trackAOD);
-fHistBetaTOF->Fill(trackAOD->Pt(), beta);
+fHistBetaTOF->Fill(trackAOD->Pt()*trackAOD->Charge(), beta);
 }
 
-if(trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && (!IsTOFPID(trackAOD))) continue;
+//if((trackAOD->Pt()>=fMinPt && trackAOD->Pt()<=fMaxPt) && (!IsTOFPID(trackAOD) || !IsTPCPID(trackAOD))) continue;
+if((trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<=fMaxPt) && !IsTOFPID(trackAOD)) continue;
 
 Int_t particleMCReco=-999;
 particleMCReco=GetParticleSpecies(trackAOD);
@@ -835,6 +924,20 @@ nsigmaKaonTPCTOF = fnsigmas[kSpKaon][kNSigmaTPCTOF];
 nsigmaProtonTPCTOF = fnsigmas[kSpProton][kNSigmaTPCTOF];
 
 
+fHistNsigmaTPCPionBeforePIDCut->Fill(trackAOD->Pt(),nsigmaPionTPC);
+fHistNsigmaTPCKaonBeforePIDCut->Fill(trackAOD->Pt(),nsigmaKaonTPC);
+fHistNsigmaTPCProtonBeforePIDCut->Fill(trackAOD->Pt(),nsigmaProtonTPC);
+
+
+fHistNsigmaTOFPionBeforePIDCut->Fill(trackAOD->Pt(),nsigmaPionTOF);
+fHistNsigmaTOFKaonBeforePIDCut->Fill(trackAOD->Pt(),nsigmaKaonTOF);
+fHistNsigmaTOFProtonBeforePIDCut->Fill(trackAOD->Pt(),nsigmaProtonTOF);
+
+fHistNsigmaTPCTOFPionBeforePIDCut->Fill(trackAOD->Pt(),nsigmaPionTPCTOF);
+fHistNsigmaTPCTOFKaonBeforePIDCut->Fill(trackAOD->Pt(),nsigmaKaonTPCTOF);
+fHistNsigmaTPCTOFProtonBeforePIDCut->Fill(trackAOD->Pt(),nsigmaProtonTPCTOF);
+
+
 
 //cout<<" NSigma TOF Pion "<<nsigmaPionTOF<<'\t'<<"NSigma TOF Kaon "<<nsigmaKaonTOF<<'\t'<<"Nsigma TOF Proton "<<nsigmaProtonTOF<<endl;
 
@@ -842,9 +945,24 @@ nsigmaProtonTPCTOF = fnsigmas[kSpProton][kNSigmaTPCTOF];
 //Pion
 
 if(TMath::Abs(pdgCodeReco) == 211) {
+
+//if( ( nsigmaPionTPC   < nsigmaKaonTPC ) && ( nsigmaPionTPC < nsigmaProtonTPC ) && TMath::Abs(nsigmaPionTPC)<3.0) {
+if(TMath::Abs(nsigmaPionTPC)<3.0) {
+fHistNsigmaTPCPionAfterPIDCut->Fill(trackAOD->Pt(),nsigmaPionTPC);
+fHistdEdxTPCPionAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),trackAOD -> GetTPCsignal());
+}
+
+//if( ( nsigmaPionTOF   < nsigmaKaonTOF ) && ( nsigmaPionTOF < nsigmaProtonTOF ) && TMath::Abs(nsigmaPionTOF)<3.0) {
+if(TMath::Abs(nsigmaPionTOF)<3.0) {
+fHistNsigmaTOFPionAfterPIDCut->Fill(trackAOD->Pt(),nsigmaPionTOF);
+if(IsTOFPID(trackAOD)) fHistBetaTOFPionAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),Beta(trackAOD));
+}
+
+
 if(particleMCReco==kSpPion) {
-if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaPionTOF!=999 && nsigmaPionTPCTOF<3.0){
-fHistSigmaTPCVsTOFPionForPionAfterCut->Fill(nsigmaPionTOF, nsigmaPionTPC);
+if( (IsTOFPID(trackAOD)) && (trackAOD->Pt()>=fMinPt && trackAOD->Pt()<=fMaxPt) && (nsigmaPionTOF!=999 && nsigmaPionTPC!=999) && nsigmaPionTPCTOF<3.0){
+fHistSigmaTPCVsTOFPionForPionAfterCut->Fill(nsigmaPionTOF,nsigmaPionTPC);
+fHistNsigmaTPCTOFPionAfterPIDCut->Fill(trackAOD->Pt(),nsigmaPionTPCTOF);
 //cout<<"NSigma Pion TOF is "<<nsigmaPionTOF<<endl;
 }
 
@@ -877,9 +995,23 @@ h1PionAsNonPion->Fill(trackAOD->Pt());
 //Kaon
 
 if(TMath::Abs(pdgCodeReco) == 321) {
+//if( ( nsigmaKaonTPC   < nsigmaPionTPC ) && ( nsigmaKaonTPC < nsigmaProtonTPC ) && TMath::Abs(nsigmaKaonTPC)<3.0){
+if(TMath::Abs(nsigmaKaonTPC)<3.0){
+fHistNsigmaTPCKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaKaonTPC);
+fHistdEdxTPCKaonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),trackAOD -> GetTPCsignal());
+}
+
+//if( ( nsigmaKaonTOF   < nsigmaPionTOF ) && ( nsigmaKaonTOF < nsigmaProtonTOF ) && TMath::Abs(nsigmaKaonTOF)<3.0) {
+if(TMath::Abs(nsigmaKaonTOF)<3.0) {
+fHistNsigmaTOFKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaKaonTOF);
+if(IsTOFPID(trackAOD)) fHistBetaTOFKaonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),Beta(trackAOD));
+}
+
 if(particleMCReco==kSpKaon) {
-if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaKaonTOF!=999 && nsigmaKaonTPCTOF<3.0){
+if( (IsTOFPID(trackAOD)) && (trackAOD->Pt()>=fMinPt && trackAOD->Pt()<=fMaxPt) && (nsigmaKaonTOF!=999 && nsigmaKaonTPC!=999) && nsigmaKaonTPCTOF<3.0){
+//if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaKaonTOF!=999 && nsigmaKaonTPCTOF<3.0){
 fHistSigmaTPCVsTOFKaonForKaonAfterCut->Fill(nsigmaKaonTOF, nsigmaKaonTPC);
+fHistNsigmaTPCTOFKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaKaonTPCTOF);
 //cout<<"NSigma Kaon TOF is "<<nsigmaKaonTOF<<endl;
 }
 h1KaonAfterCut->Fill(trackAOD->Pt());
@@ -912,9 +1044,23 @@ h1KaonAsNonKaon->Fill(trackAOD->Pt());
 //Proton
 
 if(TMath::Abs(pdgCodeReco) == 2212) {
+//if( ( nsigmaProtonTPC   < nsigmaPionTPC ) && ( nsigmaProtonTPC < nsigmaKaonTPC ) && TMath::Abs(nsigmaProtonTPC)<3.0) {
+if(TMath::Abs(nsigmaProtonTPC)<3.0) {
+fHistNsigmaTPCProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaProtonTPC);
+fHistdEdxTPCProtonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),trackAOD -> GetTPCsignal());
+}
+
+//if( ( nsigmaProtonTOF   < nsigmaPionTOF ) && ( nsigmaProtonTOF < nsigmaKaonTOF ) && TMath::Abs(nsigmaProtonTOF)<3.0){
+if(TMath::Abs(nsigmaProtonTOF)<3.0){
+ fHistNsigmaTOFProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaProtonTOF);
+if(IsTOFPID(trackAOD)) fHistBetaTOFProtonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),Beta(trackAOD));
+}
+
 if(particleMCReco==kSpProton) {
-if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaProtonTOF!=999 && nsigmaProtonTPCTOF<3.0){
+if( (IsTOFPID(trackAOD)) && (trackAOD->Pt()>=fMinPt && trackAOD->Pt()<=fMaxPt) && (nsigmaProtonTOF!=999 && nsigmaProtonTPC!=999) && nsigmaProtonTPCTOF<3.0){
+//if(IsTOFPID(trackAOD) && trackAOD->Pt()>fPtTPCMax && trackAOD->Pt()<fMaxPt && nsigmaProtonTOF!=999 && nsigmaProtonTPCTOF<3.0){
 fHistSigmaTPCVsTOFProtonForProtonAfterCut->Fill(nsigmaProtonTOF, nsigmaProtonTPC);
+fHistNsigmaTPCTOFProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaProtonTPCTOF);
 //cout<<"NSigma Proton TOF is "<<nsigmaProtonTOF<<endl;
 }
 
@@ -1025,18 +1171,24 @@ Bool_t AliAnalysisTaskEffContPIDBF::IsMCParticleCut(AliAODMCParticle* particle) 
 
 void AliAnalysisTaskEffContPIDBF::SigmaCalculate(AliAODTrack *trk ){
 
-  Double_t nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
-  Double_t nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kKaon);
-  Double_t nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
+// Changed on 14/08/2016 for TPC+TOF from .2 to 2 GeV Pt 
 
+Double_t nsigmaTPCkProton = 999.,nsigmaTPCkKaon   = 999.,nsigmaTPCkPion   = 999.;
 
-
+  if(fSigmaIndividually){
+  nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
+  nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kKaon);
+  nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
+}
 
  Double_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
  Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
 
- if(IsTOFPID(trk) && trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt){
-//cout<<" Hi I am now at TPC+TOF  track "<<endl;
+
+// Changed on 14/08/2016 for TPC+TOF from .2 to 2 GeV Pt 
+if(fSigmaIndividually){
+//cout<<" Hi I am sigma Individually track "<<endl;
+ if(IsTOFPID(trk) && trk->Pt()>fPtTPCMax && trk->Pt()<=fMaxPt){
     nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton);
     nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kKaon);
     nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kPion);
@@ -1049,15 +1201,41 @@ void AliAnalysisTaskEffContPIDBF::SigmaCalculate(AliAODTrack *trk ){
     nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
 
 }
-
+// Changed on 14/08/2016 for TPC+TOF from .2 to 2 GeV Pt 
 else{
  if(IsTPCPID(trk) && trk->Pt()>=fMinPt && trk->Pt()<=fPtTPCMax){
     nsigmaTPCTOFkProton = TMath::Abs(nsigmaTPCkProton);
     nsigmaTPCTOFkKaon   = TMath::Abs(nsigmaTPCkKaon);
     nsigmaTPCTOFkPion   = TMath::Abs(nsigmaTPCkPion);
 }
+   }
+ }
 
-  }
+else {
+//cout<<" Hi I am sigma Together track "<<endl;
+
+//if((IsTOFPID(trk) || IsTPCPID(trk) ) && (trk->Pt()>=fMinPt && trk->Pt()<=fMaxPt)){
+if( IsTOFPID(trk) && (trk->Pt()>=fMinPt && trk->Pt()<=fMaxPt)){
+
+  nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
+  nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kKaon);
+  nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
+
+  nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton);
+  nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kKaon);
+  nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kPion);
+  Double_t d2Proton=nsigmaTPCkProton * nsigmaTPCkProton + nsigmaTOFkProton * nsigmaTOFkProton;
+  Double_t d2Kaon=nsigmaTPCkKaon * nsigmaTPCkKaon + nsigmaTOFkKaon * nsigmaTOFkKaon;
+  Double_t d2Pion=nsigmaTPCkPion * nsigmaTPCkPion + nsigmaTOFkPion * nsigmaTOFkPion;
+
+  nsigmaTPCTOFkProton  =  TMath::Sqrt(d2Proton);
+  nsigmaTPCTOFkKaon    =  TMath::Sqrt(d2Kaon);
+  nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
+
+      }   
+   }
+ 
+ 
 
   fnsigmas[kSpPion][kNSigmaTPC]=nsigmaTPCkPion;
   fnsigmas[kSpKaon][kNSigmaTPC]=nsigmaTPCkKaon;
@@ -1082,7 +1260,16 @@ Int_t AliAnalysisTaskEffContPIDBF::SigmaCutForParticleSpecies(AliAODTrack *trk )
 
 Double_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
 
-if(trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt && (!IsTOFPID(trk))) return kSpUndefined;
+
+
+if(fSigmaIndividually){
+if((trk->Pt()>=fMinPt && trk->Pt()<=fPtTPCMax) && !IsTPCPID(trk)) return kSpUndefined;
+if((trk->Pt()>fPtTPCMax && trk->Pt()<=fMaxPt) && !IsTOFPID(trk)) return kSpUndefined;
+}
+
+else{
+if((trk->Pt()>=fMinPt && trk->Pt()<=fMaxPt) && (!IsTOFPID(trk))) return kSpUndefined;
+}
 
   switch (fPIDType){
   case kNSigmaTPC:
@@ -1108,9 +1295,12 @@ if(trk->Pt()>fPtTPCMax && trk->Pt()<fMaxPt && (!IsTOFPID(trk))) return kSpUndefi
    //cout<<" I am using TOF detector "<<endl;
     break;
 
-
-
 }
+
+
+if(fSigmaCutMethodOne){
+
+//cout<<" I am in Method 1..............."<<endl;
 
 if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) return kSpUndefined;
 
@@ -1129,9 +1319,30 @@ if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKao
  if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fNSigmaPID))  return kSpProton;
 
 return kSpUndefined;
+ }
 
+else {
+//cout<<" I am in Method 2..............."<<endl;
+if( ( nsigmaKaon==nsigmaPion ) && ( nsigmaKaon==nsigmaProton )) return kSpUndefined;
+  
+//Kaon
+
+if(nsigmaKaon   < fNSigmaPID) return kSpKaon;
+
+//Pion
+
+ if(nsigmaPion   < fNSigmaPID) return kSpPion;
+
+
+//Proton
+
+ if(nsigmaProton < fNSigmaPID) return kSpProton;
+
+return kSpUndefined;
+
+  }  
+ 
 }
-
 
 Int_t AliAnalysisTaskEffContPIDBF::GetParticleSpecies(AliAODTrack *trk )
 {
@@ -1140,7 +1351,7 @@ Int_t AliAnalysisTaskEffContPIDBF::GetParticleSpecies(AliAODTrack *trk )
   SigmaCalculate(trk);
   Int_t mypid = -1;
   mypid = SigmaCutForParticleSpecies(trk);
-  //Printf(" >>>>>>>>>>>>>>>>> mypid = %d",mypid);
+//  Printf(" >>>>>>>>>>>>>>>>> mypid = %d",mypid);
   return mypid;
 }
 

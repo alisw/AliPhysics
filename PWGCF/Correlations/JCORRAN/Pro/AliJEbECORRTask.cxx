@@ -455,6 +455,7 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	if(fDebugMode) cout << "EbECentBinBorders="<< (*fEbECentBinBorders)[1]<<","<< (*fEbECentBinBorders)[2]<<endl;
 
 	if( (*fEbECentBinBorders)[1] > ebeCent || ebeCent > (*fEbECentBinBorders)[2] ) return;
+    if (fVnMethod ==1) fEbeHistos->fhVnObsVectorAfterSelection[cBin][iH]->Fill(fFFlucAna->Get_vn(iH,iMethod));
 
 	fHistos->fhCentr->Fill(fcent);
 	fHistos->fhiCentr->Fill(cBin);

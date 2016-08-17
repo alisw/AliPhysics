@@ -413,22 +413,31 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
   if(pair->Track1()->Track()){
     if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();  
     else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();  
-    else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();  
+    else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();
+    else if(part1==kPionMinus) weight = pair->Track1()->Track()->CorrectionPionMinus();  
+    else if(part1==kKaonMinus) weight = pair->Track1()->Track()->CorrectionKaonMinus();  
+    else if(part1==kProtonMinus) weight = pair->Track1()->Track()->CorrectionProtonMinus();  
     else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();  
   }
   if(pair->Track1()->V0()){
-    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();  
+    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();
+    if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();  
   }
 
   if(pair->Track2()->Track()){
     if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();  
     else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();  
-    else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();  
+    else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();
+    else if(part2==kPionMinus) weight *= pair->Track2()->Track()->CorrectionPionMinus();  
+    else if(part2==kKaonMinus) weight *= pair->Track2()->Track()->CorrectionKaonMinus();  
+    else if(part2==kProtonMinus) weight *= pair->Track2()->Track()->CorrectionProtonMinus();  
     else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
   }
   if(pair->Track2()->V0()){
     if(part2==kLambda)
-	weight *= pair->Track2()->V0()->CorrectionLambda();
+      weight *= pair->Track2()->V0()->CorrectionLambda();
+    if(part2==kLambdaMinus)
+      weight *= pair->Track2()->V0()->CorrectionLambdaMinus();
   }
 
   fDPhiDEtaNumerator->Fill(dphi, deta, weight);
@@ -518,21 +527,29 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
   if(pair->Track1()->Track()){
     if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();  
     else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();  
-    else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();  
+    else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();
+    else if(part1==kPionMinus) weight = pair->Track1()->Track()->CorrectionPionMinus();  
+    else if(part1==kKaonMinus) weight = pair->Track1()->Track()->CorrectionKaonMinus();  
+    else if(part1==kProtonMinus) weight = pair->Track1()->Track()->CorrectionProtonMinus();  
     else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();  
    }
   if(pair->Track1()->V0()){
-    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();  
+    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();
+    else if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();  
   }
 
   if(pair->Track2()->Track()){
     if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();  
     else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();  
-    else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();  
+    else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();
+    else if(part2==kPionMinus) weight *= pair->Track2()->Track()->CorrectionPionMinus();  
+    else if(part2==kKaonMinus) weight *= pair->Track2()->Track()->CorrectionKaonMinus();  
+    else if(part2==kProtonMinus) weight *= pair->Track2()->Track()->CorrectionProtonMinus();  
     else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
    }
   if(pair->Track2()->V0()){
-    if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();  
+    if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();
+    else if(part2==kLambdaMinus) weight *= pair->Track2()->V0()->CorrectionLambdaMinus();
   }
 
 
