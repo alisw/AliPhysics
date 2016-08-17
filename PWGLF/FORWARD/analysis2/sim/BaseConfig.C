@@ -236,6 +236,7 @@ struct VirtualEGCfg
   /**
    * Load the pythia libraries
    *
+   * @param gen  General setup also 
    * @param vers Optional version post-fix
    */
   static void LoadPythia(Bool_t gen=true, const char* vers="6.4.21")

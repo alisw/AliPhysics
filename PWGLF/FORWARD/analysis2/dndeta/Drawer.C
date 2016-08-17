@@ -547,6 +547,7 @@ struct Drawer {
    * @param trigger         Trigger 
    * @param rebinned        If to get rebinned result
    * @param empirical       If to get empirical result 
+   * @param marker          Marker style 
    * 
    * @return Stack or null
    */

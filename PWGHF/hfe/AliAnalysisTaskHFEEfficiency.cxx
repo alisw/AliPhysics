@@ -1717,11 +1717,11 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltUp(Double_t mcEtapT) //
     double weight = 1.0;
     // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
     
-    if(mcEtapT <=4){
-        weight =    (4.26858e+02)/pow((exp(-(-8.76512e-04)*mcEtapT-(9.31692e-03)*mcEtapT*mcEtapT)+(mcEtapT/(2.68479e+00))),(7.82650e+00)); //Met 1 From EMCal Task
+    if(mcEtapT <=5.5){
+        weight =    (4.01348e-01)/pow((exp(-(9.64548e-01)*mcEtapT-(7.30011e-02)*mcEtapT*mcEtapT)+(mcEtapT/(2.92423e+00))),(2.32353e+00)); //Met 1 From EMCal Task
     }
-    if(mcEtapT >4){
-        weight =    (1.39558e+03)/pow((exp(-(-1.21075e-02)*mcEtapT-(3.54914e-02)*mcEtapT*mcEtapT)+(mcEtapT/(1.13185e+00))),(5.50479e+00)); //Met 1 From EMCal Task
+    if(mcEtapT >5.5){
+        weight =    (1.42169e-01)/pow((exp(-(-8.71455e+01)*mcEtapT-(7.94280e+00)*mcEtapT*mcEtapT)+(mcEtapT/(7.36452e+01))),(2.55991e-03)); //Met 1 From EMCal Task
     }
     //  cout << "weight in cal eta : " << weight << endl;
     
@@ -1834,10 +1834,10 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0tiltUp2040(Double_t mcPi0pT
     //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
     
     if(mcPi0pT <=4){
-        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
+        weight =    (8.52613e-01)/pow((exp(-(8.40269e-01)*mcPi0pT-(-4.34674e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(3.31267e+00))),(2.56504e+00)); //Met 1 From EMCal Task
     }
     if(mcPi0pT >4){
-        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
+        weight =    (1.58170e+02)/pow((exp(-(-9.51650e-02)*mcPi0pT-(1.43834e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.01125e+01))),(1.29361e+01)); //Met 1 From EMCal Task
     }
     //  cout << "weight in cal pi0 : " << weight << endl;
     return weight;
@@ -1849,10 +1849,10 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0tiltDw2040(Double_t mcPi0pT
     //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
     
     if(mcPi0pT <=4){
-        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
+        weight =    (8.52613e-01)/pow((exp(-(8.40269e-01)*mcPi0pT-(-4.34674e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(3.31267e+00))),(2.56504e+00)); //Met 1 From EMCal Task
     }
     if(mcPi0pT >4){
-        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
+        weight =    (1.58170e+02)/pow((exp(-(-9.51650e-02)*mcPi0pT-(1.43834e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.01125e+01))),(1.29361e+01)); //Met 1 From EMCal Task
     }
     //  cout << "weight in cal pi0 : " << weight << endl;
     return weight;
@@ -1880,10 +1880,10 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltUp2040(Double_t mcEtapT
     // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
     
     if(mcEtapT <=4){
-        weight =    (4.26858e+02)/pow((exp(-(-8.76512e-04)*mcEtapT-(9.31692e-03)*mcEtapT*mcEtapT)+(mcEtapT/(2.68479e+00))),(7.82650e+00)); //Met 1 From EMCal Task
+        weight =    (8.38897e-01)/pow((exp(-(2.69050e-02)*mcEtapT-(8.25401e-01)*mcEtapT*mcEtapT)+(mcEtapT/(1.92761e+00))),(1.48011e+00)); //Met 1 From EMCal Task
     }
     if(mcEtapT >4){
-        weight =    (1.39558e+03)/pow((exp(-(-1.21075e-02)*mcEtapT-(3.54914e-02)*mcEtapT*mcEtapT)+(mcEtapT/(1.13185e+00))),(5.50479e+00)); //Met 1 From EMCal Task
+        weight =    (8.83196e+01)/pow((exp(-(-1.24373e-02)*mcEtapT-(6.69093e-03)*mcEtapT*mcEtapT)+(mcEtapT/(1.57278e+01))),(3.14751e+01)); //Met 1 From EMCal Task
     }
     //  cout << "weight in cal eta : " << weight << endl;
     
@@ -1895,11 +1895,11 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltDw2040(Double_t mcEtapT
     double weight = 1.0;
     // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
     
-    if(mcEtapT <=5.5){
-        weight =    (4.01348e-01)/pow((exp(-(9.64548e-01)*mcEtapT-(7.30011e-02)*mcEtapT*mcEtapT)+(mcEtapT/(2.92423e+00))),(2.32353e+00)); //Met 1 From EMCal Task
+    if(mcEtapT <=4){
+        weight =    (8.38897e-01)/pow((exp(-(2.69050e-02)*mcEtapT-(8.25401e-01)*mcEtapT*mcEtapT)+(mcEtapT/(1.92761e+00))),(1.48011e+00)); //Met 1 From EMCal Task
     }
-    if(mcEtapT >5.5){
-        weight =    (1.42169e-01)/pow((exp(-(-8.71455e+01)*mcEtapT-(7.94280e+00)*mcEtapT*mcEtapT)+(mcEtapT/(7.36452e+01))),(2.55991e-03)); //Met 1 From EMCal Task
+    if(mcEtapT >4){
+        weight =    (8.83196e+01)/pow((exp(-(-1.24373e-02)*mcEtapT-(6.69093e-03)*mcEtapT*mcEtapT)+(mcEtapT/(1.57278e+01))),(3.14751e+01)); //Met 1 From EMCal Task
     }
     //  cout << "weight in cal eta : " << weight << endl;
     

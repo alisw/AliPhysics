@@ -83,6 +83,13 @@ void HFEemcQA_PlotHisto()
   NEvents->Draw();
   NE->Print(file + "(","pdf");
 
+  TCanvas *c1 = new TCanvas("Centrality", "Centrality distribution",50,50,700,500);
+  ProcessHisto(cent);
+  //VtxZ->GetXaxis()->SetRangeUser(-25,25);
+  gPad->SetLogy();
+  cent->Draw();
+  c1->Print(file,"pdf");
+
   TCanvas *c2 = new TCanvas("VtxZ", "Z vertex postion",50,50,700,500);
   ProcessHisto(VtxZ);
   VtxZ->GetXaxis()->SetRangeUser(-25,25);
@@ -254,9 +261,11 @@ void HFEemcQA_PlotHisto()
   //EMCDeltaR->Draw("colz");
   c18->Divide(2,1);
   c18->cd(1);
-  EMCDeltaR->ProjectionX()->Draw();
+  TH1D *hDeltaRX = EMCDeltaR->ProjectionX("hDeltaR");
+  hDeltaRX->Draw();
   c18->cd(2);
-  EMCDeltaR->ProjectionY()->Draw();
+  TH1D *hDeltaRY = EMCDeltaR->ProjectionY("hDeltaRY");
+  hDeltaRY->Draw();
   c18->Print(file,"pdf");
 
   //TCanvas *c18_1 = new TCanvas("EMCdeltaR","Distance of EMC cluster to its closest track",50,50,700,500);
@@ -288,6 +297,19 @@ void HFEemcQA_PlotHisto()
   NsigEovP->GetYaxis()->SetTitle("#sigma_{TPC-dE/dx}");
   ProcessHisto2D(NsigEovP);
   NsigEovP->Draw("colz");
+
+  TLine *LNsigEop[4];
+  //LNsigEop[0] = new TLine(0.,-1,3.,-1);
+  //LNsigEop[1] = new TLine(0.,3,3.,3);
+  //LNsigEop[2] = new TLine(0.9,-10,0.9,10);
+  //LNsigEop[3] = new TLine(1.3,-10,1.3,10);
+  LNsigEop[0] = new TLine(0.9,-1,1.3,-1);
+  LNsigEop[1] = new TLine(0.9, 3,1.3,3);
+  LNsigEop[2] = new TLine(0.9,-1,0.9,3);
+  LNsigEop[3] = new TLine(1.3,-1,1.3,3);
+  for(int i=0; i<4; i++)LNsigEop[i]->SetLineStyle(2);
+  for(int i=0; i<4; i++)LNsigEop[i]->Draw();
+
   //NsigEovP->ProjectionY()->Draw();
   //NsigEovP->ProjectionX("a",535,700);
   //a->Rebin(2);
@@ -302,6 +324,11 @@ void HFEemcQA_PlotHisto()
   EovP->GetXaxis()->SetRangeUser(0,15);
   gPad->SetLogz();
   EovP->Draw();
+  TLine *LEop[2];
+  LEop[0] = new TLine(0.85,0,0.85,EovP->GetBinContent(EovP->GetMaximumBin()));
+  LEop[1] = new TLine(1.3,0,1.3,EovP->GetBinContent(EovP->GetMaximumBin()));
+  for(int i=0; i<2; i++)LEop[i]->SetLineStyle(2);
+  for(int i=0; i<2; i++)LEop[i]->Draw();
   //EovP->ProjectionY()->Draw();
   c22_1->Print(file,"pdf");
 
