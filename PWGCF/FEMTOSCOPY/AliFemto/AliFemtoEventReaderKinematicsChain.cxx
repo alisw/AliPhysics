@@ -240,8 +240,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   int tV0direction = 0;
 
   double previousTrackPt = 0;
-  for (int i=0;i<nofTracks;i++)
-    {
+  for (int i=0;i<nofTracks;i++)	
+    {	
       if(fReadOnlyPrimaries)
 	{
 	  //take only primaries
@@ -269,31 +269,33 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	  //Checking mother
 	
 	  Int_t motherIndex = kinetrack->GetFirstMother();
-	  if (motherIndex == -1)
-	    continue;
+	  if (motherIndex != -1){
+	    TParticle *motherParticle = fStack->Particle(motherIndex);
+		if (motherParticle){
+			int pdgcode =  motherParticle->GetPdgCode();
+		
+			const Int_t kNWeakParticles = 7;
+			const Int_t kWeakParticles[kNWeakParticles] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+								  3122, 3112, // Lambda0 Sigma+-
+								  130, 310 // K_L0 K_S0
+			};
 
-	  TParticle *motherParticle = fStack->Particle(motherIndex);
-	  if (!motherParticle)
-	    continue;
+			bool fromWeak = false;
 
-	  int pdgcode =  motherParticle->GetPdgCode();
-
-	  const Int_t kNWeakParticles = 7;
-	  const Int_t kWeakParticles[kNWeakParticles] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
-							  3122, 3112, // Lambda0 Sigma+-
-							  130, 310 // K_L0 K_S0
-	  };
-
-	  bool fromWeak = false;
-
-	  for (Int_t j=0; j != kNWeakParticles; ++j) {
-	    if (kWeakParticles[j] == pdgcode) {
-	      //std::cout<<Form("Removing particle %d (pdg code mother %d)", i, motherParticle->GetPdgCode())<<std::endl;
-	      fromWeak=true;
-	      break;
-	    }
+			for (Int_t j=0; j != kNWeakParticles; ++j) {
+				if (kWeakParticles[j] == pdgcode) {
+					//std::cout<<Form("Removing particle %d (pdg code mother %d)", i, motherParticle->GetPdgCode())<<std::endl;
+					fromWeak=true;
+				break;
+				}
+			}
+				if(fromWeak) {
+					delete trackCopy;
+					continue;
+				}
+		}
 	  }
-	  if(fromWeak) continue;
+
 	}
 
       //setting multiplicity
@@ -344,8 +346,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
 	{; }
       else {
-	delete trackCopy;
-	continue;
+		delete trackCopy;
+		continue;
       }
 
       trackCopy->SetPidProbElectron(kinepid[0]);
@@ -437,6 +439,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       }
       
     tNormMult = 100 * collGeometry->ImpactParameter();
+    //cout<<"Impact: "<<collGeometry->ImpactParameter()<<endl;
   }
 
 
