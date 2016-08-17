@@ -276,7 +276,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                             dtc2etaphitpc[aniter]->SetPt(0.2,maxPt);
                                           }
 					if(ichg >= 13 && ichg <=16){
-					  dtc1etaphitpc[aniter]->SetPt(0.5,maxPt); //lambda
+					  dtc1etaphitpc[aniter]->SetPt(0.6,maxPt); //lambda
 					  dtc1etaphitpc[aniter]->SetCharge(0.0);
 					  if(ichg == 14 || ichg ==16) dtc1etaphitpc[aniter]->SetPDG(-3122);
 					  else dtc1etaphitpc[aniter]->SetPDG(3122);
@@ -289,8 +289,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					}
 					if (ichg == 17 ||ichg == 18 ||ichg == 19)//lambdas
                                           {
-                                            dtc1etaphitpc[aniter]->SetPt(0.5,maxPt);
-					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt);
+                                            dtc1etaphitpc[aniter]->SetPt(0.6,maxPt);
+					    dtc2etaphitpc[aniter]->SetPt(0.6,maxPt);
 					    dtc1etaphitpc[aniter]->SetCharge(0.0);
 					    dtc2etaphitpc[aniter]->SetCharge(0.0);
 					    dtc1etaphitpc[aniter]->SetPDG(3122);

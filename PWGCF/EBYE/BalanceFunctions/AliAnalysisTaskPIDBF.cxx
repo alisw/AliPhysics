@@ -101,32 +101,10 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fHistPhi(0),
   fHistEtaPhiPos(0), 	       	 
   fHistEtaPhiNeg(0), 
-  fHistPhiBefore(0),
-  fHistPhiAfter(0),
   fHistPhiPos(0),
   fHistPhiNeg(0),
   fHistV0M(0),
   fHistRefTracks(0),
-  fHistdEdxVsPTPCbeforePID(NULL),
-  fHistBetavsPTOFbeforePID(NULL), 
-  fHistProbTPCvsPtbeforePID(NULL), 
-  fHistProbTOFvsPtbeforePID(NULL), 
-  fHistProbTPCTOFvsPtbeforePID(NULL),
-  fHistNSigmaTPCvsPtbeforePID(NULL), 
-  fHistNSigmaTOFvsPtbeforePID(NULL), 
-  fHistBetaVsdEdXbeforePID(NULL),
-  fHistNSigmaTPCTOFvsPtbeforePID(NULL),
-  fHistNSigmaTPCTOFPbefPID(NULL),
-  fHistdEdxVsPTPCafterPID(NULL),
-  fHistBetavsPTOFafterPID(NULL), 
-  fHistProbTPCvsPtafterPID(NULL), 
-  fHistProbTOFvsPtafterPID(NULL), 
-  fHistProbTPCTOFvsPtafterPID(NULL),
-  fHistNSigmaTPCvsPtafterPID(NULL), 
-  fHistNSigmaTOFvsPtafterPID(NULL),  
-  fHistBetaVsdEdXafterPID(NULL), 
-  fHistNSigmaTPCTOFvsPtafterPID(NULL),
-  fHistNSigmaTPCTOFPafterPID(NULL),
   fHistdEdxVsPTPCbeforePIDelectron(NULL),
   fHistNSigmaTPCvsPtbeforePIDelectron(NULL),
   fHistdEdxVsPTPCafterPIDelectron(NULL),
@@ -242,6 +220,14 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fHistQAPhiAfterCorrectionNeg(0),
   fHistQAPhiAfterCorrectionWithCentralityNeg(0),
   fQACorrection(kFALSE),
+  fSigmaIndividually(kFALSE),
+  fSigmaCutMethodOne(kTRUE),
+  fHistdEdxTPCAfterPIDCut(0),
+  fHistBetaTOFAfterPIDCut(0),
+  fHistNsigmaTPCTOFAfterPIDCut(0),
+  fHistNsigmaTPCBeforePIDCut(0),
+  fHistNsigmaTOFBeforePIDCut(0),
+  fHistNsigmaTPCTOFBeforePIDCut(0),
   fRawType(kFALSE) {
   // Constructor
   // Define input and output slots here
@@ -405,6 +391,71 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
   fList->Add(fHistMixTracks);
 
 
+
+// Pt vs NSigma  plot for TPC, TOF and TPC+TOF : MCAODrec
+
+if(gAnalysisLevel == "MCAODrec"){
+ if(fUsePID){
+  switch(fParticleType_){
+  case kPion_:
+  fHistNsigmaTPCBeforePIDCut=new TH2F("HistNsigmaTPCvsPtPionBeforePIDCut","NsigmaTPC vs Pt of  Pion BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTOFBeforePIDCut=new TH2F("HistNsigmaTOFvsPtPionBeforePIDCut","NsigmaTOF vs Pt of  Pion BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTPCTOFBeforePIDCut=new TH2F("HistNsigmaTPCTOFvsPtPionBeforePIDCut","NsigmaTPCTOF vs Pt of  Pion BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTPCTOFAfterPIDCut=new TH2F("HistNsigmaTPCTOFvsPtPionAfterPIDCut","NsigmaTPCTOF vs Pt of  Pion AfterPIDCut",1000, 0,10,1000, -10, 10);
+
+  fHistdEdxTPCAfterPIDCut = new TH2F("fHistdEdxTPCPionAfterPIDCut", ";p_{T} (GeV/c);dE/dx (au.)",1000,-10,10,1000, 0., 1000.);
+  fHistBetaTOFAfterPIDCut = new TH2F("fHistBetaTOFPionAfterPIDCut", ";p_{T} (GeV/c);v/c",1000, -10, 10, 1000, 0, 1.2);
+  
+  fHistListPIDQA->Add(fHistNsigmaTPCBeforePIDCut);
+  fHistListPIDQA->Add(fHistNsigmaTOFBeforePIDCut);
+  fHistListPIDQA->Add(fHistNsigmaTPCTOFBeforePIDCut);
+  fHistListPIDQA->Add(fHistNsigmaTPCTOFAfterPIDCut);
+  fHistListPIDQA->Add(fHistdEdxTPCAfterPIDCut);
+  fHistListPIDQA->Add(fHistBetaTOFAfterPIDCut);
+  
+  break;
+
+ case kKaon_:   
+  fHistNsigmaTPCBeforePIDCut=new TH2F("HistNsigmaTPCvsPtKaonBeforePIDCut","NsigmaTPC vs Pt of  Kaon BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTOFBeforePIDCut=new TH2F("HistNsigmaTOFvsPtKaonBeforePIDCut","NsigmaTOF vs Pt of  Kaon BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTPCTOFBeforePIDCut=new TH2F("HistNsigmaTPCTOFvsPtKaonBeforePIDCut","NsigmaTPCTOF vs Pt of  Kaon BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTPCTOFAfterPIDCut=new TH2F("HistNsigmaTPCTOFvsPtKaonAfterPIDCut","NsigmaTPCTOF vs Pt of  Kaon AfterPIDCut",1000, 0,10,1000, -10, 10);
+
+  fHistdEdxTPCAfterPIDCut = new TH2F("fHistdEdxTPCKaonAfterPIDCut", ";p_{T} (GeV/c);dE/dx (au.)",1000,-10,10,1000, 0., 1000.);
+  fHistBetaTOFAfterPIDCut = new TH2F("fHistBetaTOFKaonAfterPIDCut", ";p_{T} (GeV/c);v/c",1000, -10, 10, 1000, 0, 1.2);
+
+  fHistListPIDQA->Add(fHistNsigmaTPCBeforePIDCut);
+  fHistListPIDQA->Add(fHistNsigmaTOFBeforePIDCut);
+  fHistListPIDQA->Add(fHistNsigmaTPCTOFBeforePIDCut);
+  fHistListPIDQA->Add(fHistNsigmaTPCTOFAfterPIDCut);
+  fHistListPIDQA->Add(fHistdEdxTPCAfterPIDCut);
+  fHistListPIDQA->Add(fHistBetaTOFAfterPIDCut);
+
+  break;
+
+case kProton_: 
+  fHistNsigmaTPCBeforePIDCut=new TH2F("HistNsigmaTPCvsPtProtonBeforePIDCut","NsigmaTPC vs Pt of  Proton BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTOFBeforePIDCut=new TH2F("HistNsigmaTOFvsPtProtonBeforePIDCut","NsigmaTOF vs Pt of  Proton BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTPCTOFBeforePIDCut=new TH2F("HistNsigmaTPCTOFvsPtProtonBeforePIDCut","NsigmaTPCTOF vs Pt of  Proton BeforePIDCut",1000, 0,10,1000, -10, 10);
+  fHistNsigmaTPCTOFAfterPIDCut=new TH2F("HistNsigmaTPCTOFvsPtProtonAfterPIDCut","NsigmaTPCTOF vs Pt of  Proton AfterPIDCut",1000, 0,10,1000, -10, 10);
+
+  fHistdEdxTPCAfterPIDCut = new TH2F("fHistdEdxTPCProtonAfterPIDCut", ";p_{T} (GeV/c);dE/dx (au.)",1000,-10,10,1000, 0., 1000.);
+  fHistBetaTOFAfterPIDCut = new TH2F("fHistBetaTOFProtonAfterPIDCut", ";p_{T} (GeV/c);v/c",1000, -10, 10, 1000, 0, 1.2);
+
+   fHistListPIDQA->Add(fHistNsigmaTPCBeforePIDCut);
+   fHistListPIDQA->Add(fHistNsigmaTOFBeforePIDCut);
+   fHistListPIDQA->Add(fHistNsigmaTPCTOFBeforePIDCut);
+   fHistListPIDQA->Add(fHistNsigmaTPCTOFAfterPIDCut);
+   fHistListPIDQA->Add(fHistdEdxTPCAfterPIDCut);
+   fHistListPIDQA->Add(fHistBetaTOFAfterPIDCut);
+
+  break;
+
+  }
+ }
+}
+
+
    if(gAnalysisLevel == "AOD" || gAnalysisLevel == "MCAODrec") {
 
    if(fUsePID){
@@ -514,10 +565,10 @@ else {
   fList->Add(fHistEtaPhiPos); 			 
   fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
   fList->Add(fHistEtaPhiNeg);
-  fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
-  fList->Add(fHistPhiBefore);
-  fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
-  fList->Add(fHistPhiAfter);
+//  fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
+//  fList->Add(fHistPhiBefore);
+//  fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
+//  fList->Add(fHistPhiAfter);
   fHistPhiPos  = new TH2F("fHistPhiPos","#phi distribution for positive particles;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiPos);
   fHistPhiNeg  = new TH2F("fHistPhiNeg","#phi distribution for negative particles;#phi;Centrality percentile",200,0.,2.*TMath::Pi(),220,-5,105);
@@ -769,38 +820,13 @@ else {
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
     if(gAnalysisLevel == "AOD" || gAnalysisLevel == "MCAODrec"){
-    fHistdEdxTPC = new TH2F("fHistdEdxTPC", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,fPtMax,500, 0., 500.);
+    fHistdEdxTPC = new TH2F("fHistdEdxTPC", ";p_{T} (GeV/c);dE/dx (au.)",1000,-10,10,1000, 0., 1000.);
+    fHistBetaTOF = new TH2F("fHistBetaTOF", ";p_{T} (GeV/c);v/c",1000, -10,10, 1000, 0, 1.2);
+
     fHistListPIDQA->Add(fHistdEdxTPC);
-    fHistBetaTOF = new TH2F(Form("fHistBetaTOF"), ";p_{T} (GeV/c);v/c",200, 0.0, fPtMax, 500, 0.1, 1.1);
     fHistListPIDQA->Add(fHistBetaTOF);
     }
 
-    fHistdEdxVsPTPCbeforePID = new TH2D ("dEdxVsPTPCbefore","dEdxVsPTPCbefore", 1000, -10.0, 10.0, 1000, 0, 1000); 
-    fHistListPIDQA->Add(fHistdEdxVsPTPCbeforePID);
-    
-    fHistBetavsPTOFbeforePID = new TH2D ("BetavsPTOFbefore","BetavsPTOFbefore", 1000, -10.0, 10., 1000, 0, 1.2); 
-    fHistListPIDQA->Add(fHistBetavsPTOFbeforePID); 
-    
-    fHistProbTPCvsPtbeforePID = new TH2D ("ProbTPCvsPtbefore","ProbTPCvsPtbefore", 1000, -10.0,10.0, 1000, 0, 2.0); 
-    fHistListPIDQA->Add(fHistProbTPCvsPtbeforePID); 
-    
-    fHistProbTOFvsPtbeforePID = new TH2D ("ProbTOFvsPtbefore","ProbTOFvsPtbefore", 1000, -50, 50, 1000, 0, 2.0); 
-    fHistListPIDQA->Add(fHistProbTOFvsPtbeforePID);
-
-    fHistProbTPCTOFvsPtbeforePID =new TH2D ("ProbTPCTOFvsPtbefore","ProbTPCTOFvsPtbefore", 1000, -50, 50, 1000, 0, 2.0); 
-    fHistListPIDQA->Add(fHistProbTPCTOFvsPtbeforePID);
-    
-    fHistNSigmaTPCvsPtbeforePID = new TH2D ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore", 1000, -10, 10, 1000, -25, 25); 
-    fHistListPIDQA->Add(fHistNSigmaTPCvsPtbeforePID);
-    
-    fHistNSigmaTOFvsPtbeforePID = new TH2D ("NSigmaTOFvsPtbefore","NSigmaTOFvsPtbefore", 1000, -10, 10, 1000, -25, 25); 
-    fHistListPIDQA->Add(fHistNSigmaTOFvsPtbeforePID); 
-
-    fHistBetaVsdEdXbeforePID = new TH2D ("BetaVsdEdXbefore","BetaVsdEdXbefore", 1000, 0., 1000, 1000, 0, 1.2); 
-    fHistListPIDQA->Add(fHistBetaVsdEdXbeforePID);
-    
-    fHistNSigmaTPCTOFvsPtbeforePID = new TH2D ("NSigmaTPCTOFvsPtbefore","NSigmaTPCTOFvsPtbefore", 1000, -10., 10., 1000, -25, 25); 
-    fHistListPIDQA->Add(fHistNSigmaTPCTOFvsPtbeforePID);
     
     //+++++++++++++++++//
     //p array
@@ -814,39 +840,8 @@ else {
       //Printf("nS: %lf - i: %d", nSigmaArray[i], i);
     }
  
-    fHistNSigmaTPCTOFPbefPID = new TH3D ("fHistNSigmaTPCTOFPbefPID","fHistNSigmaTPCTOFPbefPID;#sigma_{TPC};#sigma_{TOF};p_{T} (GeV/c)", nSigmaBins, nArrayS, nSigmaBins, nArrayS, pBins,nArrayP); 
-    fHistListPIDQA->Add(fHistNSigmaTPCTOFPbefPID); 
     //++++++++++++++//
 
-    fHistdEdxVsPTPCafterPID = new TH2D ("dEdxVsPTPCafter","dEdxVsPTPCafter", 1000, -10, 10, 1000, 0, 1000); 
-    fHistListPIDQA->Add(fHistdEdxVsPTPCafterPID);
-    
-    fHistBetavsPTOFafterPID = new TH2D ("BetavsPTOFafter","BetavsPTOFafter", 1000, -10, 10, 1000, 0, 1.2); 
-    fHistListPIDQA->Add(fHistBetavsPTOFafterPID); 
-    
-    fHistProbTPCvsPtafterPID = new TH2D ("ProbTPCvsPtafter","ProbTPCvsPtafter", 1000, -10, 10, 1000, 0, 2); 
-    fHistListPIDQA->Add(fHistProbTPCvsPtafterPID);
-  
-    fHistProbTOFvsPtafterPID = new TH2D ("ProbTOFvsPtafter","ProbTOFvsPtafter", 1000,  -10, 10, 1000, 0, 2); 
-    fHistListPIDQA->Add(fHistProbTOFvsPtafterPID); 
-    
-    fHistProbTPCTOFvsPtafterPID =new TH2D ("ProbTPCTOFvsPtafter","ProbTPCTOFvsPtafter", 1000, -50, 50, 1000, 0, 2.0); 
-    fHistListPIDQA->Add(fHistProbTPCTOFvsPtafterPID);
-
-    fHistNSigmaTPCvsPtafterPID = new TH2D ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter", 1000, -10, 10, 1000, -25, 25); 
-    fHistListPIDQA->Add(fHistNSigmaTPCvsPtafterPID);
-    
-    fHistNSigmaTOFvsPtafterPID = new TH2D ("NSigmaTOFvsPtafter","NSigmaTOFvsPtafter", 1000, -10, 10, 1000, -25, 25); 
-    fHistListPIDQA->Add(fHistNSigmaTOFvsPtafterPID);
-
-    fHistBetaVsdEdXafterPID = new TH2D ("BetaVsdEdXafter","BetaVsdEdXafter", 1000, 0., 1000, 1000, 0, 1.2); 
-    fHistListPIDQA->Add(fHistBetaVsdEdXafterPID);
-
-    fHistNSigmaTPCTOFvsPtafterPID = new TH2D ("NSigmaTPCTOFvsPtafter","NSigmaTPCTOFvsPtafter", 1000, -10., 10., 1000, -25, 25); 
-    fHistListPIDQA->Add(fHistNSigmaTPCTOFvsPtafterPID);
-
-    fHistNSigmaTPCTOFPafterPID = new TH3D ("fHistNSigmaTPCTOFPafterPID","fHistNSigmaTPCTOFPafterPID;#sigma_{TPC};#sigma_{TOF};p_{T} (GeV/c)", nSigmaBins, nArrayS, nSigmaBins, nArrayS, pBins,nArrayP); 
-    fHistListPIDQA->Add(fHistNSigmaTPCTOFPafterPID); //++++++++++++++
   }
 
   // for electron rejection only TPC nsigma histograms
@@ -884,7 +879,8 @@ else {
 //________________________________________________________________________
 void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename, 
 					      Int_t nCentralityBins, 
-					      Double_t *centralityArrayForCorrections) {
+					      Double_t *centralityArrayForCorrections) 
+{
   //Open files that will be used for correction
   fCentralityArrayBinsForCorrections = nCentralityBins;
   for (Int_t i=0; i<nCentralityBins; i++)
@@ -908,7 +904,7 @@ void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename,
     //Printf("iCent %d:",iCent);    
     TString histoName = "fHistCorrectionPlus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionPlus[iCent]= dynamic_cast<TH3D *>(f->Get(histoName.Data()));
+    fHistCorrectionPlus[iCent]= dynamic_cast<TH3F *>(f->Get(histoName.Data()));
     if(!fHistCorrectionPlus[iCent]) {
       AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return;
@@ -916,7 +912,7 @@ void AliAnalysisTaskPIDBF::SetInputCorrection(TString filename,
     
     histoName = "fHistCorrectionMinus";
     histoName += Form("%d-%d",(Int_t)(fCentralityArrayForCorrections[iCent]),(Int_t)(fCentralityArrayForCorrections[iCent+1]));
-    fHistCorrectionMinus[iCent] = dynamic_cast<TH3D *>(f->Get(histoName.Data())); 
+    fHistCorrectionMinus[iCent] = dynamic_cast<TH3F *>(f->Get(histoName.Data())); 
     if(!fHistCorrectionMinus[iCent]) {
       AliFatal(Form("fHist %s not found but correction requested ==> ABORT",histoName.Data()));
       return; 
@@ -1573,7 +1569,7 @@ Double_t AliAnalysisTaskPIDBF::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
   }//centrality in array
   
   if (correction == 0.) { 
-    AliError(Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | pt : %.2f | cent %d",vEta, vPhi, vPt, gCentralityInt)); 
+  //  AliError(Form("Should not happen : bin content = 0. >> eta: %.2f | phi : %.2f | pt : %.2f | cent %d",vEta, vPhi, vPt, gCentralityInt)); 
     correction = 1.; 
   } 
   
@@ -1710,29 +1706,31 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //===========================PID===============================//		   
 if(fUsePID){
  Double_t dEdx   = aodTrack-> GetTPCsignal();  //dEdX for TPC
- fHistdEdxTPC->Fill(aodTrack->Pt(),dEdx);
+ fHistdEdxTPC->Fill(aodTrack->Pt()*aodTrack->Charge(),dEdx);
  IsTOF(aodTrack);
  if(fHasTOFPID){
  Double_t beta = Beta(aodTrack); // Beta for TOF 
- fHistBetaTOF->Fill(aodTrack->Pt(), beta);
+ fHistBetaTOF->Fill(aodTrack->Pt()*aodTrack->Charge(), beta);
 }
 }
  
     Double_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
 
       if(fUsePID) {
-
-  Double_t nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
-  Double_t nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
-  Double_t nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+ Double_t nsigmaTPCkProton = 999.,nsigmaTPCkKaon   = 999.,nsigmaTPCkPion   = 999.;
+ if(fSigmaIndividually){
+  nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
+  nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
+  nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+}
 
    Double_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
    Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
   
     IsTOF(aodTrack);
 // --------------------------> If loop start
-   if(fHasTOFPID && aodTrack->Pt()>fPtTOFMin && aodTrack->Pt()<fPtTOFMax){
-//cout<<" Hi I am now at TPC+TOF  track "<<endl;
+if(fSigmaIndividually){
+   if(fHasTOFPID && (aodTrack->Pt()>fPtTOFMin && aodTrack->Pt()<=fPtTOFMax)){
     nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kProton);
     nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kKaon);
     nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
@@ -1750,14 +1748,40 @@ if(fUsePID){
 
  else {
      IsTPC(aodTrack);
-    if(fHasTPCPID && aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax){
-//cout<<" Hi I am now at TPC track "<<endl;
+    if(fHasTPCPID && (aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax)){
     nsigmaProton =  TMath::Abs(nsigmaTPCkProton);
     nsigmaKaon   =  TMath::Abs(nsigmaTPCkKaon);
     nsigmaPion   =  TMath::Abs(nsigmaTPCkPion);
 }
 }
-      
+  }   // fSigmaIndividually
+
+else{
+if(fHasTOFPID && (aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTOFMax)){
+    nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
+    nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
+    nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+
+    nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kProton);
+    nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kKaon);
+    nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
+    Double_t d2Proton=nsigmaTPCkProton * nsigmaTPCkProton + nsigmaTOFkProton * nsigmaTOFkProton;
+    Double_t d2Kaon=nsigmaTPCkKaon * nsigmaTPCkKaon + nsigmaTOFkKaon * nsigmaTOFkKaon;
+    Double_t d2Pion=nsigmaTPCkPion * nsigmaTPCkPion + nsigmaTOFkPion * nsigmaTOFkPion;
+    nsigmaTPCTOFkProton  =  TMath::Sqrt(d2Proton);
+    nsigmaTPCTOFkKaon    =  TMath::Sqrt(d2Kaon);
+    nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
+
+    nsigmaProton  =  TMath::Abs(nsigmaTPCTOFkProton);
+    nsigmaKaon    =  TMath::Abs(nsigmaTPCTOFkKaon)  ;
+    nsigmaPion    =  TMath::Abs(nsigmaTPCTOFkPion)  ;
+
+
+
+  }
+ }
+
+
       switch(fParticleType_) {
       case kPion_:
       HistNSigmaBeforeCut->Fill(nsigmaPion);
@@ -1786,15 +1810,22 @@ if(fUsePID){
 
 if(fUsePID) {
 
+Bool_t sigmaMethod=kFALSE;
 switch(fParticleType_){
 
 case kPion_:
 
- if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)){
 
- //cout<<"Nsigma of  Pion After cut is "<<nsigmaPion<<endl;
- 
-      
+if(fSigmaCutMethodOne){
+if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)) sigmaMethod=kTRUE;   
+}
+
+else{
+if(nsigmaPion<fPIDNSigma) sigmaMethod=kTRUE;
+}
+
+if(sigmaMethod){
+
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -1898,12 +1929,17 @@ case kPion_:
 
 case kKaon_:
 
-if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSigma)){
+if(fSigmaCutMethodOne){
+if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSigma)) sigmaMethod=kTRUE;
+}
 
- //cout<<"Nsigma of  Kaon After cut is "<<nsigmaKaon<<endl;
+else{
+if(nsigmaKaon<fPIDNSigma) sigmaMethod=kTRUE;
+}
+
+if(sigmaMethod){
  
-      
-      // fill QA histograms
+// fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
       fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
@@ -2007,11 +2043,17 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
 
 case kProton_:
 
-  if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fPIDNSigma)){
 
- //cout<<"Nsigma of  Proton After cut is "<<nsigmaProton<<endl;
- 
-      
+if(fSigmaCutMethodOne){
+ if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fPIDNSigma)) sigmaMethod=kTRUE;
+}
+
+else{
+if(nsigmaProton<fPIDNSigma) sigmaMethod=kTRUE;
+}
+
+  if(sigmaMethod){
+
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -2118,9 +2160,6 @@ case kProton_:
 } // If commmand end
 
 else {
-
- //cout<<"There are no NSigma for All Charged Particles "<<endl;
- 
       
       // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -2221,8 +2260,7 @@ else {
    }  // Else command end
 
     }//track loop
-  }// AOD analysis
-
+  } //AOD analysis
 
   // nano AODs
   else if(gAnalysisLevel == "AODnano") { // not fully supported yet (PID missing)
@@ -2353,7 +2391,7 @@ else {
          case kPion_:
 
          if(TMath::Abs(aodTrack->GetPdgCode()) == 211){
-        //cout<<" i am in MC pion loop"<<endl;
+//        cout<<" i am in MC pion loop"<<endl;
         // fill QA histograms
         fHistPt->Fill(vPt,gCentrality);
         fHistEta->Fill(vEta,gCentrality);
@@ -2793,11 +2831,11 @@ else {
 
  if(fUsePID) {
  Double_t dEdx   = aodTrack-> GetTPCsignal();  //dEdX for TPC
- fHistdEdxTPC->Fill(aodTrack->Pt(),dEdx);
+ fHistdEdxTPC->Fill(aodTrack->Pt()*aodTrack->Charge(),dEdx);
  IsTOF(aodTrack);
  if(fHasTOFPID){
  Double_t beta = Beta(aodTrack); // Beta for TOF 
- fHistBetaTOF->Fill(aodTrack->Pt(), beta);
+ fHistBetaTOF->Fill(aodTrack->Pt()*aodTrack->Charge(), beta);
 }
 }
 
@@ -2808,20 +2846,28 @@ else {
 
  Double_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
 
+ Double_t nsigmaTPCPion=999.,nsigmaTPCKaon=999.,nsigmaTPCProton=999.;
+ Double_t nsigmaTOFPion=999.,nsigmaTOFKaon=999.,nsigmaTOFProton=999.;
+ Double_t nsigmaTPCTOFPion=999.,nsigmaTPCTOFKaon=999.,nsigmaTPCTOFProton=999.;
+
   if(fUsePID) {
 
-  Double_t nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
-  Double_t nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
-  Double_t nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+ Double_t nsigmaTPCkProton = 999.,nsigmaTPCkKaon   = 999.,nsigmaTPCkPion   = 999.;
+ if(fSigmaIndividually){
+  nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
+  nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
+  nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+ nsigmaTPCPion= nsigmaTPCkPion;  nsigmaTPCKaon= nsigmaTPCkKaon;  nsigmaTPCProton=nsigmaTPCkProton;
+}
 
-  Double_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
-  Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
+   Double_t nsigmaTOFkProton=999.,nsigmaTOFkKaon=999.,nsigmaTOFkPion=999.;
+   Double_t nsigmaTPCTOFkProton=999.,nsigmaTPCTOFkKaon=999.,nsigmaTPCTOFkPion=999.;
   
-  IsTOF(aodTrack); 
-
-  // --------------------------> If loop start
-   if(fHasTOFPID && aodTrack->Pt()>fPtTOFMin && aodTrack->Pt()<fPtTOFMax){
-//cout<<" Hi I am now at TPC+TOF  track "<<endl;
+    IsTOF(aodTrack);
+// --------------------------> If loop start
+if(fSigmaIndividually){
+//cout<<" Hi I am now at MCAODrec individual track "<<endl;
+   if(fHasTOFPID && (aodTrack->Pt()>fPtTOFMin && aodTrack->Pt()<=fPtTOFMax)){
     nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kProton);
     nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kKaon);
     nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
@@ -2835,38 +2881,85 @@ else {
     nsigmaProton  =  TMath::Abs(nsigmaTPCTOFkProton);
     nsigmaKaon    =  TMath::Abs(nsigmaTPCTOFkKaon)  ;
     nsigmaPion    =  TMath::Abs(nsigmaTPCTOFkPion)  ;
+
+ nsigmaTOFPion= nsigmaTOFkPion;  nsigmaTOFKaon= nsigmaTOFkKaon;  nsigmaTOFProton=nsigmaTOFkProton;
+ nsigmaTPCTOFPion= nsigmaTPCTOFkPion;  nsigmaTPCTOFKaon= nsigmaTPCTOFkKaon;  nsigmaTPCTOFProton=nsigmaTPCTOFkProton;
+
 }
-else {
+
+ else {
      IsTPC(aodTrack);
-    if(fHasTPCPID && aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax){
+    if(fHasTPCPID && (aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTPCMax)){
 //cout<<" Hi I am now at TPC track "<<endl;
     nsigmaProton =  TMath::Abs(nsigmaTPCkProton);
     nsigmaKaon   =  TMath::Abs(nsigmaTPCkKaon);
     nsigmaPion   =  TMath::Abs(nsigmaTPCkPion);
+ nsigmaTPCTOFPion= TMath::Abs(nsigmaTPCkPion);  nsigmaTPCTOFKaon= TMath::Abs(nsigmaTPCkKaon);  nsigmaTPCTOFProton=TMath::Abs(nsigmaTPCkProton);
 }
 }
+  }   // fSigmaIndividually
 
+else{
+//cout<<" Hi I am now at MCAODrec together track "<<endl;
+if(fHasTOFPID && (aodTrack->Pt()>=fPtTPCMin && aodTrack->Pt()<=fPtTOFMax)){
+    nsigmaTPCkProton = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kProton);
+    nsigmaTPCkKaon   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
+    nsigmaTPCkPion   = fPIDResponse->NumberOfSigmasTPC(aodTrack, AliPID::kPion);
+
+    nsigmaTOFkProton = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kProton);
+    nsigmaTOFkKaon   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kKaon);
+    nsigmaTOFkPion   = fPIDResponse->NumberOfSigmasTOF(aodTrack, AliPID::kPion);
+    Double_t d2Proton=nsigmaTPCkProton * nsigmaTPCkProton + nsigmaTOFkProton * nsigmaTOFkProton;
+    Double_t d2Kaon=nsigmaTPCkKaon * nsigmaTPCkKaon + nsigmaTOFkKaon * nsigmaTOFkKaon;
+    Double_t d2Pion=nsigmaTPCkPion * nsigmaTPCkPion + nsigmaTOFkPion * nsigmaTOFkPion;
+    nsigmaTPCTOFkProton  =  TMath::Sqrt(d2Proton);
+    nsigmaTPCTOFkKaon    =  TMath::Sqrt(d2Kaon);
+    nsigmaTPCTOFkPion    =  TMath::Sqrt(d2Pion);
+
+    nsigmaProton  =  TMath::Abs(nsigmaTPCTOFkProton);
+    nsigmaKaon    =  TMath::Abs(nsigmaTPCTOFkKaon)  ;
+    nsigmaPion    =  TMath::Abs(nsigmaTPCTOFkPion)  ;
+
+ nsigmaTPCPion= nsigmaTPCkPion;  nsigmaTPCKaon= nsigmaTPCkKaon;  nsigmaTPCProton=nsigmaTPCkProton;
+ nsigmaTOFPion= nsigmaTOFkPion;  nsigmaTOFKaon= nsigmaTOFkKaon;  nsigmaTOFProton=nsigmaTOFkProton;
+ nsigmaTPCTOFPion= nsigmaTPCTOFkPion;  nsigmaTPCTOFKaon= nsigmaTPCTOFkKaon;  nsigmaTPCTOFProton=nsigmaTPCTOFkProton;
+
+
+  }
+ }
       switch(fParticleType_) {
       case kPion_:
       HistNSigmaBeforeCut->Fill(nsigmaPion);
+      fHistNsigmaTPCBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTPCkPion);
+      fHistNsigmaTOFBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTOFkPion);
+      fHistNsigmaTPCTOFBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTPCTOFkPion);
+
       //cout<<"Nsigma of  Pion Before cut is "<<nsigmaPion<<endl;
       break;
 
       case kKaon_:
       HistNSigmaBeforeCut->Fill(nsigmaKaon);
+      fHistNsigmaTPCBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTPCkKaon);
+      fHistNsigmaTOFBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTOFkKaon);
+      fHistNsigmaTPCTOFBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTPCTOFkKaon);
       //cout<<"Nsigma of  Kaon Before cut is "<<nsigmaKaon<<endl;
       break;
 
       case kProton_:
       HistNSigmaBeforeCut->Fill(nsigmaProton);
+      fHistNsigmaTPCBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTPCkProton);
+      fHistNsigmaTOFBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTOFkProton);
+      fHistNsigmaTPCTOFBeforePIDCut->Fill(aodTrack->Pt(),nsigmaTPCTOFkProton);
+
       //cout<<"Nsigma of  Proton Before cut is "<<nsigmaProton<<endl;
       break;
 
         } // end of switch command
-
 } // fUsePID end
 
 if(fUsePID) {
+
+Bool_t sigmaMethod=kFALSE;
 
 switch(fParticleType_){
 
@@ -2894,8 +2987,22 @@ if(fRawType){
 
 else{
 
-if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)){
+if(fSigmaCutMethodOne){
+if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)) sigmaMethod=kTRUE;
+}
 
+else{
+if(nsigmaPion<fPIDNSigma) sigmaMethod=kTRUE;
+}
+
+      
+if(nsigmaTPCPion<3.0) fHistdEdxTPCAfterPIDCut->Fill(aodTrack->Pt()*aodTrack->Charge(),aodTrack -> GetTPCsignal());
+if(nsigmaTOFPion<3.0) fHistBetaTOFAfterPIDCut->Fill(aodTrack->Pt()*aodTrack->Charge(),Beta(aodTrack));
+
+
+//if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)){
+if(sigmaMethod){
+fHistNsigmaTPCTOFAfterPIDCut->Fill(aodTrack->Pt(),nsigmaTPCTOFPion);
   // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -3020,7 +3127,19 @@ if(fRawType){
 
 else{
 
-if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSigma)){
+if(fSigmaCutMethodOne){
+if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSigma)) sigmaMethod=kTRUE;
+}
+
+else{
+if(nsigmaKaon<fPIDNSigma) sigmaMethod=kTRUE;
+}
+
+if(nsigmaTPCKaon<3.0) fHistdEdxTPCAfterPIDCut->Fill(aodTrack->Pt()*aodTrack->Charge(),aodTrack -> GetTPCsignal());
+if(nsigmaTOFKaon<3.0) fHistBetaTOFAfterPIDCut->Fill(aodTrack->Pt()*aodTrack->Charge(),Beta(aodTrack));
+
+if(sigmaMethod){
+fHistNsigmaTPCTOFAfterPIDCut->Fill(aodTrack->Pt(),nsigmaTPCTOFKaon);
   // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -3144,8 +3263,20 @@ if(fRawType){
 
 else{
 
-if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fPIDNSigma)){
+if(fSigmaCutMethodOne){
+ if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fPIDNSigma)) sigmaMethod=kTRUE;
+}
+
+else{
+if(nsigmaProton<fPIDNSigma) sigmaMethod=kTRUE;
+}
+
+if(nsigmaTPCProton<3.0) fHistdEdxTPCAfterPIDCut->Fill(aodTrack->Pt()*aodTrack->Charge(),aodTrack -> GetTPCsignal());
+if(nsigmaTOFProton<3.0) fHistBetaTOFAfterPIDCut->Fill(aodTrack->Pt()*aodTrack->Charge(),Beta(aodTrack));
+
+if(sigmaMethod){
   // fill QA histograms
+fHistNsigmaTPCTOFAfterPIDCut->Fill(aodTrack->Pt(),nsigmaTPCTOFProton);
 
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -3473,17 +3604,10 @@ else{
 	  beta = length/tof;
 	  
 	  nSigmaTOFForParticleOfInterest = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
-	  fHistBetavsPTOFbeforePID ->Fill(track->P()*track->Charge(),beta);
-	  fHistProbTOFvsPtbeforePID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
-	  fHistNSigmaTOFvsPtbeforePID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
 	}//TOF signal 
 	
 	
 	Double_t  nSigmaTPCForParticleOfInterest = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
-	fHistdEdxVsPTPCbeforePID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
-	fHistProbTPCvsPtbeforePID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
-	fHistNSigmaTPCvsPtbeforePID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
-	fHistProbTPCTOFvsPtbeforePID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
 	//end of QA-before pid
 	
 	if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
@@ -3498,14 +3622,6 @@ else{
 	  }
 	  
 	  //Fill QA after the PID
-	  fHistBetavsPTOFafterPID ->Fill(track->P()*track->Charge(),beta);
-	  fHistProbTOFvsPtafterPID ->Fill(track->Pt(),probTOF[fParticleOfInterest]);
-	  fHistNSigmaTOFvsPtafterPID ->Fill(track->Pt(),nSigmaTOFForParticleOfInterest);
-	  
-	  fHistdEdxVsPTPCafterPID -> Fill(track->P()*track->Charge(),track->GetTPCsignal());
-	  fHistProbTPCvsPtafterPID -> Fill(track->Pt(),probTPC[fParticleOfInterest]); 
-	  fHistProbTPCTOFvsPtafterPID -> Fill(track->Pt(),probTPCTOF[fParticleOfInterest]);
-	  fHistNSigmaTPCvsPtafterPID -> Fill(track->Pt(),nSigmaTPCForParticleOfInterest); 
 	}
       }
       //===========================PID===============================//
@@ -3738,11 +3854,11 @@ else{
 	  //Printf("phi (after): %lf\n",vPhi);
 	  Double_t vDeltaphiBefore = phi0 - gReactionPlane*TMath::DegToRad();
 	  if(vDeltaphiBefore < 0) vDeltaphiBefore += 2*TMath::Pi();
-	  fHistPhiBefore->Fill(vDeltaphiBefore,gCentrality);
+//	  fHistPhiBefore->Fill(vDeltaphiBefore,gCentrality);
 	  
 	  Double_t vDeltaphiAfter = vPhi - gReactionPlane*TMath::DegToRad();
 	  if(vDeltaphiAfter < 0) vDeltaphiAfter += 2*TMath::Pi();
-	  fHistPhiAfter->Fill(vDeltaphiAfter,gCentrality);
+	  //fHistPhiAfter->Fill(vDeltaphiAfter,gCentrality);
 	  
 	}
 	

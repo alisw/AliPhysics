@@ -1,6 +1,7 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
+AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 const AliDielectronEventCuts *GetEventCuts();
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
@@ -9,11 +10,11 @@ Bool_t kMix = kTRUE;
 Bool_t kNoPairing   = kFALSE;
 Bool_t randomizeDau = kTRUE;
      
-TString names("PbPbData1;PbPbData2");
+TString names("PbPbData0;PbPbData1;PbPbData2;PbPbData3;PbPbData4");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
-const Int_t nPF = 0; // use prefiltering for cuts lower than nPF
+const Int_t nPF = 2; // use prefiltering for cuts lower than nPF
 
 AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t isRandomRej=kFALSE)
 {
@@ -95,12 +96,16 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
         
   if(cutDefinition < nPF){
 
+    Printf("Use prefiltering!");
+
     if(bESDANA){
       die->GetTrackFilter().AddCuts(SetupPreFilterESDtrackCuts(cutDefinition));
     }
     else{
       die->GetTrackFilter().AddCuts(SetupPreFilterAODtrackCuts(cutDefinition));
     }
+    die->GetTrackFilter().AddCuts(SetPreFilterPIDcuts(cutDefinition));
+
 
     //pairPrefilter
     AliAnalysisCuts* pairPreCuts=0x0;
@@ -135,7 +140,7 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
       die->GetTrackFilter().AddCuts(SetupAODtrackCuts(cutDefinition));
     }    
     die->GetTrackFilter().AddCuts(SetPIDcuts(cutDefinition));
-    die->GetTrackFilter().AddCuts(noconv);
+    // die->GetTrackFilter().AddCuts(noconv);
   }
 
   // removing strange mixing pairs
@@ -156,15 +161,27 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.35, 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.8,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3., 3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  else if(cutDefinition == 1){
+  if(cutDefinition == 1){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.35, 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3., 3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition == 2){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.35, 100., kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3., 3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition == 3){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.8,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  else if(cutDefinition == 2){
+  else if(cutDefinition == 4){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -2. ,2. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
@@ -214,14 +231,17 @@ AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition){
   return fesdTrackCuts;
 }
 
-//AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition){
-//  AliDielectronPID *pid = new AliDielectronPID();
-//    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-//    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-//    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-//    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,4. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);   
-// return pid;
-//}
+AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition){
+  AliDielectronPID *pid = new AliDielectronPID();
+
+  if(cutDefinition==0){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -4., 4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition==1){
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-5.,5.,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }   
+  return pid;
+}
 
 AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition){
 
@@ -281,8 +301,6 @@ AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition){
 
 AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
 
-  // so far only one cut definition 
-
   AliAnalysisCuts* faodTrackCuts=0x0;
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
@@ -291,11 +309,16 @@ AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
   trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.08,100.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -1.1,1.1);
 
-
   AliDielectronTrackCuts* trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-  trackCutsDiel->SetAODFilterBit(1<<1); // TPC only cuts (to be checked)
-  trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  
+
+  if(cutDefinition==1){
+    trackCutsDiel->SetAODFilterBit(1<<1); // ITSsa cuts 
+    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  }
+  else{
+    trackCutsDiel->SetAODFilterBit(1<<0); // TPC only cuts 
+    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  }
   AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
@@ -313,7 +336,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //Setup histogram classes
   AliDielectronHistos *histos=
     new AliDielectronHistos(die->GetName(),
-                            die->GetTitle());
+                           die->GetTitle());
   
   //Initialise histogram classes
   //histos->SetReservedWords("Track;Pair");

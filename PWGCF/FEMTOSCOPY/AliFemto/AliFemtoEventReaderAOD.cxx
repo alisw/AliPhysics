@@ -27,6 +27,8 @@
 #include "AliAnalysisUtils.h"
 #include "AliGenHijingEventHeader.h"
 
+#include "AliExternalTrackParam.h"
+
 #include <algorithm>
 #include <cassert>
 #include <map>
@@ -76,15 +78,19 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMinVtxContr(0),
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0),
-  fDCAglobalTrack(kFALSE),
+  fDCAglobalTrack(0),
   fFlatCent(kFALSE),
   fShiftPosition(0.),
   fPrimaryVertexCorrectionTPCPoints(kFALSE),
   f1DcorrectionsPions(0),
   f1DcorrectionsKaons(0),
   f1DcorrectionsProtons(0),
+  f1DcorrectionsPionsMinus(0),
+  f1DcorrectionsKaonsMinus(0),
+  f1DcorrectionsProtonsMinus(0),
   f1DcorrectionsAll(0),
-  f1DcorrectionsLambdas(0)
+  f1DcorrectionsLambdas(0),
+  f1DcorrectionsLambdasMinus(0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -129,8 +135,12 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   f1DcorrectionsPions(aReader.f1DcorrectionsPions),
   f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
   f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
+  f1DcorrectionsPionsMinus(aReader.f1DcorrectionsPionsMinus),
+  f1DcorrectionsKaonsMinus(aReader.f1DcorrectionsKaonsMinus),
+  f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
-  f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas)
+  f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
+  f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus)
 
 {
   // copy constructor
@@ -195,8 +205,12 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   f1DcorrectionsPions = aReader.f1DcorrectionsPions;
   f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
   f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
+  f1DcorrectionsPionsMinus = aReader.f1DcorrectionsPionsMinus;
+  f1DcorrectionsKaonsMinus = aReader.f1DcorrectionsKaonsMinus;
+  f1DcorrectionsProtonsMinus = aReader.f1DcorrectionsProtonsMinus;
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
+  f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
 
   return *this;
 }
@@ -843,7 +857,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   float covmat[6];
   tAodTrack->GetCovMatrix(covmat);
 
-  if (!fDCAglobalTrack) {
+  if (fDCAglobalTrack==0) {
 
     tFemtoTrack->SetImpactD(tAodTrack->DCA());
     tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
@@ -941,6 +955,22 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   }
   else tFemtoTrack->SetCorrectionProton(1.0);
 
+  if(f1DcorrectionsPionsMinus){
+    tFemtoTrack->SetCorrectionPionMinus(f1DcorrectionsPionsMinus->GetBinContent(f1DcorrectionsPionsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionPionMinus(1.0);
+
+  if(f1DcorrectionsKaonsMinus){
+    tFemtoTrack->SetCorrectionKaonMinus(f1DcorrectionsKaonsMinus->GetBinContent(f1DcorrectionsKaonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionKaonMinus(1.0);
+
+  if(f1DcorrectionsProtonsMinus){
+    tFemtoTrack->SetCorrectionProtonMinus(f1DcorrectionsProtonsMinus->GetBinContent(f1DcorrectionsProtonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionProtonMinus(1.0);
+  
+
   if(f1DcorrectionsAll){
     tFemtoTrack->SetCorrectionAll(f1DcorrectionsAll->GetBinContent(f1DcorrectionsAll->FindFixBin(tAodTrack->Pt())));
   }
@@ -1013,6 +1043,14 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   else {
     tFemtoV0->SetCorrectionLambdas(1.0);
   }
+
+    if(f1DcorrectionsLambdasMinus){
+    tFemtoV0->SetCorrectionLambdasMinus(f1DcorrectionsLambdasMinus->GetBinContent(f1DcorrectionsLambdasMinus->FindFixBin(tAODv0->Pt())));
+  }
+  else {
+    tFemtoV0->SetCorrectionLambdasMinus(1.0);
+  }
+
 
   tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
   //tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
@@ -1455,7 +1493,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   // Added due to slow calculation in AliAODVertex::GetNContributors - if that changes, remove this.
   static std::map<Short_t, Int_t> _vertex_NContributors_cache;
 
-  if (fDCAglobalTrack) {
+  if (fDCAglobalTrack==1) {
 
     // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
     const AliAODVertex *vertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
@@ -1487,28 +1525,38 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     tFemtoTrack->SetImpactZ(DCAZ);
 
 
-    // // // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
-
-    // double impact[2];
-    // double covimpact[3];
-
-    // AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
-    // // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    // if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-
-    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    //   //cout << "sth went wrong with dca propagation" << endl;
-    //   tFemtoTrack->SetImpactD(-1000.0);
-    //   tFemtoTrack->SetImpactZ(-1000.0);
-
-    // }
-    // else {
-    //   tFemtoTrack->SetImpactD(impact[0]);
-    //   tFemtoTrack->SetImpactZ(impact[1]);
-    // }
-    // delete trk_clone;
   }
+  else if(fDCAglobalTrack==2)
+    {
+      Double_t DCAXY;
+      Double_t DCAZ;
+      
+      //DCA for TPC only - from PropagateToDCA method
+      AliExternalTrackParam aliextparam;
+      aliextparam.CopyFromVTrack(tAodTrack);
+      if (aliextparam.GetX() > 3.0)
+	{
+	  DCAXY = -999;
+	  DCAZ = -999;
+	}
+      else
+	{
+	  Double_t covar[3]={0,0,0};
+	  Double_t DCA[2]={0,0};
+	  if (!aliextparam.PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10.0,DCA,covar))
+	    {
+	      DCAXY = -999;
+	      DCAZ = -999;
+	    }
+	  else
+	    {
+	      DCAXY = TMath::Sqrt((DCA[0]*DCA[0]) + (DCA[1]*DCA[1]));
+	      DCAZ = tAodTrack->ZAtDCA();
+	    }
+	}
+      tFemtoTrack->SetImpactD(DCAXY);
+      tFemtoTrack->SetImpactZ(DCAZ);    
+    }
 
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
@@ -1778,7 +1826,7 @@ void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
   fisPileUp = ispileup;
 }
 
-void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
+void AliFemtoEventReaderAOD::SetDCAglobalTrack(Int_t dcagt)
 {
   fDCAglobalTrack = dcagt;
 }
@@ -1832,6 +1880,21 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsProtons(TH1D *h1)
   f1DcorrectionsProtons = h1;
 }
 
+void AliFemtoEventReaderAOD::Set1DCorrectionsPionsMinus(TH1D *h1)
+{
+  f1DcorrectionsPionsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsKaonsMinus(TH1D *h1)
+{
+  f1DcorrectionsKaonsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsProtonsMinus(TH1D *h1)
+{
+  f1DcorrectionsProtonsMinus = h1;
+}
+
 void AliFemtoEventReaderAOD::Set1DCorrectionsAll(TH1D *h1)
 {
   f1DcorrectionsAll = h1;
@@ -1841,3 +1904,9 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsLambdas(TH1D *h1)
 {
   f1DcorrectionsLambdas = h1;
 }
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
+{
+  f1DcorrectionsLambdasMinus = h1;
+}
+
