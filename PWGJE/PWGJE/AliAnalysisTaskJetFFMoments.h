@@ -130,6 +130,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
       {fkDoJetMatching=kTRUE; fkFillMismatchHisto=hm; fJetMatchingFractionMin = x;fJetMatchedDistMax = f;} // Set jet matching parameters
   void SetUseAODInputJets(Bool_t b)                    {fkUseJetFromInput = b;}                            // Set Read jets from Input
   void SetNUsedJets(Int_t f)                           {fNUsedJets = f;}                                   // Set number of used jet
+  void SetUseTrackPtSumAsJetPt(Bool_t b)               {fkUseTrackPtSumAsJetPt =b;}                        // Use Track Pt Sum As Jet Pt
   void SetGenJetType(Bool_t f=0)                       {fkGenJetType = f;}                                 // Set Gen Jet type (0 = gen , 1 = rec)
   void SetEffJetType(Bool_t f=0)                       {fkEffJetType = f;}                                 // Set Eff Jet type (0 = gen , 1 = rec)
   void SetJetMinLTrackPt(Float_t pt = -1) { fJetMinLTrackPt = pt; }
