@@ -10,6 +10,7 @@
 
 #include  "AliAnalysisTaskSE.h"
 #include  "AliAnalysisManager.h"
+#include <cmath>
 
 #ifndef __CINT__
 #include "fastjet/PseudoJet.hh"
@@ -536,7 +537,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
     Double_t phiTilted = _reference.phi_02pi() + _alpha;
     if(phiTilted > 2*TMath::Pi()) phiTilted = phiTilted - 2*TMath::Pi();
 
-    double dphi = abs(jet.phi() - phiTilted);
+    double dphi = std::abs(jet.phi() - phiTilted);
     if (dphi > TMath::Pi()) dphi = 2. * TMath::Pi() - dphi;
     double drap = jet.eta() - etaTilted;
 
