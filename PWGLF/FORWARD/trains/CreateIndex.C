@@ -1,5 +1,6 @@
 void
-CreateIndex(const TString& dir, const TString& tree="esdTree")
+CreateIndex(const TString& dir, const TString& tree="esdTree",
+	    const char* remote=0)
 {
   gROOT->SetMacroPath(Form("$ALICE_PHYSICS/PWGLF/FORWARD/trains:%s", 
 			   gROOT->GetMacroPath()));
@@ -33,10 +34,11 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   opts.Append("&check");
   opts.Append("&clean");
   opts.Append("&recursive");
-  // opts.Append("&verbose");
+  opts.Append("&verbose");
   if (mc) opts.Append("&mc");
 
-  TString realDir(gSystem->ExpandPathName(dir.Data()));
+  TString realDir(dir);
+  if (!remote)              realDir = gSystem->ExpandPathName(dir.Data());
   if (realDir.EqualTo(".")) realDir = gSystem->WorkingDirectory();
 
   TUrl url;
@@ -48,7 +50,9 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   
   Printf("Running ChainBuilder::CreateCollection(\"%s/index.root\",\"%s\")",
 	 realDir.Data(), url.GetUrl());
-  ChainBuilder::CreateCollection(Form("%s/index.root", realDir.Data()), url);
+  TString out(Form("%s/%s.root", realDir.Data(),
+		   !remote ? "index" : "remote"));
+  ChainBuilder::CreateCollection(out, url, remote);
 }
 
 				 

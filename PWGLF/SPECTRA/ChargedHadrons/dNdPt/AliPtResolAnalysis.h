@@ -51,11 +51,14 @@ public :
   // Get analysis folder
   TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
   THnSparseF *GetTrackParamHist() const {return fTrackParamHist;} 
-  THnSparseF *GetTrackParamHist2() const {return fTrackParamHist2;} 
+  THnSparseF *GetTrackParamHist2() const {return fTrackParamHist2;}
+  
+  void SetSigmaScale(Double_t scale = 0){ fSigmaScale = scale;}
 
 private:
 
-  // analysis folder 
+  // analysis folder
+  Double_t fSigmaScale;         // Scale for sigma(1/pt)
   TFolder *fAnalysisFolder; // folder for analysed histograms
   THnSparseF *fTrackParamHist;  //-> sigma(1/pT):1/pT
   THnSparseF *fTrackParamHist2;  //-> sigma(1/pT)*pT:pT
@@ -63,7 +66,7 @@ private:
   AliPtResolAnalysis(const AliPtResolAnalysis&); // not implemented
   AliPtResolAnalysis& operator=(const AliPtResolAnalysis&); // not implemented
 
-  ClassDef(AliPtResolAnalysis,2);
+  ClassDef(AliPtResolAnalysis,3);
 };
 
 #endif

@@ -3,6 +3,10 @@
 #include <TInterpreter.h>
 #include <TSystem.h>
 #include <TError.h>
+#include <TString.h>
+#else 
+class TString;
+class TSystem;
 #endif
 
 struct FixPaths

@@ -33,6 +33,12 @@ Task level:
 # We put here the event selection criteria
 Centrality: 00-90
 zvertex: -10.0:10.0
+# Select only events validated for centrality calibration
+# Check information about your runs of interest in
+# https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliMultSelectionCalibStatus
+# Learn more about its usage in
+# https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+Use OnlyCentCalibEvents: yes
 end
 
 Detectors:

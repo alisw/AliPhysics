@@ -38,6 +38,7 @@ class TH1;
 class TH3;
 class TProfile;
 class TProfile2D;
+class TProfile3D;
 class TDirectoryFile;
 class TRandom3;
 class TNtuple;
@@ -356,6 +357,8 @@ public:
  Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
   void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
   Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
+  void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
+  Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
  void SetUseParticleWeights(TProfile* const uPW) {this->fUseParticleWeights = uPW;};
  TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
  void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
@@ -755,14 +758,14 @@ public:
  TProfile* GetCRCNUATermsPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[r][c][eg][h];};
  
  // 12.e) Q Vectors:
- void SetCRCQ2ReHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2Re[r][h] = TH;};
- TProfile* GetCRCQ2ReHist(Int_t const r, Int_t const h) const {return this->fCRCQ2Re[r][h];};
- void SetCRCQ2ImHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2Im[r][h] = TH;};
- TProfile* GetCRCQ2ImHist(Int_t const r, Int_t const h) const {return this->fCRCQ2Im[r][h];};
- void SetCRCQ2ReCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2ReCorr[r][h] = TH;};
- TProfile* GetCRCQ2ReCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQ2ReCorr[r][h];};
- void SetCRCQ2ImCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2ImCorr[r][h] = TH;};
- TProfile* GetCRCQ2ImCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQ2ImCorr[r][h];};
+ void SetCRCQnReHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnRe[r][h] = TH;};
+ TProfile* GetCRCQnReHist(Int_t const r, Int_t const h) const {return this->fCRCQnRe[r][h];};
+ void SetCRCQnImHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnIm[r][h] = TH;};
+ TProfile* GetCRCQnImHist(Int_t const r, Int_t const h) const {return this->fCRCQnIm[r][h];};
+ void SetCRCQnReCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnReCorr[r][h] = TH;};
+ TProfile* GetCRCQnReCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQnReCorr[r][h];};
+ void SetCRCQnImCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnImCorr[r][h] = TH;};
+ TProfile* GetCRCQnImCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQnImCorr[r][h];};
  void SetCRCPhiHist(TH2D* const TH, Int_t const r, Int_t const c, Int_t const i) {this->fCRCPhiHist[r][c][i] = TH;};
  TH2D* GetCRCPhiHist(Int_t const r, Int_t const c, Int_t const i) const {return this->fCRCPhiHist[r][c][i];};
  
@@ -868,10 +871,14 @@ public:
  TH2F* GetZNvsCen(Int_t const h) const {return this->fhZNvsCen[h];};
   void SetZDCESEMultWeightsHist(TH2F* const n, Int_t h) {this->fZDCESEMultWeightsHist[h] = n;};
   TH2F* GetZDCESEMultWeightsHist(Int_t h) const {return this->fZDCESEMultWeightsHist[h];};
+  void SetZDCESESpecWeightsHist(TH2F* const n, Int_t h) {this->fZDCESESpecWeightsHist[h] = n;};
+  TH2F* GetZDCESESpecWeightsHist(Int_t h) const {return this->fZDCESESpecWeightsHist[h];};
   void SetZNvsTCen(TH2F* const n, Int_t const h) {this->fhZNvsTCen[h] = n;};
   TH2F* GetZNvsTCen(Int_t const h) const {return this->fhZNvsTCen[h];};
   void SetCenvsMul(TH2F* const n, Int_t const h) {this->fhCenvsMul[h] = n;};
   TH2F* GetCenvsMul(Int_t const h) const {return this->fhCenvsMul[h];};
+  void SetCenvsSpec(TH2F* const n, Int_t const h) {this->fhCenvsSpec[h] = n;};
+  TH2F* GetCenvsSpec(Int_t const h) const {return this->fhCenvsSpec[h];};
   void SetZNvsMul(TH2F* const n) {this->fhZNvsMul = n;};
   TH2F* GetZNvsMul() const {return this->fhZNvsMul;};
   
@@ -881,12 +888,6 @@ public:
  TH2F* GetZNResvsMul(Int_t const eg, Int_t const h) const {return this->fhZNResvsMul[eg][h];};
  void SetZNResvsCen(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsCen[eg][h] = n;};
  TH2F* GetZNResvsCen(Int_t const eg, Int_t const h) const {return this->fhZNResvsCen[eg][h];};
- void SetZNQVecCov(TProfile* const n, Int_t const h) {this->fhZNQVecCov[h] = n;};
- TProfile* GetZNQVecCov(Int_t const h) const {return this->fhZNQVecCov[h];};
-  void SetZDCESEHistEP(TH2D* const n, Int_t const h) {this->fZDCESEHistEP[h] = n;};
-  TH2D* GetZDCESEHistEP(Int_t const h) const {return this->fZDCESEHistEP[h];};
-  void SetZDCESEHistQV(TH2D* const n, Int_t const h) {this->fZDCESEHistQV[h] = n;};
-  TH2D* GetZDCESEHistQV(Int_t const h) const {return this->fZDCESEHistQV[h];};
   
  void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
  
@@ -1082,6 +1083,7 @@ private:
  Bool_t fUseTrackWeights; // use track weights (e.g. VZERO sector weights)
  Bool_t fUsePhiEtaWeights; // use phi,eta weights
  Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
+ Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE spec. weights
  TProfile *fUseParticleWeights; //! profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
  // TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
  // TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
@@ -1425,10 +1427,10 @@ private:
  TList *fCRCQVecWeightsList; //! Weights for Q Vectors
  TList *fCRCZDCCalibList; //! ZDC calibration
  TList *fZDCESEList; //! ZDC ESE
- TProfile *fCRCQ2Re[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
- TProfile *fCRCQ2Im[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
- TProfile *fCRCQ2ReCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
- TProfile *fCRCQ2ImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
+ TProfile *fCRCQnRe[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
+ TProfile *fCRCQnIm[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
+ TProfile *fCRCQnReCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
+ TProfile *fCRCQnImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
  TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
  TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
  TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
@@ -1436,12 +1438,13 @@ private:
  TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
  TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
  TProfile *fCRCVZSinnC[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
- AliFlowVector fTPCQ2Recenter;
+ AliFlowVector fTPCQnRecenter[fCRCnHar];
  
  // temp
  TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
- TProfile *fTPCQHist[2];  //! Run-by-run TPCQvecHist
+ TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
  TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
+  TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
  TH1D *fZDCESEMinHist[2]; //!
  TH1D *fZDCESEMaxHist[2]; //!
@@ -1459,6 +1462,7 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
+ TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec
  TH3D *fCRCZDCEP[6]; //! EPs
  TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
@@ -1649,7 +1653,8 @@ private:
  
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
- TH1D *fMultHist; //! Multiplicity distribution
+ TH1D *fMultHist; //! TPC Multiplicity distribution
+ TH1D *fV0MMultHist; //! V0M Multiplicity distribution
  TH1D *fCenHist; //! Centrality distribution
  TH2F *fVtxHist[3]; //! primary vertex
  TH1D* fCenWeightsHist; //! Centrality weights
@@ -1672,6 +1677,7 @@ private:
  TH2F* fhZNvsCen[2]; //! cen vs mul
   TH2F* fhZNvsTCen[2]; //! cen vs mul
   TH2F* fhCenvsMul[fZDCESEnCl+1]; //! cen vs mul
+  TH2F* fhCenvsSpec[fZDCESEnCl+1]; //! cen vs spec
   TH2F* fhZNvsMul; //! cen vs mul
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
   TF1 *fPolMin[2]; //!
@@ -1686,20 +1692,18 @@ private:
   Double_t fZNAen; // total energy from ZNC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
  TH2F* fZDCESEMultWeightsHist[5]; //! ZDC-ESE mult weights
+ TH2F* fZDCESESpecWeightsHist[5]; //! ZDC-ESE mult weights
   
   const static Int_t fZDCESEnPol=4;
   TF1 *fPolCuts[fZDCESEnPol]; //!
   TH1D *fZDCESECutsHist[fZDCESEnPol]; //!
   
- TProfile* fhZNQVecCov[4]; //! Q-vec cov.
- TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
- TH2D *fZDCESEHistQV[fCRCMaxnCen]; //! Test ZDC ESE
  Bool_t fQAZDCCuts;
  Bool_t fQAZDCCutsFlag;
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 19);
+ ClassDef(AliFlowAnalysisCRC, 20);
  
 };
 

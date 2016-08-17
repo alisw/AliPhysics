@@ -124,21 +124,24 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel){
+  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && !MultBins){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
     cutVertex->SetCheckZResolutionSPD();
-    if(MultBins) cutVertex->SetMaxZResolutionSPD(0.02);
-    if(!MultBins) cutVertex->SetCheckDispersionSPD();
+    cutVertex->SetCheckDispersionSPD();
     cutVertex->SetCheckZDifferenceSPDTrack();
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
   if(evtCutSetID!=eventCutSet::kNoEvtSel){
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-    if(MultBins) cutEventUtils->SetRemovePileUpMultBins();
-    cutEventUtils->SetCheckIncompleteDAQ();
-    cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-    if(MultBins) cutEventUtils->SetCheckInelGt0SPDtracklets();
+    if(!MultBins){
+      cutEventUtils->SetCheckIncompleteDAQ();
+      cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+      cutEventUtils->SetCheckInelGt0SPDtracklets();
+    }else{
+      cutEventUtils->SetRemovePileUppA2013(kFALSE);
+      cutEventUtils->SetCheckAcceptedMultSelection();
+    }
   }
 
   if(isPP && (!isMC) && cutVertex){ 

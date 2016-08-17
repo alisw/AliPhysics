@@ -119,12 +119,12 @@ Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
  * @param[in] radius Resolution parameter (0.2, 0.4, ...)
- * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
  * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
-    JetAcceptanceType accType, TString tag)
+    UInt_t accType, TString tag)
 {
   AliParticleContainer* partCont = GetParticleContainer(0);
   AliClusterContainer* clusCont = GetClusterContainer(0);
@@ -138,13 +138,13 @@ AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetTyp
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
  * @param[in] radius Resolution parameter (0.2, 0.4, ...)
- * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
  * @param[in] partCont Particle container of the objects used to generate the jets
  * @param[in] clusCont Cluster container of the objects used to generate the jets
  * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
  * @return Pointer to the new jet container
  */
-AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, JetAcceptanceType accType,
+AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, UInt_t accType,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
 {
   AliJetContainer *cont = new AliJetContainer(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag);

@@ -1524,6 +1524,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t nSigmaTPC = 0.;
 	Double_t nSigmaTOF = 0.; 
 	Double_t nSigmaTPCTOF = 0.;
+	Double_t nSigmaTPCTOFreq = 0.;
 	UInt_t detUsedTPC = 0;
 	UInt_t detUsedTOF = 0;
 	UInt_t detUsedTPCTOF = 0;
@@ -1531,9 +1532,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
 	nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+	nSigmaTPCTOFreq = nSigmaTPCTOF;
 	if (nSigmaTOF == 999 ||  nSigmaTOF == -999){
 	  nSigmaTPCTOF = nSigmaTPC;
 	}
+
 
 	//Decide what detector configuration we want to use
 	switch(fPidDetectorConfig) {
@@ -1558,6 +1561,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
 	  break;
+	case kTPCTOFreq:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPCTOFreq;
+	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPCTOF[iSpecies];
+	  break;
 	default:
 	  break;
 	}//end switch: define detector mask
@@ -1576,12 +1586,18 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    length = aodTrack->GetIntegratedLength();
 	    tof = tofTime*1E-3; // ns		      
 	    if (tof <= 0) {
-	      //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	      Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	      continue;
 	    }
 	    if (length <= 0){
-	      //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
-	      continue;
+	      // in old productions integrated track length is not stored in AODs -> need workaround
+	      Double_t exptime[10];
+	      aodTrack->GetIntegratedTimes(exptime);
+	      length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+	      if (length <= 0){
+		Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+		continue;
+	      }
 	    }	      
 	    length = length*0.01; // in meters
 	    tof = tof*c;
@@ -2172,28 +2188,48 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t probTPCTOF[AliPID::kSPECIES]={0.};
 	
 	Double_t nSigma = 0.;
+	Double_t nSigmaTPC = 0.;
+	Double_t nSigmaTOF = 0.; 
+	Double_t nSigmaTPCTOF = 0.;
+	Double_t nSigmaTPCTOFreq = 0.;
 	UInt_t detUsedTPC = 0;
 	UInt_t detUsedTOF = 0;
 	UInt_t detUsedTPCTOF = 0;
+	
+	nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest);
+	nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest);
+	nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+	nSigmaTPCTOFreq = nSigmaTPCTOF;
+	if (nSigmaTOF == 999 ||  nSigmaTOF == -999){
+	  nSigmaTPCTOF = nSigmaTPC;
+	}
 	
 	//Decide what detector configuration we want to use
 	switch(fPidDetectorConfig) {
 	case kTPCpid:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)fParticleOfInterest));
+	  nSigma = nSigmaTPC;
 	  detUsedTPC = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPC[iSpecies];
 	  break;
 	case kTOFpid:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-	  nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)fParticleOfInterest));
+	  nSigma = nSigmaTOF;
 	  detUsedTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTOF[iSpecies];
 	  break;
 	case kTPCTOF:
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPCTOF;
+	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPCTOF[iSpecies];
+	  break;
+	case kTPCTOFreq:
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPCTOFreq;
 	  detUsedTPCTOF = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
@@ -2214,14 +2250,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  tof = tofTime*1E-3; // ns	
 	  
 	  if (tof <= 0) {
-	    //Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	    Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 	    continue;
 	  }
 	  if (length <= 0){
-	    //printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	    Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
 	    continue;
 	  }
-	  
+
 	  length = length*0.01; // in meters
 	  tof = tof*c;
 	  beta = length/tof;

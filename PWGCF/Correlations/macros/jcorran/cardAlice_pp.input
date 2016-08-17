@@ -67,8 +67,6 @@ TriggerFiducialEtaCut 0.4 #
 #======= From Jiri's EMCAL analysis but still in AliJCORRAN.cxx, around line 300 
 eventBC -1 # select only events in BC modulo 4; -1 to disable
 
-DoResonancePythia 0
-
 Jet:PtBins              0 10 15 20 30 60 80 100 140 180 240 500
 Jet:PtPairBins          0 10 15 20 30 60 80 100 140 180 240 500
 InvMBin                 0 10 15 20 30 60 80 100 140 180 240 500
@@ -81,6 +79,10 @@ JetLeadPtBorders	0 3.0 5.0 10.0 25.0 50.0 100.0
 JetMultBorders		0 4 8 12 16 20 100
 DeltaRBorders		0.0 0.2 0.4 0.6
 JetEtaCut               0.25
+
+#======= Jussi's jT analysis =======
+EnableKlongBins 0 # 0 = Do not fill klong bins. 1 = Fill klong bins
+DoResonancePythia 0 # 0 = Regular PYTHIA8 run. 1 = Generate two gluon initial state in PYTHIA8
 
 #======= Level of used quality control histograms =======
 QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = quality control for acceptance correction, 2 = lots of 2D quality control histograms added

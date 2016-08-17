@@ -1206,6 +1206,7 @@ protected:
 			const char* val)
   {
     const char* cls = task->ClassName();
+    // Info("SetOnTask", "((%s)*%p)->Set%s(%s)", cls, task, what, val);
     gROOT->ProcessLine(Form("((%s*)%p)->Set%s(%s)",cls,task,what,val));
   }
   /* @} */
@@ -1228,6 +1229,7 @@ protected:
 		  Double_t defval)
   {
     Double_t val = fOptions.AsDouble(opt,defval);;
+    // Info("FromOption<D>"," %p, %s, %s, %f", task, what, opt, val);
     SetOnTask(task, what, val);
   }
   /** 
@@ -1243,6 +1245,7 @@ protected:
 		  Bool_t      /*defval*/)
   {
     Bool_t val = fOptions.AsBool(opt);;
+    // Info("FromOption<B>"," %p, %s, %s, %d", task, what, opt, val);
     SetOnTask(task, what, val);
   }
   /** 
@@ -1259,6 +1262,7 @@ protected:
 		 const char* defval)
   {
     TString val = fOptions.AsString(opt,defval);
+    // Info("FromOption<S>"," %p, %s, %s, %s", task, what, opt, val);
     SetOnTask(task, what, val.Data());
   }
   /** 
@@ -1275,6 +1279,7 @@ protected:
 		  Int_t      defval)
   {
     Int_t   val = fOptions.AsInt(opt, defval);
+    // Info("FromOption<I>"," %p, %s, %s, %d", task, what, opt, val);
     SetOnTask(task, what, val);
   }
   /** 
@@ -1291,6 +1296,7 @@ protected:
 		  Long64_t    defval)
   {
     Long64_t   val = fOptions.AsLong(opt, defval);
+    // Info("FromOption<L>"," %p, %s, %s, %lld", task, what, opt, val);
     SetOnTask(task, what, val);
   }
   /* @} */

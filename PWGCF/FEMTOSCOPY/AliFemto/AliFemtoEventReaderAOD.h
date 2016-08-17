@@ -75,7 +75,7 @@ public:
   void SetMinPlpContribSPD(Int_t minPlpContribSPD) {
     fMinPlpContribSPD = minPlpContribSPD;
   }
-  void SetDCAglobalTrack(Bool_t dcagt);
+  void SetDCAglobalTrack(Int_t dcagt);
 
   bool RejectEventCentFlat(float MagField, float CentPercent);
   void SetCentralityFlattening(Bool_t flat);
@@ -86,8 +86,12 @@ public:
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
+  void Set1DCorrectionsPionsMinus(TH1D *h1);
+  void Set1DCorrectionsKaonsMinus(TH1D *h1);
+  void Set1DCorrectionsProtonsMinus(TH1D *h1);
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
+  void Set1DCorrectionsLambdasMinus(TH1D *h1);
 
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
@@ -133,15 +137,19 @@ private:
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data
   Int_t fMinPlpContribMV;  ///< no of contributors for multivertex pile-up rejection
   Int_t fMinPlpContribSPD; ///< no of contributors for SPD pile-up rejection
-  Bool_t fDCAglobalTrack;  ///< to get DCA from global tracks instead of TPC-only
+  Int_t fDCAglobalTrack;  ///< to get DCA from global tracks instead of TPC-only
   Bool_t fFlatCent;        ///< Boolean determining if the user should flatten the centrality
   Bool_t fPrimaryVertexCorrectionTPCPoints; ///< Boolean determining if the reader should shift all TPC points to be relative to event vertex
   Double_t fShiftPosition; ///< radius at which the spatial position of the track in the shifted coordinate system is calculated
   TH1D *f1DcorrectionsPions;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsKaons;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsProtons;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsPionsMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsKaonsMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsProtonsMinus;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

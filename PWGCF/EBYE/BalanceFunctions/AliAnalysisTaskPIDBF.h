@@ -225,6 +225,15 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   void SetRawType(Bool_t rawType) {fRawType = rawType;}  
 
 
+// Added on 15/08/2016 
+
+
+  void SetSigmaIndividually(Bool_t sigmaIndividually){fSigmaIndividually=sigmaIndividually;}
+  void SetSigmaCutMethodOne(Bool_t SigmaCutMethodOne){fSigmaCutMethodOne=SigmaCutMethodOne;}
+
+
+
+
 
 
 
@@ -302,35 +311,14 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2F *fHistPhi;//phi (QA histogram)
   TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram) 		 	 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
-  TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
-  TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
+//  TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
+//  TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
   TH2F *fHistPhiNeg;//phi for negative particles (QA histogram)
   TH2F *fHistV0M;//V0 multiplicities (QA histogram)
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
 
   //============PID============//
-  TH2D *fHistdEdxVsPTPCbeforePID;//TPC dEdx vs momentum before PID cuts (QA histogram)
-  TH2D *fHistBetavsPTOFbeforePID;//beta vs momentum before PID cuts (QA histogram)
-  TH2D *fHistProbTPCvsPtbeforePID; //TPC probability vs pT before PID cuts (QA histogram)
-  TH2D *fHistProbTOFvsPtbeforePID;//TOF probability vs pT before PID cuts (QA histogram)
-  TH2D *fHistProbTPCTOFvsPtbeforePID;//TOF/TPC probability vs pT before PID cuts (QA histogram)
-  TH2D *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
-  TH2D *fHistNSigmaTOFvsPtbeforePID;//TOF nsigma vs pT before PID cuts (QA histogram)
-  TH2D *fHistBetaVsdEdXbeforePID;//TPCTOF  before PID cuts (QA histogram)
-  TH2D *fHistNSigmaTPCTOFvsPtbeforePID;//TPCTOF  before PID cuts (QA histogram)
-  TH3D *fHistNSigmaTPCTOFPbefPID;//+++++++++++++++
-
-  TH2D *fHistdEdxVsPTPCafterPID;//TPC dEdx vs momentum after PID cuts (QA histogram)
-  TH2D *fHistBetavsPTOFafterPID;//beta vs momentum after PID cuts (QA histogram)
-  TH2D *fHistProbTPCvsPtafterPID; //TPC probability vs pT after PID cuts (QA histogram)
-  TH2D *fHistProbTOFvsPtafterPID;//TOF probability vs pT after PID cuts (QA histogram)
-  TH2D *fHistProbTPCTOFvsPtafterPID;//TOF/TPC probability vs pT after PID cuts (QA histogram)
-  TH2D *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
-  TH2D *fHistNSigmaTOFvsPtafterPID;//TOF nsigma vs pT after PID cuts (QA histogram)
-  TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)
-  TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)
-  TH3D *fHistNSigmaTPCTOFPafterPID; //++++++++++++++++++
 
   // Beta and dEdX plot ------------
   TH2F *fHistdEdxTPC;
@@ -343,8 +331,8 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2D *fHistdEdxVsPTPCafterPIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtafterPIDelectron; //!
   
-  TH3D *fHistCorrectionPlus[kCENTRALITY]; //====correction  Changed it from TH3F to TH3D
-  TH3D *fHistCorrectionMinus[kCENTRALITY]; //===correction  Changed it from TH3F to TH3D
+  TH3F *fHistCorrectionPlus[kCENTRALITY]; //====correction  Changed it from TH3F to TH3D
+  TH3F *fHistCorrectionMinus[kCENTRALITY]; //===correction  Changed it from TH3F to TH3D
   Double_t fCentralityArrayForCorrections[kCENTRALITY];
   Int_t fCentralityArrayBinsForCorrections;
 
@@ -482,6 +470,17 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2D  *fHistQAPhiAfterCorrectionWithCentralityPos;
   TH1D  *fHistQAPhiAfterCorrectionNeg;
   TH2D  *fHistQAPhiAfterCorrectionWithCentralityNeg;
+  TH2F *fHistNsigmaTPCBeforePIDCut;
+  TH2F *fHistNsigmaTOFBeforePIDCut;
+  TH2F *fHistNsigmaTPCTOFBeforePIDCut;
+  TH2F *fHistdEdxTPCAfterPIDCut;
+  TH2F *fHistBetaTOFAfterPIDCut;
+  TH2F *fHistNsigmaTPCTOFAfterPIDCut;
+
+
+// Added on 15.08.2016
+  Bool_t fSigmaIndividually;
+  Bool_t fSigmaCutMethodOne;
 
 
   //AliAnalysisUtils

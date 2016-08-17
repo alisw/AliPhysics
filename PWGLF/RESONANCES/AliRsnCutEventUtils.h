@@ -61,6 +61,10 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Bool_t         IsInelGt0SPDtracklets(AliAODEvent* evt);
   Bool_t         IsInelGt0SPDtracklets(AliESDEvent* evt);
 
+  Bool_t         GetCheckAcceptedMultSelection(){return fCheckAcceptedMultSelection;}
+  void           SetCheckAcceptedMultSelection(Bool_t doit=kTRUE){fCheckAcceptedMultSelection=doit;}
+  Bool_t         IsAcceptedMultSelection();
+
  private:
   
   Bool_t              fIsRmFirstEvInChunck; // if kTRUE, remove the first event in the chunk (pA2013)
@@ -81,6 +85,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Float_t             fASPDCvsTCut;//constant for the linear cut in SPD clusters vs tracklets
   Float_t             fBSPDCvsTCut;//slope for the linear cut in SPD  clusters vs tracklets
   Bool_t              fCheckInelGt0SPDtracklets;//select INEL>0 based on SPD tracklets
+  Bool_t              fCheckAcceptedMultSelection;//use the event-selection cuts from AliMultSelection
 
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object
 

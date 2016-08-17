@@ -63,15 +63,19 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
-  typedef AliJetContainer::JetAcceptanceType EJetAcceptanceType_t;
 
   enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput };
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi };
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth };
   enum EMesonOrigin_t {
     kUnknownQuark = BIT(0),
-    kFromBottom   = BIT(1),
-    kFromCharm    = BIT(2)
+    kFromDown     = BIT(1),
+    kFromUp       = BIT(2),
+    kFromStrange  = BIT(3),
+    kFromCharm    = BIT(4),
+    kFromBottom   = BIT(5),
+    kFromTop      = BIT(6),
+    kFromGluon    = BIT(7)
   };
 
   enum EMesonDecayChannel_t {
@@ -101,6 +105,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   class AliJetInfo {
   public:
     AliJetInfo() : fMomentum(), fNConstituents(0), fNEF(0), fMaxChargedPt(0), fMaxNeutralPt(0) {}
+    AliJetInfo(Double_t px, Double_t py, Double_t pz, Double_t E, Int_t nconst, Double_t nef, Double_t cpt, Double_t npt) :
+      fMomentum(px, py, pz, E), fNConstituents(nconst), fNEF(nef), fMaxChargedPt(cpt), fMaxNeutralPt(npt) {}
 
     virtual ~AliJetInfo() {;}
 
@@ -108,6 +114,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t Eta()       const { return fMomentum.Eta()      ; }
     Double_t Phi()       const { return fMomentum.Phi()      ; }
     Double_t Phi_0_2pi() const { return fMomentum.Phi_0_2pi(); }
+    Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
+    Double_t GetDistance(const AliJetInfo& jet) const;
 
     AliTLorentzVector fMomentum             ; ///< 4-momentum of the jet
     Int_t             fNConstituents        ; ///< Number of constituents of the jet
@@ -146,6 +154,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t GetZ(std::string n) const;
     Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(std::string n) const;
+    Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
+    Double_t GetDistance(const AliJetInfo& jet) const;
     void Print() const;
 
     /// \cond CLASSIMP
@@ -166,6 +176,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source, std::string n);
+    virtual void Set(const AliJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c
     Double32_t  fPt        ; //[0,409.6,13]
@@ -270,7 +281,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetJetPtRange(Double_t min, Double_t max)        { fMinJetPt     = min; fMaxJetPt     = max; }
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
-    void SetAcceptanceType(EJetAcceptanceType_t a)        { fAcceptance   = a  ;                      }
+    Double_t GetRadius() const { return fRadius; }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
     Bool_t IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const;
@@ -287,13 +298,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     friend class AliAnalysisTaskDmesonJets;
     friend class AnalysisEngine;
 
-    void                      SetDetectorJetEtaPhiRange(const AliEMCALGeometry* const geom, Int_t run);
-
     EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
     Double_t                  fRadius        ; ///<  Jet radius
     EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
     ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
-    EJetAcceptanceType_t      fAcceptance    ; ///<  Jet acceptance
     Double_t                  fMinJetPt      ; ///<  Minimum jet pT
     Double_t                  fMaxJetPt      ; ///<  Maximum jet pT
     Double_t                  fMinJetPhi     ; ///<  Minimum jet phi
@@ -304,10 +312,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t                  fMaxChargedPt  ; ///<  Maximum pt of the leading charged particle (or track)
     Double_t                  fMinNeutralPt  ; ///<  Minimum pt of the leading neutral particle (or cluster)
     Double_t                  fMaxNeutralPt  ; ///<  Maximum pt of the leading neutral particle (or cluster)
+    std::vector<AliJetInfo>   fJets          ; //!<! Inclusive jets reconstructed in the current event (includes D meson candidate daughters, if any)
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliHFJetDefinition, 3);
+    ClassDef(AliHFJetDefinition, 4);
     /// \endcond
   };
 
@@ -318,6 +327,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// for the D meson jet analysis.
   class AnalysisEngine : public TObject {
   public:
+    typedef std::pair<AliJetInfo*, Double_t> jet_distance_pair;
+
     static EMesonOrigin_t CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray);
     static EMesonDecayChannel_t CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray);
 
@@ -371,6 +382,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     Bool_t IsInhibit() const { return fInhibit; }
 
+    jet_distance_pair FindJetMacthedToGeneratedDMeson(const AliDmesonJetInfo& dmeson, AliHFJetDefinition& jetDef, Double_t dMax, Bool_t applyKinCuts);
+
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
     friend inline bool operator<=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs > rhs) ; }
@@ -381,6 +394,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   protected:
     void RunAnalysis();
+    void FindJets(AliHFJetDefinition& jetDef);
 
     ECandidateType_t                   fCandidateType         ; ///<  Candidate type
     TString                            fCandidateName         ; ///<  Candidate name
@@ -416,13 +430,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   private:
 
-    void                AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist);
+    void                AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist=0);
     void                SetCandidateProperties(Double_t range);
     AliAODMCParticle*   MatchToMC() const;
     void                RunDetectorLevelAnalysis();
     void                RunParticleLevelAnalysis();
 
-    Bool_t              ExtractParticleLevelHFAttributes(const AliAODMCParticle* part, AliDmesonJetInfo& DmesonJet);
     Bool_t              ExtractRecoDecayAttributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractD0Attributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractDstarAttributes(const AliAODRecoCascadeHF* DstarCand, AliDmesonJetInfo& DmesonJet, UInt_t i);

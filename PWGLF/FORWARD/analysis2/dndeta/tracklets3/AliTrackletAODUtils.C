@@ -38,7 +38,70 @@ class TDatabasePDG; // Auto-load
 
 /**
  * @defgroup pwglf_forward_tracklets  Mid-rapidity tracklet code for dN/deta
+ *
+ * The code in this module constitutes tools for analysing SPD
+ * tracklet data for the charged-particle pseudorapidity density.  It
+ * is based on Ruben's original code, but differs in some important
+ * aspects.
+ *
+ * - Ruben's original code is designed to do a single pass of
+ *   real-data and simulated ESDs.  The information extracted from
+ *   those passes is then combined to form the final charged-particle
+ *   pseudorapidity density using an external script.
+ *
+ * - This code also requires a pass of real-data (AliTrackletAODTask)
+ *   and simulated (AliTrackletAODMCTask) ESDs, but the output is not
+ *   near-final histograms but an array of data structures
+ *   (AliAODTracklet) stored on the output AOD.  The data structure
+ *   contains basic information on each tracklet
+ *
+ *   - Polar angle @f$ \vartheta @f$ 
+ *   - Azimuthal angle @f$ \varphi@f$ 
+ *   - Polar opening angle @f$ \delta\vartheta@f$ 
+ *   - Azimuthal opening angle @f$ \delta\varphi@f$ 
+ *   - Quality (sum on square residuals) @f$ \Delta@f$ 
+ *   - A set of flags 
+ *
+ *   Tracklet structures from simulations contain in addition 
+ *
+ *   - First cluster primary parent transverse momentum 
+ *   - First cluster primary parent particle type 
+ *   - Second cluster primary parent transverse momentum 
+ *   - Second cluster primary parent particle type 
+ *
+ *   During the AOD production, no cuts, except those defined for the
+ *   re-reconstruction is imposed.  In this way, the AOD contains the
+ *   minimum bias information on tracklets for all events, 
  * 
+ *   A second pass over the generated AODs is then needed - for both
+ *   real (AliTrackletAODdNdeta) and simulated
+ *   (AliTrackletAODMCdNdeta).  In this pass, we can
+ *
+ *   - Impose additional constrains on the events e.g., location of
+ *     primary vertex, centrality, event class and so on.
+ *   - Impose additional constrains on the tracklets 
+ * 
+ *   And for AODs corresponding to simulated data, we can also 
+ *
+ *   - Reweigh tracklets according to the cluster primary parents
+ *     transverse momentum and particle type.
+ *
+ *   In this way, we do a single pass of ESDs for real and simulated
+ *   data, and we can then process the generated AODs with various
+ *   cuts imposed.  The AODs are generally small enough that they can
+ *   be processed locally and quickly (for example using ProofLite).
+ *   This scheme allows for fast turn-around with the largest possible
+ *   flexibility.
+ *
+ *   The final charged-particle pseudorapidity density is produced by
+ *   an external class (AliTrackletdNdeta2).
+ *
+ *   Other differences to Ruben's code is that the output files are
+ *   far more structured, allowing for fast browsing of the data and
+ *   quality assurance.
+ * 
+ * 
+ * @ingroup pwglf_forward
  */
 /**
  * Class with utlity functions 

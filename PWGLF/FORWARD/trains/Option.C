@@ -22,12 +22,44 @@
 # include <iomanip>
 # include <cstdarg>
 # include <cstdio>
+# include <sstream>
+namespace {
+  template <typename T>
+  T& str2val(const char* str, T& v)
+  {
+    std::stringstream s(str);
+    if (str[0] == '0') {
+      s << std::oct;
+      if (str[1] == 'x' || str[1] == 'X')
+	s << std::hex;
+    }
+    s >> v;
+    return v;
+  }
+  template <>
+  bool& str2val(const char* str, bool& v)
+  {
+    if (str[0] == '1' ||
+	str[0] == 'y' || str[0] == 'Y' ||
+	str[0] == 't' || str[0] == 'T')
+      return (v=true);
+    if (str[0] == '0' ||
+	str[0] == 'n' || str[0] == 'N' ||
+	str[0] == 'f' || str[0] == 'F')
+      return (v=false);
+    std::stringstream s;
+    s >> v;
+    return v;
+  }
+}
+
 #else
 class TString;
 class TList;
 class TObjArray;
 #endif
 
+    
 /** 
  * An option.  The value is stored as a string 
  *
@@ -98,11 +130,9 @@ struct Option /* : public TNamed */
 
     // Info("Set", "Setting option %s with no arg", fName.Data());
     // Allow flags to get =true, =1, =false, =0 values
-    if (!val.IsNull() && 
-	(val.EqualTo("false", TString::kIgnoreCase) || 
-	 (val.IsDigit() && !val.Atoi()))) {
-      fIsSet = false;
-      fValue = "false";
+    if (!val.IsNull()) {
+      fIsSet = str2val(val.Data(), fIsSet);
+      fValue = val;
     }
     else {
       fIsSet = true;
@@ -148,15 +178,15 @@ struct Option /* : public TNamed */
   /**
    * @return value as an integer value
    */
-  Int_t    AsInt() const { return fValue.Atoi(); }
+  Int_t AsInt() const { Int_t i; return str2val(fValue.Data(), i); }
   /**
    * @return value as a long integer value
    */
-  Long64_t AsLong() const { return fValue.Atoll(); } 
+  Long64_t AsLong() const { Long_t i; return str2val(fValue.Data(), i); } 
   /**
    * @return value as a double precision value
    */
-  Double_t AsDouble() const { return fValue.Atof(); } 
+  Double_t AsDouble() const { Double_t d; return str2val(fValue.Data(),d); } 
   /**
    * @return value as a C string
    */

@@ -161,6 +161,14 @@ enum VCluUserDefEnergy_t {
 ### Particle level jets (MC)
 For particle level jets it is usually enough to filter primary particles (see \ref READMEtracks).
 
+## Jet containers
+
+For an introduction to containers, see [here](\ref READMEcontainers). The jet container ``AliJetContainer`` allows you to apply a variety of basic cuts to your jet collection.
+
+### Acceptance cut
+
+For example, you can set the geometrical jet acceptance selection you would like to consider -- the allowed options are listed in AliEmcalJet::JetAcceptanceType. The user can select a single type (e.g. kEMCAL), or a bitwise combination (e.g. kEMCAL | kDCAL). The container can be configured via AliJetContainer::SetJetAcceptanceType() or when adding a jet container via one of the AliAnalysisTaskEmcalJet::AddJetContainer functions. The cut is implemented in AliJetContainer by comparing jet's bits (set automatically in the jet finder) to the container's bits (set by user).
+
 ## Utilities (e.g. FJ contribs)
 
 For information on utilities such as ``fastjet`` contrib, see \subpage READMEjetfwUtilities.

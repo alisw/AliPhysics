@@ -1,7 +1,8 @@
 AliAnalysisTask *AddTask_tbroeker_lowmass(Bool_t getFromAlien=kFALSE,
                                              TString cFileName = "Config_tbroeker_lowmass.C",
                                              Char_t* outputFileName="LMEE.root",
-                                             ULong64_t triggerMask = AliVEvent::kINT7
+                                             ULong64_t triggerMask = AliVEvent::kINT7,
+                                             Bool_t rejectPileup = kFALSE
                                              )
 {
 
@@ -21,18 +22,19 @@ AliAnalysisTask *AddTask_tbroeker_lowmass(Bool_t getFromAlien=kFALSE,
   TString configFilePath(configBasePath+cFileName);
 
   std::cout << "Configpath:  " << configFilePath << std::endl;
-  
-  //Do we have an MC handler?
-  Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-  
+    
   //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
   gROOT->LoadMacro(configFilePath.Data());
 
+  //Do we have an MC handler?
+  hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  if(hasMC) kMix = 0;
+  
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("MultiDielectron");
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerMask);
-//  taskMB->SetRejectPileup();
+  if(rejectPileup) task->SetRejectPileup(); //default kFALSE
   task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter

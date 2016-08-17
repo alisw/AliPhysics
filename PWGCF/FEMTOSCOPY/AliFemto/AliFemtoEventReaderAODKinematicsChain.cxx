@@ -52,7 +52,8 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain():
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
-  fReadOnlyPrimaries(true)
+  fReadOnlyPrimaries(true),
+  fReadPrimariesSecWeakMaterial(false)
 {
   //constructor with 0 parameters , look at default settings
 }
@@ -68,7 +69,8 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
-  fReadOnlyPrimaries(true)
+  fReadOnlyPrimaries(true),
+  fReadPrimariesSecWeakMaterial(false)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -78,6 +80,7 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
+  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
 }
 //__________________
 AliFemtoEventReaderAODKinematicsChain::~AliFemtoEventReaderAODKinematicsChain()
@@ -101,6 +104,7 @@ AliFemtoEventReaderAODKinematicsChain& AliFemtoEventReaderAODKinematicsChain::op
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
+  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
   return *this;
 }
 //__________________
@@ -127,6 +131,11 @@ bool AliFemtoEventReaderAODKinematicsChain::GetConstrained() const
 void AliFemtoEventReaderAODKinematicsChain::ReadOnlyPrimaries(bool primaries)
 {
   fReadOnlyPrimaries = primaries;
+}
+
+void AliFemtoEventReaderAODKinematicsChain::ReadPrimariesSecWeakMaterial(bool primaries)
+{
+  fReadPrimariesSecWeakMaterial = primaries;
 }
 
 //__________________
@@ -199,6 +208,10 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
     if(fReadOnlyPrimaries)
       {
 	if(!(MCtrk->IsPhysicalPrimary())) continue;
+      }
+    else if(fReadPrimariesSecWeakMaterial)
+      {
+	if(!(MCtrk->IsPhysicalPrimary() || MCtrk->IsSecondaryFromWeakDecay() || MCtrk->IsSecondaryFromMaterial())) {continue;}
       }
 
     AliFemtoTrack* trackCopy = new AliFemtoTrack();

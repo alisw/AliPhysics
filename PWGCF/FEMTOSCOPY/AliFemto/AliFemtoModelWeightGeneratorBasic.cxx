@@ -1,10 +1,10 @@
-////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoModelWeightGeneratorBasic -  basic femtoscopic weight generator  ///
-/// only return a simple                                                          ///
-/// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
-///                                                                          ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliFemtoModelWeightGeneratorBasic
+/// \brief Basic femtoscopic weight generator only return a simple
+/// \author Adam Kisiel <kisiel@mps.ohio-state.edu>
+///
+///
+
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassImp(AliFemtoModelWeightGeneratorBasic, 1);
@@ -85,10 +85,13 @@ Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
   Double_t tE  = tE1 + tE2;
   Double_t tPt = tPx*tPx + tPy*tPy;
   Double_t tMt = tE*tE - tPz*tPz;//mCVK;
-  Double_t tM  = sqrt(tMt - tPt);
-  
- if (tMt==0 || tE==0 || tM==0 || tPt==0 ) {cout<<" weight generator zero tPt || tMt || tM || tPt"<<tM1<<" "<<tM2<<endl; return 0;}
-  
+  Double_t tM  = (tMt - tPt > 0.0) ? sqrt(tMt - tPt) : 0.0;
+
+  if (tMt == 0 || tE == 0 || tM == 0 || tPt == 0 ) {
+    cout << " weight generator zero tPt || tMt || tM || tPt " << tM1 << " " << tM2 << endl;
+    return 0;
+  }
+
   tMt = sqrt(tMt);
   tPt = sqrt(tPt);
   Double_t tBetat = tPt/tMt;

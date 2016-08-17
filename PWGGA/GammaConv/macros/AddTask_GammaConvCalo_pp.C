@@ -133,6 +133,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
@@ -733,7 +734,13 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200009327000008250400000","1111111073032230000","0163103100000010"); // time
     cuts.AddCut("00010113","00200009327000008250400000","1111111083032230000","0163103100000010"); // time
     cuts.AddCut("00010113","00200009327000008250400000","1111111093032230000","0163103100000010"); // time
-
+  } else if (trainConfig == 107){ // EMCAL clusters, exotic cut var
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063232230000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063332230000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063532230000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063732230000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063932230000","0163103100000010"); //
   } else if (trainConfig == 109){  //Different NonLinearities part2
     cuts.AddCut("00010113","00200009327000008250400000","1111101063032230000","0163103100000010"); // NonLinearity kSDMv5
     cuts.AddCut("00010113","00200009327000008250400000","1111113063032230000","0163103100000010"); // NonLinearity LHC12 kTestBeamv2+ConvCalo
@@ -836,6 +843,14 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100900010"); // smear
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100900010"); // smear
 
+  } else if (trainConfig == 130){ // EMCAL clusters 8 TeV LHC12 - no SPD PileUp
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
+    cuts.AddCut("00010013","00200009327000008250400000","1111111063032230000","0163103100000010"); // std - no pileup cut
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
+    cuts.AddCut("00052013","00200009327000008250400000","1111111063032230000","0163103100000010"); // std - no pileup cut
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
+    cuts.AddCut("00081013","00200009327000008250400000","1111111063032230000","0163103100000010"); // std - no pileup cut
+
   //kEMC7
   } else if (trainConfig == 132){ //EMCAL minEnergy variation
     cuts.AddCut("00052113","00200009327000008250400000","1111111063022230000","0163103100000010"); //0.6 GeV/c
@@ -865,6 +880,13 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052113","00200009327000008250400000","1111111073032230000","0163103100000010"); // time
     cuts.AddCut("00052113","00200009327000008250400000","1111111083032230000","0163103100000010"); // time
     cuts.AddCut("00052113","00200009327000008250400000","1111111093032230000","0163103100000010"); // time
+  } else if (trainConfig == 137){ // EMCAL clusters, exotic cut var
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010"); //
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063232230000","0163103100000010"); //
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063332230000","0163103100000010"); //
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063532230000","0163103100000010"); //
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063732230000","0163103100000010"); //
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063932230000","0163103100000010"); //
 
   } else if (trainConfig == 139){  //Different NonLinearities part2
     cuts.AddCut("00052113","00200009327000008250400000","1111101063032230000","0163103100000010"); // NonLinearity kSDMv5
@@ -956,6 +978,13 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00081113","00200009327000008250400000","1111111073032230000","0163103100000010"); // time
     cuts.AddCut("00081113","00200009327000008250400000","1111111083032230000","0163103100000010"); // time
     cuts.AddCut("00081113","00200009327000008250400000","1111111093032230000","0163103100000010"); // time
+  } else if (trainConfig == 167){ // EMCAL clusters, exotic cut var
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010"); //
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063232230000","0163103100000010"); //
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063332230000","0163103100000010"); //
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063532230000","0163103100000010"); //
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063732230000","0163103100000010"); //
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063932230000","0163103100000010"); //
 
   } else if (trainConfig == 169){  //Different NonLinearities part2
     cuts.AddCut("00081113","00200009327000008250400000","1111101063032230000","0163103100000010"); // NonLinearity kSDMv5
@@ -1271,6 +1300,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);

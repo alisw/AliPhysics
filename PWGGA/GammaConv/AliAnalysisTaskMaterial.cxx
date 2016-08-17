@@ -36,7 +36,7 @@ ClassImp(AliAnalysisTaskMaterial)
 
 AliAnalysisTaskMaterial::AliAnalysisTaskMaterial() : AliAnalysisTaskSE(),
 	fV0Reader(NULL),
-    fV0ReaderName("V0ReaderV1"),
+  fV0ReaderName("V0ReaderV1"),
 	fConversionGammas(NULL),
 	fConversionCuts(NULL),
 	fEventCuts(NULL),
@@ -128,10 +128,11 @@ AliAnalysisTaskMaterial::~AliAnalysisTaskMaterial()
 Bool_t AliAnalysisTaskMaterial::Notify()
 {
   if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
-        fEventCuts->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
-    } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
-      fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
-    }  
+    fEventCuts->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+  } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+    fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
+  } 
+  return kTRUE;
 }
 
 //________________________________________________________________________

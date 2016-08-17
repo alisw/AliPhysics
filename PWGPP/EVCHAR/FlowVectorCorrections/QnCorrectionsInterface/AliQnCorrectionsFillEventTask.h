@@ -39,6 +39,7 @@ public:
 
 
   void SetUseTPCStandaloneTracks(Bool_t enable = kTRUE) { fUseTPCStandaloneTracks = enable; }
+  void SetUseOnlyCentCalibEvents(Bool_t enable = kTRUE) { fUseOnlyCentCalibEvents = enable; }
 
 protected:
   /* Fill event data methods */
@@ -77,6 +78,7 @@ private:
   static const Float_t fZDCSignalThreshold; ///< the ZDC channel signal threshold for building a data vector
   static const Float_t fFMDSignalThreshold; ///< the FMD channel signal threshold for building a data vector
 
+  Bool_t fUseOnlyCentCalibEvents;
   Bool_t fUseTPCStandaloneTracks;
   Bool_t fFillVZERO;
   Bool_t fFillTPC;
@@ -88,7 +90,7 @@ private:
   Bool_t fIsAOD;
   Bool_t fIsESD;
 
-  ClassDef(AliQnCorrectionsFillEventTask, 1);
+  ClassDef(AliQnCorrectionsFillEventTask, 2);
 };
 
 #endif

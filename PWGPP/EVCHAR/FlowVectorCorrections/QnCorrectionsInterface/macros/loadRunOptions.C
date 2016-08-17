@@ -222,7 +222,21 @@ Bool_t loadRunOptions(Bool_t verb,const char *filename) {
         printf ("      z vertex cut: %.1f:%.1f\n",zvertexMin,zvertexMax);
         currline.ReadLine(optionsfile);
         while (currline.BeginsWith("#") || currline.IsWhitespace()) currline.ReadLine(optionsfile);
-      } /* end centrality cuts */
+      } /* end z Vertex cuts */
+
+      /* use only events validated for centrality calibration */
+      if (currline.BeginsWith("Use OnlyCentCalibEvents: ")) {
+        currline.Remove(0, strlen("Use OnlyCentCalibEvents: "));
+        if (currline.Contains("yes"))
+          bUseOnlyCentCalibEvents = kTRUE;
+        else if (currline.Contains("no"))
+          bUseOnlyCentCalibEvents = kFALSE;
+        else
+          { printf("ERROR: wrong Use OnlyCentCalibEvents option in options file %s\n", filename); return -1; }
+        printf ("      Use OnlyCentCalibEvents: %s\n", bUseOnlyCentCalibEvents ? "yes" : "no");
+        currline.ReadLine(optionsfile);
+        while (currline.BeginsWith("#") || currline.IsWhitespace()) currline.ReadLine(optionsfile);
+      } /* end use only events validated for centrality calibration */
     }
   }
   else

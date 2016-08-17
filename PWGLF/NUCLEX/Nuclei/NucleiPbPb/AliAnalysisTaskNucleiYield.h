@@ -25,6 +25,7 @@
 #include <TString.h>
 #include <TArrayF.h>
 #include <AliPIDResponse.h>
+#include <AliPID.h>
 
 class TH2F;
 class TH3F;
@@ -73,6 +74,8 @@ public:
   void SetRequireTrackLength(float len) { fRequireTrackLength = len; }
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
 
+  void SetCentralityLimits(float min, float max) { fRequireMinCentrality = min; fRequireMaxCentrality = max; }
+
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
   void SetDCABins (Int_t nbins, Float_t* bins);
@@ -82,6 +85,11 @@ public:
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetPhiRegions (bool pos,int n, float *regions) { fPhiRegions[int(pos)].Set(n,regions); }
+  void SetUseNewCentralityFramework (bool useIt) { fNewCentralityFramework = useIt; }
+  void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
+  void SetTriggerMask (ULong_t mask) { fTriggerMask = mask; }
+  
+  void SetEnableLogarithmicBinning (bool useit) { fEnableLogAxisInPerformancePlots = useit; }
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
@@ -147,6 +155,13 @@ private:
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Float_t               fRequireTrackLength;    ///<  Cut on the track length
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
+  Bool_t                fNewCentralityFramework;///<  Use the new centrality framework
+
+  Float_t               fRequireMinCentrality;  ///<  Max centrality
+  Float_t               fRequireMaxCentrality;  ///<  Min centrality
+  Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
+  ULong_t               fTriggerMask;           ///<  Mask of the accepted triggers
+  Bool_t               fEnableLogAxisInPerformancePlots; ///< Switch on/off logarithmic bins
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
@@ -178,7 +193,7 @@ private:
 
   // Data histograms
   TH3F                 *fATOFsignal;            //!<! *(Data only)* TOF signal for anti-matter
-  TH2F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
+  TH3F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
   TH3F                 *fATOFphiSignal;         //!<! *(Data only)* TOF signal for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCphiCounts;         //!<! *(Data only)* TPC counts for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCeLoss;             //!<! *(Data only)* TPC dE/dx for anti-matter
@@ -187,7 +202,7 @@ private:
   TH3F                 *fMDCAxyTOF;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMDCAzTOF;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMTOFsignal;            //!<! *(Data only)* TOF signal for matter
-  TH2F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
+  TH3F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
   TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCeLoss;             //!<! *(Data only)* TPC dE/dx for matter

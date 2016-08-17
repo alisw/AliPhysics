@@ -67,8 +67,10 @@ public:
   AliAnalysisFilter& GetEventFilter()       { return fEventFilter;       }
   AliAnalysisFilter& GetTrackFilter()       { return fTrackFilter;       }
   AliAnalysisFilter& GetPairFilter()        { return fPairFilter;        }
-  AliAnalysisFilter& GetPairPreFilter()     { return fPairPreFilter;     }
-  AliAnalysisFilter& GetPairPreFilterLegs() { return fPairPreFilterLegs; }
+  AliAnalysisFilter& GetPairPreFilter()     { return fPairPreFilter1;     }
+  AliAnalysisFilter& GetPairPreFilter2()     { return fPairPreFilter2;     }
+  AliAnalysisFilter& GetPairPreFilterLegs() { return fPairPreFilterLegs1; }
+  AliAnalysisFilter& GetPairPreFilterLegs2() { return fPairPreFilterLegs2; }
   AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
 
@@ -107,11 +109,27 @@ public:
 
   void SetPreFilterEventPlane(Bool_t setValue=kTRUE){fPreFilterEventPlane=setValue;};
   void SetLikeSignSubEvents(Bool_t setValue=kTRUE){fLikeSignSubEvents=setValue;};
-  void SetPreFilterUnlikeOnly(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly=setValue;};
-  void SetPreFilterAllSigns(Bool_t setValue=kTRUE){fPreFilterAllSigns=setValue;};
+
+  void SetPreFilterUnlikeOnly(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly1=setValue;};
+  void SetPreFilterLikeOnly(Bool_t setValue=kTRUE){fPreFilterLikeOnly1=setValue;};
+  void SetPreFilterAllSigns(Bool_t setValue=kTRUE){fPreFilterAllSigns1=setValue;};
+  void SetPreFilterPhotons(Bool_t setValue=kTRUE){fPreFilterPhotons1=setValue;};
+
+  void SetPreFilterUnlikeOnly2(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly2=setValue;};
+  void SetPreFilterLikeOnly2(Bool_t setValue=kTRUE){fPreFilterLikeOnly2=setValue;};
+  void SetPreFilterAllSigns2(Bool_t setValue=kTRUE){fPreFilterAllSigns2=setValue;};
+  void SetPreFilterPhotons2(Bool_t setValue=kTRUE){fPreFilterPhotons2=setValue;};
 
   void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
   AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
+
+  void SetRotatePP(Bool_t const rotate){ fRotatePP = rotate;}
+  void SetRotateMM(Bool_t const rotate){ fRotateMM = rotate;}
+
+
+  Bool_t GetRotatePP() const { return fRotatePP; }
+  Bool_t GetRotateMM() const { return fRotateMM; }
+
 
   void SetMixingHandler(AliDielectronMixingHandler *mix) { fMixing=mix; }
   AliDielectronMixingHandler* GetMixingHandler() const { return fMixing; }
@@ -168,8 +186,10 @@ private:
   TObject *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
-  AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
-  AliAnalysisFilter fPairPreFilterLegs; // Leg filter after the pair prefilter cuts
+  AliAnalysisFilter fPairPreFilter1;  // pair prefilter cuts
+  AliAnalysisFilter fPairPreFilter2;  // pair prefilter cuts
+  AliAnalysisFilter fPairPreFilterLegs1; // Leg filter after the pair prefilter cuts
+  AliAnalysisFilter fPairPreFilterLegs2; // Leg filter after the pair prefilter cuts
   AliAnalysisFilter fPairFilter;     // pair cuts
   AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts  
   AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter  
@@ -201,13 +221,21 @@ private:
 
   AliDielectronCF *fCfManagerPair;//Correction Framework Manager for the Pair
   AliDielectronTrackRotator *fTrackRotator; //Track rotator
+  Bool_t fRotatePP; // combine rotated positive tracks
+  Bool_t fRotateMM; // combine rotated negative tracks
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
   AliDielectronMixingHandler *fMixing; // handler for event mixing
 
   Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
   Bool_t fLikeSignSubEvents;    //Option for dividing into subevents, sub1 ++ sub2 --
-  Bool_t fPreFilterUnlikeOnly;  //Apply PreFilter either in +- or to ++/--/+- individually
-  Bool_t fPreFilterAllSigns;    //Apply PreFilter find in  ++/--/+- and remove from all
+  Bool_t fPreFilterUnlikeOnly1;  //Apply PreFilter either in +- or to ++/--/+- individually
+  Bool_t fPreFilterLikeOnly1;    //Apply PreFilter either in -- and ++ or to ++/--/+- individually
+  Bool_t fPreFilterAllSigns1;    //Apply PreFilter find in  ++/--/+- and remove from all
+  Bool_t fPreFilterPhotons1;    //Apply PreFilter to search for photons
+  Bool_t fPreFilterUnlikeOnly2;  //Apply PreFilter either in +- or to ++/--/+- individually
+  Bool_t fPreFilterLikeOnly2;    //Apply PreFilter either in -- and ++ or to ++/--/+- individually
+  Bool_t fPreFilterAllSigns2;    //Apply PreFilter find in  ++/--/+- and remove from all
+  Bool_t fPreFilterPhotons2;    //Apply PreFilter to search for photons
   Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
   Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array
   Bool_t fDontClearArrays;      //Don't clear the arrays at the end of the Process function, needed for external use of pair and tracks
@@ -215,7 +243,7 @@ private:
 
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev);
-  void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
+  void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, Int_t prefilterN);
   void FillPairArrays(Int_t arr1, Int_t arr2);
   void FillPairArrayTR();
   
@@ -251,7 +279,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,14);
+  ClassDef(AliDielectron,16);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

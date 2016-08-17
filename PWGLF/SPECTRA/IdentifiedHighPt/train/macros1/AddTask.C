@@ -31,6 +31,7 @@ AliAnalysisTask* AddTask(const Char_t* taskname)
   // Create task  
   AliAnaTaskV0EffDecomposition* taskV0EffDecomposition 
     = new AliAnaTaskV0EffDecomposition(taskname);
+
   mgr->AddTask(taskV0EffDecomposition);
   
   // Create ONLY the output containers for the data produced by the
@@ -40,13 +41,17 @@ AliAnalysisTask* AddTask(const Char_t* taskname)
   
 
   Char_t outFileName[256]={0};
-  sprintf(outFileName, "%s_Hist.root", taskname);
+  sprintf(outFileName, "AnalysisResults.root");
+
   
   AliAnalysisDataContainer* cout_taskV0EffDecomposition = 
     mgr->CreateContainer("outputV0EffDecomposition", TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
   mgr->ConnectInput (taskV0EffDecomposition, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskV0EffDecomposition, 1, cout_taskV0EffDecomposition);
+
     
   // Return task pointer at the end
   return taskV0EffDecomposition;
+
 }
+

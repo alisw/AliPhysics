@@ -5,7 +5,7 @@
 /// It allows to select tracks based on specific prescriptions of analysis
 /// of V0 particles associated with jets.
 /// Namely, it remove the V0 daughter tracks from track sample prior
-/// to jet finding procedure.
+/// to jet finding procedure (based on track IDs).
 ///
 /// \author Vojtech Pacik <vojtech.pacik@cern.ch>, NPI Czech Academy of Sciences
 /// \date Jun 24, 2016
@@ -33,6 +33,7 @@ class AliAODEvent;
 #include "AliAODEvent.h"
 #include "AliTrackContainer.h"
 
+
 class AliTrackContainerV0 : public AliTrackContainer {
 	public:
 		AliTrackContainerV0();
@@ -54,11 +55,11 @@ class AliTrackContainerV0 : public AliTrackContainer {
 		Bool_t              fFilterDaughterTracks    ; ///< if the daughter tracks of V0s  candidates should be filtered out
 		const AliAODEvent  *fEvent                   ; ///< pointer to current event (pointer stay the same, but the content is changed event-by-event)
 		TObjArray          *fV0s                     ; ///< list of V0 candidates
-		TObjArray	          fDaughterList            ; ///< list of V0 daughters
+		std::vector<Int_t>	fDaughterVec             ; ///< list of V0 daughters (storing track IDs)
 
 	private:
 	/// \cond CLASSIMP
-  ClassDef(AliTrackContainerV0, 1);
+  ClassDef(AliTrackContainerV0, 2);
   /// \endcond
 };
 #endif

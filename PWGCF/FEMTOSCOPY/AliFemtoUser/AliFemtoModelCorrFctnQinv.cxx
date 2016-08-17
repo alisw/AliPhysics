@@ -76,35 +76,31 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv():
 
 AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *name,
                                                      const int nbins,
-                                                     const float KStarLo,
-                                                     const float KStarHi):
-  AliFemtoModelCorrFctn()
-  , fResNum(nullptr)
-  , fResDen(nullptr)
+                                                     const float qinv_low_limit,
+                                                     const float qinv_high_limit):
+  AliFemtoModelCorrFctn(name, nbins, qinv_low_limit, qinv_high_limit)
+
+  , fRecNum(new TH1F(TString::Format("%s_Num", name),
+                     "Reconstructed q_{inv} - Numerator; q_inv (GeV);",
+                     nbins, qinv_low_limit, qinv_high_limit))
+
+  , fRecDen(new TH1F(TString::Format("%s_Den", name),
+                     "Reconstructed q_{inv} - Denominator; q_{inv} (GeV);",
+                     nbins, qinv_low_limit, qinv_high_limit))
+
   , fTrueNum(nullptr)
   , fTrueDen(nullptr)
 {
-  fResNum = new TH1F(
-    TString::Format("%s_Num", name),
-    "q_{inv} - Numerator; q_{inv} (GeV);",
-    nbins, KStarLo, KStarHi
-  );
-  fResNum->Sumw2();
-
-  fResDen = new TH1F(
-    TString::Format("%s_Den", name),
-    "q_{inv} - Denominator; q_{inv} (GeV);",
-    nbins, KStarLo, KStarHi
-  );
-  fResDen->Sumw2();
+  fRecNum->Sumw2();
+  fRecDen->Sumw2();
 
   const float binstart = -0.5,
               binstop = true_type_codes.size() - 0.5;
 
   fTrueNum = new TH2F(
     TString::Format("true_%s_Num", name),
-    "q_{inv} - Numerator (True Pairs); q_{inv} (GeV);",
-    nbins, KStarLo, KStarHi,
+    "True q_{inv} - Numerator; q_{inv} (GeV);",
+    nbins, qinv_low_limit, qinv_high_limit,
     true_type_codes.size(), binstart, binstop
   );
   fTrueNum->Sumw2();
@@ -112,7 +108,7 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const char *name,
   fTrueDen = new TH2F(
     TString::Format("true_%s_Den", name),
     "q_{inv} - Denominator; q_{inv} (GeV);",
-    nbins, KStarLo, KStarHi,
+    nbins, qinv_low_limit, qinv_high_limit,
     true_type_codes.size(), binstart, binstop
   );
   fTrueDen->Sumw2();
@@ -130,17 +126,29 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctn
   , fPairType(orig.fPairType)
   , fExpectedTrack1Code(orig.fExpectedTrack1Code)
   , fExpectedTrack2Code(orig.fExpectedTrack2Code)
-  , fResNum(new TH1F(*orig.fResNum))
-  , fResDen(new TH1F(*orig.fResDen))
+  , fRecNum(new TH1F(*orig.fRecNum))
+  , fRecDen(new TH1F(*orig.fRecDen))
   , fTrueNum(new TH2F(*orig.fTrueNum))
   , fTrueDen(new TH2F(*orig.fTrueDen))
 {
 }
 
+AliFemtoModelCorrFctnQinv*
+AliFemtoModelCorrFctnQinv::Clone() const
+{
+  AliFemtoModelCorrFctnQinv *result = new AliFemtoModelCorrFctnQinv(*this);
+  result->fRecNum->Reset();
+  result->fRecDen->Reset();
+  result->fTrueNum->Reset();
+  result->fTrueDen->Reset();
+  return result;
+};
+
+
 AliFemtoModelCorrFctnQinv::~AliFemtoModelCorrFctnQinv()
 {
-  delete fResNum;
-  delete fResDen;
+  delete fRecNum;
+  delete fRecDen;
   delete fTrueNum;
   delete fTrueDen;
 }
@@ -155,13 +163,15 @@ AliFemtoModelCorrFctnQinv::Report()
 
 TList* AliFemtoModelCorrFctnQinv::GetOutputList()
 {
-  return AppendOutputList(new TList());
+  TList *result = AliFemtoModelCorrFctn::GetOutputList();
+  AppendOutputList(result);
+  return result;
 }
 
 TList* AliFemtoModelCorrFctnQinv::AppendOutputList(TList *output_list) const
 {
-  output_list->Add(fResNum);
-  output_list->Add(fResDen);
+  output_list->Add(fRecNum);
+  output_list->Add(fRecDen);
   output_list->Add(fTrueNum);
   output_list->Add(fTrueDen);
   return output_list;
@@ -242,10 +252,10 @@ void AliFemtoModelCorrFctnQinv::AddPair(const AliFemtoPair *pair,
 
 void AliFemtoModelCorrFctnQinv::AddRealPair(AliFemtoPair* aPair)
 {
-  AddPair(aPair, fResNum, fTrueNum);
+  AddPair(aPair, fRecNum, fTrueNum);
 }
 
 void AliFemtoModelCorrFctnQinv::AddMixedPair(AliFemtoPair* aPair)
 {
-  AddPair(aPair, fResDen, fTrueDen);
+  AddPair(aPair, fRecDen, fTrueDen);
 }

@@ -485,7 +485,7 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @param sys Collision system 
    * @param sNN Collision energy
-   * @param Method 
+   * @param method MEthod to use  
    */
   CENTAdder(const TString& sys, UShort_t sNN, const TString& method)
     : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0), fCMin(0), fCMax(0),
@@ -571,6 +571,7 @@ struct CENTAdder : public SysErrorAdder
    * Get centrality 
    * 
    * @param h Histogram 
+   * @param verb Be verbose 
    * 
    * @return Centrality 
    */
@@ -600,6 +601,7 @@ struct CENTAdder : public SysErrorAdder
    * Declare the systematic error from the empirical correction 
    * 
    * @param gse Graph 
+   * @param l   Optional legend 
    * 
    * @return Id of systmatic error or -1
    */
@@ -617,6 +619,9 @@ struct CENTAdder : public SysErrorAdder
    * Create a graph 
    * 
    * @param h histogram 
+   * @param l 
+   * @param eff 
+   * @param verb 
    * 
    * @return Graph 
    */  

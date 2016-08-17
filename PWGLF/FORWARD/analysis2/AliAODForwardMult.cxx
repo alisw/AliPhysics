@@ -22,7 +22,7 @@
 #include <TObjArray.h>
 #include "AliLog.h"
 ClassImp(AliAODForwardMult)
-#ifdef DOXY_INPUT
+#if 0 // def DOXY_INPUT
 ; // For Emacs 
 #endif
 

@@ -238,7 +238,7 @@ public:
    * 
    * @return Here, we always return 0 
    */
-  virtual Real_t GetParentPt(Bool_t second=false) { return 0; }
+  virtual Real_t GetParentPt(Bool_t second=false) const { return 0; }
   /** 
    * Get parent particle type 
    * 
@@ -246,7 +246,7 @@ public:
    * 
    * @return Here, we always return 0 
    */
-  virtual Short_t GetParentPdg(Bool_t second=false) { return 0; }
+  virtual Short_t GetParentPdg(Bool_t second=false) const { return 0; }
   /* @} */
   void Print(Option_t* option="") const;
 protected:
@@ -362,7 +362,7 @@ public:
    * 
    * @return First or second parent transverse momentum
    */
-  virtual Real_t GetParentPt(Bool_t second=false)
+  virtual Real_t GetParentPt(Bool_t second=false) const
   {
     return !second ? fPar1Pt : fPar2Pt;
   }
@@ -373,7 +373,7 @@ public:
    * 
    * @return First or second parent particle type 
    */
-  virtual Short_t GetParentPdg(Bool_t second=false)
+  virtual Short_t GetParentPdg(Bool_t second=false) const
   {
     return !second ? fPar1Pdg : fPar2Pdg;
   }

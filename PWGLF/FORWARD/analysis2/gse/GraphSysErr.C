@@ -60,7 +60,16 @@ class TLine;
 
 
 /** 
- * @page an_example Example 
+ * @defgroup gse Graphs with systematic errors 
+ *
+ * This module defines a class for @f$ (x,y)@f$ graphs with an
+ * arbitrary set of systematic uncertainties.  It provides storage and
+ * visualisation of such data, as well as import/export to the HepData
+ * format.
+ */
+/** 
+ * @page gse_an_example Example 
+ * @ingroup gse
  *
  * @dontinclude Example.C 
  *
@@ -168,8 +177,9 @@ class TLine;
  * Export), and one can import data sets from Durham database input
  * formatted files (see Import)
  *
- * @see @link an_example Example @endlink
+ * @see @link gse_an_example Example @endlink
  *
+ * @ingroup gse 
  */
 class GraphSysErr : public TNamed, public TAttMarker, 
 		    public TAttLine, public TAttFill 

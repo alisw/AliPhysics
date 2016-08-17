@@ -328,12 +328,12 @@ Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp, UInt_t &r
     return kFALSE;
   }
 
-  if (fMinMCLabel >= 0 && TMath::Abs(vp->GetLabel()) > fMinMCLabel) {
+  if (fMinMCLabel >= 0 && TMath::Abs(vp->GetLabel()) < fMinMCLabel) {
     rejectionReason |= kMCLabelCut;
     return kFALSE;
   }
 
-  if (fMaxMCLabel >= 0 && TMath::Abs(vp->GetLabel()) < fMaxMCLabel) {
+  if (fMaxMCLabel >= 0 && TMath::Abs(vp->GetLabel()) > fMaxMCLabel) {
     rejectionReason |= kMCLabelCut;
     return kFALSE;
   }

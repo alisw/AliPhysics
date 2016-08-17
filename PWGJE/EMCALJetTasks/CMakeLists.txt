@@ -103,6 +103,7 @@ set(SRCS
     Tracks/AliEmcalAnalysisFactory.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
+    Tracks/AliAnalysisTaskChargedParticlesMCTriggerMimic.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
@@ -166,6 +167,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
+    UserTasks/AliAnalysisTaskPSHFE.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
@@ -176,7 +178,9 @@ set(SRCS
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
     UserTasks/AliAnalysisTaskEmcalJetTree.cxx
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
-    UserTasks/AliTrackContainerV0.cxx)
+    UserTasks/AliTrackContainerV0.cxx
+    UserTasks/AliTrackContainerToyModel.cxx
+    UserTasks/AliMCParticleContainerToyModel.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}

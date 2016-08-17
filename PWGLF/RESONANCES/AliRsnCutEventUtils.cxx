@@ -11,6 +11,7 @@
 #include "AliRsnCutEventUtils.h"
 #include "AliAnalysisUtils.h"
 #include "AliESDtrackCuts.h"
+#include "AliMultSelection.h"
 #include <AliHeader.h>
 #include <AliAODMCHeader.h>
 #include <AliGenDPMjetEventHeader.h>
@@ -38,6 +39,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fASPDCvsTCut(-9999.0),
   fBSPDCvsTCut(-9999.0),
   fCheckInelGt0SPDtracklets(kFALSE),
+  fCheckAcceptedMultSelection(kFALSE),
   fUtils(0x0)
 {
   //
@@ -71,6 +73,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fASPDCvsTCut(copy.fASPDCvsTCut),
   fBSPDCvsTCut(copy.fBSPDCvsTCut),
   fCheckInelGt0SPDtracklets(copy.fCheckInelGt0SPDtracklets),
+  fCheckAcceptedMultSelection(copy.fCheckAcceptedMultSelection),
   fUtils(copy.fUtils)
 {
   //
@@ -107,6 +110,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fASPDCvsTCut=copy.fASPDCvsTCut;
   fBSPDCvsTCut=copy.fBSPDCvsTCut;
   fCheckInelGt0SPDtracklets=copy.fCheckInelGt0SPDtracklets;
+  fCheckAcceptedMultSelection=copy.fCheckAcceptedMultSelection;
   fUtils=copy.fUtils;
 	
   return (*this);
@@ -157,6 +161,8 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
 
    //select INEL>0 based on SPD tracklets
    if(fCheckInelGt0SPDtracklets && !IsInelGt0SPDtracklets()) return kFALSE;
+
+   if(fCheckAcceptedMultSelection && !IsAcceptedMultSelection()) return kFALSE;
    
    //apply filter for NSD events in DPMJET MC for pA
    if (fFilterNSDeventsDPMJETpA2013){
@@ -336,4 +342,32 @@ Bool_t AliRsnCutEventUtils::IsInelGt0SPDtracklets(AliESDEvent* esdEvt){
   Int_t n=AliESDtrackCuts::GetReferenceMultiplicity(esdEvt,AliESDtrackCuts::kTracklets,1.,0.);
   if(n<1) return kFALSE;
   return kTRUE;
+}
+
+
+Bool_t AliRsnCutEventUtils::IsAcceptedMultSelection(){
+  AliMultSelection *MultSelection=0;
+
+  if(!fEvent) return kFALSE;
+  AliAODEvent* aodEvt=0;
+  Bool_t isAOD=fEvent->IsAOD();
+  if(isAOD) aodEvt=dynamic_cast<AliAODEvent *>(fEvent->GetRef());
+  if(isAOD && aodEvt){
+    MultSelection=(AliMultSelection*) aodEvt->FindListObject("MultSelection");
+    if(!MultSelection) return kTRUE;
+    if(MultSelection->IsEventSelected()) return kTRUE;
+    return kFALSE;
+  }
+
+  AliESDEvent* esdEvt=0;
+  Bool_t isESD=fEvent->IsESD();
+  if(isESD) esdEvt=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+  if(isESD && esdEvt){
+    MultSelection=(AliMultSelection*) esdEvt->FindListObject("MultSelection");
+    if(!MultSelection) return kTRUE;
+    if(MultSelection->IsEventSelected()) return kTRUE;
+    return kFALSE;
+  }
+
+  return kFALSE;
 }

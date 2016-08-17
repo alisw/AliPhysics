@@ -3830,6 +3830,9 @@ Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliS
     // is the secondary photon from a K0s
     else if ( TMath::Abs(pdgSecondary) == 310 )
       return 2;
+    // is the secondary photon from a K0l
+    else if ( TMath::Abs(pdgSecondary) == 130 )
+      return 5;
     // is the secondary photon from a eta
     else if ( TMath::Abs(pdgSecondary) == 221 )
       return 4;
@@ -3890,6 +3893,9 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
     // is the secondary photon from a K0s
     else if ( TMath::Abs(pdgSecondary) == 310 )
       return 2;
+    // is the secondary photon from a K0l
+    else if ( TMath::Abs(pdgSecondary) == 130 )
+      return 5;
     // is the secondary photon from a eta
     else if ( TMath::Abs(pdgSecondary) == 221 )
       return 4;

@@ -9,6 +9,8 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
                                                  Int_t pidType = 1,
 						 Int_t AODfilterBit = 128,
 						 Bool_t bUseElectronRejection = kFALSE,
+                                                 Bool_t sigmaIndividual=kFALSE,
+                                                 Bool_t sigmaMethodOne=kFALSE,
 						 TString fileNameBase="AnalysisResults",
                                                  TString dirNameExtra = ""
 						 ) {
@@ -65,8 +67,8 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   taskEffContPIDBF->SetPtRange(0.2, 20.0, 100);  //acceptance cuts //5.0,49
   taskEffContPIDBF->SetNSigmaCut(nsigmapid); // NSigma Cut;
   taskEffContPIDBF->SetPIDType(pidType); // KNSigmaTPCTOF == 1, KNSigmaTPC==0, KNSigmaTOF == 2 : Here i used 1 i.e for TPC+TOF
-  
-
+  taskEffContPIDBF->SetSigmaIndividually(sigmaIndividual);
+  taskEffContPIDBF->SetSigmaCutMethodOne(sigmaMethodOne);
 
   // electron rejection
     if(bUseElectronRejection){

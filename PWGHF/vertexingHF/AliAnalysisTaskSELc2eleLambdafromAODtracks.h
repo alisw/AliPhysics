@@ -22,6 +22,7 @@
 #include "TVector.h"
 #include "TSystem.h"
 #include "TProfile.h"
+#include <vector>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -74,6 +75,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Bool_t GetUseCentralityV0M() const {return fUseCentralityV0M;}
   void SetUseCentralitySPDTracklet(Bool_t centon) {fUseCentralitySPDTracklet = centon;}
   Bool_t GetUseCentralitySPDTracklet() const {return fUseCentralitySPDTracklet;}
+  void SetUseEventPlane(Bool_t rpon) {fUseEventPlane = rpon;}
+  Bool_t GetUseEventPlane() const {return fUseEventPlane;}
   void SetWriteEachVariableTree(Bool_t a) {fWriteEachVariableTree = a;}
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
@@ -127,7 +130,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 		for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
 	}
   void DoEventMixingWithPools(Int_t index);
-  void ResetPool(Int_t poolIndex);
+  void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t charge_v0pr);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
 
 
@@ -138,6 +141,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void DefineTreeVariables();
   void DefineEleTreeVariables();
+  void DefineSingleTreeVariables();
   void DefineV0TreeVariables();
   void DefineMCTreeVariables();
   void DefineMCEleTreeVariables();
@@ -161,6 +165,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;                    //!<! Histogram to check selected events
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
+  TH1F *fHEventPlane;                //!<! Histogram to check Centrality
   TH2F *fHNTrackletvsZ;                //!<! Histogram to check N tracklet vs Z
   TH2F *fHNTrackletCorrvsZ;                //!<! Histogram to check N tracklet vs Z
   AliRDHFCutsLctoeleLambdafromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
@@ -171,6 +176,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TTree    *fVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fSingleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCV0VariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
@@ -185,6 +191,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateV0Variables;   //!<! variables to be written to the tree
+  Float_t *fCandidateSingleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCV0Variables;   //!<! variables to be written to the tree
@@ -193,12 +200,14 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
+  Float_t  fEventPlane;         /// zVertex
   Double_t fBzkG;                 /// magnetic field value [kG]
   Float_t  fCentrality;           /// Centrality
   Int_t  fRunNumber;           /// Run Number
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Bool_t  fUseCentralitySPDTracklet;         /// Stores trigger information
+  Bool_t  fUseEventPlane;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
 	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar
 	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
@@ -670,19 +679,18 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	Int_t fNCentBins;								/// number of centrality bins
 	Double_t fCentBins[100];						// [fNCentBinsDim]
   Int_t  fNOfPools; /// number of pools
-  TTree** fEventBuffer;   //!<! structure for event mixing
-	TObjString *fEventInfo; ///unique event id for mixed event check
-  TObjArray* fElectronTracks; /// array of electron-compatible tracks
-  TObjArray* fV0Tracks1; /// array of lambda-compatible tracks
-  TObjArray* fV0Tracks2; /// array of antilambda-compatible tracks
-  TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
-  TObjArray* fV0CutVarsArray1; /// array of RDHF cut information
-  TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
-  TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
-  TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
+  Int_t fPoolIndex; /// pool index
+  std::vector<Int_t> nextResVec; //!<! Vector storing next reservoir ID
+  std::vector<Bool_t> reservoirsReady; //!<! Vector storing if the reservoirs are ready
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirE; //!<! reservoir
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirL1; //!<! reservoir
+  std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirL2; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsE; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL1; //!<! reservoir
+  std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,32); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,36); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

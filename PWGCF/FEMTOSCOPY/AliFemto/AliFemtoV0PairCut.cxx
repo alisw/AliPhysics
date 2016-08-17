@@ -71,23 +71,24 @@ double calculate_avg_separation_daughters(const AliFemtoV0* V1,
                                           const AliFemtoV0* V2,
                                           const bool use_pos_daughter_2)
 {
-   int counter = 0;
-   double avgSep = 0.0;
+  int counter = 0;
+  double avgSep = 0.0;
 
-   for (int i = 0; i < 8; i++) {
-     const AliFemtoThreeVector p1 = use_pos_daughter_1
-                                  ? V1->NominalTpcPointPos(i)
-                                  : V1->NominalTpcPointNeg(i),
+  for (int i = 0; i < 8; i++) {
+    const AliFemtoThreeVector p1 = use_pos_daughter_1
+      ? V1->NominalTpcPointPos(i)
+      : V1->NominalTpcPointNeg(i),
 
-                               p2 = use_pos_daughter_2
-                                  ? V2->NominalTpcPointPos(i)
-                                  : V2->NominalTpcPointNeg(i);
+      p2 = use_pos_daughter_2
+      ? V2->NominalTpcPointPos(i)
+      : V2->NominalTpcPointNeg(i);
     if (is_unset_vector(p1) || is_unset_vector(p2)) {
       continue;
     }
     avgSep += (p1 - p2).Mag();
     counter++;
   }
+  if(counter==0) return 0;
   return avgSep / counter;
 }
 

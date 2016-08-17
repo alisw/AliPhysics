@@ -21,6 +21,7 @@
  * @param sys     Collision system 
  * @param sNN     Collision energy in GeV
  * @param field   L3 field strength
+ * @param sat     If true, assume satellite-main collisions
  * @param fname   File name 
  * @param details Drawing options 
  *

@@ -73,9 +73,10 @@ struct Canvas
   /** 
    * Clear pad 
    * 
-   * @param nPad Pad number 
-   * @param d    Detector
-   * @param r    Ring 
+   * @param nPad  Pad number 
+   * @param d     Detector
+   * @param r     Ring 
+   * @param flush Flush output 
    * 
    * @return Pointer to pad 
    */

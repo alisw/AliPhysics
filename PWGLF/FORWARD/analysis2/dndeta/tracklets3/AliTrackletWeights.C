@@ -22,9 +22,11 @@
 # include <TROOT.h>
 # include <TClass.h>
 # include "AliAODTracklet.C"
+# include <TParameter.h>
 #else
 class TH1D;
 class TH2D;
+class TH2;
 class TList;
 class TBrowser;
 class THStack;
@@ -51,6 +53,53 @@ public:
     /** If this bit is set, the weight is disabled */
     kDisabled = (0x4) << 14
   };
+  /**						
+   * Mode calculation 
+   */
+  enum ECalc {
+    /** 
+     * Tracklet weights calculated as 
+     *
+     * @f[
+     w_{ij} = \left\{\begin{array}{cl}
+       w_i & i=j \mbox{ good tracklets}\\
+       w_i w_j & i\neq j \mbox{ fake tracklets}	
+       \end{array}\right.
+    @f] 
+    */
+    kProduct,
+    /** 
+     * Tracklet weights calculated as 
+     *
+     * @f[
+     w_{ij} = \sqrt{w_i w_j} = \left\{\begin{array}{cl}
+       w_i & i=j \mbox{ good tracklets}\\
+       \sqrt{w_i w_j} & i\neq j \mbox{ fake tracklets}	
+       \end{array}\right.
+    @f] 
+    */
+    kSquare,
+    /** 
+     * Tracklet weights calculated as 
+     *
+     * @f[
+     w_{ij} = 1+(w_i-1)+(w_j-1) 
+    @f] 
+    */
+    kSum,
+    /** 
+     * Tracklet weights calculated as 
+     *
+     * @f[
+     w_{ij} = 1+\frac{(w_i-1)+(w_j-1)}{2} = \frac{w_i + w_j}{2} 
+     = \left\{\begin{array}{cl}
+       w_i & i=j \mbox{ good tracklets}\\
+       (w_i + w_j)/2 & i\neq j \mbox{ fake tracklets}	
+       \end{array}\right.
+    @f] 
+    */
+    kAverage
+  };
   
   /** Map a particle species to a weight */
   typedef std::map<short,TH1D*> PdgMap;
@@ -58,7 +107,13 @@ public:
    * Default constructor - ROOT I/O only
    * 
    */
-  AliTrackletWeights() : TNamed(), fPt(0), fAbundance(), fStrangeness() {}
+  AliTrackletWeights()
+    : TNamed(),
+      fPt(0),
+      fAbundance(),
+      fStrangeness(),
+      fCalc(kProduct)
+  {}
   /**
    * Named constructor 
    * 
@@ -91,10 +146,13 @@ public:
    * 
    * @param tracklet Tracklet 
    * @param cent     Centrality 
+   * @param corr     Optional histogram to fill with correlation of weights
    * 
    * @return The weight
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent) const;
+  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
+				Double_t        cent,
+				TH2*            corr=0) const;
   /** 
    * Add a histogram to weight particle abundances 
    * 
@@ -173,17 +231,81 @@ public:
    */
   void SetPtMode(UShort_t mode);
   /** 
+   * Set the mode for calculating the weight of a tracklet.  A
+   * tracklet consist of two clusters with labels @f$ i@f$ and @f$
+   * j@f$.  A weight (@f$ w_i@f$ and @f$ w_j@f$) is assigned to each
+   * of the particles corresponding to the tracks with these labels.
+   * The weight is calculated from the particle species and transverse
+   * momentum of the primary mother particle of the tracks @f$ i@f$
+   * and @f$ j@f$.  The weight of a tracklet can then be calculated in
+   * four different ways
+   *
+   * @b Product 
+   * @f[
+   w = \left{\begin{array}{cl}
+   w_i & \mbox{for} i=j\\
+   w_i w_j & \mbox{for} i\neq j\\
+   \end{array}\right.\quad,
+   @f] 
+   * 
+   * @b Square root of product of weights 
+   *
+   * @f[
+   w = \left{\begin{array}{cl}
+   w_i & \mbox{for} i=j\\
+   \sqrt(w_i w_j) & \mbox{for} i\neq j\\
+   \end{array}\right.\quad,
+   @f] 
+   * 
+   * @b Sum of weights 
+   *
+   * @f[ 
+   w = 1 + \left{\begin{array}{cl}
+   2(w_i-1) & \mbox{for} i=j\\
+   (w_i-1) + (w_j-1) & \mbox{for} i\neq j\\
+   \end{array}\right.\quad,
+   @f]    
+   * 
+   * @b Average of weights 
+   *
+   * @f[ 
+   w = 1 + \left{\begin{array}{cl}
+   (w_i-1) & \mbox{for} i=j\\
+   ((w_i-1) + (w_j-1))/2 & \mbox{for} i\neq j\\
+   \end{array}\right.\quad.
+   @f]    
+   * 
+   * @param mode Whether to take square root or not 
+   */
+  void SetCalc(UChar_t mode=kProduct) { fCalc = mode; }
+  /** 
+   * Set the tracklet mask 
+   * 
+   * @param mask Mask to use 
+   */
+  void SetMask(UChar_t mask) { fMask = mask; }
+  /** 
+   * Set the tracklet veto 
+   * 
+   * @param veto Veto to use 
+   */
+  void SetVeto(UChar_t veto) { fVeto = veto; }
+  /** 
    * Draw the weights 
    * 
    * @param option 
    */
-  void Draw(Option_t* option="");
+  void Draw(Option_t* option=""); //*MENU*
   /** 
    * Print information on reweights 
    *
    * @param option Not used 
    */
-  void Print(Option_t* option="") const;
+  void Print(Option_t* option="") const; //*MENU*
+  /** 
+   * @return always true 
+   */
+  Bool_t IsFolder() const { return true; }
   /** 
    * Store weights histograms in output of analysis 
    * 
@@ -198,11 +320,28 @@ public:
    * @return true on success
    */
   Bool_t Retrieve(TCollection* in);
-
+  /** 
+   * Get the abundance weight of a given particle type for a given
+   * centrality
+   * 
+   * @param apdg Absolute value of the particle PDG identifier 
+   * @param cent Centrality 
+   * 
+   * @return The associated weight 
+   */
   Double_t GetAbundanceWeight(UShort_t apdg, Double_t cent) const
   {
     return GetPdgWeight(fAbundance, apdg, cent);
   }
+  /** 
+   * Get the strangeness weight of a given particle type for a given
+   * centrality
+   * 
+   * @param apdg Absolute value of the particle PDG identifier 
+   * @param cent Centrality 
+   * 
+   * @return The associated weight 
+   */
   Double_t GetStrangenessWeight(UShort_t apdg, Double_t cent) const
   {
     return GetPdgWeight(fStrangeness, apdg, cent);
@@ -305,12 +444,13 @@ protected:
    */
   void PrintHist(const char* tag, TH1* h) const;
   
-  TH2D*  fPt;     // Weight by centrality and pT
-  PdgMap fAbundance;  // Map for abundance weight 
-  PdgMap fStrangeness;    // Map for strangeness weight 
-  
-  
-  ClassDef(AliTrackletWeights,1); // Weighs for tracklet analysis 
+  TH2D*   fPt;          // Weight by centrality and pT
+  PdgMap  fAbundance;   // Map for abundance weight 
+  PdgMap  fStrangeness; // Map for strangeness weight 
+  UChar_t fCalc;        // Whether the square of the weight is calculated
+  UChar_t fMask;        // Which particles to take
+  UChar_t fVeto;        // Which particles not to take 
+  ClassDef(AliTrackletWeights,3); // Weighs for tracklet analysis 
 };
 
 //____________________________________________________________________
@@ -319,7 +459,10 @@ AliTrackletWeights::AliTrackletWeights(const char* name,
   : TNamed(name, title),
     fPt(0),
     fAbundance(),
-    fStrangeness()
+    fStrangeness(),
+    fCalc(kProduct),
+    fMask(0xFF),
+    fVeto(0x0)
 {}
 
 //____________________________________________________________________
@@ -327,7 +470,10 @@ AliTrackletWeights::AliTrackletWeights(const AliTrackletWeights& o)
   : TNamed(o),
     fPt(0),
     fAbundance(),
-    fStrangeness()
+    fStrangeness(),
+    fCalc(o.fCalc),
+    fMask(o.fMask),
+    fVeto(o.fVeto)
 {
   UInt_t mask = kUp|kDown|kDisabled;
   SetPtWeight(o.fPt, o.fPt->TestBits(mask));
@@ -344,6 +490,9 @@ AliTrackletWeights& AliTrackletWeights::operator=(const AliTrackletWeights& o)
   if (&o == this) return *this;
   fName    = o.fName;
   fTitle   = o.fTitle;
+  fCalc    = o.fCalc;
+  fMask    = o.fMask;
+  fVeto    = o.fVeto;
   UInt_t mask = kUp|kDown|kDisabled;
   SetPtWeight(o.fPt, o.fPt->TestBits(mask));
   for (PdgMap::const_iterator i = o.fAbundance.begin();
@@ -458,26 +607,46 @@ AliTrackletWeights::LookupWeight(Double_t pT, Short_t pdg, Double_t cent) const
 
 //____________________________________________________________________
 Double_t
-AliTrackletWeights::LookupWeight(AliAODTracklet* tracklet, Double_t cent) const
+AliTrackletWeights::LookupWeight(AliAODTracklet* tracklet,
+				 Double_t        cent,
+				 TH2*            corr) const
 {
-  Double_t          w  = 1;
 #if 0
   if (!tracklet->IsSimulated()) {
     Warning("LookupWeight", "Not a simulated tracklet");
-    return w;
+    return 1;
   }
 #endif
+  UChar_t flags = tracklet->GetFlags();
+  if (fMask != 0xFF && (fMask & flags) == 0) {
+    // Info("LookupWeight", "Tracklet 0x%02x does not fullfill mask 0x%02x",
+    //       flags, fMask);	  
+    return 1;
+  }
+  if ((fVeto & flags) != 0) {
+    // Info("LookupWeight", "Tracklet 0x%02x vetoed by 0x%02x",flags, fVeto);
+    return 1;
+  }
   
-  AliAODMCTracklet* mc = static_cast<AliAODMCTracklet*>(tracklet);
-  if (mc->GetParentPdg()>0) w *= LookupWeight(mc->GetParentPt(),
-					      mc->GetParentPdg(),
-					      cent);
-  // if (!mc->IsCombinatorics()) return w;
-  if (mc->GetParentPdg(true)>0) w *= LookupWeight(mc->GetParentPt(true),
-						  mc->GetParentPdg(true),
-						  cent);
-  // Printf("Got tracklet weight %f", w);
-  return w;
+  Double_t w1 = 1, w2 = 1;
+  
+  // AliAODMCTracklet* mc = static_cast<AliAODMCTracklet*>(tracklet);
+  AliAODTracklet* mc = tracklet;
+  Short_t pdg1 = mc->GetParentPdg();
+  Short_t pdg2 = mc->GetParentPdg(true);
+  if      (pdg1>0)          w1 = LookupWeight(mc->GetParentPt(),    pdg1,cent);
+  if      (pdg2>0)          w2 = LookupWeight(mc->GetParentPt(true),pdg2,cent);
+  else if (fCalc!=kProduct) w2 = w1;
+
+  if (corr && mc->IsMeasured()) corr->Fill(w1, w2);
+
+  switch (fCalc) {
+  case kProduct: return w1 * w2;
+  case kSquare:  return TMath::Sqrt(w1 * w2);
+  case kSum:     return 1+(w1-1)+(w2-1);
+  case kAverage: return 1+((w1-1)+(w2-1))/2;
+  }
+  return 1;
 }
 
 //____________________________________________________________________
@@ -507,6 +676,10 @@ AliTrackletWeights::Store(TCollection* parent)
   top->SetName(GetName());
   top->SetOwner(true);
   parent->Add(top);
+  top->Add(new TParameter<int>("calc", fCalc, 'f'));
+  top->Add(new TParameter<int>("mask", fMask, 'f'));
+  top->Add(new TParameter<int>("veto", fVeto, 'f'));
+	   
   if (fPt) {
     TH2* copy = static_cast<TH2*>(fPt->Clone("centPt"));
     copy->SetDirectory(0);
@@ -533,6 +706,29 @@ AliTrackletWeights::StoreMap(TCollection* parent, const char* name, PdgMap& m)
   }
 }
 
+#ifndef __CINT__
+namespace {
+  template <typename T>
+  T GetPar(const char* name, TList* l)
+  {
+    TObject* o = l->FindObject(name);
+    if (!o) {
+      Warning("GetPar", "Didn't find parameter %s in %s",
+	      name, l->GetName());
+      return T();
+    }
+    TClass* cls = TParameter<T>::Class();
+    if (!o->IsA()->InheritsFrom(cls)) {
+      Warning("GetPar", "Object %s is a %s, not a %s",
+	      name, o->ClassName(), cls->GetName());
+      return T();
+    }
+    TParameter<T>* p = static_cast<TParameter<T>*>(o);
+    return p->GetVal();
+  }
+}
+#endif
+
 //____________________________________________________________________
 Bool_t
 AliTrackletWeights::Retrieve(TCollection* parent)
@@ -544,6 +740,10 @@ AliTrackletWeights::Retrieve(TCollection* parent)
     parent->ls();
     return false;
   }
+  fCalc   = GetPar<int>("calc", top);
+  fMask   = GetPar<int>("mask", top);
+  fVeto   = GetPar<int>("veto", top);
+  
   fPt        = static_cast<TH2D*>(top->FindObject("centPt"));
   if (!fPt)
     Warning("Retrieve","centPt histogram not found in %s", GetName());
@@ -590,19 +790,31 @@ AliTrackletWeights::RetrieveMap(TCollection* parent,
 
 //____________________________________________________________________
 void
-AliTrackletWeights::Draw(Option_t*)
+AliTrackletWeights::Draw(Option_t* option)
 {
-  TVirtualPad* master = gPad;
-  if (!master) return;
-  master->Divide(3,1);
+  TVirtualPad* master = TVirtualPad::Pad();
+  if (!master) {
+    Warning("Draw", "No current pad to draw in");
+    return;
+  }
+
+  Int_t nPad = 3;
+  Int_t iPad = 0;
+  if (fAbundance.size()   <= 0) nPad--;
+  if (fStrangeness.size() <= 0) nPad--;
+  TString opt(option); opt.ToUpper();
+  
+  master->Divide(nPad,1);  
   if (fPt) {
-    THStack* stack = new THStack(fPt, "y");
+    THStack* stack = new THStack(fPt, (opt.Contains("C") ? "x" : "y"));
     ModStack(stack);
     stack->SetTitle("#it{p}_{T} weights");
-    master->cd(1);
+    master->cd(++iPad);
     stack->Draw("nostack");
-    stack->GetHistogram()->SetXTitle("#it{p}_{T}");
-    master->GetPad(1)->BuildLegend();
+    stack->GetHistogram()->SetXTitle((opt.Contains("C") ?
+				      "Centrality [%]" : "#it{p}_{T}"));
+    master->GetPad(iPad)->BuildLegend();
+    master->GetPad(iPad)->Modified();
   }
 
   if (fAbundance.size() > 0) {
@@ -612,10 +824,10 @@ AliTrackletWeights::Draw(Option_t*)
       ha->Add(i->second);
     }
     ModStack(ha);
-    master->cd(2);
+    master->cd(++iPad);
     ha->Draw("nostack");
     ha->GetHistogram()->SetXTitle("Centrality [%]");
-    master->GetPad(2)->BuildLegend();
+    master->GetPad(iPad)->BuildLegend();
   }
 
   if (fStrangeness.size() > 0) {
@@ -625,11 +837,12 @@ AliTrackletWeights::Draw(Option_t*)
       hs->Add(i->second);
     }
     ModStack(hs);
-    master->cd(3);
+    master->cd(++iPad);
     hs->Draw("nostack");
     hs->GetHistogram()->SetXTitle("Centrality [%]");
-    master->GetPad(3)->BuildLegend();
+    master->GetPad(iPad)->BuildLegend();
   }
+  master->Modified();
 }
 
 //____________________________________________________________________
@@ -638,6 +851,12 @@ AliTrackletWeights::Print(Option_t* option) const
 {
   gROOT->IndentLevel();
   Printf("%s : %s", ClassName(), GetName());
+  Printf(" Weight calculation:  %s",
+	 fCalc == kProduct ? "product" :
+	 fCalc == kSquare  ? "square"  :
+	 fCalc == kSum     ? "sum"     : "average");
+  Printf(" Tracklet mask:       0x%02x", fMask);
+  Printf(" Tracklet veto:       0x%02x", fVeto);
   gROOT->IncreaseDirLevel();
   PrintHist("pT", fPt);
   PrintMap(fAbundance,   "Abundance", option);

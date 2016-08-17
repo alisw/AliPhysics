@@ -6,14 +6,17 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
+#include <TString.h>
 
 class AliAnalysisUtils;
 class AliEMCALGeometry;
+class AliOADBContainer;
 
 class TArrayD;
 class TClonesArray;
 class THistManager;
 class TList;
+class TObjArray;
 class TString;
 
 namespace EMCalTriggerPtAnalysis {
@@ -37,9 +40,14 @@ public:
   void SetRequestAnalysisUtil(Bool_t doRequest) { fRequestAnalysisUtil = doRequest; }
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); fRequestCentrality = true; }
   void SetVertexRange(double min, double max) { fVertexRange.SetLimits(min, max); }
+  void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
 
 protected:
 
+  virtual void ExecOnce();
+  virtual void RunChanged(Int_t runnumber);
+
+  Double_t GetTriggerWeight(const TString &triggerclass) const;
   void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
   bool IsOfflineSimplePatch(TObject *o) const;
   bool SelectDCALPatch(TObject *o) const;
@@ -47,22 +55,31 @@ protected:
   bool SelectJetPatch(TObject *o) const;
   double GetPatchEnergy(TObject *o) const;
 
-  void FillClusterHistograms(TString triggerclass, double energy, double transversenergy, double eta, double phi, TList *triggerpatches);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, TList *triggerpatches);
+  void FillEventHistograms(const TString &triggerclass, double centrality, double vertexz);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
   void FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundpatches) const;
   Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
-  AliAnalysisUtils                    *fAnalysisUtil;
-  THistManager                        *fHistos;
-  AliEmcalTriggerOfflineSelection     *fTriggerSelection;
-  AliEMCALGeometry                    *fGeometry;
-  TString                             fClusterContainer;
+  AliAnalysisUtils                    *fAnalysisUtil;             ///< Analysis utils for additional event selection / pileup rejection
+  THistManager                        *fHistos;                   //!<! Histogram handler
+  AliEmcalTriggerOfflineSelection     *fTriggerSelection;         ///< EMCAL offline trigger selection tool
+  AliEMCALGeometry                    *fGeometry;                 //!<! EMCAL geometry
+  TClonesArray                        *fTriggerPatches;           //!<! Container with trigger patches
+  TString                             fClusterContainer;          ///< Name of the cluster container in the event
 
-  Bool_t                              fRequestAnalysisUtil;
-  Bool_t                              fTriggerStringFromPatches;
-  AliCutValueRange<double>            fCentralityRange;
-  AliCutValueRange<double>            fVertexRange;
-  Bool_t                              fRequestCentrality;
+  Bool_t                              fRequestAnalysisUtil;       ///< Switch on request for event selection using analysis utils
+  Bool_t                              fTriggerStringFromPatches;  ///< Build trigger string from trigger patches
+  AliCutValueRange<double>            fCentralityRange;           ///< Selected centrality range
+  AliCutValueRange<double>            fVertexRange;               ///< Selected vertex range
+  Bool_t                              fRequestCentrality;         ///< Swich on request for centrality range
+
+  TString                             fNameDownscaleOADB;         ///< Name of the downscale OADB container
+  AliOADBContainer                    *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
+  TObjArray                           *fDownscaleFactors;         //!<! Downscalfactors for given run
+
+  Int_t                               fCurrentRun;                ///< Current run number (for RunChange method)
+  Bool_t                              fInitialized;               ///< Check for initialized
 
 private:
 
@@ -75,7 +92,9 @@ private:
   AliAnalysisTaskEmcalClustersRef(const AliAnalysisTaskEmcalClustersRef &);
   AliAnalysisTaskEmcalClustersRef &operator=(const AliAnalysisTaskEmcalClustersRef &);
 
+  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalClustersRef, 1);
+  /// \endcond
 };
 
 } /* namespace EMCalTriggerPtAnalysis */

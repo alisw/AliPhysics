@@ -13,20 +13,19 @@
 #include <string>
 #endif
 
-AliAnalysisTaskC2 *AddTaskC2() {
+AliAnalysisTaskC2 *AddTaskC2(const char* suffix = "recon") {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskC2", "No analysis manager to connect to.");
     return NULL;
   }
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer(Form("sums") ,
+    mgr->CreateContainer(Form("sums_%s", suffix),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
 			 Form("%s:c2_correlations", mgr->GetCommonFileName()));
 
   AliAnalysisTaskC2 *c2Task = new AliAnalysisTaskC2("TaskC2");
-  //c2Task->SelectCollisionCandidates(AliVEvent::kAny);
 
   if (!c2Task) {
       Error("CreateTasks", "Failed to add task!");
