@@ -95,6 +95,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
     fHistEMC_Had_MB_1Gev(0),
+    fHistInvMassElecLike_MB(0),
+    fHistInvMassElecUnLike_MB(0),
+    fHistOpAngElecLike_MB(0),
+    fHistOpAngElecUnLike_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -109,6 +113,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
     fHistDPhiDEta28_EMC7(0),
+    fHistInvMassElecLike_EMC7(0),
+    fHistInvMassElecUnLike_EMC7(0),
+    fHistOpAngElecLike_EMC7(0),
+    fHistOpAngElecUnLike_EMC7(0),
 
     fHistTPCNClus_EMC8(0),
     fHistITSNClus_EMC8(0),
@@ -123,6 +131,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistEtaPhiTag_EMC8(0),
     fHistDPhi28_EMC8(0),
     fHistDPhiDEta28_EMC8(0),
+    fHistInvMassElecLike_EMC8(0),
+    fHistInvMassElecUnLike_EMC8(0),
+    fHistOpAngElecLike_EMC8(0),
+    fHistOpAngElecUnLike_EMC8(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -136,7 +148,11 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
-    fHistDPhiDEta28_EMCJet(0)
+    fHistDPhiDEta28_EMCJet(0),
+    fHistInvMassElecLike_EMCJet(0),
+    fHistInvMassElecUnLike_EMCJet(0),
+    fHistOpAngElecLike_EMCJet(0),
+    fHistOpAngElecUnLike_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -442,6 +458,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistDPhi28_MB(0),
     fHistDPhiDEta28_MB(0),
     fHistEMC_Had_MB_1Gev(0),
+    fHistInvMassElecLike_MB(0),
+    fHistInvMassElecUnLike_MB(0),
+    fHistOpAngElecLike_MB(0),
+    fHistOpAngElecUnLike_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -456,6 +476,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
     fHistDPhiDEta28_EMC7(0),
+    fHistInvMassElecLike_EMC7(0),
+    fHistInvMassElecUnLike_EMC7(0),
+    fHistOpAngElecLike_EMC7(0),
+    fHistOpAngElecUnLike_EMC7(0),
 
     fHistTPCNClus_EMC8(0),
     fHistITSNClus_EMC8(0),
@@ -470,6 +494,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistEtaPhiTag_EMC8(0),
     fHistDPhi28_EMC8(0),
     fHistDPhiDEta28_EMC8(0),
+    fHistInvMassElecLike_EMC8(0),
+    fHistInvMassElecUnLike_EMC8(0),
+    fHistOpAngElecLike_EMC8(0),
+    fHistOpAngElecUnLike_EMC8(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -483,7 +511,11 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
-    fHistDPhiDEta28_EMCJet(0)
+    fHistDPhiDEta28_EMCJet(0),
+    fHistInvMassElecLike_EMCJet(0),
+    fHistInvMassElecUnLike_EMCJet(0),
+    fHistOpAngElecLike_EMCJet(0),
+    fHistOpAngElecUnLike_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -1073,6 +1105,74 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fTrackCutsWeak->SetAcceptKinkDaughters(kFALSE);
     
     // Create histograms
+    
+    //Invariant mass histos
+    
+    fHistInvMassElecLike_MB = new TH1F("fHistInvMassElecLike_MB", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_MB->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecLike_MB->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecLike_EMC7 = new TH1F("fHistInvMassElecLike_EMC7", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_EMC7->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecLike_EMC7->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecLike_EMC8 = new TH1F("fHistInvMassElecLike_EMC8", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_EMC8->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecLike_EMC8->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecLike_EMCJet = new TH1F("fHistInvMassElecLike_EMCJet", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_EMCJet->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecLike_EMCJet->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecUnLike_MB = new TH1F("fHistInvMassElecUnLike_MB", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_MB->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecUnLike_MB->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecUnLike_EMC7 = new TH1F("fHistInvMassElecUnLike_EMC7", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_EMC7->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecUnLike_EMC7->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecUnLike_EMC8 = new TH1F("fHistInvMassElecUnLike_EMC8", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_EMC8->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecUnLike_EMC8->GetYaxis()->SetTitle("Cts");
+    
+    fHistInvMassElecUnLike_EMCJet = new TH1F("fHistInvMassElecUnLike_EMCJet", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_EMCJet->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
+    fHistInvMassElecUnLike_EMCJet->GetYaxis()->SetTitle("Cts");
+    
+    //Opening Angle Histos
+    
+    fHistOpAngElecLike_MB = new TH1F("fHistOpAngElecLike_MB", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecLike_MB->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecLike_MB->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecLike_EMC7 = new TH1F("fHistOpAngElecLike_EMC7", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecLike_EMC7->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecLike_EMC7->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecLike_EMC8 = new TH1F("fHistOpAngElecLike_EMC8", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecLike_EMC8->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecLike_EMC8->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecLike_EMCJet = new TH1F("fHistOpAngElecLike_EMCJet", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecLike_EMCJet->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecLike_EMCJet->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecUnLike_MB = new TH1F("fHistOpAngElecUnLike_MB", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_MB->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecUnLike_MB->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecUnLike_EMC7 = new TH1F("fHistOpAngElecUnLike_EMC7", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_EMC7->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecUnLike_EMC7->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecUnLike_EMC8 = new TH1F("fHistOpAngElecUnLike_EMC8", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_EMC8->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecUnLike_EMC8->GetYaxis()->SetTitle("Cts");
+    
+    fHistOpAngElecUnLike_EMCJet = new TH1F("fHistOpAngElecUnLike_EMCJet", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_EMCJet->GetXaxis()->SetTitle("Opening Angle(rad)");
+    fHistOpAngElecUnLike_EMCJet->GetYaxis()->SetTitle("Cts");
     
     //PtSum Histos
     
@@ -2224,36 +2324,36 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistTPCSigCut_EMCJet->GetYaxis()->SetTitle("Count");
     
     //Impact Parameter histos
-    fHistImpPar_MB = new TH1F("fHistImpPar_MB", "Impact Parameter distribution in xy plane for all tracks", 100,-5, 5);
+    fHistImpPar_MB = new TH1F("fHistImpPar_MB", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
     fHistImpPar_MB->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_MB->GetYaxis()->SetTitle("Count");
     
-    fHistImpPar_EMC7 = new TH1F("fHistImpPar_EMC7", "Impact Parameter distribution in xy plane for all tracks", 100,-5, 5);
+    fHistImpPar_EMC7 = new TH1F("fHistImpPar_EMC7", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
     fHistImpPar_EMC7->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_EMC7->GetYaxis()->SetTitle("Count");
     
-    fHistImpPar_EMC8 = new TH1F("fHistImpPar_EMC8", "Impact Parameter distribution in xy plane for all tracks", 100,-5, 5);
+    fHistImpPar_EMC8 = new TH1F("fHistImpPar_EMC8", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
     fHistImpPar_EMC8->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_EMC8->GetYaxis()->SetTitle("Count");
     
-    fHistImpPar_EMCJet = new TH1F("fHistImpPar_EMCJet", "Impact Parameter distribution in xy plane for all tracks", 100,-5, 5);
+    fHistImpPar_EMCJet = new TH1F("fHistImpPar_EMCJet", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
     fHistImpPar_EMCJet->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_EMCJet->GetYaxis()->SetTitle("Count");
     
     //Impact Parameter for tagged electrons histos
-    fHistImpParTag_MB = new TH1F("fHistImpParTag_MB", "Impact Parameter distribution in xy plane for electron candidates", 100,-5, 5);
+    fHistImpParTag_MB = new TH1F("fHistImpParTag_MB", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
     fHistImpParTag_MB->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_MB->GetYaxis()->SetTitle("Count");
     
-    fHistImpParTag_EMC7 = new TH1F("fHistImpParTag_EMC7", "Impact Parameter distribution in xy plane for electron candidates", 100,-5, 5);
+    fHistImpParTag_EMC7 = new TH1F("fHistImpParTag_EMC7", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
     fHistImpParTag_EMC7->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_EMC7->GetYaxis()->SetTitle("Count");
     
-    fHistImpParTag_EMC8 = new TH1F("fHistImpParTag_EMC8", "Impact Parameter distribution in xy plane for electron candidates", 100,-5, 5);
+    fHistImpParTag_EMC8 = new TH1F("fHistImpParTag_EMC8", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
     fHistImpParTag_EMC8->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_EMC8->GetYaxis()->SetTitle("Count");
     
-    fHistImpParTag_EMCJet = new TH1F("fHistImpParTag_EMCJet", "Impact Parameter distribution in xy plane for electron candidates", 100,-5, 5);
+    fHistImpParTag_EMCJet = new TH1F("fHistImpParTag_EMCJet", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
     fHistImpParTag_EMCJet->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_EMCJet->GetYaxis()->SetTitle("Count");
     
@@ -2316,6 +2416,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistEtaPhiTag_MB);
     fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
     fOutputMB->Add(fHistEMC_Had_MB_1Gev);
+    fOutputMB->Add(fHistInvMassElecLike_MB);
+    fOutputMB->Add(fHistInvMassElecUnLike_MB);
+    fOutputMB->Add(fHistOpAngElecLike_MB);
+    fOutputMB->Add(fHistOpAngElecUnLike_MB);
     for(Int_t i=0; i<6;i++){
         fOutputMB->Add(fHistTPC_TOF_MB[i]);
         fOutputMB->Add(fHistTPC_EMC_MB[i]);
@@ -2377,6 +2481,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistEngTag_EMC7);
     fOutputEMC7->Add(fHistEtaPhi_EMC7);
     fOutputEMC7->Add(fHistEtaPhiTag_EMC7);
+    fOutputEMC7->Add(fHistInvMassElecLike_EMC7);
+    fOutputEMC7->Add(fHistInvMassElecUnLike_EMC7);
+    fOutputEMC7->Add(fHistOpAngElecLike_EMC7);
+    fOutputEMC7->Add(fHistOpAngElecUnLike_EMC7);
     for(Int_t i=0; i<6;i++){
         fOutputEMC7->Add(fHistTPC_TOF_EMC7[i]);
         fOutputEMC7->Add(fHistTPC_EMC_EMC7[i]);
@@ -2438,6 +2546,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC8->Add(fHistEngTag_EMC8);
     fOutputEMC8->Add(fHistEtaPhi_EMC8);
     fOutputEMC8->Add(fHistEtaPhiTag_EMC8);
+    fOutputEMC8->Add(fHistInvMassElecLike_EMC8);
+    fOutputEMC8->Add(fHistInvMassElecUnLike_EMC8);
+    fOutputEMC8->Add(fHistOpAngElecLike_EMC8);
+    fOutputEMC8->Add(fHistOpAngElecUnLike_EMC8);
     for(Int_t i=0; i<6;i++){
         fOutputEMC8->Add(fHistTPC_TOF_EMC8[i]);
         fOutputEMC8->Add(fHistTPC_EMC_EMC8[i]);
@@ -2499,6 +2611,10 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistEngTag_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhi_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhiTag_EMCJet);
+    fOutputEMCJet->Add(fHistInvMassElecLike_EMCJet);
+    fOutputEMCJet->Add(fHistInvMassElecUnLike_EMCJet);
+    fOutputEMCJet->Add(fHistOpAngElecLike_EMCJet);
+    fOutputEMCJet->Add(fHistOpAngElecUnLike_EMCJet);
     for(Int_t i=0; i<6;i++){
         fOutputEMCJet->Add(fHistTPC_TOF_EMCJet[i]);
         fOutputEMCJet->Add(fHistTPC_EMC_EMCJet[i]);
@@ -2823,6 +2939,8 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(EMCJettrg){
                 fHistImpPar_EMCJet->Fill(xy);
         }
+        
+        FillPhotoElecHistos(esd, esdtrack, fPIDResponse, i);
         
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         //If the track doesn't pass the cuts, move on to the next one
@@ -5753,6 +5871,168 @@ void AliAnalysisTaskPSHFE::SetTrackCuts(AliESDtrackCuts *gtrkCuts, AliESDtrackCu
 
 void AliAnalysisTaskPSHFE::SetElectronTrackCuts(Bool_t trkCutBool){
     trackCutsStrong=trkCutBool;
+}
+
+void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i){
+   
+    if(!esdtrack){
+        AliWarning("esdtrack is null, no point in doing Photonic Electron stuff");
+        return;
+    }
+    
+    Bool_t isElec=kFALSE;
+    Double_t ElecMass=.0005109989;    
+    //Fill TOF and TPC status variables  
+    AliPIDResponse::EDetPidStatus TPCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, esdtrack);
+        
+    AliPIDResponse::EDetPidStatus TRDStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, esdtrack);
+        
+    AliPIDResponse::EDetPidStatus EMCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kEMCAL, esdtrack);
+        
+    //Check validity of PID, TODO: Add a rejection histogram
+    if(TPCStatus!=AliPIDResponse::kDetPidOk){
+        return;
+    }
+        
+    if(TRDStatus!=AliPIDResponse::kDetPidOk){
+        return;
+    }
+        
+    if(EMCStatus!=AliPIDResponse::kDetPidOk){
+        return;
+    }
+        
+        
+    //Get the # of sigmas around an electron hypothesis for TOF and TPC
+    Double_t nSigmaTPC;
+    nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kElectron);
+        
+    Double_t elecLikeTRD[1];
+    if(fPIDResponse->ComputeTRDProbability(esdtrack, AliPID::kElectron, elecLikeTRD, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || esdtrack->GetTRDntrackletsPID()<4){
+        return;
+    }
+       
+    //declare emcal cluster PID variables
+    Double_t EOP=-1;
+    Int_t caloId=esdtrack->GetEMCALcluster();
+        
+    if(caloId==-99999){
+        return;
+    }
+        
+    AliESDCaloCluster* tagEMCclus=esd->GetCaloCluster(caloId);
+        
+    EOP = tagEMCclus->E()/esdtrack->Pt();
+    
+    if((nSigmaTPC<2&&nSigmaTPC>-2)||(EOP<1.4&&EOP>.8)||(elecLikeTRD[0]>.8)){
+        isElec=kTRUE;
+    }
+    
+    if(!isElec){return;}
+    
+    Int_t ntracks=esd->GetNumberOfTracks();
+    
+    for(Int_t j = 0; j < ntracks; j++) {
+                
+        //Don't double count the tagged tracks
+        if(i==j){continue;}
+                
+        AliESDtrack* esdtrackassoc = esd->GetTrack(j); // pointer to reconstructed to track          
+                
+        if(!esdtrackassoc) { 
+            AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
+            continue; 
+        }
+        
+        Bool_t isElecToo=kFALSE;
+        
+        //Fill TOF and TPC status variables  
+        AliPIDResponse::EDetPidStatus TPCStatusassoc=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, esdtrackassoc);
+
+        AliPIDResponse::EDetPidStatus TRDStatusassoc=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, esdtrackassoc);
+
+        //Check validity of PID, TODO: Add a rejection histogram
+        if(TPCStatusassoc!=AliPIDResponse::kDetPidOk){
+            continue;
+        }
+
+        if(TRDStatusassoc!=AliPIDResponse::kDetPidOk){
+            continue;
+        }
+
+
+        //Get the # of sigmas around an electron hypothesis for TOF and TPC
+        Double_t nSigmaTPCassoc;
+        nSigmaTPCassoc = fPIDResponse->NumberOfSigmasTPC(esdtrackassoc,AliPID::kElectron);
+
+        Double_t elecLikeTRDassoc[1];
+        if(fPIDResponse->ComputeTRDProbability(esdtrackassoc, AliPID::kElectron, elecLikeTRDassoc, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || esdtrackassoc->GetTRDntrackletsPID()<4){
+            return;
+        }
+
+        if((nSigmaTPCassoc<2&&nSigmaTPCassoc>-2)||(elecLikeTRDassoc[0]>.8)){
+            isElecToo=kTRUE;
+        }
+        
+        TVector3 elec1(esdtrack->Px(), esdtrack->Py(), esdtrack->Pz());
+        TVector3 elec2(esdtrackassoc->Px(), esdtrackassoc->Py(), esdtrackassoc->Pz());
+        Double_t elecE1=TMath::Sqrt(elec1.Dot(elec1)+ElecMass*ElecMass);
+        Double_t elecE2=TMath::Sqrt(elec2.Dot(elec2)+ElecMass*ElecMass);
+        
+        Double_t InvMass=TMath::Sqrt((elecE1+elecE2)*(elecE1+elecE2)-elec1.Dot(elec1)-elec1.Dot(elec2)-elec2.Dot(elec2));
+        Double_t OpAng=elec1.Angle(elec2);
+        
+        if(esdtrack->GetSign()==esdtrackassoc->GetSign()){
+            
+            if(MBtrg){
+                fHistInvMassElecLike_MB->Fill(InvMass);
+                fHistOpAngElecLike_MB->Fill(OpAng);
+            }
+            
+            if(EMC7trg){
+                fHistInvMassElecLike_EMC7->Fill(InvMass);
+                fHistOpAngElecLike_EMC7->Fill(OpAng);
+            }
+            
+            if(EMC8trg){
+                fHistInvMassElecLike_EMC8->Fill(InvMass);
+                fHistOpAngElecLike_EMC8->Fill(OpAng);
+            }
+            
+            if(EMCJettrg){
+                fHistInvMassElecLike_EMCJet->Fill(InvMass);
+                fHistOpAngElecLike_EMCJet->Fill(OpAng);
+            }
+            
+        }else{
+            
+            if(MBtrg){
+                fHistInvMassElecUnLike_MB->Fill(InvMass);
+                fHistOpAngElecUnLike_MB->Fill(OpAng);
+            }
+            
+            if(EMC7trg){
+                fHistInvMassElecUnLike_EMC7->Fill(InvMass);
+                fHistOpAngElecUnLike_EMC7->Fill(OpAng);
+            }
+            
+            if(EMC8trg){
+                fHistInvMassElecUnLike_EMC8->Fill(InvMass);
+                fHistOpAngElecUnLike_EMC8->Fill(OpAng);
+            }
+            
+            if(EMCJettrg){
+                fHistInvMassElecUnLike_EMCJet->Fill(InvMass);
+                fHistOpAngElecUnLike_EMCJet->Fill(OpAng);
+            }
+        }
+    }//end loop over tracks
+    
+    PostData(1, fOutputMB);
+    PostData(2, fOutputEMC7);
+    PostData(3, fOutputEMC8);
+    PostData(4, fOutputEMCJet);
+    return;
 }
 
 //________________________________________________________________________
