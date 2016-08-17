@@ -72,12 +72,15 @@ Int_t getUse(const ifstream &optionsfile, const char *name) {
 /// \brief Load the run options for the current task
 /// The run options as present in the input file are taken over the global variables
 /// \param verb flag for verbose output
-/// \param filename the options filename
-Bool_t loadRunOptions(Bool_t verb,const char *filename) {
+/// \param path the path to the configuration files
+Bool_t loadRunOptions(Bool_t verb,const char *path) {
   ifstream optionsfile;
   TString currline;
 
   if (bOptionsLoaded) CleanOptions();
+
+  TString szFileName(Form("%s/%s", path, "runoptions.txt"));
+  const char *filename = (const char *) szFileName;
 
   listOfRuns.SetOwner(kTRUE);
   optionsfile.open(filename);
@@ -365,8 +368,8 @@ Bool_t loadRunOptions(Bool_t verb,const char *filename) {
     TString szDataLocFile;
     ifstream datalocfile;
 
-    if (bMC) { szDataLocFile = "GRIDMCdata.txt"; }
-    else { szDataLocFile = "GRIDrealdata.txt"; }
+    if (bMC) { szDataLocFile = Form("%s/%s", path, "GRIDMCdata.txt"); }
+    else { szDataLocFile = Form("%s/%s", path, "GRIDrealdata.txt"); }
 
     if (verb) printf(" Opening the data location file: %s\n", szDataLocFile.Data());
     datalocfile.open(szDataLocFile.Data());
