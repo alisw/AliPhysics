@@ -111,4 +111,7 @@ std::vector<std::string> TokenizeString(const std::string input, const std::stri
 //parse 
 stringMap ParseParamString(const std::string paramString);
 std::string GetParamString(const std::string param, const std::string paramstring);
+
+//load ROOT libraries specified in comma separated string
+int LoadROOTlibs(std::string libstring, bool verbose=false);
 #endif
