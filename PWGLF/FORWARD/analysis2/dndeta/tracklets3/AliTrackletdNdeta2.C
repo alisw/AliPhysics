@@ -2926,7 +2926,7 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   // l->SetTextSize(0.04);
   // l->SetTextAlign(12);
   ModLegend(p1, l, p1->GetLeftMargin()-.01, 1-yr,
-	    1-p2->GetRightMargin(), .99);
+	    1-p1>GetRightMargin(), .99);
 
   THStack* ratios = static_cast<THStack*>(GetO(outDir, "ratios"));
   FixMinMax(ratios, true);
