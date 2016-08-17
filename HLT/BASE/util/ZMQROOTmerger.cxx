@@ -1099,6 +1099,10 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
     {
       fIgnoreDefaultNamesWhenUnpacking = (value.Contains("0"))?kFALSE:kTRUE;
     }
+    else if (option.EqualTo("FullyDestroyAnalysisDataContainer"))
+    {
+      fFullyDestroyAnalysisDataContainer = (value.Contains("0"))?kFALSE:kTRUE;
+    }
     else if (option.EqualTo("statefile"))
     {
       fInitFile = value.Data();
@@ -1143,7 +1147,8 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
   else if (fOnResetSendTo.EqualTo("in")) fZMQresetBroadcast = fZMQin;
   else if (fOnResetSendTo.EqualTo("mon")) fZMQresetBroadcast = fZMQmon;
   else if (fOnResetSendTo.EqualTo("out")) fZMQresetBroadcast = fZMQout;
-  if (fVerbose) printf("configured to bradcast on %s, socket %p\n", fOnResetSendTo.Data(), fZMQresetBroadcast);
+  if (fZMQresetBroadcast) printf("configured to bradcast resets on %s, socket %p\n", fOnResetSendTo.Data(), fZMQresetBroadcast);
+  if (fFullyDestroyAnalysisDataContainer) printf("configured to delete the fProducer/fConsumers of AliAnalysisDataContainer\n");
 
   delete options; //tidy up
 
