@@ -194,6 +194,41 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
   return task;  
 }
 
+//this AddTask only creates the task, need to add manually all the rest (for subwagons)
+AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char *wagonName){
+	
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr)
+    {
+    	Error("AddTaskEmcalJetTagger","No analysis manager found.");
+    	return 0;
+    }
+    
+    // Check the analysis type using the event handlers connected to the analysis manager.
+    //==============================================================================
+    if (!mgr->GetInputEventHandler())
+    {
+    	::Error("AddTaskEmcalJetTagger", "This task requires an input event handler");
+    	return NULL;
+    }
+    
+    
+    //Define jet tagger task
+    AliAnalysisTaskEmcalJetTagger *task = new AliAnalysisTaskEmcalJetTagger(wagonName.Data());
+    mgr->AddTask(task);
+    // all the configuration is missing, do it in the wagon/subwagon
+    //Connnect input
+    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
+    
+    //Connect output
+    TString contName(wagonName);
+    TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    mgr->ConnectOutput(task,1,coutput1);
+    
+    return task;  
+}
+
 //Attach rho task
 AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "LHC13b",
 					    TString     kTracksName         = "PicoTracks", 
