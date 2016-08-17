@@ -71,6 +71,7 @@ class AliAnalysisTaskf0f2 : public AliAnalysisTaskSE {
         virtual void    Terminate(Option_t *);
 
         void SetOption(char * option) {fOption = option;}
+        void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
         Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk); 
     
         Bool_t  GoodTracksSelection();
@@ -86,6 +87,7 @@ class AliAnalysisTaskf0f2 : public AliAnalysisTaskSE {
         AliESDtrackCuts*                fTrackCuts; //!
         AliESDEvent*                    fEsd; //!
         AliAODEvent*                    fAod; //!
+        UInt_t                          fFilterBit;
         Bool_t                          IsFirstEvent;
         AliAnalysisTaskf0f2RunTable*             fRunTable; //!
         

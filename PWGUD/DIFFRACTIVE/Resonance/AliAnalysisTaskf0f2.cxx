@@ -343,12 +343,7 @@ Bool_t AliAnalysisTaskf0f2::GoodTracksSelection(){
         else {
             track = (AliAODTrack*) fAod ->GetTrack(it);
             if (!track) continue;
-            //hybrid track : AOD 086 -> Filter bit 272
-            //hybrid track : AOD 160 -> Filter bit 768
-            //hybrid track : AOD 145 -> Filter bit 768
-            //hybrid track : AOD 115 -> Filter bit 768
-            //cut parameters (numbers) will be modified to a secure way.
-            if( ! ((AliAODTrack*) track)->TestFilterBit(768)) continue;
+            if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue;
             if (fabs(track->Eta())>0.8) continue;
             if (track->Pt()<0.4) continue;
             fPhiEta->Fill(track->Phi(),track->Eta());
