@@ -2412,19 +2412,28 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   const AliAODEvent* ev = static_cast<const AliAODEvent*>(event);
 
 
-  // Centrality Run1
+  // Centrality Run1 / Run2
   Double_t centralityF=-1;
   Double_t centralitySPD=-1;
   Double_t centralityV0A = -1;
   Double_t centralityV0C = -1;
   Double_t centralityZNA = -1;
 
-  AliCentrality *aodCentrality = header->GetCentralityP();
-  if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
-  if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
-  if (aodCentrality) centralityV0A = aodCentrality->GetCentralityPercentile("V0A");
-  if (aodCentrality) centralityV0C = aodCentrality->GetCentralityPercentile("V0C");
-  if (aodCentrality) centralityZNA = aodCentrality->GetCentralityPercentile("ZNA");
+  if(AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection")){
+    centralityF   = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+    centralitySPD = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    centralityV0A = multSelection->GetMultiplicityPercentile("V0A",kFALSE); // Currently not supported for 15o
+    centralityV0C = multSelection->GetMultiplicityPercentile("V0C",kFALSE); // Currently not supported for 15o
+    centralityZNA = multSelection->GetMultiplicityPercentile("ZDC",kFALSE);
+  }
+  else{
+    AliCentrality *aodCentrality = header->GetCentralityP();
+    if (aodCentrality) centralityF = aodCentrality->GetCentralityPercentile("V0M");
+    if (aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
+    if (aodCentrality) centralityV0A = aodCentrality->GetCentralityPercentile("V0A");
+    if (aodCentrality) centralityV0C = aodCentrality->GetCentralityPercentile("V0C");
+    if (aodCentrality) centralityZNA = aodCentrality->GetCentralityPercentile("ZNA");
+  }
 
   values[AliDielectronVarManager::kCentrality] = centralityF;
   values[AliDielectronVarManager::kCentralitySPD] = centralitySPD;
@@ -2440,7 +2449,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   ///////////////////////////////////////////
 
   // (w/o AliCentrality branch), VOM centrality should be stored in the header
-  if(!header->GetCentralityP())
+  if((!header->GetCentralityP()) && (centralityF == -1))
     values[AliDielectronVarManager::kCentrality] = header->GetCentrality();
   // (w/o AliEventPlane branch) tpc event plane stuff stored in the header
   if(!header->GetEventplaneP()) {
@@ -3058,7 +3067,6 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     binVtx = fgVZEROCalib[0]->GetXaxis()->FindBin(vtxZ);
     binCent = fgVZEROCalib[0]->GetYaxis()->FindBin(centralitySPD);
   }
-
   AliVVZERO* vzero = event->GetVZEROData();
   Double_t average = 0.0;
   for(Int_t iChannel=0; iChannel<64; ++iChannel) {
