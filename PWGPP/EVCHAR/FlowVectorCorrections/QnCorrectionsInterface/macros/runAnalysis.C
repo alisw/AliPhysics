@@ -63,9 +63,10 @@ AliMultSelectionTask *AddTaskMultSelection(
     TString lExtraOptions = "",
     Int_t lNDebugEstimators = 1,
     const TString lMasterJobSessionFlag = "");
-#endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
 #include "runAnalysis.H"
+
+#endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
 using std::cout;
 using std::endl;
