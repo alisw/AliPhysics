@@ -23,7 +23,8 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       const char cent[] = "V0M",
                                       Bool_t doCalibRun = 0,
                                       Bool_t doManualBadmap = 0,
-                                      TString badMapName = "defaultTender")
+                                      TString badMapName = "defaultTender",
+                                      Bool_t doSimStudies = 0)
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -97,6 +98,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetCentrality(cent);
   task->SetCentralityRange(centMin,centMax);
   task->SetManualBadMap(doManualBadmap);
+  task->SetSimulationStudies(doSimStudies);
   
   if(doManualBadmap) {
     if (badMapName == "defaultTender")
