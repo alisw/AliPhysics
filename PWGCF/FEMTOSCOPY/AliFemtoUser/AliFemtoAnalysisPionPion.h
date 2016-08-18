@@ -135,17 +135,6 @@ protected:
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
 
-private:
-
-  /// Internal initialization method used by all constructors
-  void _Init(const CutParams& params);
-
-#ifndef __ROOT__
-  /// \cond CLASSIMP
-  ClassDef(AliFemtoAnalysisPionPion, 0);
-  /// \endcond
-#endif
-
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
@@ -192,8 +181,8 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
-/// \brief *not yet implemented* Structure containing all fit parameters for
-///        'easy' setting of custom fit parameters via one command.
+/// \brief Structure containing all fit parameters for 'easy' setting
+///        of custom fit parameters via one command.
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
   // EVENT
@@ -222,8 +211,9 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pion_1_DCAMin,
           pion_1_DCAMax;
 
-  Float_t pion_1_NSigmaMin,
-          pion_1_NSigmaMax;
+  Float_t pion_1_NSigmaMin
+        , pion_1_NSigmaMax
+        ;
 
   Float_t pion_1_max_impact_xy
         , pion_1_max_impact_z
@@ -247,6 +237,18 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   Float_t pion_2_NSigmaMin,
           pion_2_NSigmaMax;
+
+  Float_t pion_2_max_impact_xy
+        , pion_2_max_impact_z
+        , pion_2_max_tpc_chi_ndof
+        , pion_2_max_its_chi_ndof
+        ;
+
+  UInt_t pion_2_min_tpc_ncls;
+  Bool_t pion_2_remove_kinks,
+         pion_2_set_label;
+
+
 
   // PAIR
   Bool_t pair_TPCOnly;
