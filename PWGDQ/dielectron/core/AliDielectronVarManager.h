@@ -35,6 +35,8 @@
 #include <TBits.h>
 #include <TRandom3.h>
 
+#include <AliLog.h>
+
 #include <AliVEvent.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
@@ -3036,13 +3038,14 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEv->GetHeader());
     assert(header&&"Not a standard AOD");
     AliCentrality *aodCentrality = header->GetCentralityP();
-    if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
-        //2015 cent
-// AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
-    //if(MultSelection){
-    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    // }
-
+    // Run1 aodCentrality -- Run2 multSelection
+    if(AliMultSelection *multSelection = (AliMultSelection*) aodEv->FindListObject("MultSelection")){
+      centralitySPD = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
+    }
+    else{
+      if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
+      else printf("GetVzeroRP: No centrality estimation avaible!");
+    }
   }
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   if(!primVtx) return;
