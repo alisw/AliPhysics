@@ -36,7 +36,6 @@ class AliAnalysisDeuteronpA : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   //
   void           SetESDtrackCuts(AliESDtrackCuts * trackCuts){fESDtrackCuts = trackCuts;};
-  void           SetAlephParameters(const Double_t * parameters){for(Int_t j=0;j<5;j++) fAlephParameters[j] = parameters[j]; Initialize();};
   void           SetIsMCtrue(Bool_t isMCdata = kTRUE){fMCtrue = isMCdata;};
   void           SetRapCMSpA(Bool_t isRapCMSpA = kTRUE){fRapCMSpA = isRapCMSpA;};
   //
@@ -55,7 +54,6 @@ class AliAnalysisDeuteronpA : public AliAnalysisTaskSE {
   AliESDpid       * fESDpid;           // basic TPC object for n-sigma cuts
   Bool_t        fMCtrue;               // flag if real data or MC is processed
   Bool_t        fRapCMSpA;             // flag if shift to CMS_NN system for pA
-  Double_t      fAlephParameters[5];   // Aleph Parameters for Bethe-Bloch
   AliAnalysisUtils  *fUtils;           // For vertex cut and pileup rejection
   //
   //
@@ -76,7 +74,7 @@ class AliAnalysisDeuteronpA : public AliAnalysisTaskSE {
   AliAnalysisDeuteronpA(const AliAnalysisDeuteronpA&); 
   AliAnalysisDeuteronpA& operator=(const AliAnalysisDeuteronpA&); 
 
-  ClassDef(AliAnalysisDeuteronpA, 1); 
+  ClassDef(AliAnalysisDeuteronpA, 2); 
 };
 
 #endif

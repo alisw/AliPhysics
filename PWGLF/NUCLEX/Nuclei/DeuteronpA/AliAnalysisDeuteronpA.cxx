@@ -16,7 +16,7 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 //                                                                       //
-// Analysis for identified charged hadron spectra.                       //
+// Analysis for deuteron spectra in p-Pb collisions.                    //
 //                                                                       //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,6 @@ AliAnalysisDeuteronpA::AliAnalysisDeuteronpA()
 : AliAnalysisTaskSE("TaskChargedHadron"), fESD(0), fListHist(0), fESDtrackCuts(0),fESDTrackCutsMult(0),fESDpid(0),
   fMCtrue(0),
   fRapCMSpA(0),
-  fAlephParameters(),
   fUtils(0),
   fHistRealTracks(0),
   fHistMCparticles(0),
@@ -98,7 +97,6 @@ AliAnalysisDeuteronpA::AliAnalysisDeuteronpA(const char *name)
   : AliAnalysisTaskSE(name), fESD(0), fListHist(0), fESDtrackCuts(0),fESDTrackCutsMult(0),fESDpid(0),
     fMCtrue(0),
     fRapCMSpA(0),
-    fAlephParameters(),
     fUtils(0),
     fHistRealTracks(0),
     fHistMCparticles(0),
@@ -119,16 +117,6 @@ AliAnalysisDeuteronpA::AliAnalysisDeuteronpA(const char *name)
   //
   fMCtrue = kTRUE; 
   fRapCMSpA = kTRUE;
-  /* real */
-  fAlephParameters[0] = 0.0283086;
-  fAlephParameters[1] = 2.63394e+01;
-  fAlephParameters[2] = 5.04114e-11;
-  fAlephParameters[3] = 2.12543e+00;
-  fAlephParameters[4] = 4.88663e+00;
-  //
-  // initialize PID object
-  //
-  //fESDpid = new AliESDpid();
   //
   // create track cuts
   //
@@ -277,10 +265,10 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   //
   if (!fESDpid) fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
   if (!fESDpid) {
-    fESDpid = new AliESDpid(); // HACK FOR MC PBPB --> PLEASE REMOVE AS SOON AS POSSIBLE
+    fESDpid = new AliESDpid(); 
+    AliWarning("Using custom PID object. Only allowed for debugging.");
     fESDpid->GetTPCResponse().SetBetheBlochParameters(1.28778e+00/50., 3.13539e+01, TMath::Exp(-3.16327e+01), 1.87901e+00, 6.41583e+00);
   }
-  //AliLog::SetGlobalLogLevel(AliLog::kError);
   //
   // Check Monte Carlo information and other access first:
   //
@@ -322,7 +310,6 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   //vetex cuts
   Bool_t isVtxOk = kTRUE;
   if(!fUtils->IsVertexSelected2013pA(fESD)) isVtxOk = kFALSE;
-  //NEED TO PUT THIS IN ACTION SOMEWHERE
 
 
   if (!fESDtrackCuts) {
@@ -357,8 +344,6 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       
       if (!trackMC->IsPrimary()) continue;
       //
-      //Double_t xv = trackMC->Vx();
-      //Double_t yv = trackMC->Vy();
       Double_t zv = trackMC->Vz();
 
       vertexRes = vertex->GetZ() - zv;
@@ -370,11 +355,9 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
     for(Int_t i = 0; i < stack->GetNtrack(); i++) {
       TParticle * trackMC = stack->Particle(i);
       
-      //      if (trackMC->IsPrimary()) {
       if (stack->IsPhysicalPrimary(i)) {
 	if (trackMC->Eta() > -0.9 && trackMC->Eta() < 0.9 && trackMC->GetPDG()->Charge() != 0){
 	  nPrimaries++;
-	  //cout << nPrimaries << endl;
 	}
       }
     }
@@ -383,22 +366,9 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   fHistVertexResTracks->Fill(nPrimaries, vertexRes);
 
 
-
-
   //
   Float_t centrality = -1;
   //
-  /*
-  Int_t rootS = fESD->GetBeamEnergy() < 1000 ? 0 : 1;
-  if (fESD->GetEventSpecie() == 4) { // PbPb
-    rootS = 2;
-    AliCentrality *esdCentrality = fESD->GetCentrality();
-    centrality = esdCentrality->GetCentralityClass10("V0M") + 1; // centrality percentile determined with V0
-    if (TMath::Abs(centrality - 1) < 1e-5) {
-      centrality = esdCentrality->GetCentralityClass5("V0M");
-    }
-  }
-  */
   AliCentrality *esdCentrality = fESD->GetCentrality();
   centrality = esdCentrality->GetCentralityClass10("V0A") + 1; // centrality percentile determined with V0A
   if (TMath::Abs(centrality - 1) < 1e-5) {
@@ -409,7 +379,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   //
   Int_t processCode = 0;
   //
-  // important change: fill generated only after vertex cut in case of heavy-ions
+  // important change: fill generated only after vertex cut
   //
   // I think in the previous version there was a problem: in p-A this cut might not be effective and introduce the difference wrt to Natasha, because the event specy is not 4
   //
@@ -435,15 +405,11 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       //
       Double_t xv = trackMC->Vx();
       Double_t yv = trackMC->Vy();
-      //Double_t zv = trackMC->Vz();
       Double_t dxy = 0;
-      dxy = TMath::Sqrt(xv*xv + yv*yv); // so stupid to avoid warnings
-      //Double_t dz = 0;
-      //dz = TMath::Abs(zv); // so stupid to avoid warnings
+      dxy = TMath::Sqrt(xv*xv + yv*yv);
       //
       // vertex cut - selection of primaries
       //
-      //if (dxy > 3 || dz > 10) continue; // fixed cut at 3cm in r
       //
       if (!stack->IsPhysicalPrimary(i)) continue;
       //
@@ -452,8 +418,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       Double_t rap = trackMC->Y();
       if (fRapCMSpA) rap = rap + 0.465;
       Double_t pT  = trackMC->Pt();
-      Int_t sign = pdg < 0 ? -1 : 1; // only works for charged pi,K,p !!
-      //      Double_t transMass = TMath::Sqrt(trackMC->Pt()*trackMC->Pt() + trackMC->GetMass()*trackMC->GetMass()) - trackMC->GetMass();
+      Int_t sign = pdg < 0 ? -1 : 1; // do not use this way of determining the sign for other particle types!
       //
       Int_t iPart = -1;
       if (TMath::Abs(pdg) == 1000010020)  iPart = 0; // select d+/d- only
@@ -493,8 +458,6 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   //***************************************************
   // track loop
   //***************************************************
-  //const Float_t kNsigmaCut = 3;
-  //const Float_t k2sigmaCorr = 1/(0.5*(TMath::Erf(kNsigmaCut/sqrt(2))-TMath::Erf(-kNsigmaCut/sqrt(2))))/*1/0.9545*/;
   //
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
   //
@@ -508,12 +471,9 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
     // momentum correction for different mass assumption in tracking
     //
     Double_t pT = track->Pt()/(1 - 0.333303/TMath::Power(track->Pt() + 0.651111, 5.27268));
-    // -[0]/TMath::Power(x - [1],[2])
     //
     track->GetImpactParameters(dca, cov);
     //
-    // cut for dead regions in the detector
-    // if (track->Eta() > 0.1 && (track->Eta() < 0.2 && track->Phi() > 0.1 && track->Phi() < 0.1) continue;
     //
     // 2.a) apply some standard track cuts according to general recommendations
     //
@@ -593,8 +553,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
     //
     // Process TOF information
     //
-    //Float_t time0 = fESDpid->GetTOFResponse().GetTimeZero();
-    Float_t time0 = fESDpid->GetTOFResponse().GetStartTime(track->P());//fESDpid->GetTOFResponse().GetTimeZero();
+    Float_t time0 = fESDpid->GetTOFResponse().GetStartTime(track->P());
     Float_t mass = 0;
     Float_t time = -1; 
     Float_t beta = 0;
@@ -608,11 +567,6 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       }
     }
     //
-    /*
-    Double_t timeDeuteron = (length/2.99792457999999984e-02) * TMath::Sqrt(1 + 1.876*1.876/(ptot*ptot));
-    Double_t timeTriton   = (length/2.99792457999999984e-02) * TMath::Sqrt(1 + 2.809*2.809/(ptot*ptot));
-    Double_t timeHe3      = (length/2.99792457999999984e-02) * TMath::Sqrt(1 + 2.809*2.809/(2*ptot*2*ptot));
-    */
     //
     Double_t pullsTOF[4] ={0.,0.,0.,0.};
     pullsTOF[0] = mass*mass - 1.876*1.876; // assuming 130.ps time resolution
@@ -660,23 +614,14 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
 	//
 	if (code == 1) fHistMomCorr->Fill(trackMC->Pt(), (pT - trackMC->Pt())/trackMC->Pt());
 	//
-	//here cout rap[ipart] and trackMC->Y() and pT
-	//if (trackMC->Pt()>1.5 && TMath::Abs(rap[iPart] - trackMC->Y()) > 0.1) {
-	//    printf("Y_rec: %4.3f    Y_MC: %4.3f    p_T: %5.3f \n", rap[iPart], trackMC->Y(), trackMC->Pt());
-	//}
-	 //
 	// check TOF mismatch on MC basis with TOF label
 	//
 	Int_t tofLabel[3] = {0,0,0};
 	track->GetTOFLabel(tofLabel);
 	//	
 	//
-	if (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0) {
-	  hasTOF = kFALSE;
-	  if (TMath::Abs(trackMC->GetFirstMother()) == TMath::Abs(tofLabel[0])) hasTOF = kTRUE;
-	}
+	if (hasTOF && (TMath::Abs(track->GetLabel()) != TMath::Abs(tofLabel[0]) || tofLabel[1] > 0)) hasTOF = kFALSE;
 	//
-	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
 	//                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
 	Double_t vectorHistMC[10] = {static_cast<Double_t>(iPart),  centrality,  pT, static_cast<Double_t>(sign),  rap[iPart], pullsTPC[iPart], static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0], static_cast<Double_t>(code)};
