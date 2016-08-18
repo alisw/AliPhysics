@@ -66,6 +66,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     AliAODEvent *fAOD;    //!AOD object
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
+    AliEventplane* Eventplane;
 
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
@@ -96,6 +97,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
+    TH2F        *fEvPlaneV0;//! V0 event plane
+    TH2F        *fEvPlaneV0A;//! V0A event plane
+    TH2F        *fEvPlaneV0C;//! V0C event plane
+    TH2F        *fEvPlaneTPC;//! TPC event plane
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
