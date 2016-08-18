@@ -79,6 +79,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtSumTransMinB2B(0),
     fHistPtSumTransMaxLead(0),
     fHistPtSumTransMinLead(0),
+    fHistPhotoMismatch(0),
 
     fHistTPCNClus_MB(0),
     fHistITSNClus_MB(0),
@@ -442,6 +443,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtSumTransMinB2B(0),
     fHistPtSumTransMaxLead(0),
     fHistPtSumTransMinLead(0),
+    fHistPhotoMismatch(0),
 
     fHistTPCNClus_MB(0),
     fHistITSNClus_MB(0),
@@ -1105,6 +1107,12 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fTrackCutsWeak->SetAcceptKinkDaughters(kFALSE);
     
     // Create histograms
+    
+    //Photonic e mismatch histo
+    
+    fHistPhotoMismatch = new TH1F("fHistPhotoMismatch", "Electrons identified as 'heavy flavour' that fall in photonic invariant mass and opening angle cuts", 2, 0, 1);
+    fHistPhotoMismatch->GetXaxis()->SetTitle("Electrons");
+    fHistPhotoMismatch->GetYaxis()->SetTitle("Cts");
     
     //Invariant mass histos
     
@@ -2397,6 +2405,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistBadEMCclusID);
     fOutputMB->Add(fHistNElecPerEvent);
+    fOutputMB->Add(fHistPhotoMismatch);
     //ditto for the pt sum plots
     fOutputMB->Add(fHistPtSumTransMaxB2B);
     fOutputMB->Add(fHistPtSumTransMinB2B);
@@ -2843,6 +2852,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     for(Int_t i = 0; i < ntracks; i++) {
         
         tagStrong=kFALSE;
+        tagPhot=kFALSE;
         
         AliESDtrack* esdtrack = esd->GetTrack(i); // pointer to reconstructed to track      
         
@@ -2994,6 +3004,8 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
             
             FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
+            
+            if(tagPhot){fHistPhotoMismatch->Fill(1);}
             
         }//end if(tagStrong)
         
@@ -6008,7 +6020,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *es
             }
             
         }else{
-            
+            if(InvMass<0.1&&OpAng<1){tagPhot=kTRUE;}
             if(MBtrg){
                 fHistInvMassElecUnLike_MB->Fill(InvMass);
                 fHistOpAngElecUnLike_MB->Fill(OpAng);

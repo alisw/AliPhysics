@@ -55,6 +55,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     
     //tag bools
     Bool_t          tagStrong;
+    Bool_t          tagPhot;
     
     //elec track cut bool
     Bool_t          trackCutsStrong=kTRUE;
@@ -421,6 +422,9 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     
     //Number of tagged electrons per event
     TH1F            *fHistNElecPerEvent;
+    
+    //Mismatched photonic electrons
+    TH1F            *fHistPhotoMismatch;
     
     //PtSum Histos
     TH2F            *fHistPtSumTransMaxB2B;
