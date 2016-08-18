@@ -2348,62 +2348,57 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       Float_t attProb = fTPCParam->GetAttCoef()*
 	fTPCParam->GetOxyCont()*time; //  fraction! 
    
+      if (qI==1 && (gRandom->Rndm(0)<attProb)) {  // the only electron is lost!
+	tpcHit = (AliTPChit*)NextHit();
+	continue;
+      }
+
+      //RS: all electrons share the same deterministic transformations (of the same hit), up to diffusion
+
+      Int_t indexHit[3]={0},index[3];
+      indexHit[1]=isec;
+      float xyzHit[3] = {tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
+      if (tpcrecoparam->GetUseCorrectionMap()) {
+	double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+	transform->ApplyDistortionMap(isec,xyzD);
+	for (int idim=3;idim--;) xyzHit[idim] = xyzD[idim];
+      }
+      else {
+	// ExB effect - distort hig if specifiend in the RecoParam
+	//
+	if (tpcrecoparam->GetUseExBCorrection()) {
+	  Double_t dxyz0[3]={xyzHit[0],xyzHit[1],xyzHit[2]},dxyz1[3];
+	  if (calib->GetExB()) {
+	    calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+	  }else{
+	    AliError("Not valid ExB calibration");
+	    for (int idim=3;idim--;) dxyz1[idim] = xyzHit[idim];
+	  }
+	  for (int idim=3;idim--;) xyzHit[idim] = dxyz1[idim];
+	} 
+	else if (tpcrecoparam->GetUseComposedCorrection()) {
+	  //      Use combined correction/distortion  class AliTPCCorrection
+	  if (correctionDist){
+	    Float_t distPoint[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+	    correctionDist->DistortPoint(distPoint, isec);
+	    for (int idim=3;idim--;) xyzHit[idim] = distPoint[idim];
+	  }      
+	}     
+      }
+      indexHit[0]=1;
+      fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
+      // account for A/C sides max drift L deficit to nominal 250 cm
+      xyzHit[2] -= ((isec/18)&0x1) ? 0.302 : 0.275; // C : A
+      //
       //-----------------------------------------------
       //  Loop over electrons
       //-----------------------------------------------
-      Int_t index[3];
-      index[1]=isec;
-      for(Int_t nel=0;nel<qI;nel++){
+      for(Int_t nel=0;nel<qI;nel++) {
 	// skip if electron lost due to the attachment
 	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	// use default hit position
-	xyz[0]=tpcHit->X();
-	xyz[1]=tpcHit->Y();
-	xyz[2]=tpcHit->Z(); 
+	// start from primary electron in vicinity of the readout, simulate diffusion
+	for (int idim=3;idim--;) {xyz[idim] = xyzHit[idim]; index[idim] = indexHit[idim];}
 	//
-	if (tpcrecoparam->GetUseCorrectionMap()) {
-	  double xyzD[3] = {xyz[0],xyz[1],xyz[2]};
-	  transform->ApplyDistortionMap(isec,xyzD);
-	  for (int idim=3;idim--;) xyz[idim] = xyzD[idim];
-	}
-	else {
-	  // ExB effect - distort hig if specifiend in the RecoParam
-	  //
-	  if (tpcrecoparam->GetUseExBCorrection()) {
-	    Double_t dxyz0[3],dxyz1[3];
-	    dxyz0[0]=tpcHit->X();
-	    dxyz0[1]=tpcHit->Y();
-	    dxyz0[2]=tpcHit->Z(); 	
-	    if (calib->GetExB()){
-	      calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-	    }else{
-	      AliError("Not valid ExB calibration");
-	      dxyz1[0]=tpcHit->X();
-	      dxyz1[1]=tpcHit->Y();
-	      dxyz1[2]=tpcHit->Z(); 	
-	    }
-	    xyz[0]=dxyz1[0];
-	    xyz[1]=dxyz1[1];
-	    xyz[2]=dxyz1[2]; 	
-	  } else if (tpcrecoparam->GetUseComposedCorrection()) {
-	    //      Use combined correction/distortion  class AliTPCCorrection
-	    if (correctionDist){
-	      Float_t distPoint[3]={tpcHit->X(),tpcHit->Y(), tpcHit->Z()};
-	      correctionDist->DistortPoint(distPoint, isec);
-	      xyz[0]=distPoint[0];
-            xyz[1]=distPoint[1];
-            xyz[2]=distPoint[2];
-	    }      
-	  }
-	  //
-	}
-	//
-	//
-	// protection for the nonphysical avalanche size (10**6 maximum)
-	//
-	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
-
-        index[0]=1;
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
 	Int_t padrow = fTPCParam->GetPadRow(xyz,index); 
@@ -2416,7 +2411,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
             padRegion=2;
           }
         }
-
+	
+	// protection for the nonphysical avalanche size (10**6 maximum)
+	//
+	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
+	
         //         xyz[3]= (Float_t) (-gasgain*TMath::Log(rn));
         // JW: take into account different gain in the pad regions
         xyz[3]= (Float_t) (-gasGainRegions[padRegion]*TMath::Log(rn));
@@ -2596,7 +2595,8 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
   // xyz and index must be already transformed to system 1
   //
 
-  fTPCParam->Transform1to2(xyz,index);  // mis-alignment applied in this step
+  // RS Ideal transformation to sector frame is already done in MakeSector
+  if (index[0]==1) fTPCParam->Transform1to2(xyz,index);  // mis-alignment applied in this step
   
   //add diffusion
   Float_t driftl=xyz[2];
