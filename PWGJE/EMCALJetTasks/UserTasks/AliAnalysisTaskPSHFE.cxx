@@ -1108,35 +1108,35 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     
     //Invariant mass histos
     
-    fHistInvMassElecLike_MB = new TH1F("fHistInvMassElecLike_MB", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_MB = new TH1F("fHistInvMassElecLike_MB", "Invariant mass for all like-signed electron pairs", 100, 0, .5);
     fHistInvMassElecLike_MB->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecLike_MB->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecLike_EMC7 = new TH1F("fHistInvMassElecLike_EMC7", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_EMC7 = new TH1F("fHistInvMassElecLike_EMC7", "Invariant mass for all like-signed electron pairs", 100, 0, .5);
     fHistInvMassElecLike_EMC7->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecLike_EMC7->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecLike_EMC8 = new TH1F("fHistInvMassElecLike_EMC8", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_EMC8 = new TH1F("fHistInvMassElecLike_EMC8", "Invariant mass for all like-signed electron pairs", 100, 0, .5);
     fHistInvMassElecLike_EMC8->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecLike_EMC8->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecLike_EMCJet = new TH1F("fHistInvMassElecLike_EMCJet", "Invariant mass for all like-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecLike_EMCJet = new TH1F("fHistInvMassElecLike_EMCJet", "Invariant mass for all like-signed electron pairs", 100, 0, .5);
     fHistInvMassElecLike_EMCJet->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecLike_EMCJet->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecUnLike_MB = new TH1F("fHistInvMassElecUnLike_MB", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_MB = new TH1F("fHistInvMassElecUnLike_MB", "Invariant mass for all unlike-signed electron pairs", 100, 0, .5);
     fHistInvMassElecUnLike_MB->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecUnLike_MB->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecUnLike_EMC7 = new TH1F("fHistInvMassElecUnLike_EMC7", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_EMC7 = new TH1F("fHistInvMassElecUnLike_EMC7", "Invariant mass for all unlike-signed electron pairs", 100, 0, .5);
     fHistInvMassElecUnLike_EMC7->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecUnLike_EMC7->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecUnLike_EMC8 = new TH1F("fHistInvMassElecUnLike_EMC8", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_EMC8 = new TH1F("fHistInvMassElecUnLike_EMC8", "Invariant mass for all unlike-signed electron pairs", 100, 0, .5);
     fHistInvMassElecUnLike_EMC8->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecUnLike_EMC8->GetYaxis()->SetTitle("Cts");
     
-    fHistInvMassElecUnLike_EMCJet = new TH1F("fHistInvMassElecUnLike_EMCJet", "Invariant mass for all unlike-signed electron pairs", 50, 0, .5);
+    fHistInvMassElecUnLike_EMCJet = new TH1F("fHistInvMassElecUnLike_EMCJet", "Invariant mass for all unlike-signed electron pairs", 100, 0, .5);
     fHistInvMassElecUnLike_EMCJet->GetXaxis()->SetTitle("Invariant Mass(Gev/c^2)");
     fHistInvMassElecUnLike_EMCJet->GetYaxis()->SetTitle("Cts");
     
