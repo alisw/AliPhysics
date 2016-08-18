@@ -1158,19 +1158,19 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistOpAngElecLike_EMCJet->GetXaxis()->SetTitle("Opening Angle(rad)");
     fHistOpAngElecLike_EMCJet->GetYaxis()->SetTitle("Cts");
     
-    fHistOpAngElecUnLike_MB = new TH1F("fHistOpAngElecUnLike_MB", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_MB = new TH1F("fHistOpAngElecUnLike_MB", "Opening angle for all unlike-signed electron pairs", 100, 0, TMath::Pi());
     fHistOpAngElecUnLike_MB->GetXaxis()->SetTitle("Opening Angle(rad)");
     fHistOpAngElecUnLike_MB->GetYaxis()->SetTitle("Cts");
     
-    fHistOpAngElecUnLike_EMC7 = new TH1F("fHistOpAngElecUnLike_EMC7", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_EMC7 = new TH1F("fHistOpAngElecUnLike_EMC7", "Opening angle for all unlike-signed electron pairs", 100, 0, TMath::Pi());
     fHistOpAngElecUnLike_EMC7->GetXaxis()->SetTitle("Opening Angle(rad)");
     fHistOpAngElecUnLike_EMC7->GetYaxis()->SetTitle("Cts");
     
-    fHistOpAngElecUnLike_EMC8 = new TH1F("fHistOpAngElecUnLike_EMC8", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_EMC8 = new TH1F("fHistOpAngElecUnLike_EMC8", "Opening angle for all unlike-signed electron pairs", 100, 0, TMath::Pi());
     fHistOpAngElecUnLike_EMC8->GetXaxis()->SetTitle("Opening Angle(rad)");
     fHistOpAngElecUnLike_EMC8->GetYaxis()->SetTitle("Cts");
     
-    fHistOpAngElecUnLike_EMCJet = new TH1F("fHistOpAngElecUnLike_EMCJet", "Opening angle for all like-signed electron pairs", 100, 0, TMath::Pi());
+    fHistOpAngElecUnLike_EMCJet = new TH1F("fHistOpAngElecUnLike_EMCJet", "Opening angle for all unlike-signed electron pairs", 100, 0, TMath::Pi());
     fHistOpAngElecUnLike_EMCJet->GetXaxis()->SetTitle("Opening Angle(rad)");
     fHistOpAngElecUnLike_EMCJet->GetYaxis()->SetTitle("Cts");
     
@@ -5974,13 +5974,16 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *es
             isElecToo=kTRUE;
         }
         
-        TVector3 elec1(esdtrack->Px(), esdtrack->Py(), esdtrack->Pz());
-        TVector3 elec2(esdtrackassoc->Px(), esdtrackassoc->Py(), esdtrackassoc->Pz());
-        Double_t elecE1=TMath::Sqrt(elec1.Dot(elec1)+ElecMass*ElecMass);
-        Double_t elecE2=TMath::Sqrt(elec2.Dot(elec2)+ElecMass*ElecMass);
+        if(!isElecToo){continue;}
         
-        Double_t InvMass=TMath::Sqrt((elecE1+elecE2)*(elecE1+elecE2)-elec1.Dot(elec1)-elec1.Dot(elec2)-elec2.Dot(elec2));
-        Double_t OpAng=elec1.Angle(elec2);
+        Double_t elecE1=TMath::Sqrt(esdtrack->P()*esdtrack->P()+ElecMass*ElecMass);
+        Double_t elecE2=TMath::Sqrt(esdtrackassoc->P()*esdtrackassoc->P()+ElecMass*ElecMass);
+        
+        TLorentzVector elec1(esdtrack->Px(), esdtrack->Py(), esdtrack->Pz(), elecE1);
+        TLorentzVector elec2(esdtrackassoc->Px(), esdtrackassoc->Py(), esdtrackassoc->Pz(), elecE2);
+        
+        Double_t InvMass=(elec1+elec2).M();
+        Double_t OpAng=elec1.Angle(elec2.Vect());
         
         if(esdtrack->GetSign()==esdtrackassoc->GetSign()){
             
