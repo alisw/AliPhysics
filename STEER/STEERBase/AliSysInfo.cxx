@@ -404,3 +404,58 @@ void  AliSysInfo::PrintJiraTable(TTree * tree, const char *var, const char *cut,
   }
 
 }
+
+
+TTree * AliSysInfo::MakeDUTree(const char *lname, const char * fout){
+  //
+  // Provide formatted du - "disk usage"  tree 
+  // Input du.txt files assumed to be in 2 collumn format  
+  // 1.) process du.txt - Input du.txt files assumed to be in 2 collumn format   - data volume (kBy) dirname
+  //     a.) do sorting
+  //     b.) append deep
+  // 2.) Return tree with defined aliases
+  //
+  // Example usage:
+  //  TTree * tree  =  AliSysInfo::MakeDUTree("du.txt","du.tree");
+  /*
+    // 1.) Find hotspot
+    tree->Scan("sizeTB:dir","depth==3","col=10:70")
+    **************************************************************************************************
+    *    Row   *     sizeTB *                                                                    dir *
+    **************************************************************************************************
+    *        3 *    21.1578 *                                   ./SpaceChargeDistortion/data/ATO-108 *
+    *        8 *    11.4985 *                     ./reconstruction/dataProductionPreparation/ATO-240 *
+    *        9 *    11.4672 *                                                      ./QA/ATO-102/data *
+    *       11 *    5.73582 *                                    ./reconstruction/distortionFit/data *
+    *       12 *    1.30158 *                ./reconstruction/dataProductionPreparation/ALIROOT-6252 *
+    *       15 *    0.74605 *                                                    ./JIRA/ATO-238/data *
+    *       16 *   0.474617 *                                                       ./QA/ATO-102/sim *
+    // 2. Investigate hotspots  individually 
+    tree->Scan("sizeTB:depth:dir","strstr(dir,\"ATO-108\")","col=10:5:70")
+    **********************************************************************************************************
+    *    Row   *     sizeTB * depth *                                                                    dir *
+    **********************************************************************************************************
+    *        3 *    21.1578 *     3 *                                   ./SpaceChargeDistortion/data/ATO-108 *
+    *        4 *    21.0026 *     4 *                             ./SpaceChargeDistortion/data/ATO-108/alice *
+    *        5 *    20.9637 *     5 *                        ./SpaceChargeDistortion/data/ATO-108/alice/data *
+    *        6 *    20.9637 *     6 *                   ./SpaceChargeDistortion/data/ATO-108/alice/data/2015 *
+    *       15 *    6.62019 *     7 *   ./SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o020212015 *
+    *       16 *    6.37346 *     7 *        ./SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o1002 *
+    *       25 *    3.61322 *     7 *    ./SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o30012015 *
+    *       35 *    1.42999 *     7 *        ./SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o2701 *
+    
+    or dump JIRA table
+    AliSysInfo::PrintJiraTable(tree,"sizeGB:dir","depth==3","col=10:50");
+  */
+
+  if (lname==NULL) lname="du.txt";
+  if (fout==NULL) fout="du.tree";
+  gSystem->GetFromPipe(TString::Format("cat %s | gawk '{print $1\" \"$2\" \"(split($2,a,\"/\")-1)}' | sort -g -r   > %s",lname,fout).Data());
+  //
+  TTree * tree = new TTree("du","du");
+  tree->ReadFile(fout,"size/D:dir/C:depth/d");
+  tree->SetAlias("sizeMB","size/(1024)");
+  tree->SetAlias("sizeGB","size/(1024*1024)");
+  tree->SetAlias("sizeTB","size/(1024*1024*1024)");
+  return tree;  
+}
