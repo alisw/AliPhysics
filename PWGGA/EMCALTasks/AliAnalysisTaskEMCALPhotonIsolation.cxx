@@ -3008,16 +3008,20 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   
   if(fSSsmearing){
     if((fSSsmearwidth != 0.)){
-      TRandom3 *ran=new TRandom3();
-      coi->SetM02(coi->GetM02()+ ran->Landau(fSSsmear_mean,fSSsmearwidth));
+      TRandom3 *ran=new TRandom3(0);
+      Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+      m02COI = coi->GetM02() + smear;
     }
-    else
+    else {
       AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
+      m02COI = coi->GetM02();
+    }
   }
-  else
+  else{
     AliWarning("Smearing not SET!");
-  
-  m02COI = coi->GetM02();
+    m02COI = coi->GetM02();
+  }
+
   
   
   
