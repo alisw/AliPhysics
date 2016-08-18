@@ -1607,7 +1607,11 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   if (tpcrecoparam->GetUseCorrectionMap()) {
     AliTPCTransform* transform = (AliTPCTransform*) calib->GetTransform();
     transform->SetCurrentRecoParam(tpcrecoparam);
+    transform->SetCorrectionMapMode(kFALSE); // set distortion mode
     transform->SetCurrentTimeStamp(fLoader->GetRunLoader()->GetHeader()->GetTimeStamp()); // force to upload time dependent maps
+    float strFluct = gRandom->Gaus();
+    AliInfoF("Impose %+.2f fluctuation for distortion map in event %d",strFluct,eventnumber);
+    transform->SetCurrentMapFluctStrenght(strFluct);
   }
   //
   for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
@@ -1871,7 +1875,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
   Int_t lp;
   Int_t i1;   
-  for(lp=0;lp<nofDigits;lp++)pList[lp]=0; // set all pointers to NULL
+  memset(pList,0,nofDigits*sizeof(Float_t*)); // set all pointers to NULL
   //
   //calculate signal 
   //
