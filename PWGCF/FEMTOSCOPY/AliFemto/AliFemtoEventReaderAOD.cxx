@@ -1543,17 +1543,18 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 	{
 	  Double_t covar[3]={0,0,0};
 	  Double_t DCA[2]={0,0};
-	  if (!aliextparam.PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10.0,DCA,covar))
+	  if (!aliextparam.PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),99999.0,DCA,covar))
 	    {
 	      DCAXY = -999;
 	      DCAZ = -999;
 	    }
 	  else
 	    {
-	      DCAXY = TMath::Sqrt((DCA[0]*DCA[0]) + (DCA[1]*DCA[1]));
-	      DCAZ = tAodTrack->ZAtDCA();
+	      DCAXY = DCA[0];
+	      DCAZ = DCA[1];
 	    }
 	}
+ 
       tFemtoTrack->SetImpactD(DCAXY);
       tFemtoTrack->SetImpactZ(DCAZ);    
     }
