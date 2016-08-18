@@ -1,7 +1,6 @@
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
-										
 
 Bool_t isMC=kFALSE, 
 Int_t triggerIndex=0, 
@@ -14,7 +13,9 @@ Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
 Bool_t isTender = kFALSE,
 char* period = "b",
 Int_t   centralityEstimator = 0,
-Bool_t isCentralitySys 		= kFALSE
+Bool_t isCentralitySys 		= kFALSE,
+Bool_t isTOFdet 		= kFALSE
+											 
 )
 
 {
@@ -143,8 +144,8 @@ Bool_t isCentralitySys 		= kFALSE
 			printf("======================================================================================\n ");
 		
 			task->SetTPCCalibration();
-	        //task->SetTPC_mean_sigma(1.02, 1.68);
-		    task->SetTPC_mean_sigma(0.63, 1.17);
+	        task->SetTPC_mean_sigma(1.02, 1.68);
+			// task->SetTPC_mean_sigma(0.63, 1.17);
 
 		    task->SetTPCcal_cut_min(-1);
 		    task->SetTPCcal_cut_max(3);
@@ -152,8 +153,8 @@ Bool_t isCentralitySys 		= kFALSE
 	}
 	
 	if(period == "e" || period == "f"){
-			//task->SetTPCCalibration_eta(kTRUE);
-		task->SetTPCCalibration_eta(kFALSE);
+		task->SetTPCCalibration_eta(kTRUE);
+			//task->SetTPCCalibration_eta(kFALSE);
 	}
 	 
 	
@@ -298,9 +299,18 @@ Bool_t isCentralitySys 		= kFALSE
 
 //______________________________________________________
 //Configure PID
+	
+	
+	if(isTOFdet){	
+		pid->AddDetector("TOF", 0); //Add TOF PID
+		pid->ConfigureTOF(3.0); //Configure TOF cut: Defaut = 3 sigmas
+	}
+	
 	//_________________________
 	//TPC PID
 	pid->AddDetector("TPC", 1);				//Add TPC PID
+	
+	
 	
 	//_________________________
 	//Configure TPC cut
