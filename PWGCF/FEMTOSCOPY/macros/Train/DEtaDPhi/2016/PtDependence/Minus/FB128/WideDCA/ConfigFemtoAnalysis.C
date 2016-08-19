@@ -432,17 +432,16 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//****** DCA ******
 
 					if(owndca){
-					  /dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  ///dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 					  dtc1etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  //dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1);
-					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  //dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  dtc2etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  //dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1);
-					  if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
-					  //if(ichg==9) {dtc3etaphitpc[aniter]->SetMaxImpactXY(0.1);
-					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z
-					  
+					  dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  //if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  if(ichg==9) {dtc3etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z 
 					}
 					//****** Track quality cuts ******
 
