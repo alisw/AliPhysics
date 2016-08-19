@@ -432,7 +432,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//****** DCA ******
 
 					if(owndca){
-					  /dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 					  dtc1etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1);
