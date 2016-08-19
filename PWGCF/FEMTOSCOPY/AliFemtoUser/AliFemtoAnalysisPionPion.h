@@ -46,34 +46,30 @@ public:
   /// default constructor
   AliFemtoAnalysisPionPion();
 
-  /**
-   * Construct the analysis with only a name.
-   * The particle types default to PiPlus and Lambda
-   */
+  /// Construct the analysis with only a name.
+  /// The particle types default to PiPlus
+  ///
   AliFemtoAnalysisPionPion(const char *name);
 
-  /**
-   * Construct the analysis with a name and specify the pion and lambda types
-   * to analyze.
-   */
+  /// Construct the analysis with a name and specify the pion types
+  /// to analyze.
+  ///
   AliFemtoAnalysisPionPion(const char *name,
-                           const PionType pion,
-                           const PionType lambda);
+                           const PionType pion_1,
+                           const PionType pion_2);
 
-  /**
-   * Construct the analysis with a name, the pion and lambda types, and
-   * cut-configuration object.
-   */
+  /// Construct the analysis with a name, the pion types, and specialized
+  /// cut-configuration object.
+  ///
   AliFemtoAnalysisPionPion(const char *name,
                            const PionType pion_1,
                            const PionType pion_2,
                            const CutParams& params);
 
 
-  /**
-   * Construct the analysis with a name, the pion and lambda types, and
-   * cut-configuration object.
-   */
+  /// Construct the analysis with a name, analysis parameters, and
+  /// cut-configuration object.
+  ///
   AliFemtoAnalysisPionPion(const char *name,
                            const AnalysisParams&,
                            const CutParams&);
@@ -81,9 +77,8 @@ public:
   virtual void EventBegin(const AliFemtoEvent*);
   virtual void EventEnd(const AliFemtoEvent*);
 
-  /**
-   * Create a Cut-Parameter object with default options.
-   */
+  /// Create a Cut-Parameter object with default options.
+  ///
   static CutParams DefaultCutConfig();
 
   /**
@@ -181,8 +176,10 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
-/// \brief Structure containing all fit parameters for 'easy' setting
-///        of custom fit parameters via one command.
+/// \brief Structure containing all cut parameters for use with
+///        constructing an AliFemtoAnalysisPionPion object.
+///
+/// The expected way to use this class
 ///
 struct AliFemtoAnalysisPionPion::CutParams {
   // EVENT
@@ -200,6 +197,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   Int_t   event_TriggerSelection;
   Bool_t  event_AcceptBadVertex;
+
 
   // PION - 1
   Float_t pion_1_PtMin,
@@ -225,6 +223,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Bool_t pion_1_remove_kinks,
          pion_1_set_label;
 
+
   // PION - 2
   Float_t pion_2_PtMin,
           pion_2_PtMax;
@@ -247,7 +246,6 @@ struct AliFemtoAnalysisPionPion::CutParams {
   UInt_t pion_2_min_tpc_ncls;
   Bool_t pion_2_remove_kinks,
          pion_2_set_label;
-
 
 
   // PAIR
