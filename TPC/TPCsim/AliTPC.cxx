@@ -1604,6 +1604,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   //
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+  //
   if (tpcrecoparam->GetUseCorrectionMap()) {
     AliTPCTransform* transform = (AliTPCTransform*) calib->GetTransform();
     transform->SetCurrentRecoParam(tpcrecoparam);
@@ -2342,11 +2343,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       //---------------------------------------------------
 
 
-      Float_t time = 1.e6*(fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))
-	/fTPCParam->GetDriftV(); 
-      // in microseconds!	
-      Float_t attProb = fTPCParam->GetAttCoef()*
-	fTPCParam->GetOxyCont()*time; //  fraction! 
+      Float_t time = 1.e6*(fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))/fTPCParam->GetDriftV();  // in microseconds!	
+      Float_t attProb = fTPCParam->GetAttCoef()*fTPCParam->GetOxyCont()*time; //  fraction! 
    
       if (qI==1 && (gRandom->Rndm(0)<attProb)) {  // the only electron is lost!
 	tpcHit = (AliTPChit*)NextHit();
@@ -2358,6 +2356,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       Int_t indexHit[3]={0},index[3];
       indexHit[1]=isec;
       float xyzHit[3] = {tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
+      double yLab = xyzHit[1]; // for eventual P-gradient accounting
       if (tpcrecoparam->GetUseCorrectionMap()) {
 	double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
 	transform->ApplyDistortionMap(isec,xyzD);
@@ -2386,9 +2385,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	}     
       }
       indexHit[0]=1;
+      printf(">> zel: %+e %d\n",xyzHit[2],isec);
+
       fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
       // account for A/C sides max drift L deficit to nominal 250 cm
-      xyzHit[2] -= ((isec/18)&0x1) ? 0.302 : 0.275; // C : A
+      Bool_t sideC = ((isec/18)&0x1);
+      xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
+      double maxDrift = fTPCParam->GetZLength(isec);
       //
       //-----------------------------------------------
       //  Loop over electrons
@@ -2401,6 +2404,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	//
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
+	double driftEl = xyz[2];  // GetPadRow converts Z to timebin in a way incmpatible with real calib, save drift distance
 	Int_t padrow = fTPCParam->GetPadRow(xyz,index); 
 
         // get pad region
@@ -2451,24 +2455,34 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	    }
 	  }
         }
-        if (AliTPCcalibDB::Instance()->IsTrgL0()){  
-          // Modification 14.03
-          // distinguish between the L0 and L1 trigger as it is done in the reconstruction
-          // by defualt we assume L1 trigger is used - make a correction in case of  L0
-          AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
-          if (ctp){
-            //for TPC standalone runs no ctp info
+	if (!transform) { //RS old way of getting the time bin (not timestamp aware!)
+	  if (AliTPCcalibDB::Instance()->IsTrgL0()){  
+	    // Modification 14.03
+	    // distinguish between the L0 and L1 trigger as it is done in the reconstruction
+	    // by defualt we assume L1 trigger is used - make a correction in case of  L0
+	    AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+	    if (ctp){
+	      //for TPC standalone runs no ctp info
             Double_t delay = ctp->GetDelayL1L0()*0.000000025;
             xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
-          }
-        }
-	if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
-	xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
-	//
-	// Electron track time (for pileup simulation)
-	xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
-	xyz[4] =0;
+	    }
+	  }
+	  if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
+	  xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
+	  //
+	  // Electron track time (for pileup simulation)
+	  xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
+	}
+	else { // use Transform for time-aware Z -> Tbin conversion
+	  // go back from L drift to Z
+	  double z = maxDrift - driftEl;
+	  if (sideC) z = -z;
+	  xyz[2] = transform->Z2TimeBin(z,isec, yLab);
+	 	  double zz = transform->TimeBin2Z(xyz[2],isec, yLab);
+	 	  printf("<<%d zel: %+e %d -> %e\n",nel,  z,isec, zz);
+	}
 
+	xyz[4] =0;	  
 	//
 	// row 0 - cross talk from the innermost row
 	// row fNRow+1 cross talk from the outermost row
@@ -2606,7 +2620,7 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
   Float_t sigL = driftl*(fTPCParam->GetDiffL());
   xyz[0]=gRandom->Gaus(xyz[0],sigT);
   xyz[1]=gRandom->Gaus(xyz[1],sigT);
-  xyz[2]=gRandom->Gaus(xyz[2],sigL);
+  //  xyz[2]=gRandom->Gaus(xyz[2],sigL);
 
   // ExB
   

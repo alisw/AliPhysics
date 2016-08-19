@@ -42,6 +42,9 @@ public:
   AliTPCChebCorr* GetCorrMapCache0() const {return fCorrMapCache0;}
   AliTPCChebCorr* GetCorrMapCache1() const {return fCorrMapCache1;}
   //
+  Double_t TimeBin2Z(double t, int sector, double yLab) const;
+  Double_t Z2TimeBin(double t, int sector, double yLab) const;
+  //
   static TObjArray* LoadCorrectionMaps(Bool_t refMap, Bool_t corrMode=kTRUE);
   static AliTPCChebCorr* LoadFieldDependendStaticCorrectionMap(Bool_t ref,Bool_t corrMode=kTRUE,TObjArray* mapsArrProvided=0);
   void CleanCorrectionMaps();
@@ -85,6 +88,12 @@ public:
 
   //
 private:
+  enum {  // time tolerances for various cache updates
+    kMaxTDiffVDCorrVaria=3, // +-time update for minor vdrift corrections 
+    kMaxTDiffVDCorrPT=60,   // +-time update for vdrift PT correction
+    kMaxTDiffCorrMap=3      // +-time update for SP corrections
+  };
+
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Float_t  fLastCorr[4]; ///!<! last correction from the map, 4th param is dispersion
   Float_t  fLastCorrRef[4];  ///!<! last reference correction from the map, 4th param is dispersion
@@ -104,6 +113,20 @@ private:
   time_t   fCurrentTimeStamp;          //!<! current time stamp
   Bool_t   fTimeDependentUpdated;      //!<! flag successful update of time dependent stuff
   Bool_t   fCorrMapMode;               //!<! correction or distortion map mode
+  //
+  // vdrift corrections cache
+  Double_t fVDCorrectionTime;   //!<! global time-dependent VD correction 
+  Double_t fVDCorrectionTimeGY; //!<! VD correction due to pressure gradient  
+  Double_t fTime0CorrTime;      //!<! time0 offset correction (in cm)
+  Double_t fDeltaZCorrTime;     //!<! global Z correction
+  Double_t fDriftCorrPT;        //!<! correction for relative P/T change
+  Double_t fTBinOffset;         //!<! offset of time bin (e.g. tbin for 0 drift)
+  //
+  // last cache update times
+  time_t fLastTimeStampCorrMap; //!<! for corr.map. update
+  time_t fLastTimeStampVDCorrPT; //!<! for VDrift PT update
+  time_t fLastTimeStampVDCorrVaria; //!<! for orhter VDrift corrections
+  //
   /// \cond CLASSIMP
   static const Double_t fgkSin20;       // sin(20)
   static const Double_t fgkCos20;       // sin(20)
