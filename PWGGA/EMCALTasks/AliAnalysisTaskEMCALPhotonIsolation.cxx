@@ -2826,7 +2826,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         // fill histograms for isolation
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+      
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -2866,7 +2867,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         // fill histograms for isolation
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+      
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -2905,7 +2907,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         // fill histograms for isolation
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+      
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -2945,7 +2948,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
