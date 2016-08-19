@@ -8,8 +8,9 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class  AliFITv3+;
+#pragma link C++ class  AliFITv5+;
 #pragma link C++ class  AliFITv4+;
+#pragma link C++ class  AliFITv3+;
 #pragma link C++ class  AliFITv2+;
 #pragma link C++ class  AliFITv1+;
 #pragma link C++ class  AliFITv0+;
