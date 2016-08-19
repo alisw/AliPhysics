@@ -176,6 +176,7 @@ TTree* AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::BuildTree(cons
   TString classname;
   switch (fCandidateType) {
   case kD0toKpi:
+  case kD0toKpiLikeSign:
     classname = "AliAnalysisTaskDmesonJetsDetectorResponse::AliD0MatchInfoSummary";
     fCurrentDmeson = new AliD0MatchInfoSummary();
     break;

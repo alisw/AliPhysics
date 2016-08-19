@@ -709,6 +709,23 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
       fRDHFCuts->SetTriggerClass("","");
     }
     break;
+  case kD0toKpiLikeSign:
+    fCandidatePDG = 421;
+    fCandidateName = "2ProngLikeSign";
+    fNDaughters = 2;
+    fPDGdaughters.Set(fNDaughters);
+    fPDGdaughters.Reset();
+    fPDGdaughters[0] = 211;  // pi
+    fPDGdaughters[1] = 321;  // K
+    fBranchName = "LikeSign2Prong";
+    fAcceptedDecay = kAnyDecay;
+    if (!fRDHFCuts) {
+      fRDHFCuts = new AliRDHFCutsD0toKpi();
+      fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->SetUsePhysicsSelection(kFALSE);
+      fRDHFCuts->SetTriggerClass("","");
+    }
+    break;
   case kDstartoKpipi:
     fCandidatePDG = 413;
     fCandidateName = "DStar";
@@ -880,7 +897,7 @@ bool operator==(const AliAnalysisTaskDmesonJets::AnalysisEngine& lhs, const AliA
 /// \return kTRUE on success
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractRecoDecayAttributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i)
 {
-  if (fCandidateType == kD0toKpi) { // D0 candidate
+  if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) { // D0 candidate
     return ExtractD0Attributes(Dcand, DmesonJet, i);
   }
   else if (fCandidateType == kDstartoKpipi) { // Dstar candidate
@@ -900,6 +917,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractRecoDecayAttributes(con
 /// \return kTRUE on success
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i)
 {
+  //AliDebug(2,"Checking if D0 meson is selected");
+  Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
+  if (isSelected == 0) return kFALSE;
+
   Int_t MCtruthPdgCode = 0;
 
   Double_t invMassD = 0;
@@ -932,8 +953,6 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
     }
   }
 
-  //AliDebug(2,"Checking if D0 meson is selected");
-  Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
   if (isSelected == 1) { // selected as a D0
     if (i > 0) return kFALSE; // only one mass hypothesis thanks to PID
 
@@ -1013,6 +1032,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 /// \return kTRUE on success
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const AliAODRecoCascadeHF* DstarCand, AliDmesonJetInfo& DmesonJet, UInt_t i)
 {
+  //AliDebug(2,"Checking if D0 meson is selected");
+  Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoCascadeHF*>(DstarCand), AliRDHFCuts::kAll, fAodEvent);
+  if (isSelected == 0) return kFALSE;
+
   if (i > 0) return kFALSE; // only one mass hypothesis for the D*
 
   Int_t MCtruthPdgCode = 0;
@@ -1072,10 +1095,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const A
 /// \return One of the enum constants of AliAnalysisTaskDmesonJets::EMesonDecayChannel_t (D0->Kpi or D*->D0pi->Kpipi)
 AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray)
 {
-  if (!part) return kDecayOther;
-  if (!mcArray) return kDecayOther;
+  if (!part) return kUnknownDecay;
+  if (!mcArray) return kUnknownDecay;
 
-  EMesonDecayChannel_t decay = kDecayOther;
+  EMesonDecayChannel_t decay = kUnknownDecay;
 
   Int_t absPdgPart = TMath::Abs(part->GetPdgCode());
 
@@ -1274,27 +1297,11 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunDetectorLevelAnalysis()
 
   Int_t nAccCharm = 0;
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
-    Int_t isSelected = 0;
-
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
 
-    Int_t nprongs = charmCand->GetNProngs();
-
-    if (fCandidateType == kDstartoKpipi) {
-      if (!charmCand->InheritsFrom("AliAODRecoCascadeHF")) {
-        ::Error("AliAnalysisTaskDmesonJets::AnalysisParams::RunDetectorLevelAnalysis","Candidate type is D* but object type is wrong (should be AliAODRecoCascadeHF)");
-        continue;
-      }
-    }
-
     // region of interest + cuts
     if (!fRDHFCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(fCandidatePDG))) continue;
-
-    //candidate selected by cuts and PID
-    isSelected = fRDHFCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
-
-    if (!isSelected) continue;
 
     for (Int_t im = 0; im < 2; im++)  {  // 2 mass hypothesis (when available)
       DmesonJet.Reset();
@@ -1496,6 +1503,7 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree(const char* taskName
   TString classname;
   switch (fCandidateType) {
   case kD0toKpi:
+  case kD0toKpiLikeSign:
     classname = "AliAnalysisTaskDmesonJets::AliD0InfoSummary";
     fCurrentDmesonJetInfo = new AliD0InfoSummary();
     break;
@@ -1565,7 +1573,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
       dim++;
     }
 
-    if (fCandidateType == kD0toKpi) {
+    if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) {
       title[dim] = "#it{M}_{K#pi} (GeV/#it{c}^{2})";
       nbins[dim] = fNMassBins;
       min[dim] = fMinMass;
@@ -1703,7 +1711,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Phi_0_2pi());
       hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Eta());
-      if (fCandidateType == kD0toKpi) {
+      if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) {
         hname = TString::Format("%s/fHistRejectedDMesonInvMass", GetName());
         fHistManager->FillTH1(hname, dmeson_pair.second.fD.M());
       }
@@ -1750,7 +1758,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Phi_0_2pi());
       hname = TString::Format("%s/fHistRejectedDMesonEta", GetName());
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Eta());
-      if (fCandidateType == kD0toKpi) {
+      if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) {
         hname = TString::Format("%s/fHistRejectedDMesonInvMass", GetName());
         fHistManager->FillTH1(hname, dmeson_pair.second.fD.M());
       }
@@ -1954,10 +1962,11 @@ AliAnalysisTaskDmesonJets::AnalysisEngine* AliAnalysisTaskDmesonJets::AddAnalysi
     TString cutsname;
 
     switch (type) {
-    case kD0toKpi :
+    case kD0toKpi:
+    case kD0toKpiLikeSign:
       cutsname = "D0toKpiCuts";
       break;
-    case kDstartoKpipi :
+    case kDstartoKpipi:
       cutsname = "DStartoKpipiCuts";
       break;
     default:
@@ -1974,7 +1983,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine* AliAnalysisTaskDmesonJets::AddAnalysi
   if (it == fAnalysisEngines.end() || *it != eng) {  // No analysis engine was found, adding a new one
     eng.AddJetDefinition(jetDef);
     it = fAnalysisEngines.insert(it, eng);
-    ::Info("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "A new analysis engine '%s' has been added. The total number of analysis engines is %lu.", eng.GetName(jetDef), fAnalysisEngines.size());
+    ::Info("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "A new analysis engine '%s' has been added. The total number of analysis engines is %lu.", eng.GetName(), fAnalysisEngines.size());
   }
   else {
     AnalysisEngine* found_eng = &(*it);
@@ -2050,7 +2059,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
 
-    if (param.fCandidateType == kD0toKpi) {
+    if (param.fCandidateType == kD0toKpi || param.fCandidateType == kD0toKpiLikeSign) {
       hname = TString::Format("%s/fHistRejectedDMesonInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
       fHistManager.CreateTH1(hname, htitle, param.fNMassBins, param.fMinMass, param.fMaxMass);
@@ -2168,10 +2177,17 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
       params.fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(params.fBranchName.Data()));
 
       if (params.fCandidateArray) {
-        if (!params.fCandidateArray->GetClass()->InheritsFrom("AliAODRecoDecayHF2Prong")) {
+        TString className;
+        if (params.fCandidateType == kD0toKpi || params.fCandidateType == kD0toKpiLikeSign) {
+          className = "AliAODRecoDecayHF2Prong";
+        }
+        else if (params.fCandidateType == kDstartoKpipi) {
+          className = "AliAODRecoCascadeHF";
+        }
+        if (!params.fCandidateArray->GetClass()->InheritsFrom(className)) {
           ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
-              "%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!",
-              GetName(), params.fCandidateArray->GetClass()->GetName(), params.fCandidateArray->GetName());
+              "%s: Objects of type %s in %s are not inherited from %s! Task will be disabled!",
+              GetName(), params.fCandidateArray->GetClass()->GetName(), params.fCandidateArray->GetName(), className.Data());
           params.fCandidateArray = 0;
           params.fInhibit = kTRUE;
         }

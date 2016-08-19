@@ -65,7 +65,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
 
   enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput };
-  enum ECandidateType_t  { kD0toKpi, kDstartoKpipi };
+  enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth };
   enum EMesonOrigin_t {
     kUnknownQuark = BIT(0),
@@ -79,10 +79,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   };
 
   enum EMesonDecayChannel_t {
-    kDecayOther          = BIT(0),
+    kAnyDecay            = 0,
+    kUnknownDecay        = BIT(0),
     kDecayD0toKpi        = BIT(1),
-    kDecayDStartoKpipi   = BIT(2),
-    kAnyDecay            = kDecayOther | kDecayD0toKpi | kDecayDStartoKpipi
+    kDecayDStartoKpipi   = BIT(2)
   };
 
   enum EAxis_t {
