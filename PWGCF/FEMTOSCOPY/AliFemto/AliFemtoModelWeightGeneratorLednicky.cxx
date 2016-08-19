@@ -406,7 +406,7 @@ Double_t tDTime =((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionP
 //     cout << "LL:in GetWeight = " << mLL << endl;
 
     double x1[]={tPoint->x(),tPoint->y(),tPoint->z(),tPoint->t()};
-    tPoint=((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint();
+    tPoint=((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint();
     double x2[]={tPoint->x(),tPoint->y(),tPoint->z(),tPoint->t()};
     if ((x1[0]==x2[0])&&(x1[1]==x2[1])&&(x1[2]==x2[2])&&(x1[3]==x2[3])) {
       fWeightDen=0.;
