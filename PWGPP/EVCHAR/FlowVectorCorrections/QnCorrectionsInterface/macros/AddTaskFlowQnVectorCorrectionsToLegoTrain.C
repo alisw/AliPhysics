@@ -33,7 +33,10 @@ void AddTaskFlowQnVectorCorrectionsToLegoTrain(const char *configpath = ".") {
   /* strange way of including the header file is for lego train scenarios */
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C");
-  loadRunOptions(kFALSE, configpath);
+  if (!loadRunOptions(kFALSE, configpath)) {
+    cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
+    return;
+  }
 
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
 
