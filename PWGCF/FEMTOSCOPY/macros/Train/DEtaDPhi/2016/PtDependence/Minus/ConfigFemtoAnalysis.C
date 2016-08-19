@@ -69,7 +69,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 43; //13
 	const int numOfkTbins = 5;
 
-	bool performSharedDaughterCut = false;
+	bool performSharedDaughterCut = true;
 	bool enablePairMonitors = true;
 
 	char *parameter[21];
