@@ -19,6 +19,7 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 
+#include <utility>
 #include <cassert>
 
 static const double PionMass = 0.13956995;
@@ -39,8 +40,62 @@ const UInt_t default_num_events_to_mix = 6
            , default_min_coll_size = 100
            ;
 
+#include <initializer_list>
 
-const float default_pion_PtMin = 0.2
+// typedef Float_t RangeF_t[2];
+typedef std::pair<Float_t, Float_t> RangeF_t;
+
+/// Structure for storing all configuration information regarding the
+/// analysis event-cut. This is hidden as an implementation detail due
+/// the build system not playing well with nested structures; the optimal
+/// situation would be to define this structure as a component of the
+/// AliFemtoAnalysisPionPion::CutParams structure.
+///
+///
+struct CutConfig_Event {
+
+    RangeF_t multiplicity = {0, 1000000}
+           , centrality = {0, 90}
+           , vertex_z = {-10.0f, 10.0f}
+           , EP_VZero = {-1000.0, 1000.0}
+           ;
+
+    Int_t trigger_selection = 0;
+    Bool_t accept_bad_vertex = false;
+
+    /// default constructor required to use default initialized members
+    CutConfig_Event(){};
+
+    /// Templated member for constructing AliFemtoEventCut objects from
+    /// these parameters.
+    template <typename EventCutType>
+    EventCutType* ConstructCut() const;
+};
+
+/// Configuration for creating a particle cut specifically for usage
+/// with pion values.
+///
+struct CutConfig_Pion {
+    RangeF_t pt = {0.2, 2.0}
+           , eta = {-0.8, 0.8}
+           , DCA = {0.5, 4.0}
+           , nSigma = {-3.0, 3.0}
+           ;
+
+    Float_t max_impact_xy = 2.4
+          , max_impact_z = 3.0
+          , max_tpc_chi_ndof = 0.032
+          , max_its_chi_ndof = 0.032
+          ;
+
+    CutConfig_Pion(){};
+};
+
+
+static const CutConfig_Event default_event;
+static const CutConfig_Pion default_pion;
+
+static const float default_pion_PtMin = 0.2
           , default_pion_PtMax = 2.0
 
           , default_pion_EtaMin = -0.8
@@ -64,7 +119,7 @@ const Bool_t default_pion_remove_kinks = kTRUE,
              default_pion_set_label = kFALSE;
 
 
-const float default_event_EventMultMin = 0
+const Float_t default_event_EventMultMin = 0
           , default_event_EventMultMax = 100000
 
           , default_event_EventCentralityMin = 0
@@ -213,20 +268,20 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 {
   AliFemtoAnalysisPionPion::CutParams params = {
     // Event
-    default_event_EventMultMin
-  , default_event_EventMultMax
-  , default_event_EventCentralityMin
-  , default_event_EventCentralityMax
-  , default_event_VertZPosMin
-  , default_event_VertZPosMax
-  , default_event_EPVZEROMin
-  , default_event_EPVZEROMax
-  , default_event_TriggerSelection
-  , default_event_AcceptBadVertex
+    std::get<0>(default_event.multiplicity)
+  , std::get<1>(default_event.multiplicity)
+  , default_event.centrality.first
+  , default_event.centrality.second
+  , default_event.vertex_z.first
+  , default_event.vertex_z.second
+  , default_event.EP_VZero.first
+  , default_event.EP_VZero.second
+  , default_event.trigger_selection
+  , default_event.accept_bad_vertex
 
     // Pion 1
-  , default_pion_PtMin
-  , default_pion_PtMax
+  , default_pion.pt.first
+  , default_pion.pt.second
   , default_pion_EtaMin
   , default_pion_EtaMax
   , default_pion_DCAMin
@@ -363,6 +418,17 @@ AliFemtoAnalysisPionPion::BuildPionCut2(const CutParams &p) const
   cut->SetMaxImpactXY(p.pion_2_max_impact_xy);
   cut->SetMaxImpactZ(p.pion_2_max_impact_z);
 
+  return cut;
+}
+
+template <>
+AliFemtoEventCutCentrality* CutConfig_Event::ConstructCut() const
+{
+  AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
+  cut->SetCentralityRange(centrality.first, centrality.second);
+  cut->SetZPosRange(vertex_z.first, vertex_z.second);
+  cut->SetEPVZERO(EP_VZero.first, EP_VZero.second);
+  cut->SetTriggerSelection(trigger_selection);
   return cut;
 }
 
