@@ -746,6 +746,9 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   Bool_t checkPIDInfo[2]={kTRUE,kTRUE};
   Double_t sigma_tmp[3]={fPidHF->GetSigma(0),fPidHF->GetSigma(1),fPidHF->GetSigma(2)};
   Bool_t isTOFused=fPidHF->GetTOF(),isCompat=fPidHF->GetCompat();
+  AliAODTrack *aodtrack1=(AliAODTrack*)d->GetDaughter(0);
+  AliAODTrack *aodtrack2=(AliAODTrack*)d->GetDaughter(1);
+  Short_t relativeSign = aodtrack1->Charge() * aodtrack2->Charge();
   for(Int_t daught=0;daught<2;daught++){
     //Loop con prongs
     AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
@@ -778,7 +781,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       isD0D0barPID[1]=0;
     }
     else if(combinedPID[daught][0]==2&&combinedPID[daught][1]>=1){
-      if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;//if K- D0bar excluded
+      if((relativeSign == -1 && aodtrack->Charge() == -1) || (relativeSign == 1 && daught == 1)) isD0D0barPID[1]=0;//if K- D0bar excluded
       else isD0D0barPID[0]=0;// if K+ D0 excluded
     }
     /*    else if(combinedPID[daught][0]==1&&combinedPID[daught][1]>=1){
@@ -787,11 +790,11 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
 	  }
      */
     else if(combinedPID[daught][0]>=1||combinedPID[daught][1]<=-1){ 
-      if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;// not a D0bar if K- or if pi- excluded
+      if((relativeSign == -1 && aodtrack->Charge() == -1) || (relativeSign == 1 && daught == 1)) isD0D0barPID[1]=0;// not a D0bar if K- or if pi- excluded
       else isD0D0barPID[0]=0;//  not a D0 if K+ or if pi+ excluded
     }
     else if(combinedPID[daught][0]<=-1||combinedPID[daught][1]>=1){
-      if(aodtrack->Charge()==-1)isD0D0barPID[0]=0;// not a D0 if pi- or if K- excluded
+      if((relativeSign == -1 && aodtrack->Charge() == -1) || (relativeSign == 1 && daught == 1)) isD0D0barPID[0]=0;// not a D0 if pi- or if K- excluded
       else isD0D0barPID[1]=0;// not a D0bar if pi+ or if K+ excluded
     }
 
