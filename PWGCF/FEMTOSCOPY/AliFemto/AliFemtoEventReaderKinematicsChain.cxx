@@ -209,25 +209,26 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   hbtEvent->SetPrimVertCov(fVCov);
 
   Double_t tReactionPlane = 0;
+  
+	if (fRotateToEventPlane) {
+		AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
+		  if (!hdh) {
+		    AliGenCocktailEventHeader *cdh = dynamic_cast<AliGenCocktailEventHeader *> (fGenHeader);
+		    if (cdh) {
+		      TList *tGenHeaders = cdh->GetHeaders();
+		      for (int ihead = 0; ihead<tGenHeaders->GetEntries(); ihead++) {
+			hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
+			if (hdh) break;
+		      }
+		    }
+		  }
 
-  AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
-  if (!hdh) {
-    AliGenCocktailEventHeader *cdh = dynamic_cast<AliGenCocktailEventHeader *> (fGenHeader);
-    if (cdh) {
-      TList *tGenHeaders = cdh->GetHeaders();
-      for (int ihead = 0; ihead<tGenHeaders->GetEntries(); ihead++) {
-	hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
-	if (hdh) break;
-      }
-    }
-  }
-
-  if (hdh)
-    {
-      tReactionPlane = hdh->ReactionPlaneAngle();
-      //cout << "Got reaction plane " << tReactionPlane << endl;
-    }
-
+		  if (hdh)
+		    {
+		      tReactionPlane = hdh->ReactionPlaneAngle();
+		      //cout << "Got reaction plane " << tReactionPlane << endl;
+		    }
+	}
   hbtEvent->SetReactionPlaneAngle(tReactionPlane);
 
   //starting to reading tracks
