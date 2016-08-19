@@ -22,7 +22,7 @@ static const double PionMass = 0.13956995;
 
 #include <map>
 #include <string>
-
+#include <vector>
 
 AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                          const bool is_identical_analysis,
@@ -552,7 +552,7 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
               chg_2 = track2->Charge();
 
   const float delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2),
-         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, 1.6, 0.5006670488586);
+         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, 1.6, fCurrentMagneticField);
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);
