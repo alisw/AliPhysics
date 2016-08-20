@@ -29,12 +29,12 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     
     virtual void     UserCreateOutputObjects();
     virtual void     UserExec(Option_t *option);
-    virtual void     FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, Int_t elecCnt);
     virtual void     FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse);
     virtual void     FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrack, Int_t i);
     void             FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i);
     void             SetTrackCuts(AliESDtrackCuts *gtrkCuts, AliESDtrackCuts *ctrkCuts);
     void             SetElectronTrackCuts(Bool_t trkCutBool);
+    void             SetSSCutBool(Bool_t SSCutBool);
     virtual void     Terminate(Option_t *);
     
  private:
@@ -58,7 +58,10 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     Bool_t          tagPhot;
     
     //elec track cut bool
-    Bool_t          trackCutsStrong=kTRUE;
+    Bool_t          trackCutsStrong=kFALSE;
+    
+    //Shower Shape Bool
+    Bool_t          applySSCuts=kFALSE;
     
     //MB Histos
     //Track cut QA histos
@@ -71,38 +74,12 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //PID QA histos
     //Pt bins of (1-2GeV, 2-3GeV, 3-4GeV, 4-5GeV, 5-6GeV, >6GeV)
     //TPC nSigma Plots
-    TH2F            *fHistTPC_TOF_MB[6];
-    TH2F            *fHistTPC_EMC_MB[6];
-    TH2F            *fHistTPC_TRD_MB[6];
-    TH2F            *fHistTPC_TOFEMC_MB[6];
-    TH2F            *fHistTPC_TOFTRD_MB[6];
     TH2F            *fHistTPC_EMCTRD_MB[6];
-    TH2F            *fHistTPC_TOFEMCTRD_MB[6];
-    //TOF nSigma plots
-    TH2F            *fHistTOF_TPC_MB[6];
-    TH2F            *fHistTOF_EMC_MB[6];
-    TH2F            *fHistTOF_TRD_MB[6];
-    TH2F            *fHistTOF_TPCEMC_MB[6];
-    TH2F            *fHistTOF_TPCTRD_MB[6];
-    TH2F            *fHistTOF_EMCTRD_MB[6];
-    TH2F            *fHistTOF_TPCEMCTRD_MB[6];
     //E/P Plots
-    TH1F            *fHistEMC_TPC_MB[6];
-    TH1F            *fHistEMC_TOF_MB[6];
-    TH1F            *fHistEMC_TRD_MB[6];
-    TH1F            *fHistEMC_TPCTOF_MB[6];
     TH1F            *fHistEMC_TPCTRD_MB[6];
-    TH1F            *fHistEMC_TOFTRD_MB[6];
-    TH1F            *fHistEMC_TPCTOFTRD_MB[6];
     TH1F            *fHistEMC_Had_MB_1Gev;
     //TRD nSigma plots
-    TH2F            *fHistTRD_TPC_MB[6];
-    TH2F            *fHistTRD_TOF_MB[6];
-    TH2F            *fHistTRD_EMC_MB[6];
-    TH2F            *fHistTRD_TPCTOF_MB[6];
     TH2F            *fHistTRD_TPCEMC_MB[6];
-    TH2F            *fHistTRD_TOFEMC_MB[6];
-    TH2F            *fHistTRD_TPCTOFEMC_MB[6];
     //EMCal Shower SHape plots
     TH2F            *fHistM02_All_MB[6];
     TH2F            *fHistM20_All_MB[6];
@@ -143,37 +120,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //PID QA histos
     //Pt bins of (1-2GeV, 2-3GeV, 3-4GeV, 4-5GeV, 5-6GeV, >6GeV)
     //DeDx Plots
-    TH2F            *fHistTPC_TOF_EMC7[6];
-    TH2F            *fHistTPC_EMC_EMC7[6];
-    TH2F            *fHistTPC_TRD_EMC7[6];
-    TH2F            *fHistTPC_TOFEMC_EMC7[6];
-    TH2F            *fHistTPC_TOFTRD_EMC7[6];
     TH2F            *fHistTPC_EMCTRD_EMC7[6];
-    TH2F            *fHistTPC_TOFEMCTRD_EMC7[6];
-    //TOF nSigma plots
-    TH2F            *fHistTOF_TPC_EMC7[6];
-    TH2F            *fHistTOF_EMC_EMC7[6];
-    TH2F            *fHistTOF_TRD_EMC7[6];
-    TH2F            *fHistTOF_TPCEMC_EMC7[6];
-    TH2F            *fHistTOF_TPCTRD_EMC7[6];
-    TH2F            *fHistTOF_EMCTRD_EMC7[6];
-    TH2F            *fHistTOF_TPCEMCTRD_EMC7[6];
     //E/P Plots
-    TH1F            *fHistEMC_TPC_EMC7[6];
-    TH1F            *fHistEMC_TOF_EMC7[6];
-    TH1F            *fHistEMC_TRD_EMC7[6];
-    TH1F            *fHistEMC_TPCTOF_EMC7[6];
     TH1F            *fHistEMC_TPCTRD_EMC7[6];
-    TH1F            *fHistEMC_TOFTRD_EMC7[6];
-    TH1F            *fHistEMC_TPCTOFTRD_EMC7[6];
     //TRD Liklihood plots
-    TH2F            *fHistTRD_TPC_EMC7[6];
-    TH2F            *fHistTRD_TOF_EMC7[6];
-    TH2F            *fHistTRD_EMC_EMC7[6];
-    TH2F            *fHistTRD_TPCTOF_EMC7[6];
     TH2F            *fHistTRD_TPCEMC_EMC7[6];
-    TH2F            *fHistTRD_TOFEMC_EMC7[6];
-    TH2F            *fHistTRD_TPCTOFEMC_EMC7[6];
     //EMCal Shower SHape plots
     TH2F            *fHistM02_All_EMC7[6];
     TH2F            *fHistM20_All_EMC7[6];
@@ -213,37 +164,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //PID QA histos
     //Pt bins of (1-2GeV, 2-3GeV, 3-4GeV, 4-5GeV, 5-6GeV, >6GeV)
     //DeDx Plots
-    TH2F            *fHistTPC_TOF_EMC8[6];
-    TH2F            *fHistTPC_EMC_EMC8[6];
-    TH2F            *fHistTPC_TRD_EMC8[6];
-    TH2F            *fHistTPC_TOFEMC_EMC8[6];
-    TH2F            *fHistTPC_TOFTRD_EMC8[6];
     TH2F            *fHistTPC_EMCTRD_EMC8[6];
-    TH2F            *fHistTPC_TOFEMCTRD_EMC8[6];
-    //TOF nSigma plots
-    TH2F            *fHistTOF_TPC_EMC8[6];
-    TH2F            *fHistTOF_EMC_EMC8[6];
-    TH2F            *fHistTOF_TRD_EMC8[6];
-    TH2F            *fHistTOF_TPCEMC_EMC8[6];
-    TH2F            *fHistTOF_TPCTRD_EMC8[6];
-    TH2F            *fHistTOF_EMCTRD_EMC8[6];
-    TH2F            *fHistTOF_TPCEMCTRD_EMC8[6];
     //E/P Plots
-    TH1F            *fHistEMC_TPC_EMC8[6];
-    TH1F            *fHistEMC_TOF_EMC8[6];
-    TH1F            *fHistEMC_TRD_EMC8[6];
-    TH1F            *fHistEMC_TPCTOF_EMC8[6];
     TH1F            *fHistEMC_TPCTRD_EMC8[6];
-    TH1F            *fHistEMC_TOFTRD_EMC8[6];
-    TH1F            *fHistEMC_TPCTOFTRD_EMC8[6];
     //TRD Liklihood plots
-    TH2F            *fHistTRD_TPC_EMC8[6];
-    TH2F            *fHistTRD_TOF_EMC8[6];
-    TH2F            *fHistTRD_EMC_EMC8[6];
-    TH2F            *fHistTRD_TPCTOF_EMC8[6];
     TH2F            *fHistTRD_TPCEMC_EMC8[6];
-    TH2F            *fHistTRD_TOFEMC_EMC8[6];
-    TH2F            *fHistTRD_TPCTOFEMC_EMC8[6];
     //EMCal Shower SHape plots
     TH2F            *fHistM02_All_EMC8[6];
     TH2F            *fHistM20_All_EMC8[6];
@@ -283,37 +208,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //PID QA histos
     //Pt bins of (1-2GeV, 2-3GeV, 3-4GeV, 4-5GeV, 5-6GeV, >6GeV)
     //DeDx Plots
-    TH2F            *fHistTPC_TOF_EMCJet[6];
-    TH2F            *fHistTPC_EMC_EMCJet[6];
-    TH2F            *fHistTPC_TRD_EMCJet[6];
-    TH2F            *fHistTPC_TOFEMC_EMCJet[6];
-    TH2F            *fHistTPC_TOFTRD_EMCJet[6];
     TH2F            *fHistTPC_EMCTRD_EMCJet[6];
-    TH2F            *fHistTPC_TOFEMCTRD_EMCJet[6];
-    //TOF nSigma plots
-    TH2F            *fHistTOF_TPC_EMCJet[6];
-    TH2F            *fHistTOF_EMC_EMCJet[6];
-    TH2F            *fHistTOF_TRD_EMCJet[6];
-    TH2F            *fHistTOF_TPCEMC_EMCJet[6];
-    TH2F            *fHistTOF_TPCTRD_EMCJet[6];
-    TH2F            *fHistTOF_EMCTRD_EMCJet[6];
-    TH2F            *fHistTOF_TPCEMCTRD_EMCJet[6];
     //E/P Plots
-    TH1F            *fHistEMC_TPC_EMCJet[6];
-    TH1F            *fHistEMC_TOF_EMCJet[6];
-    TH1F            *fHistEMC_TRD_EMCJet[6];
-    TH1F            *fHistEMC_TPCTOF_EMCJet[6];
     TH1F            *fHistEMC_TPCTRD_EMCJet[6];
-    TH1F            *fHistEMC_TOFTRD_EMCJet[6];
-    TH1F            *fHistEMC_TPCTOFTRD_EMCJet[6];
     //TRD Liklihood plots
-    TH2F            *fHistTRD_TPC_EMCJet[6];
-    TH2F            *fHistTRD_TOF_EMCJet[6];
-    TH2F            *fHistTRD_EMC_EMCJet[6];
-    TH2F            *fHistTRD_TPCTOF_EMCJet[6];
     TH2F            *fHistTRD_TPCEMC_EMCJet[6];
-    TH2F            *fHistTRD_TOFEMC_EMCJet[6];
-    TH2F            *fHistTRD_TPCTOFEMC_EMCJet[6];
     //EMCal Shower SHape plots
     TH2F            *fHistM02_All_EMCJet[6];
     TH2F            *fHistM20_All_EMCJet[6];
@@ -341,105 +240,15 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtAssoc_EMCJet;
     TH1F            *fHistPtTag_EMCJet;
     
-    //Region Histos
-    
-    //Tag-Side Histos
-    
-    //Track Multiplicity Histos
-    TH1F            *fHistTrkMultTag_MB[4];
-    TH1F            *fHistTrkMultTag_EMC7[4];
-    TH1F            *fHistTrkMultTag_EMC8[4];
-    TH1F            *fHistTrkMultTag_EMCJet[4];
-    
-    //Pt Distribution Histos
-    TH1F            *fHistTrkPtTag_MB[4];
-    TH1F            *fHistTrkPtTag_EMC7[4];
-    TH1F            *fHistTrkPtTag_EMC8[4];
-    TH1F            *fHistTrkPtTag_EMCJet[4];
-    
-    //dEdx by Pt Histos
-    TH2F            *fHistDeDxPtTag_MB[4];
-    TH2F            *fHistDeDxPtTag_EMC7[4];
-    TH2F            *fHistDeDxPtTag_EMC8[4];
-    TH2F            *fHistDeDxPtTag_EMCJet[4];
-    
-    //Away-Side Histos
-    
-    //Track Multiplicity Histos
-    TH1F            *fHistTrkMultAway_MB[4];
-    TH1F            *fHistTrkMultAway_EMC7[4];
-    TH1F            *fHistTrkMultAway_EMC8[4];
-    TH1F            *fHistTrkMultAway_EMCJet[4];
-    
-    //Pt Distribution Histos
-    TH1F            *fHistTrkPtAway_MB[4];
-    TH1F            *fHistTrkPtAway_EMC7[4];
-    TH1F            *fHistTrkPtAway_EMC8[4];
-    TH1F            *fHistTrkPtAway_EMCJet[4];
-    
-    //dEdx by Pt Histos
-    TH2F            *fHistDeDxPtAway_MB[4];
-    TH2F            *fHistDeDxPtAway_EMC7[4];
-    TH2F            *fHistDeDxPtAway_EMC8[4];
-    TH2F            *fHistDeDxPtAway_EMCJet[4];
-    
-    //TransMax-Side Histos
-    
-    //Track Multiplicity Histos
-    TH1F            *fHistTrkMultTransMax_MB[4];
-    TH1F            *fHistTrkMultTransMax_EMC7[4];
-    TH1F            *fHistTrkMultTransMax_EMC8[4];
-    TH1F            *fHistTrkMultTransMax_EMCJet[4];
-    
-    //Pt Distribution Histos
-    TH1F            *fHistTrkPtTransMax_MB[4];
-    TH1F            *fHistTrkPtTransMax_EMC7[4];
-    TH1F            *fHistTrkPtTransMax_EMC8[4];
-    TH1F            *fHistTrkPtTransMax_EMCJet[4];
-    
-    //dEdx by Pt Histos
-    TH2F            *fHistDeDxPtTransMax_MB[4];
-    TH2F            *fHistDeDxPtTransMax_EMC7[4];
-    TH2F            *fHistDeDxPtTransMax_EMC8[4];
-    TH2F            *fHistDeDxPtTransMax_EMCJet[4];
-    
-    //TransMin-Side Histos
-    
-    //Track Multiplicity Histos
-    TH1F            *fHistTrkMultTransMin_MB[4];
-    TH1F            *fHistTrkMultTransMin_EMC7[4];
-    TH1F            *fHistTrkMultTransMin_EMC8[4];
-    TH1F            *fHistTrkMultTransMin_EMCJet[4];
-    
-    //Pt Distribution Histos
-    TH1F            *fHistTrkPtTransMin_MB[4];
-    TH1F            *fHistTrkPtTransMin_EMC7[4];
-    TH1F            *fHistTrkPtTransMin_EMC8[4];
-    TH1F            *fHistTrkPtTransMin_EMCJet[4];
-    
-    //dEdx by Pt Histos
-    TH2F            *fHistDeDxPtTransMin_MB[4];
-    TH2F            *fHistDeDxPtTransMin_EMC7[4];
-    TH2F            *fHistDeDxPtTransMin_EMC8[4];
-    TH2F            *fHistDeDxPtTransMin_EMCJet[4];
-    
     //Rejection Histos
     //Conscious decision not to split them into trigger or pt bins. Ask klay about it.
     TH1F            *fHistPIDRejection;
-    TH1F            *fHistBadEMCclusID;
     
     //Number of tagged electrons per event
     TH1F            *fHistNElecPerEvent;
     
     //Mismatched photonic electrons
     TH1F            *fHistPhotoMismatch;
-    
-    //PtSum Histos
-    TH2F            *fHistPtSumTransMaxB2B;
-    TH2F            *fHistPtSumTransMinB2B;
-    TH2F            *fHistPtSumTransMaxLead;
-    TH2F            *fHistPtSumTransMinLead;
-    
     
     AliAnalysisTaskPSHFE(const AliAnalysisTaskPSHFE&); // not implemented
     AliAnalysisTaskPSHFE& operator=(const AliAnalysisTaskPSHFE&); // not implemented

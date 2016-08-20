@@ -73,14 +73,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     EMCJettrg(0),
     MBtrg(0),
     tagStrong(0),
+    tagPhot(0),
 
     fHistPIDRejection(0),
-    fHistBadEMCclusID(0),
     fHistNElecPerEvent(0),
-    fHistPtSumTransMaxB2B(0),
-    fHistPtSumTransMinB2B(0),
-    fHistPtSumTransMaxLead(0),
-    fHistPtSumTransMinLead(0),
     fHistPhotoMismatch(0),
 
     fHistTPCNClus_MB(0),
@@ -206,137 +202,33 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
         //Init PID Plots here since they are stored in Arrays
     for(int i=0;i<6;i++){
         //MB Plots
-        fHistTPC_TOF_MB[i]=0;
-        fHistTPC_EMC_MB[i]=0;
-        fHistTPC_TRD_MB[i]=0;
-        fHistTPC_TOFEMC_MB[i]=0;
-        fHistTPC_TOFTRD_MB[i]=0;
         fHistTPC_EMCTRD_MB[i]=0;
-        fHistTPC_TOFEMCTRD_MB[i]=0;
         
-        fHistTOF_TPC_MB[i]=0;
-        fHistTOF_EMC_MB[i]=0;
-        fHistTOF_TRD_MB[i]=0;
-        fHistTOF_TPCEMC_MB[i]=0;
-        fHistTOF_TPCTRD_MB[i]=0;
-        fHistTOF_EMCTRD_MB[i]=0;
-        fHistTOF_TPCEMCTRD_MB[i]=0;
-        
-        fHistEMC_TPC_MB[i]=0;
-        fHistEMC_TOF_MB[i]=0;
-        fHistEMC_TRD_MB[i]=0;
-        fHistEMC_TPCTOF_MB[i]=0;
         fHistEMC_TPCTRD_MB[i]=0;
-        fHistEMC_TOFTRD_MB[i]=0;
-        fHistEMC_TPCTOFTRD_MB[i]=0;
         
-        fHistTRD_TPC_MB[i]=0;
-        fHistTRD_TOF_MB[i]=0;
-        fHistTRD_EMC_MB[i]=0;
-        fHistTRD_TPCTOF_MB[i]=0;
         fHistTRD_TPCEMC_MB[i]=0;
-        fHistTRD_TOFEMC_MB[i]=0;
-        fHistTRD_TPCTOFEMC_MB[i]=0;
         
         //EMC7 Plots
-        fHistTPC_TOF_EMC7[i]=0;
-        fHistTPC_EMC_EMC7[i]=0;
-        fHistTPC_TRD_EMC7[i]=0;
-        fHistTPC_TOFEMC_EMC7[i]=0;
-        fHistTPC_TOFTRD_EMC7[i]=0;
         fHistTPC_EMCTRD_EMC7[i]=0;
-        fHistTPC_TOFEMCTRD_EMC7[i]=0;
-        
-        fHistTOF_TPC_EMC7[i]=0;
-        fHistTOF_EMC_EMC7[i]=0;
-        fHistTOF_TRD_EMC7[i]=0;
-        fHistTOF_TPCEMC_EMC7[i]=0;
-        fHistTOF_TPCTRD_EMC7[i]=0;
-        fHistTOF_EMCTRD_EMC7[i]=0;
-        fHistTOF_TPCEMCTRD_EMC7[i]=0;
-        
-        fHistEMC_TPC_EMC7[i]=0;
-        fHistEMC_TOF_EMC7[i]=0;
-        fHistEMC_TRD_EMC7[i]=0;
-        fHistEMC_TPCTOF_EMC7[i]=0;
+
         fHistEMC_TPCTRD_EMC7[i]=0;
-        fHistEMC_TOFTRD_EMC7[i]=0;
-        fHistEMC_TPCTOFTRD_EMC7[i]=0;
         
-        fHistTRD_TPC_EMC7[i]=0;
-        fHistTRD_TOF_EMC7[i]=0;
-        fHistTRD_EMC_EMC7[i]=0;
-        fHistTRD_TPCTOF_EMC7[i]=0;
         fHistTRD_TPCEMC_EMC7[i]=0;
-        fHistTRD_TOFEMC_EMC7[i]=0;
-        fHistTRD_TPCTOFEMC_EMC7[i]=0;
         
         //EMC8 Plots
-        fHistTPC_TOF_EMC8[i]=0;
-        fHistTPC_EMC_EMC8[i]=0;
-        fHistTPC_TRD_EMC8[i]=0;
-        fHistTPC_TOFEMC_EMC8[i]=0;
-        fHistTPC_TOFTRD_EMC8[i]=0;
         fHistTPC_EMCTRD_EMC8[i]=0;
-        fHistTPC_TOFEMCTRD_EMC8[i]=0;
-        
-        fHistTOF_TPC_EMC8[i]=0;
-        fHistTOF_EMC_EMC8[i]=0;
-        fHistTOF_TRD_EMC8[i]=0;
-        fHistTOF_TPCEMC_EMC8[i]=0;
-        fHistTOF_TPCTRD_EMC8[i]=0;
-        fHistTOF_EMCTRD_EMC8[i]=0;
-        fHistTOF_TPCEMCTRD_EMC8[i]=0;
-        
-        fHistEMC_TPC_EMC8[i]=0;
-        fHistEMC_TOF_EMC8[i]=0;
-        fHistEMC_TRD_EMC8[i]=0;
-        fHistEMC_TPCTOF_EMC8[i]=0;
+
         fHistEMC_TPCTRD_EMC8[i]=0;
-        fHistEMC_TOFTRD_EMC8[i]=0;
-        fHistEMC_TPCTOFTRD_EMC8[i]=0;
-        
-        fHistTRD_TPC_EMC8[i]=0;
-        fHistTRD_TOF_EMC8[i]=0;
-        fHistTRD_EMC_EMC8[i]=0;
-        fHistTRD_TPCTOF_EMC8[i]=0;
+
         fHistTRD_TPCEMC_EMC8[i]=0;
-        fHistTRD_TOFEMC_EMC8[i]=0;
-        fHistTRD_TPCTOFEMC_EMC8[i]=0;
         
         //EMCJet Plots
-        fHistTPC_TOF_EMCJet[i]=0;
-        fHistTPC_EMC_EMCJet[i]=0;
-        fHistTPC_TRD_EMCJet[i]=0;
-        fHistTPC_TOFEMC_EMCJet[i]=0;
-        fHistTPC_TOFTRD_EMCJet[i]=0;
         fHistTPC_EMCTRD_EMCJet[i]=0;
-        fHistTPC_TOFEMCTRD_EMCJet[i]=0;
-        
-        fHistTOF_TPC_EMCJet[i]=0;
-        fHistTOF_EMC_EMCJet[i]=0;
-        fHistTOF_TRD_EMCJet[i]=0;
-        fHistTOF_TPCEMC_EMCJet[i]=0;
-        fHistTOF_TPCTRD_EMCJet[i]=0;
-        fHistTOF_EMCTRD_EMCJet[i]=0;
-        fHistTOF_TPCEMCTRD_EMCJet[i]=0;
-        
-        fHistEMC_TPC_EMCJet[i]=0;
-        fHistEMC_TOF_EMCJet[i]=0;
-        fHistEMC_TRD_EMCJet[i]=0;
-        fHistEMC_TPCTOF_EMCJet[i]=0;
+
         fHistEMC_TPCTRD_EMCJet[i]=0;
-        fHistEMC_TOFTRD_EMCJet[i]=0;
-        fHistEMC_TPCTOFTRD_EMCJet[i]=0;
         
-        fHistTRD_TPC_EMCJet[i]=0;
-        fHistTRD_TOF_EMCJet[i]=0;
-        fHistTRD_EMC_EMCJet[i]=0;
-        fHistTRD_TPCTOF_EMCJet[i]=0;
         fHistTRD_TPCEMC_EMCJet[i]=0;
-        fHistTRD_TOFEMC_EMCJet[i]=0;
-        fHistTRD_TPCTOFEMC_EMCJet[i]=0;
-        
+
         fHistM02_All_MB[i]=0;
         fHistM02_Elec_MB[i]=0;
         fHistM20_All_MB[i]=0;
@@ -356,74 +248,6 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
         fHistM02_Elec_EMCJet[i]=0;
         fHistM20_All_EMCJet[i]=0;
         fHistM20_Elec_EMCJet[i]=0;
-    }
-        
-    //Region Histos
-        
-    for(Int_t i=0;i<4;i++){
-        //Tag Side Histos
-        fHistTrkMultTag_MB[i]=0;
-        fHistTrkMultTag_EMC7[i]=0;
-        fHistTrkMultTag_EMC8[i]=0;
-        fHistTrkMultTag_EMCJet[i]=0;
-            
-        fHistTrkPtTag_MB[i]=0;
-        fHistTrkPtTag_EMC7[i]=0;
-        fHistTrkPtTag_EMC8[i]=0;
-        fHistTrkPtTag_EMCJet[i]=0;
-            
-        fHistDeDxPtTag_MB[i]=0;
-        fHistDeDxPtTag_EMC7[i]=0;
-        fHistDeDxPtTag_EMC8[i]=0;
-        fHistDeDxPtTag_EMCJet[i]=0;
-            
-        //Away Side Histos
-        fHistTrkMultAway_MB[i]=0;
-        fHistTrkMultAway_EMC7[i]=0;
-        fHistTrkMultAway_EMC8[i]=0;
-        fHistTrkMultAway_EMCJet[i]=0;
-            
-        fHistTrkPtAway_MB[i]=0;
-        fHistTrkPtAway_EMC7[i]=0;
-        fHistTrkPtAway_EMC8[i]=0;
-        fHistTrkPtAway_EMCJet[i]=0;
-            
-        fHistDeDxPtAway_MB[i]=0;
-        fHistDeDxPtAway_EMC7[i]=0;
-        fHistDeDxPtAway_EMC8[i]=0;
-        fHistDeDxPtAway_EMCJet[i]=0;
-            
-        //TransMax Side Histos
-        fHistTrkMultTransMax_MB[i]=0;
-        fHistTrkMultTransMax_EMC7[i]=0;
-        fHistTrkMultTransMax_EMC8[i]=0;
-        fHistTrkMultTransMax_EMCJet[i]=0;
-            
-        fHistTrkPtTransMax_MB[i]=0;
-        fHistTrkPtTransMax_EMC7[i]=0;
-        fHistTrkPtTransMax_EMC8[i]=0;
-        fHistTrkPtTransMax_EMCJet[i]=0;
-            
-        fHistDeDxPtTransMax_MB[i]=0;
-        fHistDeDxPtTransMax_EMC7[i]=0;
-        fHistDeDxPtTransMax_EMC8[i]=0;
-        fHistDeDxPtTransMax_EMCJet[i]=0;
-            
-        //TransMin Side Histos
-        fHistTrkMultTransMin_MB[i]=0;
-        fHistTrkMultTransMin_EMC7[i]=0;
-        fHistTrkMultTransMin_EMC8[i]=0;
-        fHistTrkMultTransMin_EMCJet[i]=0;
-            
-        fHistTrkPtTransMin_MB[i]=0;
-        fHistTrkPtTransMin_EMC7[i]=0;
-        fHistTrkPtTransMin_EMC8[i]=0;
-        fHistTrkPtTransMin_EMCJet[i]=0;
-           
-        fHistDeDxPtTransMin_MB[i]=0;
-        fHistDeDxPtTransMin_EMC7[i]=0;
-        fHistDeDxPtTransMin_EMC8[i]=0;
-        fHistDeDxPtTransMin_EMCJet[i]=0;
     }
     
     // Dummy constructor ALWAYS needed for I/O.
@@ -445,14 +269,10 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     EMCJettrg(0),
     MBtrg(0),
     tagStrong(0),
+    tagPhot(0),
 
     fHistPIDRejection(0),
-    fHistBadEMCclusID(0),
     fHistNElecPerEvent(0),
-    fHistPtSumTransMaxB2B(0),
-    fHistPtSumTransMinB2B(0),
-    fHistPtSumTransMaxLead(0),
-    fHistPtSumTransMinLead(0),
     fHistPhotoMismatch(0),
 
     fHistTPCNClus_MB(0),
@@ -581,136 +401,32 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
             //Init PID Plots here since they are stored in Arrays
     for(Int_t i=0;i<6;i++){
         //MB Plots
-        fHistTPC_TOF_MB[i]=0;
-        fHistTPC_EMC_MB[i]=0;
-        fHistTPC_TRD_MB[i]=0;
-        fHistTPC_TOFEMC_MB[i]=0;
-        fHistTPC_TOFTRD_MB[i]=0;
         fHistTPC_EMCTRD_MB[i]=0;
-        fHistTPC_TOFEMCTRD_MB[i]=0;
-        
-        fHistTOF_TPC_MB[i]=0;
-        fHistTOF_EMC_MB[i]=0;
-        fHistTOF_TRD_MB[i]=0;
-        fHistTOF_TPCEMC_MB[i]=0;
-        fHistTOF_TPCTRD_MB[i]=0;
-        fHistTOF_EMCTRD_MB[i]=0;
-        fHistTOF_TPCEMCTRD_MB[i]=0;
-        
-        fHistEMC_TPC_MB[i]=0;
-        fHistEMC_TOF_MB[i]=0;
-        fHistEMC_TRD_MB[i]=0;
-        fHistEMC_TPCTOF_MB[i]=0;
+
         fHistEMC_TPCTRD_MB[i]=0;
-        fHistEMC_TOFTRD_MB[i]=0;
-        fHistEMC_TPCTOFTRD_MB[i]=0;
-        
-        fHistTRD_TPC_MB[i]=0;
-        fHistTRD_TOF_MB[i]=0;
-        fHistTRD_EMC_MB[i]=0;
-        fHistTRD_TPCTOF_MB[i]=0;
+
         fHistTRD_TPCEMC_MB[i]=0;
-        fHistTRD_TOFEMC_MB[i]=0;
-        fHistTRD_TPCTOFEMC_MB[i]=0;
         
         //EMC7 Plots
-        fHistTPC_TOF_EMC7[i]=0;
-        fHistTPC_EMC_EMC7[i]=0;
-        fHistTPC_TRD_EMC7[i]=0;
-        fHistTPC_TOFEMC_EMC7[i]=0;
-        fHistTPC_TOFTRD_EMC7[i]=0;
         fHistTPC_EMCTRD_EMC7[i]=0;
-        fHistTPC_TOFEMCTRD_EMC7[i]=0;
         
-        fHistTOF_TPC_EMC7[i]=0;
-        fHistTOF_EMC_EMC7[i]=0;
-        fHistTOF_TRD_EMC7[i]=0;
-        fHistTOF_TPCEMC_EMC7[i]=0;
-        fHistTOF_TPCTRD_EMC7[i]=0;
-        fHistTOF_EMCTRD_EMC7[i]=0;
-        fHistTOF_TPCEMCTRD_EMC7[i]=0;
-        
-        fHistEMC_TPC_EMC7[i]=0;
-        fHistEMC_TOF_EMC7[i]=0;
-        fHistEMC_TRD_EMC7[i]=0;
-        fHistEMC_TPCTOF_EMC7[i]=0;
         fHistEMC_TPCTRD_EMC7[i]=0;
-        fHistEMC_TOFTRD_EMC7[i]=0;
-        fHistEMC_TPCTOFTRD_EMC7[i]=0;
         
-        fHistTRD_TPC_EMC7[i]=0;
-        fHistTRD_TOF_EMC7[i]=0;
-        fHistTRD_EMC_EMC7[i]=0;
-        fHistTRD_TPCTOF_EMC7[i]=0;
         fHistTRD_TPCEMC_EMC7[i]=0;
-        fHistTRD_TOFEMC_EMC7[i]=0;
-        fHistTRD_TPCTOFEMC_EMC7[i]=0;
-        
+
         //EMC8 Plots
-        fHistTPC_TOF_EMC8[i]=0;
-        fHistTPC_EMC_EMC8[i]=0;
-        fHistTPC_TRD_EMC8[i]=0;
-        fHistTPC_TOFEMC_EMC8[i]=0;
-        fHistTPC_TOFTRD_EMC8[i]=0;
         fHistTPC_EMCTRD_EMC8[i]=0;
-        fHistTPC_TOFEMCTRD_EMC8[i]=0;
-        
-        fHistTOF_TPC_EMC8[i]=0;
-        fHistTOF_EMC_EMC8[i]=0;
-        fHistTOF_TRD_EMC8[i]=0;
-        fHistTOF_TPCEMC_EMC8[i]=0;
-        fHistTOF_TPCTRD_EMC8[i]=0;
-        fHistTOF_EMCTRD_EMC8[i]=0;
-        fHistTOF_TPCEMCTRD_EMC8[i]=0;
-        
-        fHistEMC_TPC_EMC8[i]=0;
-        fHistEMC_TOF_EMC8[i]=0;
-        fHistEMC_TRD_EMC8[i]=0;
-        fHistEMC_TPCTOF_EMC8[i]=0;
+
         fHistEMC_TPCTRD_EMC8[i]=0;
-        fHistEMC_TOFTRD_EMC8[i]=0;
-        fHistEMC_TPCTOFTRD_EMC8[i]=0;
         
-        fHistTRD_TPC_EMC8[i]=0;
-        fHistTRD_TOF_EMC8[i]=0;
-        fHistTRD_EMC_EMC8[i]=0;
-        fHistTRD_TPCTOF_EMC8[i]=0;
         fHistTRD_TPCEMC_EMC8[i]=0;
-        fHistTRD_TOFEMC_EMC8[i]=0;
-        fHistTRD_TPCTOFEMC_EMC8[i]=0;
-        
+
         //EMCJet Plots
-        fHistTPC_TOF_EMCJet[i]=0;
-        fHistTPC_EMC_EMCJet[i]=0;
-        fHistTPC_TRD_EMCJet[i]=0;
-        fHistTPC_TOFEMC_EMCJet[i]=0;
-        fHistTPC_TOFTRD_EMCJet[i]=0;
         fHistTPC_EMCTRD_EMCJet[i]=0;
-        fHistTPC_TOFEMCTRD_EMCJet[i]=0;
-        
-        fHistTOF_TPC_EMCJet[i]=0;
-        fHistTOF_EMC_EMCJet[i]=0;
-        fHistTOF_TRD_EMCJet[i]=0;
-        fHistTOF_TPCEMC_EMCJet[i]=0;
-        fHistTOF_TPCTRD_EMCJet[i]=0;
-        fHistTOF_EMCTRD_EMCJet[i]=0;
-        fHistTOF_TPCEMCTRD_EMCJet[i]=0;
-        
-        fHistEMC_TPC_EMCJet[i]=0;
-        fHistEMC_TOF_EMCJet[i]=0;
-        fHistEMC_TRD_EMCJet[i]=0;
-        fHistEMC_TPCTOF_EMCJet[i]=0;
+
         fHistEMC_TPCTRD_EMCJet[i]=0;
-        fHistEMC_TOFTRD_EMCJet[i]=0;
-        fHistEMC_TPCTOFTRD_EMCJet[i]=0;
         
-        fHistTRD_TPC_EMCJet[i]=0;
-        fHistTRD_TOF_EMCJet[i]=0;
-        fHistTRD_EMC_EMCJet[i]=0;
-        fHistTRD_TPCTOF_EMCJet[i]=0;
         fHistTRD_TPCEMC_EMCJet[i]=0;
-        fHistTRD_TOFEMC_EMCJet[i]=0;
-        fHistTRD_TPCTOFEMC_EMCJet[i]=0;
         
         fHistM02_All_MB[i]=0;
         fHistM02_Elec_MB[i]=0;
@@ -731,75 +447,6 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
         fHistM02_Elec_EMCJet[i]=0;
         fHistM20_All_EMCJet[i]=0;
         fHistM20_Elec_EMCJet[i]=0;
-    }
-        
-        
-    //Region Histos
-   
-    for(Int_t i=0;i<4;i++){
-        //Tag Side Histos
-        fHistTrkMultTag_MB[i]=0;
-        fHistTrkMultTag_EMC7[i]=0;
-        fHistTrkMultTag_EMC8[i]=0;
-        fHistTrkMultTag_EMCJet[i]=0;
-            
-        fHistTrkPtTag_MB[i]=0;
-        fHistTrkPtTag_EMC7[i]=0;
-        fHistTrkPtTag_EMC8[i]=0;
-        fHistTrkPtTag_EMCJet[i]=0;
-            
-        fHistDeDxPtTag_MB[i]=0;
-        fHistDeDxPtTag_EMC7[i]=0;
-        fHistDeDxPtTag_EMC8[i]=0;
-        fHistDeDxPtTag_EMCJet[i]=0;
-            
-        //Away Side Histos
-        fHistTrkMultAway_MB[i]=0;
-        fHistTrkMultAway_EMC7[i]=0;
-        fHistTrkMultAway_EMC8[i]=0;
-        fHistTrkMultAway_EMCJet[i]=0;
-            
-        fHistTrkPtAway_MB[i]=0;
-        fHistTrkPtAway_EMC7[i]=0;
-        fHistTrkPtAway_EMC8[i]=0;
-        fHistTrkPtAway_EMCJet[i]=0;
-          
-        fHistDeDxPtAway_MB[i]=0;
-        fHistDeDxPtAway_EMC7[i]=0;
-        fHistDeDxPtAway_EMC8[i]=0;
-        fHistDeDxPtAway_EMCJet[i]=0;
-            
-        //TransMax Side Histos
-        fHistTrkMultTransMax_MB[i]=0;
-        fHistTrkMultTransMax_EMC7[i]=0;
-        fHistTrkMultTransMax_EMC8[i]=0;
-        fHistTrkMultTransMax_EMCJet[i]=0;
-           
-        fHistTrkPtTransMax_MB[i]=0;
-        fHistTrkPtTransMax_EMC7[i]=0;
-        fHistTrkPtTransMax_EMC8[i]=0;
-        fHistTrkPtTransMax_EMCJet[i]=0;
-            
-        fHistDeDxPtTransMax_MB[i]=0;
-        fHistDeDxPtTransMax_EMC7[i]=0;
-        fHistDeDxPtTransMax_EMC8[i]=0;
-        fHistDeDxPtTransMax_EMCJet[i]=0;
-            
-        //TransMin Side Histos
-        fHistTrkMultTransMin_MB[i]=0;
-        fHistTrkMultTransMin_EMC7[i]=0;
-        fHistTrkMultTransMin_EMC8[i]=0;
-        fHistTrkMultTransMin_EMCJet[i]=0;
-           
-        fHistTrkPtTransMin_MB[i]=0;
-        fHistTrkPtTransMin_EMC7[i]=0;
-        fHistTrkPtTransMin_EMC8[i]=0;
-        fHistTrkPtTransMin_EMCJet[i]=0;
-        
-        fHistDeDxPtTransMin_MB[i]=0;
-        fHistDeDxPtTransMin_EMC7[i]=0;
-        fHistDeDxPtTransMin_EMC8[i]=0;
-        fHistDeDxPtTransMin_EMCJet[i]=0;
     }
         
         
@@ -851,137 +498,33 @@ AliAnalysisTaskPSHFE::~AliAnalysisTaskPSHFE()
         //Init PID Plots here since they are stored in Arrays
     for(Int_t i=0;i<6;i++){
         //MB Plots
-        delete fHistTPC_TOF_MB[i];
-        delete fHistTPC_EMC_MB[i];
-        delete fHistTPC_TRD_MB[i];
-        delete fHistTPC_TOFEMC_MB[i];
-        delete fHistTPC_TOFTRD_MB[i];
         delete fHistTPC_EMCTRD_MB[i];
-        delete fHistTPC_TOFEMCTRD_MB[i];
-        
-        delete fHistTOF_TPC_MB[i];
-        delete fHistTOF_EMC_MB[i];
-        delete fHistTOF_TRD_MB[i];
-        delete fHistTOF_TPCEMC_MB[i];
-        delete fHistTOF_TPCTRD_MB[i];
-        delete fHistTOF_EMCTRD_MB[i];
-        delete fHistTOF_TPCEMCTRD_MB[i];
-        
-        delete fHistEMC_TPC_MB[i];
-        delete fHistEMC_TOF_MB[i];
-        delete fHistEMC_TRD_MB[i];
-        delete fHistEMC_TPCTOF_MB[i];
+
         delete fHistEMC_TPCTRD_MB[i];
-        delete fHistEMC_TOFTRD_MB[i];
-        delete fHistEMC_TPCTOFTRD_MB[i];
         
-        delete fHistTRD_TPC_MB[i];
-        delete fHistTRD_TOF_MB[i];
-        delete fHistTRD_EMC_MB[i];
-        delete fHistTRD_TPCTOF_MB[i];
         delete fHistTRD_TPCEMC_MB[i];
-        delete fHistTRD_TOFEMC_MB[i];
-        delete fHistTRD_TPCTOFEMC_MB[i];
         
         //EMC7 Plots
-        delete fHistTPC_TOF_EMC7[i];
-        delete fHistTPC_EMC_EMC7[i];
-        delete fHistTPC_TRD_EMC7[i];
-        delete fHistTPC_TOFEMC_EMC7[i];
-        delete fHistTPC_TOFTRD_EMC7[i];
         delete fHistTPC_EMCTRD_EMC7[i];
-        delete fHistTPC_TOFEMCTRD_EMC7[i];
-        
-        delete fHistTOF_TPC_EMC7[i];
-        delete fHistTOF_EMC_EMC7[i];
-        delete fHistTOF_TRD_EMC7[i];
-        delete fHistTOF_TPCEMC_EMC7[i];
-        delete fHistTOF_TPCTRD_EMC7[i];
-        delete fHistTOF_EMCTRD_EMC7[i];
-        delete fHistTOF_TPCEMCTRD_EMC7[i];
-        
-        delete fHistEMC_TPC_EMC7[i];
-        delete fHistEMC_TOF_EMC7[i];
-        delete fHistEMC_TRD_EMC7[i];
-        delete fHistEMC_TPCTOF_EMC7[i];
+
         delete fHistEMC_TPCTRD_EMC7[i];
-        delete fHistEMC_TOFTRD_EMC7[i];
-        delete fHistEMC_TPCTOFTRD_EMC7[i];
-        
-        delete fHistTRD_TPC_EMC7[i];
-        delete fHistTRD_TOF_EMC7[i];
-        delete fHistTRD_EMC_EMC7[i];
-        delete fHistTRD_TPCTOF_EMC7[i];
+
         delete fHistTRD_TPCEMC_EMC7[i];
-        delete fHistTRD_TOFEMC_EMC7[i];
-        delete fHistTRD_TPCTOFEMC_EMC7[i];
         
         //EMC8 Plots
-        delete fHistTPC_TOF_EMC8[i];
-        delete fHistTPC_EMC_EMC8[i];
-        delete fHistTPC_TRD_EMC8[i];
-        delete fHistTPC_TOFEMC_EMC8[i];
-        delete fHistTPC_TOFTRD_EMC8[i];
         delete fHistTPC_EMCTRD_EMC8[i];
-        delete fHistTPC_TOFEMCTRD_EMC8[i];
-        
-        delete fHistTOF_TPC_EMC8[i];
-        delete fHistTOF_EMC_EMC8[i];
-        delete fHistTOF_TRD_EMC8[i];
-        delete fHistTOF_TPCEMC_EMC8[i];
-        delete fHistTOF_TPCTRD_EMC8[i];
-        delete fHistTOF_EMCTRD_EMC8[i];
-        delete fHistTOF_TPCEMCTRD_EMC8[i];
-        
-        delete fHistEMC_TPC_EMC8[i];
-        delete fHistEMC_TOF_EMC8[i];
-        delete fHistEMC_TRD_EMC8[i];
-        delete fHistEMC_TPCTOF_EMC8[i];
+
         delete fHistEMC_TPCTRD_EMC8[i];
-        delete fHistEMC_TOFTRD_EMC8[i];
-        delete fHistEMC_TPCTOFTRD_EMC8[i];
         
-        delete fHistTRD_TPC_EMC8[i];
-        delete fHistTRD_TOF_EMC8[i];
-        delete fHistTRD_EMC_EMC8[i];
-        delete fHistTRD_TPCTOF_EMC8[i];
         delete fHistTRD_TPCEMC_EMC8[i];
-        delete fHistTRD_TOFEMC_EMC8[i];
-        delete fHistTRD_TPCTOFEMC_EMC8[i];
         
         //EMCJet Plots
-        delete fHistTPC_TOF_EMCJet[i];
-        delete fHistTPC_EMC_EMCJet[i];
-        delete fHistTPC_TRD_EMCJet[i];
-        delete fHistTPC_TOFEMC_EMCJet[i];
-        delete fHistTPC_TOFTRD_EMCJet[i];
         delete fHistTPC_EMCTRD_EMCJet[i];
-        delete fHistTPC_TOFEMCTRD_EMCJet[i];
-        
-        delete fHistTOF_TPC_EMCJet[i];
-        delete fHistTOF_EMC_EMCJet[i];
-        delete fHistTOF_TRD_EMCJet[i];
-        delete fHistTOF_TPCEMC_EMCJet[i];
-        delete fHistTOF_TPCTRD_EMCJet[i];
-        delete fHistTOF_EMCTRD_EMCJet[i];
-        delete fHistTOF_TPCEMCTRD_EMCJet[i];
-        
-        delete fHistEMC_TPC_EMCJet[i];
-        delete fHistEMC_TOF_EMCJet[i];
-        delete fHistEMC_TRD_EMCJet[i];
-        delete fHistEMC_TPCTOF_EMCJet[i];
+
         delete fHistEMC_TPCTRD_EMCJet[i];
-        delete fHistEMC_TOFTRD_EMCJet[i];
-        delete fHistEMC_TPCTOFTRD_EMCJet[i];
         
-        delete fHistTRD_TPC_EMCJet[i];
-        delete fHistTRD_TOF_EMCJet[i];
-        delete fHistTRD_EMC_EMCJet[i];
-        delete fHistTRD_TPCTOF_EMCJet[i];
         delete fHistTRD_TPCEMC_EMCJet[i];
-        delete fHistTRD_TOFEMC_EMCJet[i];
-        delete fHistTRD_TPCTOFEMC_EMCJet[i];
-        
+
         delete fHistM02_All_MB[i];
         delete fHistM02_Elec_MB[i];
         delete fHistM20_All_MB[i];
@@ -1001,74 +544,6 @@ AliAnalysisTaskPSHFE::~AliAnalysisTaskPSHFE()
         delete fHistM02_Elec_EMCJet[i];
         delete fHistM20_All_EMCJet[i];
         delete fHistM20_Elec_EMCJet[i];
-    }
-    
-    //Region Histos
-    
-    for(Int_t i=0;i<4;i++){
-        //Tag Side Histos
-        delete fHistTrkMultTag_MB[i];
-        delete fHistTrkMultTag_EMC7[i];
-        delete fHistTrkMultTag_EMC8[i];
-        delete fHistTrkMultTag_EMCJet[i];
-        
-        delete fHistTrkPtTag_MB[i];
-        delete fHistTrkPtTag_EMC7[i];
-        delete fHistTrkPtTag_EMC8[i];
-        delete fHistTrkPtTag_EMCJet[i];
-          
-        delete fHistDeDxPtTag_MB[i];
-        delete fHistDeDxPtTag_EMC7[i];
-        delete fHistDeDxPtTag_EMC8[i];
-        delete fHistDeDxPtTag_EMCJet[i];
-          
-        //Away Side Histos
-        delete fHistTrkMultAway_MB[i];
-        delete fHistTrkMultAway_EMC7[i];
-        delete fHistTrkMultAway_EMC8[i];
-        delete fHistTrkMultAway_EMCJet[i];
-        
-        delete fHistTrkPtAway_MB[i];
-        delete fHistTrkPtAway_EMC7[i];
-        delete fHistTrkPtAway_EMC8[i];
-        delete fHistTrkPtAway_EMCJet[i];
-         
-        delete fHistDeDxPtAway_MB[i];
-        delete fHistDeDxPtAway_EMC7[i];
-        delete fHistDeDxPtAway_EMC8[i];
-        delete fHistDeDxPtAway_EMCJet[i];
-            
-        //TransMax Side Histos
-        delete fHistTrkMultTransMax_MB[i];
-        delete fHistTrkMultTransMax_EMC7[i];
-        delete fHistTrkMultTransMax_EMC8[i];
-        delete fHistTrkMultTransMax_EMCJet[i];
-        
-        delete fHistTrkPtTransMax_MB[i];
-        delete fHistTrkPtTransMax_EMC7[i];
-        delete fHistTrkPtTransMax_EMC8[i];
-        delete fHistTrkPtTransMax_EMCJet[i];
-        
-        delete fHistDeDxPtTransMax_MB[i];
-        delete fHistDeDxPtTransMax_EMC7[i];
-        delete fHistDeDxPtTransMax_EMC8[i];
-        delete fHistDeDxPtTransMax_EMCJet[i];
-        
-        //TransMin Side Histos
-        delete fHistTrkMultTransMin_MB[i];
-        delete fHistTrkMultTransMin_EMC7[i];
-        delete fHistTrkMultTransMin_EMC8[i];
-        delete fHistTrkMultTransMin_EMCJet[i];
-            
-        delete fHistTrkPtTransMin_MB[i];
-        delete fHistTrkPtTransMin_EMC7[i];
-        delete fHistTrkPtTransMin_EMC8[i];
-        delete fHistTrkPtTransMin_EMCJet[i];
-            
-        delete fHistDeDxPtTransMin_MB[i];
-        delete fHistDeDxPtTransMin_EMC7[i];
-        delete fHistDeDxPtTransMin_EMC8[i];
-        delete fHistDeDxPtTransMin_EMCJet[i];
     }
     
     delete fTrackCutsStrong;
@@ -1228,709 +703,80 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistPIDRejection->GetXaxis()->SetBinLabel(3, "TRD");
     fHistPIDRejection->GetXaxis()->SetBinLabel(4, "EMC");
     
-    //Make emcal bad cluster id histo
-    fHistBadEMCclusID = new TH1F("fHistBadEMCclusID", "Number of EMCal clusters with ID -99999", 2, 1, 2);
-    fHistBadEMCclusID->GetXaxis()->SetBinLabel(1, "Bad Clusters");
-    fHistBadEMCclusID->GetYaxis()->SetTitle("Cts");
-    
     //Number of electrons per event histo
     fHistNElecPerEvent = new TH1F("fHistNElecPerEvent", "Number of tagged electrons per event", 5, 1, 5);
     fHistNElecPerEvent->GetXaxis()->SetTitle("Num. of Electrons");
     fHistNElecPerEvent->GetYaxis()->SetTitle("Cts");
     
-    //Region Histos
-    
-    for(Int_t i=0;i<4;i++){
-           
-           //Tag Side Histos
-       
-           //Multiplicity Histos
-           fHistTrkMultTag_MB[i] = new TH1F(TString::Format("fHistTrkMultTag_MB_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTag_MB[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTag_MB[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTag_EMC7[i] = new TH1F(TString::Format("fHistTrkMultTag_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTag_EMC7[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTag_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTag_EMC8[i] = new TH1F(TString::Format("fHistTrkMultTag_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTag_EMC8[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTag_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTag_EMCJet[i] = new TH1F(TString::Format("fHistTrkMultTag_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTag_EMCJet[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTag_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //Pt Histos
-           fHistTrkPtTag_MB[i] = new TH1F(TString::Format("fHistTrkPtTag_MB_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTag_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTag_MB[i]->GetYaxis()->SetTitle("Cts");
-      
-           fHistTrkPtTag_EMC7[i] = new TH1F(TString::Format("fHistTrkPtTag_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTag_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTag_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTag_EMC8[i] = new TH1F(TString::Format("fHistTrkPtTag_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTag_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTag_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTag_EMCJet[i] = new TH1F(TString::Format("fHistTrkPtTag_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTag_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTag_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //DeDx by Pt Histos
-           fHistDeDxPtTag_MB[i] = new TH2F(TString::Format("fHistDeDxPtTag_MB_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTag_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTag_MB[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTag_EMC7[i] = new TH2F(TString::Format("fHistDeDxPtTag_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTag_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTag_EMC7[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTag_EMC8[i] = new TH2F(TString::Format("fHistDeDxPtTag_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTag_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTag_EMC8[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTag_EMCJet[i] = new TH2F(TString::Format("fHistDeDxPtTag_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Tag Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTag_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTag_EMCJet[i]->GetYaxis()->SetTitle("TPC dE/dx");
-        
-           //Away Side Histos
-       
-           //Multiplicity Histos
-           fHistTrkMultAway_MB[i] = new TH1F(TString::Format("fHistTrkMultAway_MB_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultAway_MB[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultAway_MB[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultAway_EMC7[i] = new TH1F(TString::Format("fHistTrkMultAway_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultAway_EMC7[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultAway_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultAway_EMC8[i] = new TH1F(TString::Format("fHistTrkMultAway_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultAway_EMC8[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultAway_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultAway_EMCJet[i] = new TH1F(TString::Format("fHistTrkMultAway_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultAway_EMCJet[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultAway_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //Pt Histos
-           fHistTrkPtAway_MB[i] = new TH1F(TString::Format("fHistTrkPtAway_MB_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtAway_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtAway_MB[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtAway_EMC7[i] = new TH1F(TString::Format("fHistTrkPtAway_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtAway_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtAway_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtAway_EMC8[i] = new TH1F(TString::Format("fHistTrkPtAway_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtAway_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtAway_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtAway_EMCJet[i] = new TH1F(TString::Format("fHistTrkPtAway_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtAway_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtAway_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //DeDx by Pt Histos
-           fHistDeDxPtAway_MB[i] = new TH2F(TString::Format("fHistDeDxPtAway_MB_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtAway_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtAway_MB[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtAway_EMC7[i] = new TH2F(TString::Format("fHistDeDxPtAway_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtAway_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtAway_EMC7[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtAway_EMC8[i] = new TH2F(TString::Format("fHistDeDxPtAway_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtAway_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtAway_EMC8[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtAway_EMCJet[i] = new TH2F(TString::Format("fHistDeDxPtAway_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the Away Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtAway_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtAway_EMCJet[i]->GetYaxis()->SetTitle("TPC dE/dx");
-        
-           //transMin Side Histos
-       
-           //Multiplicity Histos
-           fHistTrkMultTransMin_MB[i] = new TH1F(TString::Format("fHistTrkMultTransMin_MB_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMin_MB[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMin_MB[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTransMin_EMC7[i] = new TH1F(TString::Format("fHistTrkMultTransMin_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMin_EMC7[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMin_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTransMin_EMC8[i] = new TH1F(TString::Format("fHistTrkMultTransMin_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMin_EMC8[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMin_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTransMin_EMCJet[i] = new TH1F(TString::Format("fHistTrkMultTransMin_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMin_EMCJet[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMin_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //Pt Histos
-           fHistTrkPtTransMin_MB[i] = new TH1F(TString::Format("fHistTrkPtTransMin_MB_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMin_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMin_MB[i]->GetYaxis()->SetTitle("Cts");
-      
-           fHistTrkPtTransMin_EMC7[i] = new TH1F(TString::Format("fHistTrkPtTransMin_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMin_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMin_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTransMin_EMC8[i] = new TH1F(TString::Format("fHistTrkPtTransMin_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMin_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMin_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTransMin_EMCJet[i] = new TH1F(TString::Format("fHistTrkPtTransMin_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMin_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMin_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //DeDx by Pt Histos
-           fHistDeDxPtTransMin_MB[i] = new TH2F(TString::Format("fHistDeDxPtTransMin_MB_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMin_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMin_MB[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTransMin_EMC7[i] = new TH2F(TString::Format("fHistDeDxPtTransMin_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMin_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMin_EMC7[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTransMin_EMC8[i] = new TH2F(TString::Format("fHistDeDxPtTransMin_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMin_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMin_EMC8[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTransMin_EMCJet[i] = new TH2F(TString::Format("fHistDeDxPtTransMin_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMin Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMin_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMin_EMCJet[i]->GetYaxis()->SetTitle("TPC dE/dx");
-            
-           //TransMax Side Histos
-       
-           //Multiplicity Histos
-           fHistTrkMultTransMax_MB[i] = new TH1F(TString::Format("fHistTrkMultTransMax_MB_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMax_MB[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMax_MB[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTransMax_EMC7[i] = new TH1F(TString::Format("fHistTrkMultTransMax_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMax_EMC7[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMax_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTransMax_EMC8[i] = new TH1F(TString::Format("fHistTrkMultTransMax_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMax_EMC8[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMax_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkMultTransMax_EMCJet[i] = new TH1F(TString::Format("fHistTrkMultTransMax_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Multiplicity of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 400, 0, 400);
-           fHistTrkMultTransMax_EMCJet[i]->GetXaxis()->SetTitle("Track Multiplicity");
-           fHistTrkMultTransMax_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //Pt Histos
-           fHistTrkPtTransMax_MB[i] = new TH1F(TString::Format("fHistTrkPtTransMax_MB_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMax_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMax_MB[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTransMax_EMC7[i] = new TH1F(TString::Format("fHistTrkPtTransMax_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMax_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMax_EMC7[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTransMax_EMC8[i] = new TH1F(TString::Format("fHistTrkPtTransMax_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMax_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMax_EMC8[i]->GetYaxis()->SetTitle("Cts");
-       
-           fHistTrkPtTransMax_EMCJet[i] = new TH1F(TString::Format("fHistTrkPtTransMax_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("Pt Distribution of Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8);
-           fHistTrkPtTransMax_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistTrkPtTransMax_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-            
-           //DeDx by Pt Histos
-           fHistDeDxPtTransMax_MB[i] = new TH2F(TString::Format("fHistDeDxPtTransMax_MB_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMax_MB[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMax_MB[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTransMax_EMC7[i] = new TH2F(TString::Format("fHistDeDxPtTransMax_EMC7_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMax_EMC7[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMax_EMC7[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTransMax_EMC8[i] = new TH2F(TString::Format("fHistDeDxPtTransMax_EMC8_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMax_EMC8[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMax_EMC8[i]->GetYaxis()->SetTitle("TPC dE/dx");
-       
-           fHistDeDxPtTransMax_EMCJet[i] = new TH2F(TString::Format("fHistDeDxPtTransMax_EMCJet_%s", ptRangesRegion[i].Data()), TString::Format("DeDx by Pt for Tracks on the TransMax Side of Event with a %s pt electron", ptRangesRegion[i].Data()), 800, 0, 8, 300, 0, 12);
-           fHistDeDxPtTransMax_EMCJet[i]->GetXaxis()->SetTitle("Track Pt");
-           fHistDeDxPtTransMax_EMCJet[i]->GetYaxis()->SetTitle("TPC dE/dx");
-    }
-    
     //PID Plots
     
     //TPC PID Plots
     for(Int_t i=0; i<6; i++){
-        //MB
-        fHistTPC_TOF_MB[i] = new TH2F(TString::Format("fHistTPC_TOF_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOF_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOF_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_EMC_MB[i] = new TH2F(TString::Format("fHistTPC_EMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_EMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_EMC_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TRD_MB[i] = new TH2F(TString::Format("fHistTPC_TRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFEMC_MB[i] = new TH2F(TString::Format("fHistTPC_TOFEMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMC_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFTRD_MB[i] = new TH2F(TString::Format("fHistTPC_TOFTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFTRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFTRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
+        //MB        
         fHistTPC_EMCTRD_MB[i] = new TH2F(TString::Format("fHistTPC_EMCTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
         fHistTPC_EMCTRD_MB[i]->GetXaxis()->SetTitle("Pt");
         fHistTPC_EMCTRD_MB[i]->GetYaxis()->SetTitle("nSigma");
         
-        fHistTPC_TOFEMCTRD_MB[i] = new TH2F(TString::Format("fHistTPC_TOFEMCTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMCTRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMCTRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-    
         //EMC7
-        fHistTPC_TOF_EMC7[i] = new TH2F(TString::Format("fHistTPC_TOF_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOF_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOF_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_EMC_EMC7[i] = new TH2F(TString::Format("fHistTPC_EMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_EMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_EMC_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TRD_EMC7[i] = new TH2F(TString::Format("fHistTPC_TRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFEMC_EMC7[i] = new TH2F(TString::Format("fHistTPC_TOFEMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMC_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFTRD_EMC7[i] = new TH2F(TString::Format("fHistTPC_TOFTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFTRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFTRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
         fHistTPC_EMCTRD_EMC7[i] = new TH2F(TString::Format("fHistTPC_EMCTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
         fHistTPC_EMCTRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
         fHistTPC_EMCTRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFEMCTRD_EMC7[i] = new TH2F(TString::Format("fHistTPC_TOFEMCTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMCTRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMCTRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
+              
         //EMC8
-        fHistTPC_TOF_EMC8[i] = new TH2F(TString::Format("fHistTPC_TOF_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOF_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOF_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_EMC_EMC8[i] = new TH2F(TString::Format("fHistTPC_EMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_EMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_EMC_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TRD_EMC8[i] = new TH2F(TString::Format("fHistTPC_TRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFEMC_EMC8[i] = new TH2F(TString::Format("fHistTPC_TOFEMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMC_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFTRD_EMC8[i] = new TH2F(TString::Format("fHistTPC_TOFTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFTRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFTRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
         fHistTPC_EMCTRD_EMC8[i] = new TH2F(TString::Format("fHistTPC_EMCTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
         fHistTPC_EMCTRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
         fHistTPC_EMCTRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
         
-        fHistTPC_TOFEMCTRD_EMC8[i] = new TH2F(TString::Format("fHistTPC_TOFEMCTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMCTRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMCTRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
         //EMCJet
-        fHistTPC_TOF_EMCJet[i] = new TH2F(TString::Format("fHistTPC_TOF_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOF_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOF_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_EMC_EMCJet[i] = new TH2F(TString::Format("fHistTPC_EMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_EMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_EMC_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TRD_EMCJet[i] = new TH2F(TString::Format("fHistTPC_TRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFEMC_EMCJet[i] = new TH2F(TString::Format("fHistTPC_TOFEMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMC_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFTRD_EMCJet[i] = new TH2F(TString::Format("fHistTPC_TOFTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFTRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFTRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
         fHistTPC_EMCTRD_EMCJet[i] = new TH2F(TString::Format("fHistTPC_EMCTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
         fHistTPC_EMCTRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
         fHistTPC_EMCTRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTPC_TOFEMCTRD_EMCJet[i] = new TH2F(TString::Format("fHistTPC_TOFEMCTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TPC nSigma for tracks with Pt between %s after TOF, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTPC_TOFEMCTRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTPC_TOFEMCTRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-    }
-    
-    //TOF PID Plots
-    for(Int_t i=0; i<6; i++){
-        //MB
-        fHistTOF_TPC_MB[i] = new TH2F(TString::Format("fHistTOF_TPC_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPC_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMC_MB[i] = new TH2F(TString::Format("fHistTOF_EMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMC_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TRD_MB[i] = new TH2F(TString::Format("fHistTOF_TRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMC_MB[i] = new TH2F(TString::Format("fHistTOF_TPCEMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMC_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCTRD_MB[i] = new TH2F(TString::Format("fHistTOF_TPCTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCTRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCTRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMCTRD_MB[i] = new TH2F(TString::Format("fHistTOF_EMCTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMCTRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMCTRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMCTRD_MB[i] = new TH2F(TString::Format("fHistTOF_TPCEMCTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMCTRD_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMCTRD_MB[i]->GetYaxis()->SetTitle("nSigma");
-    
-        //EMC7
-        fHistTOF_TPC_EMC7[i] = new TH2F(TString::Format("fHistTOF_TPC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPC_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMC_EMC7[i] = new TH2F(TString::Format("fHistTOF_EMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMC_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TRD_EMC7[i] = new TH2F(TString::Format("fHistTOF_TRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMC_EMC7[i] = new TH2F(TString::Format("fHistTOF_TPCEMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMC_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCTRD_EMC7[i] = new TH2F(TString::Format("fHistTOF_TPCTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCTRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCTRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMCTRD_EMC7[i] = new TH2F(TString::Format("fHistTOF_EMCTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMCTRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMCTRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMCTRD_EMC7[i] = new TH2F(TString::Format("fHistTOF_TPCEMCTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMCTRD_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMCTRD_EMC7[i]->GetYaxis()->SetTitle("nSigma");
-        
-        //EMC8
-        fHistTOF_TPC_EMC8[i] = new TH2F(TString::Format("fHistTOF_TPC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPC_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMC_EMC8[i] = new TH2F(TString::Format("fHistTOF_EMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMC_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TRD_EMC8[i] = new TH2F(TString::Format("fHistTOF_TRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMC_EMC8[i] = new TH2F(TString::Format("fHistTOF_TPCEMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMC_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCTRD_EMC8[i] = new TH2F(TString::Format("fHistTOF_TPCTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCTRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCTRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMCTRD_EMC8[i] = new TH2F(TString::Format("fHistTOF_EMCTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMCTRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMCTRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMCTRD_EMC8[i] = new TH2F(TString::Format("fHistTOF_TPCEMCTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMCTRD_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMCTRD_EMC8[i]->GetYaxis()->SetTitle("nSigma");
-        
-        //EMCJet
-        fHistTOF_TPC_EMCJet[i] = new TH2F(TString::Format("fHistTOF_TPC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPC_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMC_EMCJet[i] = new TH2F(TString::Format("fHistTOF_EMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMC_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TRD_EMCJet[i] = new TH2F(TString::Format("fHistTOF_TRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMC_EMCJet[i] = new TH2F(TString::Format("fHistTOF_TPCEMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMC_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCTRD_EMCJet[i] = new TH2F(TString::Format("fHistTOF_TPCTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCTRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCTRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_EMCTRD_EMCJet[i] = new TH2F(TString::Format("fHistTOF_EMCTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_EMCTRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_EMCTRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
-        
-        fHistTOF_TPCEMCTRD_EMCJet[i] = new TH2F(TString::Format("fHistTOF_TPCEMCTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TOF nSigma for tracks with Pt between %s after TOF, EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, -10, 10);
-        fHistTOF_TPCEMCTRD_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTOF_TPCEMCTRD_EMCJet[i]->GetYaxis()->SetTitle("nSigma");
     }
     
     //EMC PID Plots
     for(Int_t i=0; i<6; i++){
         //MB
-        fHistEMC_TOF_MB[i] = new TH1F(TString::Format("fHistEMC_TOF_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOF_MB[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOF_MB[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPC_MB[i] = new TH1F(TString::Format("fHistEMC_TPC_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPC_MB[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPC_MB[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TRD_MB[i] = new TH1F(TString::Format("fHistEMC_TRD_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TRD_MB[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TRD_MB[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPCTOF_MB[i] = new TH1F(TString::Format("fHistEMC_TPCTOF_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOF_MB[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOF_MB[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TOFTRD_MB[i] = new TH1F(TString::Format("fHistEMC_TOFTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOFTRD_MB[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOFTRD_MB[i]->GetYaxis()->SetTitle("Cts");
-        
         fHistEMC_TPCTRD_MB[i] = new TH1F(TString::Format("fHistEMC_TPCTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
         fHistEMC_TPCTRD_MB[i]->GetXaxis()->SetTitle("E/p");
         fHistEMC_TPCTRD_MB[i]->GetYaxis()->SetTitle("Cts");
         
-        fHistEMC_TPCTOFTRD_MB[i] = new TH1F(TString::Format("fHistEMC_TPCTOFTRD_MB_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF, TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOFTRD_MB[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOFTRD_MB[i]->GetYaxis()->SetTitle("Cts");
-    
         //EMC7
-        fHistEMC_TOF_EMC7[i] = new TH1F(TString::Format("fHistEMC_TOF_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOF_EMC7[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOF_EMC7[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPC_EMC7[i] = new TH1F(TString::Format("fHistEMC_TPC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPC_EMC7[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPC_EMC7[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TRD_EMC7[i] = new TH1F(TString::Format("fHistEMC_TRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TRD_EMC7[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TRD_EMC7[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPCTOF_EMC7[i] = new TH1F(TString::Format("fHistEMC_TPCTOF_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOF_EMC7[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOF_EMC7[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TOFTRD_EMC7[i] = new TH1F(TString::Format("fHistEMC_TOFTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOFTRD_EMC7[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOFTRD_EMC7[i]->GetYaxis()->SetTitle("Cts");
-        
         fHistEMC_TPCTRD_EMC7[i] = new TH1F(TString::Format("fHistEMC_TPCTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
         fHistEMC_TPCTRD_EMC7[i]->GetXaxis()->SetTitle("E/p");
         fHistEMC_TPCTRD_EMC7[i]->GetYaxis()->SetTitle("Cts");
         
-        fHistEMC_TPCTOFTRD_EMC7[i] = new TH1F(TString::Format("fHistEMC_TPCTOFTRD_EMC7_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF, TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOFTRD_EMC7[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOFTRD_EMC7[i]->GetYaxis()->SetTitle("Cts");
-        
         //EMC8
-        fHistEMC_TOF_EMC8[i] = new TH1F(TString::Format("fHistEMC_TOF_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOF_EMC8[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOF_EMC8[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPC_EMC8[i] = new TH1F(TString::Format("fHistEMC_TPC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPC_EMC8[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPC_EMC8[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TRD_EMC8[i] = new TH1F(TString::Format("fHistEMC_TRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TRD_EMC8[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TRD_EMC8[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPCTOF_EMC8[i] = new TH1F(TString::Format("fHistEMC_TPCTOF_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOF_EMC8[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOF_EMC8[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TOFTRD_EMC8[i] = new TH1F(TString::Format("fHistEMC_TOFTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOFTRD_EMC8[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOFTRD_EMC8[i]->GetYaxis()->SetTitle("Cts");
-        
         fHistEMC_TPCTRD_EMC8[i] = new TH1F(TString::Format("fHistEMC_TPCTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
         fHistEMC_TPCTRD_EMC8[i]->GetXaxis()->SetTitle("E/p");
         fHistEMC_TPCTRD_EMC8[i]->GetYaxis()->SetTitle("Cts");
         
-        fHistEMC_TPCTOFTRD_EMC8[i] = new TH1F(TString::Format("fHistEMC_TPCTOFTRD_EMC8_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF, TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOFTRD_EMC8[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOFTRD_EMC8[i]->GetYaxis()->SetTitle("Cts");
-        
         //EMCJet
-        fHistEMC_TOF_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TOF_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOF_EMCJet[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOF_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPC_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TPC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPC_EMCJet[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPC_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TRD_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TRD_EMCJet[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TRD_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPCTOF_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TPCTOF_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOF_EMCJet[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOF_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TOFTRD_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TOFTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TOFTRD_EMCJet[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TOFTRD_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-        
         fHistEMC_TPCTRD_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TPCTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after EMC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
         fHistEMC_TPCTRD_EMCJet[i]->GetXaxis()->SetTitle("E/p");
         fHistEMC_TPCTRD_EMCJet[i]->GetYaxis()->SetTitle("Cts");
-        
-        fHistEMC_TPCTOFTRD_EMCJet[i] = new TH1F(TString::Format("fHistEMC_TPCTOFTRD_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("E/p for tracks with Pt between %s after TOF, TPC and TRD cuts",ptRangesPID[i].Data()), 100, 0, 1.5);
-        fHistEMC_TPCTOFTRD_EMCJet[i]->GetXaxis()->SetTitle("E/p");
-        fHistEMC_TPCTOFTRD_EMCJet[i]->GetYaxis()->SetTitle("Cts");
     }
     
     //TRD PID Plots
     for(Int_t i=0; i<6; i++){
         //MB
-        fHistTRD_TOF_MB[i] = new TH2F(TString::Format("fHistTRD_TOF_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOF_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOF_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPC_MB[i] = new TH2F(TString::Format("fHistTRD_TPC_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPC_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_EMC_MB[i] = new TH2F(TString::Format("fHistTRD_EMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_EMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_EMC_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOF_MB[i] = new TH2F(TString::Format("fHistTRD_TPCTOF_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOF_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOF_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TOFEMC_MB[i] = new TH2F(TString::Format("fHistTRD_TOFEMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOFEMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOFEMC_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
         fHistTRD_TPCEMC_MB[i] = new TH2F(TString::Format("fHistTRD_TPCEMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
         fHistTRD_TPCEMC_MB[i]->GetXaxis()->SetTitle("Pt");
         fHistTRD_TPCEMC_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOFEMC_MB[i] = new TH2F(TString::Format("fHistTRD_TPCTOFEMC_MB_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF, TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOFEMC_MB[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOFEMC_MB[i]->GetYaxis()->SetTitle("electron Likelihood");
     
         //EMC7
-        fHistTRD_TOF_EMC7[i] = new TH2F(TString::Format("fHistTRD_TOF_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOF_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOF_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPC_EMC7[i] = new TH2F(TString::Format("fHistTRD_TPC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPC_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_EMC_EMC7[i] = new TH2F(TString::Format("fHistTRD_EMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_EMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_EMC_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOF_EMC7[i] = new TH2F(TString::Format("fHistTRD_TPCTOF_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOF_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOF_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TOFEMC_EMC7[i] = new TH2F(TString::Format("fHistTRD_TOFEMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOFEMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOFEMC_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
         fHistTRD_TPCEMC_EMC7[i] = new TH2F(TString::Format("fHistTRD_TPCEMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
         fHistTRD_TPCEMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
         fHistTRD_TPCEMC_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
         
-        fHistTRD_TPCTOFEMC_EMC7[i] = new TH2F(TString::Format("fHistTRD_TPCTOFEMC_EMC7_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF, TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOFEMC_EMC7[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOFEMC_EMC7[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
         //EMC8
-        fHistTRD_TOF_EMC8[i] = new TH2F(TString::Format("fHistTRD_TOF_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOF_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOF_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPC_EMC8[i] = new TH2F(TString::Format("fHistTRD_TPC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPC_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_EMC_EMC8[i] = new TH2F(TString::Format("fHistTRD_EMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_EMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_EMC_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOF_EMC8[i] = new TH2F(TString::Format("fHistTRD_TPCTOF_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOF_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOF_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TOFEMC_EMC8[i] = new TH2F(TString::Format("fHistTRD_TOFEMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOFEMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOFEMC_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
         fHistTRD_TPCEMC_EMC8[i] = new TH2F(TString::Format("fHistTRD_TPCEMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
         fHistTRD_TPCEMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
         fHistTRD_TPCEMC_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOFEMC_EMC8[i] = new TH2F(TString::Format("fHistTRD_TPCTOFEMC_EMC8_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF, TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOFEMC_EMC8[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOFEMC_EMC8[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
+       
         //EMCJet
-        fHistTRD_TOF_EMCJet[i] = new TH2F(TString::Format("fHistTRD_TOF_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOF_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOF_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPC_EMCJet[i] = new TH2F(TString::Format("fHistTRD_TPC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_EMC_EMCJet[i] = new TH2F(TString::Format("fHistTRD_EMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_EMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_EMC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOF_EMCJet[i] = new TH2F(TString::Format("fHistTRD_TPCTOF_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and TPC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOF_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOF_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TOFEMC_EMCJet[i] = new TH2F(TString::Format("fHistTRD_TOFEMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TOFEMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TOFEMC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
         fHistTRD_TPCEMC_EMCJet[i] = new TH2F(TString::Format("fHistTRD_TPCEMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after EMC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
         fHistTRD_TPCEMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
         fHistTRD_TPCEMC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
-        
-        fHistTRD_TPCTOFEMC_EMCJet[i] = new TH2F(TString::Format("fHistTRD_TPCTOFEMC_EMCJet_%s",ptRangesPID[i].Data()), TString::Format("TRD electron Likelihood for tracks with Pt between %s after TOF, TPC and EMC cuts",ptRangesPID[i].Data()), 100, 0, 10, 800, 0, 1);
-        fHistTRD_TPCTOFEMC_EMCJet[i]->GetXaxis()->SetTitle("Pt");
-        fHistTRD_TPCTOFEMC_EMCJet[i]->GetYaxis()->SetTitle("electron Likelihood");
     }
     
     //EMC Shower Shape PID Plots
@@ -2453,7 +1299,6 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
         
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
-    fOutputMB->Add(fHistBadEMCclusID);
     fOutputMB->Add(fHistNElecPerEvent);
     fOutputMB->Add(fHistPhotoMismatch);
     //ditto for the pt sum plots
@@ -2482,37 +1327,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistOpAngElecLike_MB);
     fOutputMB->Add(fHistOpAngElecUnLike_MB);
     for(Int_t i=0; i<6;i++){
-        fOutputMB->Add(fHistTPC_TOF_MB[i]);
-        fOutputMB->Add(fHistTPC_EMC_MB[i]);
-        fOutputMB->Add(fHistTPC_TRD_MB[i]);
-        fOutputMB->Add(fHistTPC_TOFEMC_MB[i]);
-        fOutputMB->Add(fHistTPC_TOFTRD_MB[i]);
         fOutputMB->Add(fHistTPC_EMCTRD_MB[i]);
-        fOutputMB->Add(fHistTPC_TOFEMCTRD_MB[i]);
         
-        fOutputMB->Add(fHistTOF_TPC_MB[i]);
-        fOutputMB->Add(fHistTOF_EMC_MB[i]);
-        fOutputMB->Add(fHistTOF_TRD_MB[i]);
-        fOutputMB->Add(fHistTOF_TPCEMC_MB[i]);
-        fOutputMB->Add(fHistTOF_TPCTRD_MB[i]);
-        fOutputMB->Add(fHistTOF_EMCTRD_MB[i]);
-        fOutputMB->Add(fHistTOF_TPCEMCTRD_MB[i]);
-        
-        fOutputMB->Add(fHistEMC_TPC_MB[i]);
-        fOutputMB->Add(fHistEMC_TOF_MB[i]);
-        fOutputMB->Add(fHistEMC_TRD_MB[i]);
-        fOutputMB->Add(fHistEMC_TPCTOF_MB[i]);
         fOutputMB->Add(fHistEMC_TPCTRD_MB[i]);
-        fOutputMB->Add(fHistEMC_TOFTRD_MB[i]);
-        fOutputMB->Add(fHistEMC_TPCTOFTRD_MB[i]);
         
-        fOutputMB->Add(fHistTRD_TPC_MB[i]);
-        fOutputMB->Add(fHistTRD_TOF_MB[i]);
-        fOutputMB->Add(fHistTRD_EMC_MB[i]);
-        fOutputMB->Add(fHistTRD_TPCTOF_MB[i]);
         fOutputMB->Add(fHistTRD_TPCEMC_MB[i]);
-        fOutputMB->Add(fHistTRD_TOFEMC_MB[i]);
-        fOutputMB->Add(fHistTRD_TPCTOFEMC_MB[i]);
         
         fOutputMB->Add(fHistM02_All_MB[i]);
         fOutputMB->Add(fHistM20_All_MB[i]);
@@ -2549,37 +1368,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistOpAngElecLike_EMC7);
     fOutputEMC7->Add(fHistOpAngElecUnLike_EMC7);
     for(Int_t i=0; i<6;i++){
-        fOutputEMC7->Add(fHistTPC_TOF_EMC7[i]);
-        fOutputEMC7->Add(fHistTPC_EMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTPC_TRD_EMC7[i]);
-        fOutputEMC7->Add(fHistTPC_TOFEMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTPC_TOFTRD_EMC7[i]);
         fOutputEMC7->Add(fHistTPC_EMCTRD_EMC7[i]);
-        fOutputEMC7->Add(fHistTPC_TOFEMCTRD_EMC7[i]);
         
-        fOutputEMC7->Add(fHistTOF_TPC_EMC7[i]);
-        fOutputEMC7->Add(fHistTOF_EMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTOF_TRD_EMC7[i]);
-        fOutputEMC7->Add(fHistTOF_TPCEMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTOF_TPCTRD_EMC7[i]);
-        fOutputEMC7->Add(fHistTOF_EMCTRD_EMC7[i]);
-        fOutputEMC7->Add(fHistTOF_TPCEMCTRD_EMC7[i]);
-        
-        fOutputEMC7->Add(fHistEMC_TPC_EMC7[i]);
-        fOutputEMC7->Add(fHistEMC_TOF_EMC7[i]);
-        fOutputEMC7->Add(fHistEMC_TRD_EMC7[i]);
-        fOutputEMC7->Add(fHistEMC_TPCTOF_EMC7[i]);
         fOutputEMC7->Add(fHistEMC_TPCTRD_EMC7[i]);
-        fOutputEMC7->Add(fHistEMC_TOFTRD_EMC7[i]);
-        fOutputEMC7->Add(fHistEMC_TPCTOFTRD_EMC7[i]);
         
-        fOutputEMC7->Add(fHistTRD_TPC_EMC7[i]);
-        fOutputEMC7->Add(fHistTRD_TOF_EMC7[i]);
-        fOutputEMC7->Add(fHistTRD_EMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTRD_TPCTOF_EMC7[i]);
         fOutputEMC7->Add(fHistTRD_TPCEMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTRD_TOFEMC_EMC7[i]);
-        fOutputEMC7->Add(fHistTRD_TPCTOFEMC_EMC7[i]);
         
         fOutputEMC7->Add(fHistM02_All_EMC7[i]);
         fOutputEMC7->Add(fHistM20_All_EMC7[i]);
@@ -2616,37 +1409,11 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC8->Add(fHistOpAngElecLike_EMC8);
     fOutputEMC8->Add(fHistOpAngElecUnLike_EMC8);
     for(Int_t i=0; i<6;i++){
-        fOutputEMC8->Add(fHistTPC_TOF_EMC8[i]);
-        fOutputEMC8->Add(fHistTPC_EMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTPC_TRD_EMC8[i]);
-        fOutputEMC8->Add(fHistTPC_TOFEMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTPC_TOFTRD_EMC8[i]);
         fOutputEMC8->Add(fHistTPC_EMCTRD_EMC8[i]);
-        fOutputEMC8->Add(fHistTPC_TOFEMCTRD_EMC8[i]);
         
-        fOutputEMC8->Add(fHistTOF_TPC_EMC8[i]);
-        fOutputEMC8->Add(fHistTOF_EMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTOF_TRD_EMC8[i]);
-        fOutputEMC8->Add(fHistTOF_TPCEMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTOF_TPCTRD_EMC8[i]);
-        fOutputEMC8->Add(fHistTOF_EMCTRD_EMC8[i]);
-        fOutputEMC8->Add(fHistTOF_TPCEMCTRD_EMC8[i]);
-        
-        fOutputEMC8->Add(fHistEMC_TPC_EMC8[i]);
-        fOutputEMC8->Add(fHistEMC_TOF_EMC8[i]);
-        fOutputEMC8->Add(fHistEMC_TRD_EMC8[i]);
-        fOutputEMC8->Add(fHistEMC_TPCTOF_EMC8[i]);
         fOutputEMC8->Add(fHistEMC_TPCTRD_EMC8[i]);
-        fOutputEMC8->Add(fHistEMC_TOFTRD_EMC8[i]);
-        fOutputEMC8->Add(fHistEMC_TPCTOFTRD_EMC8[i]);
-        
-        fOutputEMC8->Add(fHistTRD_TPC_EMC8[i]);
-        fOutputEMC8->Add(fHistTRD_TOF_EMC8[i]);
-        fOutputEMC8->Add(fHistTRD_EMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTRD_TPCTOF_EMC8[i]);
+       
         fOutputEMC8->Add(fHistTRD_TPCEMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTRD_TOFEMC_EMC8[i]);
-        fOutputEMC8->Add(fHistTRD_TPCTOFEMC_EMC8[i]);
         
         fOutputEMC8->Add(fHistM02_All_EMC8[i]);
         fOutputEMC8->Add(fHistM20_All_EMC8[i]);
@@ -2683,38 +1450,12 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistOpAngElecLike_EMCJet);
     fOutputEMCJet->Add(fHistOpAngElecUnLike_EMCJet);
     for(Int_t i=0; i<6;i++){
-        fOutputEMCJet->Add(fHistTPC_TOF_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTPC_EMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTPC_TRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTPC_TOFEMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTPC_TOFTRD_EMCJet[i]);
         fOutputEMCJet->Add(fHistTPC_EMCTRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTPC_TOFEMCTRD_EMCJet[i]);
-        
-        fOutputEMCJet->Add(fHistTOF_TPC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTOF_EMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTOF_TRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTOF_TPCEMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTOF_TPCTRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTOF_EMCTRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTOF_TPCEMCTRD_EMCJet[i]);
-        
-        fOutputEMCJet->Add(fHistEMC_TPC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistEMC_TOF_EMCJet[i]);
-        fOutputEMCJet->Add(fHistEMC_TRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistEMC_TPCTOF_EMCJet[i]);
+ 
         fOutputEMCJet->Add(fHistEMC_TPCTRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistEMC_TOFTRD_EMCJet[i]);
-        fOutputEMCJet->Add(fHistEMC_TPCTOFTRD_EMCJet[i]);
-        
-        fOutputEMCJet->Add(fHistTRD_TPC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTRD_TOF_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTRD_EMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTRD_TPCTOF_EMCJet[i]);
+       
         fOutputEMCJet->Add(fHistTRD_TPCEMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTRD_TOFEMC_EMCJet[i]);
-        fOutputEMCJet->Add(fHistTRD_TPCTOFEMC_EMCJet[i]);
-        
+       
         fOutputEMCJet->Add(fHistM02_All_EMCJet[i]);
         fOutputEMCJet->Add(fHistM20_All_EMCJet[i]);
         fOutputEMCJet->Add(fHistM02_Elec_EMCJet[i]);
@@ -2731,91 +1472,6 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     }
     fOutputEMCJet->Add(fHistDPhi28_EMCJet);
     fOutputEMCJet->Add(fHistDPhiDEta28_EMCJet);
-    
-    //Add Region Histos
-    
-    for(Int_t i=0;i<4;i++){
-        
-        //Tag Side Histos
-        
-        //Multiplicity Histos
-        fOutputMB->Add(fHistTrkMultTag_MB[i]);
-        fOutputEMC7->Add(fHistTrkMultTag_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkMultTag_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkMultTag_EMCJet[i]);
-        
-        //Pt Histos
-        fOutputMB->Add(fHistTrkPtTag_MB[i]);
-        fOutputEMC7->Add(fHistTrkPtTag_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkPtTag_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkPtTag_EMCJet[i]);
-        
-        //DeDx by Pt Histos
-        fOutputMB->Add(fHistDeDxPtTag_MB[i]);
-        fOutputEMC7->Add(fHistDeDxPtTag_EMC7[i]);
-        fOutputEMC8->Add(fHistDeDxPtTag_EMC8[i]);
-        fOutputEMCJet->Add(fHistDeDxPtTag_EMCJet[i]);
-        
-        //Away Side Histos
-        
-        //Multiplicity Histos
-        fOutputMB->Add(fHistTrkMultAway_MB[i]);
-        fOutputEMC7->Add(fHistTrkMultAway_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkMultAway_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkMultAway_EMCJet[i]);
-        
-        //Pt Histos
-        fOutputMB->Add(fHistTrkPtAway_MB[i]);
-        fOutputEMC7->Add(fHistTrkPtAway_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkPtAway_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkPtAway_EMCJet[i]);
-        
-        //DeDx by Pt Histos
-        fOutputMB->Add(fHistDeDxPtAway_MB[i]);
-        fOutputEMC7->Add(fHistDeDxPtAway_EMC7[i]);
-        fOutputEMC8->Add(fHistDeDxPtAway_EMC8[i]);
-        fOutputEMCJet->Add(fHistDeDxPtAway_EMCJet[i]);
-        
-        //TransMin Side Histos
-        
-        //Multiplicity Histos
-        fOutputMB->Add(fHistTrkMultTransMin_MB[i]);
-        fOutputEMC7->Add(fHistTrkMultTransMin_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkMultTransMin_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkMultTransMin_EMCJet[i]);
-        
-        //Pt Histos
-        fOutputMB->Add(fHistTrkPtTransMin_MB[i]);
-        fOutputEMC7->Add(fHistTrkPtTransMin_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkPtTransMin_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkPtTransMin_EMCJet[i]);
-        
-        //DeDx by Pt Histos
-        fOutputMB->Add(fHistDeDxPtTransMin_MB[i]);
-        fOutputEMC7->Add(fHistDeDxPtTransMin_EMC7[i]);
-        fOutputEMC8->Add(fHistDeDxPtTransMin_EMC8[i]);
-        fOutputEMCJet->Add(fHistDeDxPtTransMin_EMCJet[i]);
-        
-        //TransMax Side Histos
-        
-        //Multiplicity Histos
-        fOutputMB->Add(fHistTrkMultTransMax_MB[i]);
-        fOutputEMC7->Add(fHistTrkMultTransMax_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkMultTransMax_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkMultTransMax_EMCJet[i]);
-        
-        //Pt Histos
-        fOutputMB->Add(fHistTrkPtTransMax_MB[i]);
-        fOutputEMC7->Add(fHistTrkPtTransMax_EMC7[i]);
-        fOutputEMC8->Add(fHistTrkPtTransMax_EMC8[i]);
-        fOutputEMCJet->Add(fHistTrkPtTransMax_EMCJet[i]);
-        
-        //DeDx by Pt Histos
-        fOutputMB->Add(fHistDeDxPtTransMax_MB[i]);
-        fOutputEMC7->Add(fHistDeDxPtTransMax_EMC7[i]);
-        fOutputEMC8->Add(fHistDeDxPtTransMax_EMC8[i]);
-        fOutputEMCJet->Add(fHistDeDxPtTransMax_EMCJet[i]);
-    }
 
     // NEW HISTO added to fOutput here
     PostData(1, fOutputMB);
@@ -3169,1645 +1825,6 @@ if(tagEvt){
     PostData(4, fOutputEMCJet);
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskPSHFE::FillRegionHistos(AliESDEvent *esd, Int_t *elecIDs, Int_t elecCnt)
-{
-    //First check if this event has any candidate electrons
-    if(elecCnt==0){
-        return;
-    }
-    if(!esd){
-        AliError("The esd event passed to FillRegionHistos is null...how did this even happen");
-        return;
-    }
-    if(!elecIDs){
-        AliError("The list electron candidate track IDs is null");
-        return;
-    }
-    
-    Int_t ntracks = esd->GetNumberOfTracks();
-    
-    Double_t EtaMax = .8;
-    Double_t PtSumLeft = 0;
-    Double_t EtSumLeft = 0;
-    Double_t PtSumRight = 0;
-    Double_t EtSumRight = 0;
-    
-    for(Int_t i=0;i<elecCnt;i++){
-        AliESDtrack *elecTrk = esd->GetTrack(elecIDs[i]);
-        
-        if(!elecTrk){
-            AliWarning("The candidate electron track in null, something is wrong.");
-            continue;
-        }
-        
-        //Initialize variables for Multiplicity
-        Int_t tag_Mult = 0;
-        Int_t away_Mult = 0;
-        Int_t left_Mult = 0;
-        Int_t right_Mult = 0;
-        
-        //Fix the phi of our candidate electron
-        Double_t Phi_0 = elecTrk->Phi();
-        
-        /*//Set the boundaries for our wedges based on the Phi_0
-        Double_t awaySidePhiUpper = Phi_0-3.0*TMath::Pi()/4.0;
-        Double_t awaySidePhiLower = Phi_0-5.0*TMath::Pi()/4.0;
-        Double_t tagSidePhiUpper = Phi_0+TMath::Pi()/4.0;
-        Double_t tagSidePhiLower = Phi_0-TMath::Pi()/4.0;
-        
-        //Away side Phi corrections
-        if(awaySidePhiUpper>2.0*TMath::Pi()){
-            awaySidePhiUpper = awaySidePhiUpper-2.0*TMath::Pi();
-        }
-        
-        if(awaySidePhiLower>2.0*TMath::Pi()){
-            awaySidePhiLower = awaySidePhiLower-2.0*TMath::Pi();
-        }
-        
-        if(awaySidePhiUpper<0){
-            awaySidePhiUpper = 2.0*TMath::Pi()+awaySidePhiUpper;
-        }
-        
-        if(awaySidePhiLower<0){
-            awaySidePhiLower = 2.0*TMath::Pi()+awaySidePhiLower;
-        }
-        
-        //Tag side Phi Corrections
-        if(tagSidePhiUpper>2.0*TMath::Pi()){
-            tagSidePhiUpper = tagSidePhiUpper-2.0*TMath::Pi();
-        }
-        
-        if(tagSidePhiLower>2.0*TMath::Pi()){
-            tagSidePhiLower = tagSidePhiLower-2.0*TMath::Pi();
-        }
-        
-        if(tagSidePhiUpper<0){
-            tagSidePhiUpper = 2.0*TMath::Pi()+tagSidePhiUpper;
-        }
-        
-        if(tagSidePhiLower<0){
-            tagSidePhiLower = 2.0*TMath::Pi()+tagSidePhiLower;
-        }*/
-        
-        //Now cycle through the rest of the tracks and fill the appropriate histograms
-        for(Int_t j=0; j<ntracks; j++){
-            
-            if(i==j){continue;}//Don't double count our candidate
-            
-            AliESDtrack *esdtrack = esd->GetTrack(j);
-            if(!esdtrack){continue;}
-           
-            //Do hybrid track cuts
-            if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){continue;}
-            
-            //Create dphi variable
-            Double_t dphi = esdtrack->Phi()-Phi_0;
-            if(dphi<0){dphi = (2*TMath::Pi()-Phi_0)+esdtrack->Phi();}
-            
-            //Tag side check
-            if(((dphi>0&&dphi<TMath::Pi()/4)||(dphi>7*TMath::Pi()/4&&dphi<2*TMath::Pi()))&&TMath::Abs(esdtrack->Eta())<EtaMax){
-                //Add it to the multiplicity count
-                tag_Mult = tag_Mult + 1;
-                
-                //Fill the Pt histos with the tracks Pt
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    
-                    if(MBtrg){
-                        fHistTrkPtTag_MB[0]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTag_EMC7[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTag_EMC8[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTag_EMCJet[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkPtTag_MB[1]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTag_EMC7[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTag_EMC8[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTag_EMCJet[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkPtTag_MB[2]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTag_EMC7[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTag_EMC8[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTag_EMCJet[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkPtTag_MB[3]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTag_EMC7[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTag_EMC8[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTag_EMCJet[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //Fill the DeDx by Pt plots
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistDeDxPtTag_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTag_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTag_EMC8[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTag_EMCJet[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistDeDxPtTag_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTag_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTag_EMC8[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTag_EMCJet[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistDeDxPtTag_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTag_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTag_EMC8[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTag_EMCJet[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistDeDxPtTag_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTag_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTag_EMC8[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTag_EMCJet[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-            }//end tag side check
-            
-            //Away side check
-            if((dphi>3*TMath::Pi()/4&&dphi<5*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){
-                //Add it to the multiplicity count
-                away_Mult = away_Mult + 1;
-                
-                //Fill the Pt histos with the tracks Pt
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkPtAway_MB[0]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtAway_EMC7[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtAway_EMC8[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtAway_EMCJet[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkPtAway_MB[1]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtAway_EMC7[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtAway_EMC8[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtAway_EMCJet[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkPtAway_MB[2]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtAway_EMC7[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtAway_EMC8[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtAway_EMCJet[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkPtAway_MB[3]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtAway_EMC7[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtAway_EMC8[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtAway_EMCJet[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //Fill the DeDx by Pt plots
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistDeDxPtAway_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtAway_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtAway_EMC8[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtAway_EMCJet[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistDeDxPtAway_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtAway_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtAway_EMC8[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtAway_EMCJet[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistDeDxPtAway_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtAway_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtAway_EMC8[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtAway_EMCJet[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistDeDxPtAway_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtAway_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtAway_EMC8[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtAway_EMCJet[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-            }//end away side check
-            
-            //Left side check
-            if((dphi>TMath::Pi()/4&&dphi<3*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){
-                //Add it to the multiplicity count
-                left_Mult = left_Mult + 1;
-                
-                //Add the Pt to the PtSum
-                PtSumLeft = PtSumLeft + esdtrack->Pt();
-            }
-            
-            //Right side check
-            if((dphi>5*TMath::Pi()/4&&dphi<7*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){
-                //Add it to the multiplicity count
-                right_Mult = right_Mult + 1;
-                
-                //Add Pt to PtSum
-                PtSumRight = PtSumRight + esdtrack->Pt();
-                
-                
-            }
-            
-        }//End loop over all tracks
-        
-        //Fill multiplicity histos
-        //tag side
-        //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkMultTag_MB[0]->Fill(tag_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTag_EMC7[0]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTag_EMC8[0]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTag_EMCJet[0]->Fill(tag_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkMultTag_MB[1]->Fill(tag_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTag_EMC7[1]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTag_EMC8[1]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTag_EMCJet[1]->Fill(tag_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkMultTag_MB[2]->Fill(tag_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTag_EMC7[2]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTag_EMC8[2]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTag_EMCJet[2]->Fill(tag_Mult);
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkMultTag_MB[3]->Fill(tag_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTag_EMC7[3]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTag_EMC8[3]->Fill(tag_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTag_EMCJet[3]->Fill(tag_Mult);
-                    }
-                    
-                }
-        
-        //away side
-        //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkMultAway_MB[0]->Fill(away_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultAway_EMC7[0]->Fill(away_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultAway_EMC8[0]->Fill(away_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultAway_EMCJet[0]->Fill(away_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkMultAway_MB[1]->Fill(away_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultAway_EMC7[1]->Fill(away_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultAway_EMC8[1]->Fill(away_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultAway_EMCJet[1]->Fill(away_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkMultAway_MB[2]->Fill(away_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultAway_EMC7[2]->Fill(away_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultAway_EMC8[2]->Fill(away_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultAway_EMCJet[2]->Fill(away_Mult);
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkMultAway_MB[3]->Fill(away_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultAway_EMC7[3]->Fill(away_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultAway_EMC8[3]->Fill(away_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultAway_EMCJet[3]->Fill(away_Mult);
-                    }
-                    
-                }
-        
-        
-        
-        
-        
-        //Fill transMin and transMax histos------------------------------------------------------------------------------------------
-        if(PtSumLeft>PtSumRight){
-            //Left is transMax
-            
-            //fill multiplicity histos
-            //left side
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[0]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[0]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[0]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[0]->Fill(left_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[1]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[1]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[1]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[1]->Fill(left_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[2]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[2]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[2]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[2]->Fill(left_Mult);
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[3]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[3]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[3]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[3]->Fill(left_Mult);
-                    }
-                    
-                }
-            
-                //right side
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[0]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[0]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[0]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[0]->Fill(right_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[1]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[1]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[1]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[1]->Fill(right_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[2]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[2]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[2]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[2]->Fill(right_Mult);
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[3]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[3]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[3]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[3]->Fill(right_Mult);
-                    }
-                    
-                }
-            
-            for(Int_t j=0; j<ntracks; j++){
-            
-                if(i==j){continue;}//Don't double count our candidate
-            
-                AliESDtrack *esdtrack = esd->GetTrack(j);
-                if(!esdtrack){continue;}
-                
-                Double_t dphi = esdtrack->Phi()-Phi_0;
-                if(dphi<0){
-                    dphi = (2*TMath::Pi()-Phi_0)+esdtrack->Phi();
-                }
-                
-            //Left side check
-            if((dphi>TMath::Pi()/4&&dphi<3*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){                
-                //Fill the Pt histos with the tracks Pt
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[0]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[1]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[2]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[3]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //Fill the DeDx by Pt plots
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-            }//end left side check
-                
-                //transmin is da right
-                if((dphi>5*TMath::Pi()/4&&dphi<7*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){
-                //Fill the Pt histos with the tracks Pt
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[0]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[1]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[2]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[3]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //Fill the DeDx by Pt plots
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                }//end of transmin right side
-                
-            }//End for(regular tracks)
-            }//End If left>right
-            
-            else{
-                //Right is transMax
-            
-            //fill multiplicity histos
-            //left side
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[0]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[0]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[0]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[0]->Fill(left_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[1]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[1]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[1]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[1]->Fill(left_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[2]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[2]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[2]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[2]->Fill(left_Mult);
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkMultTransMin_MB[3]->Fill(left_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMin_EMC7[3]->Fill(left_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMin_EMC8[3]->Fill(left_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMin_EMCJet[3]->Fill(left_Mult);
-                    }
-                    
-                }
-            
-                //right side
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[0]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[0]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[0]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[0]->Fill(right_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[1]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[1]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[1]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[1]->Fill(right_Mult);
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[2]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[2]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[2]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[2]->Fill(right_Mult);
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkMultTransMax_MB[3]->Fill(right_Mult);
-                    }
-                    if(EMC7trg){
-                        fHistTrkMultTransMax_EMC7[3]->Fill(right_Mult);
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkMultTransMax_EMC8[3]->Fill(right_Mult);
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkMultTransMax_EMCJet[3]->Fill(right_Mult);
-                    }
-                    
-                }
-            
-            for(Int_t j=0; j<ntracks; j++){
-            
-                if(i==j){continue;}//Don't double count our candidate
-            
-                AliESDtrack *esdtrack = esd->GetTrack(j);
-                if(!esdtrack){continue;}
-                
-                //Do hybrid track cuts
-                if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){continue;}
-                
-                Double_t dphi = esdtrack->Phi()-Phi_0;
-                if(dphi<0){
-                    dphi = (2*TMath::Pi()-Phi_0)+esdtrack->Phi();
-                }
-                
-            //Left side check
-            if((dphi>TMath::Pi()/4&&dphi<3*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){                
-                //Fill the Pt histos with the tracks Pt
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[0]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[1]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[2]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkPtTransMin_MB[3]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMin_EMC7[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMin_EMC8[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMin_EMCJet[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //Fill the DeDx by Pt plots
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMin_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMin_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMin_EMC8[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMin_EMCJet[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-            }
-                
-                //transmax is da right
-                if((dphi>5*TMath::Pi()/4&&dphi<7*TMath::Pi()/4)&&TMath::Abs(esdtrack->Eta())<EtaMax){
-                //Fill the Pt histos with the tracks Pt
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[0]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[0]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[1]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[1]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[2]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[2]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistTrkPtTransMax_MB[3]->Fill(esdtrack->Pt());
-                    }
-                    if(EMC7trg){
-                        fHistTrkPtTransMax_EMC7[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistTrkPtTransMax_EMC8[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistTrkPtTransMax_EMCJet[3]->Fill(esdtrack->Pt());
-                    }
-                    
-                }
-                
-                //Fill the DeDx by Pt plots
-                
-                //tagged track 1<Pt<2
-                if(elecTrk->Pt()>1&&elecTrk->Pt()<2){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[0]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 2<Pt<4
-                if(elecTrk->Pt()>2&&elecTrk->Pt()<4){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[1]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track 4<Pt<6
-                if(elecTrk->Pt()>4&&elecTrk->Pt()<6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[2]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                
-                //tagged track Pt>6
-                if(elecTrk->Pt()>6){
-                    if(MBtrg){
-                        fHistDeDxPtTransMax_MB[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    if(EMC7trg){
-                        fHistDeDxPtTransMax_EMC7[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMC8trg){
-                        fHistDeDxPtTransMax_EMC8[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                    if(EMCJettrg){
-                        fHistDeDxPtTransMax_EMCJet[3]->Fill(esdtrack->Pt(), esdtrack->GetTPCsignal()/esdtrack->GetTPCsignalSigma());
-                    }
-                    
-                }
-                }//end of transmin right side
-                
-            }//End for(regular tracks)
-            }//End of else left<right
-        
-        
-        
-        //Check for another candidate in the away side, if yes call this a back-to-back and fill a different set of histograms
-        
-        Bool_t B2B=kFALSE;
-        
-        for(Int_t k=i+1;k<elecCnt;k++){
-            AliESDtrack *elecTrk2 = esd->GetTrack(elecIDs[k]);
-  
-            if(!elecTrk2){
-                AliWarning("The candidate electron track in null, something is wrong.");
-                continue;
-            }
-            
-            Double_t dphi = elecTrk2->Phi()-Phi_0;
-            if(dphi<0){
-                dphi = (2*TMath::Pi()-Phi_0)+elecTrk2->Phi();
-            }
-            
-            if((dphi>3*TMath::Pi()/4&&dphi<5*TMath::Pi()/4)){
-                B2B=kTRUE;
-            }
-        }
-        //Compute which transverse region had the most Pt and fill the appropriate histogram
-        if(B2B){
-            if(PtSumLeft>PtSumRight){
-                fHistPtSumTransMaxB2B->Fill(elecTrk->Pt(), PtSumLeft/(.4*TMath::Pi()));
-                fHistPtSumTransMinB2B->Fill(elecTrk->Pt(), PtSumRight/(.4*TMath::Pi()));
-            }else{
-                fHistPtSumTransMaxB2B->Fill(elecTrk->Pt(), PtSumRight/(.4*TMath::Pi()));
-                fHistPtSumTransMinB2B->Fill(elecTrk->Pt(), PtSumLeft/(.4*TMath::Pi()));
-            }
-        }else{
-            if(PtSumLeft>PtSumRight){
-                fHistPtSumTransMaxLead->Fill(elecTrk->Pt(), PtSumLeft/(.4*TMath::Pi()));
-                fHistPtSumTransMinLead->Fill(elecTrk->Pt(), PtSumRight/(.4*TMath::Pi()));
-            }else{
-                fHistPtSumTransMaxLead->Fill(elecTrk->Pt(), PtSumRight/(.4*TMath::Pi()));
-                fHistPtSumTransMinLead->Fill(elecTrk->Pt(), PtSumLeft/(.4*TMath::Pi()));
-            }
-        }
-        
-    }//End loop over candidate tracks
-    
-    PostData(1, fOutputMB);
-    PostData(2, fOutputEMC7);
-    PostData(3, fOutputEMC8);
-    PostData(4, fOutputEMCJet);
-    return;
-}
-
 void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse){
         
     if(!esdtrack){
@@ -4871,7 +1888,6 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         Int_t caloId=esdtrack->GetEMCALcluster();
         
         if(caloId==-99999){
-            fHistBadEMCclusID->Fill(1);
             return;
         }
         
@@ -4925,101 +1941,6 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                 }
             
         //TPC Plots
-            
-            //TOF cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
-                if(MBtrg){
-                    fHistTPC_TOF_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                if(EMC7trg){
-                    fHistTPC_TOF_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMC8trg){
-                    fHistTPC_TOF_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMCJettrg){
-                    fHistTPC_TOF_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-            }
-            
-            //EMC cuts
-            if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
-                if(MBtrg){
-                    fHistTPC_EMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                if(EMC7trg){
-                    fHistTPC_EMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMC8trg){
-                    fHistTPC_EMC_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMCJettrg){
-                    fHistTPC_EMC_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-            }
-            
-            //TRD cuts
-            if(elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistTPC_TRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                if(EMC7trg){
-                    fHistTPC_TRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMC8trg){
-                    fHistTPC_TRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMCJettrg){
-                    fHistTPC_TRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-            }
-            
-            //TOF+EMC cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
-                if(MBtrg){
-                    fHistTPC_TOFEMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                if(EMC7trg){
-                    fHistTPC_TOFEMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMC8trg){
-                    fHistTPC_TOFEMC_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMCJettrg){
-                    fHistTPC_TOFEMC_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-            }
-            
-            //TOF+TRD cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistTPC_TOFTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                if(EMC7trg){
-                    fHistTPC_TOFTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMC8trg){
-                    fHistTPC_TOFTRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMCJettrg){
-                    fHistTPC_TOFTRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-            }
-            
             //EMC+TRD cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
                 
@@ -5039,238 +1960,8 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                 }
             }
             
-            //TOF+EMC+TRD cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
-                //tagStrong=kTRUE;
-                if(MBtrg){
-                    fHistTPC_TOFEMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                if(EMC7trg){
-                    fHistTPC_TOFEMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMC8trg){
-                    fHistTPC_TOFEMCTRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-                
-                if(EMCJettrg){
-                    fHistTPC_TOFEMCTRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
-                }
-            }
-            
-        //TOF Plots
-            
-            //TPC cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut){
-                
-                if(MBtrg){
-                    fHistTOF_TPC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_TPC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_TPC_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_TPC_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
-            //EMC cuts
-            if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
-                if(MBtrg){
-                    fHistTOF_EMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_EMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_EMC_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_EMC_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
-            //TRD cuts
-            if(elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistTOF_TRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_TRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_TRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_TRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
-            //TPC+EMC cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
-                if(MBtrg){
-                    fHistTOF_TPCEMC_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_TPCEMC_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_TPCEMC_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_TPCEMC_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
-            //TPC+TRD cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistTOF_TPCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_TPCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_TPCTRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_TPCTRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
-            //EMC+TRD cuts
-            if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistTOF_EMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_EMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_EMCTRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_EMCTRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
-            //TPC+EMC+TRD cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
-                //tagStrong=kTRUE;
-                if(MBtrg){
-                    fHistTOF_TPCEMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                if(EMC7trg){
-                    fHistTOF_TPCEMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMC8trg){
-                    fHistTOF_TPCEMCTRD_EMC8[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-                
-                if(EMCJettrg){
-                    fHistTOF_TPCEMCTRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTOF);
-                }
-            }
-            
         //EMC Plots
-            
-            //TPC cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut){
-                
-                if(MBtrg){
-                    fHistEMC_TPC_MB[i]->Fill(EOP);
-                }
-                if(EMC7trg){
-                    fHistEMC_TPC_EMC7[i]->Fill(EOP);
-                }
-                
-                if(EMC8trg){
-                    fHistEMC_TPC_EMC8[i]->Fill(EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistEMC_TPC_EMCJet[i]->Fill(EOP);
-                }
-            }
-            
-            //TOF cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
-                
-                if(MBtrg){
-                    fHistEMC_TOF_MB[i]->Fill(EOP);
-                }
-                if(EMC7trg){
-                    fHistEMC_TOF_EMC7[i]->Fill(EOP);
-                }
-                
-                if(EMC8trg){
-                    fHistEMC_TOF_EMC8[i]->Fill(EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistEMC_TOF_EMCJet[i]->Fill(EOP);
-                }
-            }
-            
-            //TRD cuts
-            if(elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistEMC_TRD_MB[i]->Fill(EOP);
-                }
-                if(EMC7trg){
-                    fHistEMC_TRD_EMC7[i]->Fill(EOP);
-                }
-                
-                if(EMC8trg){
-                    fHistEMC_TRD_EMC8[i]->Fill(EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistEMC_TRD_EMCJet[i]->Fill(EOP);
-                }
-            }
-            
-            //TPC+TOF cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
-                
-                if(MBtrg){
-                    fHistEMC_TPCTOF_MB[i]->Fill(EOP);
-                }
-                if(EMC7trg){
-                    fHistEMC_TPCTOF_EMC7[i]->Fill(EOP);
-                }
-                
-                if(EMC8trg){
-                    fHistEMC_TPCTOF_EMC8[i]->Fill(EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistEMC_TPCTOF_EMCJet[i]->Fill(EOP);
-                }
-            }
-            
+           
             //TPC+TRD cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut){
                 
@@ -5310,122 +2001,8 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                 }
             }
             
-            //TOF+TRD cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut){
-                
-                if(MBtrg){
-                    fHistEMC_TOFTRD_MB[i]->Fill(EOP);
-                }
-                if(EMC7trg){
-                    fHistEMC_TOFTRD_EMC7[i]->Fill(EOP);
-                }
-                
-                if(EMC8trg){
-                    fHistEMC_TOFTRD_EMC8[i]->Fill(EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistEMC_TOFTRD_EMCJet[i]->Fill(EOP);
-                }
-            }
-            
-            //TPC+TOF+TRD cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut){
-                //tagStrong=kTRUE;
-                if(MBtrg){
-                    fHistEMC_TPCTOFTRD_MB[i]->Fill(EOP);
-                }
-                if(EMC7trg){
-                    fHistEMC_TPCTOFTRD_EMC7[i]->Fill(EOP);
-                }
-                
-                if(EMC8trg){
-                    fHistEMC_TPCTOFTRD_EMC8[i]->Fill(EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistEMC_TPCTOFTRD_EMCJet[i]->Fill(EOP);
-                }
-            }
-            
         //TRD Plots
-            
-            //TPC cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut){
-                
-                if(MBtrg){
-                    fHistTRD_TPC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                if(EMC7trg){
-                    fHistTRD_TPC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMC8trg){
-                    fHistTRD_TPC_EMC8[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMCJettrg){
-                    fHistTRD_TPC_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-            }
-            
-            //TOF cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
-                
-                if(MBtrg){
-                    fHistTRD_TOF_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                if(EMC7trg){
-                    fHistTRD_TOF_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMC8trg){
-                    fHistTRD_TOF_EMC8[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMCJettrg){
-                    fHistTRD_TOF_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-            }
-            
-            //EMC cuts
-            if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
-                if(MBtrg){
-                    fHistTRD_EMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                if(EMC7trg){
-                    fHistTRD_EMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMC8trg){
-                    fHistTRD_EMC_EMC8[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMCJettrg){
-                    fHistTRD_EMC_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-            }
-            
-            //TPC+TOF cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut){
-                
-                if(MBtrg){
-                    fHistTRD_TPCTOF_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                if(EMC7trg){
-                    fHistTRD_TPCTOF_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMC8trg){
-                    fHistTRD_TPCTOF_EMC8[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMCJettrg){
-                    fHistTRD_TPCTOF_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-            }
-            
+           
             //TPC+EMC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
                 
@@ -5444,44 +2021,6 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                     fHistTRD_TPCEMC_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
             }
-            
-            //TOF+EMC cuts
-            if(nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
-                if(MBtrg){
-                    fHistTRD_TOFEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                if(EMC7trg){
-                    fHistTRD_TOFEMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMC8trg){
-                    fHistTRD_TOFEMC_EMC8[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMCJettrg){
-                    fHistTRD_TOFEMC_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-            }
-            
-            //TPC+TOF+EMC cuts
-            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                //tagStrong=kTRUE;
-                if(MBtrg){
-                    fHistTRD_TPCTOFEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                if(EMC7trg){
-                    fHistTRD_TPCTOFEMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMC8trg){
-                    fHistTRD_TPCTOFEMC_EMC8[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-                
-                if(EMCJettrg){
-                    fHistTRD_TPCTOFEMC_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
-                }
-            }
         }
         }
     if(MBtrg){
@@ -5491,17 +2030,54 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
         }
     }
     }
-        //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
+    
+    if(applySSCuts){
+        
+        //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15, M02=(0,.5), M20=(0,.3)
+        
+        if(esdtrack->Pt()<6){
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]&&M02<.5&&M02>0&&M20<.3&&M20>0){
+                
+                tagStrong=kTRUE;
+                
+            }
+            
+        }
+        
+        else{
+            
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[5]&&EOP>EMCcutLower[5]&&M02<.5&&M02>0&&M20<.3&&M20>0){
+                
+                tagStrong=kTRUE;
+                
+            }
+            
+        }
+        
+    }else{//no sscuts
+        
+         //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
+        
         if(esdtrack->Pt()<6){
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]){
+                
                 tagStrong=kTRUE;
+                
             }
+            
         }
+        
         else{
+            
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[5]&&EOP>EMCcutLower[5]){
+                
                 tagStrong=kTRUE;
+                
             }
+            
         }
+        
+    }
         
         /*//Check if any tracks pass all cuts
         if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher&&EOP>EMCcutLower){
@@ -5976,6 +2552,10 @@ void AliAnalysisTaskPSHFE::SetElectronTrackCuts(Bool_t trkCutBool){
     trackCutsStrong=trkCutBool;
 }
 
+void AliAnalysisTaskPSHFE::SetSSCutBool(Bool_t SSCutBool){
+    applySSCuts=SSCutBool;
+}
+
 void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i){
    
     if(!esdtrack){
@@ -6047,6 +2627,9 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *es
             continue; 
         }
         
+        //Do hybrid track cuts
+        if(!globaltrackCuts->AcceptTrack(esdtrackassoc)&&!comptrackCuts->AcceptTrack(esdtrackassoc)){continue;}
+        
         Bool_t isElecToo=kFALSE;
         
         //Fill TOF and TPC status variables  
@@ -6111,7 +2694,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *es
             }
             
         }else{
-            if(InvMass<0.1&&OpAng<1){tagPhot=kTRUE;}
+            if(InvMass<0.1&&OpAng<0.1){tagPhot=kTRUE;}
             if(MBtrg){
                 fHistInvMassElecUnLike_MB->Fill(InvMass);
                 fHistOpAngElecUnLike_MB->Fill(OpAng);
