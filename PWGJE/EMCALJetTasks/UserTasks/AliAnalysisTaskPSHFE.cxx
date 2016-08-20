@@ -675,24 +675,6 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistOpAngElecUnLike_EMCJet->GetXaxis()->SetTitle("Opening Angle(rad)");
     fHistOpAngElecUnLike_EMCJet->GetYaxis()->SetTitle("Cts");
     
-    //PtSum Histos
-    
-    fHistPtSumTransMaxB2B = new TH2F("fHistPtSumTransMaxB2B", "PtSum density vs candidate electron Pt in the TransMax region for back-to-back events", 800, 0, 8, 1000, 0, 300);
-    fHistPtSumTransMaxB2B->GetXaxis()->SetTitle("Candidate Pt");
-    fHistPtSumTransMaxB2B->GetYaxis()->SetTitle("PtSum Density");
-    
-    fHistPtSumTransMinB2B = new TH2F("fHistPtSumTransMinB2B", "PtSum density vs candidate electron Pt in the TransMin region for back-to-back events", 800, 0, 8, 1000, 0, 300);
-    fHistPtSumTransMinB2B->GetXaxis()->SetTitle("Candidate Pt");
-    fHistPtSumTransMinB2B->GetYaxis()->SetTitle("PtSum Density");
-    
-    fHistPtSumTransMaxLead = new TH2F("fHistPtSumTransMaxLead", "PtSum density vs candidate electron Pt in the TransMax region for 'leading jet' events", 800, 0, 8, 1000, 0, 300);
-    fHistPtSumTransMaxLead->GetXaxis()->SetTitle("Candidate Pt");
-    fHistPtSumTransMaxLead->GetYaxis()->SetTitle("PtSum Density");
-    
-    fHistPtSumTransMinLead = new TH2F("fHistPtSumTransMinLead", "PtSum density vs candidate electron Pt in the TransMin region for 'leading jet' events", 800, 0, 8, 1000, 0, 300);
-    fHistPtSumTransMinLead->GetXaxis()->SetTitle("Candidate Pt");
-    fHistPtSumTransMinLead->GetYaxis()->SetTitle("PtSum Density");
-    
     //Rejection Histos
     
     fHistPIDRejection = new TH1F("fHistPIDRejection", "PID rejection counts for each detector.", 4, 1, 4);
@@ -1301,11 +1283,6 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistPIDRejection);
     fOutputMB->Add(fHistNElecPerEvent);
     fOutputMB->Add(fHistPhotoMismatch);
-    //ditto for the pt sum plots
-    fOutputMB->Add(fHistPtSumTransMaxB2B);
-    fOutputMB->Add(fHistPtSumTransMinB2B);
-    fOutputMB->Add(fHistPtSumTransMaxLead);
-    fOutputMB->Add(fHistPtSumTransMinLead);
     
     fOutputMB->Add(fHistPtAssoc_MB);
     fOutputMB->Add(fHistPtTag_MB);
@@ -1746,8 +1723,6 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     for(Int_t i=0;i<elecCnt;i++){
         elecIDsSparse[i]=elecIDs[i];
     }
-    
-    FillRegionHistos(esd, elecIDsSparse, elecCnt);
     
     //Fill Number of electrons plot
     fHistNElecPerEvent->Fill(elecCnt);
