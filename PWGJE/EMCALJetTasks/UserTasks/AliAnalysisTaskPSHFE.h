@@ -109,8 +109,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistM02_Elec_MB[6];
     TH2F            *fHistM20_Elec_MB[6];
     //General Event histos
-    TH1F            *fHistEng_MB;
-    TH1F            *fHistEngTag_MB;
+    TH1F            *fHistPtSum_MB;
+    TH1F            *fHistPtSumTag_MB;
     TH2F            *fHistEtaPhi_MB;
     TH2F            *fHistEtaPhiTag_MB;
     TH2F            *fHistEtaPhiTPCOnly_MB;
@@ -128,6 +128,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistOpAngElecLike_MB;
     TH1F            *fHistInvMassElecUnLike_MB;
     TH1F            *fHistOpAngElecUnLike_MB;
+    TH1F            *fHistPtAssoc_MB;
+    TH1F            *fHistPtTag_MB;
     
     
     //EMC7 Histos
@@ -178,8 +180,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistM02_Elec_EMC7[6];
     TH2F            *fHistM20_Elec_EMC7[6];
     //General Event histos 
-    TH1F            *fHistEng_EMC7;
-    TH1F            *fHistEngTag_EMC7;
+    TH1F            *fHistPtSum_EMC7;
+    TH1F            *fHistPtSumTag_EMC7;
     TH2F            *fHistEtaPhi_EMC7;
     TH2F            *fHistEtaPhiTag_EMC7;
     TH1F            *fHistDPhi300_500_EMC7[3];
@@ -196,6 +198,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistOpAngElecLike_EMC7;
     TH1F            *fHistInvMassElecUnLike_EMC7;
     TH1F            *fHistOpAngElecUnLike_EMC7;
+    TH1F            *fHistPtAssoc_EMC7;
+    TH1F            *fHistPtTag_EMC7;
     
     
     //EMC8 Histos
@@ -246,8 +250,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistM02_Elec_EMC8[6];
     TH2F            *fHistM20_Elec_EMC8[6];
     //General Event histos
-    TH1F            *fHistEng_EMC8;
-    TH1F            *fHistEngTag_EMC8;
+    TH1F            *fHistPtSum_EMC8;
+    TH1F            *fHistPtSumTag_EMC8;
     TH2F            *fHistEtaPhi_EMC8;
     TH2F            *fHistEtaPhiTag_EMC8;
     TH1F            *fHistDPhi300_500_EMC8[3];
@@ -264,6 +268,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistOpAngElecLike_EMC8;
     TH1F            *fHistInvMassElecUnLike_EMC8;
     TH1F            *fHistOpAngElecUnLike_EMC8;
+    TH1F            *fHistPtAssoc_EMC8;
+    TH1F            *fHistPtTag_EMC8;
     
     
     //EMCJet Histos
@@ -314,8 +320,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH2F            *fHistM02_Elec_EMCJet[6];
     TH2F            *fHistM20_Elec_EMCJet[6];
     //General Event histos
-    TH1F            *fHistEng_EMCJet;
-    TH1F            *fHistEngTag_EMCJet;
+    TH1F            *fHistPtSum_EMCJet;
+    TH1F            *fHistPtSumTag_EMCJet;
     TH2F            *fHistEtaPhi_EMCJet;
     TH2F            *fHistEtaPhiTag_EMCJet;
     TH1F            *fHistDPhi300_500_EMCJet[3];
@@ -332,6 +338,8 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistOpAngElecLike_EMCJet;
     TH1F            *fHistInvMassElecUnLike_EMCJet;
     TH1F            *fHistOpAngElecUnLike_EMCJet;
+    TH1F            *fHistPtAssoc_EMCJet;
+    TH1F            *fHistPtTag_EMCJet;
     
     //Region Histos
     

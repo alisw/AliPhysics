@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -52,6 +53,7 @@
 
 using std::cout;
 using std::endl;
+
 
 ClassImp(AliAnalysisTaskPSHFE)
 
@@ -88,8 +90,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistImpPar_MB(0),
     fHistImpParTag_MB(0),
     fHistNevents_MB(0),
-    fHistEng_MB(0),
-    fHistEngTag_MB(0),
+    fHistPtSum_MB(0),
+    fHistPtSumTag_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
     fHistEtaPhiTPCOnly_MB(0),
@@ -100,6 +102,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistInvMassElecUnLike_MB(0),
     fHistOpAngElecLike_MB(0),
     fHistOpAngElecUnLike_MB(0),
+    fHistPtAssoc_MB(0),
+    fHistPtTag_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -108,8 +112,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistImpPar_EMC7(0),
     fHistImpParTag_EMC7(0),
     fHistNevents_EMC7(0),
-    fHistEng_EMC7(0),
-    fHistEngTag_EMC7(0),
+    fHistPtSum_EMC7(0),
+    fHistPtSumTag_EMC7(0),
     fHistEtaPhi_EMC7(0),
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
@@ -118,6 +122,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistInvMassElecUnLike_EMC7(0),
     fHistOpAngElecLike_EMC7(0),
     fHistOpAngElecUnLike_EMC7(0),
+    fHistPtAssoc_EMC7(0),
+    fHistPtTag_EMC7(0),
 
     fHistTPCNClus_EMC8(0),
     fHistITSNClus_EMC8(0),
@@ -126,8 +132,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistImpPar_EMC8(0),
     fHistImpParTag_EMC8(0),
     fHistNevents_EMC8(0),
-    fHistEng_EMC8(0),
-    fHistEngTag_EMC8(0),
+    fHistPtSum_EMC8(0),
+    fHistPtSumTag_EMC8(0),
     fHistEtaPhi_EMC8(0),
     fHistEtaPhiTag_EMC8(0),
     fHistDPhi28_EMC8(0),
@@ -136,6 +142,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistInvMassElecUnLike_EMC8(0),
     fHistOpAngElecLike_EMC8(0),
     fHistOpAngElecUnLike_EMC8(0),
+    fHistPtAssoc_EMC8(0),
+    fHistPtTag_EMC8(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -144,8 +152,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistImpPar_EMCJet(0),
     fHistImpParTag_EMCJet(0),
     fHistNevents_EMCJet(0),
-    fHistEng_EMCJet(0),
-    fHistEngTag_EMCJet(0),
+    fHistPtSum_EMCJet(0),
+    fHistPtSumTag_EMCJet(0),
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
@@ -153,7 +161,9 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistInvMassElecLike_EMCJet(0),
     fHistInvMassElecUnLike_EMCJet(0),
     fHistOpAngElecLike_EMCJet(0),
-    fHistOpAngElecUnLike_EMCJet(0)
+    fHistOpAngElecUnLike_EMCJet(0),
+    fHistPtAssoc_EMCJet(0),
+    fHistPtTag_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -452,8 +462,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistImpPar_MB(0),
     fHistImpParTag_MB(0),
     fHistNevents_MB(0),
-    fHistEng_MB(0),
-    fHistEngTag_MB(0),
+    fHistPtSum_MB(0),
+    fHistPtSumTag_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
     fHistEtaPhiTPCOnly_MB(0),
@@ -464,6 +474,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistInvMassElecUnLike_MB(0),
     fHistOpAngElecLike_MB(0),
     fHistOpAngElecUnLike_MB(0),
+    fHistPtAssoc_MB(0),
+    fHistPtTag_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -472,8 +484,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistImpPar_EMC7(0),
     fHistImpParTag_EMC7(0),
     fHistNevents_EMC7(0),
-    fHistEng_EMC7(0),
-    fHistEngTag_EMC7(0),
+    fHistPtSum_EMC7(0),
+    fHistPtSumTag_EMC7(0),
     fHistEtaPhi_EMC7(0),
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
@@ -482,6 +494,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistInvMassElecUnLike_EMC7(0),
     fHistOpAngElecLike_EMC7(0),
     fHistOpAngElecUnLike_EMC7(0),
+    fHistPtAssoc_EMC7(0),
+    fHistPtTag_EMC7(0),
 
     fHistTPCNClus_EMC8(0),
     fHistITSNClus_EMC8(0),
@@ -490,8 +504,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistImpPar_EMC8(0),
     fHistImpParTag_EMC8(0),
     fHistNevents_EMC8(0),
-    fHistEng_EMC8(0),
-    fHistEngTag_EMC8(0),
+    fHistPtSum_EMC8(0),
+    fHistPtSumTag_EMC8(0),
     fHistEtaPhi_EMC8(0),
     fHistEtaPhiTag_EMC8(0),
     fHistDPhi28_EMC8(0),
@@ -500,6 +514,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistInvMassElecUnLike_EMC8(0),
     fHistOpAngElecLike_EMC8(0),
     fHistOpAngElecUnLike_EMC8(0),
+    fHistPtAssoc_EMC8(0),
+    fHistPtTag_EMC8(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -508,8 +524,8 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistImpPar_EMCJet(0),
     fHistImpParTag_EMCJet(0),
     fHistNevents_EMCJet(0),
-    fHistEng_EMCJet(0),
-    fHistEngTag_EMCJet(0),
+    fHistPtSum_EMCJet(0),
+    fHistPtSumTag_EMCJet(0),
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
@@ -517,7 +533,9 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistInvMassElecLike_EMCJet(0),
     fHistInvMassElecUnLike_EMCJet(0),
     fHistOpAngElecLike_EMCJet(0),
-    fHistOpAngElecUnLike_EMCJet(0)
+    fHistOpAngElecUnLike_EMCJet(0),
+    fHistPtAssoc_EMCJet(0),
+    fHistPtTag_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -2243,38 +2261,38 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistEtaPhiTPCOnly_MB->GetYaxis()->SetTitle("Phi");
     
     // Energy per event histos
-    fHistEng_MB = new TH1F("fHistEng_MB", "Energy per event", 500, 0, 500);
-    fHistEng_MB->GetXaxis()->SetTitle("Energy");
-    fHistEng_MB->GetYaxis()->SetTitle("Cts");
+    fHistPtSum_MB = new TH1F("fHistPtSum_MB", "Pt sum for events w/o an electron candidate", 500, 0, 500);
+    fHistPtSum_MB->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSum_MB->GetYaxis()->SetTitle("Cts");
     
-    fHistEng_EMC7 = new TH1F("fHistEng_EMC7", "Energy per event", 500, 0, 500);
-    fHistEng_EMC7->GetXaxis()->SetTitle("Energy");
-    fHistEng_EMC7->GetYaxis()->SetTitle("Cts");
+    fHistPtSum_EMC7 = new TH1F("fHistPtSum_EMC7", "Pt sum for events w/o an electron candidate", 500, 0, 500);
+    fHistPtSum_EMC7->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSum_EMC7->GetYaxis()->SetTitle("Cts");
     
-    fHistEng_EMC8 = new TH1F("fHistEng_EMC8", "Energy per event", 500, 0, 500);
-    fHistEng_EMC8->GetXaxis()->SetTitle("Energy");
-    fHistEng_EMC8->GetYaxis()->SetTitle("Cts");
+    fHistPtSum_EMC8 = new TH1F("fHistPtSum_EMC8", "Pt sum for events w/o an electron candidate", 500, 0, 500);
+    fHistPtSum_EMC8->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSum_EMC8->GetYaxis()->SetTitle("Cts");
     
-    fHistEng_EMCJet = new TH1F("fHistEng_EMCJet", "Energy per event", 500, 0, 500);
-    fHistEng_EMCJet->GetXaxis()->SetTitle("Energy");
-    fHistEng_EMCJet->GetYaxis()->SetTitle("Cts");
+    fHistPtSum_EMCJet = new TH1F("fHistPtSum_EMCJet", "Pt sum for events w/o an electron candidate", 500, 0, 500);
+    fHistPtSum_EMCJet->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSum_EMCJet->GetYaxis()->SetTitle("Cts");
     
     // Energy per tagged event histos
-    fHistEngTag_MB = new TH1F("fHistEngTag_MB", "Energy per event containing a candidate", 500, 0, 500);
-    fHistEngTag_MB->GetXaxis()->SetTitle("Energy");
-    fHistEngTag_MB->GetYaxis()->SetTitle("Cts");
+    fHistPtSumTag_MB = new TH1F("fHistPtSumTag_MB", "Pt sum for events w/ an electron candidate", 500, 0, 500);
+    fHistPtSumTag_MB->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumTag_MB->GetYaxis()->SetTitle("Cts");
     
-    fHistEngTag_EMC7 = new TH1F("fHistEngTag_EMC7", "Energy per event containing a candidate", 500, 0, 500);
-    fHistEngTag_EMC7->GetXaxis()->SetTitle("Energy");
-    fHistEngTag_EMC7->GetYaxis()->SetTitle("Cts");
+    fHistPtSumTag_EMC7 = new TH1F("fHistPtSumTag_EMC7", "Pt sum for events w/ an electron candidate", 500, 0, 500);
+    fHistPtSumTag_EMC7->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumTag_EMC7->GetYaxis()->SetTitle("Cts");
     
-    fHistEngTag_EMC8 = new TH1F("fHistEngTag_EMC8", "Energy per event containing a candidate", 500, 0, 500);
-    fHistEngTag_EMC8->GetXaxis()->SetTitle("Energy");
-    fHistEngTag_EMC8->GetYaxis()->SetTitle("Cts");
+    fHistPtSumTag_EMC8 = new TH1F("fHistPtSumTag_EMC8", "Pt sum for events w/ an electron candidate", 500, 0, 500);
+    fHistPtSumTag_EMC8->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumTag_EMC8->GetYaxis()->SetTitle("Cts");
     
-    fHistEngTag_EMCJet = new TH1F("fHistEngTag_EMCJet", "Energy per event containing a candidate", 500, 0, 500);
-    fHistEngTag_EMCJet->GetXaxis()->SetTitle("Energy");
-    fHistEngTag_EMCJet->GetYaxis()->SetTitle("Cts");
+    fHistPtSumTag_EMCJet = new TH1F("fHistPtSumTag_EMCJet", "Pt sum for events w/ an electron candidate", 500, 0, 500);
+    fHistPtSumTag_EMCJet->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumTag_EMCJet->GetYaxis()->SetTitle("Cts");
     
     // Numbers of events
     fHistNevents_MB = new TH1F("fHistNevents_MB", "Number of events that have an 'electron'", 2,0,1);
@@ -2399,7 +2417,39 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistITSNClus_EMCJet->GetXaxis()->SetTitle("Number of ITS Clusters");
     fHistITSNClus_EMCJet->GetYaxis()->SetTitle("Number of Tracks");
         
-    // NEW HISTO should be defined here, with a sensible name,
+    // Pt distribution of all tracks and tagged tracks
+    fHistPtAssoc_MB = new TH1F("fHistPtAssoc_MB", "Pt distribution for associated tracks", 100,0, 15);
+    fHistPtAssoc_MB->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtAssoc_MB->GetYaxis()->SetTitle("Count");
+    
+    fHistPtAssoc_EMC7 = new TH1F("fHistPtAssoc_EMC7", "Pt distribution for associated tracks", 100,0, 15);
+    fHistPtAssoc_EMC7->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtAssoc_EMC7->GetYaxis()->SetTitle("Count");
+    
+    fHistPtAssoc_EMC8 = new TH1F("fHistPtAssoc_EMC8", "Pt distribution for associated tracks", 100,0, 15);
+    fHistPtAssoc_EMC8->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtAssoc_EMC8->GetYaxis()->SetTitle("Count");
+    
+    fHistPtAssoc_EMCJet = new TH1F("fHistPtAssoc_EMCJet", "Pt distribution for associated tracks", 100,0, 15);
+    fHistPtAssoc_EMCJet->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtAssoc_EMCJet->GetYaxis()->SetTitle("Count");
+    
+    //Impact Parameter for tagged electrons histos
+    fHistPtTag_MB = new TH1F("fHistPtTag_MB", "Pt distribution for electron candidates", 100,0, 15);
+    fHistPtTag_MB->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtTag_MB->GetYaxis()->SetTitle("Count");
+    
+    fHistPtTag_EMC7 = new TH1F("fHistPtTag_EMC7", "Pt distribution for electron candidates", 100,0, 15);
+    fHistPtTag_EMC7->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtTag_EMC7->GetYaxis()->SetTitle("Count");
+    
+    fHistPtTag_EMC8 = new TH1F("fHistPtTag_EMC8", "Pt distribution for electron candidates", 100,0, 15);
+    fHistPtTag_EMC8->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtTag_EMC8->GetYaxis()->SetTitle("Count");
+    
+    fHistPtTag_EMCJet = new TH1F("fHistPtTag_EMCJet", "Pt distribution for electron candidates", 100,0, 15);
+    fHistPtTag_EMCJet->GetXaxis()->SetTitle("Pt(Gev)");
+    fHistPtTag_EMCJet->GetYaxis()->SetTitle("Count");
         
     //Add rejection plots to MB plots since it is the easiest place
     fOutputMB->Add(fHistPIDRejection);
@@ -2412,6 +2462,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistPtSumTransMaxLead);
     fOutputMB->Add(fHistPtSumTransMinLead);
     
+    fOutputMB->Add(fHistPtAssoc_MB);
+    fOutputMB->Add(fHistPtTag_MB);
     fOutputMB->Add(fHistTPCNClus_MB);
     fOutputMB->Add(fHistITSNClus_MB);
     fOutputMB->Add(fHistTPCSig_MB);
@@ -2419,8 +2471,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistImpPar_MB);
     fOutputMB->Add(fHistImpParTag_MB);
     fOutputMB->Add(fHistNevents_MB);
-    fOutputMB->Add(fHistEng_MB);
-    fOutputMB->Add(fHistEngTag_MB);
+    fOutputMB->Add(fHistPtSum_MB);
+    fOutputMB->Add(fHistPtSumTag_MB);
     fOutputMB->Add(fHistEtaPhi_MB);
     fOutputMB->Add(fHistEtaPhiTag_MB);
     fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
@@ -2479,6 +2531,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistDPhi28_MB);
     fOutputMB->Add(fHistDPhiDEta28_MB);
     
+    fOutputEMC7->Add(fHistPtAssoc_EMC7);
+    fOutputEMC7->Add(fHistPtTag_EMC7);
     fOutputEMC7->Add(fHistTPCNClus_EMC7);
     fOutputEMC7->Add(fHistITSNClus_EMC7);
     fOutputEMC7->Add(fHistTPCSig_EMC7);
@@ -2486,8 +2540,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistImpPar_EMC7);
     fOutputEMC7->Add(fHistImpParTag_EMC7);
     fOutputEMC7->Add(fHistNevents_EMC7);
-    fOutputEMC7->Add(fHistEng_EMC7);
-    fOutputEMC7->Add(fHistEngTag_EMC7);
+    fOutputEMC7->Add(fHistPtSum_EMC7);
+    fOutputEMC7->Add(fHistPtSumTag_EMC7);
     fOutputEMC7->Add(fHistEtaPhi_EMC7);
     fOutputEMC7->Add(fHistEtaPhiTag_EMC7);
     fOutputEMC7->Add(fHistInvMassElecLike_EMC7);
@@ -2544,6 +2598,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistDPhi28_EMC7);
     fOutputEMC7->Add(fHistDPhiDEta28_EMC7);
     
+    fOutputEMC8->Add(fHistPtAssoc_EMC8);
+    fOutputEMC8->Add(fHistPtTag_EMC8);
     fOutputEMC8->Add(fHistTPCNClus_EMC8);
     fOutputEMC8->Add(fHistITSNClus_EMC8);
     fOutputEMC8->Add(fHistTPCSig_EMC8);
@@ -2551,8 +2607,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC8->Add(fHistImpPar_EMC8);
     fOutputEMC8->Add(fHistImpParTag_EMC8);
     fOutputEMC8->Add(fHistNevents_EMC8);
-    fOutputEMC8->Add(fHistEng_EMC8);
-    fOutputEMC8->Add(fHistEngTag_EMC8);
+    fOutputEMC8->Add(fHistPtSum_EMC8);
+    fOutputEMC8->Add(fHistPtSumTag_EMC8);
     fOutputEMC8->Add(fHistEtaPhi_EMC8);
     fOutputEMC8->Add(fHistEtaPhiTag_EMC8);
     fOutputEMC8->Add(fHistInvMassElecLike_EMC8);
@@ -2609,6 +2665,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC8->Add(fHistDPhi28_EMC8);
     fOutputEMC8->Add(fHistDPhiDEta28_EMC8);
     
+    fOutputEMCJet->Add(fHistPtAssoc_EMCJet);
+    fOutputEMCJet->Add(fHistPtTag_EMCJet);
     fOutputEMCJet->Add(fHistTPCNClus_EMCJet);
     fOutputEMCJet->Add(fHistITSNClus_EMCJet);
     fOutputEMCJet->Add(fHistTPCSig_EMCJet);
@@ -2616,8 +2674,8 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistImpPar_EMCJet);
     fOutputEMCJet->Add(fHistImpParTag_EMCJet);
     fOutputEMCJet->Add(fHistNevents_EMCJet);
-    fOutputEMCJet->Add(fHistEng_EMCJet);
-    fOutputEMCJet->Add(fHistEngTag_EMCJet);
+    fOutputEMCJet->Add(fHistPtSum_EMCJet);
+    fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhi_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhiTag_EMCJet);
     fOutputEMCJet->Add(fHistInvMassElecLike_EMCJet);
@@ -2839,14 +2897,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     }
     
     //Initialize energy variable and tagging flags
-    Double_t Ene=0;
+    Double_t PtSum=0;
     tagStrong=kFALSE;
     Bool_t tagEvt=kFALSE;
 
     //Initialize the # of tracks variable and the Eta Phi arrays
     Int_t ntracks = esd->GetNumberOfTracks();
-    Double_t Eta [ntracks];
-    Double_t Phi [ntracks];
+    std::vector<Double_t> Eta;
+    std::vector<Double_t> Phi;
     
     // Track loop for reconstructed event
     for(Int_t i = 0; i < ntracks; i++) {
@@ -2870,11 +2928,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){continue;}
         
         //Add this tracks energy to the running total
-        Ene=Ene+esdtrack->E();
+        PtSum=PtSum+esdtrack->Pt();
         
         //Fill the Eta Phi arrays with this tracks Eta and Phi
-        Eta[i]=esdtrack->Eta();
-        Phi[i]=esdtrack->Phi();
+        Eta.push_back(esdtrack->Eta());
+        Phi.push_back(esdtrack->Phi());
         
         if(MBtrg){
             fHistEtaPhi_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
@@ -3003,6 +3061,22 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                     fHistImpParTag_EMCJet->Fill(xy);
             }
             
+            //Pt distribution
+            if(MBtrg){
+                fHistPtTag_MB->Fill(esdtrack->Pt());
+            }
+            if(EMC7trg){
+                    fHistPtTag_EMC7->Fill(esdtrack->Pt());
+            }
+
+            if(EMC8trg){
+                    fHistPtTag_EMC8->Fill(esdtrack->Pt());
+            }
+
+            if(EMCJettrg){
+                    fHistPtTag_EMCJet->Fill(esdtrack->Pt());
+            }
+            
             FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
             
             if(tagPhot){fHistPhotoMismatch->Fill(1);}
@@ -3022,31 +3096,32 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     //Fill Number of electrons plot
     fHistNElecPerEvent->Fill(elecCnt);
     
-    //Fill the total energy histogram
-    if(MBtrg){
-        fHistEng_MB->Fill(Ene);
-    }
-        if(EMC7trg){
-                fHistEng_EMC7->Fill(Ene);
-        }
-        if(EMC8trg){
-                fHistEng_EMC8->Fill(Ene);
-        }
-        if(EMCJettrg){
-                fHistEng_EMCJet->Fill(Ene);
-        }
+    //Fill the total pt sum histogram
     if(tagEvt){
         if(MBtrg){
-            fHistEngTag_MB->Fill(Ene);
+            fHistPtSumTag_MB->Fill(PtSum);
         }
         if(EMC7trg){
-            fHistEngTag_EMC7->Fill(Ene);
+            fHistPtSumTag_EMC7->Fill(PtSum);
         }
         if(EMC8trg){
-            fHistEngTag_EMC8->Fill(Ene);
+            fHistPtSumTag_EMC8->Fill(PtSum);
         }
         if(EMCJettrg){
-            fHistEngTag_EMCJet->Fill(Ene);
+            fHistPtSumTag_EMCJet->Fill(PtSum);
+        }
+    }else{
+        if(MBtrg){
+                fHistPtSum_MB->Fill(PtSum);
+        }
+        if(EMC7trg){
+                fHistPtSum_EMC7->Fill(PtSum);
+        }
+        if(EMC8trg){
+                fHistPtSum_EMC8->Fill(PtSum);
+        }
+        if(EMCJettrg){
+                fHistPtSum_EMCJet->Fill(PtSum);
         }
     }
     
@@ -3068,7 +3143,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     //Fill the Eta Phi histograms
 if(tagEvt){
-    for(Int_t i=0;i<ntracks;i++){
+    for(Int_t i=0;i<Eta.size();i++){
         if(MBtrg){
             fHistEtaPhiTag_MB->Fill(Eta[i],Phi[i]);
         }
@@ -5462,10 +5537,26 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 //Do hybrid track cuts
                 if(!globaltrackCuts->AcceptTrack(esdtrackassoc)&&!comptrackCuts->AcceptTrack(esdtrackassoc)){continue;}
             
+                //Pt distribution
+                if(MBtrg){
+                        fHistPtAssoc_MB->Fill(esdtrack->Pt());
+                }
+                if(EMC7trg){
+                        fHistPtAssoc_EMC7->Fill(esdtrack->Pt());
+                }
+        
+                if(EMC8trg){
+                        fHistPtAssoc_EMC8->Fill(esdtrack->Pt());
+                }
+        
+                if(EMCJettrg){
+                        fHistPtAssoc_EMCJet->Fill(esdtrack->Pt());
+                }
+                
                 //Fill Delta Phi variable and correct for periodicity
                 Double_t DPhi=esdtrackassoc->Phi()-esdtrack->Phi();
                 
-                if(DPhi<-TMath::Pi()){DPhi=TMath::Abs(2*TMath::Pi()-DPhi);}
+                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
                 
                 if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
                 
