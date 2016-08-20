@@ -1,4 +1,4 @@
-AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kTRUE)
+AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE)
 {
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -28,6 +28,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kT
     
   PSHFEtask->SetTrackCuts(globaltrackCuts, comptrackCuts);
   PSHFEtask->SetElectronTrackCuts(trkCutsStrong);
+  PSHFEtask->SetSSCutBool(SSCuts);
   mgr->AddTask(PSHFEtask);  
     
   TString outfilename = "PSHFE_histos";
