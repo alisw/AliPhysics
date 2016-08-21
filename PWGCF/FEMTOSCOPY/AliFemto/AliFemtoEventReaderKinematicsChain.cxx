@@ -350,6 +350,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 		delete trackCopy;
 		continue;
       }
+  
+
 
       trackCopy->SetPidProbElectron(kinepid[0]);
       trackCopy->SetPidProbMuon(kinepid[1]);
@@ -361,6 +363,9 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	//Momentum
       double pxyz[3];
       double rxyz[3];
+
+      if(kinetrack->Px()==0 && kinetrack->Py()==0)
+        continue;
 
       pxyz[0]=kinetrack->Px();
       pxyz[1]=kinetrack->Py();
