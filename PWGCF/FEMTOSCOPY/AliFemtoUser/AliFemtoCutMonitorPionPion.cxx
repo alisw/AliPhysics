@@ -63,8 +63,8 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   fVertexXY = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
-    48, 0.05f, 0.08f,
-    48, 0.31f, 0.345f
+    48, 0.05f, 0.095f,
+    48, 0.31f, 0.355f
     // 48, 0.0f, 0.12f,
     // 48, 0.22f, 0.32f
   );
@@ -77,7 +77,7 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
       _identical_collection_size_pass = new TH1I("collection_size_p",
                                                  "Size of particle collection;"
                                                  "# pions; N_{ev}",
-                                                 100, -0.5, 800.5);
+                                                 100, -0.5, 1000.5);
       _identical_collection_size_pass->Sumw2();
       _identical_collection_size_fail = (TH1I*)_identical_collection_size_pass->Clone("collection_size_f");
     } else {
@@ -86,8 +86,8 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                        "# pions (1);"
                                        "# pions (2);"
                                        "N_{ev}",
-                                       100, -0.5, 800.5,
-                                       100, -0.5, 800.5);
+                                       100, -0.5, 1000.5,
+                                       100, -0.5, 1000.5);
       _collection_size_fail = (TH2I*)_collection_size_pass->Clone("collection_size_f");
     }
   }
