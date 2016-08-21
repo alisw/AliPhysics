@@ -44,14 +44,23 @@ AliFemtoCorrFctnDPhiStarDEta::AliFemtoCorrFctnDPhiStarDEta(char* title, double r
   // Calculate radial distance
   fMinRad = radius;
 
+  const TString xAxisTitle = "#Delta#eta",
+                yAxisTitle = "#Delta#phi*";
+
   // Set up numerator:
   char tTitNum[101] = "NumDPhiStarDEta";
   strncat(tTitNum, title, 100);
   fDPhiStarDEtaNumerator = new TH2D(tTitNum, title, aEtaBins, fEtaRangeLow, fEtaRangeUp, aPhiStarBins, fPhiStarRangeLow, fPhiStarRangeUp);
+  fDPhiStarDEtaNumerator->GetXaxis()->SetTitle(xAxisTitle);
+  fDPhiStarDEtaNumerator->GetYaxis()->SetTitle(yAxisTitle);
+
   // Set up denominator:
   char tTitDen[101] = "DenDPhiStarDEta";
   strncat(tTitDen, title, 100);
   fDPhiStarDEtaDenominator = new TH2D(tTitDen, title, aEtaBins, fEtaRangeLow, fEtaRangeUp, aPhiStarBins, fPhiStarRangeLow, fPhiStarRangeUp);
+  fDPhiStarDEtaDenominator->GetXaxis()->SetTitle(xAxisTitle);
+  fDPhiStarDEtaDenominator->GetYaxis()->SetTitle(yAxisTitle);
+
 
   // To enable error bars calculations:
   fDPhiStarDEtaNumerator->Sumw2();
