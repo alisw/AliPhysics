@@ -41,9 +41,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kF
     
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EMCal7_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCal8_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-    
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("EMCalJet_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCalJet_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     }else{
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
@@ -51,9 +49,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kF
 
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EMCal7_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
 
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCal8_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("EMCalJet_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCalJet_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     }
     
     
@@ -62,7 +58,6 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kF
     mgr->ConnectOutput(PSHFEtask, 1, coutput1);
     mgr->ConnectOutput(PSHFEtask, 2, coutput2);
     mgr->ConnectOutput(PSHFEtask, 3, coutput3);
-    mgr->ConnectOutput(PSHFEtask, 4, coutput4);
     
 return PSHFEtask;
 }
