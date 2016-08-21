@@ -1178,36 +1178,36 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistTPCSigCut_EMCJet->GetYaxis()->SetTitle("Count");
     
     //Impact Parameter histos
-    fHistImpPar_MB = new TH1F("fHistImpPar_MB", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
+    fHistImpPar_MB = new TH1F("fHistImpPar_MB", "Impact Parameter distribution in xy plane for all tracks", 100,-1, 1);
     fHistImpPar_MB->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_MB->GetYaxis()->SetTitle("Count");
     
-    fHistImpPar_EMC7 = new TH1F("fHistImpPar_EMC7", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
+    fHistImpPar_EMC7 = new TH1F("fHistImpPar_EMC7", "Impact Parameter distribution in xy plane for all tracks", 100,-1, 1);
     fHistImpPar_EMC7->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_EMC7->GetYaxis()->SetTitle("Count");
     
-    fHistImpPar_EMC8 = new TH1F("fHistImpPar_EMC8", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
+    fHistImpPar_EMC8 = new TH1F("fHistImpPar_EMC8", "Impact Parameter distribution in xy plane for all tracks", 100,-1, 1);
     fHistImpPar_EMC8->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_EMC8->GetYaxis()->SetTitle("Count");
     
-    fHistImpPar_EMCJet = new TH1F("fHistImpPar_EMCJet", "Impact Parameter distribution in xy plane for all tracks", 100,-.5, .5);
+    fHistImpPar_EMCJet = new TH1F("fHistImpPar_EMCJet", "Impact Parameter distribution in xy plane for all tracks", 100,-1, 1);
     fHistImpPar_EMCJet->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpPar_EMCJet->GetYaxis()->SetTitle("Count");
     
     //Impact Parameter for tagged electrons histos
-    fHistImpParTag_MB = new TH1F("fHistImpParTag_MB", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
+    fHistImpParTag_MB = new TH1F("fHistImpParTag_MB", "Impact Parameter distribution in xy plane for electron candidates", 100,-1, 1);
     fHistImpParTag_MB->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_MB->GetYaxis()->SetTitle("Count");
     
-    fHistImpParTag_EMC7 = new TH1F("fHistImpParTag_EMC7", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
+    fHistImpParTag_EMC7 = new TH1F("fHistImpParTag_EMC7", "Impact Parameter distribution in xy plane for electron candidates", 100,-1, 1);
     fHistImpParTag_EMC7->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_EMC7->GetYaxis()->SetTitle("Count");
     
-    fHistImpParTag_EMC8 = new TH1F("fHistImpParTag_EMC8", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
+    fHistImpParTag_EMC8 = new TH1F("fHistImpParTag_EMC8", "Impact Parameter distribution in xy plane for electron candidates", 100,-1,1);
     fHistImpParTag_EMC8->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_EMC8->GetYaxis()->SetTitle("Count");
     
-    fHistImpParTag_EMCJet = new TH1F("fHistImpParTag_EMCJet", "Impact Parameter distribution in xy plane for electron candidates", 100,-.5, .5);
+    fHistImpParTag_EMCJet = new TH1F("fHistImpParTag_EMCJet", "Impact Parameter distribution in xy plane for electron candidates", 100,-1, 1);
     fHistImpParTag_EMCJet->GetXaxis()->SetTitle("Impact Parameter(cm)");
     fHistImpParTag_EMCJet->GetYaxis()->SetTitle("Count");
     
@@ -1712,7 +1712,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             
             FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
             
-            if(tagPhot){fHistPhotoMismatch->Fill(1);}
+            if(tagPhot){fHistPhotoMismatch->Fill(0);}
             
         }//end if(tagStrong)
         
