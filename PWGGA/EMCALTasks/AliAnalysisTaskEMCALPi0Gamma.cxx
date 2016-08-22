@@ -197,6 +197,7 @@ fHPionInvMassesConvElBoth(0x0),
 fHPionInvMassesChargedPiZero(0x0),
 fHPionInvMassesChargedPiOne(0x0),
 fHPionInvMassesChargedPiBoth(0x0),
+fHPionInvMassesGammaBoth(0x0),
 fHPionInvMassesMix(0x0),
 fHPionInvMassesMix1(0x0),
 fHPionInvMassesMix2(0x0),
@@ -405,6 +406,7 @@ fHPionInvMassesConvElBoth(0x0),
 fHPionInvMassesChargedPiZero(0x0),
 fHPionInvMassesChargedPiOne(0x0),
 fHPionInvMassesChargedPiBoth(0x0),
+fHPionInvMassesGammaBoth(0x0),
 fHPionInvMassesMix(0x0),
 fHPionInvMassesMix1(0x0),
 fHPionInvMassesMix2(0x0),
@@ -1004,13 +1006,20 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
         fHPionInvMassesChargedPiOne->Sumw2();
         fOutput->Add(fHPionInvMassesChargedPiOne);
 
-        // main contributor: charged pion (one cluster)
+        // main contributor: charged pion (two clusters)
         fHPionInvMassesChargedPiBoth = new TH2F("hPionInvMassChargedPiBoth","hPionInvMassChargedPiBoth",massbins,0,massmax,nbins,0,ptmax);
         fHPionInvMassesChargedPiBoth->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
         fHPionInvMassesChargedPiBoth->SetYTitle("p_{T} [GeV/c]");
         fHPionInvMassesChargedPiBoth->Sumw2();
         fOutput->Add(fHPionInvMassesChargedPiBoth);
 
+        // main contributor: photon (both clusters)
+        fHPionInvMassesGammaBoth = new TH2F("hPionInvMassGammaBoth","hPionInvMassGammaBoth",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGammaBoth->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGammaBoth->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGammaBoth->Sumw2();
+        fOutput->Add(fHPionInvMassesGammaBoth);
+        
       }
     }
     fHPionInvMassesMix = new TH2F("hPionInvMassMix","hPionInvMassMix",massbins,0,massmax,nbins,0,ptmax);
@@ -2031,7 +2040,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     else{
       fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
     }
-    fHClustEnergySM->Fill(clusterVec.E(),GetModuleNumber(clus));
+    Int_t modnumber = GetModuleNumber(clus);
+    fHClustEnergySM->Fill(clusterVec.E(),modnumber);
     //fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
     fHClustEnergyTime->Fill(clusterVec.E(),clus->GetTOF());
     fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
@@ -2068,6 +2078,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       }
       thisEvent.hit[nclusters-1].weight=1.;
       thisEvent.hit[nclusters-1].imo=1;
+      thisEvent.hit[nclusters-1].smno=modnumber;
     }
     
     // go through MC information of clusters
@@ -2129,7 +2140,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           iit++;
         }
         fHNMothers->Fill(iit,mcP->E());
-        Double_t wgt = 1.;
+        Float_t wgt = 1.;
         
         AliMCParticle *McMo = static_cast<AliMCParticle*>(mcEvent->GetTrack(ipart));
         Double_t mcPt = McMo->Pt();
@@ -2371,6 +2382,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
           thisEvent.hit[nclusters-1].imo=ipart;
           thisEvent.hit[nclusters-1].pid=mcP->PdgCode();
+          thisEvent.hit[nclusters-1].smno=modnumber;
           if(!bGen){
             thisEvent.hit[nclusters-1].weight = wgt;
           }
@@ -2529,7 +2541,7 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     double mcPt = mcP->Pt();
     double mcEta = mcP->Eta();
     double mcY = mcP->Y();
-    double wgt2 = 1.;
+    Float_t wgt2 = 1.;
     
     if(bGen && !(bAddPi0 || bAddEta)){
       // fill truth histogram
@@ -3222,25 +3234,33 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
         }
       }
       
+      // fill histograms for simulation studies (electrons, charged pions in clusters)
       if(fSimStudies && (hitclass1 >= 100 && hitclass2 >= 100)){
-        if(abs(thisEvent.hit[i].pid) == 211 && abs(thisEvent.hit[j].pid) == 211){
+        // electrons
+        if(abs(thisEvent.hit[i].pid) == 11 && abs(thisEvent.hit[j].pid) == 11){
           fHPionInvMassesConvElBoth->Fill(pionVec.M(),pionVec.Pt());
         }
-        else if(abs(thisEvent.hit[i].pid) == 211 || abs(thisEvent.hit[j].pid) == 211){
+        else if((abs(thisEvent.hit[i].pid) == 11 && abs(thisEvent.hit[j].pid) == 22) || (abs(thisEvent.hit[i].pid) == 22 && abs(thisEvent.hit[j].pid) == 11)){
           fHPionInvMassesConvElOne->Fill(pionVec.M(),pionVec.Pt());
         }
         else{
           fHPionInvMassesConvElZero->Fill(pionVec.M(),pionVec.Pt());
         }
-        if(abs(thisEvent.hit[i].pid) == 11 && abs(thisEvent.hit[j].pid) == 11){
+        // charged pions
+        if(abs(thisEvent.hit[i].pid) == 211 && abs(thisEvent.hit[j].pid) == 211){
           fHPionInvMassesChargedPiBoth->Fill(pionVec.M(),pionVec.Pt());
         }
-        else if(abs(thisEvent.hit[i].pid) == 11 || abs(thisEvent.hit[j].pid) == 11){
+        else if((abs(thisEvent.hit[i].pid) == 211 && abs(thisEvent.hit[j].pid) == 22) || (abs(thisEvent.hit[i].pid) == 22 && abs(thisEvent.hit[j].pid) == 211)){
           fHPionInvMassesChargedPiOne->Fill(pionVec.M(),pionVec.Pt());
         }
         else{
           fHPionInvMassesChargedPiZero->Fill(pionVec.M(),pionVec.Pt());
         }
+        // two photons
+        if(abs(thisEvent.hit[i].pid) == 22 && abs(thisEvent.hit[j].pid) == 22){
+          fHPionInvMassesGammaBoth->Fill(pionVec.M(),pionVec.Pt());
+        }
+        
 
       }
     }
@@ -4075,8 +4095,8 @@ void AliAnalysisTaskEMCALPi0Gamma::SetDnDpT(Int_t i, Double_t par0, Double_t par
 }
 
 //_____________________________________________________________________
-Double_t AliAnalysisTaskEMCALPi0Gamma::CalcWeight(Double_t pt, Double_t eta, Int_t i){
-  Double_t weight = 1.;
+Float_t AliAnalysisTaskEMCALPi0Gamma::CalcWeight(Double_t pt, Double_t eta, Int_t i){
+  Float_t weight = 1.;
   if(i==1){
     Double_t par0 = 2.52684e08;
     Double_t par1 = 0.730803;
@@ -4223,6 +4243,7 @@ TrigTheta(0)
     hit[i].pid = obj.hit[i].pid;
     hit[i].weight = obj.hit[i].weight;
     hit[i].thishit = obj.hit[i].thishit;
+    hit[i].smno = obj.hit[i].smno;
   }
 }
 
@@ -4253,6 +4274,7 @@ void EmcEvent::Reset()
     hit[i].imo = 0;
     hit[i].pid = 0;
     hit[i].weight = 1;
+    hit[i].smno = 0;
     TLorentzVector lv(0,0,0,0);
     hit[i].thishit = lv;
   }
