@@ -31,26 +31,19 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kF
   PSHFEtask->SetSSCutBool(SSCuts);
   mgr->AddTask(PSHFEtask);  
     
-  TString outfilename = "PSHFE_histos";
+  TString contname = "";
   
-    if(trkCutsStrong){
+    if(trkCutsStrong){contname+="_Strong";}else{contname+="_Weak";}
+    if(SSCuts){contname+="_SS";}else{contname+="_NoSS";}
   // create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Min-Bias_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("Min-Bias%s",contname), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EMCal7_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("EMCal7%s",contname), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCalJet_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-    }else{
-        AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Min-Bias_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EMCal7_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCalJet_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-    }
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("EMCalJet%s",contname), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    
     
     
     // connect input/output
