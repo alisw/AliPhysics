@@ -1,7 +1,25 @@
 //Replace User Task with your Add Task and appropriate parameters
 
+//#include<iostream>
+
 #include<TSystem.h>
 #include<TROOT.h>
+
+/*
+#include "AliAnalysisManager.h"
+#include "AliAnalysisGrid.h"
+#include "AliInputEventHandler.h"
+#include "AliESDInputHandler.h"
+#include "AliReducedEventInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliPhysicsSelectionTask.h"
+
+#include "CreateAlienHandler.C"
+#include "../../../OADB/macros/AddTaskPhysicsSelection.C"
+*/
+
+//using std::cout;
+//using std::endl;
 
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
                                      Int_t reducedEventType = -1, Bool_t writeTree = kFALSE,
@@ -49,6 +67,8 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    gROOT->ProcessLine(".include $ROOTSYS/include");
 
+   cout << "===================== MODIFIED =================" << endl;
+   
    // Create the analysis manager
    AliAnalysisManager *mgr = new AliAnalysisManager("ReducedTreeAnalysis");
    
@@ -130,12 +150,12 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
       AddTask_iarsene_dst(reducedEventType, writeTree);
    }
    //===== Add consumer tasks for the reduced events
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
+   /*gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
    if(inputTypeStr.Contains("esd"))
       AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents);
    if(inputTypeStr.Contains("reducedevent") || inputTypeStr.Contains("baseevent"))
       AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree);
-
+   */
    // Enable debug printouts
    //mgr->SetDebugLevel(10);
 
@@ -145,10 +165,20 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    if(!runmodestr.Contains("grid"))
       chain = makeChain(infile, inputType);
    
+   TProof* proof=0x0;
+   if(runmodestr.Contains("proof")) {
+      proof = TProof::Open("");
+      //gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/ProofEnableAliRoot.C");
+      //ProofEnableAliRoot();
+      chain->SetProof();
+   }
+   
    mgr->PrintStatus();
    // Start analysis
    if(runmodestr.Contains("local"))
       mgr->StartAnalysis("local", chain, nEntries, firstEntry);
+   if(runmodestr.Contains("proof"))
+      mgr->StartAnalysis("proof", chain, nEntries, firstEntry);
    if(runmodestr.Contains("grid"))
       mgr->StartAnalysis("grid", nEntries, firstEntry);
 };
