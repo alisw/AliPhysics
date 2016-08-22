@@ -2,6 +2,7 @@
 /// \file AliFemtoAnalysisPionLambda.h
 ///
 
+#pragma once
 
 #ifndef ALIFEMTOANALYSIS_PION_LAMBDA_H_
 #define ALIFEMTOANALYSIS_PION_LAMBDA_H_
@@ -93,10 +94,11 @@ public:
   /**
    * Create an analysis-parameter object with default options. This is used
    * internally when using the default constructor. It is recommended to call
-   * this method to constrcut the AnalysisParams object, and modify that to
+   * this method to construct the AnalysisParams object, and modify that to
    * create a custom AliFemtoAnalysisPionLambda.
    */
   static AnalysisParams DefaultConfig();
+  static AnalysisParams DefaultConfigWithTypes(PionType, LambdaType);
 
   /**
    * Return the particle cut which selects the lambda-like particle
@@ -152,18 +154,6 @@ protected:
 
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
-
-
-private:
-
-  /// Internal initialization method used by all constructors
-  void _Init(const CutParams& params);
-
-#ifndef __ROOT__
-  /// \cond CLASSIMP
-  ClassDef(AliFemtoAnalysisPionLambda, 0);
-  /// \endcond
-#endif
 
 };
 
@@ -233,7 +223,7 @@ struct AliFemtoAnalysisPionLambda::CutParams {
 
   Bool_t lambda_OnFlyStatus;
 
-    // Lambda daugther parameters
+    // Lambda daughter parameters
     Float_t lambda_daughter_Eta,
             lambda_daughter_TPCncls,
             lambda_daughter_MaxDCA;

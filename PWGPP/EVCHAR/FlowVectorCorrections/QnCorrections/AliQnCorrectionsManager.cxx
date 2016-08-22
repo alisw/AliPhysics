@@ -179,6 +179,52 @@ AliQnCorrectionsDetectorConfigurationBase *AliQnCorrectionsManager::FindDetector
   return NULL;
 }
 
+/// Get the detector configuration Qn vector list
+/// \param subdetector the name of the detector configuration of interest
+/// \return the found Qn vector list
+const TList *AliQnCorrectionsManager::GetDetectorQnVectorList(const char *subdetector) const {
+
+  return  dynamic_cast<TList*> (fQnVectorList->FindObject(subdetector));
+}
+
+/// Get out of the detector configuration Qn vector list
+/// the Qn vector which complies the expected or alternative correction step
+/// \param subdetector the name of the detector configuration of interest
+/// \param expectedstep the name of the expected last correction applied
+/// \param altstep the name of the alternative correction step if the expected one is not found
+/// \return pointer to the found Qn vector
+const AliQnCorrectionsQnVector *AliQnCorrectionsManager::GetDetectorQnVector(
+    const char *subdetector,
+    const char *expectedstep,
+    const char *altstep) const {
+
+  const AliQnCorrectionsQnVector *theQnVector = NULL;
+
+  TList *pQvecList = dynamic_cast<TList*> (fQnVectorList->FindObject(subdetector));
+  if (pQvecList != NULL) {
+    /* the detector is present */
+    if (TString(expectedstep).EqualTo("latest"))
+      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+    else
+      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
+
+    if (theQnVector == NULL) {
+      /* the Qn vector for the expected step was not there */
+      if (TString(altstep).EqualTo("latest"))
+        theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+      else
+        theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altstep);
+    }
+  }
+  if (theQnVector != NULL) {
+    /* check the Qn vector quality */
+    if (!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0))
+      /* not good quality, discarded */
+      theQnVector = NULL;
+  }
+  return theQnVector;
+}
+
 /// Initializes the correction framework
 /// Basically the different list containing framework objects are built.
 /// Calibration histograms are on a per process basis while QA histograms

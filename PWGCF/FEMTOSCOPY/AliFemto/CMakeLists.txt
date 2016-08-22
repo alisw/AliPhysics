@@ -157,7 +157,7 @@ set(HDRS ${HDRS}
 
 set ( FSRCS
   AliFemtoFsiTools.F
-  AliFemtoFsiWeightLednicky.F
+  # AliFemtoFsiWeightLednicky.F
   )
 
 # Generate the dictionary
