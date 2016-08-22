@@ -106,6 +106,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtAssoc_MB;
     TH1F            *fHistPtTag_MB;
     TH1F            *fHistPhotoMismatch_MB;
+    TH2F            *fHistDPhi28dEdx_MB;
     
     
     //EMC7 Histos
@@ -151,6 +152,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtAssoc_EMC7;
     TH1F            *fHistPtTag_EMC7;
     TH1F            *fHistPhotoMismatch_EMC7;
+    TH2F            *fHistDPhi28dEdx_EMC7;
     
     
     //EMCJet Histos
@@ -196,6 +198,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtAssoc_EMCJet;
     TH1F            *fHistPtTag_EMCJet;
     TH1F            *fHistPhotoMismatch_EMCJet;
+    TH2F            *fHistDPhi28dEdx_EMCJet;
     
     //Rejection Histos
     //Conscious decision not to split them into trigger or pt bins. Ask klay about it.
