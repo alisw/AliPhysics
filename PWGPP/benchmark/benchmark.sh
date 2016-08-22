@@ -86,8 +86,10 @@ main()
     "MergeCPass1") goMergeCPass1 "$@";;
     "MergeCPass2") goMergeCPass2 "$@";;
     "MakeFilteredTrees") goMakeFilteredTrees "$@";;
-    "MakeSummary") goMakeSummary "$@";;
-    "run") goSubmitMakeflow "$@";;
+    "MakeSummary") goMakeSummary "$@"
+                   exit $? ;;
+    "run") goSubmitMakeflow "$@"
+           exit $? ;;
     "submit") goSubmitBatch "$@";;
     "test") goTest "$@";;
     "GenerateMakeflow") goGenerateMakeflow "$@";;
@@ -1064,7 +1066,21 @@ goSubmitMakeflow()
   cat running_time >> summary.log
   cat running_time >> summary_full.log
   xCopy -f -d $commonOutputPath summary.log summary_full.log running_time
-  return 0
+
+  goCheckSummary
+  return $?
+}
+
+goCheckSummary() {
+  # Checks if summary.log (which must be available in the current dir) has any
+  # indication of errors.
+  local BAD
+  [[ ! -f summary.log ]] && return 1
+  BAD=$(awk '/error summary:/,/detailed summary:/' summary.log | grep -v '===' | sed -e '/^$/d' | wc -l)
+  BAD=$((BAD && 1))
+  [[ $BAD == 0 ]] && printf "\n\n==> No BAD files found!\n\n\n" \
+                  || printf "\n\n==> Validation failed: some BAD files were found! Check summary.log for more details.\n\n\n"
+  return $BAD
 }
 
 goGenerateMakeflow()
@@ -2302,8 +2318,7 @@ goMakeSummary()
 
   { # Begin summary.log
 
-  # This is the "old style" summary
-  goSummarizeMetaFiles "$metadir"
+  goSummarizeMetaFiles "$metadir"  # <-- new style summary
 
   echo "total numbers for the production:"
   echo
@@ -2461,7 +2476,8 @@ EOF
     exec 1>&3 3>&-
     exec 2>&1
     xCopy -f -d $commonOutputPath summary.log summary_full.log
-    return 0
+    goCheckSummary
+    return $?
   fi
 
   #make file lists - QA, trending, stacktraces, filtering and calibration
