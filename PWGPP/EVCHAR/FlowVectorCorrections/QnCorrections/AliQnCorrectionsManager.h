@@ -121,6 +121,8 @@ public:
   TList *GetQnVectorList() const { return fQnVectorList; }
   /// Gets the name of the calibration histograms container
   /// \return the calibration histograms container name
+  const TList *GetDetectorQnVectorList(const char *subdetector) const;
+  const AliQnCorrectionsQnVector *GetDetectorQnVector(const char *subdetector, const char *expectedstep = "latest", const char *altstep = "latest") const;
   const char *GetCalibrationHistogramsContainerName() const
   { return szCalibrationHistogramsKeyName; }
   /// Gets the name of the calibration QA histograms container

@@ -66,7 +66,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double LambdaMass = 1.115683;
 	
 	const int numOfMultBins = 5;	
-	const int numOfChTypes = 43; //13
+	const int numOfChTypes = 34; //13
 	const int numOfkTbins = 5;
 
 	bool performSharedDaughterCut = true;
@@ -148,8 +148,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
 	
-	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1,1,1,1,1,1,1,1,1};
-	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","aPaPlowPt","aPaPhighPt","PPlowPt","PPhighPt","PaPlowPt","PaPhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt","PPvhighPt" ,"aPaPvhighPt","PaPvhighPt"};
+	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1};
+	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL" };
+	
 	
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
@@ -273,7 +274,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 ||ichg == 24 || ichg == 25 ||  ichg == 26 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg == 34  || ichg == 36|| ichg == 40 || ichg == 41  || ichg == 42) //protons
+					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30) //protons
 					  {
 					    dtc1etaphitpc[aniter]->SetPt(0.5,maxPt); 
 					    dtc1etaphitpc[aniter]->SetMass(ProtonMass);		
@@ -303,7 +304,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 25 || ichg == 26 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30|| ichg == 35 || ichg == 36|| ichg == 40 || ichg == 41  || ichg == 42) //protons
+					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30) //protons
 					  {
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); 
 					    dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
@@ -337,41 +338,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                             dtc3etaphitpc[aniter]->SetPt(0.2,maxPt);
                                           }
 
-					//low and high pT - low PP, high PP, low PaP, high PaP
-					if( ichg == 21 || ichg == 22 || ichg == 23  ||ichg == 24 || ichg == 25 ||  ichg == 26 || (ichg  >=13 && ichg <= 26) || ( ichg >= 34 && ichg <=39) || ichg == 40 || ichg == 41  || ichg == 42 )
-					  {
-					    dtc1etaphitpc[aniter]->SetMass(ProtonMass);		
-					    dtc1etaphitpc[aniter]->SetMostProbable(setMostProb1);
-					    dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
-					    dtc2etaphitpc[aniter]->SetMostProbable(setMostProb1);
-
-					    if(ichg == 21 || ichg == 23  || ichg == 25  || (ichg  >=13 && ichg <= 19) )
-					      {
-						dtc1etaphitpc[aniter]->SetPt(0.5,1.25); 
-						dtc2etaphitpc[aniter]->SetPt(0.5,1.25);
-					      }
-					    else if(ichg == 40 || ichg == 41  || ichg == 42)
-					      {
-						dtc1etaphitpc[aniter]->SetPt(2.5,8); 
-						dtc2etaphitpc[aniter]->SetPt(2.5,8);
-					      }
-					    else
-					      {
-						dtc1etaphitpc[aniter]->SetPt(1.25,maxPt); 
-						dtc2etaphitpc[aniter]->SetPt(1.25,maxPt);
-					      }
-					  }
-
-
 					//*********V0 cuts********************
 					//V0 first particle cut
 					dtc4etaphitpc[aniter] = new AliFemtoV0TrackCut();
 					dtc4etaphitpc[aniter]->SetMass(LambdaMass);
 					dtc4etaphitpc[aniter]->SetEta(0.8); //0.8
-					if(ichg>=34 && ichg<=39  || ichg == 20)
-					  dtc4etaphitpc[aniter]->SetPt(1.25,maxPt); //0.5,5.0
+					if(ichg>=20 && ichg<=26)
+					  dtc4etaphitpc[aniter]->SetPt(1.4,maxPt); //0.5,5.0
 					if(ichg>=13 && ichg<=19)
-					  dtc4etaphitpc[aniter]->SetPt(0.6,1.25);
+					  dtc4etaphitpc[aniter]->SetPt(0.6,1.4);
 					if(ichg>=27 && ichg<=33)
 					  dtc4etaphitpc[aniter]->SetPt(0.6,maxPt);
 					dtc4etaphitpc[aniter]->SetEtaDaughters(0.8);
@@ -388,7 +363,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
 					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
-					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
+					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.487648,0.507648);
 					dtc4etaphitpc[aniter]->SetRadiusV0Min(0.5);
 					dtc4etaphitpc[aniter]->SetNsigmaPosDaughter(5.0);
 					dtc4etaphitpc[aniter]->SetNsigmaNegDaughter(5.0);
@@ -399,10 +374,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter] = new AliFemtoV0TrackCut();
 					dtc5etaphitpc[aniter]->SetMass(LambdaMass);
 					dtc5etaphitpc[aniter]->SetEta(0.8);
-					if((ichg>=34 && ichg<=39) || ichg == 20)
-					  dtc5etaphitpc[aniter]->SetPt(1.25,maxPt); //0.5,5.0
+					if(ichg>=20 && ichg<=26)
+					  dtc5etaphitpc[aniter]->SetPt(1.4,maxPt);
 					if(ichg>=13 && ichg<=19)
-					  dtc5etaphitpc[aniter]->SetPt(0.6,1.25);
+					  dtc5etaphitpc[aniter]->SetPt(0.6,1.4);
 					if(ichg>=27 && ichg<=33)
 					  dtc5etaphitpc[aniter]->SetPt(0.6,maxPt);
 					dtc5etaphitpc[aniter]->SetEtaDaughters(0.8);
@@ -419,7 +394,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
 					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
-					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
+					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.487648,0.507648);
 					dtc5etaphitpc[aniter]->SetRadiusV0Min(0.5);
 					dtc5etaphitpc[aniter]->SetNsigmaPosDaughter(5.0);
 					dtc5etaphitpc[aniter]->SetNsigmaNegDaughter(5.0);
@@ -491,14 +466,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    }
 
 					    //FULL
-					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11 || (ichg>=23 && ichg<=26)|| (ichg>=13 && ichg<=39)){ 
+					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11){ 
 					    //if(ichg==0 || ichg==3 || ichg==6 || ichg==10){ 
 					      cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);
 					      cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),PionMass);
 					    }
 					    if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
-					    if(ichg==0||ichg==3||ichg==6||ichg==10||ichg==13||ichg==34)  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
-					    if(ichg==1||ichg==4||ichg==7||ichg==11||ichg==16||ichg==36) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					    if(ichg==0||ichg==3||ichg==6||ichg==10)  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					    if(ichg==1||ichg==4||ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 
 
 					    if(ichg<2){ //PP, PaP
@@ -597,19 +572,19 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					// setting event cut
 					anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 					//setting single track cuts
-					if(ichg==0 || ichg==3  || ichg==6 || ichg==10 || ichg==23 || ichg==24 || ichg==40) //positive like-sign
+					if(ichg==0 || ichg==3  || ichg==6 || ichg==10) //positive like-sign
 					{
 					  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 					  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 					  anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
 					}
-					if(ichg==1 || ichg==4 || ichg==7 || ichg==11 || ichg==21 || ichg==22  || ichg==41)//negative like-sign
+					if(ichg==1 || ichg==4 || ichg==7 || ichg==11)//negative like-sign
 					{
 					  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 					  anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
 					  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
 					}
-					if(ichg==2 || ichg==5 || ichg==8 || ichg==12 || ichg==25 || ichg==26  || ichg==42)//unlike-sign
+					if(ichg==2 || ichg==5 || ichg==8 || ichg==12)//unlike-sign
 					{
 					  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 					  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
@@ -621,15 +596,16 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  anetaphitpc[aniter]->SetFirstParticleCut(dtc3etaphitpc[aniter]);
 					  anetaphitpc[aniter]->SetSecondParticleCut(dtc3etaphitpc[aniter]);
                                         }
-					if(ichg == 17 || ichg == 31|| ichg == 37) //V0LL
+					if(ichg == 17 || ichg == 24 || ichg == 31) //V0LL
 					  {
+					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    //anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetFirstParticleCut(dtc4etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetSecondParticleCut(dtc4etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetPairCut(sqp1cetaphitpc[aniter]);
 					    //avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kV0s);
 					  }
-					if(ichg == 19  || ichg == 33|| ichg == 39) //V0ALAL
+					if(ichg == 19 || ichg == 26 || ichg == 33) //V0ALAL
 					  {
 					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    //anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
@@ -638,7 +614,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetPairCut(sqp1cetaphitpc[aniter]);
 					    //avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kV0s);
 					  }
-					if(ichg == 18 || ichg == 32|| ichg == 38) //VOLAL
+					if(ichg == 18 || ichg == 25 || ichg == 32) //VOLAL
 					  {
 					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    //anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
@@ -656,7 +632,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetPairCut(sqp2cetaphitpc[aniter]);
 					    //avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
 					  }
-					if(ichg == 15 || ichg == 29 || ichg == 35) //V0APL
+					if(ichg == 15 || ichg == 22 || ichg == 29) //V0APL
 					  {
 					    sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,0); //0 - track-pos, 1 - track-neg
 					    sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,11);
@@ -667,7 +643,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetPairCut(sqp4cetaphitpc[aniter]);
 					    //avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
 					  }
-					if(ichg == 14 || ichg == 28 || ichg == 34) //V0PAL
+					if(ichg == 14 || ichg == 21 || ichg == 28) //V0PAL
 					  {
 					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,11); //0 - track-pos, 1 - track-neg
@@ -678,7 +654,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetPairCut(sqp4cetaphitpc[aniter]);
 					    //avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
 					  }
-					if(ichg == 16 || ichg == 30 || ichg == 36) //V0APAL
+					if(ichg == 16 || ichg == 23 || ichg == 30) //V0APAL
 					  {
 					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    //anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
@@ -692,7 +668,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******	
 					//***without corrections*****
-					if(ichg==0 || ichg==1 || ichg==2 || ichg >= 13)
+					if(ichg >= 13)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),29, 29);
@@ -710,17 +686,17 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 					//***with corrections****
-					if(ichg==0 || ichg==1 || ichg==2 || ichg >= 13)
+					if(ichg >= 13)
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 
 					
-					if(ichg==0 || ichg==23 || ichg==24 || ichg==40)
+					if(ichg==0)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton);
-					else if(ichg==1 || ichg==21 || ichg ==22 || ichg==41)
+					else if(ichg==1)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProtonMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProtonMinus);
-					else if(ichg==2 || ichg==25 || ichg==26 || ichg==42)
+					else if(ichg==2)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProtonMinus);
 					else if(ichg==3)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kKaon);
@@ -738,28 +714,23 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kAll, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kAll);					
 					else if (ichg==13 || ichg==20 || ichg==27)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton);
-					else if (ichg==14 || ichg==28 || ichg==34)
+					else if (ichg==14 || ichg==21 || ichg==28)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton);
-					else if (ichg==15 || ichg==29 || ichg==35)
+					else if (ichg==15 || ichg==22 || ichg==29)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProtonMinus);
-					else if (ichg==16 || ichg==30 || ichg==36)
+					else if (ichg==16 || ichg==23 || ichg==30)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProtonMinus);
-					else if (ichg==17 || ichg==31 || ichg==37)
+					else if (ichg==17 || ichg==24 || ichg==31)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda);
-					else if (ichg==18 || ichg==32 || ichg==38)
+					else if (ichg==18 || ichg==25 || ichg==32)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
-					else if (ichg==19 || ichg==33 || ichg==39)
+					else if (ichg==19 || ichg==26 || ichg==33)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
-
 
 
 					
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
-			
-				
-
-					
-		
+						       							
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
 			}

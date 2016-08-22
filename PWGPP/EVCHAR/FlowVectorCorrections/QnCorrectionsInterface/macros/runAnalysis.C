@@ -63,9 +63,10 @@ AliMultSelectionTask *AddTaskMultSelection(
     TString lExtraOptions = "",
     Int_t lNDebugEstimators = 1,
     const TString lMasterJobSessionFlag = "");
-#endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
 #include "runAnalysis.H"
+
+#endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
 using std::cout;
 using std::endl;
@@ -75,7 +76,10 @@ void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE, const 
   /* strange way of including the header file is for lego train scenarios */
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runAnalysis.H");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/loadRunOptions.C");
-  loadRunOptions(kFALSE, configpath);
+  if (!loadRunOptions(kFALSE, configpath)) {
+    cout << "ERROR: configuration options not loaded. ABORTING!!!" << endl;
+    return;
+  }
 
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
 

@@ -69,7 +69,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 43; //13
 	const int numOfkTbins = 5;
 
-	bool performSharedDaughterCut = false;
+	bool performSharedDaughterCut = true;
 	bool enablePairMonitors = true;
 
 	char *parameter[21];
@@ -124,7 +124,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int minPlpContribSPD = atoi(parameter[3]); //3
 	int multbino = atoi(parameter[4]); //30
 	int zvertbino = atoi(parameter[5]); //10
-	Bool_t ifGlobalTracks=kFALSE; if(atoi(parameter[6]))ifGlobalTracks=kTRUE;//kTRUE 
+	int ifGlobalTracks = atoi(parameter[6]); //0 - off, 1 - on, 2 - PropagateToDCA 
 	double shareQuality = atof(parameter[7]); //0.00
 	double shareFraction = atof(parameter[8]); //0.05
 	bool ifElectronRejection = atoi(parameter[9]); //true
@@ -432,13 +432,17 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//****** DCA ******
 
 					if(owndca){
-					  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 					  dtc1etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
+					  //dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1);
 					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  dtc2etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
+					  //dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1);
 					  if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  //if(ichg==9) {dtc3etaphitpc[aniter]->SetMaxImpactXY(0.1);
 					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z
+					  
 					}
 					//****** Track quality cuts ******
 

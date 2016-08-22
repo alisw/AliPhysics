@@ -54,6 +54,17 @@ AliAnalysisTask *AddTaskHFEemcQA(
     if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
     if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
 
+    //Event plane task
+    AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
+    eventplaneTask->SelectCollisionCandidates(AliVEvent::kINT8 | AliVEvent::kINT7 | AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
+    if (type == "AOD") eventplaneTask->SetInput("AOD");
+    eventplaneTask->SetTrackType("TPC");
+    eventplaneTask->SetUsePtWeight();
+    eventplaneTask->SetUsePhiWeight();
+    eventplaneTask->SetSaveTrackContribution();
+    mgr->AddTask(eventplaneTask);
+
+
     // +++ EMCal MB
     // INT8
     AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");

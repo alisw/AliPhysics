@@ -124,7 +124,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int minPlpContribSPD = atoi(parameter[3]); //3
 	int multbino = atoi(parameter[4]); //30
 	int zvertbino = atoi(parameter[5]); //10
-	Bool_t ifGlobalTracks=kFALSE; if(atoi(parameter[6]))ifGlobalTracks=kTRUE;//kTRUE 
+	int ifGlobalTracks = atoi(parameter[6]); //0 - off, 1 - on, 2 - PropagateToDCA 
 	double shareQuality = atof(parameter[7]); //0.00
 	double shareFraction = atof(parameter[8]); //0.05
 	bool ifElectronRejection = atoi(parameter[9]); //true
@@ -162,7 +162,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runtype = 0; // Types 0 - global, 1 - ITS only, 2 - TPC Inner	//global tracks ->mfit ITS+TPC
 	int owncuts = 0; 
-	int owndca = 0;
+	int owndca = 1;
 
 	int gammacut = 1;	// cut na ee z gamma 
 	
@@ -432,13 +432,16 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//****** DCA ******
 
 					if(owndca){
-					  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  ///dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 					  dtc1etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  //dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  dtc2etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
-					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z
+					  dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  //if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  if(ichg==9) {dtc3etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z 
 					}
 					//****** Track quality cuts ******
 
@@ -715,7 +718,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					else
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 
-					
+
+
 					if(ichg==0 || ichg==23 || ichg==24 || ichg==40)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kProton);
 					else if(ichg==1 || ichg==21 || ichg ==22 || ichg==41)
@@ -752,8 +756,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
 
 
-
-					
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 			
 				

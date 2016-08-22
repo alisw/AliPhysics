@@ -68,7 +68,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
                                 Bool_t    enableTriggerOverlapRej     = kFALSE,                         // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",
-                                Bool_t    runLightOutput              = kFALSE                          // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    runLightOutput              = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
+                                Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
+                                TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
                           ) {
 
   // ================= Load Librariers =================================
@@ -1228,6 +1230,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
   
   if (doWeighting) Printf("weighting has been switched on");
   
@@ -1386,6 +1389,14 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
+    if (enableMatBudWeightsPi0 > 0){
+        if (isMC > 0){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+                initializedMatBudWeigths_existing = kTRUE;}
+            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+        }
+        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
@@ -1417,6 +1428,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(enablePlotVsCentrality);
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =

@@ -79,11 +79,26 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
 
   if (bOptionsLoaded) CleanOptions();
 
-  TString szFileName(Form("%s/%s", path, "runoptions.txt"));
-  const char *filename = (const char *) szFileName;
+  TString szTheFileName = "runoptions.txt";
+  TString szFullFileName(Form("%s/%s", path, szTheFileName.Data()));
+
+  if (szFullFileName.Contains("alien:")) {
+    /* oops! we have to bring the file here before we open it */
+    TGrid::Connect("alien://");
+    gSystem->Exec(Form("alien_cp %s .",szFullFileName.Data()));
+    szFullFileName = Form("%s/%s", gSystem->pwd(), szTheFileName.Data());
+  }
+
 
   listOfRuns.SetOwner(kTRUE);
-  optionsfile.open(filename);
+  optionsfile.open(szFullFileName.Data());
+
+  if (!optionsfile.is_open()) { printf("ERROR: cannot open options file %s in path %s\n", szTheFileName.Data(), path); return kFALSE; }
+
+  /* let's recover the original file name for the error printouts */
+  szFullFileName = Form("%s/%s", path, szTheFileName.Data());
+  const char *filename = szFullFileName.Data();
+
   currline.ReadLine(optionsfile);
   while (currline.BeginsWith("#") || currline.IsWhitespace()) currline.ReadLine(optionsfile);
 
@@ -365,15 +380,27 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
 
   /* now get the data files location */
   if (bGRIDPlugin || bTrainScope) {
-    TString szDataLocFile;
+    TString szDataLocFilename;
     ifstream datalocfile;
 
-    if (bMC) { szDataLocFile = Form("%s/%s", path, "GRIDMCdata.txt"); }
-    else { szDataLocFile = Form("%s/%s", path, "GRIDrealdata.txt"); }
+    if (bMC) { szDataLocFilename = "GRIDMCdata.txt"; }
+    else { szDataLocFilename = "GRIDrealdata.txt"; }
 
-    if (verb) printf(" Opening the data location file: %s\n", szDataLocFile.Data());
-    datalocfile.open(szDataLocFile.Data());
-    if (datalocfile.fail()) { cout << "ERROR: cannot open location file " << szDataLocFile << endl; return kFALSE; }
+    TString szDataLocFullFilename = Form("%s/%s", path, szDataLocFilename.Data());
+
+    if (szDataLocFullFilename.Contains("alien:")) {
+      /* oops! we have to bring the file here before opening it */
+      TGrid::Connect("alien");
+      gSystem->Exec(Form("alien_cp %s .", szDataLocFullFilename.Data()));
+      szDataLocFullFilename = Form("%s/%s", gSystem->pwd(), szDataLocFilename.Data());
+    }
+
+    if (verb) printf(" Opening the data location file: %s\n", szDataLocFullFilename.Data());
+    datalocfile.open(szDataLocFullFilename.Data());
+    if (datalocfile.fail()) { printf("ERROR: cannot open data location file %s in path %s\n", szDataLocFilename, path); return kFALSE; }
+
+    /* let's recover the original full file name for the error printouts */
+    szDataLocFullFilename = Form("%s/%s", path, szDataLocFilename.Data());
 
     /* the data pattern */
     currline.ReadLine(datalocfile);
@@ -382,7 +409,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
       szDataPattern = currline.Remove(0,strlen("Data pattern: "));
     }
     else
-      { cout << "ERROR: wrong Data pattern in data location file " << szDataLocFile << endl; return kFALSE; }
+      { cout << "ERROR: wrong Data pattern in data location file " << szDataLocFullFilename << endl; return kFALSE; }
     cout << " GRID data pattern: " << szDataPattern << endl;
     /* the grid data dir */
     currline.ReadLine(datalocfile);
@@ -391,7 +418,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
       szDataDir = currline.Remove(0,strlen("Grid data dir: "));
     }
     else
-      { cout << "ERROR: wrong GRID Data dir in data location file " << szDataLocFile << endl; return kFALSE; }
+      { cout << "ERROR: wrong GRID Data dir in data location file " << szDataLocFullFilename << endl; return kFALSE; }
     cout << " GRID data dir: " << szDataDir << endl;
     /* the number of input files */
     currline.ReadLine(datalocfile);
@@ -401,7 +428,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
       nNoOfInputFiles = currline.Atoi();
     }
     else
-      { cout << "ERROR: wrong number of input files in data location file " << szDataLocFile << endl; return kFALSE; }
+      { cout << "ERROR: wrong number of input files in data location file " << szDataLocFullFilename << endl; return kFALSE; }
     cout << "  GRID number of input files: " << nNoOfInputFiles << endl;
     /* the run prefix */
     currline.ReadLine(datalocfile);
@@ -410,7 +437,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
       szRunPrefix = currline.Remove(0,strlen("Run prefix: "));
     }
     else
-      { cout << "ERROR: wrong Run prefix in data location file " << szDataLocFile << endl; return kFALSE; }
+      { cout << "ERROR: wrong Run prefix in data location file " << szDataLocFullFilename << endl; return kFALSE; }
     if (szRunPrefix.IsWhitespace())
       printf("  NO run prefix\n");
     else
@@ -453,7 +480,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
       printf("%s, ", ((TObjString*) listOfActiveRuns.At(i))->GetString().Data());
     }
     printf("\n");
-    if (verb) printf(" Closing the data location file: %s\n", szDataLocFile.Data());
+    if (verb) printf(" Closing the data location file: %s\n", szDataLocFullFilename.Data());
     datalocfile.close();
   }
   else {
