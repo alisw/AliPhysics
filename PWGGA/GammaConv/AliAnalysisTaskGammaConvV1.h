@@ -107,13 +107,12 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TList*                            fCutArray;                                  //
     TList*                            fMesonCutArray;                             //
     TList*                            fClusterCutArray;                           //
-    TH1F**                            hESDCaloGammaPt;                            //!
-    TH1F**                            hESDConvGammaPt;                            //!
-    TH1F**                            hESDConvGammaR;                             //!
-    TH1F**                            hESDConvGammaEta;                           //!
-    TH1F**                            hESDConvGammaPhi;                           //!
-    TH1F**                            hESDConvGammaPsiPair;                       //!
-    TH2F**                            hESDConvGammaPsiPairPt;                     //!
+    TH1F**                            fHistoCaloGammaPt;                          //!
+    TH1F**                            fHistoConvGammaPt;                          //!
+    TH1F**                            fHistoConvGammaR;                           //!
+    TH1F**                            fHistoConvGammaEta;                         //!
+    TH1F**                            fHistoConvGammaPhi;                         //!
+    TH2F**                            fHistoConvGammaPsiPairPt;                   //!
     TTree**                           tESDConvGammaPtDcazCat;                     //!
     Float_t                           fPtGamma;                                   //!
     Float_t                           fDCAzPhoton;                                //!
@@ -128,140 +127,130 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                       // 4: secondary photon from k0s, 
                                       // 5: dalitz
                                       // 6: primary gamma
-    TH2F**                            hESDMotherInvMassPt;                        //!
+    TH2F**                            fHistoMotherInvMassPt;                        //!
     THnSparseF**                      sESDMotherInvMassPtZM;                      //!
-    TH2F**                            hESDMotherBackInvMassPt;                    //!
+    TH2F**                            fHistoMotherBackInvMassPt;                    //!
     THnSparseF**                      sESDMotherBackInvMassPtZM;                  //!
-    TH2F**                            hESDMotherInvMassEalpha;                    //!
-    TH2F**                            hESDMotherPi0PtY;                           //!
-    TH2F**                            hESDMotherEtaPtY;                           //!
-    TH2F**                            hESDMotherPi0PtAlpha;                       //!
-    TH2F**                            hESDMotherEtaPtAlpha;                       //!
-    TH2F**                            hESDMotherPi0PtOpenAngle;                   //!
-    TH2F**                            hESDMotherEtaPtOpenAngle;                   //!
+    TH2F**                            fHistoMotherInvMassEalpha;                    //!
+    TH2F**                            fHistoMotherPi0PtY;                           //!
+    TH2F**                            fHistoMotherEtaPtY;                           //!
+    TH2F**                            fHistoMotherPi0PtAlpha;                       //!
+    TH2F**                            fHistoMotherEtaPtAlpha;                       //!
+    TH2F**                            fHistoMotherPi0PtOpenAngle;                   //!
+    TH2F**                            fHistoMotherEtaPtOpenAngle;                   //!
     THnSparseF**                      sPtRDeltaROpenAngle;                        //!
-    TH1I**                            hMCHeaders;                                 //!
-    TH1F**                            hMCAllGammaPt;                              //!
-    TH1F**                            hMCDecayGammaPi0Pt;                         //!
-    TH1F**                            hMCDecayGammaRhoPt;                         //!
-    TH1F**                            hMCDecayGammaEtaPt;                         //!
-    TH1F**                            hMCDecayGammaOmegaPt;                       //!
-    TH1F**                            hMCDecayGammaEtapPt;                        //!
-    TH1F**                            hMCDecayGammaPhiPt;                         //!
-    TH1F**                            hMCDecayGammaSigmaPt;                       //!
-    TH1F**                            hMCConvGammaPt;                             //!
-    TH1F**                            hMCConvGammaR;                              //!
-    TH1F**                            hMCConvGammaEta;                            //!
-    TH1F**                            hMCPi0Pt;                                   //!
-    TH1F**                            hMCPi0WOWeightPt;                           //! array of histos with unweighted pi0, pT
-    TH1F**                            hMCPi0WOEvtWeightPt;                        //! array of histos without event weights pi0, pT
-    TH1F**                            hMCEtaWOEvtWeightPt;                        //! array of histos without event weights eta, pT
-    TH1F**                            hMCEtaPt;                                   //!
-    TH1F**                            hMCEtaWOWeightPt;                           //!
-    TH1F**                            hMCPi0WOWeightInAccPt;                      //!
-    TH1F**                            hMCEtaWOWeightInAccPt;                      //!
-    TH1F**                            hMCPi0InAccPt;                              //!
-    TH1F**                            hMCEtaInAccPt;                              //!
-    TH1F**                            hMCPi0WOEvtWeightInAccPt;                   //!
-    TH1F**                            hMCEtaWOEvtWeightInAccPt;                   //!
-    TH2F**                            hMCPi0PtY;                                  //!
-    TH2F**                            hMCEtaPtY;                                  //!
-    TH2F**                            hMCPi0PtAlpha;                              //!
-    TH2F**                            hMCEtaPtAlpha;                              //!
-    TH1F**                            hMCK0sPt;                                   //!
-    TH1F**                            hMCK0lPt;                                   //!
-    TH2F**                            hMCSecPi0PtvsSource;                        //!
-    TH2F**                            hMCSecPi0RvsSource;                         //!
-    TH1F**                            hMCSecPi0Source;                            //!
-    TH2F**                            hMCSecPi0InAccPtvsSource;                   //!
-    TH1F**                            hMCSecEtaPt;                                //!
-    TH1F**                            hMCSecEtaSource;                            //!
-    TH2F**                            hMCPi0PtJetPt;                              //! array of histos with weighted pi0, pT, hardest jet pt
-    TH2F**                            hMCEtaPtJetPt;                              //! array of histos with weighted eta, pT, hardest jet pt
-    TH1F**                            hMCPhysicalPrimariesPt;                     //!
-    TH1F**                            hMCPrimaryPionPlusPt;                       //!
-    TH1F**                            hMCPrimaryPionMinusPt;                      //!
-    TH1F**                            hMCPrimaryKaonPlusPt;                       //!
-    TH1F**                            hMCPrimaryKaonMinusPt;                      //!
-    TH1F**                            hMCPrimaryProtonPt;                         //!
-    TH1F**                            hMCPrimaryAntiprotonPt;                     //!
-    TH1F**                            hMCPrimaryPi0Pt;                            //!
-    TH1F**                            hMCPrimaryEtaPt;                            //!
-    TH2F**                            hESDTrueMotherInvMassPt;                    //!
-    TH2F**                            hESDTruePrimaryMotherInvMassPt;             //!
-    TH2F**                            hESDTruePrimaryMotherW0WeightingInvMassPt;  //!
+    TH1I**                            fHistoMCHeaders;                                 //!
+    TH1F**                            fHistoMCAllGammaPt;                              //!
+    TH1F**                            fHistoMCDecayGammaPi0Pt;                         //!
+    TH1F**                            fHistoMCDecayGammaRhoPt;                         //!
+    TH1F**                            fHistoMCDecayGammaEtaPt;                         //!
+    TH1F**                            fHistoMCDecayGammaOmegaPt;                       //!
+    TH1F**                            fHistoMCDecayGammaEtapPt;                        //!
+    TH1F**                            fHistoMCDecayGammaPhiPt;                         //!
+    TH1F**                            fHistoMCDecayGammaSigmaPt;                       //!
+    TH1F**                            fHistoMCConvGammaPt;                             //!
+    TH1F**                            fHistoMCConvGammaR;                              //!
+    TH1F**                            fHistoMCConvGammaEta;                            //!
+    TH1F**                            fHistoMCPi0Pt;                                   //!
+    TH1F**                            fHistoMCPi0WOWeightPt;                           //! array of histos with unweighted pi0, pT
+    TH1F**                            fHistoMCPi0WOEvtWeightPt;                        //! array of histos without event weights pi0, pT
+    TH1F**                            fHistoMCEtaWOEvtWeightPt;                        //! array of histos without event weights eta, pT
+    TH1F**                            fHistoMCEtaPt;                                   //!
+    TH1F**                            fHistoMCEtaWOWeightPt;                           //!
+    TH1F**                            fHistoMCPi0WOWeightInAccPt;                      //!
+    TH1F**                            fHistoMCEtaWOWeightInAccPt;                      //!
+    TH1F**                            fHistoMCPi0InAccPt;                              //!
+    TH1F**                            fHistoMCEtaInAccPt;                              //!
+    TH1F**                            fHistoMCPi0WOEvtWeightInAccPt;                   //!
+    TH1F**                            fHistoMCEtaWOEvtWeightInAccPt;                   //!
+    TH2F**                            fHistoMCPi0PtY;                                  //!
+    TH2F**                            fHistoMCEtaPtY;                                  //!
+    TH2F**                            fHistoMCPi0PtAlpha;                              //!
+    TH2F**                            fHistoMCEtaPtAlpha;                              //!
+    TH2F**                            fHistoMCPrimaryPtvsSource;                       //!
+    TH2F**                            fHistoMCSecPi0PtvsSource;                        //!
+    TH2F**                            fHistoMCSecPi0RvsSource;                         //!
+    TH1F**                            fHistoMCSecPi0Source;                            //!
+    TH2F**                            fHistoMCSecPi0InAccPtvsSource;                   //!
+    TH1F**                            fHistoMCSecEtaPt;                                //!
+    TH1F**                            fHistoMCSecEtaSource;                            //!
+    TH2F**                            fHistoMCPi0PtJetPt;                              //! array of histos with weighted pi0, pT, hardest jet pt
+    TH2F**                            fHistoMCEtaPtJetPt;                              //! array of histos with weighted eta, pT, hardest jet pt
+    TH1F**                            fHistoMCPhysicalPrimariesPt;                     //!
+    TH2F**                            fHistoTrueMotherInvMassPt;                    //!
+    TH2F**                            fHistoTruePrimaryMotherInvMassPt;             //!
+    TH2F**                            fHistoTruePrimaryMotherW0WeightingInvMassPt;  //!
     TProfile2D**                      pESDTruePrimaryMotherWeightsInvMassPt;      //!
-    TH2F**                            hESDTruePrimaryPi0MCPtResolPt;              //!
-    TH2F**                            hESDTruePrimaryEtaMCPtResolPt;              //!
-    TH2F**                            hESDTrueSecondaryMotherInvMassPt;           //!
-    TH2F**                            hESDTrueSecondaryMotherFromK0sInvMassPt;    //!
-    TH2F**                            hESDTrueSecondaryMotherFromK0lInvMassPt;    //!
-    TH1F**                            hESDTrueK0sWithPi0DaughterMCPt;             //!
-    TH1F**                            hESDTrueK0lWithPi0DaughterMCPt;             //!
-    TH2F**                            hESDTrueSecondaryMotherFromEtaInvMassPt;    //!
-    TH1F**                            hESDTrueEtaWithPi0DaughterMCPt;             //!
-    TH2F**                            hESDTrueSecondaryMotherFromLambdaInvMassPt; //!
-    TH1F**                            hESDTrueLambdaWithPi0DaughterMCPt;          //!
-    TH2F**                            hESDTrueBckGGInvMassPt;                     //!
-    TH2F**                            hESDTrueBckContInvMassPt;                   //!
-    TH2F**                            hESDTruePi0PtY;                             //!
-    TH2F**                            hESDTrueEtaPtY;                             //!
-    TH2F**                            hESDTruePi0PtAlpha;                         //!
-    TH2F**                            hESDTrueEtaPtAlpha;                         //!
-    TH2F**                            hESDTruePi0PtOpenAngle;                     //!
-    TH2F**                            hESDTrueEtaPtOpenAngle;                     //!
-    TH2F**                            hESDTrueMotherDalitzInvMassPt;              //!
-    TH1F**                            hESDTrueConvGammaPt;                        //!
-    TH1F**                            hESDTrueConvGammaR;                         //!
-    TH1F**                            hESDTrueConvGammaPtMC;                      //!
-    TH1F**                            hESDTrueConvGammaRMC;                       //!
-    TH1F**                            hESDTrueConvGammaEta;                       //!
-    TH1F**                            hESDTrueConvGammaPsiPair;                   //!
-    TH2F**                            hESDTrueConvGammaPsiPairPt;                 //!
-    TH2F**                            hESDCombinatorialPt;                        //!
-    TH2F**                            hESDCombinatorialPtDeltaPhi_ek;             //!
-    TH2F**                            hESDCombinatorialPtDeltaPhi_ep;             //!
-    TH2F**                            hESDCombinatorialPtDeltaPhi_epi;            //!
-    TH2F**                            hESDCombinatorialPtDeltaPhi_pik;            //!
-    TH2F**                            hESDCombinatorialPtDeltaPhi_pip;            //!
-    TH1F**                            hESDTruePrimaryConvGammaPt;                 //!
-    TH2F**                            hESDTruePrimaryConvGammaESDPtMCPt;          //!
-    TH1F**                            hESDTrueSecondaryConvGammaPt;               //!
-    TH1F**                            hESDTrueSecondaryConvGammaFromXFromK0sPt;   //!
-    TH1F**                            hESDTrueSecondaryConvGammaFromXFromK0lPt;   //!
-    TH1F**                            hESDTrueSecondaryConvGammaFromXFromLambdaPt;//!
-    TH2F**                            hESDTrueDalitzPsiPairDeltaPhi;              //!
-    TH2F**                            hESDTrueGammaPsiPairDeltaPhi;               //!
-    TH2F**                            hDoubleCountTruePi0InvMassPt;               //! array of histos with double counted pi0s, invMass, pT
-    TH2F**                            hDoubleCountTrueEtaInvMassPt;               //! array of histos with double counted etas, invMass, pT
-    TH2F**                            hDoubleCountTrueConvGammaRPt;               //! array of histos with double counted photons, R, pT
+    TH2F**                            fHistoTruePrimaryPi0MCPtResolPt;              //!
+    TH2F**                            fHistoTruePrimaryEtaMCPtResolPt;              //!
+    TH2F**                            fHistoTrueSecondaryMotherInvMassPt;           //!
+    TH2F**                            fHistoTrueSecondaryMotherFromK0sInvMassPt;    //!
+    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
+    TH1F**                            fHistoTrueK0sWithPi0DaughterMCPt;             //!
+    TH1F**                            fHistoTrueK0lWithPi0DaughterMCPt;             //!
+    TH2F**                            fHistoTrueSecondaryMotherFromEtaInvMassPt;    //!
+    TH1F**                            fHistoTrueEtaWithPi0DaughterMCPt;             //!
+    TH2F**                            fHistoTrueSecondaryMotherFromLambdaInvMassPt; //!
+    TH1F**                            fHistoTrueLambdaWithPi0DaughterMCPt;          //!
+    TH2F**                            fHistoTrueBckGGInvMassPt;                     //!
+    TH2F**                            fHistoTrueBckContInvMassPt;                   //!
+    TH2F**                            fHistoTruePi0PtY;                             //!
+    TH2F**                            fHistoTrueEtaPtY;                             //!
+    TH2F**                            fHistoTruePi0PtAlpha;                         //!
+    TH2F**                            fHistoTrueEtaPtAlpha;                         //!
+    TH2F**                            fHistoTruePi0PtOpenAngle;                     //!
+    TH2F**                            fHistoTrueEtaPtOpenAngle;                     //!
+    TH2F**                            fHistoTrueMotherDalitzInvMassPt;              //!
+    TH1F**                            fHistoTrueConvGammaPt;                        //!
+    TH1F**                            fHistoTrueConvGammaR;                         //!
+    TH1F**                            fHistoTrueConvGammaPtMC;                      //!
+    TH1F**                            fHistoTrueConvGammaRMC;                       //!
+    TH1F**                            fHistoTrueConvGammaEta;                       //!
+    TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
+    TH2F**                            fHistoCombinatorialPt;                        //!
+    TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
+    TH2F**                            fHistoCombinatorialPtDeltaPhi_ep;             //!
+    TH2F**                            fHistoCombinatorialPtDeltaPhi_epi;            //!
+    TH2F**                            fHistoCombinatorialPtDeltaPhi_pik;            //!
+    TH2F**                            fHistoCombinatorialPtDeltaPhi_pip;            //!
+    TH1F**                            fHistoTruePrimaryConvGammaPt;                 //!
+    TH2F**                            fHistoTruePrimaryConvGammaESDPtMCPt;          //!
+    TH1F**                            fHistoTrueSecondaryConvGammaPt;               //!
+    TH1F**                            fHistoTrueSecondaryConvGammaFromXFromK0sPt;   //!
+    TH1F**                            fHistoTrueSecondaryConvGammaFromXFromK0lPt;   //!
+    TH1F**                            fHistoTrueSecondaryConvGammaFromXFromLambdaPt;//!
+    TH2F**                            fHistoTrueDalitzPsiPairDeltaPhi;              //!
+    TH2F**                            fHistoTrueGammaPsiPairDeltaPhi;               //!
+    TH2F**                            fHistoDoubleCountTruePi0InvMassPt;               //! array of histos with double counted pi0s, invMass, pT
+    TH2F**                            fHistoDoubleCountTrueEtaInvMassPt;               //! array of histos with double counted etas, invMass, pT
+    TH2F**                            fHistoDoubleCountTrueConvGammaRPt;               //! array of histos with double counted photons, R, pT
     vector<Int_t>                     vecDoubleCountTruePi0s;                     //! vector containing labels of validated pi0
     vector<Int_t>                     vecDoubleCountTrueEtas;                     //! vector containing labels of validated eta
     vector<Int_t>                     vecDoubleCountTrueConvGammas;               //! vector containing labels of validated photons
-    TH1F**                            hMultipleCountTruePi0;                      //! array of histos how often TruePi0s are counted
-    TH1F**                            hMultipleCountTrueEta;                      //! array of histos how often TrueEtas are counted
-    TH1F**                            hMultipleCountTrueConvGamma;                //! array of histos how often TrueConvGammass are counted
+    TH1F**                            fHistoMultipleCountTruePi0;                      //! array of histos how often TruePi0s are counted
+    TH1F**                            fHistoMultipleCountTrueEta;                      //! array of histos how often TrueEtas are counted
+    TH1F**                            fHistoMultipleCountTrueConvGamma;                //! array of histos how often TrueConvGammass are counted
     map<Int_t,Int_t>                  mapMultipleCountTruePi0s;                   //! map containing pi0 labels that are counted at least twice
     map<Int_t,Int_t>                  mapMultipleCountTrueEtas;                   //! map containing eta labels that are counted at least twice
     map<Int_t,Int_t>                  mapMultipleCountTrueConvGammas;             //! map containing photon labels that are counted at least twice
-    TH1F**                            hNEvents;                                   //!
-    TH1F**                            hNEventsWOWeight;                           //! array of histos with event information without event weights
-    TH1F**                            hNGoodESDTracks;                            //!
-    TH1F**                            hNEventsWeighted;                           //!
-    TH1F**                            hNGoodESDTracksWeighted;                    //!
-    TH1F**                            hVertexZ;                                   //!
-    TH1F**                            hVertexZWeighted;                           //!
-    TH1F**                            hCentrality;                                //!
-    TH1F**                            hCentralityFlattened;                       //!
-    TH2F**                            hCentralityVsPrimaryTracks;                 //!
-    TH1F**                            hNGammaCandidates;                          //!
-    TH2F**                            hNGoodESDTracksVsNGammaCandidates;          //!
+    TH1F**                            fHistoNEvents;                                   //!
+    TH1F**                            fHistoNEventsWOWeight;                           //! array of histos with event information without event weights
+    TH1F**                            fHistoNGoodESDTracks;                            //!
+    TH1F**                            fHistoNEventsWeighted;                           //!
+    TH1F**                            fHistoNGoodESDTracksWeighted;                    //!
+    TH1F**                            fHistoVertexZ;                                   //!
+    TH1F**                            fHistoVertexZWeighted;                           //!
+    TH1F**                            fHistoCentrality;                                //!
+    TH1F**                            fHistoCentralityFlattened;                       //!
+    TH2F**                            fHistoCentralityVsPrimaryTracks;                 //!
+    TH1F**                            fHistoNGammaCandidates;                          //!
+    TH2F**                            fHistoNGoodESDTracksVsNGammaCandidates;          //!
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
-    TH1F**                            hNV0Tracks;                                 //!
+    TH1F**                            fHistoNV0Tracks;                                 //!
     TProfile**                        fProfileEtaShift;                           //! array of profiles with eta shift
     TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
     TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
-    TProfile**                        hEtaShift;                                  //!
+    TProfile**                        fHistoEtaShift;                                  //!
     TTree**                           tESDMesonsInvMassPtDcazMinDcazMaxFlag;      //!
     Float_t                           fInvMass;                                   //!
     Float_t                           fPt;                                        //!
@@ -309,7 +298,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 35);
+    ClassDef(AliAnalysisTaskGammaConvV1, 36);
 };
 
 #endif
