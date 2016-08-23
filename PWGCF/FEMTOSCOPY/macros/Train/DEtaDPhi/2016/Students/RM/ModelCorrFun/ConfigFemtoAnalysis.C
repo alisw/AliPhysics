@@ -243,6 +243,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                analysis[imainloop] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, multmix, multbins[imult], multbins[imult+1]); //tworzenie analizy
                analysis[imainloop]->SetNumEventsToMix(10); //zwiekszamy statystyke mianownika f korelacyjnej, okreslamy tu z ilu eventow (miksujemy)
                analysis[imainloop]->SetMinSizePartCollection(1); //przynajmniej jedna czastka musi przejsc nasze cuty
+               analysis[imainloop]->SetVerboseMode(kFALSE); 
 				//ograniczenie na event = jedna kolizje
                //*** Event cut ***
                basic_event_cut[imainloop] = new AliFemtoBasicEventCut(); //tworzymy cut na multiplicity
