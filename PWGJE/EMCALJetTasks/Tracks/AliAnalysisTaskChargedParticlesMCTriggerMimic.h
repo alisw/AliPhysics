@@ -83,8 +83,8 @@ public:
   void                        SetNameClusters(const TString &nameClusters) { fNameClusters = nameClusters; }
 
   void                        SetEMCALTrigger(PatchType_t patchtype, Double_t threshold) { fPatchType = patchtype; fEnergyThreshold = threshold; }
-  void                        SetObservable(Observable_t observable) { fObservables.SetBit(observable); }
-  Bool_t                      HasObservable(Observable_t observable) { return fObservables.TestBit(observable); }
+  void                        SetObservable(Observable_t observable) { fObservables.SetBitNumber(observable); }
+  Bool_t                      HasObservable(Observable_t observable) { return fObservables.TestBitNumber(observable); }
 
 protected:
 
