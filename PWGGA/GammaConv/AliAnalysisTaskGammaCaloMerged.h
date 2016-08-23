@@ -165,12 +165,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCSecPi0InAccPtvsSource;                      //! array of histos with weighted pi0 from sec in acceptance, pT for different sources
     TH2F**                  fHistoMCPi0PtJetPt;                                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                                 //! array of histos with weighted eta, pT, hardest jet pt
-    TH1F**                  fHistoMCNegPiPt;                                    //! array of histos with weighted neg pions
-    TH1F**                  fHistoMCPosPiPt;                                    //! array of histos with weighted pos pions
-    TH1F**                  fHistoMCK0sPt;                                      //! array of histos with weighted K0s
-    TH1F**                  fHistoMCK0lPt;                                      //! array of histos with weighted K0l
-    TH1F**                  fHistoMCNegKPt;                                     //! array of histos with weighted neg kaons
-    TH1F**                  fHistoMCPosKPt;                                     //! array of histos with weighted pos kaons
+    TH2F**                  fHistoMCPrimaryPtvsSource;                          //! array of histos with weighted primary particles, pT vs source
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
 
@@ -272,7 +267,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 18);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 19);
 };
 
 #endif
