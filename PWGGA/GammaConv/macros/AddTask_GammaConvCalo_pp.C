@@ -363,7 +363,9 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   } else if (trainConfig == 34){ 
     cuts.AddCut("00003113","00200009327000008250400000","1111100053032230000","0163103100000010"); // 700 MeV cluster min energy
     cuts.AddCut("00051013","00200009327000008250400000","1111100053032230000","0163103100000010"); // 700 MeV cluster min energy
-    
+
+  } else if (trainConfig == 35){ 
+    cuts.AddCut("00010113","00200009327000008250400000","1111121063032230000","0163103100000010"); // INT7
   // LHC13g  
   } else if (trainConfig == 40){  // LHC13g without pileup for triggers
     cuts.AddCut("00010113","00200009327000008250400000","1111121063032230000","0163103100000010"); // INT7
