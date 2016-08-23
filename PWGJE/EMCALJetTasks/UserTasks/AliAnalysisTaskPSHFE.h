@@ -15,6 +15,8 @@ class AliESDtrackCuts;
 class AliPIDResponse;
 class AliESDEvent;
 class AliESDtrack;
+class AliEventPoolManager;
+class AliEventPool;
 class TGraph;
 
 #ifndef ALIANALYSISTASKSE_H
@@ -31,10 +33,12 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     virtual void     UserExec(Option_t *option);
     virtual void     FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse);
     virtual void     FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrack, Int_t i);
+    void             FillMEDPhiHistos(AliESDtrack *esdtrack);
     void             FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i);
     void             SetTrackCuts(AliESDtrackCuts *gtrkCuts, AliESDtrackCuts *ctrkCuts);
     void             SetElectronTrackCuts(Bool_t trkCutBool);
     void             SetSSCutBool(Bool_t SSCutBool);
+    TObjArray*       MakeTrkArr(AliESDEvent *esd);
     virtual void     Terminate(Option_t *);
     
  private:
@@ -45,6 +49,9 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     AliESDtrackCuts *fTrackCutsWeak;     //
     AliESDtrackCuts *globaltrackCuts; 
     AliESDtrackCuts *comptrackCuts; 
+    AliEventPoolManager *fPoolMan;
+    AliEventPool    *fPool;
+    TObjArray       *trkArr;
     
     //Physics selection booleans
     Bool_t          MBtrg;
@@ -104,9 +111,21 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistInvMassElecUnLike_MB;
     TH1F            *fHistOpAngElecUnLike_MB;
     TH1F            *fHistPtAssoc_MB;
+    TH1F            *fHistPtAssocMix_MB;
     TH1F            *fHistPtTag_MB;
     TH1F            *fHistPhotoMismatch_MB;
     TH2F            *fHistDPhi28dEdx_MB;
+    
+    //Mixed Event DPhi histos
+    TH1F            *fHistDPhiMix300_500_MB[3];
+    TH1F            *fHistDPhiMix500_800_MB[3];
+    TH1F            *fHistDPhiMix800_1_MB[3];
+    TH1F            *fHistDPhiMix1_2_MB[3];
+    TH1F            *fHistDPhiMix2_3_MB[3];
+    TH1F            *fHistDPhiMix3_4_MB[3];
+    TH1F            *fHistDPhiMix4_MB[3];
+    TH1F            *fHistDPhiMix28_MB;
+    TH2F            *fHistDPhiDEtaMix28_MB;
     
     
     //EMC7 Histos
@@ -150,9 +169,21 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistInvMassElecUnLike_EMC7;
     TH1F            *fHistOpAngElecUnLike_EMC7;
     TH1F            *fHistPtAssoc_EMC7;
+    TH1F            *fHistPtAssocMix_EMC7;
     TH1F            *fHistPtTag_EMC7;
     TH1F            *fHistPhotoMismatch_EMC7;
     TH2F            *fHistDPhi28dEdx_EMC7;
+    
+    //Mixed Event DPhi histos
+    TH1F            *fHistDPhiMix300_500_EMC7[3];
+    TH1F            *fHistDPhiMix500_800_EMC7[3];
+    TH1F            *fHistDPhiMix800_1_EMC7[3];
+    TH1F            *fHistDPhiMix1_2_EMC7[3];
+    TH1F            *fHistDPhiMix2_3_EMC7[3];
+    TH1F            *fHistDPhiMix3_4_EMC7[3];
+    TH1F            *fHistDPhiMix4_EMC7[3];
+    TH1F            *fHistDPhiMix28_EMC7;
+    TH2F            *fHistDPhiDEtaMix28_EMC7;
     
     
     //EMCJet Histos
@@ -196,9 +227,21 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistInvMassElecUnLike_EMCJet;
     TH1F            *fHistOpAngElecUnLike_EMCJet;
     TH1F            *fHistPtAssoc_EMCJet;
+    TH1F            *fHistPtAssocMix_EMCJet;
     TH1F            *fHistPtTag_EMCJet;
     TH1F            *fHistPhotoMismatch_EMCJet;
     TH2F            *fHistDPhi28dEdx_EMCJet;
+    
+    //Mixed Event DPhi histos
+    TH1F            *fHistDPhiMix300_500_EMCJet[3];
+    TH1F            *fHistDPhiMix500_800_EMCJet[3];
+    TH1F            *fHistDPhiMix800_1_EMCJet[3];
+    TH1F            *fHistDPhiMix1_2_EMCJet[3];
+    TH1F            *fHistDPhiMix2_3_EMCJet[3];
+    TH1F            *fHistDPhiMix3_4_EMCJet[3];
+    TH1F            *fHistDPhiMix4_EMCJet[3];
+    TH1F            *fHistDPhiMix28_EMCJet;
+    TH2F            *fHistDPhiDEtaMix28_EMCJet;
     
     //Rejection Histos
     //Conscious decision not to split them into trigger or pt bins. Ask klay about it.
