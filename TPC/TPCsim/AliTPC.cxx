@@ -2385,7 +2385,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	}     
       }
       indexHit[0]=1;
-      printf(">> zel: %+e %d\n",xyzHit[2],isec);
+      //printf(">> zel: %+e %d\n",xyzHit[2],isec);
 
       fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
       // account for A/C sides max drift L deficit to nominal 250 cm
@@ -2478,8 +2478,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  double z = maxDrift - driftEl;
 	  if (sideC) z = -z;
 	  xyz[2] = transform->Z2TimeBin(z,isec, yLab);
-	 	  double zz = transform->TimeBin2Z(xyz[2],isec, yLab);
-	 	  printf("<<%d zel: %+e %d -> %e\n",nel,  z,isec, zz);
+	  //	  double zz = transform->TimeBin2Z(xyz[2],isec, yLab);
+	  //	  printf("<<%d zel: %+e %d -> %e\n",nel,  z,isec, zz);
 	}
 
 	xyz[4] =0;	  
