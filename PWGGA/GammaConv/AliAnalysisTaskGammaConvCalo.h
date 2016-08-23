@@ -251,12 +251,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCEtaPtY;                     //! array of histos with weighted eta, pT, Y
     TH2F**                  fHistoMCPi0PtAlpha;                 //! array of histos with weighted pi0, pT, alpha
     TH2F**                  fHistoMCEtaPtAlpha;                 //! array of histos with weighted eta, pT, alpha
-    TH1F**                  fHistoMCK0sPt;                      //! array of histos with weighted K0s, pT
-    TH1F**                  fHistoMCK0lPt;                      //! array of histos with weighted K0l, pT
-    TH1F**                  fHistoMCNegKPt;                     //! array of histos with weighted K-, pT
-    TH1F**                  fHistoMCPosKPt;                     //! array of histos with weighted K+, pT
-    TH1F**                  fHistoMCNegPiPt;                    //! array of histos with weighted pi-, pT
-    TH1F**                  fHistoMCPosPiPt;                    //! array of histos with weighted pi+, pT
+    TH2F**                  fHistoMCPrimaryPtvsSource;          //! array of histos with weighted primary particles, pT vs source
     TH2F**                  fHistoMCSecPi0PtvsSource;           //! array of histos with secondary pi0, pT, source
     TH1F**                  fHistoMCSecPi0Source;               //! array of histos with secondary pi0, source
     TH2F**                  fHistoMCSecPi0InAccPtvsSource;      //! array of histos with secondary pi0, pT, source in acceptance
@@ -430,7 +425,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 30);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 31);
 };
 
 #endif
