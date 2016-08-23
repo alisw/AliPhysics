@@ -1,6 +1,7 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
+AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 const AliDielectronEventCuts *GetEventCuts();
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
@@ -9,11 +10,11 @@ Bool_t kMix = kTRUE;
 Bool_t kNoPairing   = kFALSE;
 Bool_t randomizeDau = kTRUE;
      
-TString names("ppData1;ppData2");
+TString names("ppData0;ppData1;ppData2;ppData3;ppData4");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
-const Int_t nPF = 0; // use prefiltering for cuts lower than nPF
+const Int_t nPF = 2; // use prefiltering for cuts lower than nPF
 
 AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t isRandomRej=kFALSE)
 {
@@ -47,12 +48,18 @@ AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bES
   
   if(kMix){
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
-    mix->SetMixType(AliDielectronMixingHandler::kAll);
+
+    mixingHandler = new AliDielectronMixingHandler();
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
     mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
     mix->SetDepth(17);
-    //mix->SetMixUncomplete(kTRUE);
-    die->SetMixingHandler(mix);
+
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+
+      // using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
+      // mixingHandler->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
+
+      die->SetMixingHandler(mix);
   }//kMix
 
 
@@ -90,14 +97,18 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
         
   if(cutDefinition < nPF){
 
+    Printf("Use prefiltering!");
+
     if(bESDANA){
       die->GetTrackFilter().AddCuts(SetupPreFilterESDtrackCuts(cutDefinition));
     }
     else{
       die->GetTrackFilter().AddCuts(SetupPreFilterAODtrackCuts(cutDefinition));
     }
+    die->GetTrackFilter().AddCuts(SetPreFilterPIDcuts(cutDefinition));
 
-      //pairPrefilter
+
+    //pairPrefilter
     AliAnalysisCuts* pairPreCuts=0x0;
 
     pairCutsInvM ->AddCut(AliDielectronVarManager::kM, 0.0, 0.06);
@@ -118,7 +129,7 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
     else{
       die->GetPairPreFilterLegs().AddCuts(SetupAODtrackCuts(cutDefinition));
     }
-    die->GetPairPreFilterLegs().AddCuts(noconv);
+    // die->GetPairPreFilterLegs().AddCuts(noconv);
     
     die->SetPreFilterUnlikeOnly(kTRUE);
   }
@@ -130,12 +141,13 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
       die->GetTrackFilter().AddCuts(SetupAODtrackCuts(cutDefinition));
     }    
     die->GetTrackFilter().AddCuts(SetPIDcuts(cutDefinition));
-    die->GetTrackFilter().AddCuts(noconv);
+    // die->GetTrackFilter().AddCuts(noconv);
   }
+
   // removing strange mixing pairs
   AliDielectronVarCuts *opAngleCut = new AliDielectronVarCuts("opAngleCut","opAngleCut");
   opAngleCut->AddCut(AliDielectronVarManager::kOpeningAngle,-1.e-10,1.e-10,kTRUE);   
-  die->GetPairFilter().AddCuts(opAngleCut); 
+  //die->GetPairFilter().AddCuts(opAngleCut); 
           
 }
 //______________________________________________________________________________________
@@ -147,12 +159,30 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition){
   pid->SetTitle("PID cuts");
 
   if(cutDefinition == 0){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2., 2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
-  if(cutDefinition == 1){
+  else if(cutDefinition == 1){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2., 2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition == 2){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -2., 2. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition == 3){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,5. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.8,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition == 4){
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,3. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -2. ,2. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
     pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,1. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
@@ -168,67 +198,71 @@ AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition){
   AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts;
   fesdTrackCuts->SetTitle("ESD track cuts");
 
-  //global
-  fesdTrackCuts->SetPtRange( 0.2 , 100. );
-  fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
-  fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  fesdTrackCuts->SetDCAToVertex2D(kFALSE);
-  fesdTrackCuts->SetMaxDCAToVertexZ(3.);
-  fesdTrackCuts->SetMaxDCAToVertexXY(1.);
+  // //global
+  // fesdTrackCuts->SetPtRange( 0.2 , 100. );
+  // fesdTrackCuts->SetEtaRange( -0.8 , 0.8 );
+  // fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  // fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  // fesdTrackCuts->SetDCAToVertex2D(kFALSE);
+  // fesdTrackCuts->SetMaxDCAToVertexZ(3.);
+  // fesdTrackCuts->SetMaxDCAToVertexXY(1.);
   
-  fesdTrackCuts->SetRequireITSRefit(kTRUE);
-  fesdTrackCuts->SetRequireTPCRefit(kTRUE);
+  // fesdTrackCuts->SetRequireITSRefit(kTRUE);
+  // fesdTrackCuts->SetRequireTPCRefit(kTRUE);
  
-  if(cutDefinition == 0){
-    fesdTrackCuts->SetMinNClustersITS(4);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fesdTrackCuts->SetMinNClustersTPC(80);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(4);  
-  }
-  if(cutDefinition == 1){
-    fesdTrackCuts->SetMinNClustersITS(5);
-    fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
-    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fesdTrackCuts->SetMinNClustersTPC(100);
-    fesdTrackCuts->SetMinNCrossedRowsTPC(130);
-    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
-    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
-  }
+  // if(cutDefinition == 0){
+  //   fesdTrackCuts->SetMinNClustersITS(4);
+  //   fesdTrackCuts->SetMaxChi2PerClusterITS(4.5);
+  //   fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  //   fesdTrackCuts->SetMinNClustersTPC(80);
+  //   fesdTrackCuts->SetMinNCrossedRowsTPC(100);
+  //   fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
+  //   fesdTrackCuts->SetMaxChi2PerClusterTPC(4);  
+  // }
+  // if(cutDefinition == 1){
+  //   fesdTrackCuts->SetMinNClustersITS(5);
+  //   fesdTrackCuts->SetMaxChi2PerClusterITS(3.5);
+  //   fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  //   fesdTrackCuts->SetMinNClustersTPC(100);
+  //   fesdTrackCuts->SetMinNCrossedRowsTPC(130);
+  //   fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+  //   fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
+  // }
   
   return fesdTrackCuts;
 }
 
-//AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition){
-//  AliDielectronPID *pid = new AliDielectronPID();
-//    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-//    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
-//    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -3. ,0.5,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-//    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,4. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);   
-// return pid;
-//}
+AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition){
+  AliDielectronPID *pid = new AliDielectronPID();
+
+  if(cutDefinition==0){
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -4., 4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+  }
+  else if(cutDefinition==1){
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-5.,5.,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -4., 4. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable    ,AliDielectronVarManager::kPt);
+  }   
+  return pid;
+}
 
 AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition){
 
   AliESDtrackCuts *fesdTrackCuts = new AliESDtrackCuts;
   fesdTrackCuts->SetTitle("ESD track cuts (pre)");
 
-  //global
-  fesdTrackCuts->SetPtRange( 0.08 , 100. );
-  fesdTrackCuts->SetEtaRange( -1.1 , 1.1 );
-  fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  fesdTrackCuts->SetDCAToVertex2D(kFALSE);
-  fesdTrackCuts->SetMaxDCAToVertexZ(3.);
-  fesdTrackCuts->SetMaxDCAToVertexXY(1.);
+  // //global
+  // fesdTrackCuts->SetPtRange( 0.08 , 100. );
+  // fesdTrackCuts->SetEtaRange( -1.1 , 1.1 );
+  // fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  // fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  // fesdTrackCuts->SetDCAToVertex2D(kFALSE);
+  // fesdTrackCuts->SetMaxDCAToVertexZ(3.);
+  // fesdTrackCuts->SetMaxDCAToVertexXY(1.);
  
-  //ITS cuts
-  fesdTrackCuts->SetRequireITSRefit(kTRUE);
-  fesdTrackCuts->SetMinNClustersITS(3);
-  fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  // //ITS cuts
+  // fesdTrackCuts->SetRequireITSRefit(kTRUE);
+  // fesdTrackCuts->SetMinNClustersITS(3);
+  // fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
 
   return fesdTrackCuts;
   
@@ -269,8 +303,6 @@ AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition){
 
 AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
 
-  // so far only one cut definition 
-
   AliAnalysisCuts* faodTrackCuts=0x0;
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
@@ -279,11 +311,16 @@ AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
   trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.08,100.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -1.1,1.1);
 
-
   AliDielectronTrackCuts* trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-  trackCutsDiel->SetAODFilterBit(1<<1); // TPC only cuts (to be checked)
-  trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  
+
+  if(cutDefinition==1){
+    trackCutsDiel->SetAODFilterBit(1<<0|1<<1); // ITSsa cuts + TPC only cuts
+    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  }
+  else{
+    trackCutsDiel->SetAODFilterBit(1<<0); // TPC only cuts 
+    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  }
   AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsAOD);
@@ -301,7 +338,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //Setup histogram classes
   AliDielectronHistos *histos=
     new AliDielectronHistos(die->GetName(),
-                            die->GetTitle());
+                           die->GetTitle());
   
   //Initialise histogram classes
   //histos->SetReservedWords("Track;Pair");
@@ -373,7 +410,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to event class
   histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0,1,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",120,-12.,12.,AliDielectronVarManager::kZvPrim);
-  
+  histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
+
   //add histograms to track class
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","P","P;P [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kP);
@@ -390,15 +428,17 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   
   histos->UserHistogram("Track","NClusterITS","NClusterITS; NClusterITS ;#tracks",8,-0.5,7.5,AliDielectronVarManager::kNclsITS);
   histos->UserHistogram("Track","ITSchi2perCls","ITSchi2perCls; ITSchi2perCls ;#tracks",100,0.,10.,AliDielectronVarManager::kITSchi2Cl);
-  
+
+  histos->UserHistogram("Track","TPCdEdx_P","dEdx;P [GeV];TPC signal (arb units) vs Momentum;Mom;TPCsignal",     200,0.,10.,150,  0.,150. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);  
   histos->UserHistogram("Track","TPCnSigma_MomEle","TPC number of sigmas Electrons vs Momentum;Mom;TPCsigmaEle", 200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","ITSdEdx_P","dEdx;P [GeV];ITS signal (arb units) vs Momentum;Mom;ITSsignal",     200,0.,10.,150,  0.,150. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal);
-  histos->UserHistogram("Track","TPCdEdx_P","dEdx;P [GeV];TPC signal (arb units) vs Momentum;Mom;TPCsignal",     200,0.,10.,150,  0.,150. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);
+  histos->UserHistogram("Track","ITSnSigma_MomEle","ITS number of sigmas Electrons vs Momentum;Mom;ITSsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
   histos->UserHistogram("Track","TOFbeta_Mom","kTOFbeta vs Momentum;Mom;TOFbeta"                           ,     200,0.,10.,120,  0.,  1.2,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
+  histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
   //add histograms to pair classes
   histos->UserHistogram("Pair",
-                        "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
+                        "InvMass_pPt","Inv.Mass;PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
                         500,0.,5.,250,0.,5.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 
@@ -451,7 +491,7 @@ const AliDielectronEventCuts *GetEventCuts(){
   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
   eventCuts->SetVertexZ(-10.,10.);
   eventCuts->SetMinVtxContributors(1); 
-  
+
   return eventCuts;
 }
 
