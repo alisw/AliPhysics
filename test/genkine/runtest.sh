@@ -1,14 +1,30 @@
 #!/bin/bash -l
 # The settings come from ~/.bash_profile
 
-rm -rf */*.root */*.log */*.dat */GRP */*.ps */AliHLT*
+# Clean-up
+rm -rf */*.root */*.log */*.dat */GRP */*.ps */AliHLT* */*.d */*.pcm */*.so
+
+# Generation of kinematics tree
 cd ./gen
-aliroot -b -q rungen.C\(5\) 2>&1 | tee gen.log
+root.exe -b -q rungen.C\(50\) 2>&1 | tee gen.log
 chmod a-w *.root
+
+# Geant3 simulation
 cd ../sim
-aliroot -b -q sim.C\(5\) 2>&1 | tee sim.log
-aliroot -b -q rec.C      2>&1 | tee rec.log
-aliroot -b -q ${ALICE_ROOT}/STEER/macros/CheckESD.C 2>&1 | tee check.log
-aliroot -b -q aod.C 2>&1 | tee aod.log
+root.exe -b -q runsim.C\(50\) 2>&1 | tee sim.log
+mv syswatch.log simwatch.log
+root.exe -b -q runrec.C      2>&1 | tee rec.log
+mv syswatch.log recwatch.log
+root.exe -b -q runcheck.C 2>&1 | tee check.log
+root.exe -b -q aod.C 2>&1 | tee aod.log
+
+# Geant4 simulation
+cd ../simG4
+root.exe -b -q runsim.C\(50\) 2>&1 | tee sim.log
+mv syswatch.log simwatch.log
+root.exe -b -q runrec.C      2>&1 | tee rec.log
+mv syswatch.log recwatch.log
+root.exe -b -q runcheck.C 2>&1 | tee check.log
+root.exe -b -q aod.C 2>&1 | tee aod.log
 
 

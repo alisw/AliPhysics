@@ -2,8 +2,9 @@
 // Below we select events containing the decays D* -> D0 pi, D0 -> K- pi+
 // inside the barrel part of the ALICE detector (45 < theta < 135)
 
-// To be able to compile, please add -I<ALIROOT_INSTALL_PATH>/include
-// to your .rootrc
+// To be able to compile, you can add -I<ALIROOT_INSTALL_PATH>/include to ~/.rootrc
+// or use gSystem->SetIncludePath("-I<ALIROOT_INSTALL_PATH>/include")
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TH1F.h>
@@ -25,17 +26,27 @@
 #include "AliPythia.h"
 #endif
 
+// Forward declarations of utility functions
 Float_t EtaToTheta(Float_t arg);
 void GetFinalDecayProducts(Int_t ind, AliStack & stack , TArrayI & ar);
 
 void fastGen(Int_t nev = 1, const char* filename = "galice.root")
 {
+  // If we want to run with Root only, we need the line below
+  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
+
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();
  
+  //=======================================================================
+  // Set Random Number seed
+  gRandom->SetSeed(12345); // Set 0 to use the current time
+  cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
 
-
-  // Run loader
+  //=======================================================================
+  // Prepare the simulation environment
+  
+  // Create run loader
   AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
   
   rl->SetCompressionLevel(2);
@@ -44,14 +55,14 @@ void fastGen(Int_t nev = 1, const char* filename = "galice.root")
   rl->MakeTree("E");
   gAlice->SetRunLoader(rl);
   
-  //  Create stack
+  // Create stack
   rl->MakeStack();
   AliStack* stack = rl->Stack();
   
-  //  Header
+  // Create header
   AliHeader* header = rl->GetHeader();
   
-  //  Create and Initialize Generator
+  // Create and Initialize Generator
  
   // Example of charm generation taken from Config_PythiaHeavyFlavours.C
   AliGenPythia *gener = new AliGenPythia(-1);
@@ -70,7 +81,7 @@ void fastGen(Int_t nev = 1, const char* filename = "galice.root")
   // Go to galice.root
   rl->CdGAFile();
 
-  // Forbid some decays. Do it after gener->Init(0, because
+  // Forbid some decays. Do it after gener->Init(), because
   // the initialization of the generator includes reading of the decay table.
 
   AliPythia * py= AliPythia::Instance();
@@ -86,33 +97,31 @@ void fastGen(Int_t nev = 1, const char* filename = "galice.root")
     py->SetMDME(d,1,0);
   }
 
-  //
-  //                        Event Loop
-  //
   
+  //=======================================================================
+  // Main event loop
   TStopwatch timer;
   timer.Start();
-  for (Int_t iev = 0; iev < nev; iev++) {
+  for (Int_t iev = 0; iev < nev; iev++) { // Event Loop
     
     cout <<"Event number "<< iev << endl;
     
-    //  Initialize event
+    // Initialize event
     header->Reset(0,iev);
     rl->SetEventNumber(iev);
     stack->Reset();
     rl->MakeTree("K");
     
-    //  Generate event
-    Int_t nprim = 0;
-    Int_t ntrial = 0;
-    Int_t ndstar = 0;
-   
-   
+    //---------------------------------------------------------------------
+    // Generate event
 
-    //-------------------------------------------------------------------------------------
+    // Counters
+    Int_t nprim = 0;  // number of primary particles
+    Int_t ntrial = 0; // number of trials
+    Int_t ndstar = 0; // number of D* in the event
 
-    while(!ndstar) {
-      // Selection of events with D*
+    while(!ndstar) {// Selection of events with D*
+      
       stack->Reset();
       stack->ConnectTree(rl->TreeK());
       gener->Generate();
@@ -156,29 +165,30 @@ void fastGen(Int_t nev = 1, const char* filename = "galice.root")
           }
         }
       }   
-    }   
+    } // End of selection of events with D* 
       
     cout << "Number of particles " << nprim << endl;
     cout << "Number of trials " << ntrial << endl;
     
-    //  Finish event
+    // Finish event
     header->SetNprimary(stack->GetNprimary());
     header->SetNtrack(stack->GetNtrack());  
     
-    //      I/O
+    // I/O
     stack->FinishEvent();
     header->SetStack(stack);
     rl->TreeE()->Fill();
     rl->WriteKinematics("OVERWRITE");
     
-  } // event loop
+  } // End of event loop
   timer.Stop();
   timer.Print();
   
-  //                         Termination
-  //  Generator
+  // Termination
+
+  // Generator
   gener->FinishRun();
-  //  Write file
+  // Write file
   rl->WriteHeader("OVERWRITE");
   gener->Write();
   rl->Write();
