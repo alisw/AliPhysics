@@ -83,7 +83,7 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
 //STRIP 
 //
 
-void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf){
+void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf,UInt_t runno){
   //This method packs the SSD digits in a proper 32 bits structure
   // Revised by Enrico Fragiacomo
   Int_t ix;
@@ -103,6 +103,16 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       iz=digs->GetCoord1();  // If iz==0, O side and if iz=1 N side
       ix=digs->GetCoord2();  // Strip Number
       is=digs->GetCompressedSignal();  // ADC Signal
+
+      // During a number of runs in LHC16k and LHC16l, we had a time shift in ddl 3 (DDL 515) by 2 strips 
+      //  due to a single event upset in the FEROMS
+      // Apply shift here and undo it in the raw data reading.
+      if (ddl==3 && runno >=258391 && runno < 260025) {
+        ix -= 2;
+        if (ix < 0 || ix > 1535)  // remove hits that are out of range
+          continue;
+      }
+
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
       if(is<0) is = 0;
       if(is>4095) is = 4095;
@@ -589,7 +599,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch, AliITSFOSignalsSPD* foSignal
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
+Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch, UInt_t runno){
 
     //This method creates the Raw data files for SSD detectors
   const Int_t kSize=1536;//768*2 Number of stripe * number of sides(N and P)
@@ -617,7 +627,7 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
 	branch->GetEvent(moduleNumber);
 	//For each Module, buf contains the array of data words in Binary format	  
 	//fIndex gives the number of 32 bits words in the buffer for each module
-	GetDigitsSSD(digits,mod,moduleNumber,i,buf);
+	GetDigitsSSD(digits,mod,moduleNumber,i,buf,runno);
 	outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
 	fIndex=-1;
       }//end if

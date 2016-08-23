@@ -1188,7 +1188,7 @@ void AliITS::Digits2Raw(){
     
   //SILICON STRIP DETECTOR
   AliDebug(1,"Formatting raw data for SSD");
-  rawWriter.RawDataSSD(digits->GetBranch("ITSDigitsSSD"));
+  rawWriter.RawDataSSD(digits->GetBranch("ITSDigitsSSD"), AliRunLoader::Instance()->GetRunNumber());
 
   fLoader->UnloadDigits();
 }

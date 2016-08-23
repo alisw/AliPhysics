@@ -25,7 +25,7 @@ class AliITSDDLRawData:public TObject{
   // This method generates the files with the Silicon pixel detector data
   Int_t RawDataSDD(TBranch* branch, const AliITSDDLModuleMapSDD* ddlsdd); 
   // This method generates the files with the Silicon drift detector data
-  Int_t RawDataSSD(TBranch* branch);
+  Int_t RawDataSSD(TBranch* branch, UInt_t runno);
   // This method generates the files with the Silicon pixel detector data
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
   // To set the verbose level
@@ -38,7 +38,7 @@ class AliITSDDLRawData:public TObject{
   void  GetDigitsSDDCompressed(TClonesArray *ITSdigits, Int_t mod,UInt_t *buf);
   void  GetDigitsSDD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
   //This method formats and stores in buf all the digits of a SDD module
-  void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf);
+  void  GetDigitsSSD(TClonesArray *ITSdigits, Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf,UInt_t runno);
   //This method formats and stores in buf all the digits of a SSD module
   void  WriteChipHeader(Int_t ChipAddr,Int_t halfStave,UInt_t &BaseWord);
   void  WriteChipTrailer(UInt_t *buf, Int_t ChipHitCount, Bool_t foBit, UInt_t &BaseWord);
