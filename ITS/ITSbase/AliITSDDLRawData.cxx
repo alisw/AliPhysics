@@ -108,8 +108,11 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       //  due to a single event upset in the FEROMS
       // Apply shift here and undo it in the raw data reading.
       if (ddl==3 && runno >=258391 && runno < 260025) {
-        ix -= 2;
-        if (ix < 0 || ix > 1535)  // remove hits that are out of range
+        if (iz == 0)
+          ix -= 2;
+        else
+          ix += 2;
+        if (ix < 0 || ix > 767)  // remove hits that are out of range
           continue;
       }
 

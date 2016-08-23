@@ -549,11 +549,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, UInt_t
 	  Bool_t snFlag = 0;
 
 	  Float_t dLorentz = 0;
+          Float_t dStripSide = 0;
 	  if (side==0) { // P-side is neg clust
 	    dLorentz = fLorentzShiftN;
+            dStripSide = dStrip;
 	  }
 	  else { // N-side is pos clust
 	    dLorentz = fLorentzShiftP;
+            dStripSide = -dStrip;
 	  }
 	  
 	  Int_t n = nStrips[adc][side];
@@ -591,20 +594,20 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, UInt_t
 		}else {
 		  
 		  Ali1Dcluster &cluster = clusters1D[side][nClusters1D[side]++];
-		  cluster.SetY( y / q + dStrip + dLorentz);
+		  cluster.SetY( y / q + dStripSide + dLorentz);
 		  cluster.SetQ(q);
 		  cluster.SetNd(nDigits);
 		  cluster.SetLabels(lab);
-		  //cout<<"cluster 1D side "<<side<<": y= "<<y<<" q= "<<q<<" d="<<dStrip<<" Y="<<cluster.GetY()<<endl;
+		  //cout<<"cluster 1D side "<<side<<": y= "<<y<<" q= "<<q<<" d="<<dStripSide<<" Y="<<cluster.GetY()<<endl;
 		  //Split suspiciously big cluster
 
 		  if( repa->GetUseUnfoldingInClusterFinderSSD()
 		      && nDigits > 4 && nDigits < 25 
 		      ){
-		    cluster.SetY(y/q + dStrip - 0.25*nDigits + dLorentz);	    
+		    cluster.SetY(y/q + dStripSide - 0.25*nDigits + dLorentz);	    
 		    cluster.SetQ(0.5*q);	  
 		    Ali1Dcluster& cluster2 = clusters1D[side][nClusters1D[side]++];
-		    cluster2.SetY(y/q + dStrip + 0.25*nDigits + dLorentz);	    
+		    cluster2.SetY(y/q + dStripSide + 0.25*nDigits + dLorentz);	    
 		    cluster2.SetQ(0.5*q);
 		    cluster2.SetNd(nDigits);
 		    cluster2.SetLabels(lab);	  
