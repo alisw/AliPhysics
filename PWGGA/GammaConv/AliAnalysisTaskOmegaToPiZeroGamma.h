@@ -183,6 +183,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoPhotonPairMatchedInvMassPt;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                  fHistoMotherMatchedInvMassPt;           //! array of histograms with invariant mass and Pt of rejected omega candidates due to
                                                                     //! matching between a pcm track and cluster which do not belong to the pair forming pi0
+    TH2F**                  fHistoMotherAngleCutRejectedInvMassPt;  //! array of histograms with invariant mass and Pt of omega candidates rejected by pi0-gamma angle cut
     TH2F**                  fHistoPhotonPairYPt;                //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
     TH2F**                  fHistoPhotonPairAlphaPt;            //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
     TH2F**                  fHistoPhotonPairOpenAnglePt;        //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
@@ -320,7 +321,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 6);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 7);
 };
 
 #endif
