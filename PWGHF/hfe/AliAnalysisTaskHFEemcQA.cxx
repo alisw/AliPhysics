@@ -70,7 +70,6 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fAOD(0),
   fpidResponse(0),
   fEMCALGeo(0),
-  Eventplane(0),
   fFlagSparse(kFALSE),
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
@@ -91,6 +90,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fOutputList(0),
   fNevents(0),
   fCent(0),
+  fMult(0),
   fEvPlaneV0(0),
   fEvPlaneV0A(0),
   fEvPlaneV0C(0),
@@ -182,7 +182,6 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fAOD(0),
   fpidResponse(0),
   fEMCALGeo(0),
-  Eventplane(0),
   fFlagSparse(kFALSE),
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
@@ -203,6 +202,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fOutputList(0),
   fNevents(0),
   fCent(0),
+  fMult(0),
   fEvPlaneV0(0),
   fEvPlaneV0A(0),
   fEvPlaneV0C(0),
@@ -334,6 +334,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fCent = new TH1F("fCent","Centrality",100,0,100);
   fOutputList->Add(fCent);
+    
+  fMult = new TH2F("fMult","Track multiplicity",100,0,100,20000,0,20000);
+  fOutputList->Add(fMult);
     
   fEvPlaneV0 = new TH2F("fEvPlaneV0","V0 EP",100,0,100,100,0,TMath::Pi());
   fOutputList->Add(fEvPlaneV0);
@@ -657,6 +660,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
   if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+  fMult->Fill(centrality,ntracks);
 
   fNevents->Fill(0); //all events
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
@@ -751,20 +755,31 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   if(epV0C > TMath::Pi()) epV0C = epV0C - TMath::Pi();
     
   //TPC
-  //if (fAOD) AliEventplane* Eventplane =  fAOD->GetEventplane();
-  //else  AliEventplane* Eventplane =  fESD->GetEventplane();
-  //AliEventplane* Eventplane = 0x0;
-  if (fAOD)Eventplane =  fAOD->GetEventplane();
-  else  Eventplane =  fESD->GetEventplane();
     
-  if (Eventplane && Eventplane->GetQVector()) {
-    qTPC = Eventplane->GetQVector();
-    qxTPC = qTPC->X();
-    qyTPC = qTPC->Y();
-
-    qVectorfortrack.Set(qxTPC,qyTPC);
-    epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
+  if (fAOD){
+    AliEventplane* Eventplane=  fAOD->GetEventplane();
+    if (Eventplane && Eventplane->GetQVector()) {
+      qTPC = Eventplane->GetQVector();
+      qxTPC = qTPC->X();
+      qyTPC = qTPC->Y();
+          
+      qVectorfortrack.Set(qxTPC,qyTPC);
+      epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
+    }
   }
+    
+  else{
+    AliEventplane* Eventplane =  fESD->GetEventplane();
+    if (Eventplane && Eventplane->GetQVector()) {
+      qTPC = Eventplane->GetQVector();
+      qxTPC = qTPC->X();
+      qyTPC = qTPC->Y();
+          
+      qVectorfortrack.Set(qxTPC,qyTPC);
+      epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
+    }
+  }
+    
     
   fEvPlaneV0->Fill(centrality,epV0);  // cent. vs V0 EP
   fEvPlaneV0A->Fill(centrality,epV0A);// cent. vs V0A EP
