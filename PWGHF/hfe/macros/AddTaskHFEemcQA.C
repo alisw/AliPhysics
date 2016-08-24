@@ -53,7 +53,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     
     if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
     if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
-
+    
     //Event plane task
     AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
     eventplaneTask->SelectCollisionCandidates(AliVEvent::kINT8 | AliVEvent::kINT7 | AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
@@ -64,7 +64,22 @@ AliAnalysisTask *AddTaskHFEemcQA(
     eventplaneTask->SetSaveTrackContribution();
     mgr->AddTask(eventplaneTask);
 
+    
+    TString containerNameTPCEP = mgr->GetCommonFileName();
+    containerNameTPCEP += ":PWGHF_hfeHFEemcQAEventPlane";
+    containerNameTPCEP += ContNameExt;
+    //TString SubcontainerNameTPCEP = Form("HFEemcQAINT8_%s",calib);
+    TString SubcontainerNameTPCEP = Form("HFEemcQAINT8EventPlane_%s",calib);
+    SubcontainerNameTPCEP += ContNameExt;
 
+    AliAnalysisDataContainer *cinputTPCEP = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutputTPCEP = mgr->CreateContainer(SubcontainerNameTPCEP,TList::Class(), AliAnalysisManager::kOutputContainer,
+                 containerNameTPCEP.Data());
+    
+    mgr->ConnectInput(eventplaneTask, 0,cinputTPCEP);
+    mgr->ConnectOutput(eventplaneTask,1,coutputTPCEP);
+    
+    
     // +++ EMCal MB
     // INT8
     AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");
