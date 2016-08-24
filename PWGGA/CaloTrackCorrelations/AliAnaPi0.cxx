@@ -84,7 +84,7 @@ fhEventBin(0),               fhEventMixBin(0),
 fhCentrality(0x0),           fhCentralityNoPair(0x0),
 fhEventPlaneResolution(0x0),
 fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0x0),     fhMixedCosOpeningAngle(0x0),
-
+fhRealOpeningAnglePerSM(),fhMixedOpeningAnglePerSM(),    
 // MC histograms
 fhPrimPi0E(0x0),             fhPrimPi0Pt(0x0),
 fhPrimPi0AccE(0x0),          fhPrimPi0AccPt(0x0),          fhPrimPi0AccPtPhotonCuts(0x0),
@@ -126,6 +126,12 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
   {
     fhArmPrimEta[i] = 0;
     fhArmPrimPi0[i] = 0;
+  }
+  
+  for(Int_t ism = 0; ism < 20; ism++)
+  {
+    fhRealOpeningAnglePerSM [ism] = 0; 
+    fhMixedOpeningAnglePerSM[ism] = 0;    
   }
 }
 
@@ -1064,7 +1070,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   if(fFillAngleHisto)
   {
     fhRealOpeningAngle  = new TH2F
-    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,300,0,TMath::Pi());
+    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,285,0,2);
     fhRealOpeningAngle->SetYTitle("#theta(rad)");
     fhRealOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
     outputContainer->Add(fhRealOpeningAngle) ;
@@ -1078,7 +1084,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     if(DoOwnMix())
     {
       fhMixedOpeningAngle  = new TH2F
-      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,300,0,TMath::Pi());
+      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,285,0,2);
       fhMixedOpeningAngle->SetYTitle("#theta(rad)");
       fhMixedOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhMixedOpeningAngle) ;
@@ -1088,6 +1094,31 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMixedCosOpeningAngle->SetYTitle("cos (#theta) ");
       fhMixedCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhMixedCosOpeningAngle) ;
+    }
+    
+    if(fFillSMCombinations)
+    {
+      for(Int_t ism = 0; ism < 20; ism++)
+      {
+        fhRealOpeningAnglePerSM[ism]  = new TH2F
+        (Form("hRealOpeningAngleMod_%d",ism),
+         Form("Angle between all #gamma pair vs E_{#pi^{0}}, SM %d",ism),
+         nptbins,ptmin,ptmax,285,0,2);
+        fhRealOpeningAnglePerSM[ism]->SetYTitle("#theta(rad)");
+        fhRealOpeningAnglePerSM[ism]->SetXTitle("E_{ #pi^{0}} (GeV)");
+        outputContainer->Add(fhRealOpeningAnglePerSM[ism]) ;
+        
+        if(DoOwnMix())
+        {
+          fhMixedOpeningAnglePerSM[ism]  = new TH2F
+          (Form("hMixedOpeningAngleMod_%d",ism),
+           Form("Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs, SM %d",ism),
+           nptbins,ptmin,ptmax,285,0,2);
+          fhMixedOpeningAnglePerSM[ism]->SetYTitle("#theta(rad)");
+          fhMixedOpeningAnglePerSM[ism]->SetXTitle("E_{ #pi^{0}} (GeV)");
+          outputContainer->Add(fhMixedOpeningAnglePerSM[ism]) ;
+        }
+      }
     }
   }
   
@@ -2520,7 +2551,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(!fPairWithOtherDetector)
         {
           if(module1==module2 && module1 >=0 && module1<fNModules)
+          {
             fhReMod[module1]->Fill(pt, m, GetEventWeight()) ;
+            if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+          }
           
           if (GetCalorimeter() == kEMCAL )
           {
@@ -2830,7 +2864,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(!fPairWithOtherDetector)
             {
               if(module1==module2 && module1 >=0 && module1<fNModules)
+              {
                 fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
+                if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+              }
               
               if(GetCalorimeter()==kEMCAL)
               {
