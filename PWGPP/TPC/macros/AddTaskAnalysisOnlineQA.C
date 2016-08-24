@@ -30,14 +30,15 @@ AliAnalysisTask* AddTaskAnalysisOnlineQA()
     pRecInfoCutsTPC->SetMaxChi2PerClusterTPC(1000000.);
     pRecInfoCutsTPC->SetDCAToVertex2D(kFALSE);
     pRecInfoCutsTPC->SetHistogramsOn(kFALSE);
+
     AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
     if(pMCInfoCuts) {
         pMCInfoCuts->SetMinTrackLength(70);
     }
 
     AliPerformanceTPC *pCompTPC0 = new AliPerformanceTPC("AliPerformanceTPC","AliPerformanceTPC",0,kFALSE,-1,0,useSparse);
-    pCompTPC0->SetAliMCInfoCuts(pMCInfoCuts);
-    pCompTPC0->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompTPC0->SetAliMCInfoCuts((AliMCInfoCuts*)pMCInfoCuts->Clone());
+    pCompTPC0->SetAliRecInfoCuts((AliRecInfoCuts*)pRecInfoCutsTPC->Clone());
     pCompTPC0->SetUseTrackVertex(kTRUE);
     task->AddPerformanceObject(pCompTPC0);
 
@@ -45,16 +46,18 @@ AliAnalysisTask* AddTaskAnalysisOnlineQA()
     if(!pCompMatch0) {
         Error("AddTaskPerformanceMatch", "Cannot create AliPerformanceMatchTPCITS");
     }
-    pCompMatch0->SetAliRecInfoCuts(pRecInfoCutsTPC);
-    pCompMatch0->SetAliMCInfoCuts(pMCInfoCuts);
+    pCompMatch0->SetAliRecInfoCuts((AliRecInfoCuts*)pRecInfoCutsTPC->Clone());
+    pCompMatch0->SetAliMCInfoCuts((AliMCInfoCuts*)pMCInfoCuts->Clone());
     task->AddPerformanceObject(pCompMatch0);
 
     AliPerformanceMatch *pCompConstrain6 = new AliPerformanceMatch("AliPerformanceMatchTPCConstrain","AliPerformanceMatchTPCConstrain",2,kFALSE,useSparse);
     if(!pCompConstrain6) {
         Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchTPCConstrain");  }
-    pCompConstrain6->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompConstrain6->SetAliRecInfoCuts((AliRecInfoCuts*)pRecInfoCutsTPC->Clone());
     task->AddPerformanceObject(pCompConstrain6);
     
+    delete pRecInfoCutsTPC;
+    delete pMCInfoCuts;
     
     
     AliAnalysisDataContainer *input = mgr->GetCommonInputContainer(); //this is standard
