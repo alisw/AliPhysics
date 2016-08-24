@@ -1859,7 +1859,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
     delete fV1; fV1=0;
     delete esdB; esdB=NULL;
     delete vtxCasc;vtxCasc=NULL;
-    delete trackB; trackB=NULL;
+    trackB=NULL;
     delete trackV0; trackV0=NULL;
     if(!DStar){
     v0=NULL;
