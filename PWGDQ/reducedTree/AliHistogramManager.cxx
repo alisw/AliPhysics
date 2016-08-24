@@ -31,44 +31,50 @@ using namespace std;
 #include <TArrayD.h>
 #include <TClass.h>
 
+#include "AliReducedVarManager.h"
+
 ClassImp(AliHistogramManager)
 
 
 //_______________________________________________________________________________
 AliHistogramManager::AliHistogramManager() :
-  fMainList(0x0),
+  fMainList(),
   fName("histos"),
   fMainDirectory(0x0),
   fHistFile(0x0),
   fUseDefaultVariableNames(kFALSE),
-  fUsedVars(0x0),
+  fUsedVars(),
   fBinsAllocated(0),
-  fVariableNames(0x0),
-  fVariableUnits(0x0),
+  fVariableNames(),
+  fVariableUnits(),
   fNVars(0)
 {
   //
   // Constructor
   //
+   fMainList.SetOwner(kTRUE);
+   fMainList.SetName("HistogramList");
 }
 
 //_______________________________________________________________________________
 AliHistogramManager::AliHistogramManager(const Char_t* name, Int_t nvars) :
-  fMainList(0x0),
+  fMainList(),
   fName(name),
   fMainDirectory(0x0),
   fHistFile(0x0),
   fUseDefaultVariableNames(kFALSE),
-  fUsedVars(0x0),
+  fUsedVars(),
   fBinsAllocated(0),
-  fVariableNames(0x0),
-  fVariableUnits(0x0),
+  fVariableNames(),
+  fVariableUnits(),
   fNVars(nvars)
 {
   //
   // Constructor
   //
-  fUsedVars = new Bool_t[nvars];
+//  fUsedVars = new Bool_t[nvars];
+  fMainList.SetOwner(kTRUE);
+  fMainList.SetName("HistogramList");
   fOutputList = new THashList();
   fOutputList->SetName(fName);
   //fVariableNames = new TString[nvars];
@@ -81,25 +87,38 @@ AliHistogramManager::~AliHistogramManager()
   //
   // De-constructor
   //
-  if(fUsedVars) delete fUsedVars;
-  if(fMainList) {delete fMainList; fMainList=0x0;}
+  //if(fUsedVars) delete fUsedVars;
+  //if(fMainList) {delete fMainList; fMainList=0x0;}
   if(fMainDirectory) {delete fMainDirectory; fMainDirectory=0x0;}
   if(fHistFile) {delete fHistFile; fHistFile=0x0;}
   if(fOutputList) {delete fOutputList; fOutputList=0x0;}
 }
+
+//_______________________________________________________________________________
+void AliHistogramManager::SetDefaultVarNames(TString* vars, TString* units) 
+{
+   //
+   // Set default variable names
+   //
+   for(Int_t i=0;i<AliReducedVarManager::kNVars;++i) {
+     fVariableNames[i] = vars[i]; 
+     fVariableUnits[i] = units[i];
+   }
+};
+
 
 //__________________________________________________________________
 void AliHistogramManager::AddHistClass(const Char_t* histClass) {
   //
   // Add a new histogram list
   //
-  if(!fMainList) {
+  /*if(!fMainList) {
     fMainList = new TObjArray();
     fMainList->SetOwner();
     fMainList->SetName(fName.Data());
-  }
+  }*/
   
-  if(fMainList->FindObject(histClass)) {
+  if(fMainList.FindObject(histClass)) {
     cout << "Warning in AliHistogramManager::AddHistClass: Cannot add histogram class " << histClass
          << " because it already exists." << endl;
     return;
@@ -107,7 +126,7 @@ void AliHistogramManager::AddHistClass(const Char_t* histClass) {
   THashList* hList=new THashList;
   hList->SetOwner(kTRUE);
   hList->SetName(histClass);
-  fMainList->Add(hList);
+  fMainList.Add(hList);
 }
 
 //_________________________________________________________________
@@ -121,7 +140,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a histogram
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -257,7 +276,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a histogram
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -394,7 +413,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a multi-dimensional histogram THnF
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -443,7 +462,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a multi-dimensional histogram THnF with equal or variable bin widths
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -580,7 +599,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
   //
   //  fill a class of histograms
   //
-  THashList* hList = (THashList*)fMainList->FindObject(className);
+  THashList* hList = (THashList*)fMainList.FindObject(className);
   if(!hList) {
     cout << "Warning in AliHistogramManager::FillHistClass(): Histogram list " << className << " not found!" << endl;
     cout << "         Histogram list not filled" << endl;
@@ -719,10 +738,10 @@ void AliHistogramManager::WriteOutput(TFile* save) {
   // Write the histogram lists in the output file
   //
   cout << "Writing the output to " << save->GetName() << " ... " << flush;
-  TDirectory* mainDir = save->mkdir(fMainList->GetName());
+  TDirectory* mainDir = save->mkdir(fMainList.GetName());
   mainDir->cd();
-  for(Int_t i=0; i<fMainList->GetEntries(); ++i) {
-    THashList* list = (THashList*)fMainList->At(i);
+  for(Int_t i=0; i<fMainList.GetEntries(); ++i) {
+    THashList* list = (THashList*)fMainList.At(i);
     TDirectory* dir = mainDir->mkdir(list->GetName());
     dir->cd();
     list->Write();
@@ -738,9 +757,9 @@ THashList* AliHistogramManager::AddHistogramsToOutputList() {
   //
   // Write the histogram lists in a list
   //
-  for(Int_t i=0; i<fMainList->GetEntries(); ++i) {
+  for(Int_t i=0; i<fMainList.GetEntries(); ++i) {
     //THashList* hlist = new THashList();
-    THashList* list = (THashList*)fMainList->At(i);
+    THashList* list = (THashList*)fMainList.At(i);
     //hlist->SetName(list->GetName());
     //hlist->Add(list);
     //hlist->SetOwner(kTRUE);
@@ -788,14 +807,16 @@ TList* AliHistogramManager::GetHistogramList(const Char_t* listname) const {
   //
   // Retrieve a histogram list
   //
-  if(!fMainDirectory && !fMainList) {
+  //if(!fMainDirectory && !fMainList) {
+   if(!fMainDirectory && fMainList.GetEntries()==0) {
     cout << "AliHistogramManager::GetHistogramList() : " << endl;
     cout << "                   A ROOT file must be opened first with InitFile() or the main " << endl;
     cout << "                     list must be initialized by creating at least one histogram list !!" << endl;
     return 0x0;
   }
-  if(fMainList) {
-    THashList* hList = (THashList*)fMainList->FindObject(listname);
+  //if(fMainList) {
+  if(fMainList.GetEntries()>0) {
+    THashList* hList = (THashList*)fMainList.FindObject(listname);
     return hList;
   }
   TKey* listKey = fMainDirectory->FindKey(listname);
@@ -808,14 +829,16 @@ TObject* AliHistogramManager::GetHistogram(const Char_t* listname, const Char_t*
   //
   // Retrieve a histogram from the list hlist
   //
-  if(!fMainDirectory && !fMainList) {
+  //if(!fMainDirectory && !fMainList) {
+   if(!fMainDirectory && fMainList.GetEntries()==0) {
     cout << "AliHistogramManager::GetHistogramList() : " << endl;
     cout << "                   A ROOT file must be opened first with InitFile() or the main " << endl;
     cout << "                     list must be initialized by creating at least one histogram list !!" << endl;
     return 0x0;
   }
-  if(fMainList) {
-    THashList* hList = (THashList*)fMainList->FindObject(listname);
+  //if(fMainList) {
+  if(fMainList.GetEntries()==0) {
+    THashList* hList = (THashList*)fMainList.FindObject(listname);
     if(!hList) {
       cout << "Warning in AliHistogramManager::GetHistogram(): Histogram list " << listname << " not found!" << endl;
       return 0x0;
@@ -848,8 +871,8 @@ void AliHistogramManager::Print(Option_t*) const {
   //
   cout << "###################################################################" << endl;
   cout << "AliHistogramManager:: " << fName.Data() << endl;
-  for(Int_t i=0; i<fMainList->GetEntries(); ++i) {
-    THashList* list = (THashList*)fMainList->At(i);
+  for(Int_t i=0; i<fMainList.GetEntries(); ++i) {
+    THashList* list = (THashList*)fMainList.At(i);
     cout << "************** List " << list->GetName() << endl;
     for(Int_t j=0; j<list->GetEntries(); ++j) {
       TObject* obj = list->At(j);

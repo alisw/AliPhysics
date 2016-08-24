@@ -18,18 +18,21 @@ AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE() :
   fHistosManager(0x0),
   fMixingHandler(0x0),
   fEvent(0x0),
-  fEventCuts(0x0),
-  fTrackCuts(0x0),
-  fPairCuts(0x0)
+  fEventCuts(),
+  fTrackCuts(),
+  fPairCuts()
 {
   //
   // default constructor
   //
   for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i)
     fValues[i] = 0.0;
-  fEventCuts = new TList(); fEventCuts->SetOwner(kTRUE);
-  fTrackCuts = new TList(); fTrackCuts->SetOwner(kTRUE);
-  fPairCuts = new TList(); fPairCuts->SetOwner(kTRUE);
+  //fEventCuts = new TList(); 
+  //fTrackCuts = new TList(); 
+  //fPairCuts = new TList(); 
+  fEventCuts.SetOwner(kTRUE);
+  fTrackCuts.SetOwner(kTRUE);
+  fPairCuts.SetOwner(kTRUE);
 }
 
 
@@ -39,18 +42,21 @@ AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE(const Char_t* name, const Cha
   fHistosManager(0x0),
   fMixingHandler(0x0),
   fEvent(0x0),
-  fEventCuts(0x0),
-  fTrackCuts(0x0),
-  fPairCuts(0x0)
+  fEventCuts(),
+  fTrackCuts(),
+  fPairCuts()
 {
   //
   // named constructor
   //
   for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i)
     fValues[i] = 0.0;
-  fEventCuts = new TList();
-  fTrackCuts = new TList();
-  fPairCuts = new TList();
+  //fEventCuts = new TList();
+  //fTrackCuts = new TList();
+  //fPairCuts = new TList();
+  fEventCuts.SetOwner(kTRUE);
+  fTrackCuts.SetOwner(kTRUE);
+  fPairCuts.SetOwner(kTRUE);
 }
 
 
@@ -60,7 +66,8 @@ AliReducedAnalysisTaskSE::~AliReducedAnalysisTaskSE()
   //
   // destructor
   //
-  if(fEventCuts) {fEventCuts->Clear("C"); delete fEventCuts;}
+  /*if(fEventCuts) {fEventCuts->Clear("C"); delete fEventCuts;}
   if(fTrackCuts) {fTrackCuts->Clear("C"); delete fTrackCuts;}
-  if(fPairCuts) {fPairCuts->Clear("C"); delete fPairCuts;}
+  if(fPairCuts) {fPairCuts->Clear("C"); delete fPairCuts;}*/
+  fEventCuts.Clear("C"); fTrackCuts.Clear("C"); fPairCuts.Clear("C");
 }
