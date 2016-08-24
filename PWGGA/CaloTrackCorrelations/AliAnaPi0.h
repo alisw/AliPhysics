@@ -356,6 +356,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMixedOpeningAngle ;       //!<! Opening angle of pair versus pair energy
   TH2F *   fhMixedCosOpeningAngle ;    //!<! Cosinus of opening angle of pair version pair energy
   
+  TH2F *   fhRealOpeningAnglePerSM [20]; //!<! Opening angle of pair versus pair energy, per SM
+  TH2F *   fhMixedOpeningAnglePerSM[20]; //!<! Opening angle of pair versus pair energy, per SM
+  
   // MC analysis histograms
   // Pi0 Acceptance
     
