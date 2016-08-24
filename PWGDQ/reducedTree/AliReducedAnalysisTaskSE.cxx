@@ -71,3 +71,43 @@ AliReducedAnalysisTaskSE::~AliReducedAnalysisTaskSE()
   if(fPairCuts) {fPairCuts->Clear("C"); delete fPairCuts;}*/
   fEventCuts.Clear("C"); fTrackCuts.Clear("C"); fPairCuts.Clear("C");
 }
+
+//___________________________________________________________________________
+void AliReducedAnalysisTaskSE::Init() {
+   //
+   // initialization (typically called in AliAnalysisTask::UserCreateOutputObjects())
+   //
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisTaskSE::Process() {
+   //
+   // process a given event (typically called in AliAnalysisTask::UserExec())
+   //
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisTaskSE::Finish() {
+   //
+   // finish, to be executed after all events were processed
+   //
+}
+
+//___________________________________________________________________________
+Bool_t AliReducedAnalysisTaskSE::IsEventSelected(AliReducedBaseEvent* event) {
+   //
+   //
+   //
+}
+//___________________________________________________________________________
+Bool_t AliReducedAnalysisTaskSE::IsTrackSelected(AliReducedBaseTrack* track) {
+   //
+   //
+   //
+}
+//___________________________________________________________________________
+Bool_t AliReducedAnalysisTaskSE::IsPairSelected(AliReducedBaseTrack* pair) {
+   //
+   //
+   //
+}

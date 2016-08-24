@@ -31,11 +31,11 @@ public:
   
   // Virtual functions, to be implemented in the inheriting analysis classes
   // initialization (typically called in AliAnalysisTask::UserCreateOutputObjects())
-  virtual void Init() = 0;
+  virtual void Init();
   // process a given event (typically called in AliAnalysisTask::UserExec())
-  virtual void Process() = 0;
+  virtual void Process();
   // finish, to be executed after all events were processed
-  virtual void Finish() = 0;
+  virtual void Finish();
   // add output objects;
   
   // setters
@@ -58,8 +58,8 @@ protected:
   AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& handler);             
   AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& handler);      
    
-  AliHistogramManager* fHistosManager;   //-> Histogram manager
-  AliMixingHandler* fMixingHandler;      //-> Mixed event handler
+  AliHistogramManager* fHistosManager;   // Histogram manager
+  AliMixingHandler* fMixingHandler;      // Mixed event handler
   
   AliReducedBaseEvent* fEvent;           //! current event to be processed
   Float_t fValues[AliReducedVarManager::kNVars];   // array of values to hold information for histograms
@@ -71,9 +71,9 @@ protected:
   //TObject* fInputObjects[100];
   //TObject* fOutputObjects[100];
   
-  virtual Bool_t IsEventSelected(AliReducedBaseEvent* event) = 0;
-  virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track) = 0;
-  virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair) = 0;
+  virtual Bool_t IsEventSelected(AliReducedBaseEvent* event);
+  virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track);
+  virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair);
   
   ClassDef(AliReducedAnalysisTaskSE,3);
 };
