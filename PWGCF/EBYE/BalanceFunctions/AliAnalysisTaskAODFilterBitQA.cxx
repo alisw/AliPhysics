@@ -96,11 +96,14 @@ void AliAnalysisTaskAODFilterBitQA::UserCreateOutputObjects() {
       fHistKinematics[iCharge][iTrackBit] = new TH3D(Form("Bit%d_%s_Kinematics",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_Kinematics;#eta;#varphi (rad);p_{T} (GeV/c)",iTrackBit,sCharge[iCharge].Data()),100,-1.0,1.0,100,0,TMath::Pi()*2,100,0,10);
       fHistDCAconstrained[iCharge][iTrackBit] = new TH2D(Form("Bit%d_%s_DCAconstrained",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_DCAconstrained;DCA XY [Constrained] (cm);DCA Z [Constrained] (cm)",iTrackBit,sCharge[iCharge].Data()),100,-5.0,5.0,100,-5.0,5.0);
       fHistDCAglobal[iCharge][iTrackBit]  = new TH3D(Form("Bit%d_%s_DCAglobal",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_DCAglobal;DCA X [Global] (cm);DCA Y [Global] (cm);DCA Z [Global] (cm)",iTrackBit,sCharge[iCharge].Data()),100,-5.0,5.0,100,-5.0,5.0,100,-5.0,5.0);
-fHistChiClus[iCharge][iTrackBit]    = new TH2D(Form("Bit%d_%s_ChiClus",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_ChiClus;#chi^{2} [Fit];N_{clus} [TPC]",iTrackBit,sCharge[iCharge].Data()),100,-1.0,5.0,160,0,160.0);
+      fHistChiClus[iCharge][iTrackBit]    = new TH2D(Form("Bit%d_%s_ChiClus",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_ChiClus;#chi^{2} [Fit];N_{clus} [TPC]",iTrackBit,sCharge[iCharge].Data()),100,-1.0,5.0,160,0,160.0);
+      fHistPtRes[iCharge][iTrackBit]  = new TH2D(Form("Bit%d_%s_PtRes",iTrackBit,sCharge[iCharge].Data()),Form("Bit%d_%s_PtRes;p_{T};#sigma_{pT}/p_{T}",iTrackBit,sCharge[iCharge].Data()),200,0,10.0,200,0,0.10);
+
       fListQA->Add(fHistKinematics[iCharge][iTrackBit]);
       fListQA->Add(fHistDCAconstrained[iCharge][iTrackBit]);
       fListQA->Add(fHistDCAglobal[iCharge][iTrackBit]);
       fListQA->Add(fHistChiClus[iCharge][iTrackBit]);
+      fListQA->Add(fHistPtRes[iCharge][iTrackBit]);
     }
   }
 
@@ -242,7 +245,6 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
   // Checks track cuts (filter bits)
   // Fills QA histograms
 
-
   Double_t vEta;
   Double_t vPhi;
   Double_t vPt;
@@ -253,6 +255,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
   Double_t vDCAglobalz;
   Double_t vChi2;
   Double_t vClus;
+  Double_t vPtRes;
 
   Double_t pos[3];
   Double_t v[3];
@@ -286,7 +289,17 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
     vDCAconstrainedz   = aodTrack->ZAtDCA();   
     vChi2   = aodTrack->Chi2perNDF(); 
     vClus   = aodTrack->GetTPCNcls(); 
-
+    
+    // calculate pT resolution
+    double cov[21],p[3];
+    aodTrack->GetPxPyPz(p);
+    aodTrack->GetCovMatrix(cov);
+    double pt = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+    double px2pt = p[0]/pt, py2pt = p[1]/pt;
+    double sigPt = cov[9]*px2pt*px2pt+cov[14]*py2pt*py2pt + 2.*cov[13]*px2pt*py2pt;
+    if (sigPt>0) vPtRes = TMath::Sqrt(sigPt);
+    else vPtRes = -666;
+    
     // kinematic cuts
     if( vPt > fPtMax || vPt < fPtMin )
       continue;
@@ -322,6 +335,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
 	  fHistDCAconstrained[iCharge][iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
 	  fHistDCAglobal[iCharge][iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
 	  fHistChiClus[iCharge][iTrackBit]->Fill(vChi2,vClus);
+	  fHistPtRes[iCharge][iTrackBit]->Fill(vPt,vPtRes/vPt);
 	} 
       }//bit loop
       
@@ -331,6 +345,7 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
       fHistDCAconstrained[iCharge][gBitMax-1]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
       fHistDCAglobal[iCharge][gBitMax-1]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
       fHistChiClus[iCharge][gBitMax-1]->Fill(vChi2,vClus);
+      fHistPtRes[iCharge][gBitMax-1]->Fill(vPt,vPtRes/vPt);
       
     }//charge positive or negative
   }//track loop
