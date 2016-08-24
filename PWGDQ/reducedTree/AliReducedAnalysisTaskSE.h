@@ -42,11 +42,11 @@ public:
   void SetHistogramManager(AliHistogramManager* histos) {fHistosManager = histos;}
   void SetMixingHandler(AliMixingHandler* mixing) {fMixingHandler = mixing;}
   void SetEvent(AliReducedBaseEvent* event) {fEvent = event;}
-  void AddEventCut(AliReducedInfoCut* cut) {fEventCuts->Add(cut);}
-  void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts->Add(cut);}
-  void AddPairCut(AliReducedInfoCut* cut) {fPairCuts->Add(cut);}
+  void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
+  void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
+  void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
 
-  void SetInputObject(Int_t slot, TObject* obj) {fInputObjects[slot]=obj;}
+  //void SetInputObject(Int_t slot, TObject* obj) {fInputObjects[slot]=obj;}
 
   
   // getters
@@ -58,24 +58,24 @@ protected:
   AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& handler);             
   AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& handler);      
    
-  AliHistogramManager* fHistosManager;   // Histogram manager
-  AliMixingHandler* fMixingHandler;      // Mixed event handler
+  AliHistogramManager* fHistosManager;   //-> Histogram manager
+  AliMixingHandler* fMixingHandler;      //-> Mixed event handler
   
-  AliReducedBaseEvent* fEvent;           // current event to be processed
+  AliReducedBaseEvent* fEvent;           //! current event to be processed
   Float_t fValues[AliReducedVarManager::kNVars];   // array of values to hold information for histograms
   
-  TList* fEventCuts;     // array of event cuts
-  TList* fTrackCuts;     // array of track cuts
-  TList* fPairCuts;      // array of pair cuts
+  TList fEventCuts;     // array of event cuts
+  TList fTrackCuts;     // array of track cuts
+  TList fPairCuts;      // array of pair cuts
 
-  TObject* fInputObjects[100];
-  TObject* fOutputObjects[100];
+  //TObject* fInputObjects[100];
+  //TObject* fOutputObjects[100];
   
   virtual Bool_t IsEventSelected(AliReducedBaseEvent* event) = 0;
   virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track) = 0;
   virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair) = 0;
   
-  ClassDef(AliReducedAnalysisTaskSE,1);
+  ClassDef(AliReducedAnalysisTaskSE,3);
 };
 
 #endif

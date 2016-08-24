@@ -14,6 +14,8 @@
 #include <TList.h>
 #include <THashList.h>
 
+#include "AliReducedVarManager.h"
+
 class TAxis;
 class TArrayD;
 class TObjArray;
@@ -65,18 +67,18 @@ class AliHistogramManager : public TObject {
   void FillHistClass(const Char_t* className, Float_t* values);
   
   void SetUseDefaultVariableNames(Bool_t flag) {fUseDefaultVariableNames = flag;};
+  void SetDefaultVarNames(TString* vars, TString* units);
   void WriteOutput(TFile* saveFile);
   void InitFile(const Char_t* filename);    // open an output file for reading
   void AddToOutputList(TList* list) {fOutputList->Add(list);}
   void CloseFile();
-  TObjArray* GetMainHistogramList() const {return fMainList;}    // get a histogram list
+  const THashList* GetMainHistogramList() const {return &fMainList;}    // get a histogram list
   THashList* AddHistogramsToOutputList(); // get all histograms on a THashList
   THashList* GetHistogramOutputList() {return fOutputList;} 
   TList* GetHistogramList(const Char_t* listname) const;    // get a histogram list
   TObject* GetHistogram(const Char_t* listname, const Char_t* hname) const;  // get a histogram from an old output
-  Bool_t* GetUsedVars() const {return fUsedVars;}
-  void SetDefaultVarNames(TString* vars, TString* units) {fVariableNames = vars; fVariableUnits = units;};
-  
+  const Bool_t* GetUsedVars() const {return fUsedVars;}
+    
   ULong_t GetAllocatedBins() const {return fBinsAllocated;}  
   void Print(Option_t*) const;
   
@@ -84,23 +86,24 @@ class AliHistogramManager : public TObject {
    AliHistogramManager(const AliHistogramManager& histMan);             
    AliHistogramManager& operator=(const AliHistogramManager& histMan);      
    
-  TObjArray* fMainList;          // master histogram list
+  THashList fMainList;          // master histogram list
   TString fName;                 // master histogram list name
-  TDirectoryFile* fMainDirectory;   // main directory with analysis output (used for calibration, plotting etc.)
-  TFile* fHistFile;              // pointer to a TFile opened for reading 
-  THashList* fOutputList;        // THashList for output histograms
+  TDirectoryFile* fMainDirectory;   //! main directory with analysis output (used for calibration, plotting etc.)
+  TFile* fHistFile;                    //! pointer to a TFile opened for reading 
+  THashList* fOutputList;        //-> THashList for output histograms
    
   // Array of bool flags toggled when a variable is used (filled in a histogram)
   Bool_t fUseDefaultVariableNames;       // toggle the usage of default variable names and units
-  Bool_t* fUsedVars;                     // map of used variables
+  //Bool_t* fUsedVars;                     //! map of used variables
+  Bool_t fUsedVars[AliReducedVarManager::kNVars];           // map of used variables
   ULong_t fBinsAllocated;                // number of allocated bins
-  TString* fVariableNames;               // variable names
-  TString* fVariableUnits;               // variable units
+  TString fVariableNames[AliReducedVarManager::kNVars];               //! variable names
+  TString fVariableUnits[AliReducedVarManager::kNVars];               //! variable units
   Int_t fNVars;                          // maximum number of variables
   
   void MakeAxisLabels(TAxis* ax, const Char_t* labels);
   
-  ClassDef(AliHistogramManager, 1)
+  ClassDef(AliHistogramManager, 3)
 };
 
 #endif

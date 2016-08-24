@@ -54,11 +54,11 @@ Bool_t AliReducedAnalysisTest::IsEventSelected(AliReducedBaseEvent* event) {
   //
   // apply event cuts
   //
-  if(fEventCuts->GetEntries()==0) return kTRUE;
+  if(fEventCuts.GetEntries()==0) return kTRUE;
   // loop over all the cuts and make a logical and between all cuts in the list
   // TODO: Cut masks or more complicated cut configurations can be implemented here
-  for(Int_t i=0; i<fEventCuts->GetEntries(); ++i) {
-    AliReducedInfoCut* cut = (AliReducedInfoCut*)fEventCuts->At(i);
+  for(Int_t i=0; i<fEventCuts.GetEntries(); ++i) {
+    AliReducedInfoCut* cut = (AliReducedInfoCut*)fEventCuts.At(i);
     if(!cut->IsSelected(event)) return kFALSE;
   }
   return kTRUE;
@@ -69,11 +69,11 @@ Bool_t AliReducedAnalysisTest::IsTrackSelected(AliReducedBaseTrack* track) {
   //
   // apply event cuts
   //
-  if(fTrackCuts->GetEntries()==0) return kTRUE;
+  if(fTrackCuts.GetEntries()==0) return kTRUE;
   // loop over all the cuts and make a logical and between all cuts in the list
   // TODO: Cut masks or more complicated cut configurations can be implemented here
-  for(Int_t i=0; i<fTrackCuts->GetEntries(); ++i) {
-    AliReducedInfoCut* cut = (AliReducedInfoCut*)fTrackCuts->At(i);
+  for(Int_t i=0; i<fTrackCuts.GetEntries(); ++i) {
+    AliReducedInfoCut* cut = (AliReducedInfoCut*)fTrackCuts.At(i);
     if(!cut->IsSelected(track)) return kFALSE;
   }
   return kTRUE;
@@ -84,11 +84,11 @@ Bool_t AliReducedAnalysisTest::IsPairSelected(AliReducedBaseTrack* pair) {
   //
   // apply event cuts
   //
-  if(fPairCuts->GetEntries()==0) return kTRUE;
+  if(fPairCuts.GetEntries()==0) return kTRUE;
   // loop over all the cuts and make a logical and between all cuts in the list
   // TODO: Cut masks or more complicated cut configurations can be implemented here
-  for(Int_t i=0; i<fPairCuts->GetEntries(); ++i) {
-    AliReducedInfoCut* cut = (AliReducedInfoCut*)fPairCuts->At(i);
+  for(Int_t i=0; i<fPairCuts.GetEntries(); ++i) {
+    AliReducedInfoCut* cut = (AliReducedInfoCut*)fPairCuts.At(i);
     if(!cut->IsSelected(pair)) return kFALSE;
   }
   return kTRUE;
