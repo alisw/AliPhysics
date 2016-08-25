@@ -70,11 +70,11 @@ class AliHistogramManager : public TObject {
   void SetDefaultVarNames(TString* vars, TString* units);
   void WriteOutput(TFile* saveFile);
   void InitFile(const Char_t* filename);    // open an output file for reading
-  void AddToOutputList(TList* list) {fOutputList->Add(list);}
+  void AddToOutputList(TList* list) {fOutputList.Add(list);}
   void CloseFile();
   const THashList* GetMainHistogramList() const {return &fMainList;}    // get a histogram list
   THashList* AddHistogramsToOutputList(); // get all histograms on a THashList
-  THashList* GetHistogramOutputList() {return fOutputList;} 
+  THashList* GetHistogramOutputList() {return &fOutputList;} 
   TList* GetHistogramList(const Char_t* listname) const;    // get a histogram list
   TObject* GetHistogram(const Char_t* listname, const Char_t* hname) const;  // get a histogram from an old output
   const Bool_t* GetUsedVars() const {return fUsedVars;}
@@ -90,7 +90,7 @@ class AliHistogramManager : public TObject {
   TString fName;                 // master histogram list name
   TDirectoryFile* fMainDirectory;   //! main directory with analysis output (used for calibration, plotting etc.)
   TFile* fHistFile;                    //! pointer to a TFile opened for reading 
-  THashList* fOutputList;        //-> THashList for output histograms
+  THashList fOutputList;        // THashList for output histograms
    
   // Array of bool flags toggled when a variable is used (filled in a histogram)
   Bool_t fUseDefaultVariableNames;       // toggle the usage of default variable names and units
