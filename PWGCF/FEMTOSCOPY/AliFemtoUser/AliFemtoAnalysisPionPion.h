@@ -254,8 +254,10 @@ struct AliFemtoAnalysisPionPion::CutParams {
   // Float_t pair_MinAvgSeparationPos;
   // Float_t pair_MinAvgSeparationNeg;
 
-  Float_t pair_delta_eta_min,
-          pair_delta_phi_min;
+  Float_t pair_delta_eta_min
+        , pair_delta_phi_min
+        , pair_phi_star_radius
+        ;
 
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
