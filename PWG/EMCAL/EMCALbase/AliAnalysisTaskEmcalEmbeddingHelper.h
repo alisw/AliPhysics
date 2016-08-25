@@ -9,6 +9,7 @@
  * ESD or AOD file, providing access to the events.
  *
  * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * \author Raymond Ehlers <raymond.ehlers@cern.ch>, Yale University
  * \date Apr 28, 2016
  */
 
@@ -19,7 +20,8 @@
 #include <AliAnalysisTaskSE.h>
 
 class AliVEvent;
-class TTree;
+class AliVCaloCells;
+class TChain;
 class TFile;
 
 /**
@@ -47,41 +49,82 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   void      UserExec(Option_t *option)                           ;
   void      UserCreateOutputObjects()                            ;
-  void           SetPYTHIAPath(const char* p)                      { fPYTHIAPath                                = p ; }
   void           SetPtHardBin(Int_t r)                               {fPtHardBin                                   =r;}
   void           SetAnchorRun(Int_t r)                             { fAnchorRun                                 = r ; }
   void      Terminate(Option_t *option)                          ;
 
-  static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance        ; }
+  static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
 
-  AliVEvent* GetExternalEvent()                             const { return fExternalEvent    ; }
+  AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
+  std::string GetInputCellBranchName()                      const { return fInputCellBranchName; }
+  std::string GetCombinedCellBranchName()                   const { return fCreatedCellBranchName; }
 
-  void SetESD()                  { fTreeName     = "esdTree"; }
-  void SetAOD()                  { fTreeName     = "aodTree"; }
-  void SetAttempts(Int_t n)      { fAttempts     = n        ; }
-  void SetRandomAccess(Bool_t b) { fRandomAccess = b        ; }
+  void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
+  void SetAOD(const char * treeName = "aodTree")                  { fTreeName     = treeName; }
+  void SetRandomAccess(Bool_t b)                                  { fRandomAccess = b       ; }
+
+  void SetFilePattern(const char * pattern)                       { fFilePattern = pattern; }
+  void SetStartingFileIndex(Int_t n)                              { fFilenameIndex = n; }
+  void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
+
+  void SetInputCellBranchName(const char * inputName)             { fInputCellBranchName = inputName; }
+  void SetCombinedCellBranchName(const char * inputName)          { fCreatedCellBranchName = inputName; }
+
+  UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
+  Double_t GetZVertexCut()                                  const { return fZVertexCut; }
+  Double_t GetMaxVertexDistance()                           const { return fMaxVertexDist; }
+
+  void SetTriggerMask(UInt_t triggerMask)                         { fTriggerMask = triggerMask; }
+  void SetZVertexCut(Double_t zVertex)                            { fZVertexCut = zVertex; }
+  void SetMaxVertexDistance(Double_t distance)                    { fMaxVertexDist = distance; }
+
+  static AliAnalysisTaskEmcalEmbeddingHelper * AddTaskEmcalEmbeddingHelper();
 
  protected:
-  TFile          *GetNextFile()         ;
-  TString         GetNextFileName()     ;
-  Bool_t          OpenNextFile()        ;
+  void            GetFilenames()        ;
+  void            SetupEmbedding()      ;
+  Bool_t          SetupInputFiles()     ;
   Bool_t          GetNextEntry()        ;
   Bool_t          IsEventSelected()     ;
   Bool_t          InitEvent()           ;
+  void            InitTree()            ;
+
+  void            SetupCombinedCells()  ;
+  void            CreateCombinedCells() ;
+  void            AddCellsToCellObject(AliVCaloCells * inputCells) ;
+  void            AddObjectToEvent(TObject *obj, AliVEvent * event, Bool_t attempt = kFALSE);
+
+  UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
+  Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
+  Double_t                                      fMaxVertexDist;     ///<  Max distance between Z vertex of internal and embedded event
+
+  bool                                          fInitializedNewFile; //!<! Notes where the entry indices have been initialized for a new tree in the chain
+  bool                                          fInitializedEmbedding; //!<! Notes where the TChain has been initialized for embedding
+  bool                                          fWrappedAroundTree; //!<! Notes whether we have wrapped around the tree, which is important if the offset into the tree is non-zero
 
   TString                                       fTreeName         ; ///<  Name of the ESD/AOD tree where the events are to be found
-  TString                                       fPYTHIAPath        ; ///< Path to the given Pythia AOD file 
-  Int_t                                           fAnchorRun         ; ///<anchor run for the given pythia production
-  Int_t                                           fPtHardBin ;///<pthard bin for the given pythia production
-  Int_t                                           fAttempts         ; ///<  Number of attempts to open the external file before giving up
+  Int_t                                         fAnchorRun        ; ///<  Anchor run for the given pythia production
+  Int_t                                         fPtHardBin        ; ///<  ptHard bin for the given pythia production
   Bool_t                                        fRandomAccess     ; ///<  If true, it will start embedding from a random entry in the file rather than from the first
 
+  TString                                       fFilePattern      ; ///<  File pattern to select AliEn files
+  TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
+  Int_t                                         fFilenameIndex    ; ///<  Index of vector containing paths to files to embed
+  std::vector <std::string>                     fFilenames        ; //!<! Paths to the files to embed
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
-  TTree                                        *fExternalTree     ; //!<! External tree containing the events available for embedding
-  Int_t                                         fCurrentEntry     ; //!<! Current entry
-  Int_t                                         fFirstEntry       ; //!<! Entry of the current file from which embedding started
-  Int_t                                         fLastEntry        ; //!<! Last entry to be used for embedding from the current file
+  TChain                                       *fChain            ; //!<! External TChain (tree) containing the events available for embedding
+  Int_t                                         fCurrentEntry     ; //!<! Current entry in the current tree
+  Int_t                                         fLowerEntry       ; //!<! First entry of the current tree to be used for embedding
+  Int_t                                         fUpperEntry       ; //!<! Last entry of the current tree to be used for embedding
+  Int_t                                         fOffset           ; //!<! Offset from fLowerEntry where the loop over the tree should start
+  Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
+  Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
+
+  bool                                          fInitializedCombinedCells; //!<! True if the combined cells object has been initialized
+  std::string                                   fInputCellBranchName; ///< Name of the cell branch which will be copied from the internal and external events for the combined cells.
+  std::string                                   fCreatedCellBranchName; ///< Name of the cell branch which will be created for the combined cells.
+  AliVCaloCells                                *fCombinedCells    ; //!<! Cells combined from the input and external events.
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
