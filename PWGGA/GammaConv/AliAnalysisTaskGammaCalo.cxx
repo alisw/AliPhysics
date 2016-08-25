@@ -1101,13 +1101,13 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         }
 
         fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source","MC_Primary_Pt_Source",nBinsPt, minPt, maxPt, 7, -0.5, 6.5);
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(1,"Pi+");
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(2,"Pi-");
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(3,"K+");
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(4,"K-");
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(5,"K0s");
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(6,"K0l");
-        fHistoMCPrimaryPtvsSource[iCut]->GetXaxis()->SetBinLabel(7,"Lambda");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
         fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
 
         fHistoMCSecPi0Source[iCut]      = new TH1F("MC_SecPi0_Source","MC_SecPi0_Source",5000,0.,5000);
