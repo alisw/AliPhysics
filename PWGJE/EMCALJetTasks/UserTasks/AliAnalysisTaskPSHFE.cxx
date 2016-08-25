@@ -1733,7 +1733,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
             
             fPool = fPoolMan->GetEventPool(ntracks, esd->GetPrimaryVertex()->GetZ());
-            
+            fPool->PrintInfo();
            
             
             if(tagPhot){
@@ -1751,6 +1751,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             
             if(fPool->IsReady() ){
                 FillMEDPhiHistos(esdtrack);
+            }
+            else{
+                cout<<"Pool wasn't ready\n";
             }
             
         }//end if(tagStrong)
