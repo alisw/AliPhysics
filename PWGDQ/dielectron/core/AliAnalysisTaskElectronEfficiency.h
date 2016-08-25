@@ -224,13 +224,22 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
   Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
 
-  TH2D*                           fNgenPairs_sameMother;
-  std::vector<TH2D*>              fvRecoPairs_sameMother;
-  std::vector<TH2D*>              fvRecoPairs_poslabel_sameMother;
-  TH2D*                           fNgenPairs_diffMothers;
-  std::vector<TH2D*>              fvRecoPairs_diffMothers;
-  std::vector<TH2D*>              fvRecoPairs_poslabel_diffMothers;
-
+  TH2D*                           fNgenPairsResonances;
+  TH2D*                           fNgenPairsDiffMothers;
+  TH2D*                           fNgenPairsCharm;
+  TH2D*                           fNgenPairsBeauty;
+  std::vector<TH2D*>              fvRecoPairsResonances;
+  std::vector<TH2D*>              fvRecoPairsDiffMothers;
+  std::vector<TH2D*>              fvRecoPairsCharm;
+  std::vector<TH2D*>              fvRecoPairsBeauty;
+  TH2D*                           fNgenPairsRecResonances;
+  TH2D*                           fNgenPairsRecDiffMothers;
+  TH2D*                           fNgenPairsRecCharm;
+  TH2D*                           fNgenPairsRecBeauty;
+  std::vector<TH2D*>              fvRecoPairsRecDiffMothers;
+  std::vector<TH2D*>              fvRecoPairsRecCharm;
+  std::vector<TH2D*>              fvRecoPairsRecResonances;
+  std::vector<TH2D*>              fvRecoPairsRecBeauty;
 
   // resolutions
   Bool_t                          fCalcResolution;
