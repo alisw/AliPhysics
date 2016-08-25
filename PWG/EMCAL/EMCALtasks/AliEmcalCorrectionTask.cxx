@@ -29,6 +29,8 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionTask);
 /// \endcond
@@ -696,7 +698,7 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       }
 
       // If we've made it here, this must be at least one entry
-      AliDebugStream(2) << "Adding calo cells " << GetCellContainer(str)->GetName() << " of branch name " << GetCellContainer(str)->GetBranchName() << "to component " << component->GetName() << std::endl;
+      AliDebugStream(2) << "Adding calo cells " << GetCellContainer(str)->GetName() << " of branch name " << GetCellContainer(str)->GetBranchName() << " to component " << component->GetName() << std::endl;
       component->SetCaloCells(GetCellContainer(str)->GetCells());
       AliDebugStream(3) << "component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
     }
@@ -763,7 +765,7 @@ void AliEmcalCorrectionTask::SetupCellsInfo(std::string containerName, YAML::Nod
 
   // IsEmbedding
   bool tempBool = false;
-  AliEmcalCorrectionComponent::GetProperty("embedded", tempString, userNode, defaultNode, false, containerName);
+  AliEmcalCorrectionComponent::GetProperty("embedding", tempBool, userNode, defaultNode, false, containerName);
   cellObj->SetIsEmbedding(tempBool);
 
   // Add to the array to keep track of it
@@ -844,12 +846,11 @@ void AliEmcalCorrectionTask::SetupContainer(InputObject_t inputObjectType, std::
     }
   }
   // Embedded
-  // TODO: Enable embedded when that branch is committed!
-  /*result = AliEmcalCorrectionComponent::GetProperty("IsEmbedded", tempBool, userNode, defaultNode, false, containerName);
+  result = AliEmcalCorrectionComponent::GetProperty("IsEmbedded", tempBool, userNode, defaultNode, false, containerName);
   if (result) {
     AliDebugStream(2) << cont->GetName() << ": Setting embedding to " << (tempBool ? "enabled" : "disabled") << std::endl;
     cont->SetIsEmbedding(tempBool);
-  }*/
+  }
 
   // Cluster specific properties
   AliClusterContainer * clusterContainer = dynamic_cast<AliClusterContainer *>(cont);
@@ -1456,11 +1457,10 @@ AliVEvent * AliEmcalCorrectionTask::GetEvent(AliVEvent * inputEvent, bool isEmbe
 {
   AliVEvent * event = 0;
   if (isEmbedding) {
-    // TODO: Enable embedded when that branch is committed!
-    /*const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
     if (!embedding) return 0;
 
-    event = embedding->GetExternalEvent();*/
+    event = embedding->GetExternalEvent();
   }
   else {
     event = inputEvent;
@@ -1547,9 +1547,7 @@ void AliEmcalCorrectionTask::SetCellsObjectInCellContainerBasedOnProperties(AliE
  */
 void AliEmcalCorrectionTask::CheckForContainerArray(AliEmcalContainer * cont, InputObject_t objectType)
 {
-  // TODO: Enable embedded when that branch is committed!
-  //AliVEvent * event = GetEvent(InputEvent(), cont->GetIsEmbedding());
-  AliVEvent * event = GetEvent(InputEvent());
+  AliVEvent * event = GetEvent(InputEvent(), cont->GetIsEmbedding());
 
   TClonesArray *  array = dynamic_cast<TClonesArray *>(event->FindListObject(cont->GetArrayName()));
   if (!array) {

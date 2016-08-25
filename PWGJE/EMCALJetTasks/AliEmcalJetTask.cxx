@@ -67,6 +67,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
   fLocked(0),
   fJetsName(),
@@ -99,6 +100,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
   fLocked(0),
   fJetsName(),
@@ -231,15 +233,17 @@ Int_t AliEmcalJetTask::FindJets()
   TIter nextPartColl(&fParticleCollArray);
   AliParticleContainer* tracks = 0;
   while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
-    AliDebug(2,Form("Tracks from collection %d: '%s'.", iColl-1, tracks->GetName()));
+    AliDebug(2,Form("Tracks from collection %d: '%s'. Embedded: %i, nTracks: %i", iColl-1, tracks->GetName(), tracks->GetIsEmbedding(), tracks->GetNParticles()));
     AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
     for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
       // artificial inefficiency
       if (fTrackEfficiency < 1.) {
-        Double_t rnd = gRandom->Rndm();
-        if (fTrackEfficiency < rnd) {
-          AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
-          continue;
+        if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
+          Double_t rnd = gRandom->Rndm();
+          if (fTrackEfficiency < rnd) {
+            AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
+            continue;
+          }
         }
       }
 

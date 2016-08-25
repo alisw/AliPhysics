@@ -71,6 +71,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetMinJetPt(Double_t j)                    { if (IsLocked()) return; fMinJetPt         = j     ; }
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
+  void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost        = b     ; }
   void                   SetRadius(Double_t r)                      { if (IsLocked()) return; fRadius           = r     ; }
@@ -98,6 +99,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               GetRadius()                      { return fRadius            ; }
   Int_t                  GetRecombScheme()                { return fRecombScheme      ; }
   Double_t               GetTrackEfficiency()             { return fTrackEfficiency   ; }
+  Bool_t                 GetTrackEfficiencyOnlyForEmbedding() { return fTrackEfficiencyOnlyForEmbedding; }
 
   TClonesArray*          GetJets()                        { return fJets              ; }
   TObjArray*             GetUtilities()                   { return fUtilities         ; }
@@ -164,6 +166,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fGhostArea;              // ghost area
   Double_t               fTrackEfficiency;        // artificial tracking inefficiency (0...1)
   TObjArray             *fUtilities;              // jet utilities (gen subtractor, constituent subtractor etc.)
+  Bool_t                 fTrackEfficiencyOnlyForEmbedding; // Apply aritificial tracking inefficiency only for embedded tracks
   Bool_t                 fLocked;                 // true if lock is set
 
   TString                fJetsName;               //!name of jet collection
