@@ -32,7 +32,7 @@
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliAnalysisDataContainer.h"
+#include "TObjArray.h"
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCcalibTime.h"
 #include "AliHLTMessage.h"
@@ -90,7 +90,7 @@ AliHLTComponent* AliHLTTPCOfflinePreprocessorWrapperComponent::Spawn() {
   return new AliHLTTPCOfflinePreprocessorWrapperComponent();
 }
 
-AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAnalysisDataContainer* dataContainer)
+AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(TObjArray* dataContainer)
 {
 	if (fAsyncProcess)
 	{
@@ -104,7 +104,7 @@ AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAn
 		fAsyncProcessor.FreeBuffer(buffer);
 		dataContainer = GetDataContainer((TObject*) tmpObject);
 	}
-	AliTPCcalibTime* timeObj = dynamic_cast<AliTPCcalibTime*>(dataContainer->GetData());
+	AliTPCcalibTime* timeObj = dynamic_cast<AliTPCcalibTime*>(dataContainer->At(0));
 	AliCDBEntry* retVal = NULL;
 	if (timeObj == NULL)
 	{
@@ -137,7 +137,7 @@ AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAn
 
 void* AliHLTTPCOfflinePreprocessorWrapperComponent::AsyncRunPreprocessor(void* obj)
 {
-	return((void*) RunPreprocessor((AliAnalysisDataContainer*) obj));
+	return((void*) RunPreprocessor((TObjArray*) obj));
 }
 
 int AliHLTTPCOfflinePreprocessorWrapperComponent::DoInit( int argc, const char** argv ) 
@@ -201,11 +201,11 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::ScanConfigurationArgument(int 
   return iRet;
 }
 
-AliAnalysisDataContainer* AliHLTTPCOfflinePreprocessorWrapperComponent::GetDataContainer(TObject* obj)
+TObjArray* AliHLTTPCOfflinePreprocessorWrapperComponent::GetDataContainer(TObject* obj)
 {
-	AliAnalysisDataContainer* tmpContainer = NULL;
+	TObjArray* tmpContainer = NULL;
 	TObjArray* tmpArray = (TObjArray*) dynamic_cast<const TObjArray*>(obj);
-	tmpContainer = tmpArray ? NULL : (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>(obj);
+	tmpContainer = tmpArray ? NULL : (TObjArray*) dynamic_cast<const TObjArray*>(obj);
 	if (tmpContainer)
 	{
 		if (!fAsyncProcess) RemoveInputObjectFromCleanupList(tmpContainer);
@@ -214,7 +214,7 @@ AliAnalysisDataContainer* AliHLTTPCOfflinePreprocessorWrapperComponent::GetDataC
 	{
 		for (int i = 0;i <= tmpArray->GetLast();i++)
 		{
-			tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*tmpArray)[i]);
+			tmpContainer = (TObjArray*) dynamic_cast<const TObjArray*>((*tmpArray)[i]);
 			if (tmpContainer != NULL && strcmp(tmpContainer->GetName(), "calibTime") == 0)
 			{
 				if (!fAsyncProcess) RemoveInputObjectFromCleanupList(tmpArray);
@@ -230,7 +230,7 @@ AliAnalysisDataContainer* AliHLTTPCOfflinePreprocessorWrapperComponent::GetDataC
 	
 	if (!tmpContainer)
 	{
-		HLTImportant("TPC Offline Preprocessor component received object that is no AliAnalysisDataContainer!");
+		HLTImportant("TPC Offline Preprocessor component received object that is no TObjArray!");
 	}
 	return(tmpContainer);
 }
@@ -241,7 +241,7 @@ Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponen
 	// -- Only use data event
 	if (IsDataEvent())
 	{
-		AliAnalysisDataContainer* tmpContainer = NULL;
+		TObjArray* tmpContainer = NULL;
 		if (fAsyncProcess)
 		{
 			const AliHLTComponentBlockData* blk = GetFirstInputBlock(kAliHLTDataTypeTObject);

@@ -99,6 +99,9 @@ public:
 
   using AliHLTProcessor::DoEvent;
 
+  TCollection* GetOutputs();
+
+  void ResetOutputData();
 
   /** interface function, see @ref AliHLTComponent for description */
   Int_t Reconfigure(const Char_t* cdbEntry, const Char_t* chainId);
@@ -175,7 +178,8 @@ private:
   Int_t fForceKillAsyncProcess; //Kill async process after n msec, -1 to disable
   Bool_t fPushRequestOngoing; //Have we already requested a push? If so, wait until push before request again
   AliHLTAsyncMemberProcessor<AliHLTAnalysisManagerComponent> fAsyncProcessor; //Processor for asynchronous processing
+  TCollection* fAnalysisOutputContainer; //!
 
-  ClassDef(AliHLTAnalysisManagerComponent, 2)
+  ClassDef(AliHLTAnalysisManagerComponent, 3)
 };
 #endif

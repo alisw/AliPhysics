@@ -24,7 +24,6 @@
 
 class AliHLTTPCClusterTransformation;
 class AliHLTTPCFastTransformObject;
-class AliAnalysisDataContainer;
 class AliCDBEntry;
 
 /**

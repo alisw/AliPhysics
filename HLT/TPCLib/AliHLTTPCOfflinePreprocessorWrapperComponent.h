@@ -22,7 +22,7 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTAsyncMemberProcessor.h"
 
-class AliAnalysisDataContainer;
+class TObjArray;
 class AliCDBEntry;
 
 /**
@@ -79,9 +79,9 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCOfflinePreprocessorWrapperComponent& operator=(const AliHLTTPCOfflinePreprocessorWrapperComponent&);
   
-  AliAnalysisDataContainer* GetDataContainer(TObject* obj);
+  TObjArray* GetDataContainer(TObject* obj);
 
-  AliCDBEntry* RunPreprocessor(AliAnalysisDataContainer* dataContainer);
+  AliCDBEntry* RunPreprocessor(TObjArray* dataContainer);
   void* AsyncRunPreprocessor(void*);
   
   AliHLTAsyncMemberProcessor<AliHLTTPCOfflinePreprocessorWrapperComponent> fAsyncProcessor;
