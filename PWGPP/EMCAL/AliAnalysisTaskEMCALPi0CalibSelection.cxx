@@ -312,7 +312,7 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     
     else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
       
-    else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max) continue;
+    else if (!fChangeBkgShape && (c1->GetM02() < fL0min || c1->GetM02() > fL0max)) continue;
       
     if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;
       
@@ -401,7 +401,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
     
     else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
     
-    else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max)      continue;
+    else if (!fChangeBkgShape && (c1->GetM02() < fL0min || c1->GetM02() > fL0max))      continue;
     
     if(DebugLevel() > 2)
     { 
@@ -493,9 +493,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       
       else if (c2->GetNCells() < fMinNCells)                       continue;
       
-      else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
+      else if(fChangeBkgShape && (c2->GetM02() < fL0min || (c2->GetM02() > fL0max && c2->GetM02() < fL0Bkgmin) || c2->GetM02() > fL0Bkgmax)) continue;
       
-      else if (c2->GetM02() < fL0min || c2->GetM02() > fL0max)     continue;
+      else if (!fChangeBkgShape && (c2->GetM02() < fL0min || c2->GetM02() > fL0max))     continue;
       
       fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c2,absId2,iSupMod2,ieta2,iphi2,shared);
       
