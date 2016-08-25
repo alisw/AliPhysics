@@ -571,12 +571,12 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->SetOwner();  // IMPORTANT!
     
     //Initialize event pool stuff
-    Double_t vertexBins[11] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10 };
-    Int_t nZvtxBins  = 10;
-    Double_t multBins[6] = {0, 100, 200, 300, 400, 500};
-    Int_t nMultBins = 5;
+    Double_t vertexBins[5] = { -10, -4,  0, 4, 10 };
+    Int_t nZvtxBins  = 4;
+    Double_t multBins[4] = {0, 200, 500, 1000};
+    Int_t nMultBins = 3;
     
-    fPoolMan = new AliEventPoolManager(200, 100, nMultBins, multBins, nZvtxBins, vertexBins);
+    fPoolMan = new AliEventPoolManager(50, 50, nMultBins, multBins, nZvtxBins, vertexBins);
     fPoolMan->Validate();
     
     //Some strings for histograms
@@ -1734,9 +1734,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             
             fPool = fPoolMan->GetEventPool(ntracks, esd->GetPrimaryVertex()->GetZ());
             
-            if(fPool->IsReady()){
-                FillMEDPhiHistos(esdtrack);
-            }
+           
             
             if(tagPhot){
                 if(MBtrg){
@@ -1748,6 +1746,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 if(EMCJettrg){
                     fHistPhotoMismatch_EMCJet->Fill(0);
                 }
+            }
+             if(!fPool){cout<<"No Pool for this event man\n"; continue;}
+            
+            if(fPool->IsReady() ){
+                FillMEDPhiHistos(esdtrack);
             }
             
         }//end if(tagStrong)
@@ -2120,7 +2123,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                 //Fill Delta Phi variable and correct for periodicity
                 Double_t DPhi=esdtrackassoc->Phi()-esdtrack->Phi();
                 
-                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()-DPhi);}
+                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
                 
                 if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
                 
@@ -2701,7 +2704,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliESDtrack *esdtrack)
                 //Fill Delta Phi variable and correct for periodicity
                 Double_t DPhi=esdtrackassoc->Phi()-esdtrack->Phi();
                 
-                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()-DPhi);}
+                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
                 
                 if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
                 
