@@ -258,6 +258,32 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
       	  //getting next track
       TParticle *kinetrack= fStack->Particle(i);
+            
+	if(fIsMisalignment){
+       TParticle *motherParticle1;
+       Int_t motherIndex1 = kinetrack->GetFirstMother();
+       bool deleted_kinetrack = false;
+
+
+       if((kinetrack->GetPdgCode()==3122)|| (kinetrack->GetPdgCode()==-3122))
+       {
+            if (motherIndex1 != -1){
+             
+            motherParticle1 = fStack->Particle(motherIndex1);
+	        if(motherParticle1->GetPdgCode()==kinetrack->GetPdgCode())
+             {
+                delete trackCopy;
+                 deleted_kinetrack = ltrue;
+              continue;
+            
+             }
+
+           //   cout << "mother after: "<< motherParticle1->GetPdgCode()<< "kinetrack after: "<< kinetrack->GetPdgCode()<<endl;
+
+                }
+       }
+
+	}
 
 
 
@@ -413,6 +439,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	if(previousTrackPt==trackCopy->Pt())
 	  continue;
 	previousTrackPt=trackCopy->Pt();
+
+
 
       }
 
