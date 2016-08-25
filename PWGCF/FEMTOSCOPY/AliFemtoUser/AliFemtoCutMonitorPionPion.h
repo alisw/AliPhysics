@@ -134,9 +134,11 @@ namespace AliFemtoCutMonitorPionPion {
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoPair* aEvent);
     virtual void EventBegin(const AliFemtoEvent*);
+    virtual void SetRadius(float radius) { fRadius = radius; };
 
   protected:
     float fCurrentMagneticField;
+    float fRadius;
 
     TH1F *fMinv;
     TH1F *fKt;
@@ -153,13 +155,11 @@ namespace AliFemtoCutMonitorPionPion {
   Pair::EventBegin(const AliFemtoEvent *event)
   {
     fCurrentMagneticField = event->MagneticField();
-
     // Correct AliFemto units error for magnetic field (back to Tesla)
     // TODO: Fix this bug in AliFemtoEventReaderAOD::CopyAODtoFemtoEvent
     if (fabs(fCurrentMagneticField) < 1e-10) {
       fCurrentMagneticField *= 1e13;
     }
-
   }
 
 };

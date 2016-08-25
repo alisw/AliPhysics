@@ -146,6 +146,7 @@ const Float_t default_pair_TPCExitSepMin = -1.0
 
             , default_pair_delta_eta_min = 0.0
             , default_pair_delta_phi_min = 0.0
+            , default_pair_phi_star_radius = 1.2
 
             , default_pair_max_share_quality = 1.0
             , default_pair_max_share_fraction = 0.05
@@ -328,6 +329,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
 
   , default_pair_delta_eta_min
   , default_pair_delta_phi_min
+  , default_pair_phi_star_radius
 
   , default_pair_max_share_quality
   , default_pair_max_share_fraction
@@ -476,8 +478,11 @@ AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
   */
 
 
-  AliFemtoPairCutDetaDphi *cut = new AliFemtoPairCutDetaDphi(p.pair_delta_eta_min, p.pair_delta_phi_min);
+  AliFemtoPairCutDetaDphi *cut = new AliFemtoPairCutDetaDphi(p.pair_delta_eta_min,
+                                                             p.pair_delta_phi_min,
+                                                             p.pair_phi_star_radius);
 
+  cut->SetCutTechnique(AliFemtoPairCutDetaDphi::Quad);
   cut->SetShareQualityMax(p.pair_max_share_quality);
   cut->SetShareFractionMax(p.pair_max_share_fraction);
   cut->SetRemoveSameLabel(p.pair_remove_same_label);

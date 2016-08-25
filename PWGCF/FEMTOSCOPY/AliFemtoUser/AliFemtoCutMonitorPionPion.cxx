@@ -300,11 +300,11 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fImpact = new TH2F(
     "impact" + pf,
     Form(title_format, "Track impact parameter components",
-                       "z (cm?); "
-                       "r (cm?); "
+                       "z (cm); "
+                       "r (cm); "
                        "N_{#pi}  "),
     256, -0.25, 0.25,
-    256, -0.01, 0.1
+    256, -0.01, 0.25
   );
   fImpact->Sumw2();
 
@@ -452,6 +452,8 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
+  , fCurrentMagneticField(0.500668)
+  , fRadius(1.2)
   , fMinv(nullptr)
   , fKt(nullptr)
   , fDetaDphi(nullptr)
@@ -482,8 +484,8 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
   fDetaDphi = new TH2F(
     "DetaDphi" + pf,
     TString::Format(title_format,
-                    "#Delta #eta* vs #Delta #phi*",
-                    "#Delta #eta*; #Delta #phi*"),
+                    "#Delta #eta vs #Delta #phi*",
+                    "#Delta #eta; #Delta #phi*"),
     145, -0.2, 0.2,
     145, -0.2, 0.2
   );
@@ -552,7 +554,12 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
               chg_2 = track2->Charge();
 
   const float delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2),
-         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, 1.6, fCurrentMagneticField);
+         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, fRadius, fCurrentMagneticField);
+
+  // if (fabs(delta_eta) <= 0.07 && fabs(delta_phi_star) <= 0.07 && passes)
+  //     printf(">> %f % 6f % 6f %p \n", pair, delta_eta, delta_phi_star, this);
+    // std::cout << ">> " << pair << " " << delta_eta << ", " << delta_phi_star << "\n"; // -> " << passes << "\n";
+
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);
