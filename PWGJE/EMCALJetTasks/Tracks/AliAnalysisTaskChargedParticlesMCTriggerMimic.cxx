@@ -381,11 +381,21 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
     for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
       checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
       if(!checktrack) continue;
+      TString assocpid = "Ot";
       // Find associated particle
       if(MCEvent()){
         assocMC = MCEvent()->GetTrack(TMath::Abs(checktrack->GetLabel()));
         if(!assocMC) continue;        // Fake track
         if(!IsPhysicalPrimary(assocMC, fMCEvent)) continue;
+        // Get PID
+        switch(TMath::Abs(assocMC->PdgCode())){
+        case kPiPlus: assocpid = "Pi"; break;
+        case kMuonMinus: assocpid = "Mu"; break;
+        case kElectron: assocpid = "El"; break;
+        case kKPlus: assocpid = "Ka"; break;
+        case kProton: assocpid = "Pr"; break;
+        default: assocpid = "Ot"; break;
+        };
       }
 
       // Select only particles within ALICE acceptance
@@ -420,17 +430,6 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
       etacent *= fEtaSign;
 
       Bool_t etacentcut = fEtaCmsCut.IsInRange(etacent);
-
-      // Get PID
-      TString assocpid = "";
-      switch(TMath::Abs(assocMC->PdgCode())){
-      case kPiPlus: assocpid = "Pi"; break;
-      case kMuonMinus: assocpid = "Mu"; break;
-      case kElectron: assocpid = "El"; break;
-      case kKPlus: assocpid = "Ka"; break;
-      case kProton: assocpid = "Pr"; break;
-      default: assocpid = "Ot"; break;
-      };
 
       FillTrackHistos("Accept", weight,  ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, assocpid);
     }
