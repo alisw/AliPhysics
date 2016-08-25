@@ -55,7 +55,7 @@ fEventsList(0x0),
 fNModules(22),
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),
 fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
-fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0),
+fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0), 
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),
@@ -80,6 +80,7 @@ fhReInvPt2(0x0),             fhMiInvPt2(0x0),              fhReInvPt3(0x0),     
 fhRePtNCellAsymCuts(0x0),    fhMiPtNCellAsymCuts(0x0),     fhRePtNCellAsymCutsSM(),
 fhRePIDBits(0x0),            fhRePtMult(0x0),              fhReSS(),
 fhRePtAsym(0x0),             fhRePtAsymPi0(0x0),           fhRePtAsymEta(0x0),
+fhMiPtAsym(0x0),             fhMiPtAsymPi0(0x0),           fhMiPtAsymEta(0x0),
 fhEventBin(0),               fhEventMixBin(0),
 fhCentrality(0x0),           fhCentralityNoPair(0x0),
 fhEventPlaneResolution(0x0),
@@ -193,7 +194,7 @@ void AliAnaPi0::InitParameters()
   fNPIDBits = 2;
   fPIDBits[0] = 0;   fPIDBits[1] = 2; //  fPIDBits[2] = 4; fPIDBits[3] = 6;// check, no cut,  dispersion, neutral, dispersion&&neutral
   for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0;
-}
+ }
 
 //_______________________________________
 /// Save parameters used for analysis.
@@ -937,6 +938,24 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhRePtAsymEta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhRePtAsymEta->SetYTitle("#it{Asymmetry}");
     outputContainer->Add(fhRePtAsymEta);
+    
+    if(DoOwnMix())
+    {
+      fhMiPtAsym = new TH2F("hMiPtAsym","#it{Asymmetry} vs #it{p}_{T} , for mixed pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+      fhMiPtAsym->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiPtAsym->SetYTitle("#it{Asymmetry}");
+      outputContainer->Add(fhMiPtAsym);
+      
+      fhMiPtAsymPi0 = new TH2F("hMiPtAsymPi0","#it{Asymmetry} vs #it{p}_{T} , for mixed pairs close to #pi^{0} mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+      fhMiPtAsymPi0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiPtAsymPi0->SetYTitle("Asymmetry");
+      outputContainer->Add(fhMiPtAsymPi0);
+      
+      fhMiPtAsymEta = new TH2F("hMiPtAsymEta","#it{Asymmetry} vs #it{p}_{T} , for mixed pairs close to #eta mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+      fhMiPtAsymEta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiPtAsymEta->SetYTitle("#it{Asymmetry}");
+      outputContainer->Add(fhMiPtAsymEta);
+    }
   }
   
   if(fMultiCutAna)
@@ -2678,6 +2697,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }// bad 1
       }// pid bit loop
       
+      //
       // Fill histograms with opening angle
       if(fFillAngleHisto)
       {
@@ -2855,7 +2875,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           // In case we want only pairs in same (super) module, check their origin.
           module2 = GetModuleNumber(p2);
-          
+                    
           //-------------------------------------------------------------------------------------------------
           // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
           //-------------------------------------------------------------------------------------------------
@@ -3007,13 +3027,22 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }// pt cut loop
           } // Multi cut ana
           
+          //
           // Fill histograms with opening angle
           if(fFillAngleHisto)
           {
             fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
             fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
+          }          
+          
+          //
+          if(fFillAsymmetryHisto)
+          {
+            fhMiPtAsym->Fill(pt, a, GetEventWeight());
+            if(m > 0.10 && m < 0.17) fhMiPtAsymPi0->Fill(pt, a, GetEventWeight());
+            if(m > 0.45 && m < 0.65) fhMiPtAsymEta->Fill(pt, a, GetEventWeight());
           }
-
+          
           // Check cell time content in cluster
           if ( fFillSecondaryCellTiming)
           {
