@@ -42,6 +42,7 @@ AliHistogramManager::AliHistogramManager() :
   fName("histos"),
   fMainDirectory(0x0),
   fHistFile(0x0),
+  fOutputList(),
   fUseDefaultVariableNames(kFALSE),
   fUsedVars(),
   fBinsAllocated(0),
@@ -54,6 +55,7 @@ AliHistogramManager::AliHistogramManager() :
   //
    fMainList.SetOwner(kTRUE);
    fMainList.SetName("HistogramList");
+   fOutputList.SetName(fName);
 }
 
 //_______________________________________________________________________________
@@ -62,6 +64,7 @@ AliHistogramManager::AliHistogramManager(const Char_t* name, Int_t nvars) :
   fName(name),
   fMainDirectory(0x0),
   fHistFile(0x0),
+  fOutputList(),
   fUseDefaultVariableNames(kFALSE),
   fUsedVars(),
   fBinsAllocated(0),
@@ -75,8 +78,8 @@ AliHistogramManager::AliHistogramManager(const Char_t* name, Int_t nvars) :
 //  fUsedVars = new Bool_t[nvars];
   fMainList.SetOwner(kTRUE);
   fMainList.SetName("HistogramList");
-  fOutputList = new THashList();
-  fOutputList->SetName(fName);
+  //fOutputList = new THashList();
+  fOutputList.SetName(fName);
   //fVariableNames = new TString[nvars];
   //fVariableUnits = new TString[nvars];
 }
@@ -91,7 +94,7 @@ AliHistogramManager::~AliHistogramManager()
   //if(fMainList) {delete fMainList; fMainList=0x0;}
   if(fMainDirectory) {delete fMainDirectory; fMainDirectory=0x0;}
   if(fHistFile) {delete fHistFile; fHistFile=0x0;}
-  if(fOutputList) {delete fOutputList; fOutputList=0x0;}
+  //if(fOutputList) {delete fOutputList; fOutputList=0x0;}
 }
 
 //_______________________________________________________________________________
@@ -763,10 +766,10 @@ THashList* AliHistogramManager::AddHistogramsToOutputList() {
     //hlist->SetName(list->GetName());
     //hlist->Add(list);
     //hlist->SetOwner(kTRUE);
-    fOutputList->Add(list);
+    fOutputList.Add(list);
   }
-  fOutputList->SetOwner(kTRUE);
-  return fOutputList;
+  fOutputList.SetOwner(kTRUE);
+  return &fOutputList;
 }
 
 //____________________________________________________________________________________

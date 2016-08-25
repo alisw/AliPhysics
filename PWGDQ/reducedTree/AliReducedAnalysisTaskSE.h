@@ -58,8 +58,8 @@ protected:
   AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& handler);             
   AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& handler);      
    
-  AliHistogramManager* fHistosManager;   // Histogram manager
-  AliMixingHandler* fMixingHandler;      // Mixed event handler
+  AliHistogramManager* fHistosManager;   //-> Histogram manager
+  AliMixingHandler* fMixingHandler;      //-> Mixed event handler
   
   AliReducedBaseEvent* fEvent;           //! current event to be processed
   Float_t fValues[AliReducedVarManager::kNVars];   // array of values to hold information for histograms
@@ -75,7 +75,7 @@ protected:
   virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track);
   virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair);
   
-  ClassDef(AliReducedAnalysisTaskSE,3);
+  ClassDef(AliReducedAnalysisTaskSE,2);
 };
 
 #endif
