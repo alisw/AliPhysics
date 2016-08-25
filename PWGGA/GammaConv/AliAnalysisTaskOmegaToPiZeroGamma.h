@@ -165,6 +165,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TF1*                                fmaxfit;                // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
     Double_t                            flowerFactor;           // factor maxfit is multiplied by to get lower limit for pi0-gamma angle cut
     Double_t                            fupperFactor;           // factor maxfit is multiplied by to get upper limit for pi0-gamma angle cut
+    Double_t                            fMinPi0Pt;              // Min Pi0 Pt cut in GeV
     
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
@@ -321,7 +322,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 7);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 8);
 };
 
 #endif
