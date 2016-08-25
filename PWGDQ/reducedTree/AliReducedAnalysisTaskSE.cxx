@@ -14,7 +14,9 @@ ClassImp(AliReducedAnalysisTaskSE);
 
 //___________________________________________________________________________
 AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE() :
-  TNamed(),
+  TObject(),
+  fName(""),
+  fTitle(""),
   fHistosManager(0x0),
   fMixingHandler(0x0),
   fEvent(0x0),
@@ -38,7 +40,9 @@ AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE() :
 
 //___________________________________________________________________________
 AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE(const Char_t* name, const Char_t* title) :
-  TNamed(name,title),
+  TObject(),
+  fName(name),
+  fTitle(title),
   fHistosManager(0x0),
   fMixingHandler(0x0),
   fEvent(0x0),
