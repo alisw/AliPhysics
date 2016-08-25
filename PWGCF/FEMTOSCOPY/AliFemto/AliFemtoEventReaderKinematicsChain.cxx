@@ -273,7 +273,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	        if(motherParticle1->GetPdgCode()==kinetrack->GetPdgCode())
              {
                 delete trackCopy;
-                 deleted_kinetrack = ltrue;
+                 deleted_kinetrack = true;
               continue;
             
              }
