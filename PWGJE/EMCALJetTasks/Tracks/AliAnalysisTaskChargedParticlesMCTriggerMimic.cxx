@@ -382,9 +382,11 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
       checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
       if(!checktrack) continue;
       // Find associated particle
-      assocMC = MCEvent()->GetTrack(TMath::Abs(checktrack->GetLabel()));
-      if(!assocMC) continue;        // Fake track
-      if(!IsPhysicalPrimary(assocMC, fMCEvent)) continue;
+      if(MCEvent()){
+        assocMC = MCEvent()->GetTrack(TMath::Abs(checktrack->GetLabel()));
+        if(!assocMC) continue;        // Fake track
+        if(!IsPhysicalPrimary(assocMC, fMCEvent)) continue;
+      }
 
       // Select only particles within ALICE acceptance
       if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
@@ -407,8 +409,9 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
 
       if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
-      ptparticle = TMath::Abs(assocMC->Pt());
-      etaparticle = assocMC->Eta();
+      // prefer true pt and eta, however in case of running on data take measured values
+      ptparticle = assocMC ? TMath::Abs(assocMC->Pt()) : TMath::Abs(checktrack->Pt());
+      etaparticle = assocMC ? assocMC->Eta() : checktrack->Eta();
 
       // Calculate eta in cms frame according
       // EPJC74 (2014) 3054:
