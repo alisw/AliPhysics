@@ -349,10 +349,15 @@ else()
 
   # AliRoot modules requiring Fortran
   set(ALIROOT_MODULES_FORTRAN
-      DIME DPMJET HERWIG HIJING LHAPDF MICROCERN PYTHIA6 PYTHIA8 TAmpt TDPMjet
+      DIME HERWIG HIJING LHAPDF MICROCERN PYTHIA6 PYTHIA8 TAmpt TDPMjet
       TEPEMGEN THbtp THerwig THijing THydjet TPHIC TUHKMgen)
   if(NOT DISABLE_FORTRAN)
     list(INSERT ALIROOT_MODULES 0 "${ALIROOT_MODULES_FORTRAN}")
+    find_package(DPMJET)
+    if(NOT DPMJET_FOUND)
+      message(WARNING "Using DPMJET from AliRoot. This is deprecated and it will be removed soon!")
+      list(INSERT ALIROOT_MODULES 0 "DPMJET")
+    endif()
   else()
     string(REPLACE ";" " " ALIROOT_MODULES_FORTRAN_FLAT "${ALIROOT_MODULES_FORTRAN}")
     message(WARNING "The following modules require Fortran and will not be built: ${ALIROOT_MODULES_FORTRAN_FLAT}")

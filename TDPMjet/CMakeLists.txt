@@ -46,6 +46,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
+if(DPMJET_FOUND)
+  # Use external DPMJET if found
+  link_directories($DPMJET_LIBPATH)
+endif()
+
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS DPMJET EVGEN STEER STEERBase)
@@ -63,7 +68,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
