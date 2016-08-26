@@ -2911,25 +2911,43 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     volWCPltB->SetLineColor(kRed);
 
     // The fitting for the water cooling tube: a Pcon
-    TGeoPcon *shFitt = new TGeoPcon(0., 360., 4);
-    shFitt->Z(0)    = -kWCFittingLen1;
-    shFitt->Rmin(0) =  kWCFittingRint1;
-    shFitt->Rmax(0) =  kWCFittingRext1;
+    // NOTE (Sandro Wenzel): Commented out since the resulting
+    // polycone is not a valid construct ( it is not contiguous
+    // and fails to convert to Geant4 for example )
 
-    shFitt->Z(1)    =  0;
-    shFitt->Rmin(1) =  kWCFittingRint1;
-    shFitt->Rmax(1) =  kWCFittingRext1;
+    // TGeoPcon *shFitt = new TGeoPcon(0., 360., 4);
+    // shFitt->Z(0)    = -kWCFittingLen1;
+    // shFitt->Rmin(0) =  kWCFittingRint1;
+    // shFitt->Rmax(0) =  kWCFittingRext1;
 
-    shFitt->Z(2)    =  0;
-    shFitt->Rmin(2) =  kWCFittingRint2;
-    shFitt->Rmax(2) =  kWCFittingRext2;
+    // shFitt->Z(1)    =  0;
+    // shFitt->Rmin(1) =  kWCFittingRint1;
+    // shFitt->Rmax(1) =  kWCFittingRext1;
 
-    shFitt->Z(3)    =  kWCFittingLen2;
-    shFitt->Rmin(3) =  kWCFittingRint2;
-    shFitt->Rmax(3) =  kWCFittingRext2;
+    // shFitt->Z(2)    =  0;
+    // shFitt->Rmin(2) =  kWCFittingRint2;
+    // shFitt->Rmax(2) =  kWCFittingRext2;
 
+    // shFitt->Z(3)    =  kWCFittingLen2;
+    // shFitt->Rmin(3) =  kWCFittingRint2;
+    // shFitt->Rmax(3) =  kWCFittingRext2;
+    // TGeoVolume *volFitt = new TGeoVolume("ITSSPDWaterCoolingFitting",
+    //				 shFitt, medCopper);
+
+    TGeoTube *shFittTube1 = new TGeoTube(kWCFittingRint1, kWCFittingRext1, kWCFittingLen1/2.);
+    TGeoTube *shFittTube2 = new TGeoTube(kWCFittingRint2, kWCFittingRext2, kWCFittingLen2/2.);
+    shFittTube1->SetName("shFittTube1");
+    shFittTube2->SetName("shFittTube2");
+    TGeoTranslation *shFittTube1Tr = new TGeoTranslation("shFittTube1Tr",0.,0.,-kWCFittingLen1/2.);
+    TGeoTranslation *shFittTube2Tr = new TGeoTranslation("shFittTube2Tr",0.,0.,kWCFittingLen2/2.);
+    // register matrices so that they can be used in expressions?
+    gGeoManager->AddTransformation(shFittTube1Tr);
+    gGeoManager->AddTransformation(shFittTube2Tr);
+    // combine the 2 to make the coolingFitting shape
+    TGeoCompositeShape *shFittComposite = new TGeoCompositeShape("shFitt",
+                                                                 "(shFittTube1:shFittTube1Tr) + (shFittTube2:shFittTube2Tr)");
     TGeoVolume *volFitt = new TGeoVolume("ITSSPDWaterCoolingFitting",
-					 shFitt, medCopper);
+                     shFittComposite, medCopper);
     volFitt->SetLineColor(kOrange);
 
     // Now place everything in the containers
