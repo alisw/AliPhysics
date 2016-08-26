@@ -648,7 +648,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
     fHistoMotherInvMassEalpha       = new TH2F*[fnCuts];
-    if(fDoMesonQA == 1){
+    if(fDoMesonQA > 0){
       fHistoMotherPi0PtY            = new TH2F*[fnCuts];
       fHistoMotherEtaPtY            = new TH2F*[fnCuts];
       fHistoMotherPi0PtAlpha        = new TH2F*[fnCuts];
