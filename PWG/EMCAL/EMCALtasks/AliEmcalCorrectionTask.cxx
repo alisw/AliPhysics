@@ -504,7 +504,9 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   // Retrieve cells name from configruation
   std::string cellsName = "";
   AliEmcalCorrectionComponent::GetProperty("cellBranchName", cellsName, fUserConfiguration, fDefaultConfiguration, true, "");
-  if (cellsName == "usedefault") {
+  // In the case of fCreateNewObjectBranches, we need to get the default name to retrieve the normal cells
+  // We will then retrieve the new cells name later
+  if (cellsName == "usedefault" || fCreateNewObjectBranches) {
     cellsName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCaloCells, fIsEsd);
   }
   fCaloCellsName = cellsName;
@@ -535,15 +537,47 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
  */
 void AliEmcalCorrectionTask::CreateNewObjectBranches()
 {
+  // Create new cell branch
+  // cellBranchName doesn't belong to any particular component
+  AliEmcalCorrectionComponent::GetProperty("cellBranchName", fCreatedCellBranchName, fUserConfiguration, fDefaultConfiguration, true, "");
+  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
+  if (fCreatedCellBranchName == "usedefault") {
+    fCreatedCellBranchName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCaloCells, fIsEsd);
+  }
+
+  // Check to ensure that we are not trying to create a new branch on top of the old branch
+  TObject * existingObject = InputEvent()->FindListObject(fCreatedCellBranchName.c_str());
+  if (existingObject) {
+    AliFatal(TString::Format("Attempted to create a new cell branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedCellBranchName.c_str()));
+  }
+
+  // Create new branch and add it to the event
+  AliVCaloCells * newCells = 0;
+  if (fIsEsd) {
+    newCells = new AliESDCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
+  }
+  else {
+    newCells = new AliAODCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
+  }
+  InputEvent()->AddObject(newCells);
+  // Set fCaloCells here to avoid looking up every event
+  // newCells is the same address as that reference by the TList in the InputEvent
+  fCaloCells = newCells;
+
   // Create new cluster branch
   // Clusterizer is used since it is the first place that clusters are used.
   AliEmcalCorrectionComponent::GetProperty("clusterBranchName", fCreatedClusterBranchName, fUserConfiguration, fDefaultConfiguration, true, "Clusterizer");
+  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
+  if (fCreatedClusterBranchName == "usedefault") {
+    fCreatedClusterBranchName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCluster, fIsEsd);
+  }
 
   // Check to ensure that we are not trying to create a new branch on top of the old branch
-  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedClusterBranchName.c_str()));
-  if (existingArray) {
-    AliFatal(TString::Format("%s: Attempted to create a new cluster branch, \"%s\", with the same name as an existing branch!", GetName(), fCreatedClusterBranchName.c_str()));
+  existingObject = InputEvent()->FindListObject(fCreatedClusterBranchName.c_str());
+  if (existingObject) {
+    AliFatal(TString::Format("Attempted to create a new cluster branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedClusterBranchName.c_str()));
   }
+  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
   // Create new branch and add it to the event
   TClonesArray * newClusters = 0;
@@ -559,12 +593,17 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
   // Create new tracks branch
   // ClusterTrackMatcher is used since it is the first place that tracks are used.
   AliEmcalCorrectionComponent::GetProperty("trackBranchName", fCreatedTrackBranchName, fUserConfiguration, fDefaultConfiguration, true, "ClusterTrackMatcher");
+  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
+  if (fCreatedTrackBranchName == "usedefault") {
+    fCreatedTrackBranchName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kTrack, fIsEsd);
+  }
 
   // Check to ensure that we are not trying to create a new branch on top of the old branch
-  existingArray = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
-  if (existingArray) {
-    AliFatal(TString::Format("%s: Attempted to create a new track branch, \"%s\", with the same name as existing branch!", GetName(), fCreatedTrackBranchName.c_str()));
+  existingObject = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
+  if (existingObject) {
+    AliFatal(TString::Format("Attempted to create a new track branch, \"%s\", with the same name as existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedTrackBranchName.c_str()));
   }
+  existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
   // Create new branch and add it to the event
   TClonesArray * newTracks = 0;
@@ -585,18 +624,23 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
 void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
 {
   // Cells
-  // TODO: Handle ESD
   AliDebug(3, Form("Number of old cells: %d", fCaloCellsFromInputEvent->GetNumberOfCells()));
-  // The function CopyCaloCells() does not work!!!
+  // The function CopyCaloCells() does not work, so we use the assignment operator instead!
   if (fIsEsd)
   {
-    AliESDCaloCells * tempCells = dynamic_cast<AliESDCaloCells *>(fCaloCellsFromInputEvent);
-    fCaloCells = new AliESDCaloCells(*tempCells);
+    AliESDCaloCells * currentCells = dynamic_cast<AliESDCaloCells *>(fCaloCellsFromInputEvent);
+    AliESDCaloCells * newCells = dynamic_cast<AliESDCaloCells *>(fCaloCells);
+    fCaloCells = dynamic_cast<AliESDCaloCells *>(new (newCells) AliESDCaloCells(*currentCells));
+    // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
+    fCaloCells->SetName(fCreatedCellBranchName.c_str());
   }
   else
   {
-    AliAODCaloCells * tempCells = dynamic_cast<AliAODCaloCells *>(fCaloCellsFromInputEvent);
-    fCaloCells = new AliAODCaloCells(*tempCells);
+    AliAODCaloCells * currentCells = dynamic_cast<AliAODCaloCells *>(fCaloCellsFromInputEvent);
+    AliAODCaloCells * newCells = dynamic_cast<AliAODCaloCells *>(fCaloCells);
+    fCaloCells = dynamic_cast<AliAODCaloCells *>(new (newCells) AliAODCaloCells(*currentCells));
+    // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
+    fCaloCells->SetName(fCreatedCellBranchName.c_str());
   }
   AliDebug(3, Form("Number of old cells: %d \tNumber of new cells: %d", fCaloCellsFromInputEvent->GetNumberOfCells(), fCaloCells->GetNumberOfCells() ));
 
@@ -615,7 +659,6 @@ void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
   AliDebug(3, Form("before copy:\t currentTracks->GetEntries(): %d \t newTracks->GetEntries(): %d", currentTracks->GetEntries(), newTracks->GetEntries()));
   for (Int_t i = 0; i < currentTracks->GetEntriesFast(); i++)
   {
-    // TODO: Will the assignment operator work right with AliVTrack?
     if (fIsEsd)
     {
       AliESDtrack *currentTrack = dynamic_cast<AliESDtrack *>(currentTracks->At(i));
@@ -710,21 +753,6 @@ void AliEmcalCorrectionTask::CopyClusters(TClonesArray *orig, TClonesArray *dest
       if (aodClus) 
         aodClus->SetLabel(labels, nlabels);
     }
-  }
-}
-
-/**
- *
- *
- */
-void AliEmcalCorrectionTask::CleanupCreatedBranches()
-{
-  // This is a redundant check, strictly speaking, but it seems prudent to ensure
-  // that the CaloCells from an event are not deleted!
-  if (fCreateNewObjectBranches)
-  {
-    // We do this because we created a copy in CreateNewObjectBranches()
-    delete fCaloCells;
   }
 }
 
@@ -1032,9 +1060,6 @@ void AliEmcalCorrectionTask::UserExec(Option_t *option)
   // Call run for each correction
   if (!Run())
     return;
-
-  if (fCreateNewObjectBranches)
-    CleanupCreatedBranches();
 }
 
 /**

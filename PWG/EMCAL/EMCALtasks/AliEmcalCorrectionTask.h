@@ -126,7 +126,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void                        CreateNewObjectBranches();
   void                        CopyBranchesToNewObjects();
   void                        CopyClusters(TClonesArray *orig, TClonesArray *dest);
-  void                        CleanupCreatedBranches();
 
   Bool_t                      RetrieveEventObjects();
   void                        ExecOnceComponents();
@@ -149,6 +148,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   bool                        fIsEsd;                      ///< File type
   bool                        fCreateNewObjectBranches;    ///< Create new branches for cells and clusters
+  std::string                 fCreatedCellBranchName;      ///< Name of created cell branch
   std::string                 fCreatedClusterBranchName;   ///< Name of created cluster branch
   std::string                 fCreatedTrackBranchName;     ///< Name of created track branch
   TString                     fRunPeriod;                  ///< Run period (passed by user)
