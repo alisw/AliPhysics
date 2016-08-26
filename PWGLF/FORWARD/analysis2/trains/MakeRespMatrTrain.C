@@ -32,9 +32,11 @@ public:
     : TrainSetup(name)
   {
     fOptions.Add("trig",    "TYPE",       "Trigger type", "V0AND");
+    fOptions.Add("filter",  "TYPE",       "Filter type", "OUTLIER|PILEUP-BIN");
     fOptions.Add("ipz-min", "CENTIMETER", "Min Ip Z",     -4);
     fOptions.Add("ipz-max", "CENTIMETER", "Max Ip Z",     +4);
     fOptions.Add("max-mult","NUMBER",     "Max of histograms", 500);
+    fOptions.Add("assume-nsd", "If set, assume MC events are NSD", false);
   }
 protected:
   /** 
@@ -59,9 +61,11 @@ protected:
 
     // --- Set options -----------------------------------------------
     FromOption(tsk, "TriggerMask",         "trig",     "V0AND");
+    FromOption(tsk, "FilterMask",          "filter",   "OUTLIER|PILEUP-BIN");
     FromOption(tsk, "IpZMin",              "ipz-min",  -4.);
     FromOption(tsk, "IpZMax",              "ipz-max",  +4.);    
-    FromOption(tsk, "MaxMult",             "max-mult", 500);    
+    FromOption(tsk, "MaxMult",             "max-mult", 500);
+    FromOption(tsk, "MCIsNSD",             "assume-nsd", false);
   }
   //__________________________________________________________________
   /** 
