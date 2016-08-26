@@ -570,7 +570,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
   {
     AliAODPWG4Particle* calo =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     
-    Bool_t bConverted = kFALSE;
+    //Bool_t bConverted = kFALSE;
     
     // Check if set previously as converted couple, if so skip its use.
     //if (indexConverted[iaod]) continue;
@@ -854,7 +854,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
         {
           indexConverted[iaod] = kTRUE;
           indexConverted[jaod] = kTRUE;
-          bConverted           = kTRUE;
+          //bConverted           = kTRUE;
           
           Float_t ebin[] = {0.3,0.4,0.5,0.6,0.75,1,2};
           Int_t bin1  = -1;

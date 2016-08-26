@@ -310,9 +310,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   Float_t asymmax = GetHistogramRanges()->GetHistoAsymmetryMax();
   Float_t massmin = GetHistogramRanges()->GetHistoMassMin();
   Float_t asymmin = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
-  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
-  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
+//  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+//  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
+//  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
   Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins() ;
   Float_t tdmax   = GetHistogramRanges()->GetHistoDiffTimeMax();
   Float_t tdmin   = GetHistogramRanges()->GetHistoDiffTimeMin();
@@ -3105,7 +3105,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
           Int_t   iRCU1 = -1, iRCU2 = -1;
           GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
-          GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU1, icolAbs2, irowAbs2);
+          GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
           
           fhReOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
           

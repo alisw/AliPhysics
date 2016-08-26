@@ -973,7 +973,6 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     GetReader()->GetVertex(vertex);
   
   Float_t ptcone        = 0;
-  Float_t distToTrigger = 0;
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
     AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
@@ -1112,7 +1111,6 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
   
   Float_t pTtrack       = 0;
-  Float_t distToTrigger = 0;
   for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++)
   {
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
