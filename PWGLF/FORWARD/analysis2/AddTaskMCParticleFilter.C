@@ -1,8 +1,20 @@
+/**
+ * @file   AddTaskMCParticleFilter.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Fri Aug 26 10:29:38 2016
+ * 
+ * @brief  Add a task to storing MC particles 
+ * 
+ * 
+ * @ingroup pwglf_forward_scripts_tasks
+ */
+
 /** 
  * Add a task to storing MC particles 
  * 
  * 
  * @return Task 
+ * @ingroup pwglf_forward_scripts_tasks
  */
 AliAnalysisTask*
 AddTaskMCParticleFilter() 

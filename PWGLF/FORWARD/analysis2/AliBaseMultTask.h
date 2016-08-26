@@ -114,6 +114,7 @@ public:
     ClassDef(Bin,1); // Base class for eta bins 
   };
 
+  //__________________________________________________________________
   /**
    * Default constructor for ROOT I/O only
    * 
@@ -124,6 +125,18 @@ public:
    * 
    */
   virtual ~AliBaseMultTask() {}
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Settings 
+   */
+  void SetMaxMult(Int_t max) { fMaxMult = max; }
+  /* @} */
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Creation of @f$ \eta@f$ bins 
+   */
   /** 
    * Add another eta bin to the task
    */
@@ -144,6 +157,12 @@ public:
    * Create our default bins 
    */
   virtual void DefaultBins();
+  /* @} */
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Interface methods 
+   */
   /**
    * Create Output Objects
    */
@@ -158,7 +177,13 @@ public:
    * User Exec
    */
   virtual Bool_t Event(AliAODEvent& aod);
+  /** 
+   * Finalize the job 
+   * 
+   * @return true on success
+   */
   virtual Bool_t Finalize() {return true;}
+  /** @} */
 protected:
   /**
    * NAmed constructor 
@@ -171,13 +196,18 @@ protected:
    */
   AliBaseMultTask(const AliBaseMultTask&)
     : fBins(),
-      fIsSelected(false)
+      fIsSelected(false),
+      fMaxMult(500)
   {}
   /**
    * Assignment operator
    * 
    */
   AliBaseMultTask& operator=(const AliBaseMultTask&) { return *this; }
+  /** 
+   * @{ 
+   * @name Check of event 
+   */
   /** 
    * Check the event
    * 
@@ -202,6 +232,7 @@ protected:
    * @return true if proper reconstructed event class 
    */
   virtual Bool_t IsESDClass(AliAODForwardMult* m) const;
+  /* @} */
   /** 
    * Loop over bins and call Process for each of them 
    * 
@@ -228,10 +259,10 @@ protected:
 		       Bool_t             isMCClass,
 		       Bool_t             isESDClass,
 		       const AliAODEvent& aodevent);
-  TList  fBins;
-  Bool_t fIsSelected;
-  
-  ClassDef(AliBaseMultTask,1); // Base class for multiplicity dist tasks,
+  TList  fBins;        // List of the bins to use 
+  Bool_t fIsSelected;  // Event was selected 
+  Int_t  fMaxMult;     // Maximum of (and number of bins in) histograms 
+  ClassDef(AliBaseMultTask,2); // Base class for multiplicity dist tasks,
 };
 #endif
 // Local Variables:

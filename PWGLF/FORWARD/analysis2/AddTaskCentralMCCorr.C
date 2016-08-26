@@ -10,8 +10,9 @@
  */
 
 /** 
- * Add a Central MC correction generator task to train 
- * 
+ * Add a Central MC correction generator task to train.  
+ * This task generates corrections to be stored in OADB file 
+ * @c spd_corrections.root 
  * 
  * @return Added task 
  *

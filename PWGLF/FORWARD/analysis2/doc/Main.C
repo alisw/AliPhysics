@@ -1,5 +1,9 @@
 /** 
- * @page PWGLF_FORWARD ALICE PWGLF Forward Multiplcity Analysis 
+ * @if pwglf_fwd_main
+ * @mainpage ALICE PWGLF Forward Multiplcity Analysis 
+ * @else 
+ * @page PWGLF_FORWARD PWGLF Forward Multiplcity Analysis 
+ * @endif
  * 
  * This is the analysis code for analysis of the Forward data. 
  * 
@@ -11,8 +15,8 @@
  * - @subpage pwglf_fwd_flow_doc
  * - @subpage pwglf_fwd_mid_doc
  * - @subpage pwglf_forward_tracklets
- * - @subpage pwglf_fwd_spd_tracklet_1
- * - @subpage pwglf_fwd_spd_tracklet_2
+ *   - @subpage pwglf_fwd_spd_tracklet_1
+ *   - @subpage pwglf_fwd_spd_tracklet_2
  * - @subpage pwglf_fwd_sim
  * - @subpage pwglf_fwd_fastsim
  * 

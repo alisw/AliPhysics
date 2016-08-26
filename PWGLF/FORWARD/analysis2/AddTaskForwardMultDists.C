@@ -10,7 +10,8 @@
  * @ingroup pwglf_forward_scripts_tasks
  */
 /** 
- * Create the Forward @f$ dN/d\eta@f$ analysis task 
+ * Create the Forward @f$ dN/d\eta@f$ analysis task.
+ * Christian's sketch of a task 
  * 
  * @param trig      Trigger to use 
  * @param vzMin     Smallest @f$ v_z@f$

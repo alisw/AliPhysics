@@ -1046,9 +1046,12 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
   if (fK0SLoss) fK0SLoss->SetVal(0);
   if (!t || !fFilterK0S) return t;
 
-  const Double_t weight = 1.52233299626516083e+00; // K^0_S weight
-  const Double_t chance = 1 - 1 / weight; // chance is 1 minus inverse 
-  const Int_t    type   = 310;         // PDG code of K^0_S (K_S0)
+  const Double_t k0s    = 1.52233299626516083e+00; // 310 - K^0_S weight
+  const Double_t kpm    = (1.43744204476109627e+00*
+			   9.82150320171071400e-01); // 321  - K^{+/-}
+  const Double_t lam    = 2.75002089647900005e+00;   // 3122 - lambda
+  const Double_t sig    = 2.75002089647899961e+00;   // 3212 - sigma
+  const Double_t xi     = 3.24109605656453548e+00;   // 3322 - Xi
   TDirectory*    savDir = gDirectory;
   gDirectory            = gROOT;
   TTree*         copy   = new TTree("TreeR", "TreeR");
@@ -1059,8 +1062,7 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
   copy->SetAutoFlush(0);// Keep in memory 
   t->SetBranchAddress("ITSRecPoints", &in);
 
-  Printf("Filtering clusters from K^0_S (%d), with %4.1f%%",
-	 type, 100*chance);
+  // Printf("Filtering clusters from strange particles");
 
   Int_t min1   = AliITSgeomTGeo::GetModuleIndex(1,1,1);
   Int_t max1   = AliITSgeomTGeo::GetModuleIndex(2,1,1);
@@ -1085,22 +1087,30 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
       if (!inCl) continue;
 
       // Loop over labels in the module
-      Bool_t k0s = false;
+      Double_t weight = 1;
       for (Int_t k = 0; k < 3; k++) {
 	Int_t label = inCl->GetLabel(k);
 	if (label <= 0) continue;
 
 	// Check primary parent particle type 
 	TParticle* parent = FindPrimaryParent(label);
-	if (!parent ||
-	    (parent->GetPdgCode() != type &&
-	     parent->GetPdgCode() != -type)) continue;
+	if (!parent) continue;
+
+	switch (TMath::Abs(parent->GetPdgCode())) {
+	case 310:  weight *= k0s; break;
+	case 321:  weight *= kpm; break;
+	case 3122: weight *= lam; break;
+	case 3212: weight *= sig; break;
+	case 3322: weight *= xi;  break;
+	}
+	if (weight > 1)
+	  Printf("Cluster from %+5d: %7.5f", parent->GetPdgCode(), weight);
 	// Printf("Parent %d is a K^0_S: %d", k+1, parent->GetPdgCode());
 	// Randomly remove clusters from the right kind of primary
 	// parent particles
-	k0s = true;
       }
-      if (k0s) {
+      if (weight > 1) {
+	Double_t chance = 1 - 1 / weight; // chance is 1 minus inverse 	
 	nTotal++;
 	if (gRandom->Uniform() < chance) continue;
 	nKept++;
@@ -1112,7 +1122,7 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
   }
   if (nTotal > 0)  {
     Double_t loss = 1-Float_t(nKept)/nTotal;
-    Printf("Kept %d out of %d clusters from K^0_S (%4.1f%%)",
+    Printf("Kept %d out of %d clusters from strange primaries (%4.1f%%)",
 	   nKept, nTotal, 100.*loss);
     if (fK0SLoss) fK0SLoss->SetVal(loss);
   }

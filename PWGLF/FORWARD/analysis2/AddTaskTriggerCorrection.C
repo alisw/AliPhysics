@@ -1,11 +1,23 @@
 /**
  * @file   AddTaskTriggerCorrection.C
- * @author Valentina Zaccolo
+ * @author Valentina Zaccolo <Valentina.Zaccolo@cern.ch>
  * @date   Mon Feb 3 13:56:26 2014
  * 
  * @brief Script to add a task to create trigger bias correction
  * 
  * 
+ * @ingroup pwglf_forward_scripts_tasks_vz
+ */
+/** 
+ * Add a task to create trigger bias correction
+ * 
+ * @param trig  Trigger to use 
+ * @param vzMin Least Z--coordinate 
+ * @param vzMax Largest Z--coordinate 
+ * 
+ * @return Task 
+ *
+ * @ingroup pwglf_forward_scripts_tasks_vz
  */
 AliAnalysisTaskSE*
 AddTaskTriggerCorrection(const char* trig="INEL",

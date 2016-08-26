@@ -384,7 +384,7 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * Calculate the result as 
    * @f[
    R_{\eta,\mathrm{IP}_z = 
-   \frac{G'_{\eta,\mathrm{IP}_z}{(1-\beta')M'__{\eta,\mathrm{IP}_z} 
+   \frac{G'_{\eta,\mathrm{IP}_z}}{(1-\beta')M'__{\eta,\mathrm{IP}_z}} 
    (1-\beta)M_{\eta,\mathrm{IP}_z
    @f] 
    * where 
@@ -2926,7 +2926,7 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   // l->SetTextSize(0.04);
   // l->SetTextAlign(12);
   ModLegend(p1, l, p1->GetLeftMargin()-.01, 1-yr,
-	    1-p1>GetRightMargin(), .99);
+	    1-p1->GetRightMargin(), .99);
 
   THStack* ratios = static_cast<THStack*>(GetO(outDir, "ratios"));
   FixMinMax(ratios, true);
