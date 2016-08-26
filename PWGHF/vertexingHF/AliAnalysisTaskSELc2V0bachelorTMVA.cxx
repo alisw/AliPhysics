@@ -969,6 +969,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
       AliInfo(Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fAnalCuts->GetMaxVtxZ(), fAnalCuts->GetMaxVtxZ()));
       return;
     }
+    
+    // multiplicity definition with tracklets
+    fNTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
 
     // multiplicity definition with tracklets
     fNTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
@@ -1330,7 +1333,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 
     //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
     FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);
-
   }
 
   return;
