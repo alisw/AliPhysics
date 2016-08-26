@@ -354,12 +354,12 @@ void AliEmcalCorrectionTask::InitializeComponents()
   // They need reinitialize if they are null
   if (fUserConfiguration.IsNull() == true && fUserConfigurationString != "")
   {
-    AliInfo(TString::Format("%s: Reinitializing user configuration from string. Expected if running on grid!", GetName()));
+    AliInfo("Reinitializing user configuration from string. Expected if running on grid!");
     fUserConfiguration = YAML::Load(fUserConfigurationString);
   }
   if (fDefaultConfiguration.IsNull() == true)
   {
-    AliInfo(TString::Format("%s: Reinitializing default configuration from string. Expected if running on grid!", GetName()));
+    AliInfo("Reinitializing default configuration from string. Expected if running on grid!");
     fDefaultConfiguration = YAML::Load(fDefaultConfigurationString);
   }
 
@@ -381,7 +381,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, componentName);
     if (componentEnabled == false)
     {
-      AliInfo(TString::Format("%s: Component %s is disabled and will not be run!", GetName(), componentName.c_str()));
+      AliInfo(TString::Format("Component %s is disabled and will not be run!", componentName.c_str()));
       continue;
     }
 
@@ -389,7 +389,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     component = AliEmcalCorrectionComponentFactory::createInstance(componentName);
     if (!component)
     {
-      AliFatal(TString::Format("%s: Failed to create requested component %s!", GetName(), componentName.c_str()));
+      AliFatal(TString::Format("Failed to create requested component %s!", componentName.c_str()));
     }
 
     // For setting names of tasks to differentiate between tasks of the same class
@@ -498,7 +498,7 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   //InitializeConfiguration();
   if (fConfigurationInitialized != true)
   {
-    AliFatal(TString::Format("%s: YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!", GetName()));
+    AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
   }
 
   // Retrieve cells name from configruation
@@ -601,7 +601,7 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
   // Check to ensure that we are not trying to create a new branch on top of the old branch
   existingObject = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
   if (existingObject) {
-    AliFatal(TString::Format("Attempted to create a new track branch, \"%s\", with the same name as existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedTrackBranchName.c_str()));
+    AliFatal(TString::Format("Attempted to create a new track branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedTrackBranchName.c_str()));
   }
   existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
@@ -782,7 +782,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
       }
       else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        AliWarning("Could not retrieve centrality information! Assuming 99");
       }
     }
     else { // old centrality estimation < 2015
@@ -791,7 +791,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
       }
       else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        AliWarning("Could not retrieve centrality information! Assuming 99");
       }
     }
 
@@ -801,7 +801,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3;
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
         fCentBin = fNcentBins-1;
       }
     }
@@ -815,7 +815,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCentBin = 4;
       }
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
         fCentBin = fNcentBins-1;
       }
     }
@@ -828,7 +828,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCentBin = 0;
       }
       if (fCentBin>=fNcentBins) {
-        AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
+        AliWarning(Form("fCentBin too large: cent = %f fCentBin = %d. Assuming 99", fCent, fCentBin));
         fCentBin = fNcentBins-1;
       }
     }
@@ -863,14 +863,14 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
 void AliEmcalCorrectionTask::ExecOnce()
 {
   if (!InputEvent()) {
-    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
+    AliError("Could not retrieve event! Returning!");
     return;
   }
 
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
-      AliFatal(Form("%s: Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kF    ALSE).", GetName()));
+      AliFatal("Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kFALSE).");
       return;
     }
   }
@@ -895,7 +895,7 @@ void AliEmcalCorrectionTask::ExecOnce()
   if (!fCaloCellsName.IsNull() && !fCaloCellsFromInputEvent) {
     fCaloCellsFromInputEvent =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
     if (!fCaloCellsFromInputEvent) {
-      AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data())); 
+      AliError(Form("Could not retrieve cells %s!", fCaloCellsName.Data())); 
       return;
     }
   }
