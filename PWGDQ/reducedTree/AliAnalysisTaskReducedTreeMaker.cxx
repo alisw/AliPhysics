@@ -52,7 +52,7 @@
 #include <AliMultiplicity.h>
 #include <AliAODTracklets.h>
 #include <AliPIDResponse.h>
-#include <AliFlowBayesianPID.h>
+//#include <AliFlowBayesianPID.h>
 #include <AliMCParticle.h>
 #include <AliAODMCParticle.h>
 #include "AliAnalysisUtils.h"
@@ -93,7 +93,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fFillALambda(kTRUE),
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
-  fFillBayesianPIDInfo(kFALSE),
+  //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
   fEventFilter(0x0),
@@ -114,8 +114,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fGammaMassRange(),
   fActiveBranches(""),
   fInactiveBranches(""),
-  fAliFlowTrackCuts(0x0),
-  fBayesianResponse(0x0),
+  //fAliFlowTrackCuts(0x0),
+  //fBayesianResponse(0x0),
   fTreeFile(0x0),
   fTree(0x0),
   fReducedEvent(0x0),
@@ -147,7 +147,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fFillALambda(kTRUE),
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
-  fFillBayesianPIDInfo(kFALSE),
+  //fFillBayesianPIDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
   fFillMCInfo(kFALSE),
   fEventFilter(0x0),
@@ -168,8 +168,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fGammaMassRange(),
   fActiveBranches(""),
   fInactiveBranches(""),
-  fAliFlowTrackCuts(0x0),
-  fBayesianResponse(0x0),
+  //fAliFlowTrackCuts(0x0),
+  //fBayesianResponse(0x0),
   fTreeFile(0x0),
   fTree(0x0),
   fReducedEvent(0x0),
@@ -247,10 +247,10 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     fTree->SetBranchStatus("fEventPlane.*", 0);   
   }
  
-  if(fFillBayesianPIDInfo) {
+  /*if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
     fBayesianResponse->SetNewTrackParam();
-  }
+  }*/
   
   PostData(1, fReducedEvent);
   if(fWriteTree)
@@ -526,11 +526,11 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   }
 
   // lines from PWG/FLOW/Tasks/AliFlowTrackCuts.cxx
-  if(isESD && fFillBayesianPIDInfo){
+  /*if(isESD && fFillBayesianPIDInfo){
     //fAliFlowTrackCuts->GetBayesianResponse()->SetDetResponse(esdEvent, eventInfo->fCentrality[1],AliESDpid::kTOF_T0,kFALSE); // centrality = PbPb centrality class (0-100%) or -1 for pp collisions
     fBayesianResponse->SetDetResponse(esdEvent, eventInfo->fCentrality[1],AliESDpid::kTOF_T0,kFALSE); // centrality = PbPb centrality class (0-100%) or -1 for pp collisions
     //fAliFlowTrackCuts->GetESDpid().SetTOFResponse(esdEvent,AliESDpid::kTOF_T0);
-  }
+  }*/
   //fAliFlowTrackCuts->GetBayesianResponse()->ResetDetOR(1);
 
   eventInfo->fSPDntracklets = GetSPDTrackletMultiplicity(event, -1.0, 1.0);
@@ -835,7 +835,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        //                   (esdTrack->GetTOFsignal() < 100000) &&
        //                   (esdTrack->GetIntegratedLength() > 365);
        //Float_t mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
-       if(fFillBayesianPIDInfo) {
+       /*if(fFillBayesianPIDInfo) {
          fBayesianResponse->ComputeProb(esdTrack,fReducedEvent->fCentrality[1]); // centrality is needed for mismatch fraction
          Int_t kTPC = fBayesianResponse->GetCurrentMask(0); // is TPC on
          if( kTPC){
@@ -859,7 +859,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
             //reducedParticle->fBayes[2]   = probabilities[3];
             //reducedParticle->fBayes[3]   = probabilities[4];
        }
-     }
+     } */
    }
    if(isAOD) {
       for(Int_t idx=0; idx<3; ++idx) if(aodTrack->GetKinkIndex(idx)>0) reducedParticle->fQualityFlags |= (1<<(5+idx));

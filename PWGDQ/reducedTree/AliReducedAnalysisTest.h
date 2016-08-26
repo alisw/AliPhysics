@@ -5,8 +5,13 @@
 #ifndef ALIREDUCEDANALYSISTEST_H
 #define ALIREDUCEDANALYSISTEST_H
 
-#include "AliReducedAnalysisTaskSE.h"
+#include <TList.h>
 
+#include "AliReducedAnalysisTaskSE.h"
+#include "AliReducedInfoCut.h"
+#include "AliReducedBaseEvent.h"
+#include "AliReducedBaseTrack.h"
+#include "AliHistogramManager.h"
 
 //________________________________________________________________
 class AliReducedAnalysisTest : public AliReducedAnalysisTaskSE {
@@ -24,17 +29,24 @@ public:
   virtual void Finish();
   
   // setters
-  
+  void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
+  void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
+  void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   // getters
-  
+  virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   
 protected:
+   AliHistogramManager* fHistosManager;   // Histogram manager
+   
+   TList fEventCuts;     // array of event cuts
+   TList fTrackCuts;     // array of track cuts
+   TList fPairCuts;      // array of pair cuts
+   
+  Bool_t IsEventSelected(AliReducedBaseEvent* event);
+  Bool_t IsTrackSelected(AliReducedBaseTrack* track);
+  Bool_t IsPairSelected(AliReducedBaseTrack* pair);
   
-  virtual Bool_t IsEventSelected(AliReducedBaseEvent* event);
-  virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track);
-  virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair);
-  
-  ClassDef(AliReducedAnalysisTest,1);
+  ClassDef(AliReducedAnalysisTest,2);
 };
 
 #endif
