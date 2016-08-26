@@ -84,6 +84,7 @@ protected:
   int fCentralityBin;  // Bin index for the centrality bin
   int fXlongBin;  // Bin index for xlong bin
   bool fUseKlongBins;  // Flag for filling the klong histograms
+  int fNTrial; // Number of background pairs generated for found pair
 
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
