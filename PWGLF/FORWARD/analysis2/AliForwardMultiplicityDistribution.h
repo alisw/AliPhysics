@@ -1,9 +1,9 @@
 /**
  * @file   AliForwardMultiplicityDistribution.h
- * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @author Valentina Zaccolo <Valentina.Zaccolo@cern.ch>
  * @date   Thu Feb  7 01:02:42 2013
  * 
- * @brief  
+ * @brief  Task to do the multiplicity distibution
  * 
  * 
  * @ingroup pwglf_forward_multdist
@@ -15,7 +15,7 @@
 /**
  * Task to do the multiplicity distibution
  * 
- * @ingroup pwglf_forward Tasks
+ * @ingroup pwglf_forward_tasks
  * @ingroup pwglf_forward_multdist
  */
 class AliForwardMultiplicityDistribution : public AliBaseMultTask

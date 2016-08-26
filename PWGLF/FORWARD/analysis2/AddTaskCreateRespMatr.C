@@ -5,7 +5,20 @@
  * 
  * @brief Script to add a task to create response matrices
  * 
+ * This is using Valentina's modified  class 
+ *
+ * @ingroup pwglf_forward_scripts_tasks_vz
+ */
+/** 
+ * Add task to create response matrix 
  * 
+ * @param trig     Trigger class 
+ * @param vzMin    Least Z-coordiante of interaction point
+ * @param vzMax    Largest Z-coordiante of interaction point
+ * 
+ * @return Pointer to task 
+ *
+ * @ingroup pwglf_forward_scripts_tasks_vz
  */
 AliAnalysisTaskSE*
 AddTaskCreateRespMatr(const char* trig="V0AND",

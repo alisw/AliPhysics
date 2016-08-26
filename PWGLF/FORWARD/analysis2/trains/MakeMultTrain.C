@@ -1,6 +1,6 @@
 /**
  * @file   MakeMultTrain.C
- * @author Valentina Zaccolo
+ * @author Valentina Zaccolo <Valentina.Zaccolo@cern.ch>
  * @date   Wed Nov  21 12:47:26 2012
  * 
  * @brief  
@@ -13,11 +13,12 @@
 
 //====================================================================
 /**
- * Analysis train to make @f$ Multiplicity Distributions@f$
- * 
+ * Analysis train to make @f$ Multiplicity Distributions@f$.
+ * Valentina's modified task 
  *
  * @ingroup pwglf_forward_multdist
  * @ingroup pwglf_forward_trains_specific
+ * @ingroup pwglf_forward_scripts_tasks_vz
  */
 class MakeMultTrain : public TrainSetup
 {
@@ -31,11 +32,11 @@ public:
   : TrainSetup(name)
   {
     fOptions.Add("trig",    "TYPE",       "Trigger type",     "V0AND");
-    fOptions.Add("vzMin",   "CENTIMETER", "Min Ip Z",         -4);
-    fOptions.Add("vzMax",   "CENTIMETER", "Max Ip Z",         +4);
-    fOptions.Add("lowCent", "%",          "Min Centrality",   0); 
-    fOptions.Add("highCent","%",          "Max Centrality",   0);
-    fOptions.Add("nBins",   "N",          "Max Multiplicity", 500);
+    fOptions.Add("ipz-min", "CENTIMETER", "Min Ip Z",         -4);
+    fOptions.Add("ipz-max", "CENTIMETER", "Max Ip Z",         +4);
+    // fOptions.Add("cent-min","%",          "Min Centrality",   0); 
+    // fOptions.Add("cent-max","%",          "Max Centrality",   0);
+    fOptions.Add("max-mult","N",          "Max Multiplicity", 500);
   }
 protected:
   /** 
@@ -53,20 +54,16 @@ protected:
     gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
-    // --- Get parameters --------------------------------------------
-    TString  trig     = fOptions.Get("trig");
-    Double_t vzMin    = fOptions.AsDouble("vzmin", -4);
-    Double_t vzMax    = fOptions.AsDouble("vzmax", +4);
-    Int_t    lowCent  = fOptions.AsInt("lowCent",  0);
-    Int_t    highCent = fOptions.AsInt("highCent", 0);
-    Int_t    nBins    = fOptions.AsInt("nBins",    500);
-
-    // --- Form arguments --------------------------------------------
-    TString args;
-    args.Form("\"%s\",%f,%f,%d,%d,%d",
-	      trig.Data(), vzMin, vzMax, lowCent, highCent, nBins);
     // --- Add the task ----------------------------------------------
-    CoupleSECar("AddTaskMultDists.C(%s)", args, AliVEvent::kAny);
+    AliAnalysisTaskSE* tsk =
+      CoupleSECar("AddTaskMultDistributions.C", "", AliVEvent::kAny);
+    FromOption(tsk, "TriggerMask",         "trig",     "V0AND");
+    FromOption(tsk, "IpZMin",              "ipz-min",  -4.);
+    FromOption(tsk, "IpZMax",              "ipz-max",  +4.);    
+    FromOption(tsk, "MaxMult",             "max-mult", 500);
+    // FromOption(tsk, "CentMin",             "cent-min", 0);
+    // FromOption(tsk, "CentMax",             "cent-max", 100);
+    
   }
   //__________________________________________________________________
   /** 

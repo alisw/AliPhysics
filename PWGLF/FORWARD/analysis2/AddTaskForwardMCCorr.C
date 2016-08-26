@@ -1,9 +1,9 @@
 /**
  * @file   AddTaskForwardMCCorr.C
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Tue Apr 26 09:56:39 2011
  * 
- * @brief  
+ * @brief  Add a Forward MC correction generator task to train 
  * 
  * 
  * @ingroup pwglf_forward_scripts_tasks

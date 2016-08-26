@@ -18,6 +18,7 @@
 # include <iostream>
 # include <iomanip>
 # include <THStack.h>
+# include <TStopwatch.h>
 #else
 class TGraphErrors;
 class TGraph;
@@ -32,6 +33,8 @@ class TFile;
 #include <list>
 
 /**
+ * @defgroup pwglf_forward_tracklets_toy Toy model of trackleting
+ *
  * A model of SPD tracklets.  The problem is reduced to 1 dimension. 
  *
  * We have two layers, one placed at Y=1, and one placed at some
@@ -84,6 +87,12 @@ class TFile;
  * 
  * @ingroup pwglf_forward_tracklets
  */
+/**
+ * A model of SPD trackleting 
+ * 
+ * @ingroup pwglf_forward_tracklets_toy
+ */
+
 struct Model
 {
   // Forward declaration
@@ -387,8 +396,8 @@ struct Model
     /** 
      * Constructor 
      * 
-     * @param id1  Identifier of cluster in layer 1 
-     * @param id2  Identifier of cluster in layer 2 
+     * @param c1   Cluster in layer 1 
+     * @param c2   Cluster in layer 2 
      * @param ang  Tracklet angle 
      * @param off  Tracklet offset along X
      * 
@@ -514,6 +523,8 @@ struct Model
   TNtuple      fStat;
   /** Event record */
   TNtuple      fRecord;
+  /** Input tracks */
+  TNtuple      fGenerated;
   /** Event variables */
   Int_t        fNGood;
   /** Event variable */
@@ -557,7 +568,8 @@ struct Model
       fFrame(0),
       fCanvas(0),
       fStat("stat","Stats","nTrack:nTotal:nGood:nFake:nFree:nFree1:nFree2"),
-      fRecord("record","Record","nTrack:angle:off:fake"),
+      fRecord("record","Record","nTrack:angle:off:qual:fake"),
+      fGenerated("generated","Tracks","angle:off"),
       fNGood(0),
       fNFake(0),
       fNFree(0),
@@ -583,7 +595,8 @@ struct Model
       fFrame(0),
       fCanvas(0),
       fStat("stat","Stats","nTrack:nTotal:nGood:nFake:nFree:nFree1:nFree2"),
-      fRecord("record","Record","nTrack:angle:off:fake"),
+      fRecord("record","Record","nTrack:angle:off:qual:fake"),
+      fGenerated("generated","Tracks","angle:off"),
       fNGood(0),
       fNFake(0),
       fNFree(0),
@@ -629,7 +642,7 @@ struct Model
   /** 
    * Clear a track list 
    * 
-   * @param track List
+   * @param tracks List
    */
   void Clear(TrackList& tracks)
   {
@@ -669,8 +682,8 @@ struct Model
   /** 
    * Make a tracklet from clusters on the two layers 
    * 
-   * @param id2 Cluster in second layer 
-   * @param id1 Cluster in first layer 
+   * @param c2 Cluster in second layer 
+   * @param c1 Cluster in first layer 
    * 
    * @return Newly allocated tracklet 
    */
@@ -697,7 +710,7 @@ struct Model
     t->Accept();
     Double_t ang = t->fAngle;
     if (ang < 0) ang += TMath::Pi();
-    fRecord.Fill(fTracks.size(), ang, t->fOffset, t->IsFake());
+    fRecord.Fill(fTracks.size(), ang, t->fOffset, t->Quality(), t->IsFake());
   }
   /** 
    * Perform trackleting.
@@ -844,7 +857,8 @@ struct Model
       if (off > 999) continue; 
       Track*   trk = new Track(ang, off);
       fTracks.push_back(trk);
-
+      fGenerated.Fill(trk->fAngle, trk->fOffset);
+		      
       Double_t sigma1 = fSigma;
       Double_t sigma2 = fSigma;
 
@@ -859,8 +873,7 @@ struct Model
   /** 
    * Post processing of clusters and the layers 
    * 
-   * @param noise If true, create noise clusters 
-   * @param merge If true, merge overlapping clusters 
+   * @param nTracks  Number of tracks 
    */
   void ClusterPost(Int_t nTracks)
   {
@@ -899,9 +912,11 @@ struct Model
    * statistics.
    * 
    * @param nTracks   Number of tracks to generate 
+   * @param varTracks Variance of number of tracks to generate
    * @param dump      Should we dump to an image file?
    */
   void Event(Int_t    nTracks,
+	     Double_t varTracks,
 	     Bool_t   dump=false)
   {
     Clear();
@@ -909,13 +924,15 @@ struct Model
     // Largest angle - fixed by geometry 
     const Double_t maxAng = TMath::Pi()/4;
 
+    Int_t nTrk = nTracks;
+    if (varTracks > 1e-3) nTrk = Int_t(gRandom->Gaus(nTracks, varTracks)+.5);
     // Create "primary" tracks 
-    CreateTracks(nTracks, maxAng);
+    CreateTracks(nTrk, maxAng);
     // Possibly create "secondary" tracks 
-    if (fSecondary) CreateTracks(nTracks/10, maxAng, true);
+    if (fSecondary) CreateTracks(nTrk/10, maxAng, true);
 
     // Possibly clean up clusters, and/or add noise 
-    ClusterPost(nTracks);
+    ClusterPost(nTrk);
 
     // Find tracklets
     Trackleting();
@@ -1273,8 +1290,9 @@ struct Model
   TFile* Output(const char* filename)
   {
     TFile* out = TFile::Open(filename,"RECREATE");
-    fStat.Write();
-    fRecord.Write();
+    fStat     .Write();
+    fRecord   .Write();
+    fGenerated.Write();
     (new TParameter<bool>  ("out2in",   fOut2In))   ->Write();
     (new TParameter<bool>  ("global",   fGlobal))   ->Write();
     (new TParameter<bool>  ("noReuse",  fNoReuse))  ->Write();
@@ -1294,7 +1312,7 @@ struct Model
    */
   void RunOne(Int_t    n=500)
   {
-    Event(n,true);
+    Event(n,0,true);
   }
   /** 
    * Run a scan over number of tracks, each time doing 10 events.  We
@@ -1314,7 +1332,7 @@ struct Model
 		<< " " << std::flush;
       for (Int_t j = 0; j < nIter; j++) {
 	std::cout << "." << std::flush;
-	Event(m,j==0);
+	Event(m,0,j==0);
       }
       std::cout << " done" <<std::endl;
     }
@@ -1340,22 +1358,33 @@ struct Model
    * Make @a n events with 500 tracks in each, and form the @f$
    * dN/d\theta@f$ distribution for fake and good tracklets
    * 
-   * @param n         Number of tracks to generate
+   * @param n  Number of events to generate
+   * @param m  Number of tracks to make for each event
+   * @param v  Variance of number of tracks 
    */
-  void RunDist(Int_t    n=100)
+  void RunDist(Int_t n=100, Int_t m=500, Double_t v=0)
   {
-    Int_t m = 500;
+    TStopwatch w; w.Start();
     for (Int_t iEvent = 0; iEvent < n; iEvent++) {
       std::cout << "\rEvent # " << std::setw(4) << iEvent
 		<< "/" << std::setw(4) << n << std::flush;
-      Event(m);
+      Event(m,v);
+      w.Stop();
+      Double_t passed = w.RealTime();
+      Double_t perEv  = passed / (iEvent+1);
+      Double_t total  = n*perEv;
+      Double_t remain = total-passed;
+      std::cout << std::setw(8) << int(passed) << " seconds passed "
+		<< std::setw(8) << int(remain+.5) << " seconds remaining"
+		<< std::flush;
+      w.Continue();
     }
     printf("\n");
     
     TH1* fakes = new TH1D("fakes","Fake",90,45,135);
     // TH1* fakes = new TH1D("fakes","Fakes",100, -1, 1);
     // fakes->SetDirectory(0);
-    fakes->SetFillStyle(1001);
+    fakes->SetFillStyle(3001);
     fakes->SetFillColor(kRed+1);
     fakes->SetLineColor(kRed+1);
     fakes->SetXTitle("Angle [Degrees]");
@@ -1366,18 +1395,29 @@ struct Model
     goods->SetLineColor(kGreen+1);
     goods->SetFillColor(kGreen+1);
 
+    TH1* tracks = static_cast<TH1*>(fakes->Clone("tracks"));
+    // tracks->SetDirectory(0);
+    tracks->SetTitle("Tracks");
+    tracks->SetLineColor(kBlue+1);
+    tracks->SetFillColor(kBlue+1);
+    
     TString expr("angle*TMath::RadToDeg()");
     // TString expr("-TMath::Log(TMath::Tan(angle/2))");
-    fRecord.Draw(Form("%s>>fakes", expr.Data()), "fake!=0");
-    fRecord.Draw(Form("%s>>goods", expr.Data()), "fake==0");
-    fakes->Scale(1./n, "width");
-    goods->Scale(1./n, "width");
-    fakes->SetDirectory(0);
-    goods->SetDirectory(0);
-    fakes->SetStats(0);
-    goods->SetStats(0);
+    fRecord   .Draw(Form("%s>>fakes",  expr.Data()), "fake!=0");
+    fRecord   .Draw(Form("%s>>goods",  expr.Data()), "fake==0");
+    fGenerated.Draw(Form("%s>>tracks", expr.Data()));
+    fakes ->Scale(1./n, "width");
+    goods ->Scale(1./n, "width");
+    tracks->Scale(1./n, "width");
+    fakes ->SetDirectory(0);
+    goods ->SetDirectory(0);
+    tracks->SetDirectory(0);
+    fakes ->SetStats(0);
+    goods ->SetStats(0);
+    tracks->SetStats(0);
     
     THStack* stack = new THStack("stack","");
+    stack->Add(tracks);
     stack->Add(goods);
     stack->Add(fakes);
 
@@ -1389,10 +1429,11 @@ struct Model
     TLegend* l = fCanvas->BuildLegend(.7,.12,.99,.3);    
 
     TFile* out = Output("dist.root");
-    stack->Write();
-    fakes->Write();
-    goods->Write();
-    out->Write();
+    stack ->Write();
+    fakes ->Write();
+    goods ->Write();
+    tracks->Write();
+    out   ->Write();
   }
   /** 
    * Main stering function 
@@ -1527,11 +1568,12 @@ struct Model
 /** 
  * Run the tracklet model 
  * 
- * @param smode 
- * @param n 
- * @param sigma 
- * @param y1 
+ * @param opts    Options  
+ * @param n       Number of tracks, steps, or events 
+ * @param sigma   Cluster variance 
+ * @param y1      Location of second layer 
  *
+ * @relates Model
  * @ingroup pwglf_forward_tracklets
  */
 Model* TrackletModel(const char* opts="help",

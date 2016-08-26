@@ -1,23 +1,24 @@
 /**
  * @file   MakeRespMatrTrain.C
- * @author Valentina Zaccolo
+ * @author Valentina Zaccolo <Valentina.Zaccolo@cern.ch>
  * @date   Fri Jan  11 14:47:26 2013
  * 
- * @brief  
+ * @brief  Make response matrices 
  * 
  * @ingroup pwglf_forward_trains_specific
- * 
  * @ingroup pwglf_forward_multdist
+ * @ingroup pwglf_forward_scripts_tasks_vz
  */
 #include "TrainSetup.C"
 
 //====================================================================
 /**
- * Analysis train to make @f$ Response Matrices@f$
- * 
+ * Analysis train to make response matrices.
+ * Valentina's modified task 
  *
  * @ingroup pwglf_forward_multdist
  * @ingroup pwglf_forward_trains_specific
+ * @ingroup pwglf_forward_scripts_tasks_vz
  */
 class MakeRespMatrTrain : public TrainSetup
 {
@@ -30,9 +31,10 @@ public:
   MakeRespMatrTrain(const char* name)
     : TrainSetup(name)
   {
-    fOptions.Add("trig",  "TYPE",       "Trigger type", "V0AND");
-    fOptions.Add("vzMin", "CENTIMETER", "Min Ip Z",     -4);
-    fOptions.Add("vzMax", "CENTIMETER", "Max Ip Z",     +4);
+    fOptions.Add("trig",    "TYPE",       "Trigger type", "V0AND");
+    fOptions.Add("ipz-min", "CENTIMETER", "Min Ip Z",     -4);
+    fOptions.Add("ipz-max", "CENTIMETER", "Max Ip Z",     +4);
+    fOptions.Add("max-mult","NUMBER",     "Max of histograms", 500);
   }
 protected:
   /** 
@@ -51,16 +53,15 @@ protected:
     gROOT->SetMacroPath(Form("%s:$(ALICE_PHYSICS)/PWGLF/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
-    // --- Get parameters --------------------------------------------
-    TString  trig    = fOptions.Get("trig");
-    Double_t vzMin   = fOptions.AsDouble("vzmin", -4);
-    Double_t vzMax   = fOptions.AsDouble("vzmax", +4);
-
-    // --- Form arguments --------------------------------------------
-    TString args;
-    args.Form("\"%s\",%f,%f", trig.Data(), vzMin, vzMax);
     // --- Add the task ----------------------------------------------
-    CoupleSECar("AddTaskCreateRespMatr.C", args, AliVEvent::kAny);
+    AliAnalysisTaskSE* tsk = CoupleSECar("AddTaskCreateRespMatr.C",
+					 AliVEvent::kAny);
+
+    // --- Set options -----------------------------------------------
+    FromOption(tsk, "TriggerMask",         "trig",     "V0AND");
+    FromOption(tsk, "IpZMin",              "ipz-min",  -4.);
+    FromOption(tsk, "IpZMax",              "ipz-max",  +4.);    
+    FromOption(tsk, "MaxMult",             "max-mult", 500);    
   }
   //__________________________________________________________________
   /** 

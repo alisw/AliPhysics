@@ -242,7 +242,7 @@ public:
    *
    * @b Product 
    * @f[
-   w = \left{\begin{array}{cl}
+   w = \left\{\begin{array}{cl}
    w_i & \mbox{for} i=j\\
    w_i w_j & \mbox{for} i\neq j\\
    \end{array}\right.\quad,
@@ -251,7 +251,7 @@ public:
    * @b Square root of product of weights 
    *
    * @f[
-   w = \left{\begin{array}{cl}
+   w = \left\{\begin{array}{cl}
    w_i & \mbox{for} i=j\\
    \sqrt(w_i w_j) & \mbox{for} i\neq j\\
    \end{array}\right.\quad,
@@ -260,7 +260,7 @@ public:
    * @b Sum of weights 
    *
    * @f[ 
-   w = 1 + \left{\begin{array}{cl}
+   w = 1 + \left\{\begin{array}{cl}
    2(w_i-1) & \mbox{for} i=j\\
    (w_i-1) + (w_j-1) & \mbox{for} i\neq j\\
    \end{array}\right.\quad,
@@ -269,7 +269,7 @@ public:
    * @b Average of weights 
    *
    * @f[ 
-   w = 1 + \left{\begin{array}{cl}
+   w = 1 + \left\{\begin{array}{cl}
    (w_i-1) & \mbox{for} i=j\\
    ((w_i-1) + (w_j-1))/2 & \mbox{for} i\neq j\\
    \end{array}\right.\quad.

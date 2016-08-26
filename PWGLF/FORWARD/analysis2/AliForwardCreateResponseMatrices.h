@@ -1,16 +1,17 @@
 /**
  * @file   AliForwardCreateResponseMatrices.h
- * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
+ * @author Valentina Zaccolo <Valentina.Zaccolo@cern.ch>
  * @date   Thu Feb  7 00:56:02 2013
  * 
- * @brief  
+ * @brief Task to make the reponse matrices used by the multiplicity
+ * distibution analysis
  * 
  * @ingroup pwglf_forward_multdist
  */
 /** 
  * @defgroup pwglf_forward_multdist Multiplicity Distributions
  * 
- * Code to do with @f$P(N_{ch})@f$ analysis
+ * Code to do with @f$P(N_{ch})@f$ analysis - based on Valentina's code
  *
  * @ingroup pwglf_forward_topical
  */

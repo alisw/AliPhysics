@@ -26,7 +26,8 @@ ClassImp(AliBaseMultTask)
 AliBaseMultTask::AliBaseMultTask() 
   : AliBaseAODTask(),
     fBins(), 
-    fIsSelected(false)
+    fIsSelected(false),
+    fMaxMult(500)
 {
   //
   // Default Constructor
@@ -37,7 +38,8 @@ AliBaseMultTask::AliBaseMultTask()
 AliBaseMultTask::AliBaseMultTask(const char* name) 
   : AliBaseAODTask(name,"AliBaseMultTask"),
     fBins(), 
-    fIsSelected(false)
+    fIsSelected(false),
+    fMaxMult(500)
 {
   //
   // Constructor
@@ -77,7 +79,7 @@ Bool_t AliBaseMultTask::Book()
   TIter next(&fBins);
   Bin * bin = 0;
   while ((bin = static_cast<Bin*>(next()))) { 
-    bin->CreateOutputObjects(fSums, 400);
+    bin->CreateOutputObjects(fSums, fMaxMult);
   } 
   return true;  
 }
@@ -115,7 +117,7 @@ Bool_t AliBaseMultTask::Event(AliAODEvent& aod)
   Bool_t isESDClass = IsESDClass(aodForward);
   Bool_t isPileUp   = aodForward->IsTriggerBits(AliAODForwardMult::kPileUp);
   //primary dndeta dist
-  TH2D* primHist            = GetPrimary(aod);
+  TH2D* primHist       = GetPrimary(aod);
   TH1D* dndetaForward  = forward.ProjectionX("dndetaForward",1,
 					     forward.GetNbinsY(),"");
   TH1D* dndetaCentral  = central.ProjectionX("dndetaCentral",1,

@@ -11,6 +11,7 @@
 
 /**
  * This is the macro to include the Central multiplicity in a train.  
+ * This generates a histogram on the output AOD 
  * 
  * @param mc       If true, assume MC input
  * @param runNo    Pre-set run number

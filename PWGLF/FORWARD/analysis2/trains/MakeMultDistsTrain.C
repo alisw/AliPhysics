@@ -6,6 +6,7 @@
  * @brief  
  * 
  * @ingroup pwglf_forward_trains_specific
+ * @ingroup pwglf_forward_multdist_sketch
  * 
  */
 
@@ -13,10 +14,11 @@
 
 //====================================================================
 /**
- * Analysis train to make @f$ P(N_{ch})@f$
+ * Analysis train to make @f$ P(N_{ch})@f$.
+ * Christian's sketch of a task 
  * 
  *
- * @ingroup pwglf_forward_multdists
+ * @ingroup pwglf_forward_multdist_sketch
  * @ingroup pwglf_forward_trains_specific
  */
 class MakeMultDistsTrain : public TrainSetup
@@ -31,8 +33,8 @@ public:
   : TrainSetup(name)
   {
     fOptions.Add("trig",       "TYPE", "Trigger type", "V0AND");
-    fOptions.Add("vzMin",      "CENTIMETER", "Min Ip Z", -4);
-    fOptions.Add("vzMax",      "CENTIMETER", "Max Ip Z", +4);
+    fOptions.Add("ipz-min",    "CENTIMETER", "Min Ip Z", -4);
+    fOptions.Add("ipz-max",    "CENTIMETER", "Max Ip Z", +4);
     fOptions.Add("phi-acc",    "Use stored phi acceptance", false);
     fOptions.Add("asymmetric", "Make asymmetric (+/-) bins", false);
   }
