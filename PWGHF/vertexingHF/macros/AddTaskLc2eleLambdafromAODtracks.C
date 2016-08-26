@@ -1,6 +1,6 @@
 AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TString finname="",
 								   Bool_t theMCon=kFALSE,
-									 Bool_t ispp= kFALSE,
+									 Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kFALSE,
 									 Bool_t domixing=kFALSE,
 									 Bool_t reconstructPrimVert=kFALSE,
@@ -45,11 +45,12 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
   printf("CREATE TASK\n");
   AliAnalysisTaskSELc2eleLambdafromAODtracks *task = new AliAnalysisTaskSELc2eleLambdafromAODtracks("AliAnalysisTaskSELc2eleLambdafromAODtracks",RDHFCutsLc2eleLambdaanal,writeVariableTree);
   task->SetMC(theMCon);
-	if(ispp){
+	if(iscoltype==0){
 		task->SetUseCentralityV0M(kFALSE);
 		task->SetUseCentralitySPDTracklet(kFALSE);
 	}else{
 		task->SetUseCentralityV0M(kTRUE);
+		task->SetUseEventPlane(4);
 	}
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
@@ -68,18 +69,37 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 	Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
 	Double_t cent_mult_binlimitspp[] = { 0,100};
 	Int_t cent_mult_bin_numbpp = sizeof(cent_mult_binlimitspp)/sizeof(Double_t) - 1;
+	Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+	Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
 
 	task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
-	if(ispp){
+	if(iscoltype==0){
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
 		task->SetNumberOfEventsForMixing(10);//pp
-	}else{
+  }else if(iscoltype==1){
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
 		task->SetNumberOfEventsForMixing(10);//pPb
+  }else if(iscoltype==2){
+		task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+		task->SetNumberOfEventsForMixing(10);//PbPb
 	}
 
+  if(iscoltype==0 || iscoltype == 1){
+    Int_t nrpbin = 1.;
+    Double_t rpbinlimits[2] = {-3.2,3.2};
+    task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+  }else{
+    Int_t nrpbin = 8;
+    Double_t rpbinlimits[9];
+    Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+    for(Int_t ir=0;ir<9;ir++){
+      rpbinlimits[ir] = steprp * (Double_t) ir;
+    }
+    task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+  }
+
   //multiplicity study
-  if(ispp){
+  if(iscoltype==0){
     if(estimatorFilename.EqualTo("") ) {
       printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
     } else{
