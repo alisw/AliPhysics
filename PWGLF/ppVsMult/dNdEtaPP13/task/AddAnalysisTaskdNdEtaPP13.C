@@ -9,8 +9,8 @@
 #endif
 
 
-//const Double_t centBinsMultV0M[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
-const Double_t centBinsMultV0M[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
+const Double_t centBinsMultV0M[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
 const Double_t centBinsMultRef[] = {0., 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 100., 200.};
 const Double_t centBinsMB[] = {0., 100.};
 
@@ -49,7 +49,8 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           float  ovlPhiCut   = 0.005,
                           float  ovlZetaCut  = 0.05,
                           Bool_t checkReconstructables = kFALSE,
-                          UInt_t trigSel = AliVEvent::kINT7//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
+                          UInt_t trigSel = AliVEvent::kINT7,//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
+                          Bool_t ridgeBins      = kFALSE             // VOM percentiles with ridge binning
 )
 {
 
@@ -112,6 +113,10 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     if (strCentr == "MB"){
       centBins = centBinsMB;
       nCentBins = sizeof(centBinsMB) / 8 - 1;
+    }
+    else if (strCentr == "V0M" && ridgeBins){
+      centBins = centBinsMultV0M_Ridge;
+      nCentBins = sizeof(centBinsMultV0M_Ridge) / 8 - 1;
     }
     else if (strCentr == "V0M" || strCentr == "V0av"){
       centBins = centBinsMultV0M;

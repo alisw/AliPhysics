@@ -44,7 +44,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase STEERBase TRDbase PWGLFforward2)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGLFforward2)
 
 # Generate the ROOT map
 # Dependecies

@@ -22,7 +22,7 @@ static const double PionMass = 0.13956995;
 
 #include <map>
 #include <string>
-
+#include <vector>
 
 AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                          const bool is_identical_analysis,
@@ -63,8 +63,8 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   fVertexXY = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
-    48, 0.05f, 0.08f,
-    48, 0.31f, 0.345f
+    48, 0.05f, 0.095f,
+    48, 0.31f, 0.355f
     // 48, 0.0f, 0.12f,
     // 48, 0.22f, 0.32f
   );
@@ -77,7 +77,7 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
       _identical_collection_size_pass = new TH1I("collection_size_p",
                                                  "Size of particle collection;"
                                                  "# pions; N_{ev}",
-                                                 100, -0.5, 800.5);
+                                                 100, -0.5, 1000.5);
       _identical_collection_size_pass->Sumw2();
       _identical_collection_size_fail = (TH1I*)_identical_collection_size_pass->Clone("collection_size_f");
     } else {
@@ -86,8 +86,8 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                        "# pions (1);"
                                        "# pions (2);"
                                        "N_{ev}",
-                                       100, -0.5, 800.5,
-                                       100, -0.5, 800.5);
+                                       100, -0.5, 1000.5,
+                                       100, -0.5, 1000.5);
       _collection_size_fail = (TH2I*)_collection_size_pass->Clone("collection_size_f");
     }
   }
@@ -300,11 +300,11 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fImpact = new TH2F(
     "impact" + pf,
     Form(title_format, "Track impact parameter components",
-                       "z (cm?); "
-                       "r (cm?); "
+                       "z (cm); "
+                       "r (cm); "
                        "N_{#pi}  "),
     256, -0.25, 0.25,
-    256, -0.01, 0.1
+    256, -0.01, 0.25
   );
   fImpact->Sumw2();
 
@@ -452,6 +452,8 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
+  , fCurrentMagneticField(0.500668)
+  , fRadius(1.2)
   , fMinv(nullptr)
   , fKt(nullptr)
   , fDetaDphi(nullptr)
@@ -482,8 +484,8 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
   fDetaDphi = new TH2F(
     "DetaDphi" + pf,
     TString::Format(title_format,
-                    "#Delta #eta* vs #Delta #phi*",
-                    "#Delta #eta*; #Delta #phi*"),
+                    "#Delta #eta vs #Delta #phi*",
+                    "#Delta #eta; #Delta #phi*"),
     145, -0.2, 0.2,
     145, -0.2, 0.2
   );
@@ -552,7 +554,12 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
               chg_2 = track2->Charge();
 
   const float delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2),
-         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, 1.6, 0.5006670488586);
+         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, fRadius, fCurrentMagneticField);
+
+  // if (fabs(delta_eta) <= 0.07 && fabs(delta_phi_star) <= 0.07 && passes)
+  //     printf(">> %f % 6f % 6f %p \n", pair, delta_eta, delta_phi_star, this);
+    // std::cout << ">> " << pair << " " << delta_eta << ", " << delta_phi_star << "\n"; // -> " << passes << "\n";
+
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);

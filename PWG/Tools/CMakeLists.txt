@@ -53,6 +53,10 @@ set(HDRS
   "${HDRS}"
   TBinning.h
   )
+
+# Statically build YAML
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tests and tools")
+add_subdirectory(yaml-cpp)
   
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

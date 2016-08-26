@@ -148,8 +148,8 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
-    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t recSpherocity, Double_t nchWeight);
-    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel, Double_t nchWeight);
+    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight);
+    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight);
     
     TList  *fOutput; //! list send on output slot 1
     TList  *fListCuts; // list of cuts
@@ -174,7 +174,7 @@ private:
     TH2F* fHistNtrCorrVsNchMCPhysicalPrimary; //!<!  hist of ntracklets vs Nch (Physical Primary)
     TH1F* fHistGenPrimaryParticlesInelGt0; //!<!hist. of geenrated multiplcity
     TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //!<! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary)
-
+    
     TH1F* fHistNtrCorrPSSel; //! hist. of ntracklets for physics selection only selected events
     TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
@@ -190,6 +190,12 @@ private:
     THnSparseD *fMCRecoPrompt; //! histo for StepMCReco for D meson feeddown
     THnSparseD *fMCRecoFeeddown; //! histo for StepMCReco for D meson feeddown
     THnSparseD *fMCRecoBothPromptFD; //! histo for StepMCReco for D meson Both Prompt Feeddown
+    THnSparseD *fMCAccGenPromptSpheri; //! histo for StepMCGenAcc for D meson prompt for Sphericity
+    THnSparseD *fMCAccGenFeeddownSpheri; //! histo for StepMCGenAcc for D meson feeddown for Sphericity
+    THnSparseD *fMCRecoPromptSpheri; //! histo for StepMCReco for D meson feeddown for Sphericity
+    THnSparseD *fMCRecoFeeddownSpheri; //! histo for StepMCReco for D meson feeddown for Sphericity
+    THnSparseD *fMCRecoBothPromptFDSpheri; //! histo for StepMCReco for D meson Both Prompt Feeddown for Sphericity
+    
     THnSparseD *fMCAccGenPromptEvSel; //! histo for StepMCGenAcc for D meson prompt with Vertex selection (IsEvSel = kTRUE)
     THnSparseD *fMCAccGenFeeddownEvSel; //! histo for StepMCGenAcc for D meson feeddown with Vertex selection (IsEvSel = kTRUE)
     
@@ -247,7 +253,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,8); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,9); // D vs. mult task
 };
 
 #endif

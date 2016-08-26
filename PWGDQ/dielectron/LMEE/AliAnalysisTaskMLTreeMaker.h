@@ -83,6 +83,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Double_t etatemp;
   
   Int_t n;
+  Double_t cent;
   
   Double_t IsEventAccepted(AliESDEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
@@ -171,6 +172,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
   TTree* fTree;
   TH1F* fQAHist;
+  
 //  TH2D* fHistTrackStats;//QA histogram for track filter bit statistics vs. centrality
 
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution

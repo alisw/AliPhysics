@@ -114,11 +114,13 @@ public:
   void SetPreFilterLikeOnly(Bool_t setValue=kTRUE){fPreFilterLikeOnly1=setValue;};
   void SetPreFilterAllSigns(Bool_t setValue=kTRUE){fPreFilterAllSigns1=setValue;};
   void SetPreFilterPhotons(Bool_t setValue=kTRUE){fPreFilterPhotons1=setValue;};
+  void SetPreFilterOnlyOnePair(Bool_t setValue=kTRUE){fPreFilterOnlyOnePair1=setValue;};
 
   void SetPreFilterUnlikeOnly2(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly2=setValue;};
   void SetPreFilterLikeOnly2(Bool_t setValue=kTRUE){fPreFilterLikeOnly2=setValue;};
   void SetPreFilterAllSigns2(Bool_t setValue=kTRUE){fPreFilterAllSigns2=setValue;};
   void SetPreFilterPhotons2(Bool_t setValue=kTRUE){fPreFilterPhotons2=setValue;};
+  void SetPreFilterOnlyOnePair2(Bool_t setValue=kTRUE){fPreFilterOnlyOnePair2=setValue;};
 
   void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
   AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
@@ -232,10 +234,12 @@ private:
   Bool_t fPreFilterLikeOnly1;    //Apply PreFilter either in -- and ++ or to ++/--/+- individually
   Bool_t fPreFilterAllSigns1;    //Apply PreFilter find in  ++/--/+- and remove from all
   Bool_t fPreFilterPhotons1;    //Apply PreFilter to search for photons
+  Bool_t fPreFilterOnlyOnePair1; // each track can only belong to one pair in the prefilter
   Bool_t fPreFilterUnlikeOnly2;  //Apply PreFilter either in +- or to ++/--/+- individually
   Bool_t fPreFilterLikeOnly2;    //Apply PreFilter either in -- and ++ or to ++/--/+- individually
   Bool_t fPreFilterAllSigns2;    //Apply PreFilter find in  ++/--/+- and remove from all
   Bool_t fPreFilterPhotons2;    //Apply PreFilter to search for photons
+  Bool_t fPreFilterOnlyOnePair2; // each track can only belong to one pair in the prefilter
   Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
   Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array
   Bool_t fDontClearArrays;      //Don't clear the arrays at the end of the Process function, needed for external use of pair and tracks
@@ -243,8 +247,8 @@ private:
 
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev);
-  void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, Int_t prefilterN);
-  void FillPairArrays(Int_t arr1, Int_t arr2);
+  void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, const AliVEvent *ev, Int_t prefilterN);
+  void FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev = 0x0);
   void FillPairArrayTR();
   
   Int_t GetPairIndex(Int_t arr1, Int_t arr2) const {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}

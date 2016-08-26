@@ -1,8 +1,17 @@
 //Macro to test Analysis Macros on the GRID 
 //please check settings for output files
 //for local test use 'test' mode
+/*#include <fstream>
+using namespace std;
 
-AliAnalysisGrid* CreateAlienHandlerPbPb(const Chart_t* inputRunList)
+#include <TString.h>
+
+#include "AliAnalysisAlien.h"
+
+void AddRunNumbers(AliAnalysisAlien* plugin, const Char_t* filename);
+*/
+
+AliAnalysisGrid* CreateAlienHandlerPbPb(const Char_t* inputRunList)
 {
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
@@ -22,8 +31,9 @@ AliAnalysisGrid* CreateAlienHandlerPbPb(const Chart_t* inputRunList)
 
    plugin->SetAPIVersion("V1.1x");
    //   plugin->SetROOTVersion("v5-33-02b");
-   plugin->SetROOTVersion("v5-34-09");
-   plugin->SetAliROOTVersion("v5-05-12-AN");
+   plugin->SetROOTVersion("v5-34-30-alice5-1");
+   plugin->SetAliROOTVersion("v5-08-15-1");
+   plugin->SetAliPhysicsVersion("vAN-20160821-1");
 // Declare input data to be processed.
 // Method 1: Create automatically XML collections using alien 'find' command.
 // Define production directory LFN

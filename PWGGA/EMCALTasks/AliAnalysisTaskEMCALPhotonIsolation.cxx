@@ -2826,7 +2826,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         // fill histograms for isolation
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+      
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -2866,7 +2867,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         // fill histograms for isolation
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+      
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -2905,7 +2907,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         // fill histograms for isolation
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+      
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -2945,7 +2948,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       
       if(fWho==2) fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
       
-      isolation=isolation-ue;  // ue subscraction
+      if(fAnalysispPb) isolation=isolation-ue;  // ue subscraction
+
       if(fWho==2) {
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
@@ -3008,16 +3012,20 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   
   if(fSSsmearing){
     if((fSSsmearwidth != 0.)){
-      TRandom3 *ran=new TRandom3();
-      coi->SetM02(coi->GetM02()+ ran->Landau(fSSsmear_mean,fSSsmearwidth));
+      TRandom3 *ran=new TRandom3(0);
+      Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+      m02COI = coi->GetM02() + smear;
     }
-    else
+    else {
       AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
+      m02COI = coi->GetM02();
+    }
   }
-  else
+  else{
     AliWarning("Smearing not SET!");
-  
-  m02COI = coi->GetM02();
+    m02COI = coi->GetM02();
+  }
+
   
   
   
@@ -3279,8 +3287,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       phi = mcpart->Phi();
       
         //check photons in EMCAL //to be redefined with fIsoConeR
+      if(!fTPC4Iso){
       if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.798 || phi>(TMath::Pi()-fIsoConeRadius)))
         continue;
+      }
+      else{
+        if((TMath::Abs(eta)>0.87-fIsoConeRadius ) || (phi < 1.398 || phi>(TMath::Pi()-0.03)))
+          continue;
+      }
         //printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
       
       photonlabel = iTr;

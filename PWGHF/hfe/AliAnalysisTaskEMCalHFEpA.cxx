@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 2nd, 2016.							          //
+	//		version: August 18th, 2016.							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -343,6 +343,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_pt_2D3(0)
 ,fTPCnsigma_pt_2D4(0)
 ,fTPCnsigma_pt_2D5(0)
+
+
+	//TOF
+,fTPCnsigma_pt_2D3_tof(0)
 
 	//centrality
 ,fTPCnsigma_pt_2D3_0(0)
@@ -907,6 +911,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_pt_2D4(0)
 ,fTPCnsigma_pt_2D5(0)
 
+	//TOF
+,fTPCnsigma_pt_2D3_tof(0)
+
 	//centrality
 ,fTPCnsigma_pt_2D3_0(0)
 ,fTPCnsigma_pt_2D3_1(0)
@@ -1447,6 +1454,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_pt_2D1 = new TH2F("fTPCnsigma_pt_2D1",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D2 = new TH2F("fTPCnsigma_pt_2D2",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D3 = new TH2F("fTPCnsigma_pt_2D3",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	fTPCnsigma_pt_2D3_tof = new TH2F("fTPCnsigma_pt_2D3_tof",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D4 = new TH2F("fTPCnsigma_pt_2D4",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D5 = new TH2F("fTPCnsigma_pt_2D5",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 
@@ -1659,6 +1667,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fTPCnsigma_pt_2D1);
 	fOutputList->Add(fTPCnsigma_pt_2D2);
 	fOutputList->Add(fTPCnsigma_pt_2D3);
+	fOutputList->Add(fTPCnsigma_pt_2D3_tof);
 	fOutputList->Add(fTPCnsigma_pt_2D4);
 	fOutputList->Add(fTPCnsigma_pt_2D5);
 	
@@ -3769,7 +3778,7 @@ if(!fIspp){
 		Double_t fTPCnSigma0 = -999;
 		Double_t fTPCnSigma_eta_prov = -999;
 		Double_t fTPCnSigma = -999;
-			//Double_t fTOFnSigma = -999;
+		Double_t fTOFnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
 		Double_t fTPCnSigma_kaon = -999;
@@ -3789,7 +3798,7 @@ if(!fIspp){
 		
 		fTPCsignal = track->GetTPCsignal();
 		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-			//fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+		fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
@@ -4760,11 +4769,16 @@ if(!fIspp){
 			}
 		}
 		
-		/*
-			if(fPt>1 && fPt<2) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
-			if(fPt>2 && fPt<4) fTOF02->Fill(fTOFnSigma,fTPCnSigma);
-			if(fPt>4 && fPt<6) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
-		*/
+		
+			if(fPt>0.5 && fPt<1) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
+			if(fPt>1 && fPt<2)   fTOF02->Fill(fTOFnSigma,fTPCnSigma);
+			if(fPt>2 && fPt<2.5) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
+		
+			//TPC signal after TOF cut
+		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax && fTOFnSigma > -3 && fTOFnSigma < 3){
+			fTPCnsigma_pt_2D3_tof->Fill(fPt,fTPCnSigma);
+		}
+		
 		
 ///________________________________________________________________________
 ///PID

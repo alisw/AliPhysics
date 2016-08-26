@@ -454,38 +454,37 @@ void AliFemtoK0Analysis::UserCreateOutputObjects()
   TH3F *fHist3DOSLSignal[10][4];
   TH3F *fHist3DOSLBkg[10][4];
 
-  if(fCase3D){
-   for(int i3D=0;i3D<10;i3D++){
-    for(int j3D=0;j3D<4;j3D++){
-     TString *histname = new TString("fHist3DOSL");
-     *histname += i3D;
-     *histname += j3D;
-     histname->Append("Signal");
-     fHist3DOSLSignal[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-     fOutputList->Add(fHist3DOSLSignal[i3D][j3D]);
-     histname->Replace(12,6,"Bkg");
-     fHist3DOSLBkg[i3D][j3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
-     fOutputList->Add(fHist3DOSLBkg[i3D][j3D]);
+  if (fCase3D) {
+    for (int i3D = 0; i3D < 10; i3D++) {
+      for (int j3D = 0; j3D < 4; j3D++) {
+        TString histname("fHist3DOSL");
+        histname += i3D;
+        histname += j3D;
+
+        fHist3DOSLSignal[i3D][j3D] = new TH3F(histname + "Signal", "", 100,-.5,.5,100,-.5,.5,100,-.5,.5);
+        fOutputList->Add(fHist3DOSLSignal[i3D][j3D]);
+
+        fHist3DOSLBkg[i3D][j3D] = new TH3F(histname + "Bkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+        fOutputList->Add(fHist3DOSLBkg[i3D][j3D]);
+      }
     }
-   }
   }
 
   TH3F *fHist3DOSLCutsSignal[3][5][3]; //3 cent bins, 5 parameters, 3 cut values
   TH3F *fHist3DOSLCutsBkg[3][5][3];
-  if(fCutCheck){
+  if (fCutCheck) {
    for(int i3D=0;i3D<3;i3D++){
     for(int j3D=0;j3D<5;j3D++){
      for(int k3D=0;k3D<3;k3D++){
-      TString *histname = new TString("fHist3DOSLCuts");
-      *histname += i3D;
-      *histname += j3D;
-      *histname += k3D;
-      histname->Append("Signal");
-      fHist3DOSLCutsSignal[i3D][j3D][k3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+      TString histname("fHist3DOSLCuts");
+      histname += i3D;
+      histname += j3D;
+      histname += k3D;
+
+      fHist3DOSLCutsSignal[i3D][j3D][k3D] = new TH3F(histname + "Signal","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
       fOutputList->Add(fHist3DOSLCutsSignal[i3D][j3D][k3D]);
-      histname->Replace(17,6,"Bkg");
-      cout << histname->Data() << endl;
-      fHist3DOSLCutsBkg[i3D][j3D][k3D] = new TH3F(histname->Data(),"",100,-.5,.5,100,-.5,.5,100,-.5,.5);
+
+      fHist3DOSLCutsBkg[i3D][j3D][k3D] = new TH3F(histname + "Bkg","",100,-.5,.5,100,-.5,.5,100,-.5,.5);
       fOutputList->Add(fHist3DOSLCutsBkg[i3D][j3D][k3D]);
      }
     }
@@ -849,7 +848,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         double oldV0Pars[3] = {fabs(tempK0[iID].fMass-kMassK0Short), tempK0[iID].fV0Dca, tempK0[iID].fDDDca};
         v0JudgeNew = CheckMeritCutWinner(fMeritCutChoice, oldV0Pars, newV0Pars); //true if new wins
         if(!v0JudgeNew){		//if old beats new...
-         if(!tempK0[iID].fK0 && goodK0) continue;	//if bad old beats new good, do nothing...				
+         if(!tempK0[iID].fK0 && goodK0) continue;	//if bad old beats new good, do nothing...
          else{						//but if bad old beats new bad, or good old beats anything, skip new
           tempK0[v0Count].fSkipShared = kTRUE;		//skip new
           break;					//no need to keep checking others
@@ -858,7 +857,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         else{						//if new beats old...
          if(tempK0[iID].fK0 && !goodK0) continue;	//if bad new beats good old, do nothing...
          else{						//but if bad new beats bad old, or good new beats anything, skip old
-	      tempK0[iID].fSkipShared = kTRUE;		//skip old	
+	      tempK0[iID].fSkipShared = kTRUE;		//skip old
 	      if(tempK0[iID].fK0) k0Count--;		//if good old gets skipped, subtract from number of K0s (new one will be added later, if it succeeds)
          }
         }
@@ -866,7 +865,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
       }
      }
      if(tempK0[v0Count].fSkipShared) continue;		//if new K0 is skipped, don't load; go to next v0
-    }//if MeritCase	 	
+    }//if MeritCase
 
     //for cut check
     if(fCutCheck){
@@ -1049,7 +1048,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 	      if((fEvt)->fK0Particle[i].fDaughterID2 == (fEvt+evnum)->fK0Particle[j].fDaughterID1) continue;
 	      if((fEvt)->fK0Particle[i].fDaughterID2 == (fEvt+evnum)->fK0Particle[j].fDaughterID2) continue;
 	    }
-	
+
         px1 = (fEvt)->fK0Particle[i].fMomentum[0];
 		py1 = (fEvt)->fK0Particle[i].fMomentum[1];
 		pz1 = (fEvt)->fK0Particle[i].fMomentum[2];
@@ -1092,7 +1091,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         if(am12 == 0) continue;
         h1 = (p112/epm - en1)/am12;
         ppx = px1+pairPx*h1;									//px in PRF
-        ppy = py1+pairPy*h1;									//py in PRF	
+        ppy = py1+pairPy*h1;									//py in PRF
         ppz = pz1+pairPz*h1;									//pz in PRF
         ks = sqrt(ppx*ppx+ppy*ppy+ppz*ppz);						//k*
         ((TH1F*)fOutputList->FindObject("fHistPxCM"))->Fill(ppx);
@@ -1115,7 +1114,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 		p2LCMSSide = (pairPx*py2-pairPy*px2)/pairPt;
 		p2LCMSLong = (pairP0*pz2-pairPz*en2)/pairMt;
 		en1LCMS	= sqrt(pow(p1LCMSOut,2)+pow(p1LCMSSide,2)+pow(p1LCMSLong,2)+pow(kMassK0Short,2));
-		en2LCMS	= sqrt(pow(p2LCMSOut,2)+pow(p2LCMSSide,2)+pow(p2LCMSLong,2)+pow(kMassK0Short,2));		
+		en2LCMS	= sqrt(pow(p2LCMSOut,2)+pow(p2LCMSSide,2)+pow(p2LCMSLong,2)+pow(kMassK0Short,2));
 		betasq = pow((p1LCMSOut+p2LCMSOut)/(en1LCMS+en2LCMS),2);
 		gamma = 1./sqrt(1-betasq);
 		((TH2F*)fOutputList->FindObject("fHistGamma"))->Fill(gamma,qinv);
@@ -1156,7 +1155,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         }
         float pMean = 0.;	//average separation for positive daughters
         float nMean = 0.;	//average separation for negative daughters
-        float pDiff;		
+        float pDiff;
         float nDiff;
         float pMin = 9999.;	//minimum separation (updates) - pos
         float nMin = 9999.;	//minimum separation (updates) - neg
@@ -1308,7 +1307,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 
 
            //for mass bin study
-           //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLSignal"))->Fill(centBin+1, pairKt, qinv);	
+           //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLSignal"))->Fill(centBin+1, pairKt, qinv);
            //else if ((CL1 && CR2) || (CR1 && CL2)) ((TH3F*)fOutputList->FindObject("fHistCLCRSignal"))->Fill(centBin+1, pairKt, qinv);
            //else ((TH3F*)fOutputList->FindObject("fHistCRCRSignal"))->Fill(centBin+1, pairKt, qinv);
 
@@ -1373,7 +1372,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
             else if(centBin > 9){
              ((TH3F*)fOutputList->FindObject("fHistOSLSemiCentHighKt"))->Fill(qOutPRF,qSide,qLong);
 
-             ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKt"))->Fill(qLength, thetaSHCos, phiSH);}}*/			
+             ((TH3F*)fOutputList->FindObject("fHistSHSemiCentHighKt"))->Fill(qLength, thetaSHCos, phiSH);}}*/
 
           }//centercenter
 
@@ -1407,7 +1406,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
 		   ((TH3F*)fOutputList->FindObject("fHistDPhiPsiBkg"))->Fill(centBin+1,pairKt,dPhiPsi);
 
            //for mass bin study
-           //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLBkg"))->Fill(centBin+1, pairKt, qinv);	
+           //if(CL1 && CL2) ((TH3F*)fOutputList->FindObject("fHistCLCLBkg"))->Fill(centBin+1, pairKt, qinv);
            //else if ((CL1 && CR2) || (CR1 && CL2)) ((TH3F*)fOutputList->FindObject("fHistCLCRBkg"))->Fill(centBin+1, pairKt, qinv);
            //else ((TH3F*)fOutputList->FindObject("fHistCRCRBkg"))->Fill(centBin+1, pairKt, qinv);
 

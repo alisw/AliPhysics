@@ -1188,7 +1188,6 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
       pdgTrig    = particle->GetPdgCode();
       statusTrig = particle->GetStatusCode();
       imother    = particle->GetFirstMother();
-      ptTrig     = particle->Pt();
       nDaughters = particle->GetNDaughters();
       id0        = particle->GetDaughter(0);
       id1        = particle->GetDaughter(1);
@@ -1225,7 +1224,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
     //
     // Pt cut
     //
-    Float_t ptTrig  = fTrigger.Pt();
+    ptTrig  = fTrigger.Pt();
     
     if( ptTrig < GetMinPt() ) continue ;
 

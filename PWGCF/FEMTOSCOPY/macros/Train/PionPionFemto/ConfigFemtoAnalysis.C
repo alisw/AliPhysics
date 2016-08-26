@@ -163,7 +163,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_deltaeta_deltaphi_cf) {
-        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", 1.6,
+        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", cut_config.pair_phi_star_radius,
               // 100, 0.0, 1.6,
               // 100, 0.0, 2.0
               // 200, 0.0, 0.5,

@@ -49,6 +49,7 @@
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
@@ -89,6 +90,11 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fOutputList(0),
   fNevents(0),
   fCent(0),
+  fMult(0),
+  fEvPlaneV0(0),
+  fEvPlaneV0A(0),
+  fEvPlaneV0C(0),
+  fEvPlaneTPC(0),
   fVtxZ(0),
   fVtxX(0),
   fVtxY(0),
@@ -195,7 +201,12 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fFlagClsTypeDCAL(kTRUE),
   fOutputList(0),
   fNevents(0),
-  fCent(0), 
+  fCent(0),
+  fMult(0),
+  fEvPlaneV0(0),
+  fEvPlaneV0A(0),
+  fEvPlaneV0C(0),
+  fEvPlaneTPC(0),
   fVtxZ(0),
   fVtxX(0),
   fVtxY(0),
@@ -323,7 +334,22 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
 
   fCent = new TH1F("fCent","Centrality",100,0,100);
   fOutputList->Add(fCent);
-
+    
+  fMult = new TH2F("fMult","Track multiplicity",100,0,100,20000,0,20000);
+  fOutputList->Add(fMult);
+    
+  fEvPlaneV0 = new TH2F("fEvPlaneV0","V0 EP",100,0,100,100,0,TMath::Pi());
+  fOutputList->Add(fEvPlaneV0);
+  
+  fEvPlaneV0A = new TH2F("fEvPlaneV0A","V0A EP",100,0,100,100,0,TMath::Pi());
+  fOutputList->Add(fEvPlaneV0A);
+  
+  fEvPlaneV0C = new TH2F("fEvPlaneV0C","V0C EP",100,0,100,100,0,TMath::Pi());
+  fOutputList->Add(fEvPlaneV0C);
+    
+  fEvPlaneTPC = new TH2F("fEvPlaneTPC","TPC EP",100,0,100,100,0,TMath::Pi());
+  fOutputList->Add(fEvPlaneTPC);
+  
   fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
   fOutputList->Add(fVtxZ);
 
@@ -634,6 +660,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
   if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+  fMult->Fill(centrality,ntracks);
 
   fNevents->Fill(0); //all events
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
@@ -702,6 +729,63 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
 
+  ///////////////////
+  // event plane
+  /////////////////////
+    
+  Double_t epV0A = 0, epV0C = 0, epV0 = 0, epTPC = 0, qxV0A = 0, qyV0A = 0, qxV0C = 0, qyV0C = 0, qxV0 = 0, qyV0 = 0,  qxTPC = 0, qyTPC = 0;
+  TVector2 *qTPC = 0x0;
+  TVector2 qVectorfortrack;
+    
+  // V0
+  if(fESD){
+    epV0 = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0",fESD,2));
+    epV0A = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0A",fESD,2));
+    epV0C = TVector2::Phi_0_2pi(fESD->GetEventplane()->GetEventplane("V0C",fESD,2));
+  }
+    
+  if (fAOD){
+    epV0 = TVector2::Phi_0_2pi(fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,10,2,qxV0,qyV0));
+    epV0A = TVector2::Phi_0_2pi(fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,8,2,qxV0A,qyV0A));
+    epV0C = TVector2::Phi_0_2pi(fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD,9,2,qxV0C,qyV0C));
+  }
+  
+  if(epV0 > TMath::Pi())  epV0 = epV0 - TMath::Pi();
+  if(epV0A > TMath::Pi()) epV0A = epV0A - TMath::Pi();
+  if(epV0C > TMath::Pi()) epV0C = epV0C - TMath::Pi();
+    
+  //TPC
+    
+  if (fAOD){
+    AliEventplane* Eventplane=  fAOD->GetEventplane();
+    if (Eventplane && Eventplane->GetQVector()) {
+      qTPC = Eventplane->GetQVector();
+      qxTPC = qTPC->X();
+      qyTPC = qTPC->Y();
+          
+      qVectorfortrack.Set(qxTPC,qyTPC);
+      epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
+    }
+  }
+    
+  else{
+    AliEventplane* Eventplane =  fESD->GetEventplane();
+    if (Eventplane && Eventplane->GetQVector()) {
+      qTPC = Eventplane->GetQVector();
+      qxTPC = qTPC->X();
+      qyTPC = qTPC->Y();
+          
+      qVectorfortrack.Set(qxTPC,qyTPC);
+      epTPC = TVector2::Phi_0_2pi(qVectorfortrack.Phi())/2.;
+    }
+  }
+    
+    
+  fEvPlaneV0->Fill(centrality,epV0);  // cent. vs V0 EP
+  fEvPlaneV0A->Fill(centrality,epV0A);// cent. vs V0A EP
+  fEvPlaneV0C->Fill(centrality,epV0C);// cent. vs V0C EP
+  fEvPlaneTPC->Fill(centrality,epTPC);// cent. vs TPC EP
+  
   /////////////////////////////
   //EMCAL cluster information//
   /////////////////////////////

@@ -18,6 +18,7 @@
 #include <TList.h>
 #include <TObjString.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TClass.h>
 #include <TH2F.h>
 #include "TParticle.h"
@@ -94,7 +95,7 @@ fhEtaBandTrack(0),                fhPhiBandTrack(0),
 fhEtaBandCell(0),                 fhPhiBandCell(0),
 fhConePtLead(0),                  fhConePtLeadCluster(0),                   fhConePtLeadTrack(0),
 fhConePtLeadClustervsTrack(0),    fhConePtLeadClusterTrackFrac(0),
-fhConeSumPt(0),                   fhConeSumPtCellTrack(0),
+fhConeSumPt(0),                   fhPtLambda0Eiso(0),                       fhConeSumPtCellTrack(0),
 fhConeSumPtCell(0),               fhConeSumPtCluster(0),                    fhConeSumPtTrack(0),
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
 fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0),
@@ -972,7 +973,6 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     GetReader()->GetVertex(vertex);
   
   Float_t ptcone        = 0;
-  Float_t distToTrigger = 0;
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
     AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
@@ -1111,7 +1111,6 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
   
   Float_t pTtrack       = 0;
-  Float_t distToTrigger = 0;
   for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++)
   {
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
@@ -2137,6 +2136,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhConeSumPt->SetYTitle("#Sigma #it{p}_{T}");
     fhConeSumPt->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
     outputContainer->Add(fhConeSumPt) ;
+    
+    fhPtLambda0Eiso = new TH3F
+    (Form("hPtLambda0Eiso"),
+     Form("ABCD 3D Matrix: #it{p}_{T} vs #lambda_{0}^{2} vs E_{T}^{iso}, %s",parTitle.Data()),70,0.,70.,200,0.,2.,110,-10.,100.);
+    fhPtLambda0Eiso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhPtLambda0Eiso->SetYTitle("#lambda_{0}^{2}");
+    fhPtLambda0Eiso->SetZTitle("E_{T}^{iso} (GeV/c)");
+    outputContainer->Add(fhPtLambda0Eiso) ;
     
     fhConeSumPtTrigEtaPhi  = new TH2F("hConePtSumTrigEtaPhi",
                                       Form("Trigger #eta vs #phi, #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
@@ -3325,7 +3332,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtLambda0[iso]->SetYTitle("#lambda_{0}^{2}");
         fhPtLambda0[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtLambda0[iso]) ;
-         
+        
         if(IsDataMC())
         {
           for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
@@ -4582,7 +4589,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                         n,nfrac,coneptsum,coneptlead,isolated);
     
     if(!fMakeSeveralIC) aodinput->SetIsolated(isolated);
-
+    
     AliDebug(1,Form("Particle isolated? %i; if so with index %d",isolated,iaod));
   } // particle isolation loop
 }
@@ -4806,6 +4813,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     }
     
     fhConeSumPt              ->Fill(pt,       coneptsumTrack+coneptsumCluster, GetEventWeight());
+    Printf("Filling new histogram with values %.4f\t%.4f\t%.4f",pt,m02,coneptsumTrack+coneptsumCluster);
+    fhPtLambda0Eiso->Fill(pt, m02, coneptsumTrack+coneptsumCluster);
     fhConeSumPtTrigEtaPhi    ->Fill(eta, phi, coneptsumTrack+coneptsumCluster *GetEventWeight()); // check
     
     Float_t coneptLead = coneptLeadTrack;

@@ -48,7 +48,6 @@
 #include <TH1D.h>
 #include <TFile.h>
 
-#include <AliCFContainer.h>
 #include <AliInputEventHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliCentrality.h>

@@ -890,14 +890,13 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   hstat = new TH1F("hStat","Run statistics",nbs,0.5,nbs+0.5);
   //
   hstat->GetXaxis()->SetBinLabel(kEvTot0, "Ev.Tot0");
-  hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot");
 
   hstat->GetXaxis()->SetBinLabel(kEvAfterPhysSel , "Ev. After PS");
   hstat->GetXaxis()->SetBinLabel(kEvAfterPileUp  , "Ev. After Pup");
   hstat->GetXaxis()->SetBinLabel(kEvAfterClsVsTrk, "Ev. After ClsVsTrk");
   hstat->GetXaxis()->SetBinLabel(kEvAfterAsymCut , "Ev. After V0 Asym");
 
-
+  hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot After All Evts. Sel");
 
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
