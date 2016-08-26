@@ -2270,19 +2270,17 @@ goMakeSummary()
 
   #some defaults:
   log=summary_full.log
-  jsonLog=summary.json
   productionID=qa
   alilog_info "[BEGIN] goMakeSummary() with following parameters $*"
   configFile=$1
   shift 1
   extraOpts=("$@")
 
-  parseConfig configFile=$configFile "${extraOpts[@]}" || return 1 
+  parseConfig configFile=$configFile "${extraOpts[@]}" || return 1
   batchWorkingDirectory=$PWD
 
   logTmp="${batchWorkingDirectory}/${log}"
-  jsonLogTmp="${batchWorkingDirectory}/${jsonLog}"
-  
+
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source "$alirootSource"
   [[ ! -f "$configFile" ]] && echo "no config file ${configFile}!" && return 1
 
@@ -2308,166 +2306,11 @@ goMakeSummary()
   echo "ALICE_ROOT=${ALICE_ROOT}"
   echo "commonOutputPath=${commonOutputPath}"
 
-  # json header: open array of objects
-  echo '[' > "$jsonLogTmp"
-
   # Report simple summary (as opposed to a bloated log) to a separated file.
   #  * Full log will be on summary_full.log.
   #  * Simplified log will be on summary.log.
   rm -f summary.log
-
-  { # Begin summary.log
-
-  goSummarizeMetaFiles "$metadir"  # <-- new style summary
-
-  echo "total numbers for the production:"
-  echo
-  awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^calibfile/ {nFiles++;} 
-  /core/ {nCore++i;}
-  END {print     "cpass0 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass0.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/rec.log OK/ {nOK++;} 
-  /\/rec.log BAD/ {nBAD++;} 
-  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass0 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass0.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/calib.log OK/ {nOK++;} 
-  /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass0 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass0.job*done 2>/dev/null
-
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /merge.log OK/ {nOK++;} 
-  /merge.log BAD/ {nBAD++;} 
-  END {print "cpass0 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass0*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /ocdb.log OK/ {nOK++;} 
-  /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass0 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass0*done 2>/dev/null
-
-  echo
-  awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^calibfile/ {nFiles++;} 
-  /core/ {nCore++;}
-  END {print     "cpass1 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass1.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/rec.log OK/ {nOK++;} 
-  /\/rec.log BAD/ {nBAD++;} 
-  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass1 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass1.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/calib.log OK/ {nOK++;} 
-  /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass1 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass1.job*done 2>/dev/null
-
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /merge.log OK/ {nOK++;} 
-  /merge.log BAD/ {nBAD++;} 
-  END {print "cpass1 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /ocdb.log OK/ {nOK++;} 
-  /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass1 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
-
-  echo
-  awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^aod/ {nFiles++;} 
-  /core/ {nCore++;}
-  END {print     "cpass2 produced "nFiles" aod files, "nCore" core files";}' "$metadir"/cpass2.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/rec.log OK/ {nOK++;} 
-  /\/rec.log BAD/ {nBAD++;} 
-  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass2 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/aod.log OK/ {nOK++;} 
-  /\/aod.log BAD/ {nBAD++;} 
-  END {print "cpass2 aod: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
-
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /merge.log OK/ {nOK++;} 
-  /merge.log BAD/ {nBAD++;} 
-  END {print "cpass2 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass2*done 2>/dev/null
-
-  echo
-  echo per run stats:
-  /bin/ls -1 "$metadir"/merge.cpass0.run*.done | while read x; do
-
-    dir=$(goPrintValues dir - ${x})
-    runNumber=$(guessRunNumber ${dir})
-    [[ -z ${runNumber} ]] && continue
-
-    if $(/bin/ls "$metadir"/cpass0.job*.run${runNumber}.done &> /dev/null); then
-      statusCPass0=( $(
-      awk 'BEGIN {nOKrec=0;nBADrec=0;nOKcalib=0;nBADcalib=0;nOKstderr=0;nBADstderr=0;}
-      /\/rec.log OK/ {nOKrec++;} 
-      /\/rec.log BAD/ {nBADrec++;}
-      /stderr BAD/ {if ($0 ~ /rec.log/) {nBADrec++;} nBADstderr++;}
-      /stderr OK/ {nOKstderr++;}
-      /\/calib.log OK/ {nOKcalib++;}
-      /\/calib.log BAD/ {nBADcalib++}
-      END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib;}' "$metadir"/cpass0.job*.run${runNumber}.done 2>/dev/null
-      ) ) 
-    fi
-
-    if $(/bin/ls "$metadir"/cpass1.job*.run${runNumber}.done &>/dev/null); then
-      statusCPass1=( $(
-      awk 'BEGIN {nOKrec=0;nBADrec=0;nOKcalib=0;nBADcalib=0;nOKstderr=0;nBADstderr=0;nQAbarrelOK=0;nQAbarrelBAD=0;nQAouterOK=0;nQAouterBAD=0;}
-      /\/rec.log OK/ {nOKrec++;} 
-      /\/rec.log BAD/ {nBADrec++;}
-      /stderr BAD/ {if ($0 ~ /rec.log/) nBADrec++;nBADstderr++;}
-      /stderr OK/ {nOKstderr++;}
-      /\/calib.log OK/ {nOKcalib++;}
-      /\/calib.log BAD/ {nBADcalib++}
-      /\/qa_barrel.log OK/ {nQAbarrelOK++;}
-      /\/qa_barrel.log BAD/ {nQAbarrelBAD++;}
-      /\/qa_outer.log OK/ {nQAouterOK++;}
-      /\/qa_outer.log BAD/ {nQAouterBAD++;}
-      END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib" "nQAbarrelOK" "nQAbarrelBAD" "nQAouterOK" "nQAouterBAD;}' "$metadir"/cpass1.job*.run${runNumber}.done 2>/dev/null
-      ) ) 
-    fi
-
-    statusOCDBcpass0=$(awk '/ocdb.log/ {print $2} ' ${x} 2>/dev/null)
-    statusOCDBcpass1=$(awk '/ocdb.log/ {print $2}' ${x/cpass0/cpass1} 2>/dev/null)
-    statusQA=$(awk '/mergeMakeOCDB.log/ {print $2}' ${x/cpass0/cpass1} 2>/dev/null)
-
-    printf "%s\t ocdb.log cpass0: %s\t ocdb.log cpass1: %s\tqa.log:%s\t| cpass0: rec:%s/%s stderr:%s/%s calib:%s/%s cpass1: rec:%s/%s stderr:%s/%s calib:%s/%s QAbarrel:%s/%s QAouter:%s/%s\n" \
-           ${runNumber} ${statusOCDBcpass0} ${statusOCDBcpass1} ${statusQA} \
-           ${statusCPass0[0]} ${statusCPass0[1]} ${statusCPass0[2]} ${statusCPass0[3]} ${statusCPass0[4]} ${statusCPass0[5]} \
-           ${statusCPass1[0]} ${statusCPass1[1]} ${statusCPass1[2]} ${statusCPass1[3]} ${statusCPass1[4]} ${statusCPass1[5]} ${statusCPass1[6]} ${statusCPass1[7]} ${statusCPass1[8]} ${statusCPass1[9]}
-
-    # produce json summary
-    statusOCDBcpass0json=false
-    statusOCDBcpass1json=false
-    statusQAjson=false
-    [[ "$statusOCDBcpass0" == 'OK' ]] && statusOCDBcpass0json=true
-    [[ "$statusOCDBcpass1" == 'OK' ]] && statusOCDBcpass1json=true
-    [[ "$statusQA" == 'OK' ]] && statusQAjson=true
-    cat >> "$jsonLogTmp" <<EOF
-    {
-      run: ${runNumber},
-      status: { ocdb_pass0: ${statusOCDBcpass0json}, ocdb_pass1: ${statusOCDBcpass1json}, qa: ${statusQAjson} },
-      cpass0: {
-        reco: { n_ok: ${statusCPass0[0]}, n_bad: ${statusCPass0[1]} },
-        stderr: { n_ok: ${statusCPass0[2]}, n_bad: ${statusCPass0[3]} },
-        calib: { n_ok: ${statusCPass0[4]}, n_bad: ${statusCPass0[5]} }
-      },
-      cpass1: {
-        reco: { n_ok: ${statusCPass1[0]}, n_bad: ${statusCPass1[1]} },
-        stderr: { n_ok: ${statusCPass1[2]}, n_bad: ${statusCPass1[3]} },
-        calib: { n_ok: ${statusCPass1[4]}, n_bad: ${statusCPass1[5]} },
-        qabarrel: { n_ok: ${statusCPass1[6]}, n_bad: ${statusCPass1[7]} },
-        qarouter: { n_ok: ${statusCPass1[8]}, n_bad: ${statusCPass1[9]} }
-      }
-    },
-EOF
-
-  done
-
-  # json footer: close array of objects
-  echo ']' >> "${jsonLogTmp}"
-
-  } | tee -a summary.log # End summary.log
+  goSummarizeMetaFiles "$metadir" | tee -a summary.log
 
   if [[ $simplifiedSummary == 1 ]]; then
     maxCopyTries=1 remoteCpTimeout=120 xCopy -f -d $PWD $commonOutputPath/running_time
@@ -2500,7 +2343,7 @@ EOF
   goPrintValues qafile remote.cpass2.qa.list "$metadir"/merge.cpass2.run*.done &>/dev/null
 
   listDir "$PWD" "after goPrintValues"
- 
+
   # Copy all the files to a local dir tree.
   for remoteList in remote.cpass1.qa.list \
                     remote.calib.list \
@@ -2543,7 +2386,7 @@ EOF
   listDir "$PWD" "after merging trending"
 
   printExec goMakeSummaryTree "${metadir}" 0
-  printExec goMakeSummaryTree "${metadir}" 1 
+  printExec goMakeSummaryTree "${metadir}" 1
 
   listDir "$PWD" "after making summary tree"
 
@@ -2616,7 +2459,7 @@ goSummarizeMetaFiles()
           listOfBadLogs[nBadLogs++]=$0
         }
       }
-      
+
       else if (donefile ~ /\.job/) {
         jobLogsFiles[logFile]=1
         jobLogs[runNumber,pass,logFile]++
@@ -2626,7 +2469,7 @@ goSummarizeMetaFiles()
           listOfBadLogs[nBadLogs++]=$0
         }
       }
-      
+
       next
     }
 
@@ -2649,13 +2492,13 @@ goSummarizeMetaFiles()
       print "===== error summary: ================================================================="
       for (run in runs ) {
         for (pass in passes ) {
-          
+
           for (logFile in jobLogsFiles) {
             if (jobLogsBAD[run,pass,logFile]>0) {
               print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run,pass,logFile]" failures )"
             }
           }
-          
+
           for (logFile in mergeLogsFiles) {
             if (mergeLogsBAD[run,pass,logFile]>0) {
               print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run,pass,logFile]" failures )"
@@ -2699,7 +2542,7 @@ goSummarizeMetaFiles()
               print "    ->ERRORS: "logFile" OK:"jobLogsOK[run,pass,logFile]" BAD:"jobLogsBAD[run,pass,logFile]
             }
           }
-          
+
           for (logFile in mergeLogsFiles) {
             if (mergeLogsBAD[run,pass,logFile]>0) {
               print "    ->ERRORS merge: "logFile" OK:"mergeLogsOK[run,pass,logFile]" BAD:"mergeLogsBAD[run,pass,logFile]
@@ -2709,7 +2552,7 @@ goSummarizeMetaFiles()
           print ""
         }
       }
-     
+
       if (nBadLogs)
       {
         print ""
