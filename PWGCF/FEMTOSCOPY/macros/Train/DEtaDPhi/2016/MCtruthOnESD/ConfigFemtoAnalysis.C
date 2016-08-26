@@ -384,9 +384,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//**** Correlation functions *******
 
 					if(ichg >= 13)
-					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
-					else
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
+					else
+					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 
 

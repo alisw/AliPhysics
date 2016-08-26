@@ -23,6 +23,7 @@
 
 // --- ROOT system ---
 class TH2F;
+class TH3F;
 class TList ;
 class TObjString;
 
@@ -291,6 +292,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConePtLeadClusterTrackFrac;               //!<! Trigger pt vs cluster/track leading pt.
   
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt Sum Pt in the cone.
+  TH3F *   fhPtLambda0Eiso;                            //!<! ABCD TH3F histogram Pt, ShowerShape and sum(ET)+sum(pT) cone
   TH2F *   fhConeSumPtCellTrack ;                      //!<! Cells and tracks Sum Pt Sum Pt in the cone.
   TH2F *   fhConeSumPtCell ;                           //!<! Cells Sum Pt Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt Sum Pt in the cone.
@@ -611,7 +613,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,37) ;
+  ClassDef(AliAnaParticleIsolation,38) ;
   /// \endcond
 
 } ;

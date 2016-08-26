@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTaskEmcal.h"
 #include "AliCutValueRange.h"
+#include <TBits.h>
 #include <TCustomBinning.h>
 #include <TString.h>
 
@@ -28,6 +29,10 @@ class AliEMCalTriggerWeightHandler;
  *
  * Similar to AliAnalysisTaskChargedParticlesRefMC, however:
  * - No split in trigger classes - this has to be don on subwagon level
+ * - EMCAL trigger selection done based on patch above energy
+ *   - No fixed trigger classes with names, instead settable thresholds on EGA/EJE patches
+ * - Include plots from AliAnalysisTaskEmcalClustersRef and AliAnalysisTaskEmcalPatchesRef,
+ *   handled, in the same way
  */
 class AliAnalysisTaskChargedParticlesMCTriggerMimic : public AliAnalysisTaskEmcal {
 public:
@@ -51,6 +56,17 @@ public:
     kUndef = -1     //!< Patch type not defined
   };
 
+  /**
+   * @enum Observable_t
+   * @brief Switch for type of observable to inspect
+   */
+  enum Observable_t {
+    kTracks = 0,    //!< Tracks (true particles and reconstructed tracks)
+    kClusters = 1,  //!< EMCAL clusters
+    kEGAPatches = 2,//!< EMCAL gamma patches
+    kEJEPatches = 3 //!< EMCAL jet patches
+  };
+
   AliAnalysisTaskChargedParticlesMCTriggerMimic();
   AliAnalysisTaskChargedParticlesMCTriggerMimic(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesMCTriggerMimic();
@@ -64,8 +80,11 @@ public:
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
+  void                        SetNameClusters(const TString &nameClusters) { fNameClusters = nameClusters; }
 
   void                        SetEMCALTrigger(PatchType_t patchtype, Double_t threshold) { fPatchType = patchtype; fEnergyThreshold = threshold; }
+  void                        SetObservable(Observable_t observable) { fObservables.SetBitNumber(observable); }
+  Bool_t                      HasObservable(Observable_t observable) { return fObservables.TestBitNumber(observable); }
 
 protected:
 
@@ -74,6 +93,8 @@ protected:
   virtual Bool_t              Run();
 
   void                        FillTrackHistos(const char *eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, const char *pid);
+  void                        FillClusterHistos(double weight, double energy, double transversenergy, double eta, double phi);
+  void                        FillPatchHistos(const char *patchname, double weight, double energy, double transverseenergy, double eta, double phi, int col, int row);
   Bool_t                      IsPhysicalPrimary(const AliVParticle* const part, AliMCEvent* const mcevent);
 
   Bool_t                      SelectEmcalTrigger(const TClonesArray * triggerpatches);
@@ -104,6 +125,9 @@ private:
   PatchType_t                           fPatchType;                 ///< Type of the trigger patch (default: kUndef)
   Double_t                              fEnergyThreshold;           ///< Energy threshold in patch
 
+  // Settings
+  TBits                                 fObservables;               ///< Switch for observables
+  TString                               fNameClusters;              ///< Cluster container name
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedParticlesMCTriggerMimic, 1);

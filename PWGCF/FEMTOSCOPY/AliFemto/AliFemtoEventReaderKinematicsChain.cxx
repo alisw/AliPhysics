@@ -209,7 +209,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   hbtEvent->SetPrimVertCov(fVCov);
 
   Double_t tReactionPlane = 0;
-
+  
   AliGenHijingEventHeader *hdh = dynamic_cast<AliGenHijingEventHeader *> (fGenHeader);
   if (!hdh) {
     AliGenCocktailEventHeader *cdh = dynamic_cast<AliGenCocktailEventHeader *> (fGenHeader);
@@ -221,13 +221,14 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       }
     }
   }
-
+  
   if (hdh)
     {
       tReactionPlane = hdh->ReactionPlaneAngle();
       //cout << "Got reaction plane " << tReactionPlane << endl;
     }
-
+  
+  
   hbtEvent->SetReactionPlaneAngle(tReactionPlane);
 
   //starting to reading tracks
@@ -257,6 +258,32 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
       	  //getting next track
       TParticle *kinetrack= fStack->Particle(i);
+            
+	if(fIsMisalignment){
+       TParticle *motherParticle1;
+       Int_t motherIndex1 = kinetrack->GetFirstMother();
+       bool deleted_kinetrack = false;
+
+
+       if((kinetrack->GetPdgCode()==3122)|| (kinetrack->GetPdgCode()==-3122))
+       {
+            if (motherIndex1 != -1){
+             
+            motherParticle1 = fStack->Particle(motherIndex1);
+	        if(motherParticle1->GetPdgCode()==kinetrack->GetPdgCode())
+             {
+                delete trackCopy;
+                 deleted_kinetrack = true;
+              continue;
+            
+             }
+
+           //   cout << "mother after: "<< motherParticle1->GetPdgCode()<< "kinetrack after: "<< kinetrack->GetPdgCode()<<endl;
+
+                }
+       }
+
+	}
 
 
 
@@ -349,6 +376,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 		delete trackCopy;
 		continue;
       }
+  
+
 
       trackCopy->SetPidProbElectron(kinepid[0]);
       trackCopy->SetPidProbMuon(kinepid[1]);
@@ -360,6 +389,9 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	//Momentum
       double pxyz[3];
       double rxyz[3];
+
+      if(kinetrack->Px()==0 && kinetrack->Py()==0)
+        continue;
 
       pxyz[0]=kinetrack->Px();
       pxyz[1]=kinetrack->Py();
@@ -407,6 +439,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	if(previousTrackPt==trackCopy->Pt())
 	  continue;
 	previousTrackPt=trackCopy->Pt();
+
+
 
       }
 

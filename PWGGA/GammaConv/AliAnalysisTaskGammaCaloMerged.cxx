@@ -123,12 +123,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoMCSecPi0InAccPtvsSource(NULL),
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
-  fHistoMCNegPiPt(NULL),
-  fHistoMCPosPiPt(NULL),
-  fHistoMCK0sPt(NULL),
-  fHistoMCK0lPt(NULL),
-  fHistoMCNegKPt(NULL),
-  fHistoMCPosKPt(NULL),
+  fHistoMCPrimaryPtvsSource(NULL),
   fHistoMCDecayGammaPt(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
@@ -281,12 +276,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoMCSecPi0InAccPtvsSource(NULL),
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
-  fHistoMCNegPiPt(NULL),
-  fHistoMCPosPiPt(NULL),
-  fHistoMCK0sPt(NULL),
-  fHistoMCK0lPt(NULL),
-  fHistoMCNegKPt(NULL),
-  fHistoMCPosKPt(NULL),
+  fHistoMCPrimaryPtvsSource(NULL),
   fHistoMCDecayGammaPt(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
@@ -693,12 +683,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
     fHistoMCPi0Pt                                 = new TH1F*[fnCuts];
     fHistoMCEtaPt                                 = new TH1F*[fnCuts];
-    fHistoMCNegPiPt                               = new TH1F*[fnCuts];
-    fHistoMCPosPiPt                               = new TH1F*[fnCuts];
-    fHistoMCK0sPt                                 = new TH1F*[fnCuts];
-    fHistoMCK0lPt                                 = new TH1F*[fnCuts];
-    fHistoMCNegKPt                                = new TH1F*[fnCuts];
-    fHistoMCPosKPt                                = new TH1F*[fnCuts];
+    fHistoMCPrimaryPtvsSource                     = new TH2F*[fnCuts];
     fHistoMCDecayGammaPt                          = new TH1F*[fnCuts];
     fHistoMCAllGammaPt                         = new TH1F*[fnCuts];
     if (GetSelectedMesonID() != 2){
@@ -825,24 +810,18 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMCEtaPt[iCut]                         = new TH1F("MC_Eta_Pt","MC_Eta_Pt",ptBins, startPt, endPt);
       fHistoMCEtaPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCEtaPt[iCut]);
-      fHistoMCNegPiPt[iCut]                       = new TH1F("MC_NegPi_Pt","MC_NegPi_Pt",ptBins, startPt, endPt);
-      fHistoMCNegPiPt[iCut]->Sumw2();
-      fMCList[iCut]->Add(fHistoMCNegPiPt[iCut]);
-      fHistoMCPosPiPt[iCut]                       = new TH1F("MC_PosPi_Pt","MC_PosPi_Pt",ptBins, startPt, endPt);
-      fHistoMCPosPiPt[iCut]->Sumw2();
-      fMCList[iCut]->Add(fHistoMCPosPiPt[iCut]);
-      fHistoMCNegKPt[iCut]                        = new TH1F("MC_NegK_Pt","MC_NegK_Pt",ptBins, startPt, endPt);
-      fHistoMCNegKPt[iCut]->Sumw2();
-      fMCList[iCut]->Add(fHistoMCNegKPt[iCut]);
-      fHistoMCPosKPt[iCut]                        = new TH1F("MC_PosK_Pt","MC_PosK_Pt",ptBins, startPt, endPt);
-      fHistoMCPosKPt[iCut]->Sumw2();
-      fMCList[iCut]->Add(fHistoMCPosKPt[iCut]);
-      fHistoMCK0sPt[iCut]                         = new TH1F("MC_K0s_Pt","MC_K0s_Pt",ptBins, startPt, endPt);
-      fHistoMCK0sPt[iCut]->Sumw2();
-      fMCList[iCut]->Add(fHistoMCK0sPt[iCut]);
-      fHistoMCK0lPt[iCut]                         = new TH1F("MC_K0l_Pt","MC_K0l_Pt",ptBins, startPt, endPt);
-      fHistoMCK0lPt[iCut]->Sumw2();
-      fMCList[iCut]->Add(fHistoMCK0lPt[iCut]);
+      
+      fHistoMCPrimaryPtvsSource[iCut]   = new TH2F("MC_Primary_Pt_Source","MC_Primary_Pt_Source",ptBins, startPt, endPt, 7, -0.5, 6.5);
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
+      fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
+      fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+      fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
+      
       fHistoMCDecayGammaPt[iCut]                  = new TH1F("MC_DecayGamma_Pt","MC_DecayGamma_Pt",ptBins, startPt, endPt);
       fHistoMCDecayGammaPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCDecayGammaPt[iCut]);
@@ -1953,23 +1932,23 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
           mesonY  = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
       }
 
-      
       if (fabs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
-        if ( abs(particle->GetPdgCode()) == 310 ){  // K0s
-          fHistoMCK0sPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K0s
-        } else if ( abs(particle->GetPdgCode()) == 130 ){  // K0l
-          fHistoMCK0lPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K0l
-        } else if ( particle->GetPdgCode() == 321 ){  // positve kaons
-          fHistoMCNegKPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K+
-        } else if ( particle->GetPdgCode() == -321 ){  // negative kaons
-          fHistoMCPosKPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K-
-        } else if ( particle->GetPdgCode() == 211 ){  // positve pions
-          fHistoMCNegPiPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC pi+
+        if ( particle->GetPdgCode() == 211 ){  // positve pions
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., fWeightJetJetMC); 
         } else if ( particle->GetPdgCode() == -211 ){  // negative pions
-          fHistoMCPosPiPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC pi-
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 1., fWeightJetJetMC); 
+        } else if ( particle->GetPdgCode() == 321 ){  // positve kaons
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 2., fWeightJetJetMC); 
+        } else if ( particle->GetPdgCode() == -321 ){  // negative kaons
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 3., fWeightJetJetMC); 
+        } else if ( abs(particle->GetPdgCode()) == 310 ){  // K0s
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 4., fWeightJetJetMC); 
+        } else if ( abs(particle->GetPdgCode()) == 130 ){  // K0l
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 5., fWeightJetJetMC); 
+        } else if ( abs(particle->GetPdgCode()) == 3122 ){  // Lambda/ AntiLambda
+          fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 6., fWeightJetJetMC); 
         } else if ( particle->GetPdgCode() == 22 ){  // photons
-          fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // direct photons
-          
+          fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // direct photons  
           if(particle->GetMother(0) > -1){
             TParticle* mother = (TParticle*)fMCStack->Particle(particle->GetMother(0));
             if (  abs(mother->GetPdgCode()) == 111  || 
@@ -1985,7 +1964,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
             } 
           }
         }
-      }  
+      }
+        
       // check if particle is pi0/eta from di-photon decay
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
         ->MesonIsSelectedMC(particle,fMCStack,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){

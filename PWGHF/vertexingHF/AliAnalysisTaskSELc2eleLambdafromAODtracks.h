@@ -20,6 +20,7 @@
 
 #include "TROOT.h"
 #include "TVector.h"
+#include "TVector2.h"
 #include "TSystem.h"
 #include "TProfile.h"
 #include <vector>
@@ -38,6 +39,7 @@ class AliAODRecoCascadeHF;
 class AliESDVertex;
 class AliAODMCParticle;
 class AliEventPoolManager;
+class AliEventplane;
 class AliNormalizationCounter;
 
 class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE 
@@ -56,8 +58,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, TVector *tinfo, TVector *v0info2, Int_t charge);
-  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, Int_t convtype, Int_t mcetype, AliAODEvent *event, TClonesArray *mcArray);
-  void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
+  void FillElectronROOTObjects(AliAODTrack *trk, AliAODEvent *event, TClonesArray *mcArray);
+  void FillV0ROOTObjects(AliAODv0 *v0, AliAODEvent *event, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCV0ROOTObjects(AliAODMCParticle *mcv0part, TClonesArray *mcArray);
@@ -75,8 +77,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Bool_t GetUseCentralityV0M() const {return fUseCentralityV0M;}
   void SetUseCentralitySPDTracklet(Bool_t centon) {fUseCentralitySPDTracklet = centon;}
   Bool_t GetUseCentralitySPDTracklet() const {return fUseCentralitySPDTracklet;}
-  void SetUseEventPlane(Bool_t rpon) {fUseEventPlane = rpon;}
-  Bool_t GetUseEventPlane() const {return fUseEventPlane;}
+  void SetUseEventPlane(Int_t rpon) {fUseEventPlane = rpon;}
+  Int_t GetUseEventPlane() const {return fUseEventPlane;}
   void SetWriteEachVariableTree(Bool_t a) {fWriteEachVariableTree = a;}
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
@@ -85,6 +87,9 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Int_t GetMCEventType() const {return fMCEventType;}
   void SetMCDoPairAnalysis(Bool_t a) {fMCDoPairAnalysis = a;}
   Bool_t GetMCDoPairAnalysis() const {return fMCDoPairAnalysis;}
+
+  Float_t GetPhi0Pi(Float_t phi);
+  Float_t GetEventPlaneForCandidate(AliAODTrack* d, AliAODv0 *v0, AliEventplane *pl,TVector2* q,TVector2* qsub1,TVector2* qsub2);
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
@@ -129,9 +134,13 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 		fNCentBins = Ncentbins;
 		for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
 	}
+	void SetPoolRPBinLimits(Int_t Nrpbins,const Double_t *RPBins){
+		fNRPBins = Nrpbins;
+		for(int ix = 0;ix<fNRPBins+1;ix++){fRPBins[ix] = RPBins[ix];}
+	}
   void DoEventMixingWithPools(Int_t index);
   void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t charge_v0pr);
-  Int_t GetPoolIndex(Double_t zvert, Double_t mult);
+  Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
 
 
  private:
@@ -200,14 +209,17 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
-  Float_t  fEventPlane;         /// zVertex
+  Float_t  fEventPlane;         /// Event plane
+  TVector2 *fQ;         /// Event plane
+  TVector2 *fQSub1;         /// Event plane
+  TVector2 *fQSub2;         /// Event plane
   Double_t fBzkG;                 /// magnetic field value [kG]
   Float_t  fCentrality;           /// Centrality
   Int_t  fRunNumber;           /// Run Number
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Bool_t  fUseCentralitySPDTracklet;         /// Stores trigger information
-  Bool_t  fUseEventPlane;         /// Stores trigger information
+  Int_t  fUseEventPlane;         /// Stores trigger information (0: Not use, 1: V0, 2: V0A, 3: V0C, 4: TPC)
   Int_t  fEvNumberCounter;         /// EvNumber counter
 	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar
 	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
@@ -678,6 +690,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
 	Int_t fNCentBins;								/// number of centrality bins
 	Double_t fCentBins[100];						// [fNCentBinsDim]
+	Int_t fNRPBins;								/// number of reaction plane bins
+	Double_t fRPBins[100];						// [fRPBinsDim]
   Int_t  fNOfPools; /// number of pools
   Int_t fPoolIndex; /// pool index
   std::vector<Int_t> nextResVec; //!<! Vector storing next reservoir ID
@@ -690,7 +704,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,36); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,37); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

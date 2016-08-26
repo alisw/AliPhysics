@@ -1,3 +1,46 @@
+//this AddTask only creates the task, need to add manually all the rest (for subwagons)
+AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(Bool_t bCreateTree = kFALSE, const char *wagonName = ""){
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr)
+    {
+    	Error("AddTaskJetShapeDeriv","No analysis manager found.");
+    	return 0;
+    }
+    Bool_t ismc=kFALSE;
+    ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+    
+    // Check the analysis type using the event handlers connected to the analysis manager.
+    //==============================================================================
+    if (!mgr->GetInputEventHandler())
+    {
+    	::Error("AddTaskJetShapeDeriv", "This task requires an input event handler");
+    	return NULL;
+    }
+    
+    
+    //Configure jet tagger task
+    AliAnalysisTaskJetShapeDeriv *task = new AliAnalysisTaskJetShapeDeriv(wagonName.Data());
+    
+    mgr->AddTask(task);
+    
+    //Connnect input
+    mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
+    
+    //Connect output
+    TString contName(wagonName);
+    TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    mgr->ConnectOutput(task,1,coutput1);
+    if(bCreateTree) {
+    	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%sTree",contName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+    	mgr->ConnectOutput(task,2,coutput2);
+    }
+    
+    return task;
+    
+}
+
+//standard AddTask
 AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
 						   const char * njetsNoEmb,
 						   const Double_t R,

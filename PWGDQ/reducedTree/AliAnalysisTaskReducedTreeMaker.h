@@ -19,7 +19,7 @@ class AliReducedBaseEvent;
 class AliReducedPairInfo;
 class AliAnalysisUtils;
 class AliFlowTrackCuts;
-class AliFlowBayesianPID;
+//class AliFlowBayesianPID;
 
 //_________________________________________________________________________
 class AliAnalysisTaskReducedTreeMaker : public AliAnalysisTaskSE {
@@ -90,7 +90,7 @@ public:
   void SetFillALambda(Bool_t flag=kTRUE)             {fFillALambda = flag;}
   void SetFillCaloClusterInfo(Bool_t flag=kTRUE)   {fFillCaloClusterInfo = flag;}
   void SetFillFMDInfo(Bool_t flag=kTRUE)               {fFillFMDInfo = flag;}
-  void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
+  //void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
   void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
   
@@ -120,7 +120,7 @@ public:
   Bool_t fFillALambda;               // fill the anti-lambda V0s
   Bool_t fFillCaloClusterInfo;       // fill the calorimeter clusters  
   Bool_t fFillFMDInfo;               // fill the FMD info
-  Bool_t fFillBayesianPIDInfo;   // fill the bayesian PID information
+  //Bool_t fFillBayesianPIDInfo;   // fill the bayesian PID information
   Bool_t fFillEventPlaneInfo;     // Write event plane information
   Bool_t fFillMCInfo;                  // Write MC truth information
 
@@ -147,8 +147,8 @@ public:
   TString fActiveBranches;                   // list of active output tree branches 
   TString fInactiveBranches;                // list of inactive output tree branches
 
-  AliFlowTrackCuts* fAliFlowTrackCuts;
-  AliFlowBayesianPID* fBayesianResponse;
+  //AliFlowTrackCuts* fAliFlowTrackCuts;
+  //AliFlowBayesianPID* fBayesianResponse;
 
   TFile *fTreeFile;                  //! output file containing the tree
   TTree *fTree;                      //! Reduced event tree

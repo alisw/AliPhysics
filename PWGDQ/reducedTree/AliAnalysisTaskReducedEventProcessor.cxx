@@ -1,7 +1,9 @@
 /*
  ***********************************************************
  Wrapper class for AliReducedAnalysisTaskSE to be used in the AliAnalysisTask framework*
-Contact: Jaap Onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
+Contact: 
+Ionut-Cristian Arsene, iarsene@cern.ch
+Jaap Onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
 Instructions in AddTask_EPcorrectionsExample.C
 2015/10/01
  *********************************************************
@@ -40,9 +42,9 @@ ClassImp(AliAnalysisTaskReducedEventProcessor);
 AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
   AliAnalysisTaskSE(),
   fReducedTask(0x0),
-  fOutputSlot(),
-  fContainerType(),
-  fNoutputSlots(),
+  //fOutputSlot(),
+  //fContainerType(),
+  //fNoutputSlots(),
   fRunningMode(kUseEventsFromTree),
   fReducedEvent()
 {
@@ -55,9 +57,9 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
 AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const char* name, Int_t runningMode) :
   AliAnalysisTaskSE(name),
   fReducedTask(0x0),
-  fOutputSlot(),
-  fContainerType(),
-  fNoutputSlots(0),
+  //fOutputSlot(),
+  //fContainerType(),
+  //fNoutputSlots(0),
   fRunningMode(runningMode),
   fReducedEvent()
 {

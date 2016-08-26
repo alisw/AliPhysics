@@ -87,10 +87,9 @@ class AliAnalysisTaskAODFilterBitQA : public AliAnalysisTaskSE {
   TH2D* fHistDCAconstrained[gNCharge][gBitMax];//QA histograms for DCA (xy,z) for different filter bits for constrained tracks (stored in DCA methods)
   TH3D* fHistDCAglobal[gNCharge][gBitMax];//QA histograms for DCA (xy,z) for different filter bits for global tracks (stored in Position methods)
   TH2D* fHistChiClus[gNCharge][gBitMax];//QA histograms for Chi2 and number of TPC clusters for different filter bits
-
-
+  TH2D* fHistPtRes[gNCharge][gBitMax];//QA histograms for pT resolution for different filter bits
   
-  ClassDef(AliAnalysisTaskAODFilterBitQA, 0); //
+  ClassDef(AliAnalysisTaskAODFilterBitQA, 1); //
 };
 
 

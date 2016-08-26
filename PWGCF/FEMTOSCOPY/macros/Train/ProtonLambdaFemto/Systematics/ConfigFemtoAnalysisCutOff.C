@@ -53,7 +53,7 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
   // Switches for QA analyses
   int runmults[10] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
   int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
-  int runch[10] = {0, 0, 0, 0, 1, 1, 0, 0, 0, 0};
+  int runch[10] = {0, 0, 0, 1, 1, 1, 1, 0, 0, 0};
   const char *chrgs[10] = { "V0LL", "V0ALAL", "V0LAL", "V0PL", "V0APL", "V0PAL", "V0APAL","PP","PAP","APAP" };
 
   double ktrng[3] = {0.01, 0.7, 100};
@@ -188,7 +188,7 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
 		dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993);
 	      if(fInvariantMassK0s)
 		dtc1etaphitpc[aniter]->SetInvariantMassRejectK0s(minK0Cut, maxK0Cut);
-	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038, LambdaMass+0.0043);
+	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0045, LambdaMass+0.0045);
 	      
 	      //V0 second particle cut -> AntiLambda ichg 1, 3, 4, 5
 	      dtc2etaphitpc[aniter] = new AliFemtoV0TrackCut();
@@ -220,7 +220,7 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
 		dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
 	      if(fInvariantMassK0s)
 		dtc2etaphitpc[aniter]->SetInvariantMassRejectK0s(minK0Cut, maxK0Cut);
-	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0036, LambdaMass+0.0041);
+	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0045, LambdaMass+0.0045);
 	      
 	      //ESD first particle cut -> Proton 3, 5; AntiProton 4, 6, 7, 8
 	      dtc3etaphitpc[aniter] = new AliFemtoESDTrackCut();
@@ -467,7 +467,7 @@ AliFemtoManager* ConfigFemtoAnalysis(Bool_t fAvgSep=kTRUE, Bool_t fCosPAngle=kTR
 	      	anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 	      }
 	      	      
-	      //anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
+	      anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
 
 	      Manager->AddAnalysis(anetaphitpc[aniter]);
 	    }

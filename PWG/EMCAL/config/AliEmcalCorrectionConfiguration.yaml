@@ -1,0 +1,77 @@
+configurationName: "Default configuration"
+period: ""
+pass: ""
+cellBranchName: "usedefault"
+sharedParameters:
+    # These are parameters shared by multiple tasks
+    clusterBranchName: "usedefault"
+    trackBranchName: "usedefault"
+CellEnergy:
+    enabled: true
+    createHistos: true
+CellBadChannel:
+    enabled: true
+    createHistos: true
+CellTimeCalib:
+    enabled: true
+    createHistos: true
+Clusterizer:
+    enabled: true
+    createHistos: true
+    clusterBranchName: "sharedParameters:clusterBranchName"
+    clusterizer: kClusterizerv2
+    cellE: 0.05
+    seedE: 0.1
+    cellTimeMin: -1                    # Min cell time (s)
+    cellTimeMax: +1                    # Max cell time (s)
+    clusterTimeLength: 1               # Maximum time difference between the digits inside EMC cluster (s)
+    w0: 4.5
+    recalDistToBadChannels: false
+    recalShowerShape: false
+ClusterExotics:
+    enabled: true
+    createHistos: true
+    clusterBranchName: "sharedParameters:clusterBranchName"
+    clusterEMin: 0.0
+    clusterPtMin: 0.0
+ClusterNonLinearity:
+    enabled: true
+    createHistos: true
+    clusterBranchName: "sharedParameters:clusterBranchName"
+    clusterEMin: 0.0
+    clusterPtMin: 0.0
+    nonLinFunct: kBeamTestCorrectedv3
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true
+    maxDist: 0.1
+    updateClusters: true
+    updateTracks: true
+    clusterBranchName: "sharedParameters:clusterBranchName"
+    clusterNonLinCorrEnergyMin: 0.15
+    clusterEMin: 0.0
+    clusterPtMin: 0.0
+    trackBranchName: "sharedParameters:trackBranchName"
+ClusterHadronicCorrection:
+    enabled: true
+    createHistos: true
+    phiMatch: 0.030
+    etaMatch: 0.015
+    hadCorr: 2.
+    Eexcl: 0
+    doTrackClus: true
+    clusterBranchName: "sharedParameters:clusterBranchName"
+    clusterNonLinCorrEnergyMin: 0.15    # formerly "minPt"
+    clusterEMin: 0.0
+    clusterPtMin: 0.0
+    trackBranchName: "sharedParameters:trackBranchName"
+    trackPtMin: 0.15                    # formerly "minPt"
+executionOrder:
+    - CellEnergy
+    - CellBadChannel
+    - CellTimeCalib
+    - Clusterizer
+    - ClusterExotics
+    - ClusterNonLinearity
+    - ClusterTrackMatcher
+    - ClusterHadronicCorrection

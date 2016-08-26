@@ -45,26 +45,20 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   TH2F                *fHistdEdxHypTriton;
   TH2F                *fHistdEdxHypTritonAnti;
   TH1F                *fHistInvMassHypTriton;
-  TH1F                *fHistInvMassHypTritonMC;
-  TH1F                *fHistInvMassHypTritonMCAssoc;
-  TH1F                *fHistPtHypTriton;
-  TH1F                *fHistPtHypTritonMC;
-  TH1F                *fHistctHypTritonMC;
   TH1F                *fHistCentrality;
   TH1F                *fHistTrigger;
-  TH1F                *fHistPtHypTritonMCAssoc;
-  TH2F                *fHistdEdxHelium3NSigma;
+  TH1F                *fHistNumEvents;
   TTree               *fTree;
   TTree               *fTreeMCGen;
   Double_t             fPosVx;
   Double_t             fPosVy;
   Double_t             fPosVz;
   Int_t                fMCGenRec[40];
-  TObjArray        *fMCGenRecArray;
+  TObjArray           *fMCGenRecArray;
   AliReducedHypTritEvent *fReducedEvent;
   AliReducedHypTritEvent *fReducedEventMCGen;
 
-  TList *fOutputContainer;
+  TList *fHistogramList;
 
   void MCStackLoop(AliStack *stack);
   Bool_t TriggerSelection();
@@ -72,7 +66,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
 
   AliAnalysisTaskHypTritEventTree(const AliAnalysisTaskHypTritEventTree&);
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
-  ClassDef(AliAnalysisTaskHypTritEventTree, 1);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 2);
 };
 
 #endif

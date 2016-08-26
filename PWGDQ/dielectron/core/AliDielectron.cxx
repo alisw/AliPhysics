@@ -139,10 +139,12 @@ AliDielectron::AliDielectron() :
   fPreFilterLikeOnly1(kFALSE),
   fPreFilterAllSigns1(kFALSE),
   fPreFilterPhotons1(kFALSE),
+  fPreFilterOnlyOnePair1(kFALSE),
   fPreFilterUnlikeOnly2(kFALSE),
   fPreFilterLikeOnly2(kFALSE),
   fPreFilterAllSigns2(kFALSE),
   fPreFilterPhotons2(kFALSE),
+  fPreFilterOnlyOnePair2(kFALSE),
   fHasMC(kFALSE),
   fStoreRotatedPairs(kFALSE),
   fDontClearArrays(kFALSE),
@@ -204,10 +206,12 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPreFilterLikeOnly1(kFALSE),
   fPreFilterAllSigns1(kFALSE),
   fPreFilterPhotons1(kFALSE),
+  fPreFilterOnlyOnePair1(kFALSE),
   fPreFilterUnlikeOnly2(kFALSE),
   fPreFilterLikeOnly2(kFALSE),
   fPreFilterAllSigns2(kFALSE),
   fPreFilterPhotons2(kFALSE),
+  fPreFilterOnlyOnePair2(kFALSE),
   fHasMC(kFALSE),
   fStoreRotatedPairs(kFALSE),
   fDontClearArrays(kFALSE),
@@ -406,17 +410,17 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //fill track arrays for the first event
   if (ev1){
     FillTrackArrays(ev1);
-    if (((fPreFilterAllSigns1)||(fPreFilterUnlikeOnly1)) && !fPreFilterLikeOnly1 && ( fPairPreFilter1.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1], 1);
-    if (((fPreFilterAllSigns2)||(fPreFilterUnlikeOnly2)) && !fPreFilterLikeOnly2 && ( fPairPreFilter2.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1], 2);
+    if (((fPreFilterAllSigns1)||(fPreFilterUnlikeOnly1)) && !fPreFilterLikeOnly1 && ( fPairPreFilter1.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1], ev1, 1);
+    if (((fPreFilterAllSigns2)||(fPreFilterUnlikeOnly2)) && !fPreFilterLikeOnly2 && ( fPairPreFilter2.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1], ev1, 2);
 
     if(fPreFilterLikeOnly1 && fPairPreFilter1.GetCuts()->GetEntries()>0 ){
-       PairPreFilter(0, 0, fTracks[0], fTracks[0], 1);
-       PairPreFilter(1, 1, fTracks[1], fTracks[1], 1);
+       PairPreFilter(0, 0, fTracks[0], fTracks[0], ev1, 1);
+       PairPreFilter(1, 1, fTracks[1], fTracks[1], ev1, 1);
     }
 
     if(fPreFilterLikeOnly2 && fPairPreFilter2.GetCuts()->GetEntries()>0 ){
-       PairPreFilter(0, 0, fTracks[0], fTracks[0], 2);
-       PairPreFilter(1, 1, fTracks[1], fTracks[1], 2);
+       PairPreFilter(0, 0, fTracks[0], fTracks[0], ev1, 2);
+       PairPreFilter(1, 1, fTracks[1], fTracks[1], ev1, 2);
     }
   }
 
@@ -424,17 +428,17 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //fill track arrays for the second event
   if (ev2) {
     FillTrackArrays(ev2,1);
-    if (((fPreFilterAllSigns1)||(fPreFilterUnlikeOnly1)) && !fPreFilterLikeOnly1 && ( fPairPreFilter1.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3], 1);
-    if (((fPreFilterAllSigns2)||(fPreFilterUnlikeOnly2)) && !fPreFilterLikeOnly2 && ( fPairPreFilter2.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3], 2);
+    if (((fPreFilterAllSigns1)||(fPreFilterUnlikeOnly1)) && !fPreFilterLikeOnly1 && ( fPairPreFilter1.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3], ev2, 1);
+    if (((fPreFilterAllSigns2)||(fPreFilterUnlikeOnly2)) && !fPreFilterLikeOnly2 && ( fPairPreFilter2.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3], ev2, 2);
 
     if(fPreFilterLikeOnly1 && fPairPreFilter1.GetCuts()->GetEntries()>0 ){
-       PairPreFilter(2, 2, fTracks[2], fTracks[2], 1);
-       PairPreFilter(3, 3, fTracks[3], fTracks[3], 1);
+       PairPreFilter(2, 2, fTracks[2], fTracks[2], ev2, 1);
+       PairPreFilter(3, 3, fTracks[3], fTracks[3], ev2, 1);
     }
 
     if(fPreFilterLikeOnly2 && fPairPreFilter2.GetCuts()->GetEntries()>0 ){
-       PairPreFilter(2, 2, fTracks[2], fTracks[2], 2);
-       PairPreFilter(3, 3, fTracks[3], fTracks[3], 2);
+       PairPreFilter(2, 2, fTracks[2], fTracks[2], ev2, 2);
+       PairPreFilter(3, 3, fTracks[3], fTracks[3], ev2, 2);
     }
   }
 
@@ -447,7 +451,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
       for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
         if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
-        FillPairArrays(itrackArr1, itrackArr2);
+        FillPairArrays(itrackArr1, itrackArr2, ev1);
       }
     }
 
@@ -1117,7 +1121,7 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
 }
 
 //________________________________________________________________
-void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, Int_t prefilterN )
+void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, const AliVEvent *ev, Int_t prefilterN )
 {
   //
   // Prefilter tracks from pairs
@@ -1128,6 +1132,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
   AliAnalysisFilter * pairPreFilter = prefilterN == 1 ? &fPairPreFilter1 : &fPairPreFilter2;
   Bool_t prefilterAllSigns = prefilterN == 1 ? fPreFilterAllSigns1 : fPreFilterAllSigns2;
   Bool_t prefilterPhotons = prefilterN == 1 ? fPreFilterPhotons1 : fPreFilterPhotons2;
+  Bool_t prefilterOnlyOnePair = prefilterN == 1 ? fPreFilterOnlyOnePair1 : fPreFilterOnlyOnePair2;
 
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
@@ -1171,38 +1176,104 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
 
     Int_t pairIndex=GetPairIndex(arr1RP,arr2RP);
 
-    for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
-      Int_t end=ntrack2RP;
-      if (arr1RP==arr2RP) end=itrack1;
-      for (Int_t itrack2=0; itrack2<end; ++itrack2){
-        TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
-        TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
-        if (!track1 || !track2) continue;
-        //create the pair
-        if(prefilterPhotons){
-          candidate.SetGammaTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-                            static_cast<AliVTrack*>(track2), fPdgLeg2);
+    if( prefilterOnlyOnePair ){
+      Double_t maxLikelihood1[ntrack1RP];
+      Double_t maxLikelihood2[ntrack2RP];
+      Int_t partner1[ntrack1RP];
+      Int_t partner2[ntrack2RP];
+      for(Int_t itrack2=0; itrack2<ntrack2RP; ++itrack2){
+        maxLikelihood2[itrack2] = -999.;
+        partner2[itrack2] = -1;
+      }
+
+      for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
+        maxLikelihood1[itrack1] = -999.;
+        partner1[itrack1] = -1;
+        Int_t end=ntrack2RP;
+        if (arr1RP==arr2RP) end=itrack1;
+        for (Int_t itrack2=0; itrack2<end; ++itrack2){
+          TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
+          TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
+          if (!track1 || !track2) continue;
+          maxLikelihood2[itrack2] = -999.;
+          //create the pair
+          if(prefilterPhotons){
+            candidate.SetGammaTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                              static_cast<AliVTrack*>(track2), fPdgLeg2);
+          }
+          else{
+            candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                              static_cast<AliVTrack*>(track2), fPdgLeg2);
+          }
+
+          candidate.SetType(pairIndex);
+          candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+          //relate to the production vertex
+          //       if (AliDielectronVarManager::GetKFVertex()) candidate.SetProductionVertex(*AliDielectronVarManager::GetKFVertex());
+
+          //pair cuts
+          UInt_t cutMask=pairPreFilter->IsSelected(&candidate);
+
+          //apply cut
+          if (cutMask!=selectedMask) continue;
+      //    Double_t likelihood = prefilterN == 1 ?  candidate.PhivPair(ev->GetMagneticField()) - 21. * candidate.M() : -1. * candidate.M();
+            Double_t likelihood =  candidate.GetKFNdf() / candidate.GetKFChi2();
+          if( likelihood > maxLikelihood1[itrack1]   && likelihood > maxLikelihood2[itrack2]  ){
+            maxLikelihood1[itrack1] = likelihood;
+            maxLikelihood2[itrack2] = likelihood;
+            partner1[itrack1] = itrack2;
+            partner2[itrack2] = itrack1;
+          }
+          
+          if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
+          if (fHistos) FillHistogramsPair(&candidate,kTRUE);
+          //set flags for track removal
         }
-        else{
-          candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-                            static_cast<AliVTrack*>(track2), fPdgLeg2);
+      }
+      for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
+        if(   partner1[itrack1] != -1     ){
+          Int_t itrack2 = partner1[itrack1];
+          if(  partner2[ itrack2  ] == itrack1    ){
+            bTracks1RP[itrack1]=kTRUE;
+            bTracks2RP[itrack2]=kTRUE;
+          }
         }
+      }
+    }
+    else{
+      for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
+        Int_t end=ntrack2RP;
+        if (arr1RP==arr2RP) end=itrack1;
+        for (Int_t itrack2=0; itrack2<end; ++itrack2){
+          TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
+          TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
+          if (!track1 || !track2) continue;
+          //create the pair
+          if(prefilterPhotons){
+            candidate.SetGammaTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                              static_cast<AliVTrack*>(track2), fPdgLeg2);
+          }
+          else{
+            candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                              static_cast<AliVTrack*>(track2), fPdgLeg2);
+          }
 
-        candidate.SetType(pairIndex);
-        candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
-        //relate to the production vertex
-        //       if (AliDielectronVarManager::GetKFVertex()) candidate.SetProductionVertex(*AliDielectronVarManager::GetKFVertex());
+          candidate.SetType(pairIndex);
+          candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+          //relate to the production vertex
+          //       if (AliDielectronVarManager::GetKFVertex()) candidate.SetProductionVertex(*AliDielectronVarManager::GetKFVertex());
 
-        //pair cuts
-        UInt_t cutMask=pairPreFilter->IsSelected(&candidate);
+          //pair cuts
+          UInt_t cutMask=pairPreFilter->IsSelected(&candidate);
 
-        //apply cut
-        if (cutMask!=selectedMask) continue;
-        if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
-        if (fHistos) FillHistogramsPair(&candidate,kTRUE);
-        //set flags for track removal
-        bTracks1RP[itrack1]=kTRUE;
-        bTracks2RP[itrack2]=kTRUE;
+          //apply cut
+          if (cutMask!=selectedMask) continue;
+          if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
+          if (fHistos) FillHistogramsPair(&candidate,kTRUE);
+          //set flags for track removal
+          bTracks1RP[itrack1]=kTRUE;
+          bTracks2RP[itrack2]=kTRUE;
+        }
       }
     }
   }
@@ -1267,7 +1338,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
 }
 
 //________________________________________________________________
-void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
+void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev)
 {
   //
   // select pairs and fill pair candidate arrays
@@ -1277,9 +1348,9 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
   TObjArray arrTracks2=fTracks[arr2];
 
   //process pre filter if set
-  if ((!fPreFilterAllSigns1) && (!fPreFilterUnlikeOnly1) && (!fPreFilterLikeOnly1) && ( fPairPreFilter1.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2,1);
+  if ((!fPreFilterAllSigns1) && (!fPreFilterUnlikeOnly1) && (!fPreFilterLikeOnly1) && ( fPairPreFilter1.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2, ev, 1);
 
-  if ((!fPreFilterAllSigns2) && (!fPreFilterUnlikeOnly2) && (!fPreFilterLikeOnly2) && ( fPairPreFilter2.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2,2);
+  if ((!fPreFilterAllSigns2) && (!fPreFilterUnlikeOnly2) && (!fPreFilterLikeOnly2) && ( fPairPreFilter2.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2, ev, 2);
 
   Int_t pairIndex=GetPairIndex(arr1,arr2);
 
@@ -1521,6 +1592,48 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
           }
         } //is signal
       } //loop: pairs
+      if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignPP()){
+        Int_t npairsLS1=PairArray(AliDielectron::kEv1PP)->GetEntriesFast(); // SE ++
+        for (Int_t ipair=0; ipair<npairsLS1; ++ipair){
+          AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PP)->UncheckedAt(ipair));
+          Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+          if(isMCtruth){
+            //fill pair information
+            if (pairClass){
+              AliDielectronVarManager::Fill(pair, values);
+              fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+            }
+            //fill leg information, both + and - in the same histo
+            if (legClass){
+              AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
+              fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+              AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
+              fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+            }
+          } //is signal
+        } //loop: pairs
+      } // fill ++ pairs
+      if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignMM()){
+        Int_t npairsLS2=PairArray(AliDielectron::kEv1MM)->GetEntriesFast(); // SE --
+        for (Int_t ipair=0; ipair<npairsLS2; ++ipair){
+          AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1MM)->UncheckedAt(ipair));
+          Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+          if(isMCtruth){
+            //fill pair information
+            if (pairClass){
+              AliDielectronVarManager::Fill(pair, values);
+              fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
+            }
+            //fill leg information, both + and - in the same histo
+            if (legClass){
+              AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
+              fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+              AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
+              fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
+            }
+          } //is signal
+        } //loop: pairs
+      } // fill -- pairs
     }
 
     // fill single tracks of signals

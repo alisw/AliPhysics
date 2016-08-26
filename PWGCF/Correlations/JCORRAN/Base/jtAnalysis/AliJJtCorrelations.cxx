@@ -53,12 +53,14 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fCentralityBin(0),
   fXlongBin(0),
   fUseKlongBins(false),
+  fNTrial(20),
   fIsLikeSign(false),
   fUseZVertexBinsAcceptance(false)
 {
   // constructor
   fmaxEtaRange = fcard->Get("EtaRange");
   if(fcard->Get("EnableKlongBins") == 1) fUseKlongBins = true;
+  fNTrial = fcard->Get("NRandomizationTrials");
   
   frandom = new TRandom3(); // Random number generator for background randomization
   frandom->SetSeed(0);
@@ -96,6 +98,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fRGapBinNear(0),
   fCentralityBin(0),
   fXlongBin(0),
+  fNTrial(20),
   fUseKlongBins(false),
   fIsLikeSign(false),
   fUseZVertexBinsAcceptance(false)
@@ -133,6 +136,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fRGapBinNear(in.fRGapBinNear),
   fCentralityBin(in.fCentralityBin),
   fXlongBin(in.fXlongBin),
+  fNTrial(in.fNTrial),
   fUseKlongBins(in.fUseKlongBins),
   fIsLikeSign(in.fIsLikeSign),
   fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance)
@@ -171,6 +175,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fCentralityBin = in.fCentralityBin;
   fXlongBin = in.fXlongBin;
   fUseKlongBins = in.fUseKlongBins;
+  fNTrial = in.fNTrial;
   fIsLikeSign = in.fIsLikeSign;
   fnReal = in.fnReal;
   fnMix = in.fnMix;
@@ -504,7 +509,7 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
   // Only do the randomization, if there is a background pair according to at least one of the background methods
   if(fTyp==kReal && ( fEtaGapBin >=0 || fRGapBinNear >=0 || fPhiGapBinNear >=0  ) ){
 
-    for(int itrial=0; itrial<20; itrial++){  //For each high gap track generate twenty others
+    for(int itrial=0; itrial<fNTrial; itrial++){  //For each high gap track generate some others
       
       // Randomize the vectors for the background pair
       

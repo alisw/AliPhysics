@@ -1,7 +1,9 @@
 /*
 ***********************************************************
   Wrapper class for AliReducedAnalysisTaskSE to be used in the AliAnalysisTask framework
-  contact: jaap onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
+  contact: 
+  Ionut-Cristian Arsene, iarsene@cern.ch
+  Jaap Onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
   2015/10/01
   *********************************************************
 */
@@ -21,7 +23,7 @@ class AliAnalysisTaskReducedEventProcessor : public AliAnalysisTaskSE {
 
 public:
   enum Constants {
-    kMaxOutputs=100,
+    //kMaxOutputs=100,
     kUseOnTheFlyReducedEvents=1,      // use events from exchange container published by the tree maker task
     kUseEventsFromTree=2                     // run directly over trees of reduced events
   };
@@ -43,9 +45,9 @@ public:
   
  protected:
   AliReducedAnalysisTaskSE* fReducedTask;      // Pointer to the analysis task which will process the reduced events
-  TObject* fOutputSlot[kMaxOutputs];
-  Int_t fContainerType[kMaxOutputs]; // 0: output   1: exchange
-  Int_t fNoutputSlots;
+ // TObject* fOutputSlot[kMaxOutputs];
+ // Int_t fContainerType[kMaxOutputs]; // 0: output   1: exchange
+ // Int_t fNoutputSlots;
   
   Int_t fRunningMode;                               // Running mode, as specified in options 1 and 2 from Constants
   
@@ -54,7 +56,7 @@ public:
   AliAnalysisTaskReducedEventProcessor(const AliAnalysisTaskReducedEventProcessor &c);
   AliAnalysisTaskReducedEventProcessor& operator= (const AliAnalysisTaskReducedEventProcessor &c);
 
-  ClassDef(AliAnalysisTaskReducedEventProcessor, 2);
+  ClassDef(AliAnalysisTaskReducedEventProcessor, 3);
 };
 
 #endif

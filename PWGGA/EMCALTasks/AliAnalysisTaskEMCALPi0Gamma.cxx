@@ -112,6 +112,7 @@ fDoPSel(kFALSE),
 fIsGeoMatsSet(0),
 fRotateMixed(0),
 fAddedSignal(0),
+fSimStudies(0),
 fDataPeriod(0),
 fNEvs(0),
 fOutput(0),
@@ -190,6 +191,13 @@ fHPionInvMassesGamAdd1Mult(0x0),
 fHPionInvMassesGamAdd1MultSym(0x0),
 fHPionInvMassesGamAdd1MultAsym(0x0),
 fHPionInvMassesAdd2(0x0),
+fHPionInvMassesConvElZero(0x0),
+fHPionInvMassesConvElOne(0x0),
+fHPionInvMassesConvElBoth(0x0),
+fHPionInvMassesChargedPiZero(0x0),
+fHPionInvMassesChargedPiOne(0x0),
+fHPionInvMassesChargedPiBoth(0x0),
+fHPionInvMassesGammaBoth(0x0),
 fHPionInvMassesMix(0x0),
 fHPionInvMassesMix1(0x0),
 fHPionInvMassesMix2(0x0),
@@ -319,6 +327,7 @@ fDoPSel(kFALSE),
 fIsGeoMatsSet(0),
 fRotateMixed(0),
 fAddedSignal(0),
+fSimStudies(0),
 fDataPeriod(0),
 fNEvs(0),
 fOutput(0),
@@ -391,6 +400,13 @@ fHPionInvMassesAdd1Mult(0x0),
 fHPionInvMassesAdd1MultSym(0x0),
 fHPionInvMassesAdd1MultAsym(0x0),
 fHPionInvMassesAdd2(0x0),
+fHPionInvMassesConvElZero(0x0),
+fHPionInvMassesConvElOne(0x0),
+fHPionInvMassesConvElBoth(0x0),
+fHPionInvMassesChargedPiZero(0x0),
+fHPionInvMassesChargedPiOne(0x0),
+fHPionInvMassesChargedPiBoth(0x0),
+fHPionInvMassesGammaBoth(0x0),
 fHPionInvMassesMix(0x0),
 fHPionInvMassesMix1(0x0),
 fHPionInvMassesMix2(0x0),
@@ -848,105 +864,163 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
       fHMatPionInvMasses->SetYTitle("p_{T} [GeV/c]");
       fOutput->Add(fHMatPionInvMasses);
       
-      // no clean gammas
-      // unweighted added signals
-      fHPionInvMassesAdd1NoWgt= new TH2F("hPionInvMassAdd1NoWgt","hPionInvMassAdd1NoWgt",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1NoWgt->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1NoWgt->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1NoWgt->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1NoWgt);
+      // added signals
+      if(fAddedSignal){
+        
+        // no clean gammas
+        // unweighted added signals
+        fHPionInvMassesAdd1NoWgt= new TH2F("hPionInvMassAdd1NoWgt","hPionInvMassAdd1NoWgt",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1NoWgt->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1NoWgt->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1NoWgt->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1NoWgt);
+        
+        // added pair invariant mass < asym
+        fHPionInvMassesAdd1 = new TH2F("hPionInvMassAdd1","hPionInvMassAdd1",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1);
+        
+        // added pair invariant mass > asym
+        fHPionInvMassesAdd1Sym = new TH2F("hPionInvMassAdd1Sym","hPionInvMassAdd1Sym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1Sym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1Sym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1Sym->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1Sym);
+        
+        // added pair invariant mass > asym
+        fHPionInvMassesAdd1Asym = new TH2F("hPionInvMassAdd1Asym","hPionInvMassAdd1Asym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1Asym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1Asym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1Asym->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1Asym);
+        
+        // "unclean" added pair invariant mass < asym
+        fHPionInvMassesAdd1Mult = new TH2F("hPionInvMassAdd1Mult","hPionInvMassAdd1Mult",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1Mult->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1Mult->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1Mult->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1Mult);
+        
+        // "unclean" added pair invariant mass > asym
+        fHPionInvMassesAdd1MultSym = new TH2F("hPionInvMassAdd1MultSym","hPionInvMassAdd1MultSym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1MultSym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1MultSym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1MultSym->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1MultSym);
+        
+        // "unclean" added pair invariant mass > asym
+        fHPionInvMassesAdd1MultAsym = new TH2F("hPionInvMassAdd1MultAsym","hPionInvMassAdd1MultAsym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd1MultAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd1MultAsym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd1MultAsym->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd1MultAsym);
+        
+        // clean two-gammas
+        // added pair invariant mass < asym
+        fHPionInvMassesGamAdd1 = new TH2F("hPionInvMassGamAdd1","hPionInvMassGamAdd1",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGamAdd1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGamAdd1->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGamAdd1->Sumw2();
+        fOutput->Add(fHPionInvMassesGamAdd1);
+        
+        // added pair invariant mass > asym
+        fHPionInvMassesGamAdd1Sym = new TH2F("hPionInvMassGamAdd1Sym","hPionInvMassGamAdd1Sym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGamAdd1Sym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGamAdd1Sym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGamAdd1Sym->Sumw2();
+        fOutput->Add(fHPionInvMassesGamAdd1Sym);
+        
+        // added pair invariant mass > asym
+        fHPionInvMassesGamAdd1Asym = new TH2F("hPionInvMassGamAdd1Asym","hPionInvMassGamAdd1Asym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGamAdd1Asym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGamAdd1Asym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGamAdd1Asym->Sumw2();
+        fOutput->Add(fHPionInvMassesGamAdd1Asym);
+        
+        // "unclean" added pair invariant mass < asym
+        fHPionInvMassesGamAdd1Mult = new TH2F("hPionInvMassGamAdd1Mult","hPionInvMassGamAdd1Mult",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGamAdd1Mult->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGamAdd1Mult->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGamAdd1Mult->Sumw2();
+        fOutput->Add(fHPionInvMassesGamAdd1Mult);
+        
+        // "unclean" added pair invariant mass > asym
+        fHPionInvMassesGamAdd1MultSym = new TH2F("hPionInvMassGamAdd1MultSym","hPionInvMassGamAdd1MultSym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGamAdd1MultSym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGamAdd1MultSym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGamAdd1MultSym->Sumw2();
+        fOutput->Add(fHPionInvMassesGamAdd1MultSym);
+        
+        // "unclean" added pair invariant mass > asym
+        fHPionInvMassesGamAdd1MultAsym = new TH2F("hPionInvMassGamAdd1MultAsym","hPionInvMassGamAdd1MultAsym",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGamAdd1MultAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGamAdd1MultAsym->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGamAdd1MultAsym->Sumw2();
+        fOutput->Add(fHPionInvMassesGamAdd1MultAsym);
+        
+        // added pair invariant mass stream 2, no asym
+        fHPionInvMassesAdd2 = new TH2F("hPionInvMassAdd2","hPionInvMassAdd2",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesAdd2->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesAdd2->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesAdd2->Sumw2();
+        fOutput->Add(fHPionInvMassesAdd2);
+      }
       
-      // added pair invariant mass < asym
-      fHPionInvMassesAdd1 = new TH2F("hPionInvMassAdd1","hPionInvMassAdd1",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1);
-      
-      // added pair invariant mass > asym
-      fHPionInvMassesAdd1Sym = new TH2F("hPionInvMassAdd1Sym","hPionInvMassAdd1Sym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1Sym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1Sym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1Sym->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1Sym);
-      
-      // added pair invariant mass > asym
-      fHPionInvMassesAdd1Asym = new TH2F("hPionInvMassAdd1Asym","hPionInvMassAdd1Asym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1Asym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1Asym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1Asym->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1Asym);
-      
-      // "unclean" added pair invariant mass < asym
-      fHPionInvMassesAdd1Mult = new TH2F("hPionInvMassAdd1Mult","hPionInvMassAdd1Mult",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1Mult->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1Mult->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1Mult->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1Mult);
-      
-      // "unclean" added pair invariant mass > asym
-      fHPionInvMassesAdd1MultSym = new TH2F("hPionInvMassAdd1MultSym","hPionInvMassAdd1MultSym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1MultSym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1MultSym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1MultSym->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1MultSym);
-      
-      // "unclean" added pair invariant mass > asym
-      fHPionInvMassesAdd1MultAsym = new TH2F("hPionInvMassAdd1MultAsym","hPionInvMassAdd1MultAsym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd1MultAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd1MultAsym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd1MultAsym->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd1MultAsym);
-      
-      // clean two-gammas
-      // added pair invariant mass < asym
-      fHPionInvMassesGamAdd1 = new TH2F("hPionInvMassGamAdd1","hPionInvMassGamAdd1",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesGamAdd1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesGamAdd1->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesGamAdd1->Sumw2();
-      fOutput->Add(fHPionInvMassesGamAdd1);
-      
-      // added pair invariant mass > asym
-      fHPionInvMassesGamAdd1Sym = new TH2F("hPionInvMassGamAdd1Sym","hPionInvMassGamAdd1Sym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesGamAdd1Sym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesGamAdd1Sym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesGamAdd1Sym->Sumw2();
-      fOutput->Add(fHPionInvMassesGamAdd1Sym);
-      
-      // added pair invariant mass > asym
-      fHPionInvMassesGamAdd1Asym = new TH2F("hPionInvMassGamAdd1Asym","hPionInvMassGamAdd1Asym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesGamAdd1Asym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesGamAdd1Asym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesGamAdd1Asym->Sumw2();
-      fOutput->Add(fHPionInvMassesGamAdd1Asym);
-      
-      // "unclean" added pair invariant mass < asym
-      fHPionInvMassesGamAdd1Mult = new TH2F("hPionInvMassGamAdd1Mult","hPionInvMassGamAdd1Mult",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesGamAdd1Mult->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesGamAdd1Mult->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesGamAdd1Mult->Sumw2();
-      fOutput->Add(fHPionInvMassesGamAdd1Mult);
-      
-      // "unclean" added pair invariant mass > asym
-      fHPionInvMassesGamAdd1MultSym = new TH2F("hPionInvMassGamAdd1MultSym","hPionInvMassGamAdd1MultSym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesGamAdd1MultSym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesGamAdd1MultSym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesGamAdd1MultSym->Sumw2();
-      fOutput->Add(fHPionInvMassesGamAdd1MultSym);
-      
-      // "unclean" added pair invariant mass > asym
-      fHPionInvMassesGamAdd1MultAsym = new TH2F("hPionInvMassGamAdd1MultAsym","hPionInvMassGamAdd1MultAsym",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesGamAdd1MultAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesGamAdd1MultAsym->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesGamAdd1MultAsym->Sumw2();
-      fOutput->Add(fHPionInvMassesGamAdd1MultAsym);
-      
-      // added pair invariant mass stream 2, no asym
-      fHPionInvMassesAdd2 = new TH2F("hPionInvMassAdd2","hPionInvMassAdd2",massbins,0,massmax,nbins,0,ptmax);
-      fHPionInvMassesAdd2->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesAdd2->SetYTitle("p_{T} [GeV/c]");
-      fHPionInvMassesAdd2->Sumw2();
-      fOutput->Add(fHPionInvMassesAdd2);
+      if(fSimStudies){
+        // electrons
+        // main contributor: no converted electron (control histo)
+        fHPionInvMassesConvElZero = new TH2F("hPionInvMassConvElZero","hPionInvMassConvElZero",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesConvElZero->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesConvElZero->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesConvElZero->Sumw2();
+        fOutput->Add(fHPionInvMassesConvElZero);
+
+        // main contributor: converted electron (one cluster)
+        fHPionInvMassesConvElOne = new TH2F("hPionInvMassConvElOne","hPionInvMassConvElOne",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesConvElOne->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesConvElOne->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesConvElOne->Sumw2();
+        fOutput->Add(fHPionInvMassesConvElOne);
+
+        // main contributor: converted electron (two clusters)
+        fHPionInvMassesConvElBoth = new TH2F("hPionInvMassConvElBoth","hPionInvMassConvElBoth",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesConvElBoth->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesConvElBoth->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesConvElBoth->Sumw2();
+        fOutput->Add(fHPionInvMassesConvElBoth);
+
+        // pions
+        // main contributor: no charged pion  (control histo)
+        fHPionInvMassesChargedPiZero = new TH2F("hPionInvMassChargedPiZero","hPionInvMassChargedPiZero",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesChargedPiZero->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesChargedPiZero->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesChargedPiZero->Sumw2();
+        fOutput->Add(fHPionInvMassesChargedPiZero);
+
+        // main contributor: charged pion (one cluster)
+        fHPionInvMassesChargedPiOne = new TH2F("hPionInvMassChargedPiOne","hPionInvMassChargedPiOne",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesChargedPiOne->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesChargedPiOne->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesChargedPiOne->Sumw2();
+        fOutput->Add(fHPionInvMassesChargedPiOne);
+
+        // main contributor: charged pion (two clusters)
+        fHPionInvMassesChargedPiBoth = new TH2F("hPionInvMassChargedPiBoth","hPionInvMassChargedPiBoth",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesChargedPiBoth->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesChargedPiBoth->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesChargedPiBoth->Sumw2();
+        fOutput->Add(fHPionInvMassesChargedPiBoth);
+
+        // main contributor: photon (both clusters)
+        fHPionInvMassesGammaBoth = new TH2F("hPionInvMassGammaBoth","hPionInvMassGammaBoth",massbins,0,massmax,nbins,0,ptmax);
+        fHPionInvMassesGammaBoth->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+        fHPionInvMassesGammaBoth->SetYTitle("p_{T} [GeV/c]");
+        fHPionInvMassesGammaBoth->Sumw2();
+        fOutput->Add(fHPionInvMassesGammaBoth);
+        
+      }
     }
     fHPionInvMassesMix = new TH2F("hPionInvMassMix","hPionInvMassMix",massbins,0,massmax,nbins,0,ptmax);
     fHPionInvMassesMix->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
@@ -1027,11 +1101,11 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
       
     }
     
-//    // histogram for conversion point
-//    fHConversionPoint = new TH2F("hConversionPoint","conversion point in xy",1000,-500,500,1000,-500,500);
-//    fHConversionPoint->SetXTitle("x");
-//    fHConversionPoint->SetYTitle("y");
-//    fOutput->Add(fHConversionPoint);
+    //    // histogram for conversion point
+    //    fHConversionPoint = new TH2F("hConversionPoint","conversion point in xy",1000,-500,500,1000,-500,500);
+    //    fHConversionPoint->SetXTitle("x");
+    //    fHConversionPoint->SetYTitle("y");
+    //    fOutput->Add(fHConversionPoint);
   }
   
   TH1::SetDefaultSumw2(th1);
@@ -1649,6 +1723,9 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     
     pt_max = FillClusHists(phitrig, thetatrig);
     
+    if(pt_max < -100)
+      return;
+    
     if(pt_max > 1 && pt_max<=3) ptClass = 1;
     else if(pt_max > 3 && pt_max<=6) ptClass = 2;
     else ptClass = 3;
@@ -1827,9 +1904,23 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   fHClustNoEvt->Fill(nclus);
   thisEvent.SetGlobalInfo(0,0,0);
   
-  if(nclus > 1000){
-    AliError("Attention! More than 1000 clusters in event!");
-    return 0;
+  Int_t nclusemcaldcal = 0;
+  // count clusters on emcal/dcal
+  for(Int_t i = 0; i<nclus; ++i) {
+    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
+    if (!clus){
+      continue;
+    }
+    // emcal cluster?
+    if(!(clus->IsEMCAL())){
+      continue;
+    }
+    nclusemcaldcal++;
+  }
+  
+  if(nclusemcaldcal > 1000){
+    AliError("Attention! More than 1000 EMCal/DCal clusters in event!");
+    return -999;
   }
   
   int nclusters = 0;
@@ -1949,7 +2040,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     else{
       fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
     }
-    fHClustEnergySM->Fill(clusterVec.E(),GetModuleNumber(clus));
+    Int_t modnumber = GetModuleNumber(clus);
+    fHClustEnergySM->Fill(clusterVec.E(),modnumber);
     //fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
     fHClustEnergyTime->Fill(clusterVec.E(),clus->GetTOF());
     fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
@@ -1986,6 +2078,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       }
       thisEvent.hit[nclusters-1].weight=1.;
       thisEvent.hit[nclusters-1].imo=1;
+      thisEvent.hit[nclusters-1].smno=modnumber;
     }
     
     // go through MC information of clusters
@@ -2047,7 +2140,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           iit++;
         }
         fHNMothers->Fill(iit,mcP->E());
-        Double_t wgt = 1.;
+        Float_t wgt = 1.;
         
         AliMCParticle *McMo = static_cast<AliMCParticle*>(mcEvent->GetTrack(ipart));
         Double_t mcPt = McMo->Pt();
@@ -2289,6 +2382,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
           thisEvent.hit[nclusters-1].imo=ipart;
           thisEvent.hit[nclusters-1].pid=mcP->PdgCode();
+          thisEvent.hit[nclusters-1].smno=modnumber;
           if(!bGen){
             thisEvent.hit[nclusters-1].weight = wgt;
           }
@@ -2447,7 +2541,7 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     double mcPt = mcP->Pt();
     double mcEta = mcP->Eta();
     double mcY = mcP->Y();
-    double wgt2 = 1.;
+    Float_t wgt2 = 1.;
     
     if(bGen && !(bAddPi0 || bAddEta)){
       // fill truth histogram
@@ -2880,7 +2974,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
           fHPionPtAsym->Fill(pionVec.Pt(),pionZgg);
         
         if(fMcMode){
-          if(hitclass1 == 1 && hitclass2 == 1){
+          if(hitclass1 == 1 && hitclass2 == 1 && fAddedSignal){
             if(thisEvent.hit[i].imo == thisEvent.hit[j].imo){
               // all, no weight
               fHPionInvMassesAdd1NoWgt->Fill(pionVec.M(),pionVec.Pt());
@@ -2909,7 +3003,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
               }
             }
           }
-          else if(hitclass1 == 2 && hitclass2 == 2){
+          else if(hitclass1 == 2 && hitclass2 == 2 && fAddedSignal){
             if(thisEvent.hit[i].imo == thisEvent.hit[j].imo){
               fHPionInvMassesAdd2->Fill(pionVec.M(),pionVec.Pt(),wght);
             }
@@ -2970,7 +3064,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
           fHPionPtAsym->Fill(pionVec.Pt(),pionZgg);
         
         if(fMcMode){
-          if(hitclass1 == 1 && hitclass2 == 1){
+          if(hitclass1 == 1 && hitclass2 == 1 && fAddedSignal){
             if(thisEvent.hit[i].imo == thisEvent.hit[j].imo){
               // all, no weight
               fHPionInvMassesAdd1NoWgt->Fill(pionVec.M(),pionVec.Pt());
@@ -2999,7 +3093,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
               }
             }
           }
-          else if(hitclass1 == 2 && hitclass2 == 2){
+          else if(hitclass1 == 2 && hitclass2 == 2 && fAddedSignal){
             if(thisEvent.hit[i].imo == thisEvent.hit[j].imo){
               fHPionInvMassesAdd2->Fill(pionVec.M(),pionVec.Pt(),wght);
             }
@@ -3060,7 +3154,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
           fHPionPtAsym->Fill(pionVec.Pt(),pionZgg);
         
         if(fMcMode){
-          if(hitclass1 == 1 && hitclass2 == 1){
+          if(hitclass1 == 1 && hitclass2 == 1 && fAddedSignal){
             if(thisEvent.hit[i].imo == thisEvent.hit[j].imo){
               // all, no weight
               fHPionInvMassesAdd1NoWgt->Fill(pionVec.M(),pionVec.Pt());
@@ -3089,7 +3183,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
               }
             }
           }
-          else if(hitclass1 == 2 && hitclass2 == 2){
+          else if(hitclass1 == 2 && hitclass2 == 2 && fAddedSignal){
             if(thisEvent.hit[i].imo == thisEvent.hit[j].imo){
               fHPionInvMassesAdd2->Fill(pionVec.M(),pionVec.Pt(),wght);
             }
@@ -3140,7 +3234,35 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
         }
       }
       
-      
+      // fill histograms for simulation studies (electrons, charged pions in clusters)
+      if(fSimStudies && (hitclass1 >= 100 && hitclass2 >= 100)){
+        // electrons
+        if(abs(thisEvent.hit[i].pid) == 11 && abs(thisEvent.hit[j].pid) == 11){
+          fHPionInvMassesConvElBoth->Fill(pionVec.M(),pionVec.Pt());
+        }
+        else if((abs(thisEvent.hit[i].pid) == 11 && abs(thisEvent.hit[j].pid) == 22) || (abs(thisEvent.hit[i].pid) == 22 && abs(thisEvent.hit[j].pid) == 11)){
+          fHPionInvMassesConvElOne->Fill(pionVec.M(),pionVec.Pt());
+        }
+        else{
+          fHPionInvMassesConvElZero->Fill(pionVec.M(),pionVec.Pt());
+        }
+        // charged pions
+        if(abs(thisEvent.hit[i].pid) == 211 && abs(thisEvent.hit[j].pid) == 211){
+          fHPionInvMassesChargedPiBoth->Fill(pionVec.M(),pionVec.Pt());
+        }
+        else if((abs(thisEvent.hit[i].pid) == 211 && abs(thisEvent.hit[j].pid) == 22) || (abs(thisEvent.hit[i].pid) == 22 && abs(thisEvent.hit[j].pid) == 211)){
+          fHPionInvMassesChargedPiOne->Fill(pionVec.M(),pionVec.Pt());
+        }
+        else{
+          fHPionInvMassesChargedPiZero->Fill(pionVec.M(),pionVec.Pt());
+        }
+        // two photons
+        if(abs(thisEvent.hit[i].pid) == 22 && abs(thisEvent.hit[j].pid) == 22){
+          fHPionInvMassesGammaBoth->Fill(pionVec.M(),pionVec.Pt());
+        }
+        
+
+      }
     }
   }
 }
@@ -3164,7 +3286,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
     Short_t hitclass1 = -1;
     Short_t hitclass2 = -1;
     
-    Int_t nclus = clusters->GetEntries();
+    Int_t nclus = thisEvent.nHits;
     for (Int_t i = 0; i<nclus; ++i) {
       
       clusterVec1 = thisEvent.hit[i].thishit;
@@ -3973,8 +4095,8 @@ void AliAnalysisTaskEMCALPi0Gamma::SetDnDpT(Int_t i, Double_t par0, Double_t par
 }
 
 //_____________________________________________________________________
-Double_t AliAnalysisTaskEMCALPi0Gamma::CalcWeight(Double_t pt, Double_t eta, Int_t i){
-  Double_t weight = 1.;
+Float_t AliAnalysisTaskEMCALPi0Gamma::CalcWeight(Double_t pt, Double_t eta, Int_t i){
+  Float_t weight = 1.;
   if(i==1){
     Double_t par0 = 2.52684e08;
     Double_t par1 = 0.730803;
@@ -4121,6 +4243,7 @@ TrigTheta(0)
     hit[i].pid = obj.hit[i].pid;
     hit[i].weight = obj.hit[i].weight;
     hit[i].thishit = obj.hit[i].thishit;
+    hit[i].smno = obj.hit[i].smno;
   }
 }
 
@@ -4151,6 +4274,7 @@ void EmcEvent::Reset()
     hit[i].imo = 0;
     hit[i].pid = 0;
     hit[i].weight = 1;
+    hit[i].smno = 0;
     TLorentzVector lv(0,0,0,0);
     hit[i].thishit = lv;
   }

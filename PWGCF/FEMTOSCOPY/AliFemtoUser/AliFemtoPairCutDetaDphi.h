@@ -26,9 +26,24 @@
 ///                       - arcsin \left( \frac{ z_2 \cdot B_z \cdot R}{2 p_{T2}} \right)
 ///
 ///
+/// This class encapsulates two methods for cutting pairs: the "simple"
+/// method of independently cutting each one, and "quadrature" method
+/// which cuts Δη greater than the first parameter and \sqrt{Δη^2 + Δφ^2}
+/// greater than the second parameter. The technique may be chosen by
+/// using the SetCutTechnique method.
+///
 /// \author Andrew Kubera <andrew.kubera@cern.ch>
 ///
 class AliFemtoPairCutDetaDphi : public AliFemtoShareQualityPairCut {
+public:
+  /// Cut technique for
+  enum Technique {
+    /// Simple cut testing each parameter independently
+    Simple,
+    /// Tests if the second parameter is within \sqrt{Δη^2 + Δφ^2}
+    Quad,
+  };
+
 public:
   /// Default Constructor
   AliFemtoPairCutDetaDphi();
@@ -36,6 +51,12 @@ public:
 
   virtual bool Pass(const AliFemtoPair *);
   virtual bool Pass(AliFemtoPair *);
+
+  /// Returns the simple
+  bool PassesSimple(float deta, float dphi_star) const;
+
+  /// Returns we
+  bool PassesQuad(float deta, float dphi_star) const;
 
   /// Returns an empty string
   virtual AliFemtoString Report();
@@ -46,6 +67,9 @@ public:
 
   /// Called every time a new event is processed. This method updates the fCurrentMagneticField variable
   virtual void EventBegin(const AliFemtoEvent *event);
+
+  /// Sets which method to use
+  void SetCutTechnique(Technique t);
 
   /// Set the radius for $\Delta\phi^{*}$ calculations
   void SetR(Float_t r);
@@ -99,8 +123,31 @@ protected:
 
   /// Minimum acceptable Δφ*
   Float_t fDeltaPhiMin;
+
+  /// which method to use to cut pairs
+  Technique fCutTechnique;
 };
 
+inline
+void AliFemtoPairCutDetaDphi::SetCutTechnique(Technique t)
+{
+  // no change
+  if (fCutTechnique == t) {
+    return;
+  }
+
+  // change meaning of fDeltaPhiMin - either limit or square of limit
+  switch (t) {
+  case Simple:
+    fDeltaPhiMin = TMath::Sqrt(fDeltaPhiMin);
+    break;
+  case Quad:
+    fDeltaPhiMin = fDeltaPhiMin * fDeltaPhiMin;
+    break;
+  }
+
+  fCutTechnique = t;
+}
 
 inline
 AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
@@ -108,6 +155,7 @@ AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
   , fR(1.6f)
   , fDeltaEtaMin(0.0)
   , fDeltaPhiMin(0.0)
+  , fCutTechnique(Simple)
 {
   // no-op
 }
@@ -167,13 +215,38 @@ bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
   const Float_t dEta = fabs(CalculateDEta(p1, p2)),
                 dPhi = fabs(CalculateDPhiStar(p1, charge1, p2, charge2, fR, fCurrentMagneticField));
 
-  const bool within_cut_range = (dEta < fDeltaEtaMin) && (dPhi < fDeltaPhiMin);
+  bool passes;
+  switch (fCutTechnique) {
+  case Simple:
+    passes = PassesSimple(dEta, dPhi);
+    break;
+  case Quad:
+    passes = PassesQuad(dEta, dPhi);
+    break;
+  }
 
-  bool passes = !within_cut_range && AliFemtoShareQualityPairCut::Pass(pair);
+  passes = passes && AliFemtoShareQualityPairCut::Pass(pair);
 
   return passes;
 }
 
+
+inline
+bool AliFemtoPairCutDetaDphi::PassesSimple(float delta_eta, float delta_phi_star) const
+{
+  return (fDeltaEtaMin <= delta_eta) || (fDeltaPhiMin <= delta_phi_star);
+}
+
+inline
+bool AliFemtoPairCutDetaDphi::PassesQuad(float delta_eta, float delta_phi_star) const
+{
+  if (fDeltaEtaMin <= delta_eta) {
+    return true;
+  }
+  const float quad = delta_eta * delta_eta + delta_phi_star * delta_phi_star;
+  // fDeltaPhiMin stores limit^2 - so we don't have to take the squareroot
+  return fDeltaPhiMin <= quad;
+}
 
 inline
 Float_t AliFemtoPairCutDetaDphi::CalculateDEta(const AliFemtoThreeVector& a,
@@ -196,11 +269,14 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
               PI_TIMES_2 = TMath::Pi() * 2.0,
                RADIUS_CM = radius_in_meters * 100.0;
 
-  double thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM);
-  double thetas2 = PI_OVER_2 - TMath::ATan(b.z() / RADIUS_CM);
-  double etas1 = -TMath::Log( TMath::Tan(thetas1/2.) );
-  double etas2 = -TMath::Log( TMath::Tan(thetas2/2.) );
-  double delta_eta_star = TMath::Abs(etas1 - etas2);
+  const double thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),
+               thetas2 = PI_OVER_2 - TMath::ATan(b.z() / RADIUS_CM);
+
+  const double etas1 = -TMath::Log( TMath::Tan(thetas1 / 2.0) ),
+               etas2 = -TMath::Log( TMath::Tan(thetas2 / 2.0) );
+
+  const double delta_eta_star = TMath::Abs(etas1 - etas2);
+
   return delta_eta_star;
 }
 
@@ -221,16 +297,16 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
   //   q * B * R : [Coulomb][Tesla][Meter] = 1.60218e-19 [e][Tesla][Meter]
   //   p_T : [Joule][Second]/[Meter] = 1.60218e-10 [GeV][Second]/[Meter] = 1.60218e-10 / c [GeV/c]
   //
-  //  q * B * R / pT = (1.60218e-19 * c / 1.60218e-10) [e] [Tesla] [Meters] / [GeV/c]
+  //  q * B * R / p_T = (1.60218e-19 * c / 1.60218e-10) [e] [Tesla] [Meters] / [GeV/c]
   //                 ~ 0.3 [e] [Tesla] [Meters] / [GeV/c]
   //
 
-  const Double_t unit_factor = 0.299792458 / 2.0;
+  const Double_t unit_factor = 0.299792458;
 
   const Double_t phi_a = p_a.Phi(),
                  phi_b = p_b.Phi(),
 
-                 prefix = -1.0 * unit_factor * magnetic_field * radius_in_meters,
+                 prefix = -0.5 * unit_factor * magnetic_field * radius_in_meters,
 
                  shift_a = TMath::ASin(prefix * charge_a / p_a.Perp()),
                  shift_b = TMath::ASin(prefix * charge_b / p_b.Perp());
@@ -262,6 +338,7 @@ AliFemtoPairCutDetaDphi::EventBegin(const AliFemtoEvent *event)
     fCurrentMagneticField *= 1e13;
   }
 
+  AliFemtoCutMonitorHandler::EventBegin(event);
 }
 
 inline
@@ -281,7 +358,7 @@ AliFemtoPairCutDetaDphi::AppendSettings(TList *setting_list, const TString &pref
       prefix + TString::Format("AliFemtoPairCutDetaDphi.min_delta_phi=%f", fDeltaPhiMin)
     ),
 
-  NULL);
+  nullptr);
 
   return setting_list;
 }

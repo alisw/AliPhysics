@@ -11,18 +11,15 @@
 #ifndef ALIREDUCEDANALYSISTASKSE_H
 #define ALIREDUCEDANALYSISTASKSE_H
 
-#include <TNamed.h>
-#include <TList.h>
+#include <TObject.h>
+#include <TString.h> 
 
 #include "AliReducedVarManager.h"
-#include "AliReducedInfoCut.h"
-
-class AliReducedBaseEvent;
-class AliHistogramManager;
-class AliMixingHandler; 
+#include "AliHistogramManager.h"
+#include "AliReducedBaseEvent.h"
 
 //________________________________________________________________
-class AliReducedAnalysisTaskSE : public TNamed {
+class AliReducedAnalysisTaskSE : public TObject {
   
 public:
   AliReducedAnalysisTaskSE();
@@ -31,51 +28,35 @@ public:
   
   // Virtual functions, to be implemented in the inheriting analysis classes
   // initialization (typically called in AliAnalysisTask::UserCreateOutputObjects())
-  virtual void Init() = 0;
+  virtual void Init();
   // process a given event (typically called in AliAnalysisTask::UserExec())
-  virtual void Process() = 0;
+  virtual void Process();
   // finish, to be executed after all events were processed
-  virtual void Finish() = 0;
+  virtual void Finish();
   // add output objects;
   
   // setters
-  void SetHistogramManager(AliHistogramManager* histos) {fHistosManager = histos;}
-  void SetMixingHandler(AliMixingHandler* mixing) {fMixingHandler = mixing;}
   void SetEvent(AliReducedBaseEvent* event) {fEvent = event;}
-  void AddEventCut(AliReducedInfoCut* cut) {fEventCuts->Add(cut);}
-  void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts->Add(cut);}
-  void AddPairCut(AliReducedInfoCut* cut) {fPairCuts->Add(cut);}
-
-  void SetInputObject(Int_t slot, TObject* obj) {fInputObjects[slot]=obj;}
-
+  //void SetHistogramManager(AliHistogramManager* histos) {fHistosManager = histos;}  
   
   // getters
-  AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
-  AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
+  //AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
+  virtual AliHistogramManager* GetHistogramManager() const = 0;  //{return 0x0;}
   AliReducedBaseEvent* GetEvent() const {return fEvent;}
   
 protected:
-  AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& handler);             
-  AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& handler);      
-   
-  AliHistogramManager* fHistosManager;   // Histogram manager
-  AliMixingHandler* fMixingHandler;      // Mixed event handler
+  AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& task);             
+  AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& task);      
   
-  AliReducedBaseEvent* fEvent;           // current event to be processed
+  //AliHistogramManager* fHistosManager;   // Histogram manager
+  
+  TString fName;             // name
+  TString fTitle;                // title
+    
+  AliReducedBaseEvent* fEvent;           //! current event to be processed
   Float_t fValues[AliReducedVarManager::kNVars];   // array of values to hold information for histograms
   
-  TList* fEventCuts;     // array of event cuts
-  TList* fTrackCuts;     // array of track cuts
-  TList* fPairCuts;      // array of pair cuts
-
-  TObject* fInputObjects[100];
-  TObject* fOutputObjects[100];
-  
-  virtual Bool_t IsEventSelected(AliReducedBaseEvent* event) = 0;
-  virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track) = 0;
-  virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair) = 0;
-  
-  ClassDef(AliReducedAnalysisTaskSE,1);
+  ClassDef(AliReducedAnalysisTaskSE, 2)
 };
 
 #endif

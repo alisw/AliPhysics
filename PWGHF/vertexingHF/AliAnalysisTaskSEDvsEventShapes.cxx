@@ -89,6 +89,11 @@ fMCAccGenFeeddown(0),
 fMCRecoPrompt(0),
 fMCRecoFeeddown(0),
 fMCRecoBothPromptFD(0),
+fMCAccGenPromptSpheri(0),
+fMCAccGenFeeddownSpheri(0),
+fMCRecoPromptSpheri(0),
+fMCRecoFeeddownSpheri(0),
+fMCRecoBothPromptFDSpheri(0),
 fMCAccGenPromptEvSel(0),
 fMCAccGenFeeddownEvSel(0),
 fUpmasslimit(1.965),
@@ -175,6 +180,11 @@ fMCAccGenFeeddown(0),
 fMCRecoPrompt(0),
 fMCRecoFeeddown(0),
 fMCRecoBothPromptFD(0),
+fMCAccGenPromptSpheri(0),
+fMCAccGenFeeddownSpheri(0),
+fMCRecoPromptSpheri(0),
+fMCRecoFeeddownSpheri(0),
+fMCRecoBothPromptFDSpheri(0),
 fMCAccGenPromptEvSel(0),
 fMCAccGenFeeddownEvSel(0),
 fUpmasslimit(1.965),
@@ -546,6 +556,10 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
             fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
             fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         }
+        if(fCalculateSphericity){
+            fMCAccGenPromptSpheri = new THnSparseD("hMCAccGenPromptSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            fMCRecoPromptSpheri = new THnSparseD("hMCRecoPromptSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        }
         fMCAccGenPromptEvSel = new THnSparseD("hMCAccGenPromptEvSel","kStepMCAcceptanceEvSel:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         
         //Feeddown
@@ -557,16 +571,29 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
             fMCAccGenFeeddown = new THnSparseD("hMCAccGenBFeeddown","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
             fMCRecoFeeddown = new THnSparseD("hMCRecoFeeddown","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
         }
+        if(fCalculateSphericity){
+            fMCAccGenFeeddownSpheri = new THnSparseD("hMCAccGenBFeeddownSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            fMCRecoFeeddownSpheri = new THnSparseD("hMCRecoFeeddownSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+        }
         fMCAccGenFeeddownEvSel = new THnSparseD("hMCAccGenBFeeddownEvSel","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
         
         //BothPromptFeeddown
         fMCRecoBothPromptFD = new THnSparseD("hMCRecoBothPromptFD","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        
+        if(fCalculateSphericity) fMCRecoBothPromptFDSpheri = new THnSparseD("hMCRecoBothPromptFDSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         
         fOutputEffCorr->Add(fMCAccGenPrompt);
         fOutputEffCorr->Add(fMCAccGenFeeddown);
         fOutputEffCorr->Add(fMCRecoPrompt);
         fOutputEffCorr->Add(fMCRecoFeeddown);
         fOutputEffCorr->Add(fMCRecoBothPromptFD);
+        if(fCalculateSphericity){
+            fOutputEffCorr->Add(fMCAccGenPromptSpheri);
+            fOutputEffCorr->Add(fMCAccGenFeeddownSpheri);
+            fOutputEffCorr->Add(fMCRecoPromptSpheri);
+            fOutputEffCorr->Add(fMCRecoFeeddownSpheri);
+            fOutputEffCorr->Add(fMCRecoBothPromptFDSpheri);
+        }
         fOutputEffCorr->Add(fMCAccGenPromptEvSel);
         fOutputEffCorr->Add(fMCAccGenFeeddownEvSel);
     }
@@ -703,7 +730,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
     
     Double_t spherocity;
-    Double_t sphericity;
+    Double_t sphericity = -0.5;
     if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
         sphericity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
     }
@@ -863,7 +890,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
         }
         
-        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, isEvSel, nchWeight);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
+        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
     }
     
     if(!isEvSel)return;
@@ -1021,16 +1048,16 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         // remove D0 from Dstar at reconstruction !!
         if(fReadMC && fRemoveD0fromDstar){
-	    if(fPdgMeson==421){
+            if(fPdgMeson==421){
                 labD0 = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
                 if(labD0>=0){
-		  Bool_t keep=kTRUE;
+                    Bool_t keep=kTRUE;
                     AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD0));
                     Int_t motherD0 = mcMoth->GetMother();
                     AliAODMCParticle* mcMothD0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherD0));
                     if(!mcMothD0) continue;
                     if(TMath::Abs(mcMothD0->GetPdgCode())==413) keep=kFALSE;
-		    if(!keep) continue;
+                    if(!keep) continue;
                 }
             }
         }
@@ -1146,7 +1173,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                         if(code<0 && iHyp==0) keepCase=kFALSE;
                         if(code>0 && iHyp==1) keepCase=kFALSE;
                     }
-                    if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity, recSpherocity, nchWeight);
+                    if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity, sphericity, recSpherocity, nchWeight);
                 }
                 if(fDoImpPar) fHistMassPtImpPar[0]->Fill(arrayForSparse, fWeight);
             }
@@ -1330,7 +1357,7 @@ void AliAnalysisTaskSEDvsEventShapes::CreateMeasuredNchHisto(){
 }
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t recSpherocity, Double_t nchWeight)
+void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight)
 {
     // Function to fill the true MC signal
     
@@ -1354,6 +1381,10 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
         Double_t arrayMCRecoPrompt[4] = {pt, countMult, spherocity, rapid};
         if(fRecomputeSpherocity) fMCRecoPrompt->Fill(arrayMCRecoRecSpheroPrompt, fWeight);
         else fMCRecoPrompt->Fill(arrayMCRecoPrompt, fWeight);
+        if(fCalculateSphericity) {
+            Double_t arrayMCRecoPromptSpheri[4] = {pt, countMult, sphericity, rapid};
+            fMCRecoPromptSpheri->Fill(arrayMCRecoPromptSpheri, fWeight);
+        }
     }
     //for FD
     else if(orig == 5){
@@ -1362,15 +1393,23 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
         Double_t arrayMCRecoFeeddown[4] = {pt, countMult, spherocity, rapid};
         if(fRecomputeSpherocity) fMCRecoFeeddown->Fill(arrayMCRecoRecSpheroFeeddown, fWeight);
         else fMCRecoFeeddown->Fill(arrayMCRecoFeeddown, fWeight);
+        if(fCalculateSphericity){
+            Double_t arrayMCRecoFeeddownSpheri[4] = {pt, countMult, sphericity, rapid};
+            fMCRecoFeeddownSpheri->Fill(arrayMCRecoFeeddownSpheri, fWeight);
+        }
     }
     
     Double_t arrayMCReco[4] = {pt, countMult, spherocity, rapid};
     fMCRecoBothPromptFD->Fill(arrayMCReco, fWeight);
+    if(fCalculateSphericity){
+        Double_t arrayMCRecoSpheri[4] = {pt, countMult, sphericity, rapid};
+        fMCRecoBothPromptFDSpheri->Fill(arrayMCRecoSpheri, fWeight);
+    }
     
 }
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel, Double_t nchWeight){
+void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight){
     
     /// Fill MC acceptance histos at generator level
     
@@ -1484,6 +1523,10 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                     if(fRecomputeSpherocity) fMCAccGenPrompt->Fill(arrayMCGenRecSpheroPrompt, fWeight);
                     else fMCAccGenPrompt->Fill(arrayMCGenPrompt, fWeight);
                     if(isEvSel) fMCAccGenPromptEvSel->Fill(arrayMCGenPrompt, fWeight);
+                    if(fCalculateSphericity){
+                        Double_t arrayMCGenPromptSpheri[4] = {pt, countMult, sphericity, rapid};
+                        fMCAccGenPromptSpheri->Fill(arrayMCGenPromptSpheri, fWeight);
+                    }
                 }
                 //for FD
                 else if(orig == 5){
@@ -1493,6 +1536,10 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                     if(fRecomputeSpherocity) fMCAccGenFeeddown->Fill(arrayMCGenRecSpheroFeeddown, fWeight);
                     else fMCAccGenFeeddown->Fill(arrayMCGenFeeddown, fWeight);
                     if(isEvSel) fMCAccGenFeeddownEvSel->Fill(arrayMCGenFeeddown, fWeight);
+                    if(fCalculateSphericity){
+                        Double_t arrayMCGenFeeddownSpheri[4] = {pt, countMult, sphericity, rapid};
+                        fMCAccGenFeeddownSpheri->Fill(arrayMCGenFeeddownSpheri, fWeight);
+                    }
                 }
                 else
                     continue;

@@ -1,4 +1,4 @@
-AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kTRUE)
+AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE)
 {
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -28,32 +28,22 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kT
     
   PSHFEtask->SetTrackCuts(globaltrackCuts, comptrackCuts);
   PSHFEtask->SetElectronTrackCuts(trkCutsStrong);
+  PSHFEtask->SetSSCutBool(SSCuts);
   mgr->AddTask(PSHFEtask);  
     
-  TString outfilename = "PSHFE_histos";
+  TString contname = "";
   
-    if(trkCutsStrong){
+    if(trkCutsStrong){contname+=TString("_Strong");}else{contname+=TString("_Weak");}
+    if(SSCuts){contname+=TString("_SS");}else{contname+=TString("_NoSS");}
   // create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Min-Bias_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("Min-Bias%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EMCal7_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("EMCal7%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCal8_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("EMCalJet%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
     
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("EMCalJet_Strong", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-    }else{
-        AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Min-Bias_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EMCal7_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("EMCal8_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-
-    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("EMCalJet_Weak", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
-    }
     
     
     // connect input/output
@@ -61,7 +51,6 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kT
     mgr->ConnectOutput(PSHFEtask, 1, coutput1);
     mgr->ConnectOutput(PSHFEtask, 2, coutput2);
     mgr->ConnectOutput(PSHFEtask, 3, coutput3);
-    mgr->ConnectOutput(PSHFEtask, 4, coutput4);
     
 return PSHFEtask;
 }
