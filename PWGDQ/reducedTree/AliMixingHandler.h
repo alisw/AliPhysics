@@ -59,6 +59,9 @@ public:
   void PrintMixingLists(Int_t debug);  
   
 private:
+   AliMixingHandler(const AliMixingHandler& handler);             
+   AliMixingHandler& operator=(const AliMixingHandler& handler);      
+   
   // User options
   Int_t fPoolDepth;              // depth of the event mixing pool
   Float_t fMixingThreshold;      // within a (centrality,vtx,ep) mix all pools with entries > fMixingThreshold*fPoolDepth

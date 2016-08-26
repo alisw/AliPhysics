@@ -12,14 +12,11 @@
 #define ALIREDUCEDANALYSISTASKSE_H
 
 #include <TObject.h>
-#include <TList.h>
+#include <TString.h> 
 
 #include "AliReducedVarManager.h"
-#include "AliReducedInfoCut.h"
-
-class AliReducedBaseEvent;
-class AliHistogramManager;
-class AliMixingHandler; 
+#include "AliHistogramManager.h"
+#include "AliReducedBaseEvent.h"
 
 //________________________________________________________________
 class AliReducedAnalysisTaskSE : public TObject {
@@ -39,45 +36,27 @@ public:
   // add output objects;
   
   // setters
-  void SetHistogramManager(AliHistogramManager* histos) {fHistosManager = histos;}
-  void SetMixingHandler(AliMixingHandler* mixing) {fMixingHandler = mixing;}
   void SetEvent(AliReducedBaseEvent* event) {fEvent = event;}
-  void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
-  void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
-  void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
-
-  //void SetInputObject(Int_t slot, TObject* obj) {fInputObjects[slot]=obj;}
-
+  //void SetHistogramManager(AliHistogramManager* histos) {fHistosManager = histos;}  
   
   // getters
-  AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
-  AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
+  //AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
+  virtual AliHistogramManager* GetHistogramManager() const = 0;  //{return 0x0;}
   AliReducedBaseEvent* GetEvent() const {return fEvent;}
   
 protected:
-  AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& handler);             
-  AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& handler);      
-   
+  AliReducedAnalysisTaskSE(const AliReducedAnalysisTaskSE& task);             
+  AliReducedAnalysisTaskSE& operator=(const AliReducedAnalysisTaskSE& task);      
+  
+  //AliHistogramManager* fHistosManager;   // Histogram manager
+  
   TString fName;             // name
   TString fTitle;                // title
-  AliHistogramManager* fHistosManager;   // Histogram manager
-  AliMixingHandler* fMixingHandler;      // Mixed event handler
-  
+    
   AliReducedBaseEvent* fEvent;           //! current event to be processed
   Float_t fValues[AliReducedVarManager::kNVars];   // array of values to hold information for histograms
   
-  TList fEventCuts;     // array of event cuts
-  TList fTrackCuts;     // array of track cuts
-  TList fPairCuts;      // array of pair cuts
-
-  //TObject* fInputObjects[100];
-  //TObject* fOutputObjects[100];
-  
-  virtual Bool_t IsEventSelected(AliReducedBaseEvent* event);
-  virtual Bool_t IsTrackSelected(AliReducedBaseTrack* track);
-  virtual Bool_t IsPairSelected(AliReducedBaseTrack* pair);
-  
-  ClassDef(AliReducedAnalysisTaskSE, 3)
+  ClassDef(AliReducedAnalysisTaskSE, 2)
 };
 
 #endif

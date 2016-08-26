@@ -44,7 +44,7 @@ public:
   Int_t GetRunningMode() const {return fRunningMode;}  
   
  protected:
-  AliReducedAnalysisTaskSE* fReducedTask;      //-> Pointer to the analysis task which will process the reduced events
+  AliReducedAnalysisTaskSE* fReducedTask;      // Pointer to the analysis task which will process the reduced events
  // TObject* fOutputSlot[kMaxOutputs];
  // Int_t fContainerType[kMaxOutputs]; // 0: output   1: exchange
  // Int_t fNoutputSlots;

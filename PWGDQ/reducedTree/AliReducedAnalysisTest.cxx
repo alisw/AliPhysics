@@ -23,21 +23,36 @@ ClassImp(AliReducedAnalysisTest);
 
 //___________________________________________________________________________
 AliReducedAnalysisTest::AliReducedAnalysisTest() :
-  AliReducedAnalysisTaskSE()
+  AliReducedAnalysisTaskSE(),
+  fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
+  fEventCuts(),
+  fTrackCuts(),
+  fPairCuts()
 {
   //
   // default constructor
   //
+   fHistosManager->SetUseDefaultVariableNames(kTRUE);
+   fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
 }
 
 
 //___________________________________________________________________________
 AliReducedAnalysisTest::AliReducedAnalysisTest(const Char_t* name, const Char_t* title) :
-  AliReducedAnalysisTaskSE(name,title)
+  AliReducedAnalysisTaskSE(name,title),
+  fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
+  fEventCuts(),
+  fTrackCuts(),
+  fPairCuts()
 {
   //
   // named constructor
   //
+   fEventCuts.SetOwner(kTRUE);
+   fTrackCuts.SetOwner(kTRUE);
+   fPairCuts.SetOwner(kTRUE);
+   fHistosManager->SetUseDefaultVariableNames(kTRUE);
+   fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
 }
 
 
@@ -47,6 +62,8 @@ AliReducedAnalysisTest::~AliReducedAnalysisTest()
   //
   // destructor
   //
+   fEventCuts.Clear("C"); fTrackCuts.Clear("C"); fPairCuts.Clear("C");
+   if(fHistosManager) delete fHistosManager;
 }
 
 //___________________________________________________________________________
@@ -99,9 +116,7 @@ void AliReducedAnalysisTest::Init() {
   //
   // initialize stuff
   //
-  fHistosManager = new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars);
-  fHistosManager->SetUseDefaultVariableNames(kTRUE);
-  fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
+  
 }
 
 
