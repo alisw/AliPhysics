@@ -504,8 +504,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhReOpAngleBinMaxClusterTimePerSM    [10] ; //!<! time of highest energy cluster in pair, depending on opening angle cut, y axis is SM number    
   TH2F *  fhReOpAngleBinMinClusterNCellPerSM   [10] ; //!<! N cells of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number
   TH2F *  fhReOpAngleBinMaxClusterNCellPerSM   [10] ; //!<! N cells of highest energy cluster in pair, depending on opening angle cut, y axis is SM number  
-  TH2F *  fhReOpAngleBinPairClusterRatioPerSM  [10] ; //!<! energy of highest energy cluster in pair, depending on opening angle cut, y axis is SM number  
-  TH2F *  fhReOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other 
+  TH2F *  fhReOpAngleBinPairClusterRatioPerSM  [10] ; //!<! lowest/highest energy cluster in pair, depending on opening angle cut, y axis is SM number  
+  TH2F *  fhReOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut  
+  TH2F *  fhReOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number  
+//  TH2F *  fhReOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other 
 
   TH2F *  fhMiOpAngleBinMinClusterEtaPhi       [10] ; //!<! Eta-Phi location of lowest energy cluster in pair, depending on opening angle cut, mixed event
   TH2F *  fhMiOpAngleBinMaxClusterEtaPhi       [10] ; //!<! Eta-Phi location of highest energy cluster in pair, depending on opening angle cut, mixed event
@@ -517,7 +519,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhMiOpAngleBinMaxClusterTimePerSM    [10] ; //!<! time of highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
   TH2F *  fhMiOpAngleBinMinClusterNCellPerSM   [10] ; //!<! N cells of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event
   TH2F *  fhMiOpAngleBinMaxClusterNCellPerSM   [10] ; //!<! N cells of highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
-  TH2F *  fhMiOpAngleBinPairClusterRatioPerSM  [10] ; //!<! energy of highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
+  TH2F *  fhMiOpAngleBinPairClusterRatioPerSM  [10] ; //!<! lowest/highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
+  TH2F *  fhMiOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, mixed event  
+  TH2F *  fhMiOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number, mixed event  
 //TH2F *  fhMiOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other, mixed event 
 
   /// Copy constructor not implemented.
