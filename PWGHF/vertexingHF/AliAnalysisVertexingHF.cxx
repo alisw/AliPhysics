@@ -818,7 +818,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
     } // end fCascades
 
-
     // If there is less than 2 particles continue
     if(trkEntries<2) {
       AliDebug(1,Form(" Not enough tracks: %d",trkEntries));
@@ -1888,7 +1887,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
     delete fV1; fV1=0;
     delete esdB; esdB=NULL;
     delete vtxCasc;vtxCasc=NULL;
-    /* delete trackB; */ trackB=NULL;
+    trackB=NULL;
     delete trackV0; trackV0=NULL;
     if(!DStar){
     v0=NULL;
