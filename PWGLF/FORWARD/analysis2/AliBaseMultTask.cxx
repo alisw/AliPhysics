@@ -27,7 +27,8 @@ AliBaseMultTask::AliBaseMultTask()
   : AliBaseAODTask(),
     fBins(), 
     fIsSelected(false),
-    fMaxMult(500)
+    fMaxMult(500),
+    fMCIsNSD(false)
 {
   //
   // Default Constructor
@@ -39,7 +40,8 @@ AliBaseMultTask::AliBaseMultTask(const char* name)
   : AliBaseAODTask(name,"AliBaseMultTask"),
     fBins(), 
     fIsSelected(false),
-    fMaxMult(500)
+    fMaxMult(500),
+    fMCIsNSD(false)
 {
   //
   // Constructor
@@ -92,7 +94,8 @@ Bool_t AliBaseMultTask::IsESDClass(AliAODForwardMult* m) const
 //_____________________________________________________________________
 Bool_t AliBaseMultTask::IsMCClass(AliAODForwardMult* m) const
 {
-  return m->IsTriggerBits(AliAODForwardMult::kMCNSD);
+  // if (fMCIsNSD) Printf("Returning true because we assume it");
+  return (fMCIsNSD ? true : m->IsTriggerBits(AliAODForwardMult::kMCNSD));
 }
 
 //_____________________________________________________________________
@@ -289,7 +292,9 @@ AliBaseMultTask::Bin::CalcMult(TH1D*              dndetaForward,
   Double_t c        = 0;
   Double_t e2       = 0;
   Double_t cPrimary = 0;
-  Double_t e2Primary= 0;    
+  Double_t e2Primary= 0;
+  Double_t tCentral = 0;
+  Double_t tForward = 0;
   for (Int_t i = first; i <= last; i++){ 
     Double_t cForward  = 0;
     Double_t cCentral  = 0;
@@ -300,10 +305,12 @@ AliBaseMultTask::Bin::CalcMult(TH1D*              dndetaForward,
     if (aForward) {
       cForward  = dndetaForward->GetBinContent(i);
       e2Forward = TMath::Power(dndetaForward->GetBinError(i),2);
+      tForward  += cForward;
     }
     if (aCentral) { 
       cCentral  = dndetaCentral->GetBinContent(i);
       e2Central = TMath::Power(dndetaCentral->GetBinError(i),2);
+      tCentral  += cCentral;
     }
     Double_t cc  = 0;
     Double_t ee2 = 0;
@@ -324,7 +331,15 @@ AliBaseMultTask::Bin::CalcMult(TH1D*              dndetaForward,
     c         += cc;
     e2        += ee2;
   }
-
+  // Filter out zero-SPD events
+#if 0
+  if (tCentral < 1e-4) {
+    Printf("Total forward: %f  total central: %f -> Argh!",
+	   tForward, tCentral);
+    cPrimary = c = -1;
+  }
+#endif
+  
   // Systematic errors from here
   Int_t fmd=0;
   Int_t spd=0;

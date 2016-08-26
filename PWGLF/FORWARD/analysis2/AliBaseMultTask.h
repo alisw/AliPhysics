@@ -130,7 +130,18 @@ public:
    * @{ 
    * @name Settings 
    */
+  /** 
+   * Set maximum multiplicity 
+   * 
+   * @param max Maximum multiplicity 
+   */
   void SetMaxMult(Int_t max) { fMaxMult = max; }
+  /** 
+   * Set if we are to assume all MC events are NSD 
+   * 
+   * @param assume If true, assume MC events are always NSD (e.g., for p-Pb) 
+   */
+  void SetMCIsNSD(Bool_t assume) { fMCIsNSD = assume; }
   /* @} */
   //__________________________________________________________________
   /** 
@@ -197,7 +208,8 @@ protected:
   AliBaseMultTask(const AliBaseMultTask&)
     : fBins(),
       fIsSelected(false),
-      fMaxMult(500)
+      fMaxMult(500),
+      fMCIsNSD(false)
   {}
   /**
    * Assignment operator
@@ -261,7 +273,8 @@ protected:
 		       const AliAODEvent& aodevent);
   TList  fBins;        // List of the bins to use 
   Bool_t fIsSelected;  // Event was selected 
-  Int_t  fMaxMult;     // Maximum of (and number of bins in) histograms 
+  Int_t  fMaxMult;     // Maximum of (and number of bins in) histograms
+  Bool_t fMCIsNSD;     // Assume MC event is always NSD 
   ClassDef(AliBaseMultTask,2); // Base class for multiplicity dist tasks,
 };
 #endif

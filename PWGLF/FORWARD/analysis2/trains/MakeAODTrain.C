@@ -130,11 +130,12 @@ protected:
 			Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
 			     mc, run, sys, sNN, fld, 
 			     cenConfig.Data(), corr.Data()), mask);
-      if (cen) {
-	fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(),cenConfig),true);
-	if (!corr.IsNull())
-	  fRailway->LoadAux(Form("%s/spd_corrections.root",corr.Data()), true);
-      }	
+      fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(),cenConfig),true);
+      if (!corr.IsNull())
+	fRailway->LoadAux(Form("%s/spd_corrections.root",corr.Data()), true);
+      gROOT->ProcessLine(Form("((AliCentralMultiplicityTask*)%p)"
+			      "->SetUseSecondary(%d)",
+			      cen, sec));
     }
 
     // --- Add MC particle task --------------------------------------
