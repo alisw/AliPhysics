@@ -54,7 +54,7 @@ AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fEventsList(0x0),
 fNModules(22),
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),
-fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
+fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),      fMultiCutAnaAcc(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0), fNAngleCutBins(0),
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
@@ -167,6 +167,9 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhMiOpAngleBinPairClusterMass        [icut] = 0;   
     fhMiOpAngleBinPairClusterMassPerSM   [icut] = 0;   
 //  fhMiOpAngleBinPairClusterAbsIdMaxCell[icut] = 0;
+    
+    fhPtBinClusterEtaPhi                 [icut] = 0; 
+    fhPtBinClusterColRow                 [icut] = 0; 
   }
 }
 
@@ -211,7 +214,9 @@ void AliAnaPi0::InitParameters()
   fAngleCut    = 0.;
   fAngleMaxCut = DegToRad(80.);  // 80 degrees cut, avoid EMCal/DCal combinations
   
-  fMultiCutAna = kFALSE;
+  fMultiCutAna    = kFALSE;
+  fMultiCutAnaAcc = kFALSE;
+  fMultiCutAnaSim = kFALSE;
   
   fNPtCuts = 3;
   fPtCuts[0] = 0.; fPtCuts[1] = 0.3;   fPtCuts[2] = 0.5;
@@ -271,7 +276,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of modules: %d:",fNModules) ;
   parList+=onePar ;
-  if(fMultiCutAna)
+  if(fMultiCutAna || fMultiCutAnaAcc)
   {
     snprintf(onePar, buffersize," pT cuts: n = %d, pt > ",fNPtCuts) ;
     for(Int_t i = 0; i < fNPtCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fPtCuts[i]);
@@ -1002,6 +1007,28 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
+  if(fMultiCutAnaAcc)
+  {
+    for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+    {
+      fhPtBinClusterEtaPhi[ipt] = new TH2F
+      (Form("hPtBin%d_Cluster_EtaPhi",ipt),
+       Form("#eta vs #phi, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhPtBinClusterEtaPhi[ipt]->SetYTitle("#phi (rad)");
+      fhPtBinClusterEtaPhi[ipt]->SetXTitle("#eta");
+      outputContainer->Add(fhPtBinClusterEtaPhi[ipt]) ;
+      
+      fhPtBinClusterColRow[ipt] = new TH2F
+      (Form("hPtBin%d_Cluster_ColRow",ipt),
+       Form("column vs row, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
+       96,0,96,8*24+2*8,0,8*24+2*8);
+      fhPtBinClusterColRow[ipt]->SetYTitle("row");
+      fhPtBinClusterColRow[ipt]->SetXTitle("column");
+      outputContainer->Add(fhPtBinClusterColRow[ipt]) ;
+    }
+  }
+  
   if(fMultiCutAna)
   {
 //    fhRePIDBits         = new TH2F*[fNPIDBits];
@@ -1032,7 +1059,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         if(fFillAngleHisto) fhRePtNCellAsymCutsSMOpAngle[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
       }
     }
-    
+        
     for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
     {
       for(Int_t icell=0; icell<fNCellNCuts; icell++)
@@ -1860,7 +1887,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   for(Int_t i = 0; i < fNPIDBits; i++) printf("%d ",fPIDBits[i]);
   printf("\n");
   
-  if(fMultiCutAna)
+  if(fMultiCutAna || fMultiCutAnaAcc)
   {
     printf("pT cuts: n = %d, \n",fNPtCuts) ;
     printf("\tpT > ");
@@ -2795,9 +2822,38 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     //------------------------------------------
     // Recover original cluster
-    //    Int_t iclus1 = -1 ;
-    //    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
-    //    if(!cluster1) AliWarning("Cluster1 not found!");
+    // Declare variables for absid col-row identification of pair
+    // Also fill col-row, eta-phi histograms depending on pt bin
+    
+    Int_t iclus1 = -1, iclus2 = -1 ;
+    Float_t maxCellFraction1 = 0, maxCellFraction2 = 0;
+    Int_t absIdMax1 = -1, absIdMax2 = -1;
+    Int_t   icol1 = -1, icol2 = -1, icolAbs1 = -1, icolAbs2 = -1;
+    Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
+    Int_t   iRCU1 = -1, iRCU2 = -1;
+
+    if(fMultiCutAnaAcc || fFillAngleHisto)
+    {
+      AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
+      if(!cluster1) AliWarning("Cluster1 not found!");
+      
+      absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
+      
+      GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
+      
+      if(fMultiCutAnaAcc)
+      { 
+        for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
+        {
+          if( p1->Pt() >   fPtCuts[ipt] && p1->Pt() < fPtCuts[ipt+1] )
+          {
+            fhPtBinClusterEtaPhi[ipt]->Fill(p1->Eta(),GetPhi(p1->Phi()),GetEventWeight()) ;
+            
+            fhPtBinClusterColRow[ipt]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
+          }
+        }
+      }
+    }
     
     //---------------------------------
     // Second loop on photons/clusters
@@ -3092,13 +3148,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Int_t   mod2 = module2;
           
           // Recover original cluster
-          Int_t iclus1 = -1, iclus2 = -1 ;
-          AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
           AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
+          if(!cluster2) AliWarning("Cluster2 not found!");
 
-          Float_t maxCellFraction1 = 0, maxCellFraction2 = 0;
-          Int_t absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
-          Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
+          absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
           
           if(e2 > e1)
           {
@@ -3142,10 +3195,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           fhReOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
           fhReOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
           
-          Int_t   icol1 = -1, icol2 = -1, icolAbs1 = -1, icolAbs2 = -1;
-          Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
-          Int_t   iRCU1 = -1, iRCU2 = -1;
-          GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
           GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
           
           //fhReOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
