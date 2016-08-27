@@ -31,6 +31,7 @@
 
 class TH1;
 class TH1F;
+class TH1D;
 class TH2F;
 class TFile;
 class TList;
@@ -43,13 +44,12 @@ class AliAnaCaloChannelAnalysis : public TObject {
 public:
       AliAnaCaloChannelAnalysis() ;                // default ctor
 	  virtual ~AliAnaCaloChannelAnalysis()  { ; }  // virtual dtor
-	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber, TString workDir, TString listName);
+	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName);
 
 	  void Run();
 
       //Setters
 	  void SetExternalMergedFile(TString inputName)     {fExternalFileName = inputName;}
-	  void SetNTrial(Int_t inputNr)                     {fTrial            = inputNr  ;}
       void SetQAChecks(Bool_t inputBool)                {fTestRoutine      = inputBool;}
 
 	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
@@ -67,13 +67,15 @@ protected:
 	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
 
 	  void FlagAsDead();
-	  void FlagAsBad(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
+	  void FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
 
+	  void SummarizeResultsByFlag();
 	  void SummarizeResults();
-	  TH1 *BuildMeanFromGood();
+	  TH1D *BuildMeanFromGood();
 	  Bool_t CheckDistribution(TH1* ratio, TH1* reference);
+	  Bool_t IsCoveredByTRD(Int_t row, Int_t collumn);
 	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
-	  void PlotFlaggedCells2D(Int_t flag1,Int_t flag2=-1,Int_t flag3=-1);
+	  void PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd=-1);
 	  void SaveHistoToFile();
 
 	  //Settings for analysed period
@@ -85,7 +87,6 @@ protected:
 	  Int_t   fCellStartDCal;               ///< ID of the first cell in the DCal
 
 	  //Genergal paths
-	  TString fMergeOutput;                 ///< Here the merged files of a period are saved for a later analysis
 	  TString fAnalysisOutput;              ///< The list with bad channels and histograms are saved in this folder
 	  TString fAnalysisInput;               ///< Here the .root files of each run of the period are saved
 	  TString fRunList;                     ///< Thats the full path and name of the file which contains a list of all runs to be merged together
@@ -109,7 +110,8 @@ protected:
 	  Int_t fNMaxRowsAbs;                   ///< Maximum No of rows in Calorimeter
 
 	  //arrays to store information
-	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 (bad by lower),3 (bad by upper)     start at 0 (cellID 0 = histobin 1)
+	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 and higher (bad certain criteria)     start at 0 (cellID 0 = histobin 1)
+	  Int_t fCriterionCounter;              //!<! This value will be written in fflag and updates after each PeriodAnalysis, to distinguish the steps at which cells are marked as bad
 
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs
