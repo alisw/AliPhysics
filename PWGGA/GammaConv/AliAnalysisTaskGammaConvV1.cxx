@@ -630,7 +630,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   fHistoNV0Tracks                = new TH1F*[fnCuts];
   fHistoEtaShift                 = new TProfile*[fnCuts];
   
-  if (fDoPhotonQA == 1){
+  if (fDoPhotonQA > 0){
     fHistoConvGammaPsiPairPt    = new TH2F*[fnCuts];
     fHistoConvGammaR            = new TH1F*[fnCuts];
     fHistoConvGammaEta          = new TH1F*[fnCuts];
@@ -875,7 +875,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fPhotonDCAList[iCut]->Add(tESDConvGammaPtDcazCat[iCut]);
     }
 
-    if(fDoPhotonQA == 1 && fIsMC < 2){
+    if(fDoPhotonQA > 0 && fIsMC < 2){
     
       fHistoConvGammaPsiPairPt[iCut]= new TH2F("ESD_ConvGamma_PsiPair_Pt","ESD_ConvGamma_PsiPair_Pt",500,0,5,250,0,25);
       if(fDoCentralityFlat > 0) fHistoConvGammaPsiPairPt[iCut]->Sumw2();
@@ -1002,7 +1002,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoTrueDalitzPsiPairDeltaPhi     = new TH2F*[fnCuts];
     fHistoTrueGammaPsiPairDeltaPhi      = new TH2F*[fnCuts];
 
-    if (fDoPhotonQA == 1 && fIsMC < 2){
+    if (fDoPhotonQA > 0 && fIsMC < 2){
       fHistoMCConvGammaR               = new TH1F*[fnCuts];
       fHistoMCConvGammaEta             = new TH1F*[fnCuts];
       fHistoTrueConvGammaPsiPairPt  = new TH2F*[fnCuts];
@@ -1128,7 +1128,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fHistoMCConvGammaPt[iCut]->Sumw2();
       }
       
-      if (fDoPhotonQA == 1 && fIsMC < 2){
+      if (fDoPhotonQA > 0 && fIsMC < 2){
         fHistoMCConvGammaR[iCut]           = new TH1F("MC_ConvGamma_R","MC_ConvGamma_R",800,0,200);
         fMCList[iCut]->Add(fHistoMCConvGammaR[iCut]);
         fHistoMCConvGammaEta[iCut]         = new TH1F("MC_ConvGamma_Eta","MC_ConvGamma_Eta",2000,-2,2);
@@ -1780,7 +1780,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if(fIsFromMBHeader){
         if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
         else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
-        if (fDoPhotonQA == 1 && fIsMC < 2){
+        if (fDoPhotonQA > 0 && fIsMC < 2){
           if(fDoCentralityFlat > 0){
             fHistoConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]);
             fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), fWeightCentrality[fiCut]);
@@ -1845,7 +1845,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         if(fIsFromMBHeader){
           if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-          if (fDoPhotonQA == 1 && fIsMC < 2){
+          if (fDoPhotonQA > 0 && fIsMC < 2){
             if(fDoCentralityFlat > 0){
               fHistoConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]);
               fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), fWeightCentrality[fiCut]);
@@ -1903,7 +1903,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if(fIsFromMBHeader){
         if(fDoCentralityFlat > 0) fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
         else fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-        if (fDoPhotonQA == 1 && fIsMC < 2){
+        if (fDoPhotonQA > 0 && fIsMC < 2){
           if(fDoCentralityFlat > 0){
             fHistoConvGammaPsiPairPt[fiCut]->Fill(PhotonCandidate->GetPsiPair(),PhotonCandidate->Pt(), fWeightCentrality[fiCut]);
             fHistoConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), fWeightCentrality[fiCut]);
