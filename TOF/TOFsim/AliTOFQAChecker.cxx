@@ -131,8 +131,8 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     minTOFrawTime=150.;//ns
     maxTOFrawTime=250.;//ns
   } else {
-    minTOFrawTime=175.;//ns
-    maxTOFrawTime=250.;//ns
+    minTOFrawTime=150.;//ns
+    maxTOFrawTime=225.;//ns
   } 
   Float_t minTOFrawTot = 10.;
   Double_t maxTOFrawTot = 15.;
