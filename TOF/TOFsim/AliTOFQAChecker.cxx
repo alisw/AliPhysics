@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -130,8 +131,8 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     minTOFrawTime=150.;//ns
     maxTOFrawTime=250.;//ns
   } else {
-    minTOFrawTime=200.;//ns
-    maxTOFrawTime=275.;//ns
+    minTOFrawTime=175.;//ns
+    maxTOFrawTime=250.;//ns
   } 
   Float_t minTOFrawTot = 10.;
   Double_t maxTOFrawTot = 15.;
