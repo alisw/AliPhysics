@@ -27,7 +27,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliGenEMCocktail.cxx
+  AliGenEMCocktailV2.cxx
   AliGenEMlib.cxx
+  AliGenEMlibV2.cxx
   )
 
 # Headers from sources
