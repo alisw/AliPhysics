@@ -73,6 +73,11 @@ class AliHFSystErr : public TNamed
     fIsPass4Analysis = flag;
     AliInfo("Settings for the pass4 analysis");  
   }
+  void SetIsBDTAnalysis(Bool_t flag){
+    fIsBDTAnalysis = flag;
+    AliInfo("Settings for the Lc BDT analysis");  
+  }
+
 
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
@@ -243,6 +248,9 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2013pPb0100();
 
   void InitLctopKpi2010pp();
+  void InitLctopKpi2010ppBDT();
+  void InitLctopKpi2013pPb();
+  void InitLctopKpi2013pPbBDT();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
@@ -267,11 +275,12 @@ class AliHFSystErr : public TNamed
   Bool_t fIsLowEnergy;     /// flag for the low energy (2.76TeV) run
   Bool_t fIsLowPtAnalysis; /// flag for the low pt analysis (no topological cuts)
   Bool_t fIsPass4Analysis; /// flag for the pass4 analysis
+  Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
 
   /// \cond CLASSIMP    
-  ClassDef(AliHFSystErr,7);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,8);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 
