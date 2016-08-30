@@ -1,7 +1,8 @@
 AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_tbroeker_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
-                                                     Bool_t deactivateTree=kFALSE // enabling this has priority over 'writeTree'! (needed for LEGO trains)
+                                                     Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
+                                                     TString resolutionfile = ""
                                                      )
 {
 
