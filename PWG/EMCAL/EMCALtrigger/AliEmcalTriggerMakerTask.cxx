@@ -19,14 +19,21 @@
 #include <TObjArray.h>
 #include <TParameter.h>
 
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerBitConfig.h"
+#include "AliEMCALTriggerDCSConfig.h"
+#include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliEmcalTriggerMakerTask.h"
+#include "AliEMCALTriggerMapping.h"
 #include "AliLog.h"
 #include "AliOADBContainer.h"
 
 #include <bitset>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -42,6 +49,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fV0InName("AliAODVZERO"),
   fBadFEEChannelOADB(""),
   fUseL0Amplitudes(kFALSE),
+  fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -57,6 +65,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fV0InName("AliAODVZERO"),
   fBadFEEChannelOADB(""),
   fUseL0Amplitudes(kFALSE),
+  fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -105,6 +114,7 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
     }
     fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
     fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches;bit nr", 64, -0.5, 63.5);
+    fQAHistos->CreateTH2("FastORMaskOnline", "Masked FastORs at online level; col; row", 48, -0.5, 47.5, 104, -0.5, 103.5);
     fOutput->Add(fQAHistos->GetListOfHistograms());
     PostData(1, fOutput);
   }
@@ -203,6 +213,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
 
 void AliEmcalTriggerMakerTask::RunChanged(){
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
+  if(fLoadFastORMaskingFromOCDB) InitializeFastORMaskingFromOCDB();
 }
 
 void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
@@ -215,6 +226,49 @@ void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
   for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
     TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
     fTriggerMaker->AddOfflineBadChannel(channelID->GetVal());
+  }
+}
+
+void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
+  fTriggerMaker->ClearFastORBadChannels();
+  AliCDBManager *cdb = AliCDBManager::Instance();
+
+  AliCDBEntry *en = cdb->Get("EMCAL/Calib/Trigger");
+  if(!en){
+    AliErrorStream() << GetName() << ": FastOR masking from CDB required, but OCDB entry is not available. No masking will be applied." << std::endl;
+    return;
+  }
+
+  AliEMCALTriggerDCSConfig *trgconf = dynamic_cast<AliEMCALTriggerDCSConfig *>(en->GetObject());
+  if(!trgconf){
+    AliErrorStream() << GetName() << ": Failed decoding OCDB entry: Object is not of type AliEMCALTriggerDCSConfig." << std::endl;
+    return;
+  }
+
+  for(int itru = 0; itru < fGeom->GetTriggerMapping()->GetNTRU(); itru++){
+    AliEMCALTriggerTRUDCSConfig *truconf = trgconf->GetTRUDCSConfig(itru);
+    Int_t fastOrAbsID;
+    // Test for each channel whether it is masked
+    // In case a masked channel is found, the absolute ID is
+    // calculated. For this the function GetAbsFastORIndexFromTRU
+    // is used - it is assumed that parameter 1 (iADC) corresponds to the
+    // channel ID.
+    // @TODO: Cross check channel ID
+    // @TODO: Mask decoding should be part of AliEMCALTriggerTRUDCSConfig itself
+    for(int ic = 0; ic < 96; ++ic){
+      if(((truconf->GetMaskReg(int(ic/16)) >> (ic % 16)) & 0x1) != 0){
+        fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ic, fastOrAbsID);
+        AliDebugStream(1) << GetName() << "Channel " << ic  << " in TRU " << itru << " ( abs fastor " << fastOrAbsID << ") masked." << std::endl;
+        fTriggerMaker->AddFastORBadChannel(fastOrAbsID);
+      }
+    }
+  }
+
+  // QA: Monitor all channels which are masked in the current run
+  Int_t globCol(-1), globRow(-1) ;
+  for(const auto &ifastOrID : fTriggerMaker->GetListOfBadFastORAbsIDs()){
+    fGeom->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(ifastOrID, globCol, globRow);
+    fQAHistos->FillTH2("FastORMaskOnline", globCol, globRow);
   }
 }
 
