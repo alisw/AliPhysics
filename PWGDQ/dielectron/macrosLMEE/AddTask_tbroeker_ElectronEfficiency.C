@@ -83,10 +83,6 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     task->SetPairCutMee(rejCutMee);
     task->SetPairCutTheta(rejCutTheta);
     task->SetPairCutPhiV(rejCutPhiV);
-    Double_t MeeBins[nBinsMee+1];
-    for(Int_t i=0;i<=nBinsMee;i++) { MeeBins[i] = MeeMin + i*(MeeMax-MeeMin)/nBinsMee; }
-    Double_t PteeBins[nBinsPtee+1];
-    for(Int_t i=0;i<=nBinsPtee;i++) { PteeBins[i] = PteeMin + i*(PteeMax-PteeMin)/nBinsPtee; }
     task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins,nBinsMee,MeeBins,nBinsPtee,PteeBins);
     task->SetDoPairing(kTRUE);
   }
