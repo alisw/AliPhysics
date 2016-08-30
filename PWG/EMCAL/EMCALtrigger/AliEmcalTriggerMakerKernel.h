@@ -29,6 +29,9 @@ const Double_t kEMCL0ADCtoGeV_AP = 0.018970588*4;  // 0.075882352;             /
 /**
  * @class AliEmcalTriggerMakerKernel
  * @brief Kernel of the EMCAL trigger patch maker
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * @author Salvatore Aiola, Yale University
+ * @since Oct. 22nd, 2015
  * @ingroup EMCALTRGFW
  *
  * The trigger maker kernel contains the core functionality of
@@ -81,12 +84,27 @@ public:
    */
   TObjArray *CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp=kFALSE);
 
+  /**
+   * Get the list of online masked FastOR's used in the trigger maker
+   * @return Absolute FastOR IDs (full EMCAL + DCAL in run2+) of masked channels
+   */
+  const std::set<Short_t> &GetListOfBadFastORAbsIDs() const { return fBadChannels; }
+
+  /**
+   * Get the list of bad cells used when calculating offline patch energy. These
+   * cells were not masked at online level, instead they were determined by a calibration
+   * algorithm.
+   * @return Absolute Cell IDs (full EMCAL + DCAL in run2+) of bad cells
+   */
+  const std::set<Short_t> &GetListOfOfflineBadCellAbsIDs() const { return fOfflineBadChannels; }
+
   void SetTriggerThresholdJetLow   ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[2][0] = a; fThresholdConstants[2][1] = b; fThresholdConstants[2][2] = c; }
   void SetTriggerThresholdJetHigh  ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[0][0] = a; fThresholdConstants[0][1] = b; fThresholdConstants[0][2] = c; }
   void SetTriggerThresholdGammaLow ( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[3][0] = a; fThresholdConstants[3][1] = b; fThresholdConstants[3][2] = c; }
   void SetTriggerThresholdGammaHigh( Int_t a, Int_t b, Int_t c ) { fThresholdConstants[1][0] = a; fThresholdConstants[1][1] = b; fThresholdConstants[1][2] = c; }
   void SetBackgroundThreshold(Int_t t)                           { fBkgThreshold             = t; }
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
+
   /**
    * Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
@@ -198,10 +216,19 @@ public:
   void SetMaxAbsCellTime(Double_t maxCellTime) { fMaxAbsCellTime = maxCellTime; }
 
   /**
-   * Set cut on the minimum
-   * @param minamp
+   * Set cut on the minimum cell amplitude
+   * @param minamp Min cell amplitude accepted
    */
   void SetMinFEEAmplitude(Double_t minamp) { fMinCellAmplitude = minamp; }
+
+  /**
+   * Apply online bad channel masking to offline channel energies. This means that
+   * cell energies in cells within FastOrs that are masked online are ignored. By
+   * applying this the online trigger acceptance can be applied to offline patches
+   * as well.
+   * @param[in] doApply If true the online masking is applied to offline patch energies
+   */
+  void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE);
 
   /**
    * Reset data grids
@@ -323,7 +350,7 @@ protected:
   std::set<Short_t>                         fBadChannels;                 ///< Container of bad channels
   std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
   TArrayF                                   fFastORPedestal;              ///< FastOR pedestal
-  const AliEMCALTriggerBitConfig           *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
+  const AliEMCALTriggerBitConfig           *fTriggerBitConfig;            ///< Trigger bit configuration, aliroot-dependent
 
   AliEMCALTriggerPatchFinder<double>       *fPatchFinder;                 ///< The actual patch finder
   AliEMCALTriggerAlgorithm<double>         *fLevel0PatchFinder;           ///< Patch finder for Level0 patches
@@ -340,6 +367,7 @@ protected:
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
   Double_t                                  fMaxAbsCellTime;              ///< Maximum allowed abs cell time (default - 1)
   Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
+  Bool_t                                    fApplyOnlineBadChannelsToOffline;   ///< Apply online bad channels to offline ADC values
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
