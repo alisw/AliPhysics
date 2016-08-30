@@ -5,7 +5,7 @@ MakeRealistic()
   gROOT->LoadMacro("AliAODTracklet.C+g");
   gROOT->LoadMacro("AliTrackletWeights.C+g");
 
-  AliTrackletWeights* weights = new AliTrackletWeights("weights");
+  AliTrackletPtPidStrWeights* weights = new AliTrackletPtPidStrWeights("weights");
 
   // --- pT weight ---------------------------------------------------
   // Unity in all centralities and pT 

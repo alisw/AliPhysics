@@ -5,7 +5,7 @@ MakeWeight()
   gROOT->LoadMacro("AliAODTracklet.C+g");
   gROOT->LoadMacro("AliTrackletWeights.C+g");
 
-  AliTrackletWeights* weights = new AliTrackletWeights("weights");
+  AliTrackletPtPidStrWeights* weights = new AliTrackletPtPidStrWeights("weights");
 
   TFile* ptFile = TFile::Open("../tracklets/REWEIGHTpt.root","READ");
 

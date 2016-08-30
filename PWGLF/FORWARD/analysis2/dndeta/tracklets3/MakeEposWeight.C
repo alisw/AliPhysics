@@ -31,7 +31,7 @@ MakeEposWeight(const char* file1, const char* file2)
   gROOT->LoadMacro("AliAODTracklet.C+g");
   gROOT->LoadMacro("AliTrackletWeights.C+g");
 
-  AliTrackletWeights* weights = new AliTrackletWeights("weights");
+  AliTrackletPtPidStrWeights* weights = new AliTrackletPtPidStrWeights("weights");
 
   // --- pT weight ---------------------------------------------------
   // Int_t    nBins  = 10;

@@ -30,7 +30,7 @@
 #include <TGraphErrors.h>
 #else
 // class AliAODTracklet;
-class AliTrackletWeights;
+class AliTrackletBaseWeights;
 class AliVEvent;
 class AliMultSelection;  // Auto-load 
 class TClonesArray;
@@ -323,7 +323,7 @@ public:
    * 
    * @param w Weights to use 
    */
-  virtual void SetWeights(AliTrackletWeights* w) {};
+  virtual void SetWeights(AliTrackletBaseWeights* w) {};
   /** 
    * Whether to use square root of square (product) weights 
    * 
@@ -984,10 +984,13 @@ protected:
    * 
    * @param tracklet Tracklet 
    * @param cent     Centrality 
+   * @param ipz      Z coordinate of IP
    * 
    * @return The weight - in this class always 1
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent);
+  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
+				Double_t        cent,
+				Double_t        ipz);
   /** 
    * Check if the tracklet passed is a signal tracklet 
    * 
@@ -1306,7 +1309,7 @@ public:
    * 
    * @param w 
    */
-  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
+  void SetWeights(AliTrackletBaseWeights* w) { fWeights = w; }
   /** 
    * Whether to use square root of square (product) weights 
    * 
@@ -1349,10 +1352,13 @@ protected:
    * 
    * @param tracklet Tracklet 
    * @param cent     Centrality 
+   * @param ipz      Z coordinate of IP
    * 
    * @return The weight - in this class always 1
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent);
+  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
+				Double_t        cent,
+				Double_t        ipz);
   /* @} */
   // -----------------------------------------------------------------
   /** 
@@ -1369,9 +1375,9 @@ protected:
   Bool_t MasterFinalize(Container* results);
   /* @} */
   // -----------------------------------------------------------------
-  AliTrackletWeights* fWeights;
-  TProfile2D*         fEtaWeight;  //! 
-  TH2*                fWeightCorr;    //! 
+  AliTrackletBaseWeights* fWeights;
+  TProfile2D*             fEtaWeight;  //! 
+  TH2*                    fWeightCorr;    //! 
   ClassDef(AliTrackletAODWeightedMCdNdeta,1); 
 };
 
@@ -2305,20 +2311,22 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
 
 //____________________________________________________________________
 Double_t AliTrackletAODdNdeta::LookupWeight(AliAODTracklet* tracklet,
-					    Double_t        cent)
+					    Double_t        cent,
+					    Double_t        ipz)
 {
   return 1;
 }
 //____________________________________________________________________
 Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
-						      Double_t        cent)
+						      Double_t        cent,
+						      Double_t        ipz)
 {
   // We don't check for weights, as we must have them to come this far 
   // if (!fWeights) {
   // AliWarning("No weights defined");
   // return 1;
   // }
-  Double_t w = fWeights->LookupWeight(tracklet, cent, fWeightCorr);
+  Double_t w = fWeights->LookupWeight(tracklet, cent, ipz, fWeightCorr);
   if (tracklet->IsMeasured()) 
     fEtaWeight->Fill(tracklet->GetEta(), cent, w);
     
@@ -2360,6 +2368,7 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
   // If we have no centrality bins  to fill, we return immediately 
   if (nAcc <= 0) return;
 
+  Double_t        ipz        = ip->GetZ();
   Double_t        nBare      = 0;
   Double_t        nMeasured  = 0;
   Double_t        nGenerated = 0;
@@ -2368,7 +2377,7 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
   AliAODTracklet* tracklet   = 0;
   TIter           nextTracklet(tracklets);
   while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
-    Double_t weight = LookupWeight(tracklet, cent);
+    Double_t weight = LookupWeight(tracklet, cent, ipz);
     UShort_t signal = CheckTracklet(tracklet);
     if (signal) fEtaPhi->Fill(tracklet->GetEta(), tracklet->GetPhi());
     if (tracklet->IsMeasured()) {
@@ -3181,13 +3190,13 @@ AliTrackletAODdNdeta::Create(Bool_t      mc,
 		  wnam.Data(), wfile->GetName());
 	return 0;
       }
-      if (!wobj->IsA()->InheritsFrom(AliTrackletWeights::Class())) {
+      if (!wobj->IsA()->InheritsFrom(AliTrackletBaseWeights::Class())) {
 	::Warning("Create", "Object %s from file %s not an "
-		  "AliTrackletWeights but a %s",
+		  "AliTrackletBaseWeights but a %s",
 		  wnam.Data(), wfile->GetName(), wobj->ClassName());
 	return 0;
       }
-      wret->SetWeights(static_cast<AliTrackletWeights*>(wobj));
+      wret->SetWeights(static_cast<AliTrackletBaseWeights*>(wobj));
       ret = wret;
     }
     else 
