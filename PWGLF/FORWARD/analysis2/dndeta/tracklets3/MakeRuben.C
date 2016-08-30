@@ -5,7 +5,7 @@ MakeRuben()
   gROOT->LoadMacro("AliAODTracklet.C+g");
   gROOT->LoadMacro("AliTrackletWeights.C+g");
 
-  AliTrackletWeights* weights = new AliTrackletWeights("weights");
+  AliTrackletPtPidStrWeights* weights = new AliTrackletPtPidStrWeights("weights");
   weights->SetMask(AliAODTracklet::kGenerated);
   weights->SetVeto(0x0);
     

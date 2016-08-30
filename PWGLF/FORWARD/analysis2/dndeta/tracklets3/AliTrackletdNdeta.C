@@ -2256,7 +2256,7 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
       res = TFile::Open("result.root","READ");
     }
     if (res) {
-      THStack* other = static_cast<THStack*>(res->Get("result"));
+      THStack* other = GetHS(res, "result");
       if (other)
 	DrawInPad(fBody, 0, other, "nostack same");
       out->cd();

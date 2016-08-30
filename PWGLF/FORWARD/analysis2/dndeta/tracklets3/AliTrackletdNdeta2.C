@@ -70,13 +70,13 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
     /** Draw weights */
     kWeights      = 0x0004,    
     /** Draw dNch/deta */
-    kdNdetas      = 0x0010,
+    kdNdetas      = 0x0008,
+    /** Draw alphas */
+    kSpecies      = 0x0010,
     /** Draw delta information */   
     kDeltas       = 0x0020,
     /** Draw backgrounds */
-    kBackgrounds  = 0x0040,
-    /** Draw alphas */
-    kAlphas       = 0x0080,
+    kDetails      = 0x0040,
     /** Whether to make a PDF */
     kPDF          = 0x0100,
     kPNG          = 0x0100,
@@ -87,7 +87,7 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
     /** Alternative markers */
     kAltMarker    = 0x0800,
     /** Default options */
-    kDefaultViz   = 0x07ff
+    kDefaultViz   = 0x03ff
   };
   /**
    * Calculation options 
@@ -783,8 +783,12 @@ void AliTrackletdNdeta2::Run(UInt_t      proc,
   Printf("***************************************************\n"
 	 "  Data file:       %s\n"
 	 "  Simulation file: %s\n"
-	 "  Output file:     %s\n",
-	 dataName, simName, outName);
+	 "  Output file:     %s\n"
+	 "  Processing:      0x%x\n"
+	 "  Visualize:       0x%x\n"
+	 "  Max(Nbins):      %d\n"
+	 "  Fudge:           %f\n",	
+	 dataName, simName, outName, proc, viz, maxBins, fudge);
   
 
   // Open the input files
@@ -838,6 +842,8 @@ void AliTrackletdNdeta2::Run(UInt_t      proc,
   
   out->Write();
 
+  if (fViz == 0) return; // Do not visualize anything
+  
   Visualize(realSums, simSums, realRess, simRess, out, maxBins);
 }
 
@@ -991,8 +997,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
     return false;
   }
 
-  TH1*     mid  = static_cast<TH1*>    (GetO(final, "mid"));
-  THStack* full = static_cast<THStack*>(GetO(final, "full"));
+  TH1*     mid  = GetH1(final, "mid");
+  THStack* full = GetHS(final, "full");
   if (!mid || !final) {
     Warning("ProcessBin", "Missing one of mid (%p) or full (%p)", mid, full);
     return false;
@@ -1035,8 +1041,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   final->cd();
   full->Write(full->GetName(), TObject::kOverwrite);
 
-  THStack* clos = static_cast<THStack*>(GetO(final, "closure"));
-  TH1*     clss = GetH1(GetT(outDir, Form("results%dd",dimen)), "closure");
+  THStack* clos = GetHS(final, "closure", false);
+  TH1*     clss = GetH1(GetT(outDir, Form("results%dd",dimen)), "closure", false);
   if (clos && clss) {
     copy = static_cast<TH1*>(clss->Clone(outDir->GetName()));
     copy->SetDirectory(0);
@@ -1462,11 +1468,7 @@ Bool_t AliTrackletdNdeta2::Deltas3D(Container*  realCont,
   sDeltaD->SetTitle(s3DeltaD->GetTitle()); sDeltaD->SetName("simDeltaD");
     
   TH1* f3  = FractionFit(outDir, r3DeltaM, s3DeltaC, s3DeltaP, s3DeltaS);
-  TH1* fit = ProjectDeltaFull(static_cast<TH3*>(f3));
-  WriteDeltas(outDir,rDeltaM,rDeltaI,
-	      sDeltaM,sDeltaI,sDeltaC,
-	      sDeltaP,sDeltaS,sDeltaD,
-	      fit);
+  TH3* ff3 = static_cast<TH3*>(f3);
 
   TDirectory* full = outDir->mkdir("full");
   r3DeltaM->SetDirectory(full); r3DeltaM->SetName("realDeltaM");
@@ -1477,7 +1479,26 @@ Bool_t AliTrackletdNdeta2::Deltas3D(Container*  realCont,
   s3DeltaP->SetDirectory(full); s3DeltaP->SetName("simDeltaP");
   s3DeltaS->SetDirectory(full); s3DeltaS->SetName("simDeltaS");
   s3DeltaD->SetDirectory(full); s3DeltaD->SetName("simDeltaD");
-
+  TH1* fit = 0;
+  if (ff3){    
+    ff3->SetDirectory(full);
+    ff3->SetName("simDeltaF");
+    TH2* fetaDelta = static_cast<TH2*>(ff3->Project3D("yx e"));
+    fetaDelta->SetName("simDeltaFF");
+    fetaDelta->SetDirectory(full);
+    fetaDelta->Scale(1./ff3->GetNbinsZ());
+    outDir->cd();
+    fit = fetaDelta->ProjectionY("simDeltaF");
+    fit->SetTitle("#Delta_{F}");
+    fit->SetDirectory(outDir);
+    fit->Scale(1. / fetaDelta->GetNbinsX());
+    // delete fetaDelta;
+  }
+  WriteDeltas(outDir,rDeltaM,rDeltaI,
+	      sDeltaM,sDeltaI,sDeltaC,
+	      sDeltaP,sDeltaS,sDeltaD,
+	      fit);
+  
   outParent->cd();
   return true;
 }
@@ -1489,45 +1510,50 @@ TH1* AliTrackletdNdeta2::FractionFit(TDirectory* outDir,
 				     TH1*        sDeltaP,
 				     TH1*        sDeltaS)
 {
+  // We don't do this, as it doesn't seem to do much. 
   return 0;
   if (!rDeltaM || !sDeltaC || !sDeltaP || !sDeltaS) {
     Warning("FractionFit", "Missing M=%p, C'=%s, P'=%s, or S'=%p",
 	    rDeltaM, sDeltaC, sDeltaP, sDeltaS);
     return 0;
   }
-  TH1*  arr[] = { rDeltaM, sDeltaC, sDeltaP, sDeltaS, 0 };
-  TH1** ptr   = arr;
-  while (*ptr) {
-    TH1* tmp = static_cast<TH1*>((*ptr)->Clone());
-    tmp->SetDirectory(0);
-    Double_t intg = tmp->Integral();
-    tmp->Scale(1./intg);
-    *ptr = tmp;
-    ptr++;
-  }
+  TDirectory* savDir = gDirectory;
+  gROOT->cd();
+  Double_t intg  = rDeltaM->Integral();
+  Double_t mintg = sDeltaP->Integral()+sDeltaS->Integral()+sDeltaC->Integral();
+  TH1*     dat   = static_cast<TH1*>(rDeltaM->Clone("tmpM"));
+  dat->SetDirectory(0);
+  dat->Scale(1./intg);
+  TH1*  sig   = static_cast<TH1*>(sDeltaP->Clone("tmpPS"));
+  sig->SetDirectory(0);
+  sig->Add(sDeltaS);
+  sig->Scale(1./sig->Integral()); // mintg);
+  TH1*  bg    = static_cast<TH1*>(sDeltaC->Clone("tmpC"));
+  bg->SetDirectory(0);
+  bg->Scale(1./bg->Integral()); // mintg);
+
   TObjArray mc;
   mc.SetOwner();
-  mc.Add(arr[1]);
-  mc.Add(arr[2]);
-  mc.Add(arr[3]);
-  TFractionFitter f(arr[0], &mc, "Q");
+  mc.Add(sig);
+  mc.Add(bg);
+  // mc.Add(arr[3]);
+  TFractionFitter f(dat, &mc, "Q");
   Int_t status = f.Fit();
+  savDir->cd();
   if (status != 0) {
     Warning("FractionFit", "Fit failed w/status=%d", status);
     return 0;
   }
   Printf("\nTemplate fits");
-  for (Int_t i = 0; i < 3; i++) {
+  for (Int_t i = 0; i < 2; i++) {
     Double_t v, e;
     f.GetResult(i, v, e);
     Printf("%30s=%6.4f +/- %6.4f",
 	   mc.At(i)->GetName(), e, v);
   }
   TH1* ret = f.GetPlot();
-
-  if (ret) {
-    ret->Scale(rDeltaM->Integral());
-  }
+  ret->Scale(intg);
+  delete dat;
   return ret;
 }
 
@@ -1547,9 +1573,9 @@ void AliTrackletdNdeta2::WriteDeltas(TDirectory* outDir,
   all->Add(rDeltaM);
   all->Add(rDeltaI);
   
-  TH1*     toScale[] = { sDeltaM,sDeltaI,sDeltaC, sDeltaP,sDeltaS,sDeltaD,fit,0};
-  Color_t  toColor[] = { kRed,   kOrange,kMagenta,kGreen, kBlue,  kPink, kBlack };
-  Style_t  toStyle[] = { 24,     25,     30,      26,     32,     30, 24    };
+  TH1*     toScale[] = {sDeltaM,sDeltaI,sDeltaC, sDeltaP,sDeltaS,sDeltaD,fit,0};
+  Color_t  toColor[] = {kRed,   kOrange,kMagenta,kGreen, kBlue,  kPink, kBlack};
+  Style_t  toStyle[] = {24,     25,     30,      26,     32,     30, 24    };
   TH1**    pScale    = toScale;
   Color_t* pColor    = toColor;
   Style_t* pStyle    = toStyle;
@@ -1583,7 +1609,9 @@ void AliTrackletdNdeta2::WriteDeltas(TDirectory* outDir,
   ratioIC->SetDirectory(outDir);
   ratios->Add(ratioIC);
 
-  TH1*     ratioF = static_cast<TH1*>(sDeltaC->Clone("ratioF"));
+  if (!fit) { ratios->Write(); return; }
+  
+  TH1*     ratioF = static_cast<TH1*>(fit->Clone("ratioF"));
   ratioF->SetTitle("#Delta_{fit}/#Delta_{M}");
   ratioF->Divide(rDeltaM);
   ratioF->SetDirectory(outDir);
@@ -1761,12 +1789,19 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
     ratio->SetDirectory(outDir);
   }
 
+  
   THStack* ratios  = new THStack("ratios", "");
+  TH1*     scaleC  = 0;
   ratios->Add(RatioH(rM.p, sM.p, "rMeaured"));
   ratios->Add(RatioH(rC.p, sC.p, "rBackground"));
   ratios->Add(RatioH(rS.p, sS.p, "rSignal"));
   ratios->Add(RatioH(rR.p, sG.p, "rResult"));
-  ratios->Add(AverageOverIPz(scale, scale->GetName(), 1, realZ,  0));
+  ratios->Add((scaleC = AverageOverIPz(scale, scale->GetName(), 1, realZ,  0)));
+  scaleC->SetMarkerColor(kBlack);
+  scaleC->SetMarkerColor(kGray);
+  scaleC->SetMarkerStyle(31);
+  scaleC->SetLineStyle(2);
+  scaleC->SetLineColor(kGray);
   
   TF1* tmp = new TF1("mid", "pol0", -.5, +.5);
   dndeta->Fit(tmp, "Q0R+");
@@ -2033,7 +2068,7 @@ Bool_t AliTrackletdNdeta2::Visualize(Container*  realSums,
 				     Int_t       maxBins)
 {
   // --- Visualization -----------------------------------------------
-  TH1* realCent = static_cast<TH1*>(GetO(outDir, "realCent"));
+  TH1* realCent = GetH1(outDir, "realCent");
   if (!realCent) {
     Warning("Visualize", "realCent histogram not found");
     return false;
@@ -2041,13 +2076,16 @@ Bool_t AliTrackletdNdeta2::Visualize(Container*  realSums,
   TString outName(gSystem->DirName(outDir->GetName()));
   outName.ReplaceAll(".root", "");
   CreateCanvas(outName);
-  VisualizeParams(realSums, simSums);
-  VisualizeGeneral(realRess, simRess);
-  VisualizeWeights(simRess);
-  for (Int_t i = 0; i < 4; i++) {
-    if ((fProc & (1 << i)) == 0) continue;
-    VisualizeFinal(outDir, i);
-    VisualizeClosure(outDir, i);
+  if (fViz & kParameters) VisualizeParams(realSums, simSums);
+  if (fViz & kGeneral)    VisualizeGeneral(realRess, simRess);
+  if (fViz & kWeights)    VisualizeWeights(simRess);
+
+  if (fViz &  kdNdetas) { 
+    for (Int_t i = 0; i < 4; i++) {
+      if ((fProc & (1 << i)) == 0) continue;
+      VisualizeFinal(outDir, i);
+      VisualizeClosure(outDir, i);
+    }
   }
   for (Int_t i = 1; i <= realCent->GetNbinsX() && i <= maxBins ; i++) {
     Double_t c1 = realCent->GetXaxis()->GetBinLowEdge(i);
@@ -2272,9 +2310,9 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   TDirectory* dd  = outDir->GetDirectory(Form("final%dd", i));
   if (!dd) return;
 
-  THStack* all = static_cast<THStack*>(GetO(dd, "full"));
-  TH1*     mid = static_cast<TH1*>    (GetO(dd, "mid"));
-  TH1*     pub = static_cast<TH1*>    (GetO(outDir, "published"));
+  THStack* all = GetHS(dd, "full");
+  TH1*     mid = GetH1(dd, "mid");
+  TH1*     pub = GetH1(outDir, "published");
   if (mid->GetMinimum() <= 0) mid->SetMinimum(all->GetMinimum("nostack"));
   Double_t max = TMath::Max(all->GetMaximum("nostack"),mid->GetMaximum());
   Double_t min = TMath::Min(all->GetMinimum("nostack"),mid->GetMinimum());
@@ -2340,7 +2378,7 @@ void AliTrackletdNdeta2::VisualizeClosure(TDirectory* outDir, Int_t i)
   TDirectory* dd  = outDir->GetDirectory(Form("final%dd", i));
   if (!dd) return;
 
-  THStack* all = static_cast<THStack*>(GetO(dd, "closure"));
+  THStack* all = GetHS(dd, "closure", false);
   if (!all) return;
   
   Double_t max = all->GetMaximum("nostack");
@@ -2494,13 +2532,15 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
   }
 
   Printf("%5.1f - %5.1f%%", c1, c2);
-  VisualizeSpecies(GetC(simList, centName));
-  VisualizePrimary(GetC(GetC(simList, centName), "generated"));
+  if (fViz & kSpecies) {
+    VisualizeSpecies(GetC(simList, centName));
+    VisualizePrimary(GetC(GetC(simList, centName), "generated"));
+  }
   for (Int_t i = 0; i < 4; i++) {
     if ((fProc & (1 << i)) == 0) continue;
-    VisualizeDelta(outDir, i);
-    VisualizeDetails(outDir, i);
-    VisualizeResult(outDir, i);
+    if (fViz & kDeltas)      VisualizeDelta(outDir, i);
+    if (fViz & kDetails)     VisualizeDetails(outDir, i);
+    if (fViz & kdNdetas)     VisualizeResult(outDir, i);
   }
   
   return true;
@@ -2529,8 +2569,8 @@ Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
     Container* species = GetC(cont[i], "types");
     if (!species) continue;
 
-    THStack* all    = static_cast<THStack*>(GetO(species, "all"));
-    THStack* toPion = static_cast<THStack*>(GetO(species, "toPion"));
+    THStack* all    = GetHS(species, "all");
+    THStack* toPion = GetHS(species, "toPion");
     
     
     TVirtualPad* p = fBody->GetPad(i+1);
@@ -2581,9 +2621,9 @@ Bool_t AliTrackletdNdeta2::VisualizePrimary(Container* simCont)
   if (!simCont) return true;
   ClearCanvas();
 
-  THStack*  all     = static_cast<THStack*>(GetO(GetC(simCont,"mix"),"all"));
-  THStack*  toPion  = static_cast<THStack*>(GetO(GetC(simCont,"mix"),"toPion"));
-  THStack*  toAll   = static_cast<THStack*>(GetO(GetC(simCont,"mix"),"toAll"));
+  THStack*  all     = GetHS(GetC(simCont,"mix"),"all");
+  THStack*  toPion  = GetHS(GetC(simCont,"mix"),"toPion");
+  THStack*  toAll   = GetHS(GetC(simCont,"mix"),"toAll");
   TH2*      etaPt   = GetH2(simCont, "etaPt");
   Int_t     etaM    = etaPt->GetXaxis()->FindBin(-.5);
   Int_t     etaP    = etaPt->GetXaxis()->FindBin(+.5);
@@ -2720,7 +2760,7 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
   q->GetPad(1)->SetRightMargin(0.15);
   q->GetPad(2)->SetRightMargin(0.15);
   TVirtualPad* qq = q->GetPad(1);
-  THStack* all = static_cast<THStack*>(GetO(outDir,"all"));
+  THStack* all = GetHS(outDir,"all");
   TLegend* l = DrawInPad(q,1,all,"nostack logx logy grid leg");
   l->SetBorderSize(0);
   l->SetFillStyle(0);
@@ -2734,7 +2774,7 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
 	    1-qq->GetTopMargin()-.01);
 
   
-  THStack* ratios = static_cast<THStack*>(GetO(outDir,"ratios"));
+  THStack* ratios = GetHS(outDir,"ratios");
   ratios->SetMinimum(.6);
   ratios->SetMaximum(1.4);
   qq = q->GetPad(2);
@@ -2767,8 +2807,8 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
   q->Divide(1,2,0,0);
   q->GetPad(1)->SetRightMargin(0.10);
   q->GetPad(2)->SetRightMargin(0.10);
-  TH2* scale     = static_cast<TH2*>(GetO(outDir,"scale"));
-  TH1* scaleProj = static_cast<TH2*>(GetO(outDir,"scaleProj"));
+  TH2* scale     = GetH2(outDir,"scale");
+  TH1* scaleProj = GetH1(outDir,"scaleProj");
   DrawInPad(q,1,scale,    "colz");
   DrawInPad(q,2,scaleProj,"");
   scale->SetYTitle("IP_{#it{z}}");
@@ -2836,8 +2876,8 @@ Bool_t AliTrackletdNdeta2::VisualizeDetails(TDirectory* outTop,
     TVirtualPad* q2 = pad->GetPad(1); q2->SetRightMargin(0.15);
     TVirtualPad* q1 = pad->GetPad(2); q1->SetRightMargin(0.15);
     
-    TH2* h2 = static_cast<TH2*>(outDir->Get(Form("full/%s", name)));
-    TH1* h1 = static_cast<TH1*>(outDir->Get(name));
+    TH2* h2 = GetH2(outDir, Form("full/%s", name));
+    TH1* h1 = GetH1(outDir, name);
     if (!h2 || !h1) {
       Warning("VisualizeDetails", "Didn't find full/%s (%p) or %s (%p)",
 	      name, name);
@@ -2910,7 +2950,7 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   p2->Draw();
   p2->SetNumber(2);
   
-  THStack* all = static_cast<THStack*>(GetO(outDir, "all"));
+  THStack* all = GetHS(outDir, "all");
   TLegend* l = DrawInPad(fBody,1,all, "nostack leg2");
   all->GetHistogram()->SetXTitle("#eta");
   all->GetHistogram()->SetYTitle(ObsTitle());
@@ -2928,7 +2968,7 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   ModLegend(p1, l, p1->GetLeftMargin()-.01, 1-yr,
 	    1-p1->GetRightMargin(), .99);
 
-  THStack* ratios = static_cast<THStack*>(GetO(outDir, "ratios"));
+  THStack* ratios = GetHS(outDir, "ratios");
   FixMinMax(ratios, true);
   DrawInPad(fBody,2,ratios, "nostack");
   ratios->GetHistogram()->SetXTitle("#eta");

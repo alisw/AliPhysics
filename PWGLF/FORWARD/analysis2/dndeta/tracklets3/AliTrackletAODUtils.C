@@ -415,6 +415,16 @@ public:
    */
   static TH2* GetH2(Container* parent, const char* name, Bool_t verb=true);
   /** 
+   * Get a 2D histogram from a directory 
+   * 
+   * @param parent Directory 
+   * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH2* GetH2(TDirectory* parent, const char* name, Bool_t verb=true);
+  /** 
    * Get a 3D histogram from a container 
    * 
    * @param parent Container 
@@ -424,6 +434,16 @@ public:
    * @return Pointer to histogram or null 
    */
   static TH3* GetH3(Container* parent, const char* name, Bool_t verb=true);
+  /** 
+   * Get a 3D histogram from a directory 
+   * 
+   * @param parent Directory 
+   * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH3* GetH3(TDirectory* parent, const char* name, Bool_t verb=true);
   /** 
    * Get a 2D profile from a container 
    * 
@@ -448,6 +468,26 @@ public:
   {
     return GetP1(parent, name, verb);
   }
+  /** 
+   * Get a stack from a container 
+   * 
+   * @param parent Container 
+   * @param name   Name of container 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to container or null 
+   */
+  static THStack* GetHS(Container* parent, const char* name,Bool_t verb=true);
+  /** 
+   * Get a stack from a directory 
+   * 
+   * @param parent Container 
+   * @param name   Name of container 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to container or null 
+   */
+  static THStack* GetHS(TDirectory* parent, const char* name,Bool_t verb=true);
   /** 
    * Get a container from a container 
    * 
@@ -1176,7 +1216,7 @@ TObject* AliTrackletAODUtils::GetO(TDirectory* parent,
   if (!o) {
     if (verb) ::Warning("GetO", "Object \"%s\" not found in \"%s\"",
 			name, parent->GetName());
-    parent->ls();
+    // parent->ls();
     return 0;
   }
   if (!cls) return o;
@@ -1203,7 +1243,17 @@ TH2* AliTrackletAODUtils::GetH2(Container* parent, const char* name, Bool_t v)
   return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
 }
 //____________________________________________________________________
+TH2* AliTrackletAODUtils::GetH2(TDirectory* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
+}
+//____________________________________________________________________
 TH3* AliTrackletAODUtils::GetH3(Container* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH3*>(GetO(parent, name, TH3::Class(), v));
+}
+//____________________________________________________________________
+TH3* AliTrackletAODUtils::GetH3(TDirectory* parent, const char* name, Bool_t v)
 {
   return static_cast<TH3*>(GetO(parent, name, TH3::Class(), v));
 }
@@ -1218,6 +1268,18 @@ TProfile2D* AliTrackletAODUtils::GetP2(Container* parent, const char* name,
 				       Bool_t v)
 {
   return static_cast<TProfile2D*>(GetO(parent, name, TProfile2D::Class(), v));
+}
+//____________________________________________________________________
+THStack*
+AliTrackletAODUtils::GetHS(TDirectory* parent, const char* name, Bool_t v)
+{
+  return static_cast<THStack*>(GetO(parent, name, THStack::Class(), v));
+}
+//____________________________________________________________________
+THStack*
+AliTrackletAODUtils::GetHS(Container* parent, const char* name, Bool_t v)
+{
+  return static_cast<THStack*>(GetO(parent, name, THStack::Class(), v));
 }
 //____________________________________________________________________
 AliTrackletAODUtils::Container*

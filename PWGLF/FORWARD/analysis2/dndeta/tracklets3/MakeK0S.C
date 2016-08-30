@@ -5,7 +5,7 @@ MakeK0S()
   gROOT->LoadMacro("AliAODTracklet.C+g");
   gROOT->LoadMacro("AliTrackletWeights.C+g");
 
-  AliTrackletWeights* weights = new AliTrackletWeights("weights");
+  AliTrackletPtPidStrWeights* weights = new AliTrackletPtPidStrWeights("weights");
 
   Double_t c2Bins[] = { 0, 2.5, 5, 7.5, 10, 20, 30,
 			40, 50, 60, 70, 80, 90, 100 };
