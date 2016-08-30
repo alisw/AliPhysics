@@ -106,6 +106,7 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliV0Result.h"
+#include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityRun2.h"
 
 using std::cout;
@@ -836,13 +837,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             }
         }
         
+        //------------------------------------------------
+        // Fill V0 tree over.
+        //------------------------------------------------
+
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         // Superlight adaptive output mode
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
         //Step 1: Sweep members of the output object TList and fill all of them as appropriate
         Int_t lNumberOfConfigurations = fListV0->GetEntries();
-        AliWarning(Form("Processing different configurations (%i detected)",lNumberOfConfigurations));
+        AliWarning(Form("[V0 Analyses] Processing different configurations (%i detected)",lNumberOfConfigurations));
         TH3F *histoout         = 0x0;
         AliV0Result *lV0Result = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurations; lcfg++){
@@ -906,13 +911,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 histoout -> Fill ( fCentrality, lMass, fTreeVariablePt );
             }
         }
-        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // End Superlight adaptive output mode
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
     }// This is the end of the V0 loop
-
-    //------------------------------------------------
-    // Fill V0 tree over.
-    //------------------------------------------------
 
     //------------------------------------------------
     // Rerun cascade vertexer!
@@ -1283,10 +1286,112 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                                    (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ) ) {
             fTreeCascade->Fill();
         }
-
         //------------------------------------------------
         // Fill tree over.
         //------------------------------------------------
+        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // Superlight adaptive output mode
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        
+        //Step 1: Sweep members of the output object TList and fill all of them as appropriate
+        Int_t lNumberOfConfigurationsCascade = fListCascade->GetEntries();
+        AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
+        TH3F *histoout         = 0x0;
+        AliCascadeResult *lCascadeResult = 0x0;
+        for(Int_t lcfg=0; lcfg<lNumberOfConfigurationsCascade; lcfg++){
+            lCascadeResult = (AliCascadeResult*) fListCascade->At(lcfg);
+            histoout  = lCascadeResult->GetHistogram();
+            
+            Float_t lMass = 0;
+            Float_t lRap  = 0;
+            Float_t lPDGMass = -1;
+            Float_t lNegdEdx = 100;
+            Float_t lPosdEdx = 100;
+            Float_t lBachdEdx = 100;
+            Short_t  lCharge = -2;
+            
+            if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
+                lCharge  = -1;
+                lMass    = fTreeCascVarMassAsXi;
+                lRap     = fTreeCascVarRapXi;
+                lPDGMass = 1.32171;
+                lNegdEdx = fTreeCascVarNegNSigmaPion;
+                lPosdEdx = fTreeCascVarPosNSigmaProton;
+                lBachdEdx= fTreeCascVarBachNSigmaPion;
+            }
+            if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
+                lCharge  = +1;
+                lMass    = fTreeCascVarMassAsXi;
+                lRap     = fTreeCascVarRapXi;
+                lPDGMass = 1.32171;
+                lNegdEdx = fTreeCascVarNegNSigmaProton;
+                lPosdEdx = fTreeCascVarPosNSigmaPion;
+                lBachdEdx= fTreeCascVarBachNSigmaPion;
+            }
+            if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
+                lCharge  = -1;
+                lMass    = fTreeCascVarMassAsOmega;
+                lRap     = fTreeCascVarRapOmega;
+                lPDGMass = 1.67245;
+                lNegdEdx = fTreeCascVarNegNSigmaPion;
+                lPosdEdx = fTreeCascVarPosNSigmaProton;
+                lBachdEdx= fTreeCascVarBachNSigmaKaon;
+            }
+            if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
+                lCharge  = +1;
+                lMass    = fTreeCascVarMassAsXi;
+                lRap     = fTreeCascVarRapXi;
+                lPDGMass = 1.67245;
+                lNegdEdx = fTreeCascVarNegNSigmaProton;
+                lPosdEdx = fTreeCascVarPosNSigmaPion;
+                lBachdEdx= fTreeCascVarBachNSigmaKaon;
+            }
+            
+            if (
+                //Check 1: Charge consistent with expectations
+                fTreeCascVarCharge == lCharge &&
+                
+                //Check 2: Basic Acceptance cuts
+                TMath::Abs(fTreeCascVarPosEta)<0.8 &&
+                TMath::Abs(fTreeCascVarNegEta)<0.8 &&
+                TMath::Abs(fTreeCascVarBachEta)<0.8 &&
+                TMath::Abs(lRap) < 0.5 &&
+                
+                //Check 3: Topological Variables
+                // - V0 Selections
+                fTreeCascVarDCANegToPrimVtx > lCascadeResult->GetCutDCANegToPV() &&
+                fTreeCascVarDCAPosToPrimVtx > lCascadeResult->GetCutDCAPosToPV() &&
+                fTreeCascVarDCAV0Daughters < lCascadeResult->GetCutDCAV0Daughters() &&
+                fTreeCascVarV0CosPointingAngle > lCascadeResult->GetCutV0CosPA() &&
+                fTreeCascVarV0Radius > lCascadeResult->GetCutV0Radius() &&
+                // - Cascade Selections
+                fTreeCascVarDCAV0ToPrimVtx > lCascadeResult->GetCutDCAV0ToPV() &&
+                TMath::Abs(fTreeCascVarV0Mass-1.116) < lCascadeResult->GetCutV0Mass() &&
+                fTreeCascVarDCABachToPrimVtx > lCascadeResult->GetCutDCABachToPV() &&
+                fTreeCascVarDCACascDaughters < lCascadeResult->GetCutDCACascDaughters() &&
+                fTreeCascVarCascCosPointingAngle > lCascadeResult->GetCutCascCosPA() &&
+                fTreeCascVarCascRadius > lCascadeResult->GetCutCascRadius() &&
+                
+                // - Miscellaneous
+                fTreeCascVarDistOverTotMom*lPDGMass < lCascadeResult->GetCutProperLifetime() &&
+                fTreeCascVarLeastNbrClusters > lCascadeResult->GetCutLeastNumberOfClusters() &&
+                
+                //FIXME: ADD REJECTION CUTS HERE//
+                
+                //Check 4: TPC dEdx selections
+                TMath::Abs(lNegdEdx )<lCascadeResult->GetCutTPCdEdx() &&
+                TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
+                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx()
+                ){
+                
+                //This satisfies all my conditionals! Fill histogram
+                histoout -> Fill ( fCentrality, lMass, fTreeCascVarPt );
+            }
+        }
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        // End Superlight adaptive output mode
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
     }// end of the Cascade loop (ESD or AOD)
 
