@@ -1142,13 +1142,6 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
   else if (fOnResetSendTo.EqualTo("mon")) fZMQresetBroadcast = fZMQmon;
   else if (fOnResetSendTo.EqualTo("out")) fZMQresetBroadcast = fZMQout;
 
-  if (fOnResetSendTo.IsNull()) fZMQresetBroadcast = NULL;
-  else if (fOnResetSendTo.EqualTo("in")) fZMQresetBroadcast = fZMQin;
-  else if (fOnResetSendTo.EqualTo("mon")) fZMQresetBroadcast = fZMQmon;
-  else if (fOnResetSendTo.EqualTo("out")) fZMQresetBroadcast = fZMQout;
-  if (fZMQresetBroadcast) printf("configured to bradcast resets on %s, socket %p\n", fOnResetSendTo.Data(), fZMQresetBroadcast);
-  if (fFullyDestroyAnalysisDataContainer) printf("configured to delete the fProducer/fConsumers of AliAnalysisDataContainer\n");
-
   delete options; //tidy up
 
   if (verbose)
