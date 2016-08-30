@@ -1692,6 +1692,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliMCParticle * mcpart,Int_t
   // Do the weighting
   Double_t factor = 1;
   if (_particlesourceidx <0) return 1;
+  if (_particlesourceidx >19) return 1;
   //calculate pt of array entry
   // 0.1 -25.GeV 0.05 per bin 498 bins
   Double_t wpos = ((_particlesourcept - 0.15)/ 0.05);
@@ -1710,6 +1711,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliMCParticle * mcpart,Int_t
     {
     /*dirty hack to include xi and omega- K0(0,+) phi <https://arxiv.org/pdf/1208.5717v2.pdf*/
     case bPhi:
+      factor=1;
       flucafactor =1./fPhi->Eval(_particlesourcept);
       break;
     case bK0S892:
@@ -1749,7 +1751,8 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliMCParticle * mcpart,Int_t
     }
 
   factor*=flucafactor;
-  if (factor <= 0) factor = 1.;
+  if (factor <= 0)  factor = 1.;
+  if (factor > 1E2) factor = 1;
   return factor;
 }
 // ########################################################################################
@@ -2155,7 +2158,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleMeson( AliMCParticle *  mcpa
       if(IsPromptDMeson(mcpart))return kTRUE;
       break;
     case bDSPlus:
-      idx = bDSPlus;
+      idx = bIdxDSPlus;
       if(IsPromptDMeson(mcpart))return kTRUE;
       break;
     case bDStarPlus:
