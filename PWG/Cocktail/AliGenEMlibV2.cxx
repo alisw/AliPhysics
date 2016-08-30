@@ -793,8 +793,34 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name)
   Int_t nPar                = fPtParametrization[0]->GetNpar();
   TString formulaPi0Scaled  = fPtParametrization[0]->GetExpFormula();
   
-  TString scaledPt          = Form("TMath::Sqrt(x*x + %.10f*%.10f - %.10f*%.10f)",fgkHM[np],fgkHM[np],fgkHM[0],fgkHM[0]);
-  formulaPi0Scaled.ReplaceAll("x", scaledPt.Data());
+  TString scaledPt          = Form("(TMath::Sqrt(x*x + %.10f*%.10f - %.10f*%.10f))",fgkHM[np],fgkHM[np],fgkHM[0],fgkHM[0]);
+  TString formulaPi0ScaledTemp  = "";
+  TString sub1                  = "";
+  TString sub2                  = "";
+  TString sub3                  = "";
+  for (Int_t i=0; i<scaledPt.Length(); i++) {
+    if (i>0) sub1               = formulaPi0Scaled(i-1, 1);
+    else sub1                   = "";
+    sub2                        = formulaPi0Scaled(i, 1);
+    if (i<scaledPt.Length()-1)
+      sub3                      = formulaPi0Scaled(i+1, 1);
+    else sub3                   = "";
+    
+    if (sub2.CompareTo("x")!=0) {
+      formulaPi0ScaledTemp += sub2;
+    } else if (sub2.CompareTo("x")==0) {
+      if (i==0) {
+        formulaPi0ScaledTemp += scaledPt;
+      } else if (sub1.CompareTo("e")!=0 && sub3.CompareTo("p")!=0) {
+        formulaPi0ScaledTemp += scaledPt;
+      } else {
+        formulaPi0ScaledTemp += sub2;
+      }
+    } else {
+      formulaPi0ScaledTemp += sub2;
+    }
+  }
+  formulaPi0Scaled = formulaPi0ScaledTemp;
   
   // VALUE MESON/PI AT 5 GeV/c
   Double_t NormPt       = 5.;
