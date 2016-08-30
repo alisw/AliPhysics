@@ -176,14 +176,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
     fPIDNSigma = gMaxNSigma; }
 
-  void SetParticleOfInterest(kParticleOfInterest poi) {
-    fParticleOfInterest = poi;}
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
   void SetEventClass(TString receivedEventClass){
     fEventClass = receivedEventClass;
   }
-    
+
+  void SetUseRapidity(Bool_t useRapidity = kTRUE){
+    fUseRapidity = useRapidity;
+  }
+
   void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
 
 
@@ -205,6 +207,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     }
 
     void SetVZEROCalibrationFile(const char* filename, const char* lhcPeriod);
+    void SetParticleOfInterest(kParticleOfInterest poi);
+
 
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
@@ -317,10 +321,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   kParticleOfInterest  fParticleOfInterest;//analyzed particle
   kDetectorUsedForPID   fPidDetectorConfig;//used detector for PID
+  Double_t fMassParticleOfInterest;//particle mass (for rapidity calculation) 
 
   Bool_t fUsePID; //flag to use PID 
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
+  Bool_t fUseRapidity;//flag to use rapidity instead of pseudorapidity in correlation histograms
   Double_t fPIDNSigma;//nsigma cut for PID
   Double_t fMinAcceptedPIDProbability;//probability cut for PID
 
