@@ -1452,3 +1452,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliV0Result
     }
     fListV0->Add(lV0Result);
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliCascadeResult *lCascadeResult )
+{
+    if (!fListCascade){
+        Printf("fListCascade does not exist. Creating...");
+        fListCascade = new TList();
+        fListCascade->SetOwner();
+        
+    }
+    fListCascade->Add(lCascadeResult);
+}
