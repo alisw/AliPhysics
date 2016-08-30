@@ -458,7 +458,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (!part) continue;
       if (part->GetPdgCode() == fPDG) {
         if (part->IsPhysicalPrimary()) {
-          fMITS_TPC->Fill(centrality,pT);
+          fMITS_TPC->Fill(centrality,part->Pt());
           fMDCAPrimaryTPC->Fill(centrality,part->Pt(),dca[0]);
         } else fMDCASecondaryTPC->Fill(centrality,part->Pt(),dca[0]);
         fMPtCorrection->Fill(pT,part->Pt() - pT);
