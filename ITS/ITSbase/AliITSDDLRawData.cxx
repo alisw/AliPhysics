@@ -107,7 +107,7 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       // During a number of runs in LHC16k and LHC16l, we had a time shift in ddl 3 (DDL 515) by 2 strips 
       //  due to a single event upset in the FEROMS
       // Apply shift here and undo it in the raw data reading.
-      if (ddl==3 && runno >=258391 && runno < 260025) {
+      if (ddl==3 && runno >=258391 && runno < 259941) {
         if (iz == 0)
           ix -= 2;
         else

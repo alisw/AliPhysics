@@ -535,7 +535,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input, UInt_t
         // This correction should is only applied on raw data. The opposite shift is applied when generating raw data in MC (in AliITSDDLRawData)
         // Most MC productions go directly from Hits to Digits, thus bypassing this procedure; that is also fine 
         // (the acceptance is slightly affected: 2 strips out of 768 become invisible, for 1/10 of the detector (1DDL))
-        if (ddl == 3 && runno >= 258391 && runno < 260025) {
+        if (ddl == 3 && runno >= 258391 && runno < 259941) {
           dStrip = 2.0;
         }
 	
