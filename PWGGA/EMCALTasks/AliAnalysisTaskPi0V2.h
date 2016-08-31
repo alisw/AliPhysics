@@ -32,25 +32,27 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     virtual void           UserExec(Option_t *option);
     virtual void           Terminate(Option_t *);
 
-    void                   SetTrigClass(const char *n)      {fTrigClass  = n;}
-    void		           SetVzCut(Double_t v )	        {fVzCut     = v;}
-    void		           SetClustNCell(Double_t c )	    {fNCellCut   = c;}
-    void		           SetClustE(Double_t e )	        {fECut       = e;}
-    void		           SetClustEta(Double_t e )	        {fEtaCut     = e;}
-    void		           SetV2M02Cut(Double_t m )	        {fV2M02Cut   = m;}
-    void                   SetV1M02Cut(Double_t m )         {fV1M02Cut   = m;}
-    void		           SetDrCut(Double_t m )	        {fDrCut      = m;}
-    void		           SetPi0Asy(Double_t a )	        {fPi0AsyCut  = a;}
-    void                   UseV2Clust(Bool_t e)             {fUseV2Clust  = e;}
-    void                   UseV1Clust(Bool_t e)             {fUseV1Clust  = e;}
-    void                   UseTrack(Bool_t e)               {fUseTrk = e;}
-    void                   SetV2ClustName(TString n)        {fV2ClustName = n;} 
-    void                   SetV1ClustName(TString n)        {fV1ClustName = n;} 
-    void                   SetTrackName(TString n)          {fTrackName = n;}
-    void		           UsePhosEPCali(Bool_t e)		    {fUsePhosEPCali = e;}
-    void                   SetPhosEPCaliFileName(TString n) {fPhosEPCaliFileName = n;}
-    void		           FlattenMostCent(Bool_t e)		{fFlattenMostCent = e;}
-    void                   FlattenSemiCent(Bool_t e)        {fFlattenSemiCent = e;}    
+    void                   SetTrigClass(const char *n)           {fTrigClass   = n;}
+    void		           SetVzCut(Double_t v )	             {fVzCut       = v;}
+    void		           SetClustNCell(Double_t c )	         {fNCellCut    = c;}
+    void		           SetClustE(Double_t e )	             {fECut        = e;}
+    void		           SetClustEta(Double_t e )	             {fEtaCut      = e;}
+    void		           SetV2M02Cut(Double_t m )	             {fV2M02Cut    = m;}
+    void                   SetV1M02Cut(Double_t m )              {fV1M02Cut    = m;}
+    void		           SetDrCut(Double_t m )	             {fDrCut       = m;}
+    void		           SetPi0Asy(Double_t a )	             {fPi0AsyCut   = a;}
+    void                   UseV2Clust(Bool_t e)                  {fUseV2Clust  = e;}
+    void                   UseV1Clust(Bool_t e)                  {fUseV1Clust  = e;}
+    void                   SetBoxSSCut(Double_t a, Double_t b)   {fBoxSSCutMin = a;
+                                                                  fBoxSSCutMax = b;}
+    void                   UseTrack(Bool_t e)                    {fUseTrk      = e;}
+    void                   SetV2ClustName(TString n)             {fV2ClustName = n;} 
+    void                   SetV1ClustName(TString n)             {fV1ClustName = n;} 
+    void                   SetTrackName(TString n)               {fTrackName   = n;}
+    void		           UsePhosEPCali(Bool_t e)		         {fUsePhosEPCali      = e;}
+    void                   SetPhosEPCaliFileName(TString n)      {fPhosEPCaliFileName = n;}
+    void		           FlattenMostCent(Bool_t e)		     {fFlattenMostCent    = e;}
+    void                   FlattenSemiCent(Bool_t e)             {fFlattenSemiCent    = e;}    
 
  private:
     Int_t                  ConvertToInternalRunNum(Int_t n);
@@ -98,6 +100,9 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Bool_t                 fUseV1Clust;       // pion Asymetry cut 0=off 1=on
     Bool_t                 fUseTrk;       // pion Asymetry cut 0=off 1=on
     Bool_t			       fUsePhosEPCali;		// use Phos flattening
+
+    Double_t               fBoxSSCutMin;
+    Double_t               fBoxSSCutMax;
 
     Double_t			   fCentrality;	  	//! Centrality
     Bool_t                 fFlattenMostCent;

@@ -14,6 +14,8 @@ AliAnalysisTask* AddTaskEMCALPi0V2 (
   Double_t v1M02cut         = 0.3, 
   Double_t drCut            = 0.025, 
   Double_t pi0Asy           = 0,
+  Double_t boxSSCutMin      = 0,
+  Double_t boxSSCutMax      = 0,
   Bool_t   usePhosEPCali    = kTRUE,
   Bool_t   flattenMostCent  = kFALSE,
   Bool_t   flattenSemiCent  = kFALSE,
@@ -43,6 +45,7 @@ AliAnalysisTask* AddTaskEMCALPi0V2 (
   task->SetV1M02Cut(v1M02cut);
   task->SetDrCut(drCut);
   task->SetPi0Asy(pi0Asy);
+  task->SetBoxSSCut(boxSSCutMin, boxSSCutMax);
   task->UseV2Clust(useV2Clust);
   task->UseV1Clust(useV1Clust);
   task->UseTrack(useTrk);
