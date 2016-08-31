@@ -41,7 +41,8 @@ public:
     void                 CreateGenerator();
 
     AliMCEvent* MCEvent() const {return fMCEvent;}
-    
+    const AliGenerator* GetGenerator() const { return fGenerator; }
+
     void 		 SetGenerator(AliGenerator* generator) { fGenerator = generator; }
     
     void		 SetSeedMode(Int_t mode) { fSeedMode = mode; }
