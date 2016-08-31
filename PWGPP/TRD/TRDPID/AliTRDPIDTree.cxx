@@ -34,7 +34,8 @@
 #include "AliESDInputHandler.h"
 #include "AliESDv0KineCuts.h"
 #include "AliESDv0.h"
-#include "AliCentrality.h"
+//#include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliTRDgeometry.h"
 #include "TTree.h"
 
@@ -232,10 +233,22 @@ void AliTRDPIDTree::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEve
     return;
   }
 
-  Float_t centralityFper=99;
+ // Float_t centralityFper=99;
 
-  AliCentrality *esdCentrality = esdEvent->GetCentrality();
-  centralityFper = esdCentrality->GetCentralityPercentile("V0M");
+ // AliCentrality *esdCentrality = esdEvent->GetCentrality();
+ // centralityFper = esdCentrality->GetCentralityPercentile("V0M");
+
+  Float_t centralityFper = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection * ) esdEvent->FindListObject("MultSelection");
+  if( !MultSelection) {
+   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+   AliWarning("AliMultSelection object not found!");
+  } else{
+      centralityFper = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
+
 
 
   const AliESDVertex* fESDEventvertex = esdEvent->GetPrimaryVertexTracks(); 
