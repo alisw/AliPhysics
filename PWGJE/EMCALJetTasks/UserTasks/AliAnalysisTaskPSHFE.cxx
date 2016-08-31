@@ -108,7 +108,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtAssocMix_MB(0),
     fHistPtTag_MB(0),
     fHistPhotoMismatch_MB(0),
-    fHistDPhi28dEdx_MB(0),
+    fHistDPhi18Spe_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -133,7 +133,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtAssocMix_EMC7(0),
     fHistPtTag_EMC7(0),
     fHistPhotoMismatch_EMC7(0),
-    fHistDPhi28dEdx_EMC7(0),
+    fHistDPhi18Spe_EMC7(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -158,7 +158,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtAssocMix_EMCJet(0),
     fHistPtTag_EMCJet(0),
     fHistPhotoMismatch_EMCJet(0),
-    fHistDPhi28dEdx_EMCJet(0)
+    fHistDPhi18Spe_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -305,7 +305,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtAssocMix_MB(0),
     fHistPtTag_MB(0),
     fHistPhotoMismatch_MB(0),
-    fHistDPhi28dEdx_MB(0),
+    fHistDPhi18Spe_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -330,7 +330,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtAssocMix_EMC7(0),
     fHistPtTag_EMC7(0),
     fHistPhotoMismatch_EMC7(0),
-    fHistDPhi28dEdx_EMC7(0),
+    fHistDPhi18Spe_EMC7(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -355,7 +355,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtAssocMix_EMCJet(0),
     fHistPtTag_EMCJet(0),
     fHistPhotoMismatch_EMCJet(0),
-    fHistDPhi28dEdx_EMCJet(0)
+    fHistDPhi18Spe_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -884,20 +884,41 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistDPhiDEtaMix28_EMCJet->GetZaxis()->SetTitle("Cts");
     
     //DPhi by dEdx for triggered particles 2-8 gev and assoc. particles >2gev
-    fHistDPhi28dEdx_MB = new TH2F("fHistDPhi28dEdx_MB", "Delta-Phi by dE/dx for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 300, -30, 130);
-    fHistDPhi28dEdx_MB->GetXaxis()->SetTitle("Delta-Phi");
-    fHistDPhi28dEdx_MB->GetYaxis()->SetTitle("dE/dx");
-    fHistDPhi28dEdx_MB->GetZaxis()->SetTitle("Cts");
+    fHistDPhi18Spe_MB = new TH2F("fHistDPhi18Spe_MB", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_MB->GetXaxis()->SetTitle("Delta-Phi");
+    fHistDPhi18Spe_MB->GetYaxis()->SetTitle("Species");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(0, "Unkown");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(1, "Electron");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(2, "Muon");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(3, "Pion");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(4, "Kaon");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(5, "Proton");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_MB->GetZaxis()->SetTitle("Cts");
     
-    fHistDPhi28dEdx_EMC7 = new TH2F("fHistDPhi28dEdx_EMC7", "Delta-Phi by dE/dx for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 300, -30, 130);
-    fHistDPhi28dEdx_EMC7->GetXaxis()->SetTitle("Delta-Phi");
-    fHistDPhi28dEdx_EMC7->GetYaxis()->SetTitle("dE/dx");
-    fHistDPhi28dEdx_EMC7->GetZaxis()->SetTitle("Cts");
+    fHistDPhi18Spe_EMC7 = new TH2F("fHistDPhi18Spe_EMC7", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMC7->GetXaxis()->SetTitle("Delta-Phi");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetTitle("Species");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(0, "Unkown");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(1, "Electron");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(2, "Muon");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(3, "Pion");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(4, "Kaon");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(5, "Proton");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMC7->GetZaxis()->SetTitle("Cts");
     
-    fHistDPhi28dEdx_EMCJet = new TH2F("fHistDPhiDEta28_EMCJet", "Delta-Phi by dE/dx for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 300, -30, 130);
-    fHistDPhi28dEdx_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
-    fHistDPhi28dEdx_EMCJet->GetYaxis()->SetTitle("dE/dx");
-    fHistDPhi28dEdx_EMCJet->GetZaxis()->SetTitle("Cts");
+    fHistDPhi18Spe_EMCJet = new TH2F("fHistDPhi18Spe_EMCJet", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetTitle("Species");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(0, "Unkown");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(1, "Electron");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(2, "Muon");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(3, "Pion");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(4, "Kaon");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(5, "Proton");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMCJet->GetZaxis()->SetTitle("Cts");
         
     // Delta Phi for tracks > 300MeV
     for(Int_t i=0; i<3; i++){
@@ -1418,7 +1439,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistDPhiDEta28_MB);
     fOutputMB->Add(fHistDPhiMix28_MB);
     fOutputMB->Add(fHistDPhiDEtaMix28_MB);
-    fOutputMB->Add(fHistDPhi28dEdx_MB);
+    fOutputMB->Add(fHistDPhi18Spe_MB);
     
     fOutputEMC7->Add(fHistPhotoMismatch_EMC7);
     fOutputEMC7->Add(fHistPtAssoc_EMC7);
@@ -1471,7 +1492,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistDPhiDEta28_EMC7);
     fOutputEMC7->Add(fHistDPhiMix28_EMC7);
     fOutputEMC7->Add(fHistDPhiDEtaMix28_EMC7);
-    fOutputEMC7->Add(fHistDPhi28dEdx_EMC7);
+    fOutputEMC7->Add(fHistDPhi18Spe_EMC7);
     
     fOutputEMCJet->Add(fHistPhotoMismatch_EMCJet);
     fOutputEMCJet->Add(fHistPtAssoc_EMCJet);
@@ -1524,7 +1545,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistDPhiDEta28_EMCJet);
     fOutputEMCJet->Add(fHistDPhiMix28_EMCJet);
     fOutputEMCJet->Add(fHistDPhiDEtaMix28_EMCJet);
-    fOutputEMCJet->Add(fHistDPhi28dEdx_EMCJet);
+    fOutputEMCJet->Add(fHistDPhi18Spe_EMCJet);
 
     // NEW HISTO added to fOutput here
     PostData(1, fOutputMB);
@@ -2729,19 +2750,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     fHistDPhi2_3_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMC7trg){
                     fHistDPhi2_3_EMC7[1]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMCJettrg){
                     fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
             }
 
@@ -2751,19 +2772,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     fHistDPhi3_4_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMC7trg){
                     fHistDPhi3_4_EMC7[1]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMCJettrg){
                     fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
             }
 
@@ -2773,19 +2794,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     fHistDPhi4_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMC7trg){
                     fHistDPhi4_EMC7[1]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMCJettrg){
                     fHistDPhi4_EMCJet[1]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
             }                    
         }
@@ -2851,19 +2872,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     fHistDPhi2_3_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMC7trg){
                     fHistDPhi2_3_EMC7[2]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMCJettrg){
                     fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
             }
 
@@ -2873,19 +2894,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     fHistDPhi3_4_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMC7trg){
                     fHistDPhi3_4_EMC7[2]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMCJettrg){
                     fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
             }
 
@@ -2895,19 +2916,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrac
                     fHistDPhi4_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMC7trg){
                     fHistDPhi4_EMC7[2]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
                 if(EMCJettrg){
                     fHistDPhi4_EMCJet[2]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
                 }
             }
         }
@@ -2958,6 +2979,32 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
 
         Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
+        
+        Int_t PID=0;
+        cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
+        switch(aodtrackassoc->GetMostProbablePID()){
+            case AliAODTrack::kElectron:
+                PID=1;
+                break;
+            case AliAODTrack::kMuon:
+                PID=2;
+                break;
+            case AliAODTrack::kPion:
+                PID=3;
+                break;
+            case AliAODTrack::kKaon:
+                PID=4;
+                break;
+            case AliAODTrack::kProton:
+                PID=5;
+                break;
+            case AliAODTrack::kDeuteron:
+                PID=6;
+                break;
+            case AliAODTrack::kUnknown:
+                PID=0;
+                break;
+        }
 
         //candidate 1<pt<2
         if(aodtrack->Pt()>1&&aodtrack->Pt()<2){
@@ -2966,12 +3013,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
                 if(MBtrg){
                     fHistDPhi300_500_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi300_500_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -2979,12 +3029,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
                 if(MBtrg){
                     fHistDPhi500_800_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi500_800_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -2992,12 +3045,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
                 if(MBtrg){
                     fHistDPhi800_1_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi800_1_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3005,12 +3061,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
                 if(MBtrg){
                     fHistDPhi1_2_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi1_2_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi1_2_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3018,12 +3077,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
                 if(MBtrg){
                     fHistDPhi2_3_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi2_3_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3031,12 +3093,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
                 if(MBtrg){
                     fHistDPhi3_4_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi3_4_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3044,12 +3109,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>4){
                 if(MBtrg){
                     fHistDPhi4_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi4_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi4_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
         }
@@ -3061,12 +3129,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
                 if(MBtrg){
                     fHistDPhi300_500_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi300_500_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3074,12 +3145,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
                 if(MBtrg){
                     fHistDPhi500_800_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi500_800_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3087,12 +3161,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
                 if(MBtrg){
                     fHistDPhi800_1_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi800_1_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3100,12 +3177,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
                 if(MBtrg){
                     fHistDPhi1_2_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi1_2_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi1_2_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3115,19 +3195,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi2_3_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi2_3_EMC7[1]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3137,19 +3217,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi3_4_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi,PID);
                 }
                 if(EMC7trg){
                     fHistDPhi3_4_EMC7[1]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3159,19 +3239,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi4_MB[1]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi4_EMC7[1]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi4_EMCJet[1]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }                    
         }
@@ -3183,12 +3263,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
                 if(MBtrg){
                     fHistDPhi300_500_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi300_500_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3196,12 +3279,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
                 if(MBtrg){
                     fHistDPhi500_800_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi500_800_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3209,12 +3295,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
                 if(MBtrg){
                     fHistDPhi800_1_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi800_1_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3222,12 +3311,15 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
                 if(MBtrg){
                     fHistDPhi1_2_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi1_2_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi1_2_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3237,19 +3329,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi2_3_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi2_3_EMC7[2]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3259,19 +3351,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi3_4_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi3_4_EMC7[2]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
 
@@ -3281,19 +3373,19 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi4_MB[2]->Fill(DPhi);
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_MB->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
                 }
                 if(EMC7trg){
                     fHistDPhi4_EMC7[2]->Fill(DPhi);
                     fHistDPhi28_EMC7->Fill(DPhi);
                     fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMC7->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 }
                 if(EMCJettrg){
                     fHistDPhi4_EMCJet[2]->Fill(DPhi);
                     fHistDPhi28_EMCJet->Fill(DPhi);
                     fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                    fHistDPhi28dEdx_EMCJet->Fill(DPhi, aodtrackassoc->GetTPCsignal());
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
                 }
             }
         }
@@ -3679,14 +3771,14 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
 
             //Pt distribution
             if(MBtrg){
-                fHistPtAssocMix_MB->Fill(aodtrack->Pt());
+                fHistPtAssocMix_MB->Fill(aodtrackassoc->Pt());
             }
             if(EMC7trg){
-                fHistPtAssocMix_EMC7->Fill(aodtrack->Pt());
+                fHistPtAssocMix_EMC7->Fill(aodtrackassoc->Pt());
             }
 
             if(EMCJettrg){
-                fHistPtAssocMix_EMCJet->Fill(aodtrack->Pt());
+                fHistPtAssocMix_EMCJet->Fill(aodtrackassoc->Pt());
             }
 
             //Fill Delta Phi variable and correct for periodicity
