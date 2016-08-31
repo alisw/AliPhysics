@@ -183,7 +183,7 @@ set(MODULE_LINK_FLAGS )
 #    instructions
 #  - DELETE the dynamic/static block if only dynamic libraries are needed
 #  - If you are not sure how to proceed please contact aliroot-git-admins@cern.ch
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
@@ -210,7 +210,7 @@ target_link_libraries(${MODULE} ${LIBDEPS})
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 #  - Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
+add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

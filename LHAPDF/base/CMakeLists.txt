@@ -46,7 +46,7 @@ set(LIBDEPS Core)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Additional compilation and linking flags
 set(CMAKE_C_FLAGS "-ansi ${CMAKE_C_FLAGS}")

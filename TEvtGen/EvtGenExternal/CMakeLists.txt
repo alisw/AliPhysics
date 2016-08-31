@@ -45,7 +45,7 @@ set(SRCS
 # No dictionary
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS})
+add_library_tested(${MODULE} SHARED ${SRCS})
 
 # Do not generate the ROOT map
 # Dependecies

@@ -123,7 +123,7 @@ set(LIBDEPS Core lhapdfbase)
 #generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/lhapdfLinkDef.h")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} ${CSRCS} ${FSRCS})
+add_library_tested(${MODULE} SHARED ${SRCS} ${CSRCS} ${FSRCS})
 
 # Definitions
 add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${AliRoot_SOURCE_DIR}/LHAPDF/PDFsets" -DCTEQ)

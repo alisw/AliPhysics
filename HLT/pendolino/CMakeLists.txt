@@ -63,7 +63,7 @@ set(LIBHLTPENDOLINO_VERSION 0)
 add_definitions("-DLIBHLTPENDELINO_VERSION=${LIBHLTPENDOLINO_VERSION}")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Additional compilation flags

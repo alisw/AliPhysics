@@ -101,6 +101,9 @@ include(CheckCompiler)
 # Utility to generate PARfiles
 include(cmake/GenParFile.cmake)
 
+set(ALILIBSTESTED "" CACHE INTERNAL "ALILIBSTESTED" FORCE)
+include(AddLibraryTested)
+
 # Shared library suffix
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
@@ -429,6 +432,15 @@ else()
     cmake/GetGitRevisionDescription.cmake
     cmake/GetGitRevisionDescription.cmake.in
     DESTINATION cmake)
+
+  enable_testing()
+  foreach(TEST_LIB ${ALILIBSTESTED})
+    add_test(load_library_${TEST_LIB}
+      env
+      LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+      DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+      root -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
+  endforeach()
 
   # Install test directory
   install(DIRECTORY test/ DESTINATION test USE_SOURCE_PERMISSIONS)

@@ -129,7 +129,7 @@ set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ADbase EMCALbase EMCA
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
+add_library_tested(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} STEERBase STEER ESD CDB RAWDatabase RAWDatarec ADbase EMCALbase EMCALUtils FMDbase FMDrec FMDsim ITSbase ITSsim ITSUpgradeBase ITSUpgradeSim MUONbase MUONgeometry MUONmapping MUONrec MUONsim PMDbase T0base TOFbase TPCbase TRDbase TRDrec VZERObase VZEROrec EveBase EG Eve Ged GenVector Gpad Gui Minuit RGL STAT MLP)
 
 # Additional compilation flags
