@@ -253,16 +253,16 @@ class AliDielectronTGReducedTrack : public TObject {
   Double_t fV0Eta; // V0 Eta
   Double_t fV0DCAr; // V0 DCAr
   Double_t fV0DCAz; // V0 DCAz
-  Double_t fV0X; //V0 conversion X
-  Double_t fV0Y; //V0 conversion Y
-  Double_t fV0Z; //V0 conversion Z
-  Double_t fV0R; //V0 conversion R
-  Double_t fV0Alpha; //V0 Armenteros Alpha
-  Double_t fV0Qt; //V0 Armenteros Qt
-  Double_t fV0Psi; //V0 Psi Pair
+  Double_t fV0X; // V0 conversion X
+  Double_t fV0Y; // V0 conversion Y
+  Double_t fV0Z; // V0 conversion Z
+  Double_t fV0R; // V0 conversion R
+  Double_t fV0Alpha; // V0 Armenteros Alpha
+  Double_t fV0Qt; // V0 Armenteros Qt
+  Double_t fV0Psi; // V0 Psi Pair
   Int_t fID;  // ID  
   Int_t fLabel;  // Label
-  Int_t fQualityFlags; //from ReducedTree
+  Int_t fQualityFlags; // from ReducedTree
     
 
   //Double_t fgData[kNMaxValues];        // data
@@ -358,8 +358,10 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
   void SetESDTrackCuts(AliESDtrackCuts *fCuts){ fESDtrackCuts = fCuts;}
   void SetPIDCuts(AliDielectronPID *fCuts){ fPIDCuts = fCuts;}
   void SetV0OpenCuts(AliESDv0KineCuts* const cuts) {fV0OpenCuts = cuts;}
-  void SetEvalEfficiency(Bool_t flag, Int_t GeneratorIndex){fEvalEfficiencyFlag = flag; 
+  void SetEvalEfficiency(Bool_t flag, Int_t GeneratorIndex){fEvalEfficiencyFlag = flag;
+ 
     fEvalEfficiencyIndex = GeneratorIndex;} 
+
 
  private:
   
@@ -394,10 +396,9 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
   Bool_t fEvalEfficiencyFlag; //flag to look at pure MC
   Int_t fEvalEfficiencyIndex; //flag to look at pure MC for this Generator index
 
-
-  TH2F  *hPtRap[3]; //All electrons/positrons generated/reco/accpeted
-  TH2F  *hPtRapConv[3]; //All conversion electrons/positrons generated/reco/accpeted
-  TH2F  *hRPtConv[3]; //All electrons/positrons from conversions generated/reco/accpeted (AliESDTrackCuts)
+  TH2F  *hPtRap[3]; //! All electrons/positrons generated/reco/accpeted
+  TH2F  *hPtRapConv[3]; //! All conversion electrons/positrons generated/reco/accpeted
+  TH2F  *hRPtConv[3]; //! All electrons/positrons from conversions generated/reco/accpeted (AliESDTrackCuts)
   
 
   AliAnalysisTaskTGReducedTree(const AliAnalysisTaskTGReducedTree&); // not implemented
