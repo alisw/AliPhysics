@@ -1573,6 +1573,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
 	  break;
+	case kTPCTOFexcl:// as a starting point, more details below
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPC;
+	  detUsedTPC = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPC);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPC[iSpecies];
+	  break;
 	default:
 	  break;
 	}//end switch: define detector mask
@@ -1626,9 +1633,44 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //end of QA-before pid
 	  
 	  if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
+	    
 	    //Make the decision based on the n-sigma
 	    if(fUsePIDnSigma) {
-	      if(nSigma > fPIDNSigma || nSigma < -fPIDNSigma) continue;  
+	      
+	      // exclusive determination of PID (also taking into account other particle species, works only for pions so far)
+	      if(fPidDetectorConfig == kTPCTOFexcl){
+		
+		Double_t nSigmaPionTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion));
+		Double_t nSigmaKaonTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon));
+		Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton));
+		
+		if( vPt > 0.2 && vPt < 0.6 ){
+		  
+		  if( nSigmaPionTPC > fPIDNSigma || nSigmaKaonTPC < fPIDNSigma || nSigmaProtonTPC < fPIDNSigma )
+		    continue;
+		}
+		else if(vPt > 0.6){
+		  
+		  Double_t nSigmaPionTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kPion));
+		  Double_t nSigmaKaonTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kKaon));
+		  Double_t nSigmaProtonTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton));
+		  
+		  if( nSigmaPionTPC > fPIDNSigma )
+		    continue;	
+		  
+		  if( nSigmaPionTOF > fPIDNSigma || nSigmaKaonTOF < fPIDNSigma || nSigmaProtonTOF < fPIDNSigma )
+		    continue;	
+		  
+		}
+		else{
+		  continue;
+		}
+	      }
+	      // else just normal nSigma cut
+	      else{
+		if(TMath::Abs(nSigma) > fPIDNSigma) 
+		  continue;
+	      }	    
 	      
 	      fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
 	      fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);

@@ -165,7 +165,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fAcceptanceParameterization = parameterization;}
 
   //pid
-  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF, kTPCTOFreq }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
+  enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF, kTPCTOFreq, kTPCTOFexcl }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
 
   void SetUseBayesianPID(Double_t gMinProbabilityValue) {
