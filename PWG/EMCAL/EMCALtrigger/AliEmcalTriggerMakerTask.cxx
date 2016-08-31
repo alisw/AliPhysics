@@ -245,7 +245,12 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
     return;
   }
 
-  for(int itru = 0; itru < fGeom->GetTriggerMapping()->GetNTRU(); itru++){
+  // In run 1 the small supermodules were not contributing to triggers.
+  // Still the TRUs are counted. As access to the TRU config is not properly
+  // protected the loop over NTRU from the geometry will produce a segfault.
+  // As temporary workaround the loop limits are obtained from the DCS data itself.
+  // @TODO change as soon as the DCS config object is fixed.
+  for(int itru = 0; itru < trgconf->GetTRUArr()->GetEntries(); itru++){
     AliEMCALTriggerTRUDCSConfig *truconf = trgconf->GetTRUDCSConfig(itru);
     Int_t fastOrAbsID;
     // Test for each channel whether it is masked
