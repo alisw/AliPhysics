@@ -263,14 +263,16 @@ public:
 
   // Shower shape smearing function
   
-  void             SetSmearingFunction(Int_t smfu)        { fSmearingFunction = smfu      ; }
-  Int_t            GetSmearingFunction()           const  { return fSmearingFunction      ; }
+  void             SetSmearingFunction(Int_t smfu)         { fSmearingFunction = smfu      ; }
+  Int_t            GetSmearingFunction()             const { return fSmearingFunction      ; }
   
   Bool_t           IsShowerShapeSmeared()            const { return fSmearShowerShape      ; }
   void             SwitchOnShowerShapeSmearing()           { fSmearShowerShape = kTRUE     ; }
   void             SwitchOffShowerShapeSmearing()          { fSmearShowerShape = kFALSE    ; }
   
   void             SetShowerShapeSmearWidth(Float_t w )    { fSmearShowerShapeWidth = w    ; }
+  
+  void             SetSmearingNLMRange(Int_t mi, Int_t ma) { fSmearNLMMin = mi ; fSmearNLMMax = ma ; }
   
   // Filling/ filtering / detector information access methods
   
@@ -783,7 +785,9 @@ public:
   Float_t          fSmearShowerShapeWidth;         ///<  Smear shower shape landau function "width" (use in MC).
   TRandom3         fRandom ;                       //!<! Random generator.
   Int_t            fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05). See enum smearingFunction 
-
+  Int_t            fSmearNLMMin ;                  ///< Do smearing for clusters with at least this value 
+  Int_t            fSmearNLMMax ;                  ///< Do smearing for clusters with at maximum this value
+  
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
   Int_t            fTrackMult          ;           ///<  Track multiplicity.
