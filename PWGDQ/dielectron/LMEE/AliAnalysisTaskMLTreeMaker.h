@@ -96,6 +96,15 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
     Printf("No pion PID in TPC applied");
   }
 
+  void StorePionSigmaValues( Bool_t answer = kFALSE){
+    fPionSigmas = answer;
+    Printf("Pion nSigma values for ITS, TPC and TOF will be written to tree");
+  }
+
+  void StoreKaonSigmaValues( Bool_t answer = kFALSE){
+    fKaonSigmas = answer;
+    Printf("Kaon nSigma values for ITS, TPC and TOF will be written to tree");
+  }
  private:
  
   AliPIDResponse *fPIDResponse;     //! PID response object
@@ -143,6 +152,11 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
   Bool_t fUsePionPIDTPC; //Use Pion nSigma information in TPC
 
+  //Flags to write extra particle PID information
+  //Initiliased to kFALSE
+  Bool_t fPionSigmas; 
+  Bool_t fKaonSigmas;
+
   Int_t fFilterBit;// track cut bit from track selection (default = 96)
 
   AliESDtrackCuts* fESDTrackCuts;
@@ -155,6 +169,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> EsigTOF;
   std::vector<Double_t> EsigITS;
   
+  std::vector<Double_t> PsigTPC;
+  std::vector<Double_t> PsigTOF;
+  std::vector<Double_t> PsigITS;
+
+  std::vector<Double_t> KsigTPC;
+  std::vector<Double_t> KsigTOF;
+  std::vector<Double_t> KsigITS;
+
   Bool_t hasMC;
   Bool_t IsHij;
  
@@ -201,5 +223,4 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
 
 #endif
-
 

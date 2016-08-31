@@ -78,6 +78,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
+  PsigTPC(0),
+  PsigTOF(0),
+  PsigITS(0),
+  KsigTPC(0),
+  KsigTOF(0),
+  KsigITS(0),
   fESigITSMin(-4.),
   fESigITSMax(1.),
   fESigTPCMin(-1.5),
@@ -86,6 +92,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   fESigTOFMax(3),
   fPSigTPCMin(-100.),
   fPSigTPCMax(4.),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fUsePionPIDTPC(kTRUE),
   hasMC(kFALSE),
   MCpt(0),
@@ -139,6 +147,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
+  PsigTPC(0),
+  PsigTOF(0),
+  PsigITS(0),
+  KsigTPC(0),
+  KsigTOF(0),
+  KsigITS(0),
   fESigITSMin(-4.),
   fESigITSMax(1.),
   fESigTPCMin(-1.5),
@@ -147,6 +161,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   fESigTOFMax(3),
   fPSigTPCMin(-100.),
   fPSigTPCMax(4.),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fUsePionPIDTPC(kTRUE),
   hasMC(kFALSE),
   MCpt(0),
@@ -242,6 +258,17 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTPC", &EsigTPC);
   fTree->Branch("EsigITS", &EsigITS);
   fTree->Branch("EsigTOF", &EsigTOF);
+
+  if(fPionSigmas){
+    fTree->Branch("PsigTPC", &PsigTPC);
+    fTree->Branch("PsigITS", &PsigITS);
+    fTree->Branch("PsigTOF", &PsigTOF);
+  }
+  if(fKaonSigmas){
+    fTree->Branch("KsigTPC", &PsigTPC);
+    fTree->Branch("KsigITS", &PsigITS);
+    fTree->Branch("KsigTOF", &PsigTOF);
+  }
   
   fTree->Branch("DCAxy", &dcar);
   fTree->Branch("DCAz", &dcaz);
@@ -258,15 +285,14 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   if(hasMC) {
       
-      fTree->Branch("Pdg", &pdg);
-      fTree->Branch("Pdg_Mother", &pdgmother);
-      fTree->Branch("Mother_label", &motherlabel);
-      fTree->Branch("Has_Mother", &hasmother);
-      
+    fTree->Branch("Pdg", &pdg);
+    fTree->Branch("Pdg_Mother", &pdgmother);
+    fTree->Branch("Mother_label", &motherlabel);
+    fTree->Branch("Has_Mother", &hasmother); 
   
-       fTree->Branch("MCpt", &MCpt);
-       fTree->Branch("MCeta", &MCeta);
-       fTree->Branch("MCphi", &MCphi);
+    fTree->Branch("MCpt", &MCpt);
+    fTree->Branch("MCeta", &MCeta);
+    fTree->Branch("MCphi", &MCphi);
   }
   
   PostData(1, fList);
@@ -373,6 +399,12 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   EsigTPC.clear();
   EsigTOF.clear();
   EsigITS.clear();
+  PsigTPC.clear();
+  PsigTOF.clear();
+  PsigITS.clear();
+  KsigTPC.clear();
+  KsigTOF.clear();
+  KsigITS.clear();
   MCpt.clear();
   MCeta.clear();
   MCphi.clear(); 
@@ -445,7 +477,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 0);
       Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 0);
       Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 0);
-
+      
       if(fUsePionPIDTPC){
         if (fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
       }
@@ -494,7 +526,22 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       EsigTPC.push_back(tempEsigTPC);
       EsigITS.push_back(tempEsigITS);
       EsigTOF.push_back(tempEsigTOF);
-
+      if(fPionSigmas){
+        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2);
+        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 2);
+        Double_t tempPsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 2);
+        PsigTPC.push_back(tempPsigTPC);
+        PsigITS.push_back(tempPsigITS);
+        PsigTOF.push_back(tempPsigTOF);
+      }
+      if(fKaonSigmas){
+        Double_t tempKsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 3);
+        Double_t tempKsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 3);
+        Double_t tempKsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 3);
+        KsigTPC.push_back(tempKsigTPC);
+        KsigITS.push_back(tempKsigITS);
+        KsigTOF.push_back(tempKsigTOF);
+      }
       eta.push_back(etatemp);
       phi.push_back(esdTrack->Phi());
       pt.push_back(pttemp);
@@ -549,5 +596,4 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   num++;
   return acceptedTracks;  
 }
-
 
