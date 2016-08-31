@@ -38,7 +38,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
                                                                  const Bool_t           i_pPb                     = kFALSE,
                                                                  const Bool_t           isQA                      = kFALSE,
-								 TString		configBasePath		  = ""
+                                                                 TString                configBasePath            = "",
+                                                                 const Int_t            bWhichToSmear               = 0
                                                                  )
 {
   
@@ -136,6 +137,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetDxBinning(DxBin);
   task->SetDzBinning(DzBin);
   task->SetDecayBinning(DecayBin);
+  task->SetSmearForClusters(bWhichToSmear);
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   

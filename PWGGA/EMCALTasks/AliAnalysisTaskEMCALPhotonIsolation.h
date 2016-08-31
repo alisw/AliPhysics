@@ -84,6 +84,7 @@ public:
   void                     SetLCAnalysis (Bool_t LC)                                       { fisLCAnalysis = LC;}
   void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut)                       { fIsNLMCut = isNLMCut;
     fNLMCut = NLMCut;}
+  void                     SetSmearForClusters( Int_t whichNLM)                            { fWhich= whichNLM;}
   void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
   void                     SetTMClusterRejectioninCone (Bool_t tm)                         { fTMClusterInConeRejected = tm;}
   void                     SetRejectEventWithoutTracks(Bool_t revwotr)                     { fRejectionEventWithoutTracks = revwotr;}
@@ -160,6 +161,7 @@ protected:
   Bool_t      fSSsmearing;
   Float_t     fSSsmearwidth;
   Float_t     fSSsmear_mean;
+  Int_t       fWhich;
   
     //    TList       *fOutputList; //!<! Output list
     //    TGeoHMatrix *fGeomMatrix[12];//!<! Geometry misalignment matrices for EMCal
@@ -316,7 +318,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 6);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 7);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif
