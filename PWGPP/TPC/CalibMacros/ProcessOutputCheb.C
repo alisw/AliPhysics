@@ -95,6 +95,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
       exit(1);
     }
     a->Add(c);
+    nJobs++;
   }
   if (lowStatJobs) {
     ::Error("ProcessOutput","%d out of %d timebins have low stat, will not update OCDB",lowStatJobs,nJobs);
