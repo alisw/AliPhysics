@@ -62,14 +62,45 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
     fFilterBit = filterBit;
   }
 
+  void SetESigRangeITS(Double_t min, Double_t max){
+    fESigITSMin = min;
+    fESigITSMax = max;
+    Printf("ITS electron nSigma values (inclusive)");
+    Printf(" Min = %f, Max = %f", fESigITSMin, fESigITSMax);
+  }
+
+  void SetESigRangeTPC(Double_t min, Double_t max){
+    fESigTPCMin = min;
+    fESigTPCMax = max;
+    Printf("TPC electron nSigma values (inclusive)");
+    Printf(" Min = %f, Max = %f", fESigTPCMin, fESigTPCMax);
+  }
+
+  void SetESigRangeTOF(Double_t min, Double_t max){
+    fESigTOFMin = min;
+    fESigTOFMax = max;
+    Printf("TOF electron nSigma values (inclusive)");
+    Printf(" Min = %f, Max = %f", fESigTOFMin, fESigTOFMax);
+  }
+
+  
+  void SetPSigRangeTPC(Double_t min, Double_t max){
+    fPSigTPCMin = min;
+    fPSigTPCMax = max;
+    Printf("TPC pion nSigma values (exclusive)");
+    Printf(" Min = %f, Max = %f", fPSigTPCMin, fPSigTPCMax);
+  }
+  
+  void TPCPionPID( Bool_t answer = kTRUE){ 
+    fUsePionPIDTPC = answer;
+    Printf("No pion PID in TPC applied");
+  }
 
  private:
-     
  
   AliPIDResponse *fPIDResponse;     //! PID response object
 
   //AliPIDCombined *fPIDCombined;    
-
      
   std::vector<Double_t> eta;
   std::vector<Double_t> phi;
@@ -79,35 +110,38 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> IsBG;
   std::vector<Int_t> runn;
   
-  Double_t pttemp;
-  Double_t etatemp;
-  
   Int_t n;
   Double_t cent;
   
   Double_t IsEventAccepted(AliESDEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   
- AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
+  AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
- AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
-
+  AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   TList *fList;//output list for QA histograms
 
-
   Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
-
   Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
 
   Double_t fPtMin;// minimum pT threshold (default = 0)
-
   Double_t fPtMax;// maximum pT threshold (default = 1000)
-
   Double_t fEtaMin;// minimum eta threshold (default = -10)
-
   Double_t fEtaMax;// maximum eta threshold (default = 10)
 
+  //Electron nSigma values, initilaised to common cut values but can be set manually 
+  Double_t fESigITSMin;
+  Double_t fESigITSMax;
+  Double_t fESigTPCMin;
+  Double_t fESigTPCMax;
+  Double_t fESigTOFMin;
+  Double_t fESigTOFMax;
+  //Pion nSigma values, initilaised to common cut values but can be set manually 
+  Double_t fPSigTPCMin; 
+  Double_t fPSigTPCMax; 
+
+  Bool_t fUsePionPIDTPC; //Use Pion nSigma information in TPC
 
   Int_t fFilterBit;// track cut bit from track selection (default = 96)
 
@@ -121,12 +155,6 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> EsigTOF;
   std::vector<Double_t> EsigITS;
   
-  
- Double_t tempEsigTPC;
- Double_t tempEsigTPC2;
- Double_t tempEsigTOF;
- Double_t tempEsigITS;
-
   Bool_t hasMC;
   Bool_t IsHij;
  
@@ -135,21 +163,13 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> MCphi;
   
   std::vector<Float_t> dcar;    //DCA
-
   std::vector<Float_t> dcaz;
   
-  Float_t tempdca[2];
-
   Double_t vertx;
   Double_t verty;
   Double_t vertz; 
   
-  Double_t vert[3];
-
-  
   std::vector<Int_t> nITS;
-  Int_t tempnits;
-  Double_t nitssharedtemp;
   std::vector<Double_t> nITSshared;
   std::vector<Double_t> chi2ITS;
   std::vector<Double_t> chi2TPC;
@@ -162,11 +182,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> hasmother;
   std::vector<Int_t> motherlabel;
   
-  
-  
-  
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
-
   
 //  Double_t probs[AliPID::kSPECIESC];
 
@@ -185,4 +201,5 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 
 
 #endif
+
 
