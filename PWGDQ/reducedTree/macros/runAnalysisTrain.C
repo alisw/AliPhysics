@@ -92,6 +92,10 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
      inputHandler = new AliESDInputHandler();
      ((AliESDInputHandler*)inputHandler)->SetReadFriends(kFALSE);
    }
+   if(inputTypeStr.Contains("aod")) {                               // AODs
+      inputHandler = new AliAODInputHandler();
+      //((AliAODInputHandler*)inputHandler)->SetReadFriends(kFALSE);
+   }
    if(inputTypeStr.Contains("reducedevent")) {              // AliReducedEventInfo
       inputHandler = new AliReducedEventInputHandler();
       ((AliReducedEventInputHandler*)inputHandler)->SetInputEventType(AliReducedEventInputHandler::kReducedEventInfo);
@@ -113,15 +117,15 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    //   gROOT->LoadMacro("AddTaskTender.C");
    //   AddTaskTender();
 
-   if(inputTypeStr.Contains("esd")) {         // no need if we run over reduced events
+   if(inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod")) {         // no need if we run over reduced events
       //==== Physics Selection ====
       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
 
       //===== ADD CENTRALITY: ===
-      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-      AddTaskCentrality();
-      /* // For Run-2 Pb-Pb there is a new way to get centrality. Below are the lines of code presented by David Chinellato at the PF in 11 december 2015
+      /*gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+      AddTaskCentrality();*/
+       // For Run-2 Pb-Pb there is a new way to get centrality. Below are the lines of code presented by David Chinellato at the PF in 11 december 2015
        gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
        AddTaskMultSelection();
        // we also need to add something like the lines below, in the analysis task:
@@ -137,7 +141,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
        //   // If this happens, re-check if AliMultSelectionTask ran before your task!
        //   AliInfo("Didn't find MultSelection!");
        // }
-       */
+      
 
       //===== ADD PID RESPONSE: ===
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -145,17 +149,17 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    }
    
    //===== Add the reduced event producer task, if needed
-   if(inputTypeStr.Contains("esd")) {         // if we run over reduced events this not needed anymore
+   if(inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod")) {         // if we run over reduced events this not needed anymore
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_dst.C");
       AddTask_iarsene_dst(reducedEventType, writeTree);
    }
    //===== Add consumer tasks for the reduced events
-   /*gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
-   if(inputTypeStr.Contains("esd"))
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
+   if(inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod"))
       AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents);
    if(inputTypeStr.Contains("reducedevent") || inputTypeStr.Contains("baseevent"))
       AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree);
-   */
+   
    // Enable debug printouts
    //mgr->SetDebugLevel(10);
 
