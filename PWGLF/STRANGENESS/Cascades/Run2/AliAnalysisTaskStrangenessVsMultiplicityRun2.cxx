@@ -1340,8 +1340,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
                 lCharge  = +1;
-                lMass    = fTreeCascVarMassAsXi;
-                lRap     = fTreeCascVarRapXi;
+                lMass    = fTreeCascVarMassAsOmega;
+                lRap     = fTreeCascVarRapOmega;
                 lPDGMass = 1.67245;
                 lNegdEdx = fTreeCascVarNegNSigmaProton;
                 lPosdEdx = fTreeCascVarPosNSigmaPion;
