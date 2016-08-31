@@ -140,6 +140,10 @@ public:
   void         SetTimeCut(Double_t min, Double_t max) {
                           fTimeCutMin = min ; fTimeCutMax = max              ; }
     
+  void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
+  void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
+
+  
   // Histogram switchs
   
   void SwitchOnFillAllCellTimeHisto()           { fFillAllCellTimeHisto = kTRUE  ; }
@@ -177,6 +181,9 @@ public:
   
   // Analysis not to be used in QA
   
+  void SwitchOnAcceptanceHistoPerEBin()         { fFillEBinAcceptanceHisto = kTRUE  ; }
+  void SwitchOffAcceptanceHistoPerEBin()        { fFillEBinAcceptanceHisto = kFALSE ; }
+  
   void SwitchOnStudyClustersAsymmetry()         { fStudyClustersAsymmetry = kTRUE  ; }
   void SwitchOffStudyClustersAsymmetry()        { fStudyClustersAsymmetry = kFALSE ; }
 
@@ -210,6 +217,8 @@ public:
   Bool_t   fFillPi0PairDiffTime;                ///<  Fill time difference histograms of cluster pairs in pi0 mass window, only if  fFillAllPi0Histo=kTRUE
   Bool_t   fFillInvMassInEMCALWithPHOSDCalAcc;  ///<  Fill invariant mass histograms of EMCal clusters in DCal and PHOS eta acceptance each, only if  fFillAllPi0Histo=kTRUE
   
+  Bool_t   fFillEBinAcceptanceHisto;            ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
+  
   Bool_t   fCorrelate   ;                       ///<  Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Bool_t   fStudyBadClusters;                   ///<  Study bad clusters not passing selection criteria (exotic, shower shape, n cells). 
   
@@ -235,6 +244,8 @@ public:
   Float_t  fPHOSCellAmpMin ;                    ///<  Amplitude Threshold on PHOS cells
   Int_t    fEMCALClusterNCellMin;               ///<  Minimum number of cells on EMCal clusters
   Int_t    fPHOSClusterNCellMin ;               ///<  Minimum number of cells on PHOS clusters
+  Float_t  fEBinCuts[15] ;                      ///<  Energy bins cut 
+  Int_t    fNEBinCuts;                          ///<  Number of energy bin cuts
 
   // Invariant mass analysis
   
@@ -585,6 +596,10 @@ public:
   TH2F *   fhTrackMatchedDEtaPosMod;            //!<! Eta distance between positive track and cluster vs module for E > 0.5 GeV
   TH2F *   fhTrackMatchedDPhiPosMod;            //!<! Phi distance between positive track and cluster vs module for E > 0.5 GeV
   
+  TH2F *  fhEBinClusterEtaPhi[14] ;             //!<! Eta-Phi location of cluster in different energy bins.
+  TH2F *  fhEBinClusterColRow[14] ;             //!<! Column and row location of cluster max E cell in different energy bins.
+  TH2F *  fhEBinCellColRow   [14] ;             //!<! Column and row location of cell in different energy bins.
+
   /// Copy constructor not implemented.
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;
     

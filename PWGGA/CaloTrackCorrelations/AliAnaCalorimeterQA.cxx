@@ -54,6 +54,7 @@ fFillAllTH3(kFALSE),
 fFillAllTMHisto(kTRUE),                
 fFillAllPi0Histo(kTRUE),               fFillInvMassOpenAngle(kFALSE),               
 fFillPi0PairDiffTime(kFALSE),          fFillInvMassInEMCALWithPHOSDCalAcc(kFALSE), 
+fFillEBinAcceptanceHisto(kFALSE),
 fCorrelate(kTRUE),                     fStudyBadClusters(kFALSE),               
 fStudyClustersAsymmetry(kFALSE),       fStudyExotic(kFALSE),
 fStudyWeight(kFALSE),
@@ -64,7 +65,8 @@ fNMaxCols(48),                         fNMaxRows(24),
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fCellAmpMin(0),                        
 fEMCALCellAmpMin(0),                   fPHOSCellAmpMin(0),                    
-fEMCALClusterNCellMin(0),              fPHOSClusterNCellMin(0),                    
+fEMCALClusterNCellMin(0),              fPHOSClusterNCellMin(0),  
+fNEBinCuts(0),
 
 // Invariant mass
 fInvMassMinECut(0),                    fInvMassMaxECut(0),                    
@@ -266,6 +268,13 @@ fhTrackMatchedDEtaPosMod(0),           fhTrackMatchedDPhiPosMod(0)
     fhGenMCAccE[i]      = 0;
     fhGenMCAccPt[i]     = 0;
     fhGenMCAccEtaPhi[i] = 0;
+  }
+  
+  for(Int_t i = 0; i < 14; i++)
+  {
+    fhEBinClusterEtaPhi[i] = 0 ;
+    fhEBinClusterColRow[i] = 0 ;
+    fhEBinCellColRow   [i] = 0 ; 
   }
   
   InitParameters();
@@ -523,6 +532,17 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       fhAmpWeirdMod->Fill(amp, nModule, GetEventWeight());
       if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
         
+      if(fFillEBinAcceptanceHisto)
+      {
+        for(Int_t ie = 0; ie < fNEBinCuts; ie++)
+        {
+          if( amp >= fEBinCuts[ie] && amp < fEBinCuts[ie+1] )
+          {            
+            fhEBinCellColRow[ie]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+          }
+        }
+      }
+  
       // E cross for exotic cells
       if(amp > 0.05)
       {
@@ -973,8 +993,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   Float_t e   = fClusterMomentum.E();
   Float_t pt  = fClusterMomentum.Pt();
   Float_t eta = fClusterMomentum.Eta();
-  Float_t phi = fClusterMomentum.Phi();
-  if(phi < 0) phi +=TMath::TwoPi();
+  Float_t phi = GetPhi(fClusterMomentum.Phi());
   
   AliDebug(1,Form("cluster: E %2.3f, pT %2.3f, eta %2.3f, phi %2.3f",e,pt,eta,phi*TMath::RadToDeg()));
   
@@ -989,9 +1008,27 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   fhPhi    ->Fill(phi, GetEventWeight());
   fhEta    ->Fill(eta, GetEventWeight());
   
-  if ( fFillAllTH3 )  fhEtaPhiE->Fill(eta, phi, e, GetEventWeight());
-  else if ( e > 0.5 ) fhEtaPhi ->Fill(eta, phi,    GetEventWeight());
-
+  if(fFillEBinAcceptanceHisto)
+  {
+    Float_t maxCellFraction = 0;
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,clus,maxCellFraction);
+    
+    Int_t icol = -1, irow = -1, iRCU = -1, icolAbs = -1, irowAbs = -1;
+    GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+    
+    for(Int_t ie = 0; ie < fNEBinCuts; ie++)
+    {
+      if( e >= fEBinCuts[ie] && e < fEBinCuts[ie+1] )
+      {
+        fhEBinClusterEtaPhi[ie]->Fill(eta,phi,GetEventWeight()) ;
+        
+        fhEBinClusterColRow[ie]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+      }
+    }
+  }
+  else if ( fFillAllTH3 ) fhEtaPhiE->Fill(eta, phi, e, GetEventWeight());
+  else if ( e > 0.5     ) fhEtaPhi ->Fill(eta, phi,    GetEventWeight());
+  
   // Cells per cluster
   fhNCellsPerCluster->Fill(e, nCaloCellsPerCluster, GetEventWeight());
 
@@ -1028,7 +1065,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
 /// and the call to the different methods
 /// filling different type of histograms:
 /// * Basic cluster histograms for good or bad clusters
-/// * Excotic cluster histograms
+/// * Exotic cluster histograms
 /// * Cells in cluster
 /// * Invariant mass
 /// * Matched clusters histograms
@@ -2025,22 +2062,25 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhEta->SetXTitle("#eta ");
   outputContainer->Add(fhEta);
   
-  if(fFillAllTH3)
+  if(!fFillEBinAcceptanceHisto)
   {
-    fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
-                           netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
-    fhEtaPhiE->SetXTitle("#eta ");
-    fhEtaPhiE->SetYTitle("#phi (rad)");
-    fhEtaPhiE->SetZTitle("#it{E} (GeV) ");
-    outputContainer->Add(fhEtaPhiE);
-  }
-  else
-  {
-    fhEtaPhi  = new TH2F ("hEtaPhi","#eta vs #phi for #it{E} > 0.5 GeV, reconstructed clusters",
-                           netabins,etamin,etamax,nphibins,phimin,phimax); 
-    fhEtaPhi->SetXTitle("#eta ");
-    fhEtaPhi->SetYTitle("#phi (rad)");
-    outputContainer->Add(fhEtaPhi);
+    if(fFillAllTH3)
+    {
+      fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
+                             netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
+      fhEtaPhiE->SetXTitle("#eta ");
+      fhEtaPhiE->SetYTitle("#phi (rad)");
+      fhEtaPhiE->SetZTitle("#it{E} (GeV) ");
+      outputContainer->Add(fhEtaPhiE);
+    }
+    else 
+    {
+      fhEtaPhi  = new TH2F ("hEtaPhi","#eta vs #phi for #it{E} > 0.5 GeV, reconstructed clusters",
+                            netabins,etamin,etamax,nphibins,phimin,phimax); 
+      fhEtaPhi->SetXTitle("#eta ");
+      fhEtaPhi->SetYTitle("#phi (rad)");
+      outputContainer->Add(fhEtaPhi);
+    }
   }
   
   fhClusterTimeEnergy  = new TH2F ("hClusterTimeEnergy","energy vs TOF, reconstructed clusters",
@@ -3623,6 +3663,38 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhMCNeutral1EleEOverP);
   }
   
+  
+   if(fFillEBinAcceptanceHisto)
+  {
+    for(Int_t ie=0; ie<fNEBinCuts; ie++)
+    {
+      fhEBinClusterEtaPhi[ie] = new TH2F
+      (Form("hEBin%d_Cluster_EtaPhi",ie),
+       Form("#eta vs #phi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEBinClusterEtaPhi[ie]->SetYTitle("#phi (rad)");
+      fhEBinClusterEtaPhi[ie]->SetXTitle("#eta");
+      outputContainer->Add(fhEBinClusterEtaPhi[ie]) ;
+      
+      fhEBinClusterColRow[ie] = new TH2F
+      (Form("hEBin%d_Cluster_ColRow",ie),
+       Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhEBinClusterColRow[ie]->SetYTitle("row");
+      fhEBinClusterColRow[ie]->SetXTitle("column");
+      outputContainer->Add(fhEBinClusterColRow[ie]) ;
+      
+      fhEBinCellColRow[ie] = new TH2F
+      (Form("hEBin%d_Cell_ColRow",ie),
+       Form("column vs row, cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhEBinCellColRow[ie]->SetYTitle("row");
+      fhEBinCellColRow[ie]->SetXTitle("column");
+      outputContainer->Add(fhEBinCellColRow[ie]) ;
+    }
+  }
+
+  
   //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++)
   //    printf("i=%d, name= %s\n",i,outputContainer->At(i)->GetName());
   
@@ -4054,6 +4126,16 @@ void AliAnaCalorimeterQA::InitParameters()
   fExoDTimeCuts [0] = 1.e4 ; fExoDTimeCuts [1] = 50.0 ; fExoDTimeCuts [2] = 25.0 ; fExoDTimeCuts [3] = 10.0 ;
   fExoECrossCuts[0] = 0.80 ; fExoECrossCuts[1] = 0.85 ; fExoECrossCuts[2] = 0.90 ; fExoECrossCuts[3] = 0.92 ; fExoECrossCuts[4] = 0.94 ;
   fExoECrossCuts[5] = 0.95 ; fExoECrossCuts[6] = 0.96 ; fExoECrossCuts[7] = 0.97 ; fExoECrossCuts[8] = 0.98 ; fExoECrossCuts[9] = 0.99 ;
+
+  fNEBinCuts = 14;
+  fEBinCuts[0] = 0.;  fEBinCuts[1] = 0.3;  fEBinCuts[2] = 0.5;
+  fEBinCuts[3] = 1.;  fEBinCuts[4] = 2. ;  fEBinCuts[5] = 3. ;
+  fEBinCuts[6] = 4.;  fEBinCuts[7] = 5. ;  fEBinCuts[8] = 7. ;
+  fEBinCuts[9] = 9.;  fEBinCuts[10]= 12.;  fEBinCuts[11]= 15.;
+  fEBinCuts[12]= 20.; fEBinCuts[13]= 50.;  fEBinCuts[14]= 100.;
+  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;
+
+
 }
 
 //_____________________________________________________________________________
