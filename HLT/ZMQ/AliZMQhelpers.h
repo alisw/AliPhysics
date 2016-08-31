@@ -72,7 +72,7 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish=false);
 //general multipart messages (aliZMQmsg)
 //to access, just iterate over it.
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
-int alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, TObject* object, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
+int alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, TObject* object, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, const std::string& data);
 int alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, void* buffer, int size);
 int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data);
@@ -80,15 +80,10 @@ int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
 int alizmq_msg_close(aliZMQmsg* message);
 
-//ROOT streamers utilities
-//add streamers to a message
+//ROOT streamers
 int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQrootStreamerInfo* streamers);
-//initialize ROOT internals with the incoming streamers so the objects can be decoded
 int alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it);
-//add new and unique streamers to the list based on the output of the ROOT serializer (newStreamers)
-void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, const TCollection* newStreamers);
-//this one is slow, use only for init kind of stuff
-void alizmq_update_streamerlist_from_object(aliZMQrootStreamerInfo* streamers, TObject* object);
+void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, const TObjArray* newStreamers);
 
 //checking identity of the frame via iterator
 int alizmq_msg_iter_check(aliZMQmsg::iterator it, const DataTopic& topic);
@@ -99,14 +94,13 @@ int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data);
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, DataTopic& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object);
-int alizmq_msg_iter_data(aliZMQmsg::iterator it, void*& buffer, size_t& size);
 
 //string messages, no need to close, strings are copied
 int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags);
 int alizmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags);
 
 //send a single block (one header + payload), ZMQ_SNDMORE should not be used
-int alizmq_msg_send(DataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
+int alizmq_msg_send(const DataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_send(const DataTopic& topic, const std::string& data, void* socket, int flags);
 
 //deallocate an object - callback for ZMQ
@@ -117,184 +111,76 @@ const int kDataTypefIDsize = 8;
 const int kDataTypefOriginSize = 4;
 const int kDataTypeTopicSize = kDataTypefIDsize+kDataTypefOriginSize;
 
-//Helper functions
+//Helper function to compare topics
 bool Topicncmp(const char* topic, const char* reference, int topicSize=kDataTypeTopicSize, int referenceSize=kDataTypeTopicSize);
-ULong64_t CharArr2uint32(const char* str);
-ULong64_t CharArr2uint64(const char* str);
-
-//helper function to print a hex/ASCII dump of some memory
-void hexDump (const char* desc, const void* addr, int len);
-void hexDump (aliZMQmsg* message, size_t maxsize=16);
-
-struct BaseDataTopic
-{
-  static const UInt_t fgkMagicNumber;
-  UInt_t fMagicNumber;  // 4 bytes
-  UInt_t fHeaderSize;   // 4 bytes
-  UInt_t fFlags;        // 4 bytes
-  UInt_t fBaseHeaderVersion;  // 4 bytes
-  ULong64_t fHeaderDescription; // 8 bytes
-  ULong64_t fHeaderSerialization; // 8 bytes
-  BaseDataTopic();
-  BaseDataTopic(UInt_t size, ULong64_t desc, ULong64_t seri);
-  static BaseDataTopic* Get(void* buf) {
-    return (*reinterpret_cast<UInt_t*>(buf)==fgkMagicNumber)?
-           reinterpret_cast<BaseDataTopic*>(buf):
-           NULL;
-  }
-};
 
 //the data header, describes the data frame
-struct DataTopic : public BaseDataTopic
+struct DataTopic
 {
-  static const ULong64_t fgkDataTopicDescription;
-  static const UInt_t fgkTopicSerialization;
-  ULong64_t fDataDescription[2]; // 2*8 bytes
-  UInt_t fDataOrigin; // 4 bytes
-  UInt_t fReserved;   // 4 bytes
-  ULong64_t fDataSerialization; // 8 bytes
-  ULong64_t fSpecification;     // 8 bytes data specification of the data block
-  ULong64_t fPayloadSize;       // 8 bytes
-
+  char fTopic[kDataTypeTopicSize]; /// Data type identifier + source id as char array.
+  int32_t fSpecification;                  /// data specification of the data block
+ 
   //ctor
   DataTopic()
-    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
-    , fDataDescription()
-    , fDataOrigin(0)
-    , fReserved(0)
-    , fDataSerialization(0)
+    : fTopic()
     , fSpecification(0)
-    , fPayloadSize(0)
   {
-    fDataDescription[0]=0;
-    fDataDescription[1]=0;
   }
 
   //ctor
-  DataTopic(const char* id, const char* origin, int spec )
-    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
-    , fDataDescription()
-    , fDataOrigin(0)
-    , fReserved(0)
-    , fDataSerialization(0)
+  DataTopic(const char* id, const char* origin, int spec)
+    : fTopic()
     , fSpecification(spec)
-    , fPayloadSize(0)
   {
-    fDataDescription[0] = 0;
-    fDataDescription[1] = CharArr2uint64(id);
-    fDataOrigin = CharArr2uint32(origin);
+    memcpy(&fTopic[0], id, kDataTypefIDsize);
+    memcpy(&fTopic[kDataTypefIDsize], origin, kDataTypefOriginSize);
   }
 
   bool operator==( const DataTopic& dt )
   {
-    bool topicMatch = Topicncmp(dt.GetIDstr(),GetIDstr());
+    bool topicMatch = Topicncmp(dt.fTopic, fTopic);
     return topicMatch;
   }
 
   std::string Description() const
   {
-    std::string description(GetIDstr(),
-                            sizeof(fDataDescription[1])+sizeof(fDataOrigin));
+    std::string description(fTopic, kDataTypeTopicSize);
     description+=" spec:";
     char numstr[21];
-    snprintf(numstr, 21, "%llx", fSpecification);
+    snprintf(numstr, 21, "%x", fSpecification);
     description+=numstr;
     return description;
   }
 
-  inline std::string GetOrigin() const {
-    std::string origin(GetOriginStr(), sizeof(fDataOrigin));
+  std::string GetOrigin() const
+  {
+    std::string origin(fTopic+kDataTypefIDsize, kDataTypefOriginSize);
     return origin;
   }
-  inline std::string GetID() const {
-    std::string id(GetIDstr(), sizeof(fDataDescription[1]));
+
+  std::string GetID() const
+  {
+    std::string id(fTopic, kDataTypefIDsize);
     return id;
   }
-  UInt_t GetSpecification() const {return fSpecification;}
-  inline const ULong64_t* GetIDptr() const {return &fDataDescription[1];}
-  inline const char* GetIDstr() const {return reinterpret_cast<const char*>(GetIDptr());}
-  inline const UInt_t* GetOriginPtr() const {return &fDataOrigin;}
-  inline const char* GetOriginStr() const {return reinterpret_cast<const char*>(GetOriginPtr());}
-  inline void SetID(ULong64_t id) {fDataDescription[1]=id;}
-  inline void SetOrigin(UInt_t origin) {fDataOrigin = origin;}
-  inline void SetID(const char* s) {fDataDescription[1]=*reinterpret_cast<const ULong64_t*>(s);}
-  inline void SetOrigin(const char* s) {fDataOrigin = *reinterpret_cast<const UInt_t*>(s);}
-  inline void SetSpecification(UInt_t spec) {fSpecification=spec;}
-  inline void SetSerialization(ULong64_t s) {fDataSerialization=s;}
-  static DataTopic* Get(void* buf) {
-    BaseDataTopic* bdt = BaseDataTopic::Get(buf);
-    return (bdt && bdt->fHeaderDescription==fgkDataTopicDescription)?
-            reinterpret_cast<DataTopic*>(buf):NULL;
-  }
+
 };
 
 //common data type definitions, compatible with AliHLTDataTypes v25
-extern const DataTopic kDataTypeStreamerInfos;
-extern const DataTopic kDataTypeInfo;
-extern const DataTopic kDataTypeConfig;
-extern const DataTopic kDataTypeTObject;
-extern const DataTopic kDataTypeTH1;
-
-extern const ULong64_t kSerializationROOT;
-extern const ULong64_t kSerializationNONE;
+const DataTopic kDataTypeStreamerInfos("ROOTSTRI","***\n",0);
+const DataTopic kDataTypeInfo("INFO____","***\n",0);
+const DataTopic kDataTypeConfig("CONFIG__","***\n",0);
+const DataTopic kDataTypeTObject("ROOTTOBJ","***\n",0);
+const DataTopic kDataTypeTH1("ROOTHIST","***\n",0);
 
 //a general utility to tokenize strings
 std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
-//parse
+//parse 
 stringMap ParseParamString(const std::string paramString);
 std::string GetParamString(const std::string param, const std::string paramstring);
 
 //load ROOT libraries specified in comma separated string
 int LoadROOTlibs(std::string libstring, bool verbose=false);
-
-//______________________________________________________________________________
-inline ULong64_t CharArr2uint64(const char* str)
-{
-	return((ULong64_t) str[0] |
-         (str[0] ? ((ULong64_t) str[1] << 8 |
-         (str[1] ? ((ULong64_t) str[2] << 16 |
-         (str[2] ? ((ULong64_t) str[3] << 24 |
-         (str[3] ? ((ULong64_t) str[4] << 32 |
-         (str[4] ? ((ULong64_t) str[5] << 40 |
-         (str[5] ? ((ULong64_t) str[6] << 48 |
-         (str[6] ? ((ULong64_t) str[7] << 56 )
-          : 0)) : 0)) : 0)) : 0)) : 0)) : 0)) : 0));
-}
-
-//______________________________________________________________________________
-inline ULong64_t CharArr2uint32(const char* str)
-{
-	return((UInt_t) str[0] |
-         (str[0] ? ((UInt_t) str[1] << 8 |
-         (str[1] ? ((UInt_t) str[2] << 16 |
-         (str[2] ? ((UInt_t) str[3] << 24)
-          : 0)) : 0)) : 0));
-}
-
-//______________________________________________________________________________
-class ZMQTMessage : public TMessage {
-  public:
-    ZMQTMessage(UInt_t what = kMESS_ANY, Int_t bufsiz = TBuffer::kInitialSize) : TMessage(what,bufsiz) {}
-    ZMQTMessage(void* buf, Int_t len) : TMessage(buf, len) {ResetBit(kIsOwner);}
-    static TObject* Extract(const void* pBuffer, unsigned bufferSize, unsigned verbosity=0);
-    static ZMQTMessage* Stream(TObject* pSrc, Int_t compression, unsigned verbosity=0, bool enableSchema=kFALSE);
-#ifdef AliZMQhelpers_AliHLTMessageFormat
-    void SetLength() const
-    {
-      // Set the message length at the beginning of the message buffer a la AliHLTMessage
-      // using native byte order (little endian on x86)
-      if (IsWriting()) {
-        char *buf = Buffer();
-        *((UInt_t*)buf) = (UInt_t)(Length() - sizeof(UInt_t));
-
-        if (CompBuffer()) {
-          buf = CompBuffer();
-          *((UInt_t*)buf) = (UInt_t)(CompLength() - sizeof(UInt_t));
-        }
-      }
-    }
-#endif
-};
 
 }  //end namespace AliZMQhelpers
 
