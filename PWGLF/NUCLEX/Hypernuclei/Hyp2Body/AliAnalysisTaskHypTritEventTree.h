@@ -1,8 +1,15 @@
-#ifndef AliAnalysisTaskHypTritEventTree_H
-#define AliAnalysisTaskHypTritEventTree_H
+/// \class AliAnalysisTaskHypTritEventTree
+/// \brief Hypertriton Analysis in two particle decay channel
+///
+/// Hypertriton candidates are identified using the on-the-fly V0 finder.
+/// Events with Hypertriton candidates are filled in a tree
+/// using the AliReducedHypTritEvent class.
+///
+/// \author Lukas Kreis <lukas.kreis@cern.ch>, GSI
+/// \date Sep 1, 2016
 
-// Task searching for hypertriton with the V0 finder
-// Lukas Kreis
+#ifndef ALIANALYSISTASKHYPTRITEVENTTREE_H
+#define ALIANALYSISTASKHYPTRITEVENTTREE_H
 
 class TH1F;
 class TH2F;
@@ -31,6 +38,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
+  void SetUseEtaCorrection(Bool_t eta = kTRUE) {fEtaCorrection = eta;};
+  void SetUseMultiplicityCorrection(Bool_t mult = kTRUE) {fMultiplicityCorrection = mult;};
 
  private:
   AliESDEvent         *fEvent;
@@ -39,6 +48,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliESDpid           *fPID;
   Bool_t               fMCtrue;
   TH2F                *fHistdEdx;
+  TH2F                *fHistdEdxProton;
   TH2F                *fHistdEdxDeuteron;
   TH2F                *fHistdEdxTriton;
   TH2F                *fHistdEdxHelium3;
@@ -57,8 +67,9 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   TObjArray           *fMCGenRecArray;
   AliReducedHypTritEvent *fReducedEvent;
   AliReducedHypTritEvent *fReducedEventMCGen;
-
-  TList *fHistogramList;
+  Bool_t               fEtaCorrection;
+  Bool_t               fMultiplicityCorrection;
+  TList               *fHistogramList;
 
   void MCStackLoop(AliStack *stack);
   Bool_t TriggerSelection();
