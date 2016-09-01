@@ -350,7 +350,9 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
       continue;
     }
     tree->AddFriend(ftree, fname.Data());
-    ftree->AddFriend(tree, type.Data());
+    ftree->SetTitle(TString::Format("%s.%s",fname.Data(),ftree->GetTitle()).Data());
+    ftree->SetName(TString::Format("%s.%s",fname.Data(),ftree->GetName()).Data());
+    //ftree->AddFriend(tree, type.Data());
     Int_t fentries = tree->Draw(indexName.Data(),"","goff");
     ::Info("AliExternalInfo::GetTree","AddFriend %s+%s - entries=%d", type.Data(),  fname.Data(),fentries);
   }
