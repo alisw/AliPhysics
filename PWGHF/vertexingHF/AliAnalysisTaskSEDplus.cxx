@@ -51,7 +51,7 @@ ClassImp(AliAnalysisTaskSEDplus);
 
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
-AliAnalysisTaskSE(),
+  AliAnalysisTaskSE(),
   fOutput(0), 
   fHistNEvents(0),
   fHistTrackVar(0),
@@ -59,6 +59,8 @@ AliAnalysisTaskSE(),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
   fPtVsMass(0),
+  fPtVsMassBadDaus(0),
+  fPtVsMassGoodDaus(0),
   fYVsPtNoPid(0),
   fYVsPt(0),
   fYVsPtSigNoPid(0),
@@ -66,6 +68,9 @@ AliAnalysisTaskSE(),
   fPhiEtaCand(0),
   fPhiEtaCandSigReg(0),
   fSPDMult(0),
+  fDaughterClass(0),
+  fDeltaID(0),
+  fIDDauVsIDTra(0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
@@ -143,6 +148,8 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
   fPtVsMass(0),
+  fPtVsMassBadDaus(0),
+  fPtVsMassGoodDaus(0),
   fYVsPtNoPid(0),
   fYVsPt(0),
   fYVsPtSigNoPid(0),
@@ -150,6 +157,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fPhiEtaCand(0),
   fPhiEtaCandSigReg(0),
   fSPDMult(0),
+  fDaughterClass(0),
+  fDeltaID(0),
+  fIDDauVsIDTra(0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
@@ -276,6 +286,8 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     }
     delete fPtVsMassNoPid;
     delete fPtVsMass;
+    delete fPtVsMassBadDaus;
+    delete fPtVsMassGoodDaus;
     delete fYVsPtNoPid;
     delete fYVsPt;
     delete fYVsPtSigNoPid;
@@ -283,6 +295,9 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     delete fPhiEtaCand;
     delete fPhiEtaCandSigReg;
     delete fSPDMult;
+    delete fDaughterClass;
+    delete fDeltaID;
+    delete fIDDauVsIDTra;
     delete fHistTrackVar;
     delete fMCAccPrompt;
     delete fMCAccBFeed;
@@ -686,6 +701,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   fPtVsMassNoPid=new TH2F("hPtVsMassNoPid","PtVsMass (no PID)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
   fPtVsMass=new TH2F("hPtVsMass","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);  
+  fPtVsMassGoodDaus=new TH2F("hPtVsMassGoodDaus","PtVsMassGoodDaus",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
+  fPtVsMassBadDaus=new TH2F("hPtVsMassBadDaus","PtVsMassBadDaus",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
   fYVsPtNoPid=new TH3F("hYVsPtNoPid","YvsPt (no PID)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPt=new TH3F("hYVsPt","YvsPt",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPtSigNoPid=new TH2F("hYVsPtSigNoPid","YvsPt (MC, only sig., no PID)",40,0.,20.,80,-2.,2.);
@@ -699,6 +716,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,maxmult);
   fOutput->Add(fPtVsMassNoPid);
   fOutput->Add(fPtVsMass);
+  fOutput->Add(fPtVsMassGoodDaus);
+  fOutput->Add(fPtVsMassBadDaus);
   fOutput->Add(fYVsPtNoPid);
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSigNoPid);
@@ -707,6 +726,25 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fPhiEtaCandSigReg);
   fOutput->Add(fSPDMult);
 
+  fDaughterClass = new TH1F("hDaughterClass","",10,-0.5,9.5);
+  fDaughterClass->GetXaxis()->SetBinLabel(1,"AliAODTrack - good ID");
+  fDaughterClass->GetXaxis()->SetBinLabel(2,"AliAODTrack - charge0");
+  fDaughterClass->GetXaxis()->SetBinLabel(3,"AliAODTrack - ID=0");
+  fDaughterClass->GetXaxis()->SetBinLabel(4,"AliAODTrack - neg ID");
+  fDaughterClass->GetXaxis()->SetBinLabel(5,"AliAODTrack - different ID");
+  fDaughterClass->GetXaxis()->SetBinLabel(6,"AliAODRecoDecayHF2Prong");
+  fDaughterClass->GetXaxis()->SetBinLabel(7,"AliAODRecoDecayHF3Prong");
+  fDaughterClass->GetXaxis()->SetBinLabel(8,"AliAODRecoCascadeHF");
+  fDaughterClass->GetXaxis()->SetBinLabel(9,"Other");
+  fDeltaID = new TH1F("hDeltaID"," ; GetDaughter->GetID() - GetProngID()",20001,-10000.5,10000.5);
+  if(fSystem==0){
+    fIDDauVsIDTra = new TH2F("hIDDauVsIDTra"," ; GetProngID() ; GetDaughter->GetID()",1001,-500.5,500.5,1001,-500.5,500.5);
+  }else{
+    fIDDauVsIDTra = new TH2F("hIDDauVsIDTra"," ; GetProngID() ; GetDaughter->GetID()",1000,-30000,30000,1000,-30000,30000);
+  }
+  fOutput->Add(fDaughterClass);
+  fOutput->Add(fDeltaID);
+  fOutput->Add(fIDDauVsIDTra);
 
   //Counter for Normalization
   TString normName="NormalizationCounter";
@@ -883,6 +921,51 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
         continue;
       }
 
+      Bool_t goodDaus=kTRUE;
+      for(Int_t jdau=0; jdau<3; jdau++){
+	Int_t idStored=d->GetProngID(jdau);
+	TObject* odau=(TObject*)d->GetDaughter(jdau);
+	TString cname=odau->ClassName();
+	if(cname.Contains("AliAODTrack")){
+	  AliAODTrack* tr=(AliAODTrack*)d->GetDaughter(jdau);
+	  if(tr->Charge()==0){
+	    fDaughterClass->Fill(1);
+	    goodDaus=kFALSE;
+	  }
+	  Int_t idRecov=tr->GetID();
+	  Int_t dId=idRecov-idStored;
+	  fIDDauVsIDTra->Fill(idStored,idRecov);
+	  fDeltaID->Fill(dId);
+	  if(dId!=0){
+	    goodDaus=kFALSE;
+	    fDaughterClass->Fill(4);
+	  }else{
+	    if(idStored>0) fDaughterClass->Fill(0);
+	    else if(idStored==0) fDaughterClass->Fill(2);
+	    else{
+	      goodDaus=kFALSE;
+	      fDaughterClass->Fill(3);
+	    }
+	  }
+	}else if(cname.Contains("AliAODRecoDecayHF2")){
+	  fDaughterClass->Fill(5);
+	  goodDaus=kFALSE;
+	}else if(cname.Contains("AliAODRecoDecayHF3")){
+	  fDaughterClass->Fill(6);
+	  goodDaus=kFALSE;
+	}else if(cname.Contains("AliAODRecoCascadeHF")){
+	  fDaughterClass->Fill(7);
+	  goodDaus=kFALSE;
+	}else{
+	  fDaughterClass->Fill(8);
+	  goodDaus=kFALSE;
+	}
+      }
+      Double_t ptCand = d->Pt();
+      Double_t invMass=d->InvMassDplus();
+      if(goodDaus) fPtVsMassGoodDaus->Fill(invMass,ptCand);
+      else fPtVsMassBadDaus->Fill(invMass,ptCand);
+
       Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
       Bool_t passSingleTrackCuts=kTRUE;
       if(fRDCutsAnalysis->GetIsSelectedCuts() && fRDCutsAnalysis->GetIsSelectedPID() && !passTopolAndPIDCuts) passSingleTrackCuts=kFALSE;
@@ -906,7 +989,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	unsetvtx=kTRUE;
       }
 
-      Double_t ptCand = d->Pt();
       Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);     
     
       Bool_t recVtx=kFALSE;
@@ -945,7 +1027,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	}
       }
 
-      Double_t invMass=d->InvMassDplus();
       Double_t rapid=d->YDplus();
       fYVsPtNoPid->Fill(ptCand,rapid,invMass);
       if(passTopolAndPIDCuts) {
