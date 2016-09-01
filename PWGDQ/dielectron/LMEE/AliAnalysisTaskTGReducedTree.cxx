@@ -269,7 +269,7 @@ AliAnalysisTaskTGReducedTree::AliAnalysisTaskTGReducedTree(const char *name)
     fPIDResponse(0), fPIDCuts(0), 
     fReducedInfo(0x0), fV0OpenCuts(0),
     fTriggerMask(AliVEvent::kMB),  
-    fSelectPhysics(kFALSE), fFiredTrigger(""), 
+    fSelectPhysics(kFALSE), fFiredTrigger(""), fFiredExclude(kFALSE),
     fConvCut(117), 
     fCutArray(0), fMesonCutArray(0), fGammaCandidates(0),
     fV0Reader(NULL),fInputEvent(NULL),fReaderGammas(NULL),
@@ -477,7 +477,6 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
   //Was event selected ?
   ULong64_t isSelected = AliVEvent::kAny;
   Bool_t isRejected = kFALSE;
-  Bool_t fFiredExclude = kFALSE;
 
   if( inputHandler){
     if(fSelectPhysics){
