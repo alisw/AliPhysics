@@ -222,6 +222,7 @@ fTreeVariableCentADC(0),
       fTreeVariableRunNumber(0),
 
       fTreeVariablePtMother(0),
+fTreeVariableRapMother(0),
       fTreeVariablePID(0),
       fTreeVariablePIDPositive(0),
       fTreeVariablePIDNegative(0),
@@ -514,7 +515,8 @@ fTreeVariableCentADC(0),
       fTreeVariableRunNumber(0),
 
       fTreeVariablePtMother(0),
-      fTreeVariablePID(0),
+fTreeVariableRapMother(0),
+fTreeVariablePID(0),
       fTreeVariablePIDPositive(0),
       fTreeVariablePIDNegative(0),
       fTreeVariablePIDMother(0),
@@ -895,6 +897,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
 //-----------MC Exclusive info--------------------
     fTreeV0->Branch("fTreeVariablePtMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
+    fTreeV0->Branch("fTreeVariableRapMother",&fTreeVariableRapMother,"fTreeVariableRapMother/F");
     fTreeV0->Branch("fTreeVariablePID",&fTreeVariablePID,"fTreeVariablePID/I");
     fTreeV0->Branch("fTreeVariablePIDPositive",&fTreeVariablePIDPositive,"fTreeVariablePIDPositive/I");
     fTreeV0->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
@@ -2190,6 +2193,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
         fTreeVariablePIDNegative = 0;
 
         fTreeVariablePtMother = -1;
+        fTreeVariableRapMother = -100;
         fTreeVariablePtMC = -1;
         fTreeVariableRapMC = -100;
 
@@ -2246,6 +2250,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
                 TParticle* pThisV0Parent = lMCstack->Particle( lblThisV0Parent );
                 fTreeVariablePIDMother   = pThisV0Parent->GetPdgCode(); //V0 Mother PDG
                 fTreeVariablePtMother    = pThisV0Parent->Pt();         //V0 Mother Pt
+                //NOTE: Fill only for charged xi
+                if ( TMath::Abs(fTreeVariablePIDMother)==3312) fTreeVariableRapMother   = pThisV0Parent->Y();         //V0 Mother Pt
                 //Primary Status for the V0 Mother particle
                 if( lMCstack->IsPhysicalPrimary       (lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 1; //Is Primary!
                 if( lMCstack->IsSecondaryFromWeakDecay(lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 2; //Weak Decay!
