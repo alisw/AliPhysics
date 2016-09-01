@@ -335,7 +335,7 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
     fPIDCuts(0), 
     fReducedInfo(0), fV0OpenCuts(0),
     fTriggerMask(0), fSelectPhysics(0),
-    fFiredTrigger(""), fConvCut(117), 
+    fFiredTrigger(""), fFiredExclude(kFALSE), fConvCut(117), 
     fCutArray(0), fMesonCutArray(0), fGammaCandidates(0),
     fV0Reader(0), fInputEvent(0), fReaderGammas(0), hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE),
     fEvalEfficiencyIndex(-1)
@@ -359,42 +359,43 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
   void SetPIDCuts(AliDielectronPID *fCuts){ fPIDCuts = fCuts;}
   void SetV0OpenCuts(AliESDv0KineCuts* const cuts) {fV0OpenCuts = cuts;}
   void SetEvalEfficiency(Bool_t flag, Int_t GeneratorIndex){fEvalEfficiencyFlag = flag;
- 
     fEvalEfficiencyIndex = GeneratorIndex;} 
-
+  void SetFiredTriggerName(const char* select, Bool_t exclude=kFALSE){fFiredTrigger=select; fFiredExclude=exclude;}
+  
 
  private:
   
-  AliESDEvent *fESD;    //! ESD object
+  AliESDEvent *fESD;    // ESD object
   TList       *fOutputList; //! Output list
   TTree       *fTree; //! Tree object
-  TH1D        *fEventStat;
-  AliESDtrackCuts *fESDtrackCuts; //! ESD track cuts (now defined in the task)
-  AliAnalysisFilter *fTrackFilter; //! track filter 
-  AliMCEvent  *fMCEvent;  //! MC event object
-  AliPIDResponse *fPIDResponse;     //! PID response object  
-  AliDielectronPID *fPIDCuts;    //! PID cuts
+  TH1D        *fEventStat; //! Event stat
+  AliESDtrackCuts *fESDtrackCuts; // ESD track cuts (now defined in the task)
+  AliAnalysisFilter *fTrackFilter; // track filter 
+  AliMCEvent  *fMCEvent;  // MC event object
+  AliPIDResponse *fPIDResponse;     // PID response object  
+  AliDielectronPID *fPIDCuts;    // PID cuts
 
-  AliDielectronTGReducedInfo *fReducedInfo; //! reduced info 
-  AliESDv0KineCuts *fV0OpenCuts ;//! V0 open cuts
+  AliDielectronTGReducedInfo *fReducedInfo; // reduced info 
+  AliESDv0KineCuts *fV0OpenCuts ;// V0 open cuts
 
 
-  UInt_t fTriggerMask;  //! Event trigger mask
-  Bool_t fSelectPhysics; //! Whether to use physics selection
-  TString fFiredTrigger; //! online trigger class name
-  Int_t  fConvCut; //! Conversion cut 
+  UInt_t fTriggerMask;  // Event trigger mask
+  Bool_t fSelectPhysics; // Whether to use physics selection
+  TString fFiredTrigger; // online trigger class name
+  Bool_t  fFiredExclude; // online trigger class name excluded
+  Int_t  fConvCut; // Conversion cut 
 
-  TList* fCutArray; //! Photon cut array
-  TList* fMesonCutArray; //! Meson cut array
-  TList* fGammaCandidates; //! Photon candidates from on-the-fly V0
+  TList* fCutArray; // Photon cut array
+  TList* fMesonCutArray; // Meson cut array
+  TList* fGammaCandidates; // Photon candidates from on-the-fly V0
 
-  AliV0ReaderV1*  fV0Reader;    //! V0Reader from PCM
-  AliVEvent*      fInputEvent;  //! input event
-  TClonesArray*   fReaderGammas; //! Gamma info
+  AliV0ReaderV1*  fV0Reader;    // V0Reader from PCM
+  AliVEvent*      fInputEvent;  // input event
+  TClonesArray*   fReaderGammas; // Gamma info
 
   Bool_t hasMC;   //hasMC
-  Bool_t fEvalEfficiencyFlag; //flag to look at pure MC
-  Int_t fEvalEfficiencyIndex; //flag to look at pure MC for this Generator index
+  Bool_t fEvalEfficiencyFlag; // flag to look at pure MC
+  Int_t fEvalEfficiencyIndex; // flag to look at pure MC for this Generator index
 
   TH2F  *hPtRap[3]; //! All electrons/positrons generated/reco/accpeted
   TH2F  *hPtRapConv[3]; //! All conversion electrons/positrons generated/reco/accpeted
