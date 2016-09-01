@@ -92,6 +92,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistNevents_MB(0),
     fHistPtSum_MB(0),
     fHistPtSumTag_MB(0),
+    fHistPtSumEMC_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
     fHistEtaPhiTPCOnly_MB(0),
@@ -119,6 +120,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistNevents_EMC7(0),
     fHistPtSum_EMC7(0),
     fHistPtSumTag_EMC7(0),
+    fHistPtSumEMC_EMC7(0),
     fHistEtaPhi_EMC7(0),
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
@@ -144,6 +146,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistNevents_EMCJet(0),
     fHistPtSum_EMCJet(0),
     fHistPtSumTag_EMCJet(0),
+    fHistPtSumEMC_EMCJet(0),
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
@@ -289,6 +292,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistNevents_MB(0),
     fHistPtSum_MB(0),
     fHistPtSumTag_MB(0),
+    fHistPtSumEMC_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
     fHistEtaPhiTPCOnly_MB(0),
@@ -316,6 +320,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistNevents_EMC7(0),
     fHistPtSum_EMC7(0),
     fHistPtSumTag_EMC7(0),
+    fHistPtSumEMC_EMC7(0),
     fHistEtaPhi_EMC7(0),
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
@@ -341,6 +346,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistNevents_EMCJet(0),
     fHistPtSum_EMCJet(0),
     fHistPtSumTag_EMCJet(0),
+    fHistPtSumEMC_EMCJet(0),
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
@@ -1249,6 +1255,19 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistPtSumTag_EMCJet->GetXaxis()->SetTitle("Pt Sum");
     fHistPtSumTag_EMCJet->GetYaxis()->SetTitle("Cts");
     
+    // Energy per event in EMC acceptance histos
+    fHistPtSumEMC_MB = new TH1F("fHistPtSumEMC_MB", "Pt sum for events in EMCal acceptance", 500, 0, 500);
+    fHistPtSumEMC_MB->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumEMC_MB->GetYaxis()->SetTitle("Cts");
+    
+    fHistPtSumEMC_EMC7 = new TH1F("fHistPtSumEMC_EMC7", "Pt sum for events in EMCal acceptance", 500, 0, 500);
+    fHistPtSumEMC_EMC7->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumEMC_EMC7->GetYaxis()->SetTitle("Cts");
+    
+    fHistPtSumEMC_EMCJet = new TH1F("fHistPtSumEMC_EMCJet", "Pt sum for events in EMCal acceptance", 500, 0, 500);
+    fHistPtSumEMC_EMCJet->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumEMC_EMCJet->GetYaxis()->SetTitle("Cts");
+    
     // Numbers of events
     fHistNevents_MB = new TH1F("fHistNevents_MB", "Number of events that have an 'electron'", 2,0,1);
     fHistNevents_MB->GetXaxis()->SetBinLabel(1,"Events");
@@ -1399,6 +1418,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistNevents_MB);
     fOutputMB->Add(fHistPtSum_MB);
     fOutputMB->Add(fHistPtSumTag_MB);
+    fOutputMB->Add(fHistPtSumEMC_MB);
     fOutputMB->Add(fHistEtaPhi_MB);
     fOutputMB->Add(fHistEtaPhiTag_MB);
     fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
@@ -1454,6 +1474,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistNevents_EMC7);
     fOutputEMC7->Add(fHistPtSum_EMC7);
     fOutputEMC7->Add(fHistPtSumTag_EMC7);
+    fOutputEMC7->Add(fHistPtSumTag_EMC7);
     fOutputEMC7->Add(fHistEtaPhi_EMC7);
     fOutputEMC7->Add(fHistEtaPhiTag_EMC7);
     fOutputEMC7->Add(fHistInvMassElecLike_EMC7);
@@ -1506,6 +1527,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistImpParTag_EMCJet);
     fOutputEMCJet->Add(fHistNevents_EMCJet);
     fOutputEMCJet->Add(fHistPtSum_EMCJet);
+    fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
     fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhi_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhiTag_EMCJet);
@@ -1664,6 +1686,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     
     //Initialize energy variable and tagging flags
     Double_t PtSum=0;
+    Double_t PtSumEMC=0;
     tagStrong=kFALSE;
     Bool_t tagEvt=kFALSE;
 
@@ -1721,6 +1744,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
 
         //Add this tracks energy to the running total
         PtSum=PtSum+aodtrack->Pt();
+        if(aodtrack->Eta()<.7&&aodtrack->Eta()>-.7&&aodtrack->Phi()>80&&aodtrack->Phi()<180){
+            PtSumEMC=PtSumEMC+aodtrack->Pt();
+        }
 
         //Fill the Eta Phi arrays with this tracks Eta and Phi
         Eta.push_back(aodtrack->Eta());
@@ -1993,6 +2019,16 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(EMCJettrg){
             fHistPtSum_EMCJet->Fill(PtSum);
         }
+    }
+
+    if(MBtrg){
+        fHistPtSumEMC_MB->Fill(PtSumEMC);
+    }
+    if(EMC7trg){
+        fHistPtSumEMC_EMC7->Fill(PtSumEMC);
+    }
+    if(EMCJettrg){
+        fHistPtSumEMC_EMCJet->Fill(PtSumEMC);
     }
 
     //Fill Nevent histos

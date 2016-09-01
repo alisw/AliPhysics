@@ -101,6 +101,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //General Event histos
     TH1F            *fHistPtSum_MB;//!
     TH1F            *fHistPtSumTag_MB;//!
+    TH1F            *fHistPtSumEMC_MB;//!
     TH2F            *fHistEtaPhi_MB;//!
     TH2F            *fHistEtaPhiTag_MB;//!
     TH2F            *fHistEtaPhiTPCOnly_MB;//!
@@ -160,6 +161,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //General Event histos 
     TH1F            *fHistPtSum_EMC7;//!
     TH1F            *fHistPtSumTag_EMC7;//!
+    TH1F            *fHistPtSumEMC_EMC7;//!
     TH2F            *fHistEtaPhi_EMC7;//!
     TH2F            *fHistEtaPhiTag_EMC7;//!
     TH1F            *fHistDPhi300_500_EMC7[3];//!
@@ -218,6 +220,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //General Event histos
     TH1F            *fHistPtSum_EMCJet;//!
     TH1F            *fHistPtSumTag_EMCJet;//!
+    TH1F            *fHistPtSumEMC_EMCJet;//!
     TH2F            *fHistEtaPhi_EMCJet;//!
     TH2F            *fHistEtaPhiTag_EMCJet;//!
     TH1F            *fHistDPhi300_500_EMCJet[3];//!
