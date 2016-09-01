@@ -83,7 +83,14 @@ TObject(),
 	fNMaxRowsAbs(),
 	fFlag(),
 	fCriterionCounter(),
-	fCaloUtils()
+	fWarmCell(),
+	fCaloUtils(),
+	fRootFile(),
+	fCellAmplitude(),
+	fCellTime(),
+	fProcessedEvents(),
+	fhCellFlag(),
+	fhCellWarm()
 {
 	fCurrentRunNumber = 254381;
 	fPeriod           = "LHC16h";
@@ -125,7 +132,14 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pas
 	fNMaxRowsAbs(),
 	fFlag(),
 	fCriterionCounter(),
-	fCaloUtils()
+	fWarmCell(),
+	fCaloUtils(),
+	fRootFile(),
+	fCellAmplitude(),
+	fCellTime(),
+	fProcessedEvents(),
+	fhCellFlag(),
+	fhCellWarm()
 {
 	fCurrentRunNumber = runNumber;
 	fPeriod           = period;
@@ -190,8 +204,10 @@ void AliAnaCaloChannelAnalysis::Init()
 	//..Initialize flag array to store how the cell is categorized
 	//..In the histogram: bin 1= cellID 0, bin 2= cellID 1 etc
 	//..In the array: fFlag[cellID]= some information
-	fFlag   = new Int_t[fNoOfCells];
-	fFlag[fNoOfCells] = {0};  //..flagged as good by default
+	fFlag     = new Int_t[fNoOfCells];
+	fWarmCell = new Bool_t[fNoOfCells];
+	fFlag[fNoOfCells] = {0};      //..flagged as good by default
+	fWarmCell[fNoOfCells] = {0};  //..flagged as not warm by default
 	fCriterionCounter=2; //This value will be written in fflag and updates after each PeriodAnalysis
 	//......................................................
 	//..setings for the 2D histogram
@@ -199,7 +215,6 @@ void AliAnaCaloChannelAnalysis::Init()
 	//fNMaxRows    = 24;  //phi direction
 	fNMaxColsAbs = 2*fNMaxCols;
 	fNMaxRowsAbs = Int_t (nModules/2)*fNMaxRows; //multiply by number of supermodules
-
 
 	//......................................................
 	//..Create TLists to organize the outputfile
@@ -216,6 +231,11 @@ void AliAnaCaloChannelAnalysis::Init()
 	//fOutputListGood    ->SetOwner();//ELI instead of delete in destructor??
 	//fOutputListBadRatio    ->SetOwner();
 	//fOutputListGoodRatio    ->SetOwner();
+
+	//......................................................
+	//..Create Histograms to store the flag in a root file
+	fhCellFlag = new TH1F("fhCellFlag","fhCellFlag",fNoOfCells+10,0,fNoOfCells+10); //..cellID+1 = histogram bin
+	fhCellWarm = new TH1F("fhCellWarm","fhCellWarm",fNoOfCells,0,fNoOfCells); //..cellID+1 = histogram bin
 }
 
 ///
@@ -465,7 +485,7 @@ TString AliAnaCaloChannelAnalysis::MergeRuns()
 
 	//.. Save the merged histograms
 	cout<<"o o o Save the merged histogramms to .root file with name: "<<fMergedFileName<<endl;
-	cout<<"o o o"<<nEntrTot<<" events were merged"<<endl;
+	cout<<"o o o "<<nEntrTot<<" events were merged"<<endl;
 	TFile *BCF = TFile::Open(fMergedFileName,"recreate");
 	hNEventsProcessedPerRun->Write();
 	hCellAmplitude->Write();
@@ -1132,6 +1152,10 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	goodCells       = Form("%s/%s/%s%s_Good_Amplitudes_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial);
 
 	cout<<"    o Final results o "<<endl;
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Write the final results of dead and bad cells in a file and on screen
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	ofstream file(cellSummaryFile, ios::out | ios::trunc);
 	if(file)
 	{
@@ -1143,24 +1167,27 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 		{
 			if(cellID==0)
 			{
-				file<<"In EMCal : "<<endl;
+				file<<"In EMCal: "<<endl;
 				//cout<<"    o In EMCal : "<<endl;
 			}
 			if(cellID==fCellStartDCal)
 			{
-				file<<"In DCal : "<<endl;
+				file<<"\n"<<endl;
+				file<<"In DCal: "<<endl;
 				//cout<<endl;
 				//cout<<"    o In DCal : "<<endl;
 			}
 			if(fFlag[cellID]==1)
 			{
-				file<<cellID<<"\n" ;
+				//file<<cellID<<"\n" ;
+				file<<cellID<<", ";
 				//cout<<cellID<<"," ;
 				if(cellID<fCellStartDCal)nEMCalCells++;
 				else                     nDCalCells++;
 			}
 		}
 		//cout<<endl;
+		file<<"\n"<<endl;
 		file<<"EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
 		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
 
@@ -1172,29 +1199,45 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 		{
 			if(cellID==0)
 			{
-				file<<"In EMCal : "<<endl;
+				file<<"In EMCal: "<<endl;
 				//cout<<"    o In EMCal : "<<endl;
 			}
 			if(cellID==fCellStartDCal)
 			{
-				file<<"In DCal : "<<endl;
+				file<<"\n"<<endl;
+				file<<"In DCal: "<<endl;
 				//cout<<endl;
 				//cout<<"    o In DCal : "<<endl;
 			}
 			if(fFlag[cellID]>1)
 			{
-				file<<cellID<<"\n" ;
+				//file<<cellID<<"\n" ;
+				file<<cellID<<", ";
 				//cout<<cellID<<"," ;
 				if(cellID<fCellStartDCal)nEMCalCells++;
 				else                     nDCalCells++;
 			}
 		}
 		//cout<<endl;
+		file<<"\n"<<endl;
 		file<<"EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
 		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
 	}
 	file.close();
 
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Save the flagged cells to .pdf files
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
+	SaveBadCellsToPDF(1,badPdfName) ;
+	SaveBadCellsToPDF(10,ratioOfBad) ; //..Special case
+	if(fTestRoutine==1)SaveBadCellsToPDF(2,goodCells) ;   //..Special case all good cells to check, should all have a flag naming them *Candidate*
+
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Create a masked version of the Amp vs. ID and Time vs. ID histograms
+	//..And Fill the histograms with the flag information
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	for (Int_t cell = 0; cell < fNoOfCells; cell++)
 	{
 		//..Direction of amplitude (Checks energies from 0-10 GeV)
@@ -1203,12 +1246,23 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 			if(fFlag[cell]!=0)
 			{
 				//..cellID+1 = histogram bin
-				//Double_t N = fCellAmplitude->GetBinContent(amp,cell+1);
 				cellAmp_masked->SetBinContent(amp,cell+1,0);
 				cellTime_masked->SetBinContent(amp,cell+1,0);
 			}
 		}
+		fhCellFlag->SetBinContent(cell+1,fFlag[cell]);
+		fhCellWarm->SetBinContent(cell+1,fWarmCell[cell]);
 	}
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Plot the 2D distribution of cells by flag
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	PlotFlaggedCells2D(0);    //..all good cells
+	PlotFlaggedCells2D(1);    //..all dead cells
+	PlotFlaggedCells2D(2,fCriterionCounter);  //..all bad cells
+	PlotFlaggedCells2D(0,0);  //..Special case - Warm cells
+
+
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Plot some summary canvases
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -1237,43 +1291,74 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	cellTime_masked->SetXTitle("Cell Time [ns]");
 	cellTime_masked->SetYTitle("Abs. Cell Id");
 	cellTime_masked->Draw("colz");
-
-
-
-
 	c1->Update();
+
+	TCanvas *c2 = new TCanvas("CellFlag","summary of cell flags",1200,800);
+	c2->ToggleEventStatus();
+	c2->Divide(1,2);
+	c2->cd(1);
+	fhCellFlag->SetTitle("cell flag");
+	fhCellFlag->SetXTitle("Abs. Cell Id");
+	fhCellFlag->SetYTitle("flag");
+	fhCellFlag->DrawCopy("hist");
+	c2->cd(2);
+	fhCellWarm->SetTitle("Warm cells");
+	fhCellWarm->SetXTitle("Abs. Cell Id");
+	fhCellWarm->SetYTitle("warm=1");
+	fhCellWarm->DrawCopy("hist");
+	c2->Update();
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Add different histograms/canvases to the output root file
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	TString name   =Form("%s/%s/CellProperties.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1->SaveAs(name);
 	fRootFile->WriteObject(c1,c1->GetName());
+	fRootFile->WriteObject(c2,c2->GetName());
 	fRootFile->WriteObject(fCellAmplitude,fCellAmplitude->GetName());
 	fRootFile->WriteObject(fCellTime,fCellTime->GetName());
-
-
-	PlotFlaggedCells2D(0);    //..all good cells
-	PlotFlaggedCells2D(1);    //..all dead cells
-	PlotFlaggedCells2D(2,fCriterionCounter);  //..all bad cells
-
-
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//..Save the flagged cells to .pdf files
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
-	//SaveBadCellsToPDF(0,deadPdfName);
-	cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
-	SaveBadCellsToPDF(1,badPdfName) ;
-	SaveBadCellsToPDF(10,ratioOfBad) ; //..Special case
-	if(fTestRoutine==1)SaveBadCellsToPDF(2,goodCells) ;   //..Special case all good cells to check, should all have a flag naming them *Candidate*
-
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//..Add the amplitude distributions to the output root file
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	cout<<"    o Save all amplitues to a .root file"<<endl;
+	fRootFile->WriteObject(fhCellFlag,fhCellFlag->GetName());
+	fRootFile->WriteObject(fhCellWarm,fhCellWarm->GetName());
+	//..Save all amplitudes to the root file
 	SaveHistoToFile();
-	cout<<"    o Results can be found in : "<<endl;
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Save also the identified warm channels into a text file.
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	file.open(cellSummaryFile, ios::out | ios::app);
+	if(file)
+	{
+		file<<"Warm cells : "<<endl;
+		cout<<"    o Warm cells : "<<endl;
+		nEMCalCells =0;
+		nDCalCells  =0;
+		for(cellID=0; cellID<fNoOfCells; cellID++)
+		{
+			if(cellID==0)
+			{
+				file<<"In EMCal: "<<endl;
+			}
+			if(cellID==fCellStartDCal)
+			{
+				file<<"\n"<<endl;
+				file<<"In DCal: "<<endl;
+			}
+			if(fWarmCell[cellID]==1)
+			{
+				file<<cellID<<", ";
+				if(cellID<fCellStartDCal)nEMCalCells++;
+				else                     nDCalCells++;
+			}
+		}
+		file<<"\n"<<endl;
+		file<<"EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+	}
+	file.close();
+
+	//cout<<"    o Results can be found in : "<<endl;
 	//cout<<"    o "<<cellSummaryFile<<endl;
 	//cout<<"    o "<<badPdfName<<endl;
 	//cout<<"    o "<<badPdfName<<endl;
-
 }
 
 
@@ -1308,14 +1393,18 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 	Int_t firstCanvas=0;
 	Bool_t candidate;
 	TLatex* text = new TLatex(0.2,0.8,"*Candidate*");
-	text->SetTextSize(0.06);
-	text->SetTextColor(8);
+	text->SetTextSize(0.07);
+	text->SetTextColor(kOrange-3);
 	text->SetNDC();
-	text->SetTextColor(1);
 
 	TLatex* text2 = new TLatex(0.2,0.8,"*Not a Candidate*");
 	text2->SetTextSize(0.08);
 	text2->SetTextColor(8);
+
+	TLatex* textA = new TLatex(0.65,0.62,"*test*");
+	textA->SetTextSize(0.04);
+	textA->SetTextColor(1);
+	textA->SetNDC();
 
 	//..collect cells in an internal vector.
 	//..when the vector is of size=9 or at the end of being filled
@@ -1356,12 +1445,12 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 					leg->AddEntry(hRefDistr,"mean of good","l");
 					leg->AddEntry(hCell,"current","l");
 				}
+				//..Check the distribution whether it looks like a *Candidate* for a miscalibrated warm cell
+				candidate = CheckDistribution(hCell,hRefDistr);
+                if(candidate==1)fWarmCell[channelVector.at(i)]=candidate;
 				if(version>1)//..These are ratio plots of energy distr. of cell and mean of all good cells
 				{
-					//cout<<"bin nr: "<<ChannelVector.at(i)<<endl;
 					hCell->Divide(hRefDistr);
-					//..Check the distribution whether it looks like a *Candidate* for a miscalibrated warm cell
-					candidate = CheckDistribution(hCell,hRefDistr);
 				}
 				//.. save histograms to file
 				if(version==1) fOutputListBad->Add(hCell);
@@ -1377,16 +1466,27 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 				hRefDistr->SetLineColor(kGray+2);
 				hRefDistr->SetLineWidth(1);
 
-				if(version!=10)hCell->Draw("hist");
-				if(version==10)
-				{
-					if(fTestRoutine==0 && candidate==1)hCell->Draw("hist");  //..Draw those cells that are labled as a candidate for wam cells
-					if(fTestRoutine==1)                hCell->Draw("hist");  //..In case we are running in QA mode plot all Bad Cell distributions
-				}
+				hCell->Draw("hist");
+
 				if(version==1)hRefDistr->Draw("same") ;
-				if(version==10 && candidate==1)text->Draw();  //..Draw a marker in the histogram that could be miscalibrated and labelled as warm
-				if(version==2  && candidate==0)text2->Draw(); //..Draw a marker in the histogram that was falsley missed as a good candidate
-				if(version==2  && candidate==0)leg->Draw();
+
+				//..Mark the histogram that could be miscalibrated and labelled as warm
+				if(candidate==1 && (version==1 || version==10))
+				{
+					gPad->SetFrameFillColor(kYellow-10);
+					text->Draw();
+				}
+				if(version==1)
+				{
+					textA->SetTitle(Form("Excluded by No. %d",fFlag[channelVector.at(i)]));
+					textA->Draw();
+				}
+				if(version==2  && candidate==0)
+				{
+					gPad->SetFrameFillColor(kYellow-10);
+					text2->Draw(); //..Draw a marker in the histogram that was falsley missed as a good candidate
+					leg->Draw();
+				}
 				if(version<2)leg->Draw();
 			}
 
@@ -1453,11 +1553,17 @@ TH1D* AliAnaCaloChannelAnalysis::BuildMeanFromGood()
 /// \param reference  -- good reference histogram
 ///
 //_________________________________________________________________________
-Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
+Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* histogram, TH1* reference)
 {
+	TString Name = Form("%s_ratio",histogram->GetName());
+	TH1* ratio=(TH1*)histogram->Clone(Name);
+	ratio->Divide(reference);
+
 	Double_t percentageOfLast=0.6;
 	Double_t higherThanMean=5;
 	Double_t highestRatio=1000;
+	Double_t maxMean=10;
+	Double_t minMean=0.1;
 	Double_t cliffSize=2;       //height before cliff shouldn't be double as high than after cliff
 
 	//..By default each cell is a candidate for recalibration
@@ -1489,10 +1595,24 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 	}
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..check whether the ratio is much larger than 1
+	//..calculate the mean in the relevant energy range
+	Double_t mean=0;
+	for(Int_t i=2;i<binHeihgtOne;i++)
+	{
+		mean+=ratio->GetBinContent(i);
+	}
+	mean*=1.0/(binHeihgtOne-1);//..divide by number of bins
+	if(mean>maxMean || mean<minMean)
+	{
+		candidate=0;
+	}
+
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..check whether there are large spikes in the histogram
 	//..compare bin values to mean of the ratio. If there is a bin value with
 	//..content "higherThanMean" times lareger than mean it's losing it candidate status
-	Double_t mean=0;
+	mean=0;
 	//..Find the maximum in the mean range (0-binHeihgtOne)
 	ratio->GetXaxis()->SetRangeUser(0,binCentreHeightOne);
 	Double_t localMaxBin=ratio->GetMaximumBin();
@@ -1586,7 +1706,10 @@ Bool_t AliAnaCaloChannelAnalysis::IsCoveredByTRD(Int_t row, Int_t collumn)
 void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
 {
 	//..build two dimensional histogram with values row vs. column
-	TString histoName = Form("HitRowColumn_Flag%d",flagBegin);
+	TString histoName;
+	histoName = Form("2DChannelMap_Flag%d",flagBegin);
+	if(flagBegin==0 && flagEnd==0)histoName = Form("2DChannelMap_Flag100");
+
 	TH2F *plot2D = new TH2F(histoName,histoName,fNMaxColsAbs+2,-1.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+2,-1.5,fNMaxRowsAbs+0.5);
 	plot2D->GetXaxis()->SetTitle("cell column (#eta direction)");
 	plot2D->GetYaxis()->SetTitle("cell row (#phi direction)");
@@ -1608,8 +1731,11 @@ void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd
 			cout<<"current col: "<<cellColumnAbs<<", max col"<<fNMaxColsAbs<<endl;
 			cout<<"current row: "<<cellRowAbs<<", max row"<<fNMaxRowsAbs<<endl;
 		}
-		if(flagEnd==-1 && fFlag[cell]==flagBegin)             plot2D->SetBinContent(cellColumnAbs,cellRowAbs,1);
-		if(flagEnd!=-1 && fFlag[cell]>=flagBegin && fFlag[cell]<=flagEnd)plot2D->SetBinContent(cellColumnAbs,cellRowAbs,1);
+		if(flagEnd==-1 && fFlag[cell]==flagBegin)                        plot2D->SetBinContent(cellColumnAbs,cellRowAbs,1);
+		if(flagEnd!=0 && flagEnd!=-1 && fFlag[cell]>=flagBegin && fFlag[cell]<=flagEnd)plot2D->SetBinContent(cellColumnAbs,cellRowAbs,1);
+		if(flagBegin==0 && flagEnd==0 && fWarmCell[cell]==1)             plot2D->SetBinContent(cellColumnAbs,cellRowAbs,1); //warm cells
+
+
 	}
 	TCanvas *c1 = new TCanvas(histoName,histoName,500,500);
 	c1->ToggleEventStatus();
@@ -1619,16 +1745,17 @@ void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd
 	plot2D->Draw("colz");
 
 	TLatex* text = 0x0;
-	if(flagBegin==0) text = new TLatex(0.2,0.8,"Good Cells");
+	if(flagBegin==0 && flagEnd==-1) text = new TLatex(0.2,0.8,"Good Cells");
 	if(flagBegin==1) text = new TLatex(0.2,0.8,"Dead Cells");
 	if(flagBegin>1)  text = new TLatex(0.2,0.8,"Bad Cells");
+	if(flagBegin==0 && flagEnd==0) text = new TLatex(0.2,0.8,"Warm Cells");
 	text->SetTextSize(0.06);
 	text->SetNDC();
 	text->SetTextColor(1);
 	text->Draw();
 
 	c1->Update();
-	TString name   =Form("%s/%s/2DChannelMap_Flag%d.gif", fWorkdir.Data(),fAnalysisOutput.Data(), flagBegin);
+	TString name =Form("%s/%s/%s.gif", fWorkdir.Data(),fAnalysisOutput.Data(), histoName.Data());
 	c1->SaveAs(name);
 
 	fRootFile->WriteObject(plot2D,plot2D->GetName());

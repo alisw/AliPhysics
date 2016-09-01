@@ -110,8 +110,9 @@ protected:
 	  Int_t fNMaxRowsAbs;                   ///< Maximum No of rows in Calorimeter
 
 	  //arrays to store information
-	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 and higher (bad certain criteria)     start at 0 (cellID 0 = histobin 1)
+	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 and higher (bad certain criteria) start at 0 (cellID 0 = histobin 1)
 	  Int_t fCriterionCounter;              //!<! This value will be written in fflag and updates after each PeriodAnalysis, to distinguish the steps at which cells are marked as bad
+	  Bool_t *fWarmCell;                    //!<! fWarmCell[CellID] = 0 (really bad), fWarmCell[CellID] = 1 (candidate for warm),
 
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs
@@ -120,6 +121,8 @@ protected:
 	  TH2F* fCellAmplitude;                 //!<! main histogram for the analysis. Cell ID vs. amplitude, read from the input merged file
 	  TH2F* fCellTime;                      //!<! possible histogram for the analysis. Cell ID vs. time, read from the input merged file
 	  TH1F* fProcessedEvents;               //!<! Stores the number of events in the run
+	  TH1F* fhCellFlag;                     //!<! histogram that stores by which flag the cell has been excluded
+	  TH1F* fhCellWarm;                     //!<! histogram that stores whether the cell was marked as warm
 
 	  TList* fOutputListBad;                //!<! list with bad channel amplitudes, stored in fRootFile
 	  TList* fOutputListBadRatio;           //!<! list with bad channel amplitude ratios, stored in fRootFile
