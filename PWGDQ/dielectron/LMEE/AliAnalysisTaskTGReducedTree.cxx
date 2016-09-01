@@ -478,15 +478,19 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
   ULong64_t isSelected = AliVEvent::kAny;
   Bool_t isRejected = kFALSE;
   Bool_t fFiredExclude = kFALSE;
+
   if( inputHandler){
-    if(inputHandler->GetEventSelection()){
-      isSelected = inputHandler->IsEventSelected();
-      isSelected &= fTriggerMask;
+    if(fSelectPhysics){
+      if(inputHandler->GetEventSelection()){
+	isSelected = inputHandler->IsEventSelected();
+	isSelected &= fTriggerMask;
+      }
     }
-  }
-  if( isSelected && !fFiredTrigger.IsNull() ){
-    TString firedTriggerClasses=fInputEvent->GetFiredTriggerClasses();
-    isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+
+    if( isSelected && !fFiredTrigger.IsNull() ){
+      TString firedTriggerClasses=fInputEvent->GetFiredTriggerClasses();
+      isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+    }
   }
 
   fEventStat->Fill(0);
