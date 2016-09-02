@@ -344,6 +344,52 @@ void AliTPC::CreateMaterials()
   TString names[6]={"Ne","Ar","CO2","N","CF4","CH4"};
   TString gname;
   Float_t *comp = fTPCParam->GetComposition();
+
+  // ===| Gas composition fom gas chromatograph |===============================
+  Float_t compSensors[6]={0.,0.,0.,0.,0.,0.};
+
+  // ---| average gas values for this run |-------------------------------------
+  //      values are given in %, default
+  //      values are given as fraction
+  compSensors[0] = calibDB->GetGasSensorValue(AliTPCcalibDB::kNeon)/100.;
+  compSensors[1] = calibDB->GetGasSensorValue(AliTPCcalibDB::kArgon)/100.;
+  compSensors[2] = calibDB->GetGasSensorValue(AliTPCcalibDB::kCO2)/100.;
+  compSensors[3] = calibDB->GetGasSensorValue(AliTPCcalibDB::kN2)/100.;
+
+  // ---| Sanity check and overwriting of default value from Params |-----------
+  Float_t sumSensors=0.;
+  Float_t maxDeviation=0.;
+
+  for (Int_t i=0; i<6; ++i) {
+    sumSensors   += compSensors[i];
+    Float_t deviation = TMath::Abs(compSensors[i]-comp[i]);
+    maxDeviation = TMath::Max(maxDeviation, deviation);
+  }
+
+  Bool_t useGC=kTRUE;
+
+  // --- tolerate max 0.2% deviation (assume as rounding error from DCS export)
+  if (TMath::Abs(sumSensors-1.) > 0.002) {
+    useGC=kFALSE;
+    AliErrorF("GC values don't sum up to 1 (Neon, Argon, CO2, N2): %.2f + %.2f + %.2f + %.2f = %.2f",
+              compSensors[0], compSensors[1], compSensors[2], compSensors[3], sumSensors);
+  }
+
+  // --- tolerate at max 5% absolute deviation from default values
+  if (useGC && (maxDeviation > 0.05)) {
+    useGC=kFALSE;
+    AliErrorF("Absolut deviation from default gas composition is larger than 0.05: %.3f", maxDeviation);
+  }
+
+  if (useGC) {
+    comp=compSensors;
+    AliInfoF("Using the gas composition from the GC (Neon, Argon, CO2, N2): %.3f, %.3f, %.3f, %.3f",
+             comp[0], comp[1], comp[2], comp[3]);
+  } else {
+    AliInfoF("Using the default gas composition from AliTPCParam (Neon, Argon, CO2, N2): %.3f, %.3f, %.3f, %.3f",
+             comp[0], comp[1], comp[2], comp[3]);
+  }
+
   // indices:
   // 0-Ne, 1-Ar, 2-CO2, 3-N, 4-CF4, 5-CH4
   //
