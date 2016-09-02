@@ -6,7 +6,7 @@
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliAnalysisTaskEmcal.h"
 #include <TString.h>
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 #include <functional>
 #endif
 
@@ -180,7 +180,7 @@ public:
 
 protected:
 
-#if ! defined(__CINT__) || defined(__MAKECINT__)
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   /**
    * Closure producing a handler converting a set of mask / bit number into a channel
    * ID. In case the mask / bit number is invalid the function will return -1
