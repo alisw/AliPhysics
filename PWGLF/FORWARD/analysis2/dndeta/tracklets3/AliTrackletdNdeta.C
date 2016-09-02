@@ -475,8 +475,8 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * Calculates the result as 
    *
    * @f[
-   *  R &=& \frac{P}{(1-\beta\prime)M\prime} (1-\beta)M
-   * @f] 
+   R = \frac{P}{(1-\beta\prime)M\prime} (1-\beta)M
+   @f] 
    *
    * where 
    * 
