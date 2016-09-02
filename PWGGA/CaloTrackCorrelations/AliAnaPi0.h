@@ -108,6 +108,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   void         SwitchOnMultipleCutAnalysis()    { fMultiCutAna         = kTRUE  ; }
   void         SwitchOffMultipleCutAnalysis()   { fMultiCutAna         = kFALSE ; }
+  
+  void         SwitchOnMultipleCutAcceptAnalysis()  { fMultiCutAnaAcc  = kTRUE  ; }
+  void         SwitchOffMultipleCutAcceptAnalysis() { fMultiCutAnaAcc  = kFALSE ; }
 
   void         SetNPtCuts   (Int_t s)           { if(s <= 10)fNPtCuts    = s    ; }
   void         SetNAsymCuts (Int_t s)           { if(s <= 10)fNAsymCuts  = s    ; }
@@ -115,8 +118,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SetNPIDBits  (Int_t s)           { if(s <= 10)fNPIDBits   = s    ; }
   void         SetNAngleCutBins(Int_t s)        { if(s <= 10)fNAngleCutBins = s ; }
   
-  void         SetPtCutsAt   (Int_t p,Float_t v){ if(p < 10)fPtCuts[p]   = v    ; }
-  void         SetPtCutsMaxAt(Int_t p,Float_t v){ if(p < 10)fPtCutsMax[p]= v    ; }
+  void         SetPtCutsAt   (Int_t p,Float_t v){ if(p < 11)fPtCuts[p]   = v    ; }
+  void         SetPtCutsMaxAt(Int_t p,Float_t v){ if(p < 11)fPtCutsMax[p]= v    ; }
   void         SetAsymCutsAt (Int_t p,Float_t v){ if(p < 10)fAsymCuts[p] = v    ; }
   void         SetNCellCutsAt(Int_t p,Int_t v)  { if(p < 10)fCellNCuts[p]= v    ; }
   void         SetPIDBitsAt  (Int_t p,Int_t v)  { if(p < 10)fPIDBits[p]  = v    ; }
@@ -185,9 +188,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // Multiple cuts analysis
   Bool_t   fMultiCutAna;               ///<  Do analysis with several or fixed cut
   Bool_t   fMultiCutAnaSim;            ///<  Do analysis with several or fixed cut, in the simulation related part
+  Bool_t   fMultiCutAnaAcc;            ///<  Do analysis with several or fixed cut, acceptance plots (eta-phi, col-row)
   Int_t    fNPtCuts;                   ///<  Number of pt cuts
-  Float_t  fPtCuts[10];                ///<  Array with different pt cuts, minimum
-  Float_t  fPtCutsMax[10];             ///<  Array with different pt cuts, maximum
+  Float_t  fPtCuts[11];                ///<  Array with different pt cuts, minimum
+  Float_t  fPtCutsMax[11];             ///<  Array with different pt cuts, maximum
   Int_t    fNAsymCuts;                 ///<  Number of assymmetry cuts
   Float_t  fAsymCuts[10];              ///<  Array with different assymetry cuts
   Int_t    fNCellNCuts;                ///<  Number of cuts with number of cells in cluster
@@ -523,6 +527,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhMiOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, mixed event  
   TH2F *  fhMiOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number, mixed event  
 //TH2F *  fhMiOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other, mixed event 
+
+  TH2F *  fhPtBinClusterEtaPhi                 [10] ; //!<! Eta-Phi location of cluster in different energy bins.
+  TH2F *  fhPtBinClusterColRow                 [10] ; //!<! Column and row location of cluster in different energy bins.
 
   /// Copy constructor not implemented.
   AliAnaPi0(              const AliAnaPi0 & api0) ;

@@ -40,6 +40,7 @@ class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
 class AliV0Result; 
+class AliCascadeResult;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -135,7 +136,8 @@ public:
     }
 //---------------------------------------------------------------------------------------
 //Superlight mode: add another configuration, please
-    void AddConfiguration( AliV0Result *lV0Result );
+    void AddConfiguration( AliV0Result      *lV0Result      );
+    void AddConfiguration( AliCascadeResult *lCascadeResult );
 //---------------------------------------------------------------------------------------
     
 

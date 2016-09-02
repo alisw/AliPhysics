@@ -51,7 +51,7 @@ fCutCombinations(0x0)
 AliAnalysisMuMuCutRegistry::~AliAnalysisMuMuCutRegistry()
 {
   /// dtor
-  
+
   delete fCutElements;
   delete fCutCombinations;
 }
@@ -62,27 +62,27 @@ Int_t AliAnalysisMuMuCutRegistry::AddCutCombination(const TObjArray& cutElements
   /// Add a cut combination composed of the cuts in the cutElements array.
   ///
   /// \return 1 in case of success, 0 if already there, -1 failure
-  
+
   if ( cutElements.IsEmpty() ) return -1;
-  
+
   AliAnalysisMuMuCutCombination* cutCombination = new AliAnalysisMuMuCutCombination;
-  
+
   TIter next(&cutElements);
   AliAnalysisMuMuCutElement* ce;
-  
+
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
     cutCombination->Add(ce);
   }
-  
+
   if ( GetCutCombinations(AliAnalysisMuMuCutElement::kAny)->FindObject(cutCombination) )
   {
     delete cutCombination;
     return 0;
   }
-  
+
   GetCutCombinations(AliAnalysisMuMuCutElement::kAny)->Add(cutCombination);
-  
+
   if ( cutCombination->IsEventCutter() || cutCombination->IsEventHandlerCutter() )
   {
     GetCutCombinations(AliAnalysisMuMuCutElement::kEvent)->Add(cutCombination);
@@ -94,7 +94,7 @@ Int_t AliAnalysisMuMuCutRegistry::AddCutCombination(const TObjArray& cutElements
     TIter nextCutComb(a);
     AliAnalysisMuMuCutCombination* other;
     Bool_t alreadyThere(kFALSE);
-    
+
     while ( ( other = static_cast<AliAnalysisMuMuCutCombination*>(nextCutComb())) && !alreadyThere )
     {
         if ( cutCombination->IsEqualForTrackCutter(*other) )
@@ -102,7 +102,7 @@ Int_t AliAnalysisMuMuCutRegistry::AddCutCombination(const TObjArray& cutElements
           alreadyThere = kTRUE;
         }
     }
-    
+
     if (!alreadyThere)
     {
       a->Add(cutCombination);
@@ -209,16 +209,16 @@ AliAnalysisMuMuCutRegistry::CreateCutElement(AliAnalysisMuMuCutElement::ECutType
   /** Create a cut element. See the ctor of AliAnalysisMuMuCutElement for the meaning
    * of the parameters.
    */
-  
+
   AliAnalysisMuMuCutElement* ce = new AliAnalysisMuMuCutElement(type,cutClass,cutMethodName,cutMethodPrototype,defaultParameters);
 
   AliAnalysisMuMuCutElement* added = AddCutElement(ce);
-  
+
   if (!added)
   {
     delete ce;
   }
-  
+
   return added;
 }
 
@@ -227,7 +227,7 @@ AliAnalysisMuMuCutElement*
 AliAnalysisMuMuCutRegistry::AddCutElement(AliAnalysisMuMuCutElement* ce)
 {
   /// Add an existing cut element to the registry if it is valid
-  
+
   if ( ce && ce->IsValid() )
   {
     if (!GetCutElements(AliAnalysisMuMuCutElement::kAny)->FindObject(ce))
@@ -305,7 +305,7 @@ const TObjArray* AliAnalysisMuMuCutRegistry::GetCutCombinations(AliAnalysisMuMuC
   /// Get (and create if not already done) the array of cut combinations of the given type
 
   if (!fCutCombinations) return 0x0;
-  
+
   return static_cast<TObjArray*>(fCutCombinations->At(type));
 }
 
@@ -317,12 +317,12 @@ TObjArray* AliAnalysisMuMuCutRegistry::GetCutCombinations(AliAnalysisMuMuCutElem
   if (!fCutCombinations)
   {
     // the fCutCombinations array will be the owner of all the cut combinations
-  
+
     Int_t N = AliAnalysisMuMuCutElement::kAny + 1;
-    
+
     fCutCombinations = new TObjArray(N);
     fCutCombinations->SetOwner(kTRUE);
-  
+
     for ( Int_t i = 0; i < N; ++i )
     {
       TObjArray* array = new TObjArray;
@@ -346,7 +346,7 @@ const TObjArray* AliAnalysisMuMuCutRegistry::GetCutElements(AliAnalysisMuMuCutEl
   /// Get the array of cut elements of the given type. Return 0x0 if the array does not exist yet
 
   if (!fCutElements) return 0x0;
-  
+
   return static_cast<TObjArray*>(fCutElements->At(type));
 }
 
@@ -354,14 +354,14 @@ const TObjArray* AliAnalysisMuMuCutRegistry::GetCutElements(AliAnalysisMuMuCutEl
 TObjArray* AliAnalysisMuMuCutRegistry::GetCutElements(AliAnalysisMuMuCutElement::ECutType type)
 {
   /// Get (and create if not already done) the array of cut elements of the given type
-  
+
   if (!fCutElements)
   {
     // owner of all the cut elements
     Int_t N = AliAnalysisMuMuCutElement::kAny + 1;
     fCutElements = new TObjArray(N);
     fCutElements->SetOwner(kTRUE);
-  
+
     for ( Int_t i = 0; i < N; ++i )
     {
       TObjArray* array = new TObjArray;
@@ -382,16 +382,16 @@ TObjArray* AliAnalysisMuMuCutRegistry::GetCutElements(AliAnalysisMuMuCutElement:
 AliAnalysisMuMuCutElement* AliAnalysisMuMuCutRegistry::Not(const AliAnalysisMuMuCutElement& cutElement)
 {
   /// Create a cut which is the opposite of cutElement, and adds it.
-  
+
   AliAnalysisMuMuCutElementBar* bar = new AliAnalysisMuMuCutElementBar(cutElement);
-  
+
   AliAnalysisMuMuCutElement* added = AddCutElement(bar);
-  
+
   if (!added)
   {
     delete bar;
   }
-  
+
   return added;
 }
 
@@ -399,12 +399,12 @@ AliAnalysisMuMuCutElement* AliAnalysisMuMuCutRegistry::Not(const AliAnalysisMuMu
 void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
 {
   /// Printout
-  
+
   TString sopt(opt);
   sopt.ToUpper();
-  
+
   std::cout << "++++ Cut combinations defined : " << std::endl;
-  
+
   AliAnalysisMuMuCutElement::ECutType cutTypes[] = { AliAnalysisMuMuCutElement::kEvent, AliAnalysisMuMuCutElement::kTrack,
     AliAnalysisMuMuCutElement::kTrackPair, AliAnalysisMuMuCutElement::kTriggerClass };
 
@@ -416,7 +416,7 @@ void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
     std::cout << "  Cutting on " << AliAnalysisMuMuCutElement::CutTypeName(cutTypes[iCutType]) << std::endl;
     TIter next(GetCutCombinations(cutTypes[iCutType]));
     AliAnalysisMuMuCutCombination* cutCombination;
-  
+
     while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(next())) )
     {
       std::cout << Form("    %4d ",i);
@@ -424,11 +424,11 @@ void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
       ++i;
     }
   }
-  
+
   if ( sopt.Contains("FULL") || sopt.Contains("ALL") )
   {
     std::cout << "++++ Individual cuts defined : " << std::endl;
-    
+
     for ( Int_t iCutType = 0; iCutType < 4; ++iCutType )
     {
       if (GetCutElements(cutTypes[iCutType])->IsEmpty()) continue;

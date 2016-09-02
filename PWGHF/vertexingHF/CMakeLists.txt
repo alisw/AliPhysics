@@ -46,7 +46,9 @@ set(SRCS
   AliRDHFCutsD0toKpi.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
+  AliRDHFCutsDplustoK0spi.cxx
   AliRDHFCutsDstoKKpi.cxx
+  AliRDHFCutsDstoK0sK.cxx
   AliRDHFCutsLctopKpi.cxx
   AliRDHFCutsLctoV0.cxx
   AliRDHFCutsD0toKpipipi.cxx
@@ -175,6 +177,8 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS.C
+            ConfigVertexingHF_DplustoK0s_DstoK0s.C
+            ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
         DESTINATION
             PWGHF/vertexingHF/)
 

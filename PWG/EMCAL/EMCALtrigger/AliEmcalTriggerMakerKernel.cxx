@@ -59,6 +59,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fDebugLevel(0),
   fMaxAbsCellTime(1.),
   fMinCellAmplitude(0.),
+  fApplyOnlineBadChannelsToOffline(kFALSE),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
   fPatchADCSimple(NULL),
@@ -353,6 +354,12 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     // get position
     Int_t absId=-1;
     fGeometry->GetFastORIndexFromCellIndex(cellId, absId);
+    if(fApplyOnlineBadChannelsToOffline){
+      // Exclude FEE amplitudes from cells which are within a TRU which is masked at
+      // online level. Using this the online acceptance can be applied to offline
+      // patches as well.
+      if(fBadChannels.find(absId) != fBadChannels.end()) continue;
+    }
     Int_t globCol=-1, globRow=-1;
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add

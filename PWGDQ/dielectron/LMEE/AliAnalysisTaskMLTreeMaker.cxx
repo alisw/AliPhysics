@@ -59,65 +59,71 @@ ClassImp(AliAnalysisTaskMLTreeMaker)
 Int_t num= 0;
 Int_t ev=0;
 
-
 AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
-AliAnalysisTaskSE(),
-fList(0x0),
-fCentralityPercentileMin(0),
-fCentralityPercentileMax(100), 
-fPtMin(0),
-fPtMax(1000),
-fEtaMin(-10),
-fEtaMax(10),
-fFilterBit(96),
-fMcArray(0x0),
-fTree(0),
-fQAHist(0),  
-eta(0),
-phi(0),
-pt(0),
-EsigTPC(0),
-EsigTOF(0),
-EsigITS(0),
-hasMC(kFALSE),
-MCpt(0),
-MCeta(0),
-MCphi(0),
-pdg(0),
-pdgmother(0),
-hasmother(0),      
-dcar(),
-dcaz(),
-nITS(0),
-fESDTrackCuts(0),
-gMultiplicity(-999),
-chi2ITS(0),
-chi2TPC(0),
-chi2Global(0),
-nITSshared(0),
-chi2GlobalvsTPC(0),
-fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
-tempdca(),
-motherlabel(-999),
-charge(0.),      
-runn(0),      
-IsHij(kFALSE),
-IsBG(kFALSE),
-fPIDResponse(0),
-pttemp(0),
-etatemp(0),
-n(0),
-cent(0),
-tempEsigTPC(0),
-tempEsigTPC2(0),
-tempEsigTOF(0),
-tempEsigITS(0),
-nitssharedtemp(0),
-vertx(0),
-verty(0),
-vertz(0),
-tempnits()
-
+  AliAnalysisTaskSE(),
+  fList(0x0),
+  fCentralityPercentileMin(0),
+  fCentralityPercentileMax(100), 
+  fPtMin(0),
+  fPtMax(1000),
+  fEtaMin(-10),
+  fEtaMax(10),
+  fFilterBit(96),
+  fMcArray(0x0),
+  fTree(0),
+  fQAHist(0),  
+  eta(0),
+  phi(0),
+  pt(0),
+  EsigTPC(0),
+  EsigTOF(0),
+  EsigITS(0),
+  PsigTPC(0),
+  PsigTOF(0),
+  PsigITS(0),
+  KsigTPC(0),
+  KsigTOF(0),
+  KsigITS(0),
+  fESigITSMin(-4.),
+  fESigITSMax(1.),
+  fESigTPCMin(-1.5),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
+  fUsePionPIDTPC(kTRUE),
+  hasMC(kFALSE),
+  MCpt(0),
+  MCeta(0),
+  MCphi(0),
+  pdg(0),
+  pdgmother(0),
+  hasmother(0),      
+  dcar(),
+  dcaz(),
+  nITS(0),
+  fESDTrackCuts(0),
+  gMultiplicity(-999),
+  chi2ITS(0),
+  chi2TPC(0),
+  chi2Global(0),
+  nITSshared(0),
+  chi2GlobalvsTPC(0),
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
+  motherlabel(0),
+  charge(0.),      
+  runn(0),      
+  IsHij(kFALSE),
+  IsBG(kFALSE),
+  fPIDResponse(0),
+  n(0),
+  cent(0),
+  vertx(0),
+  verty(0),
+  vertz(0)
 {
 
 }
@@ -125,60 +131,68 @@ tempnits()
 AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   AliAnalysisTaskSE(name),
   fList(0x0),
-fCentralityPercentileMin(0),
-fCentralityPercentileMax(100), 
-fPtMin(0),
-fPtMax(1000),
-fEtaMin(-10),
-fEtaMax(10),
-fFilterBit(96),
-fMcArray(0x0),
-fTree(0),
-fQAHist(0),  
-eta(0),
-phi(0),
-pt(0),
-EsigTPC(0),
-EsigTOF(0),
-EsigITS(0),
-hasMC(kFALSE),
-MCpt(0),
-MCeta(0),
-MCphi(0),
-pdg(0),
-pdgmother(0),
-hasmother(0),      
-dcar(),
-dcaz(),
-nITS(0),
-fESDTrackCuts(0),
-gMultiplicity(-999),
-chi2ITS(0),
-chi2TPC(0),
-chi2Global(0),
-nITSshared(0),
-chi2GlobalvsTPC(0),
-fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
-tempdca(),
-motherlabel(-999),
-charge(0.),      
-runn(0),      
-IsHij(kFALSE),
-IsBG(kFALSE),
-fPIDResponse(0),
-pttemp(0),
-etatemp(0),
-n(0),
-cent(0),
-tempEsigTPC(0),
-tempEsigTPC2(0),
-tempEsigTOF(0),
-tempEsigITS(0),
-nitssharedtemp(0),
-vertx(0),
-verty(0),
-vertz(0),
-tempnits()
+  fCentralityPercentileMin(0),
+  fCentralityPercentileMax(100), 
+  fPtMin(0),
+  fPtMax(1000),
+  fEtaMin(-10),
+  fEtaMax(10),
+  fFilterBit(96),
+  fMcArray(0x0),
+  fTree(0),
+  fQAHist(0),  
+  eta(0),
+  phi(0),
+  pt(0),
+  EsigTPC(0),
+  EsigTOF(0),
+  EsigITS(0),
+  PsigTPC(0),
+  PsigTOF(0),
+  PsigITS(0),
+  KsigTPC(0),
+  KsigTOF(0),
+  KsigITS(0),
+  fESigITSMin(-4.),
+  fESigITSMax(1.),
+  fESigTPCMin(-1.5),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
+  fUsePionPIDTPC(kTRUE),
+  hasMC(kFALSE),
+  MCpt(0),
+  MCeta(0),
+  MCphi(0),
+  pdg(0),
+  pdgmother(0),
+  hasmother(0),      
+  dcar(),
+  dcaz(),
+  nITS(0),
+  fESDTrackCuts(0),
+  gMultiplicity(-999),
+  chi2ITS(0),
+  chi2TPC(0),
+  chi2Global(0),
+  nITSshared(0),
+  chi2GlobalvsTPC(0),
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
+  motherlabel(0),
+  charge(0.),      
+  runn(0),      
+  IsHij(kFALSE),
+  IsBG(kFALSE),
+  fPIDResponse(0),
+  n(0),
+  cent(0),
+  vertx(0),
+  verty(0),
+  vertz(0)
 {
 
 
@@ -244,6 +258,17 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTPC", &EsigTPC);
   fTree->Branch("EsigITS", &EsigITS);
   fTree->Branch("EsigTOF", &EsigTOF);
+
+  if(fPionSigmas){
+    fTree->Branch("PsigTPC", &PsigTPC);
+    fTree->Branch("PsigITS", &PsigITS);
+    fTree->Branch("PsigTOF", &PsigTOF);
+  }
+  if(fKaonSigmas){
+    fTree->Branch("KsigTPC", &PsigTPC);
+    fTree->Branch("KsigITS", &PsigITS);
+    fTree->Branch("KsigTOF", &PsigTOF);
+  }
   
   fTree->Branch("DCAxy", &dcar);
   fTree->Branch("DCAz", &dcaz);
@@ -260,15 +285,14 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   if(hasMC) {
       
-      fTree->Branch("Pdg", &pdg);
-      fTree->Branch("Pdg_Mother", &pdgmother);
-      fTree->Branch("Mother_label", &motherlabel);
-      fTree->Branch("Has_Mother", &hasmother);
-      
+    fTree->Branch("Pdg", &pdg);
+    fTree->Branch("Pdg_Mother", &pdgmother);
+    fTree->Branch("Mother_label", &motherlabel);
+    fTree->Branch("Has_Mother", &hasmother); 
   
-       fTree->Branch("MCpt", &MCpt);
-       fTree->Branch("MCeta", &MCeta);
-       fTree->Branch("MCphi", &MCphi);
+    fTree->Branch("MCpt", &MCpt);
+    fTree->Branch("MCeta", &MCeta);
+    fTree->Branch("MCphi", &MCphi);
   }
   
   PostData(1, fList);
@@ -286,10 +310,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   // Main loop
 
   // Called for each event
-
-  
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
-	
   AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
   
   fQAHist->Fill("Events_all",1);
@@ -300,8 +321,6 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
 
   // check event cuts
-
-
   if( IsEventAccepted(esdevent) == 0){ 
     return;
   }
@@ -309,28 +328,26 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   fQAHist->Fill("Events_accepted",1);
   
   if(hasMC){
-      
-
-      AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-      AliMCEvent* mcEvent = mchandler->MCEvent();
+    AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    AliMCEvent* mcEvent = mchandler->MCEvent();
 
     fMcArray = mcEvent;
   // get the accepted tracks in main event
 
   }
   Double_t lMultiplicityVar = -1;
-            Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
-            //fHistTrackStats->Fill(acceptedTracks,lMultiplicityVar);
+  Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
+  //fHistTrackStats->Fill(acceptedTracks,lMultiplicityVar);
 
-            AliCentrality *centrality = esdevent->GetCentrality();
-                    if (!centrality) AliError(Form("Could not receive Centrality"));  
-            cent = centrality->GetCentralityPercentile("V0M");
-            n= acceptedTracks;
-            if(acceptedTracks){
-                fTree->Fill();
-                fQAHist->Fill("Events_track_selected",1);
-                
-            }
+  AliCentrality *centrality = esdevent->GetCentrality();
+  if (!centrality) AliError(Form("Could not receive Centrality"));  
+            
+  cent = centrality->GetCentralityPercentile("V0M");
+  n= acceptedTracks;
+  if(acceptedTracks){
+    fTree->Fill();
+    fQAHist->Fill("Events_track_selected",1);
+  }
 }
 
 //~ //________________________________________________________________________
@@ -364,8 +381,8 @@ Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliESDEvent *event){
 
   
     if (TMath::Abs(event->GetVertex()->GetZ()) < 10  &&  event->GetPrimaryVertexSPD() ){
-        if (event->GetPrimaryVertexSPD()->GetNContributors() >0) return 1;
-        else return 0;}
+      if (event->GetPrimaryVertexSPD()->GetNContributors() >0) return 1;
+      else return 0;}
     return 0;
 }
 
@@ -373,202 +390,183 @@ Double_t AliAnalysisTaskMLTreeMaker::IsEventAccepted(AliESDEvent *event){
 //________________________________________________________________________
 
 Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t gCentrality){
+  ev++;
+  Int_t acceptedTracks = 0;
 
-    ev++;
-Int_t acceptedTracks = 0;
-
-eta.clear();
-phi.clear();
-pt.clear();  
-EsigTPC.clear();
-EsigTOF.clear();
-EsigITS.clear();
-MCpt.clear();
-MCeta.clear();
-MCphi.clear(); 
-dcar.clear();
-dcaz.clear();
-nITS.clear();
-nITSshared.clear();
-chi2ITS.clear();
-chi2TPC.clear();
-chi2Global.clear();
-chi2GlobalvsTPC.clear();
-pdg.clear();
-pdgmother.clear();
-hasmother.clear();
-motherlabel.clear();
-charge.clear();
-    // Loop over tracks in event
-
+  eta.clear();
+  phi.clear();
+  pt.clear();  
+  EsigTPC.clear();
+  EsigTOF.clear();
+  EsigITS.clear();
+  PsigTPC.clear();
+  PsigTOF.clear();
+  PsigITS.clear();
+  KsigTPC.clear();
+  KsigTOF.clear();
+  KsigITS.clear();
+  MCpt.clear();
+  MCeta.clear();
+  MCphi.clear(); 
+  dcar.clear();
+  dcaz.clear();
+  nITS.clear();
+  nITSshared.clear();
+  chi2ITS.clear();
+  chi2TPC.clear();
+  chi2Global.clear();
+  chi2GlobalvsTPC.clear();
+  pdg.clear();
+  pdgmother.clear();
+  hasmother.clear();
+  motherlabel.clear();
+  charge.clear();
+  
+  // Loop over tracks in event
   AliGenCocktailEventHeader* coHeader;
   AliMCEvent *mcEvent;
   
-  
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
-
-
       AliESDtrack* esdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(iTracks));
       if (!esdTrack) {
-	AliError(Form("Could not receive ESD track %d", iTracks));
-	continue;
+	      AliError(Form("Could not receive ESD track %d", iTracks));
+	      continue;
       }
       
       fQAHist->Fill("After ESD check, bef. MC",1); 
       
-      
-      
-      
-      
       if(hasMC){ 
-          
-      mcEvent = MCEvent(); 
-      if (!mcEvent) {
-        AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
-        hasMC=kFALSE;
-        continue;
+        mcEvent = MCEvent(); 
+        if (!mcEvent) {
+          AliError(Form("Could not receive MC -> hasMC set to kFALSE!!"));
+          hasMC=kFALSE;
+          continue;
         }
+        else{
+          fQAHist->Fill("After MC check, bef. Hij",1); 
       
-
-      else{
-          
-      fQAHist->Fill("After MC check, bef. Hij",1); 
-
-      
-        if(!iTracks){                             //check for first track if Hijing was the event gen
+          if(!iTracks){                             //check for first track if Hijing was the event gen
             IsHij=kFALSE;
             coHeader = dynamic_cast<AliGenCocktailEventHeader*> (mcEvent->GenEventHeader());
             if (!coHeader){
-                        AliError(Form("Could not receive coHeader -> IsHij set to kFALSE!! no rejection of enhanced sources!!"));
-//                        continue;
-                }
+              AliError(Form("Could not receive coHeader -> IsHij set to kFALSE!! no rejection of enhanced sources!!"));
+              //continue;
+            }
             else{
                 TList* list = coHeader->GetHeaders();
                 if(list->FindObject("Hijing")) IsHij = kTRUE;
-                }
             }
-      
-      //reject non-Hijing BG tracks    
-
-      if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))){
-          AliError(Form("Reject track!!"));
-          continue;
-            }
-              
+          }
+          //Reject non-Hijing BG tracks    
+          if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))){
+            AliError(Form("Reject track!!"));
+            continue;
+          }
         }
-      
       }
-    
+      fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1);  
+      if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
 
-      
-      
-    fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1);  
-     
-
-
- 
-    if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
-      
-
-            // kinematic cuts
-
-      pttemp = esdTrack->Pt();
-      etatemp = esdTrack->Eta();
+      // Kinematic cuts
+      Double_t pttemp = esdTrack->Pt();
+      Double_t etatemp = esdTrack->Eta();
       
       if( pttemp > fPtMax || pttemp < fPtMin ) continue;
       if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
  
+      Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 0);
+      Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 0);
+      Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 0);
       
-      tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 0);
-      tempEsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 0);
-      tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 0);
+      if(fUsePionPIDTPC){
+        if (fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
+      }
 
-
-
-      if (fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2) > -100. &&  fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2)  < 4.) continue; //exclude pions in TPC
-
-      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,esdTrack)==AliPIDResponse::kDetPidOk && (tempEsigTOF<-3. || tempEsigTOF > 3.)) continue;  
-      if (tempEsigITS<-4. || tempEsigITS > 1.) continue;  
-      if (tempEsigTPC<-1.5 || tempEsigTPC > 3.) continue;
+      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,esdTrack)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
+      if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
+      if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
       
       fQAHist->Fill("Selected tracks",1);  
       //Fill Tree with MC data
-
-     
       if(hasMC){ 
-   
-      AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
+        AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
 
-      pdg.push_back( mcTrack->PdgCode());
+        pdg.push_back( mcTrack->PdgCode());
 
-      MCpt.push_back(mcTrack->Pt());
-      MCeta.push_back(mcTrack->Eta());
-      MCphi.push_back(mcTrack->Phi());
-      
-      runn.push_back(event->GetRunNumber());
-      
-      if(!acceptedTracks){      //get Vertex only for first track in event
+        MCpt.push_back(mcTrack->Pt());
+        MCeta.push_back(mcTrack->Eta());
+        MCphi.push_back(mcTrack->Phi());
+        
+        runn.push_back(event->GetRunNumber());
+        //Get vertex only for first track in event
+        if(!acceptedTracks){     
+          Double_t vert[3] = {0};
 
-      mcTrack->XvYvZv(vert);
+          mcTrack->XvYvZv(vert);
+          
+          vertx= vert[0];
+          verty= vert[1];
+          vertz= vert[2];
+        }
       
-      vertx= vert[0];
-      verty= vert[1];
-      vertz= vert[2];
-
-      }
+        if(!(mcTrack->GetMother() < 0)) {  
+          hasmother.push_back(1);
+          AliMCParticle* mcmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
+	        pdgmother.push_back( mcmother->PdgCode());
+          motherlabel.push_back(mcmother->GetLabel());
+        }
+        else{
+          hasmother.push_back(0);  
+          pdgmother.push_back( -9999);
+          motherlabel.push_back(-9999);
+        }
+      } //End if hasMC 
       
-      if(!(mcTrack->GetMother() < 0)) {  
-        hasmother.push_back(1);
-        AliMCParticle* mcmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
-	pdgmother.push_back( mcmother->PdgCode());
-        motherlabel.push_back(mcmother->GetLabel());
-   
-                }
-      else{
-              hasmother.push_back(0);  
-              pdgmother.push_back( -9999);
-              motherlabel.push_back(-9999);
-            }
-
-        }  
-      
-    //Fill Tree with non MC data
-
-      
+      //Fill Tree with non MC data
       EsigTPC.push_back(tempEsigTPC);
       EsigITS.push_back(tempEsigITS);
       EsigTOF.push_back(tempEsigTOF);
-      
-
+      if(fPionSigmas){
+        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 2);
+        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 2);
+        Double_t tempPsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 2);
+        PsigTPC.push_back(tempPsigTPC);
+        PsigITS.push_back(tempPsigITS);
+        PsigTOF.push_back(tempPsigTOF);
+      }
+      if(fKaonSigmas){
+        Double_t tempKsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 3);
+        Double_t tempKsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 3);
+        Double_t tempKsigTOF=fPIDResponse->NumberOfSigmasTOF(esdTrack, (AliPID::EParticleType) 3);
+        KsigTPC.push_back(tempKsigTPC);
+        KsigITS.push_back(tempKsigITS);
+        KsigTOF.push_back(tempKsigTOF);
+      }
       eta.push_back(etatemp);
       phi.push_back(esdTrack->Phi());
       pt.push_back(pttemp);
       charge.push_back(esdTrack->Charge());         
 
        //Get DCA position
-
-//       cout<<num<<"  track:  "<<iTracks<<"  "<<" pt "<<pttemp;
-
-       esdTrack->GetImpactParameters(& tempdca[0],& tempdca[1]);       //GetImpactParameter is also used in AliESDtrackCuts.cxx to cut on DCA to verte
+      //cout<<num<<"  track:  "<<iTracks<<"  "<<" pt "<<pttemp;
+      Float_t tempdca[2] = {0};
+       esdTrack->GetImpactParameters( &tempdca[0], &tempdca[1]); //GetImpactParameter is also used in AliESDtrackCuts.cxx to cut on DCA to verte
 
 //       cout<<"  dcaxy: "<<tempdca[0]<<endl;  
 
-       dcar.push_back(tempdca[0]);
-       dcaz.push_back(tempdca[1]);
-      
-       
-      tempnits=esdTrack->GetNcls(0);    // 0 = ITS 
+      dcar.push_back(tempdca[0]);
+      dcaz.push_back(tempdca[1]);
 
+      Int_t tempnits = esdTrack->GetNcls(0);    // 0 = ITS 
       nITS.push_back(tempnits);        
-      nitssharedtemp=0.;
+      Double_t nitssharedtemp = 0.;
  
       if(tempnits){
         for(int d = 0; d<6;d++){
           nitssharedtemp+= (Double_t) esdTrack->HasSharedPointOnITSLayer(d);
-         }
+        }
 //              if(nitssharedtemp) cout<<"frac: "<<nitssharedtemp<<endl;
-
-      nitssharedtemp/=tempnits;
+        nitssharedtemp/=tempnits;
       }
 
       nITSshared.push_back(nitssharedtemp);
@@ -579,30 +577,21 @@ charge.clear();
       fCutMaxChi2TPCConstrainedVsGlobalVertexType = fESDTrackCuts->kVertexTracks | fESDTrackCuts->kVertexSPD;
 
       const AliESDVertex* vertex = 0;
-      if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTracks)
-                 
-	vertex = esdTrack->GetESDEvent()->GetPrimaryVertexTracks();
+      if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTracks){
+        vertex = esdTrack->GetESDEvent()->GetPrimaryVertexTracks();}
       
-      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexSPD)
-	vertex = esdTrack->GetESDEvent()->GetPrimaryVertexSPD();
+      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexSPD){
+	      vertex = esdTrack->GetESDEvent()->GetPrimaryVertexSPD();}
 	
-      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTPC)
-	vertex = esdTrack->GetESDEvent()->GetPrimaryVertexTPC();
-      if (vertex->GetStatus())
+      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & fESDTrackCuts->kVertexTPC){
+	      vertex = esdTrack->GetESDEvent()->GetPrimaryVertexTPC();}
 
-	chi2GlobalvsTPC.push_back(esdTrack->GetChi2TPCConstrainedVsGlobal(vertex));
-                    
-
-      
- 
-       
+      if (vertex->GetStatus()){
+        chi2GlobalvsTPC.push_back(esdTrack->GetChi2TPCConstrainedVsGlobal(vertex));}
  
       // count tracks
-
       acceptedTracks++;
-
-    }
-
+  }
     
   num++;
   return acceptedTracks;  

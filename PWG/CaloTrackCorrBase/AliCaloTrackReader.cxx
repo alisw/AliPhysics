@@ -86,7 +86,7 @@ fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
-fSmearingFunction(0),
+fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
 fTrackMult(0),               fTrackMultEtaCut(0.9),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE),
@@ -690,7 +690,8 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   
   if(fSmearShowerShape)
   {
-    snprintf(onePar,buffersize,"EMC M02 smear ON, function %d, param %2.4f; ",fSmearingFunction,fSmearShowerShapeWidth) ;
+    snprintf(onePar,buffersize,"EMC M02 smear ON, function %d, param %2.4f, %d<=NLM<=%d; ",
+             fSmearingFunction,fSmearShowerShapeWidth,fSmearNLMMin,fSmearNLMMax) ;
     parList+=onePar ;
   }
   
@@ -1103,7 +1104,9 @@ void AliCaloTrackReader::InitParameters()
   if(!fBackgroundJets) fBackgroundJets = new AliAODJetEventBackground();
 
   fSmearShowerShapeWidth = 0.005;
-    
+  fSmearNLMMin = 1;
+  fSmearNLMMax = 1;
+  
   fWeightUtils = new AliAnaWeights() ;
   fEventWeight = 1 ;
     
@@ -2069,7 +2072,10 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
   //
-  if( fSmearShowerShape  && clus->GetNCells() > 2)
+  Int_t nMaxima = GetCaloUtils()->GetNumberOfLocalMaxima(clus, GetEMCALCells()); 
+  // Int_t nMaxima = clus->GetNExMax(); // For Run2
+  if( fSmearShowerShape  && clus->GetNCells() > 2 && 
+      nMaxima >= fSmearNLMMin && nMaxima <= fSmearNLMMax )
   {
     AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
     if(fSmearingFunction == kSmearingLandau)

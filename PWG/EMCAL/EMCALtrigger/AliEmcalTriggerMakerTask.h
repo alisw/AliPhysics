@@ -6,6 +6,9 @@
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliAnalysisTaskEmcal.h"
 #include <TString.h>
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include <functional>
+#endif
 
 class TClonesArray;
 class THistManager;
@@ -13,9 +16,12 @@ class AliVVZERO;
 class AliEMCALTriggerPatchInfo;
 
 /**
- * \class AliEmcalTriggerMakerTask
- * \brief EMCAL trigger maker task
- * \ingroup EMCALTRGFW
+ * @class AliEmcalTriggerMakerTask
+ * @brief EMCAL trigger maker task
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * @author Salvatore Aiola, Yale University
+ * @since Oct. 22nd, 2015
+ * @ingroup EMCALTRGFW
  *
  * The EMCAL trigger maker task steers the process building
  * trigger patches, performed via the trigger maker kernel,
@@ -31,8 +37,8 @@ class AliEMCALTriggerPatchInfo;
 class AliEmcalTriggerMakerTask : public AliAnalysisTaskEmcal {
 public:
   /***
-   * \enum TriggerMakerTriggerBitConfig_t
-   * \brief Definition of trigger bit configurations
+   * @enum TriggerMakerTriggerBitConfig_t
+   * @brief Definition of trigger bit configurations
    *
    * This enumeration handles different trigger bit configurations for the
    * EMCAL Level1 triggers (with and without different thresholds) applied
@@ -40,7 +46,18 @@ public:
    */
   enum TriggerMakerBitConfig_t {
     kOldConfig = 0,///< Old configuration, no distinction between high and low threshold
-    kNewConfig = 1 ///< New configuration, distiction between high and low threshold
+    kNewConfig = 1 ///< New configuration, distinction between high and low threshold
+  };
+
+  /**
+   * @enum Exception_t
+   * @brief Definition of various exception codes used in the trigger maker
+   *
+   * Collection of all possible error codes issued in the trigger maker task
+   * class.
+   */
+  enum Exception_t {
+    kInvalidChannelException = 1      ///< kInvalidChannelException
   };
 
   /**
@@ -89,27 +106,27 @@ public:
 
   /**
    * Switch on basic QA of the trigger maker
-   * @param doQA If true QA is switched on.
+   * @param[in] doQA If true QA is switched on.
    */
   void SetRunQA(Bool_t doQA = kTRUE) { fDoQA = doQA; }
 
   /**
    * Set range for L0 time
-   * @param min Minimum L0 time (default is 7)
-   * @param max Maximum L0 time (default is 10)
+   * @param[in] min Minimum L0 time (default is 7)
+   * @param[in] max Maximum L0 time (default is 10)
    */
   void SetL0TimeRange(Int_t min, Int_t max) { if (fTriggerMaker) fTriggerMaker->SetL0TimeRange(min, max); }
 
 
   /**
    * Set the name of the output container
-   * @param name Name of the output container
+   * @param[in] name Name of the output container
    */
   void SetCaloTriggersOutName(const char *name)     { fCaloTriggersOutName      = name; }
 
   /**
    * Set the name of the V0 input object
-   * @param name Name of the V0 input object
+   * @param[in] name Name of the V0 input object
    */
   void SetV0InName(const char *name) { fV0InName      = name; }
 
@@ -122,9 +139,27 @@ public:
 
   /**
    * Trigger bit configuration to be used in the trigger patch maker.
-   * @param bitConfig Type of the trigger bit config (old - 3 bit, new - 5 bit)
+   * @param[in] bitConfig Type of the trigger bit config (old - 3 bit, new - 5 bit)
    */
   void SetUseTriggerBitConfig(TriggerMakerBitConfig_t bitConfig);
+
+  /**
+   * Defining whether to use the FastOR masking from the OCDB. Attention:
+   * In case the option is set to true the CDBconnect task is required to
+   * run before the trigger maker task.
+   * @param[in] doLoad If true the FastOR masking is obtained from the OCDB
+   */
+  void SetLoadFastORMaskingFromOCDB(Bool_t doLoad = kTRUE) { fLoadFastORMaskingFromOCDB = doLoad; }
+
+  /**
+   * Apply online bad channels (FastOR masking) to offline FEE energies. Using this
+   * the same acceptance which was available online can be applied to offline patches.
+   * The masking is handled inside the trigger maker kernel.
+   * @param[in] doApply If true the online FastOR masking is applied to offline energies
+   */
+  void SetApplyTRUMaskingToFEE(Bool_t doApply = kTRUE) {
+    if(fTriggerMaker) fTriggerMaker->SetApplyOnlineBadChannelMaskingToOffline(doApply);
+  }
 
   void SetTriggerThresholdJetLow   ( Int_t a, Int_t b, Int_t c ) {
     if(fTriggerMaker) fTriggerMaker->SetTriggerThresholdJetLow(a, b, c);
@@ -144,6 +179,15 @@ public:
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
 protected:
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  /**
+   * Closure producing a handler converting a set of mask / bit number into a channel
+   * ID. In case the mask / bit number is invalid the function will return -1
+   * @return function that converts a set of mask / bit number into a channel ID
+   */
+  std::function<int (unsigned int, unsigned int)> GetMaskHandler() const;
+#endif
 
   /**
    * Filling basic QA histograms implemented in the trigger maker task for
@@ -167,6 +211,11 @@ protected:
    */
   void InitializeBadFEEChannels();
 
+  /**
+   * Initialize the FastOR masking from the OCDB
+   */
+  void InitializeFastORMaskingFromOCDB();
+
   AliEmcalTriggerMakerKernel              *fTriggerMaker;             ///< The actual trigger maker kernel
   AliVVZERO                               *fV0;                       //!<! VZERO data
 
@@ -174,6 +223,7 @@ protected:
   TString                                 fV0InName;                  ///< name of output track array
   TString                                 fBadFEEChannelOADB;         ///< name of the OADB container containing channels to be masked inside the trigger maker
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
+  Bool_t                                  fLoadFastORMaskingFromOCDB; ///< Load FastOR masking from the OCDB
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fDoQA;                      ///< Fill QA histograms

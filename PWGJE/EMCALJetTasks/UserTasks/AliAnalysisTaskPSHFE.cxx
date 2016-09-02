@@ -42,12 +42,14 @@
 #include "AliStack.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
 #include "AliESDCaloCluster.h"
+#include "AliAODCaloCluster.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliESDInputHandler.h"
-#include "AliESDEvent.h"
+#include "AliAODInputHandler.h"
 #include "AliPID.h"
-#include "AliTOFcluster.h"
 #include "AliPIDResponse.h"
 #include "AliTRDPIDResponse.h"
 #include "AliEventPoolManager.h"
@@ -70,6 +72,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     comptrackCuts(0),
     fPoolMan(0),
     fPool(0),
+    aodEv(0),
     trkArr(0),
     EMC7trg(0),
     EMCJettrg(0),
@@ -89,6 +92,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistNevents_MB(0),
     fHistPtSum_MB(0),
     fHistPtSumTag_MB(0),
+    fHistPtSumEMC_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
     fHistEtaPhiTPCOnly_MB(0),
@@ -105,7 +109,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtAssocMix_MB(0),
     fHistPtTag_MB(0),
     fHistPhotoMismatch_MB(0),
-    fHistDPhi28dEdx_MB(0),
+    fHistDPhi18Spe_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -116,6 +120,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistNevents_EMC7(0),
     fHistPtSum_EMC7(0),
     fHistPtSumTag_EMC7(0),
+    fHistPtSumEMC_EMC7(0),
     fHistEtaPhi_EMC7(0),
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
@@ -130,7 +135,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtAssocMix_EMC7(0),
     fHistPtTag_EMC7(0),
     fHistPhotoMismatch_EMC7(0),
-    fHistDPhi28dEdx_EMC7(0),
+    fHistDPhi18Spe_EMC7(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -141,6 +146,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistNevents_EMCJet(0),
     fHistPtSum_EMCJet(0),
     fHistPtSumTag_EMCJet(0),
+    fHistPtSumEMC_EMCJet(0),
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
@@ -155,7 +161,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE() // All data members should be initi
     fHistPtAssocMix_EMCJet(0),
     fHistPtTag_EMCJet(0),
     fHistPhotoMismatch_EMCJet(0),
-    fHistDPhi28dEdx_EMCJet(0)
+    fHistDPhi18Spe_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -266,6 +272,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     comptrackCuts(0),
     fPoolMan(0),
     fPool(0),
+    aodEv(0),
     trkArr(0),
     EMC7trg(0),
     EMCJettrg(0),
@@ -285,6 +292,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistNevents_MB(0),
     fHistPtSum_MB(0),
     fHistPtSumTag_MB(0),
+    fHistPtSumEMC_MB(0),
     fHistEtaPhi_MB(0),
     fHistEtaPhiTag_MB(0),
     fHistEtaPhiTPCOnly_MB(0),
@@ -301,7 +309,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtAssocMix_MB(0),
     fHistPtTag_MB(0),
     fHistPhotoMismatch_MB(0),
-    fHistDPhi28dEdx_MB(0),
+    fHistDPhi18Spe_MB(0),
 
     fHistTPCNClus_EMC7(0),
     fHistITSNClus_EMC7(0),
@@ -312,6 +320,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistNevents_EMC7(0),
     fHistPtSum_EMC7(0),
     fHistPtSumTag_EMC7(0),
+    fHistPtSumEMC_EMC7(0),
     fHistEtaPhi_EMC7(0),
     fHistEtaPhiTag_EMC7(0),
     fHistDPhi28_EMC7(0),
@@ -326,7 +335,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtAssocMix_EMC7(0),
     fHistPtTag_EMC7(0),
     fHistPhotoMismatch_EMC7(0),
-    fHistDPhi28dEdx_EMC7(0),
+    fHistDPhi18Spe_EMC7(0),
 
     fHistTPCNClus_EMCJet(0),
     fHistITSNClus_EMCJet(0),
@@ -337,6 +346,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistNevents_EMCJet(0),
     fHistPtSum_EMCJet(0),
     fHistPtSumTag_EMCJet(0),
+    fHistPtSumEMC_EMCJet(0),
     fHistEtaPhi_EMCJet(0),
     fHistEtaPhiTag_EMCJet(0),
     fHistDPhi28_EMCJet(0),
@@ -351,7 +361,7 @@ AliAnalysisTaskPSHFE::AliAnalysisTaskPSHFE(const char *name) // All data members
     fHistPtAssocMix_EMCJet(0),
     fHistPtTag_EMCJet(0),
     fHistPhotoMismatch_EMCJet(0),
-    fHistDPhi28dEdx_EMCJet(0)
+    fHistDPhi18Spe_EMCJet(0)
         
         // The last in the above list should not have a comma after it
 {
@@ -585,8 +595,17 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     TString ptRangesRegion[4] = {"1-2Gev", "2-4Gev", "4-6Gev", ">6Gev"};
     
     //Strong cuts for heavy flavour
-    
-    fTrackCutsStrong = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+    fTrackCutsStrong = new AliESDtrackCuts();
+    // TPC
+    fTrackCutsStrong->SetRequireTPCRefit(kTRUE);
+    // ITS
+    fTrackCutsStrong->SetRequireITSRefit(kTRUE);
+    // 7*(0.0026+0.0050/pt^1.01)
+    fTrackCutsStrong->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    fTrackCutsStrong->SetMaxDCAToVertexZ(2);
+    fTrackCutsStrong->SetDCAToVertex2D(kFALSE);
+    fTrackCutsStrong->SetRequireSigmaToVertex(kFALSE);
+    fTrackCutsStrong->SetMaxChi2PerClusterITS(36);
     fTrackCutsStrong->SetMinNClustersTPC(120);
     fTrackCutsStrong->SetMinNClustersITS(4);
     fTrackCutsStrong->SetPtRange(1,10e10);
@@ -598,8 +617,17 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fTrackCutsStrong->SetAcceptKinkDaughters(kFALSE);
     
     //Weak cuts for heavy flavour
-    
-    fTrackCutsWeak = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+    fTrackCutsWeak = new AliESDtrackCuts();
+    // TPC
+    fTrackCutsWeak->SetRequireTPCRefit(kTRUE);
+    // ITS
+    fTrackCutsWeak->SetRequireITSRefit(kTRUE);
+    // 7*(0.0026+0.0050/pt^1.01)
+    fTrackCutsWeak->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    fTrackCutsWeak->SetMaxDCAToVertexZ(2);
+    fTrackCutsWeak->SetDCAToVertex2D(kFALSE);
+    fTrackCutsWeak->SetRequireSigmaToVertex(kFALSE);
+    fTrackCutsWeak->SetMaxChi2PerClusterITS(36);
     fTrackCutsWeak->SetMinNClustersTPC(80);
     fTrackCutsWeak->SetMinNClustersITS(3);
     fTrackCutsWeak->SetPtRange(1,10e10);
@@ -862,20 +890,41 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistDPhiDEtaMix28_EMCJet->GetZaxis()->SetTitle("Cts");
     
     //DPhi by dEdx for triggered particles 2-8 gev and assoc. particles >2gev
-    fHistDPhi28dEdx_MB = new TH2F("fHistDPhi28dEdx_MB", "Delta-Phi by dE/dx for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 300, -30, 130);
-    fHistDPhi28dEdx_MB->GetXaxis()->SetTitle("Delta-Phi");
-    fHistDPhi28dEdx_MB->GetYaxis()->SetTitle("dE/dx");
-    fHistDPhi28dEdx_MB->GetZaxis()->SetTitle("Cts");
+    fHistDPhi18Spe_MB = new TH2F("fHistDPhi18Spe_MB", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_MB->GetXaxis()->SetTitle("Delta-Phi");
+    fHistDPhi18Spe_MB->GetYaxis()->SetTitle("Species");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(0, "Unkown");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(1, "Electron");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(2, "Muon");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(3, "Pion");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(4, "Kaon");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(5, "Proton");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_MB->GetZaxis()->SetTitle("Cts");
     
-    fHistDPhi28dEdx_EMC7 = new TH2F("fHistDPhi28dEdx_EMC7", "Delta-Phi by dE/dx for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 300, -30, 130);
-    fHistDPhi28dEdx_EMC7->GetXaxis()->SetTitle("Delta-Phi");
-    fHistDPhi28dEdx_EMC7->GetYaxis()->SetTitle("dE/dx");
-    fHistDPhi28dEdx_EMC7->GetZaxis()->SetTitle("Cts");
+    fHistDPhi18Spe_EMC7 = new TH2F("fHistDPhi18Spe_EMC7", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMC7->GetXaxis()->SetTitle("Delta-Phi");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetTitle("Species");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(0, "Unkown");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(1, "Electron");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(2, "Muon");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(3, "Pion");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(4, "Kaon");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(5, "Proton");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMC7->GetZaxis()->SetTitle("Cts");
     
-    fHistDPhi28dEdx_EMCJet = new TH2F("fHistDPhiDEta28_EMCJet", "Delta-Phi by dE/dx for candidate electrons with 2<pt<8Gev and assoc. with pt>2Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 300, -30, 130);
-    fHistDPhi28dEdx_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
-    fHistDPhi28dEdx_EMCJet->GetYaxis()->SetTitle("dE/dx");
-    fHistDPhi28dEdx_EMCJet->GetZaxis()->SetTitle("Cts");
+    fHistDPhi18Spe_EMCJet = new TH2F("fHistDPhi18Spe_EMCJet", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
+    fHistDPhi18Spe_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetTitle("Species");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(0, "Unkown");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(1, "Electron");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(2, "Muon");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(3, "Pion");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(4, "Kaon");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(5, "Proton");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMCJet->GetZaxis()->SetTitle("Cts");
         
     // Delta Phi for tracks > 300MeV
     for(Int_t i=0; i<3; i++){
@@ -1206,6 +1255,19 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistPtSumTag_EMCJet->GetXaxis()->SetTitle("Pt Sum");
     fHistPtSumTag_EMCJet->GetYaxis()->SetTitle("Cts");
     
+    // Energy per event in EMC acceptance histos
+    fHistPtSumEMC_MB = new TH1F("fHistPtSumEMC_MB", "Pt sum for events in EMCal acceptance", 500, 0, 500);
+    fHistPtSumEMC_MB->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumEMC_MB->GetYaxis()->SetTitle("Cts");
+    
+    fHistPtSumEMC_EMC7 = new TH1F("fHistPtSumEMC_EMC7", "Pt sum for events in EMCal acceptance", 500, 0, 500);
+    fHistPtSumEMC_EMC7->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumEMC_EMC7->GetYaxis()->SetTitle("Cts");
+    
+    fHistPtSumEMC_EMCJet = new TH1F("fHistPtSumEMC_EMCJet", "Pt sum for events in EMCal acceptance", 500, 0, 500);
+    fHistPtSumEMC_EMCJet->GetXaxis()->SetTitle("Pt Sum");
+    fHistPtSumEMC_EMCJet->GetYaxis()->SetTitle("Cts");
+    
     // Numbers of events
     fHistNevents_MB = new TH1F("fHistNevents_MB", "Number of events that have an 'electron'", 2,0,1);
     fHistNevents_MB->GetXaxis()->SetBinLabel(1,"Events");
@@ -1356,6 +1418,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistNevents_MB);
     fOutputMB->Add(fHistPtSum_MB);
     fOutputMB->Add(fHistPtSumTag_MB);
+    fOutputMB->Add(fHistPtSumEMC_MB);
     fOutputMB->Add(fHistEtaPhi_MB);
     fOutputMB->Add(fHistEtaPhiTag_MB);
     fOutputMB->Add(fHistEtaPhiTPCOnly_MB);
@@ -1396,7 +1459,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputMB->Add(fHistDPhiDEta28_MB);
     fOutputMB->Add(fHistDPhiMix28_MB);
     fOutputMB->Add(fHistDPhiDEtaMix28_MB);
-    fOutputMB->Add(fHistDPhi28dEdx_MB);
+    fOutputMB->Add(fHistDPhi18Spe_MB);
     
     fOutputEMC7->Add(fHistPhotoMismatch_EMC7);
     fOutputEMC7->Add(fHistPtAssoc_EMC7);
@@ -1410,6 +1473,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistImpParTag_EMC7);
     fOutputEMC7->Add(fHistNevents_EMC7);
     fOutputEMC7->Add(fHistPtSum_EMC7);
+    fOutputEMC7->Add(fHistPtSumTag_EMC7);
     fOutputEMC7->Add(fHistPtSumTag_EMC7);
     fOutputEMC7->Add(fHistEtaPhi_EMC7);
     fOutputEMC7->Add(fHistEtaPhiTag_EMC7);
@@ -1449,7 +1513,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistDPhiDEta28_EMC7);
     fOutputEMC7->Add(fHistDPhiMix28_EMC7);
     fOutputEMC7->Add(fHistDPhiDEtaMix28_EMC7);
-    fOutputEMC7->Add(fHistDPhi28dEdx_EMC7);
+    fOutputEMC7->Add(fHistDPhi18Spe_EMC7);
     
     fOutputEMCJet->Add(fHistPhotoMismatch_EMCJet);
     fOutputEMCJet->Add(fHistPtAssoc_EMCJet);
@@ -1463,6 +1527,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistImpParTag_EMCJet);
     fOutputEMCJet->Add(fHistNevents_EMCJet);
     fOutputEMCJet->Add(fHistPtSum_EMCJet);
+    fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
     fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhi_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhiTag_EMCJet);
@@ -1502,7 +1567,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistDPhiDEta28_EMCJet);
     fOutputEMCJet->Add(fHistDPhiMix28_EMCJet);
     fOutputEMCJet->Add(fHistDPhiDEtaMix28_EMCJet);
-    fOutputEMCJet->Add(fHistDPhi28dEdx_EMCJet);
+    fOutputEMCJet->Add(fHistDPhi18Spe_EMCJet);
 
     // NEW HISTO added to fOutput here
     PostData(1, fOutputMB);
@@ -1520,49 +1585,90 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     // Create pointer to reconstructed event
     AliVEvent *event = InputEvent();
     if (!event) { Printf("ERROR: Could not retrieve event"); return; }
-        
+    
+    if(aodEv){cout<<"This is an AOD event\n";}
+    
+    AliESDEvent* esd;
     // create pointer to event
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-    if (!esd) {
-        AliError("Cannot get the ESD event");
+    AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
+    if (!aod) {
+        AliError("Cannot get the AOD event");
         return;
     }  
+    if(!aodEv){
+        esd = dynamic_cast<AliESDEvent*>(event);
+        cout<<"Made ESD Event\n";
+        if (!esd) {
+            AliError("Cannot get the ESD event");
+            return;
+        }  
+    }
     
     // input handler
-  const AliAnalysisManager* man(AliAnalysisManager::GetAnalysisManager());
-  if (NULL == man) {
-    AliWarning("AliAnalysisManager is not available");
-    return;
-  }
-
-  AliESDInputHandler* inputHandler(dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler()));  
-  if (NULL == inputHandler) {
-    AliWarning("AliESDInputHandler is not available");
-    return;
-  }
-
-  UInt_t fSelectMask = inputHandler->IsEventSelected();
-  Bool_t isSelected = fSelectMask & (AliVEvent::kEMC7 | AliVEvent::kEMCEJE | AliVEvent::kEMC8);
-  if(!isSelected){
-        AliWarning("This is not an EMCal triggered event");
-  }
-    
-  MBtrg = fSelectMask & AliVEvent::kAnyINT;
-  EMC7trg = fSelectMask & AliVEvent::kEMC7;
-  EMCJettrg = fSelectMask & AliVEvent::kEMCEJE;
-    
-  Int_t elecIDs[1000];
-  Int_t elecCnt=0;
-    
-    if(!globaltrackCuts||!comptrackCuts){
-        AliWarning("The hybrid track cuts are null");
+    const AliAnalysisManager* man(AliAnalysisManager::GetAnalysisManager());
+    if (NULL == man) {
+        AliWarning("AliAnalysisManager is not available");
         return;
     }
-  AliPIDResponse* fPIDResponse = inputHandler->GetPIDResponse();
-      if(!fPIDResponse){
-        AliWarning("NULL PIDResponse");}
+
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)man->GetInputEventHandler();
+    if (!inputHandler) {
+            AliWarning("AliInputEventHandler is not available");
+            return;
+    }
+    /*if(!aodEv){
+        AliESDInputHandler* inputHandlerESD = dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler());  
+        if (!inputHandlerESD) {
+            AliWarning("AliESDInputHandler is not available");
+            return;
+        }
+    }else{
+        AliAODInputHandler* inputHandlerAOD = (AliAODInputHandler*)(man->GetInputEventHandler());  
+        if (!inputHandlerAOD) {
+            AliWarning("AliAODInputHandler is not available");
+            return;
+        }
+    }*/
     
-    trkArr = MakeTrkArr(esd);
+    UInt_t fSelectMask = inputHandler->IsEventSelected();
+    /*if(!aodEv){
+        UInt_t fSelectMask = inputHandler->IsEventSelected();
+    }else{
+        UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    }       */ 
+    
+    Bool_t isSelected = fSelectMask & (AliVEvent::kEMC7 | AliVEvent::kEMCEJE | AliVEvent::kEMC8);
+    if(!isSelected){
+        AliWarning("This is not an EMCal triggered event");
+    }
+
+    MBtrg = fSelectMask & AliVEvent::kAnyINT;
+    EMC7trg = fSelectMask & AliVEvent::kEMC7;
+    EMCJettrg = fSelectMask & AliVEvent::kEMCEJE;
+
+    Int_t elecIDs[1000];
+    Int_t elecCnt=0;
+    
+    if(!aodEv){
+        if(!globaltrackCuts||!comptrackCuts){
+            AliWarning("The hybrid track cuts are null");
+            return;
+        }
+    }
+    
+    AliPIDResponse* fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
+    /*if(!aodEv){
+        AliPIDResponse* fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+    }else{
+        AliPIDResponse* fPIDResponse = (inputHandlerAOD)->GetPIDResponse();
+    }*/
+    if(!fPIDResponse){
+        AliWarning("NULL PIDResponse");
+    }
+
+    if(aodEv){
+        trkArr = MakeTrkArr(aod);
+    }
     //__________________________End major event stuff_____________________________
     
     
@@ -1571,133 +1677,233 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         fHistNevents_MB->Fill("Events",1);
     }
     if(EMC7trg){
-            fHistNevents_EMC7->Fill("Events",1);
+        fHistNevents_EMC7->Fill("Events",1);
     }
     
     if(EMCJettrg){
-            fHistNevents_EMCJet->Fill("Events",1);
+        fHistNevents_EMCJet->Fill("Events",1);
     }
     
     //Initialize energy variable and tagging flags
     Double_t PtSum=0;
+    Double_t PtSumEMC=0;
     tagStrong=kFALSE;
     Bool_t tagEvt=kFALSE;
 
     //Initialize the # of tracks variable and the Eta Phi arrays
-    Int_t ntracks = esd->GetNumberOfTracks();
+    Int_t ntracks=0;
+    ntracks = aod->GetNumberOfTracks();
+    if(!aodEv){
+        ntracks = esd->GetNumberOfTracks();
+    }
+    
     std::vector<Double_t> Eta;
     std::vector<Double_t> Phi;
     
     // Track loop for reconstructed event
     for(Int_t i = 0; i < ntracks; i++) {
-        
+
         tagStrong=kFALSE;
         tagPhot=kFALSE;
-        
-        AliESDtrack* esdtrack = esd->GetTrack(i); // pointer to reconstructed to track      
-        
-        if(!esdtrack) { 
-            AliError(Form("ERROR: Could not retrieve esdtrack %d",i)); 
+        AliESDtrack* esdtrack = 0;
+        AliAODTrack* aodtrack = (AliAODTrack*)aod->GetTrack(i); // pointer to reconstructed to track       
+        if(!aodEv){
+            esdtrack = (AliESDtrack*)esd->GetTrack(i); // pointer to reconstructed to track 
+        }
+
+        if(!aodtrack) { 
+            AliError(Form("ERROR: Could not retrieve track %d",i)); 
             continue; 
+        }
+        
+        if(!aodEv){
+            if(!esdtrack) { 
+                AliError(Form("ERROR: Could not retrieve track %d",i)); 
+                continue; 
+            }
         }
 
         //Fill TPCOnly track eta-phi
-        if(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()->AcceptTrack(esdtrack)){
-            fHistEtaPhiTPCOnly_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+
+        if(aodtrack->IsTPCOnly()){
+            fHistEtaPhiTPCOnly_MB->Fill(aodtrack->Eta(),aodtrack->Phi());
         }
-        
+
+        if(!aodEv){
+            if(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()->AcceptTrack(esdtrack)){
+                fHistEtaPhiTPCOnly_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+            }
+        }
+
+
         //Do hybrid track cuts
-        if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){continue;}
-        
+        if(!aodtrack->IsHybridGlobalConstrainedGlobal()){continue;}
+        if(!aodEv){
+            if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){continue;}
+        }
+
         //Add this tracks energy to the running total
-        PtSum=PtSum+esdtrack->Pt();
-        
+        PtSum=PtSum+aodtrack->Pt();
+        if(aodtrack->Eta()<.7&&aodtrack->Eta()>-.7&&aodtrack->Phi()>80&&aodtrack->Phi()<180){
+            PtSumEMC=PtSumEMC+aodtrack->Pt();
+        }
+
         //Fill the Eta Phi arrays with this tracks Eta and Phi
-        Eta.push_back(esdtrack->Eta());
-        Phi.push_back(esdtrack->Phi());
-        
+        Eta.push_back(aodtrack->Eta());
+        Phi.push_back(aodtrack->Phi());
+
         if(MBtrg){
-            fHistEtaPhi_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+            fHistEtaPhi_MB->Fill(aodtrack->Eta(),aodtrack->Phi());
         }
         if(EMC7trg){
-                fHistEtaPhi_EMC7->Fill(esdtrack->Eta(),esdtrack->Phi());
+            fHistEtaPhi_EMC7->Fill(aodtrack->Eta(),aodtrack->Phi());
         }
         if(EMCJettrg){
-                fHistEtaPhi_EMCJet->Fill(esdtrack->Eta(),esdtrack->Phi());
+            fHistEtaPhi_EMCJet->Fill(aodtrack->Eta(),aodtrack->Phi());
         }
-        
+
         //do Cut level histograms
         if(MBtrg){
-            if(esdtrack->GetTPCncls()>0){
-            fHistTPCNClus_MB->Fill(esdtrack->GetTPCncls());}
-            fHistITSNClus_MB->Fill(esdtrack->GetNcls(0));
+            if(aodtrack->GetTPCncls()>0){
+                fHistTPCNClus_MB->Fill(aodtrack->GetTPCncls());
+            }
+            fHistITSNClus_MB->Fill(aodtrack->GetNcls(0));
         }
         if(EMC7trg){
+            if(aodtrack->GetTPCncls()>0){
+                fHistTPCNClus_EMC7->Fill(aodtrack->GetTPCncls());
+            }
+            fHistITSNClus_EMC7->Fill(aodtrack->GetNcls(0));
+        }
+
+        if(EMCJettrg){
+            if(aodtrack->GetTPCncls()>0){
+                fHistTPCNClus_EMCJet->Fill(aodtrack->GetTPCncls());
+            }
+            fHistITSNClus_EMCJet->Fill(aodtrack->GetNcls(0)); 
+        }
+
+        if(!aodEv){
+            //Add this tracks energy to the running total
+            PtSum=PtSum+esdtrack->Pt();
+
+            //Fill the Eta Phi arrays with this tracks Eta and Phi
+            Eta.push_back(esdtrack->Eta());
+            Phi.push_back(esdtrack->Phi());
+
+            if(MBtrg){
+                fHistEtaPhi_MB->Fill(esdtrack->Eta(),esdtrack->Phi());
+            }
+            if(EMC7trg){
+                fHistEtaPhi_EMC7->Fill(esdtrack->Eta(),esdtrack->Phi());
+            }
+            if(EMCJettrg){
+                fHistEtaPhi_EMCJet->Fill(esdtrack->Eta(),esdtrack->Phi());
+            }
+
+            //do Cut level histograms
+            if(MBtrg){
                 if(esdtrack->GetTPCncls()>0){
-                    fHistTPCNClus_EMC7->Fill(esdtrack->GetTPCncls());}
+                    fHistTPCNClus_MB->Fill(esdtrack->GetTPCncls());
+                }
+                fHistITSNClus_MB->Fill(esdtrack->GetNcls(0));
+            }
+            if(EMC7trg){
+                if(esdtrack->GetTPCncls()>0){
+                    fHistTPCNClus_EMC7->Fill(esdtrack->GetTPCncls());
+                }
                 fHistITSNClus_EMC7->Fill(esdtrack->GetNcls(0));
-        }
-        
-        if(EMCJettrg){
+            }
+
+            if(EMCJettrg){
                 if(esdtrack->GetTPCncls()>0){
-                    fHistTPCNClus_EMCJet->Fill(esdtrack->GetTPCncls());}
+                    fHistTPCNClus_EMCJet->Fill(esdtrack->GetTPCncls());
+                }
                 fHistITSNClus_EMCJet->Fill(esdtrack->GetNcls(0)); 
+            }
         }
-        
+
+
         //Fill histogram for TPC resolution
-        if(MBtrg){
-            fHistTPCSig_MB->Fill(esdtrack->GetTPCsignalSigma());
-        }
-        if(EMC7trg){
+        if(!aodEv){
+            if(MBtrg){
+                fHistTPCSig_MB->Fill(esdtrack->GetTPCsignalSigma());
+            }
+            if(EMC7trg){
                 fHistTPCSig_EMC7->Fill(esdtrack->GetTPCsignalSigma());
-        }
-        
-        if(EMCJettrg){
+            }
+
+            if(EMCJettrg){
                 fHistTPCSig_EMCJet->Fill(esdtrack->GetTPCsignalSigma());
+            }
         }
         
         //Impact parameter
         Float_t xy;
         Float_t z;
         
-        esdtrack->GetImpactParameters(xy, z);
+        xy=TMath::Sqrt(aodtrack->XAtDCA()*aodtrack->XAtDCA()+aodtrack->YAtDCA()*aodtrack->YAtDCA());
         
+        if(!aodEv){
+            esdtrack->GetImpactParameters(xy, z);
+        }
+            
         if(MBtrg){
             fHistImpPar_MB->Fill(xy);
         }
         if(EMC7trg){
-                fHistImpPar_EMC7->Fill(xy);
+            fHistImpPar_EMC7->Fill(xy);
         }
-        
+
         if(EMCJettrg){
-                fHistImpPar_EMCJet->Fill(xy);
+            fHistImpPar_EMCJet->Fill(xy);
         }
         
-        FillPhotoElecHistos(esd, esdtrack, fPIDResponse, i);
+        FillPhotoElecHistos(aod, aodtrack, fPIDResponse, i);
         
+        if(!aodEv){
+            FillPhotoElecHistos(esd, esdtrack, fPIDResponse, i);
+        }
+            
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         //If the track doesn't pass the cuts, move on to the next one
         //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         if(trackCutsStrong){
-            if(!fTrackCutsStrong->AcceptTrack(esdtrack) || esdtrack->GetTPCsignalN()<80){continue;}
+            if(!fTrackCutsStrong->AcceptVTrack((AliVTrack*)aodtrack) || aodtrack->GetTPCsignalN()<80){continue;}
         }else{
-            if(!fTrackCutsWeak->AcceptTrack(esdtrack) || esdtrack->GetTPCsignalN()<80){continue;}
+            if(!fTrackCutsWeak->AcceptVTrack((AliVTrack*)aodtrack) || aodtrack->GetTPCsignalN()<80){continue;}
         }
+
+        if(!aodEv){
+            if(trackCutsStrong){
+                if(!fTrackCutsStrong->AcceptTrack(esdtrack) || esdtrack->GetTPCsignalN()<80){continue;}
+            }else{
+                if(!fTrackCutsWeak->AcceptTrack(esdtrack) || esdtrack->GetTPCsignalN()<80){continue;}
+            }
+        }
+            
+
         
         //Fill histogram for TPC resolution
-        if(MBtrg){
-            fHistTPCSigCut_MB->Fill(esdtrack->GetTPCsignalSigma());
-        }
-        if(EMC7trg){
+        if(!aodEv){
+            if(MBtrg){
+                fHistTPCSigCut_MB->Fill(esdtrack->GetTPCsignalSigma());
+            }
+            if(EMC7trg){
                 fHistTPCSigCut_EMC7->Fill(esdtrack->GetTPCsignalSigma());
-        }
-        
-        if(EMCJettrg){
+            }
+
+            if(EMCJettrg){
                 fHistTPCSigCut_EMCJet->Fill(esdtrack->GetTPCsignalSigma());
+            }
         }
         
-        FillPIDHistos(esd, esdtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
-        
+        FillPIDHistos(aod, aodtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
+
+        if(!aodEv){
+            FillPIDHistos(esd, esdtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
+        }
+
         //If the track made it through any 3 detector cuts
         if(tagStrong){
             tagEvt=kTRUE;//This event contains a candidate electron
@@ -1711,31 +1917,59 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 fHistImpParTag_MB->Fill(xy);
             }
             if(EMC7trg){
-                    fHistImpParTag_EMC7->Fill(xy);
+                fHistImpParTag_EMC7->Fill(xy);
             }
-        
+
             if(EMCJettrg){
-                    fHistImpParTag_EMCJet->Fill(xy);
+                fHistImpParTag_EMCJet->Fill(xy);
             }
-            
+
             //Pt distribution
+            
             if(MBtrg){
-                fHistPtTag_MB->Fill(esdtrack->Pt());
+                fHistPtTag_MB->Fill(aodtrack->Pt());
             }
             if(EMC7trg){
-                    fHistPtTag_EMC7->Fill(esdtrack->Pt());
+                fHistPtTag_EMC7->Fill(aodtrack->Pt());
             }
-            
+
             if(EMCJettrg){
-                    fHistPtTag_EMCJet->Fill(esdtrack->Pt());
+                fHistPtTag_EMCJet->Fill(aodtrack->Pt());
             }
+
+            if(!aodEv){
+                if(MBtrg){
+                    fHistPtTag_MB->Fill(esdtrack->Pt());
+                }
+                if(EMC7trg){
+                    fHistPtTag_EMC7->Fill(esdtrack->Pt());
+                }
+
+                if(EMCJettrg){
+                    fHistPtTag_EMCJet->Fill(esdtrack->Pt());
+                }
+            }
+                
+            FillDPhiHistos(aod, aodtrack, i);//Fill DPhi histos
             
-            FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
-            
-            fPool = fPoolMan->GetEventPool(ntracks, esd->GetPrimaryVertex()->GetZ());
+            if(!aodEv){
+                FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
+            }   
+         
+
+            fPool = fPoolMan->GetEventPool(ntracks, aod->GetPrimaryVertex()->GetZ());
             fPool->PrintInfo();
-           
-            
+
+            if(!fPool){cout<<"No Pool for this event man\n"; continue;}
+
+            if(fPool->IsReady() ){
+                FillMEDPhiHistos(aodtrack);
+            }
+            else{
+                cout<<"Pool wasn't ready\n";
+            }
+
+
             if(tagPhot){
                 if(MBtrg){
                     fHistPhotoMismatch_MB->Fill(0);
@@ -1747,30 +1981,23 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                     fHistPhotoMismatch_EMCJet->Fill(0);
                 }
             }
-             if(!fPool){cout<<"No Pool for this event man\n"; continue;}
-            
-            if(fPool->IsReady() ){
-                FillMEDPhiHistos(esdtrack);
-            }
-            else{
-                cout<<"Pool wasn't ready\n";
-            }
-            
+
+
         }//end if(tagStrong)
-        
+
     }//end main track loop
     if(tagEvt){
-    fPool->UpdatePool(trkArr);
+        fPool->UpdatePool(trkArr);
     }
     //Call function to fill Region histos and pass it int array of IDs for identified electron tracks
     Int_t elecIDsSparse[elecCnt];
     for(Int_t i=0;i<elecCnt;i++){
         elecIDsSparse[i]=elecIDs[i];
     }
-    
+
     //Fill Number of electrons plot
     fHistNElecPerEvent->Fill(elecCnt);
-    
+
     //Fill the total pt sum histogram
     if(tagEvt){
         if(MBtrg){
@@ -1784,45 +2011,55 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
     }else{
         if(MBtrg){
-                fHistPtSum_MB->Fill(PtSum);
+            fHistPtSum_MB->Fill(PtSum);
         }
         if(EMC7trg){
-                fHistPtSum_EMC7->Fill(PtSum);
+            fHistPtSum_EMC7->Fill(PtSum);
         }
         if(EMCJettrg){
-                fHistPtSum_EMCJet->Fill(PtSum);
+            fHistPtSum_EMCJet->Fill(PtSum);
         }
     }
-    
+
+    if(MBtrg){
+        fHistPtSumEMC_MB->Fill(PtSumEMC);
+    }
+    if(EMC7trg){
+        fHistPtSumEMC_EMC7->Fill(PtSumEMC);
+    }
+    if(EMCJettrg){
+        fHistPtSumEMC_EMCJet->Fill(PtSumEMC);
+    }
+
     //Fill Nevent histos
     if(tagEvt){
         if(MBtrg){
             fHistNevents_MB->Fill("Events containing candidates",1);
         }  
         if(EMC7trg){
-                fHistNevents_EMC7->Fill("Events containing candidates",1);
+            fHistNevents_EMC7->Fill("Events containing candidates",1);
         }
         if(EMCJettrg){
-                fHistNevents_EMCJet->Fill("Events containing candidates",1);
+            fHistNevents_EMCJet->Fill("Events containing candidates",1);
         }  
     }
-    
+
     //Fill the Eta Phi histograms
-if(tagEvt){
-    for(Int_t i=0;i<Eta.size();i++){
-        if(MBtrg){
-            fHistEtaPhiTag_MB->Fill(Eta[i],Phi[i]);
-        }
-        if(EMC7trg){
+    if(tagEvt){
+        for(Int_t i=0;i<Eta.size();i++){
+            if(MBtrg){
+                fHistEtaPhiTag_MB->Fill(Eta[i],Phi[i]);
+            }
+            if(EMC7trg){
                 fHistEtaPhiTag_EMC7->Fill(Eta[i],Phi[i]);
-        }
-        if(EMCJettrg){
+            }
+            if(EMCJettrg){
                 fHistEtaPhiTag_EMCJet->Fill(Eta[i],Phi[i]);
+            }
         }
     }
-}
-    
-    
+
+
     
     // NEW HISTO should be filled before this point, as PostData puts the
     // information for this iteration of the UserExec in the container
@@ -1832,136 +2069,136 @@ if(tagEvt){
 }
 
 void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse){
-        
+
     if(!esdtrack){
         AliWarning("esdtrack is null, no point in doing PID");
         return;
     }
-    
-    
-        Bool_t isPIDRej = kFALSE;
-    
-        //Fill TOF and TPC status variables
-        AliPIDResponse::EDetPidStatus TOFStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, esdtrack);
-        
-        AliPIDResponse::EDetPidStatus TPCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, esdtrack);
-        
-        AliPIDResponse::EDetPidStatus TRDStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, esdtrack);
-        
-        AliPIDResponse::EDetPidStatus EMCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kEMCAL, esdtrack);
-        
-        //Check validity of PID, TODO: Add a rejection histogram
-        if(TOFStatus!=AliPIDResponse::kDetPidOk){
-            fHistPIDRejection->Fill(2);
-            //isPIDRej=kTRUE;
-        }
-        
-        if(TPCStatus!=AliPIDResponse::kDetPidOk){
-            fHistPIDRejection->Fill(1);
-            isPIDRej=kTRUE;
-        }
-        
-        if(TRDStatus!=AliPIDResponse::kDetPidOk){
-            fHistPIDRejection->Fill(3);
-            isPIDRej=kTRUE;
-        }
-        
-        if(EMCStatus!=AliPIDResponse::kDetPidOk){
-            fHistPIDRejection->Fill(4);
-            isPIDRej=kTRUE;
-        }
-        
-        
-        //Get the # of sigmas around an electron hypothesis for TOF and TPC
-        Double_t nSigmaTOF;
-        nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(esdtrack,AliPID::kElectron);
-        
-        Double_t nSigmaTPC;
-        nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kElectron);
-        
-        Double_t elecLikeTRD[1];
-        if(fPIDResponse->ComputeTRDProbability(esdtrack, AliPID::kElectron, elecLikeTRD, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || esdtrack->GetTRDntrackletsPID()<4){
-            fHistPIDRejection->Fill(3);
-            isPIDRej=kTRUE;
-        }
-        
-        if(isPIDRej){return;}
-       
-        //declare emcal cluster PID variables
-        Double_t EOP=-1;
-        Double_t M02=-1;
-        Double_t M20=-1;
-        Int_t caloId=esdtrack->GetEMCALcluster();
-        
-        if(caloId==-99999){
-            return;
-        }
-        
-        AliESDCaloCluster* tagEMCclus=esd->GetCaloCluster(caloId);
-        
-        if(tagEMCclus->E()>.5){
+
+
+    Bool_t isPIDRej = kFALSE;
+
+    //Fill TOF and TPC status variables
+    AliPIDResponse::EDetPidStatus TOFStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, esdtrack);
+
+    AliPIDResponse::EDetPidStatus TPCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, esdtrack);
+
+    AliPIDResponse::EDetPidStatus TRDStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, esdtrack);
+
+    AliPIDResponse::EDetPidStatus EMCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kEMCAL, esdtrack);
+
+    //Check validity of PID, TODO: Add a rejection histogram
+    if(TOFStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(2);
+        //isPIDRej=kTRUE;
+    }
+
+    if(TPCStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(1);
+        isPIDRej=kTRUE;
+    }
+
+    if(TRDStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(3);
+        isPIDRej=kTRUE;
+    }
+
+    if(EMCStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(4);
+        isPIDRej=kTRUE;
+    }
+
+
+    //Get the # of sigmas around an electron hypothesis for TOF and TPC
+    Double_t nSigmaTOF;
+    nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(esdtrack,AliPID::kElectron);
+
+    Double_t nSigmaTPC;
+    nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kElectron);
+
+    Double_t elecLikeTRD[1];
+    if(fPIDResponse->ComputeTRDProbability(esdtrack, AliPID::kElectron, elecLikeTRD, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || esdtrack->GetTRDntrackletsPID()<4){
+        fHistPIDRejection->Fill(3);
+        isPIDRej=kTRUE;
+    }
+
+    if(isPIDRej){return;}
+
+    //declare emcal cluster PID variables
+    Double_t EOP=-1;
+    Double_t M02=-1;
+    Double_t M20=-1;
+    Int_t caloId=esdtrack->GetEMCALcluster();
+
+    if(caloId==-99999){
+        return;
+    }
+
+    AliESDCaloCluster* tagEMCclus=esd->GetCaloCluster(caloId);
+
+    if(tagEMCclus->E()>.5){
         EOP = tagEMCclus->E()/esdtrack->Pt();
         M02 = tagEMCclus->GetM02();
         M20 = tagEMCclus->GetM20();
-        }
-        else{
-            return;
-        }
-      
-        
-        
-        //=========================================================================================================================
-        //PID cuts and histogram filling
-        //=========================================================================================================================
-        
-        //Some Double arrays for pt ranges
-        Double_t ptUpper[6] = {2, 3, 4, 5, 6, 1000000};
-        Double_t ptLower[6] = {1, 2, 3, 4, 5, 6};
-        Double_t TPCcut = 2;
-        Double_t TOFcut = 2;
-        Double_t TRDcut = .9;
-        Double_t EMCcutLower[6] = {.85,.85,.85,.85,.85,.95};
-        Double_t EMCcutHigher[6] = {1.15,1.15,1.15,1.15,1.15,1.25};
-        
-        for(Int_t i=0; i<6; i++){
+    }
+    else{
+        return;
+    }
+
+
+
+    //=========================================================================================================================
+    //PID cuts and histogram filling
+    //=========================================================================================================================
+
+    //Some Double arrays for pt ranges
+    Double_t ptUpper[6] = {2, 3, 4, 5, 6, 1000000};
+    Double_t ptLower[6] = {1, 2, 3, 4, 5, 6};
+    Double_t TPCcut = 2;
+    Double_t TOFcut = 2;
+    Double_t TRDcut = .9;
+    Double_t EMCcutLower[6] = {.85,.85,.85,.85,.85,.95};
+    Double_t EMCcutHigher[6] = {1.15,1.15,1.15,1.15,1.15,1.25};
+
+    for(Int_t i=0; i<6; i++){
         if(esdtrack->Pt()>ptLower[i]&&esdtrack->Pt()<ptUpper[i]){
-            
+
             //Fill general shower shape plots
             if(MBtrg){
-                    fHistM02_All_MB[i]->Fill(M02, EOP);
-                    fHistM20_All_MB[i]->Fill(M20, EOP);
-                }
-                if(EMC7trg){
-                    fHistM02_All_EMC7[i]->Fill(M02, EOP);
-                    fHistM20_All_EMC7[i]->Fill(M20, EOP);
-                }
-                
-                if(EMCJettrg){
-                    fHistM02_All_EMCJet[i]->Fill(M02, EOP);
-                    fHistM20_All_EMCJet[i]->Fill(M20, EOP);
-                }
-            
-        //TPC Plots
+                fHistM02_All_MB[i]->Fill(M02, EOP);
+                fHistM20_All_MB[i]->Fill(M20, EOP);
+            }
+            if(EMC7trg){
+                fHistM02_All_EMC7[i]->Fill(M02, EOP);
+                fHistM20_All_EMC7[i]->Fill(M20, EOP);
+            }
+
+            if(EMCJettrg){
+                fHistM02_All_EMCJet[i]->Fill(M02, EOP);
+                fHistM20_All_EMCJet[i]->Fill(M20, EOP);
+            }
+
+            //TPC Plots
             //EMC+TRD cuts
             if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
-                
+
                 if(MBtrg){
                     fHistTPC_EMCTRD_MB[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
                 if(EMC7trg){
                     fHistTPC_EMCTRD_EMC7[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
-                
+
                 if(EMCJettrg){
                     fHistTPC_EMCTRD_EMCJet[i]->Fill(esdtrack->Pt(), nSigmaTPC);
                 }
             }
-            
-        //EMC Plots
-           
+
+            //EMC Plots
+
             //TPC+TRD cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut){
-                
+
                 if(!applySSCuts){
                     if(MBtrg){
                         fHistEMC_TPCTRD_MB[i]->Fill(EOP);
@@ -1981,13 +2218,13 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                         if(EMC7trg){
                             fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
                         }
-                
+
                         if(EMCJettrg){
                             fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
                         }
                     }
                 }
-                
+
                 //Fill the shower shape plots here also
                 if(MBtrg){
                     fHistM02_Elec_MB[i]->Fill(M02, EOP);
@@ -1997,95 +2234,356 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
                     fHistM02_Elec_EMC7[i]->Fill(M02, EOP);
                     fHistM20_Elec_EMC7[i]->Fill(M20, EOP);
                 }
-                
+
                 if(EMCJettrg){
                     fHistM02_Elec_EMCJet[i]->Fill(M02, EOP);
                     fHistM20_Elec_EMCJet[i]->Fill(M20, EOP);
                 }
             }
-            
-        //TRD Plots
-           
+
+            //TRD Plots
+
             //TPC+EMC cuts
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
-                
+
                 if(MBtrg){
                     fHistTRD_TPCEMC_MB[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
                 if(EMC7trg){
                     fHistTRD_TPCEMC_EMC7[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
-                
+
                 if(EMCJettrg){
                     fHistTRD_TPCEMC_EMCJet[i]->Fill(esdtrack->Pt(), elecLikeTRD[0]);
                 }
             }
         }
-        }
+    }
     if(MBtrg){
-    if(esdtrack->Pt()<2&&esdtrack->Pt()>1){
-        if(nSigmaTPC<-2&&nSigmaTPC>-8){
-            fHistEMC_Had_MB_1Gev->Fill(EOP);
+        if(esdtrack->Pt()<2&&esdtrack->Pt()>1){
+            if(nSigmaTPC<-2&&nSigmaTPC>-8){
+                fHistEMC_Had_MB_1Gev->Fill(EOP);
+            }
         }
     }
-    }
-    
+
     if(applySSCuts){
-        
+
         //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15, M02=(0,.5), M20=(0,.3)
-        
+
         if(esdtrack->Pt()<6){
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]&&M02<.5&&M02>0&&M20<.3&&M20>0){
-                
+
                 tagStrong=kTRUE;
-                
+
             }
-            
+
         }
-        
+
         else{
-            
+
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[5]&&EOP>EMCcutLower[5]&&M02<.5&&M02>0&&M20<.3&&M20>0){
-                
+
                 tagStrong=kTRUE;
-                
+
             }
-            
+
         }
-        
+
     }else{//no sscuts
-        
-         //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
-        
+
+        //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
+
         if(esdtrack->Pt()<6){
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]){
-                
+
                 tagStrong=kTRUE;
-                
+
             }
-            
+
         }
-        
+
         else{
-            
+
             if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[5]&&EOP>EMCcutLower[5]){
-                
+
                 tagStrong=kTRUE;
-                
+
             }
-            
+
         }
-        
+
     }
-        
-        /*//Check if any tracks pass all cuts
+
+    /*//Check if any tracks pass all cuts
         if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher&&EOP>EMCcutLower){
             tagAll=kTRUE;
         }*/
-        
-        //=========================================================================
-        //                     End of PID stuff
-        //=========================================================================
+
+    //=========================================================================
+    //                     End of PID stuff
+    //=========================================================================
+    PostData(1, fOutputMB);
+    PostData(2, fOutputEMC7);
+    PostData(3, fOutputEMCJet);
+    return;
+}
+
+void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack, AliPIDResponse *fPIDResponse){
+
+    if(!aodtrack){
+        AliWarning("aodtrack is null, no point in doing PID");
+        return;
+    }
+
+
+    Bool_t isPIDRej = kFALSE;
+
+    //Fill TOF and TPC status variables
+    AliPIDResponse::EDetPidStatus TOFStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, aodtrack);
+
+    AliPIDResponse::EDetPidStatus TPCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, aodtrack);
+
+    AliPIDResponse::EDetPidStatus TRDStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, aodtrack);
+
+    AliPIDResponse::EDetPidStatus EMCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kEMCAL, aodtrack);
+
+    //Check validity of PID, TODO: Add a rejection histogram
+    if(TOFStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(2);
+        //isPIDRej=kTRUE;
+    }
+
+    if(TPCStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(1);
+        isPIDRej=kTRUE;
+    }
+
+    if(TRDStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(3);
+        isPIDRej=kTRUE;
+    }
+
+    if(EMCStatus!=AliPIDResponse::kDetPidOk){
+        fHistPIDRejection->Fill(4);
+        isPIDRej=kTRUE;
+    }
+
+
+    //Get the # of sigmas around an electron hypothesis for TOF and TPC
+    Double_t nSigmaTOF;
+    nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kElectron);
+
+    Double_t nSigmaTPC;
+    nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron);
+
+    Double_t elecLikeTRD[1];
+    if(fPIDResponse->ComputeTRDProbability(aodtrack, AliPID::kElectron, elecLikeTRD, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || aodtrack->GetTRDntrackletsPID()<4){
+        fHistPIDRejection->Fill(3);
+        isPIDRej=kTRUE;
+    }
+
+    if(isPIDRej){return;}
+
+    //declare emcal cluster PID variables
+    Double_t EOP=-1;
+    Double_t M02=-1;
+    Double_t M20=-1;
+    Int_t caloId=aodtrack->GetEMCALcluster();
+
+    if(caloId==-99999){
+        return;
+    }
+
+    AliAODCaloCluster* tagEMCclus=aod->GetCaloCluster(caloId);
+
+    if(tagEMCclus->E()>.5){
+        EOP = tagEMCclus->E()/aodtrack->Pt();
+        M02 = tagEMCclus->GetM02();
+        M20 = tagEMCclus->GetM20();
+    }
+    else{
+        return;
+    }
+
+
+
+    //=========================================================================================================================
+    //PID cuts and histogram filling
+    //=========================================================================================================================
+
+    //Some Double arrays for pt ranges
+    Double_t ptUpper[6] = {2, 3, 4, 5, 6, 1000000};
+    Double_t ptLower[6] = {1, 2, 3, 4, 5, 6};
+    Double_t TPCcut = 2;
+    Double_t TOFcut = 2;
+    Double_t TRDcut = .9;
+    Double_t EMCcutLower[6] = {.85,.85,.85,.85,.85,.95};
+    Double_t EMCcutHigher[6] = {1.15,1.15,1.15,1.15,1.15,1.25};
+
+    for(Int_t i=0; i<6; i++){
+        if(aodtrack->Pt()>ptLower[i]&&aodtrack->Pt()<ptUpper[i]){
+
+            //Fill general shower shape plots
+            if(MBtrg){
+                fHistM02_All_MB[i]->Fill(M02, EOP);
+                fHistM20_All_MB[i]->Fill(M20, EOP);
+            }
+            if(EMC7trg){
+                fHistM02_All_EMC7[i]->Fill(M02, EOP);
+                fHistM20_All_EMC7[i]->Fill(M20, EOP);
+            }
+
+            if(EMCJettrg){
+                fHistM02_All_EMCJet[i]->Fill(M02, EOP);
+                fHistM20_All_EMCJet[i]->Fill(M20, EOP);
+            }
+
+            //TPC Plots
+            //EMC+TRD cuts
+            if(EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]&&elecLikeTRD[0]>TRDcut){
+
+                if(MBtrg){
+                    fHistTPC_EMCTRD_MB[i]->Fill(aodtrack->Pt(), nSigmaTPC);
+                }
+                if(EMC7trg){
+                    fHistTPC_EMCTRD_EMC7[i]->Fill(aodtrack->Pt(), nSigmaTPC);
+                }
+
+                if(EMCJettrg){
+                    fHistTPC_EMCTRD_EMCJet[i]->Fill(aodtrack->Pt(), nSigmaTPC);
+                }
+            }
+
+            //EMC Plots
+
+            //TPC+TRD cuts
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut){
+
+                if(!applySSCuts){
+                    if(MBtrg){
+                        fHistEMC_TPCTRD_MB[i]->Fill(EOP);
+                    }
+                    if(EMC7trg){
+                        fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
+                    }
+
+                    if(EMCJettrg){
+                        fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
+                    }
+                }else{
+                    if(M02<.5&&M02>0&&M20<.3&&M20>0){
+                        if(MBtrg){
+                            fHistEMC_TPCTRD_MB[i]->Fill(EOP);
+                        }
+                        if(EMC7trg){
+                            fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
+                        }
+
+                        if(EMCJettrg){
+                            fHistEMC_TPCTRD_EMCJet[i]->Fill(EOP);
+                        }
+                    }
+                }
+
+                //Fill the shower shape plots here also
+                if(MBtrg){
+                    fHistM02_Elec_MB[i]->Fill(M02, EOP);
+                    fHistM20_Elec_MB[i]->Fill(M20, EOP);
+                }
+                if(EMC7trg){
+                    fHistM02_Elec_EMC7[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMC7[i]->Fill(M20, EOP);
+                }
+
+                if(EMCJettrg){
+                    fHistM02_Elec_EMCJet[i]->Fill(M02, EOP);
+                    fHistM20_Elec_EMCJet[i]->Fill(M20, EOP);
+                }
+            }
+
+            //TRD Plots
+
+            //TPC+EMC cuts
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&EOP<EMCcutHigher[i]&&EOP>EMCcutLower[i]){
+
+                if(MBtrg){
+                    fHistTRD_TPCEMC_MB[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
+                }
+                if(EMC7trg){
+                    fHistTRD_TPCEMC_EMC7[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
+                }
+
+                if(EMCJettrg){
+                    fHistTRD_TPCEMC_EMCJet[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
+                }
+            }
+        }
+    }
+    if(MBtrg){
+        if(aodtrack->Pt()<2&&aodtrack->Pt()>1){
+            if(nSigmaTPC<-2&&nSigmaTPC>-8){
+                fHistEMC_Had_MB_1Gev->Fill(EOP);
+            }
+        }
+    }
+
+    if(applySSCuts){
+
+        //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15, M02=(0,.5), M20=(0,.3)
+
+        if(aodtrack->Pt()<6){
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]&&M02<.5&&M02>0&&M20<.3&&M20>0){
+
+                tagStrong=kTRUE;
+
+            }
+
+        }
+
+        else{
+
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[5]&&EOP>EMCcutLower[5]&&M02<.5&&M02>0&&M20<.3&&M20>0){
+
+                tagStrong=kTRUE;
+
+            }
+
+        }
+
+    }else{//no sscuts
+
+        //An electron candidate is one that passes TPC +-2Sig, TRD>.9, 0.85<E/p<1.15
+
+        if(aodtrack->Pt()<6){
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[0]&&EOP>EMCcutLower[0]){
+
+                tagStrong=kTRUE;
+
+            }
+
+        }
+
+        else{
+
+            if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher[5]&&EOP>EMCcutLower[5]){
+
+                tagStrong=kTRUE;
+
+            }
+
+        }
+
+    }
+
+    /*//Check if any tracks pass all cuts
+        if(nSigmaTPC<TPCcut&&nSigmaTPC>-TPCcut&&nSigmaTOF<TOFcut&&nSigmaTOF>-TOFcut&&elecLikeTRD[0]>TRDcut&&EOP<EMCcutHigher&&EOP>EMCcutLower){
+            tagAll=kTRUE;
+        }*/
+
+    //=========================================================================
+    //                     End of PID stuff
+    //=========================================================================
     PostData(1, fOutputMB);
     PostData(2, fOutputEMC7);
     PostData(3, fOutputEMCJet);
@@ -2093,385 +2591,842 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack
 }
 
 void AliAnalysisTaskPSHFE::FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrack, Int_t i){
-//Run through all tracks in this 
-        Int_t ntracks = esd->GetNumberOfTracks();
-            for(Int_t j = 0; j < ntracks; j++) {
-                
-                //Don't double count the tagged tracks
-                if(i==j){continue;}
-                
-                
-                AliESDtrack* esdtrackassoc = esd->GetTrack(j); // pointer to reconstructed to track          
-                
-                if(!esdtrackassoc) { 
-                        AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
-                        continue; 
-                }
-                
-                //Do hybrid track cuts
-                if(!globaltrackCuts->AcceptTrack(esdtrackassoc)&&!comptrackCuts->AcceptTrack(esdtrackassoc)){continue;}
-            
-                //Pt distribution
+    //Run through all tracks in this 
+    Int_t ntracks = esd->GetNumberOfTracks();
+    for(Int_t j = 0; j < ntracks; j++) {
+
+        //Don't double count the tagged tracks
+        if(i==j){continue;}
+
+
+        AliESDtrack* esdtrackassoc = (AliESDtrack*)esd->GetTrack(j); // pointer to reconstructed to track          
+
+        if(!esdtrackassoc) { 
+            AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
+            continue; 
+        }
+
+        //Do hybrid track cuts
+        if(!globaltrackCuts->AcceptTrack(esdtrackassoc)&&!comptrackCuts->AcceptTrack(esdtrackassoc)){continue;}
+
+        //Pt distribution
+        if(MBtrg){
+            fHistPtAssoc_MB->Fill(esdtrackassoc->Pt());
+        }
+        if(EMC7trg){
+            fHistPtAssoc_EMC7->Fill(esdtrackassoc->Pt());
+        }
+
+        if(EMCJettrg){
+            fHistPtAssoc_EMCJet->Fill(esdtrackassoc->Pt());
+        }
+
+        //Fill Delta Phi variable and correct for periodicity
+        Double_t DPhi=esdtrackassoc->Phi()-esdtrack->Phi();
+
+        if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
+
+        if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
+
+        Double_t DEta=esdtrackassoc->Eta()-esdtrack->Eta();
+
+        //candidate 1<pt<2
+        if(esdtrack->Pt()>1&&esdtrack->Pt()<2){
+
+            //300-500MeV
+            if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
                 if(MBtrg){
-                        fHistPtAssoc_MB->Fill(esdtrackassoc->Pt());
+                    fHistDPhi300_500_MB[0]->Fill(DPhi);
                 }
                 if(EMC7trg){
-                        fHistPtAssoc_EMC7->Fill(esdtrackassoc->Pt());
+                    fHistDPhi300_500_EMC7[0]->Fill(DPhi);
                 }
-        
                 if(EMCJettrg){
-                        fHistPtAssoc_EMCJet->Fill(esdtrackassoc->Pt());
+                    fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
                 }
-                
-                //Fill Delta Phi variable and correct for periodicity
-                Double_t DPhi=esdtrackassoc->Phi()-esdtrack->Phi();
-                
-                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
-                
-                if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
-                
-                Double_t DEta=esdtrackassoc->Eta()-esdtrack->Eta();
-                
-                //candidate 1<pt<2
-                if(esdtrack->Pt()>1&&esdtrack->Pt()<2){
-                    
-                //300-500MeV
-                if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
-                    if(MBtrg){
-                        fHistDPhi300_500_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi300_500_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
-                    }
+            }
+
+            //500MeV
+            if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
+                if(MBtrg){
+                    fHistDPhi500_800_MB[0]->Fill(DPhi);
                 }
-                
-                //500MeV
-                if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
-                    if(MBtrg){
-                        fHistDPhi500_800_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi500_800_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
-                    }
+                if(EMC7trg){
+                    fHistDPhi500_800_EMC7[0]->Fill(DPhi);
                 }
-                
-                //800MeV
-                if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
-                    if(MBtrg){
-                        fHistDPhi800_1_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi800_1_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
-                    }
+                if(EMCJettrg){
+                    fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
                 }
-                
-                //1GeV
-                if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
-                    if(MBtrg){
-                        fHistDPhi1_2_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi1_2_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi1_2_EMCJet[0]->Fill(DPhi);
-                    }
+            }
+
+            //800MeV
+            if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
+                if(MBtrg){
+                    fHistDPhi800_1_MB[0]->Fill(DPhi);
                 }
-                
-                //2GeV
-                if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
-                    if(MBtrg){
-                        fHistDPhi2_3_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi2_3_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
-                    }
+                if(EMC7trg){
+                    fHistDPhi800_1_EMC7[0]->Fill(DPhi);
                 }
-                
-                //3GeV
-                if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
-                    if(MBtrg){
-                        fHistDPhi3_4_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi3_4_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
-                    }
+                if(EMCJettrg){
+                    fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
                 }
-                
-                //5GeV
-                if(esdtrackassoc->Pt()>4){
-                    if(MBtrg){
-                        fHistDPhi4_MB[0]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi4_EMC7[0]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi4_EMCJet[0]->Fill(DPhi);
-                    }
+            }
+
+            //1GeV
+            if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
+                if(MBtrg){
+                    fHistDPhi1_2_MB[0]->Fill(DPhi);
                 }
+                if(EMC7trg){
+                    fHistDPhi1_2_EMC7[0]->Fill(DPhi);
                 }
-                
-                //candidate 2<pt<4
-                if(esdtrack->Pt()>2&&esdtrack->Pt()<4){
-                    
-                //300MeV
-                if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
-                    if(MBtrg){
-                        fHistDPhi300_500_MB[1]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi300_500_EMC7[1]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
-                    }
+                if(EMCJettrg){
+                    fHistDPhi1_2_EMCJet[0]->Fill(DPhi);
                 }
-                
-                //500MeV
-                if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
-                    if(MBtrg){
-                        fHistDPhi500_800_MB[1]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi500_800_EMC7[1]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
-                    }
+            }
+
+            //2GeV
+            if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
+                if(MBtrg){
+                    fHistDPhi2_3_MB[0]->Fill(DPhi);
                 }
-                
-                //800MeV
-                if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
-                    if(MBtrg){
-                        fHistDPhi800_1_MB[1]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi800_1_EMC7[1]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
-                    }
+                if(EMC7trg){
+                    fHistDPhi2_3_EMC7[0]->Fill(DPhi);
                 }
-                
-                //1GeV
-                if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
-                    if(MBtrg){
-                        fHistDPhi1_2_MB[1]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi1_2_EMC7[1]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi1_2_EMCJet[1]->Fill(DPhi);
-                    }
+                if(EMCJettrg){
+                    fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
                 }
-                
-                //2GeV
-                if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
-                    if(MBtrg){
-                        fHistDPhi2_3_MB[1]->Fill(DPhi);
-                        fHistDPhi28_MB->Fill(DPhi);
-                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                        fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMC7trg){
-                            fHistDPhi2_3_EMC7[1]->Fill(DPhi);
-                            fHistDPhi28_EMC7->Fill(DPhi);
-                            fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
-                            fHistDPhi28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
+            }
+
+            //3GeV
+            if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
+                if(MBtrg){
+                    fHistDPhi3_4_MB[0]->Fill(DPhi);
                 }
-                
-                //3GeV
-                if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
-                    if(MBtrg){
-                        fHistDPhi3_4_MB[1]->Fill(DPhi);
-                        fHistDPhi28_MB->Fill(DPhi);
-                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                        fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMC7trg){
-                            fHistDPhi3_4_EMC7[1]->Fill(DPhi);
-                            fHistDPhi28_EMC7->Fill(DPhi);
-                            fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
-                            fHistDPhi28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
+                if(EMC7trg){
+                    fHistDPhi3_4_EMC7[0]->Fill(DPhi);
                 }
-                
-                //5GeV
-                if(esdtrackassoc->Pt()>4){
-                    if(MBtrg){
-                        fHistDPhi4_MB[1]->Fill(DPhi);
-                        fHistDPhi28_MB->Fill(DPhi);
-                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                        fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMC7trg){
-                            fHistDPhi4_EMC7[1]->Fill(DPhi);
-                            fHistDPhi28_EMC7->Fill(DPhi);
-                            fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi4_EMCJet[1]->Fill(DPhi);
-                            fHistDPhi28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                }                    
+                if(EMCJettrg){
+                    fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
                 }
-            
-                //candidate 4<pt<8
-                if(esdtrack->Pt()>4&&esdtrack->Pt()<8){
-                    
-                //300MeV
-                if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
-                    if(MBtrg){
-                        fHistDPhi300_500_MB[2]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi300_500_EMC7[2]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
-                    }
+            }
+
+            //5GeV
+            if(esdtrackassoc->Pt()>4){
+                if(MBtrg){
+                    fHistDPhi4_MB[0]->Fill(DPhi);
                 }
-                
-                //500MeV
-                if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
-                    if(MBtrg){
-                           fHistDPhi500_800_MB[2]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi500_800_EMC7[2]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
-                    }
+                if(EMC7trg){
+                    fHistDPhi4_EMC7[0]->Fill(DPhi);
                 }
-                
-                //800MeV
-                if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
-                    if(MBtrg){
-                        fHistDPhi800_1_MB[2]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi800_1_EMC7[2]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
-                    }
+                if(EMCJettrg){
+                    fHistDPhi4_EMCJet[0]->Fill(DPhi);
                 }
-                
-                //1GeV
-                if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
-                    if(MBtrg){
-                        fHistDPhi1_2_MB[2]->Fill(DPhi);
-                    }
-                    if(EMC7trg){
-                            fHistDPhi1_2_EMC7[2]->Fill(DPhi);
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi1_2_EMCJet[2]->Fill(DPhi);
-                    }
+            }
+        }
+
+        //candidate 2<pt<4
+        if(esdtrack->Pt()>2&&esdtrack->Pt()<4){
+
+            //300MeV
+            if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
+                if(MBtrg){
+                    fHistDPhi300_500_MB[1]->Fill(DPhi);
                 }
-                
-                //2GeV
-                if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
-                    if(MBtrg){
-                        fHistDPhi2_3_MB[2]->Fill(DPhi);
-                        fHistDPhi28_MB->Fill(DPhi);
-                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                        fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMC7trg){
-                            fHistDPhi2_3_EMC7[2]->Fill(DPhi);
-                            fHistDPhi28_EMC7->Fill(DPhi);
-                            fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
-                            fHistDPhi28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
+                if(EMC7trg){
+                    fHistDPhi300_500_EMC7[1]->Fill(DPhi);
                 }
-                
-                //3GeV
-                if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
-                    if(MBtrg){
-                        fHistDPhi3_4_MB[2]->Fill(DPhi);
-                        fHistDPhi28_MB->Fill(DPhi);
-                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                        fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMC7trg){
-                            fHistDPhi3_4_EMC7[2]->Fill(DPhi);
-                            fHistDPhi28_EMC7->Fill(DPhi);
-                            fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
-                            fHistDPhi28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
+                if(EMCJettrg){
+                    fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
                 }
-                
-                //5GeV
-                if(esdtrackassoc->Pt()>4){
-                    if(MBtrg){
-                        fHistDPhi4_MB[2]->Fill(DPhi);
-                        fHistDPhi28_MB->Fill(DPhi);
-                        fHistDPhiDEta28_MB->Fill(DPhi, DEta);
-                        fHistDPhi28dEdx_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMC7trg){
-                            fHistDPhi4_EMC7[2]->Fill(DPhi);
-                            fHistDPhi28_EMC7->Fill(DPhi);
-                            fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
-                    if(EMCJettrg){
-                            fHistDPhi4_EMCJet[2]->Fill(DPhi);
-                            fHistDPhi28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
-                            fHistDPhi28dEdx_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
-                    }
+            }
+
+            //500MeV
+            if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
+                if(MBtrg){
+                    fHistDPhi500_800_MB[1]->Fill(DPhi);
                 }
+                if(EMC7trg){
+                    fHistDPhi500_800_EMC7[1]->Fill(DPhi);
                 }
-                
-             }
+                if(EMCJettrg){
+                    fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
+                }
+            }
+
+            //800MeV
+            if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
+                if(MBtrg){
+                    fHistDPhi800_1_MB[1]->Fill(DPhi);
+                }
+                if(EMC7trg){
+                    fHistDPhi800_1_EMC7[1]->Fill(DPhi);
+                }
+                if(EMCJettrg){
+                    fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
+                }
+            }
+
+            //1GeV
+            if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
+                if(MBtrg){
+                    fHistDPhi1_2_MB[1]->Fill(DPhi);
+                }
+                if(EMC7trg){
+                    fHistDPhi1_2_EMC7[1]->Fill(DPhi);
+                }
+                if(EMCJettrg){
+                    fHistDPhi1_2_EMCJet[1]->Fill(DPhi);
+                }
+            }
+
+            //2GeV
+            if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
+                if(MBtrg){
+                    fHistDPhi2_3_MB[1]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMC7trg){
+                    fHistDPhi2_3_EMC7[1]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMCJettrg){
+                    fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+            }
+
+            //3GeV
+            if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
+                if(MBtrg){
+                    fHistDPhi3_4_MB[1]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMC7trg){
+                    fHistDPhi3_4_EMC7[1]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMCJettrg){
+                    fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+            }
+
+            //5GeV
+            if(esdtrackassoc->Pt()>4){
+                if(MBtrg){
+                    fHistDPhi4_MB[1]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMC7trg){
+                    fHistDPhi4_EMC7[1]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMCJettrg){
+                    fHistDPhi4_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+            }                    
+        }
+
+        //candidate 4<pt<8
+        if(esdtrack->Pt()>4&&esdtrack->Pt()<8){
+
+            //300MeV
+            if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
+                if(MBtrg){
+                    fHistDPhi300_500_MB[2]->Fill(DPhi);
+                }
+                if(EMC7trg){
+                    fHistDPhi300_500_EMC7[2]->Fill(DPhi);
+                }
+                if(EMCJettrg){
+                    fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
+                }
+            }
+
+            //500MeV
+            if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
+                if(MBtrg){
+                    fHistDPhi500_800_MB[2]->Fill(DPhi);
+                }
+                if(EMC7trg){
+                    fHistDPhi500_800_EMC7[2]->Fill(DPhi);
+                }
+                if(EMCJettrg){
+                    fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
+                }
+            }
+
+            //800MeV
+            if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
+                if(MBtrg){
+                    fHistDPhi800_1_MB[2]->Fill(DPhi);
+                }
+                if(EMC7trg){
+                    fHistDPhi800_1_EMC7[2]->Fill(DPhi);
+                }
+                if(EMCJettrg){
+                    fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
+                }
+            }
+
+            //1GeV
+            if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
+                if(MBtrg){
+                    fHistDPhi1_2_MB[2]->Fill(DPhi);
+                }
+                if(EMC7trg){
+                    fHistDPhi1_2_EMC7[2]->Fill(DPhi);
+                }
+                if(EMCJettrg){
+                    fHistDPhi1_2_EMCJet[2]->Fill(DPhi);
+                }
+            }
+
+            //2GeV
+            if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
+                if(MBtrg){
+                    fHistDPhi2_3_MB[2]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMC7trg){
+                    fHistDPhi2_3_EMC7[2]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMCJettrg){
+                    fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+            }
+
+            //3GeV
+            if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
+                if(MBtrg){
+                    fHistDPhi3_4_MB[2]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMC7trg){
+                    fHistDPhi3_4_EMC7[2]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMCJettrg){
+                    fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+            }
+
+            //5GeV
+            if(esdtrackassoc->Pt()>4){
+                if(MBtrg){
+                    fHistDPhi4_MB[2]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMC7trg){
+                    fHistDPhi4_EMC7[2]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+                if(EMCJettrg){
+                    fHistDPhi4_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, esdtrackassoc->GetTPCsignal());
+                }
+            }
+        }
+
+    }
+    PostData(1, fOutputMB);
+    PostData(2, fOutputEMC7);
+    PostData(3, fOutputEMCJet);
+    return;
+}
+
+void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrack, Int_t i){
+    //Run through all tracks in this 
+    Int_t ntracks = aod->GetNumberOfTracks();
+    for(Int_t j = 0; j < ntracks; j++) {
+
+        //Don't double count the tagged tracks
+        if(i==j){continue;}
+
+
+        AliAODTrack* aodtrackassoc = (AliAODTrack*)aod->GetTrack(j); // pointer to reconstructed to track          
+
+        if(!aodtrackassoc) { 
+            AliError(Form("ERROR: Could not retrieve aodtrack %d",j)); 
+            continue; 
+        }
+
+        //Do hybrid track cuts
+        if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()){continue;}
+
+        //Pt distribution
+        if(MBtrg){
+            fHistPtAssoc_MB->Fill(aodtrackassoc->Pt());
+        }
+        if(EMC7trg){
+            fHistPtAssoc_EMC7->Fill(aodtrackassoc->Pt());
+        }
+
+        if(EMCJettrg){
+            fHistPtAssoc_EMCJet->Fill(aodtrackassoc->Pt());
+        }
+
+        //Fill Delta Phi variable and correct for periodicity
+        Double_t DPhi=aodtrackassoc->Phi()-aodtrack->Phi();
+
+        if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
+
+        if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
+
+        Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
+        
+        Int_t PID=0;
+        cout<<"most probPID"<<AliAODTrack::kElectron<<":"<<aodtrackassoc->GetMostProbablePID()<<'\n';
+        switch(aodtrackassoc->GetMostProbablePID()){
+            case AliAODTrack::kElectron:
+                PID=1;
+                break;
+            case AliAODTrack::kMuon:
+                PID=2;
+                break;
+            case AliAODTrack::kPion:
+                PID=3;
+                break;
+            case AliAODTrack::kKaon:
+                PID=4;
+                break;
+            case AliAODTrack::kProton:
+                PID=5;
+                break;
+            case AliAODTrack::kDeuteron:
+                PID=6;
+                break;
+            case AliAODTrack::kUnknown:
+                PID=0;
+                break;
+        }
+
+        //candidate 1<pt<2
+        if(aodtrack->Pt()>1&&aodtrack->Pt()<2){
+
+            //300-500MeV
+            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+                if(MBtrg){
+                    fHistDPhi300_500_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi300_500_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi300_500_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //500MeV
+            if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
+                if(MBtrg){
+                    fHistDPhi500_800_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi500_800_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi500_800_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //800MeV
+            if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
+                if(MBtrg){
+                    fHistDPhi800_1_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi800_1_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi800_1_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //1GeV
+            if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
+                if(MBtrg){
+                    fHistDPhi1_2_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi1_2_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi1_2_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //2GeV
+            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+                if(MBtrg){
+                    fHistDPhi2_3_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi2_3_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi2_3_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //3GeV
+            if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+                if(MBtrg){
+                    fHistDPhi3_4_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi3_4_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi3_4_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //5GeV
+            if(aodtrackassoc->Pt()>4){
+                if(MBtrg){
+                    fHistDPhi4_MB[0]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi4_EMC7[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi4_EMCJet[0]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+        }
+
+        //candidate 2<pt<4
+        if(aodtrack->Pt()>2&&aodtrack->Pt()<4){
+
+            //300MeV
+            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+                if(MBtrg){
+                    fHistDPhi300_500_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi300_500_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi300_500_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //500MeV
+            if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
+                if(MBtrg){
+                    fHistDPhi500_800_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi500_800_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi500_800_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //800MeV
+            if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
+                if(MBtrg){
+                    fHistDPhi800_1_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi800_1_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi800_1_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //1GeV
+            if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
+                if(MBtrg){
+                    fHistDPhi1_2_MB[1]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi1_2_EMC7[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi1_2_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //2GeV
+            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+                if(MBtrg){
+                    fHistDPhi2_3_MB[1]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi2_3_EMC7[1]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi2_3_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //3GeV
+            if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+                if(MBtrg){
+                    fHistDPhi3_4_MB[1]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi,PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi3_4_EMC7[1]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi3_4_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //5GeV
+            if(aodtrackassoc->Pt()>4){
+                if(MBtrg){
+                    fHistDPhi4_MB[1]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi4_EMC7[1]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi4_EMCJet[1]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }                    
+        }
+
+        //candidate 4<pt<8
+        if(aodtrack->Pt()>4&&aodtrack->Pt()<8){
+
+            //300MeV
+            if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
+                if(MBtrg){
+                    fHistDPhi300_500_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi300_500_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi300_500_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //500MeV
+            if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
+                if(MBtrg){
+                    fHistDPhi500_800_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi500_800_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi500_800_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //800MeV
+            if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
+                if(MBtrg){
+                    fHistDPhi800_1_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi800_1_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi800_1_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //1GeV
+            if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
+                if(MBtrg){
+                    fHistDPhi1_2_MB[2]->Fill(DPhi);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi1_2_EMC7[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi1_2_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //2GeV
+            if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
+                if(MBtrg){
+                    fHistDPhi2_3_MB[2]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi2_3_EMC7[2]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi2_3_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //3GeV
+            if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
+                if(MBtrg){
+                    fHistDPhi3_4_MB[2]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi3_4_EMC7[2]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi3_4_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+
+            //5GeV
+            if(aodtrackassoc->Pt()>4){
+                if(MBtrg){
+                    fHistDPhi4_MB[2]->Fill(DPhi);
+                    fHistDPhi28_MB->Fill(DPhi);
+                    fHistDPhiDEta28_MB->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_MB->Fill(DPhi, PID);
+                }
+                if(EMC7trg){
+                    fHistDPhi4_EMC7[2]->Fill(DPhi);
+                    fHistDPhi28_EMC7->Fill(DPhi);
+                    fHistDPhiDEta28_EMC7->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
+                }
+                if(EMCJettrg){
+                    fHistDPhi4_EMCJet[2]->Fill(DPhi);
+                    fHistDPhi28_EMCJet->Fill(DPhi);
+                    fHistDPhiDEta28_EMCJet->Fill(DPhi, DEta);
+                    fHistDPhi18Spe_EMCJet->Fill(DPhi, PID);
+                }
+            }
+        }
+
+    }
     PostData(1, fOutputMB);
     PostData(2, fOutputEMC7);
     PostData(3, fOutputEMCJet);
@@ -2493,81 +3448,81 @@ void AliAnalysisTaskPSHFE::SetSSCutBool(Bool_t SSCutBool){
 }
 
 void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i){
-   
+
     if(!esdtrack){
         AliWarning("esdtrack is null, no point in doing Photonic Electron stuff");
         return;
     }
-    
+
     Bool_t isElec=kFALSE;
     Double_t ElecMass=.0005109989;    
     //Fill TOF and TPC status variables  
     AliPIDResponse::EDetPidStatus TPCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, esdtrack);
-        
+
     AliPIDResponse::EDetPidStatus TRDStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, esdtrack);
-        
+
     AliPIDResponse::EDetPidStatus EMCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kEMCAL, esdtrack);
-        
+
     //Check validity of PID, TODO: Add a rejection histogram
     if(TPCStatus!=AliPIDResponse::kDetPidOk){
         return;
     }
-        
+
     if(TRDStatus!=AliPIDResponse::kDetPidOk){
         return;
     }
-        
+
     if(EMCStatus!=AliPIDResponse::kDetPidOk){
         return;
     }
-        
-        
+
+
     //Get the # of sigmas around an electron hypothesis for TOF and TPC
     Double_t nSigmaTPC;
     nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kElectron);
-        
+
     Double_t elecLikeTRD[1];
     if(fPIDResponse->ComputeTRDProbability(esdtrack, AliPID::kElectron, elecLikeTRD, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || esdtrack->GetTRDntrackletsPID()<4){
         return;
     }
-       
+
     //declare emcal cluster PID variables
     Double_t EOP=-1;
     Int_t caloId=esdtrack->GetEMCALcluster();
-        
+
     if(caloId==-99999){
         return;
     }
-        
+
     AliESDCaloCluster* tagEMCclus=esd->GetCaloCluster(caloId);
-        
+
     EOP = tagEMCclus->E()/esdtrack->Pt();
-    
+
     if((nSigmaTPC<2&&nSigmaTPC>-2)||(EOP<1.4&&EOP>.8)||(elecLikeTRD[0]>.8)){
         isElec=kTRUE;
     }
-    
+
     if(!isElec){return;}
-    
+
     Int_t ntracks=esd->GetNumberOfTracks();
-    
+
     for(Int_t j = 0; j < ntracks; j++) {
-                
+
         //Don't double count the tagged tracks
         if(i==j){continue;}
-                
-        AliESDtrack* esdtrackassoc = esd->GetTrack(j); // pointer to reconstructed to track          
-                
+
+        AliESDtrack* esdtrackassoc = (AliESDtrack*)esd->GetTrack(j); // pointer to reconstructed to track          
+
         if(!esdtrackassoc) { 
             AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
             continue; 
         }
-        
+
         //Do hybrid track cuts
         if(!globaltrackCuts->AcceptTrack(esdtrackassoc)&&!comptrackCuts->AcceptTrack(esdtrackassoc)){continue;}
-        
+
         Bool_t isElecToo=kFALSE;
-        
+
         //Fill TOF and TPC status variables  
         AliPIDResponse::EDetPidStatus TPCStatusassoc=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, esdtrackassoc);
 
@@ -2595,444 +3550,602 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *es
         if((nSigmaTPCassoc<2&&nSigmaTPCassoc>-2)||(elecLikeTRDassoc[0]>.8)){
             isElecToo=kTRUE;
         }
-        
+
         if(!isElecToo){continue;}
-        
+
         Double_t elecE1=TMath::Sqrt(esdtrack->P()*esdtrack->P()+ElecMass*ElecMass);
         Double_t elecE2=TMath::Sqrt(esdtrackassoc->P()*esdtrackassoc->P()+ElecMass*ElecMass);
-        
+
         TLorentzVector elec1(esdtrack->Px(), esdtrack->Py(), esdtrack->Pz(), elecE1);
         TLorentzVector elec2(esdtrackassoc->Px(), esdtrackassoc->Py(), esdtrackassoc->Pz(), elecE2);
-        
+
         Double_t InvMass=(elec1+elec2).M();
         Double_t OpAng=elec1.Angle(elec2.Vect());
-        
+
         if(esdtrack->GetSign()==esdtrackassoc->GetSign()){
-            
+
             if(MBtrg){
                 fHistInvMassElecLike_MB->Fill(InvMass);
                 fHistOpAngElecLike_MB->Fill(OpAng);
             }
-            
+
             if(EMC7trg){
                 fHistInvMassElecLike_EMC7->Fill(InvMass);
                 fHistOpAngElecLike_EMC7->Fill(OpAng);
             }
-            
+
             if(EMCJettrg){
                 fHistInvMassElecLike_EMCJet->Fill(InvMass);
                 fHistOpAngElecLike_EMCJet->Fill(OpAng);
             }
-            
+
         }else{
             if(InvMass<0.1&&OpAng<0.1){tagPhot=kTRUE;}
             if(MBtrg){
                 fHistInvMassElecUnLike_MB->Fill(InvMass);
                 fHistOpAngElecUnLike_MB->Fill(OpAng);
             }
-            
+
             if(EMC7trg){
                 fHistInvMassElecUnLike_EMC7->Fill(InvMass);
                 fHistOpAngElecUnLike_EMC7->Fill(OpAng);
             }
-            
+
             if(EMCJettrg){
                 fHistInvMassElecUnLike_EMCJet->Fill(InvMass);
                 fHistOpAngElecUnLike_EMCJet->Fill(OpAng);
             }
         }
     }//end loop over tracks
-    
+
     PostData(1, fOutputMB);
     PostData(2, fOutputEMC7);
     PostData(3, fOutputEMCJet);
     return;
 }
 
-TObjArray* AliAnalysisTaskPSHFE::MakeTrkArr(AliESDEvent *esd)
-{
-    Int_t nTracks = esd->GetNumberOfTracks();
-    TObjArray* accTracks = new TObjArray;
-    
-    for(Int_t i=0;i<nTracks;i++){
-        AliESDtrack *esdtrack = esd->GetTrack(i);
-        
-        if(!esdtrack){
-            continue;
-        }
-        
-        if(!globaltrackCuts->AcceptTrack(esdtrack)&&!comptrackCuts->AcceptTrack(esdtrack)){
-            continue;
-        }
-        
-        accTracks->Add(new AliESDtrack(*esdtrack));
+void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *aodtrack, AliPIDResponse *fPIDResponse, Int_t i){
+
+    if(!aodtrack){
+        AliWarning("aodtrack is null, no point in doing Photonic Electron stuff");
+        return;
     }
-    
+
+    Bool_t isElec=kFALSE;
+    Double_t ElecMass=.0005109989;    
+    //Fill TOF and TPC status variables  
+    AliPIDResponse::EDetPidStatus TPCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, aodtrack);
+
+    AliPIDResponse::EDetPidStatus TRDStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, aodtrack);
+
+    AliPIDResponse::EDetPidStatus EMCStatus=fPIDResponse->CheckPIDStatus(AliPIDResponse::kEMCAL, aodtrack);
+
+    //Check validity of PID, TODO: Add a rejection histogram
+    if(TPCStatus!=AliPIDResponse::kDetPidOk){
+        return;
+    }
+
+    if(TRDStatus!=AliPIDResponse::kDetPidOk){
+        return;
+    }
+
+    if(EMCStatus!=AliPIDResponse::kDetPidOk){
+        return;
+    }
+
+
+    //Get the # of sigmas around an electron hypothesis for TOF and TPC
+    Double_t nSigmaTPC;
+    nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron);
+
+    Double_t elecLikeTRD[1];
+    if(fPIDResponse->ComputeTRDProbability(aodtrack, AliPID::kElectron, elecLikeTRD, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || aodtrack->GetTRDntrackletsPID()<4){
+        return;
+    }
+
+    //declare emcal cluster PID variables
+    Double_t EOP=-1;
+    Int_t caloId=aodtrack->GetEMCALcluster();
+
+    if(caloId==-99999){
+        return;
+    }
+
+    AliAODCaloCluster* tagEMCclus=aod->GetCaloCluster(caloId);
+
+    EOP = tagEMCclus->E()/aodtrack->Pt();
+
+    if((nSigmaTPC<2&&nSigmaTPC>-2)||(EOP<1.4&&EOP>.8)||(elecLikeTRD[0]>.8)){
+        isElec=kTRUE;
+    }
+
+    if(!isElec){return;}
+
+    Int_t ntracks=aod->GetNumberOfTracks();
+
+    for(Int_t j = 0; j < ntracks; j++) {
+
+        //Don't double count the tagged tracks
+        if(i==j){continue;}
+
+        AliAODTrack* aodtrackassoc = (AliAODTrack*)aod->GetTrack(j); // pointer to reconstructed to track          
+
+        if(!aodtrackassoc) { 
+            AliError(Form("ERROR: Could not retrieve aodtrack %d",j)); 
+            continue; 
+        }
+
+        //Do hybrid track cuts
+        if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()){continue;}
+
+        Bool_t isElecToo=kFALSE;
+
+        //Fill TOF and TPC status variables  
+        AliPIDResponse::EDetPidStatus TPCStatusassoc=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, aodtrackassoc);
+
+        AliPIDResponse::EDetPidStatus TRDStatusassoc=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTRD, aodtrackassoc);
+
+        //Check validity of PID, TODO: Add a rejection histogram
+        if(TPCStatusassoc!=AliPIDResponse::kDetPidOk){
+            continue;
+        }
+
+        if(TRDStatusassoc!=AliPIDResponse::kDetPidOk){
+            continue;
+        }
+
+
+        //Get the # of sigmas around an electron hypothesis for TOF and TPC
+        Double_t nSigmaTPCassoc;
+        nSigmaTPCassoc = fPIDResponse->NumberOfSigmasTPC(aodtrackassoc,AliPID::kElectron);
+
+        Double_t elecLikeTRDassoc[1];
+        if(fPIDResponse->ComputeTRDProbability(aodtrackassoc, AliPID::kElectron, elecLikeTRDassoc, AliTRDPIDResponse::kLQ2D) != AliPIDResponse::kDetPidOk || aodtrackassoc->GetTRDntrackletsPID()<4){
+            return;
+        }
+
+        if((nSigmaTPCassoc<2&&nSigmaTPCassoc>-2)||(elecLikeTRDassoc[0]>.8)){
+            isElecToo=kTRUE;
+        }
+
+        if(!isElecToo){continue;}
+
+        Double_t elecE1=TMath::Sqrt(aodtrack->P()*aodtrack->P()+ElecMass*ElecMass);
+        Double_t elecE2=TMath::Sqrt(aodtrackassoc->P()*aodtrackassoc->P()+ElecMass*ElecMass);
+
+        TLorentzVector elec1(aodtrack->Px(), aodtrack->Py(), aodtrack->Pz(), elecE1);
+        TLorentzVector elec2(aodtrackassoc->Px(), aodtrackassoc->Py(), aodtrackassoc->Pz(), elecE2);
+
+        Double_t InvMass=(elec1+elec2).M();
+        Double_t OpAng=elec1.Angle(elec2.Vect());
+
+        if(aodtrack->GetSign()==aodtrackassoc->GetSign()){
+
+            if(MBtrg){
+                fHistInvMassElecLike_MB->Fill(InvMass);
+                fHistOpAngElecLike_MB->Fill(OpAng);
+            }
+
+            if(EMC7trg){
+                fHistInvMassElecLike_EMC7->Fill(InvMass);
+                fHistOpAngElecLike_EMC7->Fill(OpAng);
+            }
+
+            if(EMCJettrg){
+                fHistInvMassElecLike_EMCJet->Fill(InvMass);
+                fHistOpAngElecLike_EMCJet->Fill(OpAng);
+            }
+
+        }else{
+            if(InvMass<0.1&&OpAng<0.1){tagPhot=kTRUE;}
+            if(MBtrg){
+                fHistInvMassElecUnLike_MB->Fill(InvMass);
+                fHistOpAngElecUnLike_MB->Fill(OpAng);
+            }
+
+            if(EMC7trg){
+                fHistInvMassElecUnLike_EMC7->Fill(InvMass);
+                fHistOpAngElecUnLike_EMC7->Fill(OpAng);
+            }
+
+            if(EMCJettrg){
+                fHistInvMassElecUnLike_EMCJet->Fill(InvMass);
+                fHistOpAngElecUnLike_EMCJet->Fill(OpAng);
+            }
+        }
+    }//end loop over tracks
+
+    PostData(1, fOutputMB);
+    PostData(2, fOutputEMC7);
+    PostData(3, fOutputEMCJet);
+    return;
+}
+
+TObjArray* AliAnalysisTaskPSHFE::MakeTrkArr(AliAODEvent *aod)
+{
+    if(!aod){AliWarning("Invalid AOD Event");}
+    Int_t nTracks = aod->GetNumberOfTracks();
+    TObjArray* accTracks = new TObjArray;
+
+    for(Int_t i=0;i<nTracks;i++){
+        AliAODTrack *aodtrack = (AliAODTrack*)aod->GetTrack(i);
+
+        if(!aodtrack){
+            continue;
+        }
+
+        if(aodtrack->IsHybridGlobalConstrainedGlobal()){
+            continue;
+        }
+
+        accTracks->Add(new AliAODTrack(*aodtrack));
+    }
+
     return accTracks;
 }
 
-void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliESDtrack *esdtrack)
+void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
 {
     Int_t nEvents = fPool->GetCurrentNEvents();
-    
+
     for(Int_t Ev=0;Ev<nEvents;Ev++){
-        
+
         TObjArray *mixedTracks = fPool->GetEvent(Ev);
-        
+
         Int_t nMixedTracks = mixedTracks->GetEntriesFast();
-        
+
         for(Int_t j=0;j<nMixedTracks;j++){
-                AliESDtrack* esdtrackassoc = (AliESDtrack*)mixedTracks->At(j); // pointer to reconstructed to track          
-                
-                if(!esdtrackassoc) { 
-                        AliError(Form("ERROR: Could not retrieve esdtrack %d",j)); 
-                        continue; 
-                }
-                
-                //Do hybrid track cuts
-                if(!globaltrackCuts->AcceptTrack(esdtrackassoc)&&!comptrackCuts->AcceptTrack(esdtrackassoc)){continue;}
-            
-                //Pt distribution
-                if(MBtrg){
-                        fHistPtAssocMix_MB->Fill(esdtrack->Pt());
-                }
-                if(EMC7trg){
-                        fHistPtAssocMix_EMC7->Fill(esdtrack->Pt());
-                }
-        
-                if(EMCJettrg){
-                        fHistPtAssocMix_EMCJet->Fill(esdtrack->Pt());
-                }
-                
-                //Fill Delta Phi variable and correct for periodicity
-                Double_t DPhi=esdtrackassoc->Phi()-esdtrack->Phi();
-                
-                if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
-                
-                if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
-                
-                Double_t DEta=esdtrackassoc->Eta()-esdtrack->Eta();
-                
-                //candidate 1<pt<2
-                if(esdtrack->Pt()>1&&esdtrack->Pt()<2){
-                    
+            AliAODTrack* aodtrackassoc = (AliAODTrack*)mixedTracks->At(j); // pointer to reconstructed to track          
+
+            if(!aodtrackassoc) { 
+                AliError(Form("ERROR: Could not retrieve aodtrack %d",j)); 
+                continue; 
+            }
+
+            //Do hybrid track cuts
+            if(aodtrackassoc->IsHybridGlobalConstrainedGlobal()){continue;}
+
+            //Pt distribution
+            if(MBtrg){
+                fHistPtAssocMix_MB->Fill(aodtrackassoc->Pt());
+            }
+            if(EMC7trg){
+                fHistPtAssocMix_EMC7->Fill(aodtrackassoc->Pt());
+            }
+
+            if(EMCJettrg){
+                fHistPtAssocMix_EMCJet->Fill(aodtrackassoc->Pt());
+            }
+
+            //Fill Delta Phi variable and correct for periodicity
+            Double_t DPhi=aodtrackassoc->Phi()-aodtrack->Phi();
+
+            if(DPhi<-TMath::Pi()/2){DPhi=TMath::Abs(2*TMath::Pi()+DPhi);}
+
+            if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
+
+            Double_t DEta=aodtrackassoc->Eta()-aodtrack->Eta();
+
+            //candidate 1<pt<2
+            if(aodtrack->Pt()>1&&aodtrack->Pt()<2){
+
                 //300-500MeV
-                if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
+                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
                     if(MBtrg){
                         fHistDPhiMix300_500_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix300_500_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix300_500_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix300_500_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix300_500_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                
+
                 //500MeV
-                if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
+                if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
                     if(MBtrg){
                         fHistDPhiMix500_800_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix500_800_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix500_800_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix500_800_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix500_800_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                
+
                 //800MeV
-                if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
+                if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
                     if(MBtrg){
                         fHistDPhiMix800_1_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix800_1_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix800_1_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix800_1_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix800_1_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                
+
                 //1GeV
-                if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
+                if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
                     if(MBtrg){
                         fHistDPhiMix1_2_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix1_2_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix1_2_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix1_2_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix1_2_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                
+
                 //2GeV
-                if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
+                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
                     if(MBtrg){
                         fHistDPhiMix2_3_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix2_3_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix2_3_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix2_3_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix2_3_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                
+
                 //3GeV
-                if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
+                if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
                     if(MBtrg){
                         fHistDPhiMix3_4_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix3_4_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix3_4_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix3_4_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix3_4_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                
+
                 //5GeV
-                if(esdtrackassoc->Pt()>4){
+                if(aodtrackassoc->Pt()>4){
                     if(MBtrg){
                         fHistDPhiMix4_MB[0]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix4_EMC7[0]->Fill(DPhi);
+                        fHistDPhiMix4_EMC7[0]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix4_EMCJet[0]->Fill(DPhi);
+                        fHistDPhiMix4_EMCJet[0]->Fill(DPhi);
                     }
                 }
-                }
-                
-                //candidate 2<pt<4
-                if(esdtrack->Pt()>2&&esdtrack->Pt()<4){
-                    
+            }
+
+            //candidate 2<pt<4
+            if(aodtrack->Pt()>2&&aodtrack->Pt()<4){
+
                 //300MeV
-                if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
+                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
                     if(MBtrg){
                         fHistDPhiMix300_500_MB[1]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix300_500_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix300_500_EMC7[1]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix300_500_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix300_500_EMCJet[1]->Fill(DPhi);
                     }
                 }
-                
+
                 //500MeV
-                if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
+                if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
                     if(MBtrg){
                         fHistDPhiMix500_800_MB[1]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix500_800_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix500_800_EMC7[1]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix500_800_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix500_800_EMCJet[1]->Fill(DPhi);
                     }
                 }
-                
+
                 //800MeV
-                if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
+                if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
                     if(MBtrg){
                         fHistDPhiMix800_1_MB[1]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix800_1_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix800_1_EMC7[1]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix800_1_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix800_1_EMCJet[1]->Fill(DPhi);
                     }
                 }
-                
+
                 //1GeV
-                if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
+                if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
                     if(MBtrg){
                         fHistDPhiMix1_2_MB[1]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix1_2_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix1_2_EMC7[1]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix1_2_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix1_2_EMCJet[1]->Fill(DPhi);
                     }
                 }
-                
+
                 //2GeV
-                if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
+                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
                     if(MBtrg){
                         fHistDPhiMix2_3_MB[1]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix2_3_EMC7[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                        fHistDPhiMix2_3_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix28_EMC7->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix2_3_EMCJet[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                        fHistDPhiMix2_3_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                     }
                 }
-                
+
                 //3GeV
-                if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
+                if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
                     if(MBtrg){
                         fHistDPhiMix3_4_MB[1]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix3_4_EMC7[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                        fHistDPhiMix3_4_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix28_EMC7->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix3_4_EMCJet[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                        fHistDPhiMix3_4_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                     }
                 }
-                
+
                 //5GeV
-                if(esdtrackassoc->Pt()>4){
+                if(aodtrackassoc->Pt()>4){
                     if(MBtrg){
                         fHistDPhiMix4_MB[1]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix4_EMC7[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                        fHistDPhiMix4_EMC7[1]->Fill(DPhi);
+                        fHistDPhiMix28_EMC7->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix4_EMCJet[1]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                        fHistDPhiMix4_EMCJet[1]->Fill(DPhi);
+                        fHistDPhiMix28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                     }
                 }                    
-                }
-            
-                //candidate 4<pt<8
-                if(esdtrack->Pt()>4&&esdtrack->Pt()<8){
-                    
+            }
+
+            //candidate 4<pt<8
+            if(aodtrack->Pt()>4&&aodtrack->Pt()<8){
+
                 //300MeV
-                if(esdtrackassoc->Pt()>.3&&esdtrackassoc->Pt()<.5){
+                if(aodtrackassoc->Pt()>.3&&aodtrackassoc->Pt()<.5){
                     if(MBtrg){
                         fHistDPhiMix300_500_MB[2]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix300_500_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix300_500_EMC7[2]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix300_500_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix300_500_EMCJet[2]->Fill(DPhi);
                     }
                 }
-                
+
                 //500MeV
-                if(esdtrackassoc->Pt()>.5&&esdtrackassoc->Pt()<.8){
+                if(aodtrackassoc->Pt()>.5&&aodtrackassoc->Pt()<.8){
                     if(MBtrg){
-                           fHistDPhiMix500_800_MB[2]->Fill(DPhi);
+                        fHistDPhiMix500_800_MB[2]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix500_800_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix500_800_EMC7[2]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix500_800_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix500_800_EMCJet[2]->Fill(DPhi);
                     }
                 }
-                
+
                 //800MeV
-                if(esdtrackassoc->Pt()>.8&&esdtrackassoc->Pt()<1){
+                if(aodtrackassoc->Pt()>.8&&aodtrackassoc->Pt()<1){
                     if(MBtrg){
                         fHistDPhiMix800_1_MB[2]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix800_1_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix800_1_EMC7[2]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix800_1_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix800_1_EMCJet[2]->Fill(DPhi);
                     }
                 }
-                
+
                 //1GeV
-                if(esdtrackassoc->Pt()>1&&esdtrackassoc->Pt()<2){
+                if(aodtrackassoc->Pt()>1&&aodtrackassoc->Pt()<2){
                     if(MBtrg){
                         fHistDPhiMix1_2_MB[2]->Fill(DPhi);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix1_2_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix1_2_EMC7[2]->Fill(DPhi);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix1_2_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix1_2_EMCJet[2]->Fill(DPhi);
                     }
                 }
-                
+
                 //2GeV
-                if(esdtrackassoc->Pt()>2&&esdtrackassoc->Pt()<3){
+                if(aodtrackassoc->Pt()>2&&aodtrackassoc->Pt()<3){
                     if(MBtrg){
                         fHistDPhiMix2_3_MB[2]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix2_3_EMC7[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                        fHistDPhiMix2_3_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix28_EMC7->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix2_3_EMCJet[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                        fHistDPhiMix2_3_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                     }
                 }
-                
+
                 //3GeV
-                if(esdtrackassoc->Pt()>3&&esdtrackassoc->Pt()<4){
+                if(aodtrackassoc->Pt()>3&&aodtrackassoc->Pt()<4){
                     if(MBtrg){
                         fHistDPhiMix3_4_MB[2]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix3_4_EMC7[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                        fHistDPhiMix3_4_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix28_EMC7->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix3_4_EMCJet[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                        fHistDPhiMix3_4_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                     }
                 }
-                
+
                 //5GeV
-                if(esdtrackassoc->Pt()>4){
+                if(aodtrackassoc->Pt()>4){
                     if(MBtrg){
                         fHistDPhiMix4_MB[2]->Fill(DPhi);
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
                     if(EMC7trg){
-                            fHistDPhiMix4_EMC7[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMC7->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
+                        fHistDPhiMix4_EMC7[2]->Fill(DPhi);
+                        fHistDPhiMix28_EMC7->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMC7->Fill(DPhi, DEta);
                     }
                     if(EMCJettrg){
-                            fHistDPhiMix4_EMCJet[2]->Fill(DPhi);
-                            fHistDPhiMix28_EMCJet->Fill(DPhi);
-                            fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
+                        fHistDPhiMix4_EMCJet[2]->Fill(DPhi);
+                        fHistDPhiMix28_EMCJet->Fill(DPhi);
+                        fHistDPhiDEtaMix28_EMCJet->Fill(DPhi, DEta);
                     }
                 }
-                }
+            }
         }
     }
     PostData(1, fOutputMB);

@@ -2216,7 +2216,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%d",il0,ipt),
          Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, w > 0",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         96,0,96,5*24,0,5*24); // fix to generalize to other periods
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5); // fix to generalize to other periods
         fhColRowLam0BinPtBin[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBin[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBin[il0][ipt]) ;   
@@ -2225,7 +2225,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%dWeighted",il0,ipt),
          Form("cluster cell row vs column weighted in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         96,0,96,5*24,0,5*24); // fix to generalize to other periods
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5); // fix to generalize to other periods
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinWeighted[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinWeighted[il0][ipt]) ;
@@ -2234,7 +2234,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         (Form("hColRowLam0Bin%d_PtBin%d_LargeTimeInClusterCell",il0,ipt),
          Form("row vs column in #it{p}_{T}=[%2.1f,%2.1f] GeV/#it{c}, %s, |t| > 50 ns, w > 0",
               ptLimit[ipt],ptLimit[ipt+1],l0bin[il0].Data()),
-         96,0,96,5*24,0,5*24); // fix to generalize to other periods
+         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5); // fix to generalize to other periods
         fhColRowLam0BinPtBinLargeTime[il0][ipt]->SetYTitle("row");
         fhColRowLam0BinPtBinLargeTime[il0][ipt]->SetXTitle("column");
         outputContainer->Add(fhColRowLam0BinPtBinLargeTime[il0][ipt]) ;  

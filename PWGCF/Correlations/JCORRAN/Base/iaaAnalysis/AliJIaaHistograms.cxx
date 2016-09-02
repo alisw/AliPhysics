@@ -31,7 +31,6 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	fhDEtaNearM(),
 	fhDetaNearMixAcceptance(),
 	fhDphiDetaPta(),
-	//fhDphiDetaPtaRgap(),
 	fhIphiTrigg(),
 	fhIetaTrigg(),
 	fhIphiAssoc(),
@@ -53,16 +52,10 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	fhCentr(),
 	fhiCentr(),
 	fhZVert(),
-	//fhAcceptanceTraditional(),
-	//fhAcceptanceTraditional2D(),
-	//fhAcceptance3DNearSide(),
-	//fhAcceptanceTraditional2DZ(),
-	//fhAcceptance3DNearSideZ(),
-	fmaxEtaRange(0)
-{   // constructor
 
-    fmaxEtaRange = fCard->Get("EtaRange");
-  
+	fmaxEtaRange(0)
+{
+    fmaxEtaRange = fCard->Get("EtaRange"); 
 }
 
 //______________________________________________________________________________
@@ -73,7 +66,6 @@ AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
   fhDEtaNearM(obj.fhDEtaNearM),
   fhDetaNearMixAcceptance(obj.fhDetaNearMixAcceptance),
   fhDphiDetaPta(obj.fhDphiDetaPta),
-  //fhDphiDetaPtaRgap(obj.fhDphiDetaPtaRgap),
   fhIphiTrigg(obj.fhIphiTrigg),
   fhIetaTrigg(obj.fhIetaTrigg),
   fhIphiAssoc(obj.fhIphiAssoc),
@@ -95,11 +87,6 @@ AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
   fhCentr(obj.fhCentr),
   fhiCentr(obj.fhiCentr),
   fhZVert(obj.fhZVert),
-  //fhAcceptanceTraditional(obj.fhAcceptanceTraditional),
-  //fhAcceptanceTraditional2D(obj.fhAcceptanceTraditional2D),
-  //fhAcceptance3DNearSide(obj.fhAcceptance3DNearSide),
-  //fhAcceptanceTraditional2DZ(obj.fhAcceptanceTraditional2DZ),
-  //fhAcceptance3DNearSideZ(obj.fhAcceptance3DNearSideZ),
   fmaxEtaRange(obj.fmaxEtaRange)
 {
     // copy constructor
@@ -182,37 +169,32 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
   
   fhDetaNearMixAcceptance
       << TH1D( "hDEtaNearMixAcceptance", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
-      <<  fCentBin << fPTtBin << fPTaBin  << "END";
+	  <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
   
   fhDphiAssoc
 	  << TH1D( "hDphiAssoc", "",  320, -9./20, 31./20.)
 	  <<  fTypBin << fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-//  fhDEtaNear
-//	  << TH1D( "hDEtaNear", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
-//	  <<  fCentBin << fVtxBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
-//
-//  fhDEtaNearM
-//	  << TH1D( "hDEtaNearM", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
-//	  <<  fCentBin << fVtxBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
-
   fhDEtaNear
-	  << TH1D( "hDEtaNear", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
-	  <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+	  << TH1D( "hDEtaNear", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
+	  <<  fCentBin << fVtxBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
   fhDEtaNearM
-	  << TH1D( "hDEtaNearM", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
-	  <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+	  << TH1D( "hDEtaNearM", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
+	  <<  fCentBin << fVtxBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-//<< TH2D( "hDphiDetaPta", "", 100*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -9./20, 31./20.)
+//  fhDEtaNear
+//	  << TH1D( "hDEtaNear", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+//	  <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+
+//  fhDEtaNearM
+//	  << TH1D( "hDEtaNearM", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+//	  <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+
   fhDphiDetaPta
 	  << TH2D( "hDphiDetaPta", "", 40*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 72, -9./20, 31./20.)
-	  <<  fTypBin <<  fCentBin << fPTtBin << fPTaBin  << "END";
+	  <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
-//  fhDphiDetaPtaRgap
-//      << TH2D( "fhDphiDetaPtaRgap", "", 100*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -0.5, 1.5)
-//      << fTypBin << fRGapBin << fCentBin << fPTtBin << fPTaBin  << "END";
-  
   delete [] uEBinBorders;
 }
 
@@ -251,7 +233,6 @@ void AliJIaaHistograms::CreateEventTrackHistos(){
 
   fhTrackingEfficiency << TProfile("hTrackingEff","",nBINS, logBinsX)
       << fCentBin << "END";
-
 }
 
 

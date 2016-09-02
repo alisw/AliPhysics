@@ -77,13 +77,13 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p) const
     Init();
     if (!fCutMethod) return kFALSE;
   }
-  
+
   fCallParams[0] = p;
 
   fCutMethod->SetParamPtrs(&fCallParams[0]);
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
-  
+
   return (result!=0);
 }
 
@@ -100,11 +100,11 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p1, Long_t p2) const
 
   fCallParams[0] = p1;
   fCallParams[1] = p2;
-  
+
   fCutMethod->SetParamPtrs(&fCallParams[0]);
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
-  
+
   return (result!=0);
 }
 
@@ -112,13 +112,13 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p1, Long_t p2) const
 Int_t AliAnalysisMuMuCutElement::CountOccurences(const TString& prototype, const char* search) const
 {
   /// Count the number of times "search" is found in prototype
-  
+
   TObjArray* a = prototype.Tokenize(",");
   TObjString* str;
   TIter next(a);
-  
+
   Int_t n(0);
-  
+
   while ( ( str = static_cast<TObjString*>(next()) ) )
   {
     if  ( str->String().Contains(search) )
@@ -134,7 +134,7 @@ Int_t AliAnalysisMuMuCutElement::CountOccurences(const TString& prototype, const
 const char* AliAnalysisMuMuCutElement::CutTypeName(ECutType type)
 {
   /// Convert the enum into a string
-  
+
   if ( type == kEvent )
   {
     return "Event";
@@ -201,7 +201,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     *
     * Bool_t XXXX(const TString& firedTriggerClasses, TString& acceptedTriggerClasses)
     *
-    * where ... stands for optional arguments (different from VEvent VParticle, etc...), 
+    * where ... stands for optional arguments (different from VEvent VParticle, etc...),
     * which can have default values
     *
     * Note that Root reflexion does not allow (yet?) to check for constness of the arguments,
@@ -209,26 +209,26 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     *
     *
    */
-  
+
   TString scutMethodPrototype(fCutMethodPrototype);
-  
+
   // some basic checks first
-  
+
   TObjArray* tmp = fCutMethodPrototype.Tokenize(",");
   fNofParams = tmp->GetEntries();
   delete tmp;
-  
+
   Int_t nVEvent = CountOccurences(fCutMethodPrototype,"AliVEvent");
   Int_t nVEventHandler = CountOccurences(fCutMethodPrototype,"AliVEventHandler") + CountOccurences(fCutMethodPrototype,"AliInputEventHandler");
   Int_t nparticles = CountOccurences(fCutMethodPrototype,"AliVParticle");
   Int_t nstrings = CountOccurences(fCutMethodPrototype,"TString");
-  
+
   if ( expectedType == kEvent && ( nVEvent == 0 && nVEventHandler == 0 ) )
   {
     AliError(Form("Cut not of the expected %s type : did not find required prototype arguments AliVEvent, AliVEventHandler or AliInputEventHandler",CutTypeName(kEvent)));
     return;
   }
-  
+
   if ( expectedType == kTrack && ( nparticles != 1 ) )
   {
     AliError(Form("Cut not of the expected %s type : did not find the required prototype argument AliVParticle (one and only one required)",CutTypeName(kTrack)));
@@ -246,15 +246,15 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     AliError(Form("Cut not of the expected %stype : did not find the required prototype arguments TString& (2 of them required)",CutTypeName(kTriggerClass)));
     return;
   }
-  
+
   // OK, at least the prototype seems to match what we require. Let's continue...
-  
+
   scutMethodPrototype.ReplaceAll("  ","");
-  
+
   fCutMethod = new TMethodCall;
-  
+
   fCutMethod->InitWithPrototype(fCutObject->IsA(),fCutMethodName.Data(),scutMethodPrototype.Data());
-  
+
   if (!fCutMethod->IsValid())
   {
     AliError(Form("Could not find method %s(%s) in class %s",fCutMethodName.Data(),
@@ -263,13 +263,13 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     fCutMethod=0x0;
     return;
   }
-  
+
   TMethodCall nameOfMethod;
-  
+
   TString prototype("TString&");
-  
+
   Int_t nMainPar = 0;
-  
+
   if ( scutMethodPrototype.Contains("AliVEvent") )
   {
     fIsEventCutter=kTRUE;
@@ -288,7 +288,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     fCutMethod=0x0;
     return;
   }
-  
+
   if ( nparticles == 1 )
   {
     fIsTrackCutter=kTRUE;
@@ -301,10 +301,10 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
   {
     fIsTriggerClassCutter = kTRUE;
   }
-  
+
   nMainPar += nparticles;
   nMainPar += nstrings;
-  
+
   if ( nMainPar > 2 )
   {
     AliError(Form("Got an invalid prototype %s (more than two main parameters)",scutMethodPrototype.Data()));
@@ -312,7 +312,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     fCutMethod=0x0;
     return;
   }
-  
+
   if ( nMainPar == 0 )
   {
     AliError(Form("Got an invalid prototype %s (no main parameter found)",scutMethodPrototype.Data()));
@@ -320,18 +320,18 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     fCutMethod=0x0;
     return;
   }
-  
+
   if ( !fIsTriggerClassCutter )
   {
     scutMethodPrototype.ReplaceAll("const AliVEvent&","");
     scutMethodPrototype.ReplaceAll("const AliVParticle&","");
     scutMethodPrototype.ReplaceAll("const AliInputEventHandler&","");
     scutMethodPrototype.ReplaceAll("const AliVEventHandler&","");
-    
+
     prototype += scutMethodPrototype;
-    
+
     nameOfMethod.InitWithPrototype(fCutObject->IsA(),Form("NameOf%s",fCutMethodName.Data()),prototype);
-    
+
     if (!nameOfMethod.IsValid())
     {
       AliError(Form("Could not find method NameOf%s(%s) in class %s",fCutMethodName.Data(),
@@ -340,26 +340,26 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
       fCutMethod=0x0;
       return;
     }
-    
+
     // Now check if we have some default parameters for the NameOf method
     // Note that the only supported types for those default parameters
     // are Int_t and Double_t (which must be then of the form const Double_t&,
     // note the reference).
-    
+
     prototype.ReplaceAll("TString&","");
-    
+
     TObjArray* paramTypes = prototype.Tokenize(",");
     TObjArray* paramValues = fDefaultParameters.Tokenize(",");
-    
+
     fDoubleParams.resize(paramValues->GetEntries());
-    
+
     Int_t nparams = paramValues->GetEntries();
-    
+
     // first parameter is always the TString&, i.e. the "output" of the NameOf
     // method
-    
+
     fCallParams.resize(nparams+nMainPar);
-    
+
     if ( nMainPar == 2 )
     {
       fCallParams[0] = 0;
@@ -369,12 +369,12 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     {
       fCallParams[0] = reinterpret_cast<Long_t>(&fName);
     }
-    
+
     for ( Int_t i = 0; i < nparams; ++i )
     {
       TString pValue = static_cast<TObjString*>(paramValues->At(i))->String();
       TString pType = static_cast<TObjString*>(paramTypes->At(i))->String();
-      
+
       if ( pType.Contains("Double_t"))
       {
         fDoubleParams[i] = pValue.Atof();
@@ -390,11 +390,11 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
         fCallParams[i+nMainPar] = reinterpret_cast<Long_t>(&pValue);
       }
     }
-    
+
     nameOfMethod.SetParamPtrs(&fCallParams[0+nMainPar-1]);
-    
+
     nameOfMethod.Execute(fCutObject);
-    
+
     delete paramTypes;
     delete paramValues;
   }
@@ -402,11 +402,11 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
   {
       // check whether we have the input bit masks as well
     Int_t nuint = CountOccurences(scutMethodPrototype,"UInt_t");
-    
+
     Bool_t ok =
      ( nuint == 3 && nstrings == 2 && ( nuint + nstrings ) == fNofParams ) ||
     ( nuint == 0 && nstrings == 2 && nstrings == fNofParams );
-    
+
     if (!ok)
     {
       AliError("Incorrect prototype for a trigger class cutter");
@@ -415,9 +415,9 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
       return;
     }
   }
-  
+
   // Final consistency ross-check
-  
+
   if ( expectedType == kEvent && ! (fIsEventCutter || fIsEventHandlerCutter) )
   {
     AliError("No, it's not an event cutter. Invalidate");
@@ -451,11 +451,11 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
 Bool_t AliAnalysisMuMuCutElement::IsEqual(const TObject* obj) const
 {
   /// Whether we're the same cut as obj
-  
+
   if ( obj->IsA() != IsA() ) return kFALSE;
-  
+
   const AliAnalysisMuMuCutElement* cut = static_cast<const AliAnalysisMuMuCutElement*>(obj);
-  
+
   return ( fName == cut->fName &&
     fIsEventCutter == cut->fIsEventCutter &&
     fIsEventHandlerCutter == cut->fIsEventHandlerCutter &&
@@ -509,20 +509,20 @@ Bool_t AliAnalysisMuMuCutElement::Pass(const TString& firedTriggerClasses,
    * \param L1 (input, optional) level 1 trigger mask
    * \param L2 (input, optional) level 2 trigger mask
    */
-  
+
   if (!fCutMethod)
   {
     Init();
     if (!fCutMethod) return kFALSE;
   }
-  
+
   acceptedTriggerClasses = "";
-  
+
   Long_t result;
   Long_t params[] = { reinterpret_cast<Long_t>(&firedTriggerClasses),
     reinterpret_cast<Long_t>(&acceptedTriggerClasses),
     L0,L1,L2 };
-  
+
   fCutMethod->SetParamPtrs(params);
   fCutMethod->Execute(fCutObject,result);
   return (result!=0);
@@ -536,10 +536,10 @@ void AliAnalysisMuMuCutElement::Print(Option_t* opt) const
   {
     Init();
   }
-  
+
   TString sopt(opt);
   sopt.ToUpper();
-  
+
   if (sopt.Contains("PTR"))
   {
     std::cout << Form("Cut %s(%p) %s(%p)::%s(%s) [",
@@ -557,7 +557,7 @@ void AliAnalysisMuMuCutElement::Print(Option_t* opt) const
                       GetCallMethodName(),
                       GetCallMethodProto());
   }
-  
+
   if ( IsEventCutter() ) std::cout << " E";
   if ( IsEventHandlerCutter() ) std::cout << " EH";
   if ( IsTrackCutter() ) std::cout << " T";

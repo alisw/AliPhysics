@@ -50,7 +50,7 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -117,6 +117,19 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   Double_t meanErrOFOHM = 0;
   Double_t meanErrTKLHM = 0;
   Double_t thresholdV0M = 0;
+  Double_t aV0MOnVsOfVal = 0;
+  Double_t bV0MOnVsOfVal = 0;
+  Double_t aV0MOnVsOfErr = 0;
+  Double_t bV0MOnVsOfErr = 0;
+  Double_t aSPDOnVsOfVal = 0;
+  Double_t bSPDOnVsOfVal = 0;
+  Double_t aSPDOnVsOfErr = 0;
+  Double_t bSPDOnVsOfErr = 0;
+  Double_t aV0MOnVsOfOADB = 0;
+  Double_t bV0MOnVsOfOADB = 0;
+  Double_t aSPDOnVsOfOADB = 0;
+  Double_t bSPDOnVsOfOADB = 0;
+
   TH2F* hHistStat = new TH2F();
 
   TFile* fout = new TFile("trending.root","recreate");
@@ -180,6 +193,19 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("meanErrOFOHM",&meanErrOFOHM);
   t->Branch("meanErrTKLHM",&meanErrTKLHM);
   t->Branch("thresholdV0M",&thresholdV0M);
+  t->Branch("aV0MOnVsOfVal",&aV0MOnVsOfVal);
+  t->Branch("bV0MOnVsOfVal",&bV0MOnVsOfVal);
+  t->Branch("aV0MOnVsOfErr",&aV0MOnVsOfErr);
+  t->Branch("bV0MOnVsOfErr",&bV0MOnVsOfErr);
+  t->Branch("aSPDOnVsOfVal",&aSPDOnVsOfVal);
+  t->Branch("bSPDOnVsOfVal",&bSPDOnVsOfVal);
+  t->Branch("aSPDOnVsOfErr",&aSPDOnVsOfErr);
+  t->Branch("bSPDOnVsOfErr",&bSPDOnVsOfErr);
+  t->Branch("aV0MOnVsOfOADB",&aV0MOnVsOfOADB);
+  t->Branch("bV0MOnVsOfOADB",&bV0MOnVsOfOADB);
+  t->Branch("aSPDOnVsOfOADB",&aSPDOnVsOfOADB);
+  t->Branch("bSPDOnVsOfOADB",&bSPDOnVsOfOADB);
+  
   t->Branch("hHistStat",&hHistStat);
   
   TString refClass="";
@@ -387,6 +413,9 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   meanErrOFOHM   = 0;
   meanErrTKLHM   = 0;
   thresholdV0M   = 0;
+  Double_t* abV0M;
+  Double_t* abSPD;
+
   for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
     TString label = hHistStat->GetYaxis()->GetBinLabel(j);
     // kINT7
@@ -402,6 +431,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH1F* hV0MOfAcc = (TH1F*) list->FindObject("fHistV0MOfAcc");
     TH1F* hOFOAcc   = (TH1F*) list->FindObject("fHistOFOAcc");
     TH1F* hTKLAcc   = (TH1F*) list->FindObject("fHistTKLAcc");
+    TH2F* hV0MOnVsOfCln = (TH2F*) list->FindObject("fHistV0MOnVsOfCln");
+    TH2F* hSPDOnVsOfCln = (TH2F*) list->FindObject("fHistSPDOnVsOfCln");
     if (label.Contains(" &2 ")) {
       meanV0MOn    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
       meanV0MOf    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
@@ -411,6 +442,21 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       meanErrV0MOf = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
       meanErrOFO   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
       meanErrTKL   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+      aV0MOnVsOfOADB = ((TF1*) hV0MOnVsOfCln->GetListOfFunctions()->FindObject("fFuncV0MOnVsOf"))->GetParameter(0);
+      bV0MOnVsOfOADB = ((TF1*) hV0MOnVsOfCln->GetListOfFunctions()->FindObject("fFuncV0MOnVsOf"))->GetParameter(1);
+      aSPDOnVsOfOADB = ((TF1*) hSPDOnVsOfCln->GetListOfFunctions()->FindObject("fFuncSPDOnVsOf"))->GetParameter(0);
+      bSPDOnVsOfOADB = ((TF1*) hSPDOnVsOfCln->GetListOfFunctions()->FindObject("fFuncSPDOnVsOf"))->GetParameter(1);
+      
+      abV0M = getCutParametersOnlineVsOffline(hV0MOnVsOfCln, "V0M");
+      aV0MOnVsOfVal = abV0M ? abV0M[0] : 0;
+      aV0MOnVsOfErr = abV0M ? abV0M[1] : 0;
+      bV0MOnVsOfVal = abV0M ? abV0M[2] : 0;
+      bV0MOnVsOfErr = abV0M ? abV0M[3] : 0;
+      abSPD = getCutParametersOnlineVsOffline(hSPDOnVsOfCln, "SPD");
+      aSPDOnVsOfVal = abSPD ? abSPD[0] : 0;
+      aSPDOnVsOfErr = abSPD ? abSPD[1] : 0;
+      bSPDOnVsOfVal = abSPD ? abSPD[2] : 0;
+      bSPDOnVsOfErr = abSPD ? abSPD[3] : 0;
     } else if (label.Contains(" &65536 ")) {
       meanV0MOnHM    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
       meanV0MOfHM    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
@@ -569,8 +615,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH2F* hOFOvsTKLAcc     = (TH2F*) list->FindObject("fHistOFOvsTKLAcc");
     TH2F* hV0MOnVsOfAcc    = (TH2F*) list->FindObject("fHistV0MOnVsOfAcc");
         
-    DrawV0MOnVsOf(hV0MOnVsOfAll,hV0MOnVsOfCln,bitName);
-    DrawSPDOnVsOf(hSPDOnVsOfAll,hSPDOnVsOfCln,bitName);
+    DrawV0MOnVsOf(hV0MOnVsOfAll,hV0MOnVsOfCln,bitName,abV0M);
+    DrawSPDOnVsOf(hSPDOnVsOfAll,hSPDOnVsOfCln,bitName,abSPD);
     DrawSPDClsVsTkl(hSPDClsVsTklAll,hSPDClsVsTklCln,bitName);
     DrawV0C012vsTkl(hV0C012vsTklAll,hV0C012vsTklCln,bitName);
     DrawVIR(hVIRvsBCmod4pup,hVIRvsBCmod4acc,bitName);
@@ -707,6 +753,7 @@ void DrawEfficiency(TH2F* h2D, const char* multOn, const char* bitName){
   c->Print(Form("%s_efficiency.png",multOn));
 }
 
+/*
 void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
   if (!hAll || !hCln) {
     printf("QA histogram not found\n");
@@ -791,7 +838,7 @@ void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
 //  fPol1->Draw("same");
 //  cFit->Print(Form("%s_Fit.png",bitName));
 }
-
+*/
 
 
 void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  TH1F* hOfAcc, const char* bitName, TString multOn, TString multOf,
@@ -1040,33 +1087,6 @@ void DrawVIR(TH2F* hPup,TH2F* hAcc, const char* bitName){
 } 
 
 
-void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName){
-  if (!hAll || !hCln) {
-    printf("QA histogram not found\n");
-    return;
-  }
-  
-  hAll->SetTitle(bitName);
-  hCln->SetTitle(bitName);
-  hAll->GetYaxis()->SetTitleOffset(1.3);
-  hCln->GetYaxis()->SetTitleOffset(1.3);
-
-  TCanvas* c = new TCanvas(Form("cSPDOnVsOf_%s",bitName),Form("cSPDOnVsOf_%s",bitName),1800,800);
-  c->Divide(2,1,0.001,0.001);
-  c->cd(1);
-  gPad->SetLeftMargin(0.11);
-  gPad->SetRightMargin(0.11);
-  gPad->SetLogz();
-  hAll->Draw("colz");
-  c->cd(2);
-  gPad->SetLeftMargin(0.11);
-  gPad->SetRightMargin(0.11);
-  gPad->SetLogz();
-  hCln->Draw("colz");
-  c->Print("SPDOnVsOf.png");
-}
-
-
 void DrawTiming(TH1F* hAall,TH1F* hAacc,TH1F* hCall,TH1F* hCacc, TString cname, const char* bitName){
   if (!hAall || !hAacc || !hCall || !hCacc) {
     printf("QA histogram not found\n");
@@ -1192,3 +1212,215 @@ void DrawZDC(TH1F* hTimeZNA, TH1F* hTimeZNC, TH2F* hTimeZNSumVsDif, TH2F* hTimeC
   
   cZDC->Print("ZDC.png");
 }
+
+
+/*
+Moving forwards (backwards) from the maximum value which is the first bin to have a value below threshold*max
+
+Parameters
+----------
+h : TH1
+    The histogram in question
+threshold : float
+    The threshold factor below which the bin content has to be
+direction : Int_t
+    {-1, 1}. If -1, move backwards from max, else move forwards
+
+Returns
+-------
+Int_t :
+    Bin number fullfilling the requirement or the first (last) bin of the histogram with content
+*/
+Int_t findBinNtimesLessThanMax(const TH1& h, Float_t threshold, Int_t direction) {
+  Int_t ibin = h.GetMaximumBin();
+  Float_t max_val = h.GetBinContent(ibin);
+  while  (true) {
+    ibin += direction;
+    if (ibin < 1 || ibin > h.GetNbinsX() || h.GetBinContent(ibin) < 1) {
+      return ibin + direction; // we went to far...
+    }
+    if (h.GetBinContent(ibin) <= max_val*threshold) {
+      return ibin;
+    }
+  }
+}
+
+/*
+Helper function to set a point and its yerror in one go
+*/
+void setPointWithError(TGraphErrors *gr, Int_t idx, Float_t x, Float_t y, Float_t yerr) {
+  gr->SetPoint(idx, x, y);
+  gr->SetPointError(idx, 0, yerr / 2.0); // not clear if this is the total error or the error in one direction...
+}
+
+/* 
+Extract Online vs. Offline cut values.
+
+The logic for extracting these values depends on the detector (SPD or V0). 
+
+Parameters
+----------
+h2d : TH2F*
+    Online vs. Offline histogram with previous cuts already applied ("clean")
+detector : std::string
+    Name of the detector. {SPD, V0M}
+
+Returns
+-------
+Double_t[4] :
+    [offset, offset_err, slope, slope_err] or NULL if no parameters could be extracted
+ */
+Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) {
+  // Fit ranges
+  Int_t low_bin, up_bin;
+  Double_t low_edge, up_edge;
+  // N*width of the cut in terms of sigma (SPD) lambda (V0M)
+  Int_t cut_width_factor;
+  // Function used to fit individual slice
+  TF1 slice_fit;
+  // Minimum number of entries per slice
+  Int_t min_entries_per_slice;
+  
+  if (detector == "SPD") {
+    slice_fit = TF1("slice_fit", "[2]*exp(-0.5*((x-[0])/[1])**2)", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
+    min_entries_per_slice = 100;
+    cut_width_factor = 5;
+  }
+  else if (detector == "V0M") {
+    // Note that parameter 2 will later be fixed. prior to the fit
+    slice_fit = TF1("slice_fit","[2]*exp(-([0]-x)/[1])", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
+    min_entries_per_slice = 200;
+    cut_width_factor = 7;
+  }
+  else {
+    return NULL;
+  }
+  slice_fit.SetParameters(1, 1, 1);
+  TF1 fit_lin_mean = TF1("linear_fit_means","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
+  TF1 fit_lin_width = TF1("linear_fit_widths","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
+  TGraphErrors widths = TGraphErrors();
+  TGraphErrors means = TGraphErrors();
+  TGraphErrors nevents = TGraphErrors();
+  Int_t valid_fits = 0;
+  for (Int_t ibin = 1; ibin <= h2d->GetNbinsX(); ibin++) {
+    TH1* h_py = h2d->ProjectionY("slice", ibin, ibin+1);
+    if (h_py->Integral() < min_entries_per_slice) {
+      // It seems like ~100 events is about the thresholds where the fitting errors skyrocket
+      continue;
+    }
+    if (detector == "V0M") {
+      // Alice and Evgeny move to one lower bin for the upper edge! ie h_py.GetMaximumBin() - 1
+      up_bin = h_py->GetMaximumBin() - 1;
+      low_bin = findBinNtimesLessThanMax(*h_py, 0.1, -1);
+      if (up_bin - low_bin < 5) continue;
+      up_edge = h_py->GetXaxis()->GetBinCenter(up_bin);
+      low_edge = TMath::Min(0.85 * up_edge, h_py->GetXaxis()->GetBinCenter(h_py->GetMaximumBin() -3));
+      // Fix parameter [2]
+      Float_t scalling = h_py->GetBinContent(up_bin);
+      slice_fit.SetParLimits(2, scalling*0.99, scalling*1.01);
+      slice_fit.SetParameters(up_edge, up_edge/20.0, scalling);
+    }
+    if (detector =="SPD") {
+      up_bin = findBinNtimesLessThanMax(*h_py, 0, 1); // last filled bin
+      low_edge = h_py->GetXaxis()->GetBinLowEdge(h_py->GetMaximumBin() - 1);
+      up_edge = h_py->GetXaxis()->GetBinUpEdge(up_bin);
+      slice_fit.SetParameter(2, h_py->GetBinContent(h_py->GetMaximumBin()));
+    }
+    // returns negative value in case of an error not connected with the minimization procedure
+    Int_t fit_res = h_py->Fit(&slice_fit, "QRSLL", "", low_edge, up_edge);
+    if (fit_res != 0 || slice_fit.GetNDF() == 0) {
+      continue;
+    }
+    setPointWithError(&means, valid_fits,
+             h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(0),
+             slice_fit.GetParError(0));
+    setPointWithError(&widths, valid_fits,
+             h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(1),
+             slice_fit.GetParError(1));
+    nevents.SetPoint(valid_fits, h2d->GetXaxis()->GetBinCenter(ibin), h_py->Integral());
+    valid_fits++;
+  }
+  // Quality assurance after each slice has been tried to fit
+  // Require a minimum number of successful fits in order to perform a linear regression
+  if (valid_fits < 8) {
+    return NULL;
+  }
+  means.Fit(&fit_lin_mean, "QS");
+  widths.Fit(&fit_lin_width, "QRS", "", 0, widths.GetXaxis()->GetXmax());
+  Double_t *ret = new Double_t[4];
+  ret[0] = fit_lin_mean.GetParameter(0) - cut_width_factor * fit_lin_width.GetParameter(0);
+  ret[1] = fit_lin_mean.GetParError(0) + cut_width_factor*fit_lin_width.GetParError(0);
+  ret[2] = fit_lin_mean.GetParameter(1) - cut_width_factor*fit_lin_width.GetParameter(1);
+  ret[3] = fit_lin_mean.GetParError(1) + cut_width_factor*fit_lin_width.GetParError(1);
+  return ret;
+}
+
+
+void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0){
+  if (!hAll || !hCln) {
+    printf("QA histogram not found\n");
+    return;
+  }
+
+  TCanvas* c = new TCanvas(Form("cV0MOnVsOf_%s",bitName),Form("cV0MOnVsOf_%s",bitName),1800,800);
+  c->Divide(2,1,0.001,0.001);
+  c->cd(1);
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
+  gPad->SetLogz();
+  hAll->SetTitle(Form("%s",bitName));
+  hAll->GetYaxis()->SetTitleOffset(1.7);
+  hAll->Draw("colz");
+  c->cd(2);
+  gPad->SetLogz();
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
+  hCln->SetTitle(Form("%s",bitName));
+  hCln->GetYaxis()->SetTitleOffset(1.7);
+  hCln->Draw("colz");
+  if (ab) {
+    TF1 pol1("fpol1","pol1",hCln->GetXaxis()->GetXmin(),hCln->GetXaxis()->GetXmax());
+    pol1.SetLineColor(kMagenta);
+    pol1.SetParameter(0,ab[0]);
+    pol1.SetParameter(1,ab[2]);
+    pol1.Draw("same");
+  }
+  c->Print("V0MOnVsOf.png");
+
+}
+
+
+void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0){
+  if (!hAll || !hCln) {
+    printf("QA histogram not found\n");
+    return;
+  }
+  
+  hAll->SetTitle(bitName);
+  hCln->SetTitle(bitName);
+  hAll->GetYaxis()->SetTitleOffset(1.3);
+  hCln->GetYaxis()->SetTitleOffset(1.3);
+
+  TCanvas* c = new TCanvas(Form("cSPDOnVsOf_%s",bitName),Form("cSPDOnVsOf_%s",bitName),1800,800);
+  c->Divide(2,1,0.001,0.001);
+  c->cd(1);
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
+  gPad->SetLogz();
+  hAll->Draw("colz");
+  c->cd(2);
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
+  gPad->SetLogz();
+  hCln->Draw("colz");
+  if (ab) {
+    TF1 pol1("fpol1","pol1",hCln->GetXaxis()->GetXmin(),hCln->GetXaxis()->GetXmax());
+    pol1.SetLineColor(kMagenta);
+    pol1.SetParameter(0,ab[0]);
+    pol1.SetParameter(1,ab[2]);
+    pol1.Draw("same");
+  }
+  c->Print("SPDOnVsOf.png");
+}
+
+

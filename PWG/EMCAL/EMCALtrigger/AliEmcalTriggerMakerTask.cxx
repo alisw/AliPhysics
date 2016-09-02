@@ -19,14 +19,21 @@
 #include <TObjArray.h>
 #include <TParameter.h>
 
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerBitConfig.h"
+#include "AliEMCALTriggerDCSConfig.h"
+#include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliEmcalTriggerMakerTask.h"
+#include "AliEMCALTriggerMapping.h"
 #include "AliLog.h"
 #include "AliOADBContainer.h"
 
 #include <bitset>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -42,6 +49,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fV0InName("AliAODVZERO"),
   fBadFEEChannelOADB(""),
   fUseL0Amplitudes(kFALSE),
+  fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
   fQAHistos(NULL)
@@ -57,6 +65,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fV0InName("AliAODVZERO"),
   fBadFEEChannelOADB(""),
   fUseL0Amplitudes(kFALSE),
+  fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
   fQAHistos(NULL)
@@ -105,6 +114,7 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
     }
     fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
     fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches;bit nr", 64, -0.5, 63.5);
+    fQAHistos->CreateTH2("FastORMaskOnline", "Masked FastORs at online level; col; row", 48, -0.5, 47.5, 104, -0.5, 103.5);
     fOutput->Add(fQAHistos->GetListOfHistograms());
     PostData(1, fOutput);
   }
@@ -203,6 +213,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
 
 void AliEmcalTriggerMakerTask::RunChanged(){
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
+  if(fLoadFastORMaskingFromOCDB) InitializeFastORMaskingFromOCDB();
 }
 
 void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
@@ -215,6 +226,83 @@ void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
   for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
     TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
     fTriggerMaker->AddOfflineBadChannel(channelID->GetVal());
+  }
+}
+
+void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
+  fTriggerMaker->ClearFastORBadChannels();
+  AliCDBManager *cdb = AliCDBManager::Instance();
+
+  AliCDBEntry *en = cdb->Get("EMCAL/Calib/Trigger");
+  if(!en){
+    AliErrorStream() << GetName() << ": FastOR masking from CDB required, but OCDB entry is not available. No masking will be applied." << std::endl;
+    return;
+  }
+
+  AliEMCALTriggerDCSConfig *trgconf = dynamic_cast<AliEMCALTriggerDCSConfig *>(en->GetObject());
+  if(!trgconf){
+    AliErrorStream() << GetName() << ": Failed decoding OCDB entry: Object is not of type AliEMCALTriggerDCSConfig." << std::endl;
+    return;
+  }
+
+  // In run 1 the small supermodules were not contributing to triggers.
+  // Still the TRUs are counted. As access to the TRU config is not properly
+  // protected the loop over NTRU from the geometry will produce a segfault.
+  // As temporary workaround the loop limits are obtained from the DCS data itself.
+  Int_t fastOrAbsID(-1), ic(-1);
+  for(int itru = 0; itru < trgconf->GetTRUArr()->GetEntries(); itru++){
+    AliEMCALTriggerTRUDCSConfig *truconf = trgconf->GetTRUDCSConfig(itru);
+    // Test for each channel whether it is masked. The calculation is
+    // done reversely as the channel mapping is different between run1
+    // and run2: The loop is done over all masks and all bits inside the
+    // mask, and a handler matching to the correct mapping converts them
+    // into the channel ID. In case a masked channel is found, the absolute
+    // ID is calculated. For this the function GetAbsFastORIndexFromTRU
+    // is used - it is assumed that parameter 1 (iADC) corresponds to the
+    // channel ID.
+    for(unsigned int ifield = 0; ifield < 6; ifield++){
+      for(unsigned int ibit = 0; ibit < 16; ibit ++){
+        if((truconf->GetMaskReg(ifield) >> ibit) & 0x1){
+          try{
+            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, (ic =  GetMaskHandler()(ifield, ibit)), fastOrAbsID);
+            AliDebugStream(1) << GetName() << "Channel " << ic  << " in TRU " << itru << " ( abs fastor " << fastOrAbsID << ") masked." << std::endl;
+            fTriggerMaker->AddFastORBadChannel(fastOrAbsID);
+          } catch (int exept){
+            AliErrorStream() << GetName() << "Invalid mask: (" << ifield << "|" << ibit << "), exception " << exept << " thrown. Mask will not be recognized" << std::endl;
+          }
+        }
+      }
+    }
+  }
+
+  // QA: Monitor all channels which are masked in the current run
+  Int_t globCol(-1), globRow(-1) ;
+  for(const auto &ifastOrID : fTriggerMaker->GetListOfBadFastORAbsIDs()){
+    fGeom->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(ifastOrID, globCol, globRow);
+    fQAHistos->FillTH2("FastORMaskOnline", globCol, globRow);
+  }
+}
+
+
+std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler() const {
+  if(fGeom->GetTriggerMappingVersion() == 2){
+    // Run 2 - complicated TRU layout in 6 subregions
+    return [] (unsigned int ifield, unsigned int ibit) -> int {
+      if(ifield >= 6 || ibit >= 16) throw kInvalidChannelException;
+      const int kChannelMap[6][16] = {{ 8, 9,10,11,20,21,22,23,32,33,34,35,44,45,46,47},   // Channels in mask0
+                                      {56,57,58,59,68,69,70,71,80,81,82,83,92,93,94,95},   // Channels in mask1
+                                      { 4, 5, 6, 7,16,17,18,19,28,29,30,31,40,41,42,43},   // Channels in mask2
+                                      {52,53,54,55,64,65,66,67,76,77,78,79,88,89,90,91},   // Channels in mask3
+                                      { 0, 1, 2, 3,12,13,14,15,24,25,26,27,36,37,38,39},   // Channels in mask4
+                                      {48,49,50,51,60,61,62,63,72,73,74,75,84,85,86,87}};  // Channels in mask5
+      return kChannelMap[ifield][ibit];
+    };
+  } else {
+    // Run 1 - linear mapping was used
+    return [] (int ifield, int ibit) -> int {
+      if(ifield >= 6 || ibit >= 16) throw kInvalidChannelException;
+      return ifield * 16 + ibit;
+    };
   }
 }
 
