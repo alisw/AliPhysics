@@ -44,6 +44,7 @@ set(SRCS
 	AliJJetJtAnalysis.cxx
 	AliJJetJtTask.cxx
 	AliJJetAnalysis.cxx
+	AliJHSInterplayTask.cxx
 )
 
 # Headers from sources
