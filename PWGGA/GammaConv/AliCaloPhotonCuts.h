@@ -386,7 +386,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterdEtadPhiNegTracksP_075_125BeforeQA; // 2-dim plot dEta vs. dPhi, negative Tracks, 0.75 < P < 1.25
     TH2F*     fHistClusterdEtadPhiNegTracksP_125_999BeforeQA; // 2-dim plot dEta vs. dPhi, negative Tracks, P > 1.25
     TH2F*     fHistClusterdEtadPtBeforeQA;              // 2-dim plot dEta vs. Pt
-    TH2F*     fHistClusterdPhidPtBeforeQA;              // 2-dim plot dEta vs. Pt
+    TH2F*     fHistClusterdEtadPtTrueMatched;           // 2-dim plot dEta vs. Pt for validated match
+    TH2F*     fHistClusterdPhidPtPosTracksBeforeQA;     // 2-dim plot dPhi vs. Pt, positive Tracks
+    TH2F*     fHistClusterdPhidPtNegTracksBeforeQA;     // 2-dim plot dPhi vs. Pt, negative Tracks
+    TH2F*     fHistClusterdPhidPtPosTracksTrueMatched;  // 2-dim plot dPhi vs. Pt, positive Tracks, validated match
+    TH2F*     fHistClusterdPhidPtNegTracksTrueMatched;  // 2-dim plot dPhi vs. Pt, negative Tracks, validated match
     TH2F*     fHistClusterM20M02BeforeQA;               // 2-dim plot M20 vs. M02
     TH2F*     fHistClusterM20M02AfterQA;                // 2-dim plot M20 vs. M20
 
@@ -398,7 +402,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,26)
+    ClassDef(AliCaloPhotonCuts,27)
 };
 
 #endif
