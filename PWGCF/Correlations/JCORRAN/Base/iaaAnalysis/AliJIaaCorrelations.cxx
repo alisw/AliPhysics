@@ -339,10 +339,10 @@ void AliJIaaCorrelations::FillDeltaEtaHistograms(fillType fTyp)
 
   if( fNearSide ){ //one could check the phiGapBin, but in the pi/2 <1.6 and thus phiGap is always>-1
 	if( fTyp == 0 ) {
-	  fhistos->fhDEtaNear[fCentralityBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency ); //fGeometricAcceptanceCorrection?
+	  fhistos->fhDEtaNear[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency ); //fGeometricAcceptanceCorrection?
 	} else {
-	  fhistos->fhDEtaNearM[fCentralityBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );//fGeometricAcceptanceCorrection?
-	  fhistos->fhDetaNearMixAcceptance[fCentralityBin][fpttBin][fptaBin]->Fill( fDeltaEta, fTrackPairEfficiency);
+	  fhistos->fhDEtaNearM[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );//fGeometricAcceptanceCorrection?
+	  fhistos->fhDetaNearMixAcceptance[fCentralityBin][fZBin][fpttBin][fptaBin]->Fill( fDeltaEta, fTrackPairEfficiency);
 	}
   }
 }
@@ -358,7 +358,7 @@ void AliJIaaCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
   // No acceptance correction here, since we want to see the structure caused by acceptance effects
   
 
-	fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi/kJPi, fTrackPairEfficiency);
+	fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi/kJPi, fTrackPairEfficiency);
 //		fhistos->fhDphiDetaPtaRgap[fTyp][fRGapBinNear][fCentralityBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi/kJPi, fTrackPairEfficiency);
 }
 

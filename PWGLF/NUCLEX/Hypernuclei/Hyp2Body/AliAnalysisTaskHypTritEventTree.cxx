@@ -42,6 +42,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fPID(0),
   fMCtrue(0),
   fHistdEdx(0),
+  fHistdEdxProton(0),
   fHistdEdxDeuteron(0),
   fHistdEdxTriton(0),
   fHistdEdxHelium3(0),
@@ -60,6 +61,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fPosVz(0),
   fMCGenRec(),
   fMCGenRecArray(),
+  fEtaCorrection(kFALSE),
+  fMultiplicityCorrection(kFALSE),
   fHistogramList(NULL) {
 }
 
@@ -72,6 +75,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fPID(0),
   fMCtrue(0),
   fHistdEdx(0),
+  fHistdEdxProton(0),
   fHistdEdxDeuteron(0),
   fHistdEdxTriton(0),
   fHistdEdxHelium3(0),
@@ -90,6 +94,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fPosVz(0),
   fMCGenRec(),
   fMCGenRecArray(),
+  fEtaCorrection(kFALSE),
+  fMultiplicityCorrection(kFALSE),
   fHistogramList(NULL) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -128,6 +134,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
     return;
   }
   fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
+  fHistdEdxProton = new TH2F("fHistdEdXProton","dE/dx Deuterons;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
   fHistdEdxDeuteron = new TH2F("fHistdEdXDeutron","dE/dx Deuterons;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
   fHistdEdxTriton = new TH2F("fHistdEdXTriton","dE/dx Triton;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
   fHistdEdxHelium3 = new TH2F("fHistdEdXHelium3","dE/dx Helium3;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",400,-4.0,4.0,500,0.0,1500);
@@ -143,6 +150,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistogramList->SetOwner(kTRUE);
   fHistogramList->SetName(GetName());
   fHistogramList->Add(fHistdEdx);
+  fHistogramList->Add(fHistdEdxProton);
   fHistogramList->Add(fHistdEdxDeuteron);
   fHistogramList->Add(fHistdEdxTriton);
   fHistogramList->Add(fHistdEdxHelium3);
@@ -193,6 +201,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     AliError("Could not get PID response.\n");
     return;
   }
+  fPID->SetUseTPCEtaCorrection(fEtaCorrection);
+  fPID->SetUseTPCMultiplicityCorrection(fMultiplicityCorrection);
   for (int i = 0; i < 40; i++) {
     fMCGenRec[i] = -1;
   }
@@ -211,12 +221,12 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     return;
   }
   TriggerSelection();
-  AliMultSelection *multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
+  AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
   Float_t centrality = -1;
   if ( multSelection ){
     centrality = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
   }else{
-    AliInfo("Didn't find MultSelection.");
+    AliInfo("Didn't find MultSelection.\n");
   }
   Int_t runNumber = fEvent->GetRunNumber();
   if(!fMCtrue){
@@ -235,7 +245,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   fReducedEvent->fVertexPosition = primaryVertex;
   fReducedEvent->fRunNumber = runNumber;
   Int_t mcGenRecCounter = 0;
-  TClonesArray *v0Array = (TClonesArray*) fReducedEvent->fV0s;
+  TClonesArray *v0Array = fReducedEvent->fV0s;
   Int_t nV0Cand = 0;
   fMCGenRecArray = new TObjArray();
   // Loops over V0s.
@@ -289,10 +299,12 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kProton)) < 3
         && trackN->GetSign() < 0) {
       protonNegative = kTRUE;
+      fHistdEdxProton->Fill(momentumN*trackN->GetSign(), trackN->GetTPCsignal());
     }
     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kProton)) < 3
         && trackP->GetSign() > 0) {
       protonPositive = kTRUE;
+      fHistdEdxProton->Fill(momentumP*trackP->GetSign(), trackP->GetTPCsignal());
     }
     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kDeuteron)) < 3
         && trackN->GetSign() < 0) {
@@ -314,13 +326,13 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
        tritonPositive = kTRUE;
       fHistdEdxTriton->Fill(momentumP*trackP->GetSign(), trackP->GetTPCsignal());
      }
-     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kHe3)) < 3
+     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kHe3)) < 4
          && trackN->GetSign() < 0) {
        helium3Negative = kTRUE;
        fHistdEdxHelium3->Fill(momentumN*trackN->GetSign(), trackN->GetTPCsignal());
        hededxsigma = TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kHe3));
      }
-     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kHe3)) < 3
+     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kHe3)) < 4
          && trackP->GetSign() > 0) {
        helium3Positive = kTRUE;
        fHistdEdxHelium3->Fill(momentumP*trackP->GetSign(), trackP->GetTPCsignal());
@@ -367,7 +379,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       Double_t hypTritPt      = (momentumNucleon + momentumPion).Pt();
       Double_t hypTritP       = (momentumNucleon + momentumPion).P();
       Double_t rapidity       = (momentumNucleon + momentumPion).Rapidity();
-      AliReducedHypTritV0 *reducedV0 = (AliReducedHypTritV0*)v0Array->ConstructedAt(nV0Cand);
+      AliReducedHypTritV0 *reducedV0 = dynamic_cast<AliReducedHypTritV0*>(v0Array->ConstructedAt(nV0Cand));
       nV0Cand = nV0Cand + 1;
       AliReducedHypTritTrack *reducedPi = reducedV0->Pi();
       AliReducedHypTritTrack *reducedHe = reducedV0->He();
@@ -428,7 +440,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
           mctruth = 1;
           reducedV0->fMCTruth = mctruth;
           fMCGenRecArray->AddAtAndExpand(reducedV0, mcGenRecCounter);
-          fMCGenRec[mcGenRecCounter] = (Double_t) labelMotherP;
+          fMCGenRec[mcGenRecCounter] = labelMotherP;
           mcGenRecCounter++;
         }
       }

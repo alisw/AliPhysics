@@ -67,6 +67,7 @@ set(SRCS
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
   Cascades/Run2/AliV0Result.cxx
+  Cascades/Run2/AliCascadeResult.cxx
   )
 
 # Headers from sources

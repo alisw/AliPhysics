@@ -25,6 +25,7 @@ class THnSparse;
 class AliOADBContainer;
 class AliEmcalList;
 class TGraph;
+#include "TMatrixD.h"
 #include "TF1.h"
 #include "AliESDtrackCuts.h"
 #include <vector>
@@ -72,6 +73,10 @@ public:
   void SetAODBContainer(AliOADBContainer* cont);
   void EnableCorrectionSamplingMode(Bool_t val=true){fCorrrectionSamplingMode=val;}//
   void setN_ITSClusters_Input_global( Int_t value);
+  void RotateTracksAroundYAxis(double angle, double shiftx);
+  void RotateMatrixY(TMatrixD &m, double ang_rad);
+  void PartiallyRotateMatrixY(TMatrixD &m, double ang_rad);
+  void RotateVectorY(TVector3 &v, double ang_rad);
 private:
   void DoJetLoop(); //jet matching function 2/4
   void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);

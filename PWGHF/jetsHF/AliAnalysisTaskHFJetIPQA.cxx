@@ -447,10 +447,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
               if(fIsPythia){
                   //non flavour dependent histograms
                   for (Int_t ost = 0 ; ost <4 ;++ost){
-                      for (Int_t st = 0 ; st <4 ;++st){
-                          TString hname = Form("%s%s%s",stype[ost],subtype[st],subord[ot]);
+                          TString hname = Form("%s%s%s",stype[ost],subtype[jetflavour],subord[ot]);
+                         // Printf("hname %s",hname.Data());
                           FillHist(hname.Data(),jetpt,params[ost],weights[ost] );
-                        }
                     }
                 }
             }
@@ -1692,6 +1691,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliMCParticle * mcpart,Int_t
   // Do the weighting
   Double_t factor = 1;
   if (_particlesourceidx <0) return 1;
+  if (_particlesourceidx >19) return 1;
   //calculate pt of array entry
   // 0.1 -25.GeV 0.05 per bin 498 bins
   Double_t wpos = ((_particlesourcept - 0.15)/ 0.05);
@@ -1710,6 +1710,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliMCParticle * mcpart,Int_t
     {
     /*dirty hack to include xi and omega- K0(0,+) phi <https://arxiv.org/pdf/1208.5717v2.pdf*/
     case bPhi:
+      factor=1;
       flucafactor =1./fPhi->Eval(_particlesourcept);
       break;
     case bK0S892:
@@ -1749,7 +1750,8 @@ Double_t AliAnalysisTaskHFJetIPQA::GetWeightFactor( AliMCParticle * mcpart,Int_t
     }
 
   factor*=flucafactor;
-  if (factor <= 0) factor = 1.;
+  if (factor <= 0)  factor = 1.;
+  if (factor > 1E2) factor = 1;
   return factor;
 }
 // ########################################################################################
@@ -2155,7 +2157,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsSelectionParticleMeson( AliMCParticle *  mcpa
       if(IsPromptDMeson(mcpart))return kTRUE;
       break;
     case bDSPlus:
-      idx = bDSPlus;
+      idx = bIdxDSPlus;
       if(IsPromptDMeson(mcpart))return kTRUE;
       break;
     case bDStarPlus:
@@ -2732,3 +2734,171 @@ void AliAnalysisTaskHFJetIPQA::SubtractMean(Double_t val[], AliVTrack *track){
   val[0] -=deltamean*1e-4;;
 }
 //###############################################################################################################
+void AliAnalysisTaskHFJetIPQA::RotateTracksAroundYAxis(double angle,double shiftx){
+
+  //deg to rad
+  //Î±(radians) = Î±(degrees) Ã— Ï€ / 180Âº
+  angle = angle * TMath::Pi() /180;
+
+  if(InputEvent()){
+      // Rotate primary vertex //! dont do this since we try to recalculate the vertex
+      AliESDVertex * vv = (AliESDVertex*) (InputEvent()->GetPrimaryVertex());
+      /* if(vv){
+            Double_t pos[3],cova[6],chi2perNDF;
+            vv->GetXYZ(pos); // position
+            vv->GetCovMatrix(cova); //covariance matrix
+            chi2perNDF = vv->GetChi2toNDF();
+            Double_t origvtxx [3]= {0};
+            Double_t rotvtxx [3]= {0};
+
+            TVector3 vtxx(pos);
+            //Rotate vertex around y axis
+            vtxx.GetXYZ(origvtxx);
+            vtxx.RotateY(angle);
+            vtxx.GetXYZ(rotvtxx);
+
+            AliAODVertex tmpv(origvtxx,cova,chi2perNDF);
+            cova[0] = tmpv.RotatedCovMatrixXX(0,angle);
+            cova[1] = tmpv.RotatedCovMatrixXY(0,angle);
+            cova[2] = tmpv.RotatedCovMatrixYY(0);
+            cova[3] = tmpv.RotatedCovMatrixXZ(0,angle);
+            cova[4] = tmpv.RotatedCovMatrixYZ(0,angle);
+            cova[5] = tmpv.RotatedCovMatrixZZ(0,angle);
+
+            AliESDVertex  tmpesd(rotvtxx, cova, vv->GetChi2() , vv->GetNContributors() , vv->GetName());
+            *vv =tmpesd;
+
+        }*/
+      //Rotate Tracks
+      for(int itrack = 0 ; itrack < InputEvent()->GetNumberOfTracks();++itrack){
+          AliVTrack * vt = dynamic_cast<AliVTrack* > (InputEvent()->GetTrack(itrack));
+          if (!vt) continue;
+          double xyz[3] = {0};
+          double pxpypz [3] = {0};
+          vt->XvYvZv(xyz);
+          vt->PxPyPz(pxpypz);
+          TVector3 vp(pxpypz);
+          TVector3 vx(xyz);
+          //Rotate around y axis
+          RotateVectorY(vp,angle);
+          RotateVectorY(vx,angle);
+
+          //update Track
+          double rotxyz [3] ={0};
+          double rotpxpypz [3] ={0};
+
+          vp.GetXYZ(rotpxpypz);
+          vx.GetXYZ(rotxyz);
+
+          rotxyz[0] += shiftx;
+
+          //Rotate cov matrix
+
+          double cc[21] = {0};
+          ((AliExternalTrackParam*)vt)->GetCovarianceXYZPxPyPz(cc);
+
+          TMatrixD upperleft(3, 3);
+          TMatrixD lowerright(3, 3);
+          TMatrixD lowerleft(3, 3);
+
+          upperleft(0,0) = cc[0];
+          upperleft(0,1) = cc[1];
+          upperleft(0,2) = cc[3];
+          upperleft(1,0) = cc[1];
+          upperleft(1,1) = cc[2];
+          upperleft(1,2) = cc[4];
+          upperleft(2,0) = cc[3];
+          upperleft(2,1) = cc[4];
+          upperleft(2,2) = cc[5];
+          lowerright(0,0) = cc[9];
+          lowerright(0,1) = cc[13];
+          lowerright(0,2) = cc[18];
+          lowerright(1,0) = cc[13];
+          lowerright(1,1) = cc[14];
+          lowerright(1,2) = cc[19];
+          lowerright(2,0) = cc[18];
+          lowerright(2,1) = cc[19];
+          lowerright(2,2) = cc[20];
+          lowerleft(0,0) = cc[6];
+          lowerleft(0,1) = cc[10];
+          lowerleft(0,2) = cc[15];
+          lowerleft(1,0) = cc[7];
+          lowerleft(1,1) = cc[11];
+          lowerleft(1,2) = cc[16];
+          lowerleft(2,0) = cc[8];
+          lowerleft(2,1) = cc[12];
+          lowerleft(2,2) = cc[17];
+
+          RotateMatrixY(upperleft,angle);
+          PartiallyRotateMatrixY(lowerleft,angle);
+         // (lowerright,angle);
+
+          //Repopulate cov matrix
+
+          cc[0]=  upperleft(0,0) ;
+          cc[1]=  upperleft(0,1) ;
+          cc[2]=  upperleft(1,1) ;
+          cc[3]=  upperleft(2,0) ;
+          cc[4]=  upperleft(1,2) ;
+          cc[5]=  upperleft(2,2) ;
+          cc[9]  = lowerright(0,0) ;
+          cc[13] = lowerright(0,1) ;
+          cc[18] = lowerright(0,2);
+          cc[14] = lowerright(1,1) ;
+          cc[19] = lowerright(1,2) ;
+          cc[20] = lowerright(2,2) ;
+          cc[6]  = lowerleft(0,0) ;
+          cc[10] = lowerleft(0,1)  ;
+          cc[15] = lowerleft(0,2) ;
+          cc[7]  = lowerleft(1,0);
+          cc[11] = lowerleft(1,1) ;
+          cc[16] = lowerleft(1,2);
+          cc[8]  = lowerleft(2,0);
+          cc[12] = lowerleft(2,1);
+          cc[17] = lowerleft(2,2) ;
+
+          Double_t ccempty[15] = {0}; AliExternalTrackParam trackparam(rotxyz,rotpxpypz,ccempty,vt->GetSign());
+
+          trackparam.Set(rotxyz,rotpxpypz,cc,vt->GetSign());
+          *((AliExternalTrackParam*)vt) = (trackparam);
+
+        }
+    }
+
+}
+
+
+void AliAnalysisTaskHFJetIPQA::RotateMatrixY(TMatrixD &m, double ang_rad)
+{
+  TMatrixD mroty(3,3);
+  TMatrixD mroty_inverse(3,3);
+  mroty(0,0) = cos(ang_rad);  mroty(0,1) = 0;mroty(0,2) = -1.*sin(ang_rad);
+  mroty(1,0) = 0;  mroty(1,1) = 1;  mroty(1,2) = 0;
+  mroty(2,0) = sin(ang_rad);  mroty(2,1) = 0;  mroty(2,2) = cos(ang_rad);
+  mroty_inverse(0,0) = cos(ang_rad);  mroty_inverse(0,1) = 0;  mroty_inverse(0,2) = 1.*sin(ang_rad);
+  mroty_inverse(1,0) = 0;  mroty_inverse(1,1) = 1;  mroty_inverse(1,2) = 0;
+  mroty_inverse(2,0) = -1.* sin(ang_rad);  mroty_inverse(2,1) = 0;  mroty_inverse(2,2) = cos(ang_rad);
+  m = mroty_inverse*m *mroty ;
+}
+
+void AliAnalysisTaskHFJetIPQA::PartiallyRotateMatrixY(TMatrixD &m, double ang_rad)
+{
+  TMatrixD mroty(3,3);
+  TMatrixD mroty_inverse(3,3);
+  mroty(0,0) = cos(ang_rad);  mroty(0,1) = 0;mroty(0,2) = -1.*sin(ang_rad);
+  mroty(1,0) = 0;  mroty(1,1) = 1;  mroty(1,2) = 0;
+  mroty(2,0) = sin(ang_rad);  mroty(2,1) = 0;  mroty(2,2) = cos(ang_rad);
+  mroty_inverse(0,0) = cos(ang_rad);  mroty_inverse(0,1) = 0;  mroty_inverse(0,2) = 1.*sin(ang_rad);
+  mroty_inverse(1,0) = 0;  mroty_inverse(1,1) = 1;  mroty_inverse(1,2) = 0;
+  mroty_inverse(2,0) = -1.* sin(ang_rad);  mroty_inverse(2,1) = 0;  mroty_inverse(2,2) = cos(ang_rad);
+  m = mroty_inverse*m  ;
+}
+
+void AliAnalysisTaskHFJetIPQA::RotateVectorY(TVector3 &v, double ang_rad)
+{
+  TMatrixD mroty(3,3);
+  mroty(0,0) = cos(ang_rad);  mroty(0,1) = 0;mroty(0,2) = -1.*sin(ang_rad);
+  mroty(1,0) = 0;  mroty(1,1) = 1;  mroty(1,2) = 0;
+  mroty(2,0) = sin(ang_rad);  mroty(2,1) = 0;  mroty(2,2) = cos(ang_rad);
+  v = mroty* v  ;
+}

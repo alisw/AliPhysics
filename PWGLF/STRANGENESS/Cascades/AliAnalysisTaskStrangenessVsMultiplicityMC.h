@@ -314,6 +314,7 @@ private:
 
     //MC exclusive Characteristics: 7, also required for feeddown tests
     Float_t fTreeVariablePtMother; //!
+    Float_t fTreeVariableRapMother; //!
     Int_t fTreeVariablePID; //!
     Int_t fTreeVariablePIDPositive; //!
     Int_t fTreeVariablePIDNegative; //!

@@ -35,8 +35,12 @@ set(SRCS
   AliAnalysisTriggerScalers.cxx
   AliAnalysisMuMu.cxx
   AliAnalysisMuMuConfig.cxx
-  AliAnalysisMuMuResult.cxx
   AliAnalysisMuMuJpsiResult.cxx
+  AliAnalysisMuMuResult.cxx
+  AliAnalysisMuMuSpectraCapsule.cxx
+  AliAnalysisMuMuSpectraCapsulePbPb.cxx
+  AliAnalysisMuMuSpectraCapsulePbP.cxx
+  AliAnalysisMuMuSpectraCapsulePP.cxx
   AliAnalysisMuMuFnorm.cxx
   AliAnalysisMuMuGraphUtil.cxx
   AliAnalysisMuMuSpectra.cxx

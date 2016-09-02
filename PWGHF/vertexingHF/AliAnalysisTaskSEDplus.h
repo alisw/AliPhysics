@@ -132,6 +132,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   THnSparseF *fMCAccBFeed; //!<!histo for StepMCAcc for Dplus FD (pt,y,ptB)
   TH2F *fPtVsMassNoPid;    //!<! hist. of pt vs. mass (w/o PID)
   TH2F *fPtVsMass;  //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH2F *fPtVsMassBadDaus;  //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH2F *fPtVsMassGoodDaus;  //!<! hist. of pt vs. mass (topol+PID cuts)
   TH3F *fYVsPtNoPid;       //!<! hist. of Y vs. Pt vs. Mass(w/o PID)
   TH3F *fYVsPt;     //!<! hist. of Y vs. Pt vs. Mass (topol+PID cuts)
   TH2F *fYVsPtSigNoPid;    //!<! hist. of Y vs. Pt (MC, only sig, w/o PID)
@@ -139,6 +141,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH2F *fPhiEtaCand;      //!<! hist. with eta/phi distribution of candidates
   TH2F *fPhiEtaCandSigReg;//!<! hist. eta/phi of candidates in D+ mass region
   TH1F *fSPDMult;    //!<! hist. of spd mult
+  TH1F* fDaughterClass; //!<! hist
+  TH1F* fDeltaID; //!<! hist
+  TH2F* fIDDauVsIDTra; //!<! hist
   TNtuple *fNtupleDplus; //!<! output ntuple
   Float_t fUpmasslimit;  /// upper inv mass limit for histos
   Float_t fLowmasslimit; /// lower inv mass limit for histos
@@ -165,7 +170,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fSystem;   /// 0=pp,1=PbPb
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,26); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,27); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

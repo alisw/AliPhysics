@@ -224,22 +224,54 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
   Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
 
+  struct LMEEparticle {
+    Double_t genP;
+    Double_t genPt;
+    Double_t genTheta;
+    Double_t genEta;
+    Double_t genPhi;
+    Double_t recP;
+    Double_t recPt;
+    Double_t recTheta;
+    Double_t recEta;
+    Double_t recPhi;
+    Int_t mlabel;
+    Int_t mPDG;
+    Int_t grmlabel;
+    Int_t grmPDG;
+    std::vector<Bool_t> vbRec;
+    TLorentzVector genLv;
+    TLorentzVector recLv;
+    // functions
+    LMEEparticle(Int_t Ncuts=0) : genP(-99.),genPt(-99.),genTheta(-99.),genEta(-99.),genPhi(-99.),
+                                  recP(-99.),recPt(-99.),recTheta(-99.),recEta(-99.),recPhi(-99.),
+                                  mlabel(-1),mPDG(-1),grmlabel(-1),grmPDG(-1),vbRec(Ncuts,kFALSE),genLv(),recLv()
+    {
+    }
+    void MakeGenLV(){ genLv.SetPtEtaPhiM(genPt,genEta,genPhi,0.0005109989); }
+    void MakeRecLV(){ recLv.SetPtEtaPhiM(recPt,recEta,recPhi,0.0005109989); }
+  };
+
   TH2D*                           fNgenPairsResonances;
   TH2D*                           fNgenPairsDiffMothers;
   TH2D*                           fNgenPairsCharm;
   TH2D*                           fNgenPairsBeauty;
+  TH2D*                           fNgenPairsHF;
   std::vector<TH2D*>              fvRecoPairsResonances;
   std::vector<TH2D*>              fvRecoPairsDiffMothers;
   std::vector<TH2D*>              fvRecoPairsCharm;
   std::vector<TH2D*>              fvRecoPairsBeauty;
+  std::vector<TH2D*>              fvRecoPairsHF;
   TH2D*                           fNgenPairsRecResonances;
   TH2D*                           fNgenPairsRecDiffMothers;
   TH2D*                           fNgenPairsRecCharm;
   TH2D*                           fNgenPairsRecBeauty;
+  TH2D*                           fNgenPairsRecHF;
+  std::vector<TH2D*>              fvRecoPairsRecResonances;
   std::vector<TH2D*>              fvRecoPairsRecDiffMothers;
   std::vector<TH2D*>              fvRecoPairsRecCharm;
-  std::vector<TH2D*>              fvRecoPairsRecResonances;
   std::vector<TH2D*>              fvRecoPairsRecBeauty;
+  std::vector<TH2D*>              fvRecoPairsRecHF;
 
   // resolutions
   Bool_t                          fCalcResolution;

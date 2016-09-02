@@ -59,6 +59,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) :
   hEPRbrCosV0A(0), hEPRbrSinV0A(0), hEPRbrCosV0C(0), hEPRbrSinV0C(0), hEPRbrCosTPC(0), hEPRbrSinTPC(0),
   hV2ClustDxDzA(0), hV2ClustDxDzB(0), hV2ClustDphiV0A(0), hV2ClustDphiV0C(0), hV2ClustCos2phiV0A(0), hV2ClustCos2phiV0C(0), 
   hV1ClustDxDzA(0), hV1ClustDxDzB(0), hM02EA(0), hM02EB(0), hV1ClustNlmA(0), hV1ClustNlmB(0),
+  fBoxSSCutMin(0.), fBoxSSCutMax(0.),
   hTrkPhiEta(0), hTrkPt(0), 
   hTrkDphiEmcV0A(0), hTrkDphiEmcV0C(0), hTrkCos2phiEmcV0A(0), hTrkCos2phiEmcV0C(0), 
   hTrkDphiOutEmcV0A(0), hTrkDphiOutEmcV0C(0), hTrkCos2phiOutEmcV0A(0), hTrkCos2phiOutEmcV0C(0),
@@ -95,6 +96,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() :
   hEPRbrCosV0A(0), hEPRbrSinV0A(0), hEPRbrCosV0C(0), hEPRbrSinV0C(0), hEPRbrCosTPC(0), hEPRbrSinTPC(0),
   hV2ClustDxDzA(0), hV2ClustDxDzB(0), hV2ClustDphiV0A(0), hV2ClustDphiV0C(0), hV2ClustCos2phiV0A(0), hV2ClustCos2phiV0C(0), 
   hV1ClustDxDzA(0), hV1ClustDxDzB(0), hM02EA(0), hM02EB(0), hV1ClustNlmA(0), hV1ClustNlmB(0),
+  fBoxSSCutMin(0.), fBoxSSCutMax(0.),
   hTrkPhiEta(0), hTrkPt(0), 
   hTrkDphiEmcV0A(0), hTrkDphiEmcV0C(0), hTrkCos2phiEmcV0A(0), hTrkCos2phiEmcV0C(0), 
   hTrkDphiOutEmcV0A(0), hTrkDphiOutEmcV0C(0), hTrkCos2phiOutEmcV0A(0), hTrkCos2phiOutEmcV0C(0),
@@ -446,7 +448,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
     if (!fV2Clust) {
 	    AliError(Form("%s: Could not retrieve V2 cluster %s", GetName(), fV2ClustName.Data()));
     } else {
-      Int_t nCluster = fV2Clust->GetEntries(); 
+      Int_t nCluster = fV2Clust->GetEntries();
+      if (fDebug) cout << "Num. of V2 Cluster = " << nCluster << endl;
       for (Int_t i=0; i<nCluster; ++i) {
         AliVCluster* c1 = static_cast<AliVCluster*>(fV2Clust->At(i));
         if (!c1) continue;
@@ -490,6 +493,7 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
 	    AliError(Form("%s: Could not retrieve V1 cluster %s", GetName(), fV1ClustName.Data()));
     } else {
       Int_t nCluster = fV1Clust->GetEntries();
+      if (fDebug) cout << "Num. of V1 Cluster = " << nCluster << endl;
       for (Int_t i=0; i<nCluster; ++i) {
         AliVCluster* c = dynamic_cast<AliVCluster*>(fV1Clust->At(i));      
         if (!c) continue;
@@ -532,7 +536,8 @@ void AliAnalysisTaskPi0V2::UserExec(Option_t *)
         Double_t dphiV0A = TVector2::Phi_0_2pi(tPhi-fEPV0A); if (dphiV0A>TMath::Pi()) dphiV0A-=TMath::Pi();
         Double_t dphiV0C = TVector2::Phi_0_2pi(tPhi-fEPV0C); if (dphiV0C>TMath::Pi()) dphiV0C-=TMath::Pi();
   
-        if (tPhi*TMath::RadToDeg()>80. && tPhi*TMath::RadToDeg()<180. && tEta <0.7 && tEta >(-0.7)) {
+        if (fabs(tEta)>0.7) continue;
+        if (tPhi*TMath::RadToDeg()>80. && tPhi*TMath::RadToDeg()<180.) {
           hTrkDphiEmcV0A->Fill(fCentrality, dphiV0A, tPt);
           hTrkDphiEmcV0C->Fill(fCentrality, dphiV0C, tPt);
           hTrkCos2phiEmcV0A->Fill(fCentrality, TMath::Cos(2.*dphiV0A), tPt);
@@ -916,12 +921,18 @@ Bool_t AliAnalysisTaskPi0V2::IsPi0Candidate(const AliVCluster *c)
   Double_t M02 = c->GetM02();
   Int_t nlm = c->GetNExMax();
 
+  // std SS cut
   Double_t M02Min = exp(2.135-0.245*E);
   Double_t M02Max = 0.;
   if (nlm == 1) M02Max = exp(0.0662-0.0201*E) - 0.0955 + 0.00186*E + 9.91/E;
   else if (nlm == 2) M02Max = exp(0.353-0.0264*E) - 0.524 + 0.00559*E + 21.9/E;
-
   if (nlm > 2) M02Max += 0.75;
+
+  // for sys. check
+  if (fBoxSSCutMin+fBoxSSCutMax>1e-3) {
+    M02Min = fBoxSSCutMin;
+    M02Max = fBoxSSCutMax;
+  }
 
   if (M02>M02Max || M02<M02Min) return kFALSE;
   if (fDebug)
@@ -954,7 +965,7 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, AliVCluster *c)
 
   Double_t DataV0C[6];
   DataV0C[0] = Et;
-  DataV0A[1] = E;
+  DataV0C[1] = E;
   DataV0C[2] = M02;
   DataV0C[3] = fCentrality;
   DataV0C[4] = dphiV0C;
@@ -963,7 +974,7 @@ void AliAnalysisTaskPi0V2::FillPion(const TLorentzVector& p1, AliVCluster *c)
 
   Double_t DataTPC[6];
   DataTPC[0] = Et;
-  DataV0A[1] = E;
+  DataTPC[1] = E;
   DataTPC[2] = M02;
   DataTPC[3] = fCentrality;
   DataTPC[4] = dphiTPC;

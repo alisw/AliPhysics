@@ -124,6 +124,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
   fHistoMCPrimaryPtvsSource(NULL),
+  fHistoMCPrimaryYvsSource(NULL),
   fHistoMCDecayGammaPt(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
@@ -277,6 +278,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
   fHistoMCPrimaryPtvsSource(NULL),
+  fHistoMCPrimaryYvsSource(NULL),
   fHistoMCDecayGammaPt(NULL),
   fHistoMCAllGammaPt(NULL),
   fHistoTrueClusMergedPtvsM02(NULL),
@@ -684,6 +686,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     fHistoMCPi0Pt                                 = new TH1F*[fnCuts];
     fHistoMCEtaPt                                 = new TH1F*[fnCuts];
     fHistoMCPrimaryPtvsSource                     = new TH2F*[fnCuts];
+    fHistoMCPrimaryYvsSource                      = new TH2F*[fnCuts];
     fHistoMCDecayGammaPt                          = new TH1F*[fnCuts];
     fHistoMCAllGammaPt                         = new TH1F*[fnCuts];
     if (GetSelectedMesonID() != 2){
@@ -821,6 +824,17 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
       fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
+
+      fHistoMCPrimaryYvsSource[iCut]   = new TH2F("MC_Primary_Y_Source","MC_Primary_Y_Source",400, -20, 20, 7, -0.5, 6.5);
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
+      fHistoMCPrimaryYvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
+      fHistoMCPrimaryYvsSource[iCut]->Sumw2();
+      fMCList[iCut]->Add(fHistoMCPrimaryYvsSource[iCut]);
       
       fHistoMCDecayGammaPt[iCut]                  = new TH1F("MC_DecayGamma_Pt","MC_DecayGamma_Pt",ptBins, startPt, endPt);
       fHistoMCDecayGammaPt[iCut]->Sumw2();
@@ -1932,6 +1946,23 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
           mesonY  = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
       }
 
+      // fill Primary Y hist
+      if ( particle->GetPdgCode() == 211 ){  // positve pions
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 0., fWeightJetJetMC); 
+      } else if ( particle->GetPdgCode() == -211 ){  // negative pions
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 1., fWeightJetJetMC); 
+      } else if ( particle->GetPdgCode() == 321 ){  // positve kaons
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 2., fWeightJetJetMC); 
+      } else if ( particle->GetPdgCode() == -321 ){  // negative kaons
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 3., fWeightJetJetMC); 
+      } else if ( abs(particle->GetPdgCode()) == 310 ){  // K0s
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 4., fWeightJetJetMC); 
+      } else if ( abs(particle->GetPdgCode()) == 130 ){  // K0l
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 5., fWeightJetJetMC); 
+      } else if ( abs(particle->GetPdgCode()) == 3122 ){  // Lambda/ AntiLambda
+        fHistoMCPrimaryYvsSource[fiCut]->Fill(mesonY, 6., fWeightJetJetMC); 
+      }
+      
       if (fabs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
         if ( particle->GetPdgCode() == 211 ){  // positve pions
           fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., fWeightJetJetMC); 

@@ -305,7 +305,9 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     AliVCluster *c1 = (AliVCluster *) fCaloClustersArr->At(iClu);
       
     Float_t e1i = c1->E();   // cluster energy before correction
-    if      (e1i < fEmin) continue;
+    if(fChangeBkgShape && (((c1->GetM02() > fL0Bkgmin) && (c1->GetM02() < fL0Bkgmax)) && (e1i < fEBkgmin))) continue;
+    if(fChangeBkgShape && (((c1->GetM02() < fL0Bkgmin) || (c1->GetM02() > fL0Bkgmax)) && (e1i < fEmin))) continue;
+    else if (!fChangeBkgShape && e1i < fEmin) continue;
     else if (e1i > fEmax) continue;
       
     else if (c1->GetNCells() < fMinNCells)                   continue;
@@ -392,7 +394,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
     
     Float_t e1i = c1->E();   // cluster energy before correction   
     
-    if      (e1i < fEmin) continue;
+    if(fChangeBkgShape && (((c1->GetM02() > fL0Bkgmin) && (c1->GetM02() < fL0Bkgmax)) && (e1i < fEBkgmin))) continue;
+    if(fChangeBkgShape && (((c1->GetM02() < fL0Bkgmin) || (c1->GetM02() > fL0Bkgmax)) && (e1i < fEmin))) continue;
+    else if (!fChangeBkgShape && e1i < fEmin) continue;
     else if (e1i > fEmax) continue;
     
     else if (!fRecoUtils->IsGoodCluster(c1,fEMCALGeo,fEMCALCells,bc)) continue;
@@ -486,7 +490,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       AliAODCaloCluster *c2 = (AliAODCaloCluster *) fCaloClustersArr->At(jClu);
       
       Float_t e2i = c2->E();
-      if      (e2i < fEmin) continue;
+      if(fChangeBkgShape && (((c2->GetM02() > fL0Bkgmin) && (c2->GetM02() < fL0Bkgmax)) && (e2i < fEBkgmin))) continue;
+      if(fChangeBkgShape && (((c2->GetM02() < fL0Bkgmin) || (c2->GetM02() > fL0Bkgmax)) && (e2i < fEmin))) continue;
+      else if (!fChangeBkgShape && e2i < fEmin) continue;
       else if (e2i > fEmax) continue;
       
       else if (!fRecoUtils->IsGoodCluster(c2,fEMCALGeo,fEMCALCells,bc))continue;

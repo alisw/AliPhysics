@@ -107,8 +107,8 @@ static const float default_pion_PtMin = 0.2
           , default_pion_NSigmaMin = -3.0
           , default_pion_NSigmaMax = 3.0
 
-          , default_pion_max_impact_xy = 2.4
-          , default_pion_max_impact_z = 3.0
+          , default_pion_max_impact_xy = 0.2
+          , default_pion_max_impact_z = 0.15
 
           , default_pion_max_tpc_chi_ndof = 0.032
           , default_pion_max_its_chi_ndof = 0.032

@@ -12,6 +12,8 @@
 #include "TF1.h"
 #include "TRandom.h"
 #include "TROOT.h"
+#include "TDatabasePDG.h"
+
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -135,9 +137,11 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPIDCombined(0x0),
   fParticleOfInterest(kPion),
   fPidDetectorConfig(kTPCTOF),
+  fMassParticleOfInterest(0.13957),
   fUsePID(kFALSE),
   fUsePIDnSigma(kTRUE),
   fUsePIDPropabilities(kFALSE), 
+  fUseRapidity(kFALSE),
   fPIDNSigma(3.),
   fMinAcceptedPIDProbability(0.8),
   fElectronRejection(kFALSE),
@@ -1435,7 +1439,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
   Double_t vPhi;
   Double_t vPt;
 
-
   if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
     // Loop over tracks in event
     
@@ -1467,10 +1470,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
      
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
-      vY      = aodTrack->Y();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+      vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
       
+      
+
       //===========================PID (so far only for electron rejection)===============================//		    
       if(fElectronRejection) {
 
@@ -1568,6 +1573,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
 	    prob[iSpecies] = probTPCTOF[iSpecies];
 	  break;
+	case kTPCTOFexcl:// as a starting point, more details below
+	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+	  nSigma = nSigmaTPC;
+	  detUsedTPC = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPC);
+	  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
+	    prob[iSpecies] = probTPC[iSpecies];
+	  break;
 	default:
 	  break;
 	}//end switch: define detector mask
@@ -1621,9 +1633,44 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  //end of QA-before pid
 	  
 	  if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
+	    
 	    //Make the decision based on the n-sigma
 	    if(fUsePIDnSigma) {
-	      if(nSigma > fPIDNSigma || nSigma < -fPIDNSigma) continue;  
+	      
+	      // exclusive determination of PID (also taking into account other particle species, works only for pions so far)
+	      if(fPidDetectorConfig == kTPCTOFexcl){
+		
+		Double_t nSigmaPionTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion));
+		Double_t nSigmaKaonTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon));
+		Double_t nSigmaProtonTPC = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton));
+		
+		if( vPt > 0.2 && vPt < 0.6 ){
+		  
+		  if( nSigmaPionTPC > fPIDNSigma || nSigmaKaonTPC < fPIDNSigma || nSigmaProtonTPC < fPIDNSigma )
+		    continue;
+		}
+		else if(vPt > 0.6){
+		  
+		  Double_t nSigmaPionTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kPion));
+		  Double_t nSigmaKaonTOF   = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kKaon));
+		  Double_t nSigmaProtonTOF = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton));
+		  
+		  if( nSigmaPionTPC > fPIDNSigma )
+		    continue;	
+		  
+		  if( nSigmaPionTOF > fPIDNSigma || nSigmaKaonTOF < fPIDNSigma || nSigmaProtonTOF < fPIDNSigma )
+		    continue;	
+		  
+		}
+		else{
+		  continue;
+		}
+	      }
+	      // else just normal nSigma cut
+	      else{
+		if(TMath::Abs(nSigma) > fPIDNSigma) 
+		  continue;
+	      }	    
 	      
 	      fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
 	      fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
@@ -1711,7 +1758,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+      } 
+      else{
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+      } 
     }//track loop
   }// AOD analysis
 
@@ -1732,9 +1784,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
      
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
-      vY      = -999.;
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+      vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
            
       
       // Kinematics cuts from ESD track cuts
@@ -1757,7 +1809,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+      } 
+      else{
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+      }
     }//track loop
   }// AOD nano analysis
 
@@ -1782,7 +1839,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	vCharge = aodTrack->Charge();
 	vEta    = aodTrack->Eta();
-	vY      = aodTrack->Y();
+	vY      = aodTrack->Y();//true Y
 	vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
 	vPt     = aodTrack->Pt();
 	
@@ -1848,7 +1905,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
 	
 	// add the track to the TObjArray
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+	} 
+	else{
+	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+	}
       }//aodTracks
     }//MC event
   }//MCAOD
@@ -1888,9 +1950,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
-      vY      = aodTrack->Y();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+      vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
 
       //analyze one set of particles
       if(fUseMCPdgCode) {
@@ -1917,7 +1979,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(AODmcTrack){
 	  vCharge = AODmcTrack->Charge();
 	  vEta    = AODmcTrack->Eta();
-	  vY      = AODmcTrack->Y();
+	  vY      = AODmcTrack->Y();//true Y
 	  vPhi    = AODmcTrack->Phi();// * TMath::RadToDeg();
 	  vPt     = AODmcTrack->Pt();
 	}
@@ -2115,7 +2177,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+      } 
+      else{
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+      } 
     }//track loop
   }//MCAODrec
   //==============================================================================================================
@@ -2300,10 +2367,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       //===========================PID===============================//
       vCharge = trackTPC->Charge();
-      vY      = trackTPC->Y();
       vEta    = trackTPC->Eta();
       vPhi    = trackTPC->Phi();// * TMath::RadToDeg();
       vPt     = trackTPC->Pt();
+      vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
+
       fHistClus->Fill(trackTPC->GetITSclusters(0),nClustersTPC);
       fHistDCA->Fill(b[1],b[0]);
       fHistChi2->Fill(chi2PerClusterTPC,gCentrality);
@@ -2321,8 +2389,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
       // add the track to the TObjArray
-      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));   
-
+      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+      } 
+      else{
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+      }
+      
       delete trackTPC;
     }//track loop
   }// ESD analysis
@@ -2371,7 +2444,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	vCharge = track->Charge();
 	vEta    = track->Eta();
 	vPt     = track->Pt();
-	vY      = track->Y();
+	vY      = track->Y();//true Y
 	
 	if( vPt < fPtMin || vPt > fPtMax)      
 	  continue;
@@ -2574,7 +2647,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
+      if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
+	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+      } 
+      else{
 	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+      } 
       } //track loop
     }//MC event object
   }//MC
@@ -2646,6 +2724,36 @@ void  AliAnalysisTaskBFPsi::SetVZEROCalibrationFile(const char* filename,
     return;
   }
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskBFPsi::SetParticleOfInterest(kParticleOfInterest poi) {
+
+  // Function to set the particle of interest (for PID analysis)
+  // and the corresponding mass
+  
+  fParticleOfInterest = poi;
+
+  if(fParticleOfInterest == kParticleOfInterest::kElectron){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+  }  
+  else if(fParticleOfInterest == kParticleOfInterest::kMuon){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(13)->Mass();
+  }
+  else if(fParticleOfInterest == kParticleOfInterest::kPion){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  }
+  else if(fParticleOfInterest == kParticleOfInterest::kKaon){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  }
+  else if(fParticleOfInterest == kParticleOfInterest::kProton){
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  }
+  else{
+    AliWarning("Particle type not known, set fMassParticleOfInterest to pion mass.");
+    fMassParticleOfInterest = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  }
+}
+
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run, 

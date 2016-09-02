@@ -39,16 +39,16 @@ AliAnalysisMuMuCutCombination::~AliAnalysisMuMuCutCombination()
   /// Dtor
   delete fCuts;
 }
-  
+
 //_____________________________________________________________________________
 void AliAnalysisMuMuCutCombination::Add(AliAnalysisMuMuCutElement* ce)
 {
   /** Add a cut element to this combination, if the cut is not void and
    *  not already part of the combination
    */
-  
+
   if (!ce || !ce->IsValid()) return;
-  
+
   if (!fCuts)
   {
     fCuts = new TObjArray;
@@ -59,12 +59,12 @@ void AliAnalysisMuMuCutCombination::Add(AliAnalysisMuMuCutElement* ce)
     fIsTrackPairCutter = ce->IsTrackPairCutter();
     fIsTriggerClassCutter = ce->IsTriggerClassCutter();
   }
-  
+
   if (!fCuts->FindObject(ce))
   {
     fCuts->Add(ce);
     fName += ce->GetName();
-    
+
     fIsEventCutter = fIsEventCutter || ce->IsEventCutter();
     fIsEventHandlerCutter = fIsEventHandlerCutter || ce->IsEventHandlerCutter();
     fIsTrackCutter = fIsTrackCutter || ce->IsTrackCutter();
@@ -72,9 +72,9 @@ void AliAnalysisMuMuCutCombination::Add(AliAnalysisMuMuCutElement* ce)
     fIsTriggerClassCutter = fIsTriggerClassCutter || ce->IsTriggerClassCutter();
 
   }
-  
+
   // update the name
-  
+
   if ( IsTrackPairCutter() )
   {
     if ( fName[0] == 's' )
@@ -112,27 +112,27 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqualForTrackCutter(const AliAnalysisMuM
 {
   /// whether or not we are the same combination as other, only considering the cuts
   /// or the given type
-  
+
   for ( Int_t i = 0; i <= fCuts->GetLast(); ++i )
   {
     AliAnalysisMuMuCutElement* thisCuti = static_cast<AliAnalysisMuMuCutElement*>(fCuts->At(i));
-    
+
     if ( thisCuti->IsTrackCutter() && !other.fCuts->FindObject(thisCuti)  )
     {
       return kFALSE;
     }
   }
-  
+
   for ( Int_t i = 0; i <= other.fCuts->GetLast(); ++i )
   {
     AliAnalysisMuMuCutElement* otherCuti = static_cast<AliAnalysisMuMuCutElement*>(other.fCuts->At(i));
-    
+
     if ( otherCuti->IsTrackCutter() && !fCuts->FindObject(otherCuti)  )
     {
       return kFALSE;
     }
   }
-  
+
   return kTRUE;
 }
 
@@ -140,12 +140,12 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqualForTrackCutter(const AliAnalysisMuM
 Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
 {
   /// Whether or not we are the same cut combination as obj
-  
+
   if ( obj->IsA() != AliAnalysisMuMuCutCombination::Class() )
   {
     return kFALSE;
   }
-  
+
   const AliAnalysisMuMuCutCombination* other = static_cast<const AliAnalysisMuMuCutCombination*>(obj);
 
   if ( IsEventCutter() != other->IsEventCutter() ) return kFALSE;
@@ -156,21 +156,21 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
   if ( !fCuts && !other->fCuts ) return kTRUE;
 
   // no cuts, nothing to check further...
-  
+
   if ( ( fCuts && !other->fCuts ) || ( !fCuts && other->fCuts ) ) return kFALSE;
-  
+
   if ( fCuts->GetEntries() != other->fCuts->GetEntries() ) return kFALSE;
-  
+
   // ok, looks similar so far, now have compute the set of cuts in common
   // (whatever the order) to see if they really are the same combination or not
-  
+
   Int_t n1in2(0);
   Int_t n2in1(0);
-  
+
   for ( Int_t i = 0; i <= fCuts->GetLast(); ++i )
   {
     AliAnalysisMuMuCutElement* thisCuti = static_cast<AliAnalysisMuMuCutElement*>(fCuts->At(i));
-  
+
     if ( other->fCuts->FindObject(thisCuti) )
     {
       ++n1in2;
@@ -180,7 +180,7 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
   for ( Int_t i = 0; i <= fCuts->GetLast(); ++i )
   {
     AliAnalysisMuMuCutElement* otherCuti = static_cast<AliAnalysisMuMuCutElement*>(other->fCuts->At(i));
-    
+
     if ( fCuts->FindObject(otherCuti) )
     {
       ++n2in1;
@@ -194,16 +194,16 @@ Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
 Bool_t AliAnalysisMuMuCutCombination::Pass(const AliInputEventHandler& eventHandler) const
 {
   /// Whether or not the event handler is passing the cut
-  
+
   if (!fCuts) return kFALSE;
   TIter next(fCuts);
   AliAnalysisMuMuCutElement* ce;
-  
+
   const AliVEvent* event = eventHandler.GetEvent();
-  
+
   Bool_t passEvent(kTRUE);
   Bool_t passEventHandler(kTRUE);
-  
+
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
     if ( ce->IsEventCutter() && !ce->Pass(*event) )
@@ -216,7 +216,7 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const AliInputEventHandler& eventHand
       passEventHandler = kFALSE;
     }
   }
-  
+
   if ( IsEventCutter() && IsEventHandlerCutter() )
   {
     return passEvent && passEventHandler;
@@ -231,10 +231,10 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const AliInputEventHandler& eventHand
   {
     return passEvent;
   }
-  
+
   return kFALSE;
 }
-  
+
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVParticle& particle) const
@@ -244,7 +244,7 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVParticle& particle) const
   if (!fCuts) return kFALSE;
   TIter next(fCuts);
   AliAnalysisMuMuCutElement* ce;
-  
+
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
     if (ce->IsTrackCutter() && !ce->Pass(particle))
@@ -255,7 +255,7 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVParticle& particle) const
 
   return kTRUE;
 }
-  
+
 //_____________________________________________________________________________
 Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVParticle& p1, const AliVParticle& p2) const
 {
@@ -264,7 +264,7 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVParticle& p1, const AliVPar
   if (!fCuts) return kFALSE;
   TIter next(fCuts);
   AliAnalysisMuMuCutElement* ce;
-  
+
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
     if (ce->IsTrackPairCutter() && !ce->Pass(p1,p2))
@@ -272,7 +272,7 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const AliVParticle& p1, const AliVPar
       return kFALSE;
     }
   }
-  
+
   return kTRUE;
 }
 
@@ -293,17 +293,17 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const TString& firedTriggerClasses,
   TIter next(fCuts);
   AliAnalysisMuMuCutElement* ce;
   Bool_t rv(kFALSE);
-  
+
   // contrary to the other cut types, here we make a full loop on all
   // the cuts, as we need to give each cut a chance to update the acceptedTriggerClasses
   // string
-  
+
   acceptedTriggerClasses = "";
-  
+
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
     TString tmp;
-    
+
     if (ce->IsTriggerClassCutter() && ce->Pass(firedTriggerClasses,tmp,L0,L1,L2))
     {
       acceptedTriggerClasses += tmp;
@@ -311,7 +311,7 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const TString& firedTriggerClasses,
       rv = kTRUE;
     }
   }
-  
+
   return rv;
 }
 
@@ -321,7 +321,7 @@ void AliAnalysisMuMuCutCombination::Print(Option_t* opt) const
   /// Printout of the cut combination
   TString sopt(opt);
   sopt.ToUpper();
-  
+
   if ( sopt.Contains("PTR"))
   {
     std::cout << Form("%s(%p) [",GetName(),this);
@@ -336,10 +336,10 @@ void AliAnalysisMuMuCutCombination::Print(Option_t* opt) const
   if ( IsTrackPairCutter() ) std::cout << " TP";
   if ( IsTriggerClassCutter() ) std::cout << " TC";
   std::cout << " ]" << std::endl;
-  
+
   TIter next(fCuts);
   AliAnalysisMuMuCutElement* ce;
-  
+
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
     std::cout << "            ";
