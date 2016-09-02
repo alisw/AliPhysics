@@ -840,7 +840,7 @@ TH1* Avg2(TH2* h, TH1* ipz, UShort_t mode, const char* name)
  * @f[ 
  k = \frac{\int_{\Delta_{bg}}^{\infty} d\Delta f_R(\Delta)}{
  \int_{\Delta_{bg}}^{\infty} d\Delta f_B(\Delta)}
- @ f]
+ @f]
  *
  * where @f$ \Delta_{bg}=5@f$ is the cut-off on background particles
  * (where the @f$\Delta@f$ distributions of secondaries and primaries
@@ -851,6 +851,7 @@ TH1* Avg2(TH2* h, TH1* ipz, UShort_t mode, const char* name)
  * @param eR       On return, the error on @f$ k@f$ 
  * @param nEvRec   Number of events in @f$ f_R(\Delta)@f$
  * @param nEvBg    Number of events in @f$ f_B(\Delta)@f$
+ * @param lim      Integration limit 
  * 
  * @return @f$ k@f$ 
  */
@@ -859,7 +860,7 @@ Double_t GetDeltaScale(TH1*      deltaRec,
 		       Double_t& eR,
 		       Double_t  nEvRec=1,
 		       Double_t  nEvBg =1,
-		       Double_t  lim==1e9)
+		       Double_t  lim=1e9)
 {
   if (!deltaRec || !deltaBg) {
     Error("GetDeltaScale", "Missing input histogram(s): %p %p",
@@ -891,6 +892,7 @@ Double_t GetDeltaScale(TH1*      deltaRec,
  * @param eR         On return, the error on scaling factor @f$ k@f$ 
  * @param b          Bin number 
  * @param nEv        Number of events 
+ * @param lim        Integration limit 
  * 
  * @return The scaling factor @f$ k@f$ 
  */
@@ -898,7 +900,7 @@ Double_t GetDeltaScale(TSeqCollection* list,
 		       Int_t           b,
 		       Double_t&       eR,
 		       Double_t        nEv=1,
-		       Double_t        lim==1e9)
+		       Double_t        lim=1e9)
 {
   TH1*     deltaRec = CopyH1(list,Form("b%d_TrData_WDist", b));
   TH1*     deltaBg  = CopyH1(list,Form("b%d_TrInj_WDist", b));
@@ -919,6 +921,7 @@ Double_t GetDeltaScale(TSeqCollection* list,
  * @param b        Bin number 
  * @param nEvReal  Number of real events 
  * @param nEvSim   Number of simulated events 
+ * @param lim      Integration limit
  * 
  * @return The scaling factor @f$ k@f$ 
  */
@@ -928,7 +931,7 @@ Double_t GetDeltaScale(TSeqCollection* realList,
 		       Double_t&       eR,
 		       Double_t        nEvReal=1,
 		       Double_t        nEvSim=1,
-		       Double_t        lim==1e9)
+		       Double_t        lim=1e9)
 {
   TH1*     deltaReal = CopyH1(realList,Form("b%d_TrData_WDist", b));
   TH1*     deltaSim  = CopyH1(simList, Form("b%d_TrData_WDist", b));
@@ -948,6 +951,7 @@ Double_t GetDeltaScale(TSeqCollection* realList,
  * @param deltaSim  @f$ f_B(\eta,\Delta)@f$
  * @param nEvReal   Number of events in @f$ f_R(\eta,\Delta)@f$
  * @param nEvSim    Number of events in @f$ f_B(\eta,\Delta)@f$
+ * @param lim       Integration limit 
  * 
  * @return @f$ k(\eta)@f$ 
  */
@@ -955,7 +959,7 @@ TH1* GetDeltaDist(TH2*     deltaReal,
 		  TH2*     deltaSim,
 		  Double_t nEvReal,
 		  Double_t nEvSim,
-		  Double_t lim==1e9)		  
+		  Double_t lim=1e9)		  
 {
   Double_t top       = deltaReal->GetYaxis()->GetXmax();
   TH1*     ret       = deltaReal->ProjectionX("scalar");
@@ -1008,6 +1012,7 @@ TH1* GetDeltaDist(TSeqCollection* list,
  * @param b        Bin number 
  * @param nEvReal  Number of real events 
  * @param nEvSim   Number of simulated events 
+ * @param lim      Integration limit 
  * 
  * @return The scaling factor @f$ k@f$ 
  */
@@ -1039,14 +1044,16 @@ TH1* GetDeltaDist(TSeqCollection* realList,
  * @param comb if true, use combinatorial background 
  * @param list collection to get distribution from 
  * @param b    Centrality bin number 
- * 
+ * @param nEv  Number of events 
+ * @param lim  integration limit 
+ *
  * @return Background distributio 
  */
 TH2* GetBg(Bool_t          comb,
 	   TSeqCollection* list,
 	   Int_t           b,
 	   Double_t        nEv=1,
-	   Double_t        lim==1e9)
+	   Double_t        lim=1e9)
 {
   Double_t eR = 0;
   TH2* in     = GetH2(list,Form("b%d_Tr%s_ZvEtaCutT",b,comb ? "Comb" : "Inj"));
@@ -1121,7 +1128,7 @@ TH1* GetDelta(TSeqCollection* l,
 	      Int_t           nEv, 
 	      Double_t        scale=0,
 	      Double_t        scaleE=0,
-	      Double_t        lim==1e9)
+	      Double_t        lim=1e9)
 {
   TH1* h = CopyH1(l, Form("b%d_Tr%s_WDist", b, which));
   h->Scale(1./nEv);
@@ -1164,8 +1171,8 @@ TH1* GetDelta(TSeqCollection* l,
  * Calculates the result as 
  *
  * @f[
- *  R &=& \frac{P}{(1-\beta\prime)M\prime} (1-\beta)M
- * @f] 
+ R = \frac{P}{(1-\beta\prime)M\prime} (1-\beta)M
+ @f] 
  *
  * where 
  * 
@@ -1253,7 +1260,7 @@ void CorrectOneBin(THStack*        stack,
 		   Bool_t          full=false,
 		   Bool_t          showOne=false,
 		   UShort_t        scaleMode=2,
-		   Double_t        lim==1e9)
+		   Double_t        lim=1e9)
 {
   const Double_t k = (realList == simList ? 1 : 1.3);
   realList->SetName("realList");
