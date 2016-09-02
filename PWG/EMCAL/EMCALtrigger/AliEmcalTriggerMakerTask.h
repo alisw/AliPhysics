@@ -6,6 +6,9 @@
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliAnalysisTaskEmcal.h"
 #include <TString.h>
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <functional>
+#endif
 
 class TClonesArray;
 class THistManager;
@@ -34,8 +37,8 @@ class AliEMCALTriggerPatchInfo;
 class AliEmcalTriggerMakerTask : public AliAnalysisTaskEmcal {
 public:
   /***
-   * \enum TriggerMakerTriggerBitConfig_t
-   * \brief Definition of trigger bit configurations
+   * @enum TriggerMakerTriggerBitConfig_t
+   * @brief Definition of trigger bit configurations
    *
    * This enumeration handles different trigger bit configurations for the
    * EMCAL Level1 triggers (with and without different thresholds) applied
@@ -43,7 +46,18 @@ public:
    */
   enum TriggerMakerBitConfig_t {
     kOldConfig = 0,///< Old configuration, no distinction between high and low threshold
-    kNewConfig = 1 ///< New configuration, distiction between high and low threshold
+    kNewConfig = 1 ///< New configuration, distinction between high and low threshold
+  };
+
+  /**
+   * @enum Exception_t
+   * @brief Definition of various exception codes used in the trigger maker
+   *
+   * Collection of all possible error codes issued in the trigger maker task
+   * class.
+   */
+  enum Exception_t {
+    kInvalidChannelException = 1      ///< kInvalidChannelException
   };
 
   /**
@@ -165,6 +179,15 @@ public:
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
 protected:
+
+#if ! defined(__CINT__) || defined(__MAKECINT__)
+  /**
+   * Closure producing a handler converting a set of mask / bit number into a channel
+   * ID. In case the mask / bit number is invalid the function will return -1
+   * @return function that converts a set of mask / bit number into a channel ID
+   */
+  std::function<int (unsigned int, unsigned int)> GetMaskHandler() const;
+#endif
 
   /**
    * Filling basic QA histograms implemented in the trigger maker task for
