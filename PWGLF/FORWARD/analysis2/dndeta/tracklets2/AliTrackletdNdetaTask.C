@@ -619,7 +619,7 @@ public:
     SetAxis(fPhiAxis, n, max);
   }
   /** 
-   * Set the @f$ \vareta@f$ axis 
+   * Set the @f$ \eta@f$ axis 
    * 
    * @param n   Number of bins
    * @param min Least value 
@@ -630,7 +630,7 @@ public:
     SetAxis(fEtaAxis, n, min, max);
   }
   /** 
-   * Set the @f$ \vareta@f$ axis 
+   * Set the @f$ \eta@f$ axis 
    * 
    * @param n   Number of bins
    * @param max Largest absolute value 
