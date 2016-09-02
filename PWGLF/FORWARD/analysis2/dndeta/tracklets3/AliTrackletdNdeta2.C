@@ -383,9 +383,9 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
   /** 
    * Calculate the result as 
    * @f[
-   R_{\eta,\mathrm{IP}_z = 
-   \frac{G'_{\eta,\mathrm{IP}_z}}{(1-\beta')M'__{\eta,\mathrm{IP}_z}} 
-   (1-\beta)M_{\eta,\mathrm{IP}_z
+   R_{\eta,\mathrm{IP}_z} = 
+   \frac{G\prime_{\eta,\mathrm{IP}_z}}{(1-\beta\prime)M\prime_{\eta,\mathrm{IP}_z}}
+   (1-\beta)M_{\eta,\mathrm{IP}_z}
    @f] 
    * where 
    *
@@ -586,7 +586,7 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    */
   Bool_t VisualizeDetails(TDirectory* outTop, Int_t dimen);
   /** 
-   * Visualize the @f$ dN_{\mathrm{ch}/d\eta@f$ and components
+   * Visualize the @f$ dN_{\mathrm{ch}}/d\eta@f$ and components
    * 
    * @param outTop Output top directory 
    * @param dimen  The dimension to show 
@@ -654,14 +654,6 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @name Some utilities 
    */
   /** 
-   * Open a file 
-   * 
-   * @param filename File name 
-   * 
-   * @return Opened file handle or null 
-   */
-  TFile* OpenFile(const char* filename);
-  /** 
    * Set attributes on a histogram 
    * 
    * @param h      Histogram 
@@ -687,15 +679,6 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @return Observable title 
    */
   const char* ObsTitle() const { return "d#it{N}_{ch}/d#eta"; }
-  /** 
-   * Get name of centrality folder 
-   * 
-   * @param c1 Lower bound 
-   * @param c2 Upper bound 
-   * 
-   * @return String 
-   */
-  const char* CentName(Double_t c1, Double_t c2);
   /** 
    * Get mean of a histogram content by fitting with a constant. 
    * 
@@ -1020,18 +1003,7 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   mid->SetBinContent(b, f->GetParameter(0));
   mid->SetBinError  (b, f->GetParError (0));
 
-  const Color_t cc[] = { kMagenta+2, // 0
-			 kBlue+2,    // 1
-			 kAzure-1,   // 2 // 10,
-			 kCyan+2,    // 3
-			 kGreen+1,   // 4 
-			 kSpring+5,  // 5 //+10,
-			 kYellow+1,  // 6
-			 kOrange+5,  // 7 //+10,
-			 kRed+1,     // 8
-			 kPink+5,    // 9 //+10,
-			 kBlack };   // 10
-  Color_t tc = cc[b % 10];
+  Color_t tc   = CentColor(b);
   TH1*    copy = static_cast<TH1*>(dndeta->Clone(outDir->GetName()));
   copy->SetDirectory(final);
   copy->GetListOfFunctions()->Clear();
@@ -2148,24 +2120,13 @@ namespace {
   {
     if (!s || !s->GetHists()) return;
 
-    const Color_t cc[] = { kMagenta+2, // 0
-			   kBlue+2,    // 1
-			   kAzure-1,   // 2 // 10,
-			   kCyan+2,    // 3
-			   kGreen+1,   // 4 
-			   kSpring+5,  // 5 //+10,
-			   kYellow+1,  // 6
-			   kOrange+5,  // 7 //+10,
-			   kRed+1,     // 8
-			   kPink+5,    // 9 //+10,
-			   kBlack };   // 10    
     TIter next(s->GetHists());
     TH1*  h = 0;
     Int_t i = 0;
     Double_t min = +10000;
     Double_t max = -10000;
     while ((h = static_cast<TH1*>(next()))) {
-      Color_t c = cc[i % 10];
+      Color_t c = AliTrackletAODUtils::CentColor(i);
       h->SetMarkerColor(c);
       h->SetFillColor(c);
       h->SetLineColor(c);
@@ -2994,25 +2955,6 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
 }
 
 //====================================================================
-TFile* AliTrackletdNdeta2::OpenFile(const char* filename)
-{
-  TFile* file = TFile::Open(filename, "READ");
-  if (!file) {
-    Warning("OpenFile", "Failed to open \"%s\"", filename);
-    return 0;
-  }
-  return file;
-}
-//____________________________________________________________________
-const char* AliTrackletdNdeta2::CentName(Double_t c1, Double_t c2)
-{
-  static TString tmp;
-  tmp.Form("cent%06.2f_%06.2f", c1, c2);
-  tmp.ReplaceAll(".", "d");
-  return tmp.Data();
-}
-  
-//____________________________________________________________________
 TH1* AliTrackletdNdeta2::SetAttr(TH1* h,
 				Color_t  color,
 				Style_t  marker,
