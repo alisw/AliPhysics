@@ -239,7 +239,7 @@ public:
     SetAxis(fPhiAxis, n, max);
   }
   /** 
-   * Set the @f$ \vareta@f$ axis 
+   * Set the @f$ \eta@f$ axis 
    * 
    * @param n   Number of bins
    * @param min Least value 
@@ -250,7 +250,7 @@ public:
     SetAxis(fEtaAxis, n, min, max);
   }
   /** 
-   * Set the @f$ \vareta@f$ axis 
+   * Set the @f$ \eta@f$ axis 
    * 
    * @param n   Number of bins
    * @param max Largest absolute value 
@@ -336,6 +336,14 @@ public:
    * @param mask Tracklet type mask 
    */
   virtual void SetWeightMask(UChar_t mask=0xFF) {}
+  /** 
+   * Inverse the weights calculated.  That is, if this option is
+   * enabled, then the weight used is @f$1/w@f$ where @f$w@f$ is the
+   * normal weight.
+   * 
+   * @param inv If true, inverse weights 
+   */
+  virtual void SetWeightInverse(Bool_t inv) {}
   /** 
    * Set the tracklet type veto to use on weights 
    * 
@@ -1334,6 +1342,14 @@ public:
   void SetWeightVeto(UChar_t veto=0x0) {
     Info("SetWeightVeto", "veto=0x%x", veto);
     if (fWeights) fWeights->SetVeto(veto); }
+  /** 
+   * Inverse the weights calculated.  That is, if this option is
+   * enabled, then the weight used is @f$1/w@f$ where @f$w@f$ is the
+   * normal weight.
+   * 
+   * @param inv If true, inverse weights 
+   */
+  void SetWeightInverse(Bool_t inv) { if (fWeights) fWeights->SetInverse(inv); }
   /* @} */
 protected:
   // -----------------------------------------------------------------
@@ -1864,9 +1880,7 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
     fMeasured(0),
     fInjection(0)
 {
-  fName.Form("cent%03dd%02d_%03dd%02d",
-	     Int_t(fLow), Int_t(fLow*100)%100,
-	     Int_t(fHigh), Int_t(fHigh*100)%100);
+  fName = AliTrackletAODUtils::CentName(c1, c2);
   fMeasured  = MakeHistos("measured", kRed+2, 20,
 			  kMeasuredMask, // No requirements, just veto
 			  kMeasuredVeto);
@@ -2741,7 +2755,7 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
       if (pdg < 0) pdg = 0;
       if (pdg == 22) continue; // Ignore photons 
 
-      TH1*   h1    = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
+      TH1* h1 = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
       if (h1->GetEntries() <= 0) continue; // Do not store if empty
       h1->SetDirectory(0);
       h1->SetName(Form("eta_%d", pdg));
