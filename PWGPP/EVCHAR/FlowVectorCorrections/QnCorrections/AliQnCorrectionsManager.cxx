@@ -208,8 +208,8 @@ const AliQnCorrectionsQnVector *AliQnCorrectionsManager::GetDetectorQnVector(
     else
       theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
 
-    if (theQnVector == NULL) {
-      /* the Qn vector for the expected step was not there */
+    if (theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) {
+      /* the Qn vector for the expected step was not there or did not have the proper quality */
       if (TString(altstep).EqualTo("latest"))
         theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
       else
