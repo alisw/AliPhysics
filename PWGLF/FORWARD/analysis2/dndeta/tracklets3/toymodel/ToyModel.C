@@ -1,3 +1,12 @@
+/**
+ * @file   ToyModel.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Sep  1 10:42:55 2016
+ * 
+ * @brief  A toy model of trackleting in the SPD 
+ * 
+ * @ingroup pwglf_forward_tracklets_toy
+ */
 #ifndef __CINT__
 # include <TGraphErrors.h>
 # include <TList.h>
@@ -35,10 +44,13 @@ class TFile;
 /**
  * @defgroup pwglf_forward_tracklets_toy Toy model of trackleting
  *
- * A model of SPD tracklets.  The problem is reduced to 1 dimension. 
+ * A model of SPD tracklets.  
  *
- * We have two layers, one placed at Y=1, and one placed at some
- * configurable Y.  The two layers extend from -1 to +1 in X. 
+ * @image html spd_tracklet_toymodel_event229.png "Example event with 229 generated tracks" 
+ *
+ * The problem is reduced to 1 dimension.  We have two layers, one
+ * placed at Y=1, and one placed at some configurable Y.  The two
+ * layers extend from -1 to +1 in X.
  *
  * The interaction point is set to (0,0).  
  *
@@ -88,12 +100,13 @@ class TFile;
  * @ingroup pwglf_forward_tracklets
  */
 /**
- * A model of SPD trackleting 
+ * A toy model of SPD trackleting 
  * 
+ * @see pwglf_forward_tracklets_toy
+ *
  * @ingroup pwglf_forward_tracklets_toy
  */
-
-struct Model
+struct ToyModel
 {
   // Forward declaration
   struct Track;
@@ -133,13 +146,25 @@ struct Model
    */
   struct Cluster
   {
-    typedef std::list<Tracklet*> TrackletList;    
+    /** A list of references to tracklets */
+    typedef std::list<Tracklet*> TrackletList;
+    /** Position */
     Double_t     fX;
+    /** Size of cluster */
     Double_t     fE;
+    /** Reference to generating track */
     Track*       fTrack;
+    /** Whether the cluster has been used */
     Bool_t       fUsed;
+    /** List of tracklets */
     TrackletList fTracklets;
-
+    /** 
+     * Constructor 
+     * 
+     * @param t   Generating track 
+     * @param x   Position along @f$ x@f$ 
+     * @param ex  Error on position along @f$ x@f$, the cluster size
+     */
     Cluster(Track* t, Double_t x, Double_t ex)
       : fX(x),
 	fE(ex),
@@ -147,6 +172,11 @@ struct Model
 	fUsed(false),
 	fTracklets()
     {}
+    /** 
+     * Add a tracklet reference to a cluster 
+     * 
+     * @param t tracklet 
+     */
     void AddTracklet(Tracklet* t)
     {
       if (!t) return;
@@ -176,11 +206,17 @@ struct Model
    */
   struct Layer
   {
+    /** A list of clusters */
     typedef std::list<Cluster*> ClusterList;
-    ClusterList    fClusters; 
+    /** List of clusters */
+    ClusterList    fClusters;
+    /** Location in plane */
     const Double_t fY;
+    /** Line to draw */
     TGraph         fLine;
+    /** Graph of used clusters for drawing */
     TGraphErrors   fUsed;
+    /** Graph of used clusters for drawing */
     TGraphErrors   fFree;
 
     /** 
@@ -400,8 +436,6 @@ struct Model
      * @param c2   Cluster in layer 2 
      * @param ang  Tracklet angle 
      * @param off  Tracklet offset along X
-     * 
-     * @return 
      */
     Tracklet(Cluster& c1, Cluster& c2, Double_t ang, Double_t off)
       : Track(ang, off),
@@ -416,11 +450,11 @@ struct Model
     /** 
      * @return Marker Style to use 
      */
-    Style_t  Style()      const { return fAccepted ? 1      : 2; }
+    Style_t Style()      const { return fAccepted ? 1      : 2; }
     /** 
      * @return Marker/Line Color to use 
      */
-    Color_t  Color()      const { return IsFake()  ? kRed+2 : kGreen+2; }
+    Color_t Color()      const { return IsFake()  ? kRed+2 : kGreen+2; }
     /** 
      * @return Line width to use 
      */
@@ -432,25 +466,38 @@ struct Model
      *
      * @return true if fake.  
      */
-    Bool_t   IsFake()     const
+    Bool_t IsFake()     const
     {
       return (fCluster1.fTrack) != (fCluster2.fTrack) || fCluster1.fTrack == 0;
     }
     /** 
      * @return true of accepted 
      */
-    Bool_t   IsAccepted() const { return fAccepted; }
+    Bool_t IsAccepted() const { return fAccepted; }
     /** 
      * Mark this as accepted
      * 
      * @param acc If true, mark as accepted, otherwise not accepted
      */
-    void     Accept(Bool_t acc=true)
+    void Accept(Bool_t acc=true)
     {
       fAccepted = acc;
       fCluster1.fUsed = true;
       fCluster2.fUsed = true;
     }
+    /** 
+     * Return the quality @f$ q@f$ of the tracklet calculated as 
+     * @f[ 
+     q = \sigma_1^2 + \sigma_2^2 + \delta^2
+     @f]      
+     * where @f$\sigma_{1,2}@f$ are the size of the clusters on the
+     * first and second layer, respectively, and @f$\delta@f$ is the
+     * distance from the tracklet to the origin.
+     * 
+     * A smaller @f$ q@f$ indicates a better determined tracklet. 
+     * 
+     * @return @f$ q@f$ 
+     */
     Double_t Quality() const
     {
       return (TMath::Power(fCluster1.fE, 2) +
@@ -561,7 +608,7 @@ struct Model
    * 
    * @param m Object to copy from 
    */
-  Model(const Model& m)
+  ToyModel(const ToyModel& m)
     : fTracks(),
       fLayer1(m.fLayer1.fY),
       fLayer2(m.fLayer2.fY),
@@ -588,7 +635,7 @@ struct Model
    * 
    * @param y1 Virtical distance of layer one (between 0 and 1)
    */
-  Model(Double_t y1=.5)
+  ToyModel(Double_t y1=.5)
     : fTracks(),
       fLayer1(y1),
       fLayer2(1),
@@ -1452,7 +1499,7 @@ struct Model
    * 
    * @return 
    */
-  static Model* Run(Int_t    mode,
+  static ToyModel* Run(Int_t    mode,
 		    Bool_t   out2in=false,
 		    Bool_t   global=false,
 		    Bool_t   noReuse=false,
@@ -1464,7 +1511,7 @@ struct Model
 		    Bool_t   secondary=false,
 		    Double_t y1=0.75)
   {
-    Model* model = new Model(y1);
+    ToyModel* model = new ToyModel(y1);
     model->SetOut2In(out2in);
     model->SetGlobal(global);
     model->SetNoReuse(noReuse);
@@ -1497,10 +1544,20 @@ struct Model
     }
     return model;
   }
-  static Model* Run(const char* what,
-		    Int_t       n,
-		    Double_t    sigma=0.0008,
-		    Double_t    y1=0.75)
+  /** 
+   * Run the toy model 
+   * 
+   * @param what    What to do 
+   * @param n       Parameter of what to do 
+   * @param sigma   Width of clusters 
+   * @param y1      Location of 1st layer 
+   * 
+   * @return Pointer to the model object 
+   */
+  static ToyModel* Run(const char* what,
+		       Int_t       n,
+		       Double_t    sigma=0.0008,
+		       Double_t    y1=0.75)
   {
     TString  sm (what); sm.ToUpper();
     Int_t    mode    = -1;
@@ -1509,7 +1566,7 @@ struct Model
     else if (sm.Contains("DIST"))  mode = 2;
     else if (sm.Contains("HELP"))  mode = -1;
     if (mode < 0) {
-      Printf("Usage: Model::Run(OPTIONS,N,[SIGMA],[Y1])\n"
+      Printf("Usage: ToyModel::Run(OPTIONS,N,[SIGMA],[Y1])\n"
 	     "\n"
 	     "Options (first 3 letters enough):\n"
 	     " Mode:\n"
@@ -1565,24 +1622,6 @@ struct Model
 
   }
 };
-/** 
- * Run the tracklet model 
- * 
- * @param opts    Options  
- * @param n       Number of tracks, steps, or events 
- * @param sigma   Cluster variance 
- * @param y1      Location of second layer 
- *
- * @relates Model
- * @ingroup pwglf_forward_tracklets
- */
-Model* TrackletModel(const char* opts="help",
-		     Int_t       n=20,
-		     Double_t    sigma=0.0008,
-		     Double_t    y1=.75)
-{
-  return Model::Run(opts, n, sigma, y1);
-}
 
 
 //

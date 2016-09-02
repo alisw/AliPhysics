@@ -15,15 +15,20 @@
  * tracks per event
  *
  * @ingroup pwglf_forward_tracklets_toy
+ *
+ * @relates ToyModel
  */
 void
 MakeToyEvents(Bool_t full=true)
 {
-  if (!gROOT->GetClass("Model"))
-    gROOT->LoadMacro("$ANA_SRC/dndeta/tracklets3/toymodel/TrackletModel.C+g");
+  TString dir("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
+  if (gSystem->Getenv("ANA_SRC")) dir="$ANA_SRC";
 
+  if (!gROOT->GetClass("ToyModel"))
+    gROOT->LoadMacro(Form("%s/dndeta/tracklets3/toymodel/ToyModel.C+g",
+			  dir.Data()));
 
-  Model* m = new Model(0.75);
+  ToyModel* m = new ToyModel(0.75);
   m->SetOut2In(true);     // Track outside-in
   m->SetGlobal(true);     // Select tracklets globally
   m->SetNoReuse(true);    // Do not reuse clusters 
