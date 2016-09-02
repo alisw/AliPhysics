@@ -13,7 +13,7 @@ AliAnalysisTask* AddTaskEMCALPi0V2 (
   Double_t v2M02cut         = 0.5,
   Double_t v1M02cut         = 0.3, 
   Double_t drCut            = 0.025, 
-  Double_t pi0Asy           = 0,
+  Bool_t   pi0Asy           = kFALSE,
   Double_t boxSSCutMin      = 0,
   Double_t boxSSCutMax      = 0,
   Bool_t   usePhosEPCali    = kTRUE,
