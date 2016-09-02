@@ -28,6 +28,7 @@
 #else
 class TH1D;
 class TH2D;
+class TH1;
 class TH2;
 class TH3;
 class TAxis;
@@ -35,7 +36,8 @@ class TList;
 class TBrowser;
 class THStack;
 class AliAODTracklet;
-class TCanvas; // Autoload 
+class TCanvas; // Autoload
+class TVirtualPad;
 #endif
 
 //====================================================================
@@ -137,7 +139,8 @@ public:
     : TNamed(name,title),
       fCalc(kProduct),
       fMask(0xFF),
-      fVeto(0x0)
+      fVeto(0x0),
+      fInverse(false)
   {}
   /**
    * Copy constructor 
@@ -146,9 +149,10 @@ public:
    */
   AliTrackletBaseWeights(const AliTrackletBaseWeights& o)
     : TNamed(o),
-      fCalc(o.fCalc),
-      fMask(o.fMask),
-      fVeto(o.fVeto)
+      fCalc   (o.fCalc),
+      fMask   (o.fMask),
+      fVeto   (o.fVeto),
+      fInverse(o.fInverse)
   {}
   /**
    * Destructor 
@@ -166,9 +170,10 @@ public:
   {
     if (&o == this) return *this;
     TNamed::operator=(o);
-    fCalc = o.fCalc;
-    fMask = o.fMask;
-    fVeto = o.fVeto;
+    fCalc    = o.fCalc;
+    fMask    = o.fMask;
+    fVeto    = o.fVeto;
+    fInverse = o.fInverse;
     return *this;
   }
   /** 
@@ -232,6 +237,14 @@ public:
    */
   void SetVeto(UChar_t veto) { fVeto = veto; }
   /** 
+   * Inverse the weights calculated.  That is, if this option is
+   * enabled, then the weight used is @f$1/w@f$ where @f$w@f$ is the
+   * normal weight.
+   * 
+   * @param inv If true, inverse weights 
+   */
+  void SetInverse(Bool_t inv) { fInverse = inv; }
+  /** 
    * Check if tracklet is to be reweighed according to mask and veto 
    * 
    * @param tracklet Tracklet 
@@ -262,10 +275,31 @@ public:
    * 
    * @return The weight
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
-				Double_t        cent,
-				Double_t        ipz,
-				TH2*            corr=0) const = 0;
+  Double_t LookupWeight(AliAODTracklet* tracklet,
+			Double_t        cent,
+			Double_t        ipz,
+			TH2*            corr=0) const
+  {
+    if (!CheckTracklet(tracklet)) return 1;
+    Double_t w = CalcWeight(tracklet, cent, ipz, corr);
+    if (fInverse) w = 1/w;
+    return w;
+  }
+  /** 
+   * Calculate the weight of a tracklet.  This member function must be
+   * overloaded.
+   * 
+   * @param tracklet Tracklet 
+   * @param cent     Centrality 
+   * @param ipz      Interaction point Z coordinate 
+   * @param corr     Optional histogram to fill with correlation of weights
+   * 
+   * @return The weight
+   */
+  virtual Double_t CalcWeight(AliAODTracklet* tracklet,
+			      Double_t        cent,
+			      Double_t        ipz,
+			      TH2*            corr) const = 0;
   /** 
    * Store values 
    * 
@@ -280,6 +314,7 @@ public:
     top->Add(new TParameter<int>("mask", fMask, 'f'));
     top->Add(new TParameter<int>("veto", fVeto, 'f'));
     top->Add(new TParameter<int>("calc", fCalc, 'f'));
+    return top;
   }
   /** 
    * Retrieve weights from a collection 
@@ -302,7 +337,16 @@ public:
     fVeto   = GetPar<int>("veto", top);
     return top;
   }
-  virtual void Print(Option_t* option) const
+  /** 
+   * @return always true 
+   */
+  Bool_t IsFolder() const { return true; }  
+  /** 
+   * Print information on reweights 
+   *
+   * @param option Not used 
+   */
+  virtual void Print(Option_t* option="") const //*MENU*
   {
     gROOT->IndentLevel();
     Printf("%s : %s", ClassName(), GetName());
@@ -315,7 +359,8 @@ public:
   }
   UChar_t fCalc;        // Whether the square of the weight is calculated
   UChar_t fMask;        // Which partiles to take
-  UChar_t fVeto;        // Which particles not to take 
+  UChar_t fVeto;        // Which particles not to take
+  Bool_t  fInverse;     // If true, do 1/w 
   ClassDef(AliTrackletBaseWeights,1); // Base class of weights 
 };
 
@@ -389,10 +434,10 @@ public:
    * 
    * @return The weight
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
-				Double_t        cent,
-				Double_t        ipz,
-				TH2*            corr=0) const;
+  virtual Double_t CalcWeight(AliAODTracklet* tracklet,
+			      Double_t        cent,
+			      Double_t        ipz,
+			      TH2*            corr=0) const;
   /** 
    * Add a histogram to weight particle abundances 
    * 
@@ -483,10 +528,6 @@ public:
    */
   void Print(Option_t* option="") const; //*MENU*
   /** 
-   * @return always true 
-   */
-  Bool_t IsFolder() const { return true; }
-  /** 
    * Store weights histograms in output of analysis 
    * 
    * @param out Collection to add histograms to 
@@ -529,11 +570,11 @@ public:
     return GetPdgWeight(fStrangeness, apdg, cent);
   }
 
-protected:
-  
+protected:  
   /** 
    * Look-up weight based on transverse momentum @a pT, particle
-   * species @a pdf and event centrality @a cent.
+   * species @a pdf and event centrality @a cent.  This is used to
+   * calculate the weight of a cluster.
    * 
    * @param pT    (mother) particle transverse momentum 
    * @param pdg   (mother) particle specie number 
@@ -541,7 +582,7 @@ protected:
    * 
    * @return The accumulated weight 
    */
-  virtual Double_t LookupWeight(Double_t pT, Short_t pdg, Double_t cent) const;
+  virtual Double_t CalcWeight(Double_t pT, Short_t pdg, Double_t cent) const;
   /** 
    * Get the histogram associated with a particle species in a given map. 
    * 
@@ -756,9 +797,9 @@ Double_t AliTrackletPtPidStrWeights::GetPdgWeight(const PdgMap&  m,
 }
 //____________________________________________________________________
 Double_t
-AliTrackletPtPidStrWeights::LookupWeight(Double_t pT,
-					 Short_t  pdg,
-					 Double_t cent) const
+AliTrackletPtPidStrWeights::CalcWeight(Double_t pT,
+				       Short_t  pdg,
+				       Double_t cent) const
 {
   Double_t w = 1;
   if (fPt && !fPt->TestBit(kDisabled)) {
@@ -782,10 +823,10 @@ AliTrackletPtPidStrWeights::LookupWeight(Double_t pT,
 
 //____________________________________________________________________
 Double_t
-AliTrackletPtPidStrWeights::LookupWeight(AliAODTracklet* tracklet,
-					 Double_t        cent,
-					 Double_t        ipz,
-					 TH2*            corr) const
+AliTrackletPtPidStrWeights::CalcWeight(AliAODTracklet* tracklet,
+				       Double_t        cent,
+				       Double_t        ipz,
+				       TH2*            corr) const
 {
 #if 0
   if (!tracklet->IsSimulated()) {
@@ -793,16 +834,14 @@ AliTrackletPtPidStrWeights::LookupWeight(AliAODTracklet* tracklet,
     return 1;
   }
 #endif
-  if (!CheckTracklet(tracklet)) return 1;
-  
   Double_t w1 = 1, w2 = 1;
   
   // AliAODMCTracklet* mc = static_cast<AliAODMCTracklet*>(tracklet);
   AliAODTracklet* mc = tracklet;
   Short_t pdg1 = mc->GetParentPdg();
   Short_t pdg2 = mc->GetParentPdg(true);
-  if      (pdg1>0)          w1 = LookupWeight(mc->GetParentPt(),    pdg1,cent);
-  if      (pdg2>0)          w2 = LookupWeight(mc->GetParentPt(true),pdg2,cent);
+  if      (pdg1>0)          w1 = CalcWeight(mc->GetParentPt(),    pdg1,cent);
+  if      (pdg2>0)          w2 = CalcWeight(mc->GetParentPt(true),pdg2,cent);
   else if (fCalc!=kProduct) w2 = w1;
 
   if (corr && mc->IsMeasured()) corr->Fill(w1, w2);
@@ -1118,17 +1157,56 @@ public:
    * 
    * @param tracklet Tracklet 
    * @param cent     Centrality 
-   * @param ipz      Interaction point Z coordinate 
+   * @param ipZ      Interaction point Z coordinate 
    * @param corr     Optional histogram to fill with correlation of weights
    * 
    * @return The weight
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
-				Double_t        cent,
-				Double_t        ipZ,
-				TH2*            corr=0) const;
-
-  /** List of histograms */
+  virtual Double_t CalcWeight(AliAODTracklet* tracklet,
+			      Double_t        cent,
+			      Double_t        ipZ,
+			      TH2*            corr=0) const;
+  
+  /** 
+   * Project 3D histogram on 1 axis 
+   * 
+   * @param h 
+   * @param which 
+   * @param name 
+   * 
+   * @return 
+   */
+  TH1* Project(TH3* h, char which, const char* name);
+  /** 
+   * Draw the weights 
+   * 
+   * @param option 
+   */
+  void Draw(Option_t* option=""); //*MENU*
+  /** 
+   * Print information on reweights 
+   *
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const; //*MENU*
+  /** 
+   * Draw one stack 
+   * 
+   * @param pad 
+   * @param stack 
+   * @param xtitle 
+   * @param min 
+   * @param max 
+   */
+  void DrawStack(TVirtualPad* pad,
+		 THStack*     stack,
+		 const char*  xtitle,
+		 Double_t     min=0,
+		 Double_t     max=2.5);
+  void DrawOne(Double_t cent=2.5,
+	       Double_t eta=0,
+	       Double_t ipz=0) const; //*MENU*
+/** List of histograms */
   TObjArray fHistos;
   /** Centrality axis */
   TAxis fCentAxis;
@@ -1244,23 +1322,204 @@ AliTrackletDeltaWeights::FindBin(Double_t value,
 				   
 //____________________________________________________________________
 Double_t
-AliTrackletDeltaWeights::LookupWeight(AliAODTracklet* tracklet,
+AliTrackletDeltaWeights::CalcWeight(AliAODTracklet* tracklet,
 				      Double_t        cent,
 				      Double_t        ipZ,
 				      TH2*            corr) const
 {
-  if (!tracklet->IsMeasured()) return 1;
-
   TH3* h = FindHisto(cent);
   if (!h) return 1;
 
-  Int_t etaBin   = FindBin(tracklet->GetEta(),   h->GetXaxis());
-  Int_t deltaBin = FindBin(tracklet->GetDelta(), h->GetYaxis());
-  Int_t ipzBin   = FindBin(ipZ,                  h->GetZaxis());
+  Double_t eta      = tracklet->GetEta();
+  Double_t delta    = tracklet->GetDelta();
+  Int_t    etaBin   = FindBin(eta,   h->GetXaxis());
+  Int_t    deltaBin = FindBin(delta, h->GetYaxis());
+  Int_t    ipzBin   = FindBin(ipZ,   h->GetZaxis());
 
   return h->GetBinContent(etaBin, deltaBin, ipzBin);
 }
+
+//____________________________________________________________________
+TH1*
+AliTrackletDeltaWeights::Project(TH3* h, char which, const char* name)
+{
+  TAxis* a0  = 0;
+  TAxis* a1  = 0;
+  TAxis* a2  = 0;
+  typedef
+    TH1D* (TH3::*ProjFunc)(const char*,Int_t,Int_t,Int_t,Int_t,Option_t*) const;
+  ProjFunc func = 0;
+  switch (which) {
+  case 'x':
+    a0   = h->GetXaxis();
+    a1   = h->GetYaxis();
+    a2   = h->GetZaxis();
+    func = &TH3::ProjectionX;
+    break;
+  case 'y':
+    a0   = h->GetYaxis();
+    a1   = h->GetXaxis();
+    a2   = h->GetZaxis();
+    func = &TH3::ProjectionY;
+    break;
+  case 'z':
+    a0   = h->GetZaxis();
+    a1   = h->GetXaxis();
+    a2   = h->GetYaxis();
+    func = &TH3::ProjectionZ;
+    break;
+  }
+#if 0
+  TH1* ret = (h->*func)(Form("%s_%s",h->GetName(),name),
+			1, a1->GetNbins(), 1, a2->GetNbins(),"");
+#endif
+  TString n; n.Form("%s_%s",h->GetName(),name);
+  TString t(h->GetTitle());
+  Int_t   nx  = a0->GetNbins();
+  TH1*    ret = 0;
+  if (a0->GetXbins() && a0->GetXbins()->GetArray())
+    ret = new TH1D(n,t,nx,a0->GetXbins()->GetArray());
+  else
+    ret = new TH1D(n,t,nx,a0->GetXmin(),a0->GetXmax());
+  ret->Sumw2();
+  ret->SetXTitle(a0->GetTitle());
+  static_cast<const TAttAxis*>(a0)->Copy(*(ret->GetXaxis()));
+  ret->SetDirectory(0);
+  ret->SetLineColor(h->GetMarkerColor());
+  ret->SetMarkerColor(h->GetMarkerColor());
+  ret->SetFillColor(kWhite);// color);
+  ret->SetFillStyle(0);
+  ret->SetMarkerStyle(20);
   
+  for (Int_t i0 = 1; i0 <= ret->GetNbinsX(); i0++) {
+    Int_t    count = 0;
+    Double_t sum   = 0;
+    Double_t sumE2 = 0;
+    for (Int_t i1 = 1; i1 <= a1->GetNbins(); i1++) {
+      for (Int_t i2 = 1; i2 <= a2->GetNbins(); i2++) {
+	Int_t bin = 0;
+	switch (which) {
+	case 'x': bin = h->GetBin(i0, i1, i1); break;
+	case 'y': bin = h->GetBin(i1, i0, i2); break;
+	case 'z': bin = h->GetBin(i1, i2, i0); break;
+	}
+	Double_t c = h->GetBinContent(bin);
+	Double_t e = h->GetBinError  (bin);
+	if (c < 1e-3 || e < 1e-6) continue;
+	count++;
+	sum   += c;
+	sumE2 += e*e;
+      }
+    }
+    // ret->SetBinContent(i0, ret->GetBinContent(i0)/count);
+    // ret->SetBinError  (i0, ret->GetBinError  (i0)/count);
+    ret->SetBinContent(i0, sum/count);
+    ret->SetBinError  (i0, TMath::Sqrt(sumE2)/count);
+  }
+	  
+      
+  // ret->Scale(1./(a1->GetNbins()*a2->GetNbins()));
+  return ret;
+}
+  
+//____________________________________________________________________
+void
+AliTrackletDeltaWeights::Print(Option_t* option) const
+{
+  AliTrackletBaseWeights::Print(option);
+  gROOT->IncreaseDirLevel();
+  gROOT->IndentLevel();
+  Printf("%d centrality bins", fCentAxis.GetNbins());
+  for (Int_t i = 0; i < fHistos.GetEntriesFast(); i++) {
+    TH3*  h = static_cast<TH3*>(fHistos.At(i));
+    if (!h) continue;
+    h->Print(option);
+  }    
+  gROOT->DecreaseDirLevel();
+}
+//____________________________________________________________________
+void
+AliTrackletDeltaWeights::DrawOne(Double_t cent,
+				 Double_t eta,
+				 Double_t ipz) const
+{
+  TH3* h3 = FindHisto(cent);
+  if (!h3) return;
+
+  Int_t etaBin = FindBin(eta, h3->GetXaxis());
+  Int_t ipzBin = FindBin(ipz, h3->GetZaxis());
+
+  TH1* h1 = h3->ProjectionY("tmp", etaBin, etaBin, ipzBin, ipzBin);
+  h1->SetDirectory(0);
+  h1->Draw();
+}
+				 
+//____________________________________________________________________
+void
+AliTrackletDeltaWeights::DrawStack(TVirtualPad* pad,
+				   THStack*     stack,
+				   const char*  xtitle,
+				   Double_t     min,
+				   Double_t     max)
+{
+  stack->SetMinimum(min);
+  stack->SetMaximum(max);
+  pad->SetTicks();
+  pad->SetGridy();
+  pad->cd();
+  stack->Draw("nostack");
+  TH1* h = stack->GetHistogram();
+  h->SetXTitle(xtitle);
+  h->SetYTitle(stack->GetTitle());
+  h->GetXaxis()->SetNdivisions(205);
+  h->GetYaxis()->SetNdivisions(205);
+  pad->Modified();
+}
+  
+//____________________________________________________________________
+void
+AliTrackletDeltaWeights::Draw(Option_t* option)
+{
+  TVirtualPad* master = TVirtualPad::Pad();
+  if (!master) {
+    Warning("Draw", "No current pad to draw in");
+    return;
+  }
+
+  Int_t   nPad = 3;
+  Int_t   iPad = 0;
+  TString opt(option); opt.ToUpper();
+
+  master->SetTopMargin(0.01);
+  master->SetRightMargin(0.01);
+  if (opt.Contains("V"))
+    master->Divide(1,nPad);
+  else
+    master->Divide(nPad,1, 0, 0);
+
+  THStack* stackEta   = new THStack("eta",   "#LTw#GT_{#Delta,IP_{z}}");
+  THStack* stackDelta = new THStack("delta", "#LTw#GT_{#eta,IP_{z}}");
+  THStack* stackIPz   = new THStack("ipz",   "#LTw#GT_{#eta,#Delta}");
+  
+  for (Int_t i = 0; i < fHistos.GetEntriesFast(); i++) {
+    TH3*  h = static_cast<TH3*>(fHistos.At(i));
+    if (!h) continue;
+
+    TH1* etaProj   = Project(h, 'x', "eta");
+    TH1* deltaProj = Project(h, 'y', "delta");
+    TH1* ipzProj   = Project(h, 'z', "ipz");
+    stackEta  ->Add(etaProj);
+    stackDelta->Add(deltaProj);
+    stackIPz  ->Add(ipzProj);
+  }
+
+  DrawStack(master->cd(1), stackEta,   "#eta");
+  DrawStack(master->cd(2), stackDelta, "#Delta");
+  DrawStack(master->cd(3), stackIPz,   "IP_{z}");
+
+  master->Modified();
+}
+
 #endif
 //____________________________________________________________________
 // 
