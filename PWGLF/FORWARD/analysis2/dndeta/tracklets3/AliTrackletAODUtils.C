@@ -19,6 +19,7 @@
 # include <TParameter.h>
 # include <TError.h>
 # include <TMath.h>
+# include <TFile.h>
 # include <TDirectory.h>
 # include <THashList.h>
 # include <TProfile.h>
@@ -34,6 +35,7 @@ class TProfile;
 class TProfile2D;
 class TAxis;
 class TDirectory;
+class TFile;
 class TDatabasePDG; // Auto-load
 class THStack;
 #endif
@@ -517,7 +519,7 @@ public:
    * 
    * @return Pointer to container or null 
    */
-  static TDirectory* GetT(TDirectory* parent, const char* name,Bool_t verb=true);
+  static TDirectory* GetT(TDirectory* parent,const char* name,Bool_t verb=true);
   /** 
    * Get a double-precision value from a container 
    * 
@@ -816,11 +818,11 @@ public:
    * The integral is scaled to number of bins, that is, we calculate
    * the weighted average over @f$\mathrm{IP}_z@f$ 
    * 
-   @f{eqnarray}
+   @f{eqnarray*}{
    N(\eta,\Delta) &=& \sum_{\mathrm{IP}_z} w N(\eta,\Delta,\mathrm{IP}_z)\\
    \delta N(\eta,\Delta) &=& \sqrt{1/\sum_{\mathrm{IP}_z} w}\\
    w &=&  \delta N(\eta,\Delta,\mathrm{IP}_z)
-   @f{eqnarray}
+   @f}
    * 
    * @param h 3D histogram to integrate 
    * 
@@ -991,6 +993,43 @@ public:
    */
   static Int_t  PdgBin(Int_t pdg);
   /* @} */
+  /** 
+   * Get name of centrality folder 
+   * 
+   * @param c1 Lower bound 
+   * @param c2 Upper bound 
+   * 
+   * @return String 
+   */
+  static const char* CentName(Double_t c1, Double_t c2);
+  /** 
+   * Return colour correspondig to a centrality bin 
+   * 
+   * @param axis Centrality axis 
+   * @param c1   Least centrality 
+   * @param c2   Largest centrality 
+   * 
+   * @return Colour 
+   */
+  static Color_t CentColor(const TAxis& axis,
+			   Double_t     c1,
+			   Double_t     c2);
+  /** 
+   * Return colour correspondig to a centrality bin 
+   * 
+   * @param bin Centrality bin number 
+   * 
+   * @return Colour 
+   */
+  static Color_t CentColor(Int_t bin);
+  /** 
+   * Open a file 
+   * 
+   * @param filename File name 
+   * 
+   * @return Opened file handle or null 
+   */
+  static TFile* OpenFile(const char* filename);
 protected:
   ClassDef(AliTrackletAODUtils,1); // Utilities
 };
@@ -2330,7 +2369,54 @@ const TAxis& AliTrackletAODUtils::PdgAxis()
   FixAxis(*axis);
   return *axis;
 }
-    
+//____________________________________________________________________
+TFile* AliTrackletAODUtils::OpenFile(const char* filename)
+{
+  TFile* file = TFile::Open(filename, "READ");
+  if (!file) {
+    ::Warning("OpenFile", "Failed to open \"%s\"", filename);
+    return 0;
+  }
+  return file;
+}
+//____________________________________________________________________
+const char* AliTrackletAODUtils::CentName(Double_t c1, Double_t c2)
+{
+  static TString tmp;
+  tmp.Form("cent%03dd%02d_%03dd%02d",
+	   Int_t(c1), Int_t(c1*100)%100,
+	   Int_t(c2), Int_t(c2*100)%100);
+  return tmp.Data();
+}
+//____________________________________________________________________
+Color_t AliTrackletAODUtils::CentColor(Int_t bin)
+{
+  const Color_t cc[] = { kMagenta+2, // 0
+			 kBlue+2,    // 1
+			 kAzure-1,   // 2 // 10,
+			 kCyan+2,    // 3
+			 kGreen+1,   // 4 
+			 kSpring+5,  // 5 //+10,
+			 kYellow+1,  // 6
+			 kOrange+5,  // 7 //+10,
+			 kRed+1,     // 8
+			 kPink+5,    // 9 //+10,
+			 kBlack };   // 10
+  Color_t tc = cc[bin % 10];
+  return tc;
+}
+//____________________________________________________________________
+Color_t AliTrackletAODUtils::CentColor(const TAxis& axis,
+				       Double_t     c1,
+				       Double_t     c2)
+{
+  Double_t avgC = (c1+c2)/2;
+  Int_t    binC = const_cast<TAxis&>(axis).FindBin(avgC);
+  return CentColor(binC);
+}
+
+  
+  
 #endif
 // Local Variables:
 //  mode: C++
