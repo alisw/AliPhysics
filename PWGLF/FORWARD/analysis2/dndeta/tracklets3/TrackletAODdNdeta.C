@@ -72,6 +72,7 @@ struct TrackletAODdNdeta : public TrainSetup
     fOptions.Add("reweigh-calc", "MODE", "prod,square,sum",        "prod");
     fOptions.Add("reweigh-mask", "MASK", "Tracklet mask for weighing", 0xFF);
     fOptions.Add("reweigh-veto", "VETO", "Tracklet veto for weighing", 0x0);
+    fOptions.Add("reweigh-inv",          "W -> 1/W",                 false);
     fOptions.SetDescription("Analyse AOD for dN/deta from tracklets");
     fOptions.Set("type", "AOD");
   }
@@ -163,7 +164,7 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "WeightMask",      "reweigh-mask",     0xFF);
     FromOption(task, "WeightVeto",      "reweigh-veto",     0x0);
     SetOnTask (task, "WeightCalc",                          mcal);
-    
+    FromOption(task, "WeightInverse",   "reweigh-inv",      false);
     // if (mc && we) {
     //   TUrl wurl(fOptions.AsString("reweight"));
     //   TFile* wfile = TFile::Open(wurl.GetFile());
