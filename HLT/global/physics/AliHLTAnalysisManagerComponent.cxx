@@ -70,6 +70,8 @@
 #include "TClass.h"
 #include "TDataMember.h"
 
+#include "TDirectory.h"
+
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -211,6 +213,10 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerInit(void*)
 	}
     }
   }
+
+  //don't keep track of root objects
+  TDirectory::AddDirectory(kFALSE);
+  TH1::AddDirectory(kFALSE);
 
   fAnalysisManager = new AliHLTAnalysisManager();
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");

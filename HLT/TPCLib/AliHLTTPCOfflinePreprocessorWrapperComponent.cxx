@@ -36,6 +36,8 @@
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCcalibTime.h"
 #include "AliHLTMessage.h"
+#include "TDirectory.h"
+#include "TH1.h"
 
 #include "TMath.h"
 #include "TObjString.h" 
@@ -146,6 +148,10 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::DoInit( int argc, const char**
   
   int iResult=0;
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
+
+  //don't keep track of root objects
+  TDirectory::AddDirectory(kFALSE);
+  TH1::AddDirectory(kFALSE);
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
