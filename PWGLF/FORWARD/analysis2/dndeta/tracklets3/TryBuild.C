@@ -26,6 +26,7 @@ TryBuild()
   gROOT->LoadMacro("AliTrackletAODdNdeta.C+g");
   gROOT->LoadMacro("AliTrackletdNdeta.C+g");
   gROOT->LoadMacro("AliTrackletdNdeta2.C+g");
+  gROOT->LoadMacro("MakeDeltaWeights.C+g");
 }
 //
 // EOF
