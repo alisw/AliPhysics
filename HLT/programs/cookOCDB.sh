@@ -1,8 +1,8 @@
 #!/bin/bash
 SOURCE=/cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB
-TARGET=/opt/HLT/data/HCDB_new_2016-07-26
+TARGET=/opt/HLT/data/HCDB_new_2016-09-02
 FUTURE_RUN=500000
-SOURCE_RUN=258307
+SOURCE_RUN=260014
 
 #Download default CDB entries for future run
 aliroot -l -b -q $ALICE_SOURCE/HLT/programs/downloadCDB.C"($FUTURE_RUN,\"local://$SOURCE\",\"local://$TARGET/tmp\",\"*/*/*\")"
@@ -57,6 +57,7 @@ $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGE
 #Fetch some special objects from one reference run and extend them, because we want the latest object not the default object
 $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="TPC/Calib/AltroConfig" sourceRun=$SOURCE_RUN
 $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="TPC/Calib/Temperature" sourceRun=$SOURCE_RUN
+$ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="TPC/Calib/GasComposition" sourceRun=$SOURCE_RUN
 $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="ITS/Calib/BadChannelsSSD" sourceRun=$SOURCE_RUN
 $ALICE_SOURCE/HLT/programs/extendHLTOCDB.sh ocdbSource=$SOURCE ocdbTarget=$TARGET cdbEntries="ITS/Calib/SPDDead" sourceRun=$SOURCE_RUN
 
@@ -77,11 +78,12 @@ rm -f $ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform/*
 #Use all TPC Compression objects from cvmfs, to have correct behavior for all runs
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressor/*
 rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/*
-cp $SOURCE//HLT/ConfigTPC/TPCDataCompressor/* $TARGET/HLT/ConfigTPC/TPCDataCompressor
-cp $SOURCE//HLT/ConfigTPC/TPCDataCompressorHuffmanTables/* $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
+cp $SOURCE/HLT/ConfigTPC/TPCDataCompressor/* $TARGET/HLT/ConfigTPC/TPCDataCompressor
+cp $SOURCE/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/* $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
 
-#Create a default huffman table with diffential compression to match HLT settings in data replay
+#Create a default huffman table with diffential compression to match HLT settings in data replay, will have low version number, so it is overwritten by new tables for new runs
 aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
+aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TARGET/HLT/ConfigTPC/TPCDataCompressor/Run252209_999999999_v2_s0.root\", \"local://$TARGET\", 0, -1, 1)"
 
 #copy old GRP entries
 cp -n $ALIHLT_HCDBDIR/GRP/GRP/Data/* $TARGET/GRP/GRP/Data
