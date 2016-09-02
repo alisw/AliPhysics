@@ -37,6 +37,7 @@ class AliAODTracklet;
 class AliVEvent;
 class AliVVertex;
 class AliMultiplicity;
+class AliVMultiplicity;
 class AliAnalysisDataContainer;
 class AliITSMultRecBg;
 class AliGeomManager;           // Auto-load
@@ -312,7 +313,7 @@ protected:
    * 
    * @return true on success 
    */
-  Bool_t ProcessTracklets(Bool_t normal, AliMultiplicity* mult);
+  Bool_t ProcessTracklets(Bool_t normal, AliVMultiplicity* mult);
   /** 
    * Process a single tracklet 
    * 
@@ -571,17 +572,23 @@ void AliTrackletAODTask::UserExec(Option_t*)
 //____________________________________________________________________
 Bool_t AliTrackletAODTask::ProcessEvent()
 {
-  AliVEvent*        event    = 0;
-  if (!HasGeometry())         return false;
-  if (!(event = FindEvent())) return false;
-  if (!HasField(event))       return false;
+  AliVEvent* event = FindEvent();
+  if (!event) return false;
+  
 
-  TTree*            clusters = 0;
-  const AliVVertex* ip       = 0;
-  if (!(clusters = FindClusters())) return false;
-  if (!(ip       = FindIP(event)))  return false;
-
-  Bool_t ret = Reconstruct(clusters, ip);
+  TTree*            clusters = FindClusters();
+  const AliVVertex* ip       = FindIP(event);
+  Bool_t            ret      = false;
+  if (!ip) return false;
+  if (clusters) {
+    if (!HasGeometry())           ret = false;
+    if (ret && !HasField(event))  ret = false;
+    // If we have clusters, then try to reconstruct the event (again)
+    if (ret)                      ret = Reconstruct(clusters, ip);
+  }
+  else
+    // Otherwise, use the stored tracklets (max Delta = 1.5)
+    ret = ProcessTracklets(true, event->GetMultiplicity());
 
   CleanClusters(clusters);
 
@@ -739,12 +746,15 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
 }
 
 //____________________________________________________________________
-Bool_t AliTrackletAODTask::ProcessTracklets(Bool_t normal,AliMultiplicity* mult)
+Bool_t AliTrackletAODTask::ProcessTracklets(Bool_t normal,
+					    AliVMultiplicity* vmult)
 {
   // Now loop over all tracklets.  Since this method is only called
   // once per "reconstruction" pass, we save a lot of computing time
   // since we loop over the tracklets of each reconstruction exactly
-  // once. 
+  // once.
+  // if (!mult->IsA()->InheritsFrom(AliMultiplicity::Class())) return false;
+  AliMultiplicity* mult = static_cast<AliMultiplicity*>(vmult);
   Int_t nTracklets = mult->GetNumberOfTracklets();
   for (Int_t trackletNo = 0; trackletNo < nTracklets; trackletNo++) {
     if (!ProcessTracklet(normal,mult,trackletNo)) return false;
