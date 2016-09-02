@@ -337,6 +337,7 @@ TCollection* AliHLTAnalysisManagerComponent::GetOutputs()
   //otherwise just return the pointer.
   if (!fAnalysisOutputContainer) {
     fAnalysisOutputContainer = new AliHLTObjArray(1);
+    fAnalysisOutputContainer->SetOwner(kTRUE);
     TIter i(fAnalysisManager->GetOutputs());
     while (AliAnalysisDataContainer* adc = (AliAnalysisDataContainer*)i.Next())
     {
