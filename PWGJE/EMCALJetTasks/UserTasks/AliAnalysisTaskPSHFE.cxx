@@ -1474,7 +1474,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMC7->Add(fHistNevents_EMC7);
     fOutputEMC7->Add(fHistPtSum_EMC7);
     fOutputEMC7->Add(fHistPtSumTag_EMC7);
-    fOutputEMC7->Add(fHistPtSumTag_EMC7);
+    fOutputEMC7->Add(fHistPtSumEMC_EMC7);
     fOutputEMC7->Add(fHistEtaPhi_EMC7);
     fOutputEMC7->Add(fHistEtaPhiTag_EMC7);
     fOutputEMC7->Add(fHistInvMassElecLike_EMC7);
@@ -1528,7 +1528,7 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fOutputEMCJet->Add(fHistNevents_EMCJet);
     fOutputEMCJet->Add(fHistPtSum_EMCJet);
     fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
-    fOutputEMCJet->Add(fHistPtSumTag_EMCJet);
+    fOutputEMCJet->Add(fHistPtSumEMC_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhi_EMCJet);
     fOutputEMCJet->Add(fHistEtaPhiTag_EMCJet);
     fOutputEMCJet->Add(fHistInvMassElecLike_EMCJet);
@@ -1984,9 +1984,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }//end if(tagStrong)
 
     }//end main track loop
-    if(tagEvt){
+    if(UseNonSignalEvents){
         fPool->UpdatePool(trkArr);
+    }else{
+        if(tagEvt){
+            fPool->UpdatePool(trkArr);
+        }
     }
+
     //Call function to fill Region histos and pass it int array of IDs for identified electron tracks
     Int_t elecIDsSparse[elecCnt];
     for(Int_t i=0;i<elecCnt;i++){
