@@ -168,7 +168,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisNITSclsvsPtDaughters;             //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsPhiDaughters;            //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsEtaDaughters;            //!<!  Histo. of output slot #3 (fOutputTrack)
- TH1I* fHisSPDclsDaughters;                  //!<!  Histo. of output slot #3 (fOutputTrack)
+ TH1F* fHisSPDclsDaughters;                  //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisPtAllTracks;                      //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisPhiAllTracks;                     //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisEtaAllTracks;                     //!<!  Histo. of output slot #3 (fOutputTrack)
@@ -185,7 +185,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisNITSclsvsPtAllTracks;             //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsPhiAllTracks;            //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsEtaAllTracks;            //!<!  Histo. of output slot #3 (fOutputTrack)
- TH1I* fHisSPDclsAllTracks;                  //!<!  Histo. of output slot #3 (fOutputTrack)
+ TH1F* fHisSPDclsAllTracks;                  //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisdistrFakeTr;                      //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisd0f;                              //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisd0f_filt;                         //!<!  Histo. of output slot #3 (fOutputTrack)
@@ -236,7 +236,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TProfile2D *fHisQ[3];                       //!<!  Histo. of output slot #8 (fOutputFlowObs)
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,11); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,12); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

@@ -569,18 +569,21 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
 
   TString hnameEntries="hNentries";
-  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 10,-0.5,9.5);
-  fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHisNentries->GetXaxis()->SetBinLabel(2,"Pile-up Rej");
-  fHisNentries->GetXaxis()->SetBinLabel(3,"No VertexingHF");
-  fHisNentries->GetXaxis()->SetBinLabel(4,"nCandidates(AnCuts)");
-  fHisNentries->GetXaxis()->SetBinLabel(5,"EventsWithGoodVtx");
-  fHisNentries->GetXaxis()->SetBinLabel(6,"N candidates");
+  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 13,-0.5,12.5);
+  fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsRead");
+  fHisNentries->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
+  fHisNentries->GetXaxis()->SetBinLabel(3,"nEvents Mismatched dAOD");
+  fHisNentries->GetXaxis()->SetBinLabel(4,"nEventsAnal");
+  fHisNentries->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
+  fHisNentries->GetXaxis()->SetBinLabel(6,"No VertexingHF");
+  fHisNentries->GetXaxis()->SetBinLabel(7,"nCandidates(AnCuts)");
+  fHisNentries->GetXaxis()->SetBinLabel(8,"EventsWithGoodVtx");
+  fHisNentries->GetXaxis()->SetBinLabel(9,"N candidates");
   if(fReadMC){
-    fHisNentries->GetXaxis()->SetBinLabel(7,"MC Cand from c");
-    fHisNentries->GetXaxis()->SetBinLabel(8,"MC Cand from b");
-    fHisNentries->GetXaxis()->SetBinLabel(9,"N fake Trks");
-    fHisNentries->GetXaxis()->SetBinLabel(10,"N true Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(10,"MC Cand from c");
+    fHisNentries->GetXaxis()->SetBinLabel(11,"MC Cand from b");
+    fHisNentries->GetXaxis()->SetBinLabel(12,"N fake Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(13,"N true Trks");
   }
 
   fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
@@ -923,7 +926,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       fHisNITSclsvsEtaDaughters=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the daughter tracks;#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
 
       hname="hSPDclsDaughters";
-      fHisSPDclsDaughters = new TH1I(hname.Data(),"N SPD points distribution;;Entries",4,-0.5,3.5);
+      fHisSPDclsDaughters = new TH1F(hname.Data(),"N SPD points distribution;;Entries",4,-0.5,3.5);
       fHisSPDclsDaughters->GetXaxis()->SetBinLabel(1, "no SPD");
       fHisSPDclsDaughters->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
       fHisSPDclsDaughters->GetXaxis()->SetBinLabel(3, "kOnlySecond");
@@ -978,7 +981,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       fHisNITSclsvsEtaAllTracks=new TH2F(hname.Data(),"N ITS clusters vs #eta distribution of the AOD tracks (ID>0);#eta;N ITS cls",80,-2.,2.,7,-0.5,6.5);
 
       hname="hSPDclsAllTracks";
-      fHisSPDclsAllTracks = new TH1I(hname.Data(),"N SPD points distribution AOD tracks (ID>0);;Entries",4,-0.5,3.5);
+      fHisSPDclsAllTracks = new TH1F(hname.Data(),"N SPD points distribution AOD tracks (ID>0);;Entries",4,-0.5,3.5);
       fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(1, "no SPD");
       fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(2, "kOnlyFirst");
       fHisSPDclsAllTracks->GetXaxis()->SetBinLabel(3, "kOnlySecond");
@@ -1459,6 +1462,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(fCuts->GetUseCentrality()) PostData(6,fOutputCheckCentrality);
   }
 
+
+  // Protection against the mismatch of candidate TRefs:
+  //   Check if AOD and corresponding deltaAOD files contain the same number of events.
+  //   In case of discrepancy the event is rejected.
+  fHisNentries->Fill(0);
+  AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  TTree *treeAOD      = aodHandler->GetTree();
+  TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
+  if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
+    AliWarning("Difference in number of entries in main and friend tree, skipping event");
+    fHisNentries->Fill(2);
+    return;
+  }
+  fHisNentries->Fill(1);
+
+
   TClonesArray *arrayProng =0;
 
   // Load all the branches of the DeltaAOD - needed for SelectionBit counting
@@ -1651,7 +1670,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only track related histograms\n");
     isSimpleMode=kTRUE;
-    fHisNentries->Fill(2);
+    fHisNentries->Fill(5);
   }
 
   TClonesArray *mcArray = 0;
@@ -1902,7 +1921,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   // count event
-  fHisNentries->Fill(0);
+  fHisNentries->Fill(3);
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -1912,11 +1931,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   const AliESDVertex vESD(pos,cov,100.,100);
 
   TString primTitle = vtx1->GetTitle();
-  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(4);
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(7);
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //TString trigclass=aod->GetFiredTriggerClasses();
-  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHisNentries->Fill(5); //tmp
+  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHisNentries->Fill(8); //tmp
 
 
 
@@ -2502,8 +2521,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	Int_t label=0;
 	if(fReadMC){
 	  label=track->GetLabel();
-	  if (label<0) fHisNentries->Fill(8);
-	  else fHisNentries->Fill(9);
+	  if (label<0) fHisNentries->Fill(11);
+	  else fHisNentries->Fill(12);
 	}
 
 
@@ -2587,12 +2606,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if(mot){
 	      Int_t pdgMotCode = mot->GetPdgCode();
 
-	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(6); //from primary charm
-	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(7); //from beauty
+	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(9); //from primary charm
+	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(10); //from beauty
 	    }
 	  }
 	}//end MC
-	fHisNentries->Fill(5);//count the candidates (data and MC)
+	fHisNentries->Fill(8);//count the candidates (data and MC)
 
 	for(Int_t id=0;id<ndaugh;id++){
 	  //other histograms to be filled when the cut object is given
@@ -2731,7 +2750,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
-	       fHisNentries->Fill(3); //candidates passing analysis cuts
+	       fHisNentries->Fill(6); //candidates passing analysis cuts
 
 	    AliAODPid *pid = track->GetDetPid();
 	      if(pid){
