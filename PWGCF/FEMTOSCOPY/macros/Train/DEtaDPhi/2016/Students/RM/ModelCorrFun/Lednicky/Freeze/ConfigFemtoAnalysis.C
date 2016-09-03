@@ -74,8 +74,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    const char *pair_types[numOfPairTypes] = { "PP" /*0*/, "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", \
    "LamLam" /*9*/, "aLam_aLam", "Lam_aLam", "all" /*12*/, "plus", "minus", "mixed"};
 	// 1 wlaczaja nam pary do analizy, 0 wylaczaja
-   int runch[numOfPairTypes] = {1/*PP*/, 1/*aPaP*/, 1/*PaP*/, 1/*KpKp*/, 1/*KmKm*/, 1/*KpKm*/, 1,/*PIpPIp*/, 1/*PImPIm*/, 1/*PIpPIm*/,\
-    1 /*"LamLam"*/, 1 /*"aLam_aLam"*/, 1 /*"Lam_aLam"*/, 0/*all*/, 0/*plus*/, 0/*minus*/, 0/*mixed*/};
+
+   int runch[numOfPairTypes] = {1/*PP*/, 1/*aPaP*/, 1/*PaP*/, 1/*KpKp*/, 1/*KmKm*/, 1/*KpKm*/, 0,/*PIpPIp*/, 0/*PImPIm*/, 0/*PIpPIm*/,\
+				0 /*"LamLam"*/, 0 /*"aLam_aLam"*/, 0 /*"Lam_aLam"*/, 0/*all*/, 0/*plus*/, 0/*minus*/, 0/*mixed*/};
+
 
 /************** K_T SETTINGS *************/   
 	//ilosc binow przy pedzie; kt = (p1 - p2)/2 W TEJ ANALIZIE TO MOZE BYC pt = |pt1| + |pt2|
