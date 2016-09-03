@@ -1,4 +1,4 @@
-AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE)
+AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE, Bool_t UseNonSignalEvents=kFALSE)
 {
     //==============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,6 +30,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
     PSHFEtask->SetElectronTrackCuts(trkCutsStrong);
     PSHFEtask->SetSSCutBool(SSCuts);
     PSHFEtask->SetAODEvent(isAOD);
+    PSHFEtask->SetUseNonSignalEvents(UseNonSignalEvents);
     mgr->AddTask(PSHFEtask);  
 
     TString contname = "";
