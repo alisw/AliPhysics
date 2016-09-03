@@ -246,7 +246,8 @@ Int_t AliTPCPreprocessorOffline::CalibTimeVdrift(AliTPCcalibTime* timeDrift, Int
   //4.b make alignment
   //
   MakeFitTime();
-  TFile * ftime= TFile::Open("fitITSVertex.root");
+  TFile* ftime = NULL;
+  if (!(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)) ftime = TFile::Open("fitITSVertex.root");
   if (ftime){
     TObject * alignmentTime=ftime->Get("FitCorrectionTime");
     if (alignmentTime) fVdriftArray->AddLast(alignmentTime);
@@ -2408,6 +2409,11 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
   //
   //
   //
+  if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+  {
+    //CalibObjects.root does not exist in HLT case, so we cannot use it to create distortion map
+    return;
+  }
   TFile f("CalibObjects.root");
   
   //  const char *cdtype[7]={"ITS","TRD","Vertex","TOF","TPC","TPC0","TPC1"};
@@ -2561,10 +2567,14 @@ void AliTPCPreprocessorOffline::MakePrimitivesTime(){
   // Create primitive transformation to fit
   //
   fAlignTree=new TChain("fit","fit");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdy");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdsnp");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdy");
-  fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdsnp");
+  if (!(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0))
+  {
+    //File does not exist when running on HLT cluster
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdy");
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdsnp");
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdy");
+    fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdsnp");
+  }
   // 
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   Double_t bzField=AliTrackerBase::GetBz(); 
@@ -2741,10 +2751,12 @@ void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC
   fAlignTree->SetAlias("AlignTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1002,ptype)+0");
   fAlignTree->SetAlias("FitCorrectionTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1003,ptype)+0");
 
-
-  TFile *f = new TFile("fitITSVertex.root","update");
-  corrTime->Write("FitCorrectionTime");
-  f->Close();
+  if (!(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0))
+  {
+    TFile *f = new TFile("fitITSVertex.root","update");
+    corrTime->Write("FitCorrectionTime");
+    f->Close();
+  }
 }
 
 //_____________________________________________________________________________
