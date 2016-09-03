@@ -150,8 +150,11 @@ int AliHLTTPCOfflinePreprocessorWrapperComponent::DoInit( int argc, const char**
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
   //don't keep track of root objects
-  TDirectory::AddDirectory(kFALSE);
-  TH1::AddDirectory(kFALSE);
+  if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+  {
+    TDirectory::AddDirectory(kFALSE);
+    TH1::AddDirectory(kFALSE);
+  }
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);

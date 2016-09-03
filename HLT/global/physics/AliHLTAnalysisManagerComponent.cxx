@@ -215,8 +215,11 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerInit(void*)
   }
 
   //don't keep track of root objects
-  TDirectory::AddDirectory(kFALSE);
-  TH1::AddDirectory(kFALSE);
+  if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+  {
+    TDirectory::AddDirectory(kFALSE);
+    TH1::AddDirectory(kFALSE);
+  }
 
   fAnalysisManager = new AliHLTAnalysisManager();
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
