@@ -1585,9 +1585,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     // Create pointer to reconstructed event
     AliVEvent *event = InputEvent();
     if (!event) { Printf("ERROR: Could not retrieve event"); return; }
-    
-    if(aodEv){cout<<"This is an AOD event\n";}
-    
+        
     AliESDEvent* esd;
     // create pointer to event
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
