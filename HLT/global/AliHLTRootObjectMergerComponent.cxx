@@ -28,6 +28,8 @@
 #include "TList.h"
 #include "TClass.h"
 #include "AliAnalysisDataContainer.h"
+#include "TH1.h"
+#include "TDirectory.h"
 
 using namespace std;
 
@@ -73,7 +75,13 @@ AliHLTComponent* AliHLTRootObjectMergerComponent::Spawn() {
 int AliHLTRootObjectMergerComponent::DoInit( int argc, const char** argv ) 
 {
   ConfigureFromArgumentString(argc, argv);
-  
+
+  if (getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0)
+  {
+    TDirectory::AddDirectory(kFALSE);
+    TH1::AddDirectory(kFALSE);
+  }
+
   HLTInfo("AliHLTRootObjectMergerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth, fAsyncProcess, fAsyncProcess ? 100000000 : 0)) return(1);
 
