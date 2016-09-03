@@ -133,6 +133,7 @@ AliTPCParam::AliTPCParam()
 	     fTotalNormFac(0.),
 	     fNoiseNormFac(0.),
 	     fUseGlitchFilter(kTRUE),
+	     fSigmaRangePIDinTracking(15.),
 	     fNominalVoltage(),
 	     fMaxVoltageDeviation(40.),
 	     fMaxDipVoltage(2.),

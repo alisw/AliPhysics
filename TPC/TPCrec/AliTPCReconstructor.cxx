@@ -298,10 +298,13 @@ void AliTPCReconstructor::GetPidSettings(AliESDpid *esdPID)
     AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
     if (param) {
       TVectorD *paramBB=param->GetBetheBlochParameters();
+      const Float_t maxnSigmaRange = param->GetSigmaRangePIDinTracking();
       if (paramBB){
         esdPID->GetTPCResponse().SetBetheBlochParameters((*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4));
         AliInfo(Form("Setting BB parameters from OCDB (AliTPCParam): %.2g, %.2g, %.2g, %.2g, %.2g",
                      (*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4)));
+        AliInfoF("Setting max sigma PID range to %.2f", maxnSigmaRange);
+        esdPID->SetProbabilityRangeNsigma(maxnSigmaRange);
       } else {
         AliError("Couldn't get BB parameters from OCDB, the old default values will be used instead");
       }

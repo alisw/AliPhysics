@@ -209,6 +209,9 @@ public:
 
   void SetNoTOFmism(Bool_t value=kTRUE){fNoTOFmism=value;};
 
+  void    SetProbabilityRangeNsigma(Float_t range) { fRange = range; }
+  Float_t GetProbabilityRangeNsigma() const        { return fRange;  }
+
 protected:
   AliITSPIDResponse   fITSResponse;    //PID response function of the ITS
   AliTPCPIDResponse   fTPCResponse;    //PID response function of the TPC
