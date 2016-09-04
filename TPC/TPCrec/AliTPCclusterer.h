@@ -46,7 +46,11 @@ public:
   void StoreInClonesArray(Bool_t bOutput = kTRUE) {fBClonesArray = bOutput;} // store output clusters in TClonesArray
 
   void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
+  //
+  UInt_t   GetTimeStamp() const {return fTimeStamp;}
+  void     SetTimeStamp(UInt_t t) {fTimeStamp = t;}
 
+  //
 private:
   AliTPCclusterer(const AliTPCclusterer &param); // copy constructor
   AliTPCclusterer &operator = (const AliTPCclusterer & param); //assignment

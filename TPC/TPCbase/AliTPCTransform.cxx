@@ -210,8 +210,10 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     return ; // make coverity happy
   }
   
+  // RS: to reduce the mess: apply pad-by-pad correction only when ExB is applied, like in MC
   // Apply Time0 correction - Pad by pad fluctuation
-  if (!calib->HasAlignmentOCDB()) x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
+  //  if (!calib->HasAlignmentOCDB()) x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
+  if (fCurrentRecoParam->GetUseExBCorrection()) x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
   //
   // Tranform from pad - time coordinate system to the rotated global (tracking) system
   Local2RotatedGlobal(sector,x);
@@ -342,6 +344,8 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   Double_t padLength = param->GetPadPitchLength(sector,row);
   Double_t maxPad = iroc ? param->GetNPadsLow(row) : param->GetNPadsUp(row);
   //
+  AliTPCROC::Instance()->GetPositionGlobal(sector, row ,TMath::Nint(x[1]), xyzPad);
+  //
   // X coordinate
   x[0] = param->GetPadRowRadii(sector,row);  // padrow X position - ideal
   //
@@ -350,8 +354,6 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   // pads are mirrorred on C-side
   if (sideC) x[1] = -x[1];
   //
-  AliTPCROC::Instance()->GetPositionGlobal(sector, TMath::Nint(x[0]) ,TMath::Nint(x[1]), xyzPad);
-
   x[2] = TimeBin2Z(x[2],sector,xyzPad[1]);
 }
 

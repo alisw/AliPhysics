@@ -2021,7 +2021,8 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   //  if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t idROC = cluster->GetDetector();
-  transform->Transform(x,&idROC,0,1);
+  //  transform->Transform(x,&idROC,0,1);
+  transform->Transform(x,&idROC,0,cluster->GetLabel(0));
   const float* clCorr = transform->GetLastMapCorrection();
   const float* clCorrRef = transform->GetLastMapCorrectionRef();
   //
