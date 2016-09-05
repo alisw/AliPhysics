@@ -66,6 +66,32 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   hdeadlay4->GetYaxis()->SetTitle("Ladder");
   hdeadlay4->SetStats(0);
   hdeadlay4->SetMinimum(-1.);
+  TH2I* hlowthrlay3=new TH2I("hlowthrlay3","Layer 3",12,-0.5,5.5,14,-0.5,13.5);
+  hlowthrlay3->GetXaxis()->SetTitle("Detector");
+  hlowthrlay3->GetYaxis()->SetTitle("Ladder");
+  hlowthrlay3->GetXaxis()->SetTickLength(0);
+  hlowthrlay3->GetYaxis()->SetTickLength(0);
+  hlowthrlay3->SetStats(0);
+  TH2I* hlowthrlay4=new TH2I("hlowthrlay4","Layer 4",16,-0.5,7.5,22,-0.5,21.5);
+  hlowthrlay4->GetXaxis()->SetTitle("Detector");
+  hlowthrlay4->GetYaxis()->SetTitle("Ladder");
+  hlowthrlay4->GetXaxis()->SetTickLength(0);
+  hlowthrlay4->GetYaxis()->SetTickLength(0);
+  hlowthrlay4->GetYaxis()->SetTitle("Ladder");
+  hlowthrlay4->SetStats(0);
+  TH2I* hhighthrlay3=new TH2I("hhighthrlay3","Layer 3",12,-0.5,5.5,14,-0.5,13.5);
+  hhighthrlay3->GetXaxis()->SetTitle("Detector");
+  hhighthrlay3->GetYaxis()->SetTitle("Ladder");
+  hhighthrlay3->GetXaxis()->SetTickLength(0);
+  hhighthrlay3->GetYaxis()->SetTickLength(0);
+  hhighthrlay3->SetStats(0);
+  TH2I* hhighthrlay4=new TH2I("hhighthrlay4","Layer 4",16,-0.5,7.5,22,-0.5,21.5);
+  hhighthrlay4->GetXaxis()->SetTitle("Detector");
+  hhighthrlay4->GetYaxis()->SetTitle("Ladder");
+  hhighthrlay4->GetXaxis()->SetTickLength(0);
+  hhighthrlay4->GetYaxis()->SetTickLength(0);
+  hhighthrlay4->GetYaxis()->SetTitle("Ladder");
+  hhighthrlay4->SetStats(0);
 
   TObjArray *calSDD = (TObjArray *)ent->GetObject();
   printf("Entries in array=%d\n",calSDD->GetEntriesFast());
@@ -199,8 +225,20 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
     if(i<84) badAnodeCounter3+=cal->GetDeadChannels();
     else badAnodeCounter4+=cal->GetDeadChannels();
     hnbadch->SetBinContent(i+1,cal->GetDeadChannels());
-    if(lay==3) hdeadlay3->SetBinContent(det,lad,cal->GetDeadChannels());
-    if(lay==4) hdeadlay4->SetBinContent(det,lad,cal->GetDeadChannels());
+    if(lay==3){
+      hdeadlay3->SetBinContent(det,lad,cal->GetDeadChannels());
+      hlowthrlay3->SetBinContent(index,lad,cal->GetZSLowThreshold(0));
+      hlowthrlay3->SetBinContent(index+1,lad,cal->GetZSLowThreshold(1));
+      hhighthrlay3->SetBinContent(index,lad,cal->GetZSHighThreshold(0));
+      hhighthrlay3->SetBinContent(index+1,lad,cal->GetZSHighThreshold(1));
+    }
+    if(lay==4){ 
+      hdeadlay4->SetBinContent(det,lad,cal->GetDeadChannels());
+      hlowthrlay4->SetBinContent(index,lad,cal->GetZSLowThreshold(0));
+      hlowthrlay4->SetBinContent(index+1,lad,cal->GetZSLowThreshold(1));     
+      hhighthrlay4->SetBinContent(index,lad,cal->GetZSHighThreshold(0));
+      hhighthrlay4->SetBinContent(index+1,lad,cal->GetZSHighThreshold(1));     
+    }
     for(Int_t iAn=0; iAn<512; iAn++){
       Int_t ic=cal->GetChip(iAn);
       if(!cal->IsChipBad(ic) && !cal->IsBad() && cal->IsBadChannel(iAn)){ 
@@ -381,6 +419,85 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
 
 
   
+  TCanvas *c0zs=new TCanvas("c0zs","Zero Supp",900,900);
+  hlowthrlay3->SetTitle("Low Threshold - Lay 3");
+  hlowthrlay4->SetTitle("Low Threshold - Lay 4");
+  hhighthrlay3->SetTitle("High Threshold - Lay 3");
+  hhighthrlay4->SetTitle("High Threshold - Lay 4");
+  c0zs->Divide(2,2);
+  c0zs->cd(1);
+  hlowthrlay3->DrawCopy("colz");
+  ex2->Draw();
+  hlowthrlay3->DrawCopy("colz same");
+  for(Int_t i=0;i<6;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(13.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<14;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(5.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  c0zs->cd(2);
+  hlowthrlay4->DrawCopy("colz");
+  ex2->Draw();
+  hlowthrlay4->DrawCopy("colz same");
+  for(Int_t i=0;i<8;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(21.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<22;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(7.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  c0zs->cd(3);
+  hhighthrlay3->DrawCopy("colz");
+  ex2->Draw();
+  hhighthrlay3->DrawCopy("colz same");
+  for(Int_t i=0;i<6;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(13.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<14;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(5.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+  c0zs->cd(4);
+  hhighthrlay4->DrawCopy("colz");
+  ex2->Draw();
+  hhighthrlay4->DrawCopy("colz same");
+  for(Int_t i=0;i<8;i++){
+    lin->SetY1(-0.5);
+    lin->SetY2(21.5);
+    lin->SetX1(i+0.5);
+    lin->SetX2(i+0.5);
+    lin->DrawClone();
+  }
+  for(Int_t i=0;i<22;i++){
+    lin->SetX1(-0.5);
+    lin->SetX2(7.5);
+    lin->SetY1(i+0.5);
+    lin->SetY2(i+0.5);
+    lin->DrawClone();
+  }
+
   TCanvas *c1=new TCanvas("c1","Anode calibration",800,800);
   c1->Divide(2,2);
   c1->cd(1);
@@ -499,7 +616,7 @@ void ShowCalibrationSDD(Char_t *filnam="$ALICE_ROOT/OCDB/ITS/Calib/CalibSDD/Run0
   gbad->GetYaxis()->SetTitle("Anode Status (1=OK, 0=bad)");
 }
 
-void ShowCalibrationSDD(Int_t nrun, Int_t year=2012, Int_t nmod=0){
+void ShowCalibrationSDD(Int_t nrun, Int_t year=2016, Int_t nmod=0){
   TGrid::Connect("alien:",0,0,"t");
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/CalibSDD\" \"Run%d*.root\" > run.txt",year,nrun);
   gSystem->Exec(cmd.Data());

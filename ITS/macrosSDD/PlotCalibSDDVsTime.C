@@ -21,7 +21,7 @@
 // created from PEDESTAL and PULSER runs vs. Time
 // Origin: F. Prino (prino@to.infn.it)
 
-void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900, 
+void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000, 
 			Int_t lastRun=999999999,
 			Int_t selectedMod=-1){
 
@@ -41,6 +41,11 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   TH1F* hchstatus=new TH1F("hchstatus","",2,-0.5,1.5);
   TH1F* hchstatus3=new TH1F("hchstatus3","",2,-0.5,1.5);
   TH1F* hchstatus4=new TH1F("hchstatus4","",2,-0.5,1.5);
+  TH1F* hlowzsthr3=new TH1F("hlowzsthr3","",256,-0.5,255.5);
+  TH1F* hlowzsthr4=new TH1F("hlowzsthr4","",256,-0.5,255.5);
+  TH1F* hhizsthr3=new TH1F("hhizsthr3","",256,-0.5,255.5);
+  TH1F* hhizsthr4=new TH1F("hhizsthr4","",256,-0.5,255.5);
+
   TGraphErrors* gbasevstim=new TGraphErrors(0);
   TGraphErrors* gnoisevstim=new TGraphErrors(0);
   TGraphErrors* ggainvstim=new TGraphErrors(0);
@@ -48,6 +53,11 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   TGraphErrors* gfracvstim=new TGraphErrors(0);
   TGraphErrors* gfrac3vstim=new TGraphErrors(0);
   TGraphErrors* gfrac4vstim=new TGraphErrors(0);
+  TGraphErrors* gzslow3vstim=new TGraphErrors(0);
+  TGraphErrors* gzslow4vstim=new TGraphErrors(0);
+  TGraphErrors* gzshi3vstim=new TGraphErrors(0);
+  TGraphErrors* gzshi4vstim=new TGraphErrors(0);
+
   gbasevstim->SetName("gbasevstim");
   gnoisevstim->SetName("gnoisevstim");
   ggainvstim->SetName("ggainvstim");
@@ -55,6 +65,11 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   gfracvstim->SetName("gfracvstim");
   gfrac3vstim->SetName("gfrac3vstim");
   gfrac4vstim->SetName("gfrac4vstim");
+  gzslow3vstim->SetName("gzslow3vstim");
+  gzslow4vstim->SetName("gzslow4vstim");
+  gzshi3vstim->SetName("gzshi3vstim");
+  gzshi4vstim->SetName("gzshi4vstim");
+
   gbasevstim->SetTitle("Baseline vs. run");
   gnoisevstim->SetTitle("Noise vs. run");
   ggainvstim->SetTitle("Gain vs. run");
@@ -62,6 +77,10 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   gfracvstim->SetTitle("Fraction of Good Anodes vs. run");
   gfrac3vstim->SetTitle("Fraction of Good Anodes vs. run");
   gfrac4vstim->SetTitle("Fraction of Good Anodes vs. run");
+  gzslow3vstim->SetTitle("Low ZS thr vs run");
+  gzslow4vstim->SetTitle("Low ZS thr vs run");
+  gzshi3vstim->SetTitle("High ZS thr vs run");
+  gzshi4vstim->SetTitle("High ZS thr vs run");
 
 
   Char_t filnam[200],filnamalien[200];
@@ -69,12 +88,18 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   Int_t nrun,nrun2,nv,ns;
 
   while(!feof(listruns)){
+
     hbase->Reset();
     hnoise->Reset();
     hgain->Reset();
     hchstatus->Reset();
     hchstatus3->Reset();
     hchstatus4->Reset();
+    hlowzsthr3->Reset();
+    hlowzsthr4->Reset();
+    hhizsthr3->Reset();
+    hhizsthr4->Reset();
+
     fscanf(listruns,"%s\n",filnam);    
     Char_t directory[100];
     sprintf(directory,"/alice/data/%d",year);
@@ -105,6 +130,21 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
 	Float_t base=cal->GetBaseline(iAn);
 	Float_t noise=cal->GetNoiseAfterElectronics(iAn);
 	Float_t gain=cal->GetChannelGain(iAn);
+	Float_t zshi0=cal->GetZSHighThreshold(0);
+	Float_t zshi1=cal->GetZSHighThreshold(1);
+	if(!cal->IsBad()){
+	  if(iMod<84){
+	    hlowzsthr3->Fill(cal->GetZSLowThreshold(0));
+	    hlowzsthr3->Fill(cal->GetZSLowThreshold(1));
+	    hhizsthr3->Fill(cal->GetZSHighThreshold(0));
+	    hhizsthr3->Fill(cal->GetZSHighThreshold(1));
+	  }else{
+	    hlowzsthr4->Fill(cal->GetZSLowThreshold(0));
+	    hlowzsthr4->Fill(cal->GetZSLowThreshold(1));
+	    hhizsthr4->Fill(cal->GetZSHighThreshold(0));
+	    hhizsthr4->Fill(cal->GetZSHighThreshold(1));
+	  }
+	}
 	if(cal->IsBadChannel(iAn)){
 	  hchstatus->Fill(0);
 	  if(iMod<84) hchstatus3->Fill(0);
@@ -134,6 +174,14 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
     gfracvstim->SetPoint(iPoint,(Double_t)nrun,hchstatus->GetBinContent(2)/normMod/512.);
     gfrac3vstim->SetPoint(iPoint,(Double_t)nrun,hchstatus3->GetBinContent(2)/84./512.);
     gfrac4vstim->SetPoint(iPoint,(Double_t)nrun,hchstatus4->GetBinContent(2)/176./512.);
+    gzslow3vstim->SetPoint(iPoint,(Double_t)nrun,hlowzsthr3->GetMean());
+    //  gzslow3vstim->SetPointError(iPoint,0.,hlowzsthr3->GetRMS());
+    gzslow4vstim->SetPoint(iPoint,(Double_t)nrun,hlowzsthr4->GetMean());
+    //  gzslow4vstim->SetPointError(iPoint,0.,hlowzsthr4->GetRMS());
+    gzshi3vstim->SetPoint(iPoint,(Double_t)nrun,hhizsthr3->GetMean());
+    //  gzshi3vstim->SetPointError(iPoint,0.,hhizsthr3->GetRMS());
+    gzshi4vstim->SetPoint(iPoint,(Double_t)nrun,hhizsthr4->GetMean());
+    // gzshi4vstim->SetPointError(iPoint,0.,hhizsthr4->GetRMS());    
     iPoint++;
     f->Close();
   }
@@ -143,6 +191,13 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   gnoisevstim->Write();
   ggainvstim->Write();
   gstatvstim->Write();
+  gfracvstim->Write();
+  gfrac3vstim->Write();
+  gfrac4vstim->Write();
+  gzslow3vstim->Write();
+  gzslow4vstim->Write();
+  gzshi3vstim->Write();
+  gzshi4vstim->Write();
   ofil->Close();
 
   TCanvas* cbase=new TCanvas("cbase","Baselines");
@@ -229,4 +284,36 @@ void PlotCalibSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   }
   cfrac->SaveAs(Form("FractionGoodRun%d.gif",year));
 
+  TCanvas* czs=new TCanvas("czs","Zero Supp");
+  gzslow3vstim->SetMarkerStyle(22);
+  gzslow3vstim->SetMarkerColor(2);
+  gzslow3vstim->SetLineColor(2);
+  gzslow4vstim->SetMarkerStyle(23);
+  gzslow4vstim->SetMarkerColor(4);
+  gzslow4vstim->SetLineColor(4);
+  gzshi3vstim->SetMarkerStyle(26);
+  gzshi3vstim->SetMarkerColor(kRed+1);
+  gzshi3vstim->SetLineColor(kRed+1);
+  gzshi4vstim->SetMarkerStyle(32);
+  gzshi4vstim->SetMarkerColor(kBlue+1);
+  gzshi4vstim->SetLineColor(kBlue+1);
+
+  gzslow3vstim->SetMinimum(20.);
+  gzslow3vstim->SetMaximum(35.);
+  gzslow3vstim->Draw("APL");
+  gzslow3vstim->GetXaxis()->SetTitle("Run number");
+  gzslow3vstim->GetYaxis()->SetTitle("<Zero suppression threshold>");
+  gzslow4vstim->Draw("SAMEPL");
+  gzshi3vstim->Draw("SAMEPL");
+  gzshi4vstim->Draw("SAMEPL");
+  if(selectedMod==-1){
+    TLegend* legz=new TLegend(0.2,0.15,0.45,0.35);
+    legz->SetFillColor(0);
+    legz->AddEntry(gzslow3vstim,"Low Thr - Layer 3","P");
+    legz->AddEntry(gzslow4vstim,"Low Thr - Layer 4","P");
+    legz->AddEntry(gzshi3vstim,"High Thr - Layer 3","P");
+    legz->AddEntry(gzshi4vstim,"High Thr - Layer 4","P");
+    legz->Draw();
+  }
+  czs->SaveAs(Form("ZeroSuppThrRun%d.gif",year));
 }
