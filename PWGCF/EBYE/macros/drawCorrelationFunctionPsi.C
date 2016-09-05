@@ -622,7 +622,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     
     if(rebinEta > 1 || rebinPhi > 1){
       gHistPN[2]->Rebin2D(rebinEta,rebinPhi);
-      gHistPN[0]->Scale(1./(Double_t)(rebinEta*rebinPhi));
+      gHistPN[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));
     }
 
     // normalization to 1 at (0,0) --> Jan Fietes method
