@@ -60,6 +60,7 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   if(bRecalT && ! bMC)
   {
     reco->SwitchOnTimeRecalibration();
+    reco->SwitchOnL1PhaseInTimeRecalibration() ;
   }
     
   // Recalculate position with method
