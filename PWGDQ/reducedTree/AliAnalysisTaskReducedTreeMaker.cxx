@@ -56,6 +56,8 @@
 #include <AliMCParticle.h>
 #include <AliAODMCParticle.h>
 #include "AliAnalysisUtils.h"
+#include <AliMultSelection.h>
+#include <AliCentrality.h>
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
 #include "AliReducedEventInfo.h"
@@ -405,16 +407,33 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      fReducedEvent->fNVtxContributors = eventVtx->GetNContributors();
   }
   
-  AliCentrality *centrality = event->GetCentrality();
-  if(centrality) {
-     fReducedEvent->fCentrality[0] = centrality->GetCentralityPercentile("V0M");
-     fReducedEvent->fCentrality[1] = centrality->GetCentralityPercentile("CL1");
-     fReducedEvent->fCentrality[2] = centrality->GetCentralityPercentile("TRK");
-     fReducedEvent->fCentrality[3] = centrality->GetCentralityPercentile("ZEMvsZDC");
-     fReducedEvent->fCentrality[4] = centrality->GetCentralityPercentile("V0A");
-     fReducedEvent->fCentrality[5] = centrality->GetCentralityPercentile("V0C");
-     fReducedEvent->fCentrality[6] = centrality->GetCentralityPercentile("ZNA");
-     fReducedEvent->fCentQuality   = centrality->GetQuality();
+  AliCentrality *centrality = 0x0;
+  AliMultSelection* multSelection = 0x0;
+  if(event->GetRunNumber()<200000) {
+     centrality = event->GetCentrality();
+     if(centrality) {
+       fReducedEvent->fCentrality[0] = centrality->GetCentralityPercentile("V0M");
+       fReducedEvent->fCentrality[1] = centrality->GetCentralityPercentile("CL1");
+       fReducedEvent->fCentrality[2] = centrality->GetCentralityPercentile("TRK");
+       fReducedEvent->fCentrality[3] = centrality->GetCentralityPercentile("ZEMvsZDC");
+       fReducedEvent->fCentrality[4] = centrality->GetCentralityPercentile("V0A");
+       fReducedEvent->fCentrality[5] = centrality->GetCentralityPercentile("V0C");
+       fReducedEvent->fCentrality[6] = centrality->GetCentralityPercentile("ZNA");
+       fReducedEvent->fCentQuality   = centrality->GetQuality();
+     }
+  }
+  else {
+     multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+     if(multSelection) {
+        fReducedEvent->fCentrality[0] = multSelection->GetMultiplicityPercentile("V0M");
+        fReducedEvent->fCentrality[1] = multSelection->GetMultiplicityPercentile("CL1");
+        fReducedEvent->fCentrality[2] = multSelection->GetMultiplicityPercentile("TRK");
+        fReducedEvent->fCentrality[3] = multSelection->GetMultiplicityPercentile("ZEMvsZDC");
+        fReducedEvent->fCentrality[4] = multSelection->GetMultiplicityPercentile("V0A");
+        fReducedEvent->fCentrality[5] = multSelection->GetMultiplicityPercentile("V0C");
+        fReducedEvent->fCentrality[6] = multSelection->GetMultiplicityPercentile("ZNA");
+        fReducedEvent->fCentQuality   = multSelection->GetEvSelCode();
+    }
   }
   fReducedEvent->fNtracks[0] = event->GetNumberOfTracks();
 

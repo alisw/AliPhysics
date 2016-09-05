@@ -1,7 +1,7 @@
 void AddFMDTask();
 
 //__________________________________________________________________________________________
-AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE){
+AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString prod="LHC10h"){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -13,15 +13,29 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   
+  Int_t collSystem = 0;
+  if(!prod.CompareTo("LHC10h") || !prod.CompareTo("LHC15o")) collSystem = 1;    // minimum bias Pb-Pb
+  if(!prod.CompareTo("LHC11h")) collSystem = 2;    // centrality triggered Pb-Pb
+  if(!prod.CompareTo("LHC10b") || !prod.CompareTo("LHC10c") || !prod.CompareTo("LHC10d") || 
+     !prod.CompareTo("LHC10e") || !prod.CompareTo("LHC10f")) collSystem = 3;   // minimum bias pp
+  if(!prod.CompareTo("LHC13b") || !prod.CompareTo("LHC13c")) collSystem = 4;   // minimum bias p-Pb   
+  
+  if(!collSystem && !hasMC) {
+     collSystem = 1;
+     printf("WARNING: In AddTask_iarsene_dst(), no proper production name specified, or not supported! \n");
+     printf("                 Using collSystem=1 (min bias Pb-Pb) as default \n");
+  }
+  
   //create task and add it to the manager
   AliAnalysisTaskReducedTreeMaker *task=new AliAnalysisTaskReducedTreeMaker("DSTTreeMaker", kTRUE);
-  //task->SetTriggerMask(AliVEvent::kMB);
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  if(collSystem==1 || collSystem==3 || collSystem==4)
+    task->SetTriggerMask(AliVEvent::kMB);
+  if(collSystem==2)
+    task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   
-  //if(trainConfig=="pp") task->SetRejectPileup();
-  
-  //task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);  // Events passing trigger and physics selection for analysis
-  
+  if(collSystem==3)
+    task->SetRejectPileup();
+    
   //task->UsePhysicsSelection(kTRUE);
   task->SetUseAnalysisUtils(kTRUE);
   
