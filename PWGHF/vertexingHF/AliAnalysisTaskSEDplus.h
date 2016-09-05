@@ -57,6 +57,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetBinWidth(Float_t w);
   void SetUseBit(Bool_t dols=kTRUE){fUseBit=dols;}
+  void SetAODMismatchProtection(Bool_t opt=kTRUE) {fAODProtection=opt;}
 
   void SetUseOnlyPositiveEta(){fEtaSelection=1;}
   void SetUseOnlyNegativeEta(){fEtaSelection=-1;}
@@ -102,6 +103,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents; //!<!hist. for No. of events
+  TH1F *fHistNCandidates; //!<!hist. for No. of candidates
   TH1F *fMassHistNoPid[3*kMaxPtBins]; //!<!hist. for inv mass (w/o PID)
   TH1F *fCosPHist[3*kMaxPtBins]; //!<!hist. for PointingAngle (topol+PID)
   TH1F *fDLenHist[3*kMaxPtBins]; //!<!hist. for Dec Length (topol+PID)
@@ -154,6 +156,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   Double_t fArrayBinLimits[kMaxPtBins+1]; /// limits for the Pt bins
   Int_t fFillNtuple;   /// flag for filling ntuple 0 no NTuple 1 big Ntuple 2 small NTuple
+  Bool_t  fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch
   Bool_t fReadMC;    /// flag for access to MC
   Bool_t fUseStrangeness;/// flag to enhance strangeness in MC to fit to data
   Bool_t fUseBit;      /// flag to use bitmask
@@ -170,7 +173,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fSystem;   /// 0=pp,1=PbPb
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,27); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,28); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
