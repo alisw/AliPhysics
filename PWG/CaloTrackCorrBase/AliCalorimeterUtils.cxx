@@ -314,59 +314,70 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     } // Time Recalibration on    
     
     // Time L1 phase racalibration    
-    if(fEMCALRecoUtils->IsL1PhaseInTimeRecalibrationOn()) {
-      Bool_t useDefault=kFALSE;
+    if(fEMCALRecoUtils->IsL1PhaseInTimeRecalibrationOn()) 
+    {
       AliOADBContainer *contTRF=new AliOADBContainer("");
       contTRF->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeL1PhaseCalib");
+      
       TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRunNumber); 
-      if(!trecal) {
-	AliError(Form("Do NOT recalibrate time EMCAL. No params for run %d. Default used.",fRunNumber));  // run number array ok
-	trecal=(TObjArray*)contTRF->GetObject(0);
-	if(!trecal) {
-	  AliFatal(Form("No params for run %d. No default params.",fRunNumber));
-	  return;
-	}
-	useDefault=kTRUE;
+      if(!trecal) 
+      {
+        AliError(Form("L1 phase time recal: No params for run %d. Default used.",fRunNumber));  // run number array ok
+        trecal=(TObjArray*)contTRF->GetObject(0); // Try default object
       }
-
-      TString passM = pass;
-      if(useDefault) passM = "pass1";
-      else if(pass=="muon_calo_pass1") passM = "muon_calo_pass1";
-      else if(pass=="muon_calo_pass2") passM = "muon_calo_pass2";
-
-      TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
-      if(!trecalpass) {
-	if(useDefault){
-	  AliFatal("No defaults params pass1.");
-	  return;
-	}
-	AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
-	//use default
-	trecal->Delete();
-	trecal=(TObjArray*)contTRF->GetObject(0);
-	if(!trecal) {
-	  AliFatal(Form("No params for run %d. No default params.",fRunNumber));
-	  return;
-	}
-	useDefault=kTRUE;
-	trecalpass=(TObjArray*)trecal->FindObject("pass1");
-	if(!trecalpass) {
-	  AliFatal("No defaults params pass1.");
-	  return;
-	}
-	//end use default
+      
+      if(trecal)
+      {
+        // Here, it looks for a specific pass
+        TString passM = pass;
+        if (pass=="calo_spc") passM ="pass1";
+        if (pass=="muon_calo_pass1") passM ="pass0";
+        if (pass=="muon_calo_pass2" || pass=="pass2" || pass=="pass3" || pass=="pass4") passM ="pass1";
+        
+        TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
+        if(!trecalpass) 
+        {
+          AliInfo(Form("L1 phase time recal: No params for run %d and pass %s, try default", fRunNumber, passM.Data())); 
+          
+          trecal->Delete();
+          
+          trecal=(TObjArray*)contTRF->GetObject(0);
+          
+          if(trecal)          
+            trecalpass=(TObjArray*)trecal->FindObject("pass1");
+          
+          AliInfo("Time L1 phase Recalibrate EMCAL");
+        }
+        
+        if(trecalpass)
+        {
+          TH1C *h =GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+          
+          if (h) delete h;
+          
+          h = (TH1C*)trecalpass->FindObject(Form("h%d",fRunNumber));
+          
+          if (!h) AliError(Form("Could not load h%d",fRunNumber));
+          
+          h->SetDirectory(0);
+          
+          SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+        }
+        else 
+        {       
+          AliError("Do not calibrate L1 phase time");
+          fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
+        }
       }
-      AliInfo("Time L1 phase Recalibrate EMCAL");
-      TH1C *h =GetEMCALL1PhaseInTimeRecalibrationForAllSM();
-      if (h) delete h;
-      h = (TH1C*)trecalpass->FindObject(Form("h%d",fRunNumber));
-      if (!h) AliError(Form("Could not load h%d",fRunNumber));
-      h->SetDirectory(0);
-      SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
-
+      else 
+      {       
+        AliError("Do not calibrate L1 phase time");
+        fEMCALRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
+      }
+      
       delete contTRF;
     }//End of Time L1 phase racalibration 
-
+    
   }// EMCAL
   
   // PHOS
