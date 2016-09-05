@@ -1954,20 +1954,6 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 FillDPhiHistos(esd, esdtrack, i);//Fill DPhi histos
             }   
          
-
-            fPool = fPoolMan->GetEventPool(ntracks, aod->GetPrimaryVertex()->GetZ());
-            fPool->PrintInfo();
-
-            if(!fPool){cout<<"No Pool for this event man\n"; continue;}
-
-            if(fPool->IsReady() ){
-                FillMEDPhiHistos(aodtrack);
-            }
-            else{
-                cout<<"Pool wasn't ready\n";
-            }
-
-
             if(tagPhot){
                 if(MBtrg){
                     fHistPhotoMismatch_MB->Fill(0);
@@ -1980,7 +1966,19 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 }
             }
 
+            fPool = fPoolMan->GetEventPool(ntracks, aod->GetPrimaryVertex()->GetZ());
 
+
+            if(!fPool){cout<<"No Pool for this event man\n"; continue;}
+
+            fPool->PrintInfo();
+
+            if(fPool->IsReady() ){
+                FillMEDPhiHistos(aodtrack);
+            }
+            else{
+                cout<<"Pool wasn't ready\n";
+            }
         }//end if(tagStrong)
 
     }//end main track loop
