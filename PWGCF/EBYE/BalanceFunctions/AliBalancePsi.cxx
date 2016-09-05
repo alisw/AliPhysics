@@ -2004,6 +2004,8 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   TH2D *fSame  = NULL;
   TH2D *fMixed = NULL;
 
+  TF1* fNorm = new TF1("fNorm","pol1",-1.6,1.6);
+
   // ranges (in bins) for vertexZ and centrality (psi)
   Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin+0.00001);
   Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
@@ -2072,14 +2074,37 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	Double_t mixedNorm = fMixed->Integral(binXmin,binXmax,binYmin,binYmax);
 	mixedNorm /= binsX * binsY;
 
+	if(normalizationRangePhi < 0){
+	  
+	  // normalization at (0,0)
+	  binYmin  = fMixed->GetYaxis()->FindBin(0-10e-5);
+	  binYmax  = fMixed->GetYaxis()->FindBin(0+10e-5);
+	  	  
+	  // need to fit, because at (0,0) there is a hole, assume triangular shape
+	  TH1D *hNorm = fMixed->ProjectionX("hNorm",binYmin,binYmax);
+	  hNorm->Scale(1./(Double_t)(binYmax-binYmin+1));
+	  
+	  // fit only in range between -0.5 and normalizationRangePhi (and on positive side)
+	  hNorm->Fit("fNorm","Q0","",-0.5,normalizationRangePhi);
+	  Double_t mixedNorm1 = fNorm->GetParameter(0);
+	  hNorm->Fit("fNorm","Q0","",-normalizationRangePhi,0.5);
+	  Double_t mixedNorm2 = fNorm->GetParameter(0);
+	  
+	  // mixed Norm is average of right and left side fit
+	  mixedNorm = (mixedNorm1 + mixedNorm2) / 2.;
+	}
+	
 	// finite bin correction
-	Double_t binWidthEta = fMixed->GetXaxis()->GetBinWidth(fMixed->GetNbinsX());
+        Double_t binWidthEta = fMixed->GetXaxis()->GetBinWidth(fMixed->GetNbinsX());
 	Double_t maxEta      = fMixed->GetXaxis()->GetBinUpEdge(fMixed->GetNbinsX());
 	
 	Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
-	//Printf("Finite bin correction: %f", finiteBinCorrection);
-	mixedNorm /= finiteBinCorrection;
-	
+
+	if(normalizationRangePhi > 0){
+	  //Printf("Finite bin correction (only if fit is not used to normalize): %f", finiteBinCorrection);
+	  mixedNorm /= finiteBinCorrection;
+	}
+
 	fMixed->Scale(1./mixedNorm);
       }
 
