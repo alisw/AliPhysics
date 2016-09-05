@@ -37,6 +37,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
 
     if(trkCutsStrong){contname+=TString("_Strong");}else{contname+=TString("_Weak");}
     if(SSCuts){contname+=TString("_SS");}else{contname+=TString("_NoSS");}
+    if(UseNonSignalEvents){contname+=TString("_NoSig");}else{contname+=TString("_Sig");}
     // create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
