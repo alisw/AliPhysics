@@ -110,6 +110,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
+
+  void         SwitchOnAcceptanceHistoPerEBin()         { fFillEBinAcceptanceHisto = kTRUE  ; }
+  void         SwitchOffAcceptanceHistoPerEBin()        { fFillEBinAcceptanceHisto = kFALSE ; }
+  
+  void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
+  void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
   
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
@@ -175,6 +181,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
   
   Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.
+  
+  Bool_t   fFillEBinAcceptanceHisto;                ///<  Fill histograms with cluster eta-phi distribution and column-row cell, for different energy bins
+  Float_t  fEBinCuts[15] ;                          ///<  Energy bins cut 
+  Int_t    fNEBinCuts;                              ///<  Number of energy bin cuts
+
   
   //
   // Histograms
@@ -429,6 +440,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLam1PerNLargeTimeInClusterCell     [5] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, per number of large time secondary cells 
 //TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
+  
+  TH2F *  fhEBinClusterEtaPhi[14] ;                 //!<! Eta-Phi location of cluster in different energy bins.
+  TH2F *  fhEBinClusterColRow[14] ;                 //!<! Column and row location of cluster max E cell in different energy bins.
+  TH2F *  fhEBinClusterEtaPhiPID[14] ;              //!<! Eta-Phi location of cluster in different energy bins, after PID cut
+  TH2F *  fhEBinClusterColRowPID[14] ;              //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
+
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
