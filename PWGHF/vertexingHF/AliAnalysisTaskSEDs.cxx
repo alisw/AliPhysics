@@ -69,6 +69,7 @@ fWriteOnlySignal(kFALSE),
 fDoCutVarHistos(kTRUE),
 fUseSelectionBit(kFALSE),
 fFillSparse(kTRUE),
+fAODProtection(kTRUE),
 fNPtBins(0),
 fListCuts(0),
 fMassRange(0.8),
@@ -134,6 +135,7 @@ fWriteOnlySignal(kFALSE),
 fDoCutVarHistos(kTRUE),
 fUseSelectionBit(kFALSE),
 fFillSparse(kTRUE),
+fAODProtection(kTRUE),
 fNPtBins(0),
 fListCuts(0),
 fMassRange(0.8),
@@ -308,19 +310,22 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",13,-0.5,12.5);
-  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to not reco vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected for contr vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for vertex out of accept");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of 3 prong candidates");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of Ds after filtering cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"no. of Ds after selection cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"no. of not on-the-fly rec Ds");
+  fHistNEvents = new TH1F("hNEvents", "number of events ",15,-0.5,14.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsRead");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents Mismatched dAOD");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"nEventsAnal");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"n. passing IsEvSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected due to trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected due to not reco vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for contr vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"n. rejected for vertex out of accept");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"n. rejected for pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"no. of 3 prong candidates");
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"no. of Ds after filtering cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(14,"no. of Ds after selection cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(15,"no. of not on-the-fly rec Ds");
 
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   
@@ -553,6 +558,22 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
+  fHistNEvents->Fill(0); // all events
+  if(fAODProtection) {
+    //   Protection against the mismatch of candidate TRefs:
+    //   Check if AOD and corresponding deltaAOD files contain the same number of events.
+    //   In case of discrepancy the event is rejected.
+    AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+    TTree *treeAOD      = aodHandler->GetTree();
+    TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
+    if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
+      AliWarning("Difference in number of entries in main and friend tree, skipping event");
+      fHistNEvents->Fill(2);
+      return;
+    }
+    fHistNEvents->Fill(1);  
+  }
+  
   TClonesArray *array3Prong = 0;
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -582,7 +603,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
   
   
-  fHistNEvents->Fill(0); // count event
+  fHistNEvents->Fill(3); // count event
   // Post the data already here
   PostData(1,fOutput);
   
@@ -595,13 +616,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
   fHistCentrality[0]->Fill(evCentr);
   fHistCentralityMult[0]->Fill(ntracks,evCentr);
-  if(fAnalysisCuts->IsEventRejectedDueToTrigger())fHistNEvents->Fill(2);
-  if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(3);
-  if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(4);
-  if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(5);
-  if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(6);
+  if(fAnalysisCuts->IsEventRejectedDueToTrigger())fHistNEvents->Fill(5);
+  if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(6);
+  if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(7);
+  if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(8);
+  if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(9);
   if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
-    fHistNEvents->Fill(7);
+    fHistNEvents->Fill(10);
     fHistCentrality[2]->Fill(evCentr);
     fHistCentralityMult[2]->Fill(ntracks,evCentr);
   }
@@ -650,7 +671,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   }
   
   if(!isEvSel)return;
-  fHistNEvents->Fill(1);
+  fHistNEvents->Fill(4);
   fHistCentrality[1]->Fill(evCentr);
   fHistCentralityMult[1]->Fill(ntracks,evCentr);
   
@@ -672,16 +693,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
    
 
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-    fHistNEvents->Fill(8);
+    fHistNEvents->Fill(11);
     
     if(fUseSelectionBit && !(d->HasSelectionBit(AliRDHFCuts::kDsCuts))){
       continue;
     }
     nFiltered++;
-    fHistNEvents->Fill(9);
+    fHistNEvents->Fill(12);
 
     if(!(vHF->FillRecoCand(aod,d))) {////Fill the data members of the candidate only if they are empty.
-      fHistNEvents->Fill(11); //monitor how often this fails 
+      fHistNEvents->Fill(14); //monitor how often this fails
       continue;
     }
 
@@ -742,7 +763,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	}
 	
 	
-	fHistNEvents->Fill(10);
+	fHistNEvents->Fill(13);
 	nSelected++;
 	
 	Int_t index=GetHistoIndex(iPtBin);
