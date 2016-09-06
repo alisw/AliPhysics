@@ -64,7 +64,7 @@ void AliAnalysisTaskNucleiKine::UserExec(Option_t*) {
 
   AliStack* stack = mcEvent->Stack();
   if (!stack)
-    AliFatal(Form("Missing stack. TreeK at %li, \"%s\"",mcHandler->TreeK(),mcHandler->GetInputPath()->Data()));
+    AliFatal(Form("Missing stack. TreeK at %p, \"%s\"",mcHandler->TreeK(),mcHandler->GetInputPath()->Data()));
   int nstack = stack->GetNtrack();
 
   AliCollisionGeometry* hd = dynamic_cast<AliCollisionGeometry*>(mcEvent->GenEventHeader());
