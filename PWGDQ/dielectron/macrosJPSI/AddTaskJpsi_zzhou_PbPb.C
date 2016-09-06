@@ -5,10 +5,10 @@ enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k11a, k11d, k11h, k12h, k13b, k13c,
 
 
 AliAnalysisTask* AddTaskJpsi_zzhou_PbPb(
-						TString cfg="ConfigJpsi_zzhou_lowpt",
-				    Bool_t gridconf=kTRUE,
-						TString prod="",
-						Bool_t isMC=kFALSE)
+					   TString cfg="ConfigJpsi_zzhou_lowpt",
+				           Bool_t gridconf=kTRUE,
+					   TString prod="",
+					   Bool_t isMC=kFALSE)
 {
   //get the current analysis manager
   
@@ -59,12 +59,16 @@ AliAnalysisTask* AddTaskJpsi_zzhou_PbPb(
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
     //  task->SetTriggerOnV0AND();
+  eventCuts->SetCentralityRange(40.,100.);
   task->SetEventFilter(eventCuts);
   task->SetRejectPileup();
 		
   gROOT->LoadMacro( cfg.Data() );
-	
-	
+  //gROOT->LoadMacro("ConfigJpsi_zzhou_lowpt.C");
+
+  // use histogram to correct PID need etaCorr_2010.root from alien
+  //TFile *file =TFile::Open("alien:///alice/cern.ch/user/z/zzhou/PWGDQ/dielectron/files/etaCorr_2010.root");
+
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi_zzhou_lowpt(i);
@@ -72,6 +76,7 @@ AliAnalysisTask* AddTaskJpsi_zzhou_PbPb(
     jpsi->SetHasMC(hasMC);
     task->AddDielectron(jpsi);
   }
+  
   
   //   task->SetTriggerOnV0AND();
   //   if ( trainConfig=="pp" ) task->SetRejectPileup();
