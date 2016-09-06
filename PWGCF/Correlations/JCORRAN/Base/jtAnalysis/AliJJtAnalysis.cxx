@@ -546,9 +546,9 @@ void AliJJtAnalysis::UserExec(){
 	}
   
   // For systematic error estimation, decide that whather we saw the leading particle based on tracking efficiency. For example if tracking efficiency is 90 %, use subleading particle in 10 % of the cases.
-  if(fbLPSystematics){
+  if(fbLPSystematics && lpTrackCounter->Exists() && subLeadingTrackCounter->Exists()){
     if(frandom->Rndm() > lPTr->GetTrackEff()){
-      lpTrackCounter = subLeadingTrackCounter;
+      lpTrackCounter->Store(subLeadingTrackCounter->GetIndex(), subLeadingTrackCounter->GetPt(), subLeadingTrackCounter->GetPtBin());
       lPTr = subLeadingTrack;
     }
   }
