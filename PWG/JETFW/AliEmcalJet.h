@@ -50,6 +50,9 @@ class AliEmcalJet : public AliVParticle
    * @brief Bit definition for jet geometry acceptance. Cut implemented in AliJetContainer
    * by comparing jet's bits (set in jet finder) to container's bits (set by user).
    * If user doesn't set jet acceptance cut value, no cut is performed (equivalent to kUser).
+   * If you create jets outside of the standard jet finder, you may have to manually set these
+   * acceptance bits if you want to use the acceptance selection cut in the jet container
+   * e.g. "jet->SetJetAcceptanceType(fJetTask->FindJetAcceptanceType(eta,phi,r));".
    */
   enum JetAcceptanceType {
     kTPC              = 1<<0,     ///< TPC acceptance
