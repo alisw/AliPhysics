@@ -199,7 +199,7 @@ AliEmcalJet* AliEmcalJetByJetCorrection::Eval(const AliEmcalJet *jet, TClonesArr
     corrVec+=curVec;
   }
   AliEmcalJet *jetCorr = new AliEmcalJet(corrVec.Pt(),corrVec.Eta(),corrVec.Phi(),corrVec.M());
-
+  AliError("Need to implemet a fix here to set the jet acceptance correctly -> not done in the constructor AliEmcalJet(pt,eta,phi,m) just used. See JIRA https://alice.its.cern.ch/jira/browse/ALPHY-65. Use something like jet->SetJetAcceptanceType(fJetTask->FindJetAcceptanceType(eta,phi,r))");
   return jetCorr;
 }
 
