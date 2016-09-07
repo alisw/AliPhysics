@@ -650,7 +650,7 @@ void TTreeStream::BuildTree(){
     }
     if (element->GetType()>0){
       char bname2[1000];
-      snprintf(bname2,1000,"B%d/%c",i,element->GetType());
+      snprintf(bname2,1000,"%s/%c",bname1,element->GetType());
       TBranch * br = fTree->Branch(bname1,element->fPointer,bname2);
       if (entriesFilled!=0) {
 	br->SetAddress(0);
