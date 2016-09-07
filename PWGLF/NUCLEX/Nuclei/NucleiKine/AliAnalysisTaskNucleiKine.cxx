@@ -55,16 +55,14 @@ void AliAnalysisTaskNucleiKine::UserCreateOutputObjects() {
 }
 
 void AliAnalysisTaskNucleiKine::UserExec(Option_t*) {
-  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!mcHandler) return;
-
-  AliMCEvent* mcEvent = mcHandler->MCEvent();
-  if (!mcEvent) return;
+  AliMCEvent* mcEvent = MCEvent();
+  if (!mcEvent)
+    AliFatal("Missing MC event!");
 
 
   AliStack* stack = mcEvent->Stack();
   if (!stack)
-    AliFatal(Form("Missing stack. TreeK at %p, \"%s\"",mcHandler->TreeK(),mcHandler->GetInputPath()->Data()));
+    AliFatal("Missing stack.");
   int nstack = stack->GetNtrack();
 
   AliCollisionGeometry* hd = dynamic_cast<AliCollisionGeometry*>(mcEvent->GenEventHeader());
