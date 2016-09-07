@@ -85,9 +85,9 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   Bool_t isTriggered = kFALSE;
   TString trigger = aod->GetFiredTriggerClasses();
 
-  if(trigger.Contains("CCUP4-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SM2 0OMU
-  if(trigger.Contains("CCUP2-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP 0OM2
-  if(trigger.Contains("CCUP7-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  if(trigger.Contains("CCUP4-B")) isTriggered = kTRUE; // *0VBA *0VBC 0SM2 0OMU
+  if(trigger.Contains("CCUP2-B")) isTriggered = kTRUE; // *0VBA *0VBC 0SM2 0OM2
+  if(trigger.Contains("CCUP7-B")) isTriggered = kTRUE; // *0VBA *0VBC 0STP 0OMU
   if(trigger.Contains("CINT1-B")) isTriggered = kTRUE; // 0VBA || 0VBC || 0SMB
   if(trigger.Contains("CTEST58-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SH1
   if(trigger.Contains("CTEST59-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP
@@ -111,7 +111,8 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   	if( trk->TestFilterBit(1<<0) || trk->TestFilterBit(1<<1)) nGoodTracks++;
 	}
   
-  if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
+  //if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
+  if(!isTriggered || nGoodTracks == 0) return;
   //if(!isTriggered) return;
   //AliInfo("Good UPC event");
   
