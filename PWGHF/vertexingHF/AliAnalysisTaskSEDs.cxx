@@ -560,14 +560,9 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   
   fHistNEvents->Fill(0); // all events
   if(fAODProtection) {
-    //   Protection against the mismatch of candidate TRefs:
-    //   Check if AOD and corresponding deltaAOD files contain the same number of events.
+    //   Protection against different number of events in the AOD and deltaAOD
     //   In case of discrepancy the event is rejected.
-    AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    TTree *treeAOD      = aodHandler->GetTree();
-    TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
-    if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
-      AliWarning("Difference in number of entries in main and friend tree, skipping event");
+    if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
       fHistNEvents->Fill(2);
       return;
     }
