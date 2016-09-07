@@ -182,11 +182,11 @@ bool AliFemtoKTPairCutThird::Pass(const AliFemtoPair* pair)
 //   double rpangle = (pair->GetPairAngleEP())*180/TMath::Pi();
   double rpangle = pair->GetPairAngleEP();
 
-  if (rpangle > 180.0) rpangle -= 180.0;
-  if (rpangle < 0.0) rpangle += 180.0;
+  if (rpangle > 120.0) rpangle -= 120.0;
+  if (rpangle < 0.0) rpangle += 120.0;
   
   if (fPhiMin < 0) {
-    if ((rpangle > fPhiMax) && (rpangle < 180.0+fPhiMin)) 
+    if ((rpangle > fPhiMax) && (rpangle < 120.0+fPhiMin))
       temp = false;
   }
   else {
