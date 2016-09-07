@@ -7,12 +7,14 @@
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepPairCut;
 #pragma link C++ class AliFemtoPairCutRadialDistance;
 #pragma link C++ class AliFemtoESDTrackCut;
+#pragma link C++ class AliFemtoEPSelectionTaskThird+;
 #pragma link C++ class AliFemtoEventCutCentrality+;
 #pragma link C++ class AliFemtoKKTrackCut;
 #pragma link C++ class AliFemtoKKTrackCutFull;
 #pragma link C++ class AliFemtoKpmTrackCut;
 #pragma link C++ class AliFemtoKpm45TrackCut;
 #pragma link C++ class AliFemtoKtBinnedCorrFunc+;
+#pragma link C++ class AliFemtoKTPairCutThird+;
 #pragma link C++ class AliFemtoMJTrackCut;
 #pragma link C++ class AliFemtoPairCutRadialDistanceKK;
 #pragma link C++ class AliFemtoShareQualityCorrFctn;
@@ -61,6 +63,7 @@
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
 #pragma link C++ class AliFemtoAnalysisAzimuthalPbPb;
+#pragma link C++ class AliFemtoAnalysisAzimuthalPbPbThird+;
 #pragma link C++ class AliFemtoAnalysisAzimuthalPbPb2Order+;
 #pragma link C++ class AliFemtoPairCutRadialDistanceLM;
 #pragma link C++ class AliFemtoPicoEventRP;
