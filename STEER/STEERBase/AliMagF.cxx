@@ -198,6 +198,7 @@ Bool_t AliMagF::LoadParameterization()
     AliFatal(Form("Did not find field %s in %s\n",GetParamName(),fname)); 
   }
   file->Close();
+  delete fname;
   delete file;
   return kTRUE;
 }
