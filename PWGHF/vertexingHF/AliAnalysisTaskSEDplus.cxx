@@ -31,7 +31,6 @@
 #include <TList.h>
 #include <TString.h>
 #include <TDatabasePDG.h>
-
 #include "AliAnalysisManager.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODHandler.h"
@@ -804,11 +803,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   if(fAODProtection){
     //   Protection against different number of events in the AOD and deltaAOD
     //   In case of discrepancy the event is rejected.
-    AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    TTree *treeAOD      = aodHandler->GetTree();
-    TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
-    if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
-      AliWarning("Difference in number of entries in main and friend tree, skipping event");
+    if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
       fHistNEvents->Fill(1);  
       return;
     }
