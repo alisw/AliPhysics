@@ -628,6 +628,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
     fHistEventCounter->Fill(1.5);
     
+    //Fill centrality histogram
+    fHistCentrality->Fill(fCentrality);
+    
     //Event-level fill
     if ( fkSaveEventTree ) fTreeEvent->Fill() ;
 
