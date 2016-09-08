@@ -1077,8 +1077,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       //Properties of tracks matched to the EMCAL//
       /////////////////////////////////////////////
       fEMCTrkPt->Fill(TrkPt);
-      fEMCTrketa->Fill(TrkEta);
-      fEMCTrkphi->Fill(TrkPhi);
+      if(TrkPt>1.0)
+        { 
+         fEMCTrketa->Fill(TrkEta);
+         fEMCTrkphi->Fill(TrkPhi);
+        }
       fEMCdEdx->Fill(TrkP,dEdx);
       fEMCTPCnsig->Fill(TrkP,fTPCnSigma);
       fEMCTPCNpts->Fill(TrkP,track->GetTPCsignalN());
