@@ -1,12 +1,12 @@
 //=============================================================================
 //
-// *** AddTaskFemtoAzimtuhalHBT.C ***
+// *** AddTaskFemtoAzimtuhalHBTThird.C ***
 //
 // This macro initialize a complete AnalysisTask object for femtoscopy.
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName="ConfigFemtoAnalysis.C", const char *containerName="femtolist", const char *configMacroParameters="10, 20, 2, 1", const char *containername="femto")
+AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBTThird(TString configMacroName="ConfigFemtoAnalysis.C", const char *containerName="femtolist", const char *configMacroParameters="10, 20, 2, 1", const char *containername="femto")
 {
     // Creates a proton analysis task and adds it to the analysis manager.
     
@@ -14,7 +14,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName="ConfigFe
     //==============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        Error("AddTaskFemtoAzimtuhalHBT", "No analysis manager to connect to.");
+        Error("AddTaskFemtoAzimtuhalHBTThird", "No analysis manager to connect to.");
         return NULL;
     }
     TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -27,7 +27,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName="ConfigFe
     //    manager. The availability of MC handler cann also be checked here.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskFemtoAzimtuhalHBT", "This task requires an input event handler");
+        ::Error("AddTaskFemtoAzimtuhalHBTThird", "This task requires an input event handler");
         return NULL;
     }
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
