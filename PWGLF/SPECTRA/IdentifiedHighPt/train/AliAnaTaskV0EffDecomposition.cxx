@@ -4,52 +4,46 @@
  * 05 Aug 2016: implement standard cuts, added also in .h
  * 17 Aug 2016: added #includes that were missing
  * 17 Aug 2016: removed fminpt
-
+ * 19 Aug 2016: it compiles locally but gives no output
+ * 20 Aug 2016: remove mass cut and remove vtxSPD
+ * 07 Sep 2016: histogram cuts
 
 */
 
 
 #include "AliAnaTaskV0EffDecomposition.h"
-
-#include <bitset>
-// ROOT includes
 #include <TList.h>
-#include <TTree.h>
-#include <TMath.h>
 #include <TH1.h>
-#include <TParticle.h>
-#include <TFile.h>
- 
-// AliRoot includes
 #include <AliAnalysisManager.h>
-#include <AliAnalysisFilter.h>
-#include <AliESDInputHandler.h>
-#include <AliESDEvent.h>
-#include <AliESDVertex.h>
-#include <AliLog.h>
-#include <AliExternalTrackParam.h> 
-#include <AliESDtrackCuts.h>
-#include <AliESDVZERO.h>
-#include <AliAODVZERO.h>
- 
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
-#include <AliStack.h>
 
-//#include <TTreeStream.h>
-
-#include <AliHeader.h>
-#include <AliGenPythiaEventHeader.h>
-#include <AliGenDPMjetEventHeader.h>
-
-#include "AliCentrality.h" 
-#include <AliESDv0.h>
-#include <AliKFVertex.h>
-#include <AliAODVertex.h>
-
-#include <AliAODTrack.h> 
-#include <AliAODPid.h> 
-#include <AliAODMCHeader.h> 
+//#include <bitset>
+//#include <TTree.h>
+//#include <TMath.h>
+//#include <TParticle.h>
+//#include <TFile.h>
+//#include <AliAnalysisFilter.h>
+//#include <AliESDInputHandler.h>
+//#include <AliESDEvent.h>
+//#include <AliESDVertex.h>
+//#include <AliLog.h>
+//#include <AliExternalTrackParam.h> 
+//#include <AliESDtrackCuts.h>
+//#include <AliESDVZERO.h>
+//#include <AliAODVZERO.h>
+//#include <AliStack.h>
+//#include <AliHeader.h>
+//#include <AliGenPythiaEventHeader.h>
+//#include <AliGenDPMjetEventHeader.h>
+//#include "AliCentrality.h" 
+// #include <AliESDv0.h>
+// #include <AliKFVertex.h>
+// #include <AliAODVertex.h>
+// #include <AliAODTrack.h> 
+// #include <AliAODPid.h> 
+// #include <AliAODMCHeader.h> 
+ 
 #include <iostream>
 
 
@@ -62,6 +56,14 @@ ClassImp(AliAnaTaskV0EffDecomposition)
 
 //_____________________________________________________________________________
 AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition():
+  // fMinPtV0(0.1), //cuts added by tuva:
+  // fLowPtFraction(0.01),
+  // fMassCut(0.1),
+  fDecayRmax(100.),
+  fDecayRmin(5.0),  
+  fDcaDaugh(1.0),
+  fV0pndca(0.1),
+  fCospt(0.998),//end cuts by tuva
   AliAnalysisTaskSE(),
   fAOD(0x0),
   fMCArray(0x0),
@@ -74,14 +76,6 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition():
   fPdgV0(3122),       // default is Lambda
   fPdgPos(2212),      // default is p
   fPdgNeg(-211),      // default is pi-
-  fMinPtV0(0.1), //cuts added by tuva:
-  fLowPtFraction(0.01),
-  fMassCut(0.1),
-  fDecayRmax(100.),
-  fDecayRmin(5.0),  
-  fDcaDaugh(1.0),
-  fV0pndca(0.1),
-  fCospt(0.998),//end cuts by tuva
   fListOfObjects(0x0),
   hV0Gen(0x0),
   hV0Rec(0x0),
@@ -92,6 +86,14 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition():
 
 //______________________________________________________________________________
 AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition(const char *name):
+ //  fMinPtV0(0.1),//cuts added by tuva: 
+ // fLowPtFraction(0.01),
+ //  fMassCut(0.1),
+  fDecayRmax(100.),
+  fDecayRmin(5.0),  
+  fDcaDaugh(1.0),
+  fV0pndca(0.1),
+  fCospt(0.998),//end cuts by tuva
   AliAnalysisTaskSE(name),
   fAOD(0x0),
   fMCArray(0x0),
@@ -104,14 +106,6 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition(const char *name):
   fPdgV0(3122),       // default is Lambda
   fPdgPos(2212),      // default is p
   fPdgNeg(-211),      // default is pi-
-  fMinPtV0(0.1),//cuts added by tuva: 
-  fLowPtFraction(0.01),
-  fMassCut(0.1),
-  fDecayRmax(100.),
-  fDecayRmin(5.0),  
-  fDcaDaugh(1.0),
-  fV0pndca(0.1),
-  fCospt(0.998),//end cuts by tuva
   fListOfObjects(0x0),
   hV0Gen(0x0),
   hV0Rec(0x0),
@@ -166,7 +160,17 @@ void AliAnaTaskV0EffDecomposition::UserCreateOutputObjects()
 			 40, 0, 20);
   fListOfObjects->Add(hV0ButNoTracks);
   
-  // One could add much more differential histograms if needed
+  hCt = new TH1D("hCt", "DCA to primary vertex; DCA [cm]; Counts", 1000, 0, 10);
+  fListOfObjects->Add(hCt);
+
+  hDCAdaugh = new TH1D("hDCAdaugh", "DCA between daughters; DCA [cm]; Counts", 200, 0, 2);
+  fListOfObjects->Add(hDCAdaugh);
+
+  hDecayR = new TH1D("hDecayR", "V0 decay radius; Decay radius [cm]; Counts", 240, 0, 120);
+  fListOfObjects->Add(hDecayR);
+
+  hCosPA = new TH1D("hCosPA", "Cosine of pointing angle; cos(PA); Counts", 1200, 0.988, 1);
+  fListOfObjects->Add(hCosPA);
 
   // Post output data.
   PostData(1, fListOfObjects);
@@ -217,18 +221,18 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
     
     if (TMath::Abs(zvtx) < fVtxCut) {	
       
+
+      //added by tuva
       // Global primary vertex
-      const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
-      if (vtx->GetNContributors() < 2) {
-	
-	// SPD primary vertex
-	const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
-	if (vtxSPD->GetNContributors() < 2) {
-	
+      //  const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
+      //if (vtx->GetNContributors() < 2) {
+       	// SPD primary vertex
+      // const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
+      //if (vtxSPD->GetNContributors() < 2) {	
 	// Correlation between global Zvtx and SPD Zvtx
- 	// fZvtx = vtx->GetZ();
-	// Float_t zvSPD = vtxSPD->GetZ();
-	// if( TMath::Abs( fZvtx - zvSPD ) < 0.5){
+      // fZvtx = vtx->GetZ();
+      // Float_t zvSPD = vtxSPD->GetZ();
+      // if( TMath::Abs( fZvtx - zvSPD ) < 0.5){
 	  
 	  // 3) if the centrality is in the correct range
 	  Float_t centrality = -10;
@@ -252,12 +256,12 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
 	    // In this final step we try to see for each generated V0 how many
 	    // times it was reconstructed as a V0 and/or a track pair
 	    AnalyzeRecMothersAOD();
-	  }
-	}
-	}
+	    //	  }
+	    //  }
       }
     }
-
+  }
+  
   // Post output data.
   PostData(1, fListOfObjects);
 }
@@ -343,19 +347,26 @@ void AliAnaTaskV0EffDecomposition::AnalyzeV0AOD() {
     
     AliAODv0 *aodV0 = fAOD->GetV0(iV0);
     if (!aodV0) continue;
-    
+ 
+    Double_t ct = (aodV0->DecayLength(myBestPrimaryVertex))*(1.115683)/aodV0->P();
+
+    hDecayR->Fill(aodV0->RadiusV0());           
+    hCosPA->Fill(aodV0->CosPointingAngle(myBestPrimaryVertex));
+    hCt->Fill(ct);     
+    hDCAdaugh->Fill(aodV0->DcaV0Daughters());   
+ 
     // common part
     
     //cuts added by tuva
     if(aodV0->RadiusV0()<fDecayRmin)continue;
     if(aodV0->RadiusV0()>fDecayRmax)continue;
-    if(TMath::Abs(aodV0->MassLambda()-1.116)>fMassCut)continue;
-    if(TMath::Abs(aodV0->MassAntiLambda()-1.116)>fMassCut)continue;
+    // if(TMath::Abs(aodV0->MassLambda()-1.116)>fMassCut)continue;
+    // if(TMath::Abs(aodV0->MassAntiLambda()-1.116)>fMassCut)continue;
     if(aodV0->Pt()<fMinPtV0)continue;
     if(aodV0->CosPointingAngle(myBestPrimaryVertex)<fCospt)continue;
     if(aodV0->DcaV0Daughters()>fDcaDaugh)continue;
-    Double_t ct = (aodV0->DecayLength(myBestPrimaryVertex))*(1.115683)/aodV0->P();
     if(ct>3.0*7.89)continue;
+
 
     // AliAODTrack (V0 Daughters)
     AliAODVertex* vertex = aodV0->GetSecondaryVtx();
@@ -383,10 +394,11 @@ void AliAnaTaskV0EffDecomposition::AnalyzeV0AOD() {
       n_track = helpTrack;
     } 
     
+  
     //cuts added by tuva
     if(TMath::Abs(p_track->Eta()) > fEtaCut || TMath::Abs(n_track->Eta()) > fEtaCut)continue;
     
-AliAODMCParticle* p_mother = ValidateTrack(p_track, fPdgPos);
+    AliAODMCParticle* p_mother = ValidateTrack(p_track, fPdgPos);
     if(!p_mother)
       continue;
     AliAODMCParticle* n_mother = ValidateTrack(n_track, fPdgNeg);
