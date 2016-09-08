@@ -75,6 +75,13 @@ void HFEemcQA_PlotHisto()
   TH2F *M20EovP = QA1->FindObject("fM20EovP");
   THnSparse *electron = QA1->FindObject("Electron");  
   TH1F *cent = QA1->FindObject("fCent");
+  TH1F *fULS = QA1->FindObject("fInvmassULS");
+  TH1F *fLS = QA1->FindObject("fInvmassLS");
+  TH2F *fEPV0 = QA1->FindObject("fEvPlaneV0");
+  TH2F *fEPV0A = QA1->FindObject("fEvPlaneV0A");
+  TH2F *fEPV0C = QA1->FindObject("fEvPlaneV0C");
+  TH2F *fEPTPC = QA1->FindObject("fEvPlaneTPC");
+  TH2F *fTrMult = QA1->FindObject("fMult"); 
 
   cout << "No of events with NTrk > 2, ZVtx < 10 cm = " << NEvents->GetBinContent(3) <<endl;
 
@@ -113,6 +120,31 @@ void HFEemcQA_PlotHisto()
   TrigMulti->Draw("COLZ");
   gPad->SetLogz();
   //c3->Print(file,"pdf");
+
+  TCanvas *c4 = new TCanvas();
+  c4->Divide(2,2);
+  c4->cd(1);
+  TH1D *EPV0 = fEPV0->ProjectionY("EPV0",21,40);
+  EPV0->SetMinimum(1);
+  EPV0->Draw();
+  c4->cd(2);
+  TH1D *EPV0A = fEPV0A->ProjectionY("EPV0A",21,40);
+  EPV0A->SetMinimum(1);
+  EPV0A->Draw();
+  c4->cd(3);
+  TH1D *EPV0C = fEPV0C->ProjectionY("EPV0C",21,40);
+  EPV0C->SetMinimum(1);
+  EPV0C->Draw();
+  c4->cd(4);
+  TH1D *EPTPC = fEPTPC->ProjectionY("EPTPC",21,40);
+  EPTPC->SetMinimum(1);
+  EPTPC->Draw();
+  c4->Print(file,"pdf");
+
+  TCanvas *c5 = new TCanvas();
+  gPad->SetLogz();
+  fTrMult->Draw("colz");
+  c5->Print(file,"pdf");
 
 
   TCanvas *c10 = new TCanvas("EMCClusEtaPhi", "EMCAL cluster eta and phi distribution",50,50,700,500);
@@ -331,6 +363,14 @@ void HFEemcQA_PlotHisto()
   for(int i=0; i<2; i++)LEop[i]->Draw();
   //EovP->ProjectionY()->Draw();
   c22_1->Print(file,"pdf");
+
+  TCanvas *c30 = new TCanvas("Invmass","Invariant mass",50,50,700,500);
+  gPad->SetLogy();
+  fULS->SetAxisRange(0,0.2);
+  //fULS->SetMinimum(1);
+  fULS->Draw();
+  fLS->Draw("same");
+  c30->Print(file,"pdf");
 
 
   TCanvas *c24 = new TCanvas("M20","M20 distribution",50,50,700,500);
