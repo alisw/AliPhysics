@@ -15,12 +15,15 @@
 //configIndex = 12 ---> SPD kFirst + 2 ITS cls
 //configIndex = 13 ---> SPD kFirst + 4 ITS cls
 //configIndex = 14 ---> SPD kAny + 4 ITS cls
+//configIndex = 15 ---> SPD kFirst + 3 ITS cls
+//configIndex = 16 ---> SPD kAny + 3 ITS cls
+//configIndex = 17 ---> SPD kBoth + 2 ITS cls
 //Configurations for the Assoated pT Cut
 //configIndex = 20 ---> Default (same as 0)
 //configIndex = 21 ---> pT>0.3
 //configIndex = 22 ---> pT>0.5
 //configIndex = 23 ---> pT>0.7 (Do not use it - removed)
-//Configurations for the hadron cut:
+//Configurations for the hadron cut: 
 //0 (no Sum) = Only the cut from AODFilterBit
 //+1000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
 //+2000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
@@ -104,6 +107,22 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
         hfecuts->SetMinNClustersITS(4);
+    }
+    else if (configIndex == 15)
+    {
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+        hfecuts->SetMinNClustersITS(3);
+        
+    }
+    else if (configIndex == 16)
+    {
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
+        hfecuts->SetMinNClustersITS(3);
+    }
+    else if (configIndex == 17)
+    {
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
+        hfecuts->SetMinNClustersITS(2);
     }
     else
     {
