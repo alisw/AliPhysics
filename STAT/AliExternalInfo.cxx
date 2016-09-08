@@ -19,6 +19,7 @@
 #include "TChain.h"
 #include "TMath.h"
 #include "TStatToolkit.h"
+#include "TLeaf.h"
 
 ClassImp(AliExternalInfo)
 
@@ -276,7 +277,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
     if (tree) break;
   }
   delete arr;
-
+  TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
     AliInfo("-- Successfully read in tree");
     BuildIndex(tree, type);
@@ -367,6 +368,7 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
 /// Returns a chain with the information from the corresponding resources.
 /// \return TChain*
 TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
+  // FIXME  - here we should also fix Leave name bug
   TChain* chain = 0x0;
   TString internalFilename = ""; // Resulting path to the file
   TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
@@ -662,8 +664,5 @@ void AliExternalInfo::BuildHashIndex(TTree* tree, const char *chbranchName,  con
   brIndexMC->SetAddress(0);  // reset pointers to the branches to 0
   branch->SetAddress(0);     // reset pointers to the branches to 0
 }
-
-
-
 
 

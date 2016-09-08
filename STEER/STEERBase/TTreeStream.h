@@ -101,7 +101,7 @@ public:
   void SetExternalTree(const char* name, TTree* externalTree);
   static void SetDisabled(Bool_t b=kTRUE) {fgDisabled=b;}
   static Bool_t IsDisabled()        {return fgDisabled;}
- 
+    static void FixLeafNameBug(TTree* tree);
 private:
 
   TTreeSRedirector(const TTreeSRedirector & tsr);

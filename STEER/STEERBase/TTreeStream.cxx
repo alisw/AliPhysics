@@ -27,7 +27,7 @@
 //  -------------------------------------------------------------------------------------------------
 //  TTreeSRedirector
 //  Redirect file to  different TTreeStreams  
-//  Run and see   TTreeSRedirector::Test() as an example of TTreeSRedirectorer functionality 
+//  Run and see   TTreeSRedirector::Test() as an example of TTreeSRedirector functionality
 // 
 
 #include <TClass.h>
@@ -39,6 +39,7 @@
 // includes for test procedures
 #include "TVectorD.h"
 #include "TRandom.h"
+#include "TLeaf.h"
 
 ClassImp(TTreeDataElement)
 ClassImp(TTreeStream)
@@ -725,3 +726,40 @@ TTreeStream  &TTreeStream::operator<<(const Char_t *name)
   return *this;
 }
 
+
+void TTreeSRedirector::FixLeafNameBug(TTree* tree){
+  // On the fly BUG FIX for name and titles of branches and Leave:
+  //     renaming Leaves and changing title of branches to be the same as Branch name
+  // Explanation of FIX:
+  //    In the  friend tree Join logic it is assumed leaf names are used to find appropraiat primary/secondary keys
+  //    For the standard queries hovwer the branch names are used to identify data
+  //    Hovewer in the Branch constructor it is not checked
+  // As a consequence  - in case the name of the leave and and the name of branch is not the same  + freind trees are sparse
+  //    wrong joins ( unrelated pair of information) are used
+  // FIX:
+  //   To be able to use friend trees with proper indexing (in case of sarse trees) branches and leaves has to be named consistently
+  //   In this routine bnrach name is taken as a reference and branch title and leave name titles are renamed
+  //   After the fix unit test code with pairs of sprse friend trees worked properly
+  // Side effects of fix:
+  //
+  TObjArray *brArray = tree->GetListOfBranches();
+  TObjArray *lArray = tree->GetListOfLeaves();
+  for (Int_t i = 0; i < brArray->GetLast(); i++) {
+    TBranch *br = (TBranch *) brArray->At(i);
+    if (TString(br->GetTitle()).Contains(br->GetName()) == 0) {
+      TString brTitle(br->GetTitle());
+      Int_t pos = brTitle.First("/");
+      TString leafName = "";
+      if (pos < brTitle.Length()) {
+        brTitle[pos] = 0;
+        leafName = TString::Format("%s", brTitle.Data()).Data();
+        TLeaf * leaf = (TLeaf*)lArray->FindObject(leafName);
+        if (leaf) {
+          leaf->SetName(br->GetName());
+          leaf->SetTitle(br->GetName());
+          br->SetTitle(TString::Format("%s/%s",br->GetName(),&(brTitle.Data()[pos+1])).Data());
+        }
+      }
+    }
+  }
+}
