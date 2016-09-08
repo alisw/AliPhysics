@@ -66,6 +66,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1),
+    fEtaLabCut(-0.5, 0.5),
+    fEtaCmsCut(-0.13, 0.13),
+    fPhiCut(0., TMath::TwoPi()),
     fKineCorrelation(false),
     fStudyPID(false),
     fNameDownscaleOADB(""),
@@ -75,10 +78,6 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fInitialized(false)
 {
   // Restrict analysis to the EMCAL acceptance
-  fEtaLabCut[0] = -0.6;
-  fEtaLabCut[1] = 0.6;
-  fEtaCmsCut[0] = -0.13;
-  fEtaCmsCut[1] = 0.13;
 }
 
 /**
@@ -96,6 +95,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1),
+    fEtaLabCut(-0.5, 0.5),
+    fEtaCmsCut(-0.13, 0.13),
+    fPhiCut(0., TMath::TwoPi()),
     fKineCorrelation(false),
     fStudyPID(false),
     fNameDownscaleOADB(""),
@@ -105,10 +107,6 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fInitialized(false)
 {
   // Restrict analysis to the EMCAL acceptance
-  fEtaLabCut[0] = -0.6;
-  fEtaLabCut[1] = 0.6;
-  fEtaCmsCut[0] = -0.13;
-  fEtaCmsCut[1] = 0.13;
   DefineOutput(1, TList::Class());
 }
 
@@ -348,7 +346,8 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(!checktrack) continue;
-    if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
+    if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
+    if(!fPhiCut.IsInRange(checktrack->Phi())) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
     if(checktrack->IsA() == AliESDtrack::Class()){
       AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
@@ -373,7 +372,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
     Double_t etacent = -1. * checktrack->Eta() - TMath::Abs(fYshift);
     etacent *= fEtaSign;
 
-    Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
+    Bool_t etacentcut = fEtaCmsCut.IsInRange(etacent);
 
     if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
