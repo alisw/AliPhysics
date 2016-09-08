@@ -497,12 +497,14 @@ void AliQnCorrectionsFillEventTask::FillZDC(){
 void AliQnCorrectionsFillEventTask::FillFMD()
 {
   //
-  // fill ESD FMD info
+  // fill FMD info
   //
 
   Float_t m,phi;
 
-  AliAODEvent* aodEvent = AliForwardUtil::GetAODEvent(this);
+  AliAODEvent* aodEvent=0x0;
+  if(fIsAOD) aodEvent = (AliAODEvent*) fEvent;
+  if(fIsESD) aodEvent = AliForwardUtil::GetAODEvent(this);
 
 
   if (!aodEvent) {
