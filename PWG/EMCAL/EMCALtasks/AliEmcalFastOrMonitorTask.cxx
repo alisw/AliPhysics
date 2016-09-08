@@ -38,7 +38,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
 }
 
 AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskSE(name),
   fHistos(nullptr),
   fGeom(nullptr),
   fInitialized(false),
