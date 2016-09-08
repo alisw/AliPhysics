@@ -1134,11 +1134,11 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         Double_t fPtBin[7];
         if(fUseAlternativeBinnig)
         {
-            fPtBin[0] = 0.5;
-            fPtBin[1] = 1.0;
-            fPtBin[2] = 1.5;
-            fPtBin[3] = 2.0;
-            fPtBin[4] = 3.0;
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 1.2;
+            fPtBin[2] = 1.4;
+            fPtBin[3] = 1.6;
+            fPtBin[4] = 2.0;
             fPtBin[5] = 4.0;
             fPtBin[6] = 6.0;
         }
@@ -1663,11 +1663,11 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
     Double_t fPtBin[7];
     if(fUseAlternativeBinnig)
     {
-        fPtBin[0] = 0.5;
-        fPtBin[1] = 1.0;
-        fPtBin[2] = 1.5;
-        fPtBin[3] = 2.0;
-        fPtBin[4] = 3.0;
+        fPtBin[0] = 1.0;
+        fPtBin[1] = 1.2;
+        fPtBin[2] = 1.4;
+        fPtBin[3] = 1.6;
+        fPtBin[4] = 2.0;
         fPtBin[5] = 4.0;
         fPtBin[6] = 6.0;
     }
@@ -3740,11 +3740,11 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         Double_t fPtBin[7];
         if(fUseAlternativeBinnig)
         {
-            fPtBin[0] = 0.5;
-            fPtBin[1] = 1.0;
-            fPtBin[2] = 1.5;
-            fPtBin[3] = 2.0;
-            fPtBin[4] = 3.0;
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 1.2;
+            fPtBin[2] = 1.4;
+            fPtBin[3] = 1.6;
+            fPtBin[4] = 2.0;
             fPtBin[5] = 4.0;
             fPtBin[6] = 6.0;
         }
@@ -5719,11 +5719,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                             Double_t fPtBin[7];
                             if(fUseAlternativeBinnig)
                             {
-                                fPtBin[0] = 0.5;
-                                fPtBin[1] = 1.0;
-                                fPtBin[2] = 1.5;
-                                fPtBin[3] = 2.0;
-                                fPtBin[4] = 3.0;
+                                fPtBin[0] = 1.0;
+                                fPtBin[1] = 1.2;
+                                fPtBin[2] = 1.4;
+                                fPtBin[3] = 1.6;
+                                fPtBin[4] = 2.0;
                                 fPtBin[5] = 4.0;
                                 fPtBin[6] = 6.0;
                             }
@@ -5785,11 +5785,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                         Double_t fPtBin[7];
                         if(fUseAlternativeBinnig)
                         {
-                            fPtBin[0] = 0.5;
-                            fPtBin[1] = 1.0;
-                            fPtBin[2] = 1.5;
-                            fPtBin[3] = 2.0;
-                            fPtBin[4] = 3.0;
+                            fPtBin[0] = 1.0;
+                            fPtBin[1] = 1.2;
+                            fPtBin[2] = 1.4;
+                            fPtBin[3] = 1.6;
+                            fPtBin[4] = 2.0;
                             fPtBin[5] = 4.0;
                             fPtBin[6] = 6.0;
                         }
@@ -5856,11 +5856,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                         Double_t fPtBin[7];
                         if(fUseAlternativeBinnig)
                         {
-                            fPtBin[0] = 0.5;
-                            fPtBin[1] = 1.0;
-                            fPtBin[2] = 1.5;
-                            fPtBin[3] = 2.0;
-                            fPtBin[4] = 3.0;
+                            fPtBin[0] = 1.0;
+                            fPtBin[1] = 1.2;
+                            fPtBin[2] = 1.4;
+                            fPtBin[3] = 1.6;
+                            fPtBin[4] = 2.0;
                             fPtBin[5] = 4.0;
                             fPtBin[6] = 6.0;
                         }
@@ -6048,11 +6048,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 Double_t fPtBin[7];
                 if(fUseAlternativeBinnig)
                 {
-                    fPtBin[0] = 0.5;
-                    fPtBin[1] = 1.0;
-                    fPtBin[2] = 1.5;
-                    fPtBin[3] = 2.0;
-                    fPtBin[4] = 3.0;
+                    fPtBin[0] = 1.0;
+                    fPtBin[1] = 1.2;
+                    fPtBin[2] = 1.4;
+                    fPtBin[3] = 1.6;
+                    fPtBin[4] = 2.0;
                     fPtBin[5] = 4.0;
                     fPtBin[6] = 6.0;
                 }
@@ -6194,11 +6194,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     Double_t fPtBin[7];
                     if(fUseAlternativeBinnig)
                     {
-                        fPtBin[0] = 0.5;
-                        fPtBin[1] = 1.0;
-                        fPtBin[2] = 1.5;
-                        fPtBin[3] = 2.0;
-                        fPtBin[4] = 3.0;
+                        fPtBin[0] = 1.0;
+                        fPtBin[1] = 1.2;
+                        fPtBin[2] = 1.4;
+                        fPtBin[3] = 1.6;
+                        fPtBin[4] = 2.0;
                         fPtBin[5] = 4.0;
                         fPtBin[6] = 6.0;
                     }
@@ -6324,11 +6324,11 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         Double_t fPtBin[7];
         if(fUseAlternativeBinnig)
         {
-            fPtBin[0] = 0.5;
-            fPtBin[1] = 1.0;
-            fPtBin[2] = 1.5;
-            fPtBin[3] = 2.0;
-            fPtBin[4] = 3.0;
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 1.2;
+            fPtBin[2] = 1.4;
+            fPtBin[3] = 1.6;
+            fPtBin[4] = 2.0;
             fPtBin[5] = 4.0;
             fPtBin[6] = 6.0;
         }
@@ -6551,11 +6551,11 @@ void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_
         Double_t fPtBin[7];
         if(fUseAlternativeBinnig)
         {
-            fPtBin[0] = 0.5;
-            fPtBin[1] = 1.0;
-            fPtBin[2] = 1.5;
-            fPtBin[3] = 2.0;
-            fPtBin[4] = 3.0;
+            fPtBin[0] = 1.0;
+            fPtBin[1] = 1.2;
+            fPtBin[2] = 1.4;
+            fPtBin[3] = 1.6;
+            fPtBin[4] = 2.0;
             fPtBin[5] = 4.0;
             fPtBin[6] = 6.0;
         }
