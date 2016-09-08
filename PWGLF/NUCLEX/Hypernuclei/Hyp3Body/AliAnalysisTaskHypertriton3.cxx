@@ -106,6 +106,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fMinvSignal(kTRUE),
   fMinvLikeSign(kFALSE),
   fSideBand(kFALSE),
+  fTriangularDCAtracks(kFALSE),
   fDCAPiPVmin(0.1),
   fDCAzPPVmax(999.),
   fDCAzDPVmax(999.),
@@ -461,7 +462,7 @@ Bool_t AliAnalysisTaskHypertriton3::PassTriggerSelection(UInt_t PhysSelMask){
     if(isSelectedMB) { // Minimum Bias
       fHistTrigger->Fill(0);
     }
-    
+
     if(!isSelectedMB) return kFALSE;
     return kTRUE;
   } // end of fRun2PbPb
@@ -612,8 +613,9 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
     dca_dp = trackD->GetDCA(trackP,bz,xthiss,xpp);
 
     fHistDCAdeupro->Fill(dca_dp);
-
-    if(dca_dp > fDCAdp) continue;
+    if(fTriangularDCAtracks){
+      if(dca_dp > fDCAdp) continue;
+    }
 
 
     for(Int_t s=0; s<arrPi.GetSize(); s++ ){ // candidate pion loop cpion.size()
@@ -644,10 +646,14 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
       fHistDCApdppi->Fill(dca_dp,dca_ppi);
       fHistDCApidpip->Fill(dca_ppi,dca_dpi);
 
-
-      if(dca_dpi > GetDCAcut(5,dca_dp)) continue;
-      if(dca_ppi > GetDCAcut(4,dca_dp)) continue;
-
+      if(fTriangularDCAtracks){
+        if(dca_dpi > GetDCAcut(5,dca_dp)) continue;
+        if(dca_ppi > GetDCAcut(4,dca_dp)) continue;
+      } else{
+        if(dca_dpi > fDCAdpi) continue;
+        if(dca_ppi > fDCApip) continue;
+      }
+      
       fHistDCApiondeu->Fill(dca_dpi);
       fHistDCApionpro->Fill(dca_ppi);
 
