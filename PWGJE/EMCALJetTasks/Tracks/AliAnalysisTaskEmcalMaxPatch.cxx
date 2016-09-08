@@ -59,8 +59,8 @@ void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
 
   fHistos = new THistManager("histMaxPatch");
   fHistos->CreateTH1("hTrueEventCount", "Maximum energy patch in the event", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hPatchEnergyMaxEGA", "Energy spectrum of the maximum EGA patch", 5000, 0., 500.);
-  fHistos->CreateTH1("hPatchEnergyMaxEJE", "Energy spectrum of the maximum EJE patch", 5000, 0., 500.);
+  fHistos->CreateTH1("hPatchEnergyMaxEGA", "Energy spectrum of the maximum EGA patch", 2000, 0., 200.);
+  fHistos->CreateTH1("hPatchEnergyMaxEJE", "Energy spectrum of the maximum EJE patch", 2000, 0., 200.);
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   PostData(1, fOutput);
