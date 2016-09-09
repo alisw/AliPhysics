@@ -1157,12 +1157,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
     case 1:
       
       break;
+
+    case 2:
+      
+      fM02->Fill(vecCOI.E(),coi->GetM02());
+
+      break;
+
       
   }
   
   fPT->Fill(vecCOI.Pt());
   fE->Fill(vecCOI.E());
-  fM02->Fill(vecCOI.E(),coi->GetM02());
   fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
   
   Double_t checktof = coi->GetTOF()*1e9;
@@ -1177,7 +1183,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
         //  fPtaftFC->Fill(vecCOI.Pt());
       
       Double_t checkM02=coi->GetM02();
-      if(fM02mincut < checkM02 && checkM02 < fM02maxcut){
+      if(fM02mincut < checkM02 && checkM02 < fM02maxcut && fWho==2){
         fPtaftM02C->Fill(vecCOI.Pt());
       }
     }
