@@ -1,4 +1,4 @@
-AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRun2( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRun2( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, TString lExtraOptions = "", const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.
@@ -18,7 +18,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRu
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
     
     // Create and configure the task
-    AliAnalysisTaskStrangenessVsMultiplicityRun2 *taskAuxiliary = new AliAnalysisTaskStrangenessVsMultiplicityRun2(lSaveEventTree, lSaveV0, lSaveCascade, "taskAuxiliary");
+    AliAnalysisTaskStrangenessVsMultiplicityRun2 *taskAuxiliary = new AliAnalysisTaskStrangenessVsMultiplicityRun2(lSaveEventTree, lSaveV0, lSaveCascade, "taskAuxiliary", lExtraOptions);
     mgr->AddTask(taskAuxiliary);
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     
