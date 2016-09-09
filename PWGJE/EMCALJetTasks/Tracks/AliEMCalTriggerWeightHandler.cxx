@@ -28,13 +28,48 @@ ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight)
 namespace EMCalTriggerPtAnalysis {
 
 AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler() :
-  fWeightModel(NULL),
-  fBinWeights(NULL),
+  TObject(),
+  fWeightModel(nullptr),
+  fBinWeights(nullptr),
   fUseCrossSection(kFALSE)
 {
   /*
    * See header file for details
    */
+}
+
+AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler(const AliEMCalTriggerWeightHandler &ref):
+  TObject(ref),
+  fWeightModel(nullptr),
+  fBinWeights(nullptr),
+  fUseCrossSection(ref.fUseCrossSection)
+{
+  /*
+   * See header file for details
+   */
+  if(ref.fWeightModel) fWeightModel = new TF1(*ref.fWeightModel);
+  if(ref.fBinWeights){
+    fBinWeights = new TObjArray;
+    for(auto o : *(ref.fBinWeights)){
+      fBinWeights->Add(o);
+    }
+  }
+}
+
+AliEMCalTriggerWeightHandler &AliEMCalTriggerWeightHandler::operator =(const AliEMCalTriggerWeightHandler &ref){
+  this->~AliEMCalTriggerWeightHandler();
+  TObject::operator=(ref);
+  if(this != &ref){
+    if(ref.fWeightModel) fWeightModel = new TF1(*ref.fWeightModel);
+    if(ref.fBinWeights){
+      fBinWeights = new TObjArray;
+      for(auto o : *(ref.fBinWeights)){
+        fBinWeights->Add(o);
+      }
+    }
+    fUseCrossSection = ref.fUseCrossSection;
+  }
+  return *this;
 }
 
 AliEMCalTriggerWeightHandler::~AliEMCalTriggerWeightHandler(){

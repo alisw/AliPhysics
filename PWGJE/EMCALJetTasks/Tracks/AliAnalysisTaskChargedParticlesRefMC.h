@@ -55,6 +55,7 @@ public:
   void                        SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
+  void                        SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
   void                        SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
@@ -90,9 +91,10 @@ private:
   Double_t                              fEventWeight;               ///< Event weight
 
   Double_t                              fYshift;                    ///< Rapidity shift
-  Double_t                              fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
-  AliCutValueRange<double>              fEtaLabCut;                 ///< Cut applied in Eta Lab frame
-  AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in Eta centre-of-mass frame
+  Double_t                              fEtaSign;                   ///< Sign of the \f$\eta\f$-distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
+  AliCutValueRange<double>              fEtaLabCut;                 ///< Cut applied in \f$\eta_{Lab}\f$-frame
+  AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in \f$\eta_{centre-of-mass}\f$ frame
+  AliCutValueRange<double>              fPhiCut;                    ///< Track \f$\phi\f$ cut
   Double_t                              fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
 
   /// \cond CLASSIMP
