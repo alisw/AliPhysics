@@ -238,6 +238,7 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 	// clear them up for every event
 	fInputList->Clear();
 	fInputListSpectra->Clear();
+	fInputListFlow->Clear();
 
 	float fcent = -999;
 	float fImpactParameter = -999;
