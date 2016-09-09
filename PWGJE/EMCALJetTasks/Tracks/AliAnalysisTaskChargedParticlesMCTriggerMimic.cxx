@@ -64,8 +64,9 @@ AliAnalysisTaskChargedParticlesMCTriggerMimic::AliAnalysisTaskChargedParticlesMC
             fWeightHandler(NULL),
             fYshift(0.465),
             fEtaSign(1),
-            fEtaLabCut(-0.6, 0.6),
+            fEtaLabCut(-0.5, 0.5),
             fEtaCmsCut(-0.13, 0.13),
+            fPhiCut(0, TMath::TwoPi()),
             fPatchType(kUndef),
             fEnergyThreshold(0.),
             fObservables(),
@@ -337,6 +338,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
 
         // Select only particles within ALICE acceptance
         if(!fEtaLabCut.IsInRange(truepart->Eta())) continue;
+        if(!fPhiCut.IsInRange(truepart->Phi())) continue;
         if(TMath::Abs(truepart->Pt()) < 0.1) continue;
         if(!truepart->Charge()) continue;
 
@@ -400,6 +402,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
 
       // Select only particles within ALICE acceptance
       if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
+      if(!fPhiCut.IsInRange(checktrack->Phi())) continue;
       if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
       if(checktrack->IsA() == AliESDtrack::Class()){
         AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
@@ -629,7 +632,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::IsPhysicalPrimary(const Al
  * @param isAOD check whether we run on ESDs or AODs
  */
 void AliAnalysisTaskChargedParticlesMCTriggerMimic::InitializeTrackCuts(TString cutname, bool isAOD){
-  SetTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
+  SetEmcalTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
 }
 
 /**

@@ -5,7 +5,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic * AddTaskC
   mgr->AddTask(triggertask);
   triggertask->SetJetPtFactor(4.);
   triggertask->SetTrackPtFactor(1.5);
-  triggertask->SetTrackSelection(
+  triggertask->SetEmcalTrackSelection(
       EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
           "standard",
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()

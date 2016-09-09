@@ -63,6 +63,20 @@ public:
    * Constructor
    */
   AliEMCalTriggerWeightHandler();
+
+  /**
+   * Copy constructor
+   * @param ref Reference for the copy
+   */
+  AliEMCalTriggerWeightHandler(const AliEMCalTriggerWeightHandler &ref);
+
+  /**
+   * Assignment operator
+   * @param ref Reference for the assignment
+   * @return Object after assignment
+   */
+  AliEMCalTriggerWeightHandler &operator=(const AliEMCalTriggerWeightHandler &ref);
+
   /**
    * Destructor, cleanup memory assigned
    */

@@ -39,7 +39,7 @@ ClassImp(AliEmcalCellMonitorTask)
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    AliAnalysisTaskSE(),
-   fInitialized(kTRUE),
+   fInitialized(kFALSE),
    fHistManager(nullptr),
    fGeometry(nullptr),
    fMinCellAmplitude(0),
@@ -55,7 +55,7 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    AliAnalysisTaskSE(name),
-   fInitialized(kTRUE),
+   fInitialized(kFALSE),
    fHistManager(nullptr),
    fGeometry(nullptr),
    fMinCellAmplitude(0),
