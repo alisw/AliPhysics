@@ -79,6 +79,7 @@
 #include "TSystem.h"
 
 #include "TFileMerger.h"
+#include "helpers.h"
 
 static const char *USAGE = 
       "usage: alihadd [-h] [-f[kf123456]] [-a] [-k] [-T] [-O] [-n <max numer of files>]"
@@ -141,51 +142,6 @@ void die(int exitCode, const char *fmt, ...)
   va_end(args);
   exit(exitCode);
 }
-
-struct MergeInput {
-  MergeInput(const std::string &f, int order)
-  : filename(f),
-    order(order)
-  {}
-  std::string filename;
-  size_t cost;
-  int order;
-};
-
-struct MergeInputComparator {
-  bool operator()(const MergeInput &a, const MergeInput &b) {
-    return a.order < b.order;
-  }
-};
-
-inline bool ends_with(std::string const & value, std::string const & ending)
-{
-    if (ending.size() > value.size()) return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-}
-
-struct MergeJob {
-  MergeJob (const std::string &namePrefix, int maxJobs)
-  :output(namePrefix, 0, namePrefix.size() - (ends_with(namePrefix, ".root") ? 5 : 0))
-  {
-    // In case we only have one file, simply add back the .root extension.
-    // In case we have more than one file, add an incremental index to the filename.
-    if (maxJobs == 1)
-    {
-      output += ".root";
-      return;
-    }
-    static int count = 1;
-    char buf[16];
-    snprintf(buf, 10, "%i.root", count);
-    // Add numeric suffix when splitting.
-    output += buf;
-    count++;
-  }
-  std::string output;
-  std::vector<size_t> inputs;
-};
-
 //___________________________________________________________________________
 int main( int argc, char **argv )
 {
@@ -284,13 +240,14 @@ int main( int argc, char **argv )
         break;
     }
   }
+
   log(2, "Verbosity level: %i\n", gVerbosity);
 
   gSystem->Load("libTreePlayer");
 
   if (argc - optind < 2)
     die(1, "Please, specify more than one file as input.\n\n%s", USAGE);
-  
+
   // Payloads to be processed.
   std::vector<MergeJob> mergeJobs;
   std::vector<MergeInput> mergeInputs;
@@ -298,8 +255,8 @@ int main( int argc, char **argv )
   // First file is always the output.
   const char *outputTemplate = argv[optind];
   log(1, "hadd Target file: %s\n", outputTemplate);
-  
-  // Get all the files to merge. 
+
+  // Get all the files to merge.
   // @<filename> should contain a list of files
   for (int i = 1; i < argc - optind ; ++i)
   {
@@ -394,7 +351,11 @@ int main( int argc, char **argv )
     }
     f->Close();
   }
-  
+
+  // Never use compression level -1
+  if (newcomp == -1)
+    newcomp = 1;
+
   if (gRandomizeInput) {
     std::sort(mergeInputs.begin(), mergeInputs.end(), MergeInputComparator());
   }
@@ -411,7 +372,7 @@ int main( int argc, char **argv )
     // If we are below threshold, we carry on adding to the same job, otherwise
     // we create a new MergeJob.
     range.second += 1;
-    if ((costAcc < gCostLimit) 
+    if ((costAcc < gCostLimit)
         || ((range.second - range.first) > gMaxFilesPerJob))
       continue;
 
@@ -421,7 +382,7 @@ int main( int argc, char **argv )
   // Remove the last range in case it's empty.
   if (splitting.back().second - splitting.back().first == 0)
     splitting.pop_back();
-  
+
   // Costruct the merge jobs using the splitting information.
   for (size_t si = 0; si < splitting.size(); ++si)
   {
@@ -430,11 +391,11 @@ int main( int argc, char **argv )
       newJob.inputs.push_back(ii);
     mergeJobs.push_back(newJob);
   }
-  
+
   // FIXME: handle the case in which we need to keep old compression
   // FIXME: handle the case in which we need to force the new
   //        compression levels.
-  log(1, keepCompressionAsIs && !reoptimize 
+  log(1, keepCompressionAsIs && !reoptimize
          ? "hadd compression setting for meta data: %i\n"
          : "hadd compression setting for all ouput: %i\n", newcomp);
 
