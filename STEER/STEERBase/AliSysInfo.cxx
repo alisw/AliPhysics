@@ -388,20 +388,19 @@ void  AliSysInfo::PrintJiraTable(TTree * tree, const char *var, const char *cut,
   /*
     Example:
     AliSysInfo::PrintJiraTable(tree, "deltaT:sname", "deltaT>0", "col=10:100", "syswatch.table");
-    AliSysInfo::PrintJiraTable(tree, "deltaT:sname", "deltaT>0", "col=10:100", 0);
-    AliSysInfo::PrintJiraTable(tree, "deltaT:sname:fileReadCalls:fileBytesRead/1000000", "deltaT>0", "col=10:100:25:15", 0);
-  */
-  tree->SetScanField(tree->GetEntries());
-  ((TTreePlayer*)(tree->GetPlayer()))->SetScanRedirect(true);
-  ((TTreePlayer*)(tree->GetPlayer()))->SetScanFileName("AliSysInfo.PrintJiraTable.tmp0");
+    */
+    if (outputTable) {
+        tree->SetScanField(tree->GetEntries());
+        ((TTreePlayer * )(tree->GetPlayer()))->SetScanRedirect(true);
+        ((TTreePlayer * )(tree->GetPlayer()))->SetScanFileName("AliSysInfo.PrintJiraTable.tmp0");
+    }
   tree->Scan(var,cut,format);
-  ((TTreePlayer*)(tree->GetPlayer()))->SetScanRedirect(0);
-  gSystem->Exec("cat AliSysInfo.PrintJiraTable.tmp0 | sed s_*_\"|\"_g | grep -v \"|||\" > AliSysInfo.PrintJiraTable.tmp1");
-  if (outputTable==0){
-    gSystem->Exec("cat AliSysInfo.PrintJiraTable.tmp1");
-  }else{
-    gSystem->Exec(TString::Format("mv AliSysInfo.PrintJiraTable.tmp1 %s", outputTable).Data());
-  }
+    if (outputTable){
+        ((TTreePlayer*)(tree->GetPlayer()))->SetScanRedirect(0);
+        gSystem->Exec("cat AliSysInfo.PrintJiraTable.tmp0 | sed s_*_\"|\"_g | grep -v \"|||\" > AliSysInfo.PrintJiraTable.tmp1");
+        gSystem->Exec(TString::Format("mv AliSysInfo.PrintJiraTable.tmp1 %s", outputTable).Data());
+        gSystem->Exec("rm AliSysInfo.PrintJiraTable.tmp0");
+    }
 
 }
 
@@ -449,13 +448,18 @@ TTree * AliSysInfo::MakeDUTree(const char *lname, const char * fout){
   */
 
   if (lname==NULL) lname="du.txt";
-  if (fout==NULL) fout="du.tree";
-  gSystem->GetFromPipe(TString::Format("cat %s | gawk '{print $1\" \"$2\" \"(split($2,a,\"/\")-1)}' | sort -g -r   > %s",lname,fout).Data());
+  if (fout==NULL) fout="du.root";
+  gSystem->GetFromPipe(TString::Format("cat %s | gawk '{print $1\" \"$2\" \"(split($2,a,\"/\")-1)}' | sort -g -r   > %s.tree",lname,fout).Data());
   //
+  TFile *ftout=TFile::Open(fout,"recreate");
   TTree * tree = new TTree("du","du");
-  tree->ReadFile(fout,"size/D:dir/C:depth/d");
+  tree->ReadFile(TString::Format("%s.tree",fout).Data(),"size/D:dir/C:depth/d");
   tree->SetAlias("sizeMB","size/(1024)");
   tree->SetAlias("sizeGB","size/(1024*1024)");
   tree->SetAlias("sizeTB","size/(1024*1024*1024)");
+  tree->Write();
+  ftout->Close();
+    ftout=TFile::Open(fout);
+    tree=(TTree*)ftout->Get("du");
   return tree;  
 }
