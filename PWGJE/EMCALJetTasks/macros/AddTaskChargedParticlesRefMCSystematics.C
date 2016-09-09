@@ -5,8 +5,8 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   TString taskname = "chargedParticleMCQA_" + TString(suffix);
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC(taskname.Data());
-  task->SetOutlierCut(-1);
-
+  task->SetJetPtFactor(4.);
+  task->SetTrackPtFactor(1.5);
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());
