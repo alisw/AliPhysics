@@ -1099,7 +1099,10 @@ Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
   if(codemoth == 211 && uniqueID == kPDecay) return kTRUE;// pion+- decay products
   if(codemoth == 13 && uniqueID == kPDecay) return kTRUE;// muon decay products
 
-  
+  /// Hypernuclei case
+  if (TMath::Abs(moth->GetPdgCode()) > 1000000000 && uniqueID == kPDecay) {
+    if ((moth->GetPdgCode() / 10000000) % 10 != 0) return kTRUE; /// Number of lambdas in the hypernucleus != 0
+  }
 
   return kFALSE;
   
