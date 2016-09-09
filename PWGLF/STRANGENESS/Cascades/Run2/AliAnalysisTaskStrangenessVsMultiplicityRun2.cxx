@@ -125,6 +125,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
         fkDownScaleV0      ( kTRUE  ),
         fDownScaleFactorV0 ( 0.001  ),
         fkPreselectDedx ( kFALSE ),
+        fkDebugWrongPIDForTracking ( kFALSE ),
 
 //---> Flags controlling Cascade TTree output
         fkSaveCascadeTree       ( kTRUE  ),
@@ -164,6 +165,13 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
       fTreeVariableNSigmasNegProton(0),
       fTreeVariableNSigmasNegPion(0),
 
+    fTreeVariablePosPIDForTracking(-1),
+    fTreeVariableNegPIDForTracking(-1),
+    fTreeVariablePosdEdx(-1),
+    fTreeVariableNegdEdx(-1),
+    fTreeVariablePosInnerP(-1),
+    fTreeVariableNegInnerP(-1),
+
       fTreeVariableDistOverTotMom(0),
       fTreeVariableLeastNbrCrossedRows(0),
       fTreeVariableLeastRatioCrossedRowsOverFindable(0),
@@ -200,7 +208,16 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
       fTreeCascVarPosNSigmaProton(0),
       fTreeCascVarBachNSigmaPion(0),
       fTreeCascVarBachNSigmaKaon(0),
-      fTreeCascVarCentrality(0),
+fTreeCascVarPosPIDForTracking(-1),
+fTreeCascVarNegPIDForTracking(-1),
+fTreeCascVarBachPIDForTracking(-1),
+fTreeCascVarPosdEdx(-1),
+fTreeCascVarNegdEdx(-1),
+fTreeCascVarBachdEdx(-1),
+fTreeCascVarPosInnerP(-1),
+fTreeCascVarNegInnerP(-1),
+fTreeCascVarBachInnerP(-1),
+fTreeCascVarCentrality(0),
 //Histos
       fHistEventCounter(0),
       fHistCentrality(0)
@@ -210,16 +227,18 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
 
 }
 
-AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name)
+AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
     : AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
 
 //---> Flags controlling V0 TTree output
-fkSaveV0Tree       ( kFALSE ),
+fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
+fkPreselectDedx ( kFALSE ),
+fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -335,6 +354,11 @@ fCentrality(0),
         DefineOutput(5, TTree::Class()); // V0 Tree output
     if (fkSaveCascadeTree)
         DefineOutput(6, TTree::Class()); // Cascade Tree output
+    
+    //Special Debug Options (more to be added as needed)
+    // A - Study Wrong PID for tracking bug
+    if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
+
 }
 
 
@@ -425,6 +449,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         //-----------MULTIPLICITY-INFO--------------------
         fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
         //------------------------------------------------
+        if ( fkDebugWrongPIDForTracking ){
+            fTreeV0->Branch("fTreeVariablePosPIDForTracking",&fTreeVariablePosPIDForTracking,"fTreeVariablePosPIDForTracking/I");
+            fTreeV0->Branch("fTreeVariableNegPIDForTracking",&fTreeVariableNegPIDForTracking,"fTreeVariableNegPIDForTracking/I");
+            fTreeV0->Branch("fTreeVariablePosdEdx",&fTreeVariablePosdEdx,"fTreeVariablePosdEdx/F");
+            fTreeV0->Branch("fTreeVariableNegdEdx",&fTreeVariableNegdEdx,"fTreeVariableNegdEdx/F");
+            fTreeV0->Branch("fTreeVariablePosInnerP",&fTreeVariablePosInnerP,"fTreeVariablePosInnerP/F");
+            fTreeV0->Branch("fTreeVariableNegInnerP",&fTreeVariableNegInnerP,"fTreeVariableNegInnerP/F");
+        }
+        //------------------------------------------------
     }
 
     //------------------------------------------------
@@ -468,6 +501,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPosNSigmaProton",&fTreeCascVarPosNSigmaProton,"fTreeCascVarPosNSigmaProton/F");
         fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
         fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
+        //------------------------------------------------
+        if ( fkDebugWrongPIDForTracking ){
+            fTreeCascade->Branch("fTreeCascVarPosPIDForTracking",&fTreeCascVarPosPIDForTracking,"fTreeCascVarPosPIDForTracking/I");
+            fTreeCascade->Branch("fTreeCascVarNegPIDForTracking",&fTreeCascVarNegPIDForTracking,"fTreeCascVarNegPIDForTracking/I");
+            fTreeCascade->Branch("fTreeCascVarBachPIDForTracking",&fTreeCascVarBachPIDForTracking,"fTreeCascVarBachPIDForTracking/I");
+            fTreeCascade->Branch("fTreeCascVarPosdEdx",&fTreeCascVarPosdEdx,"fTreeCascVarPosdEdx/F");
+            fTreeCascade->Branch("fTreeCascVarNegdEdx",&fTreeCascVarNegdEdx,"fTreeCascVarNegdEdx/F");
+            fTreeCascade->Branch("fTreeCascVarBachdEdx",&fTreeCascVarBachdEdx,"fTreeCascVarBachdEdx/F");
+            fTreeCascade->Branch("fTreeCascVarPosInnerP",&fTreeCascVarPosInnerP,"fTreeCascVarPosInnerP/F");
+            fTreeCascade->Branch("fTreeCascVarNegInnerP",&fTreeCascVarNegInnerP,"fTreeCascVarNegInnerP/F");
+            fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");
+        }
+        //------------------------------------------------
     }
     //------------------------------------------------
     // Particle Identification Setup
@@ -693,7 +739,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;
         }
-
+        fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
+        fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
+        
+        const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
+        const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
+        Float_t lThisPosInnerP = -1;
+        Float_t lThisNegInnerP = -1;
+        if(innerposv0)  { lThisPosInnerP  = innerposv0 ->GetP(); }
+        if(innernegv0)  { lThisNegInnerP  = innernegv0 ->GetP(); }
+        Float_t lThisPosdEdx = pTrack -> GetTPCsignal();
+        Float_t lThisNegdEdx = nTrack -> GetTPCsignal();
+        
+        fTreeVariablePosdEdx = lThisPosdEdx;
+        fTreeVariableNegdEdx = lThisNegdEdx;
+        
+        fTreeVariablePosInnerP = lThisPosInnerP;
+        fTreeVariableNegInnerP = lThisNegInnerP;
+        
         //Daughter Eta for Eta selection, afterwards
         fTreeVariableNegEta = nTrack->Eta();
         fTreeVariablePosEta = pTrack->Eta();
@@ -850,7 +913,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         //Step 1: Sweep members of the output object TList and fill all of them as appropriate
         Int_t lNumberOfConfigurations = fListV0->GetEntries();
-        AliWarning(Form("[V0 Analyses] Processing different configurations (%i detected)",lNumberOfConfigurations));
+        //AliWarning(Form("[V0 Analyses] Processing different configurations (%i detected)",lNumberOfConfigurations));
         TH3F *histoout         = 0x0;
         AliV0Result *lV0Result = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurations; lcfg++){
@@ -1073,7 +1136,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
         //fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
         //fTreeCascVarNegTransMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
-
+        
         //------------------------------------------------
         // TPC dEdx information
         //------------------------------------------------
@@ -1084,6 +1147,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarBachNSigmaPion  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion );
         fTreeCascVarBachNSigmaKaon  = fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kKaon );
 
+        //------------------------------------------------
+        // Raw TPC dEdx + PIDForTracking information
+        //------------------------------------------------
+        
+        //Step 1: Acquire TPC inner wall total momentum
+        const AliExternalTrackParam *innerneg=nTrackXi->GetInnerParam();
+        const AliExternalTrackParam *innerpos=pTrackXi->GetInnerParam();
+        const AliExternalTrackParam *innerbach=bachTrackXi->GetInnerParam();
+        fTreeCascVarPosInnerP = -1;
+        fTreeCascVarNegInnerP = -1;
+        fTreeCascVarBachInnerP = -1;
+        if(innerpos)  { fTreeCascVarPosInnerP  = innerpos ->GetP(); }
+        if(innerneg)  { fTreeCascVarNegInnerP  = innerneg ->GetP(); }
+        if(innerbach) { fTreeCascVarBachInnerP = innerbach->GetP(); }
+        
+        //Step 2: Acquire TPC Signals
+        fTreeCascVarPosdEdx = pTrackXi->GetTPCsignal();
+        fTreeCascVarNegdEdx = nTrackXi->GetTPCsignal();
+        fTreeCascVarBachdEdx = bachTrackXi->GetTPCsignal();
+
+        //Step 3: Acquire PID For Tracking
+        fTreeCascVarPosPIDForTracking = pTrackXi->GetPIDForTracking();
+        fTreeCascVarNegPIDForTracking = nTrackXi->GetPIDForTracking();
+        fTreeCascVarBachPIDForTracking = bachTrackXi->GetPIDForTracking();
+        
         //------------------------------------------------
         // TPC Number of clusters info
         // --- modified to save the smallest number
@@ -1104,29 +1192,29 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //fTreeCascVarkITSRefitPositive = kTRUE;
 
         if ((pStatus&AliESDtrack::kTPCrefit)    == 0) {
-            AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!");
+            AliDebug(1, "Pb / V0 Pos. track has no TPCrefit ... continue!");
             continue;
         }
         if ((nStatus&AliESDtrack::kTPCrefit)    == 0) {
-            AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!");
+            AliDebug(1, "Pb / V0 Neg. track has no TPCrefit ... continue!");
             continue;
         }
         if ((bachStatus&AliESDtrack::kTPCrefit) == 0) {
-            AliWarning("Pb / Bach.   track has no TPCrefit ... continue!");
+            AliDebug(1, "Pb / Bach.   track has no TPCrefit ... continue!");
             continue;
         }
 
         // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
         if(lPosTPCClusters  < 70) {
-            AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!");
+            AliDebug(1, "Pb / V0 Pos. track has less than 70 TPC clusters ... continue!");
             continue;
         }
         if(lNegTPCClusters  < 70) {
-            AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!");
+            AliDebug(1, "Pb / V0 Neg. track has less than 70 TPC clusters ... continue!");
             continue;
         }
         if(lBachTPCClusters < 70) {
-            AliWarning("Pb / Bach.   track has less than 70 TPC clusters ... continue!");
+            AliDebug(1, "Pb / Bach.   track has less than 70 TPC clusters ... continue!");
             continue;
         }
         Int_t leastnumberofclusters = 1000;
@@ -1299,7 +1387,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         //Step 1: Sweep members of the output object TList and fill all of them as appropriate
         Int_t lNumberOfConfigurationsCascade = fListCascade->GetEntries();
-        AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
+        //AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
         TH3F *histoout         = 0x0;
         AliCascadeResult *lCascadeResult = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurationsCascade; lcfg++){
