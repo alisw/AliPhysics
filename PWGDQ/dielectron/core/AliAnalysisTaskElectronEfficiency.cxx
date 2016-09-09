@@ -611,7 +611,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       lHF->SetOwner();
       lHF->Add(fNgenPairsRecHF);
       for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lHF->Add(fvRecoPairsRecHF.at(iCut));
-      lGenBinning->Add(lHF);
+      lRecBinning->Add(lHF);
       
       pairEffList->Add(lRecBinning);
     }
