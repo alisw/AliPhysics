@@ -27,7 +27,6 @@ class AliAnalysisTaskParticleStudies : public AliAnalysisTaskSE {
 
     Printf("Thresholds Set");
     Printf("pT = %f - %f",fPtMin,fPtMax);
-    Printf("eta = %f - %f",fEtaMin,fEtaMax);
   }
 
   void SetEtaRange(Double_t min, Double_t max){
@@ -35,7 +34,6 @@ class AliAnalysisTaskParticleStudies : public AliAnalysisTaskSE {
     fEtaMax = max;
 
     Printf("Thresholds Set");
-    Printf("pT = %f - %f",fPtMin,fPtMax);
     Printf("eta = %f - %f",fEtaMin,fEtaMax);
   }
 
@@ -43,6 +41,12 @@ class AliAnalysisTaskParticleStudies : public AliAnalysisTaskSE {
     fPdgCode = pdg; 
     Printf("PDG set = %d",fPdgCode);
   }
+
+  void SetMotherPdgValue(Int_t pdg){ 
+    fMotherPdgCode = pdg; 
+    Printf("Mother PDG set = %d",fPdgCode);
+  }
+
 
 
  private:
@@ -55,6 +59,7 @@ class AliAnalysisTaskParticleStudies : public AliAnalysisTaskSE {
   TList *fListQA;//!output list for QA histograms
 
   Int_t    fPdgCode;//PDG value under study
+  Int_t    fMotherPdgCode;//mother PDG value under study
   Double_t fPtMin;// minimum pT threshold (default = 0)
   Double_t fPtMax;// maximum pT threshold (default = 1000)
   Double_t fEtaMin;// minimum eta threshold (default = -10)

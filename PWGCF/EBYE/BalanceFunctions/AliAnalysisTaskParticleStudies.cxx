@@ -30,6 +30,7 @@ AliAnalysisTaskParticleStudies::AliAnalysisTaskParticleStudies(const char *name)
   : AliAnalysisTaskSE(name),
   fListQA(0x0),
   fPdgCode(113),
+  fMotherPdgCode(0),
   fPtMin(0),
   fPtMax(1000),
   fEtaMin(-10),
@@ -164,11 +165,29 @@ Int_t AliAnalysisTaskParticleStudies::GetAcceptedTracks(AliVEvent *mcEvent, Doub
       AliError(Form("Could not receive MC track %d", iTracks));
       continue;
     }
-    
+
     // remove all non PDG particles
-    if( mcTrack->PdgCode() !=  fPdgCode ) 
+    if( TMath::Abs(mcTrack->PdgCode()) !=  fPdgCode ) 
       continue;
-    
+
+    // if fMotherPdgCode != 0
+    // remove all particles that do not come from mother PDG
+    if( fMotherPdgCode != 0 ) {
+      Bool_t removeParticle = kTRUE;
+      
+      Int_t motherIndex = mcTrack->GetMother();
+      if(motherIndex != -1) {
+	AliMCParticle* motherParticle = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(motherIndex));
+	if(motherParticle) {
+	  Int_t pdgCodeOfMother = motherParticle->PdgCode();
+
+	  if( TMath::Abs(pdgCodeOfMother) ==  fMotherPdgCode ) 
+	    removeParticle = kFALSE;
+	}
+      }
+      if(removeParticle)
+	continue;
+    }
       
     // some track parameters
     vEta    = mcTrack->Eta();
