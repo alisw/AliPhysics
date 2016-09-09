@@ -99,6 +99,15 @@ AliDielectronTGReducedTrack::AliDielectronTGReducedTrack() :
   fESDV0Mass(-999),
   fESDV0R(-999),
   fESDV0Phi(-999),
+  fESDV0PsiPair(-999),
+  fESDV0PhivPair(-999),
+  fESDV0CosP(-999),
+  fESDV0ArmAlpha(-999),
+  fESDV0ArmPt(-999),
+  fESDV0OA(-999),
+  fESDV0Xv(-999),
+  fESDV0Yv(-999),
+  fESDV0Zv(-999),
   fV0Conv(-999),
   fV0ConvID2(-999),
   fV0Mass(-999),
@@ -180,6 +189,15 @@ AliDielectronTGReducedTrack::AliDielectronTGReducedTrack(const AliDielectronTGRe
   fESDV0Mass(-999),
   fESDV0R(-999),
   fESDV0Phi(-999),
+  fESDV0PsiPair(-999),
+  fESDV0PhivPair(-999),
+  fESDV0CosP(-999),
+  fESDV0ArmAlpha(-999),
+  fESDV0ArmPt(-999),
+  fESDV0OA(-999),
+  fESDV0Xv(-999),
+  fESDV0Yv(-999),
+  fESDV0Zv(-999),
   fV0Conv(-999),
   fV0ConvID2(-999),
   fV0Mass(-999),
@@ -700,6 +718,7 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
     trPos = (!v0ChargesAreCorrect ? fESD->GetTrack(fCurrentV0->GetNindex()) : trPos);
     trNeg = (!v0ChargesAreCorrect ? fESD->GetTrack(fCurrentV0->GetPindex()) : trNeg); 
 
+    
    
     AliKFParticle fPair ;
     fPair.Initialize();
@@ -708,6 +727,10 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
     //fPair.ConstructGamma(kf1,kf2); 
     fPair.AddDaughter(kf1);
     fPair.AddDaughter(kf2);
+
+    AliDielectronPair candidate;
+    candidate.SetPdgCode(22); //assuming from photon
+    candidate.SetGammaTracks(trNeg, 11, trPos, 11);
 
     // TrackLabels
     Int_t currentTrackLabels[2]={-1,-1};
@@ -749,7 +772,24 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
 	rtrack->ESDV0R(fPair.GetR());
 	rtrack->ESDV0Phi(fPair.GetPhi());
 	rtrack->fQualityFlags = (processV0 ? pdgV0 : -999);
+	
+	rtrack->ESDV0PsiPair(
+			     fInputEvent ? 
+			     candidate.PsiPair(fInputEvent->GetMagneticField()) : -5);
+	rtrack->ESDV0PhivPair(
+			      fInputEvent ? 
+			      candidate.PhivPair(fInputEvent->GetMagneticField()) : -5);
+	rtrack->ESDV0CosP(candidate.GetCosPointingAngle(vtx));
+	rtrack->ESDV0ArmAlpha(candidate.GetArmAlpha());
+	rtrack->ESDV0ArmPt(candidate.GetArmPt());
+	rtrack->ESDV0OA(candidate.OpeningAngle());
+	rtrack->ESDV0Xv(candidate.Xv());
+	rtrack->ESDV0Yv(candidate.Yv());
+	rtrack->ESDV0Zv(candidate.Zv());
+
+
       }
+
     }// end of iTracks loop        
 
     
@@ -846,8 +886,8 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
 	      for (Int_t itr = 0; itr < fESD->GetNumberOfTracks(); itr++) {
 		AliESDtrack* reco = fESD->GetTrack(itr);
 		if(TMath::Abs(reco->GetLabel())==TMath::Abs(part->GetLabel())){
-		recoConv = fTrackFilter->IsSelected(reco);	     
-		break;
+		  recoConv = fTrackFilter->IsSelected(reco);	     
+		  break;
 		}
 	      }
 	    
