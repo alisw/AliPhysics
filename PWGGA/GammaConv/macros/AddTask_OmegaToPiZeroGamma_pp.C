@@ -464,6 +464,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
+    if(ReconMethod == 2) analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
