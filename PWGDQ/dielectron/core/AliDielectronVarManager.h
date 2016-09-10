@@ -77,10 +77,6 @@
 #include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
 
-#include "AliQnCorrectionsManager.h"
-#include "AliQnCorrectionsQnVector.h"
-#include "AliAnalysisTaskFlowVectorCorrections.h"
-
 #include "AliAODMCHeader.h"
 #include "AliTRDgeometry.h"
 #include "assert.h"
@@ -436,7 +432,7 @@ public:
     kTPCxH2uc,                  // TPC x-component of the Q vector for 2nd harmonic (uncorrected)
     kTPCyH2uc,                  // TPC y-component of the Q vector for 2nd harmonic (uncorrected)
     kTPCmagH2uc,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (uncorrected)
-    kTPCrpH2uc,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (uncorrected) -- corrected if the QnCorrections framework est. 2016 is used
+    kTPCrpH2uc,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (uncorrected)
     kTPCsub1xH2uc,              // TPC x-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
     kTPCsub1yH2uc,              // TPC y-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
     kTPCsub1rpH2uc,             // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected, sub event 1)
@@ -452,9 +448,7 @@ public:
     kZDCACrpH1,                  // ZDC-AC reaction plane of the Q vector for 1st harmonic
     kZDCrpResH1,                  // 1st harmonic reaction plane resolution for ZDC
     kv0ZDCrpRes,                //ZDC reaction plane for 1st harmonic and VZERO reaction plane for 2nd harmonic correlation
-    kSPDrpH2,                // SPD eventplane from QnCorrections framework
-    kFMDArpH2,               // FMDA eventplane from QnCorrections framework
-    kFMDCrpH2,               // FMDA eventplane from QnCorrections framework
+
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // track after all cuts
@@ -519,7 +513,6 @@ public:
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
-
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
@@ -553,6 +546,7 @@ public:
   static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
   static void GetZDCRP(const AliVEvent* event, Double_t qvec[][2]);
   static AliAODVertex* GetVertex(const AliAODEvent *event, AliAODVertex::AODVtx_t vtype);
+
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
   static Double_t GetTRDpidEfficiency(Int_t runNo, Double_t centrality, Double_t eta, Double_t trdPhi, Double_t pout, Double_t& effErr);
   static Double_t GetSingleLegEff(Double_t * const values);
@@ -569,7 +563,6 @@ public:
 
   static Double_t GetValue(ValueTypes var) {return fgData[var];}
   static void SetValue(ValueTypes var, Double_t val) { fgData[var]=val; }
-
 
 private:
 
@@ -612,8 +605,6 @@ private:
 
   static TString          fgZDCRecenteringFile; // file with ZDC Q-vector averages needed for event plane recentering
   static TProfile3D      *fgZDCRecentering[3][2];   // 2 VZERO sides x 2 Q-vector components
-
-
 
   static Double_t fgData[kNMaxValues];        //! data
 
@@ -2113,6 +2104,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     values[AliDielectronVarManager::kCentralityCL0plus10]    = multSelection->GetMultiplicityPercentile("CL0plus10",kFALSE);
     values[AliDielectronVarManager::kCentralityCL0minus10]   = multSelection->GetMultiplicityPercentile("CL0minus10",kFALSE);
   }
+
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   if (primVtx){
     //    printf("prim vertex reco: %f \n",primVtx->GetX());
@@ -2161,69 +2153,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0C0v0C3DiffH2;   ivar++) values[ivar] = 0.0; // v0  variables
   for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
 
-  // If QnCorrections framework (est. 2016) task should be used run the AddTask with your train. The following function will overwrite the existing AliEventplane object with the information extracted from the QnCorrections Task. Then the following code can be used as usual. The current implementation uses only the second harmonic but this could be adaptet if needed.
-  Bool_t bQnCorrectionFramework = kFALSE;
-  if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
-      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
-  if(flowQnVectorTask != NULL){
-    bQnCorrectionFramework = kTRUE;
-    AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-
-    // Reset the Eventplane and fill it afterwards with the new information
-    AliEventplane *qnEventplane = const_cast<AliVEvent*>(event)->GetEventplane();
-    qnEventplane->Reset();
-
-    // TPC Eventplane q-Vector
-    const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = flowQnVectorMgr->GetDetectorQnVector("TPC");
-    if(qVecQnFrameworkTPC != NULL){
-      TVector2 *qVectorTPC = new TVector2(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
-      qnEventplane->SetQVector(qVectorTPC);
-      qnEventplane->SetEventplaneQ(qVecQnFrameworkTPC->EventPlane(2));
-    }
-    // VZEROA Eventplane q-Vector
-    const AliQnCorrectionsQnVector *qVecQnFrameworkVZEROA = flowQnVectorMgr->GetDetectorQnVector("VZEROA","latest","raw");
-    TVector2 *qVectorVZEROA;
-    if(qVecQnFrameworkVZEROA != NULL){
-      qVectorVZEROA = new TVector2(qVecQnFrameworkVZEROA->Qx(2),qVecQnFrameworkVZEROA->Qy(2));
-    }
-    // VZEROC Eventplane q-Vector
-    const AliQnCorrectionsQnVector *qVecQnFrameworkVZEROC = flowQnVectorMgr->GetDetectorQnVector("VZEROC","latest","raw");
-    TVector2 *qVectorVZEROC;
-    if(qVecQnFrameworkVZEROC != NULL){
-      qVectorVZEROC = new TVector2(qVecQnFrameworkVZEROC->Qx(2),qVecQnFrameworkVZEROC->Qy(2));
-    }
-    if((qVecQnFrameworkVZEROA != NULL) && (qVecQnFrameworkVZEROC != NULL))   qnEventplane->SetQsub(qVectorVZEROA,qVectorVZEROC);
-
-    // SPD Eventplane q-Vector
-    if(Req(kSPDrpH2)){
-      const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = flowQnVectorMgr->GetDetectorQnVector("SPD","latest","latest");
-      TVector2 *qVectorSPD;
-      if(qVecQnFrameworkSPD != NULL){
-        qVectorSPD = new TVector2(qVecQnFrameworkSPD->Qx(2),qVecQnFrameworkSPD->Qy(2));
-        values[AliDielectronVarManager::kSPDrpH2] = TVector2::Phi_mpi_pi(qVectorSPD->Phi())/2;
-      }
-    }
-
-    // FMDA Eventplane q-Vector
-    if(Req(kFMDArpH2)){
-      const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = flowQnVectorMgr->GetDetectorQnVector("FMDA","latest","raw");
-      TVector2 *qVectorFMDA;
-      if(qVecQnFrameworkFMDA != NULL){
-        qVectorFMDA = new TVector2(qVecQnFrameworkFMDA->Qx(2),qVecQnFrameworkFMDA->Qy(2));
-        values[AliDielectronVarManager::kFMDArpH2] = TVector2::Phi_mpi_pi(qVectorFMDA->Phi())/2;
-      }
-    }
-    // FMDC Eventplane q-Vector
-    if(Req(kFMDCrpH2)){
-      const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = flowQnVectorMgr->GetDetectorQnVector("FMDC","latest","raw");
-      TVector2 *qVectorFMDC;
-      if(qVecQnFrameworkFMDC != NULL){
-        qVectorFMDC = new TVector2(qVecQnFrameworkFMDC->Qx(2),qVecQnFrameworkFMDC->Qy(2));
-        values[AliDielectronVarManager::kFMDCrpH2] = TVector2::Phi_mpi_pi(qVectorFMDC->Phi())/2;
-      }
-    }
-  }
-
   // ep angle interval [todo, fill]
   AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
   if(ep) {
@@ -2232,63 +2161,36 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
     TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
     TVector2 *qsub2 = ep->GetQsub2();
-
-    if(qstd) {
+    if(qstd && qsub1 && qsub2) {
       values[AliDielectronVarManager::kTPCxH2uc]       = qstd->X();
       values[AliDielectronVarManager::kTPCyH2uc]       = qstd->Y();
       values[AliDielectronVarManager::kTPCmagH2uc]     = qstd->Mod();
       values[AliDielectronVarManager::kTPCrpH2uc]      = TVector2::Phi_mpi_pi(qstd->Phi())/2;
-      if(qsub1 && qsub2){
-        values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
-        values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
-        values[AliDielectronVarManager::kTPCsub1rpH2uc]  = TVector2::Phi_mpi_pi(qsub1->Phi())/2;
-        values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
-        values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
-        values[AliDielectronVarManager::kTPCsub2rpH2uc]  = TVector2::Phi_mpi_pi(qsub2->Phi())/2;
+      values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
+      values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
+      values[AliDielectronVarManager::kTPCsub1rpH2uc]  = TVector2::Phi_mpi_pi(qsub1->Phi())/2;
+      values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
+      values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
+      values[AliDielectronVarManager::kTPCsub2rpH2uc]  = TVector2::Phi_mpi_pi(qsub2->Phi())/2;
 
-        values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
-  									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
-      }
+      values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
+									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
     }
 
     // VZERO event plane
     TVector2 qvec;
-    TVector2 *qVecQnFramework;
     Double_t qx = 0, qy = 0;
-
     ep->CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
     values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
     values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
-
-    qx = qy = 0.;
-    if(bQnCorrectionFramework){
-      qVecQnFramework = ep->GetQsub1();
-      if(qVecQnFramework != NULL){
-        qx = qVecQnFramework->X();
-        qy = qVecQnFramework->Y();
-      }
-    }
-    else  ep->CalculateVZEROEventPlane(event, 8, 2, qy, qy);
-    qvec.Set(qx,qy);
-
+    ep->CalculateVZEROEventPlane(event, 8, 2, qx, qy);    qvec.Set(qx,qy);
     values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
     values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
-
-    qx = qy = 0.;
-    if(bQnCorrectionFramework){
-      qVecQnFramework = ep->GetQsub2();
-      if(qVecQnFramework != NULL){
-        qx = qVecQnFramework->X();
-        qy = qVecQnFramework->Y();
-      }
-    }
-    else  ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);
-    qvec.Set(qx,qy);
-
+    ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);    qvec.Set(qx,qy);
     values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
     values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
@@ -2570,7 +2472,6 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     AliVZEROEPSelectionTask *eptask = dynamic_cast<AliVZEROEPSelectionTask *>(man->GetTask("AliVZEROEPSelectionTask"));
     if(eptask) eptask->SetEventplaneParams(&ep2,centralityF);
     else printf("no VZERO event plane selection task added! \n");
-
 
     Double_t qx = 0, qy = 0;
     ep2.CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
@@ -3152,7 +3053,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     }
     else{
       if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
-      else printf("GetVzeroRP: No centrality estimation avaible!\n");
+      else printf("GetVzeroRP: No centrality estimation avaible!");
     }
   }
   const AliVVertex *primVtx = event->GetPrimaryVertex();

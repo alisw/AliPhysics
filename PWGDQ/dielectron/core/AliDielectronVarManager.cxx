@@ -435,9 +435,6 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ZDCACrpH1",              "#Psi^{ZDCA}"                                         ""},
   {"kZDCrpResH1",            ""                                                    ""},
   {"kv0ZDCrpRes",            ""                                                    ""},
-  {"SPDrpH2",                "#Psi^{SPD}",                                                    ""},
-  {"FMDArpH2",               "#Psi^{FMDA}",                                                    ""},
-  {"FMDCrpH2",               "#Psi^{FMDC}",                                                    ""},
 
   {"NTrk",                   "N_{trk}",                                            ""},
   {"Tracks",                 "tracks/per event",                                             ""},
