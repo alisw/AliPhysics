@@ -59,7 +59,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2(const char *name) :
   hEPRbrCosV0A(0), hEPRbrSinV0A(0), hEPRbrCosV0C(0), hEPRbrSinV0C(0), hEPRbrCosTPC(0), hEPRbrSinTPC(0),
   hV2ClustDxDzA(0), hV2ClustDxDzB(0), hV2ClustDphiV0A(0), hV2ClustDphiV0C(0), hV2ClustCos2phiV0A(0), hV2ClustCos2phiV0C(0), 
   hV1ClustDxDzA(0), hV1ClustDxDzB(0), hM02EA(0), hM02EB(0), hV1ClustNlmA(0), hV1ClustNlmB(0),
-  fBoxSSCutMin(0.), fBoxSSCutMax(0.),
+  fBoxSSCutMin(0.), fBoxSSCutMax(0.), fNLMCutMin(-1), fNLMCutMax(10),
   hTrkPhiEta(0), hTrkPt(0), 
   hTrkDphiEmcV0A(0), hTrkDphiEmcV0C(0), hTrkCos2phiEmcV0A(0), hTrkCos2phiEmcV0C(0), 
   hTrkDphiOutEmcV0A(0), hTrkDphiOutEmcV0C(0), hTrkCos2phiOutEmcV0A(0), hTrkCos2phiOutEmcV0C(0),
@@ -96,7 +96,7 @@ AliAnalysisTaskPi0V2::AliAnalysisTaskPi0V2() :
   hEPRbrCosV0A(0), hEPRbrSinV0A(0), hEPRbrCosV0C(0), hEPRbrSinV0C(0), hEPRbrCosTPC(0), hEPRbrSinTPC(0),
   hV2ClustDxDzA(0), hV2ClustDxDzB(0), hV2ClustDphiV0A(0), hV2ClustDphiV0C(0), hV2ClustCos2phiV0A(0), hV2ClustCos2phiV0C(0), 
   hV1ClustDxDzA(0), hV1ClustDxDzB(0), hM02EA(0), hM02EB(0), hV1ClustNlmA(0), hV1ClustNlmB(0),
-  fBoxSSCutMin(0.), fBoxSSCutMax(0.),
+  fBoxSSCutMin(0.), fBoxSSCutMax(0.), fNLMCutMin(-1), fNLMCutMax(10),
   hTrkPhiEta(0), hTrkPt(0), 
   hTrkDphiEmcV0A(0), hTrkDphiEmcV0C(0), hTrkCos2phiEmcV0A(0), hTrkCos2phiEmcV0C(0), 
   hTrkDphiOutEmcV0A(0), hTrkDphiOutEmcV0C(0), hTrkCos2phiOutEmcV0A(0), hTrkCos2phiOutEmcV0C(0),
@@ -920,6 +920,8 @@ Bool_t AliAnalysisTaskPi0V2::IsPi0Candidate(const AliVCluster *c)
   // Double_t Et = (E / (TMath::CosH(vpos.Eta())));
   Double_t M02 = c->GetM02();
   Int_t nlm = c->GetNExMax();
+
+  if (nlm<fNLMCutMin || nlm>fNLMCutMax) return kFALSE;
 
   // std SS cut
   Double_t M02Min = exp(2.135-0.245*E);

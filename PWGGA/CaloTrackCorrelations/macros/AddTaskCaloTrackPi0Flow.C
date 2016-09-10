@@ -47,6 +47,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
                                                              const TString  col           = "PbPb", 
                                                              AliVEvent::EOfflineTriggerTypes trig = AliVEvent::kCentral + AliVEvent::kSemiCentral + AliVEvent::kMB + AliVEvent::kEMCEGA,
                                                              const TString  clustersArray = "V1_Ecell150_Eseed300_DT0_WT0",
+                                                             const Int_t    nlmMin        = 1,
+                                                             const Int_t    nlmMax        = 2,
                                                              const Bool_t   simpleM02Cut  = kFALSE,
                                                              const Bool_t   simpleMassCut = kFALSE,
                                                              const Bool_t   recaltm       = kFALSE,
@@ -134,7 +136,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   
   // Split cluster analysis
   if (kCalorimeter == "EMCAL") {
-    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo, kTRUE, kTRUE, simpleM02Cut, simpleMassCut), n++); // Pi0 event by event selection, cluster splitting
+    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo, kTRUE, kTRUE, nlmMin, nlmMax, simpleM02Cut, simpleMassCut), n++); // Pi0 event by event selection, cluster splitting
   }
   maker->AddAnalysis(ConfigurePi0Flow(), n++);
   
@@ -493,7 +495,8 @@ AliCalorimeterUtils* ConfigureCaloUtils()
 // unlike in ConfigurePi0Analysis.
 //
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
-                                      Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE, 
+                                      Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE,
+                                      Int_t nlmMin = 1, Int_t nlmMax = 2, 
                                       Bool_t simpleSplitM02Cut = kFALSE, Bool_t simpleSplitMassCut = kFALSE)
 {
   AliAnaPi0EbE *ana = new AliAnaPi0EbE();
@@ -549,7 +552,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   ana->SetTimeCut(-1e10,1e10); // Open time cut
 
   // NLM cut, used in all, exclude clusters with more than 2 maxima
-  ana->SetNLMCut(1, 2) ;
+  ana->SetNLMCut(nlmMin, nlmMax) ;
     
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetSplitWidthSigma(3.); // cut at 3 sigma of the mean pi0 peak.
