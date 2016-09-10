@@ -13,7 +13,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   outfile += ":ChargedParticleQA_" + TString(suffix);
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", suffix), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
 
   return task;
 }

@@ -116,6 +116,8 @@ AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
  * Create the output histograms
  */
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
   if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
   fHistos = new THistManager("Ref");
 
@@ -219,6 +221,8 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   for(auto hist : *(fHistos->GetListOfHistograms())){
     fOutput->Add(hist);
   }
+
+  PostData(1, fOutput);
 }
 
 bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
