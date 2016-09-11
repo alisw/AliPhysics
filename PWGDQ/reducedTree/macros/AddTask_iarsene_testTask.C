@@ -63,28 +63,23 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  evCut1->SetCentVZERORange(0.0,90.0);
+  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
-  evCut2->SetVertexZRange(-7.0,7.0);
+  evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
   processor->AddEventCut(evCut1);
   processor->AddEventCut(evCut2);
   
   // Set track cuts
-  AliReducedBaseTrackCut* trackCut1 = new AliReducedBaseTrackCut("Pt","Pt selection");
-  trackCut1->SetPtRange(0.7,2.0);
-  AliReducedBaseTrackCut* trackCut2 = new AliReducedBaseTrackCut("Eta","Eta selection");
-  trackCut2->SetEtaRange(-0.75,0.75);
-  processor->AddTrackCut(trackCut1);
-  processor->AddTrackCut(trackCut2);
-  
+  AliReducedTrackCut* trackCut1 = new AliReducedTrackCut("Pt","Pt selection");
+  trackCut1->AddCut(AliReducedVarManager::kPt, 0.,100.0);
+  trackCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
+  processor->AddTrackCut(trackCut1);  
   
   // Set pair cuts
-  AliReducedBaseTrackCut* pairCut1 = new AliReducedBaseTrackCut("Ptpair","Pt pair selection");
-  pairCut1->SetPtRange(1.0,5.0);
-  AliReducedBaseTrackCut* pairCut2 = new AliReducedBaseTrackCut("Etapair","Eta pair selection");
-  pairCut2->SetEtaRange(-0.5,0.5);
+  AliReducedTrackCut* pairCut1 = new AliReducedTrackCut("Ptpair","Pt pair selection");
+  pairCut1->AddCut(AliReducedVarManager::kPt, 0.0,100.0);
+  pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
   processor->AddPairCut(pairCut1);
-  processor->AddPairCut(pairCut2);
 }
 
 
