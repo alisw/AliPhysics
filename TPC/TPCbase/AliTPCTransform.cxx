@@ -807,6 +807,7 @@ Float_t AliTPCTransform::GetCorrMapComponent(int roc, int row, const double xyz[
 void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], float *res, Bool_t ref)
 {
   // get correction from the map for a point at given ROC and row (IROC/OROC convention)
+  //  memset(res,0,4*sizeof(float)); return; //RSTMP
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
 
   AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
@@ -831,6 +832,7 @@ void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], f
 //______________________________________________________
 Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut, Bool_t ref)
 {
+  //  return 0; // RSTMP
   // get correction for dimOut-th dimension from the map for a point at given ROC and row (IROC/OROC convention)
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
 
@@ -857,6 +859,8 @@ Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3]
 void AliTPCTransform::EvalDistortionMap(int roc, const double xyzSector[3], float *res, Bool_t ref)
 {
   // get distortions from the map for a point at given ROC
+  //  memset(res,0,4*sizeof(float)); return; //RSTMP
+
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
   AliTPCChebDist* map = (AliTPCChebDist*) (ref ? fCorrMapCacheRef : fCorrMapCache0);
   if (!map->IsDistortion()) AliFatalF("Uploaded map is not distortion: %s",map->IsA()->GetName());
