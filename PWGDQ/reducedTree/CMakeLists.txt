@@ -38,6 +38,7 @@ set(SRCS
       AliAnalysisTaskReducedTreeMaker.cxx
       AliHistogramManager.cxx
       AliMixingHandler.cxx
+      AliReducedAnalysisJpsi2ee.cxx
       AliReducedAnalysisTaskSE.cxx
       AliReducedAnalysisTest.cxx
       AliReducedBaseEvent.cxx
@@ -51,7 +52,9 @@ set(SRCS
       AliReducedFMDInfo.cxx
       AliReducedInfoCut.cxx
       AliReducedPairInfo.cxx
+      AliReducedTrackCut.cxx
       AliReducedTrackInfo.cxx
+      AliReducedVarCut.cxx
       AliReducedVarManager.cxx
       AliResonanceFits.cxx
    )
