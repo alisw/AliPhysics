@@ -546,8 +546,10 @@ void AliJJtAnalysis::UserExec(){
 	}
   
   // For systematic error estimation, decide that whather we saw the leading particle based on tracking efficiency. For example if tracking efficiency is 90 %, use subleading particle in 10 % of the cases.
+  int idOfLostTrigger = -100;
   if(fbLPSystematics && lpTrackCounter->Exists() && subLeadingTrackCounter->Exists()){
     if(frandom->Rndm() > lPTr->GetTrackEff()){
+      idOfLostTrigger = lPTr->GetID();
       lpTrackCounter->Store(subLeadingTrackCounter->GetIndex(), subLeadingTrackCounter->GetPt(), subLeadingTrackCounter->GetPtBin());
       lPTr = subLeadingTrack;
     }
@@ -569,6 +571,9 @@ void AliJJtAnalysis::UserExec(){
 
 		associatedTrack = (AliJBaseTrack*)finputList->At(itrack);
 		associatedTrack->SetAssocBin( fcard->GetBin(kAssocType, associatedTrack->Pt()) );
+    
+    // Skip the particle in the associated list that is lost in the trigger
+    if(fbLPSystematics && idOfLostTrigger != -100 && idOfLostTrigger == associatedTrack->GetID()) continue;
 
 		if(associatedTrack->IsInAssocBin()){ 
 
@@ -579,7 +584,7 @@ void AliJJtAnalysis::UserExec(){
 			new ((*fassocList)[noAssocs++]) AliJBaseTrack(*associatedTrack);
 		}
 	}
-
+  
 	//-----------------------------------------------
 	// Leading particle pT and eta
 	//-----------------------------------------------
