@@ -167,6 +167,10 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   //trackCuts->AddCut(AliDielectronVarManager::kP,1.0,1.0e+30);
   //trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,70.0,161.0);
   cuts->AddCut(trackCuts);
+  AliDielectronTrackCuts* trackCuts2 = new AliDielectronTrackCuts("trackCuts2","track cuts");
+  trackCuts2->SetRequireITSRefit(kTRUE);
+  trackCuts2->SetRequireTPCRefit(kTRUE);
+  cuts->AddCut(trackCuts2);
     //}
   /*else {
     AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts;
