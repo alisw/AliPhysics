@@ -74,9 +74,8 @@ Int_t AliHFCutVarFDsubAnalysisManagerDplus::GetTHnSparses(const TString strFileM
     fData = (THnSparseF*)ListMC->FindObject("hMassPtImpParAll");
     if (!fData) { cerr << "THnSparseF hMassPtImpParAll not found!" << endl; return 8; }
 
-    //Number of events from normalisation counter
-    AliNormalizationCounter* nc=(AliNormalizationCounter*)DplusDirMC->Get(normobj.Data());
-    fNevents = nc->GetNEventsForNorm();
+    //Dummy number of events in case of MC
+    fNevents = 1;
   }
   else {
     TFile *infileData = TFile::Open(strFileData.Data(),"READ");//open Data file
@@ -112,7 +111,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Double_t*** cutslowset,
                                                    Int_t nSets,
                                                    Int_t nPtBins,
                                                    Int_t nCutVariables) {
-  /// Preparte the cuts
+  /// Prepare the cuts
   if (fCuts) {
     delete fCuts;
     fCuts = 0x0;
@@ -142,7 +141,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Double_t*** cutslowset,
 
 
 //_________________________________________________________________________________________________
-void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(UInt_t* dataAxesNo, UInt_t* MCGenAxesNo, UInt_t* MCCutAxesNo, TString* axesName, Int_t nAxes) {
+void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(UInt_t* dataAxesNo, UInt_t* MCGenAxesNo, UInt_t* MCCutAxesNo, TString* axesName, Int_t nAxes, Bool_t *isCutSymm=0x0) {
   if (fAxes) {
     delete fAxes;
     fAxes = 0x0;
@@ -156,10 +155,15 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(UInt_t* dataAxesNo, UInt_t* M
   // like to select e.g. pt bins. In order to be to use the same cut for this, variables on
   // which one doesn't what to cut at generator level have the corresponding axes set to -1
   for(Int_t iAxis=0; iAxis<nAxes; iAxis++) {
-    fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(dataAxesNo[iAxis],MCGenAxesNo[iAxis],MCCutAxesNo[iAxis],axesName[iAxis]));
+    if(dataAxesNo[iAxis]==fPIDAxis)
+      continue; /// PID axis set with SetPID();
+    if(isCutSymm)
+      fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(dataAxesNo[iAxis],MCGenAxesNo[iAxis],MCCutAxesNo[iAxis],axesName[iAxis],isCutSymm[iAxis]));
+    else
+      fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(dataAxesNo[iAxis],MCGenAxesNo[iAxis],MCCutAxesNo[iAxis],axesName[iAxis],kFALSE));
   }
   if(fPID) {
-    fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(fPIDAxis,(UInt_t)-1,fPIDAxis,"PID"));
+    fAxes->Add((TObject*)new AliHFCutVarFDsubAxis(fPIDAxis,(UInt_t)-1,fPIDAxis,"PID",kFALSE));
   }
 }
 
@@ -167,8 +171,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(UInt_t* dataAxesNo, UInt_t* M
 TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFilePath,
                                                                   TString GenLimAccHistoName,
                                                                   TString GenAccHistoName,
-                                                                  TString system,
-                                                                  TString PromptOrFD) {
+                                                                  Int_t PromptOrFD,
+                                                                  Double_t BR,
+                                                                  Double_t sigma) {
 											   
   if(!fCorrYieldPrompt || !fCorrYieldFD) {
     cerr << "Minimisation needed before calculate cross section" << endl;
@@ -197,40 +202,28 @@ TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFil
       Int_t nPtBins = PtBinsArray->GetSize()-1;
       
       TH1F* hPtGenLimAccReb = (TH1F*)hPtGenLimAcc->Rebin(nPtBins, "hPtGenLimAccReb", PtLims);
-      TH1F* hPtGenAccReb = (TH1F*)hPtGenAcc->Rebin(nPtBins, "hPtGenAccReb", PtLims);
+      TH1F* hPtGenAccReb = (TH1F*)hPtGenAcc->Rebin(nPtBins,"hPtGenAccReb", PtLims);
       hPtGenLimAccReb->Sumw2();
       hPtGenAccReb->Sumw2();
       
       TH1F* hPtAcc = new TH1F("hPtAcc","",nPtBins,PtLims);
       hPtAcc->Divide(hPtGenAccReb,hPtGenLimAccReb,1.,1.,"B");
-      
-      TH1F* hCrossSec = new TH1F(Form("hCrossSec%s",PromptOrFD.Data()),"",nPtBins,PtLims);
 
-      Double_t BR=0.0913;
-      Double_t Sigma=0;
-      
-      if(system=="pPb") {
-        Sigma = 2.09;//barn
-      }
-      else if(system=="pp"){
-        Sigma = 0.062;//barn
-      }
-      else {
-        cerr << "only pPb and pp are implemented" << endl;
-        return 0x0;
-      } 
-      
+      TString crosssectype="Prompt";
+      if(PromptOrFD==kFD) crosssectype="FD";
+      TH1F* hCrossSec = new TH1F(Form("hCrossSec%s",crosssectype.Data()),"",nPtBins,PtLims);
+
       for(Int_t iBin=0; iBin<nPtBins; iBin++) {
         Double_t CrossSec;
         Double_t CrossSecError;
         
-        if(PromptOrFD=="Prompt") {
+        if(PromptOrFD==kPrompt) {
           //cross section in mubarn
-          CrossSec = 1./hPtAcc->GetBinContent(iBin+1)*fCorrYieldPrompt->GetBinContent(iBin+1)*Sigma*1000000./(2*(PtLims[iBin+1]-PtLims[iBin])*fNevents*BR);
+          CrossSec = 1./hPtAcc->GetBinContent(iBin+1)*fCorrYieldPrompt->GetBinContent(iBin+1)*sigma*1000000./(2*(PtLims[iBin+1]-PtLims[iBin])*fNevents*BR);
           CrossSecError = TMath::Sqrt((fCorrYieldPrompt->GetBinError(iBin+1)/fCorrYieldPrompt->GetBinContent(iBin+1))*(fCorrYieldPrompt->GetBinError(iBin+1)/fCorrYieldPrompt->GetBinContent(iBin+1))+(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1))*(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1)))*CrossSec;
         }
         else {
-          CrossSec = 1./hPtAcc->GetBinContent(iBin+1)*fCorrYieldFD->GetBinContent(iBin+1)*Sigma*1000000./(2*(PtLims[iBin+1]-PtLims[iBin])*fNevents*BR);
+          CrossSec = 1./hPtAcc->GetBinContent(iBin+1)*fCorrYieldFD->GetBinContent(iBin+1)*sigma*1000000./(2*(PtLims[iBin+1]-PtLims[iBin])*fNevents*BR);
           CrossSecError = TMath::Sqrt((fCorrYieldFD->GetBinError(iBin+1)/fCorrYieldFD->GetBinContent(iBin+1))*(fCorrYieldFD->GetBinError(iBin+1)/fCorrYieldFD->GetBinContent(iBin+1))+(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1))*(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1)))*CrossSec;
         }
         hCrossSec->SetBinContent(iBin+1,CrossSec);
@@ -254,6 +247,8 @@ TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFil
 AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus(const AliHFCutVarFDsubAnalysisManagerDplus& am)
   : AliHFCutVarFDsubAnalysisManager(am)
   , fNevents(am.fNevents)
+  , fPID(am.fPID)
+  , fPIDAxis(am.fPIDAxis)
 {
   /// Copy constructor
 
@@ -262,17 +257,18 @@ AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus(const
 }
 
 
-AliHFCutVarFDsubAnalysisManagerDplus AliHFCutVarFDsubAnalysisManagerDplus::operator=(const AliHFCutVarFDsubAnalysisManagerDplus& am)
+AliHFCutVarFDsubAnalysisManagerDplus& AliHFCutVarFDsubAnalysisManagerDplus::operator=(const AliHFCutVarFDsubAnalysisManagerDplus& am)
 {
   /// Assignment operator
 
   // TODO: do proper deep copies
   Printf("Do not use this assignment operator!");
 
-  AliHFCutVarFDsubAnalysisManager::operator=(am);
-
   if (this != &am) {
+    AliHFCutVarFDsubAnalysisManager::operator=(am);
     fNevents = am.fNevents;
+    fPID = am.fPID;
+    fPIDAxis = am.fPIDAxis;
   }
   return *this;
 }
