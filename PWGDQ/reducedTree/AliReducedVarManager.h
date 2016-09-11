@@ -440,8 +440,9 @@ class AliReducedVarManager : public TObject {
   static void SetEventPlane(AliReducedEventPlaneInfo* const ev) {fgEventPlane = ev;};
   static void SetUseVariable(Variables var) {fgUsedVars[var] = kTRUE; SetVariableDependencies();}
   static void SetUseVars(Bool_t* usedVars) {
-    for(Int_t i=0;i<kNVars;++i) 
-      fgUsedVars[i]=usedVars[i];
+    for(Int_t i=0;i<kNVars;++i) {
+      if(usedVars[i]) fgUsedVars[i]=kTRUE;    // overwrite only the variables that are being used since there are more channels to modify the used variables array, independently
+    }
     SetVariableDependencies();
   }
   static Bool_t GetUsedVar(Variables var) {return fgUsedVars[var];}
