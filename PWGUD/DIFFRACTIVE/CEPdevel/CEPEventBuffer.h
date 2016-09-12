@@ -14,6 +14,7 @@ class CEPEventBuffer : public TObject {
     Int_t fnumTracks;
     Int_t fnumSoftTracks;
     Int_t fnumResiduals;
+    Bool_t  fisPileup;
     
     // see AliPBBase.h for the definition of fGapCondition
     Int_t fGapCondition;
@@ -30,6 +31,7 @@ class CEPEventBuffer : public TObject {
     void SetEventNumber(Int_t evnum)    { fEventNumber = evnum; }
     void SetnumResiduals(Int_t nres)    { fnumResiduals = nres; }
     void SetGapCondition(Int_t gapcond) { fGapCondition = gapcond; }
+    void SetPileup(Boolt_t isPileup)    { fisPileup = isPileup; }
     void AddTrack(CEPTrackBuffer* trk);
     
     // Accessors
@@ -52,6 +54,7 @@ class CEPEventBuffer : public TObject {
     Bool_t isADC()  const { return fGapCondition & AliPBBase::kBitADC; }
     Bool_t isZDCA() const { return fGapCondition & AliPBBase::kBitZDCA; }
     Bool_t isZDCC() const { return fGapCondition & AliPBBase::kBitZDCC; }
+    Bool_t isPileup() const { return fisPileup; }
     
     CEPTrackBuffer* GetTrack(Int_t ind);
 
