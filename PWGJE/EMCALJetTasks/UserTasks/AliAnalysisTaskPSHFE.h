@@ -205,7 +205,16 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_EMCEGA[6];//!
     //TRD Liklihood plots
     TH2F            *fHistTRD_TPCEMC_EMCEGA[6];//!
+<<<<<<< HEAD
     //General Event histos
+=======
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMCEGA[6];//!
+    TH2F            *fHistM20_All_EMCEGA[6];//!
+    TH2F            *fHistM02_Elec_EMCEGA[6];//!
+    TH2F            *fHistM20_Elec_EMCEGA[6];//!
+    //General Event histos 
+>>>>>>> Added EMC Gamma and some fixes
     TH1F            *fHistPtSum_EMCEGA;//!
     TH1F            *fHistPtSumTag_EMCEGA;//!
     TH1F            *fHistPtSumEMC_EMCEGA;//!

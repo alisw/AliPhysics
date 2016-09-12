@@ -36,6 +36,7 @@
     #include "TList.h"
     #include "TF1.h"
     #include "TGraph.h"
+    #include "TSystem.h"
 
     #include "AliAnalysisTaskSE.h"
     #include "AliAnalysisManager.h"
@@ -1949,9 +1950,16 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         AliWarning("NULL PIDResponse");
     }
 
+    ProcInfo_t procInfo;
+    gSystem->GetProcInfo(&procInfo);
+    printf("Track Array: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
+
     if(aodEv){
         trkArr = MakeTrkArr(aod);
     }
+
+    gSystem->GetProcInfo(&procInfo);
+    printf("end Track Array: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
     //__________________________End major event stuff_____________________________
 
 
@@ -2181,7 +2189,13 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             fHistImpPar_EMCJet->Fill(xy);
         }
 
+        gSystem->GetProcInfo(&procInfo);
+        printf("Phot Elec: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
+
         FillPhotoElecHistos(aod, aodtrack, fPIDResponse, i);
+
+        gSystem->GetProcInfo(&procInfo);
+        printf("end Photo Elec:RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
 
         if(!aodEv){
             FillPhotoElecHistos(esd, esdtrack, fPIDResponse, i);
@@ -2225,8 +2239,13 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
         }
 
+        gSystem->GetProcInfo(&procInfo);
+        printf("PID: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
+
         FillPIDHistos(aod, aodtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
 
+        gSystem->GetProcInfo(&procInfo);
+        printf("end PID: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
         if(!aodEv){
             FillPIDHistos(esd, esdtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
         }
@@ -4315,6 +4334,7 @@ TObjArray* AliAnalysisTaskPSHFE::MakeTrkArr(AliAODEvent *aod)
     if(!aod){AliWarning("Invalid AOD Event");}
     Int_t nTracks = aod->GetNumberOfTracks();
     TObjArray* accTracks = new TObjArray;
+    accTracks->SetOwner();
 
     for(Int_t i=0;i<nTracks;i++){
         AliAODTrack *aodtrack = (AliAODTrack*)aod->GetTrack(i);
@@ -4328,7 +4348,6 @@ TObjArray* AliAnalysisTaskPSHFE::MakeTrkArr(AliAODEvent *aod)
         }
         AliAODTrack* temp = new AliAODTrack(*aodtrack);
         accTracks->Add(temp);
-        delete temp;
     }
 
     return accTracks;
