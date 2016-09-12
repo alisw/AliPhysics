@@ -3,11 +3,20 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// Implementation of AliGenEMCocktailV2 for electron, di-electron,         //
+// and photon cocktail calculations.                                       //
+// It is based on AliGenEMCocktail                                         //
+//                                                                         //
+// Responsible: Friederike Bock (friederike.bock@cern.ch)                  //
+//              Lucas Altenkaemper (lucas.altenkamper@cern.ch)             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
 // Class to create the cocktail for physics with electrons, di-electrons,
 // and photons from the decay of the following sources:
 // pizero, eta, rho, omega, etaprime, phi
-//
 
 #include "AliGenCocktail.h"
 #include "AliGenEMlibV2.h"
