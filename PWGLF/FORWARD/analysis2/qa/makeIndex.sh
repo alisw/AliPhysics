@@ -46,6 +46,8 @@ loopDir()
     case x$basehere in 
 	xqa|xjsRoot*) return ;; 
     esac
+
+    if test -f ${here}/.nosub ; then return ; fi
     
     msg 0 "Processing @ level $level: $here ($basehere)" 
 
