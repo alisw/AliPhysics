@@ -50,6 +50,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
  private:
     TList           *fOutputMB;        //! 
     TList           *fOutputEMC7; //!
+    TList           *fOutputEMCEGA; //!
     TList           *fOutputEMCJet; //!
     AliESDtrackCuts *fTrackCutsStrong;     //!
     AliESDtrackCuts *fTrackCutsWeak;     //!
@@ -66,6 +67,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //Physics selection booleans
     Bool_t          MBtrg;//!
     Bool_t          EMC7trg;//!
+    Bool_t          EMCEGAtrg;//!
     Bool_t          EMCJettrg;//!
     
     //tag bools
@@ -197,6 +199,64 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistDPhiMix28_EMC7;//!
     TH2F            *fHistDPhiDEtaMix28_EMC7;//!
     
+    //EMCEGA Histos
+    //Track Cut QA histos
+    TH1F            *fHistTPCNClus_EMCEGA;//!
+    TH1F            *fHistITSNClus_EMCEGA;//!
+    TH1F            *fHistTPCSig_EMCEGA;//!
+    TH1F            *fHistTPCSigCut_EMCEGA;//!
+    TH1F            *fHistImpPar_EMCEGA;//!
+    TH1F            *fHistImpParTag_EMCEGA;//!
+    //PID QA histos
+    //Pt bins of (1-2GeV, 2-3GeV, 3-4GeV, 4-5GeV, 5-6GeV, >6GeV)
+    //DeDx Plots
+    TH2F            *fHistTPC_EMCTRD_EMCEGA[6];//!
+    //E/P Plots
+    TH1F            *fHistEMC_TPCTRD_EMCEGA[6];//!
+    //TRD Liklihood plots
+    TH2F            *fHistTRD_TPCEMC_EMCEGA[6];//!
+    //EMCal Shower SHape plots
+    TH2F            *fHistM02_All_EMCEGA[6];//!
+    TH2F            *fHistM20_All_EMCEGA[6];//!
+    TH2F            *fHistM02_Elec_EMCEGA[6];//!
+    TH2F            *fHistM20_Elec_EMCEGA[6];//!
+    //General Event histos
+    TH1F            *fHistPtSum_EMCEGA;//!
+    TH1F            *fHistPtSumTag_EMCEGA;//!
+    TH1F            *fHistPtSumEMC_EMCEGA;//!
+    TH2F            *fHistEtaPhi_EMCEGA;//!
+    TH2F            *fHistEtaPhiTag_EMCEGA;//!
+    TH1F            *fHistDPhi300_500_EMCEGA[3];//!
+    TH1F            *fHistDPhi500_800_EMCEGA[3];//!
+    TH1F            *fHistDPhi800_1_EMCEGA[3];//!
+    TH1F            *fHistDPhi1_2_EMCEGA[3];//!
+    TH1F            *fHistDPhi2_3_EMCEGA[3];//!
+    TH1F            *fHistDPhi3_4_EMCEGA[3];//!
+    TH1F            *fHistDPhi4_EMCEGA[3];//!
+    TH1F            *fHistDPhi28_EMCEGA;//!
+    TH2F            *fHistDPhiDEta28_EMCEGA;//!
+    TH1F            *fHistNevents_EMCEGA;//!
+    TH1F            *fHistInvMassElecLike_EMCEGA;//!
+    TH1F            *fHistOpAngElecLike_EMCEGA;//!
+    TH1F            *fHistInvMassElecUnLike_EMCEGA;//!
+    TH1F            *fHistOpAngElecUnLike_EMCEGA;//!
+    TH1F            *fHistPtAssoc_EMCEGA;//!
+    TH1F            *fHistPtAssocMix_EMCEGA;//!
+    TH1F            *fHistPtTag_EMCEGA;//!
+    TH1F            *fHistPhotoMismatch_EMCEGA;//!
+    TH2F            *fHistDPhi18Spe_EMCEGA;//!
+
+    //Mixed Event DPhi histos
+    TH1F            *fHistDPhiMix300_500_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix500_800_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix800_1_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix1_2_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix2_3_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix3_4_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix4_EMCEGA[3];//!
+    TH1F            *fHistDPhiMix28_EMCEGA;//!
+    TH2F            *fHistDPhiDEtaMix28_EMCEGA;//!
+
     
     //EMCJet Histos
     //Track Cut histos
