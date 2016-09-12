@@ -53,6 +53,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        AllocateClusterHistograms()                       ;
   void                        AllocateCellHistograms()                          ;
   void                        AllocateDijetHistograms()                         ;
+  void                        AllocatePostProcHistograms()                      ;
 
   void                        DoJetLoop()                                       ;
   void                        DoTrackLoop()                                     ;
