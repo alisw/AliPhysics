@@ -6,7 +6,6 @@
 #include "helpers.h"
 #include <cassert>
 #include <iostream>
-#include <tuple>
 
 int main() {
   assert(ends_with("foobar", "bar"));
