@@ -201,7 +201,7 @@ void run_single_task(const char* mode,
     odir=input;
     input="0";
   }
-
+  Int_t recoPass=2;
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,7 +214,7 @@ void run_single_task(const char* mode,
   bool mcData=false;
   bool makepidresp=false;
   int nTestFiles=10;
-  int nMaxInputFiles=20; //2010pp: 100 ||| pPb:20(LHC13b), 6-20(LHC13c), MC: 8
+  int nMaxInputFiles=50; //2010pp: 100 ||| pPb:20(LHC13b), 6-20(LHC13c), MC: 8
   TString strArguments(arguments);
   TString mergeDirs;
   TString strCustomInputHandler;
@@ -252,6 +252,14 @@ void run_single_task(const char* mode,
 	// NOTE: not to be confused with option 'mc' which is propagated to tasks
 	// and switches processing and output modes inside tasks
 	makepidresp=true;
+	continue;
+      }
+      key="--recopass=";
+      if (arg.BeginsWith(key)) {
+	// this is an argument to the macro, don't propagate it further to tasks
+	strArguments.ReplaceAll(arg, "");
+	arg.ReplaceAll(key, "");
+	recoPass=arg.Atoi();
 	continue;
       }
       key="--merge=";
@@ -523,7 +531,7 @@ void run_single_task(const char* mode,
   // Activate for singletrack eff running
   if(makepidresp){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(mcData, kTRUE, mcData, 2, kFALSE, "", kTRUE, kFALSE, -1);
+    AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(mcData, kTRUE, mcData, recoPass, kFALSE, "", kTRUE, kFALSE, -1);
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
