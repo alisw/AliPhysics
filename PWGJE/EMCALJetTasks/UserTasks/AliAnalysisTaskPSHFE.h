@@ -245,7 +245,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistPtTag_EMCEGA;//!
     TH1F            *fHistPhotoMismatch_EMCEGA;//!
     TH2F            *fHistDPhi18Spe_EMCEGA;//!
-
     //Mixed Event DPhi histos
     TH1F            *fHistDPhiMix300_500_EMCEGA[3];//!
     TH1F            *fHistDPhiMix500_800_EMCEGA[3];//!
@@ -256,7 +255,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistDPhiMix4_EMCEGA[3];//!
     TH1F            *fHistDPhiMix28_EMCEGA;//!
     TH2F            *fHistDPhiDEtaMix28_EMCEGA;//!
-
     
     //EMCJet Histos
     //Track Cut histos
