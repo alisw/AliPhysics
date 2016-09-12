@@ -659,7 +659,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
-  if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
+  //if(ntracks < 1) printf("There are %d tracks in this event\n",ntracks);
   fMult->Fill(centrality,ntracks);
 
   fNevents->Fill(0); //all events
