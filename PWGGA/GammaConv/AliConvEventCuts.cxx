@@ -1612,7 +1612,13 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
-    if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    if(GetUseNewMultiplicityFramework()){
+      AliMultSelection *MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+      if(fDetectorCentrality==0) return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+      else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+    }else{
+      if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    }
   }
 
   return -1;
