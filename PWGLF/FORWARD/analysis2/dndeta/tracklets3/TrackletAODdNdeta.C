@@ -165,33 +165,104 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "WeightVeto",      "reweigh-veto",     0x0);
     SetOnTask (task, "WeightCalc",                          mcal);
     FromOption(task, "WeightInverse",   "reweigh-inv",      false);
-    // if (mc && we) {
-    //   TUrl wurl(fOptions.AsString("reweight"));
-    //   TFile* wfile = TFile::Open(wurl.GetFile());
-    //   if (!wfile) {
-    // 	Warning("CreateTasks", "Failed to open weights file: %s",
-    // 		wurl.GetUrl());
-    // 	return;
-    //   }
-    //   TString wnam(wurl.GetAnchor());
-    //   if (wnam.IsNull()) wnam = "weights";
-    //   TObject* wobj = wfile->Get(wnam);
-    //   if (!wobj) {
-    // 	Warning("CreateTasks", "Failed to get weights %s from file %s",
-    // 		wnam.Data(), wfile->GetName());
-    // 	return;
-    //   }
-    //   if (!wobj->IsA()->InheritsFrom("AliTrackletWeights")) {
-    // 	Warning("CreateTasks", "Object %s from file %s not an "
-    // 		"AliTrackletWeights but a %s",
-    // 		wnam.Data(), wfile->GetName(), wobj->ClassName());
-    // 	return;
-    //   }
-    //   SetOnTaskGeneric(task, "Weights",
-    // 		       Form("((AliTrackletWeights*)%p)", wobj));
-    // }
-    Printf("Print the generated task");
     task->Print("");    
+  }
+  //__________________________________________________________________
+  /** 
+   * Overloaded to create new Collect.C 
+   * 
+   * @param asShellScript 
+   */
+  void SaveSetup(Bool_t asShellScript)
+  {
+    TrainSetup::SaveSetup(asShellScript);
+
+    SaveCollect();
+  }
+  /** 
+   * Make script to collect final
+   * @f$\mathrm{d}N_{\mathrm{ch}}/\mathrm{d}\eta@f$ from this and
+   * other pass.
+   * 
+   */
+  void SaveCollect()
+  {
+    std::ofstream o("Collect.C");
+    if (!o) { 
+      Error("TrackletAODdNdeta::SavePost", "Failed to open Collect.C");
+      return;
+    }
+    o << "// Created by " << ClassName() << "\n"
+      << "// Will draw dN/deta results from produced files\n"
+      << "// \n"
+      << "// Arguments:\n"
+      << "//   other     Directory of other result (MC or real)\n"
+      << "//   output    Optional output directory name\n"
+      << "//   proc      Bit mask of processing options\n"
+      << "//             - 0x1  Unit normalisation of C\n"
+      << "//             - 0x2  Constant normalisation of C\n"
+      << "//             - 0x4  eta-dependent normalisation of C\n"
+      << "//             - 0x8  (eta,IPz)-dependent normalisation of C\n"
+      << "//   viz       Bit mask of visualisation options\n"
+      << "//             - 0x0001  General information\n"
+      << "//             - 0x0002  Parameters used\n"
+      << "//             - 0x0004  Show weights if used\n"
+      << "//             - 0x0008  Show dN/deta \n"
+      << "//             - 0x0010  Show species\n"
+      << "//             - 0x0020  Show delta distribtions\n"
+      << "//             - 0x0040  Show details of the calculation\n"
+      << "//             - 0x0080  Reserved\n"
+      << "//             - 0x0100  Generate PDF and PNGs\n"
+      << "//             - 0x0200  Pause after each page\n"
+      << "//             - 0x0400  Generate plots in landscape orientation\n"
+      << "//             - 0x0800  Use an alternate marker\n"
+      << "//   n         Number of centrality bins to process\n" 
+      << "// \n"
+      << "// Output is generated in the sub-directory\n"
+      << "// \n";
+    if (fRailway->IsMC()) 
+      o << "//    " << fEscapedName << "_<other>\n";
+    else
+      o << "//    <other>_" << fEscapedName << "\n";
+    o << "//\n"
+      << "// where <other> is the first argument given\n"
+      << "void Collect(const char* other,\n"
+      << "             const char* output=0\n"
+      << "             UInt_t      proc=0x2,\n"
+      << "             UInt_t      viz=0x32f,\n"
+      << "             UInt_t      n=10)\n"
+      << "{\n"
+      << "  TString fwd=\n"
+      << "    \"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dndeta/tracklets3\";\n"
+      << "  gSystem->AddIncludePath(Form(\"-I%s\",fwd.Data()));\n"
+      << "  gROOT->LoadMacro(Form(\"%s/AliTrackletAODUtils.C+g\",fwd.Data()));"
+      << "\n"
+      << "  gROOT->LoadMacro(Form(\"%s/AliTrackletdNdeta2.C+g\",fwd.Data()));"
+      << "\n";
+    TString oName(fEscapedName); oName.Append("/AnalysisResults.root");
+    if (fRailway->IsMC()) 
+      o << "  TString realFile = Form(\"%s/AnalysisResults.root\",other);\n"
+	<< "  TString simFile  = \"" << oName << "\";\n"
+	<< "  TString outFile  = Form(\""<<fEscapedName <<"_%s\",other);\n";
+    else
+      o << "  TString realFile = \"" << oName << "\";\n"
+	<< "  TString simFile  = Form(\"%s/AnalysisResults.root\",other);\n"
+	<< "  TString outFile  = Form(\"%s_"<<fEscapedName <<"\",other);\n";
+    o << "  if (output && output[0] != '\0') outFile = output;\n"
+      << "  AliTrackletdNdeta2* p = new AliTrackletdNdeta2;\n"
+      << "  if (proc & 0x1) outFile.Append(\"_unit\");\n"
+      << "  if (proc & 0x2) outFile.Append(\"_const\");\n"
+      << "  if (proc & 0x4) outFile.Append(\"_eta\");\n"
+      << "  if (proc & 0x8) outFile.Append(\"_etaipz\");\n"
+      << "  \n"
+      << "  p->Run(proc,viz,n,realFile,simFile,outFile);\n"
+      << "  \n"
+      << "  gROOT->LoadMacro(Form(\"%s/ExtractGSE2.C\",fwd.Data()));\n"
+      << "  ExtractGSE2(outFile);\n"
+      << "}\n"
+      << "// EOF\n"
+      << std::endl;
+    o.close();
   }
   /** 
    * Get the train setup name 

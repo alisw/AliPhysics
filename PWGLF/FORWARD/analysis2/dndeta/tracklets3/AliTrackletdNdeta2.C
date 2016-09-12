@@ -843,17 +843,19 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
 
   // Check consistency of found histograms 
   if (!CheckConsistency(realCent, simCent)) {
-    Warning("Post", "Centrality bins are incompatible, giving up");
+    Warning("Process", "Centrality bins are incompatible, giving up");
     return false;
   }
   if (!CheckConsistency(realIPz, simIPz)) {
-    Warning("Post", "IPz bins are incompatible, giving up");
+    Warning("Process", "IPz bins are incompatible, giving up");
     return false;
   }
   
   // Check if we're doing a closure test 
   if (fProc & kClosure) realTop = simTop;
 
+  PrintAxis(*realCent->GetXaxis(), 2, "Real centrality");
+  PrintAxis(*simCent ->GetXaxis(), 2, "Simulated centrality");
 
   THStack* mids = new THStack("mids", "");
   TH1*     publ = 0;
@@ -941,7 +943,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 {
   // Form the folder name
   TString centName(CentName(c1,c2));
-
+  if (c1 >= c2) centName = "all";
+		  
   // Get centrality containers 
   Container* realCont = GetC(realTop, centName);
   Container* simCont  = GetC(simTop,  centName);
@@ -2317,7 +2320,7 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   l->SetTextSize(0.04);
 	    
   l = DrawInPad(p2,0, all, "nostack logy grid leg");
-  all->GetHistogram()->SetXTitle("#eta");
+  if (all && all->GetHistogram()) all->GetHistogram()->SetXTitle("#eta");
 
   ModLegend(p2, l, right, .15, .99, .99);
   l->SetMargin(0.2);
@@ -2482,6 +2485,7 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
 {
   // Form the folder name
   TString centName(CentName(c1,c2));
+  if (c1 >= c2) centName = "all";
   fLastBin.Form("%.1f#minus%.1f%%", c1, c2);
   fLastShort = centName;
   

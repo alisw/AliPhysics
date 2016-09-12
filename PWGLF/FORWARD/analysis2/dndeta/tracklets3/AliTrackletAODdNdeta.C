@@ -67,7 +67,7 @@ public:
     kSecondaryMask    = AliAODTracklet::kSecondary,
     kSecondaryVeto    = 0x0,
     kGeneratedMask    = AliAODTracklet::kGenerated,
-    kGeneratedVeto    = AliAODTracklet::kNeutral
+    kGeneratedVeto    = AliAODTracklet::kNeutral|AliAODTracklet::kSuppressed
   };
     
   /** Type of containers */
@@ -744,6 +744,12 @@ public:
 		      const TAxis& ipzAxis,
 		      const TAxis& deltaAxis);
     /** 
+     * Check if this is the MB "centrality" bin
+     * 
+     * @return True if MB bin 
+     */
+    Bool_t IsAllBin() const;
+    /** 
      * Check if we should process this event 
      * 
      * @param cent Event centrality 
@@ -863,7 +869,23 @@ protected:
   virtual CentBin* MakeCentBin(Float_t c1, Float_t c2)
   {
     return new CentBin(c1, c2);
-  }
+  } 
+  /** 
+   * Create and initialize a centrality bin 
+   * 
+   * @param bin        Bin number 
+   * @param c1         Least centrality 
+   * @param c2         Largest centrality 
+   * @param existing   Possible existing container to initialize from 
+   * @param deltaAxis  Axis for @f$ \Delta @f$ 
+   *
+   * @return Pointer to bin object or null
+   */
+  virtual CentBin* InitCentBin(Int_t        bin,
+			       Float_t      c1,
+			       Float_t      c2,
+			       Container*   existing,
+			       const TAxis& deltaAxis);
   /* @} */
   
   // -----------------------------------------------------------------
@@ -1819,6 +1841,30 @@ Bool_t AliTrackletAODWeightedMCdNdeta::WorkerInit()
   return true;
 }
 //____________________________________________________________________
+AliTrackletAODdNdeta::CentBin*
+AliTrackletAODdNdeta::InitCentBin(Int_t        bin,
+				  Float_t      c1,
+				  Float_t      c2,
+				  Container*   existing,
+				  const TAxis& deltaAxis)
+{
+  CentBin* ret  = MakeCentBin(c1, c2);
+  Bool_t   ok   = true;
+  if (!existing) 
+    ok = ret->WorkerInit(fContainer,fEtaAxis,fIPzAxis,deltaAxis);
+  else
+    ok = ret->FinalizeInit(existing);
+  if (!ok) {
+    AliWarningF("Failed to initialize bin %s", ret->GetName());
+    delete ret;
+    return 0;
+  }
+  ret->SetDebug(DebugLevel());
+  fCentBins->AddAt(ret, bin);
+  return ret;
+
+}
+//____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
 {
   if (DebugLevel() > 1)
@@ -1829,42 +1875,22 @@ Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
   fCentBins->SetName("centralityBins");
   fCentBins->SetOwner();
 
-  TAxis    deltaAxis (Int_t(5*fMaxDelta),0,         fMaxDelta);
+  TAxis    deltaAxis (Int_t(5*fMaxDelta),0,fMaxDelta);
   FixAxis(deltaAxis,
 	  "#Delta=[(#Delta#phi-#delta#phi)/#sigma_{#phi}]^{2}+"
 	  "[#Delta#thetasin^{-2}(#theta)/#sigma_{#theta}]^{2}");
 
   // Add min-bias bin
-  Bool_t   ret  = true;
-  CentBin* bin  = MakeCentBin(0, 100);
-  if (!existing) 
-    ret = bin->WorkerInit(fContainer,fEtaAxis,fIPzAxis,deltaAxis);
-  else
-    ret = bin->FinalizeInit(existing);
-  if (!ret) {
-    AliWarningF("Failed to initialize bin %s", bin->GetName());
-    return false;
-  }
-  bin->SetDebug(DebugLevel());
-  fCentBins->AddAt(bin, 0);
+  if (!InitCentBin(0,0,0,existing,deltaAxis)) return false;
 
   // Add other bins
   Int_t nCentBins = fCentAxis.GetNbins();
   for (Int_t i = 1; i <= nCentBins; i++) {
     Float_t  c1 = fCentAxis.GetBinLowEdge(i);
     Float_t  c2 = fCentAxis.GetBinUpEdge(i);
-    bin         = MakeCentBin(c1, c2);
-    if (!existing) 
-      ret = bin->WorkerInit(fContainer,fEtaAxis,fIPzAxis,deltaAxis);
-    else
-      ret = bin->FinalizeInit(existing);
-    if (!ret) {
-      AliWarningF("Failed to initialize %s", bin->GetName());
-      return false;
-    }
-    bin->SetDebug(DebugLevel());
-    fCentBins->AddAt(bin, i);
+    if (!InitCentBin(i, c1, c2, existing, deltaAxis)) return false;
   }
+  if (!InitCentBin(nCentBins+1, 0, 100, existing, deltaAxis)) return false;
   return true;
 }
 
@@ -1880,7 +1906,10 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
     fMeasured(0),
     fInjection(0)
 {
-  fName = AliTrackletAODUtils::CentName(c1, c2);
+  if (c1 >= c2)
+    fName = "all";
+  else 
+    fName = AliTrackletAODUtils::CentName(c1, c2);
   fMeasured  = MakeHistos("measured", kRed+2, 20,
 			  kMeasuredMask, // No requirements, just veto
 			  kMeasuredVeto);
@@ -2102,8 +2131,8 @@ Bool_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
   // Check the centrality
   Int_t nTracklets = 0;
   cent = FindCentrality(event, nTracklets);
-  if (cent < 0) return false;
-  fStatus->Fill(kCentrality);
+  // Do not fail on missing centrality 
+  if (cent >= 0) fStatus->Fill(kCentrality);
 
   fIPz->Fill(ip->GetZ());
   fCent->Fill(cent);
@@ -2417,9 +2446,14 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
 }    
 
 //____________________________________________________________________
+Bool_t AliTrackletAODdNdeta::CentBin::IsAllBin() const
+{
+  return fLow >= fHigh;
+}
+//____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::CentBin::Accept(Double_t cent, Double_t ipz)
 {
-  if (cent < fLow || cent >= fHigh) return false;
+  if (!IsAllBin() && (cent < fLow || cent >= fHigh)) return false;
   fCent   ->Fill(cent);
   fIPz    ->Fill(ipz);
   fCentIPz->Fill(ipz, cent);
