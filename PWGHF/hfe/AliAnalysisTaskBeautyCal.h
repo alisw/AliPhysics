@@ -125,12 +125,13 @@ private:
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
     TH2F        *fM02EovP;//!M20 vs E/p
-    TH1F        *fInvmassULS;//!Invmass of ULS
-    TH1F        *fInvmassLS;//!Invmass of LS
+    TH2F        *fInvmassULS;//!Invmass of ULS
+    TH2F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassHfULS;//!Invmass of ULS
     TH2F        *fInvmassHfLS;//!Invmass of LS
     TH1F        *fMCcheckMother;
