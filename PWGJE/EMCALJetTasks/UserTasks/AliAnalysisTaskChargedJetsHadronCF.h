@@ -35,6 +35,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
 
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
+  void                        SetPythiaExtractionMode(Int_t mode) {fPythiaExtractionMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
   void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading, Double_t dphi) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading; fEventCriteriumMinJetDeltaPhi = dphi;}
@@ -77,6 +78,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Double_t                    fMinFakeFactorPercentage;                 ///< min fake factor (percentage relative to cut profile)
   Double_t                    fMaxFakeFactorPercentage;                 ///< max fake factor (percentage relative to cut profile)
+  Int_t                       fPythiaExtractionMode;                    ///< Mode which PYTHIA-jets to extract for fJetOutputMode==6: 0: all, 1: quark-jets, 2: gluon jets
   Int_t                       fEventCriteriumMode;                      ///< Mode of event selection
   Double_t                    fEventCriteriumMinBackground;             ///< Minimum background
   Double_t                    fEventCriteriumMaxBackground;             ///< Maximum background
@@ -139,9 +141,9 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 class AliBasicJetConstituent : public TObject
 {
   public:
-    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0) {}
-    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fPID(0) {}
+    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fPID(pid)
     {
     }
     ~AliBasicJetConstituent();
@@ -151,15 +153,16 @@ class AliBasicJetConstituent : public TObject
     Double_t Phi()      { return fPhi; }
     Double_t Eta()      { return fEta; }
     Short_t  Charge()   { return fCharge; }
+    Short_t  PID()      { return fPID; }
 
   private:
     Float_t fEta;      ///< eta
     Float_t fPhi;      ///< phi
     Float_t fpT;       ///< pT
     Short_t fCharge;   ///< charge
-
+    Short_t fPID;      ///< most probably PID code/PDG code
   /// \cond CLASSIMP
-  ClassDef( AliBasicJetConstituent, 1); // very basic jet constituent object
+  ClassDef( AliBasicJetConstituent, 2); // very basic jet constituent object
   /// \endcond
 };
 
@@ -201,9 +204,9 @@ class AliBasicJet : public TObject
 
     // Basic constituent functions
     AliBasicJetConstituent*   GetJetConstituent(Int_t index) { return &fConstituents[index]; }
-    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid=0)
     {
-      AliBasicJetConstituent c (eta, phi, pt, charge);
+      AliBasicJetConstituent c (eta, phi, pt, charge, pid);
       AddJetConstituent(&c);
     }
     void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }
