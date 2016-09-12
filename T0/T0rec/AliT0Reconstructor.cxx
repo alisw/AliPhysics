@@ -219,7 +219,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   clustersTree->Branch( "T0", "AliT0RecPoint" ,&pfrecpoints);
   Int_t timecenterA = 511;
   Int_t timecenterC = 511;
-  if(fLHCperiod) { timecenterC=514;timecenterA=518;}
+  //   if(fLHCperiod) { timecenterC=512;timecenterA=516;}
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
@@ -303,8 +303,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   if( besttimeA < 999999 && besttimeA!=0) {
     frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  );
     frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c - shiftA) );
-    if(fLHCperiod ) 
-      frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c - fTimeMeanShift[1]) );
+    //    if(fLHCperiod ) 
+    //   frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c - fTimeMeanShift[1]) );
     tr[1]=true;
   }
  printf(" 1stimeA %f besttimeA %f fdZonCA%f  shiftA %f \n",
@@ -313,8 +313,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   if( besttimeC < 999999 && besttimeC!=0) {
     frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c) );
     frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c - shiftC) );
-    if(fLHCperiod ) 
-      frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c - fTimeMeanShift[2]) );
+    //   if(fLHCperiod ) 
+    //    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c - fTimeMeanShift[2]) );
    tr[2]=true;
   }
   //  printf(" 1stimeC %f besttimeC %f fdZonC %f  shiftC %f \n",
@@ -329,8 +329,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     timeDiff = (besttimeA - besttimeC)*channelWidth;
     meanTime = channelWidth * (besttimeA_best + besttimeC_best)/2. ; 
     timeclock = channelWidth * (besttimeA + besttimeC)/2. - shiftAC ;
-    if(fLHCperiod) 
-      timeclock = channelWidth * (besttimeA + besttimeC)/2. - fTimeMeanShift[0] ;
+    //  if(fLHCperiod) 
+    //  timeclock = channelWidth * (besttimeA + besttimeC)/2. - fTimeMeanShift[0] ;
    vertex = meanVertex - 0.001* c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
     tr[0]=true; 
   }
