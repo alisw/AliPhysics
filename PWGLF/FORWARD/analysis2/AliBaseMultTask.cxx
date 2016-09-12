@@ -185,8 +185,8 @@ void AliBaseMultTask::Process(TH1D*              dndetaForward,
 		 isMCClass,
 		 isESDClass,
 		 aodevent,
-		 fMinIpZ,
-		 fMaxIpZ);
+		 fIPzAxis.GetXmin(),
+		 fIPzAxis.GetXmax());
   }
 }
 

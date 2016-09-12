@@ -66,7 +66,7 @@ AliForwarddNdetaTask::MakeCentralityBin(const char* name, Float_t l,Float_t h)
   //    Newly allocated object (of our type)
   //
   DGUARD(fDebug, 3,
-	 "Make a centrality bin for AliForwarddNdetaTask: %s [%d,%d]",
+	 "Make a centrality bin for AliForwarddNdetaTask: %s [%5.1f%%,%5.1f%%]",
 	 name, l, h);
   return new AliForwarddNdetaTask::CentralityBin(name, l, h);
 }
@@ -99,9 +99,16 @@ AliForwarddNdetaTask::CheckEventData(Double_t vtx,
 {
   // Check if this is satellite
   // if (!fSatelliteVertices) return;
+
+  // If we don't care about satellites, get out
+  if (vtx < fIPzAxis.GetXmin() || vtx > fIPzAxis.GetXmax()) return;
+
+  // Check if this is a satelllite 
   Double_t aVtx = TMath::Abs(vtx);
   if (aVtx < 37.5 || aVtx > 400) return;
 
+  DMSG(fDebug,0,"Got satelitte vertex %f", vtx);
+  
   TH2* hists[] = { data, dataMC };
 
   // In satellite vertices FMD2i is cut away manually at this point
@@ -125,7 +132,6 @@ AliForwarddNdetaTask::CheckEventData(Double_t vtx,
 	(vtx < 50                 && TMath::Abs(x) < 4.75))
       zero = true;
     if (!zero) continue;
-    
     for (Int_t iH = 0; iH < 2; iH++) {
       if (!hists[iH]) continue;
       // if (iX > hists[iH]->GetNbinsX()+1) continue;
@@ -138,6 +144,7 @@ AliForwarddNdetaTask::CheckEventData(Double_t vtx,
   }
 
   if (fCorrEmpty) {
+    DMSG(fDebug,1,"Correcting with corrEmpty=true");
     // Now, since we have some dead areas in FMD2i (sectors 16 and
     // 17), we need to remove the corresponding bins from the
     // histogram. However, it is not obvious which bins (in eta) to
@@ -184,18 +191,25 @@ Bool_t
 AliForwarddNdetaTask::LoadEmpirical(const char* prx)
 {
   TString path(prx);
+  TUrl    empUrl;
+  TFile*  empFile = 0;
+
   if (gSystem->ExpandPathName(path)) {
     // Expand with TString argument return 0 on success, 1 on failure
     return false;
   }
   if (!path.Contains("empirical"))
     path = gSystem->ConcatFileName(path.Data(), "empirical.root");
-  TUrl   empUrl(path);
+  empUrl.SetUrl(path);
   if (!empUrl.GetAnchor() || empUrl.GetAnchor()[0] == '\0')
     empUrl.SetAnchor("default");
-  TFile* empFile = TFile::Open(empUrl.GetUrl());
-  if (!empFile) return false;
-
+  empFile = TFile::Open(empUrl.GetUrl());
+  if (!empFile) {
+    DMSG(fDebug,1,"%s not found", empUrl.GetUrl());
+    return false;
+  }
+  DMSG(fDebug,0,"Got empirical file %s", empUrl.GetUrl());
+  
   TString     base(GetName()); base.ReplaceAll("dNdeta", "");
   TString     empAnch = empUrl.GetAnchor();
   TObject*    empObj  = empFile->Get(Form("%s/%s",base.Data(),empAnch.Data()));
@@ -206,6 +220,8 @@ AliForwarddNdetaTask::LoadEmpirical(const char* prx)
 	    empAnch.Data(), empUrl.GetUrl());
     return false;
   }
+  DMSG(fDebug,0,"Got empirical correction %s [%s]", empObj->GetName(),
+       empObj->ClassName());
   // Store correction in output list 
   static_cast<TNamed*>(empObj)->SetName("empirical");
   fResults->Add(empObj);
@@ -282,6 +298,7 @@ AliForwarddNdetaTask::Finalize()
     const char*  fns[] = { "", "empirical_000138190.root", 0 };
     const char** pfn   = fns;
     while (*pfn) {
+      AliForwardUtil::SuppressGuard g(1000);
       TString path(gSystem->ConcatFileName(*pdir, *pfn));
       if ((ok = LoadEmpirical(path))) break;
       pfn++;
@@ -370,26 +387,33 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					triggerMask, marker, color, mclist, 
 					truthlist);
 
-  // TH1* h = EmpiricalCorrection(results);
-
-  if (!IsAllBin()) return;
-  TFile* file = TFile::Open("forward.root", "READ");
-  if (!file) return;
+  TH1* h = EmpiricalCorrection(results);
+  Info("End", "Applied empirical correction: %p (%s)",
+       h, h ? h->GetName() : "");
   
-  TList* forward = static_cast<TList*>(file->Get("ForwardSums"));
-  if (!forward) { 
-    AliError("List Forward not found in forward.root");
-    return;
-  }
-  TList* rings = static_cast<TList*>(forward->FindObject("ringResults"));
-  if (!rings) { 
-    AliError("List ringResults not found in forward.root");
-    return;
-  }
-  THStack* res = static_cast<THStack*>(rings->FindObject("all"));
-  if (!res) { 
-    AliError(Form("Stack all not found in %s", rings->GetName()));
-    return;
+  if (!IsAllBin()) return;
+
+  THStack* res = 0;
+  {
+    AliForwardUtil::SuppressGuard g;
+    TFile* file = TFile::Open("forward.root", "READ");
+    if (!file) return;
+    
+    TList* forward = static_cast<TList*>(file->Get("ForwardSums"));
+    if (!forward) { 
+      AliError("List Forward not found in forward.root");
+      return;
+    }
+    TList* rings = static_cast<TList*>(forward->FindObject("ringResults"));
+    if (!rings) { 
+      AliError("List ringResults not found in forward.root");
+      return;
+    }
+    res = static_cast<THStack*>(rings->FindObject("all"));
+    if (!res) { 
+      AliError(Form("Stack all not found in %s", rings->GetName()));
+      return;
+    }
   }
   if (!fTriggers) { 
     AliError("Triggers histogram not set");
