@@ -163,14 +163,14 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   fUserInfo   = (TList*)fOutputTree->GetUserInfo();
   
   AliMCGenHandler* mcGenHandler           = (AliMCGenHandler*)AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
-  AliGenerator* mcGenerator               = mcGenHandler->GetGenerator();
+  const AliGenerator* mcGenerator         = mcGenHandler->GetGenerator();
   TString mcGeneratorClassName;
   if (mcGenerator)  mcGeneratorClassName  = mcGenerator->ClassName();
   else              mcGeneratorClassName  = "";
   
   if (mcGenerator && mcGeneratorClassName.CompareTo("AliGenEMCocktailV2") == 0) {
     
-    AliGenEMCocktailV2* mcCocktailGen = dynamic_cast<AliGenEMCocktailV2*>(mcGenerator);
+    AliGenEMCocktailV2* mcCocktailGen = (AliGenEMCocktailV2*)mcGenerator;
     
     // has mother i
     SetHasMother((UInt_t)mcCocktailGen->GetSelectedMothers());
