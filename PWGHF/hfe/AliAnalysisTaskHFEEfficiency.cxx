@@ -1,3 +1,4 @@
+#include "TTree.h"
 #include "TChain.h"
 #include "TH2F.h"
 #include "TMath.h"
@@ -606,18 +607,10 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         fITSnsigma->Fill(p,fITSnSigma);
         fTOFnsigma->Fill(p,fTOFnSigma);
         
-        
-        
-        Bool_t MCElectron=kFALSE;
-        Int_t PrimElectron = GetPrimary(trkLabel, mcArray);
-        AliAODMCParticle *AODMCElectron = (AliAODMCParticle*)mcArray->At(PrimElectron);
-        Int_t trkIndexElectron = AODMCElectron->GetLabel();//gives index of the particle in original MCparticle array
-        MCElectron = IsFromBGEventAOD(trkIndexElectron);//check if the particle comes from hijing or from enhanced event
-        if(MCElectron){
-            if(TMath::Abs(MCtrack->GetPdgCode()) == 11){
-                fITSnsigmaElectron->Fill(p,fITSnSigma);
-            }
+        if(TMath::Abs(MCtrack->GetPdgCode()) == 11){
+            fITSnsigmaElectron->Fill(p,fITSnSigma);
         }
+        
         
         //Electron id
         if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
@@ -896,7 +889,7 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fITSnsigma = new TH2F("fITSnsigma", "ITS - n sigma",1000,0,50,400,-20,20);
     fOutputList->Add(fITSnsigma);
     
-    fITSnsigmaElectron = new TH2F("fITSnsigmaElectron", "ITS - n sigma Elect",600,0,6,400,-20,20);
+    fITSnsigmaElectron = new TH2F("fITSnsigmaElectron", "ITS - n sigma Elect",1000,0,50,400,-20,20);
     fOutputList->Add(fITSnsigmaElectron);
     
     fTOFnsigma = new TH2F("fTOFnsigma", "TOF - n sigma",1000,0,50,400,-20,20);
