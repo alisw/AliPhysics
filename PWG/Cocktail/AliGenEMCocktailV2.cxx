@@ -13,7 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliGenEMCocktailV2.cxx 40702 2010-04-26 13:09:52Z morsch $ */
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// Implementation of AliGenEMCocktailV2 for electron, di-electron,         //
+// and photon cocktail calculations.                                       //
+// It is based on AliGenEMCocktail                                         //
+//                                                                         //
+// Responsible: Friederike Bock (friederike.bock@cern.ch)                  //
+//              Lucas Altenkaemper (lucas.altenkamper@cern.ch)             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 
 // Class to create the cocktail for physics with electrons, di-electrons,
 // and photons from the decay of the following sources:

@@ -3,15 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliGenEMlibV2.h 30052 2008-11-25 14:54:18Z morsch $ */
-
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 // Implementation of AliGenEMlibV2 for electron, di-electron, and photon   //
 // cocktail calculations.                                                  //
-// It is based on AliGenGSIlib.                                            //
+// It is based on AliGenEMlib                                              //
 //                                                                         //
-// Responsible: R.Averbeck@gsi.de                                          //
+// Responsible: Friederike Bock (friederike.bock@cern.ch)                  //
+//              Lucas Altenkaemper (lucas.altenkamper@cern.ch)             //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
