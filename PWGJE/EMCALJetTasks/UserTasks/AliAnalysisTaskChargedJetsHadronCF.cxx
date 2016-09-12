@@ -32,6 +32,7 @@
 #include "AliLog.h"
 #include "AliJetContainer.h"
 #include "AliTrackContainer.h"
+#include "AliAODTrack.h"
 #include "AliPicoTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
@@ -81,6 +82,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetOutputMode(0),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
+  fPythiaExtractionMode(0),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -123,6 +125,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetOutputMode(0),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
+  fPythiaExtractionMode(0),
   fEventCriteriumMode(0),
   fEventCriteriumMinBackground(0),
   fEventCriteriumMaxBackground(0),
@@ -523,6 +526,14 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
       partid = fPythiaInfo->GetPartonFlag6();
     else if (jet==fInitialPartonMatchedJet2)
       partid = fPythiaInfo->GetPartonFlag7();
+
+    // If fPythiaExtractionMode is set, only extract certain jets
+    if( (fPythiaExtractionMode==1) && not (partid>=1 && partid<=6)) // all quark-jet extraction
+      return;
+    else if( (fPythiaExtractionMode==2) && not (partid==21)) // gluon-jet extraction
+      return;
+    else if( (fPythiaExtractionMode<0) && (fPythiaExtractionMode!=-partid) ) // custom type jet extraction by given a negative number
+      return;
   }
 
   AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), eventID, fCent);
@@ -531,7 +542,27 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
   {
     AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
     if(!particle) continue;
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+
+    AliAODTrack*  aodtrack = static_cast<AliAODTrack*>(jet->TrackAt(i, fTracksCont->GetArray()));
+    Int_t constid = 9; // 9 mean unknown
+    if(fJetOutputMode==6)
+    {
+      // Use same convention as PID in AODs
+      if(TMath::Abs(particle->PdgCode()) == 2212) // proton
+        constid = 4;
+      else if (TMath::Abs(particle->PdgCode()) == 211) // pion
+        constid = 2;
+      else if (TMath::Abs(particle->PdgCode()) == 321) // kaon
+        constid = 3;
+      else if (TMath::Abs(particle->PdgCode()) == 11) // electron
+        constid = 0;
+      else if (TMath::Abs(particle->PdgCode()) == 13) // muon
+        constid = 1;
+    }
+    else if (aodtrack)
+      constid = aodtrack->GetMostProbablePID();
+
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid);
   }
   if(jet==fMatchedJet) // set the true pT from the matched jets (only possible in modes 4 & 7)
     basicJet.SetTruePt(fMatchedJetReference->Pt());
