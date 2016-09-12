@@ -35,7 +35,8 @@ AliClusterContainer::AliClusterContainer():
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fExoticCut(kTRUE),
-  fDefaultClusterEnergy(-1)
+  fDefaultClusterEnergy(-1),
+  fIncludePHOS(kFALSE)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -54,7 +55,8 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fExoticCut(kTRUE),
-  fDefaultClusterEnergy(-1)
+  fDefaultClusterEnergy(-1),
+  fIncludePHOS(kFALSE)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -315,10 +317,12 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     rejectionReason |= kNullObject;
     return kFALSE;
   }
-      
-  if (!clus->IsEMCAL()) {
-    rejectionReason |= kIsEMCalCut;
-    return kFALSE;
+  
+  Bool_t bInAcceptance = clus->IsEMCAL();
+  if (fIncludePHOS) bInAcceptance = clus->IsEMCAL() || clus->IsPHOS();
+  if (!bInAcceptance) {
+      rejectionReason |= kIsEMCalCut;
+      return kFALSE;
   }
 
   if (clus->TestBits(fBitMap) != (Int_t)fBitMap) {
