@@ -17,9 +17,9 @@ AliBaseAODTask::AliBaseAODTask()
   : AliAnalysisTaskSE(),
     fTriggerMask(0xFFFFFFFF),
     fFilterMask(AliAODForwardMult::kDefaultFilter),
-    fMinIpZ(0),
-    fMaxIpZ(-1),
     fCentAxis(0, 0, -1),
+    fAbsMinCent(-1),
+    fIPzAxis(1,-10,10),
     fTriggers(0),
     fEventStatus(0),
     fVertex(0),
@@ -39,9 +39,9 @@ AliBaseAODTask::AliBaseAODTask(const char* name,
   : AliAnalysisTaskSE(name),
     fTriggerMask(0xFFFFFFFF),
     fFilterMask(AliAODForwardMult::kDefaultFilter),
-    fMinIpZ(0),
-    fMaxIpZ(-1),
     fCentAxis(0, 0, -1),
+    fAbsMinCent(-1),
+    fIPzAxis(1,-10,10),
     fTriggers(0),
     fEventStatus(0),
     fVertex(0),
@@ -131,6 +131,104 @@ AliBaseAODTask::SetFilterMask(UInt_t mask)
   DGUARD(fDebug,3,"Set the filter mask: 0x%0x", mask);
   fFilterMask = mask;
 }
+//====================================================================
+void AliBaseAODTask::FixAxis(TAxis& axis, const char* title)
+{
+  if (title && title[0] != '\0') axis.SetTitle(title);
+  axis. SetNdivisions(210);
+  axis. SetLabelFont(42);
+  axis. SetLabelSize(0.03);
+  axis. SetLabelOffset(0.005);
+  axis. SetLabelColor(kBlack);
+  axis. SetTitleOffset(1);
+  axis. SetTitleFont(42);
+  axis. SetTitleSize(0.04);
+  axis. SetTitleColor(kBlack);
+  axis. SetTickLength(0.03);
+  axis. SetAxisColor(kBlack);
+}
+//____________________________________________________________________
+void AliBaseAODTask::SetAxis(TAxis& axis, Int_t n, Double_t* borders)
+{
+  axis.Set(n, borders);
+  FixAxis(axis);
+}
+//____________________________________________________________________
+void AliBaseAODTask::SetAxis(TAxis&         axis,
+			     const TString& spec,
+			     const char*    sep)
+{
+  TString s(spec);
+  Bool_t isRange = false, isUnit = false;
+  if (s[0] == 'r' || s[0] == 'R') {
+    isRange = true;
+    s.Remove(0,1);
+  }
+  if (s[0] == 'u' || s[0] == 'U') {
+    isUnit = true;
+    s.Remove(0,1);
+  }
+  TObjArray*  tokens = s.Tokenize(sep);
+  TArrayD     bins(tokens->GetEntries());
+  TObjString* token = 0;
+  TIter       next(tokens);
+  Int_t       i = 0;
+  while ((token = static_cast<TObjString*>(next()))) {
+    Double_t v = token->String().Atof();
+    bins[i] = v;
+    i++;
+  }
+  delete tokens;
+  if (isUnit) {
+    if (bins.GetSize() > 1)
+      SetAxis(axis, Int_t(bins[1]-bins[0]), bins[0], bins[1]);
+    else
+      SetAxis(axis, 2*Int_t(bins[0]), bins[0]);
+  }      
+  else if (isRange) {
+    Int_t    nBins = Int_t(bins[0]);
+    if (bins.GetSize() > 2) 
+      SetAxis(axis, nBins, bins[1], bins[2]);
+    else
+      SetAxis(axis, nBins, bins[1]);
+  }
+  else 
+    SetAxis(axis, bins.GetSize()-1,bins.GetArray());
+}
+//____________________________________________________________________
+void AliBaseAODTask::SetAxis(TAxis&   axis,
+			     Int_t    n,
+			     Double_t l,
+			     Double_t h)
+{
+  axis.Set(n, l, h);
+  FixAxis(axis);
+}
+//____________________________________________________________________
+void AliBaseAODTask::SetAxis(TAxis& axis, Int_t n, Double_t m)
+{
+  SetAxis(axis, n, -TMath::Abs(m), +TMath::Abs(m));
+}
+//____________________________________________________________________
+void AliBaseAODTask::PrintAxis(const TAxis& axis,
+			       Int_t nSig,
+			       const char* alt)
+{
+  gROOT->IndentLevel();
+  TString tit(alt ? alt : axis.GetTitle());
+  tit.Append(" axis:");
+  printf(" %-26s ", tit.Data());
+  if (axis.GetXbins() && axis.GetXbins()->GetArray()) {
+    printf("%.*f", nSig, axis.GetBinLowEdge(1));
+    for (Int_t i = 1; i <= axis.GetNbins(); i++)
+      printf(":%.*f", nSig, axis.GetBinUpEdge(i));
+  }
+  else
+    printf("%d bins between %.*f and %.*f",
+	   axis.GetNbins(), nSig, axis.GetXmin(),nSig,axis.GetXmax());
+  printf("\n");
+}
+
 //________________________________________________________________________
 void
 AliBaseAODTask::SetCentralityAxis(UShort_t n, Short_t* bins)
@@ -139,44 +237,7 @@ AliBaseAODTask::SetCentralityAxis(UShort_t n, Short_t* bins)
   TArrayD dbins(n+1);
   for (UShort_t i = 0; i <= n; i++)
     dbins[i] = (bins[i] == 100 ? 100.1 : bins[i]);
-  fCentAxis.Set(n, dbins.GetArray());
-
-}
-//____________________________________________________________________
-namespace {
-  Double_t GetEdge(const TString& str, Int_t start, Int_t end)
-  {
-    TString sub(str(start, end));
-    return sub.Atof();
-  }
-  Bool_t ExtractBins(const TString& spec, TArrayD& edges)
-  {
-    TArrayD tmp(200);
-    Int_t   start = 0;
-    Int_t   cnt   = 0;
-    for (Int_t i=1; i<spec.Length(); i++) {
-      if (spec[i] == '-' || spec[i] == ':') {
-  Double_t c = GetEdge(spec, start, i);
-  if (cnt > 0 && c < tmp[cnt-1]) {
-    Warning("ExtractBins",
-      "Invalid edge @ %d: %f (< %f)", cnt, c, tmp[cnt-1]);
-  tmp.Set(0);
-  return false;
-  }
-  tmp[cnt] = c;
-  i++;
-  start = i;
-  cnt++;
-      }
-    }
-    if (start+1 != spec.Length()) {
-      Double_t c = GetEdge(spec, start, spec.Length());
-      tmp[cnt] = c;
-      cnt++;
-    }
-    edges.Set(cnt, tmp.GetArray());
-    return true;
-  }
+  SetAxis(fCentAxis, n, dbins.GetArray());
 }
 
 //________________________________________________________________________
@@ -193,20 +254,19 @@ AliBaseAODTask::SetCentralityAxis(const char* bins)
   TArrayD edges;
   if (spec.EqualTo("default", TString::kIgnoreCase) ||
       spec.EqualTo("pbpb", TString::kIgnoreCase)) {
-    //                 1  2  3   4   5   6   7   8   9   10  11
-    Double_t tmp[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
-    edges.Set(11, tmp);
+    //                 1  2  3   4   5   6   7   8   9   10  11  12
+    Double_t tmp[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+    SetAxis(fCentAxis,11,tmp);
+    return;
   }
   else if (spec.EqualTo("ppb", TString::kIgnoreCase) ||
-     spec.EqualTo("pbp", TString::kIgnoreCase)) {
+	   spec.EqualTo("pbp", TString::kIgnoreCase)) {
     //                 1  2  3   4   5   6   7   8
     Double_t tmp[] = { 0, 5, 10, 20, 40, 60, 80, 100 };
-    edges.Set(8, tmp);
+    SetAxis(fCentAxis,7, tmp);
+    return;
   }
-  else {
-    ExtractBins(spec, edges);
-  }
-  SetCentralityAxis(edges.GetSize()-1, edges.GetArray());
+  SetAxis(fCentAxis,bins);
 }
 
 //________________________________________________________________________
@@ -214,14 +274,14 @@ void
 AliBaseAODTask::SetCentralityAxis(UShort_t n, Double_t* bins)
 {
   DGUARD(fDebug,3,"Set centrality axis, %d bins", n);
-  fCentAxis.Set(n, bins);
+  SetAxis(fCentAxis, n, bins);
 }
 //________________________________________________________________________
 void
 AliBaseAODTask::SetCentralityAxis(Short_t low, Short_t high)
 {
   Short_t a[] = { low, high };
-  SetCentralityAxis(1, a);
+  SetAxis(fCentAxis, (high-low), low, high);
 }
 
 //____________________________________________________________________
@@ -504,6 +564,7 @@ AliBaseAODTask::UserExec(Option_t *)
   Float_t  cent  = GetCentrality(*aod, forward);
   fVertex->Fill(vtx);
   fCent->Fill(cent);
+  if (HasCentrality() && fAbsMinCent >= 0 && cent < fAbsMinCent) return;
 
   // Now check our event selectio up front
   if (!CheckEvent(*forward)) return;
@@ -531,14 +592,22 @@ Bool_t
 AliBaseAODTask::CheckEvent(const AliAODForwardMult& forward)
 {
   if (HasCentrality()) {
-    return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
+    return forward.CheckEvent(fTriggerMask,
+			      fIPzAxis.GetXmin(),
+			      fIPzAxis.GetXmax(),
 			      fCentAxis.GetXmin(),
 			      fCentAxis.GetXmax(),
-			      fTriggers, fEventStatus,
+			      fTriggers,
+			      fEventStatus,
 			      fFilterMask);
 }
-  return forward.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ,
-			    0, 0, fTriggers, fEventStatus,
+  return forward.CheckEvent(fTriggerMask, 
+			    fIPzAxis.GetXmin(),
+			    fIPzAxis.GetXmax(),
+			    0,
+			    0,
+			    fTriggers,
+			    fEventStatus,
 			    fFilterMask);
 }
 
@@ -606,18 +675,11 @@ AliBaseAODTask::Print(Option_t* /*option=""*/) const
    */
   AliForwardUtil::PrintTask(*this);
   gROOT->IncreaseDirLevel();
-  PFV("Trigger mask",  AliAODForwardMult::GetTriggerString(fTriggerMask));
-  PFV("Filter mask",   AliAODForwardMult::GetTriggerString(fFilterMask,"|"));
-  PF("IP z range", "%++6.1f - %+6.1f", fMinIpZ, fMaxIpZ);
-  PFV("Centrality bins", (HasCentrality() ? "" : "none"));
-  gROOT->IndentLevel();
-  if (HasCentrality()) {
-    Int_t           nBins = fCentAxis.GetNbins();
-    const Double_t* bins  = fCentAxis.GetXbins()->GetArray();
-    for (Int_t i = 0; i <= nBins; i++)
-      std::cout << (i==0 ? " " : "-") << bins[i];
-    std::cout << std::endl;
-  }
+  PFV("Trigger mask",   AliAODForwardMult::GetTriggerString(fTriggerMask));
+  PFV("Filter mask",    AliAODForwardMult::GetTriggerString(fFilterMask,"|"));
+  PFV("Abs.least cent", fAbsMinCent);
+  PrintAxis(fIPzAxis,  1, "IP z");
+  PrintAxis(fCentAxis, 0, "Centraltiy");
   gROOT->DecreaseDirLevel();
 }
 //

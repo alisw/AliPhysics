@@ -843,7 +843,7 @@ protected:
     Int_t    nBins = xAxis->GetNbins();
     Double_t xMin  = xAxis->GetXmin();
     Double_t xMax  = xAxis->GetXmax();
-    TIter  next(o->GetHists());
+    TIter    next(o->GetHists());
     while ((h = static_cast<TH1*>(next()))) {
       TAxis* a = h->GetXaxis();
       nBins    = TMath::Max(nBins, a->GetNbins()); 
@@ -856,6 +856,7 @@ protected:
       xAxis->Set(nBins, xMin, xMax);
       o->GetHistogram()->Rebuild();
     }
+    o->GetHistogram()->SetYTitle(title);
     return o;
   }
   /** 
@@ -1450,9 +1451,10 @@ protected:
    */
   void Pause()
   {
-    if (!fPause) return;
-    printf("Press enter to continue");
-    std::cin.get();
+    if (!fPause) return;    
+    // printf("Press space to continue");
+    fCanvas->WaitPrimitive();
+    // std::cin.get();
   }
   static void CompileScript(const TString& name, 
 			    const TString& sub, 

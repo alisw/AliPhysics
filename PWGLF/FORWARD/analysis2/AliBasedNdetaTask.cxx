@@ -6,6 +6,7 @@
 #include <TF1.h>
 #include <THStack.h>
 #include <TList.h>
+#include <TProfile.h>
 #include <AliAnalysisManager.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
@@ -18,6 +19,101 @@
 #include <TROOT.h>
 #include <TParameter.h>
 #include <TColor.h>
+
+//====================================================================
+namespace {
+  /** 
+   * Get bin number corresponding to the passed centrality 
+   * 
+   * @param c1 Least centrality 
+   * @param c2 Largest centrality 
+   * 
+   * @return Bin number 
+   */
+  Int_t PbPbBin(Double_t c1, Double_t c2)
+  {
+    Double_t c = (c1+c2) / 2;
+    if      (c <  5) return 0;
+    else if (c < 10) return 1;
+    else if (c < 20) return 2;
+    else if (c < 30) return 3;
+    else if (c < 40) return 4;
+    else if (c < 50) return 5;
+    else if (c < 60) return 6;
+    else if (c < 70) return 7;
+    else if (c < 80) return 8;
+    else if (c < 90) return 9;
+    return                  10;
+  }
+  //__________________________________________________________________
+  /** 
+   * Get the centrality color for PbPb 
+   * 
+   * @param c1 Lower edge
+   * @param c2 Upper edge
+   * 
+   * @return Color 
+   */
+  Color_t PbPbColor(Double_t c1, Double_t c2)
+  {
+    const Color_t cc[] = { kMagenta+2,           // 0
+			   kBlue+2,              // 1
+			   kAzure-1,             // 2
+			   kCyan+2,              // 3
+			   kGreen+1,             // 4
+			   kSpring+5,            // 5
+			   kYellow+1,            // 6
+			   kOrange+5,            // 7
+			   kRed+1,               // 8
+			   kPink+5,              // 9
+			   kBlack };             // 10
+    Int_t bin = PbPbBin(c1,c2);
+    return cc[bin];
+  }
+  //__________________________________________________________________
+  /** 
+   * Get bin number corresponding to the passed centrality 
+   * 
+   * @param c1 Least centrality 
+   * @param c2 Largest centrality 
+   * 
+   * @return Bin number 
+   */
+  Int_t pPbBin(Double_t c1, Double_t c2)
+  {
+    Double_t c   = (c1+c2) / 2;
+    if      (c <   5) return 0;
+    else if (c <  10) return 1;
+    else if (c <  20) return 2;
+    else if (c <  40) return 3;
+    else if (c <  60) return 4;
+    else if (c <  80) return 5;
+    else if (c < 100) return 6;
+    return                   7;
+  }
+  //__________________________________________________________________
+  /** 
+   * Get the centrality color pPb 
+   * 
+   * @param c1 Lower edge
+   * @param c2 Upper edge
+   * 
+   * @return Color 
+   */
+  Color_t pPbColor(Double_t c1, Double_t c2)
+  {
+    const Color_t cc[] = { kMagenta+2, // 0
+                           kBlue+2,    // 1
+                           kCyan+2,    // 2
+                           kGreen+1,   // 3
+                           kYellow+1,  // 4
+                           kRed+1,     // 5 
+                           kPink+5,    // 6 
+                           kBlack };   // 7
+    Int_t bin = pPbBin(c1,c2);
+    return cc[bin];
+  }
+}
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
@@ -74,9 +170,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
   // 
   DGUARD(fDebug, 3,"Named CTOR of AliBasedNdetaTask: %s", name);
 
+  SetIPzAxis(10,-10,+10);
   fTriggerMask        = AliAODForwardMult::kInel;
-  fMinIpZ             = -10;
-  fMaxIpZ             = +10;
   fListOfCentralities = new TObjArray(1);
   fListOfCentralities->SetName("centralityBins");
   // fListOfCentralities->SetTitle("Centrality bins");
@@ -128,6 +223,13 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Float_t low, Float_t high)
   }
   bin->SetSatelliteVertices(fSatelliteVertices);
   bin->SetDebugLevel(fDebug);
+  Color_t color = (bin->IsAllBin() ? kBlack : kGray+1);
+  if (HasCentrality() && !(high <= low) && (high <= 100)) {
+    if  (fCentAxis.GetNbins() > 7) color = PbPbColor(low,high);
+    else                           color = pPbColor (low,high);
+  }
+  DMSG(fDebug, 3, "Color of bin %d", color);
+  bin->SetColor(color);
   fListOfCentralities->AddAtAndExpand(bin, at);
 }
 
@@ -420,27 +522,25 @@ AliBasedNdetaTask::Book()
       
       fSeenCent = new TH1D("centSeen", "Centralities seen",
 			    a.GetSize()-1, a.GetArray());
-      fMeanVsC=new TH2D("sumVsC",
-			"Integral vs centrality",
-			a.GetSize()-1, a.GetArray(),
-			400, 0, 20000);			
+      fMeanVsC=new TProfile("sumVsC",
+			    "Integral vs centrality",
+			    a.GetSize()-2, a.GetArray());	
     }
     else {
       fSeenCent = new TH1D("centSeen", "Centralities seen",
 			   fCentAxis.GetNbins()+1,
 			   fCentAxis.GetXmin(),
 			   fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));
-      fMeanVsC=new TH2D("sumVsC",
-			"Integral vs centrality",
-			fCentAxis.GetNbins()+1,
-			fCentAxis.GetXmin(),
-			fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1),
-			400, 0, 20000);			
+      fMeanVsC=new TProfile("sumVsC",
+			    "Integral vs centrality",
+			    fCentAxis.GetNbins()+1,
+			    fCentAxis.GetXmin(),
+			    fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));
     }
   }
   else {
-    fSeenCent = new TH1D("centSeen", "Null",1, 0, 100);
-    fMeanVsC = new TH2D("sumVsC", "Null",1,0,20000,1,0,100);
+    fSeenCent = new TH1D("centSeen", "Null",1,0,100);
+    fMeanVsC = new TProfile("sumVsC", "Null",1,0,100);
   }
   fSeenCent->SetDirectory(0);
   fSeenCent->SetXTitle(Form("Centrality (%s) [%%]",fCentMethod.Data()));
@@ -449,7 +549,11 @@ AliBasedNdetaTask::Book()
   fSeenCent->SetFillColor(kYellow-2);
   fMeanVsC->SetDirectory(0);
   fMeanVsC->SetXTitle(fSeenCent->GetXaxis()->GetTitle());
-  fMeanVsC->SetYTitle("#int signal");  
+  fMeanVsC->SetYTitle("#LT#int signal#GT");
+  fMeanVsC->SetMarkerStyle(20);
+  fMeanVsC->SetMarkerColor(kRed+1);
+  fMeanVsC->SetLineColor(kRed+1);
+  
 
   fTakenCent = static_cast<TH1D*>(fSeenCent->Clone("centTaken"));
   fTakenCent->SetTitle("Centralities taken by bins");
@@ -472,8 +576,14 @@ AliBasedNdetaTask::CheckEvent(const AliAODForwardMult& fwd)
   if (!fCentMethod.BeginsWith("MULT")) 
     AliBaseAODTask::CheckEvent(fwd);
   else
-    fwd.CheckEvent(fTriggerMask, fMinIpZ, fMaxIpZ, 
-		   0, 0, fTriggers, fEventStatus, fFilterMask);
+    fwd.CheckEvent(fTriggerMask,
+		   fIPzAxis.GetXmin(),
+		   fIPzAxis.GetXmax(),
+		   0,
+		   0,
+		   fTriggers,
+		   fEventStatus,
+		   fFilterMask);
 
   // Here, we always return true, as the centrality bins will do 
   // their own checks on the events - this is needed for event 
@@ -491,9 +601,13 @@ AliBasedNdetaTask::GetCentrality(AliAODEvent&       event,
 	 fCentMethod.Data());
   if (fCacheCent > -1) {
     // In case we already got the centrality, don't do it again
-    DMSG(fDebug,1,"Returning cached value: %5.1f%%", fCent);
+    DMSG(fDebug,1,"Returning cached value: %5.1f%%", fCacheCent);
     qual = fCacheQual;
     return fCacheCent;
+  }
+  if (fCentMethod.EqualTo("none")) {
+    fCacheQual = 0;
+    return fCacheCent = 0;
   }
   qual            = 0;
   Float_t cent    = AliBaseAODTask::GetCentrality(event,forward,qual);
@@ -560,7 +674,8 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   // Loop over centrality bins 
   CentralityBin* allBin = 
     static_cast<CentralityBin*>(fListOfCentralities->At(0));
-  if (allBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, fMaxIpZ, 
+  if (allBin->ProcessEvent(forward, fTriggerMask, isZero,
+			   fIPzAxis.GetXmin(), fIPzAxis.GetXmax(),
 			   data, dataMC, fFilterMask, ipzW)) taken = true;
   
   // Find this centrality bin
@@ -578,7 +693,8 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
 				AliAODForwardMult::kCentNoCalib) ?
 	 "out-of-calib" : "in-calib");
     
-    Int_t          icent   = fCentAxis.FindBin(cent);    
+    Int_t          icent   = fCentAxis.FindBin(cent);
+    DMSG(fDebug,1,"Centrality %5.2f%% maps to bin %d", cent, icent);
     if (icent == (fCentAxis.GetNbins()+1) &&
 	TMath::Abs(cent-fCentAxis.GetXmax()) < 1e-6)
       // Make sure that upper edge is analysed 
@@ -587,7 +703,9 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
     if (icent >= 1 && icent <= fCentAxis.GetNbins()) 
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin && thisBin->ProcessEvent(forward, fTriggerMask,
-					 isZero, fMinIpZ,  fMaxIpZ,
+					 isZero,
+					 fIPzAxis.GetXmin(),
+					 fIPzAxis.GetXmax(), 
 					 data, dataMC, fFilterMask, ipzW)) 
       taken = true;
     if (taken) fTakenCent->Fill(cent);
@@ -596,7 +714,9 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
     CentralityBin* fullBin = 
       static_cast<CentralityBin*>(fListOfCentralities->At(nbins+1));
     if (fullBin && fullBin->ProcessEvent(forward, fTriggerMask, isZero,
-					 fMinIpZ, fMaxIpZ, data, dataMC,
+					 fIPzAxis.GetXmin(),
+					 fIPzAxis.GetXmax(), 
+					 data, dataMC,
 					 fFilterMask, ipzW))
       fSeenCent->Fill(cent);
   }
@@ -835,6 +955,7 @@ AliBasedNdetaTask::Finalize()
   TList* truthlist = 0;
   
   if (fFinalMCCorrFile.Contains(".root")) {
+    AliForwardUtil::SuppressGuard g;
     TFile* ftest = TFile::Open(fFinalMCCorrFile.Data());
     if(ftest) {
       mclist    = dynamic_cast<TList*>(ftest->Get(Form("%sResults",GetName())));
@@ -851,10 +972,12 @@ AliBasedNdetaTask::Finalize()
     bin->End(fSums, fResults, fNormalizationScheme, fTriggerEff, fTriggerEff0, 
 	     fUseROOTProj, fCorrEmpty, fTriggerMask, 
 	     style, color, mclist, truthlist);
-    if (HasCentrality() && bin->IsAllBin()) 
+    if (HasCentrality() && bin->IsAllBin()) {
       // If we have centrality bins, do not add the min-bias
       // distribution to the output stack.
+      AliWarning("Skipping MB bin since we have centrality");
       continue;
+    }
     TH1* dndeta      = bin->GetResult("");
     TH1* dndetaMC    = bin->GetResult("MC", false);
     TH1* dndetaEmp   = bin->GetResult("Emp", false);
@@ -879,6 +1002,9 @@ AliBasedNdetaTask::Finalize()
   if (dndetaMCStack) fResults->Add(dndetaMCStack);
 
   // If available, output track-ref stack
+  DMSG(0,fDebug,"Emp stack: %p (%d)", dndetaEmpStack,
+       dndetaEmpStack->GetHists() && dndetaEmpStack->GetHists()->GetEntries()
+       ? dndetaEmpStack->GetHists()->GetEntries() : -1);
   if (!dndetaEmpStack->GetHists() || 
       dndetaEmpStack->GetHists()->GetEntries() <= 0) {
     // AliWarning("No MC histograms found");
@@ -918,7 +1044,8 @@ AliBasedNdetaTask::Finalize()
   centEstimator->SetUniqueID(centID);
   fResults->Add(&fCentAxis);
   fResults->Add(centEstimator);
-
+  fResults->Add(AliForwardUtil::MakeParameter("absMinCent", fAbsMinCent));
+  
   // Output trigger string 
   if (trig) { 
     TNamed* maskObj = new TNamed("trigger",
@@ -929,7 +1056,8 @@ AliBasedNdetaTask::Finalize()
   // Output filter string 
   if (filter) { 
     TNamed* maskObj = new TNamed("filter",
-				 AliAODForwardMult::GetTriggerString(filter, " | "));
+				 AliAODForwardMult::GetTriggerString(filter,
+								     " | "));
     maskObj->SetUniqueID(filter);
     fResults->Add(maskObj); 
   }
@@ -943,10 +1071,12 @@ AliBasedNdetaTask::Finalize()
   }
 
   // Output vertex axis 
-  TAxis* vtxAxis = new TAxis(1,fMinIpZ,fMaxIpZ);
-  vtxAxis->SetName("vtxAxis");
-  vtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", fMinIpZ,fMaxIpZ));
-  fResults->Add(vtxAxis);
+  fIPzAxis.SetName("vtxAxis");
+  fIPzAxis.SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm",
+			 fIPzAxis.GetXmin(),
+			 fIPzAxis.GetXmax()));
+  TAxis* ipzAxis = static_cast<TAxis*>(fIPzAxis.Clone());
+  fResults->Add(ipzAxis);
 
   // Output trigger efficiency 
   fResults->Add(AliForwardUtil::MakeParameter("triggerEff", fTriggerEff));
@@ -959,6 +1089,13 @@ AliBasedNdetaTask::Finalize()
   options->SetTitle(str);
   fResults->Add(options);
 
+  TObject* sumVsC = fSums->FindObject("sumVsC");
+  if (sumVsC) {
+    fMeanVsC = static_cast<TProfile*>(sumVsC->Clone());
+    fMeanVsC->SetDirectory(0);
+    fResults->Add(fMeanVsC);
+  }
+  
   return true;
 }
 
@@ -1127,7 +1264,8 @@ AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
 void
 AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero, Double_t weight)
 {
-  DGUARD(fDebug,2,"Adding %s to sums", data->GetName());
+  DGUARD(fDebug,2,"Adding %s to sums w/weight %f (%f)",
+	 data->GetName(),weight,data->Integral());
   if (isZero) fSum0->Add(data, weight);
   else        fSum->Add(data, weight);
   fEvents->Fill(isZero ? 1 : 0);
@@ -1430,7 +1568,9 @@ namespace {
 Int_t
 AliBasedNdetaTask::CentralityBin::GetColor(Int_t fallback) const 
 {
-  if (IsAllBin()) return fallback;
+  return fColor;
+#if 0
+  if (IsAllBin()) return kBlack; // fallback;
   Float_t  fc       = /*(fLow+double(fHigh-fLow)/2)*/ fHigh / 100;
   Int_t    nCol     = gStyle->GetNumberOfColors();
   Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
@@ -1440,6 +1580,7 @@ AliBasedNdetaTask::CentralityBin::GetColor(Int_t fallback) const
   col = Brighten(orig);
 #endif
   return col;
+#endif 
 }
 
 //____________________________________________________________________
@@ -1572,7 +1713,12 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
   //
   if (!forward) return false;
 
-  DGUARD(fDebug,2,"Check the event");
+  DGUARD(fDebug,2,"Check the event "
+	 "IPz: %f < %f < %f  Trigger: 0x%08x (masked 0x%08x  vetoed 0x%08x)",
+	 vzMin, forward->GetIpZ(), vzMax,
+	 forward->GetTriggerBits(),
+	 forward->GetTriggerBits() & triggerMask,
+	 forward->GetTriggerBits() & filter);
   // We do not check for centrality here - it's already done 
   Bool_t ret = forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
 				   fTriggers, fStatus, filter);
@@ -1606,7 +1752,8 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //    weight      Event weight 
   //
   DGUARD(fDebug,1,"Process one event for %s a given centrality bin " 
-	 "[%5.1f%%,%5.1f%%)", data ? data->GetName() : "(null)", fLow, fHigh);
+	 "[%5.1f%%,%5.1f%%) w/weight %f",
+	 data ? data->GetName() : "(null)", fLow, fHigh, weight);
   if (!CheckEvent(forward, triggerMask, vzMin, vzMax, filter)) 
     return false;
   if (!data) return false;
@@ -1753,26 +1900,54 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   TString tN = t.GetXaxis()->GetBinLabel(AliAODForwardMult::kWithTrigger);
   tN.ReplaceAll("w/Selected trigger (","");
   tN.ReplaceAll(")", "");
+  Int_t d = fDebug;
   DMSG(fDebug,0,"\n"
        " Total of        %9d events for %s\n"
        "  of these       %9d have an offline trigger\n"
-       "  of these N_T = %9d has the selected trigger (%s)\n" 
-       "  of these N_V = %9d has a vertex\n" 
-       "  of these N_A = %9d were in the selected range\n"
+       "  of these N_T = %9d has the selected trigger (%s)\n"
+       "  of these N_V = %9d has a vertex\n"
+       "  of these N_A = %9d were in the selected range",
+       Int_t(nAll), GetTitle(),
+       Int_t(nOffline),
+       Int_t(nTriggered), tN.Data(),
+       Int_t(nWithVertex),
+       Int_t(nAccepted));       
+  DMSG(fDebug,0,"\n"
        "  Triggers by hardware type:\n"
        "    N_b   =  %9d\n"
        "    N_ac  =  %9d (%d+%d)\n"
-	       "    N_e   =  %9d\n"
+       "    N_e   =  %9d\n"
        "  Vertex efficiency:          %f\n"
        "  Trigger efficiency:         %f\n"
        "  Total number of events: N = %f\n"
        "  Scaler (N_A/N):             %f\n"
-       "  %25s = %f",
-       Int_t(nAll), GetTitle(), Int_t(nOffline), 
-       Int_t(nTriggered), tN.Data(), 
-       Int_t(nWithVertex), Int_t(nAccepted),
-       Int_t(nB), Int_t(nA+nC), Int_t(nA), Int_t(nC), Int_t(nE), 
-       vtxEff, trigEff, ntotal, scaler, rhs.Data(), ntotal);
+       "  %-25s = %f",
+       Int_t(nB),
+       Int_t(nA+nC),Int_t(nA),Int_t(nC),
+       Int_t(nE),
+       vtxEff,
+       trigEff,
+       ntotal,
+       scaler,
+       rhs.Data(), ntotal);
+#if 0
+  DMSG(d,0,"\n"
+       " Total of        %9d events for %s", Int_t(nAll), GetTitle());
+  DMSG(d,0,"  of these       %9d have an offline trigger", Int_t(nOffline));
+  DMSG(d,0,"  of these N_T = %9d has the selected trigger (%s)",
+       Int_t(nTriggered), tN.Data());
+  DMSG(d,0,"  of these N_V = %9d has a vertex",Int_t(nWithVertex));
+  DMSG(d,0,"  of these N_A = %9d were in the selected range",Int_t(nAccepted));
+  DMSG(d,0,"  Triggers by hardware type:");
+  DMSG(d,0,"    N_b   =  %9d",                Int_t(nB));
+  DMSG(d,0,"    N_ac  =  %9d (%d+%d)",        Int_t(nA+nC),Int_t(nA),Int_t(nC));
+  DMSG(d,0,"    N_e   =  %9d",                Int_t(nE));
+  DMSG(d,0,"  Vertex efficiency:          %f",vtxEff);
+  DMSG(d,0,"  Trigger efficiency:         %f",trigEff);
+  DMSG(d,0,"  Total number of events: N = %f",ntotal);
+  DMSG(d,0,"  Scaler (N_A/N):             %f",scaler);
+  DMSG(fDebug, 0,"  %-25s = %f", rhs.Data(), ntotal);
+#endif 
   return scaler;
 }
 

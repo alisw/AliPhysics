@@ -294,8 +294,6 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;
-  
-  
 
   // Get FMD data 
   AliESDFMD*  esdFMD  = esd.GetFMDData();
