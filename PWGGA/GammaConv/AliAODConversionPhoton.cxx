@@ -208,12 +208,12 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
   Int_t particleMotherNDaugthers      = 0;
   Int_t particleGrandMotherNDaugthers = 0;
   if (particleMotherLabel > -1){
-    particleMotherNDaugthers          = MCStack->Particle(particleMotherLabel)->GetNDaughters();
-    particleGrandMotherLabel          = MCStack->Particle(particleMotherLabel)->GetMother(0);
-    particleMotherPDG = MCStack->Particle(particleMotherLabel)->GetPdgCode();
+    particleMotherNDaugthers          = MCStack->Particle(Photon->GetMother(0))->GetNDaughters();
+    particleGrandMotherLabel          = MCStack->Particle(Photon->GetMother(0))->GetMother(0);
+    particleMotherPDG = MCStack->Particle(Photon->GetMother(0))->GetPdgCode();
     if (particleGrandMotherLabel > -1){
-      particleGrandMotherPDG          = MCStack->Particle(MCStack->Particle(particleGrandMotherLabel)->GetPdgCode();
-      particleGrandMotherNDaugthers   = MCStack->Particle(MCStack->Particle(particleGrandMotherLabel)->GetNDaughters();
+      particleGrandMotherPDG          = MCStack->Particle(MCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode();
+      particleGrandMotherNDaugthers   = MCStack->Particle(MCStack->Particle(Photon->GetMother(0))->GetMother(0))->GetNDaughters();
     }	
   }
 

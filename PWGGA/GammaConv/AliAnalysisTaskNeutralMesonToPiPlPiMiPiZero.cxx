@@ -2157,8 +2157,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
 					if(particle->GetPdgCode() == 221)fHistoMCEtaPiPlPiMiPiZeroPt[fiCut]->Fill(particle->Pt(), weighted); 						// All MC Eta in respective decay channel
 					if(particle->GetPdgCode() == 223)fHistoMCOmegaPiPlPiMiPiZeroPt[fiCut]->Fill(particle->Pt(), weighted); 						// All MC Omega in respective decay channel
 
-                    if(labelNeutPion>-1 && neutPion->GetDaughter(0)>-1 && neutPion->GetDaughter(1)>-1){
-                      TParticle *neutPion    = fMCStack->Particle(labelNeutPion);
+                    if(labelNeutPion>-1){
+                     TParticle *neutPion    = fMCStack->Particle(labelNeutPion);
+                     if(neutPion->GetDaughter(0)>-1 && neutPion->GetDaughter(1)>-1){
                       TParticle *gamma1 = fMCStack->Particle(neutPion->GetDaughter(0));
                       TParticle *gamma2 = fMCStack->Particle(neutPion->GetDaughter(1));
                       Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, neutPion->GetDaughter(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -2188,6 +2189,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
                           }
                       }
                     }
+                  }
 				}
 			}
 		}	
