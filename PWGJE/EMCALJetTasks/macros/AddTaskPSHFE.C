@@ -45,7 +45,9 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
 
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("EMCal7%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
 
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("EMCalJet%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("EMCalEGA%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("EMCalJet%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
 
 
 
@@ -54,6 +56,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
     mgr->ConnectOutput(PSHFEtask, 1, coutput1);
     mgr->ConnectOutput(PSHFEtask, 2, coutput2);
     mgr->ConnectOutput(PSHFEtask, 3, coutput3);
+    mgr->ConnectOutput(PSHFEtask, 4, coutput4);
 
     return PSHFEtask;
 }
