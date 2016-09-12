@@ -77,23 +77,24 @@ struct TrainSetup
       fOptions(),
       fRailway(0)
   {
-    fOptions.Add("help",   "Show help",                                  false);
-    fOptions.Add("date",   "YYYY-MM-DD HH:MM", "Set date",               "now");
-    fOptions.Add("ps",     "MODE",             "Physics selection mode", "");
-    fOptions.Add("verbose","LEVEL",            "Set verbosity level",    0);
-    fOptions.Add("url",    "URL",              "Job location & input URL","");
-    fOptions.Add("overwrite","Allow overwrite",                          false);
-    fOptions.Add("events", "N",             "Number of events to analyse",-1);
-    fOptions.Add("type",   "ESD|AOD|USER",     "Input data stype",       "");
-    fOptions.Add("setup",  "Only do the setup",                          false);
-    fOptions.Add("branches","Load only requested branches",              false);
-    fOptions.Add("version","Print version and exit",                     false);
-    fOptions.Add("tender", "WHICH",            "Specify tender supplies","");
-    fOptions.Add("ocdb",   "(TENDER_SNAPSHOT)","Enable OCDB",            "");
+    fOptions.Add("help",     "Show help",                               false);
+    fOptions.Add("date",     "YYYY-MM-DD HH:MM", "Set date",            "now");
+    fOptions.Add("ps",       "MODE",             "Physics selection mode", "");
+    fOptions.Add("verbose",  "LEVEL",            "Set verbosity level",    0);
+    fOptions.Add("url",      "URL",              "Job location & input URL","");
+    fOptions.Add("overwrite","Allow overwrite",                         false);
+    fOptions.Add("events",   "N",             "Number of events to analyse",-1);
+    fOptions.Add("type",     "ESD|AOD|USER",     "Input data stype",    "");
+    fOptions.Add("setup",    "Only do the setup",                       false);
+    fOptions.Add("branches", "Load only requested branches",            false);
+    fOptions.Add("version",  "Print version and exit",                  false);
+    fOptions.Add("tender",   "WHICH",            "Specify tender supplies","");
+    fOptions.Add("ocdb",     "(TENDER_SNAPSHOT)","Enable OCDB",            "");
     fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
     fOptions.Add("cent-oadb","PERIOD","Alternative OADB for centrality","");
-    fOptions.Add("no-link","Do not make symlink to output",              false);
-    fOptions.Add("old-cent","Add old centrality task to train",          false);
+    fOptions.Add("no-link",  "Do not make symlink to output",           false);
+    fOptions.Add("old-cent", "Add old centrality task to train",        false);
+    fOptions.Add("aod-cent", "Recalculate centrality in AODs",          false);
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -761,6 +762,11 @@ protected:
     AliVEventHandler*   inp = mgr->GetInputEventHandler();
     if (!inp) return;
 
+    // Check if input is AOD.  Do not add MultSelection task, unless
+    // explicitly stated.
+    Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
+    if (isAOD && !fOptions.AsBool("aod-cent")) return;
+    
     // Possibly load as PAR
     LoadOADB();
     
@@ -794,11 +800,7 @@ protected:
 			"AOD:header,vertices,AliAODTZERO,AliAODVZERO,"
 			"AliAODZDC,AliAODAD");
     }
-    if (!fOptions.Has("old-cent")) return;
-    
-    
-    // Check if input is AOD 
-    Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
+    if (!fOptions.Has("old-cent")) return;    
     if (isAOD) return;
     
     task = CoupleSECar("AddTaskCentrality.C",

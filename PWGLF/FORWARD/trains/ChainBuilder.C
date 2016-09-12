@@ -105,7 +105,7 @@ struct ChainBuilder
     }
 
     // --- check file type -------------------------------------------
-    TString type(gSystem->GetFromPipe(Form("file -b %s", src.Data())));
+    TString type(gSystem->GetFromPipe(Form("file -b -L %s", src.Data())));
     if ((flags & kVerbose))
       Info("ChainBuilder::CheckSource", "file -b %s -> %s", 
 	   tmp.Data(), type.Data());
