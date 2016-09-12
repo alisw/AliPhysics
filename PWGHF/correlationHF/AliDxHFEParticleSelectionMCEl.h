@@ -117,7 +117,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Bool_t fUseGenerator;                // whether or not to check generator for particle
   Int_t fGenerator;                    // which generator was used to produce particle
   Bool_t fUseHIJINGOnly;               // Selecing only tracks generated from HIJING (used eg for LHC13d3)
-
+  Int_t fSystem;                       // whether running on pp(0,default), PbPb(1) or pPb(2)
   ClassDef(AliDxHFEParticleSelectionMCEl, 6);
 };
 

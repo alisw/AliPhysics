@@ -66,6 +66,7 @@ AliDxHFEParticleSelectionMCEl::AliDxHFEParticleSelectionMCEl(const char* opt)
   , fUseGenerator(kFALSE)
   , fGenerator(-1)
   , fUseHIJINGOnly(kFALSE)
+  , fSystem(0)
 {
   // constructor
   // 
@@ -200,25 +201,43 @@ THnSparse* AliDxHFEParticleSelectionMCEl::DefineTHnSparse()
     thn=(THnSparse*)CreateControlTHnSparse(name,thnSizeExt,thnBinsExt,thnMinExt,thnMaxExt,thnNamesExt);
   }
   else{
+    if(!fUseGenerator){
+      const int thnSize =4;
+      InitTHnSparseArray(thnSize);
+      
+      // TODO: Redo binning of distributions more?
+      //     		       0       1      2     3            
+      // 	 	               Pt     Phi   Eta   mother
+      int    thnBins[thnSize] = { 50,  100, 100, nrMotherEl+1 };
+      double thnMin [thnSize] = {   0,    0, -1.,  -1.5 };
+      double thnMax [thnSize] = {  10, 2*Pi,  1.,nrMotherEl-0.5 };
+      const char* thnNames[thnSize]={
+	"Pt",
+	"Phi",
+	"Eta", 
+	"Mother" //bin==-1: Not MC truth electron
 
-    const int thnSize =5;
-    InitTHnSparseArray(thnSize);
-
-    // TODO: Redo binning of distributions more?
-    //     		       0       1      2     3           4 
-    // 	 	               Pt     Phi   Eta   mother     generator 
-    int    thnBins[thnSize] = { 50,  100, 100, nrMotherEl+1,      4  };
-    double thnMin [thnSize] = {   0,    0, -1.,  -1.5    ,     -1.5 };
-    double thnMax [thnSize] = {  10, 2*Pi,  1.,nrMotherEl-0.5,  2.5};
-    const char* thnNames[thnSize]={
-      "Pt",
-      "Phi",
-      "Eta", 
-      "Mother", //bin==-1: Not MC truth electron
-      "Generator"
-    };
-    thn=(THnSparse*)CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
-
+      };
+      thn=(THnSparse*)CreateControlTHnSparse(name,thnSize,thnBins,thnMin,thnMax,thnNames);
+    }else{
+      const int thnSizeGen =5;
+      InitTHnSparseArray(thnSizeGen);
+      
+      // TODO: Redo binning of distributions more?
+      //     		       0       1      2     3           4 
+      // 	 	               Pt     Phi   Eta   mother     generator 
+      int    thnBins[thnSizeGen] = { 50,  100, 100, nrMotherEl+1,      4  };
+      double thnMin [thnSizeGen] = {   0,    0, -1.,  -1.5    ,     -1.5 };
+      double thnMax [thnSizeGen] = {  10, 2*Pi,  1.,nrMotherEl-0.5,  2.5};
+      const char* thnNames[thnSizeGen]={
+	"Pt",
+	"Phi",
+	"Eta", 
+	"Mother", //bin==-1: Not MC truth electron
+	"Generator"
+      };
+      thn=(THnSparse*)CreateControlTHnSparse(name,thnSizeGen,thnBins,thnMin,thnMax,thnNames);
+    }
   }
   return thn;
 }
@@ -241,7 +260,7 @@ int AliDxHFEParticleSelectionMCEl::FillParticleProperties(AliVParticle* p, Doubl
   data[i++]=p->Eta();
   if (trRP) data[i++]=trRP->GetOriginMother();
   else data[i++]=fOriginMother;
-  data[i]=fGenerator;
+  if(fUseGenerator)data[i++]=fGenerator;//i++ or only i here?
   i++; // take out of conditionals to be save
   if (i<dimension) {
     if(fStoreCutStepInfo) data[i]=GetLastSurvivedCutsStep();
@@ -445,57 +464,61 @@ int AliDxHFEParticleSelectionMCEl::CheckMC(AliVParticle* p, const AliVEvent* pEv
       
   if(fUseGenerator){
     //    originvsGen=-1; 
-   
-    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(p);
-    if(!aodtrack) {cout << "no AODtrack" << endl; return -1;}
-	   
-    if(fUseKine){
-      fMCTools.GetTrackPrimaryGenerator(aodtrack,nameGen,kTRUE);
-    }
-    else{
-      fMCTools.GetTrackPrimaryGenerator(aodtrack,nameGen);
-    }
-  
-
-    if(nameGen.Contains("ijing")){
-      //cout << "hijing generator" << endl;
-      fGenerator=1;
-    }
-    else if(nameGen.Contains("ythia")){
-      //cout << "pythia generator" << endl;
-      fGenerator=2;
+    if(fSystem!=2){   
+      AliAODTrack *aodtrack = static_cast<AliAODTrack *>(p);
+      if(!aodtrack) {cout << "no AODtrack" << endl; return -1;}
+      
+      if(fUseKine){
+	fMCTools.GetTrackPrimaryGenerator(aodtrack,nameGen,kTRUE);
+      }
+      else{
+	fMCTools.GetTrackPrimaryGenerator(aodtrack,nameGen);
+      }
+      
+      
+      if(nameGen.Contains("ijing")){
+	//cout << "hijing generator" << endl;
+	fGenerator=1;
+      }
+      else if(nameGen.Contains("ythia")){
+	//cout << "pythia generator" << endl;
+	fGenerator=2;
+      }
+    }else{ //pPb case
+      //Remove tracks that are not from the HIJING generator, e.g., in LHC13d3 which has an enhaced sample from PYTHIA. 
+      //Selecting only HIJING lets the sample be used as a minimum bias sample
+      //Be vary of how this is set for D0 as well
+      
+	AliAODMCHeader* mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+	AliAODMCParticle *mcpart=dynamic_cast<AliAODMCParticle*>(p);
+	AliAODTrack *aodtrack = static_cast<AliAODTrack *>(p);
+	TClonesArray *mcArray = dynamic_cast<TClonesArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	
+	if(fUseKine){ //Kine
+	  Bool_t fromhijing = kFALSE;
+	  Int_t Prim = GetPrimary((mcpart->GetLabel()), mcArray);
+	  AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)mcArray->At(Prim);
+	  Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle
+	  if(IsFromBGEventAOD(trkIndexPrim, pEvent)) fromhijing = kTRUE;//check if the particle comes from hijing or from enhanced event
+	  if(!fromhijing){
+	    fGenerator=2;
+	    if(fUseHIJINGOnly){return 0;}
+	  }else{fGenerator=1;}
+	}else{ //Reco
+	  Bool_t MCElectron=kFALSE;
+	  Int_t trkLabel = TMath::Abs(p->GetLabel());
+	  AliAODMCParticle *MCtrack = (AliAODMCParticle*)mcArray->At(trkLabel);
+	  Int_t PrimElectron = GetPrimary(trkLabel, mcArray);
+	  AliAODMCParticle *AODMCElectron = (AliAODMCParticle*)mcArray->At(PrimElectron);
+	  Int_t trkIndexElectron = AODMCElectron->GetLabel();//gives index of the particle in original MCparticle array
+	  MCElectron = IsFromBGEventAOD(trkIndexElectron, pEvent);//check if the particle comes from hijing or from enhanced event
+	  if(!MCElectron){
+	    fGenerator=2;
+	    if(fUseHIJINGOnly){return 0;}
+	  }else{fGenerator=1;}
+	}
     }
   }
-  //Remove tracks that are not from the HIJING generator, e.g., in LHC13d3 which has an enhaced sample from PYTHIA. 
-  //Selecting only HIJING lets the sample be used as a minimum bias sample
-  //Be vary of how this is set for D0 as well
- 
-  if(fUseHIJINGOnly){
-    AliAODMCHeader* mcHeader = dynamic_cast<AliAODMCHeader*>(pEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    AliAODMCParticle *mcpart=dynamic_cast<AliAODMCParticle*>(p);
-    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(p);
-    TClonesArray *mcArray = dynamic_cast<TClonesArray*>(pEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    
-    
-    if(fUseKine){ //Kine
-      Bool_t fromhijing = kFALSE;
-      Int_t Prim = GetPrimary((mcpart->GetLabel()), mcArray);
-      AliAODMCParticle *AODMCtrackPrim = (AliAODMCParticle*)mcArray->At(Prim);
-      Int_t trkIndexPrim = AODMCtrackPrim->GetLabel();//gives index of the particle in original MCparticle
-      if(IsFromBGEventAOD(trkIndexPrim, pEvent)) fromhijing = kTRUE;//check if the particle comes from hijing or from enhanced event
-      if(!fromhijing){return 0;}
-    }else{ //Reco
-      Bool_t MCElectron=kFALSE;
-      Int_t trkLabel = TMath::Abs(p->GetLabel());
-      AliAODMCParticle *MCtrack = (AliAODMCParticle*)mcArray->At(trkLabel);
-      Int_t PrimElectron = GetPrimary(trkLabel, mcArray);
-      AliAODMCParticle *AODMCElectron = (AliAODMCParticle*)mcArray->At(PrimElectron);
-      Int_t trkIndexElectron = AODMCElectron->GetLabel();//gives index of the particle in original MCparticle array
-      MCElectron = IsFromBGEventAOD(trkIndexElectron, pEvent);//check if the particle comes from hijing or from enhanced event
-      if(!MCElectron){return 0;}
-    }  
-  }
-  
   return 1;
 }
 
@@ -549,6 +572,7 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
 	else if(argument.CompareTo("aftertofpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOF;
 	else if(argument.CompareTo("aftertpcpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTPC;
 	else if(argument.CompareTo("afterfullpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOFTPC;
+	else if(argument.CompareTo("afterselection")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kSelected;
 	else AliFatal(Form("unknown argument '%s'", argument.Data()));
 
 	AliDxHFEParticleSelectionEl::SetFinalCutStep(fSelectionStep);
@@ -615,7 +639,20 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
     }
     if(argument.BeginsWith("useHIJINGOnly")){
       AliInfo("Select source also based on generator");
-      fUseHIJINGOnly=kTRUE;	    
+      fUseHIJINGOnly=kTRUE;
+      fUseGenerator=kTRUE;
+      continue;
+    }
+    if (argument.BeginsWith("system=")) {
+      argument.ReplaceAll("system=", "");
+      if (argument.CompareTo("pp")==0) {fSystem=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2;}
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
+      }
       continue;
     }
     // forwarding of single argument works, unless key-option pairs separated
@@ -648,7 +685,6 @@ Bool_t AliDxHFEParticleSelectionMCEl::IsFromBGEventAOD(Int_t Index,  const AliVE
         return (0);
     }
     fNBG = hijingH->NProduced();
-    
     return (Index < fNBG);
 }
 Int_t AliDxHFEParticleSelectionMCEl::GetPrimary(Int_t id, TClonesArray *mcArray){
