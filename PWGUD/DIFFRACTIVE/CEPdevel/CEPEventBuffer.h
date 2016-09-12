@@ -31,7 +31,7 @@ class CEPEventBuffer : public TObject {
     void SetEventNumber(Int_t evnum)    { fEventNumber = evnum; }
     void SetnumResiduals(Int_t nres)    { fnumResiduals = nres; }
     void SetGapCondition(Int_t gapcond) { fGapCondition = gapcond; }
-    void SetPileup(Boolt_t isPileup)    { fisPileup = isPileup; }
+    void SetPileup(Bool_t isPileup)    { fisPileup = isPileup; }
     void AddTrack(CEPTrackBuffer* trk);
     
     // Accessors

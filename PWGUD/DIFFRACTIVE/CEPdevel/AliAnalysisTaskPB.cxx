@@ -1758,6 +1758,8 @@ Bool_t AliAnalysisTaskPB::DetermineGap()
 	fCurrentGapCondition = 0x0; // initialize gap condition
 
 	if (fDoAOD) {
+		// AODs
+    
 		AliAODHandler* aodHandler =
 			(AliAODHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 		TTree *aodTree = aodHandler->GetTree();
@@ -1787,7 +1789,9 @@ Bool_t AliAnalysisTaskPB::DetermineGap()
 		//printf("AliAnalysisTaskPB - gapcondition=0x%x\n", fCurrentGapCondition);
 	}
 	else {
-		if (fAnalysisStatus & AliPBBase::kBitReadPreprocessedGap) {
+		// ESDs
+    
+    if (fAnalysisStatus & AliPBBase::kBitReadPreprocessedGap) {
 			// retrieve preprocessed gap information
 			AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
 			TTree* esdTree = am->GetInputEventHandler()->GetTree(); // get ESD tree
@@ -1814,7 +1818,7 @@ Bool_t AliAnalysisTaskPB::DetermineGap()
 	}
   //printf("gapCondition: %i\n",fCurrentGapCondition);
 
-	// disentagle the contributions to the gap conditions of different "tightness"
+	// disentangle the contributions to the gap conditions of different "tightness"
 	fGapInformation[kV0] =
 		AliPBBase::GetGapBin("V0", fCurrentGapCondition, kFALSE);
 	fGapInformation[kV0FMD] =

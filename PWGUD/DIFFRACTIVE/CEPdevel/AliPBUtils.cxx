@@ -551,8 +551,8 @@ Int_t AliPBUtils::GetGapConfig(const AliESDEvent *ESDEvent,
 	//
 	// GetGapConfigAndTracks
 	//
-	// retrieves the gap configuration of a track and returns it as
-	// an bit vector
+	// retrieves the gap configuration of an event and returns it as
+	// a bit vector
 	// kBaseLine ensures, that this event is valid
 	// + is equivalent to | in this case
   //
@@ -711,7 +711,7 @@ Int_t AliPBUtils::GetFMD(const AliESDEvent *ESDEvent, TH2 *hitMapFMDa,
 	const Bool_t fmdC =
 		triggerAnalysis.FMDTrigger(ESDEvent, AliTriggerAnalysis::kCSide);
 
-	//printf("FR - GetFMD\n");
+	printf("<I - GetFMD> %i (A) : %i (C) \n",fmdA,fmdC);
 
 	// prepartions for a charge summation algorithm
 	Bool_t hitMaps = (Bool_t)(hitMapFMDa && hitMapFMDc);
