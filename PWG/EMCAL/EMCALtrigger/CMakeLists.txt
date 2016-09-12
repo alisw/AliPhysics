@@ -56,7 +56,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MOD
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils EMCALTriggerBase ESD PWGTools PWGEMCALbase STEER STEERBase Tender)
+set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALbase EMCALrec EMCALUtils EMCALTriggerBase ESD PWGTools PWGEMCALbase STEER STEERBase Tender)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

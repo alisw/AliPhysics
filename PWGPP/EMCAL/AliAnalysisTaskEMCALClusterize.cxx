@@ -401,7 +401,72 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     
     delete contTRF;
   } // Time recalibration on    
-  
+    
+  // L1 Phase Time Recalibration
+  if( fRecoUtils->IsL1PhaseInTimeRecalibrationOn() )
+  {  
+    // init default maps first
+    if (!fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationArray())
+      fRecoUtils->InitEMCALL1PhaseInTimeRecalibration() ;
+    
+    AliOADBContainer *contBC = new AliOADBContainer("");
+        
+    TFile *timeFile=new TFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"read");
+    if (!timeFile || timeFile->IsZombie())
+    {
+      AliFatal(Form("EMCALTimeL1PhaseCalib.root was not found in the path provided: %s",fOADBFilePath.Data()));
+      return ;
+    }  
+    
+    if (timeFile) delete timeFile;
+    
+    contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePath.Data()),"AliEMCALTimeL1PhaseCalib");    
+    
+    TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
+    if (!arrayBC)
+    {
+      AliError(Form("No external L1 phase in time calibration set for run number: %d", runnumber));
+      fRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
+    }
+    else
+    {
+      // Here, it looks for a specific pass
+      TString pass2 = pass;
+      if (pass=="calo_spc") pass2 ="pass1";
+      if (pass=="muon_calo_pass1") pass2 ="pass0";
+      if (pass=="muon_calo_pass2" || pass=="pass2" || pass=="pass3" || pass=="pass4") pass2 ="pass1";
+      
+      TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass2);
+      if (!arrayBCpass)
+      {
+        AliError(Form("No external L1 phase in time calibration set for: %d -%s", runnumber,pass2.Data()));
+        fRecoUtils->SwitchOffL1PhaseInTimeRecalibration();
+      }
+      else AliInfo("Recalibrate L1 Phase time");
+            
+      if(arrayBCpass)
+      {
+        if ( DebugLevel()>0 ) arrayBCpass->Print();
+        
+        TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+        if (h) delete h;
+        
+        h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runnumber));
+        
+        if (!h) 
+        {
+          AliFatal(Form("There is no calibration histogram h%d for this run",runnumber));
+          return;
+        }
+        
+        h->SetDirectory(0);
+        fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
+      }
+    }
+
+    delete contBC;
+  }   // L1 Phase Time Recalibration
+    
   // Parameters already set once, so do not it again
   fOADBSet = kTRUE;
 }  

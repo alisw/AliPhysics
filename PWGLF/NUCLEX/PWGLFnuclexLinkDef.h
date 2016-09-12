@@ -35,8 +35,6 @@
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
-/// * TRDabsorption
-#pragma link C++ class AliAnalysisTaskAbsorptionStudies+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
 

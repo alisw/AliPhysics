@@ -105,6 +105,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet::PseudoJet>& constituents,
                                              std::vector<fastjet::PseudoJet>& constituents_sub, Int_t flag = 0, TClonesArray *particles_sub = 0);
 
+  UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
+  
   Int_t                  GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub);
 
   Bool_t                 IsLocked() const;
@@ -126,7 +128,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   ExecuteUtilities(AliEmcalJet* jet, Int_t ij);
   void                   TerminateUtilities();
   Bool_t                 GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
-  UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   Bool_t                 IsJetInEmcal(Double_t eta, Double_t phi, Double_t r);
   Bool_t                 IsJetInDcal(Double_t eta, Double_t phi, Double_t r);
 

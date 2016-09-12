@@ -2,7 +2,7 @@
 ***********************************************************
   Implementation of AliReducedEventCut class.
   Contact: iarsene@cern.ch
-  2015/09/10
+  2016/09/07
   *********************************************************
 */
 
@@ -10,22 +10,14 @@
 #include "AliReducedEventCut.h"
 #endif
 
-#include "AliReducedEventInfo.h"
+#include "AliReducedBaseEvent.h"
+#include "AliReducedVarManager.h"
 
 ClassImp(AliReducedEventCut)
 
 //____________________________________________________________________________
 AliReducedEventCut::AliReducedEventCut() :
-  AliReducedInfoCut(),
-  fEventTagMask(0),
-  fCutOnEventTag(kFALSE),  
-  fTriggerMask(0),
-  fCutOnTriggerMask(kFALSE),
-  fVertexZRange(),
-  fCutOnVertexZ(kFALSE),
-  fCentVZERORange(),
-  fCutOnCentralityVZERO(kFALSE),
-  fCutOnPhysicsSelection(kFALSE)
+  AliReducedVarCut()
 {
   //
   // default constructor
@@ -34,16 +26,7 @@ AliReducedEventCut::AliReducedEventCut() :
 
 //____________________________________________________________________________
 AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) :
-  AliReducedInfoCut(name, title),
-  fEventTagMask(0),
-  fCutOnEventTag(kFALSE),  
-  fTriggerMask(0),
-  fCutOnTriggerMask(kFALSE),
-  fVertexZRange(),
-  fCutOnVertexZ(kFALSE),
-  fCentVZERORange(),
-  fCutOnCentralityVZERO(kFALSE),
-  fCutOnPhysicsSelection(kFALSE)
+  AliReducedVarCut(name, title)
 {
   //
   // named constructor
@@ -62,18 +45,22 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj) {
   //
   // apply cuts
   //
-   if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE; 
-   AliReducedBaseEvent* baseEv = (AliReducedBaseEvent*)obj;
-   
-  AliReducedEventInfo* ev = NULL;
-  if(obj->IsA()==AliReducedEventInfo::Class()) ev = (AliReducedEventInfo*)obj;
-    
-  if(fCutOnEventTag && !(fEventTagMask&baseEv->EventTag())) return kFALSE;
-  if(fCutOnVertexZ && (baseEv->Vertex(2)<fVertexZRange[0] || baseEv->Vertex(2)>fVertexZRange[1])) return kFALSE;
-  if(fCutOnCentralityVZERO && (baseEv->CentralityVZERO()<fCentVZERORange[0] || baseEv->CentralityVZERO()>fCentVZERORange[1])) return kFALSE;
-  if(ev && fCutOnTriggerMask && !(fTriggerMask&ev->TriggerMask())) return kFALSE;
-  if(ev && fCutOnPhysicsSelection && !ev->IsPhysicsSelection()) return kFALSE;
+  if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE;
   
-  return kTRUE;
+  //Fill values
+  Float_t values[AliReducedVarManager::kNVars];
+  AliReducedVarManager::FillEventInfo((AliReducedBaseEvent*)obj, values);
+  
+  return IsSelected(obj, values);
 }
 
+
+//____________________________________________________________________________
+Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
+   //
+   // apply cuts
+   //      
+   if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE;
+   
+   return AliReducedVarCut::IsSelected(obj, values);   
+}

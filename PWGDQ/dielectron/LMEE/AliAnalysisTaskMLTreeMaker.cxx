@@ -265,9 +265,9 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("PsigTOF", &PsigTOF);
   }
   if(fKaonSigmas){
-    fTree->Branch("KsigTPC", &PsigTPC);
-    fTree->Branch("KsigITS", &PsigITS);
-    fTree->Branch("KsigTOF", &PsigTOF);
+    fTree->Branch("KsigTPC", &KsigTPC);
+    fTree->Branch("KsigITS", &KsigITS);
+    fTree->Branch("KsigTOF", &KsigTOF);
   }
   
   fTree->Branch("DCAxy", &dcar);
@@ -329,9 +329,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   if(hasMC){
     AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    AliMCEvent* mcEvent = mchandler->MCEvent();
-
-    fMcArray = mcEvent;
+    fMcArray = mchandler->MCEvent();
   // get the accepted tracks in main event
 
   }

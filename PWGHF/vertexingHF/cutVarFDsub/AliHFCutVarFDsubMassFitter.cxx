@@ -68,14 +68,48 @@ AliHFCutVarFDsubMassFitter::~AliHFCutVarFDsubMassFitter() {
 
 
 void AliHFCutVarFDsubMassFitter::ObtainMassHistogram() {
+  Int_t SymmCutAxisCounter=0;
+  for (Int_t iCut=0; iCut<fCutSet->GetEntries(); ++iCut) {
+    AliHFCutVarFDsubCut* cut = fCutSet->GetCut(iCut);
+    AliHFCutVarFDsubAxis* axis = (AliHFCutVarFDsubAxis*)fAxes->At(cut->fAxisId);
+    if(axis->IsCutSymmetric() && cut->fHigh != -cut->fLow)
+      SymmCutAxisCounter++;
+  }
+  if(SymmCutAxisCounter==0) { // if none of the axis has a two-region cut symmetric with respect to zero just project
+    fMassHist = (TH1F*)ProjectDataSparse(kFALSE);
+  }
+  else { // else get the histograms corresponding to the two symmetric regions and sum them
+    TH1F* hRegion1 = (TH1F*)ProjectDataSparse(kFALSE);
+    TH1F* hRegion2 = (TH1F*)ProjectDataSparse(kTRUE);
+    fMassHist=(TH1F*)hRegion1->Clone();
+    fMassHist->Add(hRegion1,hRegion2,1.,1.);
+    delete hRegion1;
+    hRegion1=0x0;
+    delete hRegion2;
+    hRegion2=0x0;
+  }
+  fMassHist->Rebin(fCutSet->fFitRebin);
+}
+
+
+TH1F* AliHFCutVarFDsubMassFitter::ProjectDataSparse(Bool_t reflectedaxes) {
   for (Int_t iCut=0; iCut<fCutSet->GetEntries(); ++iCut) {
     AliHFCutVarFDsubCut* cut = fCutSet->GetCut(iCut);
     AliHFCutVarFDsubAxis* axis = (AliHFCutVarFDsubAxis*)fAxes->At(cut->fAxisId);
     UInt_t axisNo = axis->GetAxisNo(AliHFCutVarFDsubAxis::kData);
+    Bool_t isCutSymm = axis->IsCutSymmetric();
     if (axisNo<(UInt_t)-1) {
       TAxis* ax = fTHn->GetAxis(axisNo);
-      Int_t binMin = ax->FindBin(cut->fLow*1.0001);
-      Int_t binMax = ax->FindBin(cut->fHigh*0.9999);
+      Int_t binMin;
+      Int_t binMax;
+      if(reflectedaxes && isCutSymm) {
+        binMin = ax->FindBin(-cut->fHigh*1.0001);
+        binMax = ax->FindBin(-cut->fLow*0.9999);
+      }
+      else {
+        binMin = ax->FindBin(cut->fLow*1.0001);
+        binMax = ax->FindBin(cut->fHigh*0.9999);
+      }
       ax->SetRange(binMin, binMax);
     }
   }
@@ -83,8 +117,9 @@ void AliHFCutVarFDsubMassFitter::ObtainMassHistogram() {
   Int_t binMin=fTHn->GetAxis(0)->FindBin(fCutSet->fFitLow*1.0001);
   Int_t binMax=fTHn->GetAxis(0)->FindBin(fCutSet->fFitHigh*0.9999);
   fTHn->GetAxis(0)->SetRange(binMin,binMax);
-  fMassHist = (TH1F*)fTHn->Projection(0);
-  fMassHist->Rebin(fCutSet->fFitRebin);
+  TH1F* hProj = (TH1F*)fTHn->Projection(0);
+
+  return hProj;
 }
 
 

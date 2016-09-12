@@ -137,8 +137,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
     if(!MultBins){
       cutEventUtils->SetCheckIncompleteDAQ();
       cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-      cutEventUtils->SetCheckInelGt0SPDtracklets();
     }else{
+      //cutEventUtils->SetCheckInelGt0SPDtracklets();
       cutEventUtils->SetRemovePileUppA2013(kFALSE);
       cutEventUtils->SetCheckAcceptedMultSelection();
     }

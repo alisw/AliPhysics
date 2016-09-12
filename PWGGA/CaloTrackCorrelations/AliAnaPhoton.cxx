@@ -56,7 +56,8 @@ fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0),
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fPrimaryMom(),               fProdVertex(),
-fConstantTimeShift(0),
+fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
+
 // Histograms
 
 // Control histograms
@@ -290,6 +291,14 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
   {
     fhLam0PerNLargeTimeInClusterCell[ilarge] = 0;
     fhLam1PerNLargeTimeInClusterCell[ilarge] = 0;
+  }
+  
+  for(Int_t i = 0; i < 14; i++)
+  {
+    fhEBinClusterEtaPhi[i] = 0 ;
+    fhEBinClusterColRow[i] = 0 ;    
+    fhEBinClusterEtaPhiPID[i] = 0 ;
+    fhEBinClusterColRowPID[i] = 0 ;
   }
   
   // Initialize parameters
@@ -3006,6 +3015,45 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     } // conversion vertex
   } // Histos with MC
   
+  if(fFillEBinAcceptanceHisto)
+  {
+    for(Int_t ie=0; ie<fNEBinCuts; ie++)
+    {
+      fhEBinClusterEtaPhi[ie] = new TH2F
+      (Form("hEBin%d_Cluster_EtaPhi",ie),
+       Form("#eta vs #phi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEBinClusterEtaPhi[ie]->SetYTitle("#phi (rad)");
+      fhEBinClusterEtaPhi[ie]->SetXTitle("#eta");
+      outputContainer->Add(fhEBinClusterEtaPhi[ie]) ;
+      
+      fhEBinClusterColRow[ie] = new TH2F
+      (Form("hEBin%d_Cluster_ColRow",ie),
+       Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhEBinClusterColRow[ie]->SetYTitle("row");
+      fhEBinClusterColRow[ie]->SetXTitle("column");
+      outputContainer->Add(fhEBinClusterColRow[ie]) ;
+
+      fhEBinClusterEtaPhiPID[ie] = new TH2F
+      (Form("hEBin%d_Cluster_EtaPhi_PID",ie),
+       Form("#eta vs #phi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}, PID cut",fEBinCuts[ie],fEBinCuts[ie+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhEBinClusterEtaPhiPID[ie]->SetYTitle("#phi (rad)");
+      fhEBinClusterEtaPhiPID[ie]->SetXTitle("#eta");
+      outputContainer->Add(fhEBinClusterEtaPhiPID[ie]) ;
+      
+      fhEBinClusterColRowPID[ie] = new TH2F
+      (Form("hEBin%d_Cluster_ColRow_PID",ie),
+       Form("column vs row, cluster max E cell, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}, PID cut",fEBinCuts[ie],fEBinCuts[ie+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhEBinClusterColRowPID[ie]->SetYTitle("row");
+      fhEBinClusterColRowPID[ie]->SetXTitle("column");
+      outputContainer->Add(fhEBinClusterColRowPID[ie]) ;
+    }
+  }
+
+  
   return outputContainer ;
 }
 
@@ -3039,6 +3087,14 @@ void AliAnaPhoton::InitParameters()
   fNCellsCut   = 0;
 	
   fRejectTrackMatch       = kTRUE ;
+  
+  fNEBinCuts = 14;
+  fEBinCuts[0] = 0.;  fEBinCuts[1] = 0.3;  fEBinCuts[2] = 0.5;
+  fEBinCuts[3] = 1.;  fEBinCuts[4] = 2. ;  fEBinCuts[5] = 3. ;
+  fEBinCuts[6] = 4.;  fEBinCuts[7] = 5. ;  fEBinCuts[8] = 7. ;
+  fEBinCuts[9] = 9.;  fEBinCuts[10]= 12.;  fEBinCuts[11]= 15.;
+  fEBinCuts[12]= 20.; fEBinCuts[13]= 50.;  fEBinCuts[14]= 100.;
+  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;
 }
 
 //_______________________________________
@@ -3223,6 +3279,33 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t nSM = GetModuleNumber(calo);
     aodph.SetSModNumber(nSM);
 
+    Float_t en  = fMomentum.E ();
+    Float_t pt  = fMomentum.Pt();
+    Float_t eta = fMomentum.Eta();
+    Float_t phi = GetPhi(fMomentum.Phi());
+    Int_t ebin = -1;
+    for(Int_t ie = 0; ie < fNEBinCuts; ie++)
+    {
+      if( en >= fEBinCuts[ie] && en < fEBinCuts[ie+1] ) ebin = ie;
+    }
+    
+    Int_t icolAbs = -1, irowAbs = -1;
+    if(fFillEBinAcceptanceHisto)
+    {
+      Float_t maxCellFraction = 0;
+      Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells,calo,maxCellFraction);
+      
+      Int_t icol = -1, irow = -1, iRCU = -1; 
+      GetModuleNumberCellIndexesAbsCaloMap(absIdMax,GetCalorimeter(), icol, irow, iRCU, icolAbs, irowAbs);
+      
+      if(ebin>=0 && ebin < fNEBinCuts) 
+      {
+        fhEBinClusterEtaPhi[ebin]->Fill(eta,phi,GetEventWeight()) ;
+        
+        fhEBinClusterColRow[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+      }
+    }
+
     //-------------------------------------
     // PID selection or bit setting
     //-------------------------------------
@@ -3256,12 +3339,18 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     AliDebug(1,Form("Photon selection cuts passed: pT %3.2f, pdg %d",aodph.Pt(),aodph.GetIdentifiedParticleType()));
     
-      
-    Float_t en = fMomentum.E ();
-    Float_t pt = fMomentum.Pt();
-
     fhClusterCutsE [9]->Fill(en, GetEventWeight());
     fhClusterCutsPt[9]->Fill(pt, GetEventWeight());
+    
+    if(fFillEBinAcceptanceHisto)
+    {  
+      if(ebin>=0 && ebin < fNEBinCuts) 
+      {
+        fhEBinClusterEtaPhiPID[ebin]->Fill(eta,phi,GetEventWeight()) ;
+        
+        fhEBinClusterColRowPID[ebin]->Fill(icolAbs,irowAbs,GetEventWeight()) ;
+      }
+    }
     
     if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
@@ -3319,7 +3408,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   // printf("++++++++++ GetEventCentrality() %f\n",cen);
   
   Float_t ep  = GetEventPlaneAngle();
-  
+
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
     AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));

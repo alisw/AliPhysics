@@ -43,6 +43,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
+  void SetAODMismatchProtection(Bool_t opt=kTRUE) {fAODProtection=opt;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   
@@ -107,6 +108,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
+  Bool_t  fAODProtection;             /// flag to activate protection against AOD-dAOD mismatch
   UChar_t fNPtBins;                   /// number of Pt bins
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
@@ -125,7 +127,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[3]: Selected FD Ds
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,16);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,17);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

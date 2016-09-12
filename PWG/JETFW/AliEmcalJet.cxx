@@ -58,7 +58,8 @@ AliEmcalJet::AliEmcalJet() :
   fLabel(-1),
   fHasGhost(kFALSE),
   fGhosts(),
-  fJetShapeProperties(0)
+  fJetShapeProperties(0),
+  fJetAcceptanceType(0)
 {
   fClosestJets[0] = 0;
   fClosestJets[1] = 0;
@@ -107,7 +108,8 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fLabel(-1),
   fHasGhost(kFALSE),
   fGhosts(),
-  fJetShapeProperties(0)
+  fJetShapeProperties(0),
+  fJetAcceptanceType(0)
 {
   if (fPt != 0) {
     fPhi = TVector2::Phi_0_2pi(TMath::ATan2(py, px));
@@ -211,7 +213,7 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fHasGhost(jet.fHasGhost),
   fGhosts(jet.fGhosts),
   fJetShapeProperties(0),
-  fJetAcceptanceType(0)
+  fJetAcceptanceType(jet.fJetAcceptanceType)
 {
   // Copy constructor.
   fClosestJets[0]     = jet.fClosestJets[0];

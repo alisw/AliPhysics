@@ -89,6 +89,15 @@ class AliDielectronTGReducedTrack : public TObject {
   Double_t  ESDV0Mass() const {return  fESDV0Mass; }
   Double_t  ESDV0R() const {return  fESDV0R; }
   Double_t  ESDV0Phi() const {return  fESDV0Phi; }
+  Double_t  ESDV0PsiPair() const {return  fESDV0PsiPair; }
+  Double_t  ESDV0PhivPair() const {return  fESDV0PhivPair; }
+  Double_t  ESDV0CosP() const {return  fESDV0CosP; }                              
+  Double_t  ESDV0ArmAlpha() const {return  fESDV0ArmAlpha; }                         
+  Double_t  ESDV0ArmPt() const {return  fESDV0ArmPt; }                              
+  Double_t  ESDV0OA() const {return  fESDV0OA; }                              
+  Double_t  ESDV0Xv() const {return  fESDV0Xv; }                              
+  Double_t  ESDV0Yv() const {return  fESDV0Yv; }                              
+  Double_t  ESDV0Zv() const {return  fESDV0Zv; }                              
   Int_t  V0Conv() const {return  fV0Conv; }
   Int_t  V0ConvID2() const {return  fV0ConvID2; }
   Double_t  V0Mass() const {return  fV0Mass; }
@@ -167,6 +176,15 @@ class AliDielectronTGReducedTrack : public TObject {
   void  ESDV0Mass(Double_t val){ fESDV0Mass=val;}
   void  ESDV0R(Double_t val){ fESDV0R=val;}
   void  ESDV0Phi(Double_t val){ fESDV0Phi=val;}
+  void  ESDV0PsiPair(Double_t val){ fESDV0PsiPair=val;}
+  void  ESDV0PhivPair(Double_t val){ fESDV0PhivPair=val;}
+  void  ESDV0CosP(Double_t val){ fESDV0CosP=val;}
+  void  ESDV0ArmAlpha(Double_t val){ fESDV0ArmAlpha=val;}
+  void  ESDV0ArmPt(Double_t val){ fESDV0ArmPt=val;}
+  void  ESDV0OA(Double_t val){ fESDV0OA=val;}
+  void  ESDV0Xv(Double_t val){ fESDV0Xv=val;}
+  void  ESDV0Yv(Double_t val){ fESDV0Yv=val;}
+  void  ESDV0Zv(Double_t val){ fESDV0Zv=val;}
   void  V0Conv(Int_t val){ fV0Conv=val;}
   void  V0ConvID2(Int_t val){ fV0ConvID2=val;}
   void  V0Mass(Double_t val){ fV0Mass=val;}
@@ -245,6 +263,15 @@ class AliDielectronTGReducedTrack : public TObject {
   Double_t fESDV0Mass; // this track in V0 on the fly reconstructed 
   Double_t fESDV0R; // this track in V0 on the fly reconstructed 
   Double_t fESDV0Phi; // this track in V0 on the fly reconstructed 
+  Double_t fESDV0PsiPair; // psi pair
+  Double_t fESDV0PhivPair; // phiv pair
+  Double_t fESDV0CosP; // CosPointingAngle
+  Double_t fESDV0ArmAlpha; // ArmAlpha
+  Double_t fESDV0ArmPt; // ArmPt
+  Double_t fESDV0OA; // Opening Angle
+  Double_t fESDV0Xv; // Xv
+  Double_t fESDV0Yv; // Yv
+  Double_t fESDV0Zv; // Zv
   Int_t fV0Conv; // this track in V0 and passed PCM task
   Int_t fV0ConvID2; // counter part of fV0Conv
   Double_t fV0Mass; // V0 Mass

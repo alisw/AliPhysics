@@ -32,8 +32,7 @@ AliReducedAnalysisTest::AliReducedAnalysisTest() :
   //
   // default constructor
   //
-   fHistosManager->SetUseDefaultVariableNames(kTRUE);
-   fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
+   
 }
 
 
@@ -51,8 +50,6 @@ AliReducedAnalysisTest::AliReducedAnalysisTest(const Char_t* name, const Char_t*
    fEventCuts.SetOwner(kTRUE);
    fTrackCuts.SetOwner(kTRUE);
    fPairCuts.SetOwner(kTRUE);
-   fHistosManager->SetUseDefaultVariableNames(kTRUE);
-   fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
 }
 
 
@@ -116,7 +113,9 @@ void AliReducedAnalysisTest::Init() {
   //
   // initialize stuff
   //
-  
+   AliReducedVarManager::SetDefaultVarNames();
+   fHistosManager->SetUseDefaultVariableNames(kTRUE);
+   fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames,AliReducedVarManager::fgVariableUnits);
 }
 
 

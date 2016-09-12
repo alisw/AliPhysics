@@ -31,6 +31,7 @@ set(SRCS
   AliFemtoShareQualityKTPairCut.cxx
   AliFemtoShareQualityTPCEntranceSepPairCut.cxx
   AliFemtoESDTrackCut.cxx
+  AliFemtoEPSelectionTaskThird.cxx
   AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
@@ -38,6 +39,7 @@ set(SRCS
   AliFemtoKpmTrackCut.cxx
   AliFemtoKpm45TrackCut.cxx
   AliFemtoKtBinnedCorrFunc.cxx
+  AliFemtoKTPairCutThird.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
   AliFemtoModelAllHiddenInfo.cxx
@@ -83,6 +85,7 @@ set(SRCS
   AliFemtoPairCutPt.cxx
   AliFemtoAvgSepCorrFctn.cxx
   AliFemtoAnalysisAzimuthalPbPb.cxx
+  AliFemtoAnalysisAzimuthalPbPbThird.cxx
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoAnalysisPionLambda.cxx
   AliFemtoAnalysisPionPion.cxx

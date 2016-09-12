@@ -572,68 +572,19 @@ void  LoadLibraries(Int_t mode)
   }  
   
   //--------------------------------------
-  // Load the needed libraries most of them already loaded by aliroot
+  // Load the needed libraries via par files if modified
   //--------------------------------------
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libXMLIO");
-  gSystem->Load("libMatrix");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit"); // Root + libraries to if reclusterization is done
-  
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libGui"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libCDB"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libESD"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libAOD");
-  gSystem->Load("libRAWDatabase"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libProof"); 
-  gSystem->Load("libOADB");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libSTEER"); // Root + libraries to if reclusterization is done
-  
-  gSystem->Load("libRAWDatarec"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libRAWDatasim"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libVZERObase");  // Root + libraries to if reclusterization is done
-  gSystem->Load("libVZEROrec");   // Root + libraries to if reclusterization is done
-
-  gSystem->Load("libPHOSUtils");
-
-  gSystem->Load("libEMCALUtils");
   //SetupPar("EMCALUtils");
-  gSystem->Load("libEMCALraw");  // Root + libraries to if reclusterization is done
-  gSystem->Load("libEMCALbase"); // Root + libraries to if reclusterization is done
-  gSystem->Load("libEMCALsim");  // Root + libraries to if reclusterization is done
-  gSystem->Load("libEMCALrec");  // Root + libraries to if reclusterization is done
   //SetupPar("EMCALraw");
   //SetupPar("EMCALbase");
   //SetupPar("EMCALsim");
   //SetupPar("EMCALrec");
   
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libESDfilter");
-
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  
-  gSystem->Load("libCORRFW");
-  gSystem->Load("libPWGTools");
-
-  gSystem->Load("libPWGPPEMCAL");
   //SetupPar("PWGPPEMCAL");
   
-  gSystem->Load("libPWGCaloTrackCorrBase");
-  gSystem->Load("libPWGGACaloTrackCorrelations");
   //SetupPar("PWGCaloTrackCorrBase");
-  //SetupPar("PWGGACaloTrackCorrelations");
- 
-  //gSystem->Load("libJETAN");
-  //gSystem->Load("FASTJETAN");
-  //gSystem->Load("PWGJE");
+  //SetupPar("PWGGACaloTrackCorrelations"); 
 
-  //gSystem->Load("libCORRFW");
-  //gSystem->Load("libPWGGAGammaConv"); 
   //SetupPar("PWGGAGammaConv"); 
   
   // needed for plugin?
@@ -1208,27 +1159,29 @@ void CheckEnvironmentVariables()
     
   }// args loop
   
-  if(!sRun.Contains("LHC10"))
+  if     ( kRun < 140000) 
   {
-    if     ( kRun < 140000) 
-    {
-      kYear = 2010;
-      if( kRun >= 136851 ) kCollision = "PbPb";
-    }
-    else if( kRun < 170600)
-    {
-      kYear = 2011;
-      if( kRun >= 166500 ) kCollision = "PbPb";
-    }
-    else if( kRun < 200000 )
-    {
-      kYear = 2012;
-      if( kRun >= 194000 ) kCollision = "pPb";
-    }
-    else
-    {
-      kYear = 2015;
-    }
+    kYear = 2010;
+    if( kRun >= 136851 ) kCollision = "PbPb";
+  }
+  else if( kRun < 170600)
+  {
+    kYear = 2011;
+    if( kRun >= 166500 ) kCollision = "PbPb";
+  }
+  else if( kRun < 200000 )
+  {
+    kYear = 2012;
+    if( kRun >= 194000 ) kCollision = "pPb";
+  }
+  else if( kRun < 247000 )
+  {
+    kYear = 2015;
+    if( kRun >= 244820 ) kCollision = "PbPb";
+  }
+  else
+  {
+    kYear = 2016;
   }
   
   if(kMC) sprintf(kTrigger,"");

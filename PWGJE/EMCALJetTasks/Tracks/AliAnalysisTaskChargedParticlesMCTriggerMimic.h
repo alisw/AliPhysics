@@ -75,9 +75,11 @@ public:
   void                        SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
   void                        SetAnalysisUtil(AliAnalysisUtils *util) { fAliAnalysisUtils = util; }
-  void                        SetTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
+  void                        SetEmcalTrackSelection(AliEmcalTrackSelection * sel) { fTrackCuts = sel; }
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
+  void                        SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
+
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
   void                        SetNameClusters(const TString &nameClusters) { fNameClusters = nameClusters; }
@@ -119,7 +121,8 @@ private:
   Double_t                              fYshift;                    ///< Rapidity shift
   Double_t                              fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
   AliCutValueRange<double>              fEtaLabCut;                 ///< Cut applied in Eta Lab frame
-  AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in Eta centre-of-mass frame
+  AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in \f$\eta_{centre-of-mass}\f$-frame
+  AliCutValueRange<double>              fPhiCut;                    ///< Cut applied in \f$\phi\f$
 
   // Trigger specific information
   PatchType_t                           fPatchType;                 ///< Type of the trigger patch (default: kUndef)

@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include "AliCutValueRange.h"
 #include <string>
 #include <TCustomBinning.h>
 #include <TString.h>
@@ -54,8 +55,9 @@ public:
   void InitializeTrackCuts(TString cutname, bool isAOD);
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
-  void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
-  void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
+  void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut.SetLimits(etamin, etamax); }
+  void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
+  void SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
   void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
 
 protected:
@@ -79,8 +81,9 @@ protected:
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
 
-  Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
-  Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
+  AliCutValueRange<double>        fEtaLabCut;                 ///< Cut applied in \f$\eta_{lab}\f$ frame
+  AliCutValueRange<double>        fEtaCmsCut;                 ///< Cut applied in \f$\eta_{centre-of-mass}\f$ frame
+  AliCutValueRange<double>        fPhiCut;                    ///< Cut applied in \f$\phi_{track}\f$
 
   Bool_t                          fKineCorrelation;           ///< Use kinematics correlation histograms
   Bool_t                          fStudyPID;                  ///< Use kinematics correlation histograms

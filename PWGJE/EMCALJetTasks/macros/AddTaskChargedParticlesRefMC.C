@@ -3,7 +3,8 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC(Form("chargedParticleMCQA_%s", suffix));
-  task->SetOutlierCut(-1);
+  task->SetJetPtFactor(4.);
+  task->SetTrackPtFactor(1.5);
   // Set Energy thresholds for additional patch selection:
   // These are events with offline patches of a given type where the trigger reached already the plateau
   // These numers are determined as:

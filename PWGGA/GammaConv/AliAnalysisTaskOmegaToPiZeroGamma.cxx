@@ -1,17 +1,17 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                       *
- * Author: Daniel Mühlheim, Friederike Bock                     *
- * Version 1.0                                 *
- *                                       *
  *                                                                        *
- * Permission to use, copy, modify and distribute this software and its    *
- * documentation strictly for non-commercial purposes is hereby granted    *
- * without fee, provided that the above copyright notice appears in all    *
- * copies and that both the copyright notice and this permission notice    *
- * appear in the supporting documentation. The authors make no claims    *
- * about the suitability of this software for any purpose. It is      *
- * provided "as is" without express or implied warranty.               *
+ * Author: Daniel Mühlheim, Ziruo Zhang                                   *
+ * Version 1.0                                                            *
+ *                                                                        *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 //////////////////////////////////////////////////////////////////
@@ -414,15 +414,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::~AliAnalysisTaskOmegaToPiZeroGamma()
 //___________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::InitBack(){
   
-  Int_t mode;
-  if(fReconMethod > 3) mode = 0; //convconv
-  else if(fReconMethod > 1) mode = 4; //calocalo
-  else mode = 2; //convcalo
-
   fBGHandler = new AliGammaConversionAODBGHandler*[fnCuts];
-
   fBGClusHandler = new AliGammaConversionAODBGHandler*[fnCuts];
-
   fBGPi0Handler = new AliGammaConversionAODBGHandler*[fnCuts];
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -450,17 +443,17 @@ void AliAnalysisTaskOmegaToPiZeroGamma::InitBack(){
                                 collisionSystem,centMin,centMax,
                                 ((AliConversionMesonCuts*)fNeutralPionCutArray->At(iCut))->GetNumberOfBGEvents(),
                                 ((AliConversionMesonCuts*)fNeutralPionCutArray->At(iCut))->UseTrackMultiplicity(),
-                                mode,8,5);
+                                2,8,5);
       fBGClusHandler[iCut] = new AliGammaConversionAODBGHandler(
                                 collisionSystem,centMin,centMax,
                                 ((AliConversionMesonCuts*)fNeutralPionCutArray->At(iCut))->GetNumberOfBGEvents(),
                                 ((AliConversionMesonCuts*)fNeutralPionCutArray->At(iCut))->UseTrackMultiplicity(),
-                                mode,8,5);
+                                2,8,5);
       fBGPi0Handler[iCut] = new AliGammaConversionAODBGHandler(
                                 collisionSystem,centMin,centMax,
-                                ((AliConversionMesonCuts*)fNeutralPionCutArray->At(iCut))->GetNumberOfBGEvents(),
-                                ((AliConversionMesonCuts*)fNeutralPionCutArray->At(iCut))->UseTrackMultiplicity(),
-                                mode,8,5);
+                                ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
+                                ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+                                2,8,5);
     }
   }
 }
@@ -2372,6 +2365,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
               fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
               if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
                   pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
+                //change energy of pi0 candidate s.t. its mass is the pdg mass
+                pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
                 fPi0Candidates->Add(pi0cand);
                 if(fDoMesonQA>0){
                   fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
@@ -2456,6 +2451,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
               fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
               if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
                   pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
+                //change energy of pi0 candidate s.t. its mass is the pdg mass
+                pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
                 fPi0Candidates->Add(pi0cand);
                 if(fDoMesonQA>0){
                   fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
@@ -2530,6 +2527,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
             fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
             if(pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
+              //change energy of pi0 candidate s.t. its mass is the pdg mass
+              pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
               fPi0Candidates->Add(pi0cand);
               if(fDoMesonQA>0){
                 fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
@@ -2593,6 +2592,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
             fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
             if(pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
+              //change energy of pi0 candidate s.t. its mass is the pdg mass
+              pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
               fPi0Candidates->Add(pi0cand);
               if(fDoMesonQA>0){
                 fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
@@ -2663,6 +2664,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
             fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
             if(pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
+              //change energy of pi0 candidate s.t. its mass is the pdg mass
+              pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
               fPi0Candidates->Add(pi0cand);
               if(fDoMesonQA>0){
                 fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
@@ -2735,6 +2738,8 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaCandidates()
             fHistoPhotonPairInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
             if(pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionLow() &&
                pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->GetSelectionHigh()){
+              //change energy of pi0 candidate s.t. its mass is the pdg mass
+              pi0cand->SetPxPyPzE(pi0cand->Px(),pi0cand->Py(),pi0cand->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0cand->P()*pi0cand->P()));
               fPi0Candidates->Add(pi0cand);
               if(fDoMesonQA>0){
                 fHistoPhotonPairYPt[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),fWeightJetJetMC);
@@ -3664,13 +3669,14 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
 //________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
 
-  Int_t zbin = fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
-  Int_t mbin = 0;
+  //zbin and mbin from pi0handler
+  Int_t Pi0zbin = fBGPi0Handler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  Int_t Pi0mbin = 0;
 
-  if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity() || fReconMethod == 2){
-    mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+    Pi0mbin = fBGPi0Handler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
   }else {
-    mbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+    Pi0mbin = fBGPi0Handler[fiCut]->GetMultiplicityBinIndex(fPi0Candidates->GetEntries());
   }
 
   AliGammaConversionAODBGHandler::GammaConversionVertex *bgEvent1Vertex = NULL;
@@ -3678,9 +3684,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
   // background generation using pi0s and gammas
   // pi0 from handler, gamma from current event
   for(Int_t previous=0;previous<fBGPi0Handler[fiCut]->GetNBGEvents();previous++){
-    AliGammaConversionMotherAODVector* previousPi0s = fBGPi0Handler[fiCut]->GetBGGoodMesons(zbin,mbin,previous);
+    AliGammaConversionMotherAODVector* previousPi0s = fBGPi0Handler[fiCut]->GetBGGoodMesons(Pi0zbin,Pi0mbin,previous);
     if(fMoveParticleAccordingToVertex == kTRUE){
-      bgEvent1Vertex = fBGPi0Handler[fiCut]->GetBGEventVertex(zbin,mbin,previous);
+      bgEvent1Vertex = fBGPi0Handler[fiCut]->GetBGEventVertex(Pi0zbin,Pi0mbin,previous);
     }
     for(UInt_t iPi0=0;iPi0<previousPi0s->size();iPi0++){
       AliAODConversionMother BGpi0cand = (AliAODConversionMother)(*(previousPi0s->at(iPi0)));
@@ -3714,14 +3720,34 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
   }
 
   //pi0 from current event, gamma from handler
+  //zbin and mbin from clushandler
+  Int_t Cluszbin = fBGClusHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  Int_t Clusmbin = 0;
+
+  if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity()){
+    Clusmbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+  }else {
+    Clusmbin = fBGClusHandler[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
+  }
+
+  //zbin and mbin from gammahandler
+  Int_t Gammazbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  Int_t Gammambin = 0;
+
+  if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity()){
+    Gammambin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+  }else {
+    Gammambin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGammaCandidates->GetEntries());
+  }
+
   for(Int_t iCurrent=0;iCurrent<fPi0Candidates->GetEntries();iCurrent++){
     AliAODConversionMother* BGpi0cand = dynamic_cast<AliAODConversionMother*>(fPi0Candidates->At(iCurrent));
     if(BGpi0cand == NULL) continue;
     if(fReconMethod % 2 == 0){ //EMCAL gamma
       for(Int_t previous=0;previous<fBGClusHandler[fiCut]->GetNBGEvents();previous++){
-        AliGammaConversionAODVector *previousclusters = fBGClusHandler[fiCut]->GetBGGoodV0s(zbin,mbin,previous);
+        AliGammaConversionAODVector *previousclusters = fBGClusHandler[fiCut]->GetBGGoodV0s(Cluszbin,Clusmbin,previous);
         if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-          bgEvent1Vertex = fBGClusHandler[fiCut]->GetBGEventVertex(zbin,mbin,previous);
+          bgEvent1Vertex = fBGClusHandler[fiCut]->GetBGEventVertex(Cluszbin,Clusmbin,previous);
         }
         for(UInt_t igamma2=0;igamma2<previousclusters->size();igamma2++){
           AliAODConversionPhoton gamma2 = (AliAODConversionPhoton)(*(previousclusters->at(igamma2)));
@@ -3738,9 +3764,9 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
       }
     } else{ //PCM gamma
       for(Int_t previous=0;previous<fBGHandler[fiCut]->GetNBGEvents();previous++){
-        AliGammaConversionAODVector *previousV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,previous);
+        AliGammaConversionAODVector *previousV0s = fBGHandler[fiCut]->GetBGGoodV0s(Gammazbin,Gammambin,previous);
         if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-          bgEvent1Vertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,previous);
+          bgEvent1Vertex = fBGHandler[fiCut]->GetBGEventVertex(Gammazbin,Gammambin,previous);
         }
         for(UInt_t igamma2=0;igamma2<previousV0s->size();igamma2++){
           AliAODConversionPhoton gamma2 = (AliAODConversionPhoton)(*(previousV0s->at(igamma2)));
@@ -3784,38 +3810,24 @@ void AliAnalysisTaskOmegaToPiZeroGamma::MoveParticleAccordingToVertex(AliAODConv
 //________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::UpdateEventByEventData(){
   //see header file for documentation
-  if(fReconMethod==5){
-    if(fGammaCandidates->GetEntries()>0){
+  if(fPi0Candidates->GetEntries()>0){
+    if(fReconMethod % 2 == 1){ //single gamma is PCM
       if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity()){
         fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
       }else { // means we use #V0s for multiplicity
         fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGammaCandidates->GetEntries(),fEventPlaneAngle);
       }
-    }
-  } else if(fReconMethod==2){
-    if(fClusterCandidates->GetEntries()>0){
+    } else{ //single gamma is EMCAL
       if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity()){
         fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
-      }else { // means we use #V0s for multiplicity
+      }else {
         fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fClusterCandidates->GetEntries(),fEventPlaneAngle);
       }
     }
-  } else{
-    if(fClusterCandidates->GetEntries()>0 || fGammaCandidates->GetEntries()>0){
-      if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity()){
-        fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
-        fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
-      }else { // means we use #V0s for multiplicity
-        fBGHandler[fiCut]->AddEvent(fGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGammaCandidates->GetEntries(),fEventPlaneAngle);
-        fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGammaCandidates->GetEntries(),fEventPlaneAngle);
-      }
-    }
-  }
-  if(fPi0Candidates->GetEntries()>0){
-    if(((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseTrackMultiplicity() || fReconMethod == 2){
+    if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGPi0Handler[fiCut]->AddMesonEvent(fPi0Candidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),0);
-    }else { // means we use #V0s for multiplicity
-      fBGPi0Handler[fiCut]->AddMesonEvent(fPi0Candidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGammaCandidates->GetEntries(),0);
+    }else {
+      fBGPi0Handler[fiCut]->AddMesonEvent(fPi0Candidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fPi0Candidates->GetEntries(),0);
     }
   }
 }

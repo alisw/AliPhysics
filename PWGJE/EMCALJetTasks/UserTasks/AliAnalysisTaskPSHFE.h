@@ -43,6 +43,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     void             SetElectronTrackCuts(Bool_t trkCutBool);
     void             SetSSCutBool(Bool_t SSCutBool);
     void             SetAODEvent(Bool_t AODq){aodEv=AODq;}
+    void             SetUseNonSignalEvents(Bool_t use){UseNonSignalEvents=use;}
     TObjArray*       MakeTrkArr(AliAODEvent *aod);
     virtual void     Terminate(Option_t *);
     
@@ -60,6 +61,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     
     //Boolean to keep track of whether we are using aod
     Bool_t          aodEv;
+    Bool_t          UseNonSignalEvents;
     
     //Physics selection booleans
     Bool_t          MBtrg;//!

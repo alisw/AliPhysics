@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
