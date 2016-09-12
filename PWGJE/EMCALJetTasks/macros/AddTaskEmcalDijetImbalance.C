@@ -2,10 +2,10 @@ AliAnalysisTaskEmcalDijetImbalance* AddTaskEmcalDijetImbalance(
   const char *ntracks            = "usedefault",
   const char *nclusters          = "usedefault",
   const char* ncells             = "usedefault",
-  const char *suffix             = "",
   const Double_t trigJetMinPt    = 2,
   const Double_t assJetMinPt     = 0.3,
-  const Double_t deltaPhiMin     = 2*TMath::Pi()/3
+  const Double_t deltaPhiMin     = 2*TMath::Pi()/3,
+  const char *suffix             = ""
 )
 {
   // Get the pointer to the existing analysis manager via the static access method.

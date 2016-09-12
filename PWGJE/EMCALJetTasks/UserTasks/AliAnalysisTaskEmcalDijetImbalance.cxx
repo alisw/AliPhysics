@@ -76,6 +76,7 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   AllocateJetHistograms();
   AllocateCellHistograms();
   AllocateDijetHistograms();
+  AllocatePostProcHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -290,13 +291,108 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetHistograms()
     groupname = jetCont->GetName();
     //fHistManager.CreateHistoGroup(groupname);
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
+
+      // Some basic plots for di-jet pairs
+
+      histname = TString::Format("%s/histDijetLeadingJetPt_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Leading Jet p_{T} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+
+      histname = TString::Format("%s/histDijetSubleadingJetPt_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Subleading Jet p_{T} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+
+      histname = TString::Format("%s/histDijetLeadingJetPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Leading Jet #phi;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histDijetSubleadingJetPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Subleading Jet #phi;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histDijetLeadingJetEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Leading Jet #eta;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, -1, 1);
+
+      histname = TString::Format("%s/histDijetSubleadingJetEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Subleading Jet #eta;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, -1, 1);
+
+      histname = TString::Format("%s/histDijetDeltaEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#Delta#eta;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, -2, 2);
+
+      // Some di-jet observables
  
       histname = TString::Format("%s/histDijetAJ_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;AJ;counts", histname.Data());
+      histtitle = TString::Format("%s;A_{J};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 1);
+
+      histname = TString::Format("%s/histDijetxJ_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;x_{J};counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, 100, 0, 1);
       
+      histname = TString::Format("%s/histDijetDeltaPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#Delta#phi;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 4);
+
+      histname = TString::Format("%s/histDijetkT_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;k_{Ty} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 100);
+
+      histname = TString::Format("%s/histDijetLeadingJetNTracks_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Leading Jet N tracks;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 100);
+
+      histname = TString::Format("%s/histDijetSubleadingJetNTracks_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Subleading Jet N tracks;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 100);
+
+      histname = TString::Format("%s/histDijetLeadingJetArea_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Leading Jet Area;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 3);
+
+      histname = TString::Format("%s/histDijetSubleadingJetArea_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Subleading Jet Area;counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 100, 0, 3);
+
+      // Leading jets that don't have acceptable associated jet
+      histname = TString::Format("%s/histUnmatchedLeadingJetPt_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;Leading Jet p_{T} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
+
     }
   }
+}
+
+/*
+ * This function allocates the histograms that are filled at the end of the analysis.
+ * A set of histograms is allocated per each centrality bin.
+ */
+void AliAnalysisTaskEmcalDijetImbalance::AllocatePostProcHistograms()
+{
+
+  // Plot jet ratio R=0.2/R=0.4
+  TString groupnameRatio = "JetRatioPlots";
+  fHistManager.CreateHistoGroup(groupnameRatio);
+  TString histnameChRatio;
+  TString histnameFuRatio;
+  TString histtitleChRatio;
+  TString histtitleFuRatio;
+
+  for (Int_t cent = 0; cent < fNcentBins; cent++) {
+
+    // Create a ratio plot for each charged, full
+    histnameChRatio = TString::Format("%s/histChargedJetRatio0204_%d", groupnameRatio.Data(), cent);
+    histtitleChRatio = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});Ratio", histnameChRatio.Data());
+    fHistManager.CreateTH1(histnameChRatio, histtitleChRatio, fNbins, fMinBinPt, fMaxBinPt);
+
+    histnameFuRatio = TString::Format("%s/histFullJetRatio0204_%d", groupnameRatio.Data(), cent);
+    histtitleFuRatio = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});Ratio", histnameFuRatio.Data());
+    fHistManager.CreateTH1(histnameFuRatio, histtitleFuRatio, fNbins, fMinBinPt, fMaxBinPt);
+
+  }
+
 }
 
 /**
@@ -505,7 +601,6 @@ void AliAnalysisTaskEmcalDijetImbalance::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
 {
-  
   TString histname;
   TString groupname;
   
@@ -514,35 +609,101 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     groupname = jetCont->GetName();
 
-    // get trigger jet
+    // Get trigger jet
     AliEmcalJet *trigJet = jetCont->GetLeadingJet();
     if(!trigJet) continue;
-    Double_t trigJetPt = trigJet->Pt();
-    Double_t trigJetPhi = trigJet->Phi();
-    if(trigJetPt < fTrigJetMinPt) continue;
+    if(trigJet->Pt() < fTrigJetMinPt) continue;
   
-    // look for associated jet
-    Double_t assJetPt = 0;
+    // Look for associated jet
+    AliEmcalJet *assJet = 0;
     for(auto assJetCand : jetCont->accepted()) {
       if (!assJetCand) continue;
-      Double_t assJetCandPt = assJetCand->Pt();
-      Double_t assJetCandPhi = assJetCand->Phi();
+      if ( assJetCand->Pt() < fAssJetMinPt ) continue;
+      if ( TMath::Abs(trigJet->Phi() - assJetCand->Phi()) < fDeltaPhiMin ) continue;
+      if (assJet) { if ( assJetCand->Pt() < assJet->Pt() ) continue; }
       
-      if ( assJetCandPt < fAssJetMinPt ) continue;
-      if ( TMath::Abs(trigJetPhi - assJetCandPhi) < fDeltaPhiMin ) continue;
-      if ( assJetCandPt < assJetPt ) continue;
-      if ( assJetCand->Compare(trigJet) == 0 ) continue;
-      
-      assJetPt = assJetCandPt;
-      
+      assJet = assJetCand;
     }
     
-    // if we find an acceptable associated jet, fill the AJ spectrum
-    if(assJetPt > 0){
-      Double_t AJ = (trigJetPt - assJetPt)/(trigJetPt + assJetPt);
+    // If we find an acceptable associated jet, fill the di-jet histograms
+    if(assJet){
       
+      // Define kinematic variables for the di-jet pair
+      Double_t trigJetPt  = trigJet->Pt();
+      Double_t trigJetPhi = trigJet->Phi();
+      Double_t trigJetEta = trigJet->Eta();
+      Double_t assJetPt   = assJet->Pt();
+      Double_t assJetPhi  = assJet->Phi();
+      Double_t assJetEta  = assJet->Eta();
+
+      // Some basic plots for the found di-jet pairs
+
+      histname = TString::Format("%s/histDijetLeadingJetPt_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, trigJetPt);
+
+      histname = TString::Format("%s/histDijetLeadingJetPhi_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, trigJetPhi);
+
+      histname = TString::Format("%s/histDijetLeadingJetEta_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, trigJetEta);
+
+      histname = TString::Format("%s/histDijetSubleadingJetPt_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, assJetPt);
+
+      histname = TString::Format("%s/histDijetSubleadingJetPhi_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, assJetPhi);
+
+      histname = TString::Format("%s/histDijetSubleadingJetEta_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, assJetEta);
+
+      Double_t deltaEta = trigJetEta - assJetEta;
+      histname = TString::Format("%s/histDijetDeltaEta_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, deltaEta);
+
+      // Some di-jet observables
+
+      Double_t AJ = (trigJetPt - assJetPt)/(trigJetPt + assJetPt);
       histname = TString::Format("%s/histDijetAJ_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, AJ);
+
+      Double_t xJ = assJetPt / trigJetPt;
+      histname = TString::Format("%s/histDijetxJ_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, xJ);
+
+      Double_t deltaPhi = TMath::Abs(trigJetPhi - assJetPhi);
+      histname = TString::Format("%s/histDijetDeltaPhi_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, deltaPhi);
+
+      Double_t kT = TMath::Abs( trigJetPt * TMath::Sin(deltaPhi) );
+      histname = TString::Format("%s/histDijetkT_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, kT);
+
+      // Study internal structure of the leading, subleading jets
+
+      Double_t nTracksLeadingJet = trigJet->GetNumberOfTracks();
+      histname = TString::Format("%s/histDijetLeadingJetNTracks_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, nTracksLeadingJet);
+
+      Double_t nTracksSubleadingJet = assJet->GetNumberOfTracks();
+      histname = TString::Format("%s/histDijetSubleadingJetNTracks_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, nTracksSubleadingJet);
+
+      histname = TString::Format("%s/histDijetLeadingJetArea_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, trigJet->Area());
+
+      histname = TString::Format("%s/histDijetSubleadingJetArea_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, assJet->Area());
+
+      // Study momentum balance
+      // TO DO: loop through tracks/clusters in event (as in above loops) using ClusterAt(i)/TrackAt(i)
+      // and group according to proximity to leading, subleading jet axes
+
+    } else { // If we don't find an associated jet
+
+      // Plot leading jets that did not find any associated jet
+      histname = TString::Format("%s/histUnmatchedLeadingJetPt_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, trigJet->Pt());
+
     }
     
   }
@@ -555,4 +716,55 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
  */
 void AliAnalysisTaskEmcalDijetImbalance::Terminate(Option_t *)
 {
+
+  // Plot jet ratio R=0.2/R=0.4
+
+  TString groupnameRatio = "JetRatioPlots";
+  TString histnameChRatio;
+  TString histnameFuRatio;
+
+  TString groupnameCh02 = "Jet_AKTChargedR020_tracks_pT0150_pt_scheme";
+  TString groupnameCh04 = "Jet_AKTChargedR040_tracks_pT0150_pt_scheme";
+  TString groupnameFu02 = "Jet_AKTFullR020_tracks_pT0150_caloClusters_E0300_pt_scheme";
+  TString groupnameFu04 = "Jet_AKTFullR040_tracks_pT0150_caloClusters_E0300_pt_scheme";
+  TString histnameCh02;
+  TString histnameCh04;
+  TString histnameFu02;
+  TString histnameFu04;
+
+  for (Int_t cent = 0; cent < fNcentBins; cent++) {
+
+    histnameChRatio = TString::Format("%s/histChargedJetRatio0204_%d", groupnameRatio.Data(), cent);
+    histnameFuRatio = TString::Format("%s/histFullJetRatio0204_%d", groupnameRatio.Data(), cent);
+
+    // Get jet yield in each jet container at each pT bin, and fill ratio plot
+
+    histnameCh02 = TString::Format("%s/histJetPt_%d", groupnameCh02.Data(), cent);
+    histnameCh04 = TString::Format("%s/histJetPt_%d", groupnameCh04.Data(), cent);
+    histnameFu02 = TString::Format("%s/histJetPt_%d", groupnameFu02.Data(), cent);
+    histnameFu04 = TString::Format("%s/histJetPt_%d", groupnameFu04.Data(), cent);
+
+    TH1F* hCh02Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameCh02));
+    TH1F* hCh04Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameCh04));
+    TH1F* hChRatio = static_cast<TH1F*>(fHistManager.FindObject(histnameChRatio));
+
+    TH1F* hFu02Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameFu02));
+    TH1F* hFu04Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameFu04));
+    TH1F* hFuRatio = static_cast<TH1F*>(fHistManager.FindObject(histnameFuRatio));
+
+    for (Int_t bin = 1; bin < fNbins+1; bin++) {
+      Double_t Ch02Yield = hCh02Yield->GetBinContent(bin);
+      Double_t Ch04Yield = hCh04Yield->GetBinContent(bin);
+      if (Ch04Yield != 0)
+        hChRatio->SetBinContent(bin, Ch02Yield / Ch04Yield);
+
+      Double_t Fu02Yield = hFu02Yield->GetBinContent(bin);
+      Double_t Fu04Yield = hFu04Yield->GetBinContent(bin);
+      if (Fu04Yield != 0)
+        hFuRatio->SetBinContent(bin, Fu02Yield / Fu04Yield);
+
+    }
+
+  }
+
 }
