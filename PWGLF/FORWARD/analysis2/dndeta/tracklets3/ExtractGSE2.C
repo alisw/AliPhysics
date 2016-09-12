@@ -149,7 +149,10 @@ TObject* MakeGSE(TDirectory* d,
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
 			 Int_t(c1), Int_t(c1*100)%100, 
 			 Int_t(c2), Int_t(c2*100)%100);
-  TString sub(bin); sub.Prepend("cent");
+  Bool_t isAll = (c1+1.e-9 >= c2);
+  if (isAll) bin = "all";
+  TString sub(bin);
+  if (!isAll) sub.Prepend("cent");
   sub.Append(Form("/results%dd/result", dimen));
   TString nme(bin); nme.Prepend("CENT_");
   TH1*    g = GetH1(d, sub);
@@ -173,7 +176,7 @@ TObject* MakeGSE(TDirectory* d,
   gse->SetKey("accelerator", "LHC");
   gse->SetKey("detector", "TRACKLETS");
   gse->SetKey("reference", sNN==5023 ? "ALICE-AN-2830" : "ALICE-AN-2180");
-  gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
+  if (!isAll)gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
   gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d", sNN));
   gse->SetXTitle("ETARAP");
   gse->SetYTitle("DN/DETARAP");
@@ -237,8 +240,10 @@ TObject* MakeTGSE(TDirectory* d,
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
 			 Int_t(c1), Int_t(c1*100)%100, 
 			 Int_t(c2), Int_t(c2*100)%100);
+  Bool_t isAll = (c1+1.e-9 >= c2);
+  if (isAll) bin = "all";
   TString sub(bin);
-  sub.Prepend("cent");
+  if (!isAll) sub.Prepend("cent");
   sub.Append(Form("/results%dd/simG",dimen));
   TString nme(bin); nme.Prepend("CENTT_");
   TH1*    g = GetH1(d, sub);
@@ -258,7 +263,7 @@ TObject* MakeTGSE(TDirectory* d,
   gse->SetKey("accelerator", "LHC");
   gse->SetKey("detector", "TRACKLETS");
   gse->SetKey("reference", sNN==5023 ? "ALICE-AN-2830" : "ALICE-AN-2180");
-  gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
+  if (!isAll)gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
   gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d", sNN));
   gse->SetXTitle("ETARAP");
   gse->SetYTitle("DN/DETARAP");

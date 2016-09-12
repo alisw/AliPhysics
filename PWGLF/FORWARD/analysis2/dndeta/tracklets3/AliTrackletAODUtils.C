@@ -750,7 +750,7 @@ public:
    */
   static void ScaleAxis(TAxis& ret, Double_t fact=1);
   /** 
-   * Set an axis based on bin borders 
+   * Set an axis based ona bin borders 
    * 
    * @param axis    Axis to set 
    * @param n       Number of bins 
@@ -1050,9 +1050,11 @@ Bool_t AliTrackletAODUtils::CheckAxisNBins(const char*  which,
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODUtils::CheckAxisLimits(const char*  which,
-					       const TAxis* a1,
-					       const TAxis* a2)
+					    const TAxis* a1,
+					    const TAxis* a2)
 {
+  if (TMath::AreEqualAbs(a1->GetXmin(), a2->GetXmin(), 1.e-3)  &&
+      TMath::AreEqualAbs(a1->GetXmax(), a2->GetXmax(), 1.e-3)) return true;
   if (!TMath::AreEqualRel(a1->GetXmin(), a2->GetXmin(),1.E-12) ||
       !TMath::AreEqualRel(a1->GetXmax(), a2->GetXmax(),1.E-12)) {
     Warning("CheckAxisLimits",
@@ -1079,6 +1081,8 @@ Bool_t AliTrackletAODUtils::CheckAxisBins(const char*  which,
   }
   else {
     for (int i = 0; i < fN; ++i) {
+      if (TMath::AreEqualAbs(h1Array->GetAt(i),
+			     h2Array->GetAt(i), 1.e-3)) continue;
       if (!TMath::AreEqualRel(h1Array->GetAt(i),h2Array->GetAt(i),1E-10)) {
 	Warning("CheckAxisBins",
 		"%s limit # %3d incompatible: %f vs %f",
@@ -1124,10 +1128,11 @@ Bool_t AliTrackletAODUtils::CheckAxisLabels(const char*  which,
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODUtils::CheckAxis(const char*  which, 
-					 const TAxis* a1,
-					 const TAxis* a2,
-					 Bool_t       alsoLbls)
+				      const TAxis* a1,
+				      const TAxis* a2,
+				      Bool_t       alsoLbls)
 {
+  if (a1->GetNbins() == 0 && a2->GetNbins() == 0) return true;
   if (!CheckAxisNBins (which, a1, a2)) return false;
   if (!CheckAxisLimits(which, a1, a2)) return false;
   if (!CheckAxisBins  (which, a1, a2)) return false;
@@ -1747,8 +1752,8 @@ void AliTrackletAODUtils::SetAxis(TAxis& axis, Int_t n, Double_t* borders)
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::SetAxis(TAxis&         axis,
-				    const TString& spec,
-				    const char*    sep)
+				  const TString& spec,
+				  const char*    sep)
 {
   TString s(spec);
   Bool_t isRange = false, isUnit = false;
@@ -1789,9 +1794,9 @@ void AliTrackletAODUtils::SetAxis(TAxis&         axis,
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::SetAxis(TAxis&   axis,
-				    Int_t    n,
-				    Double_t l,
-				    Double_t h)
+				  Int_t    n,
+				  Double_t l,
+				  Double_t h)
 {
   axis.Set(n, l, h);
   FixAxis(axis);
@@ -1803,8 +1808,8 @@ void AliTrackletAODUtils::SetAxis(TAxis& axis, Int_t n, Double_t m)
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::PrintAxis(const TAxis& axis,
-				      Int_t nSig,
-				      const char* alt)
+				    Int_t nSig,
+				    const char* alt)
 {
   printf(" %17s axis: ", alt ? alt : axis.GetTitle());
   if (axis.GetXbins() && axis.GetXbins()->GetArray()) {

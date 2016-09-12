@@ -33,7 +33,8 @@ public:
     kDistinct       = 0x08,
     kSimulated      = 0x10,
     kGenerated      = 0x20,
-    kNeutral        = 0x40
+    kNeutral        = 0x40,
+    kSuppressed     = 0x80
   };
     
   /** Type of real values */
@@ -129,6 +130,10 @@ public:
    * Flag "tracklet" as from a neutral primary, particle in simulated data 
    */
   void SetNeutral() { fFlags |= kNeutral; }
+  /** 
+   * A primary charged particle can be suppressed 
+   */
+  void SetSuppressed() { fFlags |= kSuppressed; }
   /* @} */
   /** 
    * @{ 
@@ -226,6 +231,12 @@ public:
    * @return true if tracklet is a generated, primary, neutral particle
    */
   Bool_t IsNeutral() const { return fFlags & kNeutral; }
+  /** 
+   * Check if this primary is suppressed 
+   * 
+   * @return true of suppressed 
+   */
+  Bool_t IsSuppressed() const { return fFlags & kSuppressed; }
   /* @} */
   /** 
    * @{ 
