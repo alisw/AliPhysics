@@ -3584,6 +3584,7 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 //_________________________________________________________________________
 Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
   
+  if (stackpos < 0) return kFALSE;
   TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
   if (!particle) return kFALSE; 
   if (abs(particle->GetPdgCode()) == 11 ){
