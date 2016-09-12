@@ -168,6 +168,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
+    UserTasks/AliAnalysisTaskJetV3.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
