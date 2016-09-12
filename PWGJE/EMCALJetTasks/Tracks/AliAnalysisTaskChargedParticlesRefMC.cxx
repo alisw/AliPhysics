@@ -72,8 +72,9 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fEventWeight(1.),
         fYshift(0.465),
         fEtaSign(1),
-        fEtaLabCut(-0.6, 0.6),
+        fEtaLabCut(-0.5, 0.5),
         fEtaCmsCut(-0.13, 0.13),
+        fPhiCut(0., TMath::TwoPi()),
         fFracPtHard(-1)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -94,8 +95,9 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fEventWeight(1.),
         fYshift(0.465),
         fEtaSign(1),
-        fEtaLabCut(-0.6, 0.6),
+        fEtaLabCut(-0.5, 0.5),
         fEtaCmsCut(-0.13, 0.13),
+        fPhiCut(0., TMath::TwoPi()),
         fFracPtHard(-1)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -114,6 +116,8 @@ AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
  * Create the output histograms
  */
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
   if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
   fHistos = new THistManager("Ref");
 
@@ -217,6 +221,8 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   for(auto hist : *(fHistos->GetListOfHistograms())){
     fOutput->Add(hist);
   }
+
+  PostData(1, fOutput);
 }
 
 bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
@@ -290,6 +296,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {  // Select event
 
     // Select only particles within ALICE acceptance
     if(!fEtaLabCut.IsInRange(truepart->Eta())) continue;
+    if(!fPhiCut.IsInRange(truepart->Phi())) continue;
     if(TMath::Abs(truepart->Pt()) < 0.1) continue;
     if(!truepart->Charge()) continue;
 
@@ -340,6 +347,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {  // Select event
 
     // Select only particles within ALICE acceptance
     if(!fEtaLabCut.IsInRange(checktrack->Eta())) continue;
+    if(!fPhiCut.IsInRange(checktrack->Phi())) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
     if(checktrack->IsA() == AliESDtrack::Class()){
       AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));

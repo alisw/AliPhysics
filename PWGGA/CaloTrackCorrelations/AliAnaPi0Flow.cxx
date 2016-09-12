@@ -113,7 +113,6 @@ fHistEPV0AR4(0), fHistEPV0AR7(0), fHistEPV0CR0(0), fHistEPV0CR3(0),
 fHistEPTPCFlatten(0), fHistEPV0AFlatten(0), fHistEPV0CFlatten(0),
 fHistEPDiffV0A_V0CR0(0), fHistEPDiffV0A_V0CR3(0), fHistEPDiffV0CR0_V0CR3(0),
 fHistEPDiffV0C_V0AR4(0), fHistEPDiffV0C_V0AR7(0), fHistEPDiffV0AR4_V0AR7(0), fHistEPDiffV0AR_V0CR(0),
-fHistEPRBRCosV0A(0), fHistEPRBRSinV0A(0), fHistEPRBRCosV0C(0), fHistEPRBRSinV0C(0), fHistEPRBRCosTPC(0), fHistEPRBRSinTPC(0),
 fHistClusterEtaPhi(0), fHistClusterEN(0), fHistClusterEtN(0), fHistClusterEM02(0), fHistClusterEtM02(0),
 
 fDataV0(0), fDataV0A(0), fDataV0C(0), fDataTPC(0)
@@ -238,24 +237,6 @@ TList * AliAnaPi0Flow::GetCreateOutputObjects()
 
   fHistEPDiffV0AR_V0CR = new TH2F("fHistEPDiffV0AR_V0CR","",100,0,100,100,-1.0,1.0);
   outputList->Add(fHistEPDiffV0AR_V0CR);
-
-  fHistEPRBRCosV0A = new TProfile("fHistEPRBRCosV0A","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRCosV0A);
-
-  fHistEPRBRSinV0A = new TProfile("fHistEPRBRSinV0A","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRSinV0A);
-
-  fHistEPRBRCosV0C = new TProfile("fHistEPRBRCosV0C","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRCosV0C);
-
-  fHistEPRBRSinV0C = new TProfile("fHistEPRBRSinV0C","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRSinV0C);
-
-  fHistEPRBRCosTPC = new TProfile("fHistEPRBRCosTPC","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRCosTPC);
-
-  fHistEPRBRSinTPC = new TProfile("fHistEPRBRSinTPC","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRSinTPC);
 
   fHistClusterEtaPhi = new TH2F("fHistClusterEtaPhi","Cluster #eta vs #phi",100,-1.0,1.0,100,0.0,6.29);
   fHistClusterEtaPhi->GetXaxis()->SetTitle("#eta"); fHistClusterEtaPhi->GetYaxis()->SetTitle("#phi [rad]");
@@ -554,14 +535,6 @@ void AliAnaPi0Flow::GetVZEROEventPlane(Bool_t flattenEP)
   fHistEPDiffV0C_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0C - fEPV0AR7)));
   fHistEPDiffV0AR4_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR4 - fEPV0AR7)));   
   fHistEPDiffV0AR_V0CR->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR - fEPV0CR)));
-
-  // run-by-run QA
-  fHistEPRBRCosV0A->Fill(fInternalRunNum, TMath::Cos(2*fEPV0A));
-  fHistEPRBRSinV0A->Fill(fInternalRunNum, TMath::Sin(2*fEPV0A));
-  fHistEPRBRCosV0C->Fill(fInternalRunNum, TMath::Cos(2*fEPV0C));
-  fHistEPRBRSinV0C->Fill(fInternalRunNum, TMath::Sin(2*fEPV0C));
-  fHistEPRBRCosTPC->Fill(fInternalRunNum, TMath::Cos(2*fEPTPC));
-  fHistEPRBRSinTPC->Fill(fInternalRunNum, TMath::Sin(2*fEPTPC));
 }
 
 Double_t AliAnaPi0Flow::ApplyFlatteningV0A(Double_t phi, Double_t c)

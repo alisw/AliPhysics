@@ -42,6 +42,7 @@ public:
   virtual void ConnectInputData(Option_t *option = "");
 
   Int_t GetRunningMode() const {return fRunningMode;}  
+  AliReducedAnalysisTaskSE* GetReducedTask() const {return fReducedTask;}
   
  protected:
   AliReducedAnalysisTaskSE* fReducedTask;      // Pointer to the analysis task which will process the reduced events

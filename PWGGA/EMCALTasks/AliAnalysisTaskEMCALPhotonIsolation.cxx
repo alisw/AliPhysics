@@ -1157,12 +1157,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
     case 1:
       
       break;
+
+    case 2:
+      
+      fM02->Fill(vecCOI.E(),coi->GetM02());
+
+      break;
+
       
   }
   
   fPT->Fill(vecCOI.Pt());
   fE->Fill(vecCOI.E());
-  fM02->Fill(vecCOI.E(),coi->GetM02());
   fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
   
   Double_t checktof = coi->GetTOF()*1e9;
@@ -1177,7 +1183,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
         //  fPtaftFC->Fill(vecCOI.Pt());
       
       Double_t checkM02=coi->GetM02();
-      if(fM02mincut < checkM02 && checkM02 < fM02maxcut){
+      if(fM02mincut < checkM02 && checkM02 < fM02maxcut && fWho==2){
         fPtaftM02C->Fill(vecCOI.Pt());
       }
     }
@@ -3020,21 +3026,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
 //  Printf("cluster ID %d with nlm %d . M02 BEFORE possible smearing %.4lf . Do we set the smearing ? %s ",coi->GetID(),nlm, m02COI = coi->GetM02(), fSSsmearing? "Yes":"No");
   
   if(fSSsmearing){
-    if(fWhich==0){
-//      Printf("Smearing for all clusters");
-      if((fSSsmearwidth != 0.)){
-        TRandom3 *ran=new TRandom3(0);
-        Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-        m02COI = coi->GetM02() + smear;
-      }
-      else {
-        AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
-        m02COI = coi->GetM02();
-      }
-    }
-    else{
-//      Printf("Smearing for only clusters with nlm = %d" ,fWhich);
-      if(nlm==fWhich){
+    if(coi->GetID()%3==0 && coi->GetM02()>0.1 && fSSsmear_mean!=0){
+      
+      if(fWhich==0){
+          //      Printf("Smearing for all clusters");
         if((fSSsmearwidth != 0.)){
           TRandom3 *ran=new TRandom3(0);
           Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
@@ -3045,8 +3040,22 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
           m02COI = coi->GetM02();
         }
       }
-      else
-        m02COI = coi->GetM02();
+      else{
+          //      Printf("Smearing for only clusters with nlm = %d" ,fWhich);
+        if(nlm==fWhich){
+          if((fSSsmearwidth != 0.)){
+            TRandom3 *ran=new TRandom3(0);
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            m02COI = coi->GetM02() + smear;
+          }
+          else {
+            AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
+            m02COI = coi->GetM02();
+          }
+        }
+        else
+          m02COI = coi->GetM02();
+      }
     }
   }
   else{
@@ -3054,8 +3063,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
     m02COI = coi->GetM02();
   }
   
-//  Printf("M02 AFTER possible smearing: %.4lf",m02COI);
-
+    //  Printf("M02 AFTER possible smearing: %.4lf",m02COI);
+  
     //AliInfo(Form("M02 value: %lf\n",m02COI));
   
     // ******** Isolation and UE calculation with different methods *********

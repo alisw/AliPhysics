@@ -8,6 +8,6 @@ void RunReducedAnalysis(TString outputdir="", TString inputfilename="", Int_t ru
   //gROOT->LoadMacro(Form("%s/macros/AddTask_reducedep.C",outputdir.Data()));
   //AliReducedAnalysisTaskSE* task = AddTask_reducedep();
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
-  AliReducedAnalysisTaskSE* task = AddTask_iarsene_testTask(kFALSE);
+  AliReducedAnalysisTaskSE* task = AddTask_iarsene_testTask(kFALSE)->GetReducedTask();
   RunReducedEventAnalysis(task,outputfiledir,inputfilename,run,howMany,offset);
 }

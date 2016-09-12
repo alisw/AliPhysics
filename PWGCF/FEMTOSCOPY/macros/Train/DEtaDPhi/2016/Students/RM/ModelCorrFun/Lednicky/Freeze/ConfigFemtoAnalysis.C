@@ -57,7 +57,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    double LambdaMass = 1.115683;
 
    //double *part_mases[4] = {ProtonMass, KaonMass, PionMass, LambdaMass};
-
+	char *parameter[2];
+	if(strlen(params)!=0)
+	  {
+	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
+	  }
+	int sel_pair_set = atoi(parameter[0]); 
 /************** MULTIPLICITY *************/   
 	//ilosc binow krotnosci czastek, krotnosc (MULTIPLICITY) - ilosc czastek wyprodukowanych w zderzeniu; bierzemy biny np. 0-10, 11-20 itd...; multiplicity uzywa sie wymiennie z centralnoscia (albo jedno albo drugie),
 	//zazwyczaj tworzy osobne histogramy dla czastek z danego binu multiplicity, piszemy wtedy M0, M1 ...
@@ -74,8 +79,59 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    const char *pair_types[numOfPairTypes] = { "PP" /*0*/, "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", \
    "LamLam" /*9*/, "aLam_aLam", "Lam_aLam", "all" /*12*/, "plus", "minus", "mixed"};
 	// 1 wlaczaja nam pary do analizy, 0 wylaczaja
-   int runch[numOfPairTypes] = {1/*PP*/, 1/*aPaP*/, 1/*PaP*/, 1/*KpKp*/, 1/*KmKm*/, 1/*KpKm*/, 1,/*PIpPIp*/, 1/*PImPIm*/, 1/*PIpPIm*/,\
-    1 /*"LamLam"*/, 1 /*"aLam_aLam"*/, 1 /*"Lam_aLam"*/, 0/*all*/, 0/*plus*/, 0/*minus*/, 0/*mixed*/};
+
+   int runch[numOfPairTypes]= {0/*PP*/, 0/*aPaP*/, 0/*PaP*/, 0/*KpKp*/, 0/*KmKm*/, 0/*KpKm*/, 0,/*PIpPIp*/, 0/*PImPIm*/, 0/*PIpPIm*/,\
+    0 /*"LamLam"*/, 0 /*"aLam_aLam"*/, 0 /*"Lam_aLam"*/, 0/*all*/, 0/*plus*/, 0/*minus*/, 0/*mixed*/};
+   if(sel_pair_set==0) 
+   {//protons
+   	runch[0]=1;
+   	runch[1]=1;
+   	runch[2]=1;
+   }
+   else if(sel_pair_set==1)
+   {//kaons
+   	runch[3]=1;
+   	runch[4]=1;
+   	runch[5]=1;
+   }
+   else if(sel_pair_set==2)
+  {//pions
+   	runch[6]=1;
+   	runch[7]=1;
+   	runch[8]=1;
+   }
+   else if(sel_pair_set==3)
+   {//lambdas
+   	runch[9]=1;
+   	runch[10]=1;
+   	runch[11]=1;
+   }
+    else if(sel_pair_set==4)
+   {//without PDG
+   	runch[12]=1;
+   	runch[13]=1;
+   	runch[14]=1;
+   	runch[15]=1;
+   }
+   else
+   {
+   	runch[0]=1;
+   	runch[1]=1;
+   	runch[2]=1;
+   	runch[3]=1;
+   	runch[4]=1;
+   	runch[5]=1;
+	runch[6]=1;
+   	runch[7]=1;
+   	runch[8]=1;
+   	runch[9]=1;
+   	runch[10]=1;
+   	runch[11]=1;
+   	runch[12]=1;
+   	runch[13]=1;
+   	runch[14]=1;
+   	runch[15]=1;
+   }
 
 /************** K_T SETTINGS *************/   
 	//ilosc binow przy pedzie; kt = (p1 - p2)/2 W TEJ ANALIZIE TO MOZE BYC pt = |pt1| + |pt2|
@@ -244,7 +300,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                int multmix = 3; //miksujemy tylko eventy o podobnych krotnosciach
                if(imult == 4) multmix = 30; //whole multiplicity
                analysis[imainloop] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, multmix, multbins[imult], multbins[imult+1]); //tworzenie analizy
-               analysis[imainloop]->SetNumEventsToMix(10); //zwiekszamy statystyke mianownika f korelacyjnej, okreslamy tu z ilu eventow (miksujemy)
+               analysis[imainloop]->SetNumEventsToMix(5); //zwiekszamy statystyke mianownika f korelacyjnej, okreslamy tu z ilu eventow (miksujemy)
                analysis[imainloop]->SetMinSizePartCollection(1); //przynajmniej jedna czastka musi przejsc nasze cuty
                analysis[imainloop]->SetVerboseMode(kFALSE); 
 				//ograniczenie na event = jedna kolizje

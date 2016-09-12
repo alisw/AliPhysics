@@ -1,7 +1,7 @@
 void AddFMDTask();
 
 //__________________________________________________________________________________________
-AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE){
+AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString prod="LHC10h"){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -13,39 +13,53 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   
+  Int_t collSystem = 0;
+  if(!prod.CompareTo("LHC10h") || !prod.CompareTo("LHC15o")) collSystem = 1;    // minimum bias Pb-Pb
+  if(!prod.CompareTo("LHC11h")) collSystem = 2;    // centrality triggered Pb-Pb
+  if(!prod.CompareTo("LHC10b") || !prod.CompareTo("LHC10c") || !prod.CompareTo("LHC10d") || 
+     !prod.CompareTo("LHC10e") || !prod.CompareTo("LHC10f")) collSystem = 3;   // minimum bias pp
+  if(!prod.CompareTo("LHC13b") || !prod.CompareTo("LHC13c")) collSystem = 4;   // minimum bias p-Pb   
+  
+  if(!collSystem && !hasMC) {
+     collSystem = 1;
+     printf("WARNING: In AddTask_iarsene_dst(), no proper production name specified, or not supported! \n");
+     printf("                 Using collSystem=1 (min bias Pb-Pb) as default \n");
+  }
+  
   //create task and add it to the manager
   AliAnalysisTaskReducedTreeMaker *task=new AliAnalysisTaskReducedTreeMaker("DSTTreeMaker", kTRUE);
-  //task->SetTriggerMask(AliVEvent::kMB);
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  if(collSystem==1 || collSystem==3 || collSystem==4)
+    task->SetTriggerMask(AliVEvent::kMB);
+  if(collSystem==2)
+    task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   
-  //if(trainConfig=="pp") task->SetRejectPileup();
-  
-  //task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);  // Events passing trigger and physics selection for analysis
-  
+  if(collSystem==3)
+    task->SetRejectPileup();
+    
   //task->UsePhysicsSelection(kTRUE);
   task->SetUseAnalysisUtils(kTRUE);
   
-  //task->SetFillV0Info(kFALSE);
+  task->SetFillV0Info(kFALSE);
   //task->SetFillGammaConversions(kFALSE);
   //task->SetFillK0s(kFALSE);
   //task->SetFillLambda(kFALSE);
   //task->SetFillALambda(kFALSE);
-  //task->SetFillCaloClusterInfo(kFALSE);
+  task->SetFillCaloClusterInfo(kFALSE);
   //task->SetFillDielectronInfo(kFALSE);
   //task->SetFillFriendInfo(kFALSE);
   
   task->SetEventFilter(CreateEventFilter(isAOD));
   task->SetTrackFilter(CreateGlobalTrackFilter(isAOD));
   //  task->SetFlowTrackFilter(CreateFlowTrackFilter(isAOD));
-  task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
-  task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
-  task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
-  task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
-  task->SetK0sMassRange(0.44,0.55);
-  task->SetLambdaMassRange(1.090,1.14);
-  task->SetGammaConvMassRange(0.0,0.1);
-  task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
-  task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
+  //task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
+  //task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
+  //task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
+  //task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
+  //task->SetK0sMassRange(0.44,0.55);
+  //task->SetLambdaMassRange(1.090,1.14);
+  //task->SetGammaConvMassRange(0.0,0.1);
+  //task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
+  //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
   //task->SetFillFMDInfo(); AddFMDTask();
   //task->SetFillMCInfo(kTRUE);
   //task->SetFillEventPlaneInfo(kTRUE);
@@ -63,6 +77,41 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   //task->SetTreeInactiveBranch("fEventTag");
   //task->SetTreeInactiveBranch("fRunNo");
   //task->SetTreeInactiveBranch("fCandidates.*");
+  task->SetTreeInactiveBranch("fSPDntrackletsEta*");
+  task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
+  task->SetTreeInactiveBranch("fVZEROMult*");
+  task->SetTreeInactiveBranch("fZDCnEnergy*");
+  task->SetTreeInactiveBranch("fZDCpEnergy*");
+  task->SetTreeInactiveBranch("fT0amplitude*");
+  task->SetTreeInactiveBranch("fL0TriggerInputs");
+  task->SetTreeInactiveBranch("fL1TriggerInputs");
+  task->SetTreeInactiveBranch("fL2TriggerInputs");
+  task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
+  task->SetTreeInactiveBranch("fNpileupSPD");
+  task->SetTreeInactiveBranch("fNpileupTracks");
+  task->SetTreeInactiveBranch("fNPMDtracks");
+  task->SetTreeInactiveBranch("fNTRDtracks");
+  task->SetTreeInactiveBranch("fNTRDtracklets");
+  task->SetTreeInactiveBranch("fT0TOF*");
+  task->SetTreeInactiveBranch("fT0TOFbest*");
+  task->SetTreeInactiveBranch("fT0zVertex");
+  task->SetTreeInactiveBranch("fT0start");
+  task->SetTreeInactiveBranch("fTracks.fTPCPhi");
+  task->SetTreeInactiveBranch("fTracks.fTPCPt");
+  task->SetTreeInactiveBranch("fTracks.fTPCEta");
+  task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
+  task->SetTreeInactiveBranch("fTracks.fITSsignal");
+  task->SetTreeInactiveBranch("fTracks.fITSnSig*");
+  task->SetTreeInactiveBranch("fTracks.fTPCNclsF");
+  task->SetTreeInactiveBranch("fTracks.fTOFtime");
+  task->SetTreeInactiveBranch("fTracks.fTOFdx");
+  task->SetTreeInactiveBranch("fTracks.fTOFdz");
+  task->SetTreeInactiveBranch("fTracks.fTOFmismatchProbab");
+  task->SetTreeInactiveBranch("fTracks.fTOFchi2");
+  task->SetTreeInactiveBranch("fTracks.fTOFnSig");
+  task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
+  task->SetTreeInactiveBranch("fTracks.fTRDpid*");
+  task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
   
   mgr->AddTask(task);
     
@@ -111,13 +160,17 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   trackCuts->AddCut(AliDielectronVarManager::kImpactParXY,-3.0,3.0);
   trackCuts->AddCut(AliDielectronVarManager::kImpactParZ,-10.0,10.0);
   trackCuts->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
-  trackCuts->AddCut(AliDielectronVarManager::kPt,0.15,1.0e+30);
-  trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,1.0,161.0);
+  trackCuts->AddCut(AliDielectronVarManager::kP,1.0,1.0e+30);
+  trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,50.0,161.0);
   //  trackCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.1,4.0);
   
   //trackCuts->AddCut(AliDielectronVarManager::kP,1.0,1.0e+30);
   //trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,70.0,161.0);
   cuts->AddCut(trackCuts);
+  AliDielectronTrackCuts* trackCuts2 = new AliDielectronTrackCuts("trackCuts2","track cuts");
+  trackCuts2->SetRequireITSRefit(kTRUE);
+  trackCuts2->SetRequireTPCRefit(kTRUE);
+  cuts->AddCut(trackCuts2);
     //}
   /*else {
     AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts;
@@ -138,9 +191,10 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   }*/
   
   AliDielectronPID *electronPid = new AliDielectronPID("PID","PID cut");
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron     
-  electronPid->AddCut(AliDielectronPID::kTOF,AliPID::kProton,  -3.0, 3.0, -2.0, 2.0, kTRUE, AliDielectronPID::kRequire,AliDielectronVarManager::kTPCnSigmaPro); // TPC exclusion for proton   
-  //cuts->AddCut(electronPid);
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron    
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-3.0, 3.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron     
+  electronPid->AddCut(AliDielectronPID::kTOF,AliPID::kProton,  -3.0, 3.0, -2.0, 2.0, kTRUE, AliDielectronPID::kIfAvailable, AliDielectronVarManager::kTPCnSigmaPro); // TPC exclusion for proton   
+  cuts->AddCut(electronPid);
   
   return cuts;
 }

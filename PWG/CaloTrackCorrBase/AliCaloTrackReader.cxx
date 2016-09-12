@@ -1535,6 +1535,12 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
   {
     if ( !GetCentrality() ) return -1;
     
+    AliDebug(1,Form("Cent. Percentile: V0M %2.2f, CL0 %2.2f, CL1 %2.2f; selected class %s", 
+                    GetCentrality()->GetCentralityPercentile("V0M"), 
+                    GetCentrality()->GetCentralityPercentile("CL0"), 
+                    GetCentrality()->GetCentralityPercentile("CL1"), 
+                    fCentralityClass.Data()));
+    
     if     (fCentralityOpt == 100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
     else if(fCentralityOpt ==  10) return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
     else if(fCentralityOpt ==  20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
@@ -1548,8 +1554,14 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
   {
     if ( !GetMultSelCen() ) return -1;
     
+    AliDebug(1,Form("Mult. Percentile: V0M %2.2f, CL0 %2.2f, CL1 %2.2f; selected class %s", 
+                    GetMultSelCen()->GetMultiplicityPercentile("V0M",1), 
+                    GetMultSelCen()->GetMultiplicityPercentile("CL0",1), 
+                    GetMultSelCen()->GetMultiplicityPercentile("CL1",1), 
+                    fCentralityClass.Data()));
+    
     return GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass, kTRUE); // returns centrality only for events used in calibration
-                                                                     
+    
     // equivalent to
     //GetMultSelCen()->GetMultiplicityPercentile("V0M", kFALSE); // returns centrality for any event
     //Int_t    qual = GetMultSelCen()->GetEvSelCode(); if (qual ! = 0) cent = qual;

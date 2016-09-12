@@ -44,7 +44,9 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void                   UseV2Clust(Bool_t e)                  {fUseV2Clust  = e;}
     void                   UseV1Clust(Bool_t e)                  {fUseV1Clust  = e;}
     void                   SetBoxSSCut(Double_t a, Double_t b)   {fBoxSSCutMin = a;
-                                                                  fBoxSSCutMax = b;}
+                                                                  fBoxSSCutMax = b;}  
+    void                   SetNLMCut(Int_t min, Int_t max)       {fNLMCutMin = min;
+                                                                  fNLMCutMax = max;}
     void                   UseTrack(Bool_t e)                    {fUseTrk      = e;}
     void                   SetV2ClustName(TString n)             {fV2ClustName = n;} 
     void                   SetV1ClustName(TString n)             {fV1ClustName = n;} 
@@ -103,6 +105,9 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
 
     Double_t               fBoxSSCutMin;
     Double_t               fBoxSSCutMax;
+
+    Int_t                  fNLMCutMin;
+    Int_t                  fNLMCutMax;
 
     Double_t			   fCentrality;	  	//! Centrality
     Bool_t                 fFlattenMostCent;

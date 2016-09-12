@@ -1,4 +1,4 @@
-AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE)
+AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE, Bool_t UseNonSignalEvents=kFALSE)
 {
     //==============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,12 +30,14 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
     PSHFEtask->SetElectronTrackCuts(trkCutsStrong);
     PSHFEtask->SetSSCutBool(SSCuts);
     PSHFEtask->SetAODEvent(isAOD);
+    PSHFEtask->SetUseNonSignalEvents(UseNonSignalEvents);
     mgr->AddTask(PSHFEtask);  
 
     TString contname = "";
 
     if(trkCutsStrong){contname+=TString("_Strong");}else{contname+=TString("_Weak");}
     if(SSCuts){contname+=TString("_SS");}else{contname+=TString("_NoSS");}
+    if(UseNonSignalEvents){contname+=TString("_NoSig");}else{contname+=TString("_Sig");}
     // create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 

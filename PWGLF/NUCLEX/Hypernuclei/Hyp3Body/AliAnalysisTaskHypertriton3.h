@@ -71,6 +71,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetChargeTriplet(bool sign_c = kTRUE, bool ls_c = kTRUE) {fMinvSignal = sign_c; fMinvLikeSign = ls_c;}
   void SetMotherType(bool matter = kTRUE, bool antimatter = kTRUE){fChooseMatter = matter; fChooseAntiMatter = antimatter;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
+  void SetDCAtracksTrianSel(Bool_t selDcaT = kFALSE) {fTriangularDCAtracks = selDcaT;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
   void SetDCAzProtonPrimaryVtx(double dcaprotonpv) {fDCAzPPVmax = dcaprotonpv;}
@@ -146,6 +147,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Bool_t             fMinvSignal;                  ///< flag for correct charge triplet - signal
   Bool_t             fMinvLikeSign;                ///< flag for like-sign charge triplet
   Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
+  Bool_t             fTriangularDCAtracks;             ///<
 
   //Cut variables
   Double_t           fDCAPiPVmin;                  ///< Cut on Min DCA of \f$\pi\f$ from primary vertex

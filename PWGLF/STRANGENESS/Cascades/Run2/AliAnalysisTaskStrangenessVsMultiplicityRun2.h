@@ -49,7 +49,7 @@ class AliCascadeResult;
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskStrangenessVsMultiplicityRun2();
-    AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name);
+    AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions = "");
     virtual ~AliAnalysisTaskStrangenessVsMultiplicityRun2();
 
     virtual void   UserCreateOutputObjects();
@@ -163,6 +163,7 @@ private:
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
     Bool_t fkPreselectDedx;
+    Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -212,6 +213,15 @@ private:
     Int_t   fTreeVariableLeastNbrCrossedRows;//!
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
 
+    //Variables for debugging Wrong PID hypothesis in tracking bug
+    // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
+    Int_t fTreeVariablePosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
+    Int_t fTreeVariableNegPIDForTracking; //!
+    Float_t fTreeVariablePosdEdx; //!
+    Float_t fTreeVariableNegdEdx; //!
+    Float_t fTreeVariablePosInnerP; //!
+    Float_t fTreeVariableNegInnerP; //!
+    
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
 
@@ -249,6 +259,18 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
+    
+    //Variables for debugging Wrong PID hypothesis in tracking bug
+    // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
+    Int_t fTreeCascVarPosPIDForTracking; //! uses AliPID EParticleType code (0=electron, 1=muon, 2=pion, etc)
+    Int_t fTreeCascVarNegPIDForTracking; //!
+    Int_t fTreeCascVarBachPIDForTracking; //!
+    Float_t fTreeCascVarNegInnerP; //!
+    Float_t fTreeCascVarPosInnerP; //!
+    Float_t fTreeCascVarBachInnerP; //!
+    Float_t fTreeCascVarNegdEdx; //!
+    Float_t fTreeCascVarPosdEdx; //!
+    Float_t fTreeCascVarBachdEdx; //!
 
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!

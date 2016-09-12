@@ -31,7 +31,6 @@
 #include <TList.h>
 #include <TString.h>
 #include <TDatabasePDG.h>
-
 #include "AliAnalysisManager.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODHandler.h"
@@ -54,6 +53,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   AliAnalysisTaskSE(),
   fOutput(0), 
   fHistNEvents(0),
+  fHistNCandidates(0),
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
@@ -80,6 +80,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fRDCutsAnalysis(0),
   fCounter(0),
   fFillNtuple(0),
+  fAODProtection(kTRUE),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
@@ -143,6 +144,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
+  fHistNCandidates(0),
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
@@ -169,6 +171,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fRDCutsAnalysis(dpluscutsana),
   fCounter(0),
   fFillNtuple(fillNtuple),
+  fAODProtection(kTRUE),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
@@ -251,6 +254,7 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistNCandidates;
     for(Int_t i=0;i<3*fNPtBins;i++){    
       delete fMassHistNoPid[i];
       delete fCosPHist[i];
@@ -481,25 +485,32 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",13,-0.5,12.5);
-  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to centrality"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to vtxz");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after topological cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after Topological+SingleTrack cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"D+ after Topological+SingleTrack+PID cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(13,"D+ not on-the-fly reco");
- 
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",10,-0.5,9.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEvents read");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Rejected due to mismatch in trees");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with good AOD"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected due to trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to vertex reco");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to centrality"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Rejected due to vtxz");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"Rejected due to Physics Sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"nEvents accepted");
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
-  fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+
+  fHistNCandidates = new TH1F("hNCandidates","number of candidates",6,-0.5,5.5);
+  fHistNCandidates->GetXaxis()->SetBinLabel(1,"no. of 3prong candidates");
+  fHistNCandidates->GetXaxis()->SetBinLabel(2,"no. of cand with D+ bitmask");
+  fHistNCandidates->GetXaxis()->SetBinLabel(3,"D+ not on-the-fly reco");
+  fHistNCandidates->GetXaxis()->SetBinLabel(4,"D+ after topological cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(5,"D+ after Topological+SingleTrack cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(6,"D+ after Topological+SingleTrack+PID cuts");
+  fHistNCandidates->GetXaxis()->SetNdivisions(1,kFALSE);  
+  fHistNCandidates->SetMinimum(0);
+  fOutput->Add(fHistNCandidates);
+
 
   TString hisname;
   Int_t index=0;
@@ -786,7 +797,18 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   /// heavy flavor candidates association to MC truth
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  
+
+  fHistNEvents->Fill(0); // count event
+
+  if(fAODProtection){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
+      fHistNEvents->Fill(1);  
+      return;
+    }
+  }
+ 
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -824,7 +846,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   //Store the event in AliNormalizationCounter->To disable for Pb-Pb? Add a flag to disable it?
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC);
 
-  fHistNEvents->Fill(0); // count event
+  fHistNEvents->Fill(2); 
+
   Int_t runNumber=aod->GetRunNumber();
 
   //Event selection
@@ -833,11 +856,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Float_t evCentr=0;
   if(fRDCutsAnalysis->GetUseCentrality()>0) evCentr=fRDCutsAnalysis->GetCentrality(aod);
   fHistCentrality[0]->Fill(ntracks,evCentr);
-  if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(2);
-  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(3); 
-  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(ntracks,evCentr);}
-  if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
-  if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(6);
+  if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
+  if(!isEvSel && fRDCutsAnalysis->GetWhyRejection()==0) fHistNEvents->Fill(4); 
+  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(5); 
+  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(6);fHistCentrality[2]->Fill(ntracks,evCentr);}
+  if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(7);
+  if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(8);
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
@@ -877,7 +901,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   fSPDMult->Fill(tracklets);
 
   fHistCentrality[1]->Fill(ntracks,evCentr);
-  fHistNEvents->Fill(1);
+  fHistNEvents->Fill(9);
 
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -910,14 +934,14 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     Int_t nSelectednopid=0,nSelected=0;
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-      fHistNEvents->Fill(7);
+      fHistNCandidates->Fill(0);
       if(fUseBit && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){
-	fHistNEvents->Fill(8);
 	continue;
       }
+      fHistNCandidates->Fill(1);
 
       if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
-        fHistNEvents->Fill(12); //monitor how often this fails 
+        fHistNCandidates->Fill(2); //monitor how often this fails 
         continue;
       }
 
@@ -971,10 +995,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       if(fRDCutsAnalysis->GetIsSelectedCuts() && fRDCutsAnalysis->GetIsSelectedPID() && !passTopolAndPIDCuts) passSingleTrackCuts=kFALSE;
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
-      fHistNEvents->Fill(9);
+      fHistNCandidates->Fill(3);
       if(!passSingleTrackCuts) continue;
-      fHistNEvents->Fill(10);
-      if(passTopolAndPIDCuts) fHistNEvents->Fill(11);
+      fHistNCandidates->Fill(4);
+      if(passTopolAndPIDCuts) fHistNCandidates->Fill(5);
 
       Double_t etaD=d->Eta();
       Double_t phiD=d->Phi();
@@ -1576,7 +1600,7 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
   if(fHistNEvents){
-    printf("Number of analyzed events = %d\n",(Int_t)fHistNEvents->GetBinContent(2));
+    printf("Number of analyzed events = %d\n",(Int_t)fHistNEvents->GetBinContent(10));
   }else{
     printf("ERROR: fHistNEvents not available\n");
     return;

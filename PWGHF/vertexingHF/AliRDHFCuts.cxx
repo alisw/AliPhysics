@@ -41,12 +41,15 @@
 #include "AliVertexerTracks.h"
 #include "AliRDHFCuts.h"
 #include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
 #include "AliMultSelection.h"
 #include "TRandom.h"
 #include <TF1.h>
+#include <TFile.h>
+#include <TKey.h>
 
 using std::cout;
 using std::endl;
@@ -677,6 +680,47 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d, const AliAODEvent
   }
   
   return retval;
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
+  //
+  // Check if AOD and deltaAOD files are composed of the same events:
+  // mismatches were observed in the merged AODs of LHC15o
+  // an event is rejected if 
+  // - the AOD trees in AliAOD.root and AliAOD.VertexingHF.root have different number of entries
+  // - the titles of the TProcessID objects do not match
+  AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  TTree *treeAOD      = aodHandler->GetTree();
+  TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
+  if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
+    printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: Difference in number of entries in main and friend tree, skipping event\n");
+    return kFALSE;
+  }
+  TFile *mfile = treeAOD->GetCurrentFile();
+  TFile *dfile = treeDeltaAOD->GetCurrentFile();
+  TList* lm=mfile->GetListOfKeys();
+  TList* ld=dfile->GetListOfKeys();
+  Int_t nentm=lm->GetEntries();
+  Int_t nentd=ld->GetEntries();
+  for(Int_t jm=0; jm<nentm; jm++){
+    TKey* o=(TKey*)lm->At(jm);
+    TString clnam=o->GetClassName();
+    if(clnam=="TProcessID"){
+      TString pname=o->GetName();
+      TString ptit=o->GetTitle();
+      if(pname.Contains("ProcessID")){
+	TObject* od=(TObject*)ld->FindObject(pname.Data());
+	if(od){
+	  TString ptit2=od->GetTitle();
+	  if(ptit2!=ptit){
+	    printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: mismatch in %s: AOD: %s  -- deltaAOD: %s\n",pname.Data(),ptit.Data(),ptit2.Data());
+	    return kFALSE;
+	  }
+	}
+      }
+    }
+  }
+  return kTRUE;
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::CheckPtDepCrossedRows(TString rows,Bool_t print) const {

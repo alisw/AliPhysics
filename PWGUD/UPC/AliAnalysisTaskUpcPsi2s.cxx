@@ -538,7 +538,7 @@ void AliAnalysisTaskUpcPsi2s::UserExec(Option_t *)
   //cout<<"#################### Next event ##################"<<endl;
 
   if( fType == 0 ){
-    	RunESDtrig(); 
+    	//RunESDtrig(); 
   	if(fRunHist) RunESDhist();
 	if(fRunTree) RunESDtree();
 	}
@@ -992,11 +992,14 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<0))) continue;
+      /*/
       if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
       if(trk->GetTPCNcls() < 70)continue;
       if(trk->Chi2perNDF() > 4)continue;
+      /*/
       if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      /*/
       Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
       AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
       if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
@@ -1004,6 +1007,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       if(TMath::Abs(dca[1]) > 2) continue;
       Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
       if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      /*/
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;

@@ -109,12 +109,6 @@ class AliAnaPi0Flow : public AliAnaCaloTrackCorrBaseClass {
    TH2F                  *fHistEPDiffV0C_V0AR7;
    TH2F                  *fHistEPDiffV0AR4_V0AR7;
    TH2F                  *fHistEPDiffV0AR_V0CR;
-   TProfile              *fHistEPRBRCosV0A;
-   TProfile              *fHistEPRBRSinV0A;
-   TProfile              *fHistEPRBRCosV0C;
-   TProfile              *fHistEPRBRSinV0C;
-   TProfile              *fHistEPRBRCosTPC;
-   TProfile              *fHistEPRBRSinTPC;
    TH2F                  *fHistClusterEtaPhi;
    TH2F                  *fHistClusterEN;
    TH2F                  *fHistClusterEtN;

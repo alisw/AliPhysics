@@ -1,116 +1,103 @@
-void Setup(AliReducedAnalysisTaskSE* processor, Int_t run=-1);
-AliHistogramManager* SetupHistogramManager(Int_t run=-1);
-void DefineHistograms(AliHistogramManager* man, Int_t run=-1);
-
+void Setup(AliReducedAnalysisTaskSE* processor, TString prod="LHC10h");
+AliHistogramManager* SetupHistogramManager(TString prod="LHC10h");
+void DefineHistograms(AliHistogramManager* man, TString prod="LHC10h");
 
 //__________________________________________________________________________________________
-AliReducedAnalysisTaskSE* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=1){    
+AliAnalysisTask* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=1, TString prod="LHC10h"){    
    //
    // isAliRoot=kTRUE for ESD/AOD analysis in AliROOT, kFALSE for root analysis on reduced trees
    //
    //get the current analysis manager
 
-   cout << "AddTask_iarsene_testTask() isAliRoot, runMode :: " << isAliRoot << ", " << runMode << endl;
-  if(isAliRoot){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      if (!mgr) {
-         Error("AddTask_iarsene_dst", "No analysis manager found.");
-         return 0;
-      }
-  }
+  printf("INFO on AddTask_iarsene_testTask(): (isAliRoot, runMode) :: (%d,%d)", isAliRoot, runMode);
 
-  // REDUCED TASKS
-  AliReducedAnalysisTaskSE* testAnalysis = new AliReducedAnalysisTest("TestAnalysis","Test analysis");
+  AliReducedAnalysisTest* testAnalysis = new AliReducedAnalysisTest("TestAnalysis","Test analysis");
   testAnalysis->Init();
-  Setup(testAnalysis, 170389);
+  Setup(testAnalysis, prod);
+  // initialize an AliAnalysisTask which will wrapp the AliReducedAnalysisTest such that it can be run in an aliroot analysis train (e.g. LEGO, local analysis etc)
+  AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
+  task->AddTask(testAnalysis);
   
   if(isAliRoot){
-      AliAnalysisDataContainer* cReducedEvent = NULL;
-      if(runMode==AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents) {
-         cout << "AddTask_iarsene_testTask() use on the fly events "  << endl;
-         cReducedEvent = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ReducedEventDQ");
-         if(!cReducedEvent) {
-            cout<<"Couldn't find exchange container with ReducedEvent, run AddTask_iarsene_dst.C"<<endl; 
-            return;
-         }
-      }
-      //AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager",AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents);
-      AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
-      task->AddTask(testAnalysis);
-  
-      AliAnalysisDataContainer *cOutputHist = mgr->CreateContainer("testHistos", THashList::Class(),
-                                          AliAnalysisManager::kOutputContainer, "test.root");
-    
-      mgr->AddTask(task);
-  
-      if(runMode==AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree) {
-         cout << "AddTask_iarsene_testTask() connect tree as input"  << endl;
+     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+     if (!mgr) {
+        Error("AddTask_iarsene_dst", "No analysis manager found.");
+        return 0;
+     }
+     
+     AliAnalysisDataContainer* cReducedEvent = NULL;
+     if(runMode==AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents) {
+       printf("INFO on AddTask_iarsene_testTask(): use on the fly events ");
+       cReducedEvent = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("ReducedEventDQ");
+       if(!cReducedEvent) {
+         printf("ERROR: In AddTask_iarsene_testTask(), couldn't find exchange container with ReducedEvent! ");
+         printf("             You need to use AddTask_iarsene_dst() in the on-the-fly reduced events mode!");
+         return 0x0;
+       }
+     }
+            
+     mgr->AddTask(task);
+      
+     if(runMode==AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree) 
         mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-      }
-      if(runMode==AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents) {
-         cout << "AddTask_iarsene_testTask() connect the exchange container as input "  << endl;
-        mgr->ConnectInput(task, 0, cReducedEvent);
-      }
+      
+     if(runMode==AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents) 
+       mgr->ConnectInput(task, 0, cReducedEvent);
   
-      mgr->ConnectOutput(task, 1, cOutputHist );
+     AliAnalysisDataContainer *cOutputHist = mgr->CreateContainer("testHistos", THashList::Class(),
+                                                                  AliAnalysisManager::kOutputContainer, "dstAnalysisHistograms.root");
+     mgr->ConnectOutput(task, 1, cOutputHist );
   }
   
-  return testAnalysis;
+  return task;
 }
 
 
-
-
-
 //_________________________________________________________________
-void Setup(AliReducedAnalysisTaskSE* processor, Int_t run /*=-1*/) {
+void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   //
   // Configure the event processor
   // Setup histograms, handlers, cuts, etc.
   //
-  SetupHistogramManager(processor->GetHistogramManager(), run);
+  SetupHistogramManager(processor->GetHistogramManager(), prod);
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  evCut1->SetCentVZERORange(0.0,90.0);
+  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
-  evCut2->SetVertexZRange(-7.0,7.0);
+  evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
   processor->AddEventCut(evCut1);
   processor->AddEventCut(evCut2);
   
   // Set track cuts
-  AliReducedBaseTrackCut* trackCut1 = new AliReducedBaseTrackCut("Pt","Pt selection");
-  trackCut1->SetPtRange(0.7,2.0);
-  AliReducedBaseTrackCut* trackCut2 = new AliReducedBaseTrackCut("Eta","Eta selection");
-  trackCut2->SetEtaRange(-0.75,0.75);
-  processor->AddTrackCut(trackCut1);
-  processor->AddTrackCut(trackCut2);
+  AliReducedTrackCut* trackCut1 = new AliReducedTrackCut("Pt","Pt selection");
+  trackCut1->AddCut(AliReducedVarManager::kPt, 0.,100.0);
+  trackCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
+  processor->AddTrackCut(trackCut1);  
   
   // Set pair cuts
-  AliReducedBaseTrackCut* pairCut1 = new AliReducedBaseTrackCut("Ptpair","Pt pair selection");
-  pairCut1->SetPtRange(1.0,5.0);
-  AliReducedBaseTrackCut* pairCut2 = new AliReducedBaseTrackCut("Etapair","Eta pair selection");
-  pairCut2->SetEtaRange(-0.5,0.5);
+  AliReducedTrackCut* pairCut1 = new AliReducedTrackCut("Ptpair","Pt pair selection");
+  pairCut1->AddCut(AliReducedVarManager::kPt, 0.0,100.0);
+  pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
   processor->AddPairCut(pairCut1);
-  processor->AddPairCut(pairCut2);
 }
 
 
 //_________________________________________________________________
-void SetupHistogramManager(AliHistogramManager* man, Int_t run /*=-1*/) {
+void SetupHistogramManager(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   //
   // setup the histograms manager
   //
   AliReducedVarManager::SetDefaultVarNames();
   
-  DefineHistograms(man);
+  DefineHistograms(man, prod);
   
   AliReducedVarManager::SetUseVars(man->GetUsedVars());
 }
 
 
 //_________________________________________________________________
-void DefineHistograms(AliHistogramManager* man, Int_t run /*=-1*/) {
+void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
   //
   // define histograms
   //
@@ -157,17 +144,27 @@ void DefineHistograms(AliHistogramManager* man, Int_t run /*=-1*/) {
   Int_t runNBins = 0;
   Double_t runHistRange[2] = {0.0,0.0};
   
-  // Pb-Pb from 2011 run range is default
-  runNBins = 2700;
-  runHistRange[0] = 167900.;
-  runHistRange[1] = 170600.;
+  // Pb-Pb from 2010 run range is default: LHC10h
+  runNBins = 2500;
+  runHistRange[0] = 137100.;
+  runHistRange[1] = 139600.;
   
-  if(run>137100 && run<139600) {
-    runNBins = 2500;
-    runHistRange[0] = 137100.;
-    runHistRange[1] = 139600.;
+  // Pb-Pb of 2011
+  if(!prod.CompareTo("LHC11h")) {
+    runNBins = 2700;
+    runHistRange[0] = 167900.;
+    runHistRange[1] = 170600.;
   }
-  if(run>195300 && run<195700) {
+  
+  // Pb-Pb of 2015
+  if(!prod.CompareTo("LHC15o")) {
+     runNBins = 2100;
+     runHistRange[0] = 244900.;
+     runHistRange[1] = 247000.;
+  }
+  
+  // p-Pb of 2013
+  if(!prod.CompareTo("LHC13b") || !prod.CompareTo("LHC13c")) {
     runNBins = 400;
     runHistRange[0] = 195300.;
     runHistRange[1] = 195700.;

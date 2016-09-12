@@ -32,6 +32,7 @@ public:
   void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
   void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
+  
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   

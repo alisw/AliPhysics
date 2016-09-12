@@ -1647,12 +1647,14 @@ void AliCFTaskVertexingHFCutVarFDSub::SetMotherPtWeightsFromFONLL5overLHC13d3(){
   /// and FONLL calculations for pp data
   if(fHistoMotherPtWeight) delete fHistoMotherPtWeight;
 
-  Double_t weights[] = { 0.958796, 0.94262, 1.00746, 1.00264, 1.0103, 1.00033, 0.970773, 0.925759, 0.873651, 0.827537, 0.793838, 0.770711, 0.753224, 0.740698, 0.729354, 0.720129, 0.71487, 0.711469, 0.706371, 0.704551, 0.705003, 0.702572, 0.704875, 0.706797, 0.70574, 0.710273, 0.714451, 0.716691, 0.720462, 0.719736, 0.722672, 0.724752, 0.731169, 0.734225, 0.741758, 0.749343, 0.741116, 0.747457, 0.746682, 0.754226, 0.763797, 0.765175, 0.762687, 0.772638, 0.767542, 0.779808, 0.782834, 0.781626 };
-  Int_t nBins=48;
+  const Int_t nBins=48;
+
+  Double_t weights[nBins] = { 0.958796, 0.94262, 1.00746, 1.00264, 1.0103, 1.00033, 0.970773, 0.925759, 0.873651, 0.827537, 0.793838, 0.770711, 0.753224, 0.740698, 0.729354, 0.720129, 0.71487, 0.711469, 0.706371, 0.704551, 0.705003, 0.702572, 0.704875, 0.706797, 0.70574, 0.710273, 0.714451, 0.716691, 0.720462, 0.719736, 0.722672, 0.724752, 0.731169, 0.734225, 0.741758, 0.749343, 0.741116, 0.747457, 0.746682, 0.754226, 0.763797, 0.765175, 0.762687, 0.772638, 0.767542, 0.779808, 0.782834, 0.781626 };
+
   Double_t xMin=0.;
   Double_t xMax=24.;
   fHistoMotherPtWeight = new TH1F("hMotherPtWeight",";Mother #it{p}_T;Weight",nBins,xMin,xMax);
-  for (Int_t ix=1;ix<nBins+1;++ix) fHistoMotherPtWeight->SetBinContent(ix, weights[ix]);
+  for (Int_t ix=1;ix<nBins+1;++ix) fHistoMotherPtWeight->SetBinContent(ix, weights[ix-1]);
   fUseMotherPtWeight=kTRUE;
 }
 

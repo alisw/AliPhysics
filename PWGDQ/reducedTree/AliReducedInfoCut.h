@@ -15,14 +15,15 @@ class AliReducedInfoCut : public TNamed {
   AliReducedInfoCut(const Char_t* name, const Char_t* title);
   virtual ~AliReducedInfoCut();
   
-  virtual Bool_t IsSelected(TObject* obj) = 0;
+  virtual Bool_t IsSelected(TObject* obj) {return kTRUE;};
+  virtual Bool_t IsSelected(TObject* obj, Float_t* values) {return kTRUE;};
   
  protected: 
    
   AliReducedInfoCut(const AliReducedInfoCut &c);
   AliReducedInfoCut& operator= (const AliReducedInfoCut &c);
   
-  ClassDef(AliReducedInfoCut,1);
+  ClassDef(AliReducedInfoCut,2);
 };
 
 #endif
