@@ -1610,7 +1610,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
     transform->SetCurrentRecoParam(tpcrecoparam);
     transform->SetCorrectionMapMode(kFALSE); // set distortion mode
     transform->SetCurrentTimeStamp(fLoader->GetRunLoader()->GetHeader()->GetTimeStamp()); // force to upload time dependent maps
-    float strFluct = 0;//gRandom->Gaus(); // RSTMP
+    float strFluct = gRandom->Gaus(); // RSTMP
     AliInfoF("Impose %+.2f fluctuation for distortion map in event %d",strFluct,eventnumber);
     transform->SetCurrentMapFluctStrenght(strFluct);
   }
