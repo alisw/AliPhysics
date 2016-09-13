@@ -1295,7 +1295,7 @@ void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, in
 
 Bool_t AliAnalysisTaskBeautyCal::IsDdecay(int mpid)
 {
- int abmpid = fabs(mpid);
+ int abmpid = TMath::Abs(mpid);
  if(abmpid==411 || abmpid==421 || abmpid==413 || abmpid==423 || abmpid==431 || abmpid==433)
    {
     return kTRUE;
@@ -1308,7 +1308,7 @@ Bool_t AliAnalysisTaskBeautyCal::IsDdecay(int mpid)
 
 Bool_t AliAnalysisTaskBeautyCal::IsBdecay(int mpid)
 {
- int abmpid = fabs(mpid);
+ int abmpid = TMath::Abs(mpid);
  if(abmpid==511 || abmpid==521 || abmpid==513 || abmpid==523 || abmpid==531 || abmpid==533)
    {
     return kTRUE;
@@ -1321,7 +1321,7 @@ Bool_t AliAnalysisTaskBeautyCal::IsBdecay(int mpid)
 
 Bool_t AliAnalysisTaskBeautyCal::IsPdecay(int mpid)
 {
- int abmpid = fabs(mpid);
+ int abmpid = TMath::Abs(mpid);
  if(abmpid==22 || abmpid==111 || abmpid==221)
    {
     return kTRUE;
