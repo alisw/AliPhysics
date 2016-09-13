@@ -164,15 +164,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                dtc1etaphitpc[aniter]->SetCharge(1.0);//ustawiamy ograniczenia na ladunek, zostawi dodatnie
                dtc2etaphitpc[aniter]->SetCharge(-1.0);
 
-               dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);// psedopospiesznosc 0 - czastki wyprodukowane prostopadle do osi detektora
-               dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);// limit 0.9; powyzej czatka nie zostaje zarejestrowana
-               dtc3etaphitpc[aniter]->SetEta(-0.8,0.8);
-               
 
 				if (ichg == 0 ||ichg == 1 ||ichg == 2)//protons 0-2
 				{
-					dtc1etaphitpc[aniter]->SetPt(0.5,4); // w zaleznosci od czastki rozne pedy
-					dtc2etaphitpc[aniter]->SetPt(0.5,4);
 											   
 					dtc1etaphitpc[aniter]->SetPDG(2212); //numer rodzaju czastek
 					dtc2etaphitpc[aniter]->SetPDG(2212);
@@ -187,8 +181,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				}
 				if (ichg == 3 ||ichg == 4 ||ichg == 5)//kaons 3-5
 				{
-					dtc1etaphitpc[aniter]->SetPt(0.3,4);
-					dtc2etaphitpc[aniter]->SetPt(0.3,4);
 
 					dtc1etaphitpc[aniter]->SetPDG(321);
 					dtc2etaphitpc[aniter]->SetPDG(321);
@@ -203,8 +195,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				}
 				if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
 				{
-					dtc1etaphitpc[aniter]->SetPt(0.2,4);
-					dtc2etaphitpc[aniter]->SetPt(0.2,4);
 
 					dtc1etaphitpc[aniter]->SetPDG(211);
 					dtc2etaphitpc[aniter]->SetPDG(211); 
@@ -220,9 +210,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				if (ichg == 9 || ichg == 10 || ichg == 11){ //lambdy 9-11
 					dtc1etaphitpc[aniter]->SetCharge(0);//ustawiamy ograniczenia na ladunek, zostawi dodatnie
 					dtc2etaphitpc[aniter]->SetCharge(0);
-					
-					dtc1etaphitpc[aniter]->SetPt(0.7,4);
-					dtc2etaphitpc[aniter]->SetPt(0.7,4);
 
 					dtc1etaphitpc[aniter]->SetPDG(3122);
 					dtc2etaphitpc[aniter]->SetPDG(-3122);
@@ -235,10 +222,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ichg==10) 
 						dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 				}
-                if (ichg == 12)//all
-                {
-					dtc3etaphitpc[aniter]->SetPt(0.2,4);//min 0.12 TPC jeszcze wyciaga
-                }
+            
                 if (ichg == 13 ||ichg == 14 ||ichg == 15)//plus,minus,mixed
                 {
 					dtc1etaphitpc[aniter]->SetPt(1,2);
