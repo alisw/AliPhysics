@@ -391,7 +391,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       
       //MC particle flags - determine whether particle is primary or secondary
       Bool_t    IsConversionPrimaryESD( AliStack *MCStack,
-                                        UInt_t stackpos, 
+                                        Long_t stackpos,
                                         Double_t prodVtxX, 
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);

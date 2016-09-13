@@ -1916,7 +1916,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessAODMCParticles()
   if (AODMCTrackArray == NULL) return;
   
   // Loop over all primary MC particle
-  for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+  for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
     
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
     if (!particle) continue;
@@ -2018,7 +2018,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessMCParticles()
 //   cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
   
   // Loop over all primary MC particles
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
     if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
       // fill primary histograms
       TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -3708,7 +3708,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
     if(fMoveParticleAccordingToVertex == kTRUE){
       bgEvent1Vertex = fBGPi0Handler[fiCut]->GetBGEventVertex(Pi0zbin,Pi0mbin,previous);
     }
-    for(UInt_t iPi0=0;iPi0<previousPi0s->size();iPi0++){
+    for(Int_t iPi0=0;iPi0<previousPi0s->size();iPi0++){
       AliAODConversionMother BGpi0cand = (AliAODConversionMother)(*(previousPi0s->at(iPi0)));
       if(fMoveParticleAccordingToVertex == kTRUE && bgEvent1Vertex){
         MoveParticleAccordingToVertex(&BGpi0cand, bgEvent1Vertex);
@@ -3769,7 +3769,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
         if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
           bgEvent1Vertex = fBGClusHandler[fiCut]->GetBGEventVertex(Cluszbin,Clusmbin,previous);
         }
-        for(UInt_t igamma2=0;igamma2<previousclusters->size();igamma2++){
+        for(Int_t igamma2=0;igamma2<previousclusters->size();igamma2++){
           AliAODConversionPhoton gamma2 = (AliAODConversionPhoton)(*(previousclusters->at(igamma2)));
           if(fMoveParticleAccordingToVertex == kTRUE && bgEvent1Vertex){
             MoveParticleAccordingToVertex(&gamma2,bgEvent1Vertex);
@@ -3788,7 +3788,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
         if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
           bgEvent1Vertex = fBGHandler[fiCut]->GetBGEventVertex(Gammazbin,Gammambin,previous);
         }
-        for(UInt_t igamma2=0;igamma2<previousV0s->size();igamma2++){
+        for(Int_t igamma2=0;igamma2<previousV0s->size();igamma2++){
           AliAODConversionPhoton gamma2 = (AliAODConversionPhoton)(*(previousV0s->at(igamma2)));
           if(fMoveParticleAccordingToVertex == kTRUE && bgEvent1Vertex){
             MoveParticleAccordingToVertex(&gamma2,bgEvent1Vertex);

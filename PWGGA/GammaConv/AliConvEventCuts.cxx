@@ -1957,7 +1957,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         }
         if (jet) delete jet;
         if (fMCStack){
-          for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+          for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
             TParticle* particle = (TParticle *)fMCStack->Particle(i);
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -1968,7 +1968,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 
           }
         } else if (fMCStackAOD){
-          for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+          for(Long_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
             AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2100,7 +2100,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
       }
       if (fMCStack){
-        for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+        for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
           TParticle* particle = (TParticle *)fMCStack->Particle(i);
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2111,7 +2111,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           
         }
       } else if (fMCStackAOD){
-        for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+        for(Long_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
           AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -3587,8 +3587,8 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 }
 
 //_________________________________________________________________________
-Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
-  
+Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
+
   if (stackpos < 0) return kFALSE;
   TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
   if (!particle) return kFALSE; 
@@ -3622,7 +3622,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
 //       cout << "dalitz candidate found" << endl;
     }
   
-    UInt_t source = particle->GetMother(0);
+    Long_t source = particle->GetMother(0);
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
@@ -3725,7 +3725,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
 //       cout << "dalitz candidate found" << endl;
     }
 
-    UInt_t source = currentParticle->GetMother();
+    Long_t source = currentParticle->GetMother();
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;

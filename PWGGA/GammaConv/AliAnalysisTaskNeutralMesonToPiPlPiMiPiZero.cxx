@@ -1839,7 +1839,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 	vector<Int_t> lGoodNegPionIndexPrev(0);
 	vector<Int_t> lGoodPosPionIndexPrev(0);
 	
-	for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
+    for(Int_t i = 0; i < fSelectorNegPionIndex.size(); i++){
 		AliESDtrack* negPionCandidate = fESDEvent->GetTrack(fSelectorNegPionIndex[i]);
 		if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(negPionCandidate) ) continue;
 		lGoodNegPionIndexPrev.push_back(   fSelectorNegPionIndex[i] );
@@ -1878,7 +1878,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 		}
 	}
 
-	for(UInt_t i = 0; i < fSelectorPosPionIndex.size(); i++){
+    for(Int_t i = 0; i < fSelectorPosPionIndex.size(); i++){
 		AliESDtrack* posPionCandidate = fESDEvent->GetTrack( fSelectorPosPionIndex[i] );
 		if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
 		lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
@@ -1918,12 +1918,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessPionCandidates(){
 	}
 
 
-	for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
+    for(Int_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
 
 		AliESDtrack *negPionCandidate = fESDEvent->GetTrack(lGoodNegPionIndexPrev[i]);
 		AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
 
-		for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
+        for(Int_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
 			AliESDtrack *posPionCandidate = fESDEvent->GetTrack(lGoodPosPionIndexPrev[j]);
 			AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
 
@@ -2307,13 +2307,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 							bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGPl);
 							bgEventVertexMi = fBGHandlerPiMi[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGMi);
 						}
-						for(UInt_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
+                        for(Int_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
 							AliAODConversionMother EventPiPlGoodMeson = (AliAODConversionMother)(*(EventPiPlMeson->at(iPrevious1)));
 							if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 								MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
 							}
 							AliAODConversionMother *PiPlPiMiBackgroundCandidate = new AliAODConversionMother(&EventPiZeroGoodMeson, &EventPiPlGoodMeson);
-							for(UInt_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
+                            for(Int_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
 								AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iPrevious2)));
 								if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 									MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);
@@ -2365,7 +2365,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 					bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGPl);
 				}
 
-				for(UInt_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
+                for(Int_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
 					AliAODConversionMother EventPiPlGoodMeson = (AliAODConversionMother)(*(EventPiPlMeson->at(iPrevious1)));
 					if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 						MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
@@ -2410,7 +2410,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 					AliAODConversionMother EventPiPosGoodMeson = *(AliAODConversionMother*)(fPosPionCandidates->At(iPrevious1));
 					AliAODConversionMother *PiPlPiMiBackgroundCandidate = new AliAODConversionMother(&EventPiPosGoodMeson,&EventPiZeroGoodMeson);
 
-					for(UInt_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
+                    for(Int_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
 						AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iPrevious2)));
 						if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 							MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);
@@ -2460,14 +2460,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 							bgEventVertexMi = fBGHandlerPiMi[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGMi);
 						}
 
-						for(UInt_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
+                        for(Int_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
 							AliAODConversionMother EventPiPlGoodMeson = (AliAODConversionMother)(*(EventPiPlMeson->at(iPrevious1)));
 							if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 								MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
 							}
 							AliAODConversionMother *PiPlPiMiBackgroundCandidate = new AliAODConversionMother(&EventPiZeroGoodMeson, &EventPiPlGoodMeson);
 
-							for(UInt_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
+                            for(Int_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
 								AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iPrevious2)));
 								if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 									MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);
@@ -2517,7 +2517,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 					bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGPl);
 				}
 
-				for(UInt_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
+                for(Int_t iPrevious1=0; iPrevious1<EventPiPlMeson->size(); iPrevious1++){
 					AliAODConversionMother EventPiPlGoodMeson = (AliAODConversionMother)(*(EventPiPlMeson->at(iPrevious1)));
 					if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 						MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
@@ -2560,7 +2560,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 					AliAODConversionMother EventPiPosGoodMeson = *(AliAODConversionMother*)(fPosPionCandidates->At(iPrevious1));
 					AliAODConversionMother *PiPlPiMiBackgroundCandidate = new AliAODConversionMother(&EventPiPosGoodMeson,&EventPiZeroGoodMeson);
 
-					for(UInt_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
+                    for(Int_t iPrevious2=0; iPrevious2<EventPiMiMeson->size(); iPrevious2++){
 						AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iPrevious2)));
 						if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 							MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);

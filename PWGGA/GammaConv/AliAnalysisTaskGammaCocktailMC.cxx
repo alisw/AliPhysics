@@ -266,7 +266,7 @@ void AliAnalysisTaskGammaCocktailMC::UserExec(Option_t *)
 void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
 
   // Loop over all primary MC particle  
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
     // fill primary histograms
     TParticle* particle         = NULL;
     particle                    = (TParticle *)fMCStack->Particle(i);

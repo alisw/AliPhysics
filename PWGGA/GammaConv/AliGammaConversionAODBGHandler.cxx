@@ -50,7 +50,7 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler() :
 }
 
 //_____________________________________________________________________________________________________________________________
-AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t binsZ,UInt_t binsMultiplicity,UInt_t nEvents) :
+AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t binsZ,Int_t binsMultiplicity,Int_t nEvents) :
 	TObject(),
 	fNEvents(nEvents),
 	fBGEventCounter(NULL),
@@ -71,8 +71,8 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t binsZ,UInt
 
 
 //_____________________________________________________________________________________________________________________________
-AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(UInt_t collisionSystem, UInt_t centMin, UInt_t centMax, 
-															   UInt_t nEvents, Bool_t useTrackMult, UInt_t mode, UInt_t binsZ, UInt_t binsMultiplicity) :
+AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSystem, Int_t centMin, Int_t centMax,
+                                                               Int_t nEvents, Bool_t useTrackMult, Int_t mode, Int_t binsZ, Int_t binsMultiplicity) :
 	TObject(),
 	fNEvents(nEvents),
 	fBGEventCounter(NULL),
@@ -588,7 +588,7 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
 	//  cout<<"Checking the entries: Z="<<z<<", M="<<m<<", eventCounter="<<eventCounter<<endl;
 
 	//  cout<<"The size of this vector is: "<<fBGEvents[z][m][eventCounter].size()<<endl;
-	for(UInt_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+    for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
 		delete (AliAODConversionPhoton*)(fBGEvents[z][m][eventCounter][d]);
 	}
 	fBGEvents[z][m][eventCounter].clear();
@@ -620,7 +620,7 @@ void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Do
 	fBGEventVertex[z][m][eventCounter].fEP = epvalue;
 
 	//first clear the vector
-	for(UInt_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+    for(Int_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
 		delete (AliAODConversionMother*)(fBGEventsMeson[z][m][eventCounter][d]);
 	}
 	fBGEventsMeson[z][m][eventCounter].clear();
@@ -649,7 +649,7 @@ void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventE
 	//  cout<<"Checking the entries: Z="<<z<<", M="<<m<<", eventCounter="<<eventCounter<<endl;
 
 	//  cout<<"The size of this vector is: "<<fBGEvents[z][m][eventCounter].size()<<endl;
-	for(UInt_t d=0;d<fBGEventsENeg[z][m][eventENegCounter].size();d++){
+    for(Int_t d=0;d<fBGEventsENeg[z][m][eventENegCounter].size();d++){
 		delete (AliAODConversionPhoton*)(fBGEventsENeg[z][m][eventENegCounter][d]);
 	}
 
