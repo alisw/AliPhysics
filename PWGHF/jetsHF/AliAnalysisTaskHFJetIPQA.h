@@ -24,6 +24,7 @@ class AliTriggerAnalysis;
 class THnSparse;
 class AliOADBContainer;
 class AliEmcalList;
+class AliVertexerTracks;
 class TGraph;
 #include "TMatrixD.h"
 #include "TF1.h"
@@ -69,7 +70,7 @@ public:
   void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
                                      TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
                                      TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
-  Bool_t SetResFunction( TF1 * f = 0x0,Int_t i = 0 , Int_t j=0);
+  Bool_t SetResFunction( TGraph * f = 0x0, Int_t j=0);
   void SetAODBContainer(AliOADBContainer* cont);
   void EnableCorrectionSamplingMode(Bool_t val=true){fCorrrectionSamplingMode=val;}//
   void setN_ITSClusters_Input_global( Int_t value);
@@ -77,6 +78,7 @@ public:
   void RotateMatrixY(TMatrixD &m, double ang_rad);
   void PartiallyRotateMatrixY(TMatrixD &m, double ang_rad);
   void RotateVectorY(TVector3 &v, double ang_rad);
+
 private:
   void DoJetLoop(); //jet matching function 2/4
   void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
@@ -128,6 +130,12 @@ private:
   Double_t GetPsiPair(AliESDv0 * v0);
   Double_t GetPtCorrected(const AliEmcalJet* jet);
   Double_t GetPtCorrectedMC(const AliEmcalJet *jet);
+  //Functions to allow jet probability/TC System 8 efficiency estimation
+  Bool_t IsJetTaggedTC(int n =0 ,double thres = 0.1);
+  Bool_t IsJetTaggedJetProb(double thresProb = 0.90);
+
+
+  void GetUDGResolutionFunctionHists(AliVTrack * track,AliEmcalJet * jet);
   AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
   TH1 *  AddHistogramm(const char * name,const char * title,Int_t x,Double_t xlow,Double_t xhigh, Int_t y=0,Double_t ylow=0,Double_t yhigh=0);
   TH1D * GetHist1D(const char * name){return (TH1D*)fOutput2->FindObject(name);}
@@ -152,7 +160,7 @@ private:
   AliMCEvent       *fMCEvent;//!;
   AliESDtrackCuts  *fESDTrackCut;//
   AliAnalysisUtils *fUtils;//!
-
+  AliVertexerTracks *fVertexer;//!
   Bool_t fDoJetProbabilityAnalysis;
   Bool_t fESD ;
   Bool_t fMcEvtSampled;//
@@ -168,9 +176,9 @@ private:
   std::vector <Double_t > fEtaUdsgEvt;//!
   std::vector <Double_t > fPhiUdsgEvt;//!
 
-  TGraph fResolutionFunction [10];//[10]
+  TGraph fResolutionFunction [5];//[5] ie 5 * n Pt bins
   TH2D * fh2dAcceptedTracksEtaPhiPerLayer[6];//![6]
-  ClassDef(AliAnalysisTaskHFJetIPQA, 7	)
+  ClassDef(AliAnalysisTaskHFJetIPQA, 9	)
 };
 #endif
 
