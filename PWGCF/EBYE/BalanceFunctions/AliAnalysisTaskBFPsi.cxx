@@ -1692,6 +1692,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
 	    fHistBetaVsdEdXafterPID ->Fill(aodTrack->GetTPCsignal(),beta);
 	  }
+	  // if not detector flag remove track
+	  else{
+	    continue;
+	  }
+	}
+	// if probably mismatch remove track
+	else{
+	  continue;
 	}
       }
       //===========================PID===============================//
