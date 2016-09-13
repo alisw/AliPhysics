@@ -2114,7 +2114,7 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
   if (AODMCTrackArray == NULL) return;
   
   // Loop over all primary MC particle
-  for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+  for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
     
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
     if (!particle) continue;
@@ -2286,7 +2286,7 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
   
   // Loop over all primary MC particle
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
     if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 
       TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -2823,7 +2823,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(!isPrimary){ // Secondary Meson
       // filling secondary histograms
-      Int_t secMotherLabel = -1;
+      Long_t secMotherLabel = -1;
       if(gamma0MotherLabel > -1) secMotherLabel = ((TParticle*)MCStack->Particle(gamma0MotherLabel))->GetMother(0);
 
       Float_t weightedSec= 1;
@@ -3151,7 +3151,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(!isPrimary){ // Secondary Meson
-      Int_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetMother();
+      Long_t secMotherLabel = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MotherLabel))->GetMother();
       Float_t weightedSec= 1;
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, 0x0, fInputEvent) && static_cast<AliAODMCParticle*>(AODMCTrackArray->At(secMotherLabel))->GetPdgCode()==310){
         weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, 0x0, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
@@ -3235,7 +3235,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
       AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
       for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-        for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+        for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
           AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
           AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
@@ -3261,7 +3261,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
       if(previousEventV0s){
         for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-          for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
         
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);

@@ -1928,7 +1928,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
   
   // Loop over all primary MC particle
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
     if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 
       TParticle* particle = (TParticle *)fMCStack->Particle(i);

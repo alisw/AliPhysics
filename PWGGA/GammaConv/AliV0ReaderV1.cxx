@@ -1323,7 +1323,7 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
 
   AliStack *fMCStack= fMCEvent->Stack();
   // Loop over all primary MC particle
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
     if (fEventCuts->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histogram
       TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -1373,8 +1373,8 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
   if ( negPart == NULL || posPart == NULL ) return;
 //   if (!(negPart->GetPdgCode() == 11)) return;
 //   if (!(posPart->GetPdgCode() == -11)) return;
-  UInt_t motherlabelNeg = negPart->GetFirstMother();
-  UInt_t motherlabelPos = posPart->GetFirstMother();
+  Long_t motherlabelNeg = negPart->GetFirstMother();
+  Long_t motherlabelPos = posPart->GetFirstMother();
 
 //   cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
   if (motherlabelNeg>-1 && motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){

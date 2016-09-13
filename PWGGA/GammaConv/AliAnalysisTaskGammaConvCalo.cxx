@@ -2323,7 +2323,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   // Loop over EMCal clusters
-  for(Int_t i = 0; i < nclus; i++){    
+  for(Int_t i = 0; i < nclus; i++){
     AliVCluster* clus = NULL;
     if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
     else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
@@ -3004,7 +3004,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
       FillMultipleCountMap(fMapMultipleCountTrueConvGammas,posDaughter->GetMother(0));
     }
   }
-  Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
+  Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
   if(isPrimary){
     // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
     if(fIsFromMBHeader){
@@ -3058,7 +3058,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
   if (AODMCTrackArray == NULL) return;
   
   // Loop over all primary MC particle
-  for(Int_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+  for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
     
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
     if (!particle) continue;
@@ -3271,7 +3271,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 //   cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
   
   // Loop over all primary MC particle  
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
     if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
       // fill primary histograms
       TParticle* particle = (TParticle *)fMCStack->Particle(i);
@@ -4084,7 +4084,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
       
       for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
-        for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+        for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
           AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
           if(fMoveParticleAccordingToVertex == kTRUE){
             if (bgEventVertex){
@@ -4123,7 +4123,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
         }
         for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
-          for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+          for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
         
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
           
@@ -4221,7 +4221,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackgroundRP(){
         
         for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
           AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
-          for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
+          for(Int_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
             
             AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
             
