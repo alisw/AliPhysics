@@ -224,15 +224,15 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         Bool_t                  PassesCuts(AliVEvent* event);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
-        void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
+        void                    FillHistogramsAfterSubtraction(Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         void                    FillWeightedTrackHistograms() const;
         void                    FillWeightedClusterHistograms() const;
         void                    FillWeightedEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
         void                    FillWeightedRhoHistograms();
-        void                    FillWeightedDeltaPtHistograms(Double_t psi2) const; 
-        void                    FillWeightedJetHistograms(Double_t psi2);
+        void                    FillWeightedDeltaPtHistograms(Double_t psi3) const; 
+        void                    FillWeightedJetHistograms(Double_t psi3);
         void                    FillWeightedQAHistograms(AliVTrack* vtrack) const;
         void                    FillWeightedQAHistograms(AliVEvent* vevent);
         void                    FillWeightedTriggerQA(Double_t dPhi, Double_t pt, UInt_t trigger);
@@ -380,7 +380,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH3F*                   fHistPsiVZEROALeadingJet[10];   //! correlation vzeroa EP, LJ pt
         TH3F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
         TH3F*                   fHistPsiVZEROCombLeadingJet[10];//! correlation vzerocomb EP, LJ pt
-        TH3F*                   fHistPsi2Correlation[10];       //! correlation of event planes
+        TH3F*                   fHistPsi3Correlation[10];       //! correlation of event planes
         TH2F*                   fHistLeadingJetBackground[10];  //! geometric correlation of leading jet w/wo bkg subtraction
         // background
         TH1F*                   fHistRhoPackage[10];    //! rho as estimated by emcal jet package
@@ -394,13 +394,13 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistRCPhiEta[10];              //! random cone eta and phi
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
         TH1F*                   fHistRCPt[10];                  //! rcpt
-        TH2F*                   fHistDeltaPtDeltaPhi2[10];      //! dpt vs dphi (psi2 - phi)
-        TH2F*                   fHistDeltaPtDeltaPhi2Rho0[10];  //! dpt vs dphi, rho_0
+        TH2F*                   fHistDeltaPtDeltaPhi3[10];      //! dpt vs dphi (psi2 - phi)
+        TH2F*                   fHistDeltaPtDeltaPhi3Rho0[10];  //! dpt vs dphi, rho_0
         TH2F*                   fHistRCPhiEtaExLJ[10];          //! random cone eta and phi, excl leading jet
         TH2F*                   fHistRhoVsRCPtExLJ[10];         //! rho * A vs rcpt, excl leading jet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi2ExLJRho0[10];      //! dpt vs dphi, excl leading jet, rho_0
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi3ExLJRho0[10];      //! dpt vs dphi, excl leading jet, rho_0
         // jet histograms (after kinematic cuts)
         TH1F*                   fHistJetPtRaw[10];              //! jet pt - no background subtraction
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
@@ -413,10 +413,10 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistJetPtConstituents[10];     //! jet pt versus number of constituents
         TH2F*                   fHistJetEtaRho[10];             //! jet eta versus rho
         // in plane, out of plane jet spectra
-        TH2F*                   fHistJetPsi2Pt[10];             //! event plane dependence of jet pt
-        TH3F*                   fHistJetLJPsi2Pt[10];           //! event plane dependence of jet pt and leading track pt
-        TH3F*                   fHistJetLJPsi2PtRatio[10];      //! ratio of leading track v2 to jet v2
-        TH2F*                   fHistJetPsi2PtRho0[10];         //! event plane dependence of jet pt vs rho_0
+        TH2F*                   fHistJetPsi3Pt[10];             //! event plane dependence of jet pt
+        TH3F*                   fHistJetLJPsi3Pt[10];           //! event plane dependence of jet pt and leading track pt
+        TH3F*                   fHistJetLJPsi3PtRatio[10];      //! ratio of leading track v2 to jet v2
+        TH2F*                   fHistJetPsi3PtRho0[10];         //! event plane dependence of jet pt vs rho_0
         // vzero event plane calibration cache for 10h data
         Float_t                 fMeanQ[9][2][2];                //! recentering
         Float_t                 fWidthQ[9][2][2];               //! recentering
