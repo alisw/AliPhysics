@@ -1590,7 +1590,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t beta = -999.;
 
 
-	if ((aodTrack->IsOn(AliAODTrack::kITSin)) &&  (aodTrack->IsOn(AliAODTrack::kTOFpid)) ) { //leonardo's analysis
+	if ((aodTrack->IsOn(AliAODTrack::kITSin)) &&  (aodTrack->IsOn(AliAODTrack::kTOFout)) ) { //check if track goes from ITS to matched TOF hit
 	  
 	  tofTime = aodTrack->GetTOFsignal();//in ps
 	  length = aodTrack->GetIntegratedLength();
@@ -1687,7 +1687,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	      fHistProbTPCvsPtafterPID ->Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
 	      fHistProbTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
 	    }	   
-	    
+
 	    //Fill QA after the PID
 	    fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
 	    fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
