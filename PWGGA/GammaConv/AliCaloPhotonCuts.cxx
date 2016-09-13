@@ -948,6 +948,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCS
    // MonteCarlo Photon Selection
 
   if(!fMCStack)return kFALSE;
+  if(!particle) return kFALSE;
 
   if (particle->GetPdgCode() == 22){
 
@@ -967,6 +968,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *
    // MonteCarlo Photon Selection
 
   if(!fMCStack)return kFALSE;
+  if(!particle) return kFALSE;
 
   if (TMath::Abs(particle->GetPdgCode()) == 11){
 
@@ -987,6 +989,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
   // MonteCarlo Photon Selection
 
   if(!aodmcArray)return kFALSE;
+  if(!particle) return kFALSE;
 
   if (particle->GetPdgCode() == 22){
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;

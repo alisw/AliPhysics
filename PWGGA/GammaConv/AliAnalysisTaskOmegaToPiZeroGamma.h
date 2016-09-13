@@ -59,8 +59,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
                                           AliAODConversionPhoton *TrueGammaCandidate0,
                                           AliAODConversionPhoton *TrueGammaCandidate1,
                                           AliAODConversionPhoton *TrueGammaCandidate2);
-    void ProcessConversionPhotonsForMissingTags     ();
-    void ProcessConversionPhotonsForMissingTagsAOD  ();
     
     // switches for additional analysis streams or outputs
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
@@ -323,7 +321,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 9);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 10);
 };
 
 #endif
