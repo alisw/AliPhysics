@@ -1589,48 +1589,49 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	Double_t c = TMath::C()*1.E-9;// m/ns
 	Double_t beta = -999.;
 
-	Float_t probMis = fPIDResponse->GetTOFMismatchProbability(aodTrack);
-	if (probMis < 0.01) { //if u want to reduce mismatch using also TPC
 
-	  if ((aodTrack->IsOn(AliAODTrack::kITSin)) &&  (aodTrack->IsOn(AliAODTrack::kTOFpid)) ) { //leonardo's analysis
-	    
-	    tofTime = aodTrack->GetTOFsignal();//in ps
-	    length = aodTrack->GetIntegratedLength();
-	    tof = tofTime*1E-3; // ns		      
-	    if (tof <= 0) {
-	      Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	if ((aodTrack->IsOn(AliAODTrack::kITSin)) &&  (aodTrack->IsOn(AliAODTrack::kTOFpid)) ) { //leonardo's analysis
+	  
+	  tofTime = aodTrack->GetTOFsignal();//in ps
+	  length = aodTrack->GetIntegratedLength();
+	  tof = tofTime*1E-3; // ns		      
+	  if (tof <= 0) {
+	    Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	    continue;
+	  }
+	  if (length <= 0){
+	    // in old productions integrated track length is not stored in AODs -> need workaround
+	    Double_t exptime[10];
+	    aodTrack->GetIntegratedTimes(exptime);
+	    length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+	    if (length <= 0){
+	      Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
 	      continue;
 	    }
-	    if (length <= 0){
-	      // in old productions integrated track length is not stored in AODs -> need workaround
-	      Double_t exptime[10];
-	      aodTrack->GetIntegratedTimes(exptime);
-	      length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
-	      if (length <= 0){
-		Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
-		continue;
-	      }
-	    }	      
-	    length = length*0.01; // in meters
-	    tof = tof*c;
-	    beta = length/tof;
-	    
-	    fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
-	    fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
-	    fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
-	  }//TOF signal 
+	  }	      
+	  length = length*0.01; // in meters
+	  tof = tof*c;
+	  beta = length/tof;
 	  
-	  fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->GetTPCmomentum()*aodTrack->Charge(),aodTrack->GetTPCsignal()); //aodTrack->P()*aodTrack->Charge()
-	  fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
-	  fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);	
-	  fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
-	  
-	  //combined TPC&TOF
-	  fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); 	
-	  fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
-	  fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P()); //++++++++++++++
-	  //Printf("NSIGMA: %lf - nSigmaTOF: %lf - nSigmaTPC: %lf - nSigmaTPCTOF: %lf",nSigma,nSigmaTOF,nSigmaTPC,nSigmaTPCTOF); 
-	  //end of QA-before pid
+	  fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+	  fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
+	  fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
+	}//TOF signal 
+	
+	fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->GetTPCmomentum()*aodTrack->Charge(),aodTrack->GetTPCsignal()); //aodTrack->P()*aodTrack->Charge()
+	fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
+	fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);	
+	fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+	
+	//combined TPC&TOF
+	fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); 	
+	fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
+	fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P()); //++++++++++++++
+	//Printf("NSIGMA: %lf - nSigmaTOF: %lf - nSigmaTPC: %lf - nSigmaTPCTOF: %lf",nSigma,nSigmaTOF,nSigmaTPC,nSigmaTPCTOF); 
+	//end of QA-before pid
+
+	Float_t probMis = fPIDResponse->GetTOFMismatchProbability(aodTrack);
+	if (probMis < 0.01) { //if u want to reduce mismatch using also TPC
 	  
 	  if ((detUsedTPC != 0)||(detUsedTOF != 0)||(detUsedTPCTOF != 0)) {
 	    
@@ -1691,8 +1692,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	    fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
 	    fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
 	    fHistBetaVsdEdXafterPID ->Fill(aodTrack->GetTPCsignal(),beta);
+	  
 	  }
-	  // if not detector flag remove track
+	  // if no detector flag remove track
 	  else{
 	    continue;
 	  }
