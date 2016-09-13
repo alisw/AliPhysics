@@ -1838,7 +1838,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
   if (!TruePhotonCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (!fDoLightOutput && fDoClusterQA > 0) fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(), fWeightJetJetMC);
   
-  if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0)Photon = fMCStack->Particle(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
+  if (TruePhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return;
+  if (TruePhotonCandidate->GetNCaloPhotonMCLabels() > 0) Photon = fMCStack->Particle(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
     else return;
     
   if(Photon == NULL){
@@ -1862,8 +1863,10 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
         fHistoTrueClusElectronPt[fiCut]->Fill(TruePhotonCandidate->Pt());
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
         fHistoTrueClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-        TParticle* motherPart = (TParticle*)fMCStack->Particle(Photon->GetMother(0));
-        fHistoTrueClusConvGammaMCPt[fiCut]->Fill(motherPart->Pt());
+        if(Photon->GetMother(0) > -1){
+          TParticle* motherPart = (TParticle*)fMCStack->Particle(Photon->GetMother(0));
+          fHistoTrueClusConvGammaMCPt[fiCut]->Fill(motherPart->Pt());
+        }
       }
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && TruePhotonCandidate->IsConversionFullyContained()) 
         fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt());
@@ -2427,7 +2430,8 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
         if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC(particle,fMCStack,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
           TParticle* daughter0  = (TParticle*)fMCStack->Particle(particle->GetFirstDaughter());
           TParticle* daughter1  = (TParticle*)fMCStack->Particle(particle->GetLastDaughter());
-          Int_t pdgCode = ((TParticle*)fMCStack->Particle( particle->GetFirstMother() ))->GetPdgCode();
+          Int_t pdgCode = -1;
+          if(particle->GetFirstMother() > -1) pdgCode = ((TParticle*)fMCStack->Particle( particle->GetFirstMother() ))->GetPdgCode();
           
           if(particle->GetPdgCode() == 111){
             Int_t source = GetSourceClassification(111,pdgCode);
@@ -2554,7 +2558,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
       if (TrueGammaCandidate0->IsLargestComponentPhoton()){                            // for photons its the direct mother 
         gamma0MotherLabel=gammaMC0->GetMother(0);
       } else if (TrueGammaCandidate0->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
-        if (TrueGammaCandidate0->IsConversion()){
+        if (TrueGammaCandidate0->IsConversion() && (gammaMC0->GetMother(0) > -1)){
           convertedPhotonLabel0 = gammaMC0->GetMother(0);
           gamma0MotherLabel=MCStack->Particle(gammaMC0->GetMother(0))->GetMother(0);
         } else {
@@ -2582,7 +2586,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
         if (TrueGammaCandidate1->IsConversion()){
           convertedPhotonLabel1   = gammaMC1->GetMother(0);
           fRconv           = gammaMC1->R();
-          gamma1MotherLabel    = MCStack->Particle(gammaMC1->GetMother(0))->GetMother(0);
+          if(convertedPhotonLabel1 > -1) gamma1MotherLabel    = MCStack->Particle(convertedPhotonLabel1)->GetMother(0);
         } else {
           gamma1MotherLabel=gammaMC1->GetMother(0);
           fRconv           = gammaMC1->R();
@@ -2819,9 +2823,11 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, gamma0MotherLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if(!isPrimary){ // Secondary Meson
       // filling secondary histograms
-      Int_t secMotherLabel = ((TParticle*)MCStack->Particle(gamma0MotherLabel))->GetMother(0);
+      Int_t secMotherLabel = -1;
+      if(gamma0MotherLabel > -1) secMotherLabel = ((TParticle*)MCStack->Particle(gamma0MotherLabel))->GetMother(0);
+
       Float_t weightedSec= 1;
-      if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, fMCStack, fInputEvent) && MCStack->Particle(secMotherLabel)->GetPdgCode()==310){
+      if((secMotherLabel > -1) && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(secMotherLabel, fMCStack, fInputEvent) && MCStack->Particle(secMotherLabel)->GetPdgCode()==310){
         weightedSec= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(secMotherLabel, fMCStack, fInputEvent)/2.; //invariant mass is additive thus the weight for the daughters has to be devide by two for the K0s at a certain pt
         //cout << "MC input \t"<<i << "\t" <<  particle->Pt()<<"\t"<<weighted << endl;
       }

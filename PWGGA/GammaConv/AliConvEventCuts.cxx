@@ -3299,6 +3299,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliStack *MCStack, AliV
           fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3                    // LHC11a MCs
      ) ) return 1.;
   Int_t kCaseGen = 0;
+
+  if(index < 0) return 0; // No Particle
     
   if (IsParticleFromBGEvent(index, MCStack, InputEvent)){
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b || fPeriodEnum == kLHC13e7 || fPeriodEnum == kLHC13b2_efix || fPeriodEnum == kLHC14a1a || fPeriodEnum ==  kLHC14a1b || fPeriodEnum ==  kLHC14a1c       ||

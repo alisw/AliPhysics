@@ -630,6 +630,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
 
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+        if(daughterIndex<0) continue;
         TParticle *tmpDaughter = fMCStack->Particle(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
         if(tmpDaughter->GetPdgCode() == 11){
