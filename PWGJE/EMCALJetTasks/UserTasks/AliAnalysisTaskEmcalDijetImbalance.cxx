@@ -103,29 +103,16 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateClusterHistograms()
     groupname = clusCont->GetName();
     fHistManager.CreateHistoGroup(groupname);
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
+
+      // Cluster histograms (PHOS+EMCal)
+
       histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
 
-      histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster}^{exotic} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
-
-      histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster}^{non-lin.corr.} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
-
-      histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{E}_{cluster}^{had.corr.} (GeV);counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
-
-      histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#phi}_{custer};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
-
-      histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), cent);
-      histtitle = TString::Format("%s;#it{#eta}_{custer};counts", histname.Data());
-      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+      histname = TString::Format("%s/histClusterEtaPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{cluster};#it{#phi}_{cluster};counts", histname.Data());
+      fHistManager.CreateTH2(histname, histtitle, fNbins / 6, -1, 1, fNbins / 2, 0, TMath::TwoPi());
 
       histname = TString::Format("%s/histNClusters_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;number of clusters;events", histname.Data());
@@ -135,6 +122,65 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateClusterHistograms()
       else {
         fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
       }
+
+      // EMCal cluster histograms
+
+      histname = TString::Format("%s/histEMCalClusterEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histEMCalClusterEnergyExotic_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{exotic} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histEMCalClusterNonLinCorrEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{non-lin.corr.} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histEMCalClusterHadCorrEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{had.corr.} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histEMCalClusterPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#phi}_{cluster};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histEMCalClusterEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{cluster};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+      histname = TString::Format("%s/histEMCalNClusters_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;number of clusters;events", histname.Data());
+      if (fForceBeamType != kpp) {
+        fHistManager.CreateTH1(histname, histtitle, 500, 0, 3000);
+      }
+      else {
+        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+      }
+
+      // PHOS cluster histograms
+
+      histname = TString::Format("%s/histPHOSClusterEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histPHOSClusterPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#phi}_{cluster};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histPHOSClusterEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{cluster};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+      histname = TString::Format("%s/histPHOSNClusters_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;number of clusters;events", histname.Data());
+      if (fForceBeamType != kpp) {
+        fHistManager.CreateTH1(histname, histtitle, 500, 0, 3000);
+      }
+      else {
+        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+      }
+
     }
   }
 }
@@ -257,6 +303,10 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
       histname = TString::Format("%s/histJetEta_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;#it{#eta}_{jet};counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+      histname = TString::Format("%s/histJetEtaPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{jet};#it{#phi}_{jet};counts", histname.Data());
+      fHistManager.CreateTH2(histname, histtitle, fNbins / 6, -1, 1, fNbins / 2, 0, TMath::TwoPi());
 
       histname = TString::Format("%s/histNJets_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;number of jets;events", histname.Data());
@@ -440,6 +490,9 @@ void AliAnalysisTaskEmcalDijetImbalance::DoJetLoop()
       histname = TString::Format("%s/histJetEta_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, jet->Eta());
 
+      histname = TString::Format("%s/histJetEtaPhi_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, jet->Eta(), jet->Phi());
+
       if (jetCont->GetRhoParameter()) {
         histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
         fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
@@ -509,7 +562,7 @@ void AliAnalysisTaskEmcalDijetImbalance::DoTrackLoop()
 }
 
 /**
- * This function performs a loop over the reconstructed EMCal clusters
+ * This function performs a loop over the reconstructed EMCal/PHOS clusters
  * in the current event and fills the relevant histograms.
  */
 void AliAnalysisTaskEmcalDijetImbalance::DoClusterLoop()
@@ -525,12 +578,14 @@ void AliAnalysisTaskEmcalDijetImbalance::DoClusterLoop()
       if (!cluster) continue;
 
       if (cluster->GetIsExotic()) {
-        histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), fCentBin);
+        histname = TString::Format("%s/histEMCalClusterEnergyExotic_%d", groupname.Data(), fCentBin);
         fHistManager.FillTH1(histname, cluster->E());
       }
     }
 
     UInt_t count = 0;
+    UInt_t countEMCal = 0;
+    UInt_t countPHOS = 0;
     for(auto cluster : clusCont->accepted()) {
       if (!cluster) continue;
       count++;
@@ -541,21 +596,53 @@ void AliAnalysisTaskEmcalDijetImbalance::DoClusterLoop()
       histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, cluster->E());
 
-      histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, cluster->GetNonLinCorrEnergy());
+      histname = TString::Format("%s/histClusterEtaPhi_%d", groupname.Data(),fCentBin);
+      fHistManager.FillTH2(histname, nPart.Eta(), nPart.Phi_0_2pi());
 
-      histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, cluster->GetHadCorrEnergy());
+      if (cluster->IsEMCAL()) {
 
-      histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
+        countEMCal++;
 
-      histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), fCentBin);
-      fHistManager.FillTH1(histname, nPart.Eta());
+        histname = TString::Format("%s/histEMCalClusterEnergy_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, cluster->E());
+
+        histname = TString::Format("%s/histEMCalClusterNonLinCorrEnergy_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, cluster->GetNonLinCorrEnergy());
+
+        histname = TString::Format("%s/histEMCalClusterHadCorrEnergy_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, cluster->GetHadCorrEnergy());
+
+        histname = TString::Format("%s/histEMCalClusterPhi_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
+
+        histname = TString::Format("%s/histEMCalClusterEta_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, nPart.Eta());
+
+      } else if (cluster->IsPHOS()){
+
+        countPHOS++;
+
+        histname = TString::Format("%s/histPHOSClusterEnergy_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, cluster->E());
+
+        histname = TString::Format("%s/histPHOSClusterPhi_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
+
+        histname = TString::Format("%s/histPHOSClusterEta_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, nPart.Eta());
+
+      }
     }
 
     histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
     fHistManager.FillTH1(histname, count);
+
+    histname = TString::Format("%s/histEMCalNClusters_%d", groupname.Data(), fCentBin);
+    fHistManager.FillTH1(histname, countEMCal);
+
+    histname = TString::Format("%s/histPHOSNClusters_%d", groupname.Data(), fCentBin);
+    fHistManager.FillTH1(histname, countPHOS);
+
   }
 }
 
