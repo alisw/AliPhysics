@@ -1067,7 +1067,8 @@ void AliHFSystErr::InitDplustoKpipi2010ppPass4(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  for(Int_t i=1; i<=2; i++) fTrackingEff->SetBinContent(i,0.04);
+  fTrackingEff->SetBinContent(1,0.04);
+  fTrackingEff->SetBinContent(2,0.045);
   fTrackingEff->SetBinContent(3,0.045);
   fTrackingEff->SetBinContent(4,0.05);
   fTrackingEff->SetBinContent(5,0.05);
