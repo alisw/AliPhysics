@@ -2356,6 +2356,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       Int_t indexHit[3]={0},index[3];
       indexHit[1]=isec;
       float xyzHit[3] = {tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
+
       double yLab = xyzHit[1]; // for eventual P-gradient accounting
       if (tpcrecoparam->GetUseCorrectionMap()) {
 	double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
@@ -2386,7 +2387,14 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       }
       indexHit[0]=1;
 
-      fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
+      // RS: there is a mess in the application of the aligmnent: in the old code it is applied
+      // here unconditionally, while in the reco it is subject of GetUseSectorAlignment. And for some
+      // reason it is ON in our RecoParams tailored for MC.
+      // For consistency, use the same condition here, although with the CorrectionMaps the alignment will
+      // be switched OFF
+      tpcrecoparam->GetUseSectorAlignment() ? 
+	fTPCParam->Transform1to2(xyzHit,indexHit) :
+	fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
       // account for A/C sides max drift L deficit to nominal 250 cm
       Bool_t sideC = ((isec/18)&0x1);
       xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
