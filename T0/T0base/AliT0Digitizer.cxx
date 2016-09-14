@@ -93,7 +93,7 @@ AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput)
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
-  if(LHCperiod.Contains("LHC15")) fRun2=kTRUE;
+  if(LHCperiod.Contains("LHC15") || LHCperiod.Contains("LHC16") || LHCperiod.Contains("LHC17")  ) fRun2=kTRUE;
   else 
     fRun2=kFALSE;
 
