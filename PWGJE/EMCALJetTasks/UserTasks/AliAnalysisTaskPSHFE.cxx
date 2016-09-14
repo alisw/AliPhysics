@@ -1,4 +1,4 @@
- **************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -4709,8 +4709,9 @@ TObjArray* AliAnalysisTaskPSHFE::MakeTrkArr(AliAODEvent *aod)
         if(aodtrack->IsHybridGlobalConstrainedGlobal()){
             continue;
         }
-
-        accTracks->Add(new AliAODTrack(*aodtrack));
+        AliAODTrack* temp = new AliAODTrack(*aodtrack);
+        accTracks->Add(temp);
+        delete temp;
     }
 
     return accTracks;
