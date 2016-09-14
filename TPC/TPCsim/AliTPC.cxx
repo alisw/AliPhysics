@@ -2276,6 +2276,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   Int_t previousTrack,currentTrack;
   previousTrack = -1; // nothing to store so far!
 
+  double maxDrift = fTPCParam->GetZLength(isec);
+
   for(Int_t track=0;track<ntracks;track++){
     Bool_t isInSector=kTRUE;
     ResetHits();
@@ -2392,13 +2394,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       // reason it is ON in our RecoParams tailored for MC.
       // For consistency, use the same condition here, although with the CorrectionMaps the alignment will
       // be switched OFF
-      tpcrecoparam->GetUseSectorAlignment() ? 
-	fTPCParam->Transform1to2(xyzHit,indexHit) :
-	fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
-      // account for A/C sides max drift L deficit to nominal 250 cm
       Bool_t sideC = ((isec/18)&0x1);
-      xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
-      double maxDrift = fTPCParam->GetZLength(isec);
+      if ( tpcrecoparam->GetUseSectorAlignment() ) fTPCParam->Transform1to2(xyzHit,indexHit);
+      else {
+	fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
+	// account for A/C sides max drift L deficit to nominal 250 cm
+	xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
+      }
       //
       //-----------------------------------------------
       //  Loop over electrons
