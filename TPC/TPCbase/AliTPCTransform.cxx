@@ -872,7 +872,7 @@ void AliTPCTransform::EvalDistortionMap(int roc, const double xyzSector[3], floa
   // for time dependent correction need to evaluate 2 maps, assuming linear dependence
   if (fCorrMapCache1) {
     float delta1[4] = {0.0f};
-    ((AliTPCChebDist*)fCorrMapCache1)->Eval(roc,xyzSector[0],y2x,z2x,res);
+    ((AliTPCChebDist*)fCorrMapCache1)->Eval(roc,xyzSector[0],y2x,z2x,delta1);
     UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
     UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
       // possible division by 0 is checked at upload of maps
