@@ -406,8 +406,9 @@ Bool_t AliPBUtils::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
   //  vertex->GetNContributors(),ESDEvent->GetPrimaryVertexSPD());
   //printf("z-position of vertex: %f\n",vertex->GetZ());
 
-  const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < 10.);
 	// 10 is the common value, unit: cm
+  // use here 15 cm to allow systematic cut studies
+  const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < 15.);
 	if (hpriv) hpriv->Fill(kpriv);
 	if (hpriVtxDist) hpriVtxDist->Fill(vertex->GetZ());
 	if (hpriVtxPos && kpr0) hpriVtxPos->Fill(!kpriv);
@@ -711,7 +712,10 @@ Int_t AliPBUtils::GetFMD(const AliESDEvent *ESDEvent, TH2 *hitMapFMDa,
 	const Bool_t fmdC =
 		triggerAnalysis.FMDTrigger(ESDEvent, AliTriggerAnalysis::kCSide);
 
-	printf("<I - GetFMD> %i (A) : %i (C) \n",fmdA,fmdC);
+	printf("<I - GetFMD> online : %i (A) : %i (C) \n",fmdA,fmdC);
+	printf("<I - GetFMD> offline: %i (A) : %i (C) \n",
+    triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDA),
+    triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDC) );
 
 	// prepartions for a charge summation algorithm
 	Bool_t hitMaps = (Bool_t)(hitMapFMDa && hitMapFMDc);
