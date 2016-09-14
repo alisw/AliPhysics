@@ -21,8 +21,9 @@ CEPEventBuffer::CEPEventBuffer()
   , fnumTracks(0)
   , fnumSoftTracks(0)
   , fnumResiduals(0)
-  , fTracks(0x0)
+  , fMCProcessType(-1)
   , fGapCondition(0)
+  , fTracks(0x0)
 {
 
   fRunNumber = CEPTrackBuffer::kdumval;
@@ -49,6 +50,7 @@ void CEPEventBuffer::Reset()
   fnumSoftTracks = 0;
   fnumResiduals  = 0;
   fGapCondition  = 0;  
+  fMCProcessType = -1;
 
   // clear the track list
   //printf("I am reseting the ftracks TList!!\n");

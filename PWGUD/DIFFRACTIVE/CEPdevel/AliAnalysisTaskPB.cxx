@@ -70,6 +70,8 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fPhysicsSelection(0x0)
 	, fTracks(new AliPBTracks())
 	, fVtxDst(-1.)
+	, fVtxX(0)
+	, fVtxY(0)
 	, fVtxZ(-20)
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
@@ -276,6 +278,8 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fPhysicsSelection(0x0)
 	, fTracks(0x0)
 	, fVtxDst(-1.)
+	, fVtxX(0)
+	, fVtxY(0)
 	, fVtxZ(-20)
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
@@ -1403,6 +1407,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     fCEPEvent->SetEventNumber(fEvent);
     fCEPEvent->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
     fCEPEvent->SetGapCondition(fCurrentGapCondition);
+    fCEPEvent->SetVertexPos(fVtxX,fVtxY,fVtxZ);
   
     // add normal tracks to event buffer
     Double_t mom[3];
@@ -1649,12 +1654,12 @@ Bool_t AliAnalysisTaskPB::CheckInput()
 		//return kFALSE;
 	}
 
-	if(fDoAOD && fAODEvent && fabs(fAODEvent->GetMagneticField())<1){
+	if(fDoAOD && fAODEvent && TMath::Abs(fAODEvent->GetMagneticField())<1){
 		printf("AliAnalysisTaskPB strange Bfield! %f\n",
 		       fAODEvent->GetMagneticField());
 		return kFALSE;
 	}
-	else if((!fDoAOD) && fESDEvent && fabs(fESDEvent->GetMagneticField())<1){
+	else if((!fDoAOD) && fESDEvent && TMath::Abs(fESDEvent->GetMagneticField())<1){
 		printf("AliAnalysisTaskPB strange Bfield! %f\n",
 		       fESDEvent->GetMagneticField());
 		return kFALSE;
@@ -2097,7 +2102,7 @@ void AliAnalysisTaskPB::DoTrackPair(Bool_t soft /* = kFALSE */)
 	Int_t vtxInRng = 0;
 	Int_t vtxCoincidence = 0;
 
-	vtxInRng = (fabs(fVtxZ) < 4.) ? 1 : 0;
+	vtxInRng = (TMath::Abs(fVtxZ) < 4.) ? 1 : 0;
 	// 4cm range, determined from detector geometry
 
 	// vertex coincidence of the track and SPD vertex
@@ -2296,7 +2301,7 @@ Int_t AliAnalysisTaskPB::DoPID(Int_t combCh)
 
     ptot = 0.;
     for (Int_t kk=0; kk<AliPID::kSPECIES; kk++) ptot += kpid[kk];
-    if (abs(ptot-1.) < 1.E-3) {
+    if (TMath::Abs(ptot-1.) < 1.E-3) {
       for (Int_t kk=0; kk<AliPID::kSPECIES; kk++)
         fPIDBayesWP[ii][kk+1] = kpid[kk];
     } else {
@@ -2309,7 +2314,7 @@ Int_t AliAnalysisTaskPB::DoPID(Int_t combCh)
         
     ptot = 0.;
     for (Int_t kk=0; kk<AliPID::kSPECIES; kk++) ptot += kpid[kk];
-    if (abs(ptot-1.) < 1.E-3) {
+    if (TMath::Abs(ptot-1.) < 1.E-3) {
       for (Int_t kk=0; kk<AliPID::kSPECIES; kk++)
         fPIDBayesNP[ii][kk+1] = kpid[kk];
     } else {
@@ -2374,13 +2379,14 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 	//
 
 	// get MC information
-	fMCprocess = -1; //detailed MC sub process information
+	fMCprocess = -1;      //detailed MC sub process information
 	fMCprocessType = AliPBBase::kBinND; // ND is default, also for data
 
 	if (fMCEvent) {
 		AliGenEventHeader* header = fMCEvent->GenEventHeader();
 		if (header) {
       printf("MC generator name: %s\n",TString(header->GetName()).Data());
+			//printf("MC process: %i\n",header->ProcessType());
 
 			// Pythia6
 			if (TString(header->IsA()->GetName()) == "AliGenPythiaEventHeader") {
@@ -2694,6 +2700,8 @@ void AliAnalysisTaskPB::AnalyzeVtx()
 		(AliVVertex*)fAODEvent->GetPrimaryVertexSPD() :
 		(AliVVertex*)fESDEvent->GetPrimaryVertexSPD();
 
+	fVtxX = trackVtx->GetX(); // store the vertex x position
+	fVtxY = trackVtx->GetY(); // store the vertex y position
 	fVtxZ = trackVtx->GetZ(); // store the vertex z position
 
 	if (fDoAOD && (trackVtx == spdVtx)) { // no primary track vertex in the AOD

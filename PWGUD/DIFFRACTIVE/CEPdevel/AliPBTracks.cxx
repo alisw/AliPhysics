@@ -347,8 +347,8 @@ void AliPBTracks::CutTrack(AliESDEvent *ESDEvent, Int_t mode /* = 0 */)
 		//	const AliESDtrack* esdtrack = ESDEvent->GetTrack(itrack);
 		//	UInt64 status = esdtrack->GetStatus();
 		//	if ((status & kITSpureSA) && !(status & kITSsa)){
-		//	}
-		//}
+		//  }
+		// }
 		TObjArray* arr = esdTrackCuts.GetAcceptedTracks(ESDEvent);
 		fNITSpureSA = arr->GetEntriesFast();
 		
