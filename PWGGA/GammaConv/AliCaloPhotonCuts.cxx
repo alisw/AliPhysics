@@ -3612,7 +3612,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
         // 7 TeV LHC10x
         else if( fCurrentMC==k14j4 )
-          energy /= FunctionNL_kSDM(energy, 0.973866*0.99*0.996, -4.06436, -0.379);
+          energy /= FunctionNL_kSDM(energy, 0.973866*0.99*0.996*0.999, -4.06436, -0.379);
         
         else fPeriodNameAvailable = kFALSE;
       }
@@ -3731,7 +3731,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= (FunctionNL_DPOW(energy, 1.0489259285, -0.0759079646, -0.1239772934, 1.1835846739, -0.1998987993, -0.0854186691) - 0.014);
         // 7 TeV
         else if( fCurrentMC == k14j4 )
-          energy /= (FunctionNL_DPOW(energy, 1.1086453117, -0.1373335557, -0.0800000000, 1.1855482066, -0.1999999504, -0.0830177063) - 0.01);
+          energy /= (FunctionNL_DPOW(energy, 1.1086453117, -0.1373335557, -0.0800000000, 1.1855482066, -0.1999999504, -0.0830177063) - 0.014);
         else fPeriodNameAvailable = kFALSE;
       }
       break;
