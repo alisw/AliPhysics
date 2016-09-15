@@ -53,16 +53,15 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   void                        AllocateClusterHistograms()                       ;
   void                        AllocateCellHistograms()                          ;
   void                        AllocateDijetHistograms()                         ;
-  void                        AllocatePostProcHistograms()                      ;
 
   void                        DoJetLoop()                                       ;
   void                        DoTrackLoop()                                     ;
   void                        DoClusterLoop()                                   ;
   void                        DoCellLoop()                                      ;
   
-  Double_t                    fDeltaPhiMin;                   //! minimum delta phi between di-jets
-  Double_t                    fTrigJetMinPt;                  //! Pt threshold for trigger (full) jet
-  Double_t                    fAssJetMinPt;                   //! Pt threshold for associated (charged) jet (note: unscaled)
+  Double_t                    fDeltaPhiMin;                   ///< minimum delta phi between di-jets
+  Double_t                    fTrigJetMinPt;                  ///< Pt threshold for trigger jet
+  Double_t                    fAssJetMinPt;                   ///< Pt threshold for associated jet
 
   THistManager                fHistManager                                      ;///< Histogram manager
 
@@ -71,7 +70,7 @@ class AliAnalysisTaskEmcalDijetImbalance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDijetImbalance &operator=(const AliAnalysisTaskEmcalDijetImbalance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 1);
+  ClassDef(AliAnalysisTaskEmcalDijetImbalance, 2);
   /// \endcond
 };
 #endif

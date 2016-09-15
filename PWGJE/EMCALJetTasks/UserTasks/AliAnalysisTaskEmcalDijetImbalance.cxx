@@ -40,7 +40,10 @@ ClassImp(AliAnalysisTaskEmcalDijetImbalance);
  */
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() : 
   AliAnalysisTaskEmcalJet(),
-  fHistManager()
+  fHistManager(),
+  fDeltaPhiMin(0),
+  fTrigJetMinPt(0),
+  fAssJetMinPt(0)
 {
 }
 
@@ -51,7 +54,10 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
  */
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name)
+  fHistManager(name),
+  fDeltaPhiMin(2),
+  fTrigJetMinPt(0),
+  fAssJetMinPt(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -76,7 +82,6 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
   AllocateJetHistograms();
   AllocateCellHistograms();
   AllocateDijetHistograms();
-  AllocatePostProcHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
@@ -413,36 +418,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateDijetHistograms()
 
     }
   }
-}
-
-/*
- * This function allocates the histograms that are filled at the end of the analysis.
- * A set of histograms is allocated per each centrality bin.
- */
-void AliAnalysisTaskEmcalDijetImbalance::AllocatePostProcHistograms()
-{
-
-  // Plot jet ratio R=0.2/R=0.4
-  TString groupnameRatio = "JetRatioPlots";
-  fHistManager.CreateHistoGroup(groupnameRatio);
-  TString histnameChRatio;
-  TString histnameFuRatio;
-  TString histtitleChRatio;
-  TString histtitleFuRatio;
-
-  for (Int_t cent = 0; cent < fNcentBins; cent++) {
-
-    // Create a ratio plot for each charged, full
-    histnameChRatio = TString::Format("%s/histChargedJetRatio0204_%d", groupnameRatio.Data(), cent);
-    histtitleChRatio = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});Ratio", histnameChRatio.Data());
-    fHistManager.CreateTH1(histnameChRatio, histtitleChRatio, fNbins, fMinBinPt, fMaxBinPt);
-
-    histnameFuRatio = TString::Format("%s/histFullJetRatio0204_%d", groupnameRatio.Data(), cent);
-    histtitleFuRatio = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});Ratio", histnameFuRatio.Data());
-    fHistManager.CreateTH1(histnameFuRatio, histtitleFuRatio, fNbins, fMinBinPt, fMaxBinPt);
-
-  }
-
 }
 
 /**
@@ -803,55 +778,5 @@ Bool_t AliAnalysisTaskEmcalDijetImbalance::Run()
  */
 void AliAnalysisTaskEmcalDijetImbalance::Terminate(Option_t *)
 {
-
-  // Plot jet ratio R=0.2/R=0.4
-
-  TString groupnameRatio = "JetRatioPlots";
-  TString histnameChRatio;
-  TString histnameFuRatio;
-
-  TString groupnameCh02 = "Jet_AKTChargedR020_tracks_pT0150_pt_scheme";
-  TString groupnameCh04 = "Jet_AKTChargedR040_tracks_pT0150_pt_scheme";
-  TString groupnameFu02 = "Jet_AKTFullR020_tracks_pT0150_caloClusters_E0300_pt_scheme";
-  TString groupnameFu04 = "Jet_AKTFullR040_tracks_pT0150_caloClusters_E0300_pt_scheme";
-  TString histnameCh02;
-  TString histnameCh04;
-  TString histnameFu02;
-  TString histnameFu04;
-
-  for (Int_t cent = 0; cent < fNcentBins; cent++) {
-
-    histnameChRatio = TString::Format("%s/histChargedJetRatio0204_%d", groupnameRatio.Data(), cent);
-    histnameFuRatio = TString::Format("%s/histFullJetRatio0204_%d", groupnameRatio.Data(), cent);
-
-    // Get jet yield in each jet container at each pT bin, and fill ratio plot
-
-    histnameCh02 = TString::Format("%s/histJetPt_%d", groupnameCh02.Data(), cent);
-    histnameCh04 = TString::Format("%s/histJetPt_%d", groupnameCh04.Data(), cent);
-    histnameFu02 = TString::Format("%s/histJetPt_%d", groupnameFu02.Data(), cent);
-    histnameFu04 = TString::Format("%s/histJetPt_%d", groupnameFu04.Data(), cent);
-
-    TH1F* hCh02Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameCh02));
-    TH1F* hCh04Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameCh04));
-    TH1F* hChRatio = static_cast<TH1F*>(fHistManager.FindObject(histnameChRatio));
-
-    TH1F* hFu02Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameFu02));
-    TH1F* hFu04Yield = static_cast<TH1F*>(fHistManager.FindObject(histnameFu04));
-    TH1F* hFuRatio = static_cast<TH1F*>(fHistManager.FindObject(histnameFuRatio));
-
-    for (Int_t bin = 1; bin < fNbins+1; bin++) {
-      Double_t Ch02Yield = hCh02Yield->GetBinContent(bin);
-      Double_t Ch04Yield = hCh04Yield->GetBinContent(bin);
-      if (Ch04Yield != 0)
-        hChRatio->SetBinContent(bin, Ch02Yield / Ch04Yield);
-
-      Double_t Fu02Yield = hFu02Yield->GetBinContent(bin);
-      Double_t Fu04Yield = hFu04Yield->GetBinContent(bin);
-      if (Fu04Yield != 0)
-        hFuRatio->SetBinContent(bin, Fu02Yield / Fu04Yield);
-
-    }
-
-  }
-
+  
 }
