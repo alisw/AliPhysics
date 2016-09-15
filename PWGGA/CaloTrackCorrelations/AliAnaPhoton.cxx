@@ -54,6 +54,7 @@ fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0), 
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
+fFillSSNLocMaxHisto(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fPrimaryMom(),               fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
@@ -71,7 +72,11 @@ fhPtCentralityPhoton(0),      fhPtEventPlanePhoton(0),
 
 // Shower shape histograms
 fhNLocMax(0),
-fhDispE(0),                   fhLam0E(0),                   fhLam0Pt(0),        fhLam1E(0),
+fhDispE(0),                   fhDispPt(0),                  
+fhLam0E(0),                   fhLam0Pt(0),        
+fhLam1E(0),                   fhLam1Pt(0),
+fhLam0PtNLM1(0),              fhLam0PtNLM2(0),              
+fhLam1PtNLM1(0),              fhLam1PtNLM2(0),
 fhDispETRD(0),                fhLam0ETRD(0),                fhLam0PtTRD(0),     fhLam1ETRD(0),
 fhDispETM(0),                 fhLam0ETM(0),                 fhLam0PtTM(0),      fhLam1ETM(0),
 fhDispETMTRD(0),              fhLam0ETMTRD(0),              fhLam0PtTMTRD(0),   fhLam1ETMTRD(0),
@@ -777,7 +782,7 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 //_________________________________________________________________________________
 /// Fill cluster Shower Shape histograms.
 //_________________________________________________________________________________
-void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag, 
+void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag, Int_t nlm,
                                               Float_t maxCellFraction, Int_t & largeTime)
 {
   if(!fFillSSHistograms || GetMixedEvent()) return;
@@ -796,7 +801,23 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
   fhLam0E ->Fill(energy, lambda0, GetEventWeight());
   fhLam0Pt->Fill(pt    , lambda0, GetEventWeight());
   fhLam1E ->Fill(energy, lambda1, GetEventWeight());
+  fhLam1Pt->Fill(pt    , lambda1, GetEventWeight());
   fhDispE ->Fill(energy, disp   , GetEventWeight());
+  fhDispPt->Fill(pt    , disp   , GetEventWeight());
+  
+  if(fFillSSNLocMaxHisto)
+  {
+    if(nlm==1) 
+    {
+      fhLam0PtNLM1->Fill(pt, lambda0, GetEventWeight());
+      fhLam1PtNLM1->Fill(pt, lambda1, GetEventWeight());
+    }
+    else if(nlm==2)
+    {
+      fhLam0PtNLM2->Fill(pt, lambda0, GetEventWeight());
+      fhLam1PtNLM2->Fill(pt, lambda1, GetEventWeight());
+    }
+  }
   
   if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
      GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD()  )
@@ -1649,18 +1670,51 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
     fhLam0Pt  = new TH2F ("hLam0Pt","#lambda_{0}^{2} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam0Pt->SetYTitle("#lambda_{0}^{2}");
-    fhLam0Pt->SetXTitle("#it{p}_{T} (GeV)");
+    fhLam0Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhLam0Pt);
     
     fhLam1E  = new TH2F ("hLam1E","#lambda_{1}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhLam1E->SetYTitle("#lambda_{1}^{2}");
     fhLam1E->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhLam1E);
-    
+
+    fhLam1Pt  = new TH2F ("hLam1Pt","#lambda_{1}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhLam1Pt->SetYTitle("#lambda_{1}^{2}");
+    fhLam1Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhLam1Pt);
+
     fhDispE  = new TH2F ("hDispE"," dispersion^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
     fhDispE->SetYTitle("D^{2}");
     fhDispE->SetXTitle("#it{E} (GeV) ");
     outputContainer->Add(fhDispE);
+
+    fhDispPt  = new TH2F ("hDispPt"," dispersion^{2} vs #it{p}_{T}", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+    fhDispPt->SetYTitle("D^{2}");
+    fhDispPt->SetXTitle("#it{p}_{T} (GeV/#it{c}) ");
+    outputContainer->Add(fhDispPt);
+    
+    if(fFillSSNLocMaxHisto)
+    {
+      fhLam0PtNLM1  = new TH2F ("hLam0PtNLM1","#lambda_{0}^{2} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0PtNLM1->SetYTitle("#lambda_{0}^{2}");
+      fhLam0PtNLM1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam0PtNLM1);
+      
+      fhLam0PtNLM2  = new TH2F ("hLam0PtNLM2","#lambda_{0}^{2} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam0PtNLM2->SetYTitle("#lambda_{0}^{2}");
+      fhLam0PtNLM2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam0PtNLM2);
+
+      fhLam1PtNLM1  = new TH2F ("hLam1PtNLM1","#lambda_{1}^{2} vs #it{p}_{T}, #it{n}_{LM}=1", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam1PtNLM1->SetYTitle("#lambda_{1}^{2}");
+      fhLam1PtNLM1->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam1PtNLM1);
+      
+      fhLam1PtNLM2  = new TH2F ("hLam1PtNLM2","#lambda_{1}^{2} vs #it{p}_{T}, #it{n}_{LM}=2", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+      fhLam1PtNLM2->SetYTitle("#lambda_{1}^{2}");
+      fhLam1PtNLM2->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhLam1PtNLM2);      
+    }
     
     if(!fRejectTrackMatch)
     {
@@ -1694,7 +1748,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
       fhLam0PtTRD  = new TH2F ("hLam0PtTRD","#lambda_{0}^{2} vs #it{p}_{T}, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
       fhLam0PtTRD->SetYTitle("#lambda_{0}^{2}");
-      fhLam0PtTRD->SetXTitle("#it{E} (GeV)");
+      fhLam0PtTRD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam0PtTRD);
       
       fhLam1ETRD  = new TH2F ("hLam1ETRD","#lambda_{1}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
@@ -3263,7 +3317,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if( absIdMax < 0 ) AliFatal("Wrong absID");
     
     Int_t largeTimeInCellCluster = kFALSE;
-    FillShowerShapeHistograms(calo,tag,maxCellFraction,largeTimeInCellCluster);
+    FillShowerShapeHistograms(calo,tag,nMaxima,maxCellFraction,largeTimeInCellCluster);
     aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
     //if(largeTimeInCellCluster > 1) printf("Set n cells large time %d, pt %2.2f\n",aodph.GetFiducialArea(),aodph.Pt());
     
