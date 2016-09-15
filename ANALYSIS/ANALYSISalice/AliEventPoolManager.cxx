@@ -113,6 +113,11 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
   iEvent++;
 
   Int_t mult = trk->GetEntries();
+  
+  // Do not fill empty events
+  if (mult == 0)
+    return fEvents.size();
+  
   Int_t nTrk = NTracksInPool();
 
   if (!IsReady() && IsReady(nTrk + mult, GetCurrentNEvents() + 1))
@@ -154,9 +159,9 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
   fWasUpdated = true;
 
   if (AliEventPool::fDebug) {
-    cout << " Event " << fEventIndex.back();
-    cout << " PoolDepth = " << GetCurrentNEvents(); 
-    cout << " NTracksInCurrentEvent = " << NTracksInCurrentEvent();
+    cout << " Event " << fEventIndex.back() << endl;
+    cout << " PoolDepth = " << GetCurrentNEvents() << endl;
+    cout << " NTracksInCurrentEvent = " << NTracksInCurrentEvent() << endl;
   }
 
   return fEvents.size();
