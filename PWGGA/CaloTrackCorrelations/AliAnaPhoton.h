@@ -63,29 +63,32 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, 
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t nlm,
                                          Float_t maxCellEFraction, Int_t & largeTimeInside) ;
   
-  void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms      = kTRUE  ; }
-  void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms      = kFALSE ; }  
+  void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
+  void         SwitchOffFillShowerShapeHistograms()       { fFillSSHistograms      = kFALSE ; }  
 
-  void         SwitchOnFillEMCALRegionSSHistograms()  { fFillEMCALRegionSSHistograms = kTRUE  ; }
-  void         SwitchOffFillEMCALRegionSSHistograms() { fFillEMCALRegionSSHistograms = kFALSE ; }  
-
-  void         SwitchOnFillConversionVertexHistograms()  { fFillConversionVertexHisto = kTRUE  ; }
-  void         SwitchOffFillConversionVertexHistograms() { fFillConversionVertexHisto = kFALSE ; }  
+  void         SwitchOnFillShowerShapeHistogramsPerNLM()  { fFillSSNLocMaxHisto    = kTRUE  ; }
+  void         SwitchOffFillShowerShapeHistogramsPerNLM() { fFillSSNLocMaxHisto    = kFALSE ; }  
   
-  void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
-  void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
+  void         SwitchOnFillEMCALRegionSSHistograms()      { fFillEMCALRegionSSHistograms = kTRUE  ; }
+  void         SwitchOffFillEMCALRegionSSHistograms()     { fFillEMCALRegionSSHistograms = kFALSE ; }  
+
+  void         SwitchOnFillConversionVertexHistograms()   { fFillConversionVertexHisto = kTRUE  ; }
+  void         SwitchOffFillConversionVertexHistograms()  { fFillConversionVertexHisto = kFALSE ; }  
+  
+  void         SwitchOnOnlySimpleSSHistoFill()            { fFillOnlySimpleSSHisto = kTRUE  ; }
+  void         SwitchOffOnlySimpleHistoFill()             { fFillOnlySimpleSSHisto = kFALSE ; }
   
   void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut);
   
-  void         SwitchOnTMHistoFill()                  { fFillTMHisto           = kTRUE  ; }
-  void         SwitchOffTMHistoFill()                 { fFillTMHisto           = kFALSE ; }
+  void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
+  void         SwitchOffTMHistoFill()                     { fFillTMHisto           = kFALSE ; }
 
   void         FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cells, Int_t absIdMax) ;
  
-  void         SetConstantTimeShift(Float_t shift)    { fConstantTimeShift     = shift  ; }
+  void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
   // Analysis parameters setters getters
     
@@ -111,8 +114,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
 
-  void         SwitchOnAcceptanceHistoPerEBin()         { fFillEBinAcceptanceHisto = kTRUE  ; }
-  void         SwitchOffAcceptanceHistoPerEBin()        { fFillEBinAcceptanceHisto = kFALSE ; }
+  void         SwitchOnAcceptanceHistoPerEBin()       { fFillEBinAcceptanceHisto = kTRUE  ; }
+  void         SwitchOffAcceptanceHistoPerEBin()      { fFillEBinAcceptanceHisto = kFALSE ; }
   
   void         SetNEBinCuts(Int_t nb)           { fNEBinCuts = nb            ; }
   void         SetEBinCutsAt(Int_t i, Float_t va) { if(i < 15) fEBinCuts[i] = va ; }
@@ -173,6 +176,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillOnlySimpleSSHisto;                  ///<  Fill selected cluster histograms, selected SS histograms
     
+  Bool_t   fFillSSNLocMaxHisto;                     ///<  Fill shower shape histograms for different NLM
+  
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
@@ -213,10 +218,17 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhNLocMax;                                 //!<! number of maxima in selected clusters
 
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
+  TH2F * fhDispPt;                                  //!<! Cluster dispersion vs pT
   TH2F * fhLam0E;                                   //!<! Cluster lambda0 vs  E
   TH2F * fhLam0Pt;                                  //!<! Cluster lambda0 vs  pT
   TH2F * fhLam1E;                                   //!<! Cluster lambda1 vs  E
+  TH2F * fhLam1Pt;                                  //!<! Cluster lambda1 vs  pT
 
+  TH2F * fhLam0PtNLM1;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=1 
+  TH2F * fhLam0PtNLM2;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=2 
+  TH2F * fhLam1PtNLM1;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=1 
+  TH2F * fhLam1PtNLM2;                              //!<! Cluster lambda0 vs  pT, for clusters with NLM=2 
+  
   TH2F * fhDispETRD;                                //!<! Cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                                //!<! Cluster lambda0 vs  E, SM covered by TRD
   TH2F * fhLam0PtTRD;                               //!<! Cluster lambda0 vs  pT, SM covered by TRD
