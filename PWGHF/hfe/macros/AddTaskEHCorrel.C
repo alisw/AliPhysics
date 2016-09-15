@@ -1,5 +1,4 @@
-AliAnalysisTask *AddTaskEHCorrel()
-
+AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,12 +23,9 @@ AliAnalysisTask *AddTaskEHCorrel()
     MCthere=kFALSE;
   }
 
-  //analysis task 
-  //gROOT->LoadMacro("./ConfigTaskEHCorrel.C");
-  //AliAnalysisTaskEHCorrel *taskHFEeh = ConfigTaskEHCorrel("Central","hfeCorrl");
-
   AliAnalysisTaskEHCorrel *taskHFEeh = new AliAnalysisTaskEHCorrel("eh");
   taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
+  taskHFEeh->SetCentralitySelection(centMin,centMax);
     
   TString containerName = mgr->GetCommonFileName();
   TString SubcontainerName = "EH_PbPb_INT7";
@@ -46,6 +42,7 @@ AliAnalysisTask *AddTaskEHCorrel()
     AliAnalysisTaskEHCorrel *taskHFEehGA01 = new AliAnalysisTaskEHCorrel("eh");
     taskHFEehGA01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
     taskHFEehGA01->SetEMCalTriggerEG1(kTRUE);
+    taskHFEehGA01->SetCentralitySelection(centMin,centMax);
     
     TString containerName01 = mgr->GetCommonFileName();
    // containerName01 += "EH_PbPb_GA1";
@@ -57,25 +54,6 @@ AliAnalysisTask *AddTaskEHCorrel()
     mgr->ConnectInput(taskHFEehGA01, 0, cinput);
     mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
     mgr->AddTask(taskHFEehGA01);
-
     
-    // EMCal EGA EG2
-    AliAnalysisTaskEHCorrel *taskHFEehGA02 = new AliAnalysisTaskEHCorrel("eh");
-    taskHFEehGA02->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-    taskHFEehGA02->SetEMCalTriggerEG2(kTRUE);
-    
-    TString containerName02 = mgr->GetCommonFileName();
-    //containerName02 += "EH_PbPb_GA2";
-    // TString SubcontainerName01 = Form("HFEemcQATrigGAEG1_%s",calib);
-    TString SubcontainerName02 = "EH_PbPb_GA2";
-    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
-    
-    mgr->ConnectInput(taskHFEehGA02, 0, cinput);
-    mgr->ConnectOutput(taskHFEehGA02, 1, coutput1);
-    mgr->AddTask(taskHFEehGA02);
-    
-    
-
   return taskHFEeh;
 }
