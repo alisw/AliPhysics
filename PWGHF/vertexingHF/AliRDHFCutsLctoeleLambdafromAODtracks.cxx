@@ -1470,3 +1470,20 @@ Double_t AliRDHFCutsLctoeleLambdafromAODtracks::DeltaEta(AliAODv0 *v0, AliAODTra
   Double_t deta = etav - etae;
   return deta;
 }
+
+//________________________________________________________________________
+Double_t AliRDHFCutsLctoeleLambdafromAODtracks::CosOpeningAngle(AliAODv0 *v0, AliAODTrack *trk)
+{
+  //
+  // Calculate Opening angle
+  //
+  Double_t v0px = v0->Px();
+  Double_t v0py = v0->Py();
+  Double_t v0pz = v0->Pz();
+  Double_t epx = trk->Px();
+  Double_t epy = trk->Py();
+  Double_t epz = trk->Pz();
+  Double_t cosoa = (v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz);
+
+  return cosoa;
+}

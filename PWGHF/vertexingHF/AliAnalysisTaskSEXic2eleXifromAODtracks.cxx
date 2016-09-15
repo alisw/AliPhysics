@@ -140,7 +140,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fUseCentralitySPDTracklet(kFALSE),
-  fUseEventPlane(4),
+  fUseEventPlane(0),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -436,7 +436,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fUseCentralitySPDTracklet(kFALSE),
-  fUseEventPlane(4),
+  fUseEventPlane(0),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -1150,8 +1150,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
     nextResVec.resize(fNOfPools,0);
     reservoirsReady.resize(fNOfPools,kFALSE);
 
-    for(int s=0; s<fNOfPools; s++) {
-      for(unsigned int k=0;k<fNumberOfEventsForMixing;k++){
+    for(Int_t s=0; s<fNOfPools; s++) {
+      for(Int_t k=0;k<fNumberOfEventsForMixing;k++){
         m_ReservoirE[s][k].clear();
         m_ReservoirL1[s][k].clear();
         m_ReservoirL2[s][k].clear();
@@ -1265,6 +1265,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
 
 		FillCascROOTObjects(casc,aodEvent,mcArray);
   }
+
+  if(fWriteEachVariableTree)
+    return;
 
   //------------------------------------------------
   // Cascade loop 
@@ -2200,7 +2203,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   //
   // New strategy: Fully analyze correlation
   //
-  for(Int_t iv=0;iv<13;iv++){
+  for(Int_t iv=0;iv<14;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 	Double_t cont_cor_nd[7];
@@ -2230,6 +2233,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   fCorrelationVariables[10] = fCentrality;
   fCorrelationVariables[11] = exobj->Pt();
   fCorrelationVariables[12] = exobj->InvMass(2,pdgdg);
+  fCorrelationVariables[13] = fAnalCuts->CosOpeningAngle(casc,trk);
 
 	cont_cor_nd[0] = exobj->Pt();
 	cont_cor_nd[1] = fAnalCuts->DeltaPhi(casc,trk);
@@ -2540,7 +2544,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   //
   // New strategy: Fully analyze correlation
   //
-  for(Int_t iv=0;iv<13;iv++){
+  for(Int_t iv=0;iv<14;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 
@@ -2571,6 +2575,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   fCorrelationVariables[10] = fCentrality;
   fCorrelationVariables[11] = sqrt(pxsum*pxsum+pysum*pysum);
   fCorrelationVariables[12] = mexi;
+  fCorrelationVariables[13] = cosoa;
 
 	cont_cor_nd[0] =  sqrt(pxsum*pxsum+pysum*pysum);
 	cont_cor_nd[1] =  TVector2::Phi_mpi_pi(casc->Phi()-trke->Phi());
@@ -5156,7 +5161,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
 
   const char* nameoutput = GetOutputSlot(12)->GetContainer()->GetName();
   fCorrelationVariablesTree = new TTree(nameoutput,"Correlation variables tree");
-  Int_t nVar = 13;
+  Int_t nVar = 14;
   fCorrelationVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -5173,6 +5178,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
   fCandidateVariableNames[10] = "Centrality";
   fCandidateVariableNames[11] = "EleXiPt";
   fCandidateVariableNames[12] = "EleXiMass";
+  fCandidateVariableNames[13] = "EleXiCosOA";
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
