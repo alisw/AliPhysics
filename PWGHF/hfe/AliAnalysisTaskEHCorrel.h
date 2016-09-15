@@ -57,6 +57,13 @@ public:
     void    EMCalClusterInfo();
     void    SelectNonHFElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     
+    void    SetCentralitySelection(Double_t centMin, Double_t centMax) {fCentralityMin = centMin; fCentralityMax = centMax;};
+    void    SetTPCnsigCut(Double_t nsigMin, Double_t nsigMax) {fTPCnSigmaMin = nsigMin; fTPCnSigmaMax= nsigMax;};
+    void    SetM02Cut(Double_t m02Min, Double_t m02Max) {fM02Min = m02Min; fM02Max = m02Max;};
+    void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
+    void    SetEovPCut(Double_t eovpMin, Double_t eovpMax) {fEovPMin = eovpMin; fEovPMax = eovpMax;};
+    
+    
     
 private:
     AliVEvent 		    *fVevent;		//!V event object
@@ -124,8 +131,12 @@ private:
     
     TH1F                *fInvmassLS;//!
     TH1F                *fInvmassULS;//!
+    TH2F                *fInvmassLSPt;//!
+    TH2F                *fInvmassULSPt;//!
     
     THnSparse           *fSprsInclusiveEHCorrl;//!
+    THnSparse           *fSprsLSEHCorrl;//!
+    THnSparse           *fSprsULSEHCorrl;//!
     
     
     AliAnalysisTaskEHCorrel(const AliAnalysisTaskEHCorrel&); // not implemented

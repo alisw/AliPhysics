@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
 //  Task for Heavy Flavour Electron-Hadron DeltaPhi Correlation       //
+//  Non-Photonic Electron identified with Invariant mass              //
+//  analysis methos in function  SelectPhotonicElectron               //
+//  DeltaPhi calculated in function  ElectronHadCorrel                //
+//                                                                    //
 //  Author: Deepa Thomas (University of Texas at Austin)              //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
@@ -145,7 +149,11 @@ ClassImp(AliAnalysisTaskEHCorrel)
   fHadronPt(0),
 fInvmassLS(0),
 fInvmassULS(0),
-  fSprsInclusiveEHCorrl(0)
+fInvmassLSPt(0),
+fInvmassULSPt(0),
+  fSprsInclusiveEHCorrl(0),
+  fSprsLSEHCorrl(0),
+  fSprsULSEHCorrl(0)
 {
   //Named constructor
 
@@ -221,7 +229,11 @@ fEMCClsEtaPhi(0),
   fHadronPt(0),
 fInvmassLS(0),
 fInvmassULS(0),
-  fSprsInclusiveEHCorrl(0)
+fInvmassLSPt(0),
+fInvmassULSPt(0),
+  fSprsInclusiveEHCorrl(0),
+fSprsLSEHCorrl(0),
+fSprsULSEHCorrl(0)
 {
   //Default constructor
   // Constructor
@@ -241,6 +253,8 @@ AliAnalysisTaskEHCorrel::~AliAnalysisTaskEHCorrel()
 
   delete fOutputList;
   delete fSprsInclusiveEHCorrl;
+    delete   fSprsLSEHCorrl;
+    delete fSprsULSEHCorrl;
 }
 //_________________________________________
 void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
@@ -370,14 +384,27 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     
     fInvmassULS = new TH1F("fInvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
     fOutputList->Add(fInvmassULS);
+    
+    fInvmassLSPt = new TH2F("fInvmassLSPt", "Inv mass of LS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
+    fOutputList->Add(fInvmassLSPt);
+    
+    fInvmassULSPt = new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
+    fOutputList->Add(fInvmassULSPt);
+
 
   //------THnsparse------
   Int_t bin[4] = {50,50,64,100}; //ptElec, ptHad,Dphi, Deta
   Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
   Double_t xmax[4] = {50,50,(3*TMath::Pi())/2,1.8};
 
-  fSprsInclusiveEHCorrl = new THnSparseD("fSprsInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta",4,bin,xmin,xmax);
+  fSprsInclusiveEHCorrl = new THnSparseD("fSprsInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsInclusiveEHCorrl);
+    
+    fSprsLSEHCorrl = new THnSparseD("fSprsLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+    fOutputList->Add(fSprsLSEHCorrl);
+    
+    fSprsULSEHCorrl = new THnSparseD("fSprsULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+    fOutputList->Add(fSprsULSEHCorrl);
 
   PostData(1,fOutputList);
 }
@@ -395,7 +422,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     printf("ERROR: fVEvent not available\n");
     return;
   }
-
+    
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if (fAOD) {
     // printf("fAOD available\n");
@@ -517,12 +544,6 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       //////////////////
       if(!PassEIDCuts(track, clustMatch)) continue;
       InclsElecPt->Fill(TrkPt);
-        
-        ////////////////////
-        //NonHFE selection//
-        ////////////////////
-        Bool_t fFlagPhotonicElec = kFALSE;
-        SelectNonHFElectron(iTracks,track,fFlagPhotonicElec);
 
       ///////////////////
       //E-H Correlation//
@@ -531,6 +552,12 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
       //Inclusive E-H correl
       ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl);
+        
+        ////////////////////
+        //NonHFE selection//
+        ////////////////////
+        Bool_t fFlagPhotonicElec = kFALSE;
+        SelectNonHFElectron(iTracks,track,fFlagPhotonicElec);
     }
   }
 
@@ -892,6 +919,11 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
         
         if(fFlagLS && track->Pt()>1) fInvmassLS->Fill(mass);
         if(fFlagULS && track->Pt()>1) fInvmassULS->Fill(mass);
+        if(fFlagLS) fInvmassLSPt->Fill(track->Pt(),mass);
+        if(fFlagULS) fInvmassULSPt->Fill(track->Pt(),mass);
+        
+        if(fFlagLS && mass<fInvmassCut) ElectronHadCorrel(itrack, track, fSprsLSEHCorrl);
+        if(fFlagULS && mass<fInvmassCut) ElectronHadCorrel(itrack, track, fSprsULSEHCorrl);
         
         if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
             flagPhotonicElec = kTRUE;
