@@ -83,13 +83,15 @@ Double_t chiSquareEstimateOfSysError(Double_t* x, Double_t* par)
 
 //________________________________________________________
 Double_t findSystematicError(Int_t nPoints, Double_t* xMean, Double_t* xSigma, Bool_t ignoreSigmaErrors,
-                             Double_t minError = 0.0, Double_t maxError = 1.0, Double_t* xMeanResult = 0x0) 
+                             Double_t minError = 0.0, Double_t maxError = 1.0, Double_t minMean = 0., Double_t maxMean = 1.,
+                             Double_t* xMeanResult = 0x0) 
 {
   Bool_t success = kTRUE;
   Double_t sysError[3] = {999., 999., 999.};
   
   // Root of function is estimate for systematic error
-  TF1* f = new TF1("findSystematicError", chiSquareEstimateOfSysError, 0, 1, 2 * nPoints + 2 + 1);
+  // Means lie all within [minMean, maxMean]
+  TF1* f = new TF1("findSystematicError", chiSquareEstimateOfSysError, minMean, maxMean, 2 * nPoints + 2 + 1);
   f->SetParameter(2 * nPoints + 2, ignoreSigmaErrors);
   f->SetParameter(1, nPoints);
   
@@ -110,7 +112,7 @@ Double_t findSystematicError(Int_t nPoints, Double_t* xMean, Double_t* xSigma, B
     
     
     f->SetParameter(0, nPoints - 1);
-    //TODO OLD: more accurate, but different from dcommon efinition of sys. error 
+    //OLD: more accurate, but different from common definition of sys. error 
     //f->SetParameter(0, TMath::ChisquareQuantile(chi2Percentile, nPoints - 1)); // NDF = nPoints - 1
     
     
@@ -126,7 +128,8 @@ Double_t findSystematicError(Int_t nPoints, Double_t* xMean, Double_t* xSigma, B
     Bool_t currSuccess = brf.Solve(1000);
     
     if (iter == 0 && xMeanResult) {
-      TF1* fMean = new TF1("findMean", getWeightedMean, 0, 1, 2 * nPoints + 2 + 1);
+      // Means lie all within [minMean, maxMean]
+      TF1* fMean = new TF1("findMean", getWeightedMean, minMean, maxMean, 2 * nPoints + 2 + 1);
       fMean->SetParameters(f->GetParameters());
       *xMeanResult = fMean->Eval(brf.Root());
       delete fMean;
@@ -152,6 +155,16 @@ Double_t findSystematicError(Int_t nPoints, Double_t* xMean, Double_t* xSigma, B
     printf("Error: Failed to find root!\n");
     sysErrorEstimateFinal = 999.;
   }
+  
+  /*
+  if (sysErrorEstimateFinal > 900) {
+    printf("%e (nPoints %d)\nminMean %e, maxMean %e, minError %e, maxError %e\n", sysErrorEstimateFinal, nPoints, minMean, maxMean, minError, maxError);
+    
+    for (Int_t i = 0; i < nPoints; i++)
+      printf("mean %d: %e\n", i, xMean[i]);
+    printf("\n\n");
+  }*/
+  
 
   return TMath::Max(0., sysErrorEstimateFinal);
 }
@@ -208,7 +221,7 @@ Bool_t extractSystematicError(const Int_t nHistos, TH2D** hInput, TH2D* hResults
       
       Double_t weightedMean = 0;
       // The root finder needs some given range. For yields, the error should lie within [0, maxMean - minMean]
-      Double_t sysError = findSystematicError(nHistos, meansForFit, sigmasForFit, ignoreSigmaErrors, 0, maxMean - minMean,
+      Double_t sysError = findSystematicError(nHistos, meansForFit, sigmasForFit, ignoreSigmaErrors, 0, maxMean - minMean, minMean, maxMean,
                                               &weightedMean);
       
       if (setMean)
