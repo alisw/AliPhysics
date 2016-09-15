@@ -1310,3 +1310,21 @@ Double_t AliRDHFCutsXictoeleXifromAODtracks::DeltaEta(AliAODcascade *casc, AliAO
   Double_t deta = etav - etae;
   return deta;
 }
+
+//________________________________________________________________________
+Double_t AliRDHFCutsXictoeleXifromAODtracks::CosOpeningAngle(AliAODcascade *casc, AliAODTrack *trk)
+{
+  //
+  // Calculate Cosine of opening angle
+  //
+
+  Double_t xipx = casc->MomXiX();
+  Double_t xipy = casc->MomXiY();
+  Double_t xipz = casc->MomXiZ();
+  Double_t epx = trk->Px();
+  Double_t epy = trk->Py();
+  Double_t epz = trk->Pz();
+  Double_t cosoa = (xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz);
+  return cosoa;
+}
+
