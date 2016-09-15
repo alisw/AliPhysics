@@ -1933,34 +1933,35 @@ Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const {
 }
 
 //______________________________________________________________________
-Bool_t AliMultSelectionTask::IsHijing() const { 
-	//Function to check if this is Hijing MC
-	Bool_t lReturnValue = kFALSE; 
-        AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
-        AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-        AliStack*    stack=0;
-        AliMCEvent*  mcEvent=0;
-        AliGenHijingEventHeader* hHijing=0;
-        if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
-            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())){
-		//Option 1: Just Hijing
-		lReturnValue = kTRUE;
-	    } else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-		//Option 2: cocktail involving Hijing
-                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-		if ( hHijing ) lReturnValue = kTRUE;  
-            }		
-
-	}	
-	return lReturnValue;
+Bool_t AliMultSelectionTask::IsHijing() const {
+    //Function to check if this is Hijing MC
+    Bool_t lReturnValue = kFALSE;
+    AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+    AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+    AliStack*    stack=0;
+    AliMCEvent*  mcEvent=0;
+    AliGenHijingEventHeader* hHijing=0;
+    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())){
+            //Option 1: Just Hijing
+            lReturnValue = kTRUE;
+        } else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+            //Option 2: cocktail involving Hijing
+            TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+            TIter next(headers);
+            while (const TObject *obj=next()){
+                //Look for an object inheriting from the hijing header class
+                if ( obj->InheritsFrom(AliGenHijingEventHeader::Class()) ){ lReturnValue = kTRUE; }
+            }
+        }
+    }
+    return lReturnValue;
 }
 
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::IsDPMJet() const { 
     //Function to check if this is DPMJet
-        //Function to check if this is Hijing MC
         Bool_t lReturnValue = kFALSE;
         AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
         AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
