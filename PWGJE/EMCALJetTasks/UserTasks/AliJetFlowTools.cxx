@@ -148,7 +148,8 @@ AliJetFlowTools::AliJetFlowTools() :
     fPivot              (55.),
     fSubdueError        (kTRUE),
     fUnfoldedSpectrumIn (0x0),
-    fUnfoldedSpectrumOut(0x0) { // class constructor
+    fUnfoldedSpectrumOut(0x0),
+    fHarmonic(2) { // class constructor
 #ifdef ALIJETFLOWTOOLS_DEBUG_FLAG
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
 #endif

@@ -1,4 +1,4 @@
-void jetFlowTools() {
+void jetV2tools() {
     // load and compile the libraries
     Load();
 
@@ -308,6 +308,6 @@ void Load() {
     gSystem->Load("/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/libRooUnfold");
     gSystem->AddIncludePath("-I/home/rbertens/Documents/CERN/alice/BUILDS/ROOUNFOLD/RooUnfold-1.1.1/src/");
     // compile unfolding class (only if there are local changes or the .o is not found)
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/FLOW/Tasks/AliJetFlowTools.cxx+");
+    gROOT->LoadMacro("$PWGJE/EMCALJetTasks/UserTasks/AliJetFlowTools.cxx+");
 }
 //_____________________________________________________________________________
