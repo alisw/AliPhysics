@@ -762,6 +762,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
+    double m20mim = 0.03;
+    double m20max = 0.3;
+
     ////////////////////
     //Apply track cuts//
     ////////////////////
@@ -926,8 +929,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
-      if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
-      if(fTPCnSigma < -3.5)fHistEopHad->Fill(track->Pt(),eop);
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
@@ -951,7 +954,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max){ //rough cuts
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
@@ -999,7 +1002,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
        } // eID cuts
 
-     if(fTPCnSigma < -4 && eop>0.9 && eop<1.3)fHistDCAhad->Fill(track->Pt(),DCAxy); // hadron contamination
+     if(fTPCnSigma < -4 && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)fHistDCAhad->Fill(track->Pt(),DCAxy); // hadron contamination
 
 
     }
