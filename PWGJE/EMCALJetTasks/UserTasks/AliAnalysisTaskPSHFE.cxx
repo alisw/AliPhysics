@@ -982,49 +982,49 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     fHistDPhi18Spe_MB = new TH2F("fHistDPhi18Spe_MB", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_MB->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_MB->GetYaxis()->SetTitle("Species");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(0, "Unkown");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(1, "Electron");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(2, "Muon");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(3, "Pion");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(4, "Kaon");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(5, "Proton");
-    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(1, "Unkown");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(2, "Electron");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(3, "Muon");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(4, "Pion");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(5, "Kaon");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(6, "Proton");
+    fHistDPhi18Spe_MB->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_MB->GetZaxis()->SetTitle("Cts");
 
     fHistDPhi18Spe_EMC7 = new TH2F("fHistDPhi18Spe_EMC7", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_EMC7->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_EMC7->GetYaxis()->SetTitle("Species");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(0, "Unkown");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(1, "Electron");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(2, "Muon");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(3, "Pion");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(4, "Kaon");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(5, "Proton");
-    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(1, "Unkown");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(2, "Electron");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(3, "Muon");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(4, "Pion");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(5, "Kaon");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(6, "Proton");
+    fHistDPhi18Spe_EMC7->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_EMC7->GetZaxis()->SetTitle("Cts");
 
     fHistDPhi18Spe_EMCEGA = new TH2F("fHistDPhi18Spe_EMCEGA", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_EMCEGA->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_EMCEGA->GetYaxis()->SetTitle("Species");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(0, "Unkown");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(1, "Electron");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(2, "Muon");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(3, "Pion");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(4, "Kaon");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(5, "Proton");
-    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(1, "Unkown");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(2, "Electron");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(3, "Muon");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(4, "Pion");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(5, "Kaon");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(6, "Proton");
+    fHistDPhi18Spe_EMCEGA->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_EMCEGA->GetZaxis()->SetTitle("Cts");
 
     fHistDPhi18Spe_EMCJet = new TH2F("fHistDPhi18Spe_EMCJet", "Delta-Phi by most probable species for candidate electrons with 1<pt<8Gev and assoc. with pt>.3Gev", 100, -TMath::Pi()/2, 3*TMath::Pi()/2, 10, 0, 10);
     fHistDPhi18Spe_EMCJet->GetXaxis()->SetTitle("Delta-Phi");
     fHistDPhi18Spe_EMCJet->GetYaxis()->SetTitle("Species");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(0, "Unkown");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(1, "Electron");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(2, "Muon");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(3, "Pion");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(4, "Kaon");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(5, "Proton");
-    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(6, "Deuteron");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(1, "Unkown");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(2, "Electron");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(3, "Muon");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(4, "Pion");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(5, "Kaon");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(6, "Proton");
+    fHistDPhi18Spe_EMCJet->GetYaxis()->SetBinLabel(7, "Deuteron");
     fHistDPhi18Spe_EMCJet->GetZaxis()->SetTitle("Cts");
 
     // Delta Phi for tracks > 300MeV
@@ -1950,16 +1950,10 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         AliWarning("NULL PIDResponse");
     }
 
-    ProcInfo_t procInfo;
-    gSystem->GetProcInfo(&procInfo);
-    printf("Track Array: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
-
     if(aodEv){
         trkArr = MakeTrkArr(aod);
     }
 
-    gSystem->GetProcInfo(&procInfo);
-    printf("end Track Array: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
     //__________________________End major event stuff_____________________________
 
 
@@ -2189,13 +2183,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             fHistImpPar_EMCJet->Fill(xy);
         }
 
-        gSystem->GetProcInfo(&procInfo);
-        printf("Phot Elec: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
-
         FillPhotoElecHistos(aod, aodtrack, fPIDResponse, i);
-
-        gSystem->GetProcInfo(&procInfo);
-        printf("end Photo Elec:RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
 
         if(!aodEv){
             FillPhotoElecHistos(esd, esdtrack, fPIDResponse, i);
@@ -2239,13 +2227,8 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
         }
 
-        gSystem->GetProcInfo(&procInfo);
-        printf("PID: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
-
         FillPIDHistos(aod, aodtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
 
-        gSystem->GetProcInfo(&procInfo);
-        printf("end PID: RSS: %7.1f VMem: %7.1f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
         if(!aodEv){
             FillPIDHistos(esd, esdtrack, fPIDResponse);//Fill PID histos and set "tagStrong" boolean if this track satisfies cuts
         }
