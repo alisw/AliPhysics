@@ -7,6 +7,20 @@
  * 19 Aug 2016: it compiles locally but gives no output
  * 20 Aug 2016: remove mass cut and remove vtxSPD
  * 07 Sep 2016: histogram cuts
+ * 10 Sep 2016: 
+	       a) mass cut
+	       b) aodV0->DcaPosToPrimVertex(); and aodV0->DcaNegToPrimVertex();
+	       c) and dcaV0
+ * 11 Sep 2016: testing filter bits 1, 128, 768, 1024, or hard coded -> run without filter bit on tracks for now 
+ * 14 Sep 2016: 
+               a) adding a weight to the ghost V0 and tracks -> solving the track pair efficiency issue, but need to add TPCrefit later to get rid of ghost tracks (for now just subtract them)
+	       b) clean-up and change hard coded values (generalize)
+	       
+
+//to run locally:
+aliroot
+.L runAAFDev.C
+runAAF(2, "local aod PbPb MC", "test_aod_mc.txt", 4)
 
 */
 
@@ -24,20 +38,14 @@
 //#include <TParticle.h>
 //#include <TFile.h>
 //#include <AliAnalysisFilter.h>
-//#include <AliESDInputHandler.h>
-//#include <AliESDEvent.h>
-//#include <AliESDVertex.h>
 //#include <AliLog.h>
 //#include <AliExternalTrackParam.h> 
-//#include <AliESDtrackCuts.h>
-//#include <AliESDVZERO.h>
 //#include <AliAODVZERO.h>
 //#include <AliStack.h>
 //#include <AliHeader.h>
 //#include <AliGenPythiaEventHeader.h>
 //#include <AliGenDPMjetEventHeader.h>
 //#include "AliCentrality.h" 
-// #include <AliESDv0.h>
 // #include <AliKFVertex.h>
 // #include <AliAODVertex.h>
 // #include <AliAODTrack.h> 
@@ -56,14 +64,17 @@ ClassImp(AliAnaTaskV0EffDecomposition)
 
 //_____________________________________________________________________________
 AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition():
-  // fMinPtV0(0.1), //cuts added by tuva:
-  // fLowPtFraction(0.01),
-  // fMassCut(0.1),
+fLowPtFraction(0.01),
+  fMassCut(0.1),
+  fPdca(0.1),
+  fNdca(0.1),
+  fMinPtV0(0.1), 
   fDecayRmax(100.),
   fDecayRmin(5.0),  
   fDcaDaugh(1.0),
+  fDcaV0(-100),
   fV0pndca(0.1),
-  fCospt(0.998),//end cuts by tuva
+  fCospt(0.998),
   AliAnalysisTaskSE(),
   fAOD(0x0),
   fMCArray(0x0),
@@ -77,23 +88,42 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition():
   fPdgPos(2212),      // default is p
   fPdgNeg(-211),      // default is pi-
   fListOfObjects(0x0),
+  fCt(3.0),
+  fNcl(60.),
+  fChi2perNDF(4.0),
   hV0Gen(0x0),
   hV0Rec(0x0),
-  hDaughterRec(0x0)
- {
+  hDaughterRec(0x0),
+  hV0Ghost(0x0),
+  hTrackGhost(0x0),
+  hV0ButNoTracks(0x0),
+  hCt(0x0),            
+  hDCAdaugh(0x0),
+  hDecayR(0x0),
+  hCosPA(0x0),
+  hInvMass(0x0),
+  hNcl(0x0),
+  hChi2perNDF(0x0),
+  hPdca(0x0),
+  hNdca(0x0),
+  hDcaV0(0x0)
+{
   // Default constructor (should not be used)
 }
 
 //______________________________________________________________________________
 AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition(const char *name):
- //  fMinPtV0(0.1),//cuts added by tuva: 
- // fLowPtFraction(0.01),
- //  fMassCut(0.1),
+  fLowPtFraction(0.01),
+  fMassCut(0.1),
+  fPdca(0.1),
+  fNdca(0.1),
+  fMinPtV0(0.1),
   fDecayRmax(100.),
   fDecayRmin(5.0),  
   fDcaDaugh(1.0),
+  fDcaV0(-100),
   fV0pndca(0.1),
-  fCospt(0.998),//end cuts by tuva
+  fCospt(0.998),
   AliAnalysisTaskSE(name),
   fAOD(0x0),
   fMCArray(0x0),
@@ -107,9 +137,25 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition(const char *name):
   fPdgPos(2212),      // default is p
   fPdgNeg(-211),      // default is pi-
   fListOfObjects(0x0),
+  fCt(3.0),
+  fNcl(60.),
+  fChi2perNDF(4.0),
   hV0Gen(0x0),
   hV0Rec(0x0),
-  hDaughterRec(0x0)
+  hDaughterRec(0x0),
+  hV0Ghost(0x0),
+  hTrackGhost(0x0),
+  hV0ButNoTracks(0x0),
+  hCt(0x0),            
+  hDCAdaugh(0x0),
+  hDecayR(0x0),
+  hCosPA(0x0),
+  hInvMass(0x0),
+  hNcl(0x0),
+  hChi2perNDF(0x0),
+  hPdca(0x0),
+  hNdca(0x0),
+  hDcaV0(0x0)
 {
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
@@ -160,17 +206,36 @@ void AliAnaTaskV0EffDecomposition::UserCreateOutputObjects()
 			 40, 0, 20);
   fListOfObjects->Add(hV0ButNoTracks);
   
-  hCt = new TH1D("hCt", "DCA to primary vertex; DCA [cm]; Counts", 1000, 0, 10);
+  hCt = new TH1D("hCt", "DCA to primary vertex; DCA [cm]; Counts", 300, 0, 50);
   fListOfObjects->Add(hCt);
 
-  hDCAdaugh = new TH1D("hDCAdaugh", "DCA between daughters; DCA [cm]; Counts", 200, 0, 2);
+  hDCAdaugh = new TH1D("hDCAdaugh", "DCA between daughters; DCA_{d-d} [cm]; Counts", 200, 0, 2);
   fListOfObjects->Add(hDCAdaugh);
 
   hDecayR = new TH1D("hDecayR", "V0 decay radius; Decay radius [cm]; Counts", 240, 0, 120);
   fListOfObjects->Add(hDecayR);
 
-  hCosPA = new TH1D("hCosPA", "Cosine of pointing angle; cos(PA); Counts", 1200, 0.988, 1);
+  hCosPA = new TH1D("hCosPA", "Cosine of pointing angle; cos(PA); Counts", 600, 0.998, 1);
   fListOfObjects->Add(hCosPA);
+
+  hInvMass = new TH1D("hInvMass", "Inv Mass; inv mass (GeV/c2); Counts", 600, -0.3, 0.3);
+  fListOfObjects->Add(hInvMass);
+
+  hNcl = new TH1D("hNcl", "Number of TPC clusters; ncl; Counts", 170, 0, 170);
+  fListOfObjects->Add(hNcl);
+
+  hChi2perNDF = new TH1D("hChi2perNDF", "Chi2 per NDF; Chi2; Counts", 100, 0, 100);
+  fListOfObjects->Add(hChi2perNDF);
+
+  hPdca = new TH1D("hPdca", "DCA of positive daughter to primary vertex; DCA_{pd-PV}; Counts", 1000, 0., 100);
+  fListOfObjects->Add(hPdca);
+
+  hNdca = new TH1D("hNdca", "DCA of negative daughter to primary vertex; DCA_{nd-PV}; Counts", 1000, 0., 100);
+  fListOfObjects->Add(hNdca);
+
+  hDcaV0 = new TH1D("hDcaV0", "DCA of V0 to primary vertex; DCA_{V0-PV}; Counts", 1000, 0., 10);
+  fListOfObjects->Add(hDcaV0);
+
 
   // Post output data.
   PostData(1, fListOfObjects);
@@ -182,8 +247,7 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
   // Main loop
   
   //
-  // Comment: This method matches completely the same method for the high pT
-  // tracks
+  // Comment: This method matches completely the same method for the high pT tracks
   //
 
 
@@ -197,10 +261,6 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
     return;
   }
 
-  // fMC = dynamic_cast<AliMCEvent*>(MCEvent());
-  // if(fMC)
-  //   fMC->Dump();
-  
   fMCArray = (TClonesArray*)fAOD->FindListObject("mcparticles");
   if(!fMCArray){
     Printf("%s:%d AOD MC array not found in Input Manager",(char*)__FILE__,__LINE__);
@@ -218,22 +278,8 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
     const AliVVertex* primaryVertex = fAOD->GetPrimaryVertex(); 
     if(primaryVertex->GetNContributors()>0)
       zvtx = primaryVertex->GetZ();
-    
     if (TMath::Abs(zvtx) < fVtxCut) {	
       
-
-      //added by tuva
-      // Global primary vertex
-      //  const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
-      //if (vtx->GetNContributors() < 2) {
-       	// SPD primary vertex
-      // const AliAODVertex *vtxSPD = fAOD->GetPrimaryVertexSPD();
-      //if (vtxSPD->GetNContributors() < 2) {	
-	// Correlation between global Zvtx and SPD Zvtx
-      // fZvtx = vtx->GetZ();
-      // Float_t zvSPD = vtxSPD->GetZ();
-      // if( TMath::Abs( fZvtx - zvSPD ) < 0.5){
-	  
 	  // 3) if the centrality is in the correct range
 	  Float_t centrality = -10;
 	  AliCentrality *centObject = fAOD->GetCentrality();
@@ -256,8 +302,6 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
 	    // In this final step we try to see for each generated V0 how many
 	    // times it was reconstructed as a V0 and/or a track pair
 	    AnalyzeRecMothersAOD();
-	    //	  }
-	    //  }
       }
     }
   }
@@ -279,7 +323,6 @@ void AliAnaTaskV0EffDecomposition::ProcessMCTruthAOD()
     // We will use the Generator Index as a counter to see what we reconstruct
     trackMC->SetGeneratorIndex(0);
 
-
     Int_t pdgCode = trackMC->PdgCode();
     if(pdgCode != fPdgV0)
       continue;
@@ -290,12 +333,8 @@ void AliAnaTaskV0EffDecomposition::ProcessMCTruthAOD()
     
     if (TMath::Abs(trackMC->Eta()) > fEtaCut )
       continue;
-    
+
     Float_t ptMC      = trackMC->Pt();
-    // Float_t pMC       = trackMC->P();
-    // Float_t etaMC     = trackMC->Eta();
-    // Float_t phiMC     = trackMC->Phi();
-    
     hV0Gen->Fill(ptMC);
   }
 }
@@ -348,25 +387,33 @@ void AliAnaTaskV0EffDecomposition::AnalyzeV0AOD() {
     AliAODv0 *aodV0 = fAOD->GetV0(iV0);
     if (!aodV0) continue;
  
-    Double_t ct = (aodV0->DecayLength(myBestPrimaryVertex))*(1.115683)/aodV0->P();
+
+    Double_t ct = ((aodV0->DecayLength(myBestPrimaryVertex))*(1.115683))/aodV0->P();
 
     hDecayR->Fill(aodV0->RadiusV0());           
     hCosPA->Fill(aodV0->CosPointingAngle(myBestPrimaryVertex));
     hCt->Fill(ct);     
     hDCAdaugh->Fill(aodV0->DcaV0Daughters());   
+    hInvMass->Fill(aodV0->MassLambda()-1.116);
+    hPdca->Fill(aodV0->DcaPosToPrimVertex());
+    hNdca->Fill(aodV0->DcaNegToPrimVertex());
+    hDcaV0->Fill(aodV0->DcaV0ToPrimVertex());
  
-    // common part
-    
-    //cuts added by tuva
-    if(aodV0->RadiusV0()<fDecayRmin)continue;
-    if(aodV0->RadiusV0()>fDecayRmax)continue;
-    // if(TMath::Abs(aodV0->MassLambda()-1.116)>fMassCut)continue;
-    // if(TMath::Abs(aodV0->MassAntiLambda()-1.116)>fMassCut)continue;
-    if(aodV0->Pt()<fMinPtV0)continue;
+ 
+  if(TMath::Abs(aodV0->Eta())>fEtaCut)continue;
+    if(aodV0->RadiusV0()<fDecayRmin || aodV0->RadiusV0()>fDecayRmax)continue;
+    if(TMath::Abs(aodV0->MassLambda()-1.115683)>fMassCut)continue;
     if(aodV0->CosPointingAngle(myBestPrimaryVertex)<fCospt)continue;
     if(aodV0->DcaV0Daughters()>fDcaDaugh)continue;
-    if(ct>3.0*7.89)continue;
+    if(ct>fCt*7.89)continue;
+    if(aodV0->DcaPosToPrimVertex()<fPdca || aodV0->DcaNegToPrimVertex()<fNdca)continue;
+    //    if(aodV0->DcaV0ToPrimVertex()<fDcaV0)continue;
+    
+    //Reject on-the-fly tracks too
+    if(aodV0->GetOnFlyStatus() != 0 ) continue;
 
+  
+    //Check if V0 is primary by analyzing its daughters:
 
     // AliAODTrack (V0 Daughters)
     AliAODVertex* vertex = aodV0->GetSecondaryVtx();
@@ -394,10 +441,15 @@ void AliAnaTaskV0EffDecomposition::AnalyzeV0AOD() {
       n_track = helpTrack;
     } 
     
-  
-    //cuts added by tuva
-    if(TMath::Abs(p_track->Eta()) > fEtaCut || TMath::Abs(n_track->Eta()) > fEtaCut)continue;
+      if(TMath::Abs(p_track->Eta()) > fEtaCut || TMath::Abs(n_track->Eta()) > fEtaCut)continue;
     
+    //not for mc, right?
+    // if(!aodTrack->IsOn(AliAODTrack::kTPCrefit))continue;
+    //but maybe;???:
+    // if(!p_track->IsOn(AliAODTrack::kTPCrefit))continue;
+
+
+
     AliAODMCParticle* p_mother = ValidateTrack(p_track, fPdgPos);
     if(!p_mother)
       continue;
@@ -415,25 +467,38 @@ void AliAnaTaskV0EffDecomposition::AnalyzeV0AOD() {
     
     // One could also consider to fill the pT of the reconstructed mother
     hV0Rec->Fill(p_mother->Pt());
+
     p_mother->SetGeneratorIndex(p_mother->GetGeneratorIndex() + 1);
   }//end loop over v0's
 }
 
 
 //________________________________________________________________________
-AliAODMCParticle* AliAnaTaskV0EffDecomposition::ValidateTrack(AliAODTrack* track, 
-							   Int_t pdgDaughter)
+AliAODMCParticle* AliAnaTaskV0EffDecomposition::ValidateTrack(AliAODTrack* track, Int_t pdgDaughter)
 {
   // Validate V0 daughter track
   
-  // Apply track quality cuts
-  if(!track->TestFilterBit(fTrackFilterBit)) {
-    return 0;
-  }
-  
-  // Do we want to check the invarinat mass here? e.g. a la
-  // Double_t deltaInvMassK0s   = aodV0->MassK0Short()-0.498;
-  
+  //Apply track quality cuts
+  // if(!track->TestFilterBit(fTrackFilterBit)) {
+  //   return 0;
+  // }
+
+  hNcl->Fill(track->Chi2perNDF());
+  hChi2perNDF->Fill(track->GetTPCNcls());
+
+ //standard primary track cuts:
+  if(track->GetTPCNcls()<fNcl){return 0;}
+  if(track->Chi2perNDF()>fChi2perNDF){return 0;}
+ 
+
+  // track->SetMinNClustersTPC(50);
+  // track->SetMaxChi2PerClusterTPC(4);
+  // track->SetMaxDCAToVertexZ(3.2);
+  // track->SetMaxDCAToVertexXY(2.4);
+  // track->SetDCAToVertex2D(kTRUE);
+  // track->SetAcceptKinkDaughters(kFALSE);  
+
+
   const Int_t label = TMath::Abs(track->GetLabel());
   AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(label));
   if (!mcTrack)
@@ -455,7 +520,10 @@ AliAODMCParticle* AliAnaTaskV0EffDecomposition::ValidateTrack(AliAODTrack* track
   Int_t pdgMother = mother->GetPdgCode();
   if(pdgMother != fPdgV0)
     return 0;
-  
+
+  if(!(mother->IsPhysicalPrimary()))
+    return 0;
+
   return mother;
 }
 
@@ -492,6 +560,7 @@ void AliAnaTaskV0EffDecomposition::AnalyzeDaughtersAOD()
     if(!mother1)
       continue;
 
+    
     // loop over the remaining tracks and see of the other daughter track was
     // also reconstructed
     for(Int_t jT = iT+1; jT < nAODTracks; jT++) {
@@ -507,7 +576,7 @@ void AliAnaTaskV0EffDecomposition::AnalyzeDaughtersAOD()
       // check that mother is the same
       if(mother1 != mother2)
 	continue;
-      
+
       //      wasUsed[jT] = kTRUE;
       
       // check that mother has good eta
@@ -532,7 +601,7 @@ void AliAnaTaskV0EffDecomposition::AnalyzeRecMothersAOD()
     
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
 
-    Int_t pdgCode = trackMC->PdgCode();
+    Int_t pdgCode = trackMC->GetPdgCode();
     if(pdgCode != fPdgV0)
       continue;
     
@@ -544,17 +613,14 @@ void AliAnaTaskV0EffDecomposition::AnalyzeRecMothersAOD()
       continue;
     
     Float_t ptMC      = trackMC->Pt();
-    // Float_t pMC       = trackMC->P();
-    // Float_t etaMC     = trackMC->Eta();
-    // Float_t phiMC     = trackMC->Phi();
-    
+      
     Int_t nV0rec = trackMC->GetGeneratorIndex()%100;
     Int_t nTrackrec = Int_t(trackMC->GetGeneratorIndex()/100);
 
     if(nV0rec > 1)
-      hV0Ghost->Fill(ptMC);
+      hV0Ghost->Fill(ptMC, nV0rec-1);
     if(nTrackrec > 1)
-      hTrackGhost->Fill(ptMC);
+      hTrackGhost->Fill(ptMC, nTrackrec-1);
     if(nV0rec==1 && nTrackrec==0)
       hV0ButNoTracks->Fill(ptMC);      
   }
