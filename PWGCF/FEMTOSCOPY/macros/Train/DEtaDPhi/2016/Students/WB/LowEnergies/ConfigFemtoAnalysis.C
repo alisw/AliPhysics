@@ -53,7 +53,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 16; // liczba mozliwych par
 	const int numOfpTbins = 1; // biny w pedzie poprzecznym
 
-   int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0}; // 1 - wlacza czastki do analizy: wlaczone PIpPIm , all
+   int runch[numOfChTypes] = {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // 1 - wlacza czastki do analizy: wlaczone PIpPIm , all
    const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "LL", "aLaL", "LaL", "all", "plus", "minus", "mixed"};
    // pary czastek ktore analizujemy PP - proton proton; KpKp - K plus
    int runktdep = 0; // czy chcemy wlaczac analize w zaleznosci od pedow poprzecznych; 0 - nie ma, 1 - jest
