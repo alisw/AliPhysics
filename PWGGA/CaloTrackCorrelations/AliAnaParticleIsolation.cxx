@@ -4813,10 +4813,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     }
     
     fhConeSumPt              ->Fill(pt,       coneptsumTrack+coneptsumCluster, GetEventWeight());
-    Printf("Filling new histogram with values %.4f\t%.4f\t%.4f",pt,m02,coneptsumTrack+coneptsumCluster);
-    fhPtLambda0Eiso->Fill(pt, m02, coneptsumTrack+coneptsumCluster);
     fhConeSumPtTrigEtaPhi    ->Fill(eta, phi, coneptsumTrack+coneptsumCluster *GetEventWeight()); // check
-    
+
+    fhPtLambda0Eiso          ->Fill(pt, m02, coneptsumTrack+coneptsumCluster);
+
     Float_t coneptLead = coneptLeadTrack;
     if(coneptLeadCluster > coneptLeadTrack) coneptLead = coneptLeadCluster;
     fhConePtLead->Fill(pt, coneptLead, GetEventWeight());
