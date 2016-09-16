@@ -2,6 +2,8 @@
 
 // Macro to calcuate efficiency QA
 // Jitendra Kumar, Zaida
+// Last edited: 15September 2016 (for typos)
+
 
 //Range of container variable
 const Double_t etamin = -0.9;
@@ -51,7 +53,7 @@ mins[icent] = centmin;    maxs[icent] = centmax;
 
 
 //Slicing container
-AliCFContainer *CalcSingleTrackEffQAC(const char *inputfile="Run_117222/AnalysisResults_trainMarch10.root", const char *fParticleType = "NchFbit0"){
+AliCFContainer *CalcSingleTrackEffQAC(const char *inputfile="QAresults.root", const char *fParticleType = "NchFbit0"){
     
     
     TFile* infile = TFile::Open(inputfile,"read");
@@ -118,7 +120,7 @@ Float_t CalcTotalSingleTrackEff(AliCFGridSparse* gridSprsNum,
 {
     
     gROOT->SetStyle("Plain");
-    gStyle->SetOptStat(1);
+    gStyle->SetOptStat("e");
     gStyle->SetPalette(1);
     gStyle->SetCanvasColor(0);
     gStyle->SetFrameFillColor(0);
@@ -155,7 +157,7 @@ Float_t CalcTotalSingleTrackEff(AliCFGridSparse* gridSprsNum,
     cout << "Eff Numerator   ---> " << Form("Num%s_%s_Efficiency_%sBy%s_fbit%d", fParticleType, fWhichVar, cLevelNum, cLevelDen, fWchfbit) << endl;
     cout << "Eff Denominator ---> " << Form("Den%s_%s_Efficiency_%sBy%s_fbit%d", fParticleType, fWhichVar, cLevelNum, cLevelDen, fWchfbit) << endl;
     
-    TCanvas *c = new TCanvas(hEffName.Data(), hEffName.Data(), 2250,750);
+    TCanvas *c = new TCanvas(hEffName.Data(), hEffName.Data(), 1500,500);
     c->Divide(3,1);
    
     THnSparse* numData = (THnSparse*)gridSprsNumClone->GetGrid();
@@ -166,7 +168,7 @@ Float_t CalcTotalSingleTrackEff(AliCFGridSparse* gridSprsNum,
     Float_t fVarMin = heffnum->GetXaxis()->GetXmin();
     Float_t fVarMax = heffnum->GetXaxis()->GetXmax();
     hEffName.Resize(0);
-    hEffName.Form("%s: %s_%s_distribution (%.1f-%.1f)",cLevelDen, fParticleType, fWhichVar, fVarMin, fVarMax);
+    hEffName.Form("%s: %s_%s_distribution (%.1f to %.1f)",cLevelNum, fParticleType, fWhichVar, fVarMin, fVarMax);
     SetHisto(heffnum,hEffName,fWhichVar, 9);
     heffnum->Draw();
     
@@ -176,7 +178,7 @@ Float_t CalcTotalSingleTrackEff(AliCFGridSparse* gridSprsNum,
     c->cd(1);
     if(fWhichVar=="pt" || fWhichVar=="PT" || fWhichVar=="Pt")gPad->SetLogy();
     hEffName.Resize(0);
-    hEffName.Form("%s: %s_%s_distribution (%.1f-%.1f)",cLevelNum, fParticleType, fWhichVar, fVarMin, fVarMax);
+    hEffName.Form("%s: %s_%s_distribution (%.1f to %.1f)",cLevelDen, fParticleType, fWhichVar, fVarMin, fVarMax);
     SetHisto(heffden,hEffName,fWhichVar, 6);
     heffden->Draw();
     
@@ -184,18 +186,24 @@ Float_t CalcTotalSingleTrackEff(AliCFGridSparse* gridSprsNum,
     //Efficiencys
     TH1D* heff = (TH1D*)heffnum->Clone("heff");
     hEffName.Resize(0);
-    hEffName.Form("Efficiency: %s_%s (%.1f-%.1f)",fParticleType, fWhichVar, fVarMin, fVarMax);
+    hEffName.Form("Efficiency: %s_%s (%.1f to %.1f)",fParticleType, fWhichVar, fVarMin, fVarMax);
     heff->Divide(heffnum,heffden,1,1,"B");
     heff->SetTitle(hEffName.Data());
     heff->GetYaxis()->SetTitle("Efficiency");
-    heff->SetMaximum(1.00);
-    heff->SetMinimum(-0.20);
+    heff->SetMaximum(1.10);
+    heff->SetMinimum(-0.10);
     heff->SetMarkerColor(4); //blue
     c->cd(3);
- 
-    
-    gPad->SetFrameFillColor(5);
+    gPad->SetFrameFillColor(kCyan-10);
+    if(fWhichVar=="pt" || fWhichVar=="PT" || fWhichVar=="Pt")gPad->SetFrameFillColor(5);
+    heff->SetStats(kFALSE);
     heff->Draw();
+    
+    TLine *line = new TLine(fVarMin,1,fVarMax,1);
+    line->SetLineColor(kRed);
+    line->SetLineStyle(2);
+    line->Draw();
+
     LatexName(xvalue, fWhichVar, runNumber, fWchfbit, fParticleType);
     c->Update();
     hEffName.Resize(0);
@@ -292,16 +300,20 @@ void SetHisto(TH1D* h, TString title= "", const char *Var="pt", const Int_t mrkC
     //Title
     h->SetTitle(title.Data());
     h->SetName(title.Data());
-    if(Var=="eta" || Var=="ETA" || Var=="Eta")
-    {
+    
+    h->GetYaxis()->SetTitleOffset(1.12);
+    
+    if(Var=="eta" || Var=="ETA" || Var=="Eta"){
         h->SetMaximum(h->GetMaximum()*1.25);
         h->SetMinimum(h->GetMinimum()*0.10);
+        h->GetXaxis()->SetTitle("#eta");
+        h->GetYaxis()->TGaxis::SetMaxDigits(3);
+    }else if(Var=="PT" || Var=="Pt" || Var=="pt"){
+        h->GetXaxis()->SetTitle("#it{p}_{T} GeV/#it{c}");
     }
-    //h->SetTitleFont(43);
-    //h->SetTitleSize(25);
+    h->GetYaxis()->SetTitle("# Counts");
     
     //X axis
-    h->GetXaxis()->SetTitle(Form("%s", Var));
     //h->GetXaxis()->SetTitleSize(1);
     //h->GetXaxis()->SetTitleOffset(0.50);
     //h->GetXaxis()->SetLabelFont(43);
@@ -309,7 +321,6 @@ void SetHisto(TH1D* h, TString title= "", const char *Var="pt", const Int_t mrkC
     //h->GetXaxis()->SetLabelOffset(0.007);
     
     //Y-axis
-    h->GetYaxis()->SetTitle("counts");
     //h->GetYaxis()->SetTitleFont(43);
     //h->GetYaxis()->SetLabelFont(43);
     //h->GetYaxis()->SetLabelSize(15);
@@ -324,25 +335,25 @@ void LatexName(const Double_t xvalue, TString fWhichVar="", Int_t runNumber, Int
     TLatex Tl;
     Tl.SetTextAlign(12);
     Tl.SetTextSize(0.035);
-    Tl.DrawLatex(xvalue,0.49, Form("Configurations"));
+    Tl.DrawLatex(xvalue,0.49, Form("Configuration"));
     Tl.DrawLatex(xvalue,0.48, ""); //new commit 21March 2016
     Tl.DrawLatex(xvalue,0.42, Form("1. runNumber: %d", runNumber));
     Tl.DrawLatex(xvalue,0.36, Form("2. Filterbit: %d", fbit));
-    Tl.DrawLatex(xvalue,0.30, Form("3. Particle: %s ", fPartype));
+    Tl.DrawLatex(xvalue,0.30, Form("3. Particle type: %s ", fPartype));
     
     if(fWhichVar=="pt" || fWhichVar=="PT" || fWhichVar=="Pt"){
         Tl.DrawLatex(xvalue,0.24, Form("4. %.1f #leq #eta #leq %.1f ", etamin, etamax));
-        Tl.DrawLatex(xvalue,0.18, Form("5. %.1f #leq Zvtx #leq %.1f ", zvtxmin, zvtxmax));
+        Tl.DrawLatex(xvalue,0.18, Form("5. %.1f #leq Zvtx #leq %.1f cm", zvtxmin, zvtxmax));
     }else if(fWhichVar=="eta" || fWhichVar=="ETA" || fWhichVar=="Eta"){
-        Tl.DrawLatex(xvalue,0.24, Form("4. %.1f #leq p_{T} #leq %.1f ", ptmin, ptmax));
-        Tl.DrawLatex(xvalue,0.18, Form("5. %.1f #leq Zvtx #leq %.1f ", zvtxmin, zvtxmax));
+        Tl.DrawLatex(xvalue,0.24, Form("4. %.1f #leq #it{p}_{T} #leq %.1f GeV/#it{c}", ptmin, ptmax));
+        Tl.DrawLatex(xvalue,0.18, Form("5. %.1f #leq Zvtx #leq %.1f cm", zvtxmin, zvtxmax));
     }else if(fWhichVar=="zvtx" || fWhichVar=="ZVTX" || fWhichVar=="Zvtx"){
         Tl.DrawLatex(xvalue,0.24, Form("4. %.1f #leq #eta #leq %.1f ", etamin, etamax));
-        Tl.DrawLatex(xvalue,0.18, Form("5. %.1f #leq p_{T} #leq %.1f ", ptmin, ptmax));
+        Tl.DrawLatex(xvalue,0.18, Form("5. %.1f #leq #it{p}_{T} #leq %.1f GeV/#it{c} ", ptmin, ptmax));
     }else {
-        Tl.DrawLatex(xvalue,0.18, Form("4. %.1f #leq Zvtx #leq %.1f ", zvtxmin, zvtxmax));
+        Tl.DrawLatex(xvalue,0.18, Form("4. %.1f #leq Zvtx #leq %.1f cm", zvtxmin, zvtxmax));
         Tl.DrawLatex(xvalue,0.24, Form("5. %.1f #leq #eta #leq %.1f ", etamin,  etamax));
-        Tl.DrawLatex(xvalue,0.30, Form("6. %.1f #leq p_{T} #leq %.1f", ptmin,   ptmax));
+        Tl.DrawLatex(xvalue,0.30, Form("6. %.1f #leq #it{p}_{T} #leq %.1f GeV/#it{c}", ptmin,   ptmax));
     }
     
 }
