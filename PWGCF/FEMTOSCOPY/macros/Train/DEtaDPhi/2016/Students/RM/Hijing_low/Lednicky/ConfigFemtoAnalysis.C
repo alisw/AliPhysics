@@ -336,18 +336,24 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
                	//_______Cuty dla konkretnych typow czastek_________
             	//uzupelniane inne ograniczenia w zaleznosci od typu czastki
-               if (itype == 0 ||itype == 1 ||itype == 2)//protons 0-2
+              if (itype == 0 ||itype == 1 ||itype == 2)//protons 0-2
                {
-                  // part1_mc_track_cut[imainloop]->SetPt(0.5,4); //Pt - ped poprzeczny
-                  // part2_mc_track_cut[imainloop]->SetPt(0.5,4);
-                                           
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3); //Pt - ped poprzeczny
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3);
+                                   
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.3, 3); 
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.35, 3);
+                             
                   part1_mc_track_cut[imainloop]->SetPDG(2212); //PDG - numer czastki z bookletu, tutaj okreslamy ze to sa wlasnie protony
                   part2_mc_track_cut[imainloop]->SetPDG(2212);
                }
                if (itype == 3 ||itype == 4 ||itype == 5)//kaons 3-5
-               // {
-               //    part1_mc_track_cut[imainloop]->SetPt(0.3,4);
-               //    part2_mc_track_cut[imainloop]->SetPt(0.3,4);
+               {
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3);
+
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.25, 3.3); 
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.25, 3.3);
 
                   part1_mc_track_cut[imainloop]->SetPDG(321);
                   part2_mc_track_cut[imainloop]->SetPDG(321);
@@ -355,42 +361,56 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                }
                if (itype == 6 ||itype == 7 ||itype == 8)//pions 6-8
                {
-                  // part1_mc_track_cut[imainloop]->SetPt(0.2,4);
-                  // part2_mc_track_cut[imainloop]->SetPt(0.2,4);
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3);
+
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.36, 3.85); 
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.37, 3.8);
 
                   part1_mc_track_cut[imainloop]->SetPDG(211);
                   part2_mc_track_cut[imainloop]->SetPDG(211);   
                 }
                 if(itype == 9)  //lambdas 9-11
                 {
-                  // part1_mc_track_cut[imainloop]->SetPt(0.7,4);
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3);
                   part1_mc_track_cut[imainloop]->SetPDG(3122);
                   part1_mc_track_cut[imainloop]->SetCharge(0.0);
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
+                 
                 }
-            	if(itype == 10)
-            	{
+              if(itype == 10)
+              {
                   part2_mc_track_cut[imainloop]->SetCharge(0.0);
-                  // part2_mc_track_cut[imainloop]->SetPt(0.7,4);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3);
                   part2_mc_track_cut[imainloop]->SetPDG(-3122);
-            	}
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
+              }
                if(itype == 11)
-                // {
-                //   part1_mc_track_cut[imainloop]->SetPt(0.7,4);
-                //   part2_mc_track_cut[imainloop]->SetPt(0.7,4);
+                {
+                  part1_mc_track_cut[imainloop]->SetPt(0.7,4);
+                  part2_mc_track_cut[imainloop]->SetPt(0.7,4);
+
                   part1_mc_track_cut[imainloop]->SetCharge(0.0);
                   part2_mc_track_cut[imainloop]->SetCharge(0.0);
+
+                   part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
+                   part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
 
                   part1_mc_track_cut[imainloop]->SetPDG(3122);
                   part2_mc_track_cut[imainloop]->SetPDG(-3122);
                 }
                 if (itype == 12)//all
                 {
-                  // part3_mc_track_cut[imainloop]->SetPt(0.12,4);
+                  part3_mc_track_cut[imainloop]->SetPt(0.0,3);
+                  part3_mc_track_cut[imainloop]->SetRapidity(0.0,4.0);
                 }
                 if (itype == 13 ||itype == 14 ||itype == 15)//plus,minus,mixed
                 {
-                  // part1_mc_track_cut[imainloop]->SetPt(0.12,4);
-                  part2_mc_track_cut[imainloop]->(0.0,100);
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3.0);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3.0);
+
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0,4);
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.0,4);
                 }
 
                //**************** track Monitors ***************
