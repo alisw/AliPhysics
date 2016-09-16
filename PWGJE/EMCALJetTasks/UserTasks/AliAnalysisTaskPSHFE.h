@@ -97,11 +97,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_Had_MB_1Gev;//!
     //TRD nSigma plots
     TH2F            *fHistTRD_TPCEMC_MB[6];//!
-    //EMCal Shower SHape plots
-    TH2F            *fHistM02_All_MB[6];//!
-    TH2F            *fHistM20_All_MB[6];//!
-    TH2F            *fHistM02_Elec_MB[6];//!
-    TH2F            *fHistM20_Elec_MB[6];//!
     //General Event histos
     TH1F            *fHistPtSum_MB;//!
     TH1F            *fHistPtSumTag_MB;//!
@@ -157,11 +152,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_EMC7[6];//!
     //TRD Liklihood plots
     TH2F            *fHistTRD_TPCEMC_EMC7[6];//!
-    //EMCal Shower SHape plots
-    TH2F            *fHistM02_All_EMC7[6];//!
-    TH2F            *fHistM20_All_EMC7[6];//!
-    TH2F            *fHistM02_Elec_EMC7[6];//!
-    TH2F            *fHistM20_Elec_EMC7[6];//!
     //General Event histos 
     TH1F            *fHistPtSum_EMC7;//!
     TH1F            *fHistPtSumTag_EMC7;//!
@@ -215,11 +205,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_EMCEGA[6];//!
     //TRD Liklihood plots
     TH2F            *fHistTRD_TPCEMC_EMCEGA[6];//!
-    //EMCal Shower SHape plots
-    TH2F            *fHistM02_All_EMCEGA[6];//!
-    TH2F            *fHistM20_All_EMCEGA[6];//!
-    TH2F            *fHistM02_Elec_EMCEGA[6];//!
-    TH2F            *fHistM20_Elec_EMCEGA[6];//!
     //General Event histos
     TH1F            *fHistPtSum_EMCEGA;//!
     TH1F            *fHistPtSumTag_EMCEGA;//!
@@ -272,11 +257,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_EMCJet[6];//!
     //TRD Liklihood plots
     TH2F            *fHistTRD_TPCEMC_EMCJet[6];//!
-    //EMCal Shower SHape plots
-    TH2F            *fHistM02_All_EMCJet[6];//!
-    TH2F            *fHistM20_All_EMCJet[6];//!
-    TH2F            *fHistM02_Elec_EMCJet[6];//!
-    TH2F            *fHistM20_Elec_EMCJet[6];//!
     //General Event histos
     TH1F            *fHistPtSum_EMCJet;//!
     TH1F            *fHistPtSumTag_EMCJet;//!
