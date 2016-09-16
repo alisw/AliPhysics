@@ -70,10 +70,12 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustDz; //!
 
   TH1F                        *fHistMultCent; //!
+  TH2F                        *fHistZcorr; //!
   TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
   TH2F                        *fHistEop;
   TH1F                        *fHistJetOrg;
+  TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
   TH1F                        *fHistJetSub;
   TH1F                       *fHisteJetOrg;

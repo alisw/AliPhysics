@@ -5,9 +5,9 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   const char *nclusters          = "usedefault",
   const char *njets              = "Jets",
   const char *nrho               = "Rho",
-  Double_t    jetradius          = 0.2,
+  Double_t    jetradius          = 0.3,
   Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.557,
+  Double_t    jetareacut         = 0.2,
   const char *cutType            = "TPCfid",
   Int_t       leadhadtype        = 0,
   const char *suffix             = ""
@@ -133,8 +133,13 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   //AliJetContainer *jetCont = jetTask->AddJetContainer(njets, cutType, jetradius);
   AliJetContainer* jetCont = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "Jet");
   if (jetCont) {
-    jetCont->SetRhoName(nrho);
-    jetCont->SetPercAreaCut(jetareacut);
+    //jetCont->SetRhoName(nrho);
+    jetCont->SetRhoName("Rho");
+    cout << "Name of Rho " << jetCont->GetRhoName() << endl;
+    if(jetradius==0.3)jetareacut=0.2;
+    cout << "jetradius = " << jetradius << " ; jetareacut = " << jetareacut << endl;  
+    //jetCont->SetPercAreaCut(jetareacut);
+    jetCont->SetJetAreaCut(jetareacut);
     jetCont->SetJetPtCut(jetptcut);
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
