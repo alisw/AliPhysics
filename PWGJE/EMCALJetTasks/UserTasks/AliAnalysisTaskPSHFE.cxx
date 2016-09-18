@@ -75,7 +75,6 @@ comptrackCuts(0),
 fPoolMan(0),
 fPool(0),
 aodEv(0),
-trkArr(0),
 EMC7trg(0),
 EMCEGAtrg(0),
 EMCJettrg(0),
@@ -313,7 +312,6 @@ comptrackCuts(0),
 fPoolMan(0),
 fPool(0),
 aodEv(0),
-trkArr(0),
 EMC7trg(0),
 EMCEGAtrg(0),
 EMCJettrg(0),
@@ -1950,9 +1948,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         AliWarning("NULL PIDResponse");
     }
 
-    if(aodEv){
-        trkArr = MakeTrkArr(aod);
-    }
+    ProcInfo_t procInfo;
+    gSystem->GetProcInfo(&procInfo);
+    printf("Track Array: RSS: %7.5f VMem: %7.5f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
+    
+    TObjArray* trkArr = MakeTrkArr(aod);
+    
+    gSystem->GetProcInfo(&procInfo);
+    printf("Track Array: RSS: %7.5f VMem: %7.5f MB\n ",float(procInfo.fMemResident)/1024,float(procInfo.fMemVirtual)/1024);
 
     //__________________________End major event stuff_____________________________
 
@@ -2335,7 +2338,9 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     }
     else{
         if(UseNonSignalEvents){
-            fPool->UpdatePool(trkArr);
+            if(trkArr){
+                fPool->UpdatePool(trkArr);
+            }
         }else{
             if(tagEvt){
                 fPool->UpdatePool(trkArr);
@@ -2427,7 +2432,6 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
         }
     }
-
 
 
     // NEW HISTO should be filled before this point, as PostData puts the

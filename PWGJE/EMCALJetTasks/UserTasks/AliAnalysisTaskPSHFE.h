@@ -58,7 +58,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     AliESDtrackCuts *comptrackCuts; //!
     AliEventPoolManager *fPoolMan;//!
     AliEventPool    *fPool;//!
-    TObjArray       *trkArr;//!
     
     //Boolean to keep track of whether we are using aod
     Bool_t          aodEv;
@@ -205,7 +204,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_EMCEGA[6];//!
     //TRD Liklihood plots
     TH2F            *fHistTRD_TPCEMC_EMCEGA[6];//!
-    //General Event histos 
+    //General Event histos
     TH1F            *fHistPtSum_EMCEGA;//!
     TH1F            *fHistPtSumTag_EMCEGA;//!
     TH1F            *fHistPtSumEMC_EMCEGA;//!
