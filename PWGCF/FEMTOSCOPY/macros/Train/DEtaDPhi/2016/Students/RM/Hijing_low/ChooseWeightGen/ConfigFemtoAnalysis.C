@@ -7,7 +7,7 @@
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
 #include "AliFemtoCorrFctn.h"
-#include "AliFemtoCutMonitorParticleYPt.h"
+#include "AliFemtoCutMonitorParticleYPtWithWeights.h"
 #include "AliFemtoCutMonitorParticleVertPos.h"
 #include "AliFemtoCutMonitorParticleMomRes.h"
 #include "AliFemtoCutMonitorParticlePID.h"
@@ -19,7 +19,7 @@
 #include "AliFemtoModelCorrFctnQinv.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoCorrFctnDEtaDPhi.h"
-#include "AliFemtoModelCorrFctn.h"
+#include "AliFemtoModelCorrFctnWithWeights.h"
 #include "AliFemtoCorrFctnNonIdDR.h"
 #include "AliFemtoShareQualityCorrFctn.h"
 #include "AliFemtoTPCInnerCorrFctn.h"
@@ -43,9 +43,11 @@
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoPairCutPt.h"
-#include "AliFemtoModelCorrFctnDEtaDPhi.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiWithWeights.h"
 #include "AliFemtoAvgSepCorrFctn.h"
-#include "AliFemtoModelGausRinvFreezeOutGenerator"
+#include "AliFemtoModelGausRinvFreezeOutGenerator.h"
+#include "AliFemtoQinvCorrFctnWithWeights.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiWithWeights.h"
 #endif
 
 //________________________________________________________________________
@@ -57,12 +59,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    double LambdaMass = 1.115683;
 
    //double *part_mases[4] = {ProtonMass, KaonMass, PionMass, LambdaMass};
-	char *parameter[2];
-	if(strlen(params)!=0)
-	  {
-	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
-	  }
-	int sel_pair_set = atoi(parameter[0]); 
+
 /************** MULTIPLICITY *************/   
 	//ilosc binow krotnosci czastek, krotnosc (MULTIPLICITY) - ilosc czastek wyprodukowanych w zderzeniu; bierzemy biny np. 0-10, 11-20 itd...; multiplicity uzywa sie wymiennie z centralnoscia (albo jedno albo drugie),
 	//zazwyczaj tworzy osobne histogramy dla czastek z danego binu multiplicity, piszemy wtedy M0, M1 ...
@@ -79,58 +76,75 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    const char *pair_types[numOfPairTypes] = { "PP" /*0*/, "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", \
    "LamLam" /*9*/, "aLam_aLam", "Lam_aLam", "all" /*12*/, "plus", "minus", "mixed"};
 	// 1 wlaczaja nam pary do analizy, 0 wylaczaja
+  char *parameter[3];
+  if(strlen(params)!=0)
+    {
+      parameter[0] = strtok(params, ",");// Splits spaces between words in params
+       parameter[1] = strtok(NULL, ","); 
+       parameter[2] = strtok(NULL, ","); 
+    }
+  int sel_pair_set = atoi(parameter[0]);
+  const int setWeightGen = atoi(parameter[1]); //0 - none; 1 - basic; 2- lednicky
+  const char* filterPath = parameter[2];
+  ///////////////////////////////////////////
+  TGrid::Connect("alien://");
+  TFile *filterFile = TFile::Open(filterPath);
+  ///////////////////////////////////////////
+  TH2D *filter1 = new TH2D();
+  TH2D *filter2 = new TH2D();
+  const char* filterTypes[8] = {"p+", "p-","K+", "K-", "pi+", "pi-", "lambda", "lambdab"};
 
-   int runch[numOfPairTypes]= {0/*PP*/, 0/*aPaP*/, 0/*PaP*/, 0/*KpKp*/, 0/*KmKm*/, 0/*KpKm*/, 0,/*PIpPIp*/, 0/*PImPIm*/, 0/*PIpPIm*/,\
+  int runch[numOfPairTypes]= {0/*PP*/, 0/*aPaP*/, 0/*PaP*/, 0/*KpKp*/, 0/*KmKm*/, 0/*KpKm*/, 0,/*PIpPIp*/, 0/*PImPIm*/, 0/*PIpPIm*/,\
     0 /*"LamLam"*/, 0 /*"aLam_aLam"*/, 0 /*"Lam_aLam"*/, 0/*all*/, 0/*plus*/, 0/*minus*/, 0/*mixed*/};
    if(sel_pair_set==0) 
    {//protons
-   	runch[0]=1;
-   	runch[1]=1;
-   	runch[2]=1;
+    runch[0]=1;
+    runch[1]=1;
+    runch[2]=1;
    }
    else if(sel_pair_set==1)
    {//kaons
-   	runch[3]=1;
-   	runch[4]=1;
-   	runch[5]=1;
+    runch[3]=1;
+    runch[4]=1;
+    runch[5]=1;
    }
    else if(sel_pair_set==2)
   {//pions
-   	runch[6]=1;
-   	runch[7]=1;
-   	runch[8]=1;
+    runch[6]=1;
+    runch[7]=1;
+    runch[8]=1;
    }
    else if(sel_pair_set==3)
    {//lambdas
-   	runch[9]=1;
-   	runch[10]=1;
-   	runch[11]=1;
+    runch[9]=1;
+    runch[10]=1;
+    runch[11]=1;
    }
     else if(sel_pair_set==4)
    {//without PDG
-   	runch[12]=1;
-   	runch[13]=1;
-   	runch[14]=1;
-   	runch[15]=1;
+    runch[12]=1;
+    runch[13]=1;
+    runch[14]=1;
+    runch[15]=1;
    }
    else
    {
-   	runch[0]=1;
-   	runch[1]=1;
-   	runch[2]=1;
-   	runch[3]=1;
-   	runch[4]=1;
-   	runch[5]=1;
-	runch[6]=1;
-   	runch[7]=1;
-   	runch[8]=1;
-   	runch[9]=1;
-   	runch[10]=1;
-   	runch[11]=1;
-   	runch[12]=1;
-   	runch[13]=1;
-   	runch[14]=1;
-   	runch[15]=1;
+    runch[0]=1;
+    runch[1]=1;
+    runch[2]=1;
+    runch[3]=1;
+    runch[4]=1;
+    runch[5]=1;
+  runch[6]=1;
+    runch[7]=1;
+    runch[8]=1;
+    runch[9]=1;
+    runch[10]=1;
+    runch[11]=1;
+    runch[12]=1;
+    runch[13]=1;
+    runch[14]=1;
+    runch[15]=1;
    }
 
 /************** K_T SETTINGS *************/   
@@ -141,9 +155,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    double kt_bins[numOfkTbins+1] = {0.0, 0.75, 1.5, 2.25, 100.0};   
 
 /************** OTHER SETTINGS *************/   
-	//jesli 1 to analizowane sa funkcje korelacyjne w roznych przedzialach sredniego pedu poprzecznego kt
-   int runktdep = 0; //run kT dependance - jak 0 to nie ma analizy
-
    //wlaczenie konkretnego cutu na dwie czastki, ma wyrzucac elektrony i pozytony pochodzace od fotonow
    int gammacut = 1;   // cut for e+e- coming from gamma
 
@@ -153,11 +164,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 //dosyc istotne, ustalamy tu z jaka analiza mamy do czynienia, z jakimi plikami pracujemy
 
    //  ***Reader ESD***
-   //AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
+   // AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
    //sposob liczenia multiplicity, ustawione aby liczyc track po tracku dla zdefiniowanych dobrze trackow, zeby dowiedziec sie jakie dokladnie czastki \
    brane pod uwage nalezy wejsc w szczegoly READERa \
    dla zdezen Pb-Pb wybiera sie po centrality - centralnosc zostala przyporzadkowana eventowi w trakcie rekonstrukcji
-   //Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kReferenceITSTPC);
+   // Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kReferenceITSTPC);
 
    //  ***Reader AOD***
    //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
@@ -186,23 +197,29 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    Manager->SetEventReader(Reader);
 
    /************** WEIGHT GENERATOR ***********/
-   AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
-   // AliFemtoModelWeightGeneratorBasic *tWeightBasic = new AliFemtoModelWeightGeneratorBasic();
-   // tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonProton());
-   tWeight ->SetCoulOn();
-   tWeight -> SetQuantumOn();
-   tWeight -> SetStrongOn();
-   tWeight -> Set3BodyOn();
+   if(setWeightGen == 1)
+   {
+   	AliFemtoModelWeightGeneratorBasic *tWeight = new AliFemtoModelWeightGeneratorBasic();
+   }
+   else if(setWeightGen == 2)
+   {
+	   AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
+	   
+	   // tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonProton());
+	   tWeight ->SetCoulOn();
+	   tWeight -> SetQuantumOn();
+	   tWeight -> SetStrongOn();
+	   tWeight -> Set3BodyOn();
+	}
 
-   AliFemtoModelManager *tModelManager = new AliFemtoModelManager(); 
-   AliFemtoModelGausRinvFreezeOutGenerator *tFreezepim = new AliFemtoModelGausRinvFreezeOutGenerator();
-   tFreezepim->SetSizeInv(2.0); 
-   // AliFemtoModelGausLCMSFreezeOutGenerator *tFreezepim = new AliFemtoModelGausLCMSFreezeOutGenerator();
-  	// tFreezepim->SetSizeOut(1.8*TMath::Sqrt(2.0));                                                
-  	// tFreezepim->SetSizeSide(1.3*TMath::Sqrt(2.0));                                               
-  	// tFreezepim->SetSizeLong(1.6*TMath::Sqrt(2.0));      
-	tModelManager->AcceptFreezeOutGenerator(tFreezepim); 
-	tModelManager->CreateCopyHiddenInfo(kFALSE); 
+   if(setWeightGen != 0)
+   {
+	   AliFemtoModelManager *tModelManager = new AliFemtoModelManager(); 
+	   AliFemtoModelGausRinvFreezeOutGenerator *tFreezepim = new AliFemtoModelGausRinvFreezeOutGenerator();
+	   tFreezepim->SetSizeInv(2.0); 
+		tModelManager->AcceptFreezeOutGenerator(tFreezepim); 
+		tModelManager->CreateCopyHiddenInfo(kFALSE); 
+   }
 
 
 
@@ -226,17 +243,17 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    AliFemtoMCTrackCut          *part1_mc_track_cut[320];
    AliFemtoMCTrackCut          *part2_mc_track_cut[320]; //nazwy niekoniecznie odpowiadaja faktycznie uzywanym detektorom
    AliFemtoMCTrackCut          *part3_mc_track_cut[320];
-   //AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[320]; //monitory na pojedyncze czastki
-   //AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[320];
+   //AliFemtoCutMonitorParticleYPtWithWeights *cutPass1YPtetaphitpc[320]; //monitory na pojedyncze czastki
+   //AliFemtoCutMonitorParticleYPtWithWeights *cutFail1YPtetaphitpc[320];
    AliFemtoCutMonitorParticlePID *cutPass1PID[320]; //generuja wykresy PID
    AliFemtoCutMonitorParticlePID *cutFail1PID[320];
-   //AliFemtoCutMonitorParticleYPt *cutPass2YPtetaphitpc[320];
-   //AliFemtoCutMonitorParticleYPt *cutFail2YPtetaphitpc[320];
+   //AliFemtoCutMonitorParticleYPtWithWeights *cutPass2YPtetaphitpc[320];
+   //AliFemtoCutMonitorParticleYPtWithWeights *cutFail2YPtetaphitpc[320];
    AliFemtoCutMonitorParticlePID *cutPass2PID[320]; //generuja wykresy PID na pary
    AliFemtoCutMonitorParticlePID *cutFail2PID[320];
 
-   AliFemtoCutMonitorParticleYPt *cutPass3YPt[320]; //generuje wykresy rapidity od pedu
-   AliFemtoCutMonitorParticleYPt *cutFail3YPt[320];
+   AliFemtoCutMonitorParticleYPtWithWeights *cutPass3YPt[320]; //generuje wykresy rapidity od pedu
+   AliFemtoCutMonitorParticleYPtWithWeights *cutFail3YPt[320];
 
    AliFemtoCutMonitorParticlePID *cutPass3PID[320]; //Pass - przeszly cuty, Fail - nie przeszly TRACKcutow (przeszly event cuty)
    AliFemtoCutMonitorParticlePID *cutFail3PID[320];
@@ -250,10 +267,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    AliFemtoPairCutPt                   *kt_sum_cuts[640]; //cut na sume pedow poprzecznych 
    AliFemtoQinvCorrFctn               *cQinv_kt[320]; //Qinv najbardziej podst femtoskopowa funkcja
    AliFemtoQinvCorrFctn               *cQinv[320];
-	//komponenty funkcji korelacyjnej
    AliFemtoCorrFctnDEtaDPhi         *cDetaDphi[640];
-   AliFemtoModelCorrFctn              *cQinvModel[320];
-   AliFemtoModelCorrFctnDEtaDPhi         *cDetaDphiModel[640];
+
+   AliFemtoQinvCorrFctnWithWeights               *cQinvWB[320];
+   AliFemtoCorrFctnDEtaDPhiWithWeights         *cDetaDphiWB[640];
+   AliFemtoModelCorrFctnWithWeights              *cQinvModel[320];
+   AliFemtoModelCorrFctnDEtaDPhiWithWeights         *cDetaDphiModel[640];
 
 
 
@@ -276,23 +295,25 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
          {
             if (runch[itype]) //sprawdzamy czy dany typ czastek jest brany pod uwage do analizy
             {
-  
-               if(itype==0)
-                  tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonProton());
-              	else if(itype==2)
-              		tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());
-              	else if(itype==3)
-              		tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
-              	else if(itype==5)
-              		tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
-              	else if(itype==6)
-              		tWeight->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
-              	else if(itype==8)
-              		tWeight->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionMinus());
-              	else
-                   tWeight->SetPairType(AliFemtoModelWeightGenerator::PairTypeNone()); 
-
-               tModelManager->AcceptWeightGenerator(tWeight);
+            	if(setWeightGen == 2)
+            	{
+	            	// if(itype==0)
+	             //      tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonProton());
+	             //  	else if(itype==2)
+	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());
+	             //  	else if(itype==3)
+	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
+	             //  	else if(itype==5)
+	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
+	             //  	else if(itype==6)
+	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
+	             //  	else if(itype==8)
+	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionMinus());
+	             //  	else
+	             //       tWeight->SetPairType(AliFemtoModelWeightGenerator::PairTypeNone()); 
+	           }
+	           if(setWeightGen !=0)
+               		tModelManager->AcceptWeightGenerator(tWeight);
 
            		
            	   
@@ -336,13 +357,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
                	//_______Cuty dla konkretnych typow czastek_________
             	//uzupelniane inne ograniczenia w zaleznosci od typu czastki
-              if (itype == 0 ||itype == 1 ||itype == 2)//protons 0-2
+               if (itype == 0 ||itype == 1 ||itype == 2)//protons 0-2
                {
                   part1_mc_track_cut[imainloop]->SetPt(0.0,3); //Pt - ped poprzeczny
                   part2_mc_track_cut[imainloop]->SetPt(0.0,3);
                                    
-                  part1_mc_track_cut[imainloop]->SetRapidity(0.3, 3); 
-                  part2_mc_track_cut[imainloop]->SetRapidity(0.35, 3);
+                  // part1_mc_track_cut[imainloop]->SetRapidity(0.3, 3); //sczytane z histogramu
+                  // part2_mc_track_cut[imainloop]->SetRapidity(0.35, 3);
+                   part1_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0); 
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0);
                              
                   part1_mc_track_cut[imainloop]->SetPDG(2212); //PDG - numer czastki z bookletu, tutaj okreslamy ze to sa wlasnie protony
                   part2_mc_track_cut[imainloop]->SetPDG(2212);
@@ -352,8 +375,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                   part1_mc_track_cut[imainloop]->SetPt(0.0,3);
                   part2_mc_track_cut[imainloop]->SetPt(0.0,3);
 
-                  part1_mc_track_cut[imainloop]->SetRapidity(0.25, 3.3); 
-                  part2_mc_track_cut[imainloop]->SetRapidity(0.25, 3.3);
+                  //part1_mc_track_cut[imainloop]->SetRapidity(0.25, 3.3); 
+                  // part2_mc_track_cut[imainloop]->SetRapidity(0.25, 3.3);
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0); 
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0);
+
 
                   part1_mc_track_cut[imainloop]->SetPDG(321);
                   part2_mc_track_cut[imainloop]->SetPDG(321);
@@ -364,8 +390,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                   part1_mc_track_cut[imainloop]->SetPt(0.0,3);
                   part2_mc_track_cut[imainloop]->SetPt(0.0,3);
 
-                  part1_mc_track_cut[imainloop]->SetRapidity(0.36, 3.85); 
-                  part2_mc_track_cut[imainloop]->SetRapidity(0.37, 3.8);
+                  // part1_mc_track_cut[imainloop]->SetRapidity(0.36, 3.85); 
+                  // part2_mc_track_cut[imainloop]->SetRapidity(0.37, 3.8);
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0); 
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0);
 
                   part1_mc_track_cut[imainloop]->SetPDG(211);
                   part2_mc_track_cut[imainloop]->SetPDG(211);   
@@ -375,26 +403,31 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                   part1_mc_track_cut[imainloop]->SetPt(0.0,3);
                   part1_mc_track_cut[imainloop]->SetPDG(3122);
                   part1_mc_track_cut[imainloop]->SetCharge(0.0);
-                  part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
+                  // part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0); 
                  
                 }
-              if(itype == 10)
-              {
+            	if(itype == 10)
+            	{
                   part2_mc_track_cut[imainloop]->SetCharge(0.0);
                   part2_mc_track_cut[imainloop]->SetPt(0.0,3);
                   part2_mc_track_cut[imainloop]->SetPDG(-3122);
-                  part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
-              }
+                  // part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
+                   part2_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0);
+
+            	}
                if(itype == 11)
                 {
-                  part1_mc_track_cut[imainloop]->SetPt(0.0,3.0);
-                  part2_mc_track_cut[imainloop]->SetPt(0.0,3.0);
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,4.0);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,4.0);
 
                   part1_mc_track_cut[imainloop]->SetCharge(0.0);
                   part2_mc_track_cut[imainloop]->SetCharge(0.0);
 
-                   part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
-                   part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
+                   // part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
+                   // part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0); 
+                   part2_mc_track_cut[imainloop]->SetRapidity(0.0, 4.0);
 
                   part1_mc_track_cut[imainloop]->SetPDG(3122);
                   part2_mc_track_cut[imainloop]->SetPDG(-3122);
@@ -409,9 +442,73 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                   part1_mc_track_cut[imainloop]->SetPt(0.0,3.0);
                   part2_mc_track_cut[imainloop]->SetPt(0.0,3.0);
 
-                  part1_mc_track_cut[imainloop]->SetRapidity(0.0,4);
-                  part2_mc_track_cut[imainloop]->SetRapidity(0.0,4);
+                  part1_mc_track_cut[imainloop]->SetRapidity(0.0,4.0);
+                  part2_mc_track_cut[imainloop]->SetRapidity(0.0,4.0);
                 }
+            
+            filterFile->cd();
+            // gDirectory->pwd();
+            if(itype == 0)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[0]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[0]));
+            }
+            else if(itype==1)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[1]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[1]));
+            }
+            else if(itype==2)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[0]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[1]));
+            }
+            else if(itype==3)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[2]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[2]));
+            }
+            else if(itype==4)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[3]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[3]));
+            }
+            else if(itype==5)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[2]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[3]));
+            }
+            else if(itype==6)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[4]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[4]));
+            }
+            else if(itype==7)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[5]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[5]));
+            }
+            else if(itype==8)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[4]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[5]));
+            }
+            else if(itype==9)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[6]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[6]));
+            }
+            else if(itype==10)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[7]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[7]));
+            }
+            else if(itype==11)
+            {
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[6]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[7]));
+            }
+
 
                //**************** track Monitors ***************
                //tutaj jest jak wlaczalibysmy monitory na pojedyncze czastki
@@ -427,8 +524,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                      mass = PionMass;
                   else if(itype>=9 & itype<12)
                      mass = LambdaMass;
-                  cutPass3YPt[imainloop] = new AliFemtoCutMonitorParticleYPt(Form("cutPass_%s_M%i", pair_types[itype], imult), mass);
-                  cutFail3YPt[imainloop] = new AliFemtoCutMonitorParticleYPt(Form("cutFail_%s_M%i", pair_types[itype], imult), mass);
+                  cutPass3YPt[imainloop] = new AliFemtoCutMonitorParticleYPtWithWeights(Form("cutPass_%s_M%i", pair_types[itype], imult), mass, filter1);
+                  cutFail3YPt[imainloop] = new AliFemtoCutMonitorParticleYPtWithWeights(Form("cutFail_%s_M%i", pair_types[itype], imult), mass, filter1);
                   if(itype%3 ==0 ) part1_mc_track_cut[imainloop]->AddCutMonitor(cutPass3YPt[imainloop], cutFail3YPt[imainloop]);
                   else if(itype%3 == 1) part2_mc_track_cut[imainloop]->AddCutMonitor(cutPass3YPt[imainloop], cutFail3YPt[imainloop]);
                  }
@@ -500,54 +597,32 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
            
                //setting two-track cuts
                analysis[imainloop]->SetPairCut(antigamma_cut[imainloop]);
-
+            
                //______________Funkcje korelacyjne___________________
                //**** Correlation functions *******
-               //dodajemy funkcje korelacyjna
-               // cQinv[imainloop] = new AliFemtoQinvCorrFctn(Form("NumcQinv_%s_M%i", pair_types[itype], imult), 20, 0, 2); //sprawdzic, czy wart arg sa ok
-               // analysis[imainloop]->AddCorrFctn(cQinv[imainloop]);
-
-              //  cDetaDphi[imainloop] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp_%s_M%i", pair_types[itype], imult),35, 35);
-              //  analysis[imainloop]->AddCorrFctn(cDetaDphi[imainloop]);
               // //Model correlation functions 
-               cQinvModel[imainloop] = new AliFemtoModelCorrFctn(Form("cQinv_Model_%s_M%i", pair_types[itype], imult), 20, 0, 2); //sprawdzic, czy wart arg sa ok
-               // cQinvModel[imainloop] -> SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
-               // cQinvModel[imainloop] -> SetExpectedPDGCodes(2122,2122);
+            if(setWeightGen != 0)
+            {
+               cQinvModel[imainloop] = new AliFemtoModelCorrFctnWithWeights(Form("cQinv_Model_%s_M%i", pair_types[itype], imult), filter1, filter2, 20, 0, 2); //sprawdzic, czy wart arg sa ok
                cQinvModel[imainloop] -> ConnectToManager(tModelManager); 
                analysis[imainloop]->AddCorrFctn(cQinvModel[imainloop]);
                cQinvModel[imainloop]->Report();
 
-             
-               cDetaDphiModel[imainloop] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cdedp_Model_%s_M%i", pair_types[itype], imult),35, 35);
+               cDetaDphiModel[imainloop] = new AliFemtoModelCorrFctnDEtaDPhiWithWeights(Form("cdedp_Model_%s_M%i", pair_types[itype], imult), filter1, filter2, 35, 35);
                cDetaDphiModel[imainloop] -> ConnectToManager(tModelManager); 
                analysis[imainloop]->AddCorrFctn(cDetaDphiModel[imainloop]);
+            }
+            else //bez weights generatorow
+            {
+               cQinvWB[imainloop] = new AliFemtoQinvCorrFctnWithWeights(Form("cQinv_%s_M%i", pair_types[itype], imult), 20, 0, 2, filter1, filter2); //sprawdzic, czy wart arg sa ok
+               analysis[imainloop]->AddCorrFctn(cQinvWB[imainloop]);
 
+               cDetaDphiWB[imainloop] = new AliFemtoCorrFctnDEtaDPhiWithWeights(Form("cdedp_%s_M%i", pair_types[itype], imult),filter1, filter2, 35, 35);
+               analysis[imainloop]->AddCorrFctn(cDetaDphiWB[imainloop]);
 
+            }
 
-               //jesli 1 to analizowane sa funkcje korelacyjne w roznych przedzialach sredniego pedu poprzecznego kt
-               if (runktdep)
-               {
-                  //liczenie dla pedu poprzecznego, jesli to wlaczylismy
-                  //generuje dodatkowe histogramy
-                  int ktm;
-                  for (int ikt=0; ikt<numOfkTbins; ikt++)
-                  {
-                     ktm = imainloop * numOfkTbins + ikt;
-                     kt_sum_cuts[ktm] = new AliFemtoPairCutPt(kt_bins[ikt], kt_bins[ikt+1]);
-
-                     // cQinv[ktm] = new AliFemtoQinvCorrFctn(Form("cQinv%s_M%ipT%i", pair_types[itype], imult, ikt), 20, 0, 2);
-                     // cQinv[ktm]->SetPairSelectionCut(kt_sum_cuts[ktm]);
-
-                     // analysis[imainloop]->AddCorrFctn(cQinv[ktm]);
-
-                     // cDetaDphi[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp_%s_M%ipT%i", pair_types[itype], imult,ikt),35, 35);
-                     // cDetaDphi[ktm]->SetPairSelectionCut(kt_sum_cuts[ktm]);
-                     // analysis[imainloop]->AddCorrFctn(cDetaDphi[ktm]);
-
-                  }
-               }
-
-            	//dodajemy do Managera(glownego programu) funkcje z analiza
+         
                Manager->AddAnalysis(analysis[imainloop]);   
             }
          }

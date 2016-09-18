@@ -373,7 +373,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                 }
                 if(itype == 9)  //lambdas 9-11
                 {
-                  part1_mc_track_cut[imainloop]->SetPt(0.0,3);
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3.0);
                   part1_mc_track_cut[imainloop]->SetPDG(3122);
                   part1_mc_track_cut[imainloop]->SetCharge(0.0);
                   part1_mc_track_cut[imainloop]->SetRapidity(0.0, 3.5); 
@@ -382,14 +382,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
             	if(itype == 10)
             	{
                   part2_mc_track_cut[imainloop]->SetCharge(0.0);
-                  part2_mc_track_cut[imainloop]->SetPt(0.0,3);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3.0);
                   part2_mc_track_cut[imainloop]->SetPDG(-3122);
                   part2_mc_track_cut[imainloop]->SetRapidity(0.5, 2.9);
             	}
                if(itype == 11)
                 {
-                  part1_mc_track_cut[imainloop]->SetPt(0.7,4);
-                  part2_mc_track_cut[imainloop]->SetPt(0.7,4);
+                  part1_mc_track_cut[imainloop]->SetPt(0.0,3.0);
+                  part2_mc_track_cut[imainloop]->SetPt(0.0,3.0);
 
                   part1_mc_track_cut[imainloop]->SetCharge(0.0);
                   part2_mc_track_cut[imainloop]->SetCharge(0.0);
