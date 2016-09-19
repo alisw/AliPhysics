@@ -148,7 +148,7 @@ private:
     TString fAlternateOADBFullManualBypass;
     TString fAlternateOADBFullManualBypassMC;
     
-    AliESDtrackCuts *fESDtrackCuts;
+    AliESDtrackCuts *fTrackCutsGlobal2015;
     AliAnalysisUtils *fUtils;         // analysis utils
     
     //To perform event selection
@@ -222,7 +222,8 @@ private:
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
-    AliESDtrackCuts* fTrackCuts;  //! optional track cuts
+    AliESDtrackCuts* fTrackCuts;        // optional track cuts
+    AliESDtrackCuts* fTrackCutsGlobal;  // optional track cuts
     
     AliMultVariable *fZnaFired;
     AliMultVariable *fZncFired;
@@ -266,6 +267,8 @@ private:
     TProfile *fHistQASelected_TrackletsVsV0M; 
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
+    
+    TProfile *fHistQASelected_PtVsV0M; 
 
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;
