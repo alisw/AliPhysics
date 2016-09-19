@@ -33,7 +33,7 @@ AliMixingHandler::AliMixingHandler() :
   fDownscaleTracks(1.0),
   fPoolsLeg1("TClonesArray"),
   fPoolsLeg2("TClonesArray"),
-  fNParallelCuts(1),
+  fNParallelCuts(0),
   fHistClassNames(""),
   fPoolSize(),
   fIsInitialized(kFALSE),
@@ -41,9 +41,9 @@ AliMixingHandler::AliMixingHandler() :
   fCentralityLimits(),
   fEventVertexLimits(),
   fEventPlaneLimits(),
-  fCentralityVariable(-1),
-  fEventVertexVariable(-1),
-  fEventPlaneVariable(-1),
+  fCentralityVariable(AliReducedVarManager::kNothing),
+  fEventVertexVariable(AliReducedVarManager::kNothing),
+  fEventPlaneVariable(AliReducedVarManager::kNothing),
   fHistos(0x0)
 {
   // 
@@ -68,7 +68,7 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
   fDownscaleTracks(1.0),
   fPoolsLeg1("TClonesArray"),
   fPoolsLeg2("TClonesArray"),
-  fNParallelCuts(1),
+  fNParallelCuts(0),
   fHistClassNames(""),
   fPoolSize(),
   fIsInitialized(kFALSE),
@@ -76,9 +76,9 @@ AliMixingHandler::AliMixingHandler(const Char_t* name, const Char_t* title) :
   fCentralityLimits(),
   fEventVertexLimits(),
   fEventPlaneLimits(),
-  fCentralityVariable(-1),
-  fEventVertexVariable(-1),
-  fEventPlaneVariable(-1),
+  fCentralityVariable(AliReducedVarManager::kNothing),
+  fEventVertexVariable(AliReducedVarManager::kNothing),
+  fEventPlaneVariable(AliReducedVarManager::kNothing),
   fHistos(0x0)
 {
   //
@@ -103,6 +103,19 @@ AliMixingHandler::~AliMixingHandler() {
 
 
 //_________________________________________________________________________
+void AliMixingHandler::SetEventVariables(AliReducedVarManager::Variables cent, AliReducedVarManager::Variables vtx, 
+                                         AliReducedVarManager::Variables ep) {
+   //
+   // set the event mixing variables
+   //
+   fCentralityVariable=cent; fEventVertexVariable=vtx; fEventPlaneVariable=ep;    
+   AliReducedVarManager::SetUseVariable(fCentralityVariable);
+   AliReducedVarManager::SetUseVariable(fEventVertexVariable);
+   AliReducedVarManager::SetUseVariable(fEventPlaneVariable);
+}
+
+
+//_________________________________________________________________________
 void AliMixingHandler::Init() {
   //
   // Initialization of pools
@@ -120,8 +133,9 @@ void AliMixingHandler::Init() {
     return;
   }
   TObjArray* histClassArr = fHistClassNames.Tokenize(";");
-  if(histClassArr->GetEntries()!=fNParallelCuts) {
+  if(histClassArr->GetEntries()!=3*fNParallelCuts) {       // 3 because there is one class of histograms for each pair type: ++,+- and --
     cout << "AliMixingHandler::Init(): ERROR The number of cuts and the number of hist class names provided do not match!" << endl;
+    cout << "                   hist classes: " << histClassArr->GetEntries() << ";    n-parallel cuts: " << fNParallelCuts << endl;
     return;
   }
   Int_t size = (fCentralityLimits.GetSize()-1)*(fEventVertexLimits.GetSize()-1)*(fEventPlaneLimits.GetSize()-1);
@@ -349,6 +363,7 @@ void AliMixingHandler::RunLeftoverMixing(Int_t type) {
     Int_t centBin = GetCentralityBin(icateg);
     Int_t zBin = GetEventVertexBin(icateg);
     Int_t epBin = GetEventPlaneBin(icateg);
+    //cout << "epBin/low/high :: " << epBin << "/" << fEventPlaneLimits[epBin] << "/" << fEventPlaneLimits[epBin+1] << endl;
     values[fCentralityVariable] = 0.5*(fCentralityLimits[centBin]+fCentralityLimits[centBin+1]);
     values[fEventVertexVariable] = 0.5*(fEventVertexLimits[zBin]+fEventVertexLimits[zBin+1]);
     values[fEventPlaneVariable] = 0.5*(fEventPlaneLimits[epBin]+fEventPlaneLimits[epBin+1]);
@@ -364,12 +379,12 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   //
   // Run event mixing
   // NOTE: The mixingMask is a bit map with bits toggled for the pools which need mixing
-  //       The type is the pair candidate type. It is used in AliReducedPairInfo::CandidateType
+  //       The type is the pair candidate type. It is used in AliReducedPairInfo::CandidateType, mainly to know which mass assumption to be made for the legs
   //
   cout << "AliMixingHandler::RunEventMixing for mask " << flush;
   AliReducedVarManager::PrintBits(mixingMask,fNParallelCuts);
-  cout << ";  (cent/vtx/ep): " << values[AliReducedVarManager::kCentVZERO] << "/"
-       << values[AliReducedVarManager::kVtxZ] << "/" << values[AliReducedVarManager::kVZERORP] << endl;
+  cout << ";  (cent/vtx/ep): " << values[fCentralityVariable] << "/"
+       << values[fEventVertexVariable] << "/" << values[fEventPlaneVariable] << endl;
   
   Int_t entries = leg1Pool->GetEntries();
   if(entries<2) return;
@@ -380,24 +395,28 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   TIter iterEv1Leg2Pool(leg2Pool);
   ULong_t testFlags1 = 0;
   ULong_t testFlags2 = 0;
-  for(Int_t iev1=0; iev1<entries; ++iev1) {
+  for(Int_t iev1=0; iev1<entries; ++iev1) {                            // first event loop
     // get the lists of leg1 and leg2 tracks for the first event
     TList* ev1Leg1List = (TList*)iterEv1Leg1Pool();
     TList* ev1Leg2List = (TList*)iterEv1Leg2Pool();
+    //cout << "## iev1 " << iev1 << endl;
     
     TIter iterEv2Leg1Pool(leg1Pool);
     TIter iterEv2Leg2Pool(leg2Pool);
-    for(Int_t iev2=0; iev2<entries; ++iev2) {
-      if(iev1==iev2) continue;
+    for(Int_t iev2=0; iev2<entries; ++iev2) {                         // second event loop 
       TList* ev2Leg1List = (TList*)iterEv2Leg1Pool();
       TList* ev2Leg2List = (TList*)iterEv2Leg2Pool();
-    
+      if(iev1==iev2) continue;
+      //cout << "#### iev2 " << iev2 << endl;
+      
       //loop over the ev1-leg1 list
       TIter iterLeg1(ev1Leg1List);
       AliReducedBaseTrack* ev1Leg1=0x0;
       while((ev1Leg1=(AliReducedBaseTrack*)iterLeg1())) {
 	// check that this track has at least one common bit with the mixing mask
 	testFlags1 = mixingMask & ev1Leg1->GetFlags();
+        //cout << "###### ev1Leg1 (p/px/testFlags1): " << ev1Leg1->P() << "/" << ev1Leg1->Px() << "/";
+        //AliReducedVarManager::PrintBits(testFlags1, fNParallelCuts); cout << endl;
 	if(!testFlags1) continue;
 	
 	//loop over the ev2-leg2 list 
@@ -406,13 +425,16 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	while((ev2Leg2=(AliReducedBaseTrack*)iterLeg2())) {
 	  // check that this track has at least one common bit with the mixing mask and with ev1-leg1
 	  testFlags2 = testFlags1 & ev2Leg2->GetFlags();
+          //cout << "###### ev2Leg2 (p/px/testFlags1): " << ev2Leg2->P() << "/" << ev2Leg2->Px() << "/";
+          //AliReducedVarManager::PrintBits(testFlags2, fNParallelCuts); cout << endl;
 	  if(!testFlags2) continue;
 	  
 	  // fill cross-pairs (leg1 - leg2) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg2, type, values);
+          //cout << "######## cross-pair (mass): " << values[AliReducedVarManager::kMass] << endl;
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) 
-              fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+              fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
           }  
 	}  // end loop over the ev2-leg2 list
 	
@@ -423,13 +445,16 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	while((ev2Leg1=(AliReducedBaseTrack*)iterLeg1LS())) {
 	  // check that this track has at least one common bit with the mixing mask and with ev1-leg1
 	  testFlags2 = testFlags1 & ev2Leg1->GetFlags();
+          //cout << "###### ev2Leg1 (p/px/testFlags2): " << ev2Leg1->P() << "/" << ev2Leg1->Px() << "/";
+          //AliReducedVarManager::PrintBits(testFlags2, fNParallelCuts); cout << endl;
 	  if(!testFlags2) continue;
 	  
 	  // fill like-pairs (leg1 - leg1) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg1, ev2Leg1, type, values);
+          //cout << "######## like-pair leg1-leg1 (mass): " << values[AliReducedVarManager::kMass] << endl;
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) 
-              fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+              fHistos->FillHistClass(histClassArr->At(ibit*3+0)->GetName(), values);
           }  
 	}  // end loop over the ev2-leg1 list
       }  // end loop over the ev1-leg1 list
@@ -441,6 +466,8 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
       while((ev1Leg2=(AliReducedBaseTrack*)iterLeg2())) {
 	// check that this track has at least one common bit with the mixing mask
 	testFlags1 = mixingMask & ev1Leg2->GetFlags();
+        //cout << "###### ev1Leg2 (p/px/testFlags1): " << ev1Leg2->P() << "/" << ev1Leg2->Px() << "/";
+        //AliReducedVarManager::PrintBits(testFlags1, fNParallelCuts); cout << endl;
 	if(!testFlags1) continue;
 	
 	//loop over the ev2-leg2 list 
@@ -449,13 +476,16 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
 	while((ev2Leg2=(AliReducedBaseTrack*)iterLeg2LS())) {
 	  // check that this track has at least one common bit with the mixing mask and with ev1-leg1
 	  testFlags2 = testFlags1 & ev2Leg2->GetFlags();
+          //cout << "###### ev2Leg2 (p/px/testFlags2): " << ev2Leg2->P() << "/" << ev2Leg2->Px() << "/";
+          //AliReducedVarManager::PrintBits(testFlags2, fNParallelCuts); cout << endl;
 	  if(!testFlags2) continue;
 	  
 	  // fill like-pairs (leg2 - leg2) for the enabled bits
 	  AliReducedVarManager::FillPairInfoME(ev1Leg2, ev2Leg2, type, values);
+          //cout << "######## like-pair leg2-leg2 (mass): " << values[AliReducedVarManager::kMass] << endl;
 	  for(Int_t ibit=0; ibit<fNParallelCuts; ++ibit) {
             if((testFlags2)&(ULong_t(1)<<ibit)) 
-              fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
+              fHistos->FillHistClass(histClassArr->At(ibit*3+2)->GetName(), values);
           }  
 	}  // end loop over the ev2-leg2 list
       }  // end loop over the ev1-leg2 list
@@ -465,38 +495,41 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   // unset the mixing flags --------------------------------------
   iterEv1Leg1Pool.Reset(); 
   iterEv1Leg2Pool.Reset();
+  //cout << "Unsetting bits for which mixing was performed" << endl;
   for(Int_t ie1=0; ie1<entries; ++ie1) {
     TList* leg1List = (TList*)iterEv1Leg1Pool();        
     TIter iterLeg1(leg1List);
     AliReducedBaseTrack* track=0x0;
     while((track=(AliReducedBaseTrack*)iterLeg1())) {
-      AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << "/" << flush;
+      //cout << "leg1 p " << track->P() << "     " << flush; 
+      //AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << "/" << flush;
       testFlags1 = mixingMask & track->GetFlags();
       if(!testFlags1) {
-	AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
+	//AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
 	continue;
       }
       for(UShort_t ibit=0; ibit<fNParallelCuts; ++ibit) {
 	if((testFlags1)&(ULong_t(1)<<ibit)) 
 	  track->UnsetFlag(ibit);
       }
-      AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
+      //AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
     }  // end loop over the first leg list
     
     TList* leg2List = (TList*)iterEv1Leg2Pool();
     TIter iterLeg2(leg2List);
     while((track=(AliReducedBaseTrack*)iterLeg2())) {
-      AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << "/" << flush;
+      //cout << "leg2 p " << track->P() << "     " << flush; 
+      //AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << "/" << flush;
       testFlags1 = mixingMask & track->GetFlags();
       if(!testFlags1) {
-	AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
+	//AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
 	continue;
       }
       for(UShort_t ibit=0; ibit<fNParallelCuts; ++ibit) {
 	if((testFlags1)&(ULong_t(1)<<ibit)) 
 	  track->UnsetFlag(ibit);
       }
-      AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
+      //AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << endl;
     }  // end loop over the second leg list
   }  // end loop over events
   
@@ -507,9 +540,9 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   while((leg1List=(TList*)iterEv1Leg1Pool())) {
     TIter iterLeg1(leg1List);
     while((track=(AliReducedBaseTrack*)iterLeg1())) {
-      AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << flush;
+      //AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << flush;
       if(!track->GetFlags()) {
-	leg1List->Remove(track); delete track;
+         leg1List->Remove(track); delete track;
       }
     }
   }  // end while
@@ -518,9 +551,9 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   while((leg2List=(TList*)iterEv1Leg2Pool())) {  
     TIter iterLeg2(leg2List);
     while((track=(AliReducedBaseTrack*)iterLeg2())) {
-      AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << flush;
+      //AliReducedVarManager::PrintBits(track->GetFlags(),fNParallelCuts); cout << flush;
       if(!track->GetFlags()) {
-	leg2List->Remove(track); delete track;
+         leg2List->Remove(track); delete track;
       }
     }
   }  // end while
@@ -535,22 +568,6 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
        leg2Pool->RemoveAt(i); leg2Pool->Compress(); //delete leg2List;
     }
   }
-  
-  /*
-  iterEv1Leg1Pool.Reset(); iterEv1Leg2Pool.Reset();
-  while((leg1List=(TList*)iterEv1Leg1Pool())) {
-    leg2List=(TList*)iterEv1Leg2Pool();
-    cout << "leg1/leg2 tracks : " << leg1List->GetEntries() << "/" << leg2List->GetEntries() << endl;
-    if(leg1List->GetEntries()==0 && 
-       leg2List->GetEntries()==0) {
-      cout << "    ... removing" << endl;
-       leg1Pool->Remove(leg1List); leg1Pool->Compress(); //delete leg1List;
-       leg2Pool->Remove(leg2List); leg2Pool->Compress(); //delete leg2List;
-    }    
-    else
-      cout << "    ... keep" << endl;
-  }
-  */
 }
 
 
@@ -625,9 +642,9 @@ void AliMixingHandler::PrintMixingLists(Int_t debugLevel) {
 	  cout << "		Leg1 list" << endl;
 	  for(Int_t itrack=0; itrack<leg1List->GetEntries(); ++itrack) {
 	    track = (AliReducedBaseTrack*)iterLeg1List();
-	    cout << "		track #" << itrack << " (pt/phi/eta/charge/flags) :: "
-	         << track->Pt() << " / " << track->Phi() << " / " 
-		 << track->Eta() << " / " << track->Charge() << " / " << flush;
+	    cout << "		track #" << itrack << " (p/px/py/pz/charge/flags) :: "
+	         << track->P() << " / " << track->Px() << " / " 
+                 << track->Py() << " / " << track->Pz() << "/" << track->Charge() << " / " << flush;
 	    AliReducedVarManager::PrintBits(track->GetFlags(), fNParallelCuts);	 
 	    cout << endl;
 	  }  // end loop over tracks
@@ -636,9 +653,9 @@ void AliMixingHandler::PrintMixingLists(Int_t debugLevel) {
 	  cout << "		Leg2 list" << endl;
 	  for(Int_t itrack=0; itrack<leg2List->GetEntries(); ++itrack) {
 	    track = (AliReducedBaseTrack*)iterLeg2List();
-	    cout << "		track #" << itrack << " (pt/phi/eta/charge/flags) :: "
-	         << track->Pt() << " / " << track->Phi() << " / " 
-		 << track->Eta() << " / " << track->Charge() << " / " << flush;
+	    cout << "		track #" << itrack << " (p/px/py/pz/charge/flags) :: "
+	         << track->P() << " / " << track->Px() << " / " 
+                 << track->Py() << " / " << track->Pz() << "/" << track->Charge() << " / " << flush;
 	    AliReducedVarManager::PrintBits(track->GetFlags(), fNParallelCuts);	 
 	    cout << endl;
 	  }  // end loop over tracks
