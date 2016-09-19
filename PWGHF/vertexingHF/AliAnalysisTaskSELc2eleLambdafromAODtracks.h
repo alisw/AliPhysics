@@ -657,6 +657,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoEtaMCGen;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTotal;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTag;         //!<! Number of electrons from eta and have partner
+  TH1F* fHistoKaonMCGen;         //!<! Number of electrons from pi0
+  TH1F* fHistoD0MCGen;         //!<! Number of electrons from pi0
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
@@ -704,7 +706,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,37); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,38); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

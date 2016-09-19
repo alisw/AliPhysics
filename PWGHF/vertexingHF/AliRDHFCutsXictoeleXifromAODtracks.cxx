@@ -104,7 +104,8 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.),
-	fConversionMassMax(-1.)
+	fConversionMassMax(-1.),
+	fEleXiMassMax(2.5)
 {
   //
   // Default Constructor
@@ -194,7 +195,8 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax),
-	fConversionMassMax(source.fConversionMassMax)
+	fConversionMassMax(source.fConversionMassMax),
+	fEleXiMassMax(source.fEleXiMassMax)
 {
   //
   // Copy constructor
@@ -266,6 +268,7 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
 	fConversionMassMax = source.fConversionMassMax;
+	fEleXiMassMax = source.fEleXiMassMax;
   
   for(Int_t i=0;i<3;i++){
     fPrimVert[i] = source.fPrimVert[i];
