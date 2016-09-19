@@ -92,5 +92,5 @@ Bool_t AliReducedTrackCut::IsSelected(TObject* obj, Float_t* values) {
    if(fRejectTaggedGamma && ((AliReducedBaseTrack*)obj)->IsGammaLeg()) return kFALSE;
    if(fRejectTaggedPureGamma && ((AliReducedBaseTrack*)obj)->IsPureGammaLeg()) return kFALSE;
    
-   return AliReducedVarCut::IsSelected(obj, values);   
+   return AliReducedVarCut::IsSelected(values);   
 }

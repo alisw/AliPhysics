@@ -71,6 +71,10 @@ AliAnalysisTask* AddTask_iarsene_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString
          if(!firstConsumerTask) firstConsumerTask = AddTask_iarsene_testTask(kTRUE, runMode, prod);
          else AddTask_iarsene_testTask(kTRUE, runMode, prod);
       }
+      if(!task.CompareTo("jpsi2ee")) {
+         if(!firstConsumerTask) firstConsumerTask = AddTask_iarsene_jpsi2ee(kTRUE, runMode, prod);
+         else AddTask_iarsene_jpsi2ee(kTRUE, runMode, prod);
+      }
       // NOTE: here add the same for any other potential task
       /*
       if(!firstConsumerTask) {

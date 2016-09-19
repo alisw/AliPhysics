@@ -62,5 +62,5 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
    //      
    if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE;
    
-   return AliReducedVarCut::IsSelected(obj, values);   
+   return AliReducedVarCut::IsSelected(values);   
 }
