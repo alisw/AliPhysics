@@ -20,6 +20,7 @@
 #pragma link C++ class AliNDLocalRegression+;
 
 #pragma link C++ class AliExternalInfo+;
+#pragma link C++ class AliTreePlayer+;
 #pragma link C++ namespace AliFFTsmoother+;
 
 #pragma link C++ namespace TStatToolkit;
