@@ -148,7 +148,7 @@ private:
     TString fAlternateOADBFullManualBypass;
     TString fAlternateOADBFullManualBypassMC;
     
-    AliESDtrackCuts *fTrackCutsGlobal2015;
+    AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
     
     //To perform event selection
@@ -223,7 +223,7 @@ private:
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;        // optional track cuts
-    AliESDtrackCuts* fTrackCutsGlobal;  // optional track cuts
+    AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
     
     AliMultVariable *fZnaFired;
     AliMultVariable *fZncFired;

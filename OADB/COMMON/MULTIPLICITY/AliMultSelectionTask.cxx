@@ -1273,7 +1273,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Track information
         for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
             AliVTrack *track = lVevent -> GetVTrack( itrack );
-            fHistQASelected_PtVsV0M -> Fill( track->Pt() , lV0M ); 
+            fHistQASelected_PtVsV0M -> Fill( lV0M, track->Pt() ); 
         }
         //=============================================================================
 
