@@ -79,13 +79,13 @@ void AliAnalysisTaskEGAMonitor::UserExec(Option_t *){
   Int_t col(-1), row(-1), triggerbits(0);
   while(emctrigraw->Next()){
     emctrigraw->GetTriggerBits(triggerbits);
-    if(!(triggerbits & (kL1GammaHigh | kL1GammaLow))) continue;
+    if(!(triggerbits & (BIT(kL1GammaHigh) | BIT(kL1GammaLow)))) continue;
 
     emctrigraw->GetPosition(col, row);
-    if(triggerbits & kL1GammaHigh){
+    if(triggerbits & BIT(kL1GammaHigh)){
       for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), col, row);
     }
-    if(triggerbits & kL1GammaLow){
+    if(triggerbits & BIT(kL1GammaLow)){
       for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), col, row);
     }
   }
