@@ -642,39 +642,35 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       
       if(!clus) return;
       
-      if(clus->IsEMCAL())
+      nClustersOrg++;
+      
+      if(!clus->IsEMCAL()) continue;
+      
+      Int_t label = clus->GetLabel();
+      Int_t label2 = -1 ;
+      if (clus->GetNLabels() >=2 ) label2 = clus->GetLabelAt(1) ;
+      
+      //printf("Org cluster %d) ID = %d, E %2.2f, Time  %3.0f,  N Cells %d, N MC labels %d, main MC label %d, all MC labels:\n", 
+      //       i, clus->GetID(), clus->E(), clus->GetTOF()*1e9, clus->GetNCells(), clus->GetNLabels(), label);
+      //
+      //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
+      //  printf("%d) Label %d, E dep frac %0.2f; ",
+      //         imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
+      //if(clus->GetNLabels() > 0) printf("\n");
+      
+      UShort_t * index    = clus->GetCellsAbsId() ;
+      for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
       {
-        Int_t label = clus->GetLabel();
-        Int_t label2 = -1 ;
-        if (clus->GetNLabels() >=2 ) label2 = clus->GetLabelAt(1) ;
+        fOrgClusterCellId[index[icell]] = i;
+        fCellTime[index[icell]]         = clus->GetTOF();
+        fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
+        fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
         
-        //printf("Org cluster %d) ID = %d, E %2.2f, Time  %3.0f,  N Cells %d, N MC labels %d, main MC label %d, all MC labels:\n", 
-        //       i, clus->GetID(), clus->E(), clus->GetTOF()*1e9, clus->GetNCells(), clus->GetNLabels(), label);
-        //
-        //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
-        //  printf("%d) Label %d, E dep frac %0.2f; ",
-        //         imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
-        //if(clus->GetNLabels() > 0) printf("\n");
-        
-        UShort_t * index    = clus->GetCellsAbsId() ;
-        for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
+        if(!fSetCellMCLabelFromEdepFrac)
         {
-          fOrgClusterCellId[index[icell]] = i;
-          fCellTime[index[icell]]         = clus->GetTOF();
-          fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
-          fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
-          
-          if(!fSetCellMCLabelFromEdepFrac)
-          {
-            fCellLabels[index[icell]]       = label;
-            fCellSecondLabels[index[icell]] = label2;
-          }
-          
-          Float_t eDepFrac[4];
-          clus->GetCellMCEdepFractionArray(icell,eDepFrac);
+          fCellLabels[index[icell]]       = label;
+          fCellSecondLabels[index[icell]] = label2;
         }
-
-        nClustersOrg++;
       }
     } 
   }
@@ -739,7 +735,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
     Float_t efrac = cells->GetEFraction(icell);
     
-    //When checking the MC of digits, give weight to cells with embedded signal
+    // When checking the MC of digits, give weight to cells with embedded signal
     if (mcLabel > 0 && efrac < 1.e-6) efrac = 1;
         
     AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp*efrac);
@@ -754,55 +750,55 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       fCellLabels[id] = idigit; 
       //printf("\t absId %d, idigit %d\n",id,idigit);
 
-      if(fOrgClusterCellId[id] >= 0) // index can be negative if noisy cell that did not form cluster 
+      if(fOrgClusterCellId[id] < 0) continue; // index can be negative if noisy cell that did not form cluster 
+      
+      AliVCluster *clus = 0;
+      Int_t iclus = fOrgClusterCellId[id];
+      
+      if(iclus < 0)
       {
-        AliVCluster *clus = 0;
-        Int_t iclus = fOrgClusterCellId[id];
+        AliInfo("Negative original cluster index, skip \n");
+        continue;
+      }
+      
+      if(aodIH && aodIH->GetEventToMerge()) //Embedding
+        clus = aodIH->GetEventToMerge()->GetCaloCluster(iclus); //Get clusters directly from embedded signal
+      else      
+        clus = fEvent->GetCaloCluster(iclus);
+      
+      for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
+      {
+        if(id != clus->GetCellAbsId(icluscell)) continue ;
         
-        if(iclus < 0)
+        // Get the energy deposition fraction.
+        Float_t eDepFrac[4];
+        clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
+        
+        // Select the MC label contributing, only if enough energy deposition
+        TArrayI labeArr(0);
+        TArrayF eDepArr(0);
+        Int_t nLabels = 0;
+        for(Int_t imc = 0; imc < 4; imc++)
         {
-          AliInfo("Negative original cluster index, skip \n");
-          continue;
+          if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
+          {
+            nLabels++;
+            
+            labeArr.Set(nLabels);
+            labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
+            
+            eDepArr.Set(nLabels);
+            eDepArr.AddAt(eDepFrac[imc]*amp    , nLabels-1);
+            // use as deposited energy a fraction of the simulated energy (smeared and with noise)
+          }
         }
         
-        if(aodIH && aodIH->GetEventToMerge()) //Embedding
-          clus = aodIH->GetEventToMerge()->GetCaloCluster(iclus); //Get clusters directly from embedded signal
-        else      
-          clus = fEvent->GetCaloCluster(iclus);
-        
-        for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
+        if(nLabels > 0)
         {
-          if(id != clus->GetCellAbsId(icluscell)) continue ;
-          
-          // Get the energy deposition fraction.
-          Float_t eDepFrac[4];
-          clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
-          
-          // Select the MC label contributing, only if enough energy deposition
-          TArrayI labeArr(0);
-          TArrayF eDepArr(0);
-          Int_t nLabels = 0;
-          for(Int_t imc = 0; imc < 4; imc++)
-          {
-            if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
-            {
-              nLabels++;
-              
-              labeArr.Set(nLabels);
-              labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
-              
-              eDepArr.Set(nLabels);
-              eDepArr.AddAt(eDepFrac[imc]*amp    , nLabels-1);
-              // use as deposited energy a fraction of the simulated energy (smeared and with noise)
-            }
-          }
-          
-          if(nLabels > 0)
-          {
-            digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
-          }
+          digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
         }
       }
+      
     } // cell MC label, new
     
     idigit++;
