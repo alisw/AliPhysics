@@ -110,7 +110,7 @@ void SetupEventCuts(AliDielectron *die, Int_t cutDefinition)
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(40.,100.);
+  eventCuts->SetCentralityRange(40.,90.);
   //eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
   
@@ -606,22 +606,22 @@ void SetEtaCorrection(AliDielectron *die) {
   Bool_t hasMC=die->GetHasMC();
   Bool_t hasTuneOnData=kFALSE;
 
-  TF2 *fCntrdCorr=0x0;
+  TF1 *fCntrdCorr=0x0;
   TF2 *fWdthCorr=0x0;
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv DATA vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // either data or MC with tune on data option
   if( !hasMC  ) {
     // 2-dimensional eta correction for the centroid of electron sigmas
     //Fit centroid  pol5 for eta and linear for centrality
-    fCntrdCorr = new TF2("fCntrdCorr", 
-    			 "([0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5)  ) + ([6] + [7]*x)",
-    			 40.0, 90.0, -0.9, +0.9);
-    fCntrdCorr->SetParameters(-2.27484, +0.0890669 , -1.04856, -0.303762, +3.12385, +0.155271, +2.43459, +0.00355718); 
+    fCntrdCorr = new TF1("fCntrdCorr", 
+    			 "[0] + [1]*x",
+    			 40.0, 90.0);
+    fCntrdCorr->SetParameters(+0.442897,  +0.00161659); 
         
     // 2-dimensional eta correction for the width of electron sigmas
     //Fit width  pol6 for eta and linear for centrality
-    fWdthCorr = new TF2("fWdthCorr", "([0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6) ) + ([7] + [8]*x)", 40.0, 90.0, -0.9, +0.9);
-    fWdthCorr->SetParameters(-1.23642, -0.0237933, -0.252081, -0.0204869, +0.256383, 0.0689695, -0.0288898, +2.21448, -0.000224069); // pol6*linear
+    fWdthCorr = new TF2("fWdthCorr", "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6)  + [7]*x", 40.0, 90.0, -0.9, +0.9);
+    fWdthCorr->SetParameters(1.03565, -0.0225206, -0.678966, +0.0813398, +1.59697, -0.0679809, -1.13399, -0.00121459); // pol6*linear
     
     // apply corrections
     die->SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
