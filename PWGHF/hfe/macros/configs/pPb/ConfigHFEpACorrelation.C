@@ -30,7 +30,17 @@
 //+3000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
 //+4000 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
 
+
+
 //To change the electron the test electron binning: just sum +100 to the configuration you are working. For example: config 1 with alternative binning-> 101
+
+/*
+ //Hadron pT Cuts:
+0 = from 0.5 to 2 GeV/c
+1 = from 0.4 to 2 GeV/c
+2 = from 0.3 to 2 GeV/c 
+3 = from 0.3 to 10000 GeV/c (no limit)
+ */
 
 ///*******************************************************
 
@@ -42,7 +52,8 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
                                                        Bool_t isAOD = kFALSE,
                                                        Bool_t isEMCal = kFALSE,
                                                        Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
-                                                       Bool_t ispp = kFALSE
+                                                       Bool_t ispp = kFALSE,
+                                                       Int_t HadronPtCut = 0
                                                        )
 
 {
@@ -60,7 +71,7 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
         HadronCutType = (Int_t) configIndex/1000;
         configIndex = (Int_t) (configIndex - HadronCutType*1000);
     }
-    printf("ConfigIndex after hadron determination: %d  HadronCutType: %d", configIndex, HadronCutType);
+    printf("ConfigIndex after hadron determination: %d  HadronCutType: %d\n", configIndex, HadronCutType);
     //Test Diferent pT Binning
     if(configIndex>99)
     {
@@ -152,10 +163,21 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     task->SetEventMixing(kTRUE);
     if(ispp)
         task->SetPPanalysis(kTRUE);
+    
     if(SetFinepTBinning)
         task->SetUseAlternativeBinning();
     
-    task->SetAssHadronPtRange(0.5,2.0);
+    if(HadronPtCut == 0)
+        task->SetAssHadronPtRange(0.5,2.0);
+    else if (HadronPtCut == 1)
+        task->SetAssHadronPtRange(0.4,2.0);
+    else if(HadronPtCut == 2)
+        task->SetAssHadronPtRange(0.3,2.0);
+    else if (HadronPtCut == 3)
+        task->SetAssHadronPtRange(0.3,1000);
+    
+    
+    
     
     task->SetAdditionalCuts(0.0,80);
     if(configIndex==20) task->SetAdditionalCuts(0.0,80);
