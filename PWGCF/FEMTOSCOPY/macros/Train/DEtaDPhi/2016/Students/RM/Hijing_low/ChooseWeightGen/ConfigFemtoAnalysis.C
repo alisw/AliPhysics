@@ -48,10 +48,13 @@
 #include "AliFemtoModelGausRinvFreezeOutGenerator.h"
 #include "AliFemtoQinvCorrFctnWithWeights.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiWithWeights.h"
+#include "AliFemtoModelCorrFctn.h"
+#include "AliFemtoModelCorrFctnDEtaDPhi.h"
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
+AliFemtoManager* ConfigFemtoAnalysis(const char* params) 
+{
 //masy czastek w GeV
    double PionMass = 0.13956995;
    double KaonMass = 0.493677;
@@ -84,7 +87,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
        parameter[2] = strtok(NULL, ","); 
     }
   int sel_pair_set = atoi(parameter[0]);
-  const int setWeightGen = atoi(parameter[1]); //0 - none; 1 - basic; 2- lednicky
+  const int weightSetting = atoi(parameter[1]); //0 - none; 1 - none + filter; 2 - basic; 3- lednicky; 4 - basic+ filter; 5 - lednicky + filter
   const char* filterPath = parameter[2];
   ///////////////////////////////////////////
   TGrid::Connect("alien://");
@@ -197,11 +200,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    Manager->SetEventReader(Reader);
 
    /************** WEIGHT GENERATOR ***********/
-   if(setWeightGen == 1)
+   if(weightSetting == 2 || weightSetting == 4)
    {
    	AliFemtoModelWeightGeneratorBasic *tWeight = new AliFemtoModelWeightGeneratorBasic();
    }
-   else if(setWeightGen == 2)
+   else if(weightSetting == 3 || weightSetting == 5)
    {
 	   AliFemtoModelWeightGeneratorLednicky *tWeight = new AliFemtoModelWeightGeneratorLednicky();
 	   
@@ -210,9 +213,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	   tWeight -> SetQuantumOn();
 	   tWeight -> SetStrongOn();
 	   tWeight -> Set3BodyOn();
-	}
+	 }
 
-   if(setWeightGen != 0)
+   if(weightSetting > 1)
    {
 	   AliFemtoModelManager *tModelManager = new AliFemtoModelManager(); 
 	   AliFemtoModelGausRinvFreezeOutGenerator *tFreezepim = new AliFemtoModelGausRinvFreezeOutGenerator();
@@ -264,15 +267,17 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    AliFemtoPairCutAntiGamma         *antigamma_cut[320];
    //AliFemtoPairCutRadialDistance         *antigamma_cut[320];  //tu liczy sie odlegosc katowa a nie zwykla
    //   AliFemtoChi2CorrFctn               *cchiqinvetaphitpc[320]; //?
-   AliFemtoPairCutPt                   *kt_sum_cuts[640]; //cut na sume pedow poprzecznych 
-   AliFemtoQinvCorrFctn               *cQinv_kt[320]; //Qinv najbardziej podst femtoskopowa funkcja
+   // AliFemtoPairCutPt                   *kt_sum_cuts[640]; //cut na sume pedow poprzecznych 
+   // AliFemtoQinvCorrFctn               *cQinv_kt[320]; //Qinv najbardziej podst femtoskopowa funkcja
+   
    AliFemtoQinvCorrFctn               *cQinv[320];
    AliFemtoCorrFctnDEtaDPhi         *cDetaDphi[640];
-
    AliFemtoQinvCorrFctnWithWeights               *cQinvWB[320];
    AliFemtoCorrFctnDEtaDPhiWithWeights         *cDetaDphiWB[640];
-   AliFemtoModelCorrFctnWithWeights              *cQinvModel[320];
-   AliFemtoModelCorrFctnDEtaDPhiWithWeights         *cDetaDphiModel[640];
+   AliFemtoModelCorrFctn            *cQinvModel[320];
+    AliFemtoModelCorrFctnDEtaDPhi    *cDetaDphiModel[640];
+   AliFemtoModelCorrFctnWithWeights              *cQinvModelWithWeights[320];
+   AliFemtoModelCorrFctnDEtaDPhiWithWeights         *cDetaDphiModelWithWeights[640];
 
 
 
@@ -295,41 +300,25 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
          {
             if (runch[itype]) //sprawdzamy czy dany typ czastek jest brany pod uwage do analizy
             {
-            	if(setWeightGen == 2)
-            	{
-	            	// if(itype==0)
-	             //      tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonProton());
-	             //  	else if(itype==2)
-	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());
-	             //  	else if(itype==3)
-	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonPlus());
-	             //  	else if(itype==5)
-	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::KaonPlusKaonMinus());
-	             //  	else if(itype==6)
-	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
-	             //  	else if(itype==8)
-	             //  		tWeight->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionMinus());
-	             //  	else
-	             //       tWeight->SetPairType(AliFemtoModelWeightGenerator::PairTypeNone()); 
-	           }
-	           if(setWeightGen !=0)
-               		tModelManager->AcceptWeightGenerator(tWeight);
-
-           		
+            
+  	           if(weightSetting > 1)
+               {
+                 		tModelManager->AcceptWeightGenerator(tWeight);
+               }
            	   
                imainloop = itype * numOfMultBins + imult; //struktura danych(histogramow w tablicy): PPM0, PPM1, PPM2 ... aPaPM0, aPaPM1...
                int multmix = 3; //miksujemy tylko eventy o podobnych krotnosciach
                if(imult == 4) multmix = 30; //whole multiplicity
-               analysis[imainloop] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, multmix, multbins[imult], multbins[imult+1]); //tworzenie analizy
+               analysis[imainloop] = new AliFemtoVertexMultAnalysis(10, -1.0, 1.0, multmix, multbins[imult], multbins[imult+1]); //tworzenie analizy
                analysis[imainloop]->SetNumEventsToMix(5); //zwiekszamy statystyke mianownika f korelacyjnej, okreslamy tu z ilu eventow (miksujemy)
                analysis[imainloop]->SetMinSizePartCollection(1); //przynajmniej jedna czastka musi przejsc nasze cuty
                analysis[imainloop]->SetVerboseMode(kFALSE); 
 				//ograniczenie na event = jedna kolizje
                //*** Event cut ***
                basic_event_cut[imainloop] = new AliFemtoBasicEventCut(); //tworzymy cut na multiplicity
-               basic_event_cut[imainloop]->SetEventMult(0.001,100000); //cut na multiplicity dolny i gorny
+               basic_event_cut[imainloop]->SetEventMult(1,100000); //cut na multiplicity dolny i gorny
             	//odcinamy zderzenie ktore dzieja sie w odleglosci wiekszej niz 10 cm od srodka detektora na osi z
-               basic_event_cut[imainloop]->SetVertZPos(-10,10);//cm
+               basic_event_cut[imainloop]->SetVertZPos(-1,1);//cm
 
                //****** event monitors **********   //najpierw tworzymy cuta, zaraz potem monitory
                cutPassEvM[imainloop] = new AliFemtoCutMonitorEventMult(Form("cutPass_%s_M%i", pair_types[itype], imult), 2000, 20000.5);
@@ -450,63 +439,63 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
             // gDirectory->pwd();
             if(itype == 0)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[0]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[0]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[0]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[0]));
             }
             else if(itype==1)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[1]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[1]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[1]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[1]));
             }
             else if(itype==2)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[0]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[1]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[0]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[1]));
             }
             else if(itype==3)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[2]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[2]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[2]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[2]));
             }
             else if(itype==4)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[3]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[3]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[3]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[3]));
             }
             else if(itype==5)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[2]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[3]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[2]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[3]));
             }
             else if(itype==6)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[4]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[4]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[4]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[4]));
             }
             else if(itype==7)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[5]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[5]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[5]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[5]));
             }
             else if(itype==8)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[4]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[5]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[4]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[5]));
             }
             else if(itype==9)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[6]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[6]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[6]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[6]));
             }
             else if(itype==10)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[7]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[7]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[7]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[7]));
             }
             else if(itype==11)
             {
-              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[6]));
-              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_%s", filterTypes[7]));
+              filter1 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[6]));
+              filter2 = (TH2D*)gDirectory->Get(Form("YPt_filter_corr_%s", filterTypes[7]));
             }
 
 
@@ -601,18 +590,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                //______________Funkcje korelacyjne___________________
                //**** Correlation functions *******
               // //Model correlation functions 
-            if(setWeightGen != 0)
+            if(weightSetting == 0)
             {
-               cQinvModel[imainloop] = new AliFemtoModelCorrFctnWithWeights(Form("cQinv_Model_%s_M%i", pair_types[itype], imult), filter1, filter2, 20, 0, 2); //sprawdzic, czy wart arg sa ok
-               cQinvModel[imainloop] -> ConnectToManager(tModelManager); 
-               analysis[imainloop]->AddCorrFctn(cQinvModel[imainloop]);
-               cQinvModel[imainloop]->Report();
+               cQinv[imainloop] = new AliFemtoQinvCorrFctn(Form("cQinv_%s_M%i", pair_types[itype], imult), 20, 0, 2); //sprawdzic, czy wart arg sa ok
+               analysis[imainloop]->AddCorrFctn(cQinv[imainloop]);
 
-               cDetaDphiModel[imainloop] = new AliFemtoModelCorrFctnDEtaDPhiWithWeights(Form("cdedp_Model_%s_M%i", pair_types[itype], imult), filter1, filter2, 35, 35);
-               cDetaDphiModel[imainloop] -> ConnectToManager(tModelManager); 
-               analysis[imainloop]->AddCorrFctn(cDetaDphiModel[imainloop]);
+               cDetaDphi[imainloop] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp_%s_M%i", pair_types[itype], imult), 35, 35);
+               analysis[imainloop]->AddCorrFctn(cDetaDphi[imainloop]);
             }
-            else //bez weights generatorow
+            else if(weightSetting == 1)//no weights generator + filter
             {
                cQinvWB[imainloop] = new AliFemtoQinvCorrFctnWithWeights(Form("cQinv_%s_M%i", pair_types[itype], imult), 20, 0, 2, filter1, filter2); //sprawdzic, czy wart arg sa ok
                analysis[imainloop]->AddCorrFctn(cQinvWB[imainloop]);
@@ -621,8 +607,30 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                analysis[imainloop]->AddCorrFctn(cDetaDphiWB[imainloop]);
 
             }
+            else if(weightSetting == 2 || weightSetting == 3)
+            {
+               cQinvModel[imainloop] = new AliFemtoModelCorrFctn(Form("cQinv_Model_%s_M%i", pair_types[itype], imult), 20, 0, 2); //sprawdzic, czy wart arg sa ok
+               cQinvModel[imainloop] -> ConnectToManager(tModelManager); 
+               analysis[imainloop]->AddCorrFctn(cQinvModel[imainloop]);
+               cQinvModel[imainloop]->Report();
 
-         
+               cDetaDphiModel[imainloop] = new AliFemtoModelCorrFctnDEtaDPhi(Form("cdedp_Model_%s_M%i", pair_types[itype], imult), 35, 35);
+               cDetaDphiModel[imainloop] -> ConnectToManager(tModelManager); 
+               analysis[imainloop]->AddCorrFctn(cDetaDphiModel[imainloop]);
+            }
+            else if(weightSetting == 4 || weightSetting == 5) //weights generator + filter
+            {
+               cQinvModelWithWeights[imainloop] = new AliFemtoModelCorrFctnWithWeights(Form("cQinv_Model_%s_M%i", pair_types[itype], imult), filter1, filter2, 20, 0, 2); //sprawdzic, czy wart arg sa ok
+               cQinvModelWithWeights[imainloop] -> ConnectToManager(tModelManager); 
+               analysis[imainloop]->AddCorrFctn(cQinvModelWithWeights[imainloop]);
+               // cQinvModelWithWeights[imainloop]->Report();
+
+               cDetaDphiModelWithWeights[imainloop] = new AliFemtoModelCorrFctnDEtaDPhiWithWeights(Form("cdedp_Model_%s_M%i", pair_types[itype], imult), filter1, filter2, 35, 35);
+               cDetaDphiModelWithWeights[imainloop] -> ConnectToManager(tModelManager); 
+               analysis[imainloop]->AddCorrFctn(cDetaDphiModelWithWeights[imainloop]);
+            }
+           
+
                Manager->AddAnalysis(analysis[imainloop]);   
             }
          }
