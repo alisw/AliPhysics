@@ -36,6 +36,7 @@ set(SRCS
     AliNDLocalRegression.cxx
     AliExternalInfo.cxx
     AliFFTsmoother.cxx   
+    AliTreePlayer.cxx
   )
 
 # Headers from sources
