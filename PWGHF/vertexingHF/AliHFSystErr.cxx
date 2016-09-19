@@ -1088,11 +1088,11 @@ void AliHFSystErr::InitDplustoKpipi2010ppPass4(){
   
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.05); // 10%
+  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.05); 
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.05); // 5%
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.); // 0%
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
@@ -5022,12 +5022,12 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   //
   gStyle->SetOptStat(0);
 
-  TCanvas *cSystErr = new TCanvas("cSystErr","Systematic Errors",300,80,640,500);
+  TCanvas *cSystErr = new TCanvas("cSystErr","Systematic Errors",300,80,1000,600);
   cSystErr->Range(0.20,-0.5,18.4,0.34);
   cSystErr->SetRightMargin(0.318);
   cSystErr->SetFillColor(0);
 
-  TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} (GeV/c); Relative Error",40,0,40,100,-1,+1);
+  TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{T} (GeV/c); Relative Syst. Unc.",40,0,40,100,-1,+1);
   hFrame->SetAxisRange(1.,35.9,"X");
   if(fIsLowPtAnalysis) hFrame->SetAxisRange(0.,24.,"X");
   hFrame->SetAxisRange(-0.5,0.5,"Y");
@@ -5077,7 +5077,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   gTotErr->SetFillColor(kRed);
   gTotErr->SetFillStyle(3002);
   gTotErr->Draw("2");
-  leg->AddEntry(gTotErr,"Total (excl. norm.)","f");
+  leg->AddEntry(gTotErr,"Total (excl. norm. and BR)","f");
 //   hTotErr->SetLineColor(1);
 //   hTotErr->SetLineWidth(3);
 //   hTotErr->Draw("same");
@@ -5090,31 +5090,12 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   //TH1F *hNormRefl = ReflectHisto(fNorm);
   //hNormRefl->Draw("same");
   Double_t norm = fNorm->GetBinContent(1)*100;
-  leg->AddEntry(fNorm,Form("Normalization (%.1f%s)",norm,"%"),"");
-
-  if(grErrFeeddown) {
-    grErrFeeddown->SetFillColor(kTeal-8);
-    grErrFeeddown->SetFillStyle(3001);
-    grErrFeeddown->Draw("2");
-    leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
-  }
-  if(fTrackingEff) {
-    fTrackingEff->SetFillColor(4);
-    fTrackingEff->SetFillStyle(3006);
-    fTrackingEff->Draw("same");
-    TH1F *hTrackingEffRefl = ReflectHisto(fTrackingEff);
-    hTrackingEffRefl->Draw("same");
-    leg->AddEntry(fTrackingEff,"Tracking efficiency","f");
-  }
+  leg->AddEntry(fNorm,Form("Normalization (#pm %.1f%s)",norm,"%"),"");
   if(fBR) {
-    fBR->SetFillColor(6);
-    fBR->SetFillStyle(3005);
-    //fBR->SetFillStyle(3020);
-    fBR->Draw("same");
-    TH1F *hBRRefl = ReflectHisto(fBR);
-    hBRRefl->Draw("same");
-    leg->AddEntry(fBR,"Branching ratio","f");
+    Double_t brsys=fBR->GetBinContent(1)*100;
+    leg->AddEntry(fBR,Form("Branching ratio(#pm %.1f%s)",brsys,"%"),"");
   }
+
   if(fRawYield) {
     Int_t ci;   // for color index setting
     ci = TColor::GetColor("#00cc00");
@@ -5126,13 +5107,21 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     hRawYieldRefl->Draw("same");
     leg->AddEntry(fRawYield,"Yield extraction","l");
   }
+  if(fTrackingEff) {
+    fTrackingEff->SetFillColor(4);
+    fTrackingEff->SetFillStyle(3005);
+    fTrackingEff->Draw("same");
+    TH1F *hTrackingEffRefl = ReflectHisto(fTrackingEff);
+    hTrackingEffRefl->Draw("same");
+    leg->AddEntry(fTrackingEff,"Tracking efficiency","f");
+  }
   if(fCutsEff) {
     fCutsEff->SetLineColor(4);
     fCutsEff->SetLineWidth(3);
     fCutsEff->Draw("same");
     TH1F *hCutsEffRefl = ReflectHisto(fCutsEff);
     hCutsEffRefl->Draw("same");
-    leg->AddEntry(fCutsEff,"Cuts efficiency","l");
+    leg->AddEntry(fCutsEff,"Cut efficiency","l");
   }
   if(fPIDEff) {
     fPIDEff->SetLineColor(7);
@@ -5161,6 +5150,12 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     TH1F *hPartAntipartRefl = ReflectHisto(fPartAntipart);
     hPartAntipartRefl->Draw("same");
     leg->AddEntry(fPartAntipart,"D = #bar{D}","l");
+  }
+  if(grErrFeeddown) {
+    grErrFeeddown->SetFillColor(kTeal-8);
+    grErrFeeddown->SetFillStyle(3001);
+    grErrFeeddown->Draw("2");
+    leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
   }
 
 
