@@ -717,35 +717,46 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       continue;
     }
     
-    Int_t mcLabel = cells->GetMCLabel(icell);
+    //
+    // MC
+    //
     
-    // Old way to recover/set the cell MC label
+    // Old way
+    Int_t mcLabel = cells->GetMCLabel(icell);
+    Float_t eDep = amp;
+    
+    // New way
+    TArrayI labeArr(0);
+    TArrayF eDepArr(0);
+    Int_t nLabels = 0;
+    
     if(!fSetCellMCLabelFromEdepFrac)
     {
+      // Old way to recover/set the cell MC label
+      // Only possibility for old Run1 productions
+
       if     ( fSetCellMCLabelFromCluster == 1 ) mcLabel = fCellLabels[id]; // Older aliroot MC productions
      
       else if( fSetCellMCLabelFromCluster == 0 && 
                fRemapMCLabelForAODs)             RemapMCLabelForAODs(mcLabel);
       
       else                                       mcLabel = -1; // found later
+      
+      // Last parameter of the digit object should be MC deposited energy, 
+      // since it is not available in aliroot before year 2016, add just the cell amplitude so that
+      // we give more weight to the MC label of the cell with highest energy in the cluster
+            
+      Float_t efrac = cells->GetEFraction(icell);
+      
+      // When checking the MC of digits, give weight to cells with embedded signal
+      if (mcLabel > 0 && efrac < 1.e-6) efrac = 1;
+      
+      eDep *= efrac ; 
     }
-    
-    // Create the digit, put a fake primary deposited energy to trick the clusterizer
-    // when checking the most likely primary
-    
-    Float_t efrac = cells->GetEFraction(icell);
-    
-    // When checking the MC of digits, give weight to cells with embedded signal
-    if (mcLabel > 0 && efrac < 1.e-6) efrac = 1;
-        
-    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, amp*efrac);
-
-    // Last parameter should be MC deposited energy, since it is not available in aliroot before year 2016, add just the cell amplitude so that
-    // we give more weight to the MC label of the cell with highest energy in the cluster
-
-    // New way, valid only for MC productions with aliroot > v5-07-21
-    if(fSetCellMCLabelFromEdepFrac)
+    else // fSetCellMCLabelFromEdepFrac = true
     {
+      // New way, valid only for MC productions with aliroot > v5-07-21
+
       // Map the digit to cell index for later to calculate the cell MC energy deposition map
       fCellLabels[id] = idigit; 
       //printf("\t absId %d, idigit %d\n",id,idigit);
@@ -775,9 +786,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
         clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
         
         // Select the MC label contributing, only if enough energy deposition
-        TArrayI labeArr(0);
-        TArrayF eDepArr(0);
-        Int_t nLabels = 0;
+      
         for(Int_t imc = 0; imc < 4; imc++)
         {
           if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
@@ -791,16 +800,18 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
             eDepArr.AddAt(eDepFrac[imc]*amp    , nLabels-1);
             // use as deposited energy a fraction of the simulated energy (smeared and with noise)
           }
-        }
-        
-        if(nLabels > 0)
-        {
-          digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
-        }
+        }        
       }
-      
     } // cell MC label, new
     
+    //
+    // Create the digit
+    //
+    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, eDep);
+    
+    if(nLabels > 0)
+      digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
+
     idigit++;
   }
 
