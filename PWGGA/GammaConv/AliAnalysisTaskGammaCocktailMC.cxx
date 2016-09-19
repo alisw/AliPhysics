@@ -77,8 +77,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fHistPythiaBR(NULL),
   fHistPtGammaSourceInput(NULL),
   fHistPhiGammaSourceInput(NULL),
-  fHistPtYInputRest(NULL),
-  fHistPtYGammaSourceRest(NULL),
+  fHistPdgInputRest(NULL),
+  fHistPdgGammaSourceRest(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
   fPtParametrization{NULL},
@@ -115,8 +115,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fHistPythiaBR(NULL),
   fHistPtGammaSourceInput(NULL),
   fHistPhiGammaSourceInput(NULL),
-  fHistPtYInputRest(NULL),
-  fHistPtYGammaSourceRest(NULL),
+  fHistPdgInputRest(NULL),
+  fHistPdgGammaSourceRest(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
   fPtParametrization{NULL},
@@ -304,12 +304,12 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   }
   delete[] binsDeltaPhi;
   
-  fHistPtYInputRest = (TH1I*)SetHist1D(fHistPtYInputRest,"f","Pdg_primary_rest","PDG code","",5000,0,5000,kTRUE);
-  fOutputContainer->Add(fHistPtYInputRest);
+  fHistPdgInputRest = (TH1I*)SetHist1D(fHistPdgInputRest,"f","Pdg_primary_rest","PDG code","",5000,0,5000,kTRUE);
+  fOutputContainer->Add(fHistPdgInputRest);
   
   //Gammas from certain mother
-  fHistPtYGammaSourceRest = (TH1I*)SetHist1D(fHistPtYGammaSourceRest,"f","Pdg_Gamma_From_rest","PDG code mother","",5000,0,5000,kTRUE);
-  fOutputContainer->Add(fHistPtYGammaSourceRest);
+  fHistPdgGammaSourceRest = (TH1I*)SetHist1D(fHistPdgGammaSourceRest,"f","Pdg_Gamma_From_rest","PDG code mother","",5000,0,5000,kTRUE);
+  fOutputContainer->Add(fHistPdgGammaSourceRest);
   
   fOutputContainer->Add(fOutputTree);
 
@@ -418,9 +418,10 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
       hasMother                 = kFALSE;
     }
     
-    Bool_t motherIsPrimary    = kFALSE;
+    Bool_t motherIsPrimary      = kFALSE;
     if(hasMother){
-      if(motherParticle->GetMother(0)>-1)motherIsPrimary = kTRUE;
+      if(motherParticle->GetMother(0)>-1)motherIsPrimary = kFALSE;
+      else motherIsPrimary                               = kTRUE;
     }
       
     TParticle* daughter0 = NULL;
@@ -435,7 +436,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     if (fabs(y) > fMaxY) continue;
     
     if(particle->GetPdgCode()==22 && hasMother==kTRUE){
-      if(motherIsPrimary || !IsMotherInList(motherParticle)){
+      if(motherIsPrimary){
         fHistPtYGamma->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
         fHistPtPhiGamma->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
         switch(motherParticle->GetPdgCode()){
@@ -523,9 +524,9 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistPtGammaSourceInput[13]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
           fHistPhiGammaSourceInput[13]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
-          default:
-            fHistPtYGammaSourceRest->Fill(motherParticle->GetPdgCode());
-            break;
+        default:
+          fHistPdgGammaSourceRest->Fill(motherParticle->GetPdgCode());
+          break;
         }
       }
     }
@@ -671,7 +672,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[13]) fHistPtDeltaPhiInput[13]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
         default:
-          fHistPtYInputRest->Fill(particle->GetPdgCode());
+          fHistPdgInputRest->Fill(particle->GetPdgCode());
           break;
       }
     }
@@ -715,150 +716,140 @@ void AliAnalysisTaskGammaCocktailMC::SetLogBinningXTH2(TH2* histoRebin){
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaCocktailMC::IsMotherInList(TParticle* mother){
-  
-  Int_t PdgMother = mother->GetPdgCode();
-  for(Int_t i=0;i<6;i++){
-    if(PdgMother==fParticleList[i]) return kTRUE;
-  }
-  return kFALSE;
-}
-
-//_________________________________________________________________________________
 void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist(TH1F* hist, Int_t np) {
   
   switch (np) {
     case 0:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"2#gamma");
-      hist->GetXaxis()->SetBinLabel(3,"e^{+}e^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(4,"2e^{+}2e^{-}");
-      hist->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}");
+      hist->GetXaxis()->SetBinLabel(2,"#gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(3,"e^{+} e^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"e^{+} e^{-} e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(5,"e^{+} e^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
     case 1:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"2#gamma");
-      hist->GetXaxis()->SetBinLabel(3,"3#pi^{0}");
-      hist->GetXaxis()->SetBinLabel(4,"#pi^{0}2#gamma");
-      hist->GetXaxis()->SetBinLabel(5,"#pi^{+}#pi^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(8,"2e^{+}2e^{-}");
-      hist->GetXaxis()->SetBinLabel(9,"#pi^{+}#pi^{-}2#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"#gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{0} #pi^{0} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{0} #gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{+} #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(6,"e^{+} e^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(7,"#mu^{+} #mu^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(8,"e^{+} e^{-} e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(9,"#pi^{+} #pi^{-} #gamma #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 2:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#eta");
-      hist->GetXaxis()->SetBinLabel(3,"#rho^{0}#gamma");
-      hist->GetXaxis()->SetBinLabel(4,"#pi^{+}#pi^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(5,"#omega#gamma");
-      hist->GetXaxis()->SetBinLabel(6,"2#gamma");
-      hist->GetXaxis()->SetBinLabel(7,"#mu^{+}#mu^{-}#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{-} #eta");
+      hist->GetXaxis()->SetBinLabel(3,"#rho^{0} #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{+} #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#omega #gamma");
+      hist->GetXaxis()->SetBinLabel(6,"#gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(7,"#mu^{+} #mu^{-} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 3:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}#pi^{0}");
-      hist->GetXaxis()->SetBinLabel(3,"#pi^{0}#gamma");
-      hist->GetXaxis()->SetBinLabel(4,"#eta#gamma");
-      hist->GetXaxis()->SetBinLabel(5,"#pi^{0}e^{+}e^{-}");
-      hist->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
-      hist->GetXaxis()->SetBinLabel(7,"2#pi^{0}#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{-} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{0} #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"#eta #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{0} e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(6,"e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(7,"#pi^{0} #pi^{0} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 4:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{-}");
-      hist->GetXaxis()->SetBinLabel(3,"#pi^{+}#pi^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(4,"#pi^{0}#gamma");
-      hist->GetXaxis()->SetBinLabel(5,"#eta#gamma");
-      hist->GetXaxis()->SetBinLabel(6,"2#pi^{0}#gamma");
-      hist->GetXaxis()->SetBinLabel(7,"e^{+}e^{-}");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{0} #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#eta #gamma");
+      hist->GetXaxis()->SetBinLabel(6,"#pi^{0} #pi^{0} #gamma");
+      hist->GetXaxis()->SetBinLabel(7,"e^{+} e^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 5:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"#pi^{+}#pi^{0}");
-      hist->GetXaxis()->SetBinLabel(3,"#pi^{+}#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{+} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 6:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"#pi^{-}#pi^{0}");
-      hist->GetXaxis()->SetBinLabel(3,"#pi^{-}#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{-} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{-} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 7:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"K^{+}K^{-}");
-      hist->GetXaxis()->SetBinLabel(3,"K^{0}_{L}K^{0}_{S}");
-      hist->GetXaxis()->SetBinLabel(4,"#eta#gamma");
-      hist->GetXaxis()->SetBinLabel(5,"#pi^{0}#gamma");
-      hist->GetXaxis()->SetBinLabel(6,"e^{+}e^{-}");
-      hist->GetXaxis()->SetBinLabel(7,"#eta e^{+}e^{-}");
-      hist->GetXaxis()->SetBinLabel(8,"#pi^{+}#pi^{-}#gamma");
-      hist->GetXaxis()->SetBinLabel(9,"f_{0}(980)#gamma");
-      hist->GetXaxis()->SetBinLabel(10,"2#pi^{0}#gamma");
-      hist->GetXaxis()->SetBinLabel(11,"#pi^{0}e^{+}e^{-}");
-      hist->GetXaxis()->SetBinLabel(12,"#pi^{0}#eta#gamma");
-      hist->GetXaxis()->SetBinLabel(13,"a_{0}(980)#gamma");
-      hist->GetXaxis()->SetBinLabel(14,"#eta'#gamma");
-      hist->GetXaxis()->SetBinLabel(15,"#mu^{+}#mu^{-}#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"K^{+} K^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"K^{0}_{L} K^{0}_{S}");
+      hist->GetXaxis()->SetBinLabel(4,"#eta #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{0} #gamma");
+      hist->GetXaxis()->SetBinLabel(6,"e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(7,"#eta e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(8,"#pi^{+} #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(9,"f_{0}(980) #gamma");
+      hist->GetXaxis()->SetBinLabel(10,"#pi^{0} #pi^{0} #gamma");
+      hist->GetXaxis()->SetBinLabel(11,"#pi^{0} e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(12,"#pi^{0} #eta #gamma");
+      hist->GetXaxis()->SetBinLabel(13,"a_{0}(980) #gamma");
+      hist->GetXaxis()->SetBinLabel(14,"#eta' #gamma");
+      hist->GetXaxis()->SetBinLabel(15,"#mu^{+} #mu^{-} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 8:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"3g");
-      hist->GetXaxis()->SetBinLabel(3,"2g#gamma");
-      hist->GetXaxis()->SetBinLabel(4,"e^{+}e^{-}");
-      hist->GetXaxis()->SetBinLabel(5,"e^{+}e^{-}#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"ggg");
+      hist->GetXaxis()->SetBinLabel(3,"gg #gamma");
+      hist->GetXaxis()->SetBinLabel(4,"e^{+} e^{-}");
+      hist->GetXaxis()->SetBinLabel(5,"e^{+} e^{-} #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 9:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"n#pi^{-}");
-      hist->GetXaxis()->SetBinLabel(3,"X#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"n #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"X #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 10:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"n#pi^{0}");
-      hist->GetXaxis()->SetBinLabel(3,"p#pi^{-}");
-      hist->GetXaxis()->SetBinLabel(4,"n#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"n #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(3,"p #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(4,"n #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
 
     case 11:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"n#pi^{+}");
-      hist->GetXaxis()->SetBinLabel(3,"p#pi^{0}");
-      hist->GetXaxis()->SetBinLabel(4,"p#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"n #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(3,"p #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(4,"p #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 12:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"p#pi^{+}");
-      hist->GetXaxis()->SetBinLabel(3,"X#gamma");
+      hist->GetXaxis()->SetBinLabel(2,"p #pi^{+}");
+      hist->GetXaxis()->SetBinLabel(3,"X #gamma");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       
     case 13:
       hist->GetXaxis()->SetBinLabel(1,"all");
-      hist->GetXaxis()->SetBinLabel(2,"#Lambda#gamma");
-      hist->GetXaxis()->SetBinLabel(3,"#Lambda e^{+}e^{-}");
+      hist->GetXaxis()->SetBinLabel(2,"#Lambda #gamma");
+      hist->GetXaxis()->SetBinLabel(3,"#Lambda e^{+} e^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
       

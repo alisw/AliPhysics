@@ -33,7 +33,6 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t yMin, Double_t yMax, Bool_t optSumw2);
     TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t* binsY, Bool_t optSumw2);
     Float_t GetDecayChannel(AliStack* stack, TParticle* part);
-    Bool_t IsMotherInList(TParticle* mother);
     
   protected:
     AliVEvent*                  fInputEvent;                // current event
@@ -73,8 +72,8 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TH2F**                      fHistPtGammaSourceInput;    //! histo for pt correlation of gammas from input particles to source
     TH2F**                      fHistPhiGammaSourceInput;   //! histo for phi correlation of gammas from input particles to source
     
-    TH1I*                       fHistPtYInputRest;          //! histo for rest
-    TH1I*                       fHistPtYGammaSourceRest;    //! histo for gamma from rest
+    TH1I*                       fHistPdgInputRest;          //! histo for rest
+    TH1I*                       fHistPdgGammaSourceRest;    //! histo for gamma from rest
   
     TF1*                        fPtParametrization[14];     //!
     TObjString*                 fCocktailSettings[9];       //!
