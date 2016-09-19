@@ -650,7 +650,7 @@ void AliITSUCATracker::MakeCells(int iteration)
       {
         if (idx != fDoublets[iD + 1][iD1].x) break;
         if (TMath::Abs(fDoublets[iD][iD0].tanL - fDoublets[iD + 1][iD1].tanL) < fCDTanL &&
-            TMath::Abs(fDoublets[iD][iD0].phi - fDoublets[iD + 1][iD1].phi) < fCDPhi) {
+            CompareAngles(fDoublets[iD][iD0].phi,fDoublets[iD + 1][iD1].phi,fCDPhi)) {
           const float tan = 0.5f * (fDoublets[iD][iD0].tanL + fDoublets[iD + 1][iD1].tanL);
           const float extz = -tan * fLayer[iD][fDoublets[iD][iD0].x]->r +
                               fLayer[iD][fDoublets[iD][iD0].x]->z;
