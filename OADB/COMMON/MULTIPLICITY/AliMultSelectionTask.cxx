@@ -117,6 +117,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fZpaFired(0),
       fZpcFired(0),
       fNTracks(0),
+      fNTracksGlobal2015(0),
+      fNTracksGlobal2015Trigger(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -217,6 +219,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fZpaFired(0),
       fZpcFired(0),
       fNTracks(0),
+      fNTracksGlobal2015(0),
+      fNTracksGlobal2015Trigger(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -476,7 +480,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
 
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
-
+        fTreeEvent->Branch("fNTracksGlobal2015",      &fNTracksGlobal2015, "fNTracksGlobal2015/I");
+        fTreeEvent->Branch("fNTracksGlobal2015Trigger",      &fNTracksGlobal2015Trigger, "fNTracksGlobal2015Trigger/I");
+        
         if( fkDebugIsMC ) {
             fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
             fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
@@ -1271,12 +1277,23 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
 
         //Track information
+        fNTracksGlobal2015        = 0 ;
+        fNTracksGlobal2015Trigger = 0;
+        
         for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
             AliVTrack *track = lVevent -> GetVTrack( itrack );
-            fHistQASelected_PtVsV0M -> Fill( lV0M, track->Pt() ); 
+            if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
+            
+            //Only for accepted tracks
+            fNTracksGlobal2015 ++; //count them
+            fHistQASelected_PtVsV0M -> Fill( lV0M, track->Pt() );
+            
+            //Count accepted + TOF time window (info from Alberica)
+            //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
+            if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 ) fNTracksGlobal2015Trigger ++;
         }
         //=============================================================================
-
+        
         //Add to AliVEvent
         //if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
         //    InputEvent()->AddObject(fSelection);
