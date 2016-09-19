@@ -135,6 +135,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b,Double_t &c){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;c=fSigmaElectronTPCPtDepPar2;}
 	Double_t GetConversionMassMax(){return fConversionMassMax;}
+	Double_t GetEleXiMassMax(){return fEleXiMassMax;}
 
 	void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
 	void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
@@ -147,6 +148,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
 	void SetConversionMassMax(Double_t a){fConversionMassMax=a;}
+	void SetEleXiMassMax(Double_t a){fEleXiMassMax=a;}
 
 	Bool_t IsPeakRegion(AliAODcascade *c);
 	Bool_t IsPeakRegion(TLorentzVector *c);
@@ -222,9 +224,10 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
 
 	Double_t fConversionMassMax; /// Conversion mass
+	Double_t fEleXiMassMax; /// e-xi mass max
   
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,8);
+  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,9);
   /// \endcond
 };
 
