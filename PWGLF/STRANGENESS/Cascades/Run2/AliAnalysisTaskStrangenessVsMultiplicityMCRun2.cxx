@@ -124,7 +124,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
         fkSaveV0Tree       ( kTRUE ),
         fkDownScaleV0      ( kTRUE  ),
         fDownScaleFactorV0 ( 0.001  ),
-        fkPreselectDedx ( kFALSE ),
+        fkPreselectDedx ( kTRUE ),
         fkDebugWrongPIDForTracking ( kFALSE ),
 
 //---> Flags controlling Cascade TTree output
@@ -246,7 +246,7 @@ fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
-fkPreselectDedx ( kFALSE ),
+fkPreselectDedx ( kTRUE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 
 //---> Flags controlling Cascade TTree output
