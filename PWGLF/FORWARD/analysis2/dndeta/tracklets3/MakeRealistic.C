@@ -1,3 +1,19 @@
+/**
+ * @file   MakeRealistic.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:12:58 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
+/** 
+ * @{ 
+ * @name Make realistic weights 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 MakeRealistic()
 {
@@ -51,3 +67,7 @@ MakeRealistic()
   weights->Draw();
   weights->Print();
 }
+/* @} */
+//
+// EOF
+//

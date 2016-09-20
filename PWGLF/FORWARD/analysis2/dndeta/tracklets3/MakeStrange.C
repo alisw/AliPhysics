@@ -1,3 +1,19 @@
+/**
+ * @file   MakeStrange.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:14:22 2016
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+/** 
+ * @{
+ * @name Make strangeness weights 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 MakeStrange()
 {
@@ -72,3 +88,7 @@ MakeStrange()
   weights->Draw();
   weights->Print();
 }
+/* @} */
+//
+// EOF
+//

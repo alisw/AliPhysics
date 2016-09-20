@@ -1,3 +1,13 @@
+/**
+ * @file   FixPaths.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:10:39 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef __CINT__
 #include <TROOT.h>
 #include <TInterpreter.h>
@@ -9,6 +19,11 @@ class TString;
 class TSystem;
 #endif
 
+/**
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 struct FixPaths
 {
   static FixPaths* fgInstance;
@@ -23,6 +38,9 @@ struct FixPaths
 #ifndef __CINT__
 FixPaths* FixPaths::fgInstance = new FixPaths;
 #endif
+//
+// EOF
+//
 
 
 

@@ -1,3 +1,20 @@
+/**
+ * @file   MakeK0S.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:12:09 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
+
+/** 
+ * @{ 
+ * @name Name @f$ K_S^0@f$ weights
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 MakeK0S()
 {
@@ -48,3 +65,7 @@ MakeK0S()
   weights->Draw();
   weights->Print();
 }
+/* @} */
+//
+// EOF
+//

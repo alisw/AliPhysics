@@ -1,3 +1,14 @@
+/**
+ * @file   BackOfTheEnvelope.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:07:01 2016
+ * 
+ * @brief  Do back of the envelope calculation of effect of reweighing
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+
 #ifndef __CINT__
 # include <vector>
 # include <TFile.h>
@@ -22,9 +33,24 @@ class TBrowser;
 class TCanvas;
 #endif
 
+/**
+ * Print format 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 const char* fmt = "%10s | %5.3f | %5.2f | %5.2f | %5.2f  %5.2f |";
+/**
+ * Class to do the calculation 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 struct Calculation
 {
+  /** 
+   * Per particle information
+   * 
+   * @ingroup pwglf_forward_tracklets
+   */
   struct Particle
   {
     TString  n;
@@ -33,6 +59,13 @@ struct Calculation
     Double_t Ss;
     Double_t Cs;
     Double_t Cb;
+    /** 
+     * Get a quantity
+     * 
+     * @param i number of parameter 
+     * 
+     * @return Parameter
+     */
     Double_t Get(Int_t i) const
     {
       return (i == 0 ? Ps :
@@ -56,7 +89,11 @@ struct Calculation
   Double_t     fC;  // Ratio of combinatorics to all tracklets     
   Double_t     fPs; // Ratio of signal primaries to all tracklets 	       
   Double_t     fSs; // Ratio of signal secondaries to all tracklets   
-  Double_t     fCs; // Ratio of signal combinatorics to all tracklets 
+  Double_t     fCs; // Ratio of signal combinatorics to all tracklets
+  /** 
+   * Print out 
+   * 
+   */
   void Print()
   {
     TString head(fmt);
@@ -77,10 +114,24 @@ struct Calculation
       (*i)->Print();
     Printf(lne);
   }
+  /** 
+   * Add a particle 
+   * 
+   * @param p 
+   */
   void AddParticle(Particle* p)
   {
     particles.push_back(p);
   }
+  /** 
+   * Calculate the change 
+   * 
+   * @param i 
+   * @param w 
+   * @param verb 
+   * 
+   * @return 
+   */
   Double_t R(Int_t i, const char* w="", Bool_t verb=true) const
   {
     Double_t ret = 1;
@@ -94,6 +145,13 @@ struct Calculation
     if (verb) printf("=%6.4f\n", ret);
     return ret;
   }  
+  /** 
+   * Calculate the full change 
+   * 
+   * @param verb 
+   * 
+   * @return 
+   */
   Double_t Calc(Bool_t verb=true)
   {
     Double_t rPs      = R(0, "rPs", verb);
@@ -274,10 +332,22 @@ struct Calculation
   }
 };
 
-  
+/** 
+ * Do back of the envoloope calculation  
+ * 
+ * @param file 
+ * @param c1 
+ * @param c2 
+ * @param mid 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */  
 void BackOfTheEnvelope(const char* file, Double_t c1=0, Double_t c2=0,
 		       Bool_t mid=true)
 {
   Calculation c;
   c.Run(file, c1, c2, mid);
 }
+//
+// EOF
+// 

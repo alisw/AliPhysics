@@ -1,3 +1,19 @@
+/**
+ * @file   MakeWeight.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:15:00 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
+/** 
+ * @{ 
+ * @name Make Roberto's weights 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 MakeWeight()
 {
@@ -91,3 +107,7 @@ MakeWeight()
   weights->Draw();
   weights->Print();
 }
+/* @} */
+//
+// EOF
+// 
