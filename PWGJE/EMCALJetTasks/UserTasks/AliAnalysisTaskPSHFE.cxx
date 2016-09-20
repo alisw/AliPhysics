@@ -2181,7 +2181,18 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
     }
 
-
+    if(!fPool){
+        if(UseNonSignalEvents){
+            if(trkArr){
+                delete trkArr;
+            }
+        }else{
+            if(tagEvt){
+                delete trkArr;
+            }
+        }
+    }
+    
 
     // NEW HISTO should be filled before this point, as PostData puts the
     // information for this iteration of the UserExec in the container
