@@ -66,6 +66,7 @@ AliHLTTPCDataCompressionMonitorComponent::AliHLTTPCDataCompressionMonitorCompone
   , fHistoNofClusters(NULL)
   , fHistoNofClustersReductionFactor(NULL)
   , fHistogramFile()
+  , fHuffmanTableFile()
   , fMonitoringContainer(NULL)
   , fVerbosity(0)
   , fFlags(0)
@@ -584,6 +585,9 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
   fMonitoringContainer=dataContainer.release();
   fpBenchmark=benchmark.release();
   fpDecoder=decoder.release();
+  if (!fHuffmanTableFile.IsNull()) {
+    fpDecoder->SetHuffmanTableConfiguration(fHuffmanTableFile.Data());
+  }
 
   return iResult;
 }
@@ -654,6 +658,13 @@ int AliHLTTPCDataCompressionMonitorComponent::ScanConfigurationArgument(int argc
       if ((bMissingParam=(++i>=argc))) break;
       fHistogramFile=argv[i++];
       return i;
+    }
+    // -load-huffman-table
+    if (argument.CompareTo("-load-huffman-table")==0) {
+      // load huffman table from file instead OCDB
+      if ((bMissingParam=(++i>=argc))) break;
+      fHuffmanTableFile=argv[i++];
+      return 2;
     }
     // -publishing-mode
     if (argument.CompareTo("-publishing-mode")==0) {

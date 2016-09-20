@@ -372,6 +372,7 @@ private:
   TH2* fHistoNofClusters; //! number of clusters vs. event size
   TH2* fHistoNofClustersReductionFactor;  //! reduction factor wrp to hwcf vs. number of clusters
   TString fHistogramFile; //! file to save histogram
+  TString fHuffmanTableFile; //! configuration file to load Huffman table from
   AliDataContainer* fMonitoringContainer; //! cluster read interface for monitoring
 
   /// verbosity

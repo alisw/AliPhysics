@@ -24,6 +24,7 @@
 #include "AliHLTTPCHWClusterMerger.h"
 #include "AliHLTTPCClusterFlagsData.h"
 #include <vector>
+#include <string>
 
 /**
  * @class AliHLTTPCDataCompressionDecoder
@@ -60,6 +61,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   void SetPadShift(float padShift) {fPadShift=padShift;}
   float PadShift() const {return fPadShift;}
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
+  void SetHuffmanTableConfiguration(const char* name) {fHuffmanTableFile = name;}
 
   int InitPartitionClusterDecoding(AliHLTUInt32_t specification);
   int InitTrackModelClusterClusterDecoding();
@@ -104,6 +106,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   unsigned int fDecodeFlagsTmpPos; //!
   unsigned int fDecodeFlagsTmpEntries; //!
   vector<const AliHLTTPCClusterMCData*> fClusterMCData; //! references to MC data blocks
+  std::string fHuffmanTableFile; //! file for direct configuration of Huffman table
 
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
 };
