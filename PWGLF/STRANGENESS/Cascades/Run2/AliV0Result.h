@@ -60,7 +60,7 @@ public:
     Double_t GetCutTPCdEdx              () const { return fCutTPCdEdx; }
     
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
-    Bool_t GetCutMCLambdaFromPrimaryXi() const { return fCutMCPhysicalPrimary; }
+    Bool_t GetCutMCLambdaFromPrimaryXi() const { return fCutMCLambdaFromPrimaryXi; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     
     TH3F* GetHistogram () { return fHisto; } 
