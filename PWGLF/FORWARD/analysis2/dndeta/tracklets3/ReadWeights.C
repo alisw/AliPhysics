@@ -1,3 +1,19 @@
+/**
+ * @file   ReadWeights.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:18:29 2016
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+/** 
+ * @{ 
+ * @name Read in weights 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void ReadWeights(const char* filename="weights.root")
 {
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include");
@@ -12,3 +28,7 @@ void ReadWeights(const char* filename="weights.root")
   weights->Draw();
 }
 
+/* @} */
+//
+// EOF
+// 

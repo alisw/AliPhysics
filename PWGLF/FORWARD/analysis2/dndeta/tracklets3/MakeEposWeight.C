@@ -1,3 +1,19 @@
+/**
+ * @file   MakeEposWeight.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:11:23 2016
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+/** 
+ * @{ 
+ * @name Calculate epos-lhc weights 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 TProfile* GetOne(const char* filename)
 {
   TFile* file = TFile::Open(filename, "READ");
@@ -93,3 +109,7 @@ MakeEposWeight(const char* file1, const char* file2)
   weights->Draw();
   weights->Print();
 }
+/* @} */
+//
+// EOF
+//

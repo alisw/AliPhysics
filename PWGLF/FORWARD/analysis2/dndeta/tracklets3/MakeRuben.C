@@ -1,3 +1,19 @@
+/**
+ * @file   MakeRuben.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:13:34 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
+/** 
+ * @{ 
+ * @name Make Ruben's weights 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 MakeRuben()
 {
@@ -53,3 +69,7 @@ MakeRuben()
   weights->Draw();
   weights->Print();
 }
+/* @} */
+//
+// EOF
+//

@@ -1,3 +1,13 @@
+/**
+ * @file   PureMCWeights.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:18:17 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #include "AliTrackletAODUtils.C"
 #ifndef __CINT__
 #include "AliTrackletWeights.C"
@@ -15,6 +25,7 @@ class TCanvas;
  * A structure to define weights (@f$ p_{T}@f$, centrality, and
  * species dependent) from one simulation to another.
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 struct PureMCWeights : public AliTrackletAODUtils 
 {

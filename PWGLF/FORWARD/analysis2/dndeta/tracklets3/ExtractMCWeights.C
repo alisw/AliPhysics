@@ -1,4 +1,23 @@
 // for alternative markers, add 0x20000 to the flags 
+/**
+ * @file   ExtractMCWeights.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 17:10:05 2016
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+/** 
+ * 
+ * 
+ * @param nFile 
+ * @param dFile 
+ * @param oFile 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 ExtractMCWeights(const char* nFile="dpmjet.root",
 		 const char* dFile="hijing.root",
@@ -17,3 +36,6 @@ ExtractMCWeights(const char* nFile="dpmjet.root",
   p.Run(nFile, dFile, oFile);
 }
 
+//
+// EOF
+//

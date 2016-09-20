@@ -1,3 +1,13 @@
+/**
+ * @file   DetailsCompare.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Tue Sep 20 20:57:27 2016
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
 #ifndef __CINT__
 #include <TH1.h>
 #include <THStack.h>
@@ -12,6 +22,7 @@
 #include <TLatex.h>
 #include <TApplication.h>
 #include <TSystem.h>
+#include <TPaletteAxis.h>
 #else
 class TH1;
 class TArrayI;
@@ -20,14 +31,52 @@ class THStack;
 class TCanvas;
 class TList;
 class TVirtualPad;
+class TFile;
 #endif
 
+//====================================================================
+namespace {
+  /** 
+   * A guard to suppress messages 
+   */
+  struct SuppressGuard3
+  {
+    /** The previous message level */
+    Int_t save = 0;
+    /** 
+     * Constructor 
+     * 
+     * @param lvl Level to suppress to 
+     */
+    SuppressGuard3(Int_t lvl=2000)
+    {
+      save = gErrorIgnoreLevel;
+      gErrorIgnoreLevel = lvl;
+    }
+    /** 
+     * Destructor 
+     */
+    ~SuppressGuard3()
+    {
+      gErrorIgnoreLevel = save;
+    }
+  };
+}
+
+/**
+ * Compare details
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 struct DetailsComparer
 {
   TCanvas*     fCanvas;
   TVirtualPad* fTop;
   TVirtualPad* fBody;
   TVirtualPad* fBottom;
+  TFile*       fOutput;
+  TLegend*     fLegend;
+  Bool_t       f2D;
   
   void MakeCanvas()
   {
@@ -48,7 +97,10 @@ struct DetailsComparer
     fCanvas->cd();
     gSystem->Exec("rm -rf compare");
     gSystem->Exec("mkdir -p compare");
+    SuppressGuard3 g;
     fCanvas->SaveAs(Form("compare/%s[", fCanvas->GetTitle()), "PDF");
+
+    fOutput = TFile::Open("compare/result.root", "RECREATE");
   }
   void ClearCanvas()
   {
@@ -65,6 +117,7 @@ struct DetailsComparer
     fTop->cd();
     ltx->Draw();
 
+    SuppressGuard3 g;
     fCanvas->Modified();
     fCanvas->Update();
     fCanvas->cd();
@@ -73,11 +126,14 @@ struct DetailsComparer
     if (shortTitle && shortTitle[0] != '\0')
       fCanvas->SaveAs(Form("compare/%s.png", shortTitle));
     fCanvas->WaitPrimitive();
+    
   }
   void CloseCanvas()
   {
     fCanvas->SaveAs(Form("compare/%s]", fCanvas->GetTitle()), "PDF");
-    fCanvas->Delete();
+    fCanvas->Close();
+    fOutput->Write();
+    // fOutput->Close();
   }  
   Color_t IndexColor(Int_t cnt)
   {
@@ -140,6 +196,9 @@ struct DetailsComparer
     l4->Draw();
     
     PrintCanvas("Comparison of details", "");
+    fOutput->cd();
+    fLegend->Write("legend");
+    files->Write("files", TObject::kSingleKey);
   }
     
 	       
@@ -161,87 +220,13 @@ struct DetailsComparer
 	Double_t c = hr->GetBinContent(i);
 	Double_t e = hr->GetBinError(i);
 	if (c < 1e-6 || e < 1e-9) continue;
-	min = TMath::Min(min, c-2*e);
-	max = TMath::Max(max, c+2*e);
+	min = TMath::Min(min, c-1.1*e);
+	max = TMath::Max(max, c+1.1*e);
       }
     }
-    ratios->SetMinimum(min);
-    ratios->SetMaximum(max);
+    ratios->SetMinimum(TMath::Max(0.5,min));
+    ratios->SetMaximum(TMath::Min(1.5,max));
     return ratios;
-  }
-  void DrawStack(TVirtualPad* mother,
-		 Int_t        sub,
-		 THStack*     stack,
-		 Bool_t       log,
-		 Double_t     tbase=0.05)
-  {
-    if (!stack || !stack->GetHists()) {
-      Warning("DrawStack", "No stack passed");
-      return;
-    }
-    if (TString(stack->GetName()).EqualTo("scaleProj")) log = false;
-
-    TVirtualPad* p = mother->cd(sub);
-    gStyle->SetTitleFontSize(2*tbase/p->GetHNDC());
-    p->SetTopMargin(0.01);
-    p->SetRightMargin(0.01);
-    p->SetLeftMargin(0.15);
-    p->SetBottomMargin(0.15);
-    p->Divide(1,2,0,0);
-
-    TVirtualPad* q = p->cd(1);
-    q->SetRightMargin(0.01);
-    q->SetLogx(log);
-    q->SetLogy(log);
-    q->SetGridx();
-    q->SetGridy();
-    q->SetTicks();
-    TString tit(stack->GetTitle());
-    stack->SetTitle("");
-    stack->Draw("nostack");
-    if (stack->GetHistogram()) {
-      stack->GetHistogram()->GetXaxis()->SetTitleSize(tbase/p->GetHNDC());
-      stack->GetHistogram()->GetXaxis()->SetLabelSize(tbase/p->GetHNDC());
-      stack->GetHistogram()->GetXaxis()->SetTitleOffset(0.4);
-      stack->GetHistogram()->GetXaxis()->SetNdivisions(207);
-      stack->GetHistogram()->GetYaxis()->SetTitleSize(tbase/p->GetHNDC());
-      stack->GetHistogram()->GetYaxis()->SetLabelSize(tbase/p->GetHNDC());
-      stack->GetHistogram()->GetYaxis()->SetNdivisions(207);
-      stack->GetHistogram()->GetYaxis()->SetTitleOffset(0.4);
-      stack->GetHistogram()->GetYaxis()->CenterTitle(true);
-      stack->GetHistogram()->SetYTitle(tit);
-    }
-    q->Modified();
-
-    q = p->cd(2);
-    q->SetRightMargin(0.01);
-    q->SetLogx(log);
-    q->SetTicks();
-    q->SetGridx();
-    q->SetGridy();
-    
-    THStack* ratios = RatioStack(stack);
-    if (!ratios) {
-      Warning("DrawStack", "Failed to make ratio");
-      return;
-    }
-    tit = ratios->GetTitle();
-    ratios->SetTitle("");
-    ratios->Draw("nostack");
-    if (ratios->GetHistogram()) {
-      ratios->GetHistogram()->GetXaxis()->SetTitleSize(tbase/p->GetHNDC());
-      ratios->GetHistogram()->GetXaxis()->SetLabelSize(tbase/p->GetHNDC());
-      ratios->GetHistogram()->GetXaxis()->SetTitleOffset(0.4);
-      ratios->GetHistogram()->GetXaxis()->SetNdivisions(207);
-      ratios->GetHistogram()->GetYaxis()->SetTitleSize(tbase/p->GetHNDC());
-      ratios->GetHistogram()->GetYaxis()->SetLabelSize(tbase/p->GetHNDC());
-      ratios->GetHistogram()->GetYaxis()->SetTitleOffset(0.4);
-      ratios->GetHistogram()->GetYaxis()->SetNdivisions(207);
-      // ratios->GetHistogram()->SetYTitle(tit);
-    }
-    q->Modified();
-    p->Modified();
-    
   }
   TH1* AddHisto(TDirectory*    dir,
 		Int_t          dimen,
@@ -251,13 +236,20 @@ struct DetailsComparer
 		Color_t        col)
   {
     TString hname;
-    hname.Form("%s/%s%dd/%s",binName.Data(),sub, dimen, stack->GetName());
+    hname.Form("%s/%s%dd/%s%s",binName.Data(),sub, dimen,
+	       (f2D && TString(sub).EqualTo("results") ? "full/" : ""),
+	       stack->GetName());
+    // Printf("Will get histogram %s", hname.Data());
     TH1* h = static_cast<TH1*>(dir->Get(hname));
     if (!h) {
       Warning("Addhisto", "No histogram %s in %s", hname.Data(),dir->GetName());
       return 0;;
     }
     stack->Add(h);
+    Double_t min = TMath::Min(stack->GetMinimum("nostack"), h->GetMinimum());
+    Double_t max = TMath::Max(stack->GetMaximum("nostack"), h->GetMaximum());
+    stack->SetMaximum(max);
+    stack->SetMinimum(min);
     TString fn(dir->GetName());
     TString dn(gSystem->DirName(fn));
     h->SetName(dn.IsNull() || dn == "." ? fn : dn);
@@ -269,8 +261,7 @@ struct DetailsComparer
 		   const TArrayI& dimens,
 		   const TString& binName,
 		   const char*    sub,
-		   TList*         stacks,
-		   TLegend*       l)
+		   TList*         stacks)
   {
     TIter       nextD(files);
     TDirectory* dir = 0;
@@ -279,10 +270,6 @@ struct DetailsComparer
       TIter         nextS(stacks);
       THStack*      stack = 0;
       Color_t       col   = IndexColor(cnt);
-      TString       fn    = dir->GetTitle();
-      TLegendEntry* e     = l->AddEntry("dummy", fn, "f");
-      e->SetFillColor(col);
-      e->SetFillStyle(1001);
       Bool_t        ok    = true;
       while ((stack = static_cast<THStack*>(nextS()))) 
 	if (!AddHisto(dir, dimens[cnt], binName, sub, stack, col)) ok = false;
@@ -291,13 +278,124 @@ struct DetailsComparer
     }
     return cnt;
   }
-  void DrawStacks(TVirtualPad* mother, TList* stacks, Bool_t log)
+  void DrawStack(TVirtualPad* mother,
+		 Int_t        sub,
+		 THStack*     stack,
+		 TDirectory*  out, 
+		 Bool_t       log,
+		 Double_t     tbase=0.05)
+  {
+    if (!stack || !stack->GetHists()) {
+      Warning("DrawStack", "No stack passed");
+      return;
+    }
+    if (TString(stack->GetName()).EqualTo("scaleProj")) log = false;
+
+    TDirectory* dir = out->mkdir(stack->GetName());
+    dir->cd();
+    stack->Write("full");
+    
+    TVirtualPad* p = mother->cd(sub);
+    // gStyle->SetTitleFontSize(2*tbase/p->GetHNDC());
+    p->SetTopMargin(0.01);
+    p->SetRightMargin(0.01);
+    p->SetLeftMargin(0.15);
+    p->SetBottomMargin(0.15);
+    p->Divide(1,2,0,0);
+
+    TVirtualPad* q = p->cd(1);
+    q->SetRightMargin(f2D ? 0.1 : 0.01);
+    q->SetLogx(log);
+    q->SetLogy(log);
+    q->SetGridx();
+    q->SetGridy();
+    q->SetTicks();
+    TString tit(stack->GetTitle());
+    stack->SetTitle("");
+    stack->Draw(f2D ? "nostack colz" : "nostack");
+    if (stack->GetHistogram()) {
+      TH1* h = stack->GetHistogram();
+      h->GetXaxis()->SetTitleSize(tbase/p->GetHNDC());
+      h->GetXaxis()->SetLabelSize(tbase/p->GetHNDC());
+      h->GetXaxis()->SetTitleOffset(0.4);
+      h->GetXaxis()->SetNdivisions(207);
+      h->GetYaxis()->SetTitleSize(tbase/p->GetHNDC());
+      h->GetYaxis()->SetLabelSize(tbase/p->GetHNDC());
+      h->GetYaxis()->SetNdivisions(207);
+      h->GetYaxis()->SetTitleOffset(0.4);
+      h->GetYaxis()->CenterTitle(true);
+      h->SetYTitle(tit);
+      if (f2D) {
+	q->Update();
+	h = static_cast<TH1*>(stack->GetHists()->Last());
+	TPaletteAxis* pal = static_cast<TPaletteAxis*>(h->GetListOfFunctions()
+						       ->FindObject("palette"));
+	if (pal) {
+	  pal->GetAxis()->SetTitleSize(tbase/p->GetHNDC());
+	  pal->GetAxis()->SetLabelSize(tbase/p->GetHNDC());
+	  pal->GetAxis()->SetNdivisions(207);
+	  pal->GetAxis()->SetTitleOffset(0.4);
+	}
+      }
+    }
+    q->Modified();
+    
+    q = p->cd(2);
+    q->SetRightMargin(f2D ? 0.1 : 0.01);
+    q->SetLogx(log);
+    q->SetTicks();
+    q->SetGridx();
+    q->SetGridy();
+    
+    THStack* ratios = RatioStack(stack);
+    if (!ratios) {
+      Warning("DrawStack", "Failed to make ratio");
+      return;
+    }
+    // if (ratios->GetMaximum("nostack") > 1.5) ratios->SetMaximum(1.5);
+    // if (ratios->GetMinimum("nostack") < 0.5) ratios->SetMinimum(0.5);
+    ratios->Write("ratios");
+    tit = ratios->GetTitle();
+    ratios->SetTitle("");
+    ratios->Draw(f2D ? "nostack colz" : "nostack");
+    if (ratios->GetHistogram()) {
+      TH1* h = ratios->GetHistogram();
+      h->GetXaxis()->SetTitleSize(tbase/p->GetHNDC());
+      h->GetXaxis()->SetLabelSize(tbase/p->GetHNDC());
+      h->GetXaxis()->SetTitleOffset(0.4);
+      h->GetXaxis()->SetNdivisions(207);
+      h->GetYaxis()->SetTitleSize(tbase/p->GetHNDC());
+      h->GetYaxis()->SetLabelSize(tbase/p->GetHNDC());
+      h->GetYaxis()->SetTitleOffset(0.4);
+      h->GetYaxis()->SetNdivisions(207);
+      h->GetYaxis()->CenterTitle(true);
+      h->SetYTitle("Ratio");
+      if (f2D) {
+	q->Update();
+	h = static_cast<TH1*>(ratios->GetHists()->Last());
+	TPaletteAxis* pal = static_cast<TPaletteAxis*>(h->GetListOfFunctions()
+						       ->FindObject("palette"));
+	if (pal) {
+	  pal->GetAxis()->SetTitleSize(tbase/p->GetHNDC());
+	  pal->GetAxis()->SetLabelSize(tbase/p->GetHNDC());
+	  pal->GetAxis()->SetNdivisions(207);
+	  pal->GetAxis()->SetTitleOffset(0.4);
+	}
+      }
+    }
+    q->Modified();
+    p->Modified();
+  }
+  void DrawStacks(TVirtualPad* mother,
+		  TList*       stacks,
+		  TDirectory*  out,
+		  Bool_t       log)
   {
     Int_t cnt = 1;
     TIter nextS(stacks);
     THStack* stack = 0;
     while ((stack = static_cast<THStack*>(nextS()))) {
-      DrawStack(mother, cnt, stack, log);
+      DrawStack(mother, cnt, stack, out, log);
       cnt++;
     }
   }    
@@ -308,6 +406,7 @@ struct DetailsComparer
 		  const TString& title,
 		  const char**   names,
 		  const char**   titles,
+		  TDirectory*    out, 
 		  Bool_t         log=false)
   {
     TList* stacks = new TList;
@@ -331,15 +430,11 @@ struct DetailsComparer
     fBody->Divide(nCol, nRow, 0, 0);
     
     
-    TLegend*    l = new TLegend(.05, .05, .95, .95);
-    l->SetFillStyle(0);
-    l->SetBorderSize(0);
-
-    if (FillStacks(files, dimens, binName, sub, stacks, l) <= 0) return;
-    DrawStacks(fBody, stacks, log);
+    if (FillStacks(files, dimens, binName, sub, stacks) <= 0) return;
+    DrawStacks(fBody, stacks,out,  log);
 
     fBottom->cd();
-    l->Draw();
+    fLegend->Draw();
 
     PrintCanvas(title,Form("%s_%s", sub, binName.Data()));
   }
@@ -347,7 +442,8 @@ struct DetailsComparer
   void ProcessCentDelta(TList*         files,
 			const TArrayI& dimens,
 			const TString& binName,
-			const TString& centTitle)
+			const TString& centTitle,
+			TDirectory*    out)
   {
     const char* names[] = { "realDeltaM", "realDeltaI",
 			    "simDeltaM" , "simDeltaI" ,
@@ -359,33 +455,38 @@ struct DetailsComparer
 			     "#Delta_{C'}", "#Delta_{P'}",
 			     "#Delta_{S'}", "#LTk#it{k}#GT",
 			     0 };
-
+    TDirectory* dir = out->mkdir("delta");
+    
     ProcessOne(files, dimens, binName, "delta",
 	       Form("#Delta #minus %s", centTitle.Data()),
-	       names, titles, true);
+	       names, titles, dir, true);
   }
   void ProcessCentResult(TList*         files,
 			 const TArrayI& dimens,
 			 const TString& binName,
-			 const TString& centTitle)
+			 const TString& centTitle,
+			 TDirectory*    out)
   {
     const char* names[] = { "result", "simG", "realS", "simS",  
     			    "realM",  "simM", "realC", "simC",  0 };
     const char* titles[] = { "dN/d#eta", "G'", "S", "S'",
 			     "M", "M'", "C", "C'", 0 };
+    TDirectory* dir = out->mkdir("parts");
     ProcessOne(files, dimens, binName, "results",
 	       Form("Parts #minus %s", centTitle.Data()),
-	       names, titles);
+	       names, titles, dir);
   }
       
 				 
   void ProcessCentBin(TList*         files,
 		      const TArrayI& dimens,
 		      const TString& binName,
-		      const TString& centTitle)
+		      const TString& centTitle,
+		      TDirectory*    out)
   {
-    ProcessCentDelta (files, dimens, binName, centTitle);
-    ProcessCentResult(files, dimens, binName, centTitle);
+    TDirectory* dir = out->mkdir(binName);
+    ProcessCentDelta (files, dimens, binName, centTitle, dir);
+    ProcessCentResult(files, dimens, binName, centTitle, dir);
   }
     
   void Run(const char* f1,   const char* f2,
@@ -405,9 +506,9 @@ struct DetailsComparer
     char**       args = new char*[argc];
     Int_t        j    = 0;
     for (Int_t i = 1; i < argc; i++) {
-      if (!TString(argv[i]).EndsWith(".root")) continue;
+      // if (!TString(argv[i]).EndsWith(".root")) continue;
       args[j] = StrDup(argv[i]);
-      Printf("Got file %s", args[j]);
+      // Printf("Argument %s", args[j]);
       j++;
     }
     args[j] = 0;
@@ -417,42 +518,67 @@ struct DetailsComparer
   void Run(const char** filenames)
   {
     MakeCanvas();
+    fLegend = new TLegend(.05, .05, .95, .95);
+    fLegend->SetFillStyle(0);
+    fLegend->SetBorderSize(0);
+
     TList*  files = new TList;
     TArrayI dimens;
     Int_t   cnt   = 0;
+    TString last  = "";
     const char** fptr = filenames;    
     while (*fptr) {
+      // Extract information 
       TString fn(*fptr);
-      TString dn(gSystem->DirName(fn));
-      TString tit(fn); tit.ReplaceAll(".root","");
-      if (!dn.IsNull() && !dn.EqualTo(".")) tit = dn;
-      Int_t   col = tit.Index(":");
-      if (col != kNPOS) {
-	tit.Remove(col, tit.Length()-col);
-	fn.Remove(0,fn.Index(":")+1);
+      if (!fn.EndsWith(".root")) {
+	last = fn;
+	fptr++;
+	continue;
       }
-      Printf("Got file %s with title %s (%d)", fn.Data(), tit.Data(), col);
+      TString dn(gSystem->DirName(fn));
+      TString tit(last);
+      if (tit.IsNull()) {
+	tit = fn;
+	tit.ReplaceAll(".root",""); 
+	if (!dn.IsNull() && !dn.EqualTo(".")) tit = dn;
+      }
+      last = "";
+      
+      // Try o open the file 
       TFile* file = TFile::Open(fn, "READ");
-      file->SetTitle(tit);
       fptr++;
       if (!file) continue;
+
+      // Set the title and increase count 
+      file->SetTitle(tit);
       cnt++;
+
+      // Create legend entry 
+      Color_t       color = IndexColor(cnt-1);
+      TLegendEntry* e     = fLegend->AddEntry("dummy", tit, "f");
+      e->SetFillColor(color);
+      e->SetLineColor(color);
+      e->SetFillStyle(1001);
+
+      // Figure out dimension 
       Int_t   dim = 0;
       if      (fn.EndsWith("etaipz.root") || dn.EndsWith("etaipz")) dim = 3;
       else if (fn.EndsWith("eta.root")    || dn.EndsWith("eta"))    dim = 2;
-      else if (fn.EndsWith("const.root")  || dn.EndsWith("const"))  dim = 1;
-      
+      else if (fn.EndsWith("const.root")  || dn.EndsWith("const"))  dim = 1;      
       dimens.Set(cnt);
       dimens[cnt-1] = dim;
+
+      // Add to list of files 
       files->Add(file);
     }
     if (cnt <= 0) {
       Warning("", "No files opened");
       return;
     }
+    f2D = false; // cnt == 2;
     TFile* f0 = static_cast<TFile*>(files->At(0));
     TH1* cent = static_cast<TH1*>(f0->Get("realCent"));
-    Printf("Got centrality histogram %p", cent);
+    // Printf("Got centrality histogram %p", cent);
 
     MakeTitlePage(files);
     
@@ -463,15 +589,23 @@ struct DetailsComparer
       cn.Form("cent%06.2f_%06.2f", c1, c2); cn.ReplaceAll(".","d");
       ct.Form("%5.1f-%5.1f%%", c1, c2);
       Printf("Processing centrality bin %6.2f-%6.2f%%", c1, c2);
-      ProcessCentBin(files, dimens, cn, ct);
+      ProcessCentBin(files, dimens, cn, ct, fOutput);
     }
     CloseCanvas();
   }
 };
 
+/** 
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 DetailsCompare()
 {
   DetailsComparer d;
   d.Run(); // "hijing_etaipz.root", "eposlhc_etaipz.root", "whijing_const.root");
 }
+//
+// EOF
+//
