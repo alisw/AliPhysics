@@ -53,6 +53,7 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		void SetKineOnly (Bool_t iskineonly) {IsKinematicOnly = iskineonly;};
 		void RegisterList(TClonesArray* listToFill, TClonesArray* listFromToFill,double lpt, double hpt);
 		void SetPtHardMin( double pthardmin ){fPtHardMin = pthardmin; };
+		void SetPtHardMax( double pthardmax ){fPtHardMax = pthardmax; };
 
 	private:
 		TDirectory           *fOutput;     // Output
@@ -69,6 +70,7 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		TClonesArray * fInputList;
 		TClonesArray * fInputListSpectra;
 		int fVnMethod; // 0; RunFlow 1 : JFluc
+		int fESMethod; // 0; all pt 1 : leading pt
 		TClonesArray * fInputListFlow;
 
 		Bool_t fFirstEvent; //
@@ -84,6 +86,7 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		Bool_t IsMC;
 		Bool_t IsKinematicOnly;
 		double fPtHardMin;
+		double fPtHardMax;
 		Bool_t TagThisEvent;
 
 		ClassDef(AliJHSInterplayTask, 1); // example of analysis
