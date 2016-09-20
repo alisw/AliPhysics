@@ -222,7 +222,8 @@ private:
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
-    AliESDtrackCuts* fTrackCuts;  //! optional track cuts
+    AliESDtrackCuts* fTrackCuts;        // optional track cuts
+    AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
     
     AliMultVariable *fZnaFired;
     AliMultVariable *fZncFired;
@@ -230,6 +231,8 @@ private:
     AliMultVariable *fZpcFired;
     
     Int_t    fNTracks;             //!  no. tracks
+    Int_t    fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
+    Int_t    fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
     Int_t fCurrentRun;
     
     Float_t fQuantiles[100]; //! percentiles
@@ -266,6 +269,8 @@ private:
     TProfile *fHistQASelected_TrackletsVsV0M; 
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
+    
+    TProfile *fHistQASelected_PtVsV0M; 
 
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;

@@ -96,7 +96,7 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0),
+    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fUtils(0),
       fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -117,6 +117,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fZpaFired(0),
       fZpcFired(0),
       fNTracks(0),
+      fNTracksGlobal2015(0),
+      fNTracksGlobal2015Trigger(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -184,6 +186,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
+      fHistQASelected_PtVsV0M(0), 
 
       //Objects
       fOadbMultSelection(0),
@@ -195,7 +198,7 @@ AliMultSelectionTask::AliMultSelectionTask()
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
-    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0),
+    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fUtils(0),
       fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -216,6 +219,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fZpaFired(0),
       fZpcFired(0),
       fNTracks(0),
+      fNTracksGlobal2015(0),
+      fNTracksGlobal2015Trigger(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -283,6 +288,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
+      fHistQASelected_PtVsV0M(0), 
       
       //Objects
       fOadbMultSelection(0),
@@ -474,7 +480,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
 
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
-
+        fTreeEvent->Branch("fNTracksGlobal2015",      &fNTracksGlobal2015, "fNTracksGlobal2015/I");
+        fTreeEvent->Branch("fNTracksGlobal2015Trigger",      &fNTracksGlobal2015Trigger, "fNTracksGlobal2015Trigger/I");
+        
         if( fkDebugIsMC ) {
             fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
             fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
@@ -520,11 +528,20 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fESDtrackCuts->SetEtaRange(-1.0, 1.0);
     }
     
+   
     //Create TPC only track cuts
     if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     
     if(! fUtils ) {
         fUtils = new AliAnalysisUtils();
+    }
+    
+    // Multiplicity
+    if(! fTrackCutsGlobal2015 ) {
+        fTrackCutsGlobal2015 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kTRUE,kFALSE);
+	//Initial set of cuts - to be adjusted
+        fTrackCutsGlobal2015->SetPtRange(0.15);  
+        fTrackCutsGlobal2015->SetEtaRange(-1.0, 1.0);
     }
 
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -613,6 +630,12 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     if ( !fHistQASelected_TrackletsVsCL1 ) {
         fHistQASelected_TrackletsVsCL1 = new TProfile("fHistQASelected_TrackletsVsCL1", ";CL1 Percentile;#LTSPD Tracklets#GT", 105,0,105);
         fListHist->Add(fHistQASelected_TrackletsVsCL1);
+    }
+    
+    //In development: QA with global track information 
+        if ( !fHistQASelected_PtVsV0M ) {
+        fHistQASelected_PtVsV0M = new TProfile("fHistQASelected_PtVsV0M", ";V0M Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtVsV0M);
     }
 
     //List of Histograms: Normal
@@ -1252,8 +1275,25 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
-        //=============================================================================
 
+        //Track information
+        fNTracksGlobal2015        = 0 ;
+        fNTracksGlobal2015Trigger = 0;
+        
+        for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
+            AliVTrack *track = lVevent -> GetVTrack( itrack );
+            if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
+            
+            //Only for accepted tracks
+            fNTracksGlobal2015 ++; //count them
+            fHistQASelected_PtVsV0M -> Fill( lV0M, track->Pt() );
+            
+            //Count accepted + TOF time window (info from Alberica)
+            //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
+            if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 ) fNTracksGlobal2015Trigger ++;
+        }
+        //=============================================================================
+        
         //Add to AliVEvent
         //if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
         //    InputEvent()->AddObject(fSelection);

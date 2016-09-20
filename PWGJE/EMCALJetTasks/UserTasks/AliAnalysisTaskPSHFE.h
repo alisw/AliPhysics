@@ -20,6 +20,8 @@ class AliAODTrack;
 class AliEventPoolManager;
 class AliEventPool;
 
+enum _TRG {EMC7, EMCEGA, EMCJE, NONE};
+
 #ifndef ALIANALYSISTASKSE_H
 #include <AliAnalysisTaskSE.h>
 #endif
@@ -32,17 +34,12 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     
     virtual void     UserCreateOutputObjects();
     virtual void     UserExec(Option_t *option);
-    void             FillPIDHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse);
-    void             FillDPhiHistos(AliESDEvent *esd, AliESDtrack *esdtrack, Int_t i);
-    void             FillPhotoElecHistos(AliESDEvent *esd, AliESDtrack *esdtrack, AliPIDResponse *fPIDResponse, Int_t i);
     void             FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack, AliPIDResponse *fPIDResponse);
     void             FillDPhiHistos(AliAODEvent *esd, AliAODTrack *aodtrack, Int_t i);
     void             FillMEDPhiHistos(AliAODTrack *aodtrack);
     void             FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *aodtrack, AliPIDResponse *fPIDResponse, Int_t i);
-    void             SetTrackCuts(AliESDtrackCuts *gtrkCuts, AliESDtrackCuts *ctrkCuts);
     void             SetElectronTrackCuts(Bool_t trkCutBool);
     void             SetSSCutBool(Bool_t SSCutBool);
-    void             SetAODEvent(Bool_t AODq){aodEv=AODq;}
     void             SetUseNonSignalEvents(Bool_t use){UseNonSignalEvents=use;}
     TObjArray*       MakeTrkArr(AliAODEvent *aod);
     virtual void     Terminate(Option_t *);
@@ -54,14 +51,11 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TList           *fOutputEMCJet; //!
     AliESDtrackCuts *fTrackCutsStrong;     //!
     AliESDtrackCuts *fTrackCutsWeak;     //!
-    AliESDtrackCuts *globaltrackCuts; //!
-    AliESDtrackCuts *comptrackCuts; //!
     AliEventPoolManager *fPoolMan;//!
     AliEventPool    *fPool;//!
-    TObjArray       *trkArr;//!
+    _TRG            trigVal;
     
     //Boolean to keep track of whether we are using aod
-    Bool_t          aodEv;
     Bool_t          UseNonSignalEvents;
     
     //Physics selection booleans
@@ -84,8 +78,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //Track cut QA histos
     TH1F            *fHistTPCNClus_MB;//!
     TH1F            *fHistITSNClus_MB;//!
-    TH1F            *fHistTPCSig_MB;//!
-    TH1F            *fHistTPCSigCut_MB;//!
     TH1F            *fHistImpPar_MB;//!
     TH1F            *fHistImpParTag_MB;//!
     //PID QA histos
@@ -140,8 +132,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //Track Cut QA histos
     TH1F            *fHistTPCNClus_EMC7;//!
     TH1F            *fHistITSNClus_EMC7;//!
-    TH1F            *fHistTPCSig_EMC7;//!
-    TH1F            *fHistTPCSigCut_EMC7;//!
     TH1F            *fHistImpPar_EMC7;//!
     TH1F            *fHistImpParTag_EMC7;//!
     //PID QA histos
@@ -193,8 +183,6 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //Track Cut QA histos
     TH1F            *fHistTPCNClus_EMCEGA;//!
     TH1F            *fHistITSNClus_EMCEGA;//!
-    TH1F            *fHistTPCSig_EMCEGA;//!
-    TH1F            *fHistTPCSigCut_EMCEGA;//!
     TH1F            *fHistImpPar_EMCEGA;//!
     TH1F            *fHistImpParTag_EMCEGA;//!
     //PID QA histos
@@ -205,7 +193,7 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     TH1F            *fHistEMC_TPCTRD_EMCEGA[6];//!
     //TRD Liklihood plots
     TH2F            *fHistTRD_TPCEMC_EMCEGA[6];//!
-    //General Event histos 
+    //General Event histos
     TH1F            *fHistPtSum_EMCEGA;//!
     TH1F            *fHistPtSumTag_EMCEGA;//!
     TH1F            *fHistPtSumEMC_EMCEGA;//!
