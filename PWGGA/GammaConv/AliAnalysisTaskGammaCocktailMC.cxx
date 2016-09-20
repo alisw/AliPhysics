@@ -62,7 +62,6 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fMCEvent(NULL),
   fMCStack(NULL),
   fDoLightOutput(kFALSE),
-  fHasPtParametrization(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
   fHistPtYGamma(NULL),
@@ -82,6 +81,7 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fParticleList(NULL),
   fParticleListNames(NULL),
   fPtParametrization{NULL},
+  fPtParametrizationProton(NULL),
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
   fUserInfo(NULL),
@@ -100,7 +100,6 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fMCEvent(NULL),
   fMCStack(NULL),
   fDoLightOutput(kFALSE),
-  fHasPtParametrization(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
   fHistPtYGamma(NULL),
@@ -120,6 +119,7 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fParticleList(NULL),
   fParticleListNames(NULL),
   fPtParametrization{NULL},
+  fPtParametrizationProton(NULL),
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
   fUserInfo(NULL),
@@ -176,10 +176,11 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     SetHasMother((UInt_t)mcCocktailGen->GetSelectedMothers());
     
     // pt parametrizations
-    GetAndSetPtParametrizations(mcCocktailGen, fHasPtParametrization);
+    GetAndSetPtParametrizations(mcCocktailGen);
     for (Int_t i=0; i<14; i++) {
       if (fHasMother[i]) fUserInfo->Add(fPtParametrization[i]);
     }
+    fUserInfo->Add(fPtParametrizationProton);
     
     // cocktail settings
     Double_t ptMin, ptMax;
@@ -341,15 +342,15 @@ void AliAnalysisTaskGammaCocktailMC::UserExec(Option_t *)
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen, Bool_t setParams)
+void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen)
 {
-  if (setParams || !mcCocktailGen) return;
+  if (!mcCocktailGen) return;
 
   for (Int_t i=0; i<14; i++) fPtParametrization[i] = NULL;
   
   TF1* fct        = NULL;
   TString fctName = "";
-  for (Int_t i=0; i<16; i++) {
+  for (Int_t i=0; i<17; i++) {
     fct = (TF1*)mcCocktailGen->GetPtParametrization(i);
     if (fct) {
       fctName = fct->GetName();
@@ -367,10 +368,9 @@ void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktai
       if (fctName.BeginsWith("2214_pt")) fPtParametrization[11]  = new TF1(*fct);
       if (fctName.BeginsWith("2224_pt")) fPtParametrization[12]  = new TF1(*fct);
       if (fctName.BeginsWith("3212_pt")) fPtParametrization[13]  = new TF1(*fct);
+      if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = new TF1(*fct);
     }
   }
-
-  fHasPtParametrization = kTRUE;
 }
 
 //_____________________________________________________________________________

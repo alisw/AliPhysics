@@ -41,6 +41,7 @@ ClassImp(AliGenEMlibV2)
 
 //Initializers for static members
 TF1*  AliGenEMlibV2::fPtParametrization[]       = {0x0};
+TF1*  AliGenEMlibV2::fPtParametrizationProton   = NULL;
 TH1D* AliGenEMlibV2::fMtFactorHisto             = NULL;
 Int_t AliGenEMlibV2::fgSelectedCollisionsSystem = AliGenEMlibV2::kpp7TeV;
 Int_t AliGenEMlibV2::fgSelectedCentrality       = AliGenEMlibV2::kpp;
@@ -780,55 +781,75 @@ Double_t AliGenEMlibV2::YFlat(Double_t /*y*/)
 //                             Mt-scaling
 //
 //--------------------------------------------------------------------------
-TF1* AliGenEMlibV2::MtScal(Int_t np, TString name)
+TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
 {
-  // Function for the calculation of the Pt distribution for a
-  // given particle np, from the pizero Pt distribution using
-  // mt scaling.
+  // function that calculates the pt distribution of a given particle np
+  // by mt scaling the pi0 pt distribution for mesons and the proton pt
+  // distribution for baryons
 
   Double_t xmin, xmax;
-  fPtParametrization[0]->GetRange(xmin, xmax);
-
-  Int_t nPar                = fPtParametrization[0]->GetNpar();
-  TString formulaPi0Scaled  = fPtParametrization[0]->GetExpFormula();
+  Int_t nPar;
+  TString formulaBaseScaled, scaledPt;
   
-  TString scaledPt          = Form("(TMath::Sqrt(x*x + %.10f*%.10f - %.10f*%.10f))",fgkHM[np],fgkHM[np],fgkHM[0],fgkHM[0]);
-  TString formulaPi0ScaledTemp  = "";
+  // value meson/pi0 (baryon/p) at 5 GeV/c
+  Double_t NormPt       = 5.;
+  Double_t scaledNormPt, norm;
+  
+  if (!isMeson && fPtParametrizationProton) {
+    // scale baryons from protons
+    fPtParametrizationProton->GetRange(xmin, xmax);
+    nPar                  = fPtParametrizationProton->GetNpar();
+    formulaBaseScaled     = fPtParametrizationProton->GetExpFormula();
+    scaledPt              = Form("(TMath::Sqrt(x*x + %.7f*%.7f - %.7f*%.7f))",fgkHM[np],fgkHM[np],0.9382720,0.9382720);
+    scaledNormPt          = TMath::Sqrt(NormPt*NormPt + fgkHM[np]*fgkHM[np] - 0.9382720*0.9382720);
+    norm                  = fMtFactorHisto->GetBinContent(np+1) * fPtParametrizationProton->Eval(NormPt) / fPtParametrizationProton->Eval(scaledNormPt);
+  } else {
+    // scale mesons from pi0
+    fPtParametrization[0]->GetRange(xmin, xmax);
+    nPar                  = fPtParametrization[0]->GetNpar();
+    formulaBaseScaled     = fPtParametrization[0]->GetExpFormula();
+    scaledPt              = Form("(TMath::Sqrt(x*x + %.7f*%.7f - %.7f*%.7f))",fgkHM[np],fgkHM[np],fgkHM[0],fgkHM[0]);
+    scaledNormPt          = TMath::Sqrt(NormPt*NormPt + fgkHM[np]*fgkHM[np] - fgkHM[0]*fgkHM[0]);
+    norm                  = fMtFactorHisto->GetBinContent(np+1) * fPtParametrization[0]->Eval(NormPt) / fPtParametrization[0]->Eval(scaledNormPt);
+  }
+  
+  TString formulaBaseScaledTemp = "";
   TString sub1                  = "";
   TString sub2                  = "";
   TString sub3                  = "";
   for (Int_t i=0; i<scaledPt.Length(); i++) {
-    if (i>0) sub1               = formulaPi0Scaled(i-1, 1);
+    if (i>0) sub1               = formulaBaseScaled(i-1, 1);
     else sub1                   = "";
-    sub2                        = formulaPi0Scaled(i, 1);
+    sub2                        = formulaBaseScaled(i, 1);
     if (i<scaledPt.Length()-1)
-      sub3                      = formulaPi0Scaled(i+1, 1);
+      sub3                      = formulaBaseScaled(i+1, 1);
     else sub3                   = "";
     
     if (sub2.CompareTo("x")!=0) {
-      formulaPi0ScaledTemp += sub2;
+      formulaBaseScaledTemp += sub2;
     } else if (sub2.CompareTo("x")==0) {
       if (i==0) {
-        formulaPi0ScaledTemp += scaledPt;
+        formulaBaseScaledTemp += scaledPt;
       } else if (sub1.CompareTo("e")!=0 && sub3.CompareTo("p")!=0) {
-        formulaPi0ScaledTemp += scaledPt;
+        formulaBaseScaledTemp += scaledPt;
       } else {
-        formulaPi0ScaledTemp += sub2;
+        formulaBaseScaledTemp += sub2;
       }
     } else {
-      formulaPi0ScaledTemp += sub2;
+      formulaBaseScaledTemp += sub2;
     }
   }
-  formulaPi0Scaled = formulaPi0ScaledTemp;
+  formulaBaseScaled = formulaBaseScaledTemp;
   
-  // VALUE MESON/PI AT 5 GeV/c
-  Double_t NormPt       = 5.;
-  Double_t scaledNormPt = TMath::Sqrt(NormPt*NormPt + fgkHM[np]*fgkHM[np] - fgkHM[0]*fgkHM[0]);
-  Double_t norm         = fMtFactorHisto->GetBinContent(np+1) * fPtParametrization[0]->Eval(NormPt) / fPtParametrization[0]->Eval(scaledNormPt);
-  
-  TF1* result = new TF1(name.Data(), Form("%.10f * (x/%s) * (%s)", norm, scaledPt.Data(), formulaPi0Scaled.Data()), xmin, xmax);
-  for (Int_t i=0; i<nPar; i++) {
-    result->SetParameter(i, fPtParametrization[0]->GetParameter(i));
+  TF1* result = new TF1(name.Data(), Form("%.10f * (x/%s) * (%s)", norm, scaledPt.Data(), formulaBaseScaled.Data()), xmin, xmax);
+  if (!isMeson && fPtParametrizationProton) {
+    for (Int_t i=0; i<nPar; i++) {
+      result->SetParameter(i, fPtParametrizationProton->GetParameter(i));
+    }
+  } else {
+    for (Int_t i=0; i<nPar; i++) {
+      result->SetParameter(i, fPtParametrization[0]->GetParameter(i));
+    }
   }
   return result;
 }
@@ -916,6 +937,16 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
   fPtParametrization[0] = new TF1(*fPtParametrizationTemp);
   fPtParametrization[0]->SetName("111_pt");
 
+  // check for proton parametrization (base for baryon mt scaling)
+  TF1* fPtParametrizationProtonTemp = (TF1*)fParametrizationFile->Get("2212_pt");
+  if (!fPtParametrizationProtonTemp) {
+    AliWarningClass(Form("File %s doesn't contain proton parametrization, scaling baryons from pi0.", fileName.Data()));
+    fPtParametrizationProton = NULL;
+  } else {
+    fPtParametrizationProton = new TF1(*fPtParametrizationProtonTemp);
+    fPtParametrizationProton->SetName("2212_pt");
+  }
+  
   AliGenEMlibV2 lib;
   TRandom* rndm;
 
@@ -927,7 +958,10 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
       fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
     } else {
-      fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip));
+      if (i==7 || i==9 || i==10 || i==11 || i==12)
+        fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 0);
+      else
+        fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 1);
     }
   }
   
@@ -946,6 +980,8 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
 TF1* AliGenEMlibV2::GetPtParametrization(Int_t np) {
   if (np<16)
     return fPtParametrization[np];
+  else if (np==16)
+    return fPtParametrizationProton;
   else
     return NULL;
 }

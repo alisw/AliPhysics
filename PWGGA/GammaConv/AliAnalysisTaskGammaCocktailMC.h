@@ -27,7 +27,7 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     void SetLightOutput(Bool_t flag) {fDoLightOutput = flag;}
     void InitializeDecayChannelHist(TH1F* hist, Int_t np);
     void FillPythiaBranchingRatio(TH1F* histo, Int_t np);
-    void GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen, Bool_t setParams);
+    void GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
     void SetHasMother(UInt_t selectedMothers);
     TH1* SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2);
     TH2* SetHist2D(TH2* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Int_t nBinsY, Double_t yMin, Double_t yMax, Bool_t optSumw2);
@@ -47,7 +47,6 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TString*                    fParticleListNames;         // array with particle names
     
     Bool_t                      fDoLightOutput;             // switch for running light
-    Bool_t                      fHasPtParametrization;      // pt parametrizations found
     Bool_t                      fHasMother[14];             // mother i produced
   
     // histograms events
@@ -76,6 +75,7 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TH1I*                       fHistPdgGammaSourceRest;    //! histo for gamma from rest
   
     TF1*                        fPtParametrization[14];     //!
+    TF1*                        fPtParametrizationProton;   //!
     TObjString*                 fCocktailSettings[9];       //!
     TH1D*                       fMtScalingFactors;          //!
 
