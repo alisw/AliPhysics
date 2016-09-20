@@ -41,6 +41,11 @@ public:
     void SetCutArmenteros           ( Bool_t lCut   ) { fCutArmenteros = lCut; }
     void SetCutTPCdEdx              ( Double_t lCut ) { fCutTPCdEdx    = lCut; }
     
+    //MC specific
+    void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
+    void SetCutMCLambdaFromPrimaryXi( Bool_t lCut ) { fCutMCLambdaFromPrimaryXi= lCut; }
+    void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
+    
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -53,6 +58,10 @@ public:
     Double_t GetCutCompetingV0Rejection () const { return fCutCompetingV0Rejection; }
     Bool_t   GetCutArmenteros           () const { return fCutArmenteros; }
     Double_t GetCutTPCdEdx              () const { return fCutTPCdEdx; }
+    
+    Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
+    Bool_t GetCutMCLambdaFromPrimaryXi() const { return fCutMCPhysicalPrimary; }
+    Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     
     TH3F* GetHistogram () { return fHisto; } 
     
@@ -72,9 +81,14 @@ private:
     Bool_t fCutArmenteros;
     Double_t fCutTPCdEdx;
     
+    Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
+    Bool_t fCutMCLambdaFromPrimaryXi; //Checking for feeddown contributions
+    Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliV0Result, 1)
+    ClassDef(AliV0Result, 2)
     // 1 - original implementation
+    // 2 - first implementation of MC association (to be adjusted)
 };
 #endif
