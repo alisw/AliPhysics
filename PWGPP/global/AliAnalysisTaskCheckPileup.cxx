@@ -485,7 +485,7 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   fHistoTPCTracksVsTracklets->Fill(fNTracklets,fNTracksTPC);
   fHistoGloTracksVsTracklets->Fill(fNTracklets,fNTracksTPCITS);
   fTimeStamp=esd->GetTimeStamp();
-  fTrackTree->Fill();
+  if(fFillTree) fTrackTree->Fill();
 
   Bool_t isPileUpfromSPD=esd->IsPileupFromSPD(fSPDContributorsCut,fSPDZDiffCut);
   Int_t nPileupSPD=0;

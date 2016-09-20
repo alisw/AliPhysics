@@ -31,7 +31,6 @@
 #include "AliCentrality.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
-//#include "AliEMCALRecPoint.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloTrigger.h"
 #include "AliESDEvent.h"
@@ -51,10 +50,6 @@
 #include "AliStack.h"
 #include "AliTrackerBase.h"
 #include "AliTriggerAnalysis.h"
-//#include "AliConversionCuts.h"
-//#include "AliV0ReaderV1.h"
-//#include "AliMCAnalysisUtils.h"
-//#include "AliCalorimeterUtils.h"
 #include "../GammaConv/AliAODConversionPhoton.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -213,23 +208,23 @@ fHPionInvMassesMixDCalCalib(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
 //fHConversionPoint(0),
-fHPionTruthPt(),
-fHPionTruthPtIn(),
-fHPionTruthPtAcc(),
-fHEtaTruthPt(),
-fHEtaTruthPtIn(),
-fHEtaTruthPtAcc(),
-fHGamTruthPt(),
-fHGamTruthPtIn(),
-fHGamTruthPtAcc(),
-fHPionTruthPtAdd(),
-fHPionTruthPtInAdd(),
-fHPionTruthPtAccAdd(),
-fHEtaTruthPtAdd(),
-fHEtaTruthPtInAdd(),
-fHEtaTruthPtAccAdd(),
+fHPionTruthPt(0x0),
+fHPionTruthPtIn(0x0),
+fHPionTruthPtAcc(0x0),
+fHEtaTruthPt(0x0),
+fHEtaTruthPtIn(0x0),
+fHEtaTruthPtAcc(0x0),
+fHGamTruthPt(0x0),
+fHGamTruthPtIn(0x0),
+fHGamTruthPtAcc(0x0),
+fHPionTruthPtAdd(0x0),
+fHPionTruthPtInAdd(0x0),
+fHPionTruthPtAccAdd(0x0),
+fHEtaTruthPtAdd(0x0),
+fHEtaTruthPtInAdd(0x0),
+fHEtaTruthPtAccAdd(0x0),
 fHNMothers(0x0),
-//fHMixRotation(),
+//fHMixRotation(0x0),
 ipymin(0),
 ipymax(0),
 ipi0min(0),
@@ -248,18 +243,18 @@ fHMCpartfrac(0),
 fHECluEMC(0x0),
 fHECluEMCAddPi0(0x0),
 fHECluEMCAddEta(0x0),
-//  fHRecTrue(),
-//  fHRecTrueAddPi0(),
-//  fHRecTrueAddEta(),
-fHECluEMCnofull(),
-fHECluEMCnofullAdd(),
-fHECluEMCelectron(),
-fHECluEMCpion(),
-fHECluEMCkaon(),
-fHECluEMCother(),
-fHECluEMCpi0single(),
-//  fHCorrection(),
-//  fHPionSm(),
+//  fHRecTrue(0x0),
+//  fHRecTrueAddPi0(0x0),
+//  fHRecTrueAddEta(0x0),
+fHECluEMCnofull(0x0),
+fHECluEMCnofullAdd(0x0),
+fHECluEMCelectron(0x0),
+fHECluEMCpion(0x0),
+fHECluEMCkaon(0x0),
+fHECluEMCother(0x0),
+fHECluEMCpi0single(0x0),
+//  fHCorrection(0x0),
+//  fHPionSm(0x0),
 evt(),
 thisEvent(),
 fHWgt(0)
@@ -422,23 +417,23 @@ fHPionInvMassesMixDCalCalib(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
 //fHConversionPoint(0),
-fHPionTruthPt(),
-fHPionTruthPtIn(),
-fHPionTruthPtAcc(),
-fHEtaTruthPt(),
-fHEtaTruthPtIn(),
-fHEtaTruthPtAcc(),
-fHGamTruthPt(),
-fHGamTruthPtIn(),
-fHGamTruthPtAcc(),
-fHPionTruthPtAdd(),
-fHPionTruthPtInAdd(),
-fHPionTruthPtAccAdd(),
-fHEtaTruthPtAdd(),
-fHEtaTruthPtInAdd(),
-fHEtaTruthPtAccAdd(),
+fHPionTruthPt(0x0),
+fHPionTruthPtIn(0x0),
+fHPionTruthPtAcc(0x0),
+fHEtaTruthPt(0x0),
+fHEtaTruthPtIn(0x0),
+fHEtaTruthPtAcc(0x0),
+fHGamTruthPt(0x0),
+fHGamTruthPtIn(0x0),
+fHGamTruthPtAcc(0x0),
+fHPionTruthPtAdd(0x0),
+fHPionTruthPtInAdd(0x0),
+fHPionTruthPtAccAdd(0x0),
+fHEtaTruthPtAdd(0x0),
+fHEtaTruthPtInAdd(0x0),
+fHEtaTruthPtAccAdd(0x0),
 fHNMothers(0x0),
-//fHMixRotation(),
+//fHMixRotation(0x0),
 ipymin(0),
 ipymax(0),
 ipi0min(0),
@@ -457,18 +452,18 @@ fHMCpartfrac(0),
 fHECluEMC(0x0),
 fHECluEMCAddPi0(0x0),
 fHECluEMCAddEta(0x0),
-//  fHRecTrue(),
-//  fHRecTrueAddPi0(),
-//  fHRecTrueAddEta(),
-fHECluEMCnofull(),
-fHECluEMCnofullAdd(),
-fHECluEMCelectron(),
-fHECluEMCpion(),
-fHECluEMCkaon(),
-fHECluEMCother(),
-fHECluEMCpi0single(),
-//  fHCorrection(),
-//  fHPionSm(),
+//  fHRecTrue(0x0),
+//  fHRecTrueAddPi0(0x0),
+//  fHRecTrueAddEta(0x0),
+fHECluEMCnofull(0x0),
+fHECluEMCnofullAdd(0x0),
+fHECluEMCelectron(0x0),
+fHECluEMCpion(0x0),
+fHECluEMCkaon(0x0),
+fHECluEMCother(0x0),
+fHECluEMCpi0single(0x0),
+//  fHCorrection(0x0),
+//  fHPionSm(0x0),
 evt(),
 thisEvent(),
 fHPionInvMassesGamAdd1(0x0),
@@ -507,15 +502,7 @@ AliAnalysisTaskEMCALPi0Gamma::~AliAnalysisTaskEMCALPi0Gamma()
   
   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
-    //fOutput = 0;
   }
-  //delete fPtRanges; fPtRanges = 0;
-  //fGeom = 0; // do not delete geometry when using instance
-  //delete fReco;
-  //fReco = 0;
-  //delete fTrClassNamesArr;
-  //delete fSelTracks;
-  //delete fSelPrimTracks;
 }
 
 //________________________________________________________________________
@@ -576,7 +563,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
   fSelPrimTracks = new TObjArray;
   if(fMcMode){
     if (TClass::GetClass("AliStaPart"))
-      //TClass::GetClass("AliStaPart")->IgnoreTObjectStreamer();
       fMcParts = new TClonesArray("AliStaPart");
   }
   
@@ -969,6 +955,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
       }
       
       if(fSimStudies){
+        
         // electrons
         // main contributor: no converted electron (control histo)
         fHPionInvMassesConvElZero = new TH2F("hPionInvMassConvElZero","hPionInvMassConvElZero",massbins,0,massmax,nbins,0,ptmax);
@@ -1022,11 +1009,14 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
         
       }
     }
+    
+    // mixed events
     fHPionInvMassesMix = new TH2F("hPionInvMassMix","hPionInvMassMix",massbins,0,massmax,nbins,0,ptmax);
     fHPionInvMassesMix->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesMix->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesMix);
     
+    // it does not really make sense to mix added signals, but maybe it is interesting ...
     fHPionInvMassesMix1 = new TH2F("hPionInvMassMix1","hPionInvMassMix1",massbins,0,massmax,nbins,0,ptmax);
     fHPionInvMassesMix1->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesMix1->SetYTitle("p_{T} [GeV/c]");
@@ -1037,6 +1027,8 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionInvMassesMix2->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesMix2);
     
+    // more histograms, for DCal
+    // still might want to add more of them!
     // DCal real events
     fHPionInvMassesDCal = new TH2F("hPionInvMassDCal","hPionInvMassDCal",massbins,0,massmax,nbins,0,ptmax);
     fHPionInvMassesDCal->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
@@ -1049,20 +1041,23 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionInvMassesMixDCal->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesMixDCal);
     
+    // let's see if there is anything if we combine EMCal with DCal
     // EMCal+DCal real events
-    fHPionInvMassesEMCalDCal = new TH2F("hPionInvMassEMCalDCal","hPionInvMassEMCalDCal",100,0,10,60,0,30);
+    fHPionInvMassesEMCalDCal = new TH2F("hPionInvMassEMCalDCal","hPionInvMassEMCalDCal",200,0,10,40,0,20);
     fHPionInvMassesEMCalDCal->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesEMCalDCal->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesEMCalDCal);
     
     // EMCal+DCal mixed events
-    fHPionInvMassesMixEMCalDCal = new TH2F("hPionInvMassMixEMCalDCal","hPionInvMassMixEMCalDCal",100,0,10,60,0,30);
+    fHPionInvMassesMixEMCalDCal = new TH2F("hPionInvMassMixEMCalDCal","hPionInvMassMixEMCalDCal",100,0,10,40,0,20);
     fHPionInvMassesMixEMCalDCal->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesMixEMCalDCal->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesMixEMCalDCal);
     
     // calibration stuff
+    // here we fill (E_1 + E_2)/2 instead of pT!
     if(fCalibRun){
+      // EMCal
       fHPionInvMassesEMCalCalib = new TH2F("hPionInvMassesEMCalCalib","hPionInvMassesEMCalCalib",massbins,0,massmax,nbins,0,ptmax);
       fHPionInvMassesEMCalCalib->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
       fHPionInvMassesEMCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
@@ -1073,6 +1068,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
       fHPionInvMassesMixEMCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
       fOutput->Add(fHPionInvMassesMixEMCalCalib);
       
+      //DCal
       fHPionInvMassesDCalCalib = new TH2F("hPionInvMassesDCalCalib","hPionInvMassesDCalCalib",massbins,0,massmax,nbins,0,ptmax);
       fHPionInvMassesDCalCalib->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
       fHPionInvMassesDCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
@@ -1883,9 +1879,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   
   max_phi = 0;
   max_theta = 0;
-  //Double_t max_pt = 0;
+
   // Fill histograms related to cluster properties.
   
+  // get objects
   TObjArray *clusters = fEsdClusters;
   if (!clusters)
     clusters = fAodClusters;
@@ -1894,13 +1891,16 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     return 0;
   }
   
+  // get clusters
   Int_t nclus = clusters->GetEntries();
   
   //       cout << nclus << " clusters in event ";
   
+  // get vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
+  // fill cluster number amd store event properties
   fHClustNoEvt->Fill(nclus);
   thisEvent.SetGlobalInfo(0,0,0);
   
@@ -1918,16 +1918,18 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     nclusemcaldcal++;
   }
   
+  // set a limit due to memory
   if(nclusemcaldcal > 1000){
     AliError("Attention! More than 1000 EMCal/DCal clusters in event!");
     return -999;
   }
   
   int nclusters = 0;
-  
+  // main cluster loop
   for(Int_t i = 0; i<nclus; ++i) {
     
     Bool_t bdcal = 0;
+    // get cluster
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
     if (!clus){
       continue;
@@ -1943,10 +1945,12 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       continue;
     }
     
+    // DCal (pure geometry)
     if ( (clusterVec.Phi() < 1.2 && clusterVec.Phi() > -2.8) ){
       bdcal = 1;
     }
     
+    // fill QA histograms for cells
     FillCellQAHists(clus,bdcal,0);
     
     //if(bdcal) continue;
@@ -1954,23 +1958,15 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     Double_t maxAxis    = 1; //clus->GetTOF(); //sigma
     Double_t clusterEcc = 1; //clus->Chi2();   //eccentricity
     fHClustEccentricity->Fill(clusterEcc);
-    // here we only fill after fulfilling cuts)
-    /*
-     if(clusterVecCorr.Pt()>max_pt){
-     max_phi = (float)clusterVecCorr.Phi();
-     max_theta = (float)clusterVecCorr.Theta();
-     max_pt = clusterVecCorr.Pt();
-     }
-     */
-    // fill clusters into this event
-    
-    // see clusters in the beginning
+ 
+    // fill clusters in the beginning
     
     fHClustEtaPhiAll->Fill(clusterVec.Eta(),clusterVec.Phi());
     
+    // cluster QA, fill a histogram
     Int_t cluster = 1;
-    
     fHClusters->Fill(cluster++);
+
     // look if cluster is on bad cell
     if(fApplyBadMapManually) {
       UShort_t* CellsID = clus->GetCellsAbsId();
@@ -1994,9 +1990,9 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       if(fBadMap->GetBinContent(fBadMap->FindBin(maxID))>0)
         continue;
     }
-    
     fHClusters->Fill(cluster++);
-    // apply cluster cuts first
+    
+    // apply cluster cuts now
     if (clus->E()<fMinE)
       continue;
     
@@ -2024,15 +2020,14 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     //    }
     fHClusters->Fill(cluster++);
     
+    // fill QA histograms after badmap and cluster cuts
     FillCellQAHists(clus,bdcal,1);
     
     if(bprint)
       clusterVec.Print();
-    //  if(bDirGam){
     
-    //}
-    
-    // fill cluster histograms
+    // fill cluster histograms, after cuts
+    // eta vs. phi
     fHClustEtaPhi->Fill(clusterVec.Eta(),clusterVec.Phi());
     if (bdcal){
       fHClustEnergyPtDCal->Fill(clusterVec.E(),clusterVec.Pt());
@@ -2040,6 +2035,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     else{
       fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
     }
+    //SM number
     Int_t modnumber = GetModuleNumber(clus);
     fHClustEnergySM->Fill(clusterVec.E(),modnumber);
     //fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
@@ -2048,6 +2044,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     fHClustEnergyNCell->Fill(clus->E(),clus->GetNCells());
     nclusters++;
     
+    // mainly store clusters for mixing, if data
     if(!fMcMode){
       
       Double_t En = clus->E();
@@ -2081,7 +2078,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       thisEvent.hit[nclusters-1].smno=modnumber;
     }
     
-    // go through MC information of clusters
+    // go through MC information of clusters, store clusters for mixing and do cluster studies using MC info
     else{
       // MC labels
       int ilabel = -1;
@@ -2099,7 +2096,6 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       }
       
       if(ilabel != -1){
-        
         
         // get MC event
         AliMCEvent *mcEvent = MCEvent();
@@ -2119,11 +2115,14 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         
         // is it generator particle or added signal?
         // one needs to look at the last aka first mother?
+        
         // find original particle
         Int_t imother = 1;
         Int_t ipart = mcP->Label();
         Int_t iit = -1;
         Int_t idpi0 = -1;
+        
+        // loop back to the "top"
         while(imother >= 0){
           AliMCParticle *tmppart = static_cast<AliMCParticle*>(mcEvent->GetTrack(ipart));
           if(bprint){
@@ -2140,6 +2139,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           iit++;
         }
         fHNMothers->Fill(iit,mcP->E());
+        
+        // calculate weight (for added signals)
         Float_t wgt = 1.;
         
         AliMCParticle *McMo = static_cast<AliMCParticle*>(mcEvent->GetTrack(ipart));
@@ -2153,6 +2154,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         bool bAddPi0 = kFALSE;
         bool bAddEta = kFALSE;
         
+        // go through MC headers to associate MC particle with correct header
         if(pythiaHeader && fAddedSignal){
           if(ipart > ipymax){
             bGen = kFALSE;
@@ -2177,6 +2179,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
         
         // if not added signals, distinguish between clusters from
         // 1) primary pi0, 2) secondary pi0 (not K0), 3) pi0 from K0, 4) pi0 from material
+        // still needs to be implemented for DCal, I think
         
         // loop up until pi0, then look for mother of pi0
         
@@ -2378,6 +2381,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           }
           
         }
+        // store clusters for mixing
         if(1){
           thisEvent.hit[nclusters-1].thishit=clusterVecCorr1;
           thisEvent.hit[nclusters-1].imo=ipart;
@@ -2430,7 +2434,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
 {
-  // Get Mc truth particle information.
+  // Get Mc truth particle information and store it
   if (!fMcMode)
     return;
   
@@ -2486,20 +2490,27 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
   //    return;
   //  }
   
+  // get MC event
   AliMCEvent *mcEvent = MCEvent();
   if (!mcEvent){
     cout << "no MC event" << endl;
     return;
   }
   
+  // get vertex
   const AliVVertex *evtVtx = mcEvent->GetPrimaryVertex();
   if (!evtVtx)
     return;
   
+  // read event
   mcEvent->PreReadAll();
   
+  // get number of MC particles
   Int_t nTracks = mcEvent->GetNumberOfPrimaries();
+
+  // loop through MC particles
   for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
+    // get particle at index iTrack
     AliMCParticle *mcP = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
     if (!mcP)
       continue;
@@ -2512,6 +2523,7 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       continue;
     
     // primary particle - should be accounted for already
+    // check the radius from the vertex, if it is from decay, radius is larger than 0
     Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) +
                               (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
     
@@ -2609,7 +2621,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     // thus, need to loop through the "daughters" and see if they are 2 photons or 1 photon and one converted photons
     // then, check if both are in acceptance
     
-    
     if(bGen && !bAddEta && !bAddPi0){
       // fill truth histogram for input
       if(mcP->PdgCode() == 111){
@@ -2673,7 +2684,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       }
     }
     
-    
     if(bGen && !bAddEta && !bAddPi0){
       // if both photons are on EMCal
       if(binp){
@@ -2685,7 +2695,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
         }
       }
     }
-    
     
     if(bAddPi0 && !bAddEta && !bGen){
       // if both photons are on EMCal
@@ -2931,27 +2940,36 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
   if(nclus<2){
     return;
   }
+  // loop over clusters
   for (Int_t i = 0; i<nclus; ++i) {
+    // get 1st cluster
     clusterVec1 = thisEvent.hit[i].thishit;
     hitclass1 = thisEvent.hit[i].hittype;
     Double_t wght = 1.;
     wght = thisEvent.hit[i].weight;
     
+    // loop over 2nd clusters
     for (Int_t j = i+1; j<nclus; ++j) {
       
+      // get 2nd cluster
       clusterVec2 = thisEvent.hit[j].thishit;
       hitclass2 = thisEvent.hit[j].hittype;
       
+      // calculate distance between clusters
       Double_t d_phi = clusterVec1.Phi() - clusterVec2.Phi();
       Double_t d_eta = clusterVec1.Eta() - clusterVec2.Eta();
       Double_t d_r = sqrt(d_phi*d_phi + d_eta*d_eta);
       
+      // calculate pair vector
+      
       pionVec = clusterVec1 + clusterVec2;
       fHdr->Fill(d_r);
       
+      // cut on minimum distance, should be made settable
       if(d_r < 0.01)
         continue;
       
+      // asymmetry
       Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
       Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
       
@@ -2965,6 +2983,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
         }
       }
       
+      // fill all histograms with inv masses
       if (pionZgg < fAsymMax1) {
         fHPionMggPt->Fill(pionVec.M(),pionVec.Pt());
         fHPionMggAsym->Fill(pionVec.M(),pionZgg);
@@ -3287,6 +3306,8 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
     Short_t hitclass2 = -1;
     
     Int_t nclus = thisEvent.nHits;
+    
+    // loop over clusters in current events
     for (Int_t i = 0; i<nclus; ++i) {
       
       clusterVec1 = thisEvent.hit[i].thishit;
@@ -3300,6 +3321,8 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
         Double_t thetarot = OldEvent.TrigTheta;
         //				if(fRotateMixed && PtClass > 0)
         //          fHMixRotation->Fill(phi0-phirot);
+        
+        // loop over old clusters
         for (Int_t j = 0; j<nclusold; ++j) {
           clusterVec2 = OldEvent.hit[j].thishit;
           hitclass2 = OldEvent.hit[j].hittype;
@@ -3316,8 +3339,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
           
           pionVec = clusterVec1 + clusterVec2;
           
-          //          if(d_r < 0.005 && pionVec.Pt()<8)
-          //            continue;
+          // cut on minimum distance, should be made settable and the same as in "same" events
           if(d_r < 0.01)
             continue;
           
@@ -3333,6 +3355,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
             }
           }
           
+          // fill all histograms (maybe split into more asymmetry classes as in same events
           if (pionZgg < fAsymMax3) {
             if(fMcMode){
               if(hitclass1 == 1 && hitclass2 == 1){

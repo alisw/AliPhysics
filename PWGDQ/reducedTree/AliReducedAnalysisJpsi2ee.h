@@ -11,8 +11,10 @@
 #include "AliReducedInfoCut.h"
 #include "AliReducedBaseEvent.h"
 #include "AliReducedBaseTrack.h"
+#include "AliReducedTrackInfo.h"
 #include "AliHistogramManager.h"
 #include "AliMixingHandler.h"
+
 
 //________________________________________________________________
 class AliReducedAnalysisJpsi2ee : public AliReducedAnalysisTaskSE {
@@ -31,12 +33,16 @@ public:
   
   // setters
   void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
-  void AddTrackCut(AliReducedInfoCut* cut) {fTrackCuts.Add(cut);}
+  void AddTrackCut(AliReducedInfoCut* cut);
+  void AddPrefilterTrackCut(AliReducedInfoCut* cut) {fPreFilterTrackCuts.Add(cut);}
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
+  void AddPrefilterPairCut(AliReducedInfoCut* cut) {fPreFilterPairCuts.Add(cut);}
     
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
+  Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
+  const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -48,11 +54,24 @@ protected:
    TList fPairCuts;                  // array of pair cuts
    TList fPreFilterPairCuts;     // pair cuts to be used at the prefilter stage
    
+   TList fPosTracks;               // list of selected positive tracks in the current event
+   TList fNegTracks;              // list of selected negative tracks in the current event
+   TList fPrefilterPosTracks;  // list of prefilter selected positive tracks in the current event
+   TList fPrefilterNegTracks; // list of prefilter selected negative tracks in the current event
+   
+   ULong_t fEventCounter;   // event counter
+   
   Bool_t IsEventSelected(AliReducedBaseEvent* event, Float_t* values=0x0);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
-  Bool_t IsPairSelected(AliReducedBaseTrack* pair, Float_t* values=0x0);
-  Bool_t IsPairPreFilterSelected(AliReducedBaseTrack* pair, Float_t* values=0x0);
+  Bool_t IsPairSelected(Float_t* values);
+  Bool_t IsPairPreFilterSelected(Float_t* values);
+  void RunPrefilter();
+  void RunSameEventPairing(TString pairClass = "PairSE");
+  void RunTrackSelection();
+  void FillTrackHistograms(TString trackClass = "Track");
+  void FillTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "Track");
+  void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE");
   
   ClassDef(AliReducedAnalysisJpsi2ee,1);
 };

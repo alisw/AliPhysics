@@ -24,11 +24,14 @@ fCutLeastNumberOfCrossedRows(70),
 fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
-fCutTPCdEdx(3.0)
+fCutTPCdEdx(3.0),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCLambdaFromPrimaryXi(kFALSE),
+fCutMCPDGCodeAssociation(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F("fHisto","", 20,0,100, 200,0,2, 100,0,10);
+    fHisto = new TH3F("fHisto","", 20,0,100, 400,0,2, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -45,7 +48,10 @@ fCutLeastNumberOfCrossedRows(70),
 fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
-fCutTPCdEdx(3.0)
+fCutTPCdEdx(3.0),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCLambdaFromPrimaryXi(kFALSE),
+fCutMCPDGCodeAssociation(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -54,7 +60,7 @@ fCutTPCdEdx(3.0)
     if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -71,7 +77,10 @@ fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
 fCutLeastNumberOfCrossedRowsOverFindable(lCopyMe.fCutLeastNumberOfCrossedRowsOverFindable),
 fCutCompetingV0Rejection(lCopyMe.fCutCompetingV0Rejection),
 fCutArmenteros(lCopyMe.fCutArmenteros),
-fCutTPCdEdx(lCopyMe.fCutTPCdEdx)
+fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
+fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
+fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
+fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -80,7 +89,7 @@ fCutTPCdEdx(lCopyMe.fCutTPCdEdx)
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -91,15 +100,19 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     fMassHypo = lCopyMe->GetMassHypothesis();
     fCutV0Radius = lCopyMe->GetCutV0Radius();
     fCutDCANegToPV = lCopyMe->GetCutDCANegToPV();
-    fCutDCAPosToPV = lCopyMe->GetCutDCAPosToPV(),
-    fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters(),
-    fCutV0CosPA = lCopyMe->GetCutV0CosPA(),
-    fCutProperLifetime = lCopyMe->GetCutProperLifetime(),
-    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows(),
-    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable(),
-    fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection(),
+    fCutDCAPosToPV = lCopyMe->GetCutDCAPosToPV();
+    fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters();
+    fCutV0CosPA = lCopyMe->GetCutV0CosPA();
+    fCutProperLifetime = lCopyMe->GetCutProperLifetime();
+    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
+    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
+    fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe->GetCutArmenteros();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
+    
+    fCutMCPhysicalPrimary = lCopyMe->GetCutMCPhysicalPrimary();
+    fCutMCLambdaFromPrimaryXi = lCopyMe->GetCutMCLambdaFromPrimaryXi();
+    fCutMCPDGCodeAssociation = lCopyMe->GetCutMCPDGCodeAssociation();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -108,7 +121,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -132,15 +145,19 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fMassHypo = lCopyMe.GetMassHypothesis();
     fCutV0Radius = lCopyMe.GetCutV0Radius();
     fCutDCANegToPV = lCopyMe.GetCutDCANegToPV();
-    fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV(),
-    fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters(),
-    fCutV0CosPA = lCopyMe.GetCutV0CosPA(),
-    fCutProperLifetime = lCopyMe.GetCutProperLifetime(),
-    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows(),
+    fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV();
+    fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
+    fCutV0CosPA = lCopyMe.GetCutV0CosPA();
+    fCutProperLifetime = lCopyMe.GetCutProperLifetime();
+    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
     fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable(),
-    fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection(),
+    fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe.GetCutArmenteros();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
+    
+    fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
+    fCutMCLambdaFromPrimaryXi = lCopyMe.GetCutMCLambdaFromPrimaryXi();
+    fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     
     if (fHisto) {
         delete fHisto;
@@ -153,7 +170,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
     
     return *this;

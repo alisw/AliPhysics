@@ -15,6 +15,7 @@
 #include <TString.h>
 
 #include "AliHistogramManager.h"
+#include "AliReducedVarManager.h"
 
 class AliMixingHandler : public TNamed {
 
@@ -35,9 +36,7 @@ public:
   void SetEventPlaneLimits(Int_t n, const Float_t* arr)  {fEventPlaneLimits.Set(n,arr);}
   void SetHistogramManager(AliHistogramManager* histos) {fHistos = histos;}
   void SetHistClassNames(const Char_t* names) {fHistClassNames = names;}
-  void SetEventVariables(Int_t cent, Int_t vtx, Int_t ep) {
-    fCentralityVariable=cent; fEventVertexVariable=vtx; fEventPlaneVariable=ep;    
-  }
+  void SetEventVariables(AliReducedVarManager::Variables centVar, AliReducedVarManager::Variables vtxVar, AliReducedVarManager::Variables epVar);
   
   // getters
   Int_t GetDepth() const {return fPoolDepth;}
@@ -47,6 +46,7 @@ public:
   Int_t GetNParallelCuts() const {return fNParallelCuts;}
   Int_t GetPoolSize(Int_t cut, Float_t centrality, Float_t vtxz, Float_t ep);
   Int_t GetPoolSize(Int_t cut, Int_t eventCategory);
+  TString GetHistClassNames() const {return fHistClassNames;};
   
   void Init();
   Int_t FindEventCategory(Float_t centrality, Float_t vtxz, Float_t ep);
@@ -79,9 +79,9 @@ private:
   TArrayF fCentralityLimits;
   TArrayF fEventVertexLimits;
   TArrayF fEventPlaneLimits;
-  Int_t fCentralityVariable;
-  Int_t fEventVertexVariable;
-  Int_t fEventPlaneVariable;
+  AliReducedVarManager::Variables fCentralityVariable;
+  AliReducedVarManager::Variables fEventVertexVariable;
+  AliReducedVarManager::Variables fEventPlaneVariable;
   
   AliHistogramManager* fHistos;    // histogram manager
   

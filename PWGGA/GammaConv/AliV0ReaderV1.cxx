@@ -780,8 +780,10 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
 //     cout << "recProp: " <<  fCurrentMotherKF->GetTrackLabelPositive() << "\t" << fCurrentMotherKF->GetTrackLabelNegative() << endl;
 //     cout << "MC: " <<  labeln << "\t" << labelp << endl;
 
-    TParticle *fNegativeMCParticle = fMCStack->Particle(labeln);
-    TParticle *fPositiveMCParticle = fMCStack->Particle(labelp);
+    TParticle *fNegativeMCParticle = 0x0;
+    if(labeln>-1) fNegativeMCParticle = fMCStack->Particle(labeln);
+    TParticle *fPositiveMCParticle = 0x0;
+    if(labelp>-1) fPositiveMCParticle = fMCStack->Particle(labelp);
 
     if(fPositiveMCParticle&&fNegativeMCParticle){
       fCurrentMotherKF->SetMCLabelPositive(labelp);
@@ -1263,6 +1265,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
     TParticle* eNeg = NULL;
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+        if(daughterIndex<0) continue;
         TParticle *tmpDaughter = MCStack->Particle(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
           if(tmpDaughter->GetPdgCode() == 11){
@@ -1320,12 +1323,13 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
 
   AliStack *fMCStack= fMCEvent->Stack();
   // Loop over all primary MC particle
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
     if (fEventCuts->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histogram
       TParticle* particle = (TParticle *)fMCStack->Particle(i);
       if (!particle) continue;
       if (ParticleIsConvertedPhoton(fMCStack, particle, 0.9, 180.,250. )){
+        if(particle->GetFirstDaughter()<0) continue;
         TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsR->Fill(particle->Pt(),tmpDaughter->R());
@@ -1333,6 +1337,7 @@ void AliV0ReaderV1::CreatePureMCHistosForV0FinderEffiESD(){
         fHistoMCGammaRvsPhi->Fill(tmpDaughter->R(),particle->Phi());
       }
       if (ParticleIsConvertedPhoton(fMCStack, particle, 1.4, 180.,250. )){
+        if(particle->GetFirstDaughter()<0) continue;
         TParticle *tmpDaughter = fMCStack->Particle(particle->GetFirstDaughter());
         if (!tmpDaughter) continue;
         fHistoMCGammaPtvsEta->Fill(particle->Pt(),particle->Eta());
@@ -1360,17 +1365,19 @@ void AliV0ReaderV1::FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0){
   Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelPos)->GetLabel());
   Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,tracklabelNeg)->GetLabel());
 
-  TParticle* negPart = (TParticle *)fMCStack->Particle(labeln);
-  TParticle* posPart = (TParticle *)fMCStack->Particle(labelp);
+  TParticle* negPart = 0x0;
+  if(labeln>-1) negPart = (TParticle *)fMCStack->Particle(labeln);
+  TParticle* posPart = 0x0;
+  if(labelp>-1) posPart = (TParticle *)fMCStack->Particle(labelp);
 
   if ( negPart == NULL || posPart == NULL ) return;
 //   if (!(negPart->GetPdgCode() == 11)) return;
 //   if (!(posPart->GetPdgCode() == -11)) return;
-  UInt_t motherlabelNeg = negPart->GetFirstMother();
-  UInt_t motherlabelPos = posPart->GetFirstMother();
+  Long_t motherlabelNeg = negPart->GetFirstMother();
+  Long_t motherlabelPos = posPart->GetFirstMother();
 
 //   cout << "mother neg " << motherlabelNeg << " mother pos " << motherlabelPos << endl;
-  if (motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
+  if (motherlabelNeg>-1 && motherlabelNeg == motherlabelPos && negPart->GetFirstMother() != -1){
     if (fEventCuts->IsConversionPrimaryESD( fMCStack, negPart->GetFirstMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
 
       TParticle* mother =  (TParticle *)fMCStack->Particle(motherlabelNeg);

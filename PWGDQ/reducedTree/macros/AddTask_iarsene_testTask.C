@@ -6,6 +6,8 @@ void DefineHistograms(AliHistogramManager* man, TString prod="LHC10h");
 AliAnalysisTask* AddTask_iarsene_testTask(Bool_t isAliRoot=kTRUE, Int_t runMode=1, TString prod="LHC10h"){    
    //
    // isAliRoot=kTRUE for ESD/AOD analysis in AliROOT, kFALSE for root analysis on reduced trees
+   // runMode=1 (AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents)
+   //               =2 (AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree)
    //
    //get the current analysis manager
 

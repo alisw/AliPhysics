@@ -173,9 +173,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       h->SetUniqueID(0);
       if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+				     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
       fUsedVars[varX] = kTRUE;
@@ -198,17 +198,17 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits[varX] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+				     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varY][0]) 
 	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
-      if(fVariableNames && isProfile) 
+				     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+      if(fVariableNames[varY][0] && isProfile) 
 	h->GetYaxis()->SetTitle(Form("<%s> %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));	
+				     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));	
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
       fUsedVars[varX] = kTRUE;
@@ -241,22 +241,22 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
       h->GetZaxis()->SetUniqueID(UInt_t(varZ));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+				     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varY][0]) 
 	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+                                     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varZ][0]) 
 	h->GetZaxis()->SetTitle(Form("%s %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
-      if(fVariableNames && isProfile && varT<0)  // for TProfile2D 
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
+      if(fVariableNames[varZ][0] && isProfile && varT<0)  // for TProfile2D 
 	h->GetZaxis()->SetTitle(Form("<%s> %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));	
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));	
       if(arr->At(3)) h->GetZaxis()->SetTitle(arr->At(3)->GetName());
       if(zLabels[0]!='\0') MakeAxisLabels(h->GetZaxis(), zLabels);
       fUsedVars[varX] = kTRUE;
@@ -310,9 +310,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       h->SetUniqueID(0);
       if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+                                     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
       fUsedVars[varX] = kTRUE;
@@ -335,17 +335,18 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
-      if(fVariableNames) 
-	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+      if(fVariableNames[varX][0]) 
+	h->GetXaxis()->SetTitle(Form("%s (%s)", fVariableNames[varX].Data(), 
+                                     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
-	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
-      if(fVariableNames && isProfile) 
-	h->GetYaxis()->SetTitle(Form("<%s> %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+      if(fVariableNames[varY][0]) 
+         h->GetYaxis()->SetTitle(Form("%s (%s)", fVariableNames[varY].Data(), 
+                                      (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+      if(fVariableNames[varY][0] && isProfile) 
+         h->GetYaxis()->SetTitle(Form("<%s> (%s)", fVariableNames[varY].Data(), 
+                                      (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
       fUsedVars[varX] = kTRUE;
@@ -378,22 +379,22 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
       h->GetZaxis()->SetUniqueID(UInt_t(varZ));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+                                     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varY][0]) 
 	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+                                     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varZ][0]) 
 	h->GetZaxis()->SetTitle(Form("%s %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
-      if(fVariableNames && isProfile && varT<0)  // TProfile2D 
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
+      if(fVariableNames[varZ][0] && isProfile && varT<0)  // TProfile2D 
 	h->GetZaxis()->SetTitle(Form("<%s> %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
 				     
       if(arr->At(3)) h->GetZaxis()->SetTitle(arr->At(3)->GetName());
       if(zLabels[0]!='\0') MakeAxisLabels(h->GetZaxis(), zLabels);
@@ -442,9 +443,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
     bins*=(nBins[idim]+2);
     TAxis* axis = h->GetAxis(idim);
     axis->SetUniqueID(vars[idim]);
-    if(fVariableNames) 
+    if(fVariableNames[vars[idim]][0]) 
       axis->SetTitle(Form("%s %s", fVariableNames[vars[idim]].Data(), 
-	                  (fVariableUnits ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
+                          (fVariableUnits[vars[idim]][0] ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
     if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());
@@ -505,9 +506,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
     bins*=(nBins[idim]+2);
     TAxis* axis = h->GetAxis(idim);
     axis->SetUniqueID(vars[idim]);
-    if(fVariableNames) 
+    if(fVariableNames[vars[idim]][0]) 
       axis->SetTitle(Form("%s %s", fVariableNames[vars[idim]].Data(), 
-	                  (fVariableUnits ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
+                          (fVariableUnits[vars[idim]][0] ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
     if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());

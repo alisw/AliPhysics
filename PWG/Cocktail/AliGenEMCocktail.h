@@ -50,7 +50,8 @@ public:
   void    SetV2Systematic(AliGenEMlib::v2Sys_t v2sys)     { fV2Systematic = v2sys  ;}
   void    SetForceGammaConversion(Bool_t force=kTRUE)     { fForceConv=force   ;}
   void    SetHeaviestHadron(ParticleGenerator_t part);
-    
+  void    SetRandomEventPlane(void){fRandomPsi=kTRUE;} //Switch on random Event-by-event enent plane smearing (off by default)   
+  
   //***********************************************************************************************
   // This function allows to select the particle which should be procude based on 1 Integer value
   // this integer value is then bitwise compare to the values in SelectParticle
@@ -94,9 +95,10 @@ private:
   Bool_t        fForceConv;   // select whether you want to force all gammas to convert imidediately
   UInt_t        fSelectedParticles; // which particles to simulate, allows to switch on and off 32 different particles
 
+  Bool_t        fRandomPsi; //Turn on random event plane distribution
 
 
-  ClassDef(AliGenEMCocktail,2)       // cocktail for EM physics
+  ClassDef(AliGenEMCocktail,3)       // cocktail for EM physics
 };
 
 #endif

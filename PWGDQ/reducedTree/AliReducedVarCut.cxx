@@ -6,6 +6,10 @@
   *********************************************************
 */
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 #ifndef ALIREDUCEDVARCUT_H
 #include "AliReducedVarCut.h"
 #endif
@@ -100,23 +104,31 @@ Bool_t AliReducedVarCut::IsSelected(TObject* obj) {
   if(obj->InheritsFrom(AliReducedBaseTrack::Class())) AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
   if(obj->InheritsFrom(AliReducedPairInfo::Class())) AliReducedVarManager::FillPairInfo((AliReducedPairInfo*)obj, values);
   
-  return IsSelected(obj, values);
+  return IsSelected(values);
 }
 
 
 //____________________________________________________________________________
-Bool_t AliReducedVarCut::IsSelected(TObject* obj, Float_t* values) {
+Bool_t AliReducedVarCut::IsSelected(Float_t* values) {
    //
    // apply cuts
    //         
    for(Int_t i=0; i<fNCuts; ++i) {
+      //cout << "AliReducedVarCut::IsSelected() icut " << i << endl;
       if(fCutHasDependentVariable[i]) {
-         Bool_t inRange = (values[fDependentVariable[i]]>=fDependentVariableCutLow[i] && values[fDependentVariable[i]]<=fDependentVariableCutHigh[i]);
+         //cout << "AliReducedVarCut::IsSelected() has dependent var " << endl;
+         Bool_t inRangeDep = (values[fDependentVariable[i]]>=fDependentVariableCutLow[i] && values[fDependentVariable[i]]<=fDependentVariableCutHigh[i]);
+         //cout << "AliReducedVarCut::IsSelected() inRangeDep/fDepVar/val/cutLow/cutHigh: " << inRangeDep 
+         //        << "/" << fDependentVariable[i] << "/" << values[fDependentVariable[i]] << "/"
+         //        << fDependentVariableCutLow[i] << "/" << fDependentVariableCutHigh[i] << endl;
+         //cout << "AliReducedVarCut::IsSelected() fDependentVariableExclude: " << fDependentVariableExclude[i] << endl;        
          // do not apply this cut if outside of the applicability range
-         if(!inRange && !fDependentVariableExclude[i]) continue;
-         if(inRange && fDependentVariableExclude[i]) continue;
+         if(!inRangeDep && !fDependentVariableExclude[i]) continue;
+         if(inRangeDep && fDependentVariableExclude[i]) continue;
       }
       Bool_t inRange = (values[fCutVariables[i]]>=fCutLow[i] && values[fCutVariables[i]]<=fCutHigh[i]);
+      //cout << "AliReducedVarCut::IsSelected() inRange/fCutVariables/val/cutLow/cutHigh: " << inRange << "/" << fCutVariables[i]
+      //        << "/" << values[fCutVariables[i]] << "/" << fCutLow[i] << "/" << fCutHigh[i] << "/" << fCutExclude[i] << endl;
       if(!inRange && !fCutExclude[i]) return kFALSE;
       if(inRange && fCutExclude[i]) return kFALSE;
    }

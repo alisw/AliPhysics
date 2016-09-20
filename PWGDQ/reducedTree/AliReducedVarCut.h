@@ -23,7 +23,7 @@ class AliReducedVarCut : public AliReducedInfoCut {
               AliReducedVarManager::Variables dependentVar=AliReducedVarManager::kNothing, Float_t depCutLow=0., Float_t depCutHigh=0., Bool_t depCutExclude=kFALSE);
   
   virtual Bool_t IsSelected(TObject* obj);
-  virtual Bool_t IsSelected(TObject* obj, Float_t* values);
+  virtual Bool_t IsSelected(Float_t* values);
   
  protected: 
   

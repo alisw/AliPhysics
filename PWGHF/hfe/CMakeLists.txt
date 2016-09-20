@@ -81,7 +81,7 @@ set(SRCS
   AliHFEbayesPIDqa.cxx
   AliHFEpidBayes.cxx
   AliHFEpidObject.cxx
-  AliAnalysisTaskElecHadronCorrel.cxx
+  AliAnalysisTaskEHCorrel.cxx
   AliAnalysisTaskFlowTPCEMCalEP.cxx
   AliAnalysisTaskHFECal.cxx 
   AliAnalysisTaskEMCalHFEpA.cxx 

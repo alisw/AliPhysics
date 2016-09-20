@@ -11,6 +11,7 @@ class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
 class TArrayI;
+class TH1D;
 
 class AliMultiplicitySelectionCPPWA :public TObject {
 
@@ -47,7 +48,7 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		}
 
 		Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd);
-		Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices);
+		Int_t GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices, TH1D *hDCAz, TH1D *hMult[], Bool_t isSave);
 		Int_t GetNumberOfITSSAtracks(AliESDEvent *esd, TArrayI &indices);
 
 		TArrayI GetIndicesN() {return fIndicesN;}

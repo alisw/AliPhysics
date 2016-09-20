@@ -6,4 +6,6 @@
 
 #pragma link C++ class AliGenEMlib+;
 #pragma link C++ class AliGenEMCocktail+;
+#pragma link C++ class AliGenEMlibV2+;
+#pragma link C++ class AliGenEMCocktailV2+;
 #endif

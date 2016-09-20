@@ -93,7 +93,7 @@ protected:
   TObjArray                       *fDownscaleFactors;         //!<! Downscalfactors for given run
 
   Int_t                           fCurrentRun;                ///< Current run number (for RunChange method)
-  Bool_t                          fInitialized;               ///< Check for initialized
+  Bool_t                          fLocalInitialized;          ///< Check for initialized
 
 private:
 

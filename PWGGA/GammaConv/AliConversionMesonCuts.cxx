@@ -384,6 +384,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
 
     for(Int_t i=0;i<2;i++){
+      if(fMCMother->GetDaughter(i) < 0) return kFALSE;
       TParticle *MDaughter=fMCStack->Particle(fMCMother->GetDaughter(i));
       // Is Daughter a Photon?
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
@@ -467,7 +468,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
   TParticle    *gamma = 0x0;
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+    if(index < 0) continue;
     TParticle* temp = (TParticle*)fMCStack->Particle( index );
 
     switch( temp->GetPdgCode() ) {
@@ -522,7 +523,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   TParticle    *gamma = 0x0;
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+    if(index < 0) continue;
     TParticle* temp = (TParticle*)fMCStack->Particle( index );
 
     switch( temp->GetPdgCode() ) {
@@ -578,7 +579,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 
 //   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-    
+    if(index < 0) continue;
     TParticle* temp = (TParticle*)fMCStack->Particle( index );
 //     cout << temp->GetPdgCode() << endl;
     switch( temp->GetPdgCode() ) {
@@ -627,6 +628,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
   TParticle *pi0 = 0x0;
 
   for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
     TParticle *temp = (TParticle*)fMCStack->Particle(index);
     switch(temp->GetPdgCode()){
     case 22:
@@ -692,7 +694,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
     Int_t labeljpsiChiC = -1;
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+      if(index < 0) continue;
       TParticle* temp = (TParticle*)fMCStack->Particle( index );
 
       switch( temp->GetPdgCode() ) {
@@ -712,6 +714,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 
 
     for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
+      if(index < 0) continue;
       TParticle* temp = (TParticle*)fMCStack->Particle( index );
       switch( temp->GetPdgCode() ) {
       case -11:

@@ -64,7 +64,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetMaxMCLabel(Int_t s)                       { fMaxMCLabel      = s   ; }
   void                        SetMCLabelRange(Int_t min, Int_t max)        { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
   void                        SetExoticCut(Bool_t e)                       { fExoticCut       = e   ; }
-
+  void                        SetIncludePHOS(Bool_t b)                     { fIncludePHOS = b       ; }
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
 
@@ -92,13 +92,14 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t           fExoticCut;                  ///< reject clusters marked as "exotic"
   Double_t         fUserDefEnergyCut[AliVCluster::kLastUserDefEnergy+1]; ///< cut on the energy of the cluster after higher level corrections (see AliVCluster.h)
   Int_t            fDefaultClusterEnergy;       ///< default cluster energy: -1 for clus->E(); otherwise clus->GetUserDefEnergy(fDefaultClusterEnergy)
+  Bool_t           fIncludePHOS;                ///< whether or not to include PHOS clusters in addition to EMCal clusters
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,5);
+  ClassDef(AliClusterContainer,6);
   /// \endcond
 };
 

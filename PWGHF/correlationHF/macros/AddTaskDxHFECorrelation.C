@@ -98,6 +98,10 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   TString taskOptions;
   Int_t NrTPCclusters=120; // quick fix for problem sending hfe track cut object to addtask
   Int_t NrITSclusters=4;
+  Int_t recoPass=2;
+  Double_t RatioTPCncls=0.8;
+  Double_t nSigTPCLow=-1.0;
+  Double_t nSigTPCHigh=3.0;
   Int_t ITSreq=AliHFEextraCuts::kFirst;
   ULong64_t triggerMask=AliVEvent::kAnyINT;
   Int_t triggerParticle=AliDxHFECorrelation::kD;
@@ -212,6 +216,22 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    ::Info("AddTaskDxHFEParticleSelection",Form("Setting nr TPC clusters to %d",NrTPCclusters));
 	    continue;
 	  }
+	  if(argument.BeginsWith("RatioTPCncls=")){
+	    argument.ReplaceAll("RatioTPCncls=", "");
+	    RatioTPCncls=argument.Atof();
+	    ::Info(Form("Minimum ratio of clusters TPC found/findable: %f GeV/c",RatioTPCncls));
+	    continue;
+	  }
+	  if(argument.BeginsWith("nSigTPCLow=")){
+	    argument.ReplaceAll("nSigTPCLow=", "");
+	    nSigTPCLow=argument.Atof();
+	    continue;
+	  }
+	  if(argument.BeginsWith("nSigTPCHigh=")){
+	    argument.ReplaceAll("nSigTPCHigh=", "");
+	    nSigTPCHigh=argument.Atof();
+	    continue;
+	  }
 	  if (argument.BeginsWith("usekine") ||argument.BeginsWith("kine")) {
 	    bUseKine=kTRUE;
 	    taskOptions+=" usekine";
@@ -289,6 +309,11 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
 	    else if(argument.CompareTo("kMB")==0) {triggerMask=AliVEvent::kMB; cout<<"kMB"<<endl;}
 	    continue;
 	  }
+	  if(argument.BeginsWith("recopass=")){
+	    argument.ReplaceAll("recopass=", "");
+	    recoPass=argument.Atoi();
+	    continue;
+	   }
 	  if (argument.BeginsWith("tuneondata")) {
 	    bTuneOnData=kTRUE;
 	    cout <<"Use tuneondata for PIDresponsetask" << endl;
@@ -333,7 +358,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     gROOT->LoadMacro(pidTaskMacro);
     TString pidFunction;
     // isMC, autoMCeds, tuneOnData, recoPass, cachePID, detResponse, useTPCEtaCorrection, recoDataPass
-    pidFunction.Form("AddTaskPIDResponse(%d, %d, %d, %d, %d, %s, %d, %d, -1)", bUseMC, kTRUE, bTuneOnData, 2, kFALSE,"\"\"" ,kTRUE, kTRUE);
+    pidFunction.Form("AddTaskPIDResponse(%d, %d, %d, %d, %d, %s, %d, %d, -1)", bUseMC, kTRUE, bTuneOnData, recoPass, kFALSE,"\"\"" ,kTRUE, kTRUE);
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
       ::Error("AddTaskDxHFECorrelation", Form("failed to add PID task '%s' from macro '%s'",
@@ -592,7 +617,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
       hfecuts->SetTPCmodes(AliHFEextraCuts::kFound,AliHFEextraCuts::kFoundOverFindable);
       hfecuts->SetMinNClustersTPC(NrTPCclusters);	//Default = 80
       hfecuts->SetMinNClustersTPCPID(80);	//Default = 80
-      hfecuts->SetMinRatioTPCclusters(0.6); 	//Default = 0.6
+      hfecuts->SetMinRatioTPCclusters(RatioTPCncls); 	//Default = 0.6
       
       ///ITS
       hfecuts->SetCutITSpixel(ITSreq);        	//Cut on SPD
@@ -629,8 +654,8 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
       Double_t params[paramSize];
       memset(params, 0, sizeof(Double_t)*paramSize);
       if(bUseEMCAL)  params[0]=-3.;
-      else params[0]=-3.; //[FIXME]: Temporarily set to -3 from -1
-      fPID->ConfigureTPCdefaultCut(NULL, params, 3.);
+      else params[0]= nSigTPCLow;
+      fPID->ConfigureTPCdefaultCut(NULL, params,  nSigTPCHigh);
       fPID->InitializePID();
       
       // PID for Only TPC
@@ -638,7 +663,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
       if(!fPIDOnlyTPC->GetNumberOfPIDdetectors()) { 
 	fPIDOnlyTPC->AddDetector("TPC",0);
       }
-      fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params, 3.);
+      fPIDOnlyTPC->ConfigureTPCdefaultCut(NULL, params,  nSigTPCHigh);
       fPIDOnlyTPC->InitializePID();
       
       //Create TList of HFE pid and track cuts

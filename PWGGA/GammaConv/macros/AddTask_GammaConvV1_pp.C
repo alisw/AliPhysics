@@ -656,7 +656,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010013", "00200009227302008250400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND - no pileup cut
     cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
     cuts.AddCut("00000013", "00200009227300008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR - no pileup cut
-
+  //pp 8TeV cuts with EMC triggers
+  } else if (trainConfig == 89) { //pp 8TeV cuts with EMC triggers
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // standard cut 8tev
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000","1111111063032230000"); // standard cut 8tev + double counting
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEMC7
     //---------systematic studies August 2015 with dEdx--------------------------//
   } else if (trainConfig == 90) {
     cuts.AddCut("00000113", "00200009217302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent

@@ -692,29 +692,31 @@ Bool_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   TTree *treeAOD      = aodHandler->GetTree();
   TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
-  if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
-    printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: Difference in number of entries in main and friend tree, skipping event\n");
-    return kFALSE;
-  }
-  TFile *mfile = treeAOD->GetCurrentFile();
-  TFile *dfile = treeDeltaAOD->GetCurrentFile();
-  TList* lm=mfile->GetListOfKeys();
-  TList* ld=dfile->GetListOfKeys();
-  Int_t nentm=lm->GetEntries();
-  Int_t nentd=ld->GetEntries();
-  for(Int_t jm=0; jm<nentm; jm++){
-    TKey* o=(TKey*)lm->At(jm);
-    TString clnam=o->GetClassName();
-    if(clnam=="TProcessID"){
-      TString pname=o->GetName();
-      TString ptit=o->GetTitle();
-      if(pname.Contains("ProcessID")){
-	TObject* od=(TObject*)ld->FindObject(pname.Data());
-	if(od){
-	  TString ptit2=od->GetTitle();
-	  if(ptit2!=ptit){
-	    printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: mismatch in %s: AOD: %s  -- deltaAOD: %s\n",pname.Data(),ptit.Data(),ptit2.Data());
-	    return kFALSE;
+  if(treeDeltaAOD && treeAOD){
+    if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
+      printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: Difference in number of entries in main and friend tree, skipping event\n");
+      return kFALSE;
+    }
+    TFile *mfile = treeAOD->GetCurrentFile();
+    TFile *dfile = treeDeltaAOD->GetCurrentFile();
+    TList* lm=mfile->GetListOfKeys();
+    TList* ld=dfile->GetListOfKeys();
+    Int_t nentm=lm->GetEntries();
+    Int_t nentd=ld->GetEntries();
+    for(Int_t jm=0; jm<nentm; jm++){
+      TKey* o=(TKey*)lm->At(jm);
+      TString clnam=o->GetClassName();
+      if(clnam=="TProcessID"){
+	TString pname=o->GetName();
+	TString ptit=o->GetTitle();
+	if(pname.Contains("ProcessID")){
+	  TObject* od=(TObject*)ld->FindObject(pname.Data());
+	  if(od){
+	    TString ptit2=od->GetTitle();
+	    if(ptit2!=ptit){
+	      printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: mismatch in %s: AOD: %s  -- deltaAOD: %s\n",pname.Data(),ptit.Data(),ptit2.Data());
+	      return kFALSE;
+	    }
 	  }
 	}
       }

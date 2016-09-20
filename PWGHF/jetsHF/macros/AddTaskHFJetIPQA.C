@@ -12,7 +12,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     const char *nrhoMC               = "RhoMC",
     TString PathToWeights = 	"alien:///alice/cern.ch/user/l/lfeldkam/Weights.root",
     TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
-    TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/ResulFct.root",
+    TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/ResulFc.root",
     Bool_t GenerateMeanSigmaCorrectionTable=kTRUE,
     Int_t nITSReq=6,
     const char* suffix = ""
@@ -79,37 +79,24 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
   Printf("Loading udg Resolution function for jet probability tagger");
   TFile * fileResFunction =TFile::Open(PathToJetProbabilityInput.Data(),"READ");
   if(!fileResFunction) {Printf("ERRORfile");return 0x0;}
-  TF1 * fct =0x0;
-  fct=(TF1*)(fileResFunction->Get("ITS6_kBOTH_1.000000_1.500000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,0,0);
-  fct=(TF1*)(fileResFunction->Get("ITS5_kBOTH_1.000000_1.500000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,0,1);
-  fct=(TF1*)(fileResFunction->Get("ITS4_kBOTH_1.000000_1.500000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,0,2);
-  fct=(TF1*)(fileResFunction->Get("ITS5_kANY_1.000000_1.500000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,0,3);
-  fct=(TF1*)(fileResFunction->Get("ITS4_kANY_1.000000_1.500000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,0,4);
-  fct=(TF1*)(fileResFunction->Get("ITS6_kBOTH_1.500000_999.000000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,1,0);
-  fct=(TF1*)(fileResFunction->Get("ITS5_kBOTH_1.500000_999.000000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,1,1);
-  fct=(TF1*)(fileResFunction->Get("ITS4_kBOTH_1.500000_999.000000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,1,2);
-  fct=(TF1*)(fileResFunction->Get("ITS5_kANY_1.500000_999.000000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,1,3);
-  fct=(TF1*)(fileResFunction->Get("ITS4_kANY_1.500000_999.000000"));
-  if(!fct) {Printf("ERROR");return 0x0;}
-  jetTask->SetResFunction(fct,1,4);
+  TGraph * fct =0x0;
+  fct=(TGraph*)(fileResFunction->Get("ITS6;1"));
+  if(!fct) {Printf("ERROR1");return 0x0;}
+  jetTask->SetResFunction(fct,0);
+  fct=(TGraph*)(fileResFunction->Get("ITS5b"));
+  if(!fct) {Printf("ERROR2");return 0x0;}
+  jetTask->SetResFunction(fct,1);
+  fct=(TGraph*)(fileResFunction->Get("ITS4b"));
+  if(!fct) {Printf("ERROR3");return 0x0;}
+  jetTask->SetResFunction(fct,2);
+  fct=(TGraph*)(fileResFunction->Get("ITS5a"));
+  if(!fct) {Printf("ERROR4");return 0x0;}
+  jetTask->SetResFunction(fct,3);
+  fct=(TGraph*)(fileResFunction->Get("ITS4a"));
+  if(!fct) {Printf("ERROR5");return 0x0;}
+  jetTask->SetResFunction(fct,4);
+
+
 
   Printf("DONE");
 

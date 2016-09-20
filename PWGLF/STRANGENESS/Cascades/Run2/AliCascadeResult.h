@@ -50,6 +50,10 @@ public:
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutTPCdEdx               ( Double_t lCut ) { fCutTPCdEdx               = lCut; }
     
+    //MC specific
+    void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
+    void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
+
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     
     //Getters for V0 Cuts
@@ -71,8 +75,11 @@ public:
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutTPCdEdx () const { return fCutTPCdEdx; }
-    
-    TH3F* GetHistogram () { return fHisto; } 
+
+    Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
+    Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
+
+    TH3F* GetHistogram () { return fHisto; }
     
 private:
 
@@ -97,9 +104,13 @@ private:
     Double_t fCutLeastNumberOfClusters;
     Double_t fCutTPCdEdx;
     
+    Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
+    Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 1)
+    ClassDef(AliCascadeResult, 2)
     // 1 - original implementation
+    // 2 - MC association implementation (disabled in real data analysis)
 };
 #endif

@@ -212,7 +212,7 @@ private:
     AliAnalysisTaskHFEEfficiency(const AliAnalysisTaskHFEEfficiency&); // not implemented
     AliAnalysisTaskHFEEfficiency& operator=(const AliAnalysisTaskHFEEfficiency&); // not implemented
     
-    ClassDef(AliAnalysisTaskHFEEfficiency,2);//!example of analysis
+    ClassDef(AliAnalysisTaskHFEEfficiency,3);//!example of analysis
     
 };
 
