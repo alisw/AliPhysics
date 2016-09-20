@@ -49,6 +49,7 @@ class TTree;
 #include "AliAnalysisUtils.h"
 #include "AliMultiplicity.h"
 #include "AliPID.h"
+#include "AliMultiplicitySelectionCPPWA.h"
 #ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTaskSE.h"
 #endif
@@ -306,6 +307,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		AliESDtrackCuts *fTrackCuts;//!
 		AliESDEvent *fESDEvent;//!
 		AliMultiplicity *fMult;//!
+		AliMultiplicitySelectionCPPWA fSelec;//!
 
 		//Histograms----------------------------------------------------------
 		TH1D *fHistEvent; //!Histogram for number of event
