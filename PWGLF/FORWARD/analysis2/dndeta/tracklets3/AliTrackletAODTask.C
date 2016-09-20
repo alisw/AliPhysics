@@ -1555,8 +1555,9 @@ Int_t AliTrackletAODMCTask::FindPrimaryParentID(Int_t label) const
 {
   AliStack*   stack     = MCEvent()->Stack();
   Int_t       nTracks   = stack->GetNtrack();
-  TParticle*  particle  = stack->Particle(label);
   Int_t       trackNo   = label;
+  if (trackNo > nTracks || trackNo <= 0) return 0;
+  TParticle*  particle  = stack->Particle(label);
   while (!stack->IsPhysicalPrimary(trackNo)) {
     trackNo  = particle->GetFirstMother();
     // If we have hit the top 

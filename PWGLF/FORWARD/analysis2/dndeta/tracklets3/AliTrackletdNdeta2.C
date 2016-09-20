@@ -560,6 +560,15 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    */
   Bool_t VisualizeSpecies(Container* simCont);
   /** 
+   * Visualize specie deltas from simulation
+   * 
+   * @param simCont Centrality container of simulated data
+   * @param outDir  Output directory
+   *
+   * @return true on success 
+   */
+  Bool_t VisualizeSpeciesDelta(Container* simCont, TDirectory* outDir);
+  /** 
    * Visualize primary particles 
    * 
    * @param simCont Centrality container of simulated data
@@ -2499,15 +2508,18 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
   Printf("%5.1f - %5.1f%%", c1, c2);
   if (fViz & kSpecies) {
     VisualizeSpecies(GetC(simList, centName));
+    if (fViz & kDeltas) 
+      VisualizeSpeciesDelta(GetC(simList, centName), outDir);
     VisualizePrimary(GetC(GetC(simList, centName), "generated"));
   }
-  for (Int_t i = 0; i < 4; i++) {
-    if ((fProc & (1 << i)) == 0) continue;
-    if (fViz & kDeltas)      VisualizeDelta(outDir, i);
-    if (fViz & kDetails)     VisualizeDetails(outDir, i);
-    if (fViz & kdNdetas)     VisualizeResult(outDir, i);
+  if (fViz & kdNdetas) {
+    for (Int_t i = 0; i < 4; i++) {
+      if ((fProc & (1 << i)) == 0) continue;
+      if (fViz & kDeltas)      VisualizeDelta(outDir, i);
+      if (fViz & kDetails)     VisualizeDetails(outDir, i);
+      if (fViz & kdNdetas)     VisualizeResult(outDir, i);
+    }
   }
-  
   return true;
 }
 //____________________________________________________________________
@@ -2579,6 +2591,269 @@ Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
 	      Form("%s_species", fLastShort.Data()));
   return true;
 }
+
+//____________________________________________________________________
+Bool_t AliTrackletdNdeta2::VisualizeSpeciesDelta(Container* simCont,
+						 TDirectory* outDir)
+{
+  if (!simCont) return true;
+  ClearCanvas();
+  Container*  comb = GetC(GetC(simCont, "combinatorics"), "specie", false);
+  Container*  prim = GetC(GetC(simCont, "primaries"),     "specie", false);
+  Container*  seco = GetC(GetC(simCont, "secondaries"),   "specie", false);
+  Container*  cont[] = { comb, prim, seco, 0 };
+  if (!comb || !prim || !seco) return true;
+  
+  const char* tit[]  = { "C' by primary mother's specie",
+			 "P' by species",
+			 "S' by primary mother's specie" };
+
+  // --- Draw the delta distributions --------------------------------
+  THStack* hp = 0;
+  THStack* hs = 0;
+  THStack* hc = 0;
+  Double_t rr = .8;
+  for (Int_t i = 0; i < 2; i++) {
+    TString  sub = (i == 0 ? "mid" : "fwd");
+    TPad*    pad = new TPad("pad","pad",i*rr/2,0,(i+1)*rr/2,1);
+    pad->SetTopMargin(0.10);
+    pad->SetRightMargin(0.01);
+    pad->SetNumber(i+1);
+    fBody->cd();
+    pad->Draw();
+    pad->Divide(1,3,0,0);
+    pad->GetPad(1)->SetRightMargin(0.01);
+    pad->GetPad(2)->SetRightMargin(0.01);
+    pad->GetPad(3)->SetRightMargin(0.01);
+    DrawInPad(pad, 1, hp = GetHS(GetC(prim, sub), "all"),
+	      "nostack grid logy logx");
+    DrawInPad(pad, 2, hs = GetHS(GetC(seco, sub), "all"),
+	      "nostack grid logy logx");
+    DrawInPad(pad, 3, hc = GetHS(GetC(comb, sub), "all"),
+	      "nostack grid logy logx");
+    hp->GetHistogram()->SetYTitle("Primaries");
+    hs->GetHistogram()->SetYTitle("Secondaries");
+    hc->GetHistogram()->SetYTitle("Combinatorial");
+    hp->GetHistogram()->SetXTitle("#Delta");
+    hs->GetHistogram()->SetXTitle("#Delta");
+    hc->GetHistogram()->SetXTitle("#Delta");
+    TLatex* txt = new TLatex(pad->GetLeftMargin()+
+			     (1-pad->GetLeftMargin()-pad->GetRightMargin())/2,
+			     1-pad->GetTopMargin()+.01, hp->GetTitle());
+    txt->SetNDC();
+    txt->SetTextAlign(21);
+    txt->SetTextSize(0.07);
+    DrawInPad(pad,0,txt,"");
+  }
+  // --- Make a legend -----------------------------------------------
+  const TAxis& pdgs = PdgAxis();
+  TLegend* l = new TLegend(rr, fBody->GetBottomMargin(),
+			   .99, 1-fBody->GetTopMargin());
+  l->SetFillStyle(0);
+  l->SetBorderSize(0);
+  TLegendEntry* e = 0;
+  for (Int_t i = 0; i < 3; i++) {
+    THStack* tmp = i == 0 ? hs : i == 1 ? hc : hp;
+    TIter next(tmp->GetHists());
+    TH1*  h = 0;
+    while ((h = static_cast<TH1*>(next()))) {
+      Int_t   bin = h->GetUniqueID();
+      TString lbl = pdgs.GetBinLabel(bin);
+      Int_t   pdg = lbl.Atoi();
+      TString nme;
+      Color_t col;
+      Style_t sty;
+      PdgAttr(pdg, nme, col, sty);
+      if (nme.EqualTo("0")) {
+	nme = "All";
+	sty = 24;
+	col = kBlack;
+	h->SetMarkerStyle(sty);
+      }
+      nme.Append("#rightarrowX_{ch}");
+      TIter         nextE(l->GetListOfPrimitives());
+      while ((e = static_cast<TLegendEntry*>(nextE()))) {
+	if (nme.EqualTo(e->GetLabel())) break;
+      }
+      if (e) continue;
+      e = l->AddEntry(lbl,nme,"p");
+      e->SetMarkerStyle(sty);
+      e->SetMarkerColor(col);
+      e->SetLineColor  (col);
+    }
+  }
+  fBody->cd();
+  l->Draw();
+  
+  PrintCanvas(Form("Species #Delta #topbar %s", fLastBin.Data()),
+	      Form("%s_species_delta", fLastShort.Data()));
+
+  // --- Draw relative contributions to signal/background ------------
+  ClearCanvas();
+  fBody->SetTopMargin(0.2);
+  fBody->Divide(2,3,0,0);
+  gStyle->SetPaintTextFormat("9.7f");
+  Bool_t drawLog = true;
+  for (Int_t i = 0; i < 2; i++) {
+    TString  sub = (i == 0 ? "mid" : "fwd");
+    for (Int_t j = 0; j < 3; j++) {
+      Container*   par   = (j == 0 ? prim :
+			    j == 1 ? seco : comb);
+      TString      parT  = (j == 0 ? "Primaries" :
+			    j == 1 ? "Secondaries" : "Combinatorics");
+      Int_t        padNo = j * 2 + i + 1;
+      TVirtualPad* pad   = fBody->cd(padNo);
+      if ((padNo % 2) == 0) pad->SetRightMargin(0.01);
+      pad->SetTicks();
+      pad->SetGridx();
+      pad->SetGridy();
+      THStack*     rhs   = GetHS(GetC(par, sub), "ratios");
+      TObjLink*    ptr   = rhs->GetHists()->FirstLink();
+      while (ptr) {
+	ptr->SetOption("hist bar0");
+	TH1* h = static_cast<TH1*>(ptr->GetObject());
+	h->SetMarkerSize(2);
+	ptr = ptr->Next();
+      }
+      rhs->SetMaximum(drawLog ? 2    : 1.1);
+      rhs->SetMinimum(drawLog ? 1e-8 : 0);
+      // Printf("Draw %s/%s in %d", sub.Data(), parT.Data(), padNo);
+      DrawInPad(fBody, padNo, hp = rhs, Form("nostack %s",
+					     drawLog ? "logy" : ""));
+      hp->GetHistogram()->SetYTitle(parT);
+    }
+  }
+  // --- Make a legend -----------------------------------------------
+  l = new TLegend(fBody->GetLeftMargin(),
+		  1-fBody->GetTopMargin(),
+		  .99, .99);
+  l->SetNColumns(2);
+  l->SetFillStyle(0);
+  l->SetBorderSize(0);
+  e = l->AddEntry("dummy", "Signal #minus #Delta<1.5", "f");
+  e->SetFillColor(kGreen+1);
+  e->SetFillStyle(1001);
+  e = l->AddEntry("dummy", "Background #minus 5<#Delta<25", "f");
+  e->SetFillColor(kRed+1);
+  e->SetFillStyle(1001);
+  fBody->cd();
+  l->Draw();
+  
+  PrintCanvas(Form("Species contribution #topbar %s", fLastBin.Data()),
+	      Form("%s_species_contrib", fLastShort.Data()));
+
+
+  // --- Draw selected particles -------------------------------------
+  TH1*     lt1p       = GetH1(GetC(prim, "mid"), "totalIntegrals");
+  TH1*     lt1s       = GetH1(GetC(seco, "mid"), "totalIntegrals");
+  TH1*     lt1c       = GetH1(GetC(comb, "mid"), "totalIntegrals");
+  TH1*     gt1p       = GetH1(GetC(prim, "fwd"), "totalIntegrals");
+  TH1*     gt1s       = GetH1(GetC(seco, "fwd"), "totalIntegrals");
+  TH1*     gt1c       = GetH1(GetC(comb, "fwd"), "totalIntegrals");
+  Double_t totalA     = (lt1p->GetBinContent(1)+
+			 lt1s->GetBinContent(1)+
+			 lt1c->GetBinContent(1)+
+			 gt1p->GetBinContent(1)+
+			 gt1s->GetBinContent(1)+
+			 gt1c->GetBinContent(1));
+  
+  // --- Draw relative contributions to signal/background ------------
+  ClearCanvas();
+  fBody->SetTopMargin(0.2);
+  fBody->SetRightMargin(0.01);
+  fBody->Divide(2,3,0,0);
+  gStyle->SetPaintTextFormat("6.2f");
+  drawLog = false;
+  for (Int_t i = 0; i < 2; i++) {
+    TString  sub = (i == 0 ? "mid" : "fwd");
+    TString  bin = (i == 0 ? "|#eta|<1" : "|#eta|>1");
+    for (Int_t j = 0; j < 3; j++) {
+      Container*   par   = (j == 0 ? prim :
+			    j == 1 ? seco : comb);
+      TString      parT  = (j == 0 ? "Primaries" :
+			    j == 1 ? "Secondaries" : "Combinatorics");
+      Int_t        padNo = j * 2 + i + 1;
+      TVirtualPad* pad   = fBody->cd(padNo);
+      if ((padNo % 2) == 0) pad->SetRightMargin(0.10);
+      else                  pad->SetLeftMargin(0.20);
+      pad->SetTicks();
+      pad->SetGridx();
+      pad->SetGridy();
+      TH1*         itg   = GetH1(GetC(par, sub), "totalIntegrals");
+      THStack*     rhs   = GetHS(GetC(par, sub), "rows");
+      TObjLink*    ptr   = rhs->GetHists()->FirstLink();
+      while (ptr) {
+	ptr->SetOption("hist bar0 text30");
+	TH1* h = static_cast<TH1*>(ptr->GetObject());
+	h->SetMarkerSize(3);
+	ptr = ptr->Next();
+      }
+      rhs->SetMaximum(drawLog ? 200  : 110);
+      rhs->SetMinimum(drawLog ? 1e-3 : 0);
+      // Printf("Draw %s/%s in %d", sub.Data(), parT.Data(), padNo);
+      DrawInPad(fBody, padNo, rhs, Form("nostack %s",
+					drawLog ? "logy" : ""));
+      rhs->GetHistogram()->SetYTitle(parT);
+      rhs->GetHistogram()->GetXaxis()->SetLabelSize(0.03/pad->GetHNDC());
+      rhs->GetHistogram()->GetYaxis()->SetLabelSize(0.03/pad->GetHNDC());
+      rhs->GetHistogram()->GetYaxis()->SetTitleSize(0.03/pad->GetHNDC());
+      rhs->GetHistogram()->GetYaxis()->SetNdivisions(207);
+      rhs->GetHistogram()->GetYaxis()->SetTitleOffset(1);
+      
+      pad->cd();
+      Double_t total = itg->GetBinContent(1);
+      TLatex* txt = new TLatex(pad->GetLeftMargin()+.05,
+			       .99, Form("%5.2f%% of all",
+					 100*total/totalA));
+      txt->SetTextAlign(13);
+      txt->SetNDC();
+      txt->SetTextSize(0.06);
+      txt->Draw();
+
+      txt = new TLatex(pad->GetLeftMargin()+.05,
+		       .99-txt->GetTextSize(),
+		       Form("Signal %5.2f%% of all",
+			    100*itg->GetBinContent(2)/totalA));
+      txt->SetTextAlign(13);
+      txt->SetNDC();
+      txt->SetTextSize(0.06);
+      txt->SetTextColor(kGreen+1);
+      txt->Draw();
+
+      txt = new TLatex(pad->GetLeftMargin()+.05,
+		       .99-2*txt->GetTextSize(),
+		       Form("Background %5.2f%% of all",
+			    100*itg->GetBinContent(3)/totalA));
+      txt->SetTextAlign(13);
+      txt->SetNDC();
+      txt->SetTextSize(0.06);
+      txt->SetTextColor(kRed+1);
+      txt->Draw();
+    }
+  }
+  // --- Make a legend -----------------------------------------------
+  l = new TLegend(fBody->GetLeftMargin(),
+		  1-fBody->GetTopMargin(),
+		  .99, .99);
+  l->SetNColumns(2);
+  l->SetFillStyle(0);
+  l->SetBorderSize(0);
+  e = l->AddEntry("dummy", "Signal #minus #Delta<1.5", "f");
+  e->SetFillColor(kGreen+1);
+  e->SetFillStyle(1001);
+  e = l->AddEntry("dummy", "Background #minus 5<#Delta<25", "f");
+  e->SetFillColor(kRed+1);
+  e->SetFillStyle(1001);
+  fBody->cd();
+  l->Draw();
+  
+  PrintCanvas(Form("Species strangeness #topbar %s", fLastBin.Data()),
+	      Form("%s_species_strange", fLastShort.Data()));
+
+
+    
+}  
+  
 
 //____________________________________________________________________
 Bool_t AliTrackletdNdeta2::VisualizePrimary(Container* simCont)
