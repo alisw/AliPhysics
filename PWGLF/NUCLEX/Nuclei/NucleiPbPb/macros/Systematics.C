@@ -20,6 +20,7 @@ using std::to_string;
 #include <TList.h>
 #include <TCanvas.h>
 #include <TMath.h>
+#include <TLegend.h>
 
 float zTest(const float mu0, const float sig0, const float mu1, const float sig1) {
   const float sigma = sqrt(sig0 * sig0 + sig1 * sig1);
@@ -29,15 +30,17 @@ float zTest(const float mu0, const float sig0, const float mu1, const float sig1
 
 void Systematics() {
   TFile input_file(kSpectraOutput.data());
-  TFile signal_file(kSignalOutput.data());
+  TFile fitsyst_file(kFitSystematicsOutput.data());
   TFile output_file(kSystematicsOutput.data(),"recreate");
+
+  TH1D* fitsyst = (TH1D*)fitsyst_file.Get("Systematics/hSystFit");
+  Requires(fitsyst,"Missing fit systematics");
 
   TAxis* centAxis = (TAxis*)input_file.Get("centrality");
   TAxis* ptAxis = (TAxis*)input_file.Get("pt");
 
   vector<TH1F*> references(centAxis->GetNbins(),nullptr);
   vector<TH1F*> cutsyst(centAxis->GetNbins(),nullptr);
-  vector<TH1F*> fitsyst(centAxis->GetNbins(),nullptr);
   vector<TH1F*> matsyst(centAxis->GetNbins(),nullptr);
   vector<TH1F*> abssyst(centAxis->GetNbins(),nullptr);
   vector<TH1F*> totsyst(centAxis->GetNbins(),nullptr);
@@ -67,11 +70,6 @@ void Systematics() {
       abssyst[iC]->Reset();
 
       basepath = kFilterListNames + "/" + kNames[iS] + "/Systematics/hSystFit" + kLetter[iS] + to_string(iC);
-      fitsyst[iC] = (TH1F*)signal_file.Get(basepath.data());
-      if (!fitsyst[iC]) {
-        cout << basepath.data() << " is missing." << endl;
-        return;
-      }
       for (auto& syst : kCutNames) {
         basepath = kFilterListNames + "_" + syst.first.data() + "%i/" + kNames[iS] + "/TOFspectra" + to_string(iC);
         TDirectory* cut_dir = species_dir->mkdir(syst.first.data());
@@ -96,11 +94,12 @@ void Systematics() {
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
           matsyst[iC]->SetBinContent(iB,kMatSyst);
-          abssyst[iC]->SetBinContent(iB,kAbsSyst);
+          abssyst[iC]->SetBinContent(iB,kAbsSyst[iS]);
           const float m0 = references[iC]->GetBinContent(iB);
           const float s0 = references[iC]->GetBinError(iB);
 
           vector<float> values{m0};
+          vector<float> weigths{s0};
           for (size_t iV = 0; iV < syst.second.size(); ++iV) {
             const float m1 = variations[iV]->GetBinContent(iB);
             const float s1 = variations[iV]->GetBinError(iB);
@@ -111,9 +110,10 @@ void Systematics() {
               variations[iV]->SetBinError(iB,0.f);
             } else {
               values.push_back(m1);
+              weigths.push_back(s1);
             }
           }
-          rms[iB - 1] = TMath::RMS(values.size(),values.data()) / m0;
+          rms[iB - 1] = TMath::RMS(values.begin(),values.end()) / m0;
           cutsyst[iC]->SetBinContent(iB, cutsyst[iC]->GetBinContent(iB) + rms[iB-1] * rms[iB-1]);
         }
 
@@ -153,20 +153,60 @@ void Systematics() {
       }
       for (int iB = 1; iB <= cutsyst[iC]->GetNbinsX(); ++iB) {
         cutsyst[iC]->SetBinContent(iB,sqrt(cutsyst[iC]->GetBinContent(iB)));
+      }
+
+      if (kSmoothSystematics) {
+        cutsyst[iC]->GetXaxis()->SetRange(cutsyst[iC]->FindBin(kPtRange[0]+0.01),cutsyst[iC]->FindBin(kPtRange[1]-0.01));
+        fitsyst->GetXaxis()->SetRange(fitsyst->FindBin(kPtRange[0]+0.01),fitsyst->FindBin(kPtRange[1]-0.01));
+        cutsyst[iC]->Smooth(1,"R");
+        fitsyst->Smooth(1,"R");
+      }
+
+      for (int iB = 1; iB <= cutsyst[iC]->GetNbinsX(); ++iB) {
         float tot = sqrt(
             cutsyst[iC]->GetBinContent(iB) * cutsyst[iC]->GetBinContent(iB) +
             matsyst[iC]->GetBinContent(iB) * matsyst[iC]->GetBinContent(iB) +
             abssyst[iC]->GetBinContent(iB) * abssyst[iC]->GetBinContent(iB) +
-            fitsyst[iC]->GetBinContent(iB) * fitsyst[iC]->GetBinContent(iB)
+            fitsyst->GetBinContent(iB) * fitsyst->GetBinContent(iB)
             );
         totsyst[iC]->SetBinContent(iB,tot);
       }
+
+      TCanvas summary("summary","Summary");
+      summary.DrawFrame(kPtRange[0],0.,kPtRange[1],0.3,";#it{p}_{T} (GeV/#it{c}); Systematics uncertainties (%)");
+      TLegend leg (0.12,0.6,0.42,0.88);
+      leg.SetBorderSize(0);
+      cutsyst[iC]->SetLineColor(kColor[0]);
+      cutsyst[iC]->Draw("same");
+      leg.AddEntry(cutsyst[iC],"PID and cuts","l");
+      fitsyst->SetLineColor(kColor[1]);
+      fitsyst->Draw("same");
+      leg.AddEntry(fitsyst,"TOF fits","l");
+      matsyst[iC]->SetLineColor(kColor[2]);
+      matsyst[iC]->Draw("same");
+      leg.AddEntry(matsyst[iC],"Material budget","l");
+      abssyst[iC]->SetLineColor(kColor[3]);
+      abssyst[iC]->Draw("same");
+      leg.AddEntry(abssyst[iC],"Hadronic interaction","l");
+      totsyst[iC]->SetLineColor(kColor[4]);
+      totsyst[iC]->Draw("same");
+      leg.AddEntry(totsyst[iC],"Total","l");
+      totsyst[iC]->SetLineWidth(2);
+      totsyst[iC]->Draw("same");
+      leg.Draw();
+
       species_dir->cd();
       cutsyst[iC]->Write("cutsyst");
-      fitsyst[iC]->Write("fitsyst");
+      fitsyst->Write("fitsyst");
       abssyst[iC]->Write("abssyst");
       matsyst[iC]->Write("matsyst");
       totsyst[iC]->Write("totsyst");
+      summary.Write();
+
+      if (kPrintFigures) {
+        summary.SaveAs((kFiguresFolder + "syst" + kLetter[iS] + to_string(iC) + ".eps").data());
+        summary.SaveAs((kMacrosFolder + "syst" + kLetter[iS] + to_string(iC) + ".C").data());
+      }
     }
   }
   output_file.Close();
