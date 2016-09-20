@@ -30,11 +30,13 @@ fCutCascRadius(0.4),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
-fCutTPCdEdx(4.0)
+fCutTPCdEdx(4.0),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCPDGCodeAssociation(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F("fHisto","", 20,0,100, 200,0,2, 100,0,10);
+    fHisto = new TH3F("fHisto","", 20,0,100, 400,0,2, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -57,7 +59,9 @@ fCutCascRadius(0.4),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
-fCutTPCdEdx(4.0)
+fCutTPCdEdx(4.0),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCPDGCodeAssociation(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -67,7 +71,7 @@ fCutTPCdEdx(4.0)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -90,7 +94,10 @@ fCutCascRadius(lCopyMe.fCutCascRadius),
 //Miscellaneous
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
-fCutTPCdEdx(lCopyMe.fCutTPCdEdx)
+fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
+//MC specific
+fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
+fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -100,7 +107,7 @@ fCutTPCdEdx(lCopyMe.fCutTPCdEdx)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -111,9 +118,9 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     fMassHypo = lCopyMe->GetMassHypothesis();
     //V0 Cuts
     fCutDCANegToPV     = lCopyMe->GetCutDCANegToPV();
-    fCutDCAPosToPV     = lCopyMe->GetCutDCAPosToPV(),
-    fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters(),
-    fCutV0CosPA        = lCopyMe->GetCutV0CosPA(),
+    fCutDCAPosToPV     = lCopyMe->GetCutDCAPosToPV();
+    fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters();
+    fCutV0CosPA        = lCopyMe->GetCutV0CosPA();
     fCutV0Radius       = lCopyMe->GetCutV0Radius();
     //Cascade Cuts
     fCutDCAV0ToPV = lCopyMe -> GetCutDCAV0ToPV();
@@ -124,9 +131,13 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     fCutCascRadius = lCopyMe -> GetCutCascRadius();
     
     //Miscellaneous
-    fCutProperLifetime = lCopyMe->GetCutProperLifetime(),
-    fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters(),
+    fCutProperLifetime = lCopyMe->GetCutProperLifetime();
+    fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
+    
+    //MC specific
+    fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
+    fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -136,7 +147,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -161,8 +172,8 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     //V0 Cuts
     fCutDCANegToPV = lCopyMe.GetCutDCANegToPV();
     fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV(),
-    fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters(),
-    fCutV0CosPA = lCopyMe.GetCutV0CosPA(),
+    fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
+    fCutV0CosPA = lCopyMe.GetCutV0CosPA();
     fCutV0Radius = lCopyMe.GetCutV0Radius();
     //Cascade Cuts
     fCutDCAV0ToPV = lCopyMe.GetCutDCAV0ToPV();
@@ -173,9 +184,13 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutCascRadius = lCopyMe.GetCutCascRadius();
     
     //Miscellaneous
-    fCutProperLifetime = lCopyMe.GetCutProperLifetime(),
-    fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters(),
+    fCutProperLifetime = lCopyMe.GetCutProperLifetime();
+    fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
+    
+    //MC specific
+    fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
+    fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     
     if (fHisto) {
         delete fHisto;
@@ -189,7 +204,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
     fHisto->Sumw2();
     
     return *this;
