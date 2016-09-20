@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWG/Cocktail                    
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
@@ -92,10 +93,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils)
+set(ALIPHYSICS_DECPENDENCIES PWGCocktail)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DECPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

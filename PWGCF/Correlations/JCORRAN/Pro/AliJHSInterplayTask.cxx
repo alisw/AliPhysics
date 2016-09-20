@@ -57,6 +57,7 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	fInputList(NULL),
 	fInputListSpectra(NULL),
 	fVnMethod(0),
+	fESMethod(0),
 	fInputListFlow(NULL),
 	fFirstEvent(kTRUE),
 	cBin(-1),
@@ -85,6 +86,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const char *name)
 	fInputList(0x0),
 	fInputListSpectra(0x0),
 	fVnMethod(0),
+	fESMethod(0),
 	fInputListFlow(0x0),
 	fFirstEvent(kTRUE),
 	cBin(-1),
@@ -98,6 +100,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const char *name)
 	IsMC(kFALSE),
 	IsKinematicOnly(kFALSE),
 	fPtHardMin(0),
+	fPtHardMax(0),
         TagThisEvent(kFALSE)
 {
 
@@ -124,6 +127,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	fInputList(a.fInputList),
 	fInputListSpectra(a.fInputListSpectra),
 	fVnMethod(a.fVnMethod),
+	fESMethod(a.fVnMethod),
 	fInputListFlow(a.fInputListFlow),
 	fFirstEvent(kTRUE),
 	cBin(-1),
@@ -137,6 +141,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	IsMC(a.IsMC),
 	IsKinematicOnly(a.IsKinematicOnly),
 	fPtHardMin(a.fPtHardMin),
+	fPtHardMax(a.fPtHardMax),
         TagThisEvent(a.TagThisEvent)
 {
 	//copy constructor
@@ -198,6 +203,7 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	fHadronSelectionCut = int ( fCard->Get("HadronSelectionCut"));
 	trkfilterBit	= Int_t ( fCard->Get("AODTrackFilterBit"));
 	//fVnMethod 	= int (fCard->Get("VnMethod"));
+	fESMethod 	= int (fCard->Get("ESMethod"));
 
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
@@ -374,15 +380,33 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 	if(fDebugMode) cout << "Start of RunEbEFlowAnalysis.. FilterBit (AOD,Ntrack)="<< trkfilterBit << ","<< fInputList->GetEntries() <<endl;
 	// Spectra Ana
 	if(fDebugMode) cout << "Spectra Ana fInputListSpectra->GetEntriesFast() = "<< fInputListSpectra->GetEntriesFast() << endl;
-	if(fDebugMode) cout << " fPtHardMin = "<< fPtHardMin << endl;
+	if(fDebugMode) cout << " fPtHardMin = "<< fPtHardMin <<" , fPtHardMax = "<< fPtHardMax << endl;
 
-	// Find whether this event has a partilce at least pt > PtHardMin
+	// find LP in a event
+	float pT_max = -1.;     //maximal pT in the event
+	int indexLP      = -1;      //index of the leading particle
 	for(int i=0;i<fInputListSpectra->GetEntriesFast();i++) {
 		AliJBaseTrack *track = (AliJBaseTrack*)fInputListSpectra->At(i);
 		double ptt = track->Pt();
+		if(ptt > pT_max ){  //Find the leading particle in the event
+			indexLP  = i;
+			pT_max = ptt;
+		}
+	}
+
+	if(fESMethod==1) { // Leading particle
 		// Make a decision for running the analysis or not
 		// analyze the events only if we find a pt > PtHardMin
-		if( ptt > fPtHardMin ) TagThisEvent = kTRUE;
+		if( pT_max > fPtHardMin && pT_max < fPtHardMax ) TagThisEvent = kTRUE;
+	} else if (fESMethod==0) {
+		// Find whether this event has a partilce at least pt > PtHardMin
+		for(int i=0;i<fInputListSpectra->GetEntriesFast();i++) {
+			AliJBaseTrack *track = (AliJBaseTrack*)fInputListSpectra->At(i);
+			double ptt = track->Pt();
+			// Make a decision for running the analysis or not
+			// analyze the events only if we find a pt > PtHardMin
+			if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent = kTRUE;
+		}
 	}
 
 	if(TagThisEvent) {
