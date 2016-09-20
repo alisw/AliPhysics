@@ -963,9 +963,9 @@ AliMUONCalibrationData::LV() const
 {
   /// Return the LV map for a given (detElemId, manuId) pair
 
-  if (!fLV && RunNumber() > 250127)
+  if (!fLV && RunNumber() > 254853 )
   {
-    /// LV object was only introduced at the beginning of 2016 (march ...), so we
+    /// LV object was only introduced at the beginning of 2016 (LHC16h,april), so we
     /// can not require it for runs before that...
     fLV = CreateLV(fRunNumber);
   }

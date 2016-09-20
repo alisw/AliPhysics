@@ -9,7 +9,7 @@
 /// \ingroup rec
 /// \class AliMUONPadStatusMaker
 /// \brief Make a 2DStore of pad statuses, using different sources of information
-/// 
+///
 //  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
@@ -33,10 +33,10 @@ class AliMUONPadStatusMaker : public TObject
 public:
   AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData);
   virtual ~AliMUONPadStatusMaker();
-  
+
   /// Get the reference to the calibrationdata object we use.
   const AliMUONCalibrationData& CalibrationData() const { return fkCalibrationData; }
-  
+
   /** Get access to internal status store (for debug only, as it may not be complete,
     depending on whether you've already called PadStatus for all possible de,manu
     combinations or not...
@@ -46,31 +46,31 @@ public:
   AliMUONVCalibParam* PadStatus(Int_t detElemId, Int_t manuId) const;
 
   Int_t PadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
-  
+
   AliMUONVStore* NeighboursStore() const;
-  
+
   AliMUONVCalibParam* Neighbours(Int_t detElemId, Int_t manuId) const;
-  
+
   static TString AsString(Int_t status);
 
   static TString AsCondition(Int_t status);
-  
+
   /// Return HV threshold
   Double_t HVLimit(Int_t chamberId) const;
-  
+
   /// Return Low and High threshold for pedestal mean
   TVector2 PedMeanLimits() const { return fPedMeanLimits; }
   /// Return Low and High threshold for pedestal sigma
   TVector2 PedSigmaLimits() const { return fPedSigmaLimits; }
-  
+
   /// Set HV limit
   void SetHVLimit(Int_t chamberId, Double_t hv);
 
   /// Set Low and High threshold for pedestal mean
   void SetPedMeanLimits(float low, float high) { fPedMeanLimits.Set(low,high); }
-  /// Set Low and High threshold for pedestal sigma 
+  /// Set Low and High threshold for pedestal sigma
   void SetPedSigmaLimits(float low, float high) { fPedSigmaLimits.Set(low,high); }
-  	
+
   /// Set Low and High manu occupancy limits
   void SetManuOccupancyLimits(float low, float high) { fManuOccupancyLimits.Set(low,high); }
   /// Get manu occupancy limits
@@ -85,22 +85,22 @@ public:
   void SetDEOccupancyLimits(float low, float high) { fDEOccupancyLimits.Set(low,high); }
   /// Get DE occupancy limits
   TVector2 DEOccupancyLimits() const { return fDEOccupancyLimits; }
-  
+
   void SetLimits(const AliMUONRecoParam& recoParams);
 
   void Report(UInt_t mask);
-  
+
   static Float_t SwitchValue(const TObjArray& dcsArray);
-  
-  Int_t LVStatus(Int_t detElemId) const;
-  
+
+  Int_t LVStatus(Int_t detElemId, Int_t manuId) const;
+
   Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
-  
+
   Int_t OccupancyStatus(Int_t detElemId, Int_t manuId) const;
 
-  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, 
+  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus,
                            Int_t&  lvStatus, Int_t& otherStatus);
-  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, 
+  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus,
                            Int_t lvStatus, Int_t otherStatus);
 private:
   /// Not implemented
@@ -108,23 +108,25 @@ private:
   /// Not implemented
   AliMUONPadStatusMaker& operator=(const AliMUONPadStatusMaker&);
 
-  
+
   AliMUONVCalibParam* ComputeStatus(Int_t detElemId, Int_t manuId) const;
 
   Bool_t HVSt12Status(Int_t detElemId, Int_t sector,
                       Bool_t& hvChannelTooLow,
                       Bool_t& hvChannelTooHigh,
                       Bool_t& hvChannelON) const;
-  
-  
+
+
   Bool_t HVSt345Status(Int_t detElemId, Int_t pcbIndex,
                        Bool_t& hvChannelTooLow,
                        Bool_t& hvChannelTooHigh,
                        Bool_t& hvChannelON,
                        Bool_t& hvSwitchON) const;
 
+  AliMUONVTrackerData* InternalTrackerData() const;
+  TExMap* InternalHV() const;
+  TExMap* InternalLV() const;
   void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
-
   Int_t CheckConfigConsistencyWithPedestalInformation(Int_t detElemId,Int_t manuId) const;
 
 private:
@@ -143,21 +145,21 @@ private:
     kPedMeanTooHigh = (1<<3),
     kPedSigmaTooLow = (1<<4),
     kPedSigmaTooHigh = (1<<5),
-    
+
     kPedMissing = kMissing // please always use last bit for meaning "missing"
   };
-  
+
   /// LV status
   enum ELVStatus
   {
     kLVOK = 0,
     kLVTooLow = (1<<3),
-    
+
     kLVMissing = kMissing // please always use last bit for meaning "missing"
   };
-  
+
   /// HV Error
-  enum EHVError 
+  enum EHVError
   {
     kHVOK = 0,
     kHVError = (1<<0),
@@ -168,7 +170,7 @@ private:
 
     kHVMissing = kMissing // please always use last bit for meaning "missing"
   };
-  
+
   /// Other
   enum EOccupancyStatus
   {
@@ -179,29 +181,30 @@ private:
     kDEOccupancyTooLow = (1<<5),
     kDEOccupancyTooHigh = (1<<6),
     kBusPatchRemovedByPAR = (1<<7),
-    
+
   };
-  
+
   const AliMUONCalibrationData& fkCalibrationData; //!<! helper class to get data access (not owner)
-  
+
   Double_t fHVLimit[10]; //!<! Low thresholds for HV
 
   TVector2 fPedMeanLimits; //!<! Low and High threshold for pedestal mean
   TVector2 fPedSigmaLimits; //!<! Low and High threshold for pedestal sigma
-  
+
   TVector2 fManuOccupancyLimits; //!<! Low and High manu occupancy limits
   TVector2 fBuspatchOccupancyLimits; //!<! Low and High buspatch occupancy limits
   TVector2 fDEOccupancyLimits; //!<! Low and High DE occupancy limits
-  
+
   AliMUONVStore* fStatus; //!<! statuses of the pads
-  
+
+  mutable TExMap* fLV; //!<! cache of lv statuses
   mutable TExMap* fHV; //!<! cache of hv statuses
 
   AliMUONVStore* fPedestals; //!<! pedestal values
   AliMUONVStore* fConfig; //!<! readout configuration
-  
-  AliMUONVTrackerData* fTrackerData; //!<! to get occupancies...
-  
+
+  mutable AliMUONVTrackerData* fTrackerData; //!<! to get occupancies...
+
   ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,lv,hv
 };
 
