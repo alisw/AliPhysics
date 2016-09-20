@@ -48,7 +48,6 @@
 #include "AliStack.h"
 #include "TGeoManager.h"
 
-#include "AliMultiplicitySelectionCPPWA.h"
 #include "AliAnalysisTaskCDPWA.h"
 
 ClassImp(AliAnalysisTaskCDPWA);
@@ -224,6 +223,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
+	, fSelec()
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -330,6 +330,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
+	, fSelec()
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -798,6 +799,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fTwoTrackInfo.Delete();
 	fFourTrackInfo.Delete();
 	fMCTrack.Delete();
+	fSelec.Clear();
 
 	//Check corrupted file, load ESDevent and handler
 	if (!CheckInput()) {
@@ -1048,14 +1050,13 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//two/four track event investigation in DG and NG
 	Bool_t is10bc = kFALSE;
 	if (fEventInfo.fPeriod <= 2) is10bc=kTRUE;
-	AliMultiplicitySelectionCPPWA selec;
 	//(clusterCut,useITSSA,isRun2,nCluster)
-	if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,0);// 1 = b,c and 0 = d,e
-	else selec.InitDefaultTrackCuts(0,0,kTRUE,0);//Run2
+	if (!fIsRun2) fSelec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,0);// 1 = b,c and 0 = d,e
+	else fSelec.InitDefaultTrackCuts(0,0,kTRUE,0);//Run2
 	TArrayI indices;
 
 	Bool_t isrealNG = (normalCut && fDG_Det[7]) ? kTRUE : kFALSE;
-	Int_t Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices,hDCAz_MS,hMultNG_Test,isrealNG);
+	Int_t Nsel = fSelec.GetNumberOfITSTPCtracks(fESDEvent,indices,hDCAz_MS,hMultNG_Test,isrealNG);
 	
 	//2-tracks & 4-tracks
 	lv_sum_2t.SetPxPyPzE(0,0,0,0);
@@ -1117,11 +1118,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		for (Int_t i = 0; i < 11; i++) {
 			Nsel = 0;
 			indices = 0x0;
-			selec.Clear();
+			fSelec.Clear();
 //			selec.SetInitCuts();
-			if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,i);
-			else selec.InitDefaultTrackCuts(0,0,kTRUE,0);
-			Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices,0x0,0x0,kFALSE);
+			if (!fIsRun2) fSelec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,i);
+			else fSelec.InitDefaultTrackCuts(0,0,kTRUE,0);
+			Nsel = fSelec.GetNumberOfITSTPCtracks(fESDEvent,indices,0x0,0x0,kFALSE);
 			fEventInfo.fCheckTwoTrack[i] = (Nsel == 2) ? kTRUE : kFALSE;
 			fEventInfo.fCheckFourTrack[i] = (Nsel == 4) ? kTRUE : kFALSE;
 
@@ -1156,11 +1157,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		//By default it has to run it over with 'fnSys'
 		Nsel = 0;
 		indices = 0x0;
-		selec.Clear();
+		fSelec.Clear();
 //		selec.SetInitCuts();
-		if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,fnSys);
-		else selec.InitDefaultTrackCuts(0,0,kTRUE,0);
-		Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices,0x0,0x0,kFALSE);
+		if (!fIsRun2) fSelec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,fnSys);
+		else fSelec.InitDefaultTrackCuts(0,0,kTRUE,0);
+		Nsel = fSelec.GetNumberOfITSTPCtracks(fESDEvent,indices,0x0,0x0,kFALSE);
 		fEventInfo.fCheckTwoTrack[0] = (Nsel == 2) ? kTRUE : kFALSE;
 		fEventInfo.fCheckFourTrack[0] = (Nsel == 4) ? kTRUE : kFALSE;
 		for (Int_t i = 1; i < 11; ++i) {
@@ -1180,7 +1181,6 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	}
 
-	selec.Clear();
 	indices = 0x0;
 
 	if (!fIsMC && storeT) fTree->Fill();
