@@ -303,7 +303,7 @@ TString  AliTreePlayer::printSelectedTreeInfo(TTree*tree, TString infoType,  TSt
    */
   TString result="";
   TList * treeFriends = tree->GetListOfFriends();
-  Int_t ntrees = 1+(treeFriends!=NULL)?treeFriends->GetEntries():0;
+  Int_t ntrees = 1+( (treeFriends!=NULL)?treeFriends->GetEntries():0 );
   TPRegexp  pregExpFriend=regExpFriend;
   TPRegexp  pregExpTag=regExpTag;
   const char* dataTypes[3]={"branch","alias", "metaData"};
