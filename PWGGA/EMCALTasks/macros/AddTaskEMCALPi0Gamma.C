@@ -68,7 +68,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   TString pathToBadMap;
   
   if (badMapName !="defaultTender") {
-    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/b/bsahlmul/%s.root .",badMapName.Data()));
+    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/%s.root .",badMapName.Data()));
     pathToBadMap = Form("%s/",gSystem->pwd());
     pathToBadMap += badMapName;
     pathToBadMap += ".root";
