@@ -204,6 +204,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMassDG_ST_4t(0x0)
 	, fMassDG_MS_4t(0x0)
 	, fTrackCutsInfo(0x0)
+	, fTrackCutsInfo_NG(0x0)
 	, fTrackCutsInfo_ITSSA(0x0)
 	, fhClusterVsTracklets_bf(0x0)
 	, fhClusterVsTracklets_af(0x0)
@@ -222,6 +223,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMult_Rec_DG_Process(0x0)
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
+	, hDCAz_MS(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -233,6 +235,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 			fMC_Eta[i] = 0x0;
 			fMC_DiffMass[i] = 0x0;
 			fMC_DiffMass_PDG[i] = 0x0;
+		}
+		if (i < 6) {
+			hMultNG_Test[i] = 0x0;
 		}
 		fRunVsDG[i] = 0x0;
 	}
@@ -305,6 +310,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMassDG_ST_4t(0x0)
 	, fMassDG_MS_4t(0x0)
 	, fTrackCutsInfo(0x0)
+	, fTrackCutsInfo_NG(0x0)
 	, fTrackCutsInfo_ITSSA(0x0)
 	, fhClusterVsTracklets_bf(0x0)
 	, fhClusterVsTracklets_af(0x0)
@@ -323,6 +329,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Rec_DG_Process(0x0)
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
+	, hDCAz_MS(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -335,6 +342,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 			fMC_Eta[i] = 0x0;
 			fMC_DiffMass[i] = 0x0;
 			fMC_DiffMass_PDG[i] = 0x0;
+		}
+		if (i < 6) {
+			hMultNG_Test[i] = 0x0;
 		}
 	}
 }
@@ -381,6 +391,7 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMassDG_ST_4t) delete fMassDG_ST_4t;
 	if (fMassDG_MS_4t) delete fMassDG_MS_4t;
 	if (fTrackCutsInfo) delete fTrackCutsInfo;
+	if (fTrackCutsInfo_NG) delete fTrackCutsInfo_NG;
 	if (fTrackCutsInfo_ITSSA) delete fTrackCutsInfo_ITSSA;
 	if (fhClusterVsTracklets_bf) delete fhClusterVsTracklets_bf;
 	if (fhClusterVsTracklets_af) delete fhClusterVsTracklets_af;
@@ -398,6 +409,7 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMult_Gen_Process) delete fMult_Gen_Process;
 	if (fMult_Rec_DG_Process) delete fMult_Rec_DG_Process;
 	if (fMult_Rec_NG_Process) delete fMult_Rec_NG_Process;
+	if (hDCAz_MS) delete hDCAz_MS;
 	for (Int_t i = 0; i < 10; i++) {
 		if (i<2) {
 			if (fV0Time[i]) delete fV0Time[i];
@@ -405,6 +417,8 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 		}
 		if (i<6 && fRunFiducial[i]) delete fRunFiducial[i];
 		if (fRunVsDG[i]) delete fRunVsDG[i];
+		if (i < 5) delete hMultNG_Test[i];
+		
 	}
 }
 //______________________________________________________________________________
@@ -627,6 +641,10 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fTrackCutsInfo = new TH1D("fTrackCutsInfo","",20,-10,10);
 		fList->Add(fTrackCutsInfo);
 	}
+	if (!fTrackCutsInfo_NG) {
+		fTrackCutsInfo_NG = new TH1D("fTrackCutsInfo_NG","",110,-10,100);
+		fList->Add(fTrackCutsInfo_NG);
+	}
 	if (!fTrackCutsInfo_ITSSA) {
 		fTrackCutsInfo_ITSSA = new TH1D("fTrackCutsInfo_ITSSA","",20,-10,10);
 		fList->Add(fTrackCutsInfo_ITSSA);
@@ -728,6 +746,14 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		}
 	}
 
+	if (!hDCAz_MS) {
+		hDCAz_MS = new TH1D("hDCAz_MS","hDCAz_MS",1000,0,1000);
+		fList->Add(hDCAz_MS);
+	}
+	for (Int_t i = 0; i < 6; i++) {
+		hMultNG_Test[i] = new TH1D(Form("hMultNG_Test_%d",i),Form("hMultNG_Test_%d",i),110,-10,100);
+		fList->Add(hMultNG_Test[i]);
+	}
 
 	// Track Cuts
 	if (!fIsRun2) {
@@ -1027,7 +1053,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,0);// 1 = b,c and 0 = d,e
 	else selec.InitDefaultTrackCuts(0,0,kTRUE,0);//Run2
 	TArrayI indices;
-	Int_t Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices);
+
+	Bool_t isrealNG = (normalCut && fDG_Det[7]) ? kTRUE : kFALSE;
+	Int_t Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices,hDCAz_MS,hMultNG_Test,isrealNG);
 	
 	//2-tracks & 4-tracks
 	lv_sum_2t.SetPxPyPzE(0,0,0,0);
@@ -1055,6 +1083,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	if (normalCut && fDG_Det[7]) {//NG
 		fMultNG_MS->Fill(Nsel);
+		fTrackCutsInfo_NG->Fill(Nsel);
 		if (Nsel == 2 && trkCharge == 0) fMassNG_MS_2t->Fill(lv_sum_2t.M());
 		if (Nsel == 4 && trkCharge == 0) fMassNG_MS_4t->Fill(lv_sum_4t.M());
 	}
@@ -1092,7 +1121,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 //			selec.SetInitCuts();
 			if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,i);
 			else selec.InitDefaultTrackCuts(0,0,kTRUE,0);
-			Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices);
+			Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices,0x0,0x0,kFALSE);
 			fEventInfo.fCheckTwoTrack[i] = (Nsel == 2) ? kTRUE : kFALSE;
 			fEventInfo.fCheckFourTrack[i] = (Nsel == 4) ? kTRUE : kFALSE;
 
@@ -1131,7 +1160,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 //		selec.SetInitCuts();
 		if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,fnSys);
 		else selec.InitDefaultTrackCuts(0,0,kTRUE,0);
-		Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices);
+		Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices,0x0,0x0,kFALSE);
 		fEventInfo.fCheckTwoTrack[0] = (Nsel == 2) ? kTRUE : kFALSE;
 		fEventInfo.fCheckFourTrack[0] = (Nsel == 4) ? kTRUE : kFALSE;
 		for (Int_t i = 1; i < 11; ++i) {
