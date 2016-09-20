@@ -25,7 +25,9 @@
 #include "AliHLTTPCRawClustersDescriptor.h"
 #include "AliHLTDataInflaterSimple.h"
 #include "AliHLTDataInflaterHuffman.h"
+#include "AliCDBEntry.h"
 #include "TList.h"
+#include "TFile.h"
 #include <memory>
 
 ClassImp(AliHLTTPCDataCompressionDecoder)
@@ -47,6 +49,7 @@ AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
   , fDecodeFlagsTmpPos(0)
   , fDecodeFlagsTmpEntries(0)
   , fClusterMCData()
+  , fHuffmanTableFile()
 {
   /// constructor
 }
@@ -110,11 +113,27 @@ AliHLTDataInflater* AliHLTTPCDataCompressionDecoder::CreateInflater(int deflater
     {
       std::auto_ptr<AliHLTDataInflaterHuffman> inflaterhuffman(new AliHLTDataInflaterHuffman);
       if (!inflaterhuffman.get()) return NULL;
+      TObject* pConf=NULL;
+      if (fHuffmanTableFile.empty()) {
       TString cdbPath("HLT/ConfigTPC/TPCDataCompressorHuffmanTables");
-      TObject* pConf=AliHLTMisc::Instance().ExtractObject(AliHLTMisc::Instance().LoadOCDBEntry(cdbPath));
+      pConf=AliHLTMisc::Instance().ExtractObject(AliHLTMisc::Instance().LoadOCDBEntry(cdbPath));
       if (!pConf) {
 	HLTError("can not load configuration object %s", cdbPath.Data());
 	return NULL;
+      }
+      } else {
+	// load huffman table directly from file
+	TFile* tablefile = TFile::Open(fHuffmanTableFile.c_str());
+	if (!tablefile || tablefile->IsZombie()) return NULL;
+	TObject* obj = NULL;
+	AliCDBEntry* cdbentry = NULL;
+	tablefile->GetObject("AliCDBEntry", obj);
+	if (obj == NULL || (cdbentry = dynamic_cast<AliCDBEntry*>(obj))==NULL) {
+	  HLTError("can not read configuration object from file %s", fHuffmanTableFile.c_str());
+	  return NULL;
+	}
+	HLTInfo("reading huffman table configuration object from file %s", fHuffmanTableFile.c_str());
+	pConf = cdbentry->GetObject();
       }
       if (dynamic_cast<TList*>(pConf)==NULL) {
 	HLTError("huffman table configuration object of inconsistent type");

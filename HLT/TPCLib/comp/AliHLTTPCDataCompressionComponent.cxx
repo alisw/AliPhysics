@@ -67,7 +67,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   , fHistoClusterRatio(NULL)
   , fHistoTrackClusterRatio(NULL)
   , fHistogramFile()
-  , fTrainingTableOutput()
+  , fHuffmanTableFile()
   , fpBenchmark(NULL)
   , fpWrittenAssociatedClusterIds(NULL)
   , fDriftTimeFactorA(1.)
@@ -526,7 +526,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   float compressionFactor=(float)inputRawClusterSize;
   if ((outputDataSize)>0) compressionFactor/=outputDataSize;
   else compressionFactor=0.;
-  if (fHistoCompFactor) fHistoCompFactor->Fill(compressionFactor);
+  if (fHistoCompFactor && compressionFactor > 0.) fHistoCompFactor->Fill(compressionFactor);
 
   if (GetBenchmarkInstance() && allClusters>0) {
     GetBenchmarkInstance()->Stop(0);
@@ -921,10 +921,26 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
     if (!deflater.get()) return -ENOMEM;
 
     if (!deflater->IsTrainingMode()) {
+      TObject* pConf=NULL;
+      if (fHuffmanTableFile.IsNull()) {
       TString cdbPath("HLT/ConfigTPC/");
       cdbPath += GetComponentID();
       cdbPath += "HuffmanTables";
-      TObject* pConf=LoadAndExtractOCDBObject(cdbPath);
+      pConf=LoadAndExtractOCDBObject(cdbPath);
+      } else {
+	// load huffman table directly from file
+	TFile* tablefile = TFile::Open(fHuffmanTableFile);
+	if (!tablefile || tablefile->IsZombie()) return -EBADF;
+	TObject* obj = NULL;
+	AliCDBEntry* cdbentry = NULL;
+	tablefile->GetObject("AliCDBEntry", obj);
+	if (obj == NULL || (cdbentry = dynamic_cast<AliCDBEntry*>(obj))==NULL) {
+	  HLTError("can not read configuration object from file %s", fHuffmanTableFile.Data());
+	  return -ENOENT;
+	}
+	HLTInfo("reading huffman table configuration object from file %s", fHuffmanTableFile.Data());
+	pConf = cdbentry->GetObject();
+      }
       if (!pConf) return -ENOENT;
       if (dynamic_cast<TList*>(pConf)==NULL) {
 	HLTError("huffman table configuration object of inconsistent type");
@@ -1029,9 +1045,9 @@ int AliHLTTPCDataCompressionComponent::DoDeinit()
       fpDataDeflater->SaveAs(filename);
     }
     if (fDeflaterMode==kDeflaterModeHuffmanTrainer) {
-      if (fTrainingTableOutput.IsNull()) {
-	fTrainingTableOutput=GetComponentID();
-	fTrainingTableOutput+="-huffman.root";
+      if (fHuffmanTableFile.IsNull()) {
+	fHuffmanTableFile=GetComponentID();
+	fHuffmanTableFile+="-huffman.root";
       }
       // TODO: currently, the code tables are also calculated in FindObject
       // check if a different function is more appropriate
@@ -1047,7 +1063,7 @@ int AliHLTTPCDataCompressionComponent::DoDeinit()
 	cdbMetaData->SetComment("Huffman encoder configuration");
 	AliCDBEntry* entry=new AliCDBEntry(pConf, cdbId, cdbMetaData, kTRUE);
 
-	entry->SaveAs(fTrainingTableOutput);
+	entry->SaveAs(fHuffmanTableFile);
 	// this is a small memory leak
 	// seg fault in ROOT object handling if the two objects are deleted
 	// investigate later
@@ -1121,10 +1137,16 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
       fHistogramFile=argv[i++];
       return 2;
     }
-    // -save-histogram-table
+    // -save-huffman-table
     if (argument.CompareTo("-save-huffman-table")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      fTrainingTableOutput=argv[i++];
+      fHuffmanTableFile=argv[i++];
+      return 2;
+    }
+    // -load-huffman-table
+    if (argument.CompareTo("-load-huffman-table")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      fHuffmanTableFile=argv[i++];
       return 2;
     }
     // -cluster-verification
