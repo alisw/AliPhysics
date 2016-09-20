@@ -28,23 +28,23 @@ class AliReducedHypTritTrack : public TObject {
 
   // Getters
   TLorentzVector P() const {return fP;}
-  Double_t Dca() const {return fDca;}
-  Double_t Phi() const {return fPhi;}
-  Double_t Eta() const {return fEta;}
-  Double_t Charge() const {return fCharge;}
-  Double_t Dedx() const {return fDedx;}
-  Double_t DedxSigma() const {return fDedxSigma;}
-  Double_t TPCNcls() const {return fTpcNClusters;}
+  Float_t Dca() const {return fDca;}
+  Float_t Phi() const {return fPhi;}
+  Float_t Eta() const {return fEta;}
+  Float_t Dedx() const {return fDedx;}
+  Float_t DedxSigma() const {return fDedxSigma;}
+  Float_t DedxSigmaTriton() const {return fDedxSigmaTriton;}
+  Float_t TpcNcls() const {return fTpcNClusters;}
 
  private:
-  TLorentzVector fP;   // 4 momentum of track
-  Double_t fDca;        // DCA to prim vertex
-  Double_t fDedx;             // specific energyloss in TPC of track
-  Double_t fDedxSigma;        // dEdx sigma
-  Double_t fCharge;           // sign of  track
-  Double_t fEta;              // eta of track
-  Double_t fPhi;              // phi of track
-  Double_t fTpcNClusters;     // number of clusters
+  TLorentzVector fP;               //< 4 momentum of track
+  Float_t        fDca;             //< DCA to prim vertex
+  Float_t        fDedx;            //< specific energyloss in TPC of track
+  Float_t        fDedxSigma;       //< dEdx sigma
+  Float_t        fDedxSigmaTriton; //< dEdx sigma of triton hypothesis
+  Float_t        fEta;             //< eta of track
+  Float_t        fPhi;             //< phi of track
+  Float_t        fTpcNClusters;    //< number of clusters
 
 
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
@@ -62,35 +62,35 @@ class AliReducedHypTritV0 : public TObject {
 
   // Getters
   TVector3 Position() const {return fPosition;}
-  Double_t M() const {return fM;}
-  Double_t Pt() const {return fPt;}
-  Double_t P() const {return fP;}
-  Double_t SigmaD0() const {return fSigmaD0;}
-  Float_t Dca() const {return fDCAv0;}
-  Double_t Ct() const {return fDecayLength;}
+  AliReducedHypTritTrack* Pi() const {return fPiTrack;}
+  AliReducedHypTritTrack* He() const {return fHeTrack;}
+  Float_t M() const {return fM;}
+  Float_t Pt() const {return fPt;}
+  Float_t P() const {return fP;}
+  Float_t Dca() const {return fDcaV0;}
+  Float_t Ct() const {return fDecayLength;}
   Float_t Cos() const {return fCosPointingAngle;}
-  Double_t Chi2() const {return fChi2;}
-  Bool_t MC() const {return fMCTruth;}
-  Double_t Y() const {return fRapidity;}
-  Int_t Charge() const {return fCharge;}
-  AliReducedHypTritTrack *Pi() const {return fPiTrack;}
-  AliReducedHypTritTrack *He() const {return fHeTrack;}
+  Bool_t  Mc() const {return fMcTruth;}
+  Float_t Y() const {return fRapidity;}
+  Short_t Charge() const {return fCharge;}
+  Short_t Species() const {return fParticleSpecies;}
+
 
  private:
-  TVector3 fPosition;         // Lorentzvector of v0
-  Double_t fP;       // momentum of mother
-  Double_t fPt;       //  transverse momentum of mother
-  Double_t fM;  // reconstructed invariant mass of mother
-  Float_t fDCAv0;           // DCA of daughters
-  Double_t fSigmaD0;         // Sigma of tracks
-  Float_t fCosPointingAngle;  // cosine of pointing angle of vertex
-  Float_t fDecayLength;       // decay radius of mother particle
-  Double_t fChi2;               // chi2 of V0
-  Bool_t fMCTruth;              // Monte Carlo truth of mother type
-  Double_t fRapidity;           // Rapidity of V0
-  Int_t fCharge;                // anti or particle
-  AliReducedHypTritTrack *fPiTrack;        // positive daughter of v0
-  AliReducedHypTritTrack *fHeTrack;        // negative daughter of v0
+  TVector3                fPosition;         //< Lorentzvector of v0
+  AliReducedHypTritTrack* fPiTrack;          //< positive daughter of v0
+  AliReducedHypTritTrack* fHeTrack;          //< negative daughter of v0
+  Float_t                 fP;                //< momentum of mother
+  Float_t                 fPt;               //<  transverse momentum of mother
+  Float_t                 fM;                //< reconstructed invariant mass of mother
+  Float_t                 fDcaV0;            //< DCA of daughters
+  Float_t                 fCosPointingAngle; //< cosine of pointing angle of vertex
+  Float_t                 fDecayLength;      //< decay radius of mother particle
+  Bool_t                  fMcTruth;          //< Monte Carlo truth of mother type
+  Float_t                 fRapidity;         //< Rapidity of V0
+  Short_t                 fCharge;           //< anti or particle
+  Short_t                 fParticleSpecies;  //< particle species
+
 
   AliReducedHypTritV0(const AliReducedHypTritV0&);
   AliReducedHypTritV0 &operator = (const AliReducedHypTritV0&);
@@ -105,27 +105,23 @@ class AliReducedHypTritEvent : public TObject {
   AliReducedHypTritEvent();
   ~AliReducedHypTritEvent();
 
-  AliReducedHypTritV0 *V0(Int_t i) const
+  AliReducedHypTritV0* V0(Int_t i) const
       {return (i < fNumberV0s ? (AliReducedHypTritV0*) fV0s->At(i) : 0x0);}
-  Float_t Centrality() const {return fCentrality;}
-  Int_t NumberV0s() const {return fNumberV0s;}
-  Bool_t Trigger() const {return fTrigger;}
-  Int_t RunNumber() const {return fRunNumber;}
   TVector3 VertexPosition() const {return fVertexPosition;}
-  Int_t EventId() const {return fEventId;}
+  Float_t  Centrality() const {return fCentrality;}
+  UShort_t NumberV0s() const {return fNumberV0s;}
+  UShort_t Trigger() const {return fTrigger;}
+  Int_t    RunNumber() const {return fRunNumber;}
 
   void ClearEvent();
 
  private:
-  Int_t fEventId;
-  TVector3 fVertexPosition; // position of primary vertex
-  Int_t fNumberV0s;            // number of v0s in event
-  Float_t fCentrality;    // centrality of event
-  Int_t fRunNumber;       // number of run
-  TClonesArray *fV0s;     // array of v0s in event
-  Int_t fTrigger;     // array of Triggers
-
-  static TClonesArray *fgV0s;
+  TVector3      fVertexPosition; //< position of primary vertex
+  TClonesArray* fV0s;            //< array of v0s in event
+  UShort_t      fNumberV0s;      //< number of v0s in event
+  Float_t       fCentrality;     //< centrality of event
+  Int_t         fRunNumber;      //< number of run
+  UShort_t      fTrigger;        //< array of Triggers
 
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);

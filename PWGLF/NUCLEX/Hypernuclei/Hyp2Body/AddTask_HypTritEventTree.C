@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7, Bool_t eta = kTRUE, Bool_t mult = kTRUE) {
+AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7, Bool_t pidQa = kTRUE) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_lkreis_HypTritEventTree", "No analysis manager found.");
@@ -6,8 +6,7 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7,
   }
   AliAnalysisTaskHypTritEventTree *task = new AliAnalysisTaskHypTritEventTree("lkreisTaskHypTritEventTree");
   task->SelectCollisionCandidates(triggerMask);
-  task->SetUseEtaCorrection(eta);
-  task->SetUseMultiplicityCorrection(mult);
+  task->SetPidQa(pidQa);
   //Data Containers
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 =
