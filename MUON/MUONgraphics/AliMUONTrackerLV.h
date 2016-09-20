@@ -15,6 +15,8 @@ public:
 
   virtual void Scan(Int_t verbose=0);
 
+  void CheckLV(Int_t runNumber, Int_t verbose=0);
+
 private:
 
   AliMUONTrackerLV(const AliMUONTrackerLV& rhs); // not implemented on purpose

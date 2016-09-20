@@ -552,6 +552,18 @@ AliMUONReconstructor::CreateCalibrationData() const
         AliFatal("Could not access all required calibration data (HV)");      
       }
     } 
+   
+    if ( !fCalibrationData->LV() ) 
+    {
+      // Like for LV, we only break if the values
+      // are not there *AND* we cut on them.
+      UInt_t mask = GetRecoParam()->PadGoodnessMask();
+      TString smask(AliMUONPadStatusMaker::AsCondition(mask));
+      if ( smask.Contains("LV") )
+      {
+        AliFatal("Could not access all required calibration data (LV)");      
+      }
+    } 
   }
 }
 
