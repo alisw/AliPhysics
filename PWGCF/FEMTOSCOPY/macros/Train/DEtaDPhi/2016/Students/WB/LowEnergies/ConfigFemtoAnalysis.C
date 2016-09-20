@@ -53,7 +53,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 16; // liczba mozliwych par
 	const int numOfpTbins = 1; // biny w pedzie poprzecznym
 
-   int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0}; // 1 - wlacza czastki do analizy: wlaczone PIpPIm , all
    const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "LL", "aLaL", "LaL", "all", "plus", "minus", "mixed"};
    // pary czastek ktore analizujemy PP - proton proton; KpKp - K plus
    int runktdep = 0; // czy chcemy wlaczac analize w zaleznosci od pedow poprzecznych; 0 - nie ma, 1 - jest
@@ -61,6 +60,47 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
    int gammacut = 1;   // cut for e+e- coming from gamma //wlaczenie cuty na konkretne pary czastek
 
+//parameters:
+  char *parameter[17];
+  if(strlen(params)!=0)
+    {
+      parameter[0] = strtok(params, ","); // PP
+      parameter[1] = strtok(NULL, ","); //aPaP
+      parameter[2] = strtok(NULL, ","); //PaP
+      parameter[3] = strtok(NULL, ","); //KpKp
+      parameter[4] = strtok(NULL, ","); //KmKm
+      parameter[5] = strtok(NULL, ","); //KpKm
+      parameter[6] = strtok(NULL, ","); //PIpPIp
+      parameter[7] = strtok(NULL, ","); //PImPIm
+      parameter[8] = strtok(NULL, ","); //PIpPIm
+      parameter[9] = strtok(NULL, ","); //LL
+      parameter[10] = strtok(NULL, ","); //aLaL
+      parameter[11] = strtok(NULL, ","); //LaL
+      parameter[12] = strtok(NULL, ","); //all
+      parameter[13] = strtok(NULL, ","); //plus
+      parameter[14] = strtok(NULL, ","); //minus
+      parameter[15] = strtok(NULL, ","); //mixed
+      parameter[16] = strtok(NULL, ","); //filters
+    }
+  int PP = atoi(parameter[0]);
+  int aPaP = atoi(parameter[1]);
+  int PaP = atoi(parameter[2]);
+  int KpKp = atoi(parameter[3]);
+  int KmKm = atoi(parameter[4]);
+  int KpKm = atoi(parameter[5]);
+  int PIpPIp = atoi(parameter[6]);
+  int PImPIm = atoi(parameter[7]);
+  int PIpPIm = atoi(parameter[8]);
+  int LL = atoi(parameter[9]);
+  int aLaL = atoi(parameter[10]);
+  int LaL = atoi(parameter[11]);
+  int all = atoi(parameter[12]);
+  int plus = atoi(parameter[13]);
+  int minus = atoi(parameter[14]);
+  int mixed = atoi(parameter[15]);
+  const char* filterPath = parameter[16];
+
+  int runch[numOfChTypes] = {PP, aPaP, PaP, KpKp, KmKm, KpKm, PIpPIp, PImPIm, PIpPIm, LL, aLaL, LaL, all, plus, minus, mixed}; // 1 - wlacza czastki do analizy: wlaczone PIpPIm , all
 
 //Ustalamy z ktora analiza mamy do czynienia
    //  ***Reader ESD***
@@ -85,35 +125,35 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
    AliFemtoManager* Manager = new AliFemtoManager(); //typowy dla alifemto
    Manager->SetEventReader(Reader);
 	// * Monitory * - histogramy ktore beda wypelniane podczas analizy - wlasciwie klasy generujace histogramy
-   AliFemtoVertexMultAnalysis      *anetaphitpc[640]; //korelujemy eventy tylko podobne w wertexie i multiplicity
-   AliFemtoBasicEventCut             *mecetaphitpc[320]; //podstawowy cut na zderzenia
-   AliFemtoCutMonitorEventMult    *cutPassEvMetaphitpc[320];
-   AliFemtoCutMonitorEventMult    *cutFailEvMetaphitpc[320];
-   AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[320];
-   AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[320];
-   AliFemtoMCTrackCut          *dtc1etaphitpc[320]; // ograniczenia dla konkretnych czastek
-   AliFemtoMCTrackCut          *dtc2etaphitpc[320];
-   AliFemtoMCTrackCut          *dtc3etaphitpc[320];
+   AliFemtoVertexMultAnalysis      *anetaphitpc[numOfMultBins*numOfChTypes]; //korelujemy eventy tylko podobne w wertexie i multiplicity
+   AliFemtoBasicEventCut             *mecetaphitpc[numOfMultBins*numOfChTypes]; //podstawowy cut na zderzenia
+   AliFemtoCutMonitorEventMult    *cutPassEvMetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorEventMult    *cutFailEvMetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorEventVertex *cutPassEvVetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorEventVertex *cutFailEvVetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoMCTrackCut          *dtc1etaphitpc[numOfMultBins*numOfChTypes]; // ograniczenia dla konkretnych czastek
+   AliFemtoMCTrackCut          *dtc2etaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoMCTrackCut          *dtc3etaphitpc[numOfMultBins*numOfChTypes];
    //AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[320];
    //AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[numOfMultBins*numOfChTypes];
+   //AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[numOfMultBins*numOfChTypes];
    //AliFemtoCutMonitorParticleYPt *cutPass2YPtetaphitpc[320];
    //AliFemtoCutMonitorParticleYPt *cutFail2YPtetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[320];
-   AliFemtoCutMonitorParticleYPt *cutPass3YPtetaphitpc[320];
-   AliFemtoCutMonitorParticleYPt *cutFail3YPtetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutPass3PIDetaphitpc[320];
-   AliFemtoCutMonitorParticlePID *cutFail3PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[320];
+   AliFemtoCutMonitorParticleYPt *cutPass3YPtetaphitpc[numOfMultBins*numOfChTypes];
+   AliFemtoCutMonitorParticleYPt *cutFail3YPtetaphitpc[numOfMultBins*numOfChTypes];
+   //AliFemtoCutMonitorParticlePID *cutPass3PIDetaphitpc[320];
+   //AliFemtoCutMonitorParticlePID *cutFail3PIDetaphitpc[320];
    //    AliFemtoShareQualityTPCEntranceSepPairCut         *sqpcetaphitpcsame[320]; //sprawdza jak duzo trackow jest dzielone przez czastki
-   AliFemtoPairCutAntiGamma         *sqpcetaphitpc[320]; //ograniczenia na pary czastek
+   AliFemtoPairCutAntiGamma         *sqpcetaphitpc[numOfMultBins*numOfChTypes]; //ograniczenia na pary czastek
    //AliFemtoPairCutRadialDistance         *sqpcetaphitpc[320];
    //   AliFemtoChi2CorrFctn               *cchiqinvetaphitpc[320];
-   AliFemtoPairCutPt                   *ktpcuts[640];
-   AliFemtoQinvCorrFctn               *cqinvkttpc[320];
-   AliFemtoQinvCorrFctn               *cqinvtpc[320];
-   AliFemtoCorrFctnDEtaDPhi         *cdedpetaphi[640];
+   AliFemtoPairCutPt                   *ktpcuts[numOfMultBins*numOfChTypes*numOfpTbins];
+   AliFemtoQinvCorrFctn               *cqinvkttpc[numOfMultBins*numOfChTypes*numOfpTbins];
+   AliFemtoQinvCorrFctn               *cqinvtpc[numOfMultBins*numOfChTypes*numOfpTbins];
+   AliFemtoCorrFctnDEtaDPhi         *cdedpetaphi[numOfMultBins*numOfChTypes*numOfpTbins];
 
 
    
@@ -139,7 +179,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, multmix, multbins[imult], multbins[imult+1]);
                anetaphitpc[aniter]->SetNumEventsToMix(5); //zwiekszamy statystyke w mianowkiku sygnalu korelacji
                anetaphitpc[aniter]->SetMinSizePartCollection(1); //co najmniej jedna czastka na event
-               anetaphitpc[aniter]->SetVerboseMode(kFALSE);
+               //anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 
                //*** Event cut ***
                mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
@@ -164,15 +204,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                dtc1etaphitpc[aniter]->SetCharge(1.0);//ustawiamy ograniczenia na ladunek, zostawi dodatnie
                dtc2etaphitpc[aniter]->SetCharge(-1.0);
 
-               dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);// psedopospiesznosc 0 - czastki wyprodukowane prostopadle do osi detektora
-               dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);// limit 0.9; powyzej czatka nie zostaje zarejestrowana
-               dtc3etaphitpc[aniter]->SetEta(-0.8,0.8);
+               dtc1etaphitpc[aniter]->SetEta(0,4);// psedopospiesznosc 0 - czastki wyprodukowane prostopadle do osi detektora
+               dtc2etaphitpc[aniter]->SetEta(0,4);// limit 0.9; powyzej czatka nie zostaje zarejestrowana
+               dtc3etaphitpc[aniter]->SetEta(0,4);
                
 
 				if (ichg == 0 ||ichg == 1 ||ichg == 2)//protons 0-2
 				{
-					dtc1etaphitpc[aniter]->SetPt(0.5,4); // w zaleznosci od czastki rozne pedy
-					dtc2etaphitpc[aniter]->SetPt(0.5,4);
+					dtc1etaphitpc[aniter]->SetPt(0,2.5); // w zaleznosci od czastki rozne pedy
+					dtc2etaphitpc[aniter]->SetPt(0,2.5);
 											   
 					dtc1etaphitpc[aniter]->SetPDG(2212); //numer rodzaju czastek
 					dtc2etaphitpc[aniter]->SetPDG(2212);
@@ -187,8 +227,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				}
 				if (ichg == 3 ||ichg == 4 ||ichg == 5)//kaons 3-5
 				{
-					dtc1etaphitpc[aniter]->SetPt(0.3,4);
-					dtc2etaphitpc[aniter]->SetPt(0.3,4);
+					dtc1etaphitpc[aniter]->SetPt(0,2.5);
+					dtc2etaphitpc[aniter]->SetPt(0,2.5);
 
 					dtc1etaphitpc[aniter]->SetPDG(321);
 					dtc2etaphitpc[aniter]->SetPDG(321);
@@ -203,8 +243,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				}
 				if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
 				{
-					dtc1etaphitpc[aniter]->SetPt(0.2,4);
-					dtc2etaphitpc[aniter]->SetPt(0.2,4);
+					dtc1etaphitpc[aniter]->SetPt(0,2.5);
+					dtc2etaphitpc[aniter]->SetPt(0,2.5);
 
 					dtc1etaphitpc[aniter]->SetPDG(211);
 					dtc2etaphitpc[aniter]->SetPDG(211); 
@@ -221,8 +261,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetCharge(0);//ustawiamy ograniczenia na ladunek, zostawi dodatnie
 					dtc2etaphitpc[aniter]->SetCharge(0);
 					
-					dtc1etaphitpc[aniter]->SetPt(0.7,4);
-					dtc2etaphitpc[aniter]->SetPt(0.7,4);
+					dtc1etaphitpc[aniter]->SetPt(0,2.5);
+					dtc2etaphitpc[aniter]->SetPt(0,2.5);
 
 					dtc1etaphitpc[aniter]->SetPDG(3122);
 					dtc2etaphitpc[aniter]->SetPDG(-3122);
@@ -237,7 +277,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 				}
                 if (ichg == 12)//all
                 {
-					dtc3etaphitpc[aniter]->SetPt(0.2,4);//min 0.12 TPC jeszcze wyciaga
+					dtc3etaphitpc[aniter]->SetPt(0,2.5);//min 0.12 TPC jeszcze wyciaga
                 }
                 if (ichg == 13 ||ichg == 14 ||ichg == 15)//plus,minus,mixed
                 {

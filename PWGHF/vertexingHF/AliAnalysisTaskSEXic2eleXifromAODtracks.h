@@ -424,6 +424,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoEtaMCGen;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTotal;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTag;         //!<! Number of electrons from eta and have partner
+  TH1F* fHistoKaonMCGen;         //!<! Number of electrons from pi0
+  TH1F* fHistoD0MCGen;         //!<! Number of electrons from pi0
 
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
@@ -478,7 +480,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,34); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,35); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

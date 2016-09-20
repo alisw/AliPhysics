@@ -1578,7 +1578,10 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 //-------------------------------------------------------------
 Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){ 
   if (fPeriodEnum == kLHC15o ||  // PbPb 5TeV 
-      fPeriodEnum == kLHC15k1 || fPeriodEnum == kLHC15k1a || fPeriodEnum == kLHC15k1_plus  || fPeriodEnum == kLHC15k1b || // MC PbPb 5TeV
+      fPeriodEnum == kLHC15k1a1 || fPeriodEnum == kLHC15k1a2 || fPeriodEnum == kLHC15k1a3  ||    // MC PbPb 5TeV LowIR
+      fPeriodEnum == kLHC16h4a || fPeriodEnum ==  kLHC16h4b || fPeriodEnum ==  kLHC16h4c ||      // MC PbPb 5TeV added signals
+      fPeriodEnum == kLHC16g1 || fPeriodEnum ==  kLHC16g1a || fPeriodEnum ==  kLHC16g1b || fPeriodEnum ==  kLHC16g1c ||    // MC PbPb 5TeV general purpose
+      fPeriodEnum == kLHC16h2a || fPeriodEnum ==  kLHC16h2b || fPeriodEnum ==  kLHC16h2c ||      // MC PbPb 5TeV jet-jet
       fPeriodEnum == kLHC15fm || // pp 13TeV
       fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 // MC pp 13TeV
       ){
@@ -1612,7 +1615,13 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
-    if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    if(GetUseNewMultiplicityFramework()){
+      AliMultSelection *MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+      if(fDetectorCentrality==0) return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+      else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+    }else{
+      if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    }
   }
 
   return -1;
@@ -1948,7 +1957,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         }
         if (jet) delete jet;
         if (fMCStack){
-          for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+          for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
             TParticle* particle = (TParticle *)fMCStack->Particle(i);
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -1959,7 +1968,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 
           }
         } else if (fMCStackAOD){
-          for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+          for(Long_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
             AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2091,7 +2100,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
       }
       if (fMCStack){
-        for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+        for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
           TParticle* particle = (TParticle *)fMCStack->Particle(i);
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2102,7 +2111,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           
         }
       } else if (fMCStackAOD){
-        for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+        for(Long_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
           AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -3293,6 +3302,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliStack *MCStack, AliV
           fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3                    // LHC11a MCs
      ) ) return 1.;
   Int_t kCaseGen = 0;
+
+  if(index < 0) return 0; // No Particle
     
   if (IsParticleFromBGEvent(index, MCStack, InputEvent)){
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b || fPeriodEnum == kLHC13e7 || fPeriodEnum == kLHC13b2_efix || fPeriodEnum == kLHC14a1a || fPeriodEnum ==  kLHC14a1b || fPeriodEnum ==  kLHC14a1c       ||
@@ -3576,8 +3587,9 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 }
 
 //_________________________________________________________________________
-Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
-  
+Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
+
+  if (stackpos < 0) return kFALSE;
   TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
   if (!particle) return kFALSE; 
   if (abs(particle->GetPdgCode()) == 11 ){
@@ -3610,7 +3622,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
 //       cout << "dalitz candidate found" << endl;
     }
   
-    UInt_t source = particle->GetMother(0);
+    Long_t source = particle->GetMother(0);
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
@@ -3713,7 +3725,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
 //       cout << "dalitz candidate found" << endl;
     }
 
-    UInt_t source = currentParticle->GetMother();
+    Long_t source = currentParticle->GetMother();
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
@@ -4174,17 +4186,44 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC15l1b2") == 0){
     fPeriodEnum = kLHC15l1b2;
     fEnergyEnum = k5TeV;
-  } else if (periodName.Contains("LHC15k1a")){
-    fPeriodEnum = kLHC15k1a;
+  } else if (periodName.Contains("LHC15k1a1")){
+    fPeriodEnum = kLHC15k1a1;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC15k1_plus")){
-    fPeriodEnum = kLHC15k1_plus;
+  } else if (periodName.Contains("LHC15k1a2")){
+    fPeriodEnum = kLHC15k1a2;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC15k1b")){
-    fPeriodEnum = kLHC15k1b;
+  } else if (periodName.Contains("LHC15k1a3")){
+    fPeriodEnum = kLHC15k1a3;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC15k1")){
-    fPeriodEnum = kLHC15k1;
+  } else if (periodName.Contains("LHC16h4a")){
+    fPeriodEnum = kLHC16h4a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h4b")){
+    fPeriodEnum = kLHC16h4b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h4c")){
+    fPeriodEnum = kLHC16h4c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1")){
+    fPeriodEnum = kLHC16g1;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1a")){
+    fPeriodEnum = kLHC16g1a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1b")){
+    fPeriodEnum = kLHC16g1b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1c")){
+    fPeriodEnum = kLHC16g1c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h2a")){
+    fPeriodEnum = kLHC16h2a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h2b")){
+    fPeriodEnum = kLHC16h2b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h2c")){
+    fPeriodEnum = kLHC16h2c;
     fEnergyEnum = kPbPb5TeV;
   // MC upgrade 
   } else if (periodName.Contains("LHC13d19")){

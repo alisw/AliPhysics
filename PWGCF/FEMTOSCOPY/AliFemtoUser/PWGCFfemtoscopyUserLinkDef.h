@@ -22,6 +22,7 @@
 #pragma link C++ class AliFemtoChi2CorrFctn;
 #pragma link C++ class AliFemtoModelCorrFctnSource;
 #pragma link C++ class AliFemtoModelCorrFctnDEtaDPhi;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiWithWeights+;
 #pragma link C++ class AliFemtoModelBPLCMSCorrFctn;
 #pragma link C++ class AliFemtoModelBPLCMSCorrFctnKK;
 #pragma link C++ class AliFemtoModelGausRinvFreezeOutGenerator;
@@ -39,6 +40,7 @@
 #pragma link C++ class AliFemtoCutMonitorTrackTPCncls;
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepQAPairCut;
 #pragma link C++ class AliFemtoShareQualityQAPairCut;
+#pragma link C++ class AliFemtoCutMonitorParticleYPtWithWeights;
 //#pragma link C++ class AliFemtoEventReaderESDKine;
 //#pragma link C++ class AliFemtoEventReaderAllESDKine;
 #pragma link C++ class AliFemtoYlm;
@@ -46,7 +48,7 @@
 #pragma link C++ class AliFemtoModelCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
-#pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections;
+#pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections+;
 #pragma link C++ class AliFemtoCorrFctnDYDPhi;
 #pragma link C++ class AliFemtoCorrFctnKStar+;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
@@ -56,6 +58,7 @@
 #pragma link C++ class AliFemtoCorrFctnMinvMonitor;
 #pragma link C++ class AliFemtoPairCutAntiGamma;
 #pragma link C++ class AliFemtoPairCutResonances;
+#pragma link C++ class AliFemtoModelCorrFctnWithWeights;
 //#pragma link C++ class AliFemtoPhiPairCut;
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;
@@ -80,7 +83,9 @@
 #pragma link C++ class AliFemtoPairCutMergedFraction+;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimple+;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections+;
+#pragma link C++ class AliFemtoCorrFctnDEtaDPhiWithWeights;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;
+#pragma link C++ class AliFemtoQinvCorrFctnWithWeights;
 #pragma link C++ class AliFemtoAnalysisPionLambda+;
 #pragma link C++ class AliFemtoAnalysisPionLambda::AnalysisParams+;
 #pragma link C++ class AliFemtoAnalysisPionLambda::CutParams+;

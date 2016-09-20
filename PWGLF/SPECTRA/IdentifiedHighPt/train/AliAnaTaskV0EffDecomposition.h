@@ -33,16 +33,21 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
 
   Double_t GetVtxCut() { return fVtxCut; }   
   Double_t GetEtaCut() { return fEtaCut; }  
-  //cuts added by tuva   
   //  Double_t GetLowPtFraction()  { return fLowPtFraction; }
-  //Double_t GetMassCut()  { return fMassCut; }
+  Double_t GetMassCut()  { return fMassCut; }
   Double_t GetMinPtV0()  { return fMinPtV0; }
   Double_t GetDecayRmax()  { return fDecayRmax; }
   Double_t GetDecayRmin()  { return fDecayRmin; }
   Double_t GetDcaDaugh()  { return fDcaDaugh; }
   Double_t GetV0pndca()  { return fV0pndca; }
   Double_t GetCospt()  { return fCospt; }
-
+  Double_t GetPdca()  { return fPdca; }
+  Double_t GetNdca()  { return fNdca; }
+  Double_t GetDcaV0()  { return fDcaV0; }
+  Double_t GetCt()  { return fCt; }
+  Double_t GetInvMass()  { return fInvMass; }
+  Double_t GetNcl()  { return fNcl; }
+  Double_t GetChi2perNDF()  { return fChi2perNDF; }
 
 
   virtual void  SetTrigger(UInt_t ktriggerInt) {fTrigBit = ktriggerInt;}
@@ -54,15 +59,23 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   virtual void  SetPdgV0(Int_t pdg) {fPdgV0 = pdg;}
   virtual void  SetPdgPos(Int_t pdg) {fPdgPos = pdg;}
   virtual void  SetPdgNeg(Int_t pdg) {fPdgNeg = pdg;}
-  /* //cuts added by tuva: */
-  /* virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;} */
-  /* virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;} */
+
+  virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;} 
+  virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;} 
+  virtual void SetPdca(Double_t Pdca){fPdca = Pdca;}
+  virtual void SetNdca(Double_t Ndca){fNdca = Ndca;}
+  virtual void SetDcaV0(Double_t DcaV0){fDcaV0 = DcaV0;}
   virtual void  SetMinPtV0(Double_t value) {fMinPtV0 = value;}
   virtual void SetDecayRmax(Double_t DecayRmax){fDecayRmax = DecayRmax; }
   virtual void SetDecayRmin(Double_t DecayRmin){fDecayRmin = DecayRmin; }
   virtual void SetDcaDaugh(Double_t DcaDaugh){fDcaDaugh = DcaDaugh; }
   virtual void SetV0pndca(Double_t V0pndca){fV0pndca = V0pndca; }
   virtual void SetCospt(Double_t Cospt){fCospt = Cospt; }
+
+   virtual void SetCt(Double_t Ct){fCt = Ct;}
+   virtual void SetInvMass(Double_t InvMass){fInvMass = InvMass;}
+   virtual void SetNcl(Double_t Ncl){fNcl = Ncl;}
+   virtual void SetChi2perNDF(Double_t Chi2perNDF){fChi2perNDF = Chi2perNDF;}
 
 
   
@@ -91,16 +104,22 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   Int_t        fPdgV0;     // pdg of mother 
   Int_t        fPdgPos;    // pdg of pos daughter 
   Int_t        fPdgNeg;    // pdg of neg daughter 
-  /* //cuts added by tuva: */
-  /* Double_t fLowPtFraction; */
-  /* Double_t fMassCut; */
+  Double_t fLowPtFraction; 
+  Double_t fMassCut; 
   Double_t fMinPtV0;
   Double_t fDecayRmax;
   Double_t fDecayRmin;
   Double_t fDcaDaugh;
   Double_t fV0pndca;
   Double_t fCospt;
-  /* //end cuts by tuva */
+  Double_t fPdca;
+  Double_t fNdca;
+  Double_t fDcaV0;
+  Double_t fCt;
+  Double_t fInvMass;
+  Double_t fNcl;
+  Double_t fChi2perNDF;
+
 
   //
   // Output objects
@@ -117,6 +136,12 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   TH1D*         hDCAdaugh;          //! DCA between daughters
   TH1D*         hDecayR;            //! V0 decay radius
   TH1D*         hCosPA;             //! cosine of pointing angle
+  TH1D*         hInvMass;           //!
+  TH1D*         hNcl;    //!
+  TH1D*         hChi2perNDF;  //!
+  TH1D*         hPdca;              //!
+  TH1D*         hNdca;              //!
+  TH1D*         hDcaV0;              //!
 
   ClassDef(AliAnaTaskV0EffDecomposition, 1);    //Analysis task for v0 eff decomposition 
 };

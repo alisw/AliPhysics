@@ -1,4 +1,4 @@
-AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE, Bool_t UseNonSignalEvents=kFALSE)
+AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t trkCutsStrong=kFALSE, Bool_t SSCuts=kFALSE, Bool_t UseNonSignalEvents=kFALSE)
 {
     //==============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,18 +18,8 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
 
     AliAnalysisTaskPSHFE* PSHFEtask = new AliAnalysisTaskPSHFE(taskname);
 
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-
-    AliESDtrackCuts* globaltrackCuts = 0x0;
-    AliESDtrackCuts* comptrackCuts = 0x0;
-
-    globaltrackCuts = CreateTrackCutsPWGJE(10001006);
-    comptrackCuts = CreateTrackCutsPWGJE(10011008);
-
-    PSHFEtask->SetTrackCuts(globaltrackCuts, comptrackCuts);
     PSHFEtask->SetElectronTrackCuts(trkCutsStrong);
     PSHFEtask->SetSSCutBool(SSCuts);
-    PSHFEtask->SetAODEvent(isAOD);
     PSHFEtask->SetUseNonSignalEvents(UseNonSignalEvents);
     mgr->AddTask(PSHFEtask);  
 
@@ -45,7 +35,9 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
 
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("EMCal7%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
 
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("EMCalJet%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("EMCalEGA%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
+    
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("EMCalJet%s",contname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s", AliAnalysisManager::GetCommonFileName()));
 
 
 
@@ -54,6 +46,7 @@ AliAnalysisTaskPSHFE* AddTaskPSHFE(const char* taskname, Bool_t isAOD=kTRUE, Boo
     mgr->ConnectOutput(PSHFEtask, 1, coutput1);
     mgr->ConnectOutput(PSHFEtask, 2, coutput2);
     mgr->ConnectOutput(PSHFEtask, 3, coutput3);
+    mgr->ConnectOutput(PSHFEtask, 4, coutput4);
 
     return PSHFEtask;
 }

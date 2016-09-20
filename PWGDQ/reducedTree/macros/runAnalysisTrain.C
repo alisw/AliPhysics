@@ -1,15 +1,15 @@
 // Grid running parameters
-TString gGridRunMode = "full";
-TString gRootVersion = "v5-34-30-alice5-1";
-TString gAlirootVersion = "v5-08-15-1";
-TString gAliphysicsVersion = "vAN-20160828-1";
-//TString gGridDataDir = "/alice/data/2011/LHC11h_2";
-TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
-//TString gGridDataPattern = "*/pass2/*/AliESDs.root";
-TString gGridDataPattern = "*/*/dstTree.root";
+TString gGridRunMode = "test";
+TString gRootVersion = "v5-34-30-alice5-2";
+TString gAlirootVersion = "v5-08-16-1";
+TString gAliphysicsVersion = "vAN-20160912-1";
+TString gGridDataDir = "/alice/data/2011/LHC11h_2";
+//TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
+TString gGridDataPattern = "*/pass2/*/AliESDs.root";
+//TString gGridDataPattern = "*/*/dstTree.root";
 TString gGridWorkingDir = "work";
-TString gGridOutputDir = "outputTestNew";
-Int_t gGridMaxInputFileNumber = 30;
+TString gGridOutputDir = "outputTestNew2";
+Int_t gGridMaxInputFileNumber = 10;
 
 //______________________________________________________________________________________________________________________________________
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,

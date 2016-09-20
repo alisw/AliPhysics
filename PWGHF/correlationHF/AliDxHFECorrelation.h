@@ -126,7 +126,7 @@ class AliDxHFECorrelation : public TNamed {
   Double_t GetMaxPhi() const {return fMaxPhi;}
   Double_t GetDeltaPhi() const {return fDeltaPhi;}
   Double_t GetDeltaEta() const {return fDeltaEta;}
-  Int_t GetPoolBin() const {return fDeltaEta;}
+  Int_t GetPoolBin() const {return fPoolBin;}
   inline int GetDimTHnSparse() const {return fDimThn;}
   AliAnalysisCuts* GetCuts() const {return fCuts;}
   Int_t GetTriggerParticleType() const {return fTriggerParticleType;}

@@ -188,6 +188,7 @@ class AliJetFlowTools {
                 gRandom = new TRandom3(0);
             }
         }
+        void            SetHarmonic(Int_t n)                    {fHarmonic              = n;}
         // main function. buffers about 5mb per call!
         void            Make(TH1* customIn = 0x0, TH1* customOut = 0x0);
         void            MakeAU();       // test function, use with caution (09012014)
@@ -575,6 +576,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         Bool_t                  fSubdueError;           // no error > pivot
         TH1*                    fUnfoldedSpectrumIn;    // unfolded spectrum in plane
         TH1*                    fUnfoldedSpectrumOut;   // unfolded spectrum out of plane
+        Int_t                   fHarmonic;              // vn harmonic
 
         static TArrayD*         gV2;                    // internal use only, do not touch these
         static TArrayD*         gStat;                  // internal use only, do not touch these

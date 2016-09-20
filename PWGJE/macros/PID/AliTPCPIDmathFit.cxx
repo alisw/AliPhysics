@@ -334,34 +334,59 @@ void AliTPCPIDmathFit::SetMaxCalls(const Int_t maxCalls)
 Bool_t AliTPCPIDmathFit::SetParametersToRegularise(const Int_t numParams, const Int_t numParamsPerXbin, 
                                                    const Int_t* indexParametersToRegularise, const Int_t* lastNotFixedIndexOfParameters,
                                                    const Double_t* xValuesForRegularisation, const Double_t* xStatisticalWeight,
-                                                   const Double_t* xStatisticalWeightError)
+                                                   const Double_t* xStatisticalWeightError, const Double_t* xStatisticalWeight2,
+                                                   const Double_t* xStatisticalWeightError2, const Double_t* parAdditional)
 {
   // Sets the number of parameters to the new value and saves the indices of the parameters to regularise in an internal array.
   // Also, the number of parameters per xBin is set, the x values of the individual x bins and the last index of the x bin
   // in which the corresponding parameter is not fixed plus the statistical weights and errors for each xBin.
   // kFALSE is returned and the internal values are reset, if invalid values are provided.
+  // If patching is to be used (and it must be set before), the corresponding statistical weights and parAddional can be forwarded here.
+  // Note that parAdditional is the statistical weight per parameter. The size of parAdditional must be equal to the number of parameters 
+  // used in the fit later!
   
   fNumParametersPerXbin = 0;
   fNumParametersToRegularise = 0;
   
-  delete fIndexParametersToRegularise;
+  delete [] fIndexParametersToRegularise;
   fIndexParametersToRegularise = 0x0;
   
-  delete fLastNotFixedIndexOfParameters;
+  delete [] fLastNotFixedIndexOfParameters;
   fLastNotFixedIndexOfParameters = 0x0;
   
-  delete fXvaluesForRegularisation;
+  delete [] fXvaluesForRegularisation;
   fXvaluesForRegularisation = 0x0;
   
-  delete fXstatisticalWeight;
+  delete [] fXstatisticalWeight;
   fXstatisticalWeight = 0x0;
   
-  delete fXstatisticalWeightError;
+  delete [] fXstatisticalWeightError;
   fXstatisticalWeightError = 0x0;
+  
+  delete [] fXstatisticalWeight2;
+  fXstatisticalWeight2 = 0x0;
+  
+  delete [] fXstatisticalWeightError2;
+  fXstatisticalWeightError2 = 0x0;
+  
+  delete [] fParAdditional;
+  fParAdditional = 0x0;
   
   if (!indexParametersToRegularise || !xValuesForRegularisation || numParamsPerXbin <= 0 || numParams <= 0
       || !xStatisticalWeight || !xStatisticalWeightError || !lastNotFixedIndexOfParameters) {
     printf("Error: Cannot set parameters to regularise. Invalid input!\n");
+    
+    return kFALSE;
+  }
+  
+  if (fApplyPatching && (!xStatisticalWeight2 || !xStatisticalWeightError2 || !parAdditional)) {
+    printf("Error: Patching is switched on, but input is missing!\n");
+    
+    return kFALSE;
+  }
+  
+  if (!fApplyPatching && (xStatisticalWeight2 || xStatisticalWeightError2 || parAdditional)) {
+    printf("Error: Patching is switched off, but input is there! Please enable patching before!\n");
     
     return kFALSE;
   }
@@ -378,16 +403,36 @@ Bool_t AliTPCPIDmathFit::SetParametersToRegularise(const Int_t numParams, const 
   fXstatisticalWeight = new Double_t[fNumXbinsRegularisation];
   fXstatisticalWeightError = new Double_t[fNumXbinsRegularisation];
   
+  const Int_t numAdditionalParams = numParamsPerXbin * fNumXbinsRegularisation;
+  
+  if (fApplyPatching) {
+    fXstatisticalWeight2 = new Double_t[fNumXbinsRegularisation];
+    fXstatisticalWeightError2 = new Double_t[fNumXbinsRegularisation];
+    fParAdditional = new Double_t[numAdditionalParams];
+  }
   
   Bool_t success = kTRUE;
+  
+  Bool_t xValuesDecreasing = kFALSE;
+  if (fNumXbinsRegularisation >= 2) {
+    if (xValuesForRegularisation[1] < xValuesForRegularisation[0]) {
+      xValuesDecreasing = kTRUE;
+      
+      printf("Found decreasing ordering of x values for regularisation!\n");
+    }
+  }
   
   for (Int_t i = 0; i < fNumXbinsRegularisation; i++) {
     fXvaluesForRegularisation[i] = xValuesForRegularisation[i];
     
-    if (i > 0 && fXvaluesForRegularisation[i] <= fXvaluesForRegularisation[i - 1]) {
-      printf("Error: x values for regularisation must be strictly increasing!\n");
-      success = kFALSE;
-      break;
+    if (i > 0) {
+      if ((!xValuesDecreasing && fXvaluesForRegularisation[i] <= fXvaluesForRegularisation[i - 1]) ||
+          (xValuesDecreasing  && fXvaluesForRegularisation[i] >= fXvaluesForRegularisation[i - 1])) {
+        printf("Error: x values for regularisation must be strictly increasing or decreasing (assumed %s here)!\n",
+              xValuesDecreasing ? "decreasing" : "increasing");
+        success = kFALSE;
+        break;
+      }
     }
     
     if (xStatisticalWeight[i] < 0 || xStatisticalWeightError[i] < 0) {
@@ -399,26 +444,59 @@ Bool_t AliTPCPIDmathFit::SetParametersToRegularise(const Int_t numParams, const 
     
     fXstatisticalWeight[i] = xStatisticalWeight[i];
     fXstatisticalWeightError[i] = xStatisticalWeightError[i];
+    
+    if (fApplyPatching) {
+      if (xStatisticalWeight2[i] < 0 || xStatisticalWeightError2[i] < 0) {
+        printf("Error: Invalid statistical weight 2 and/or error for bin %d: value %e, error %e\n",
+              i, xStatisticalWeight2[i], xStatisticalWeightError2[i]);
+        success = kFALSE;
+        break;
+      }
+      
+      fXstatisticalWeight2[i] = xStatisticalWeight2[i];
+      fXstatisticalWeightError2[i] = xStatisticalWeightError2[i];
+    }
+  }
+
+  if (fApplyPatching && success) {
+    for (Int_t i = 0; i < numAdditionalParams ; i++) {
+      if (parAdditional[i] < 0) {
+        printf("Error: Invalid parAdditional error for bin %d: %e\n", i, parAdditional[i]);
+        success = kFALSE;
+        break;
+      }
+      
+      fParAdditional[i] = parAdditional[i];
+    }    
   }
   
   if (!success) {
     fNumParametersPerXbin = 0;
     fNumParametersToRegularise = 0;
     
-    delete fIndexParametersToRegularise;
+    delete [] fIndexParametersToRegularise;
     fIndexParametersToRegularise = 0x0;
     
-    delete fLastNotFixedIndexOfParameters;
+    delete [] fLastNotFixedIndexOfParameters;
     fLastNotFixedIndexOfParameters = 0x0;
   
-    delete fXvaluesForRegularisation;
+    delete [] fXvaluesForRegularisation;
     fXvaluesForRegularisation = 0x0;
     
-    delete fXstatisticalWeight;
+    delete [] fXstatisticalWeight;
     fXstatisticalWeight = 0x0;
     
-    delete fXstatisticalWeightError;
+    delete [] fXstatisticalWeightError;
     fXstatisticalWeightError = 0x0;
+    
+    delete [] fXstatisticalWeight2;
+    fXstatisticalWeight2 = 0x0;
+    
+    delete [] fXstatisticalWeightError2;
+    fXstatisticalWeightError2 = 0x0;
+    
+    delete [] fParAdditional;
+    fParAdditional = 0x0;
   
     return kFALSE;
   }
@@ -464,6 +542,10 @@ fLastNotFixedIndexOfParameters(0x0),
 fXvaluesForRegularisation(0x0),
 fXstatisticalWeight(0x0),
 fXstatisticalWeightError(0x0),
+fApplyPatching(kFALSE),
+fParAdditional(0x0),
+fXstatisticalWeight2(0x0),
+fXstatisticalWeightError2(0x0),
 fRegularisationFactor(1),
 fMinimisationString("MINIMIZE"),
 fkMaxNdata(maxDataPoints), 
@@ -601,22 +683,37 @@ AliTPCPIDmathFit::~AliTPCPIDmathFit()
   delete fMinuit;
   fMinuit = 0x0;
   
-  delete fXstatisticalWeight;
+  delete [] fPar;
+  fPar = 0x0;
+  
+  delete [] fErr;
+  fErr = 0x0;
+  
+  delete [] fXstatisticalWeight;
   fXstatisticalWeight = 0x0;
   
-  delete fXstatisticalWeightError;
+  delete [] fXstatisticalWeightError;
   fXstatisticalWeightError = 0x0;
   
-  delete fPolIntX;
+  delete [] fParAdditional;
+  fParAdditional = 0x0;
+  
+  delete [] fXstatisticalWeight2;
+  fXstatisticalWeight2 = 0x0;
+  
+  delete [] fXstatisticalWeightError2;
+  fXstatisticalWeightError2 = 0x0;
+  
+  delete [] fPolIntX;
   fPolIntX = 0x0;
   
-  delete fPolIntY;
+  delete [] fPolIntY;
   fPolIntY = 0x0;
   
-  delete fPolIntC;
+  delete [] fPolIntC;
   fPolIntC = 0x0;
   
-  delete fPolIntD;
+  delete [] fPolIntD;
   fPolIntD = 0x0;
   
   fNumXbinsRegularisation = 0;
@@ -928,16 +1025,16 @@ Int_t AliTPCPIDmathFit::Fit(const Double_t *inPar, Double_t *covMatrix, const Do
   delete fMinuit;
   fMinuit = 0x0;
   
-  delete fPolIntX;
+  delete [] fPolIntX;
   fPolIntX = 0x0;
   
-  delete fPolIntY;
+  delete [] fPolIntY;
   fPolIntY = 0x0;
   
-  delete fPolIntC;
+  delete [] fPolIntC;
   fPolIntC = 0x0;
   
-  delete fPolIntD;
+  delete [] fPolIntD;
   fPolIntD = 0x0;
   
   fXbinIndex = 0;
@@ -1136,11 +1233,24 @@ void AliTPCPIDmathFit::AddPenaltyTermForRegularisation(const Bool_t useLogLikeli
     for (Int_t iPar = 0; iPar < fNumParametersToRegularise; iPar++) {
       const Int_t currParIndex = fIndexParametersToRegularise[iPar];
       
+      // currParIndex < 0 means that this parameter in this xBin should NOT contribute to the penalty term
+      if (currParIndex < 0) {
+        if (fDebugLevel > 1)
+          printf("Skipping for reg: %d - parInBin %d, xBin %d\n", -currParIndex, -currParIndex % fNumParametersPerXbin, (Int_t)(-currParIndex / fNumParametersPerXbin));
+        continue;
+      }
+      
       // the xBin of the current parameter can be obtained from the parameter index
       // and the number of parameters per xBin
       const Int_t xBin = (Int_t)(currParIndex / fNumParametersPerXbin);
       
-      if (fXstatisticalWeight[xBin] < fkDoubleEpsilonLimit) 
+      const Double_t xStatisticalWeightSummed = fApplyPatching ? (fXstatisticalWeight[xBin] + fXstatisticalWeight2[xBin])
+                                                               :  fXstatisticalWeight[xBin];
+      const Double_t xStatisticalWeightErrorSquaredSummed = fApplyPatching
+                                                                ? fXstatisticalWeightError[xBin]*fXstatisticalWeightError[xBin] +  
+                                                                  fXstatisticalWeightError2[xBin]*fXstatisticalWeightError2[xBin]
+                                                                :  fXstatisticalWeightError[xBin]*fXstatisticalWeightError[xBin];
+      if (xStatisticalWeightSummed < fkDoubleEpsilonLimit)
           continue; // If there is no statistics in this bin, one can safely skip it (the term cannot be calculated anyway)
       
       // Determine the number of points used for the regularisation (= order of interpolation polynomial)
@@ -1180,15 +1290,13 @@ void AliTPCPIDmathFit::AddPenaltyTermForRegularisation(const Bool_t useLogLikeli
       
       // Bin effective weight required for weighted log likelihood
       const Double_t weight = fUseWeightsForLoglikelihoodForCurrentFit 
-                                ? (fXstatisticalWeightError[xBin] * fXstatisticalWeightError[xBin] / fXstatisticalWeight[xBin])
+                                ? (xStatisticalWeightErrorSquaredSummed / xStatisticalWeightSummed)
                                 : 1.0;
       
       // Current values of this parameter
-      Double_t currYerr = 0, currYvalue = 0;
-      fMinuit->GetParameter(currParIndex, currYvalue, currYerr);
-      
-
-      Double_t y, yErr;
+      const Double_t currYvalue = fApplyPatching ? PatchParameter(fPar[currParIndex], fXstatisticalWeight[xBin], fParAdditional[currParIndex],
+                                                                  xStatisticalWeightSummed)
+                                                 : fPar[currParIndex];
       
       // Set the data points for the interpolation
       
@@ -1203,14 +1311,13 @@ void AliTPCPIDmathFit::AddPenaltyTermForRegularisation(const Bool_t useLogLikeli
         if (xBinTemp == xBin) // Do not add considered bin to interpolation
           continue;
         
-        y = 0;
-        yErr = 0;
-        
-        fMinuit->GetParameter(currParIndex % fNumParametersPerXbin + xBinTemp * fNumParametersPerXbin, y, yErr);
-        
+        const Int_t currParIndexTemp = currParIndex % fNumParametersPerXbin + xBinTemp * fNumParametersPerXbin;
         // NOTE: +1 to ignore dummy index 0!
         fPolIntX[i + 1] = fXvaluesForRegularisation[xBinTemp];
-        fPolIntY[i + 1] = y;
+        fPolIntY[i + 1] = fApplyPatching ? PatchParameter(fPar[currParIndexTemp], fXstatisticalWeight[xBinTemp], 
+                                                          fParAdditional[currParIndexTemp],
+                                                          fXstatisticalWeight[xBinTemp] + fXstatisticalWeight2[xBinTemp])
+                                         : fPar[currParIndexTemp];
         
         i++;
       }
@@ -1230,9 +1337,20 @@ void AliTPCPIDmathFit::AddPenaltyTermForRegularisation(const Bool_t useLogLikeli
       // this is only a number of measured counts, which is a fact). A weighting correction will be applied for the
       // penalty term.
       
-      const Double_t yError2 = (0.5 * (currYvalue + yInterpolated)) / fXstatisticalWeight[xBin];
+      const Double_t yError2 = (0.5 * (currYvalue + yInterpolated)) / xStatisticalWeightSummed;
       
-      const Double_t regPenaltyTerm = fRegularisationFactor * weight * (yDiff * yDiff) / yError2;
+      Double_t regPenaltyTerm = 0.;
+      if (yError2 > fkDoubleEpsilonLimit)
+        regPenaltyTerm = fRegularisationFactor * weight * (yDiff * yDiff) / yError2;
+      //else {
+        // Should only happen, if currYvalue ~ yInterpolates ~ 0. But then, yDiff is ~ 0 also. So, take regPenaltyTerm = 0 in this case.
+      //}
+        
+      // Each fit of the simultaneous fit group is a fit of its own and has its own regularisation. Thus,
+      // the penalty term needs to be added for every individual fit in order to get the same strength for
+      // the reg. as for non-simultaneous fit. This has been checked and yields consistent results with only
+      // one single fit.
+      regPenaltyTerm *= fNumSimultaneousFits;
       
       // ...and add it to the negLogLikelihood or the chi^2 depending on the fit method.
       // The factor 0.5 for the log likelihood is to take the proper definition of negLogLikelihood
@@ -1278,6 +1396,19 @@ void AliTPCPIDmathFit::GetCovarianceMatrix(Double_t* covMatrix) const
     }
     rfree++;
   }
+}
+
+
+//______________________________________________________
+inline Double_t AliTPCPIDmathFit::PatchParameter(Double_t par, Double_t statWeightTot1, Double_t statWeightPar2, Double_t statWeightTotSummed)
+{
+  // Patch parameter - NOTE: statWeightTotSummed is assumed to be statWeightTot1 + statWeightTot2!!!
+  // E.g. TOF patching: par = fraction_species, statWeightTot1 = TPC_yield_tot, statWeightTot2 = TOF_yield_tot,
+  // statWeightPar2 = TOF_yield_species
+  if (statWeightTotSummed > 0.)
+    return (par * statWeightTot1 + statWeightPar2) / statWeightTotSummed;
+  
+  return 0.;
 }
 
 

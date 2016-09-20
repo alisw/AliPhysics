@@ -47,11 +47,17 @@ class AliDhCorrelationExtraction : public TObject
 
 public:
     
-    enum DMesonSpecies {kD0toKpi, kDplusKpipi, kDStarD0pi};
+  enum DMesonSpecies {kD0toKpi, kDplusKpipi, kDStarD0pi, kDxHFE};
     enum SandBextraction {kSandBFromFit, kSfromBinCount, kBfromBinCount}; //default for paper: kBfromBinCount
     enum SBscaling {kFitScaling, kBinCountScaling}; //default for paper: kBfromBinCount
     enum selectAnType {kSE, kME};
     enum selectRegion {kSign, kSideb};  
+    enum DxHFECorrBins {kDxCorrD0Mass, kDxCorrD0Pt, kDxCorrElPt, kDxCorrdPhi, kDxCorrdEta, kDxCorrPoolbin};
+    enum DxHFECorrMCBins {kDxCorrMCD0Mass, kDxCorrMCD0Pt, kDxCorrMCElPt, kDxCorrMCdPhi, kDxCorrMCdEta, kDxCorrMCOriginD0, kDxCorrMCOriginEl,kDxCorrMCGeneratorEl};
+    enum DxHFED0Bins {kDxD0Pt, kDxD0Phi, kDxD0Mass, kDxD0Eta, kDxD0Mother};
+    enum DxHFEElBins {kDxElPt, kDxElPhi, kDxElEta, kDxElMother, kDxElGenerator};
+    enum DxHFEElSource {kAll, kAllEl, kHFE, kNonHFE, kcEl, kbEl};
+    enum DxHFED0Source {kcD0=1, kbD0};
 
     AliDhCorrelationExtraction(); // default constructor
     AliDhCorrelationExtraction(const AliDhCorrelationExtraction &source);
@@ -84,6 +90,9 @@ public:
     void SetCorrectPoolsSeparately(Bool_t usePools) {fCorrectPoolsSeparately=usePools;}
     void SetNpools(Int_t npools) {fNpools=npools;}
     void SetDeltaEtaRange(Double_t etaLow=-1., Double_t etaHigh=1) {fDeltaEtaMin=etaLow; fDeltaEtaMax=etaHigh;}
+    void SetUseMC(Bool_t useMC) {fUseMC=useMC;}
+    void SetUseElSource(Int_t elSource) {fElSource=elSource;}
+    void SetUseD0Source(Int_t D0Source) {fD0Source=D0Source;}
 
     void SetFitRanges(Double_t left, Double_t right) {fLeftFitRange=left; fRightFitRange=right;}
     void SetBkgFitFunction(Int_t func=0) {fBkgFitFunction=func;}
@@ -99,6 +108,7 @@ public:
     TH2D* GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDplus(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
+    TH2D* GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDplusTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
     TH2D* GetCorrelHistoDstarTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
@@ -114,6 +124,9 @@ public:
     void SetHistoStyle(TH1F* &histo, Int_t colour);
     void SetHistoCorrStyle(TH1D* &histo);
     void DefinePaveText(TPaveText* &paveText, Double_t xmin, Double_t ymin, Double_t xmax, Double_t ymax, TString name);
+    void SetPtRanges(Int_t ptBin, THnSparse* thn, Int_t dimension);
+    void SetElSource(Int_t type, THnSparse* thn, Int_t dimension);
+    void SetD0Source(Int_t type, THnSparse* thn, Int_t dimension);
 
     Bool_t ReadInputs(); //reads input files and loads lists of plots
     Bool_t FitInvariantMass(); //method to perform invariant mass fit via AliHFMassFitter
@@ -186,6 +199,9 @@ private:
     Bool_t fSBSingleBin;
     Double_t fDeltaEtaMin;
     Double_t fDeltaEtaMax;
+    Bool_t fUseMC;
+    Int_t fElSource;
+    Int_t fD0Source;
 
     Double_t *fSignalCorrel;
     Double_t *fBackgrCorrel;

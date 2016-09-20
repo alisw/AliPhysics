@@ -86,6 +86,8 @@ public:
   void    SetClusterMaxEnergy(Float_t emax)              { fEmax        = emax       ; }
   
   void    SetClusterMinEnergyForBkgShapeStudy(Float_t emin)              { fEBkgmin        = emin       ; }
+    
+  void    SetClusterMaxEnergyForBkgShapeStudy(Float_t emax)              { fEBkgmax        = emax       ; }
   
   void    SetClusterLambda0Cuts(Float_t min, Float_t max){ fL0max       = max        ;
                                                            fL0min       = min        ; }
@@ -247,6 +249,7 @@ private:
   Float_t             fEmax;             ///<  Maximum cluster energy (GeV).
   
   Float_t             fEBkgmin;          ///<  Minimum cluster energy (GeV) for bkg shape study (only for high M02 clusters).
+  Float_t             fEBkgmax;          ///<  Maximum cluster energy (GeV) for bkg shape study (only for high M02 clusters).
     
   Float_t             fL0min;            ///<  Minimum cluster L0.
   Float_t             fL0max;            ///<  Maximum cluster L0.

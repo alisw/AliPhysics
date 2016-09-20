@@ -144,7 +144,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fUseCentralitySPDTracklet(kFALSE),
-  fUseEventPlane(4),
+  fUseEventPlane(0),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -553,6 +553,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEtaMCGen(0),
   fHistoElectronEtaTotal(0),
   fHistoElectronEtaTag(0),
+  fHistoKaonMCGen(0),
+  fHistoD0MCGen(0),
 	fCounter(0),
 	fHistonEvtvsRunNumber(0),
   fHistonElevsRunNumber(0),
@@ -657,7 +659,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fUseCentralitySPDTracklet(kFALSE),
-  fUseEventPlane(4),
+  fUseEventPlane(0),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -1066,6 +1068,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEtaMCGen(0),
   fHistoElectronEtaTotal(0),
   fHistoElectronEtaTag(0),
+  fHistoKaonMCGen(0),
+  fHistoD0MCGen(0),
 	fCounter(0),
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
@@ -1197,8 +1201,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::~AliAnalysisTaskSELc2eleLambdafromAO
 		fCounter = 0;
 	}
 
-	for(int i = 0;i<fNOfPools;i++){
-		for(unsigned int j=0;j<fNumberOfEventsForMixing;j++){
+	for(Int_t i = 0;i<fNOfPools;i++){
+		for(Int_t j=0;j<fNumberOfEventsForMixing;j++){
 			while(!m_ReservoirE[i][j].empty()){
 				delete m_ReservoirE[i][j].back();
 				m_ReservoirE[i][j].pop_back();
@@ -1467,7 +1471,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   fAnalCuts->SetMagneticField(fBzkG);
   fAnalCuts->SetPrimaryVertex(pos);
   MakeAnalysis(aodEvent,mcArray);
-
 
   PostData(1,fOutput);
   PostData(3,fOutputAll);
@@ -2250,7 +2253,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoEleLambdaMassvsElePtRS->Fill(cont2);
 			if(trk->Charge()>0) fHistoEleLambdaMassvsElePtRS1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtRS2->Fill(cont2);
-			if(cont[0]<2.3){
+			if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsRapidityRS->Fill(elobj->Pt(),elobj_rap);
 				fHistoElePtRS->Fill(trk->Pt(),fCentrality);
 				fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
@@ -2362,7 +2365,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 						fHistoEleLambdaMassvsElePtMCS->Fill(cont2);
 						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtMCS1->Fill(cont2);
 						else fHistoEleLambdaMassvsElePtMCS2->Fill(cont2);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoEleLambdaPtvsRapidityMCS->Fill(elobj->Pt(),elobj_rap);
 							fHistoElePtMCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
@@ -2500,7 +2503,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 						fHistoEleLambdaMassvsElePtFeeddownXic0MCS->Fill(cont2);
 						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtFeeddownXic0MCS1->Fill(cont2);
 						else fHistoEleLambdaMassvsElePtFeeddownXic0MCS2->Fill(cont2);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoFeedDownXic0MCS->Fill(cont_mclc);
 							if(trk->Charge()>0) fHistoFeedDownXic0MCS1->Fill(cont_mclc);
 							else fHistoFeedDownXic0MCS2->Fill(cont_mclc);
@@ -2547,7 +2550,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 						fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS->Fill(cont2);
 						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1->Fill(cont2);
 						else fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2->Fill(cont2);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoFeedDownXicPlusMCS->Fill(cont_mclc);
 							if(trk->Charge()>0) fHistoFeedDownXicPlusMCS1->Fill(cont_mclc);
 							else fHistoFeedDownXicPlusMCS2->Fill(cont_mclc);
@@ -2590,7 +2593,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 						}
 					}
 					if(abs(pdgcode)==4122 && abs(mcpdgele_array[1])==4122 && ( abs(mcpdgv0_array[1])==3212 || abs(mcpdgv0_array[1])==3214 || abs(mcpdgv0_array[1])==3224) ){
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoFeedDownSigmaMCS->Fill(cont_mclc);
 							if(trk->Charge()>0) fHistoFeedDownSigmaMCS1->Fill(cont_mclc);
 							else fHistoFeedDownSigmaMCS2->Fill(cont_mclc);
@@ -2627,7 +2630,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoEleLambdaMassvsElePtWS->Fill(cont2);
 			if(trk->Charge()>0) fHistoEleLambdaMassvsElePtWS1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtWS2->Fill(cont2);
-			if(cont[0]<2.3){
+			if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsRapidityWS->Fill(elobj->Pt(),elobj_rap);
 				fHistoElePtWS->Fill(trk->Pt(),fCentrality);
 				fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
@@ -2725,7 +2728,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 
 					if(abs(pdgcode)==5122 && abs(mcpdgele_array[1])==5122 && abs(mcpdgv0_array[1])==4122 && abs(mcpdgv0_array[2])==5122){
 						fHistoEleLambdaMassLambdabMCS->Fill(cont);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoResponseEleLambdaPtLambdab->Fill(mclc->Pt(),elobj->Pt());
 							fHistoResponseElePtLambdab->Fill(mclc->Pt(),trk->Pt());
 							fHistoResponseLambdaPtLambdab->Fill(mclc->Pt(),v0->Pt());
@@ -2746,7 +2749,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
           }
 					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgv0_array[1])==4132 && abs(mcpdgv0_array[2])==5132){
 						fHistoEleLambdaMassXibMCS->Fill(cont);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoEleLambdaPtvsV0dlXibMCS->Fill(cont_elelamptvsv0dl);
 							if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlXibMCS1->Fill(cont_elelamptvsv0dl);
 							else fHistoEleLambdaPtvsV0dlXibMCS2->Fill(cont_elelamptvsv0dl);
@@ -2758,7 +2761,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
           }
 					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgv0_array[1])==4232 && abs(mcpdgv0_array[2])==5132){
 						fHistoEleLambdaMassXibMCS->Fill(cont);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoEleLambdaPtvsV0dlXibMCS->Fill(cont_elelamptvsv0dl);
 							if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlXibMCS1->Fill(cont_elelamptvsv0dl);
 							else fHistoEleLambdaPtvsV0dlXibMCS2->Fill(cont_elelamptvsv0dl);
@@ -2770,7 +2773,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
           }
 					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgv0_array[1])==4132 && abs(mcpdgv0_array[2])==5232){
 						fHistoEleLambdaMassXibMCS->Fill(cont);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoEleLambdaPtvsV0dlXibMCS->Fill(cont_elelamptvsv0dl);
 							if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlXibMCS1->Fill(cont_elelamptvsv0dl);
 							else fHistoEleLambdaPtvsV0dlXibMCS2->Fill(cont_elelamptvsv0dl);
@@ -2782,7 +2785,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
           }
 					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgv0_array[1])==4232 && abs(mcpdgv0_array[2])==5232){
 						fHistoEleLambdaMassXibMCS->Fill(cont);
-						if(cont[0]<2.3){
+						if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 							fHistoEleLambdaPtvsV0dlXibMCS->Fill(cont_elelamptvsv0dl);
 							if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlXibMCS1->Fill(cont_elelamptvsv0dl);
 							else fHistoEleLambdaPtvsV0dlXibMCS2->Fill(cont_elelamptvsv0dl);
@@ -2806,7 +2809,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoEleLambdaMassRSAway->Fill(cont_flip);
 			if(trk->Charge()>0) fHistoEleLambdaMassRS1Away->Fill(cont_flip);
 			else fHistoEleLambdaMassRS2Away->Fill(cont_flip);
-			if(cont_flip[0]<2.3){
+			if(cont_flip[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsV0dlRSAway->Fill(cont_elelamptvsv0dl_flip);
 				if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlRS1Away->Fill(cont_elelamptvsv0dl_flip);
 				else fHistoEleLambdaPtvsV0dlRS2Away->Fill(cont_elelamptvsv0dl_flip);
@@ -2815,7 +2818,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoEleLambdaMassWSAway->Fill(cont_flip);
 			if(trk->Charge()>0) fHistoEleLambdaMassWS1Away->Fill(cont_flip);
 			else fHistoEleLambdaMassWS2Away->Fill(cont_flip);
-			if(cont_flip[0]<2.3){
+			if(cont_flip[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsV0dlWSAway->Fill(cont_elelamptvsv0dl_flip);
 				if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlWS1Away->Fill(cont_elelamptvsv0dl_flip);
 				else fHistoEleLambdaPtvsV0dlWS2Away->Fill(cont_elelamptvsv0dl_flip);
@@ -2876,7 +2879,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoEleLambdaMassRSSideAway->Fill(cont_flip);
 			if(trk->Charge()>0) fHistoEleLambdaMassRSSide1Away->Fill(cont_flip);
 			else fHistoEleLambdaMassRSSide2Away->Fill(cont_flip);
-			if(cont_flip[0]<2.3){
+			if(cont_flip[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsV0dlRSSideAway->Fill(cont_elelamptvsv0dl_flip);
 				if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlRSSide1Away->Fill(cont_elelamptvsv0dl_flip);
 				else fHistoEleLambdaPtvsV0dlRSSide2Away->Fill(cont_elelamptvsv0dl_flip);
@@ -2885,7 +2888,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoEleLambdaMassWSSideAway->Fill(cont_flip);
 			if(trk->Charge()>0) fHistoEleLambdaMassWSSide1Away->Fill(cont_flip);
 			else fHistoEleLambdaMassWSSide2Away->Fill(cont_flip);
-			if(cont_flip[0]<2.3){
+			if(cont_flip[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsV0dlWSSideAway->Fill(cont_elelamptvsv0dl_flip);
 				if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlWSSide1Away->Fill(cont_elelamptvsv0dl_flip);
 				else fHistoEleLambdaPtvsV0dlWSSide2Away->Fill(cont_elelamptvsv0dl_flip);
@@ -2896,7 +2899,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	//
 	// New strategy: Fully analyze correlation
 	//
-  for(Int_t iv=0;iv<13;iv++){
+  for(Int_t iv=0;iv<15;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 
@@ -2928,6 +2931,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
   fCorrelationVariables[10] = fCentrality;
   fCorrelationVariables[11] = elobj->Pt();
 	fCorrelationVariables[12] = elobj->InvMass(2,pdgdg);
+	fCorrelationVariables[13] = fAnalCuts->CosOpeningAngle(v0,trk);
 
 	cont_cor_nd[0] = elobj->Pt();
 	cont_cor_nd[1] = fAnalCuts->DeltaPhi(v0,trk);
@@ -2982,6 +2986,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
         fCorrelationVariables[9] = 15;
 				cont_cor_nd[5] = 6;
       }
+      if(FromSemileptonicDecays(mcpdgele_array)==3){
+        fCorrelationVariables[9] = 16;
+      }
     }
     if(fCorrelationVariables[9]<0){
       Bool_t lam_from_bottom = HaveBottomInHistory(mcpdgv0_array);
@@ -3007,7 +3014,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 
 				cont_cor_nd[5] = 9;
       }
+      if(FromSemileptonicDecays(mcpdgele_array)==3){
+        if(HaveBottomInHistory(mcpdgele_array)) fCorrelationVariables[9] = 1021;
+        else if(HaveCharmInHistory(mcpdgele_array)) fCorrelationVariables[9] = 1022;
+        else  fCorrelationVariables[9] = 1023;
+      }
     }
+    fCorrelationVariables[14] = mcpdgele_array[1];
   }
 
 	if(fAnalCuts->IsSelected(elobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(v0))
@@ -3016,14 +3029,14 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fCorrelationVariablesTree->Fill();
 
 		if(fUseMCInfo){
-			if(elobj->InvMass(2,pdgdg)<2.3)
+			if(elobj->InvMass(2,pdgdg)<fAnalCuts->GetEleLambdaMassMax())
 				fHistoCorrelationVariablesvsEleLambdaPtMC->Fill(cont_cor_nd);
 			cont_cor_nd[0] = trk->Pt();
 			fHistoCorrelationVariablesvsElePtMC->Fill(cont_cor_nd);
 			cont_cor_nd[0] = v0->Pt();
 			fHistoCorrelationVariablesvsLambdaPtMC->Fill(cont_cor_nd);
 		}else{
-			if(elobj->InvMass(2,pdgdg)<2.3)
+			if(elobj->InvMass(2,pdgdg)<fAnalCuts->GetEleLambdaMassMax())
 				fHistoCorrelationVariablesvsEleLambdaPt->Fill(cont_cor_nd);
 			cont_cor_nd[0] = trk->Pt();
 			fHistoCorrelationVariablesvsElePt->Fill(cont_cor_nd);
@@ -3251,7 +3264,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 			fHistoEleLambdaMassvsElePtRSMix->Fill(cont2);
 			if(trke->T()>0) fHistoEleLambdaMassvsElePtRSMix1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtRSMix2->Fill(cont2);
-			if(cont[0]<2.3){
+			if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoElePtRSMix->Fill(trke->Pt(),fCentrality);
 				fHistoElePtvsEtaRSMix->Fill(cont_eleptvseta);
 				fHistoElePtvsLambdaPtRSMix->Fill(cont_eleptvslambdapt);
@@ -3279,7 +3292,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 			fHistoEleLambdaMassvsElePtWSMix->Fill(cont2);
 			if(trke->T()>0) fHistoEleLambdaMassvsElePtWSMix1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtWSMix2->Fill(cont2);
-			if(cont[0]<2.3){
+			if(cont[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoElePtWSMix->Fill(trke->Pt(),fCentrality);
 				fHistoElePtvsEtaWSMix->Fill(cont_eleptvseta);
 				fHistoElePtvsLambdaPtWSMix->Fill(cont_eleptvslambdapt);
@@ -3309,7 +3322,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 			fHistoEleLambdaMassRSMixAway->Fill(cont_flip);
 			if(trke->T()>0) fHistoEleLambdaMassRSMix1Away->Fill(cont_flip);
 			else fHistoEleLambdaMassRSMix2Away->Fill(cont_flip);
-			if(cont_flip[0]<2.3){
+			if(cont_flip[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsV0dlRSMixAway->Fill(cont_elelamptvsv0dl_flip);
 				if(trke->T()>0) fHistoEleLambdaPtvsV0dlRSMix1Away->Fill(cont_elelamptvsv0dl_flip);
 				else fHistoEleLambdaPtvsV0dlRSMix2Away->Fill(cont_elelamptvsv0dl_flip);
@@ -3318,7 +3331,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 			fHistoEleLambdaMassWSMixAway->Fill(cont_flip);
 			if(trke->T()>0) fHistoEleLambdaMassWSMix1Away->Fill(cont_flip);
 			else fHistoEleLambdaMassWSMix2Away->Fill(cont_flip);
-			if(cont_flip[0]<2.3){
+			if(cont_flip[0]<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoEleLambdaPtvsV0dlWSMixAway->Fill(cont_elelamptvsv0dl_flip);
 				if(trke->T()>0) fHistoEleLambdaPtvsV0dlWSMix1Away->Fill(cont_elelamptvsv0dl_flip);
 				else fHistoEleLambdaPtvsV0dlWSMix2Away->Fill(cont_elelamptvsv0dl_flip);
@@ -3329,7 +3342,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 	//
 	// New strategy: Fully analyze correlation
 	//
-  for(Int_t iv=0;iv<13;iv++){
+  for(Int_t iv=0;iv<15;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 
@@ -3361,6 +3374,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   fCorrelationVariables[10] = fCentrality;
   fCorrelationVariables[11] = sqrt(pxsum*pxsum+pysum*pysum);
   fCorrelationVariables[12] = mel;
+  fCorrelationVariables[13] = cosoa;
 
 	cont_cor_nd[0] =  sqrt(pxsum*pxsum+pysum*pysum);
 	cont_cor_nd[1] =  TVector2::Phi_mpi_pi(v0->Phi()-trke->Phi());
@@ -3384,7 +3398,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 		if(fWriteVariableTree)
 			fCorrelationVariablesTree->Fill();
 
-		if(mel<2.3)
+		if(mel<fAnalCuts->GetEleLambdaMassMax())
 			fHistoCorrelationVariablesvsEleLambdaPtMix->Fill(cont_cor_nd);
 		cont_cor_nd[0] = trke->Pt();
 		fHistoCorrelationVariablesvsElePtMix->Fill(cont_cor_nd);
@@ -4289,14 +4303,14 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 			fHistoEleLambdaMassvsElePtMCGen->Fill(cont2);
 			if(mcepart->GetPdgCode()<0) fHistoEleLambdaMassvsElePtMCGen1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtMCGen2->Fill(cont2);
-			if(InvMassEleLambda<2.3){
+			if(InvMassEleLambda<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoElePtMCGen->Fill(mcepart->Pt(),fCentrality);
 				fHistoElePtvsEtaMCGen->Fill(cont_eleptvseta);
 				fHistoElePtvsLambdaPtMCGen->Fill(cont_eleptvslambdapt);
 			}
 		}
 		if(fabs(mcpart->Y())<0.7){
-			if(InvMassEleLambda<2.3){
+			if(InvMassEleLambda<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoElePtvsLambdaPtMCLcGen->Fill(cont_eleptvslambdapt);
 				fHistoElePtvsLambdaPtvsLcPtMCGen->Fill(cont_eleptvslambdaptvslcpt);
 			}
@@ -4313,7 +4327,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 			fHistoEleLambdaMassvsElePtFeeddownXic0MCGen->Fill(cont2);
 			if(mcepart->GetPdgCode()<0) fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2->Fill(cont2);
-			if(InvMassEleLambda<2.3){
+			if(InvMassEleLambda<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoElePtFeeddownXic0MCGen->Fill(mcepart->Pt(),fCentrality);
 				fHistoElePtvsEtaFeeddownXic0MCGen->Fill(cont_eleptvseta);
 				fHistoElePtvsLambdaPtFeeddownXic0MCGen->Fill(cont_eleptvslambdapt);
@@ -4331,7 +4345,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 			fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen->Fill(cont2);
 			if(mcepart->GetPdgCode()<0) fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1->Fill(cont2);
 			else fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2->Fill(cont2);
-			if(InvMassEleLambda<2.3){
+			if(InvMassEleLambda<fAnalCuts->GetEleLambdaMassMax()){
 				fHistoElePtFeeddownXicPlusMCGen->Fill(mcepart->Pt(),fCentrality);
 				fHistoElePtvsEtaFeeddownXicPlusMCGen->Fill(cont_eleptvseta);
 				fHistoElePtvsLambdaPtFeeddownXicPlusMCGen->Fill(cont_eleptvslambdapt);
@@ -5589,6 +5603,10 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoPi0MCGen);
   fHistoEtaMCGen = new TH1F("fHistoEtaMCGen","",100,0.,20.);
   fOutputAll->Add(fHistoEtaMCGen);
+  fHistoKaonMCGen = new TH1F("fHistoKaonMCGen","",100,0.,20.);
+  fOutputAll->Add(fHistoKaonMCGen);
+  fHistoD0MCGen = new TH1F("fHistoD0MCGen","",100,0.,20.);
+  fOutputAll->Add(fHistoD0MCGen);
 
 	//Axis 0: Pt
 	//Axis 1: Dphi
@@ -6510,6 +6528,16 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
         fHistoEtaMCGen->Fill(mcpart->Pt());
       }
     }
+    if(TMath::Abs(mcpart->GetPdgCode())==321){
+      if(fabs(mcpart->Y())<0.5){
+        fHistoKaonMCGen->Fill(mcpart->Pt());
+      }
+    }
+    if(TMath::Abs(mcpart->GetPdgCode())==421){
+      if(fabs(mcpart->Y())<0.5){
+        fHistoD0MCGen->Fill(mcpart->Pt());
+      }
+    }
 	}
 
 	if(fMCDoPairAnalysis)
@@ -6684,7 +6712,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineCorrelationTreeVariables(
 
   const char* nameoutput = GetOutputSlot(12)->GetContainer()->GetName();
   fCorrelationVariablesTree = new TTree(nameoutput,"Correlation variables tree");
-  Int_t nVar = 13;
+  Int_t nVar = 15;
   fCorrelationVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -6701,6 +6729,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineCorrelationTreeVariables(
   fCandidateVariableNames[10] = "Centrality";
   fCandidateVariableNames[11] = "EleLambdaPt";
   fCandidateVariableNames[12] = "EleLambdaMass";
+  fCandidateVariableNames[13] = "EleLambdaCosOA";
+  fCandidateVariableNames[14] = "MCEleMother";
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
@@ -6826,6 +6856,13 @@ Int_t AliAnalysisTaskSELc2eleLambdafromAODtracks::FromSemileptonicDecays(Int_t *
   if(abs(history[1])==5132) return 2;
   if(abs(history[1])==5232) return 2;
   if(abs(history[1])==5332) return 2;
+
+  if(abs(history[1])==311) return 3;
+  if(abs(history[1])==321) return 3;
+  if(abs(history[1])==3122) return 3;
+  if(abs(history[1])==3312) return 3;
+  if(abs(history[1])==3322) return 3;
+  if(abs(history[1])==3334) return 3;
 
   return 0;
 }

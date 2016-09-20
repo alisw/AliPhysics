@@ -159,7 +159,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
   Bool_t isSubLeadingEM             = kFALSE; // cluster contains at least one electron or photon from a pi0, eta or eta_prime in subleading contribution
   
   
-  TParticle* Photon;
+  TParticle* Photon = 0x0;
   if (fNCaloPhotonMCLabels==0) return;
   
   if (enableSort){
@@ -195,7 +195,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
     }   
   }
   
-  Photon                            = MCStack->Particle(GetCaloPhotonMCLabel(0));
+  if(GetCaloPhotonMCLabel(0)>-1) Photon = MCStack->Particle(GetCaloPhotonMCLabel(0));
   
   if(Photon == NULL){
     return;
@@ -278,6 +278,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
     for (Int_t i = 1; i< fNCaloPhotonMCLabels; i++){
       if (i > 49) continue;													// abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       if (enablePrintOuts) cout << "checking particle: " <<  i << endl;
+      if (GetCaloPhotonMCLabel(i) < 0) continue;
       dummyPart = MCStack->Particle(GetCaloPhotonMCLabel(i));
       Int_t dummyPartMotherLabel      = dummyPart->GetMother(0);
       Int_t dummyPartGrandMotherLabel = -1;

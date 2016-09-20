@@ -63,7 +63,8 @@ AliGenEMCocktail::AliGenEMCocktail()
   fCentrality(AliGenEMlib::kpp),
   fV2Systematic(AliGenEMlib::kNoV2Sys),
   fForceConv(kFALSE),
-  fSelectedParticles(kGenHadrons)
+  fSelectedParticles(kGenHadrons),
+  fRandomPsi(kFALSE)
 {
   // Constructor
 }
@@ -481,9 +482,11 @@ void AliGenEMCocktail::Generate()
 	
   // Loop over generators and generate events
   Int_t igen = 0;
-  Float_t evPlane;
-  Rndm(&evPlane,1);
-  evPlane*=TMath::Pi()*2;
+  Float_t evPlane=0.;
+  if(fRandomPsi){
+    Rndm(&evPlane,1);
+    evPlane*=2.*TMath::Pi();
+  }
   while((entry = (AliGenCocktailEntry*)next())) {
     gen = entry->Generator();
     gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));

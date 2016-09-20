@@ -43,6 +43,7 @@ set(SRCS
     legotrain/AliMultiplicitySelectionCPPWA.cxx
     legotrain/AliAnalysisTaskDG.cxx
     legotrain/AliAnalysisTaskDiffCrossSections.cxx
+    legotrain/AliSPDGeometryUtils.cxx
     QA/AliAnalysisTaskCPQA.cxx
     QA/AliAnalysisTaskCEPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx

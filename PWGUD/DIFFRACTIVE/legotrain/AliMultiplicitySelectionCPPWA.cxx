@@ -194,7 +194,7 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd)
 {
 	printf("%d",fTPCnclsS);
 	TArrayI indices;
-	return GetNumberOfITSTPCtracks(esd, indices);
+	return GetNumberOfITSTPCtracks(esd, indices,NULL,NULL,kFALSE);
 }
 //Member function: Include V0 particles??
 Bool_t AliMultiplicitySelectionCPPWA::InitV0Daughters(AliESDEvent *esd)
@@ -225,7 +225,7 @@ Bool_t AliMultiplicitySelectionCPPWA::InitV0Daughters(AliESDEvent *esd)
 	return kTRUE;
 }
 //Return Number of ITSTPC tracks with Standard + Special trackcuts
-Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices)
+Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices, TH1D *hDCAz, TH1D *hMult[], Bool_t isSave)
 {
 	//Initialize TArrayI
 	indices.Set(esd->GetNumberOfTracks());
@@ -256,14 +256,24 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 	{
 		AliESDtrack* track = esd->GetTrack(iTrack);
 		track->SetESDEvent(esd);
+		if (isSave) hMult[5]->Fill(0);
 
-		if(track->GetTPCnclsS()>fTPCnclsS) return -1;
+		if (track->Eta() < fTrackEtaMin || track->Eta() > fTrackEtaMax) continue;
+		if (isSave) hMult[5]->Fill(1);
+
+		if (!AcceptTrack(track,kTRUE)) continue;
+		if (isSave) hMult[5]->Fill(2);
+
+		if (track->GetTPCnclsS()>fTPCnclsS) continue;//return -1;
+		if (isSave) hMult[5]->Fill(3);
 
 		if(!track->PropagateToDCA(vtxESD, bfield, 500., dca, cov))
 			continue;
+		if (isSave) hMult[5]->Fill(4);
 
 		if(fkIgnoreV0s && fkIsTrackSec[iTrack])
 			continue;
+		if (isSave) hMult[5]->Fill(5);
 
 		Bool_t isITSpureSA = ((track->GetStatus() & AliESDtrack::kITSpureSA) != 0);
 		if(isITSpureSA) 
@@ -271,9 +281,11 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 			NpureITStracks++;
 			continue;
 		}
+		if(isSave) hDCAz->Fill(TMath::Abs(track->Zv() - vtxESD->GetZ()));
 
 		if(TMath::Abs(track->Zv() - vtxESD->GetZ())>fTrackDCAz) 
 			continue;
+		if (isSave) hMult[5]->Fill(6);
 
 		indices.AddAt(iTrack, NtracksSel);
 
@@ -289,9 +301,8 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 			fIndicesP.AddAt(iTrack, NtracksSelP);
 			NtracksSelP++;
 		}
-
-
 	}
+	if (isSave) hMult[0]->Fill(NtracksSel);
 
 	indices.Set(NtracksSel);
 
@@ -300,6 +311,7 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 	fIndicesN.Set(NtracksSelN);
 	fIndicesP.Set(NtracksSelP);
 
+	/*
 	for(Int_t i = 0; i < NtracksSel; i++)
 	{
 		AliESDtrack* tr = esd->GetTrack(indices.At(i));
@@ -308,21 +320,31 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 		if(!AcceptTrack(tr, kTRUE))
 			return -3;
 	}
+	*/
 
 	const AliMultiplicity *mult = esd->GetMultiplicity();
 
-	if(NpureITStracks>NtracksSel || mult->GetNumberOfTracklets() > NtracksSel)
+	if(NpureITStracks > NtracksSel || mult->GetNumberOfTracklets() > NtracksSel) {
+		if (isSave) hMult[1]->Fill(-1);
 		return -4;
+	}
+	if (isSave) hMult[1]->Fill(NtracksSel);
 
-	if(!TestFiredChips(esd, indices))
+	if(!TestFiredChips(esd, indices)) {
+		if (isSave) hMult[2]->Fill(-1);
 		return -5;
+	}
+	if (isSave) hMult[2]->Fill(NtracksSel);
 
 	if(fkCheckReferenceMultiplicity)
 	{
 		Int_t NRefMult = AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSTPC, 3);
 
-		if(NRefMult > NtracksSel)
+		if(NRefMult > NtracksSel) {
+			if (isSave) hMult[3]->Fill(-1);
 			return -6;
+		}
+		if (isSave) hMult[3]->Fill(NtracksSel);
 	}
 
 	return NtracksSel; 

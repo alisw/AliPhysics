@@ -75,7 +75,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
     fCurrentRun(-1),
-    fInitialized(false)
+    fLocalInitialized(false)
 {
   // Restrict analysis to the EMCAL acceptance
 }
@@ -104,7 +104,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
     fCurrentRun(-1),
-    fInitialized(false)
+    fLocalInitialized(false)
 {
   // Restrict analysis to the EMCAL acceptance
   DefineOutput(1, TList::Class());
@@ -245,10 +245,10 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
  * @param option Not used
  */
 void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
-  if(!fInitialized){
+  if(!fLocalInitialized){
     AliInfoStream() << GetName() << ": Initializing ..." << std::endl;
     ExecOnce();
-    fInitialized = kTRUE;
+    fLocalInitialized = kTRUE;
   }
   if(InputEvent()->GetRunNumber() != fCurrentRun){
     AliInfoStream() << GetName() << ": Changing run from " <<  fCurrentRun << " to " << InputEvent()->GetRunNumber() << std::endl;

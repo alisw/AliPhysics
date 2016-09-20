@@ -139,7 +139,7 @@ private:
 	AliPhysicsSelection *fPhysicsSelection; // physics selection object
 	AliPBTracks *fTracks; // object taking care about the track cuts
 	Double_t fVtxDst; // distance of the primary vertex from tracks and from SPD
-	Double_t fVtxZ; // z-position of the primary vertex from tracks
+	Double_t fVtxX, fVtxY, fVtxZ; // position of the primary vertex from tracks
 	Int_t fResidualTracks; // tracks rejected by cuts within the event
 	Int_t fResidualTrackletsCB; // SPD tracklets not assigned to tracks
 	Int_t fResidualTrackletsFW; // SPD tracklets not assigned to tracks

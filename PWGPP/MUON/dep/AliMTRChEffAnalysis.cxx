@@ -549,9 +549,13 @@ Bool_t AliMTRChEffAnalysis::CopyLocally ( const char* runList, const char* path,
   }
 
   TGridResult* res = 0x0;
+  Bool_t hasCurl = kFALSE;
   if ( isGrid ) {
     if ( ! gGrid ) TGrid::Connect("alien://");
     res = gGrid->Query(path,pattern);
+  }
+  else {
+    if ( gSystem->Exec("which curl &> /dev/null") == 0 ) hasCurl = kTRUE;
   }
 
   TList* rl = GetRunList(runList);
@@ -608,7 +612,13 @@ Bool_t AliMTRChEffAnalysis::CopyLocally ( const char* runList, const char* path,
       }
       else {
         src = Form("http://aliqamu.web.cern.ch/aliqamu/%s",dest.Data());
-        isFileOk = TFile::Cp(src.Data(),dest.Data());
+        // TFile::Cp was having some issue lately.
+        // If curl is found on the system, let's use it instead...
+        if ( hasCurl ) {
+          Int_t cmdOut = gSystem->Exec(Form("curl -o %s %s",dest.Data(),src.Data()));
+          isFileOk = ( cmdOut == 0 );
+        }
+        else isFileOk = TFile::Cp(src.Data(),dest.Data());
       }
     }
 

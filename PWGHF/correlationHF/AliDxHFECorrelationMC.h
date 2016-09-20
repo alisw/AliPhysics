@@ -53,6 +53,12 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
     kNonHF= 4,
     kHadrons=5
   };
+  enum{
+    kOriginC = 0,
+    kOriginB = 1,
+    kOriginNonHF = 2,
+    kOriginHadron = 3
+  };
 
 
   enum{
@@ -74,6 +80,10 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   int fStoreOriginD; // Which origin to store for Ds
   Int_t fRunMode;    // Which mode to run in (bigger thnsparse)
   Short_t fSystem;               // Which system pp/PbPb
-  ClassDef(AliDxHFECorrelationMC, 3)
+  Bool_t fUseReducedOrigin; // Flag to store full or reduced origin info. Default false (full info)
+  int fReducedOriginEl;    // Reduced origin info for electrons
+  int fReducedOriginD0;   // Reduced origin info for D0s
+  Bool_t fStorePoolbin; // Flag to store poolbin information (only valid for pPb reduced mode for now)
+  ClassDef(AliDxHFECorrelationMC, 4)
 };
 #endif
