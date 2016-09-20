@@ -480,6 +480,7 @@ public:
 	fVeto(veto),
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
+	fEtaDeltaPdg(0),
 	fEtaPdgIPz(0),
 	fEtaPdg(0),
 	fEtaPt(0),
@@ -497,6 +498,7 @@ public:
 	fVeto(o.fVeto),
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
+	fEtaDeltaPdg(0),
 	fEtaPdgIPz(0),
 	fEtaPdg(0),
 	fEtaPt(0),
@@ -632,10 +634,25 @@ public:
      */
     void Print(Option_t* option="") const;
   protected:
+    Bool_t ProjectEtaPdg(Container* result, Int_t nEvents);
+    Bool_t ProjectEtaDeltaPdgPart(Container*     result,
+				  Int_t          nEvents,
+				  Double_t       tailDelta,
+				  Double_t       tailMax,
+				  const TString& pre,
+				  const TString& tit);
+    Bool_t ProjectEtaDeltaPdg(Container* result,
+			      Int_t      nEvents,
+			      Double_t   tailCut,
+			      Double_t   tailMax);
+    Bool_t ProjectEtaPdgIPz(Container*     result,
+			    TH1*           ipz,
+			    const TString& shn);
     const UChar_t fMask;
     const UChar_t fVeto;
     TH2*          fEtaIPz;       //!
     TH3*          fEtaDeltaIPz;  //!
+    TH3*          fEtaDeltaPdg;  //!
     TH3*          fEtaPdgIPz;    //! 
     TH2*          fEtaPdg;       //! 
     TH2*          fEtaPt;        //! 
@@ -1696,9 +1713,10 @@ void AliTrackletAODdNdeta::Histos::Print(Option_t*) const
   char cMask[7]; Bits2String(fMask, cMask);
   char cVeto[7]; Bits2String(fVeto, cVeto);  
   Printf("  Histograms: %s", fName.Data());
-  Printf("   Mask:         0x%02x (%s)", fMask, cMask);
-  Printf("   Veto:         0x%02x (%s)", fVeto, cVeto);
-  Printf("   Delta:        %s", fEtaDeltaIPz ? "yes" : "no");
+  Printf("   Mask:          0x%02x (%s)", fMask, cMask);
+  Printf("   Veto:          0x%02x (%s)", fVeto, cVeto);
+  Printf("   Delta:         %s", fEtaDeltaIPz ? "yes" : "no");
+  Printf("   Delta per PDG: %s", fEtaDeltaPdg ? "yes" : "no");
 }
 
   
@@ -2037,6 +2055,11 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
 		    "Primary transverse momentum",
 		    kCyan+2, 30, etaAxis, ptAxis);
   }
+  if (IsPrimary() || IsSecondary() || IsCombinatoric()) {
+    fEtaDeltaPdg = Make3D(fContainer, "etaDeltaPdg",
+			  "#Delta by primary particle type",
+			  kMagenta, 22, etaAxis, deltaAxis, PdgAxis());
+  }
   
   SetAttr(fColor, fStyle);
   return true;
@@ -2055,6 +2078,12 @@ void AliTrackletAODdNdeta::Histos::SetAttr(Color_t c, Style_t m)
     fEtaDeltaIPz->SetMarkerColor(c);
     fEtaDeltaIPz->SetLineColor(c);
     fEtaDeltaIPz->SetFillColor(c);
+  }
+  if (fEtaDeltaPdg) {
+    fEtaDeltaPdg->SetMarkerStyle(m);
+    fEtaDeltaPdg->SetMarkerColor(c);
+    fEtaDeltaPdg->SetLineColor(c);
+    fEtaDeltaPdg->SetFillColor(c);
   }
   if (fEtaPdgIPz) {
     fEtaPdgIPz->SetMarkerStyle(m);
@@ -2423,7 +2452,7 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
     Double_t weight = LookupWeight(tracklet, cent, ipz);
     UShort_t signal = CheckTracklet(tracklet);
     if (signal) fEtaPhi->Fill(tracklet->GetEta(), tracklet->GetPhi());
-    if (tracklet->IsMeasured()) {
+    if (tracklet->IsMeasured() && TMath::Abs(tracklet->GetEta()) < 0.7) {
       nMeasured += weight;
       nBare     ++;
       if      (tracklet->IsCombinatorics()) nFake += weight;
@@ -2431,7 +2460,7 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
     }
     else if (tracklet->IsGenerated() &&
 	     !tracklet->IsNeutral() &&
-	     TMath::Abs(tracklet->GetEta()) <= 2) nGenerated ++; // += weight;
+	     TMath::Abs(tracklet->GetEta()) <= 1) nGenerated ++; // += weight;
     TIter nextBin(&toRun);
     while ((bin = static_cast<CentBin*>(nextBin()))) {
       bin->ProcessTracklet(tracklet, ip->GetZ(), signal, weight);
@@ -2499,12 +2528,13 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   }
 
   // If we need the PDG code, get that here
-  if (fEtaPdgIPz || fEtaPdg) pdgBin = PdgBin(tracklet->GetParentPdg());
+  if (fEtaPdgIPz || fEtaPdg || fEtaDeltaPdg)
+    pdgBin = PdgBin(tracklet->GetParentPdg());
   
   // If we have the eta-vs-pdg histogram, we should fill before the
   // veto, which filters out the neutral particles.
   if (fEtaPdg) fEtaPdg->Fill(eta, pdgBin, weight);
-  
+
   // Check the veto mask 
   if (fVeto != 0 && (flags & fVeto) != 0) {
     if (fDebug > 3) Printf("%14s (----,0x%02x) %6s %7s (0x%02x) ",
@@ -2514,6 +2544,14 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   // Debug message that we accepted tracklet 
   if (fDebug > 3) Printf("%14s (0x%02x,0x%02x) %6s %7s (0x%02x) ",
 			 GetName(), fMask, fVeto, "accept", m, flags);
+  
+  // Fill PDG,eta dependent Delta distributions
+  if (fEtaDeltaPdg) {
+    fEtaDeltaPdg->Fill(eta, delta, pdgBin, weight);
+    if (tracklet->IsCombinatorics())
+      // Fill both particles 
+      fEtaPdgIPz->Fill(eta,delta,PdgBin(tracklet->GetParentPdg(true)),weight);
+  }
   
   // Both reguirements (Delta < cut, dPhi < cut)
   if (fEtaIPz && (signal == 0x3))     fEtaIPz->Fill(eta, ipZ, weight);
@@ -2586,6 +2624,7 @@ Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
   fContainer   = GetC(parent, fName);
   fEtaIPz      = GetH2(fContainer, "etaIPz",      false); // No complaints
   fEtaDeltaIPz = GetH3(fContainer, "etaDeltaIPz", false);
+  fEtaDeltaPdg = GetH3(fContainer, "etaDeltaPdg", false);
   fEtaPdgIPz   = GetH3(fContainer, "etaPdgIPz",   false);
   fEtaPdg      = GetH2(fContainer, "etaPdg",      false);
   fEtaPt       = GetH2(fContainer, "etaPt",       false);
@@ -2724,6 +2763,473 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
 
 //____________________________________________________________________
 Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaPdg(Container* result,
+					    Int_t      nEvents)
+{
+  // Scale distribution of PDGs to number of events and bin width
+  if (!fEtaPdg) return true;
+
+  
+  TH2* etaPdg = static_cast<TH2*>(fEtaPdg->Clone());
+  etaPdg->SetDirectory(0);
+  etaPdg->Scale(1. / nEvents, "width");
+  result->Add(etaPdg);
+  
+  // Loop over PDG types and create 2D and 1D distributions 
+  TAxis*     yaxis  = etaPdg->GetYaxis();
+  Int_t      first  = yaxis->GetFirst();
+  Int_t      last   = yaxis->GetLast();
+  THStack*   pdgs   = new THStack("all","");
+  THStack*   toPion = new THStack("toPion", "");
+  THStack*   toAll  = new THStack("toAll", "");
+  TH1*       pion   = 0;
+  Container* pdgOut = new Container();
+  pdgOut->SetName("mix");
+  result->Add(pdgOut);
+  pdgOut->Add(pdgs);
+  pdgOut->Add(toPion);
+  pdgOut->Add(toAll);
+
+  TH1* all = static_cast<TH1*>(etaPdg->ProjectionX("total",
+						   1,etaPdg->GetNbinsY()));
+  all->SetDirectory(0);
+  all->SetName("total");
+  all->SetTitle("All");
+  all->SetYTitle(Form("d#it{N}_{%s}/d#eta", "all"));
+  all->SetFillColor(kBlack);
+  all->SetMarkerColor(kBlack);
+  all->SetLineColor(kBlack);
+  all->SetMarkerStyle(20);
+  all->SetFillStyle(0);
+  all->SetFillColor(0);
+  all->Reset();
+  pdgs->Add(all);
+  for (Int_t i = 1; i <= etaPdg->GetNbinsY(); i++) {
+    Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+    TString nme;
+    Style_t sty;
+    Color_t col;
+    PdgAttr(pdg, nme, col, sty);
+    if (pdg < 0) pdg = 0;
+    if (pdg == 22) continue; // Ignore photons 
+
+    TH1* h1 = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
+    if (h1->GetEntries() <= 0) continue; // Do not store if empty
+    h1->SetDirectory(0);
+    h1->SetName(Form("eta_%d", pdg));
+    h1->SetTitle(nme);
+    h1->SetYTitle(Form("d#it{N}_{%s}/d#eta", nme.Data()));
+    h1->SetFillColor(col);
+    h1->SetMarkerColor(col);
+    h1->SetLineColor(col);
+    h1->SetMarkerStyle(sty);
+    h1->SetFillStyle(0);
+    h1->SetFillColor(0);
+    h1->SetBinContent(0,0);
+    all->Add(h1);
+    pdgs->Add(h1);
+    switch (pdg) {
+    case 321:  h1->SetBinContent(0, 0.15);   break; // PRC88,044910
+    case 2212: h1->SetBinContent(0, 0.05);   break; // PRC88,044910
+    case 310:  h1->SetBinContent(0, 0.075);  break; // PRL111,222301
+    case 3122: h1->SetBinContent(0, 0.018);  break; // PRL111,222301
+    case 3212: h1->SetBinContent(0, 0.0055); break; // NPA904,539
+    case 3322: h1->SetBinContent(0, 0.005);  break; // PLB734,409
+    case 211:  h1->SetBinContent(0, 1);      break; // it self 
+    default:   h1->SetBinContent(0, -1);     break; // Unknown
+    }
+    pdgOut->Add(h1);
+      
+    if (pdg == 211) pion = h1;
+  }
+  if (!pdgs->GetHists()) return true;
+  
+  TIter    next(pdgs->GetHists());
+  TH1*     tmp  = 0;
+  Double_t rmin = +1e9;
+  Double_t rmax = -1e9;
+  while ((tmp = static_cast<TH1*>(next()))) {
+    if (tmp == all)  continue;
+    // Calculate ratio to all
+    TH1* rat = static_cast<TH1*>(tmp->Clone());
+    rat->Divide(all);
+    rat->SetDirectory(0);
+    rat->SetTitle(Form("%s / all", tmp->GetTitle()));
+    toAll->Add(rat);
+	
+    if (tmp == pion) continue;
+    Double_t r276 = tmp->GetBinContent(0);
+    if (r276 < 0 || r276 >= 1) continue;
+	
+    // Calulate ratio to pions 
+    rat = static_cast<TH1*>(tmp->Clone());
+    rat->Divide(pion);
+    rat->SetTitle(Form("%s / %s", tmp->GetTitle(), pion->GetTitle()));
+    rat->SetDirectory(0);
+
+    TGraphErrors* g = new TGraphErrors(1);
+    g->SetName(Form("%s_2760", rat->GetName()));
+    g->SetTitle(Form("%s in #sqrt{s_{NN}}=2.76TeV", rat->GetTitle()));
+    g->SetPoint(0,0,r276);
+    g->SetPointError(0,.5,0);
+    g->SetLineColor(rat->GetLineColor());
+    g->SetLineStyle(rat->GetLineStyle());
+    g->SetMarkerColor(rat->GetMarkerColor());
+    g->SetMarkerStyle(rat->GetMarkerStyle());
+    g->SetMarkerSize(1.5*rat->GetMarkerSize());
+    rat->GetListOfFunctions()->Add(g,"p");
+    rat->SetMaximum(TMath::Max(rat->GetMaximum(),r276));
+    rat->SetMinimum(TMath::Min(rat->GetMinimum(),r276));
+    rmin = TMath::Min(rat->GetMinimum(),rmin);
+    rmax = TMath::Max(rat->GetMaximum(),rmax);
+	
+    toPion->Add(rat);
+  }
+  // toPion->SetMinimum(rmin);
+  toPion->SetMaximum(1.1*rmax);
+
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
+						     Int_t          nEvents,
+						     Double_t       tailDelta,
+						     Double_t       tailMax,
+						     const TString& pre,
+						     const TString& tit)
+{
+  Container* pdgOut = new Container();
+  pdgOut->SetName(pre);
+  result->Add(pdgOut);
+  TAxis*     zaxis  = fEtaDeltaPdg->GetZaxis();
+  Int_t      first  = zaxis->GetFirst();
+  Int_t      last   = zaxis->GetLast();
+  Bool_t     isMid  = TString(pre).EqualTo("mid");
+  Int_t      nX     = fEtaDeltaPdg->GetNbinsX();
+  Int_t      nY     = fEtaDeltaPdg->GetNbinsY();
+  Int_t      nZ     = fEtaDeltaPdg->GetNbinsZ();
+  Int_t      l1     = fEtaDeltaPdg->GetXaxis()->FindBin(-1);
+  Int_t      r1     = fEtaDeltaPdg->GetXaxis()->FindBin(+1);
+  Int_t      b1     = (isMid ? l1 : 1);
+  Int_t      b2     = (isMid ? r1 : l1-1);
+  Int_t      b3     = (isMid ? -1 : r1+1);
+  Int_t      b4     = (isMid ? -1 : nX);
+  THStack*   stack  = new THStack("all", tit);
+  pdgOut->Add(stack);
+
+  TH1* total = fEtaDeltaPdg->ProjectionY("totalMid",1, 1,1, nZ);
+  total->SetDirectory(0);
+  total->SetName("total");
+  total->SetTitle("Total");
+  total->SetYTitle(Form("d#it{N}_{%s}/d#Delta", "total"));
+  total->SetFillColor(kBlack);
+  total->SetMarkerColor(kBlack);
+  total->SetLineColor(kBlack);
+  total->SetMarkerStyle(24);
+  total->SetFillStyle(0);
+  total->SetFillColor(0);
+  total->Reset();
+  stack->Add(total);
+
+  THStack* ratios = new THStack("ratios","");
+  TH1* ratioSig = Make1D(0, "ratioSig", "Ratio to all", kGreen+1, 24, *zaxis);
+  TH1* ratioBg  = Make1D(0, "ratioBg",  "Ratio to all", kRed+1,   25, *zaxis);
+  ratioSig->GetXaxis()->LabelsOption("v");
+  ratioBg ->GetXaxis()->LabelsOption("v");
+  ratioSig->SetFillColor(kGreen+1);
+  ratioBg ->SetFillColor(kRed  +1);
+  ratioSig->SetFillStyle(1001);
+  ratioBg ->SetFillStyle(1001);
+  ratioSig->SetBarWidth(0.4);
+  ratioBg ->SetBarWidth(0.4);
+  ratioSig->SetBarOffset(0.05);
+  ratioBg ->SetBarOffset(0.55);
+  ratios->Add(ratioSig, "bar0 e text30");
+  ratios->Add(ratioBg,  "bar0 e text30");
+  pdgOut->Add(ratios);
+
+  THStack* rows = new THStack("rows","");
+  TH1* rowSig = new TH1D("rowSig","row",6,0,6);
+  rowSig->SetDirectory(0);
+  rowSig->SetYTitle("Fraction of signal");
+  rowSig->GetXaxis()->SetBinLabel(1, "K^{0}_{S}");
+  rowSig->GetXaxis()->SetBinLabel(2, "K^{#pm}");
+  rowSig->GetXaxis()->SetBinLabel(3, "#Lambda");
+  rowSig->GetXaxis()->SetBinLabel(4, "#Xi");
+  rowSig->GetXaxis()->SetBinLabel(5, "#Sigma");
+  rowSig->GetXaxis()->SetBinLabel(6, "Other");
+  rowSig->GetXaxis()->LabelsOption("v");
+  rowSig->SetMaximum(100);
+  rowSig->SetMinimum(0);
+  rowSig->SetLineColor(kGreen+1);
+  rowSig->SetMarkerColor(kGreen+1);
+  rowSig->SetMarkerStyle(24);
+  TH1* rowBg = static_cast<TH1*>(rowSig->Clone("rowBg"));
+  rowBg->SetDirectory(0);
+  rowBg->SetYTitle("Fraction of background");
+  rowBg->SetLineColor(kRed+1);
+  rowBg->SetMarkerColor(kRed+1);
+  rowBg->SetMarkerStyle(25);
+  rowSig->SetFillStyle(1001);
+  rowBg ->SetFillColor(1001);
+  rowSig->SetFillColor(kGreen+1);
+  rowBg ->SetFillColor(kRed  +1);
+  rowSig->SetBarWidth(0.4);
+  rowBg ->SetBarWidth(0.4);
+  rowSig->SetBarOffset(0.05);
+  rowBg ->SetBarOffset(0.55);
+  rows->Add(rowSig, "bar0 e text30");
+  rows->Add(rowBg,  "bar0 e text30");
+  pdgOut->Add(rows);
+  
+  for (Int_t i = 1; i <= zaxis->GetNbins(); i++) {
+    Int_t   pdg = TString(zaxis->GetBinLabel(i)).Atoi();
+    TString nme;
+    Style_t sty;
+    Color_t col;
+    Int_t   ipdg = pdg;    
+    PdgAttr(pdg, nme, col, sty);
+    if (pdg < 0) pdg = 0;
+    ratioSig->GetXaxis()->SetBinLabel(i, nme);
+    ratioBg ->GetXaxis()->SetBinLabel(i, nme);
+    if (pdg == 22) continue; // Ignore photons 
+
+    
+    TH1* h1 = fEtaDeltaPdg->ProjectionY(Form("%d", pdg), b1, b2, i,i);
+    h1->SetDirectory(0);
+    if (b3 < b4) {
+      TH1* h2 = fEtaDeltaPdg->ProjectionY(Form("t%d", pdg), b3, b4, i,i);
+      h2->SetDirectory(0);
+      h1->Add(h2);
+      delete h2;
+    }
+    h1->SetUniqueID(i); // Store bin number 
+    if (h1->GetEntries() <= 0) continue; // Do not store if empty
+    h1->SetName(Form("%d", pdg));
+    h1->SetTitle(nme);
+    h1->SetYTitle(Form("d#it{N}_{%s}/d#Delta", nme.Data()));
+    h1->SetFillColor(col);
+    h1->SetMarkerColor(col);
+    h1->SetLineColor(col);
+    h1->SetMarkerStyle(sty);
+    h1->SetFillStyle(0);
+    h1->SetFillColor(0);
+    h1->SetBinContent(0,ipdg);
+    total->Add(h1);
+    stack->Add(h1);
+  }
+  total->SetBinContent(0,0);
+  total->Scale(1./nEvents);
+  Double_t deltaCut   = 1.5;
+  Double_t eTot, iTot = Integrate(total, 0,         tailMax,  eTot);
+  Double_t eSig, iSig = Integrate(total, 0,         deltaCut, eSig);
+  Double_t eBg,  iBg  = Integrate(total, tailDelta, tailMax,  eBg);
+
+  TH1* totInt = new TH1D("totalIntegrals", "Integrals of total:", 3, 0, 3);
+  totInt->SetDirectory(0);
+  totInt->GetXaxis()->SetBinLabel(1,Form("0#minus%4.1f", tailMax));
+  totInt->GetXaxis()->SetBinLabel(2,Form("0#minus%3.1f",deltaCut));
+  totInt->GetXaxis()->SetBinLabel(3,Form("%3.1f#minus%4.1f",tailDelta,tailMax));
+  totInt->SetBinContent(1,iTot); totInt->SetBinError(1, eTot);
+  totInt->SetBinContent(2,iSig); totInt->SetBinError(2, eSig);
+  totInt->SetBinContent(3,iBg);  totInt->SetBinError(3, eBg);
+  pdgOut->Add(totInt);
+  
+  if (!stack->GetHists()) return true;
+  
+  Double_t sigOth = 0, eSigOth = 0, bgOth = 0, eBgOth = 0;
+  Double_t sigK0s = 0, eSigK0s = 0, bgK0s = 0, eBgK0s = 0;
+  Double_t sigKpm = 0, eSigKpm = 0, bgKpm = 0, eBgKpm = 0;
+  Double_t sigLam = 0, eSigLam = 0, bgLam = 0, eBgLam = 0;
+  Double_t sigXi0 = 0, eSigXi0 = 0, bgXi0 = 0, eBgXi0 = 0;
+  Double_t sigSig = 0, eSigSig = 0, bgSig = 0, eBgSig = 0;
+  TIter    next(stack->GetHists());
+  TH1*     tmp  = 0;
+  while ((tmp = static_cast<TH1*>(next()))) {
+    // Calculate ratio to all
+    // Scale(tmp, iTot, eTot);
+    if (tmp == total) continue;
+    Int_t    pdg          = tmp->GetBinContent(0); tmp->SetBinContent(0,0);
+    tmp->Scale(1./  nEvents);
+    Double_t eiSig, iiSig = Integrate(tmp, 0,         deltaCut, eiSig);
+    Double_t eiBg,  iiBg  = Integrate(tmp, tailDelta, tailMax,  eiBg);
+    Double_t erS,  rS     = RatioE(iiSig, eiSig, iSig, eSig,  erS);
+    Double_t erB,  rB     = RatioE(iiBg,  eiBg,  iBg,  eBg,   erB);
+    Int_t    bin          = tmp->GetUniqueID();
+#if 0
+    Printf(" %10s(%4d,%3d) "
+	   "signal=%6.1f/%6.1f=%5.3f+/-%5.3f bg=%6.1f/%6.1f=%5.3f+/-%5.3f",
+	   tmp->GetTitle(), pdg, bin, iiSig, iSig, rS, erS, iiBg, iBg, rB, erB); 
+#endif 
+    ratioSig->SetBinContent(bin, rS);
+    ratioSig->SetBinError  (bin, erS);
+    ratioBg ->SetBinContent(bin, rB);
+    ratioBg ->SetBinError  (bin, erB);
+
+    switch (pdg) {
+    case 321:                   // K^{+}
+      sigKpm += rS; eSigKpm += erS*erS; bgKpm += rB; eBgKpm += erB*erB; break; 
+    case 310:                   // K^{0}_{S}
+      sigK0s += rS; eSigK0s += erS*erS; bgK0s += rB; eBgK0s += erB*erB; break; 
+    case 3112:                  // #Sigma^{-}			 
+    case 3222:		        // #Sigma^{+}			 
+      // case 3114:		// #Sigma^{*-}		 
+      // case 3224:		// #Sigma^{*+}		 
+      // case 4214:		// #Sigma^{*+}_{c}		 
+      // case 4224:             // #Sigma^{*++}_{c}
+      // case 3212: 	        // #Sigma^{0}			 
+      // case 4114:      	// #Sigma^{*0}_{c}		 
+      // case 3214:             // #Sigma^{*0}	
+      sigSig += rS; eSigSig += erS*erS; bgSig += rB; eBgSig += erB*erB; break;          
+    case 3312:                  // #Xi^{-}			 
+      // case 3314:             // #Xi^{*-}
+      // case 3324:     	// #Xi^{*0}			 
+      // case 4132:       	// #Xi^{0}_{c}		       
+      // case 4314:             // #Xi^{*0}_{c}	
+      sigXi0 += rS; eSigXi0 += erS*erS; bgXi0 += rB; eBgXi0 += erB*erB; break; 
+      // case 4122:             // #Lambda^{+}_{c}
+    case 3122:                  // #Lambda  
+      sigLam += rS; eSigLam += erS*erS; bgLam += rB; eBgLam += erB*erB; break; 
+    default:
+      sigOth += rS; eSigOth += erS*erS; bgOth += rB; eBgOth += erB*erB; break;
+    }    
+  } // while(tmp)
+  rowSig->SetBinContent(1,100*sigK0s);
+  rowSig->SetBinError  (1,100*TMath::Sqrt(eSigK0s));
+  rowSig->SetBinContent(2,100*sigKpm);
+  rowSig->SetBinError  (2,100*TMath::Sqrt(eSigKpm));
+  rowSig->SetBinContent(3,100*sigLam);
+  rowSig->SetBinError  (3,100*TMath::Sqrt(eSigLam));
+  rowSig->SetBinContent(4,100*sigXi0);
+  rowSig->SetBinError  (4,100*TMath::Sqrt(eSigXi0));
+  rowSig->SetBinContent(5,100*sigSig);
+  rowSig->SetBinError  (5,100*TMath::Sqrt(eSigSig));
+  rowSig->SetBinContent(6,100*sigOth);
+  rowSig->SetBinError  (6,100*TMath::Sqrt(eSigOth));
+  rowBg ->SetBinContent(1,100* bgK0s);
+  rowBg ->SetBinError  (1,100*TMath::Sqrt( eBgK0s));
+  rowBg ->SetBinContent(2,100* bgKpm);
+  rowBg ->SetBinError  (2,100*TMath::Sqrt( eBgKpm));
+  rowBg ->SetBinContent(3,100* bgLam);
+  rowBg ->SetBinError  (3,100*TMath::Sqrt( eBgLam));
+  rowBg ->SetBinContent(4,100* bgXi0);
+  rowBg ->SetBinError  (4,100*TMath::Sqrt( eBgXi0));
+  rowBg ->SetBinContent(5,100* bgSig);
+  rowBg ->SetBinError  (5,100*TMath::Sqrt( eBgSig));
+  rowBg ->SetBinContent(6,100* bgOth);
+  rowBg ->SetBinError  (6,100*TMath::Sqrt( eBgOth));
+
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdg(Container* result,
+						 Int_t      nEvents,
+						 Double_t   tailDelta,
+						 Double_t   tailMax)
+{
+  // Scale distribution of PDGs to number of events and bin width
+  if (!fEtaDeltaPdg) return true;
+
+  Container* pdgOut = new Container();
+  pdgOut->SetName("specie");
+  result->Add(pdgOut);
+  
+  ProjectEtaDeltaPdgPart(pdgOut,
+			 nEvents,
+			 tailDelta,
+			 tailMax,
+			 "mid",
+			 "|#eta|<1");
+  ProjectEtaDeltaPdgPart(pdgOut,
+			 nEvents,
+			 tailDelta,
+			 tailMax,
+			 "fwd",
+			 "|#eta|>1");
+}
+
+//____________________________________________________________________
+Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaPdgIPz(Container*     result,
+					       TH1*           ipz,
+					       const TString& shn)
+{
+  // If we have the PDG distributions, we project on eta,IPz, and then
+  // average over IPz to get dNpdg/deta.
+  if (!fEtaPdgIPz) return true;
+  
+  // Scale each vertex range by number of events in that range
+  TH3* etaPdgIPz = ScaleToIPz(fEtaPdgIPz, ipz, false);
+  result->Add(etaPdgIPz);
+  
+  // Loop over PDG types and create 2D and 1D distributions 
+  TAxis*     yaxis  = etaPdgIPz->GetYaxis();
+  Int_t      first  = yaxis->GetFirst();
+  Int_t      last   = yaxis->GetLast();
+  THStack*   pdgs   = new THStack("all","");
+  THStack*   ratios = new THStack("toPion", "");
+  TH1*       pion   = 0;
+  Container* pdgOut = new Container();
+  pdgOut->SetName("types");
+  result->Add(pdgOut);
+  pdgOut->Add(pdgs);
+  pdgOut->Add(ratios);
+  for (Int_t i = 1; i <= etaPdgIPz->GetNbinsY(); i++) {
+    yaxis->SetRange(i,i);
+    
+    Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+    TString nme;
+    Style_t sty;
+    Color_t col;
+    PdgAttr(pdg, nme, col, sty);
+    if (pdg < 0) pdg = 0;
+    
+    TH2*   h2    = static_cast<TH2*>(etaPdgIPz->Project3D("zx e"));
+    if (h2->GetEntries() <= 0) continue; // Do not store if empty
+    h2->SetDirectory(0);
+    h2->SetName(Form("etaIPz_%d", pdg));
+    h2->SetTitle(Form("%s#rightarrowX_{%s}", nme.Data(), shn.Data()));
+    h2->SetYTitle(Form("d#it{N}^{2}_{%s#rightarrow%s}/"
+		       "(d#etadIP_{#it{z}})",
+		       nme.Data(), shn.Data()));
+    h2->SetFillColor(col);
+    h2->SetMarkerColor(col);
+    h2->SetLineColor(col);
+    pdgOut->Add(h2);
+    
+    TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
+    h1->SetDirectory(0);
+    h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
+		       nme.Data(), shn.Data()));
+    h1->SetMarkerStyle(sty);
+    pdgs->Add(h1);
+    
+    if (pdg == 211) pion = h1;
+  }
+  if (!pdgs->GetHists()) {
+    yaxis->SetRange(first, last);    
+    return true;
+  }
+  
+  TIter    next(pdgs->GetHists());
+  TH1*     tmp = 0;
+  while ((tmp = static_cast<TH1*>(next()))) {
+    if (tmp == pion) continue;
+    TH1* rat = static_cast<TH1*>(tmp->Clone());
+    rat->Divide(pion);
+    rat->SetDirectory(0);
+      ratios->Add(rat);
+  }
+  
+  yaxis->SetRange(first, last);    
+}
+
+//____________________________________________________________________
+Bool_t 
 AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
 					     TH1*       ipz,
 					     Double_t   tailDelta,
@@ -2743,205 +3249,20 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
     etaIPz = ScaleToIPz(fEtaIPz, ipz);
     result->Add(etaIPz);
   }
-
-  // Scale distribution of PDGs to number of events and bin width
-  if (fEtaPdg) {
-    TH2* etaPdg = static_cast<TH2*>(fEtaPdg->Clone());
-    etaPdg->SetDirectory(0);
-    etaPdg->Scale(1. / nEvents, "width");
-    result->Add(etaPdg);
-
-    // Loop over PDG types and create 2D and 1D distributions 
-    TAxis*     yaxis  = etaPdg->GetYaxis();
-    Int_t      first  = yaxis->GetFirst();
-    Int_t      last   = yaxis->GetLast();
-    THStack*   pdgs   = new THStack("all","");
-    THStack*   toPion = new THStack("toPion", "");
-    THStack*   toAll  = new THStack("toAll", "");
-    TH1*       pion   = 0;
-    Container* pdgOut = new Container();
-    pdgOut->SetName("mix");
-    result->Add(pdgOut);
-    pdgOut->Add(pdgs);
-    pdgOut->Add(toPion);
-    pdgOut->Add(toAll);
-
-    TH1* all = static_cast<TH1*>(etaPdg->ProjectionX("total",
-						     1,etaPdg->GetNbinsY()));
-    all->SetDirectory(0);
-    all->SetName("total");
-    all->SetTitle("All");
-    all->SetYTitle(Form("d#it{N}_{%s}/d#eta", "all"));
-    all->SetFillColor(kBlack);
-    all->SetMarkerColor(kBlack);
-    all->SetLineColor(kBlack);
-    all->SetMarkerStyle(20);
-    all->SetFillStyle(0);
-    all->SetFillColor(0);
-    all->Reset();
-    pdgs->Add(all);
-    for (Int_t i = 1; i <= etaPdg->GetNbinsY(); i++) {
-      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
-      TString nme;
-      Style_t sty;
-      Color_t col;
-      PdgAttr(pdg, nme, col, sty);
-      if (pdg < 0) pdg = 0;
-      if (pdg == 22) continue; // Ignore photons 
-
-      TH1* h1 = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
-      if (h1->GetEntries() <= 0) continue; // Do not store if empty
-      h1->SetDirectory(0);
-      h1->SetName(Form("eta_%d", pdg));
-      h1->SetTitle(nme);
-      h1->SetYTitle(Form("d#it{N}_{%s}/d#eta", nme.Data()));
-      h1->SetFillColor(col);
-      h1->SetMarkerColor(col);
-      h1->SetLineColor(col);
-      h1->SetMarkerStyle(sty);
-      h1->SetFillStyle(0);
-      h1->SetFillColor(0);
-      h1->SetBinContent(0,0);
-      all->Add(h1);
-      pdgs->Add(h1);
-      switch (pdg) {
-      case 321:  h1->SetBinContent(0, 0.15);   break; // PRC88,044910
-      case 2212: h1->SetBinContent(0, 0.05);   break; // PRC88,044910
-      case 310:  h1->SetBinContent(0, 0.075);  break; // PRL111,222301
-      case 3122: h1->SetBinContent(0, 0.018);  break; // PRL111,222301
-      case 3212: h1->SetBinContent(0, 0.0055); break; // NPA904,539
-      case 3322: h1->SetBinContent(0, 0.005);  break; // PLB734,409
-      case 211:  h1->SetBinContent(0, 1);      break; // it self 
-      default:   h1->SetBinContent(0, -1);     break; // Unknown
-      }
-      pdgOut->Add(h1);
-      
-      if (pdg == 211) pion = h1;
-    }
-    if (pdgs->GetHists()) {
-      TIter    next(pdgs->GetHists());
-      TH1*     tmp  = 0;
-      Double_t rmin = +1e9;
-      Double_t rmax = -1e9;
-      while ((tmp = static_cast<TH1*>(next()))) {
-	if (tmp == all)  continue;
-	// Calculate ratio to all
-	TH1* rat = static_cast<TH1*>(tmp->Clone());
-	rat->Divide(all);
-	rat->SetDirectory(0);
-	rat->SetTitle(Form("%s / all", tmp->GetTitle()));
-	toAll->Add(rat);
-	
-	if (tmp == pion) continue;
-	Double_t r276 = tmp->GetBinContent(0);
-	if (r276 < 0 || r276 >= 1) continue;
-	
-	// Calulate ratio to pions 
-	rat = static_cast<TH1*>(tmp->Clone());
-	rat->Divide(pion);
-	rat->SetTitle(Form("%s / %s", tmp->GetTitle(), pion->GetTitle()));
-	rat->SetDirectory(0);
-
-	TGraphErrors* g = new TGraphErrors(1);
-	g->SetName(Form("%s_2760", rat->GetName()));
-	g->SetTitle(Form("%s in #sqrt{s_{NN}}=2.76TeV", rat->GetTitle()));
-	g->SetPoint(0,0,r276);
-	g->SetPointError(0,.5,0);
-	g->SetLineColor(rat->GetLineColor());
-	g->SetLineStyle(rat->GetLineStyle());
-	g->SetMarkerColor(rat->GetMarkerColor());
-	g->SetMarkerStyle(rat->GetMarkerStyle());
-	g->SetMarkerSize(1.5*rat->GetMarkerSize());
-	rat->GetListOfFunctions()->Add(g,"p");
-	rat->SetMaximum(TMath::Max(rat->GetMaximum(),r276));
-	rat->SetMinimum(TMath::Min(rat->GetMinimum(),r276));
-	rmin = TMath::Min(rat->GetMinimum(),rmin);
-	rmax = TMath::Max(rat->GetMaximum(),rmax);
-	
-	toPion->Add(rat);
-      }
-      // toPion->SetMinimum(rmin);
-      toPion->SetMaximum(1.1*rmax);
-    }
-  }
-
   // Scale distribution of Pt to number of events and bin width
   if (fEtaPt) {
     TH2* etaPt = static_cast<TH2*>(fEtaPt->Clone());
     etaPt->SetDirectory(0);
     etaPt->Scale(1. / nEvents, "width");
     result->Add(etaPt);
-
-   }
-  
+  }
   // Short-hand-name
   TString shn(etaIPz ? etaIPz->GetTitle() : "X"); 
-
-  // If we have the PDG distributions, we project on eta,IPz, and then
-  // average over IPz to get dNpdg/deta.
-  if (fEtaPdgIPz) {
-    // Scale each vertex range by number of events in that range
-    TH3* etaPdgIPz = ScaleToIPz(fEtaPdgIPz, ipz, false);
-    result->Add(etaPdgIPz);
-
-    // Loop over PDG types and create 2D and 1D distributions 
-    TAxis*     yaxis  = etaPdgIPz->GetYaxis();
-    Int_t      first  = yaxis->GetFirst();
-    Int_t      last   = yaxis->GetLast();
-    THStack*   pdgs   = new THStack("all","");
-    THStack*   ratios = new THStack("toPion", "");
-    TH1*       pion   = 0;
-    Container* pdgOut = new Container();
-    pdgOut->SetName("types");
-    result->Add(pdgOut);
-    pdgOut->Add(pdgs);
-    pdgOut->Add(ratios);
-    for (Int_t i = 1; i <= etaPdgIPz->GetNbinsY(); i++) {
-      yaxis->SetRange(i,i);
-
-      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
-      TString nme;
-      Style_t sty;
-      Color_t col;
-      PdgAttr(pdg, nme, col, sty);
-      if (pdg < 0) pdg = 0;
-
-      TH2*   h2    = static_cast<TH2*>(etaPdgIPz->Project3D("zx e"));
-      if (h2->GetEntries() <= 0) continue; // Do not store if empty
-      h2->SetDirectory(0);
-      h2->SetName(Form("etaIPz_%d", pdg));
-      h2->SetTitle(Form("%s#rightarrowX_{%s}", nme.Data(), shn.Data()));
-      h2->SetYTitle(Form("d#it{N}^{2}_{%s#rightarrow%s}/"
-			 "(d#etadIP_{#it{z}})",
-			 nme.Data(), shn.Data()));
-      h2->SetFillColor(col);
-      h2->SetMarkerColor(col);
-      h2->SetLineColor(col);
-      pdgOut->Add(h2);
-
-      TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
-      h1->SetDirectory(0);
-      h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
-			 nme.Data(), shn.Data()));
-      h1->SetMarkerStyle(sty);
-      pdgs->Add(h1);
-
-      if (pdg == 211) pion = h1;
-    }
-    if (pdgs->GetHists()) {
-      TIter    next(pdgs->GetHists());
-      TH1*     tmp = 0;
-      while ((tmp = static_cast<TH1*>(next()))) {
-	if (tmp == pion) continue;
-	TH1* rat = static_cast<TH1*>(tmp->Clone());
-	rat->Divide(pion);
-	rat->SetDirectory(0);
-	ratios->Add(rat);
-      }
-    }
-    
-    yaxis->SetRange(first, last);    
-  }
+  
+  ProjectEtaPdg     (result, nEvents);
+  ProjectEtaDeltaPdg(result, nEvents, tailDelta, tailMax);
+  ProjectEtaPdgIPz  (result, ipz, shn);
+  
   // If we do not have eta vs Delta, just return 
   if (!fEtaDeltaIPz) return true;
 
