@@ -72,7 +72,7 @@ public:
   static Double_t IntegratedKrollWada(const Double_t *mh, const Double_t *);
   
   static Double_t YFlat(Double_t y);
-  static TF1*     MtScal(Int_t np, TString name);
+  static TF1*     MtScal(Int_t np, TString name, Bool_t isMeson);
   static Double_t V2Param(const Double_t *px, const Double_t *param);
   static Double_t V2Flat(const Double_t *px, const Double_t *param);
   static Double_t KEtScal(Double_t pt, Int_t np, Int_t nq=2);
@@ -201,6 +201,7 @@ public:
 
 private:
   static TF1*     fPtParametrization[16];     //! pt paramtrizations
+  static TF1*     fPtParametrizationProton;   //! pt paramtrizations
   static TH1D*    fMtFactorHisto;             //! mt scaling factors
 
   ClassDef(AliGenEMlibV2,1);

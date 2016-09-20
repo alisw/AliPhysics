@@ -64,7 +64,6 @@ fDecayMode(kAll),
 fWeightingMode(kNonAnalog),
 fNPart(1000),
 fParametrizationFile(""),
-//fPtParametrization{NULL},
 fYieldArray(),
 fCollisionSystem(AliGenEMlibV2::kpp7TeV),
 fCentrality(AliGenEMlibV2::kpp),
@@ -77,6 +76,7 @@ fSelectedParticles(kGenHadrons)
 
 // initialize static member
 TF1*  AliGenEMCocktailV2::fPtParametrization[]  = {0x0};
+TF1*  AliGenEMCocktailV2::fParametrizationProton = NULL;
 TH1D* AliGenEMCocktailV2::fMtScalingFactorHisto = NULL;
 
 //_________________________________________________________________________
@@ -100,6 +100,8 @@ TF1* AliGenEMCocktailV2::GetPtParametrization(Int_t np) {
 
   if (np<16)
     return fPtParametrization[np];
+  else if (np==16)
+    return fParametrizationProton;
   else
     return NULL;
 }
@@ -495,10 +497,13 @@ void AliGenEMCocktailV2::Init()
 Bool_t AliGenEMCocktailV2::SetPtParametrizations() {
 
   TF1* tempFct = NULL;
-  for(Int_t i=0; i<16; i++) {
+  for(Int_t i=0; i<17; i++) {
     tempFct = AliGenEMlibV2::GetPtParametrization(i);
     if (!tempFct) return kFALSE;
-    fPtParametrization[i] = new TF1(*tempFct);
+    if (i<16)
+      fPtParametrization[i] = new TF1(*tempFct);
+    else
+      fParametrizationProton = new TF1(*tempFct);
   }
   return kTRUE;
 }
