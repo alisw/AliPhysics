@@ -342,6 +342,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMassDG_ST_4t;//!
 		TH1D *fMassDG_MS_4t;//!
 		TH1D *fTrackCutsInfo;//!
+		TH1D *fTrackCutsInfo_NG;//!
 		TH1D *fTrackCutsInfo_ITSSA;//!
 		TH2D *fhClusterVsTracklets_bf;//!
 		TH2D *fhClusterVsTracklets_af;//!
@@ -365,6 +366,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH2D *fMult_Rec_NG_Process;//!
 		TH2D *fV0Time[2];//!
 		TH2D *fADTime[2];//!
+		TH1D *hDCAz_MS;//!
+		TH1D *hMultNG_Test[6];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);
