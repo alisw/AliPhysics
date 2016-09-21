@@ -29,6 +29,10 @@ const Int_t AliFemtoModelWeightGenerator::fgkPionPlusProton = 9;
 const Int_t AliFemtoModelWeightGenerator::fgkPionPlusAntiproton = 10;
 const Int_t AliFemtoModelWeightGenerator::fgkKaonPlusProton = 11;
 const Int_t AliFemtoModelWeightGenerator::fgkKaonPlusAntiproton = 12;
+const Int_t AliFemtoModelWeightGenerator::fgkLambdaLambda = 13;
+const Int_t AliFemtoModelWeightGenerator::fgkAntilambdaAntilambda = 14;
+const Int_t AliFemtoModelWeightGenerator::fgkLambdaAntilambda = 15;
+
 
 //_____________________________________________
 AliFemtoModelWeightGenerator::AliFemtoModelWeightGenerator() :
@@ -120,6 +124,13 @@ Int_t    AliFemtoModelWeightGenerator::GetPairTypeFromPair(AliFemtoPair *aPair)
   else if (((ktPid1 ==  -321) && (ktPid2 ==  2212)) ||
            ((ktPid1 ==   321) && (ktPid2 == -2212)))
     tPairType = fgkKaonPlusAntiproton;
+  else if (((ktPid1 ==  3122) && (ktPid2 ==  3122)))
+    tPairType = fgkLambdaLambda;
+  else if (((ktPid1 ==  -3122) && (ktPid2 ==  -3122)))
+    tPairType = fgkAntilambdaAntilambda;
+  else if (((ktPid1 ==  3122) && (ktPid2 ==  -3122)) ||
+           ((ktPid1 ==   -3122) && (ktPid2 == 3122)))
+    tPairType = fgkLambdaAntilambda;
 
   return tPairType;
 }
