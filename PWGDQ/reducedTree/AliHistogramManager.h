@@ -19,7 +19,7 @@
 class TAxis;
 class TArrayD;
 class TObjArray;
-class TDirectoryFile;
+//class TDirectoryFile;
 class TFile;
 
 //_____________________________________________________________________
@@ -69,13 +69,13 @@ class AliHistogramManager : public TObject {
   void SetUseDefaultVariableNames(Bool_t flag) {fUseDefaultVariableNames = flag;};
   void SetDefaultVarNames(TString* vars, TString* units);
   void WriteOutput(TFile* saveFile);
-  void InitFile(const Char_t* filename);    // open an output file for reading
+  void InitFile(const Char_t* filename, const Char_t* mainListName="");    // open an output file for reading
   void AddToOutputList(TList* list) {fOutputList.Add(list);}
   void CloseFile();
   const THashList* GetMainHistogramList() const {return &fMainList;}    // get a histogram list
   THashList* AddHistogramsToOutputList(); // get all histograms on a THashList
   THashList* GetHistogramOutputList() {return &fOutputList;} 
-  TList* GetHistogramList(const Char_t* listname) const;    // get a histogram list
+  THashList* GetHistogramList(const Char_t* listname) const;    // get a histogram list
   TObject* GetHistogram(const Char_t* listname, const Char_t* hname) const;  // get a histogram from an old output
   const Bool_t* GetUsedVars() const {return fUsedVars;}
     
@@ -88,7 +88,7 @@ class AliHistogramManager : public TObject {
    
   THashList fMainList;          // master histogram list
   TString fName;                 // master histogram list name
-  TDirectoryFile* fMainDirectory;   //! main directory with analysis output (used for calibration, plotting etc.)
+  THashList* fMainDirectory;   //! main directory with analysis output (this is used for loading output files and retrieving histograms offline)
   TFile* fHistFile;                    //! pointer to a TFile opened for reading 
   THashList fOutputList;        // THashList for output histograms
    
