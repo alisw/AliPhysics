@@ -50,7 +50,7 @@ void AliEmcalParticleMaker::ExecOnce()
 
   AliAnalysisTaskEmcal::ExecOnce();
 
-  if (!fInitialized)
+  if (!fLocalInitialized)
     return;
 
   if (!fTracksOutName.IsNull()) {

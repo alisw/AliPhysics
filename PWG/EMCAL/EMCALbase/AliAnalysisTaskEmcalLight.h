@@ -215,7 +215,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   TObjArray                   fRejectedTriggerClasses;     ///< list of accepted trigger classes
 
   // Service fields
-  Bool_t                      fInitialized;                //!<!whether or not the task has been already initialized
+  Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
   EDataType_t                 fDataType;                   //!<!data type (ESD or AOD)
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
   AliVCaloCells              *fCaloCells;                  //!<!cells
