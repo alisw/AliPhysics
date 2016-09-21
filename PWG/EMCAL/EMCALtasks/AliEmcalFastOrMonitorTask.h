@@ -95,7 +95,7 @@ protected:
 
   THistManager                            *fHistos;           //!<! Histogram handler
   AliEMCALGeometry                        *fGeom;             //!<! EMCAL Geometry object
-  Bool_t                                  fInitialized;       ///< Switch whether task is initialized (for ExecOnce)
+  Bool_t                                  fLocalInitialized;  ///< Switch whether task is initialized (for ExecOnce)
   Int_t                                   fOldRun;            ///< Old Run (for RunChanged())
 
   ULong_t                                 fRequestTrigger;    ///< Trigger selection bits

@@ -119,7 +119,7 @@ void AliEmcalTriggerQATask::ExecOnce()
     fTimeStampBinWidth = 0;
   }
 
-  if (!fInitialized) return;
+  if (!fLocalInitialized) return;
 
   fTriggerPatches = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTriggerPatchesName));
 
@@ -134,7 +134,7 @@ void AliEmcalTriggerQATask::ExecOnce()
   }
 
   if (!fTriggerPatches) {
-    fInitialized = kFALSE;
+    fLocalInitialized = kFALSE;
     AliError(Form("%s: Unable to get trigger patch container with name %s. Aborting", GetName(), fTriggerPatchesName.Data()));
     return;
   }

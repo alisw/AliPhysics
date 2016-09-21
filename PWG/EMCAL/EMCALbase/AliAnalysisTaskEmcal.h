@@ -258,7 +258,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TString                     fPythiaInfoName;             ///< name of pythia info object
   BeamType                    fForceBeamType;              ///< forced beam type
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
-  Bool_t                      fInitialized;                ///< whether or not the task has been already initialized
+  Bool_t                      fLocalInitialized;           ///< whether or not the task has been already initialized
   Bool_t                      fCreateHisto;                ///< whether or not create histograms
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection

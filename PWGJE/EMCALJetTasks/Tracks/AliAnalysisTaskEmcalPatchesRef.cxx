@@ -61,7 +61,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
     fCurrentRun(-1),
-    fInitialized(false)
+    fLocalInitialized(false)
 {
 }
 
@@ -84,7 +84,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name)
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
     fCurrentRun(-1),
-    fInitialized(false)
+    fLocalInitialized(false)
 {
   DefineOutput(1, TList::Class());
 }
@@ -139,10 +139,10 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
  */
 void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   AliDebugStream(1) << GetName() << ": Start function" << std::endl;
-  if(!fInitialized){
+  if(!fLocalInitialized){
     AliInfoStream() << GetName() << ": Initializing ..." << std::endl;
     ExecOnce();
-    fInitialized = kTRUE;
+    fLocalInitialized = kTRUE;
   }
   if(fCurrentRun != InputEvent()->GetRunNumber()){
     AliDebugStream(1) << GetName() << ": Changing run from " <<  fCurrentRun << " to " << InputEvent()->GetRunNumber() << std::endl;
