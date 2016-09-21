@@ -135,6 +135,16 @@ void AliGenLightNuclei::Generate()
 		this->GenerateNuclei(kDeuteron, 1.87561282, protons, neutrons);
 		this->GenerateNuclei(-kDeuteron, 1.87561282, antiprotons, antineutrons);
 	}
+	else if(TMath::Abs(fPdg) == kLambdaN)
+	{
+		this->GenerateNuclei(kLambdaN, 2.054, lambdas, neutrons);
+		this->GenerateNuclei(-kLambdaN, 2.054, antilambdas, antineutrons);
+	}
+	else if(TMath::Abs(fPdg) == kHDibarion)
+	{
+		this->GenerateNuclei(kHDibarion, 2.231, lambdas, lambdas);
+		this->GenerateNuclei(-kHDibarion, 2.231, antilambdas, antilambdas);
+	}
 	else if(TMath::Abs(fPdg) == kTriton)
 	{
 		this->GenerateNuclei(kTriton, 2.80925, protons, neutrons, neutrons);
@@ -144,6 +154,21 @@ void AliGenLightNuclei::Generate()
 	{
 		this->GenerateNuclei(kHyperTriton, 2.99131, protons, neutrons, lambdas);
 		this->GenerateNuclei(-kHyperTriton, 2.99131, antiprotons, antineutrons, antilambdas);
+	}
+	else if(TMath::Abs(fPdg) == kLambdaNN )
+	{
+		this->GenerateNuclei(kLambdaNN, 2.982, lambdas, neutrons, neutrons);
+		this->GenerateNuclei(-kLambdaNN, 2.982, antilambdas, antineutrons, antineutrons);
+	}
+	else if(TMath::Abs(fPdg) == kLambdaLN )
+	{
+		this->GenerateNuclei(kLambdaLN, 3.171, lambdas, lambdas, neutrons);
+		this->GenerateNuclei(-kLambdaLN, 3.171, antilambdas, antilambdas, antineutrons);
+	}
+	else if(TMath::Abs(fPdg) == kLambdaLP )
+	{
+		this->GenerateNuclei(kLambdaLP, 3.17, lambdas, lambdas, protons);
+		this->GenerateNuclei(-kLambdaLP, 3.17, antilambdas, antilambdas, antiprotons);
 	}
 	else if(TMath::Abs(fPdg) == kHe3Nucleus)
 	{
