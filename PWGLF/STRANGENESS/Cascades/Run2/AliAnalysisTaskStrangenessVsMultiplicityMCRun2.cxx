@@ -124,7 +124,8 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
         fkSaveV0Tree       ( kTRUE ),
         fkDownScaleV0      ( kTRUE  ),
         fDownScaleFactorV0 ( 0.001  ),
-        fkPreselectDedx ( kTRUE ),
+        fkPreselectDedx ( kFALSE ),
+        fkPreselectPID  ( kTRUE  ),
         fkDebugWrongPIDForTracking ( kFALSE ),
 
 //---> Flags controlling Cascade TTree output
@@ -150,8 +151,10 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
       fTreeVariableV0CosineOfPointingAngle(0),
       fTreeVariableV0Radius(0),
       fTreeVariablePt(0),
+      fTreeVariablePtMC(0),
       fTreeVariableRapK0Short(0),
       fTreeVariableRapLambda(0),
+      fTreeVariableRapMC(0),
       fTreeVariableInvMassK0s(0),
       fTreeVariableInvMassLambda(0),
       fTreeVariableInvMassAntiLambda(0),
@@ -177,14 +180,25 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
       fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
       fTreeVariableCentrality(0),
+//MC Variables
+      fTreeVariablePtMother(0),
+      fTreeVariableRapMother(0),
+      fTreeVariablePID(0),
+      fTreeVariablePIDPositive(0),
+      fTreeVariablePIDNegative(0),
+      fTreeVariablePIDMother(0),
+      fTreeVariablePrimaryStatus(0),
+      fTreeVariablePrimaryStatusMother(0),
 
 //---> Variables for fTreeCascade
       fTreeCascVarCharge(0),
       fTreeCascVarMassAsXi(0),
       fTreeCascVarMassAsOmega(0),
       fTreeCascVarPt(0),
+      fTreeCascVarPtMC(0),
       fTreeCascVarRapXi(0),
       fTreeCascVarRapOmega(0),
+      fTreeCascVarRapMC(0),
       fTreeCascVarNegEta(0),
       fTreeCascVarPosEta(0),
       fTreeCascVarBachEta(0),
@@ -218,6 +232,9 @@ fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
 fTreeCascVarCentrality(0),
+fTreeCascVarPID(0),
+fTreeCascVarIsPhysicalPrimary(0),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -246,7 +263,8 @@ fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
-fkPreselectDedx ( kTRUE ),
+fkPreselectDedx ( kFALSE ),
+fkPreselectPID  ( kTRUE  ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 
 //---> Flags controlling Cascade TTree output
@@ -299,6 +317,17 @@ fTreeVariableNegInnerP(-1),
       fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
       fTreeVariableCentrality(0),
+
+//MC Variables
+fTreeVariablePtMother(0),
+fTreeVariableRapMother(0),
+fTreeVariablePID(0),
+fTreeVariablePIDPositive(0),
+fTreeVariablePIDNegative(0),
+fTreeVariablePIDMother(0),
+fTreeVariablePrimaryStatus(0),
+fTreeVariablePrimaryStatusMother(0),
+
 //---> Variables for fTreeCascade
       fTreeCascVarCharge(0),
       fTreeCascVarMassAsXi(0),
@@ -338,7 +367,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
-      fTreeCascVarCentrality(0),
+fTreeCascVarCentrality(0),
+fTreeCascVarPID(0),
+fTreeCascVarIsPhysicalPrimary(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -617,37 +648,37 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     
     if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityK0Short);
     }
     if(! fHistGeneratedPtVsYVsCentralityLambda ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityLambda);
     }
     if(! fHistGeneratedPtVsYVsCentralityAntiLambda ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiLambda);
     }
     if(! fHistGeneratedPtVsYVsCentralityXiMinus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityXiMinus);
     }
     if(! fHistGeneratedPtVsYVsCentralityXiPlus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityXiPlus);
     }
     if(! fHistGeneratedPtVsYVsCentralityOmegaMinus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaMinus);
     }
     if(! fHistGeneratedPtVsYVsCentralityOmegaPlus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", "pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
     }
     
@@ -1112,17 +1143,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             if(
                 //Case 1: Lambda Selection
                 (fTreeVariableInvMassLambda    < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda &&
-                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasPosProton) < 7.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 7.0) )
+                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasPosProton) < 7.0 && TMath::Abs(fTreeVariableNSigmasNegPion) < 7.0) ) &&
+                 (!fkPreselectPID || fTreeVariablePID == 3122 )
                 )
                 ||
                 //Case 2: AntiLambda Selection
                 (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda &&
-                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegProton) < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) )
+                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegProton) < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) ) &&
+                 (!fkPreselectPID || fTreeVariablePID == -3122 )
                 )
                 ||
                 //Case 3: K0Short Selection
                 (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short &&
-                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegPion)   < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) )
+                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegPion)   < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) ) &&
+                 (!fkPreselectPID || fTreeVariablePID == 310 )
                 ) ) {
                 //Pre-selection in case this is AA...
                     
@@ -1680,6 +1714,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarMassAsXi    = lInvMassXiPlus;
             fTreeCascVarMassAsOmega = lInvMassOmegaPlus;
         }
+        fTreeCascVarPID = lPDGCodeCascade; 
         fTreeCascVarPt = lXiTransvMom;
         fTreeCascVarPtMC = lXiTransvMomMC;
         fTreeCascVarRapXi = lRapXi ;
@@ -1726,8 +1761,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Bool_t lKeepCascade = kTRUE;
         if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
 
-        if( fkSaveCascadeTree && lKeepCascade && ( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
-                                   (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ) ) {
+        if( fkSaveCascadeTree && lKeepCascade && (
+                                                  //Xi Conditionals
+                                                  (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075 &&
+                                                   (!fkPreselectPID || TMath::Abs(fTreeCascVarPID) == 3312 )) ||
+                                                  //Omega Conditionals
+                                                  (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075 &&
+                                                   (!fkPreselectPID || TMath::Abs(fTreeCascVarPID) == 3334 ))
+                                                  )
+           )
+        {
             fTreeCascade->Fill();
         }
         //------------------------------------------------

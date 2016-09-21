@@ -66,7 +66,10 @@ public:
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
     }
-
+    void SetPreselectPID (Bool_t lPreselectPID = kTRUE ) {
+        fkPreselectPID   = lPreselectPID;
+    }
+    
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection 
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -163,6 +166,7 @@ private:
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
     Bool_t fkPreselectDedx;
+    Bool_t fkPreselectPID;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
