@@ -84,7 +84,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -168,7 +168,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -446,10 +446,10 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms()
  */
 void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 {
-  if (!fInitialized)
+  if (!fLocalInitialized)
     ExecOnce();
 
-  if (!fInitialized)
+  if (!fLocalInitialized)
     return;
 
   if (!RetrieveEventObjects())
@@ -678,7 +678,7 @@ void AliAnalysisTaskEmcalLight::ExecOnce()
 
   }
 
-  fInitialized = kTRUE;
+  fLocalInitialized = kTRUE;
 }
 
 /**

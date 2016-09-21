@@ -11,7 +11,7 @@
 #include <TList.h>
 #include <TMath.h>
 
-AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(TH2D *filter):
+AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(TH2D *filter, int calculateWeights = 1):
   fYPt(0),
   fYPhi(0),
   fPtPhi(0),
@@ -22,7 +22,8 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fDCARPt(0),
   fDCAZPt(0),
   fMass(0.13957),
-  filterHist(filter)
+  filterHist(filter),
+  fCalcWeights(calculateWeights)
 {
   // Default constructor
   fYPt = new TH2D("YPt", "Rapidity vs Pt",              100, 0.0, 6.0, 100, 0.0, 3.0);
@@ -38,7 +39,7 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
 
 }
 
-AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(const char *aName, float aMass, TH2D *filter):
+AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(const char *aName, float aMass, TH2D *filter, int calculateWeights=1):
   fYPt(0),
   fYPhi(0),
   fPtPhi(0),
@@ -49,7 +50,8 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fDCARPt(0),
   fDCAZPt(0),
   fMass(aMass),
-  filterHist(filter)
+  filterHist(filter),
+  fCalcWeights(calculateWeights)
   {
   // Normal constructor
   char name[200];
@@ -99,7 +101,8 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fDCARPt = new TH2D(*aCut.fDCARPt);
   fDCAZPt = new TH2D(*aCut.fDCAZPt);
   filterHist = new TH2D(*aCut.filterHist);
-  fMass = aCut.fMass; 
+  fMass = aCut.fMass;
+  fCalcWeights = aCut.fCalcWeights; 
 }
 
 AliFemtoCutMonitorParticleYPtWithWeights::~AliFemtoCutMonitorParticleYPtWithWeights()
@@ -144,6 +147,8 @@ AliFemtoCutMonitorParticleYPtWithWeights& AliFemtoCutMonitorParticleYPtWithWeigh
 
   if(filterHist) delete filterHist;
   filterHist = new TH2D(*aCut.filterHist);
+
+  fCalcWeights = aCut.fCalcWeights;
   
   return *this;
 }
@@ -174,6 +179,8 @@ void AliFemtoCutMonitorParticleYPtWithWeights::Fill(const AliFemtoTrack* aTrack)
     tPt = -999;
 
   double weight = filterHist->GetBinContent(filterHist->FindBin(tRapidity, tPt));
+  if(fCalcWeights == 0)
+    weight=1.0;
 
   float tEta;
   if(aTrack->P().Theta()==0)

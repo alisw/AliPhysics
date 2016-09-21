@@ -105,6 +105,7 @@ private:
   Int_t           fNPart;                               // multiplicity of each source per event
   Double_t        fYieldArray[kGENs];                   // array of dN/dy for each source
   static TF1*     fPtParametrization[16];               //! pt paramtrizations
+  static TF1*     fParametrizationProton;               //!
   static TH1D*    fMtScalingFactorHisto;                //! mt scaling factors
   
   AliGenEMlibV2::CollisionSystem_t  fCollisionSystem;   // selected collision system

@@ -29,7 +29,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   AliAnalysisTaskSE(),
   fHistos(nullptr),
   fGeom(nullptr),
-  fInitialized(false),
+  fLocalInitialized(false),
   fOldRun(-1),
   fRequestTrigger(AliVEvent::kAny),
   fTriggerPattern("")
@@ -41,7 +41,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
   AliAnalysisTaskSE(name),
   fHistos(nullptr),
   fGeom(nullptr),
-  fInitialized(false),
+  fLocalInitialized(false),
   fOldRun(-1),
   fRequestTrigger(AliVEvent::kAny),
   fTriggerPattern("")
@@ -77,9 +77,9 @@ void AliEmcalFastOrMonitorTask::RunChanged(){
 }
 
 void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
-  if(!fInitialized){
+  if(!fLocalInitialized){
     ExecOnce();
-    fInitialized = true;
+    fLocalInitialized = true;
   }
 
   // Run change

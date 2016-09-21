@@ -53,26 +53,26 @@ AliFemtoModelCorrFctnDEtaDPhiWithWeights::AliFemtoModelCorrFctnDEtaDPhiWithWeigh
   // set up numerator
   char tTitNumDT[101] = "NumDPhiDEtaTrue";
   strncat(tTitNumDT,title, 100);
-  fDPhiDEtaNumeratorTrue = new TH2D(tTitNumDT,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumeratorTrue = new TH2D(tTitNumDT,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-5.0,5.0);
 
   char tTitNumDF[101] = "NumDPhiDEtaFake";
   strncat(tTitNumDF,title, 100);
-  fDPhiDEtaNumeratorFake = new TH2D(tTitNumDF,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumeratorFake = new TH2D(tTitNumDF,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-5.0,5.0);
 
 
   // set up denominator
   char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
-  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-5.0,5.0);
 
   // set up numerator
   char tTitNumR[101] = "NumDPhiDEtaCol";
   strncat(tTitNumR,title, 100);
-  fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-5.0,5.0);
   // set up denominator
   char tTitDenR[101] = "DenDPhiDEtaCol";
   strncat(tTitDenR,title, 100);
-  fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-5.0,5.0);
 
   // set up numerator
   char tTitNumDPhiT[101] = "NumDPhiTrue";

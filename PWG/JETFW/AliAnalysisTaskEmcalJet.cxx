@@ -141,7 +141,7 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
     if (!fRho) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return;
     }
   }
@@ -150,7 +150,7 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     fLocalRho = dynamic_cast<AliLocalRhoParameter*>(InputEvent()->FindListObject(fLocalRhoName));
     if (!fLocalRho) {
       AliError(Form("%s: Could not retrieve local rho %s!", GetName(), fLocalRhoName.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return;
     }
   }
@@ -175,7 +175,7 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
     fJets = cont->GetArray();
     if(!fJets && fJetCollArray.GetEntriesFast()>0) {
       AliError(Form("%s: Could not retrieve first jet branch!", GetName()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return;
     }
   }
