@@ -572,6 +572,9 @@ int AliDxHFEParticleSelectionMCEl::ParseArguments(const char* arguments)
 	else if(argument.CompareTo("aftertofpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOF;
 	else if(argument.CompareTo("aftertpcpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTPC;
 	else if(argument.CompareTo("afterfullpid")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kPIDTOFTPC;
+	else if(argument.CompareTo("afterpirej")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRejPi;
+	else if(argument.CompareTo("afterprotonrej")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kRejProton;
+	else if(argument.CompareTo("afterinvmass")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kINVMASS;
 	else if(argument.CompareTo("afterselection")==0) fSelectionStep=AliDxHFEParticleSelectionEl::kSelected;
 	else AliFatal(Form("unknown argument '%s'", argument.Data()));
 
