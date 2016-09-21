@@ -8,7 +8,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                         Bool_t isEMCal                  = kFALSE,
                                                         char * period                   = "b",
                                                         Int_t EMCalThreshould   = 0,
-                                                        Bool_t ispp = kFALSE
+                                                        Bool_t ispp = kFALSE,
+                                                        Int_t HadronPtCut = 0
                                                         )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -28,7 +29,7 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     //gROOT->LoadMacro("ConfigEMCalHFEpACorrelation.C");
     
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEpACorrelation.C");
-    AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,EMCalThreshould,ispp);
+    AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,EMCalThreshould,ispp,HadronPtCut);
     
     //_______________________
     //Trigger
