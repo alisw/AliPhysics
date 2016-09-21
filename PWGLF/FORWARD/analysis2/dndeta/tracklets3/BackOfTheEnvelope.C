@@ -38,7 +38,7 @@ class TCanvas;
  * 
  * @ingroup pwglf_forward_tracklets
  */
-const char* fmt = "%10s | %5.3f | %5.2f | %5.2f | %5.2f  %5.2f |";
+const char* fmt = "%-10s | %5.3f | %5.2f | %5.2f | %5.2f  %5.2f |";
 /**
  * Class to do the calculation 
  * 
@@ -135,7 +135,7 @@ struct Calculation
   Double_t R(Int_t i, const char* w="", Bool_t verb=true) const
   {
     Double_t ret = 1;
-    if (verb) printf("%10s: %6.4f", w, ret);
+    if (verb) printf("%-10s: %6.4f", w, ret);
     for (ParticleList::const_iterator j = particles.begin();
 	 j != particles.end(); ++j) {
       Particle* p =  *j;
@@ -159,11 +159,22 @@ struct Calculation
     Double_t rCs      = R(2, "rCs", verb);
     Double_t rCb      = R(3, "rCb", verb);
     Double_t rMsim    = (fP*rPs+fS*rSs+fC*rCs)/(fP+fS+fC);
+    Printf("%-10s: (%5.3f*%6.4f+%5.3f*%6.4f+%5.3f*%6.4f)/"
+	   "(%5.3f+%5.3f+%5.3f)=%6.4f",
+	   "rM'", fP, rPs, fS, rSs, fC, rCs, fP, fS, fC, rMsim);
     Double_t beta     = (fCs)/(fPs+fSs+fCs);
+    Printf("%-10s: %5.3f/(%5.3f+%5.3f+%5.3f)=%6.4f", "beta",fCs,fPs,fSs,fCs);
     Double_t rBetasim = (1-rCs/rMsim*beta)/(1-beta);
+    Printf("%-10s: (1-%6.4f/%6.4f*%6.4f)/(1-%6.4f)=%6.4f",
+	   "rbeta'", rCs, rMsim, beta, beta);
     Double_t rScale   = rCs/rCb;
+    Printf("%-10s: %6.4f/%6.4f=%6.4f", "rk", rCs, rCb, rScale);
     Double_t rBetarea = (1-rScale*beta)/(1-beta);
+    Printf("%-10s: (1-%6.4f*%6.4f)/(1-%6.4f)=%6.4f",
+	   "rbeta", rScale, beta, beta);   
     Double_t rR       = rPs * rBetarea / rBetasim / rMsim;
+    Printf("%-10s: %6.4f*%6.4f/%6.4f/%6.4f=%6.4f",
+	   "rR", rPs, rBetarea, rBetasim, rMsim);
     return rR;
   }
   TObject* ChkC(TObject* o, TClass* c) const
