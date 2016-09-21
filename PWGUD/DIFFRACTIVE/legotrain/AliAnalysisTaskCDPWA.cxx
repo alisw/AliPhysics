@@ -49,6 +49,7 @@
 #include "TGeoManager.h"
 
 #include "AliAnalysisTaskCDPWA.h"
+#include "AliMultiplicitySelectionCPPWA.h"
 
 ClassImp(AliAnalysisTaskCDPWA);
 ClassImp(AliAnalysisTaskCDPWA::EventInfo);
@@ -223,7 +224,6 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
-	, fSelec()
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -330,7 +330,6 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
-	, fSelec()
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -799,7 +798,6 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fTwoTrackInfo.Delete();
 	fFourTrackInfo.Delete();
 	fMCTrack.Delete();
-	fSelec.Clear();
 
 	//Check corrupted file, load ESDevent and handler
 	if (!CheckInput()) {
@@ -1051,6 +1049,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	Bool_t is10bc = kFALSE;
 	if (fEventInfo.fPeriod <= 2) is10bc=kTRUE;
 	//(clusterCut,useITSSA,isRun2,nCluster)
+	AliMultiplicitySelectionCPPWA fSelec;
 	if (!fIsRun2) fSelec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,0);// 1 = b,c and 0 = d,e
 	else fSelec.InitDefaultTrackCuts(0,0,kTRUE,0);//Run2
 	TArrayI indices;
