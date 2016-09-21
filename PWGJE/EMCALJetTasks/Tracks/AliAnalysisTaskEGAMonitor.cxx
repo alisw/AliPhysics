@@ -54,7 +54,7 @@ void AliAnalysisTaskEGAMonitor::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hColRowG2%s", t.c_str()), Form("Col-Row distribution of online G2 patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
   }
 
-  PostData(1, fHistos);
+  PostData(1, fHistos->GetListOfHistograms());
 }
 
 void AliAnalysisTaskEGAMonitor::UserExec(Option_t *){
