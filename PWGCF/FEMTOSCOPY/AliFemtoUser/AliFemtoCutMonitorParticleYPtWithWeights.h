@@ -26,8 +26,8 @@ class TList;
 
 class AliFemtoCutMonitorParticleYPtWithWeights : public AliFemtoCutMonitor {
 public:
-  AliFemtoCutMonitorParticleYPtWithWeights(TH2D *filter);
-  AliFemtoCutMonitorParticleYPtWithWeights(const char *aName, float aMass, TH2D *filter);
+  AliFemtoCutMonitorParticleYPtWithWeights(TH2D *filter, int calculateWeights);
+  AliFemtoCutMonitorParticleYPtWithWeights(const char *aName, float aMass, TH2D *filter, int calculateWeights);
   AliFemtoCutMonitorParticleYPtWithWeights(const AliFemtoCutMonitorParticleYPtWithWeights &aCut);
   virtual ~AliFemtoCutMonitorParticleYPtWithWeights();
 
@@ -51,6 +51,7 @@ public:
 
 private:
   TH2D *filterHist;
+  int fCalcWeights;
 
   TH2D *fYPt;     // Rapidity vs. Pt monitor
   TH2D *fYPhi;    // Rapidity cs. Phi monitor
