@@ -1,5 +1,3 @@
-#include "AliGenLightNuclei.h"
-
 AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2,Int_t cr=1,Float_t ptWeight=0) 
 {
   //Add Pythia generator: pt-hard bin or min bias
