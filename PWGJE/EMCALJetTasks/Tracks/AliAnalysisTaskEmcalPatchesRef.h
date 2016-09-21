@@ -3,12 +3,13 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskSE.h"
+#include <string>
+#include <vector>
+#include "AliAnalysisTaskEmcal.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
 #include <TString.h>
 
-class AliAnalysisUtils;
 class AliOADBContainer;
 class THistManager;
 class TObjArray;
@@ -17,15 +18,11 @@ namespace EMCalTriggerPtAnalysis {
 
 class AliEmcalTriggerOfflineSelection;
 
-class AliAnalysisTaskEmcalPatchesRef : public AliAnalysisTaskSE {
+class AliAnalysisTaskEmcalPatchesRef : public AliAnalysisTaskEmcal {
 public:
   AliAnalysisTaskEmcalPatchesRef();
   AliAnalysisTaskEmcalPatchesRef(const char *name);
   virtual ~AliAnalysisTaskEmcalPatchesRef();
-
-  void UserCreateOutputObjects();
-  void UserExec(Option_t *);
-  void Terminate(Option_t *) {}
 
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
@@ -35,9 +32,12 @@ public:
   void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
 
 protected:
-
+  virtual void UserCreateOutputObjects();
   virtual void ExecOnce();
+  virtual bool IsEventSelected();
+  virtual bool Run();
   virtual void RunChanged(Int_t runnumber);
+
   Double_t GetTriggerWeight(const TString &triggerclass) const;
 
   void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
@@ -51,10 +51,9 @@ protected:
   void FillEventHistograms(const TString &triggerclass, double centrality, double vertexz);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
-  AliAnalysisUtils                    *fAnalysisUtil;             ///< Analysis utils for event selection
   AliEmcalTriggerOfflineSelection     *fTriggerSelection;         ///< Offline trigger selection tool
+  std::vector<std::string>            fAcceptTriggers;            //!<! Temporary container of selected triggers
   THistManager                        *fHistos;                   //!<! Histogram handler
-  TClonesArray                        *fTriggerPatches;           //!<! Container with trigger patches
 
   Bool_t                              fRequestAnalysisUtil;       ///< Switch on request for analysis util
   Bool_t                              fTriggerStringFromPatches;  ///< Switch on building a trigger string based on available trigger patches
@@ -66,9 +65,6 @@ protected:
   TString                             fNameDownscaleOADB;         ///< Name of the downscale OADB container
   AliOADBContainer                    *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
   TObjArray                           *fDownscaleFactors;         //!<! Downscalefactors for given run
-
-  Int_t                               fCurrentRun;                ///< Current run number (for RunChange method)
-  Bool_t                              fLocalInitialized;          ///< Check for initialized
 
 private:
 
