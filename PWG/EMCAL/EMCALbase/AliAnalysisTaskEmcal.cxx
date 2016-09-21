@@ -581,7 +581,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 
   if(InputEvent()->GetRunNumber() != fRunNumber){
     fRunNumber = InputEvent()->GetRunNumber();
-    RunChanged();
+    RunChanged(fRunNumber);
   }
 
   if (IsEventSelected()) {
