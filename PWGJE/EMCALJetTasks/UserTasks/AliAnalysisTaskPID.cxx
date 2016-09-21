@@ -2728,7 +2728,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   else
     std::cout << "false";
   
-  std::cout << endl;
+  std::cout << std::endl;
   printf("Do PID: %d\n", fDoPID);
   printf("Do Efficiency: %d\n", fDoEfficiency);
   printf("Do PtResolution: %d\n", fDoPtResolution);
