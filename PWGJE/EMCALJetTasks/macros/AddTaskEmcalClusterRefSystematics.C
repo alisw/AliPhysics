@@ -1,11 +1,46 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRefSystematics(TString clustercontname, const char *suffix){
+EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRefSystematics(const char * nClusters, const char *suffix){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString clusName(nClusters);
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
 
   TString taskname = "emcalClusterQA_" + TString(suffix);
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef(taskname.Data());
-  task->SetClusterContainer(clustercontname);
+  task->AddClusterContainer(clusName);
+  task->SetClusterContainer(clusName);
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());

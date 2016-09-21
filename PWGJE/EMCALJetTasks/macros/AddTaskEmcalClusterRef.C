@@ -1,9 +1,45 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRef(TString clustercontname){
+EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRef(TString nClusters = "usedefault"){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString clusName(nClusters);
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+
   EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef("emcalClusterQA");
-  task->SetClusterContainer(clustercontname);
+  task->AddClusterContainer(clusName.Data());
+  task->SetClusterContainer(clusName);
   mgr->AddTask(task);
 
   // Set Energy thresholds for additional patch selection:
@@ -22,7 +58,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRef(
   outfile += ":ClusterQA";
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("ClusterResults", TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer("ClusterResults", AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
 
   return task;
 }

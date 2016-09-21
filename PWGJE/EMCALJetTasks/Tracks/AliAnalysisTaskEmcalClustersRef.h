@@ -3,13 +3,14 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskSE.h"
+#include <string>
+#include <vector>
+
+#include "AliAnalysisTaskEmcal.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
 #include <TString.h>
 
-class AliAnalysisUtils;
-class AliEMCALGeometry;
 class AliOADBContainer;
 
 class TArrayD;
@@ -23,18 +24,14 @@ namespace EMCalTriggerPtAnalysis {
 
 class AliEmcalTriggerOfflineSelection;
 
-class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskSE {
+class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskEmcal {
 public:
   AliAnalysisTaskEmcalClustersRef();
   AliAnalysisTaskEmcalClustersRef(const char *name);
   virtual ~AliAnalysisTaskEmcalClustersRef();
 
-  void UserCreateOutputObjects();
-  void UserExec(Option_t *);
-  void Terminate(Option_t *) {}
-
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
-  void SetClusterContainer(TString clustercontname) { fClusterContainer = clustercontname; }
+  void SetClusterContainer(TString clustercontname) { fNameClusterContainer = clustercontname; }
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
 
   void SetRequestAnalysisUtil(Bool_t doRequest) { fRequestAnalysisUtil = doRequest; }
@@ -44,6 +41,9 @@ public:
 
 protected:
 
+  virtual void UserCreateOutputObjects();
+  virtual bool Run();
+  virtual bool IsEventSelected();
   virtual void ExecOnce();
   virtual void RunChanged(Int_t runnumber);
 
@@ -61,12 +61,10 @@ protected:
   void FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundpatches) const;
   Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
-  AliAnalysisUtils                    *fAnalysisUtil;             ///< Analysis utils for additional event selection / pileup rejection
   THistManager                        *fHistos;                   //!<! Histogram handler
   AliEmcalTriggerOfflineSelection     *fTriggerSelection;         ///< EMCAL offline trigger selection tool
-  AliEMCALGeometry                    *fGeometry;                 //!<! EMCAL geometry
-  TClonesArray                        *fTriggerPatches;           //!<! Container with trigger patches
-  TString                             fClusterContainer;          ///< Name of the cluster container in the event
+  std::vector<std::string>            fAcceptTriggers;            //!<! Temporary container with list of selected triggers
+  TString                             fNameClusterContainer;      ///< Name of the cluster container in the event
 
   Bool_t                              fRequestAnalysisUtil;       ///< Switch on request for event selection using analysis utils
   Bool_t                              fTriggerStringFromPatches;  ///< Build trigger string from trigger patches
@@ -77,9 +75,6 @@ protected:
   TString                             fNameDownscaleOADB;         ///< Name of the downscale OADB container
   AliOADBContainer                    *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
   TObjArray                           *fDownscaleFactors;         //!<! Downscalfactors for given run
-
-  Int_t                               fCurrentRun;                ///< Current run number (for RunChange method)
-  Bool_t                              fLocalInitialized;          ///< Check for initialized
 
 private:
 
