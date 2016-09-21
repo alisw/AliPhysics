@@ -49,6 +49,9 @@ class AliFemtoModelWeightGenerator
   static Int_t KaonPlusProton();    
   static Int_t KaonPlusAntiproton();
   static Int_t PairTypeNone();
+  static Int_t LambdaLambda();
+  static Int_t AntilambdaAntilambda();
+   static Int_t LambdaAntilambda();
 
  protected:
   static const Int_t fgkPairTypeNone;      // no pair type set - read from model
@@ -64,6 +67,9 @@ class AliFemtoModelWeightGenerator
   static const Int_t fgkPionPlusAntiproton;// opposite-chare pion proton pair
   static const Int_t fgkKaonPlusProton;    // same-charge kaon proton pair
   static const Int_t fgkKaonPlusAntiproton;// opposite-charge kaon proton pair
+  static const Int_t fgkLambdaLambda;// same-type lambdas
+  static const Int_t fgkAntilambdaAntilambda;// same-type antilambdas
+   static const Int_t fgkLambdaAntilambda;// non-same-type lambdas
 
   Int_t fPairType;     // Type of the pair for which the calculation is done
 
@@ -108,6 +114,9 @@ inline Int_t AliFemtoModelWeightGenerator::PionPlusProton() { return fgkPionPlus
 inline Int_t AliFemtoModelWeightGenerator::PionPlusAntiproton() { return fgkPionPlusAntiproton; }
 inline Int_t AliFemtoModelWeightGenerator::KaonPlusProton() { return fgkKaonPlusProton; }    
 inline Int_t AliFemtoModelWeightGenerator::KaonPlusAntiproton() { return fgkKaonPlusAntiproton; }
+inline Int_t AliFemtoModelWeightGenerator::LambdaLambda() { return fgkLambdaLambda; }
+inline Int_t AliFemtoModelWeightGenerator::AntilambdaAntilambda() { return fgkAntilambdaAntilambda; }
+inline Int_t AliFemtoModelWeightGenerator::LambdaAntilambda() { return fgkLambdaAntilambda; }
 
 #endif
 
