@@ -621,9 +621,10 @@ void AliCaloCellsQA::FillPi0Mass(TObjArray *clusArray, Double_t vertexXYZ[3])
       if ((sm2 = CheckClusterGetSM(clus2)) < 0) continue;
 
       clus2->GetMomentum(p2, vertexXYZ);
-
       psum = p1 + p2;
-      if (psum.M2() < 0) continue;
+      
+      if (psum.M2() < 0 ) continue;
+      if (psum.Pt() < 2.) continue; // pT > 2 GeV/c
 
       // s1 <= s2
       Int_t s1 = (sm1 <= sm2) ? sm1 : sm2;
