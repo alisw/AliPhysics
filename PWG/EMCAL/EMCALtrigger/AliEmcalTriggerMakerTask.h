@@ -203,8 +203,9 @@ protected:
    * RunChanged method of the trigger maker:
    * In case of a bad channel container provided, initialize bad channel map
    * for the new run.
+   * @param[in] newrun New run number
    */
-  virtual void RunChanged();
+  virtual void RunChanged(Int_t newrun);
 
   /**
    * Initialize bad channels from the OADB container. Called by the RunChanged() method.
