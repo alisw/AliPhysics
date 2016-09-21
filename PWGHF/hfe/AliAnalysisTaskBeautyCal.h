@@ -126,6 +126,7 @@ private:
     TH2F        *fHistNsigEop;//!E/p vs dedx
     TH2F        *fHistEop;//!pt vs E/p
     TH2F        *fHistEopHad;//!pt vs E/p
+    TH2F        *fHistEopHad2;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
