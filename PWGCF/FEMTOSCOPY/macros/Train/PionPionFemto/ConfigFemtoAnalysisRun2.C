@@ -1,5 +1,5 @@
 ///
-/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigFemtoAnalysis.C
+/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigFemtoAnalysisRun2.C
 ///
 /// \brief The configuration macro which sets up identical pion-pion analyses
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
@@ -39,9 +39,6 @@ struct MacroParams {
   bool do_kt_q3d;
   bool do_kt_qinv;
   bool do_ylm_cf; // not implemented yet
-  int filter_bit;
-  AliFemtoEventReaderAOD::EventMult multiplicity;
-  bool dca_global_track;
 };
 
 void
@@ -56,7 +53,7 @@ BuildConfiguration(
 AliFemtoManager*
 ConfigFemtoAnalysis(const TString& param_str="")
 {
-  std::cout << "[ConfigFemtoAnalysis (PionPion)]\n";
+  std::cout << "[ConfigFemtoAnalysisRun2 (PionPion)]\n";
 
   const double PionMass = 0.13956995;
 
@@ -74,9 +71,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_ylm_cf = false;
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
-  macro_config.filter_bit = 7;
-  macro_config.multiplicity = AliFemtoEventReaderAOD::kCentrality;
-  macro_config.dca_global_track = true;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -84,14 +78,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
-    rdr->SetFilterBit(macro_config.filter_bit);
+  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
+    rdr->SetFilterBit(7);
     rdr->SetEPVZERO(kTRUE);
-    rdr->SetUseMultiplicity(macro_config.multiplicity);
+    rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
     rdr->SetCentralityFlattening(kFALSE);
     rdr->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-    rdr->SetDCAglobalTrack(macro_config.dca_global_track);
+    rdr->SetDCAglobalTrack(kTRUE);
   // rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
