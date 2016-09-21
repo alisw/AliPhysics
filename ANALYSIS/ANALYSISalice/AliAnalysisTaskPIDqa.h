@@ -29,6 +29,7 @@ class AliAnalysisTaskPIDqa : public AliAnalysisTaskSE {
   
   
 public:
+  enum ETPCHistOffset { kTrackPIDBasic=0, kTrackPIDMC, kTrackPIDV0, kMaxHistOffset };
   AliAnalysisTaskPIDqa();
   AliAnalysisTaskPIDqa(const char *name);
   virtual ~AliAnalysisTaskPIDqa();
@@ -74,6 +75,8 @@ private:
   TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
   TList                 *fListQAV0;         //! List with V0 kine cuts QA histograms
   TList                 *fListQAinfo;       //! List with information about loaded splines etc.
+
+  TArrayI                fTPChistogramOffsets; //! Histogram offsets for different histogram groups
 
   
   void ExecNewRun();
