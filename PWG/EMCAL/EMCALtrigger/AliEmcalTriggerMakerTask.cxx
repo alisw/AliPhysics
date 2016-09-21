@@ -140,7 +140,7 @@ void AliEmcalTriggerMakerTask::SetUseTriggerBitConfig(TriggerMakerBitConfig_t bi
 void AliEmcalTriggerMakerTask::ExecOnce(){
   AliAnalysisTaskEmcal::ExecOnce();
 
-  if (!fInitialized) return;
+  if (!fLocalInitialized) return;
 
   if (!fCaloTriggersOutName.IsNull()) {
     fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
@@ -150,7 +150,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       InputEvent()->AddObject(fCaloTriggersOut);
     }
     else {
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fCaloTriggersOutName.Data()));
       return;
     }

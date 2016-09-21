@@ -85,7 +85,7 @@ void AliEmcalPatchFromCellMaker::ExecOnce()
 
   AliAnalysisTaskEmcal::ExecOnce();
 
-  if (!fInitialized)
+  if (!fLocalInitialized)
     return;
 
   if (!fCaloTriggersOutName.IsNull()) {
@@ -96,7 +96,7 @@ void AliEmcalPatchFromCellMaker::ExecOnce()
       InputEvent()->AddObject(fCaloTriggersOut);
     }
     else {
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fCaloTriggersOutName.Data()));
       return;
     }

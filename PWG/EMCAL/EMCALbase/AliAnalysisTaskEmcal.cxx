@@ -65,7 +65,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPythiaInfoName(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fCreateHisto(kTRUE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -173,7 +173,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPythiaInfoName(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fCreateHisto(histo),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -568,12 +568,12 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
  */
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
-  if (!fInitialized){
+  if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();
   }
 
-  if (!fInitialized)
+  if (!fLocalInitialized)
     return;
 
   if (!RetrieveEventObjects())
@@ -885,7 +885,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
 
   }
 
-  fInitialized = kTRUE;
+  fLocalInitialized = kTRUE;
 }
 
 /**

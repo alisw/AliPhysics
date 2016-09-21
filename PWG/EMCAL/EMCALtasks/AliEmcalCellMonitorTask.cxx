@@ -39,7 +39,7 @@ ClassImp(AliEmcalCellMonitorTask)
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    AliAnalysisTaskSE(),
-   fInitialized(kFALSE),
+   fLocalInitialized(kFALSE),
    fHistManager(nullptr),
    fGeometry(nullptr),
    fMinCellAmplitude(0),
@@ -55,7 +55,7 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    AliAnalysisTaskSE(name),
-   fInitialized(kFALSE),
+   fLocalInitialized(kFALSE),
    fHistManager(nullptr),
    fGeometry(nullptr),
    fMinCellAmplitude(0),
@@ -93,9 +93,9 @@ void AliEmcalCellMonitorTask::RunChanged(){
 }
 
 void AliEmcalCellMonitorTask::UserExec(Option_t *){
-  if(!fInitialized) {
+  if(!fLocalInitialized) {
     ExecOnce();
-    fInitialized = kTRUE;
+    fLocalInitialized = kTRUE;
   }
 
   // Run change

@@ -59,11 +59,11 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(char* t
   // set up numerator
   char tTitNumD[101] = "NumDPhiDEta";
   strncat(tTitNumD,title, 100);
-  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,fphiL,fphiT,aEtaBins,-5.0,5.0);
   // set up denominator
   char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
-  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-5.0,5.0);
 
   char tTitNum[101] = "PtSumDist";
   strncat(tTitNum,title, 100);
@@ -94,7 +94,7 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(char* t
 
   char tTitEta[101] = "Eta";
   strncat(tTitEta,title, 100);
-  fEta = new TH1D(tTitEta,title,90,-1.2,1.2);
+  fEta = new TH1D(tTitEta,title,500,-5.0,5.0);
     
 
   // THnSparse(const char* name, const char* title, Int_t dim,

@@ -100,7 +100,7 @@ void AliEmcalClusterMaker::ExecOnce()
 
   // Do base class initializations and if it fails -> bail out
   AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized) {
+  if (!fLocalInitialized) {
     return;
   }
 
@@ -122,7 +122,7 @@ void AliEmcalClusterMaker::ExecOnce()
       InputEvent()->AddObject(fOutClusters);
     }
     else {
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       AliFatal(Form("%s: Container with same name %s already present. Aborting", GetName(), fOutCaloName.Data()));
       return;
     }

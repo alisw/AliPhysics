@@ -77,7 +77,7 @@ AliDxHFEParticleSelectionEl::AliDxHFEParticleSelectionEl(const char* opt)
   , fSelNHFE(NULL)
   , fTrackCuts(NULL)
   , fCFM(NULL)
-  , fFinalCutStep(kPIDTOFTPC)
+  , fFinalCutStep(kINVMASS)
   , fInvMassLow(0.1)
   , fUseInvMassCut(kNoInvMass)
   , fSystem(0)
@@ -752,7 +752,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   ((TH2D*)fHistoList->FindObject("fnSigTPCPid"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
   if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFPid"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   ((TH1D*)fHistoList->FindObject("fTPCnClTPCTOFPID"))->Fill(track->GetTPCNcls());
-  
+  if(fFinalCutStep==kPIDTOFTPC) {AliDebug(2,"Returns at PIDTOFTPC"); return 1;}
+
   // [FIXME]: Under development
   // Rejection of pions and protons based on 3. nsigma cut in tpc
   Double_t nsigmaTPCpi=fPIDResponse->NumberOfSigmasTPC((AliVParticle*)track,(AliPID::EParticleType)AliPID::kPion);
@@ -770,7 +771,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejPi"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
     }
   }  
-  
+  if(fFinalCutStep==kRejPi) {AliDebug(2,"Returns after pion rejection"); return 1;}  
   //Proton rejection
   if(fTPCnSigmaPRej>0){ //Proton rejection on by default, but can be turned off by setting fTPCnSigmaPRej to -1
     if(TMath::Abs(nsigmaTPCp)<fTPCnSigmaPRej && pPart>fPRejPMin && pPart<fPRejPMax){ //Only applied above 1GeV
@@ -783,7 +784,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
       if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFRejProton"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
     }
   }
-  
+  if(fFinalCutStep==kRejProton) {AliDebug(2,"Returns after proton rejection"); return 1;}  
+
   //Removing electrons based on invariant mass method
   if(fUseInvMassCut==kInvMassSingleSelected)
     {
@@ -819,7 +821,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   ((TH2D*)fHistoList->FindObject("fnSigTPCIM"))->Fill(track->GetTPCmomentum(), fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
   if(!fUseEMCAL) ((TH2D*)fHistoList->FindObject("fnSigTOFIM"))->Fill(pPart, fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron));
   ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kSelected);
-  
+  if(fFinalCutStep==kINVMASS) {AliDebug(2,"Returns after invariant mass"); return 1;}  
   return 1;
   
 }

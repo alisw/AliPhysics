@@ -72,7 +72,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
     fCurrentRun(-1),
-    fInitialized(false)
+    fLocalInitialized(false)
 {
 }
 
@@ -97,7 +97,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
     fCurrentRun(-1),
-    fInitialized(false)
+    fLocalInitialized(false)
 {
   DefineOutput(1, TList::Class());
 }
@@ -178,10 +178,10 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
  */
 void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   AliDebugStream(1) << GetName() << ": UserExec start" << std::endl;
-  if(!fInitialized){
+  if(!fLocalInitialized){
     AliInfoStream() << GetName() << ": Initializing ..." << std::endl;
     ExecOnce();
-    fInitialized = kTRUE;
+    fLocalInitialized = kTRUE;
   }
   if(fCurrentRun != InputEvent()->GetRunNumber()){
     AliInfoStream() << GetName() << ": Changing run from " <<  fCurrentRun << " to " << InputEvent()->GetRunNumber() << std::endl;
