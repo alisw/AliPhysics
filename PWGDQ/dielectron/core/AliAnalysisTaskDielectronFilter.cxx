@@ -57,6 +57,7 @@ fStoreRotatedPairs(kFALSE),
 fStoreEventsWithSingleTracks(kFALSE),
 fCreateNanoAOD(kFALSE),
 fStoreHeader(kFALSE),
+fStoreEventplanes(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -81,6 +82,7 @@ fStoreRotatedPairs(kFALSE),
 fStoreEventsWithSingleTracks(kFALSE),
 fCreateNanoAOD(kFALSE),
 fStoreHeader(kFALSE),
+fStoreEventplanes(kFALSE),
 fEventFilter(0x0)
 {
   //
@@ -96,11 +98,11 @@ void AliAnalysisTaskDielectronFilter::Init()
 {
   // Initialization
   if (fDebug > 1) AliInfo("Init() \n");
-  
+
 // require AOD handler
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   if (!aodH) AliFatal("No AOD handler. Halting.");
-    
+
   aodH->AddFilteredAOD("AliAOD.Dielectron.root", "DielectronEvents");
 //   AddAODBranch("AliDielectronCandidates",fDielectron->GetPairArraysPointer(),"deltaAOD.Dielectron.root");
 }
@@ -227,7 +229,7 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
     return;
   }
   if(fStoreRotatedPairs) fDielectron->SetStoreRotatedPairs(kTRUE);
-  fDielectron->SetDontClearArrays(); 
+  fDielectron->SetDontClearArrays();
   fDielectron->Init();
 
   Int_t nbins=kNbinsEvent+2;
@@ -249,7 +251,7 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
     fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2),Form("#splitline{With >1 candidate}{%s}",fDielectron->GetName()));
    }
 
-Bool_t isAOD=AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODInputHandler::Class(); 
+Bool_t isAOD=AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 if(fCreateNanoAOD && isAOD){
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
@@ -261,10 +263,10 @@ if(fCreateNanoAOD && isAOD){
    extDielectron->AddBranch("TClonesArray", &nanoAODVertices);
    TClonesArray *nanoAODCaloCluster = new TClonesArray("AliAODCaloCluster",500);
    nanoAODCaloCluster->SetName("caloClusters");
-   extDielectron->AddBranch("TClonesArray", &nanoAODCaloCluster);  
+   extDielectron->AddBranch("TClonesArray", &nanoAODCaloCluster);
    extDielectron->GetAOD()->GetStdContent();
-   }else if(fCreateNanoAOD && !isAOD){AliWarning("Filtered-Nano AODs creation works only on AODs ");  } 
-  
+ }else if(fCreateNanoAOD && !isAOD){AliWarning("Filtered-Nano AODs creation works only on AODs ");  }
+
   PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
   PostData(2,fEventStat);
 }
@@ -420,6 +422,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
 		if (!t->GetBranch("dielectrons"))
 			t->Bronch("dielectrons","TObjArray",fDielectron->GetPairArraysPointer());
 
+
 			// store positive and negative tracks
 		if(fCreateNanoAOD && isAOD){
 			Int_t nTracks = (fDielectron->GetTrackArray(0))->GetEntries() + (fDielectron->GetTrackArray(1))->GetEntries();
@@ -445,7 +448,21 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
 				// Set header information
 			SetHeaderData(inputHeader, header, values);
 
-
+      // Store Eventplane information from the 2016 est. QnCorrections Framework
+      // A new branch containing the q-Vectors in a list is created to store the information
+      if(fStoreEventplanes){
+        if(AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
+            dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections"))){
+          if(flowQnVectorTask != NULL){
+            AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+            TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+            if(qnlist != NULL){
+              qnlist->SetName("qnVectorList");
+              aodH->AddBranch("TList",&qnlist);
+            }
+          }
+        }
+      }
 
 
 				//______________________________________________________________________________
@@ -518,5 +535,3 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
 	PostData(2,fEventStat);
 	return;
 }
-
-
