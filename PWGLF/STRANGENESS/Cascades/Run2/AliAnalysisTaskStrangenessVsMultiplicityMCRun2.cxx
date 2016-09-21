@@ -1247,7 +1247,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //    - Create another out histogram in AliV0Result to be able to do the momentum correlations?
                 ( ! (lV0Result->GetCutMCPhysicalPrimary())    || fTreeVariablePrimaryStatus == 1 ) &&
                 ( ! (lV0Result->GetCutMCLambdaFromPrimaryXi())|| (fTreeVariablePrimaryStatusMother == 1 && fTreeVariablePIDMother == lPDGCodeXiMother) ) &&
-                ( ! (lV0Result->GetCutMCPDGCodeAssociation()) || fTreeCascVarPID == lPDGCode     ) &&
+                ( ! (lV0Result->GetCutMCPDGCodeAssociation()) || fTreeVariablePID == lPDGCode     ) &&
                 
                 //FIXME: ADD REJECTION CUTS HERE//
                 
