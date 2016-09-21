@@ -51,6 +51,9 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base()
   , fPIDResponse(0x0)
   , fV0KineCuts(0x0)
   , fAnaUtils(0x0)
+  , fRunMode(kJetPIDMode)
+  , fPileUpRejectionType(kPileUpRejectionOff)
+  , fMinPlpContribSPD(3)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
   , fTPCcutType(kNoCut)
@@ -86,6 +89,9 @@ AliAnalysisTaskPIDV0base::AliAnalysisTaskPIDV0base(const char *name)
   , fPIDResponse(0x0)
   , fV0KineCuts(0x0)
   , fAnaUtils(0x0)
+  , fRunMode(kJetPIDMode)  
+  , fPileUpRejectionType(kPileUpRejectionOff)  
+  , fMinPlpContribSPD(3)
   , fIsPbpOrpPb(kFALSE)
   , fUsePhiCut(kFALSE)
   , fTPCcutType(kNoCut)
@@ -180,6 +186,9 @@ void AliAnalysisTaskPIDV0base::UserCreateOutputObjects()
   // Default analysis utils
   fAnaUtils = new AliAnalysisUtils();
   
+  //Sets the minimum number of contributors to the SPD vertext (Pile-Up)
+  fAnaUtils->SetMinPlpContribSPD(GetMinPlpContribSPD());
+  
   // Not used yet, but to be save, forward vertex z cut to analysis utils object
   fAnaUtils->SetMaxVtxZ(fZvtxCutEvent);
 }
@@ -243,7 +252,7 @@ Bool_t AliAnalysisTaskPIDV0base::PhiPrimeCut(const AliVTrack* track, Double_t ma
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcut) const
 {
-  // Check whether vertex ful-fills quality requirements.
+  // Check whether vertex fulfills quality requirements.
   // Apply cut on z-position of vertex if doVtxZcut = kTRUE.
   
   AliAODEvent* aod = 0x0;
@@ -258,84 +267,115 @@ Bool_t AliAnalysisTaskPIDV0base::GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcu
       return kFALSE;
     }
   }
+  
+  if (GetRunMode() == kJetPIDMode) {
     
-  if (fIsPbpOrpPb) {
-    const AliVVertex* trkVtx = (aod ? dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex()) :
-                                      dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertex()));
+    if (fIsPbpOrpPb) {
+      const AliVVertex* trkVtx = event->GetPrimaryVertex();
       
-    if (!trkVtx || trkVtx->GetNContributors() <= 0)
+      if (!trkVtx || !(trkVtx->GetStatus()))
+        return kFALSE;
+      
+      TString vtxTtl = trkVtx->GetTitle();
+      if (!vtxTtl.Contains("VertexerTracks"))
+        return kFALSE;
+      
+      Float_t zvtx = trkVtx->GetZ();
+      const AliVVertex* spdVtx = event->GetPrimaryVertexSPD();
+    
+      if (!spdVtx || !(spdVtx->GetStatus()))
+        return kFALSE;
+      
+      TString vtxTyp = spdVtx->GetTitle();
+      Double_t cov[6] = {0};
+      spdVtx->GetCovarianceMatrix(cov);
+      Double_t zRes = TMath::Sqrt(cov[5]);
+      if (vtxTyp.Contains("vertexer:Z") && (zRes > 0.25))
+        return kFALSE;
+      
+      if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)
+        return kFALSE;
+    
+      if (doVtxZcut) {
+        if (TMath::Abs(zvtx) > fZvtxCutEvent) //Default: 10 cm
+          return kFALSE;
+      }
+      
+      return kTRUE;
+    }
+    else {
+      // pp and PbPb
+      const AliVVertex* primaryVertex = 0x0;
+      if (aod) {
+        primaryVertex = dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex());
+        if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+          return kFALSE;
+    
+        // Reject TPC vertices
+        TString primVtxTitle(primaryVertex->GetTitle());
+        if (primVtxTitle.Contains("TPCVertex",TString::kIgnoreCase))
+        return kFALSE;
+      }
+      else {
+        primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexTracks());
+        if (!primaryVertex)
+          return kFALSE;
+    
+        if (primaryVertex->GetNContributors() <= 0) {
+          // Try SPD vertex
+          primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD());
+          if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+            return kFALSE;
+        }
+      }
+  
+      if (doVtxZcut) {
+        if (TMath::Abs(primaryVertex->GetZ()) > fZvtxCutEvent) //Default: 10 cm
+          return kFALSE;
+      }
+    }
+  }
+  
+  if (GetRunMode() == kLightFlavorMode) {
+    const AliESDVertex *trkVertex = esd->GetPrimaryVertexTracks();
+    const AliESDVertex *spdVertex = esd->GetPrimaryVertexSPD();
+  
+    Bool_t hasSPD = spdVertex->GetStatus();
+    Bool_t hasTrk = trkVertex->GetStatus();  
+  
+    if (!hasSPD) 
       return kFALSE;
-      
-    TString vtxTtl = trkVtx->GetTitle();
-    if (!vtxTtl.Contains("VertexerTracks"))
+    
+    if (spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25)) 
       return kFALSE;
-      
-    Float_t zvtx = trkVtx->GetZ();
-    const AliVVertex* spdVtx = (aod ? dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertexSPD()) :
-                                      dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD()));
-    if (spdVtx->GetNContributors() <= 0)
-      return kFALSE;
-      
-    Double_t cov[6] = {0};
-    spdVtx->GetCovarianceMatrix(cov);
-    Double_t zRes = TMath::Sqrt(cov[5]);
-    if (spdVtx->IsFromVertexerZ() && (zRes > 0.25))
-      return kFALSE;
-      
-    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)
+
+    if (TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5)
       return kFALSE;
     
     if (doVtxZcut) {
-      if (TMath::Abs(zvtx) > fZvtxCutEvent) //Default: 10 cm
-        return kFALSE;
-    }
-      
-    return kTRUE;
-  }
-    
-  
-  // pp and PbPb
-  const AliVVertex* primaryVertex = 0x0;
-  if (aod) {
-    primaryVertex = dynamic_cast<const AliVVertex*>(aod->GetPrimaryVertex());
-    if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
-      return kFALSE;
-    
-    // Reject TPC vertices
-    TString primVtxTitle(primaryVertex->GetTitle());
-    if (primVtxTitle.Contains("TPCVertex",TString::kIgnoreCase))
-      return kFALSE;
-  }
-  else {
-    primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexTracks());
-    if (!primaryVertex)
-      return kFALSE;
-    
-    if (primaryVertex->GetNContributors() <= 0) {
-      // Try SPD vertex
-      primaryVertex = dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD());
-      if (!primaryVertex || primaryVertex->GetNContributors() <= 0) 
+      const AliVVertex *vertex = event->GetPrimaryVertex();
+      if (TMath::Abs(vertex->GetZ())>GetZvtxCutEvent()) 
         return kFALSE;
     }
   }
   
-  if (doVtxZcut) {
-    if (TMath::Abs(primaryVertex->GetZ()) > fZvtxCutEvent) //Default: 10 cm
-      return kFALSE;
-  }
-  
-  return kTRUE;
+  return kTRUE; 
 }
 
 
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskPIDV0base::GetIsPileUp(AliVEvent* event, AliAnalysisTaskPIDV0base::PileUpRejectionType pileUpRejectionType) const
+Bool_t AliAnalysisTaskPIDV0base::GetIsPileUp(AliVEvent* event, PileUpRejectionType pileUpRejection) const
 {
   // Check whether event is a pile-up event according to current AnalysisUtils object.
   // If rejection type is kPileUpRejectionOff, kFALSE is returned.
   // In case of errors, the error is displayed and kTRUE is returned.
   
-  if (pileUpRejectionType == kPileUpRejectionOff)
+  PileUpRejectionType functionPURejectionType = GetPileUpRejectionType();
+  
+  if (!(pileUpRejection == kPileUpRejectionClass))
+    functionPURejectionType == pileUpRejection;
+  
+  if (functionPURejectionType == kPileUpRejectionOff)
     return kFALSE;
   
   if (!event) {
@@ -348,9 +388,9 @@ Bool_t AliAnalysisTaskPIDV0base::GetIsPileUp(AliVEvent* event, AliAnalysisTaskPI
     return kTRUE;
   }
   
-  if (pileUpRejectionType == kPileUpRejectionSPD)
+  if (functionPURejectionType == kPileUpRejectionSPD)
     return fAnaUtils->IsPileUpSPD(event);
-  else if (pileUpRejectionType == kPileUpRejectionMV)
+  else if (functionPURejectionType == kPileUpRejectionMV)
     return fAnaUtils->IsPileUpMV(event);
   
   return kTRUE;

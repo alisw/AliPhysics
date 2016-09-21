@@ -31,7 +31,9 @@ class AliVTrack;
 
 class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
  public:
-  enum PileUpRejectionType { kPileUpRejectionOff = 0, kPileUpRejectionSPD = 1, kPileUpRejectionMV = 2 };
+   
+  enum RunMode { kJetPIDMode = 0, kLightFlavorMode = 1}; 
+  enum PileUpRejectionType { kPileUpRejectionOff = 0, kPileUpRejectionSPD = 1, kPileUpRejectionMV = 2, kPileUpRejectionClass = 3 };
   enum TPCcutType { kNoCut = 0, kTPCCutMIGeo = 1, kTPCnclCut = 2 };
   AliAnalysisTaskPIDV0base();
   AliAnalysisTaskPIDV0base(const char *name);
@@ -43,7 +45,16 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   
   virtual Bool_t GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcut = kTRUE) const;
  
-  virtual Bool_t GetIsPileUp(AliVEvent* event, PileUpRejectionType pileUpRejectionType) const;
+  virtual Bool_t GetIsPileUp(AliVEvent* event, PileUpRejectionType pileUpRejection = kPileUpRejectionClass) const;
+  
+  RunMode GetRunMode() const { return fRunMode; };
+  void SetRunMode(RunMode flag) { fRunMode = flag; };
+    
+  PileUpRejectionType GetPileUpRejectionType() const { return fPileUpRejectionType; };
+  void SetPileUpRejectionType(PileUpRejectionType newType) { fPileUpRejectionType = newType; };
+  
+  virtual Int_t GetMinPlpContribSPD() const { return fMinPlpContribSPD; };
+  virtual void SetMinPlpContribSPD(Int_t newValue) { fMinPlpContribSPD = newValue; };
   
   virtual Bool_t GetIsPbpOrpPb() const { return fIsPbpOrpPb; };
   virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };
@@ -114,6 +125,10 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
   
   AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
+ 
+  RunMode fRunMode;
+  PileUpRejectionType fPileUpRejectionType; // Which pile-up rejection is used (if any)
+  Int_t fMinPlpContribSPD;  //Minimum of SPD contributors to vertext (used for Pile-Up rejection)
   
   Bool_t fIsPbpOrpPb;       // Pbp/pPb collision or something else?
   Bool_t fUsePhiCut;        // Use cut on phi (useful for TPC)
