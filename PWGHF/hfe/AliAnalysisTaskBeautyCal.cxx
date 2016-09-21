@@ -122,6 +122,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistNsigEop(0),
   fHistEop(0),
   fHistEopHad(0),
+  fHistEopHad2(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -215,6 +216,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistNsigEop(0),
   fHistEop(0),
   fHistEopHad(0),
+  fHistEopHad2(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -400,6 +402,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistEopHad = new TH2F("fHistEopHad", "E/p distribution Hadron;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
   fOutputList->Add(fHistEopHad);
+
+  fHistEopHad2 = new TH2F("fHistEopHad2", "E/p distribution Hadron without shower;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+  fOutputList->Add(fHistEopHad2);
 
   fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
   fOutputList->Add(fHistdEdxEop);
@@ -931,6 +936,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       }
       if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
+      if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
