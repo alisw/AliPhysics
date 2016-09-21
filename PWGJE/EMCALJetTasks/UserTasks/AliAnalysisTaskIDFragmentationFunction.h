@@ -346,7 +346,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_
           SetUEMethods(defaultMethods);
           break;
         default:
-          cout << "Too many Underlying event PID tasks to specify default methods. Please specify them yourselves for each task by giving TString array as third argument in SetNamesOfJetUEPIDtasks!" << endl;
+          std::cout << "Too many Underlying event PID tasks to specify default methods. Please specify them yourselves for each task by giving TString array as third argument in SetNamesOfJetUEPIDtasks!" << std::endl;
           break;
       }
       delete defaultMethods;
@@ -357,7 +357,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_
 
 inline void AliAnalysisTaskIDFragmentationFunction::SetUEMethods(const TString* names) {
   if (fNumJetUEPIDtasks < 1) {
-    cout << "Number of Underlying event PID tasks has to be greater than 0 to set the methods" << endl;
+    std::cout << "Number of Underlying event PID tasks has to be greater than 0 to set the methods" << std::endl;
     return;
   }
   delete [] fUEMethods;
