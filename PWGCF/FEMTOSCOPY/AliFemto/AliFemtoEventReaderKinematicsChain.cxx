@@ -60,7 +60,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fReadPrimariesSecWeakMaterial(false),
   fReadPrimariesSecWeakMaterialV0(false),
   fIsMisalignment(false),
-  fRemoveWeakDecaysInMC(false)
+  fRemoveWeakDecaysInMC(false),
+  fDiscardStatusCodeFlag(false),
+  fDiscardStatusCode(0)
 {
   //constructor with 0 parameters , look at default settings
 }
@@ -82,7 +84,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fReadPrimariesSecWeakMaterial(false),
   fReadPrimariesSecWeakMaterialV0(false),
   fIsMisalignment(false),
-  fRemoveWeakDecaysInMC(false)
+  fRemoveWeakDecaysInMC(false),
+  fDiscardStatusCodeFlag(false),
+  fDiscardStatusCode(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -98,7 +102,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fReadPrimariesSecWeakMaterialV0 = aReader.fReadPrimariesSecWeakMaterialV0;
   fIsMisalignment  = aReader.fIsMisalignment;
   fRemoveWeakDecaysInMC = aReader.fRemoveWeakDecaysInMC;
-
+  fDiscardStatusCodeFlag = aReader.fDiscardStatusCodeFlag;
+  fDiscardStatusCode = aReader.fDiscardStatusCode;
+  
 }
 //__________________
 AliFemtoEventReaderKinematicsChain::~AliFemtoEventReaderKinematicsChain()
@@ -128,6 +134,8 @@ AliFemtoEventReaderKinematicsChain& AliFemtoEventReaderKinematicsChain::operator
   fReadPrimariesSecWeakMaterialV0 = aReader.fReadPrimariesSecWeakMaterialV0;
   fIsMisalignment  = aReader.fIsMisalignment;
   fRemoveWeakDecaysInMC = aReader.fRemoveWeakDecaysInMC;
+  fDiscardStatusCodeFlag = aReader.fDiscardStatusCodeFlag;
+  fDiscardStatusCode = aReader.fDiscardStatusCode;
   return *this;
 }
 //__________________
@@ -443,7 +451,13 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 
       }
-
+      
+      //remove particles with specific status code
+      if(fDiscardStatusCodeFlag)
+	{
+	  if(kinetrack->GetStatusCode() == fDiscardStatusCode) continue;
+	}
+      
       hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
       //cout<<"Track added: "<<i<<endl;
 
@@ -513,6 +527,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       if(kinetrack->GetDaughter(0)<1) continue; //has 1'st daughter
       if(kinetrack->GetDaughter(1)<1) continue;  //has 2'nd daughter
 
+ 
       //we want one positive, one negative particle. Or two neutral.
       // if((fStack->Particle(kinetrack->GetDaughter(0)))->GetPDG()->Charge()>=0)
       // 	if((fStack->Particle(kinetrack->GetDaughter(1)))->GetPDG()->Charge()>0)
@@ -729,4 +744,12 @@ Float_t AliFemtoEventReaderKinematicsChain::GetSigmaToVertex(double *impact, dou
     }
 
 
+}
+
+
+
+void AliFemtoEventReaderKinematicsChain::DiscardStatusCode(bool flag, int code)
+{
+  fDiscardStatusCodeFlag = flag;
+  fDiscardStatusCode = code;
 }
