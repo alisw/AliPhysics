@@ -91,8 +91,10 @@ public:
   
   void    SetClusterLambda0Cuts(Float_t min, Float_t max){ fL0max       = max        ;
                                                            fL0min       = min        ; }
-  void    SetClusterLambda0CutsForBkgShapeStudy(Float_t min, Float_t max){ fL0Bkgmax       = max        ;
-    fL0Bkgmin       = min        ; }
+  void    SetClusterLambda0CutsForBkgShapeStudy(Float_t min, Float_t max){ fL0Bkgmax       = max        ; fL0Bkgmin       = min        ; }
+    
+  void    SetClusterOpeningAngleCutsForBkgShapeStudy(Float_t opmin, Float_t opmax){ fOpAnglemax       = opmax        ;fOpAnglemin       = opmin        ; }
+    
   void    SetClusterMinNCells(Int_t n)                   { fMinNCells   = n          ; }
   
   void    SetNCellsGroup(Int_t n)                        { fGroupNCells = n          ; }
@@ -256,6 +258,9 @@ private:
   
   Float_t             fL0Bkgmin;            ///<  Minimum cluster L0 for bkg shape study.
   Float_t             fL0Bkgmax;            ///<  Maximum cluster L0 for bkg shape study.
+    
+  Float_t             fOpAnglemin;            ///<  Minimum cluster opening angle for bkg shape study.
+  Float_t             fOpAnglemax;            ///<  Maximum cluster opening angle for bkg shape study.
 
   Float_t             fDTimeCut;         ///<  Maximum difference between time of cluster pairs (ns).
   Float_t             fTimeMax;          ///<  Maximum cluster time (ns).
