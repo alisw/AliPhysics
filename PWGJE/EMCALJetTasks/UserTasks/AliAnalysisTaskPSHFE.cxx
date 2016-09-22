@@ -1845,6 +1845,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     }
 
     TObjArray* trkArr = MakeTrkArr(aod);
+    Bool_t delTrk = kTRUE;
 
     //__________________________End major event stuff_____________________________
 
@@ -2077,11 +2078,15 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     else{
         if(UseNonSignalEvents){
             if(trkArr){
+                delTrk=kFALSE;
                 fPool->UpdatePool(trkArr);
             }
         }else{
             if(tagEvt){
-                fPool->UpdatePool(trkArr);
+                if(trkArr){
+                    delTrk=kFALSE;
+                    fPool->UpdatePool(trkArr);
+                }
             }
         }
     }
@@ -2181,18 +2186,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         }
     }
 
-    if(!fPool){
-        if(UseNonSignalEvents){
-            if(trkArr){
-                delete trkArr;
-            }
-        }else{
-            if(tagEvt){
-                delete trkArr;
-            }
-        }
+    if(trkArr&&delTrk){
+        delete trkArr;
     }
-    
+
+
 
     // NEW HISTO should be filled before this point, as PostData puts the
     // information for this iteration of the UserExec in the container
@@ -2540,7 +2538,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         }
 
         if(PID==1||PID==2||PID==0){continue;}
-        
+
         //candidate 1<pt<2
         if(aodtrack->Pt()>1&&aodtrack->Pt()<2){
 
