@@ -50,6 +50,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
+  void SetSystem(Int_t system){fSystem = system;}
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -63,7 +64,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
 
-  enum {kMaxPtBins=20};
+  enum {kMaxPtBins=20,knVarForSparse=13,knVarForSparseAcc=2,knVarForSparseIP=6};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source); 
@@ -101,8 +102,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
                                      /// 1 for filling ntuple for events through Phi
                                      /// 2 for filling ntuple for events through K0Star
                                      /// 3 for filling all
-                                    
-                                     
+  Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC;                    ///  flag for access to MC
   Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
