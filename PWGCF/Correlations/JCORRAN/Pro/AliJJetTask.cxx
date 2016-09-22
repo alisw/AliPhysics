@@ -39,6 +39,7 @@
 #include "AliAODCaloCluster.h"
 #include "AliESDCaloCluster.h"
 #include "AliVTrack.h"
+#include "AliAODTrack.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliLog.h"
@@ -50,6 +51,7 @@
 #include "AliJMCTrack.h"
 #include "AliJJet.h"
 #include "AliJJetTask.h"
+#include "AliEmcalTrackSelectionAOD.h"
 
 
 ClassImp(AliJJetTask);
@@ -163,20 +165,24 @@ void AliJJetTask::UserCreateOutputObjects()
 //________________________________________________________________________
 Bool_t AliJJetTask::FillHistograms()
 {
-
-  // FIXME : We assume that we have only one of each. be  carefull. This must be fixed later
+  // FIXME : We assume that we have only one of each. be  carefull. This must be fixed later, See for example AliEmcalJetTask.cxx FindJets()
   //== AliJTrack
   //FIXME Search by container name
   AliParticleContainer *tracksCont = GetParticleContainer("tracks");
   if(debug > 0){
     cout << "AliParticleContainer name: " << tracksCont->GetName() << endl;
+    cout << "NParticles(): " << tracksCont->GetNParticles() << endl;
   }
   if( tracksCont ){
     for (int itrack = 0; itrack<tracksCont->GetNParticles(); itrack++){
-      AliVTrack *track = static_cast<AliVTrack*>(tracksCont->GetParticle(itrack));
+      AliAODTrack *track = static_cast<AliAODTrack*>(tracksCont->GetParticle(itrack));
+      if(!track) continue;
       new (fJTracks[itrack]) AliJBaseTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
       AliJBaseTrack * particle = static_cast<AliJBaseTrack*>(fJTracks[itrack]);
       particle->SetLabel(track->GetLabel());
+      if(track->IsHybridGlobalConstrainedGlobal()){
+        particle->SetFlag(1,kTRUE);
+      }
     }     
   }
 
@@ -194,18 +200,13 @@ Bool_t AliJJetTask::FillHistograms()
       AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
       new (fJMCTracks[itrack]) AliJMCTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
       tracks++;
-      if(debug > 0){
-        cout << "Track " << itrack << " Px: " << track->Px() << " Py: " << track->Py() << " Pz: " << track->Pz() << " charge: " << track->Charge() << endl;
-        track->Print();
-        cout << "pT " << track->Pt() << " eta: " << track->Eta() << endl;
-      }
       AliJMCTrack * particle = static_cast<AliJMCTrack*>(fJMCTracks[itrack]);
-      if(track->IsPrimary()){
+      if(track->IsPhysicalPrimary()){
         particle->SetPrimary();
       }
       particle->SetPdgCode(track->GetPdgCode());
-      //cout << "Track label: " << track->GetLabel() << endl;
       particle->SetLabel(track->GetLabel());
+      particle->SetMother(track->GetMother(),track->GetMother());
     }     
     if(debug > 0){
       cout << "Number of accepted tracks: " << tracks << endl;
