@@ -983,12 +983,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
                 
-                //FIXME: ADD REJECTION CUTS HERE//
-                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
-                TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() ){
-                
+                TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
+            
+                //Check 5: Armenteros-Podolanski space cut (for K0Short analysis)
+                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
+                )
+            {
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, lMass, fTreeVariablePt );
             }
