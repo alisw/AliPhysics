@@ -35,8 +35,8 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE)
 {
     // Dummy Constructor - not to be used!
-    //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F("fHisto","", 20,0,100, 400,0,2, 100,0,10);
+    //Main output histogram: Centrality, pt, mass
+    fHisto = new TH3F("fHisto","", 20,0,100, 100,0,10, 400,0,2 );
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -71,7 +71,7 @@ fCutMCPDGCodeAssociation(kTRUE)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -115,7 +115,7 @@ fCutMCPDGCodeAssociation(kTRUE)
     for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-0.1) + ( ( (Double_t) ibound )*lMassDelta );
     
     //Main output histogram: Centrality, mass, transverse momentum: Variable binning
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNMassBins, lMassBins, lNPtBins, lPtBins );
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBins, lMassBins );
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -151,7 +151,7 @@ fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -191,7 +191,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -248,7 +248,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 400,lThisMass-0.1,lThisMass+0.1, 100,0,10);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
     
     return *this;

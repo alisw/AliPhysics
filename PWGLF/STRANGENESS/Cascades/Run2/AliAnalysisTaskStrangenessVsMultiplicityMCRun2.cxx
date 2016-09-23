@@ -1258,7 +1258,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 )
             {
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, lMass, fTreeVariablePt );
+                histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1884,7 +1884,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, lMass, fTreeCascVarPt );
+                histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

@@ -17,8 +17,17 @@ public:
         kAntiLambda= 2
     };
     
+    //Dummy Constructor
     AliV0Result();
+    
+    //Standard Constructor
     AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo = AliV0Result::kK0Short, const char * title = "V0 Result");
+    
+    //Variable-Binning Constructor:
+    // Binning in ( centrality , momentum ) can be chosen and invariant mass is fixed at defaults
+    AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins);
+    
+    //Specific uses
     AliV0Result(AliV0Result *lCopyMe);
     AliV0Result(const AliV0Result& lCopyMe);
     ~AliV0Result();
@@ -87,8 +96,9 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliV0Result, 2)
+    ClassDef(AliV0Result, 3)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
+    // 3 - Variable binning constructor + re-order variables in main output for convenience
 };
 #endif
