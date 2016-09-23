@@ -15,6 +15,11 @@ public:
   AliAnalysisTaskEmcalNeutralJets(const char *name);
   virtual ~AliAnalysisTaskEmcalNeutralJets();
 
+  void SetRequestTrigger(ULong_t triggers, const TString &triggerstring){
+    fTriggerBits = triggers;
+    fTriggerString = triggerstring;
+  }
+
   void SetContainers(const TString &name02, const TString &name04, const TString &nameClusters){
     fNameR02jets = name02;
     fNameR04jets = name04;
