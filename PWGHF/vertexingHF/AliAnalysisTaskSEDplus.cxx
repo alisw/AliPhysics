@@ -80,7 +80,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fRDCutsAnalysis(0),
   fCounter(0),
   fFillNtuple(0),
-  fAODProtection(kTRUE),
+  fAODProtection(1),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
@@ -172,7 +172,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fRDCutsAnalysis(dpluscutsana),
   fCounter(0),
   fFillNtuple(fillNtuple),
-  fAODProtection(kTRUE),
+  fAODProtection(1),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
@@ -805,10 +805,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
   fHistNEvents->Fill(0); // count event
 
-  if(fAODProtection){
+  if(fAODProtection>=0){
     //   Protection against different number of events in the AOD and deltaAOD
     //   In case of discrepancy the event is rejected.
-    if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
       fHistNEvents->Fill(1);
       return;
     }
