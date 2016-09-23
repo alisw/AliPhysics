@@ -18,8 +18,17 @@ public:
         kOmegaPlus  = 3
     };
     
+    //Dummy Constructor
     AliCascadeResult();
+    
+    //Standard Constructor
     AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo = AliCascadeResult::kXiMinus, const char * title = "Cascade Result");
+    
+    //Variable-Binning Constructor:
+    // Binning in ( centrality , momentum ) can be chosen and invariant mass is fixed at defaults 
+    AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins);
+    
+    //Specific uses
     AliCascadeResult(AliCascadeResult *lCopyMe);
     AliCascadeResult(const AliCascadeResult& lCopyMe);
     ~AliCascadeResult();
