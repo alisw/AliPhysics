@@ -75,6 +75,50 @@ fCutMCPDGCodeAssociation(kTRUE)
     fHisto->Sumw2();
 }
 //________________________________________________________________
+AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
+TNamed(name,title),
+fMassHypo(lMassHypo),
+//V0 Cuts
+fCutDCANegToPV(0.1),
+fCutDCAPosToPV(0.1),
+fCutDCAV0Daughters(1.0),
+fCutV0CosPA(0.998),
+fCutV0Radius(5.0),
+//Cascade Cuts
+fCutDCAV0ToPV(0.05),
+fCutV0Mass(0.010),
+fCutDCABachToPV(0.03),
+fCutDCACascDaughters(2.0),
+fCutCascCosPA(0.95),
+fCutCascRadius(0.4),
+//Miscellaneous
+fCutProperLifetime(1000),
+fCutLeastNumberOfClusters(70),
+fCutTPCdEdx(4.0),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCPDGCodeAssociation(kTRUE)
+{
+    // Constructor
+    Double_t lThisMass = 0;
+    if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
+    if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
+    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
+    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    
+    //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
+    const Long_t lNMassBins = 400;
+    
+    Double_t lMassWindow = 0.1 ;
+    Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
+    Double_t lMassBins[lNMassBins];
+    
+    for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-0.1) + ( ( (Double_t) ibound )*lMassDelta );
+    
+    //Main output histogram: Centrality, mass, transverse momentum: Variable binning
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNMassBins, lMassBins, lNPtBins, lPtBins );
+    fHisto->Sumw2();
+}
+//________________________________________________________________
 AliCascadeResult::AliCascadeResult(const AliCascadeResult& lCopyMe)
 : TNamed(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
