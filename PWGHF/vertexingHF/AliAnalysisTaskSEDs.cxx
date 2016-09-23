@@ -69,7 +69,7 @@ fWriteOnlySignal(kFALSE),
 fDoCutVarHistos(kTRUE),
 fUseSelectionBit(kFALSE),
 fFillSparse(kTRUE),
-fAODProtection(kTRUE),
+fAODProtection(1),
 fNPtBins(0),
 fListCuts(0),
 fMassRange(0.8),
@@ -136,7 +136,7 @@ fWriteOnlySignal(kFALSE),
 fDoCutVarHistos(kTRUE),
 fUseSelectionBit(kFALSE),
 fFillSparse(kTRUE),
-fAODProtection(kTRUE),
+fAODProtection(1),
 fNPtBins(0),
 fListCuts(0),
 fMassRange(0.8),
@@ -563,16 +563,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
   fHistNEvents->Fill(0); // all events
-  if(fAODProtection) {
+  if(fAODProtection>=0){
     //   Protection against different number of events in the AOD and deltaAOD
     //   In case of discrepancy the event is rejected.
-    if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
       fHistNEvents->Fill(2);
       return;
     }
-    fHistNEvents->Fill(1);  
+    fHistNEvents->Fill(1);
   }
-  
+
   TClonesArray *array3Prong = 0;
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD

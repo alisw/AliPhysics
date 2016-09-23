@@ -682,20 +682,29 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d, const AliAODEvent
   return retval;
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
+Int_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
   //
   // Check if AOD and deltaAOD files are composed of the same events:
   // mismatches were observed in the merged AODs of LHC15o
-  // an event is rejected if 
-  // - the AOD trees in AliAOD.root and AliAOD.VertexingHF.root have different number of entries
-  // - the titles of the TProcessID objects do not match
+  //
+  // When AOD+deltaAOD are produced from ESD, mismatches can be found looking at:
+  //   - the AOD trees in AliAOD.root and AliAOD.VertexingHF.root have different number of entries
+  //   - the titles of the TProcessID objects do not match
+  // When deltaAOD are produced from AOD, mismatches can be found looking at:
+  //   - the AOD trees in AliAOD.root and AliAOD.VertexingHF.root have different number of entries
+  //
+  // Return values:
+  //   -1: AOD and deltaAOD trees have different number of entries
+  //    0: AOD and deltaAOD trees have same number of entries  +  the titles of the TProcessID objects do not match
+  //    1: AOD and deltaAOD trees have same number of entries  +  the titles of the TProcessID objects match
+  Bool_t okTProcessNames = kTRUE;
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   TTree *treeAOD      = aodHandler->GetTree();
   TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
   if(treeDeltaAOD && treeAOD){
     if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
       printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: Difference in number of entries in main and friend tree, skipping event\n");
-      return kFALSE;
+      return -1;
     }
     TFile *mfile = treeAOD->GetCurrentFile();
     TFile *dfile = treeDeltaAOD->GetCurrentFile();
@@ -715,14 +724,16 @@ Bool_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
 	    TString ptit2=od->GetTitle();
 	    if(ptit2!=ptit){
 	      printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: mismatch in %s: AOD: %s  -- deltaAOD: %s\n",pname.Data(),ptit.Data(),ptit2.Data());
-	      return kFALSE;
+	      okTProcessNames = kFALSE;
 	    }
 	  }
 	}
       }
     }
   }
-  return kTRUE;
+
+  if (okTProcessNames) return 1;
+  else return 0;
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::CheckPtDepCrossedRows(TString rows,Bool_t print) const {
