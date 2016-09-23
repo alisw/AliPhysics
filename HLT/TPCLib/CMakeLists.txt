@@ -168,9 +168,12 @@ set(HDRS ${HDRS}
     AliHLTTPCLog.h
     AliHLTTPCLogging.h
     AliHLTTPCSpacePointData.h
+    AliHLTTPCRawCluster.h
+    AliHLTTPCRawClustersDescriptor.h
     AliHLTTPCDigitData.h
     AliHLTTPCClusterDataFormat.h
     AliHLTTPCClusterMCData.h
+    AliHLTTPCClusterFlagsData.h
     HWCFemulator/AliHLTTPCHWCFDataTypes.h
     tracking-ca/AliHLTTPCCADef.h
     tracking-ca/AliHLTTPCCAMath.h
