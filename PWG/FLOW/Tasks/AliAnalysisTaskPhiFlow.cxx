@@ -359,7 +359,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::EventCut(T* event)
    // Impose event cuts
    if(fDebug > 0) cout << " *** EventCut() *** " << endl;
    if (!event) return kFALSE;
-   if (fSkipEventSelection) return kTRUE;
+//   if (fSkipEventSelection) return kTRUE;
    if (!CheckVertex(event)) return kFALSE;
    if (!CheckCentrality(event)) return kFALSE;
    if(fQA) PlotMultiplcities(event);
@@ -396,7 +396,17 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
 
    AliMultSelection *multSelection = 0x0; 
    multSelection = static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
-   if(multSelection) fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+   if(multSelection) {
+       fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+       if(fCentrality > fCentralityMin && fCentrality < fCentralityMax) {
+           fCentralityPass->Fill(fCentrality);
+           return kTRUE;
+       } else {
+           fCentralityNoPass->Fill(fCentrality);
+           return kFALSE;
+       }
+   }
+
    else  fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodA);
    Double_t cenB(-999);
    // if a second centrality estimator is requited, set it
@@ -540,7 +550,8 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
 {
    // Kaon identification routine, based on multiple detectors and approaches
    if(fDebug > 1) cout << " *** IsKaon() *** " << endl;
-   if(fUsePidResponse) {
+
+/*   if(fUsePidResponse) {
        Double_t prob[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
        fPIDCombined->ComputeProbabilities(track, fPIDResponse, prob);
        if(prob[3] > fPIDConfig[6])  return kTRUE;
@@ -582,6 +593,12 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
    if(fDebug>1) cout << " Bayesian method received track with p_t " << track->Pt() << endl;
    // switch to bayesian PID
    if (PassesTPCbayesianCut(track)) {
+       if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
+       return kTRUE;
+   }*/
+
+   if ((TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2))< 2.) 
+   {
        if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
    }
