@@ -286,6 +286,9 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   tempConfiguration << fDefaultConfiguration;
   fDefaultConfigurationString = tempConfiguration.str();
 
+  //AliInfo(TString::Format("User configuration: %s", fUserConfigurationString.c_str()));
+  //AliInfo(TString::Format("Default configuration: %s", fDefaultConfigurationString.c_str()));
+
   // Note that it is initialized properly so that the analysis can proceed
   fConfigurationInitialized = true;
 }
@@ -350,19 +353,6 @@ void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & 
  */
 void AliEmcalCorrectionTask::InitializeComponents()
 {
-  // YAML Objects cannot be streamed, so we need to reinitialize them here.
-  // They need reinitialize if they are null
-  if (fUserConfiguration.IsNull() == true && fUserConfigurationString != "")
-  {
-    AliInfo("Reinitializing user configuration from string. Expected if running on grid!");
-    fUserConfiguration = YAML::Load(fUserConfigurationString);
-  }
-  if (fDefaultConfiguration.IsNull() == true)
-  {
-    AliInfo("Reinitializing default configuration from string. Expected if running on grid!");
-    fDefaultConfiguration = YAML::Load(fDefaultConfigurationString);
-  }
-
   // Create a function to handle creation and configuration of the all of the created module
   std::vector<std::string> executionOrder;
   RetrieveExecutionOrder(executionOrder);
@@ -500,6 +490,31 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   {
     AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
   }
+
+  // Show the configurations info this is available
+  AliDebug(4, TString::Format("User configuration string: %s", fUserConfigurationString.c_str()));
+  AliDebugStream(4) << "User configuration: " << fUserConfiguration << std::endl;
+  AliDebug(4, TString::Format("Default configuration string: %s", fDefaultConfigurationString.c_str()));
+  AliDebugStream(4) << "Default configuration: " << fDefaultConfiguration << std::endl;
+
+  // YAML Objects cannot be streamed, so we need to reinitialize them here.
+  // They need reinitialize if they are null
+  if (fUserConfiguration.IsNull() == true && fUserConfigurationString != "")
+  {
+    AliInfo("Reinitializing user configuration from string. Expected if running on grid!");
+    fUserConfiguration = YAML::Load(fUserConfigurationString);
+  }
+  if (fDefaultConfiguration.IsNull() == true)
+  {
+    AliInfo("Reinitializing default configuration from string. Expected if running on grid!");
+    fDefaultConfiguration = YAML::Load(fDefaultConfigurationString);
+  }
+
+  // Debug to check that the configuration has been (re)initiailzied has been completed correctly
+  AliDebug(4, TString::Format("(Re)initialized user configuration: %s", fUserConfigurationString.c_str()));
+  AliDebugStream(4) << "(Re)initialized User configuration: " << fUserConfiguration << std::endl;
+  AliDebug(4, TString::Format("(Re)initialized default configuration: %s", fDefaultConfigurationString.c_str()));
+  AliDebugStream(4) << "(Re)initialized Default configuration: " << fDefaultConfiguration << std::endl;
 
   // Retrieve cells name from configruation
   std::string cellsName = "";
