@@ -80,6 +80,8 @@ class AliAODv0;
 #include "AliAODEvent.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
+#include "AliLightV0vertexer.h"
+#include "AliLightCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -135,6 +137,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
 
 //---> Flags controlling Vertexers
         fkRunVertexers    ( kFALSE ),
+        fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
         fTrigType(AliVEvent::kMB),
@@ -274,6 +277,7 @@ fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
+fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -1274,15 +1278,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     if( fkRunVertexers ) {
         lESDevent->ResetCascades();
         lESDevent->ResetV0s();
-
-        AliV0vertexer lV0vtxer;
-        AliCascadeVertexer lCascVtxer;
-
-        lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-        lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-
-        lV0vtxer.Tracks2V0vertices(lESDevent);
-        lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        
+        //Decide between regular and light vertexer (default: light)
+        if ( ! fkUseLightVertexer ){
+            AliV0vertexer lV0vtxer;
+            AliCascadeVertexer lCascVtxer;
+            
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        } else {
+            AliLightV0vertexer lV0vtxer;
+            AliLightCascadeVertexer lCascVtxer;
+            
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        }
     }
 
     //------------------------------------------------
