@@ -49,16 +49,25 @@ AliAnalysisTaskEGAMonitor::~AliAnalysisTaskEGAMonitor() {
 }
 
 void AliAnalysisTaskEGAMonitor::UserCreateOutputObjects(){
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
   fAliAnalysisUtils = new AliAnalysisUtils;
 
   fHistos = new THistManager("EGAhistos");
+  fHistos->CreateTH1("hEventCountEGA", "Number of EGA triggered events", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCountINT7", "Number of INT7 triggered events", 1, 0.5, 1.5);
   std::array<std::string, 5> triggers = {"EG1", "EG2", "DG1", "DG2", "MB"};
   for(const auto &t : triggers){
     fHistos->CreateTH2(Form("hColRowG1%s", t.c_str()), Form("Col-Row distribution of online G1 patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
     fHistos->CreateTH2(Form("hColRowG2%s", t.c_str()), Form("Col-Row distribution of online G2 patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+    fHistos->CreateTH2(Form("hColRowGall%s", t.c_str()), Form("Col-Row distribution of online gamma patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+    fHistos->CreateTH1(Form("hADCRecalcGall%s", t.c_str()), Form("ADC distribution of gamma recalc patches for trigger %s", t.c_str()), 2049, -0.5, 2048.5);
+    fHistos->CreateTH1(Form("hADCRecalcG1%s", t.c_str()), Form("ADC distribution of G1 recalc patches for trigger %s", t.c_str()), 2049, -0.5, 2048.5);
+    fHistos->CreateTH1(Form("hADCRecalcG2%s", t.c_str()), Form("ADC distribution of G2 recalc patches for trigger %s", t.c_str()), 2049, -0.5, 2048.5);
   }
+  for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
-  PostData(1, fHistos->GetListOfHistograms());
+  PostData(1, fOutput);
 }
 
 bool AliAnalysisTaskEGAMonitor::IsEventSelected(){
@@ -75,19 +84,32 @@ bool AliAnalysisTaskEGAMonitor::Run(){
     if(InputEvent()->GetFiredTriggerClasses().Contains("EG2")) triggers.push_back("EG2");
     if(InputEvent()->GetFiredTriggerClasses().Contains("DG1")) triggers.push_back("DG1");
     if(InputEvent()->GetFiredTriggerClasses().Contains("DG2")) triggers.push_back("DG2");
-  } else {
+    fHistos->FillTH1("hEventCountEGA", 1);
+  } else if(fInputHandler->IsEventSelected() & AliVEvent::kINT7){
     triggers.push_back("MB");
+    fHistos->FillTH1("hEventCountINT7", 1);
   }
+  if(!triggers.size()) return false;
 
   if(fUseRecalcPatches){
     for(auto p : *(this->fTriggerPatchInfo)){
       AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
       if(!patch->IsGammaLowRecalc()) continue;
+      for(const auto &t : triggers){
+        fHistos->FillTH2(Form("hColRowGall%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+        fHistos->FillTH1(Form("hADCRecalcGall%s", t.c_str()), patch->GetADCAmp());
+      }
       if(patch->GetADCAmp() > fRecalcLow){
-        for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+        for(const auto &t : triggers){
+          fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+          fHistos->FillTH1(Form("hADCRecalcG2%s", t.c_str()), patch->GetADCAmp());
+        }
       }
       if(patch->GetADCAmp() > fRecalcHigh){
-        for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+        for(const auto &t : triggers){
+          fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+          fHistos->FillTH1(Form("hADCRecalcG1%s", t.c_str()), patch->GetADCAmp());
+        }
       }
     }
   } else {
