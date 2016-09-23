@@ -50,6 +50,8 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliGRPObject.h"
+#include "AliGenEventHeader.h"
+#include "AliHeader.h"
 
 ClassImp(AliT0Digitizer)
 
@@ -201,7 +203,7 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
   Float_t zdetA, zdetC;
   Int_t sumMultCoeff = 100;
   Int_t refpoint=0;
-   
+  const char *genname;
   Int_t ph2Mip = fParam->GetPh2Mip();     
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t delayVertex = fParam->GetTimeDelayTVD();
@@ -243,6 +245,11 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
     AliLoader * pInStartLoader = inRL->GetLoader("T0Loader");
     if (!inRL->GetAliRun()) inRL->LoadgAlice();
     fT0  = (AliT0*)inRL ->GetAliRun()->GetDetector("T0");
+    AliHeader *header = inRL->GetHeader();
+    AliGenEventHeader *genHeader = header->GenEventHeader();
+    genname=genHeader->GetName();
+    TString gen=genHeader->GetName();
+    printf(" generator %s\n", genname);
 
        //read Hits 
     pInStartLoader->LoadHits("READ");//probably it is necessary to load them before
@@ -377,11 +384,11 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
       AliDebug(10,Form("summult mv %i   mult  in chammens %i in ps %f ", 
 		      sumMult, fSumMult, fSumMult*channelWidth));
     }
-
-    fT0->AddDigit(bestATDC,bestCTDC,meanTime,timeDiff,fSumMult, refpoint,
+    if (gen.Contains("EPOSLHC_p-p"))  refpoint = 100;
+    printf("!! refpoint before writing in digits %i\n",refpoint);
+     fT0->AddDigit(bestATDC,bestCTDC,meanTime,timeDiff,fSumMult, refpoint,
 		       ftimeCFD,fADC0,ftimeLED,fADC);
      
-    
       AliDebug(10,Form(" Digits wrote refpoint %i bestATDC %i bestCTDC %i  meanTime %i  timeDiff %i fSumMult %i ",refpoint ,bestATDC,bestCTDC,meanTime,timeDiff,fSumMult ));
     pOutStartLoader->UnloadHits();
   } //input streams loop
