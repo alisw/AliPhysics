@@ -596,16 +596,18 @@ void SetEtaCorrection(AliDielectron *die) {
     fCntrdCorr = new TF2("fCntrdCorr", 
     			 "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*x",
     			 40.0, 90.0, -0.9, +0.9);
-    fCntrdCorr->SetParameters(0.402308, +0.0662174 , -1.56518, -0.451915, +3.54694, +0.442897,  +0.00161659); 
+    fCntrdCorr->SetParameters(0.402308+0.213, +0.0662174 , -1.56518, -0.451915, +3.54694, +0.442897,  +0.00161659); 
         
     // 2-dimensional eta correction for the width of electron sigmas
     //Fit width  pol6 for eta and linear for centrality
     fWdthCorr = new TF2("fWdthCorr", "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6)  + [7]*x", 40.0, 90.0, -0.9, +0.9);
     fWdthCorr->SetParameters(1.03565, -0.0225206, -0.678966, +0.0813398, +1.59697, -0.0679809, -1.13399, -0.00121459); // pol6*linear
-    
+
     // apply corrections
+    //AliDielectronPID::SetCorrVal(0.213);
     die->SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
     die->SetWidthCorrFunction(fWdthCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
+
     //printf(" DATA PID correction loaded!!!\n");
   }
 
