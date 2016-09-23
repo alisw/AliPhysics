@@ -180,7 +180,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t shiftC = GetRecoParam() -> GetLow(311);  
   Float_t shiftAC = GetRecoParam() -> GetLow(312);
   AliDebug(2, Form("Reconstruct(TTree*digitsTree shiftA %f shiftC %f shiftAC %f \n",shiftA, shiftC, shiftAC));
-  
+
   Double32_t besttimeA=9999999;  Double32_t besttimeA_best=0;
   Double32_t besttimeC=9999999;  Double32_t besttimeC_best=0;
   Int_t timeDelayCFD[24]; 
@@ -207,6 +207,14 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetTimeLED(*timeLED);
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
+  Int_t genid =  fDigits->RefPoint();
+  if (genid==100)  {
+    shiftA =  shiftA + 20;
+    shiftC =  shiftC + 40;
+    shiftAC =  shiftAC + 35;
+  }
+  printf("!!!! generator %i shiftA %f shiftC %f shiftAC %f\n", genid, shiftA, shiftC, shiftAC) ;
+ 
   Int_t onlineMean =  fDigits->MeanTime();
   Int_t corridor = GetRecoParam() -> GetCorridor();  
  
