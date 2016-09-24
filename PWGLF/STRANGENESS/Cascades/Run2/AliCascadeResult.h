@@ -58,6 +58,7 @@ public:
     void SetCutProperLifetime        ( Double_t lCut ) { fCutProperLifetime        = lCut; }
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutTPCdEdx               ( Double_t lCut ) { fCutTPCdEdx               = lCut; }
+    void SetCutXiRejection           ( Double_t lCut ) { fCutXiRejection           = lCut; }
     
     //MC specific
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
@@ -84,7 +85,8 @@ public:
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutTPCdEdx () const { return fCutTPCdEdx; }
-
+    Double_t GetCutXiRejection () const { return fCutXiRejection; }
+    
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
 
@@ -116,6 +118,7 @@ private:
     Double_t fCutProperLifetime;
     Double_t fCutLeastNumberOfClusters;
     Double_t fCutTPCdEdx;
+    Double_t fCutXiRejection; //Xi rejection (for omega analysis only!) 
     
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code

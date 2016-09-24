@@ -1406,9 +1406,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Random denial
         Bool_t lKeepCascade = kTRUE;
         if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
-
-        if( fkSaveCascadeTree && lKeepCascade && ( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
-                                   (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ) ) {
+        
+        if( fkSaveCascadeTree && lKeepCascade &&
+           (
+            (//START XI SELECTIONS
+             (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) &&
+             (//dE/dx Pre-selection for Xi, if requested
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 7.0 && fTreeCascVarCharge == -1  ) ) ||
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 7.0 && fTreeCascVarCharge == +1) )
+              )//end dE/dx Pre-selection
+             )//end Xi Selections
+            ||
+            (//START OMEGA SELECTIONS
+             (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) &&
+             (//dE/dx Pre-selection for Xi, if requested
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 7.0 && fTreeCascVarCharge == -1  ) ) ||
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 7.0 && fTreeCascVarCharge == +1) )
+              )//end dE/dx Pre-selection
+             )//end Xi Selections
+            )
+           )
+        {
             fTreeCascade->Fill();
         }
         //------------------------------------------------
@@ -1502,12 +1520,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeCascVarDistOverTotMom*lPDGMass < lCascadeResult->GetCutProperLifetime() &&
                 fTreeCascVarLeastNbrClusters > lCascadeResult->GetCutLeastNumberOfClusters() &&
                 
-                //FIXME: ADD REJECTION CUTS HERE//
-                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
-                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx()
+                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
+                
+                //Check 5: Xi rejection for Omega analysis
+                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus || lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
@@ -1517,7 +1536,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         // End Superlight adaptive output mode
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
+        
     }// end of the Cascade loop (ESD or AOD)
 
     // Post output data.
