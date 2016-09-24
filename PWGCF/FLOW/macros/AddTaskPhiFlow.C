@@ -12,13 +12,13 @@ class AliFlowTrackSimpleCuts;
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analysis methods
-                                       Bool_t SPSUB = kFALSE,
-                                       Bool_t QC = kTRUE,
+                                       Bool_t SPSUB = kTRUE,
+                                       Bool_t QC = kFALSE,
                                        Bool_t EP = kFALSE,
                                        Bool_t EP3sub = kFALSE,
                                        Bool_t VZERO_SP = kTRUE, // use vzero sp method
-                                       Float_t centrMin = 0., // centrality selection
-                                       Float_t centrMax = 90.,
+                                       Float_t centrMin = 20., // centrality selection
+                                       Float_t centrMax = 40.,
                                        Double_t ITSsigma = 0., // pid mode (see task implementation)
                                        Double_t ITSrange = 0.,
                                        Double_t TPCcontrol = 1.,
@@ -141,6 +141,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
        cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
        cutsRP->SetApplyRecentering(kTRUE);
+       cutsRP->SetParamType(AliFlowTrackCuts::kKappaVZERO);
 //       cutsRP->SetUseVZERORing(7, kFALSE);
        SP = kFALSE; // disable other methods
        SPSUB = kTRUE; // calculate sp_qa and sp_qb
