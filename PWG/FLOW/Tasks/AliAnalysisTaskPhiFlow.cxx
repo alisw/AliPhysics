@@ -597,7 +597,7 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        return kTRUE;
    }*/
 
-   if ((TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2))< 2.) 
+   if ((TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2)))< 3.) 
    {
        if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
