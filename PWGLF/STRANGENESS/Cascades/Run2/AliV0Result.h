@@ -74,6 +74,9 @@ public:
     
     TH3F* GetHistogram () { return fHisto; } 
     
+    Bool_t HasSameCuts( AliV0Result *lCompare );
+    void Print();
+    
 private:
     //V0 Selection Criteria
     AliV0Result::EMassHypo fMassHypo; //For determining invariant mass

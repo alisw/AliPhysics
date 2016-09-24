@@ -231,3 +231,61 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
     }
     return (Long64_t) GetHistogram()->GetEntries();
 }
+//________________________________________________________________
+Bool_t AliV0Result::HasSameCuts(AliV0Result *lCompare)
+//Function to compare the cuts contained in this result with another
+//Returns kTRUE if all selection cuts are identical within 1e-6
+//WARNING: Does not check MC association flags
+{
+    Bool_t lReturnValue = kTRUE;
+    
+    if( fMassHypo != lCompare->GetMassHypothesis() ) lReturnValue = kFALSE;
+    
+    //V0 Selection Criteria
+    if( TMath::Abs( fCutDCANegToPV - lCompare->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAPosToPV - lCompare->GetCutDCAPosToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAV0Daughters - lCompare->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0CosPA - lCompare->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0Radius - lCompare->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompare->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompare->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
+    //if( fCutCompetingV0Rejection != lCompare->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
+    if( fCutArmenteros != lCompare->GetCutArmenteros() ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
+
+    return lReturnValue;
+}
+//________________________________________________________________
+void AliV0Result::Print()
+//Function to compare the cuts contained in this result with another
+//Returns kTRUE if all selection cuts are identical within 1e-6
+//WARNING: Does not check MC association flags
+{
+    cout<<"========================================"<<endl;
+    cout<<"    AliV0Result Configuration      "<<endl;
+    cout<<"========================================"<<endl;
+    cout<<" Object Name........: "<<this->GetName()<<endl;
+    if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
+    if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
+    if( fMassHypo == AliV0Result::kAntiLambda   ) cout<<" Mass Hypothesis....: AntiLambda"<<endl;
+    
+    cout<<" DCA Neg to PV......: "<<fCutDCANegToPV<<endl;
+    cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
+    cout<<" DCA V0 Daughters...: "<<fCutDCAV0Daughters<<endl;
+    cout<<" V0 Cos PA..........: "<<fCutV0CosPA<<endl;
+    cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
+    
+    cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
+    cout<<" Nbr Crossed Rows...: "<<fCutLeastNumberOfCrossedRows<<endl;
+    cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
+    cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
+    cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
+    
+    cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
+    cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
+    cout<<" Lambda from Xi.....: "<<fCutMCLambdaFromPrimaryXi<<endl;
+    cout<<"========================================"<<endl;
+    return;
+}

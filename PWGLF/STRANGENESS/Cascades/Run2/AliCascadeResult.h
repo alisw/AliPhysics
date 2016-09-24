@@ -90,6 +90,10 @@ public:
 
     TH3F* GetHistogram () { return fHisto; }
     
+    Bool_t HasSameCuts( AliCascadeResult *lCompare );
+    void Print();
+    
+    
 private:
 
     AliCascadeResult::EMassHypo fMassHypo; //For determining invariant mass

@@ -272,3 +272,71 @@ Long64_t AliCascadeResult::Merge(TCollection *hlist)
     }
     return (Long64_t) GetHistogram()->GetEntries();
 }
+//________________________________________________________________
+Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
+//Function to compare the cuts contained in this result with another
+//Returns kTRUE if all selection cuts are identical within 1e-6
+//WARNING: Does not check MC association flags 
+{
+    Bool_t lReturnValue = kTRUE;
+    
+    if( fMassHypo != lCompare->GetMassHypothesis() ) lReturnValue = kFALSE;
+    
+    //V0 Selection Criteria
+    if( TMath::Abs( fCutDCANegToPV - lCompare->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAPosToPV - lCompare->GetCutDCAPosToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAV0Daughters - lCompare->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0CosPA - lCompare->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0Radius - lCompare->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Cascade Selection Criteria
+    if( TMath::Abs( fCutDCAV0ToPV - lCompare->GetCutDCAV0ToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0Mass - lCompare->GetCutV0Mass() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCABachToPV - lCompare->GetCutDCABachToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCACascDaughters - lCompare->GetCutDCACascDaughters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutCascCosPA - lCompare->GetCutCascCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutCascRadius - lCompare->GetCutCascRadius() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfClusters - lCompare->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    return lReturnValue;
+}
+//________________________________________________________________
+void AliCascadeResult::Print()
+//Function to compare the cuts contained in this result with another
+//Returns kTRUE if all selection cuts are identical within 1e-6
+//WARNING: Does not check MC association flags
+{
+    cout<<"========================================"<<endl;
+    cout<<"    AliCascadeResult Configuration      "<<endl;
+    cout<<"========================================"<<endl;
+    cout<<" Object Name........: "<<this->GetName()<<endl;
+    if( fMassHypo == AliCascadeResult::kXiMinus      ) cout<<" Mass Hypothesis....: XiMinus"<<endl;
+    if( fMassHypo == AliCascadeResult::kXiPlus       ) cout<<" Mass Hypothesis....: XiPlus"<<endl;
+    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) cout<<" Mass Hypothesis....: OmegaMinus"<<endl;
+    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) cout<<" Mass Hypothesis....: OmegaPlus"<<endl;
+    
+    cout<<" DCA Neg to PV......: "<<fCutDCANegToPV<<endl;
+    cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
+    cout<<" DCA V0 Daughters...: "<<fCutDCAV0Daughters<<endl;
+    cout<<" V0 Cos PA..........: "<<fCutV0CosPA<<endl;
+    cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
+    
+    cout<<" DCA V0 to PV.......: "<<fCutDCAV0ToPV<<endl;
+    cout<<" V0 Mass............: "<<fCutV0Mass<<endl;
+    cout<<" DCA Bach to PV.....: "<<fCutDCABachToPV<<endl;
+    cout<<" DCA Casc Daughters.: "<<fCutDCACascDaughters<<endl;
+    cout<<" Casc Cos PA........: "<<fCutCascCosPA<<endl;
+    cout<<" Casc 2D Radius.....: "<<fCutCascRadius<<endl;
+    
+    cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
+    cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
+    cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
+    
+    cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
+    cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
+    cout<<"========================================"<<endl;
+    return;
+}
