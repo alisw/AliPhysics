@@ -28,7 +28,6 @@ class AliGenLightNuclei: public AliGenCocktail
 	void SetNucleusPdgCode(Int_t pdg) { fPdg = pdg; }
 	
 	void SetCoalescenceMomentum(Double_t p0) { fP0 = p0; }
-	void SetSpinProbability(Double_t s) { fSpinProb = s; }
 	
 	enum {   kDeuteron    = 1000010020 // pn
 	       , kLambdaN     = 1010000020 // ln
@@ -63,9 +62,8 @@ class AliGenLightNuclei: public AliGenCocktail
 	
 	Int_t fPdg;          // nucleus PDG code
 	Double_t fP0;        // coalescence momentum
-	Double_t fSpinProb;  // probability of cluster formation due to nucleus spin
 	
-	ClassDef(AliGenLightNuclei, 5)
+	ClassDef(AliGenLightNuclei, 6)
 };
 
 #endif // ALIGENLIGHTNUCLEI_H

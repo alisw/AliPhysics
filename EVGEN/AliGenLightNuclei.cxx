@@ -33,7 +33,6 @@
 //    gener->AddGenerator(pythia, "PYTHIA", 1);
 //    gener->SetNucleusPdgCode(AliGenLightNuclei::kDeuteron); // default
 //    gener->SetCoalescenceMomentum(0.100); // default (GeV/c)
-//    gener->SetSpinProbability(0.75); // default: 1
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -61,7 +60,6 @@ AliGenLightNuclei::AliGenLightNuclei()
 :AliGenCocktail()
 ,fPdg(kDeuteron)
 ,fP0(0.100)
-,fSpinProb(1)
 {
 //
 // default constructor
@@ -214,7 +212,7 @@ Bool_t AliGenLightNuclei::Coalescence(const TLorentzVector& p1, const TLorentzVe
 	p1cm.Boost(b);
 	p2cm.Boost(b);
 	
-	return (p1cm.Vect().Mag() < fP0) && (p2cm.Vect().Mag() < fP0) && (Rndm() <= fSpinProb);
+	return (p1cm.Vect().Mag() < fP0) && (p2cm.Vect().Mag() < fP0);
 }
 
 Bool_t AliGenLightNuclei::Coalescence(const TLorentzVector& p1, const TLorentzVector& p2, const TLorentzVector& p3) const
@@ -233,7 +231,7 @@ Bool_t AliGenLightNuclei::Coalescence(const TLorentzVector& p1, const TLorentzVe
 	p2cm.Boost(b);
 	p3cm.Boost(b);
 	
-	return (p1cm.Vect().Mag() < fP0) && (p2cm.Vect().Mag() < fP0) && (p3cm.Vect().Mag() < fP0) && (Rndm() <= fSpinProb);
+	return (p1cm.Vect().Mag() < fP0) && (p2cm.Vect().Mag() < fP0) && (p3cm.Vect().Mag() < fP0);
 }
 
 Bool_t AliGenLightNuclei::Coalescence(const TLorentzVector& p1, const TLorentzVector& p2, const TLorentzVector& p3, const TLorentzVector& p4) const
@@ -254,7 +252,7 @@ Bool_t AliGenLightNuclei::Coalescence(const TLorentzVector& p1, const TLorentzVe
 	p3cm.Boost(b);
 	p4cm.Boost(b);
 	
-	return (p1cm.Vect().Mag() < fP0) && (p2cm.Vect().Mag() < fP0) && (p3cm.Vect().Mag() < fP0) && (p4cm.Vect().Mag() < fP0) && (Rndm() <= fSpinProb);
+	return (p1cm.Vect().Mag() < fP0) && (p2cm.Vect().Mag() < fP0) && (p3cm.Vect().Mag() < fP0) && (p4cm.Vect().Mag() < fP0);
 }
 
 Int_t AliGenLightNuclei::GenerateNuclei(Int_t pdg, Double_t mass, const TList* l1, const TList* l2)
