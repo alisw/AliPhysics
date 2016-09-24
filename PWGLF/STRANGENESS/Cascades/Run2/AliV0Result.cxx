@@ -65,6 +65,7 @@ fCutMCPDGCodeAssociation(kTRUE)
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
+TNamed(name,title),
 fMassHypo(lMassHypo),
 fCutV0Radius(5.0),
 fCutDCANegToPV(0.1),
