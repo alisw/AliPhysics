@@ -31,6 +31,7 @@ fCutCascRadius(0.4),
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
+fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE)
 {
@@ -60,6 +61,7 @@ fCutCascRadius(0.4),
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
+fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE)
 {
@@ -95,6 +97,7 @@ fCutCascRadius(0.4),
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
+fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE)
 {
@@ -139,6 +142,7 @@ fCutCascRadius(lCopyMe.fCutCascRadius),
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
+fCutXiRejection(0.008),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
@@ -178,6 +182,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
     fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
+    fCutXiRejection = lCopyMe->GetCutXiRejection();
     
     //MC specific
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
@@ -231,6 +236,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
     fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
+    fCutXiRejection = lCopyMe.GetCutXiRejection();
     
     //MC specific
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
@@ -300,6 +306,7 @@ Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
     if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutLeastNumberOfClusters - lCompare->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutXiRejection - lCompare->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }
@@ -334,6 +341,7 @@ void AliCascadeResult::Print()
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
+    cout<<" Xi Rej (for Omega).: "<<fCutXiRejection<<endl;
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;

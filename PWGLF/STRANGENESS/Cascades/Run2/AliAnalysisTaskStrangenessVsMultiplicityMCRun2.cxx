@@ -1891,12 +1891,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( ! (lCascadeResult->GetCutMCPhysicalPrimary())    || fTreeCascVarIsPhysicalPrimary == kTRUE ) &&
                 ( ! (lCascadeResult->GetCutMCPDGCodeAssociation()) || fTreeCascVarPID == lPDGCode            ) &&
                 
-                //FIXME: ADD REJECTION CUTS HERE//
-                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
-                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx()
+                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
+                
+                //Check 5: Xi rejection for Omega analysis
+                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus || lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
