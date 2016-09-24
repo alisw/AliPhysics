@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 2009-2015, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2009-2016, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -23,16 +23,22 @@
 //
 // Sample code for PYTHIA:
 //
-//    AliGenLightNuclei* gener = new AliGenLightNuclei();
+//    AliGenCocktail* gener = new AliGenCocktail();
 //
 //    AliGenPythia* pythia = new AliGenPythia(-1);
 //    pythia->SetCollisionSystem("p+", "p+");
 //    pythia->SetEnergyCMS(7000);
 //
-//    gener->UsePerEventRates();
+//    AliGenLightNuclei* aft = new AliGenLightNuclei();
+//    aft->SetNucleusPdgCode(AliGenLightNuclei::kDeuteron); // default
+//    aft->SetCoalescenceMomentum(0.100); // default (GeV/c)
+//    
 //    gener->AddGenerator(pythia, "PYTHIA", 1);
-//    gener->SetNucleusPdgCode(AliGenLightNuclei::kDeuteron); // default
-//    gener->SetCoalescenceMomentum(0.100); // default (GeV/c)
+//    gener->AddGenerator(aft, "deuteron", 1);
+//
+// Notice that the order in which the afterburner is added is
+// important and more than one afterburner can be added
+// to generate different nucleus species.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -57,7 +63,7 @@
 ClassImp(AliGenLightNuclei)
 
 AliGenLightNuclei::AliGenLightNuclei()
-:AliGenCocktail()
+:AliGenerator()
 ,fPdg(kDeuteron)
 ,fP0(0.100)
 {
@@ -76,12 +82,17 @@ AliGenLightNuclei::~AliGenLightNuclei()
 void AliGenLightNuclei::Generate()
 {
 //
-// delegate the particle generation to the cocktail
-// and modify the stack adding the light nuclei
+// modify current stack adding light nuclei
 //
-	AliGenCocktail::Generate();
+	if(fStack == 0)
+	{
+		  AliRunLoader* rl = AliRunLoader::Instance();
+		  if(rl != 0)  fStack = rl->Stack();
+	}
 	
-	// find the nucleons and anti-nucleons
+	if(fStack == 0) AliFatal("no stack");
+	
+	// find nucleons and anti-nucleons
 	TList* protons      = new TList();
 	TList* neutrons     = new TList();
 	TList* lambdas      = new TList();

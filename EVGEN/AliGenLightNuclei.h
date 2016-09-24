@@ -1,26 +1,28 @@
 #ifndef ALIGENLIGHTNUCLEI_H
 #define ALIGENLIGHTNUCLEI_H
 
-/* Copyright(c) 2009-2015, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2009-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 // afterburner to generate light nuclei
 // Author: Eulogio Serradilla <eulogio.serradilla@cern.h>
 
-#include "AliGenCocktail.h"
+#include "AliGenerator.h"
 
 class TParticle;
 class AliStack;
 class TLorentzVector;
 
-class AliGenLightNuclei: public AliGenCocktail
+class AliGenLightNuclei: public AliGenerator
 {
 
  public:
 
 	AliGenLightNuclei();
+	AliGenLightNuclei(Int_t pdg, Double_t p0) { fPdg = pdg; fP0 = p0; }
+	
 	virtual ~AliGenLightNuclei();
-
+	
 	virtual void Generate();
 	
 	Double_t GetCoalescenceMomentum() const { return fP0; }
@@ -63,7 +65,7 @@ class AliGenLightNuclei: public AliGenCocktail
 	Int_t fPdg;          // nucleus PDG code
 	Double_t fP0;        // coalescence momentum
 	
-	ClassDef(AliGenLightNuclei, 6)
+	ClassDef(AliGenLightNuclei, 7)
 };
 
 #endif // ALIGENLIGHTNUCLEI_H
