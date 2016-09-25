@@ -125,9 +125,10 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 3)
+    ClassDef(AliCascadeResult, 4)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
+    // 4 - Xi rejection added
 };
 #endif
