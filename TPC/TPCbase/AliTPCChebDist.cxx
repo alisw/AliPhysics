@@ -81,11 +81,11 @@ void AliTPCChebDist::Eval(int sector, float x, float y2x, float z, float *distor
   if (!fCacheValid) chpar->Eval(ixLow  , tz, fCacheDistLow);
   if (ixLow<fNRows-1) {
     if (!fCacheValid) chpar->Eval(ixLow+1, tz, fCacheDistUp);
-    for (int i=4;i--;) distortion[i] = scl*(fCacheDistUp[i]-fCacheDistLow[i]); // linear interpolation
+    for (int i=4;i--;) distortion[i] = fCacheDistLow[i]+scl*(fCacheDistUp[i]-fCacheDistLow[i]); // linear interpolation
   }
   else { // we are at the last slice, extrapolate
     if (!fCacheValid) chpar->Eval(ixLow-1, tz, fCacheDistUp);
-    for (int i=4;i--;) distortion[i] = scl*(fCacheDistLow[i]-fCacheDistUp[i]); // linear extrapolation   
+    for (int i=4;i--;) distortion[i] = fCacheDistLow[i]+scl*(fCacheDistLow[i]-fCacheDistUp[i]); // linear extrapolation   
   }
   //
   if (!fCacheValid) { // memorize
