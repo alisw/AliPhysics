@@ -35,6 +35,7 @@ class AliTPCChebDist : public AliTPCChebCorr
   //
   virtual  Bool_t   IsCorrection()               const {return kFALSE;}
   virtual  Bool_t   IsDistortion()               const {return kTRUE;}
+  virtual  void     Init();
   //
   Int_t    X2Slice(float x) const;
   Float_t  Slice2X(int ix)  const;
@@ -50,6 +51,14 @@ class AliTPCChebDist : public AliTPCChebCorr
   static Float_t fgRMaxTPC;                             // def. max radius
   static Int_t   fgNSlices;                             // def. number of slices in X
  private:
+  mutable Bool_t  fCacheValid;                                  //! flag cache validity
+  mutable Float_t fCacheDistLow[4];                             //! cache value
+  mutable Float_t fCacheDistUp[4];                              //! cache value
+  mutable Float_t fCacheY2X;                                    //! cache value
+  mutable Float_t fCacheZ2X;                                    //! cache value
+  mutable Int_t   fCacheSector;                                 //! cache value
+  mutable Int_t   fCacheIXLow;                                  //! cache value
+  //
   AliTPCChebDist(const AliTPCChebDist& src);            // dummy
   AliTPCChebDist& operator=(const AliTPCChebDist& rhs); // dummy
   //
