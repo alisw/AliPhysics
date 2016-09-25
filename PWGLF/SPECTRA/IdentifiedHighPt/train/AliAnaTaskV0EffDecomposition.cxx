@@ -15,7 +15,10 @@
  * 14 Sep 2016: 
                a) adding a weight to the ghost V0 and tracks -> solving the track pair efficiency issue, but need to add TPCrefit later to get rid of ghost tracks (for now just subtract them)
 	       b) clean-up and change hard coded values (generalize)
-	           
+ * 23 Sep 2016: 
+               a) finer pt binning
+               b) pt window in cut distributions
+	  
 
 //to run locally:
 aliroot
@@ -34,7 +37,7 @@ runAAF(2, "local aod PbPb MC", "test_aod_mc.txt", 4)
 
 //#include <bitset>
 //#include <TTree.h>
-//#include <TMath.h>
+//#include <TMath.h> 
 //#include <TParticle.h>
 //#include <TFile.h>
 //#include <AliAnalysisFilter.h>
@@ -97,6 +100,7 @@ fLowPtFraction(0.01),
   hV0Ghost(0x0),
   hTrackGhost(0x0),
   hV0ButNoTracks(0x0),
+  hCentr(0x0),            
   hCt(0x0),            
   hDCAdaugh(0x0),
   hDecayR(0x0),
@@ -106,7 +110,17 @@ fLowPtFraction(0.01),
   hChi2perNDF(0x0),
   hPdca(0x0),
   hNdca(0x0),
-  hDcaV0(0x0)
+  hDcaV0(0x0),
+  hCtHigh(0x0),            
+  hDCAdaughHigh(0x0),
+  hDecayRHigh(0x0),
+  hCosPAHigh(0x0),
+  hInvMassHigh(0x0),
+  hNclHigh(0x0),
+  hChi2perNDFHigh(0x0),
+  hPdcaHigh(0x0),
+  hNdcaHigh(0x0),
+  hDcaV0High(0x0)
 {
   // Default constructor (should not be used)
 }
@@ -147,6 +161,7 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition(const char *name):
   hTrackGhost(0x0),
   hV0ButNoTracks(0x0),
   hCt(0x0),            
+  hCentr(0x0),            
   hDCAdaugh(0x0),
   hDecayR(0x0),
   hCosPA(0x0),
@@ -155,7 +170,17 @@ AliAnaTaskV0EffDecomposition::AliAnaTaskV0EffDecomposition(const char *name):
   hChi2perNDF(0x0),
   hPdca(0x0),
   hNdca(0x0),
-  hDcaV0(0x0)
+  hDcaV0(0x0),
+ hCtHigh(0x0),            
+  hDCAdaughHigh(0x0),
+  hDecayRHigh(0x0),
+  hCosPAHigh(0x0),
+  hInvMassHigh(0x0),
+  hNclHigh(0x0),
+  hChi2perNDFHigh(0x0),
+  hPdcaHigh(0x0),
+  hNdcaHigh(0x0),
+  hDcaV0High(0x0)
 {
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
@@ -182,30 +207,32 @@ void AliAnaTaskV0EffDecomposition::UserCreateOutputObjects()
   //
   // Histograms
   //  
-  hV0Gen = new TH1D("hV0Gen", "Number of generated V0s; p_{T} [GeV/c]; Counts", 
-		    40, 0, 20);
+
+  const Int_t nPtBins = 37;
+  Double_t ptBins[nPtBins+1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10.0, 14.0};
+ 
+  hV0Gen = new TH1D("hV0Gen", "Number of generated V0s; p_{T} [GeV/c]; Counts", nPtBins, ptBins);
   fListOfObjects->Add(hV0Gen);
 
-  hV0Rec = new TH1D("hV0Rec", "Number of reconstructed V0s; p_{T} [GeV/c]; Counts", 
-		    40, 0, 20);
+  hV0Rec = new TH1D("hV0Rec", "Number of reconstructed V0s; p_{T} [GeV/c]; Counts", nPtBins, ptBins);
   fListOfObjects->Add(hV0Rec);
 
-  hDaughterRec = new TH1D("hDaughterRec", "Number of reconstructed track pairs; V0 p_{T} [GeV/c]; Counts", 
-		       40, 0, 20);
+  hDaughterRec = new TH1D("hDaughterRec", "Number of reconstructed track pairs; V0 p_{T} [GeV/c]; Counts", nPtBins, ptBins);
   fListOfObjects->Add(hDaughterRec);
 
-  hV0Ghost = new TH1D("hV0Ghost", "Number of reconstructed V0 ghosts; V0 p_{T} [GeV/c]; Counts", 
-		      40, 0, 20);
+  hV0Ghost = new TH1D("hV0Ghost", "Number of reconstructed V0 ghosts; V0 p_{T} [GeV/c]; Counts", nPtBins, ptBins);
   fListOfObjects->Add(hV0Ghost);
 
-  hTrackGhost = new TH1D("hTrackGhost", "Number of reconstructed track pair ghosts; V0 p_{T} [GeV/c]; Counts", 
-			 40, 0, 20);
+  hTrackGhost = new TH1D("hTrackGhost", "Number of reconstructed track pair ghosts; V0 p_{T} [GeV/c]; Counts", nPtBins, ptBins);
   fListOfObjects->Add(hTrackGhost);
 
-  hV0ButNoTracks = new TH1D("hV0ButNoTracks", "Strange V0s: V0 rec but no daughter tracks; V0 p_{T} [GeV/c]; Counts", 
-			 40, 0, 20);
+  hV0ButNoTracks = new TH1D("hV0ButNoTracks", "Strange V0s: V0 rec but no daughter tracks; V0 p_{T} [GeV/c]; Counts", nPtBins, ptBins);
   fListOfObjects->Add(hV0ButNoTracks);
   
+  hCentr = new TH1D("hCentr", "Centrality distribution", 110, 0, 11);
+  fListOfObjects->Add(hCentr);
+
+
   hCt = new TH1D("hCt", "DCA to primary vertex; DCA [cm]; Counts", 300, 0, 50);
   fListOfObjects->Add(hCt);
 
@@ -235,6 +262,40 @@ void AliAnaTaskV0EffDecomposition::UserCreateOutputObjects()
 
   hDcaV0 = new TH1D("hDcaV0", "DCA of V0 to primary vertex; DCA_{V0-PV}; Counts", 1000, 0., 10);
   fListOfObjects->Add(hDcaV0);
+
+
+   
+
+  hCtHigh = new TH1D("hCtHigh", "DCA to primary vertex; DCA [cm]; Counts", 300, 0, 50);
+  fListOfObjects->Add(hCtHigh);
+
+  hDCAdaughHigh = new TH1D("hDCAdaughHigh", "DCA between daughters; DCA_{d-d} [cm]; Counts", 200, 0, 2);
+  fListOfObjects->Add(hDCAdaughHigh);
+
+  hDecayRHigh = new TH1D("hDecayRHigh", "V0 decay radius; Decay radius [cm]; Counts", 240, 0, 120);
+  fListOfObjects->Add(hDecayRHigh);
+
+  hCosPAHigh = new TH1D("hCosPAHigh", "Cosine of pointing angle; cos(PA); Counts", 600, 0.998, 1);
+  fListOfObjects->Add(hCosPAHigh);
+
+  hInvMassHigh = new TH1D("hInvMassHigh", "Inv Mass; inv mass (GeV/c2); Counts", 600, -0.3, 0.3);
+  fListOfObjects->Add(hInvMassHigh);
+
+  hNclHigh = new TH1D("hNclHigh", "Number of TPC clusters; ncl; Counts", 170, 0, 170);
+  fListOfObjects->Add(hNclHigh);
+
+  hChi2perNDFHigh = new TH1D("hChi2perNDFHigh", "Chi2 per NDF; Chi2; Counts", 100, 0, 100);
+  fListOfObjects->Add(hChi2perNDFHigh);
+
+  hPdcaHigh = new TH1D("hPdcaHigh", "DCA of positive daughter to primary vertex; DCA_{pd-PV}; Counts", 1000, 0., 100);
+  fListOfObjects->Add(hPdcaHigh);
+
+  hNdcaHigh = new TH1D("hNdcaHigh", "DCA of negative daughter to primary vertex; DCA_{nd-PV}; Counts", 1000, 0., 100);
+  fListOfObjects->Add(hNdcaHigh);
+
+  hDcaV0High = new TH1D("hDcaV0High", "DCA of V0 to primary vertex; DCA_{V0-PV}; Counts", 1000, 0., 10);
+  fListOfObjects->Add(hDcaV0High);
+
 
 
   // Post output data.
@@ -287,6 +348,8 @@ void AliAnaTaskV0EffDecomposition::UserExec(Option_t *)
 	    centrality = centObject->GetCentralityPercentile("V0M"); 
 	  if((centrality < fMaxCent) && (centrality>=fMinCent)) {
 	    
+	    hCentr->Fill(centrality);
+
 	    // as we focus here on Pb-Pb data I decide that the simplest would be
 	    // to demand that all 3 are ok before going on
 	    
@@ -322,6 +385,14 @@ void AliAnaTaskV0EffDecomposition::ProcessMCTruthAOD()
     AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
     // We will use the Generator Index as a counter to see what we reconstruct
     trackMC->SetGeneratorIndex(0);
+
+ 
+    // TString genname;
+    // Bool_t yesno=fMCArray->GetCocktailGenerator(iTracks, genname);
+    // if(yesno) {
+    //   if(!genname.Contains("Hijing")) continue;
+    // }
+    
 
     Int_t pdgCode = trackMC->PdgCode();
     if(pdgCode != fPdgV0)
@@ -390,19 +461,34 @@ void AliAnaTaskV0EffDecomposition::AnalyzeV0AOD() {
 
     Double_t ct = ((aodV0->DecayLength(myBestPrimaryVertex))*(1.115683))/aodV0->P();
 
-    hDecayR->Fill(aodV0->RadiusV0());           
-    hCosPA->Fill(aodV0->CosPointingAngle(myBestPrimaryVertex));
-    hCt->Fill(ct);     
-    hDCAdaugh->Fill(aodV0->DcaV0Daughters());   
-    hInvMass->Fill(aodV0->MassLambda()-1.116);
-    hPdca->Fill(aodV0->DcaPosToPrimVertex());
-    hNdca->Fill(aodV0->DcaNegToPrimVertex());
-    hDcaV0->Fill(aodV0->DcaV0ToPrimVertex());
- 
+
+    if(aodV0->Pt()>1.0 && aodV0->Pt()<1.3){
+      hDecayR->Fill(aodV0->RadiusV0());           
+      hCosPA->Fill(aodV0->CosPointingAngle(myBestPrimaryVertex));
+      hCt->Fill(ct);     
+      hDCAdaugh->Fill(aodV0->DcaV0Daughters());   
+      hInvMass->Fill(aodV0->MassLambda()-1.116);
+      hPdca->Fill(aodV0->DcaPosToPrimVertex());
+      hNdca->Fill(aodV0->DcaNegToPrimVertex());
+      hDcaV0->Fill(aodV0->DcaV0ToPrimVertex());
+    }
+
+    if(aodV0->Pt()>4.5 && aodV0->Pt()<6.5){
+      hDecayRHigh->Fill(aodV0->RadiusV0());           
+      hCosPAHigh->Fill(aodV0->CosPointingAngle(myBestPrimaryVertex));
+      hCtHigh->Fill(ct);     
+      hDCAdaughHigh->Fill(aodV0->DcaV0Daughters());   
+      hInvMassHigh->Fill(aodV0->MassLambda()-1.116);
+      hPdcaHigh->Fill(aodV0->DcaPosToPrimVertex());
+      hNdcaHigh->Fill(aodV0->DcaNegToPrimVertex());
+      hDcaV0High->Fill(aodV0->DcaV0ToPrimVertex());
+    }
+
+
  
   if(TMath::Abs(aodV0->Eta())>fEtaCut)continue;
     if(aodV0->RadiusV0()<fDecayRmin || aodV0->RadiusV0()>fDecayRmax)continue;
-    if(TMath::Abs(aodV0->MassLambda()-1.115683)>fMassCut)continue;
+    // if(TMath::Abs(aodV0->MassLambda()-1.115683)>fMassCut)continue;
     if(aodV0->CosPointingAngle(myBestPrimaryVertex)<fCospt)continue;
     if(aodV0->DcaV0Daughters()>fDcaDaugh)continue;
     if(ct>fCt*7.89)continue;
@@ -483,20 +569,28 @@ AliAODMCParticle* AliAnaTaskV0EffDecomposition::ValidateTrack(AliAODTrack* track
   //   return 0;
   // }
 
-  hNcl->Fill(track->Chi2perNDF());
-  hChi2perNDF->Fill(track->GetTPCNcls());
 
- //standard primary track cuts:
+ if(track->Pt()>1.0 && track->Pt()<1.3){
+    hNcl->Fill(track->GetTPCNcls());
+    hChi2perNDF->Fill(track->Chi2perNDF());
+  }
+
+  if(track->Pt()>4.5 && track->Pt()<6.5){
+    hNclHigh->Fill(track->GetTPCNcls());
+    hChi2perNDFHigh->Fill(track->Chi2perNDF());
+  }
+  
+  //standard primary track cuts:
   if(track->GetTPCNcls()<fNcl){return 0;}
   if(track->Chi2perNDF()>fChi2perNDF){return 0;}
- 
-
+  
   // track->SetMinNClustersTPC(50);
   // track->SetMaxChi2PerClusterTPC(4);
   // track->SetMaxDCAToVertexZ(3.2);
   // track->SetMaxDCAToVertexXY(2.4);
   // track->SetDCAToVertex2D(kTRUE);
   // track->SetAcceptKinkDaughters(kFALSE);  
+
 
 
   const Int_t label = TMath::Abs(track->GetLabel());
@@ -509,6 +603,12 @@ AliAODMCParticle* AliAnaTaskV0EffDecomposition::ValidateTrack(AliAODTrack* track
   if(pdgCode != pdgDaughter)
     return 0;
   
+  // TString genname;
+  // Bool_t yesno=fMCArray->GetCocktailGenerator(label, genname);
+  //   if(yesno) {
+  //     if(!genname.Contains("Hijing")) continue;
+  //   }
+ 
   // mother_steps is the number of steps we have to go backe to find the
   // primary mother. Here we only accept primary V0s so it has to be 1
   Int_t mother_steps = 0;
