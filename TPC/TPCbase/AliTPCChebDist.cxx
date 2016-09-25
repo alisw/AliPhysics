@@ -87,6 +87,8 @@ void AliTPCChebDist::Eval(int sector, float x, float y2x, float z, float *distor
     if (!fCacheValid) chpar->Eval(ixLow-1, tz, fCacheDistUp);
     for (int i=4;i--;) distortion[i] = fCacheDistLow[i]+scl*(fCacheDistLow[i]-fCacheDistUp[i]); // linear extrapolation   
   }
+  // protection against extrapolation of dispersion making it negative
+  if (distortion[3]<1e-3) distortion[3] = 1e-3;
   //
   if (!fCacheValid) { // memorize
     fCacheValid = kTRUE;
