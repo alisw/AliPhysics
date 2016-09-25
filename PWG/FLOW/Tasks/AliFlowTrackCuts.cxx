@@ -2120,6 +2120,8 @@ AliFlowTrack* AliFlowTrackCuts::FillFlowTrack(TObjArray* trackCollection, Int_t 
       return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kKappaVZERO:
       return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kHotfixHI:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kKink:
       return FillFlowTrackKink(trackCollection, trackIndex);
     //case kV0:
@@ -2147,6 +2149,8 @@ Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
     case kDeltaVZERO:
       return FillFlowTrackGeneric(track);
     case kKappaVZERO:
+      return FillFlowTrackGeneric(track);
+    case kHotfixHI:
       return FillFlowTrackGeneric(track);
     default:
       return FillFlowTrackVParticle(track);
@@ -2655,6 +2659,8 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
       return fgkNumberOfVZEROtracks;
     case kKappaVZERO:
       return fgkNumberOfVZEROtracks;
+    case kHotfixHI:
+      return fgkNumberOfVZEROtracks;
     case kMUON:                                      // XZhang 20120604
       if (!fEvent) return 0;                         // XZhang 20120604
       esd = dynamic_cast<AliESDEvent*>(fEvent);      // XZhang 20120604
@@ -2727,6 +2733,15 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       }
       return esd->GetVZEROData();
    case kKappaVZERO:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) //contributed by G.Ortona
+      {
+        aod = dynamic_cast<AliAODEvent*>(fEvent);
+        if(!aod)return NULL;
+        return aod->GetVZEROData();
+      }
+      return esd->GetVZEROData();
+   case kHotfixHI:
       esd = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esd) //contributed by G.Ortona
       {
@@ -5027,6 +5042,8 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "DeltaVZERO";
     case kKappaVZERO:
       return "KappaVZERO";
+    case kHotfixHI:
+      return "HotfixHI";
     case kMUON:       // XZhang 20120604
       return "MUON";  // XZhang 20120604
     case kKink:

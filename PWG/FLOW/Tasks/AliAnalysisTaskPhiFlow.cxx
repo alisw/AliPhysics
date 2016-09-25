@@ -48,6 +48,8 @@
 #include "AliAnalysisTaskVnV0.h"
 #include "AliEventPoolManager.h"
 #include "AliMultSelection.h"
+#include "TMatrixDSym.h"
+#include "AliVVertex.h"
 
 class AliFlowTrackCuts;
 
@@ -58,10 +60,10 @@ ClassImp(AliAnalysisTaskPhiFlow)
 ClassImp(AliPhiMesonHelperTrack)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
-   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0)
+   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE)
 {
    // Default constructor
-   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
+   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 3.;
    for(Int_t i(0); i < 5; i++) fDCAConfig[i] = 0.;
    for(Int_t i(0); i < 20; i++) {
        fVertexMixingBins[i] = 0;
@@ -75,10 +77,10 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0)
+   fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE)
 {
    // Constructor
-   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 0.;
+   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 3.;
    for(Int_t i(0); i < 5; i++) fDCAConfig[i] = 0.;
    for(Int_t i(0); i < 20; i++) {
        fVertexMixingBins[i] = 0;
@@ -597,7 +599,9 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        return kTRUE;
    }*/
 
-   if ((TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2)))< 3.) 
+   cout << TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2))<< endl;
+
+   if ((TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2)))< fPIDConfig[0]) 
    {
        if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
@@ -739,7 +743,40 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
    fAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // check for aod data type
    if (fAOD) {
       if (!EventCut(fAOD)) return; // check for event cuts
-      InitializeBayesianPID(fAOD); // init event objects
+
+
+      // add extra pileup cuts for high intensity runs
+      // courtesy of alex dobrin
+      if (fPileUp){
+
+          if (plpMV(fAOD))
+              return;
+	
+          Short_t isPileup = fAOD->IsPileupFromSPD(3);
+          if (isPileup != 0)
+              return;
+	
+          if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0)
+              return;
+	
+          /*
+          Int_t bc2 = ((AliAODHeader*)fAOD->GetHeader())->GetIRInt2ClosestInteractionMap();
+          if (bc2 != 0)
+              return;
+	
+          Int_t bc1 = ((AliAODHeader*)fAOD->GetHeader())->GetIRInt1ClosestInteractionMap();
+          if (bc1 != 0)
+              return;
+           */
+	
+      }
+       
+      //new function for 2015 to remove incomplete events
+      if (fAOD->IsIncompleteDAQ())
+          return;
+
+
+//      InitializeBayesianPID(fAOD); // init event objects
       SetNullCuts(fAOD);
       PrepareFlowEvent(fAOD->GetNumberOfTracks());
       fCandidates->SetLast(-1);
@@ -750,6 +787,7 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
       AliAODTrack* up[unTracks];
       Int_t unp(0);
       Int_t unn(0);
+      if(fDebug > 1) cout << " started with " << unTracks << " of tracks "<< endl;
       for (Int_t iTracks = 0; iTracks < unTracks; iTracks++) { // select analysis candidates
          AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
          if(!track) AliFatal("Not a standard AOD");
@@ -1022,4 +1060,85 @@ void AliAnalysisTaskPhiFlow::IsMC()
       if (isSecondaryMaterial) fDCAMaterial->Fill(track->Pt(), b[0]);
    }
 }
+
+
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskPhiFlow::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+{
+    
+    // calculate sqrt of weighted distance to other vertex
+    if (!v0 || !v1) {
+        printf("One of vertices is not valid\n");
+        return 0;
+    }
+    static TMatrixDSym vVb(3);
+    double dist = -1;
+    double dx = v0->GetX()-v1->GetX();
+    double dy = v0->GetY()-v1->GetY();
+    double dz = v0->GetZ()-v1->GetZ();
+    double cov0[6],cov1[6];
+    v0->GetCovarianceMatrix(cov0);
+    v1->GetCovarianceMatrix(cov1);
+ //
+ // fQxavsV0[0]          fQxnmV0A
+ // fQyavsV0[0]          fQynmV0A
+ // fQxavsV0[1]          fQxnsV0A
+ // fQyavsV0[1]          fQynsV0A
+ // fQxcvsV0[0]          fQxnmV0C
+ // fQycvsV0[0]          fQynmV0C
+ // fQxcvsV0[1]          fQxnsV0C
+ // fQycvsV0[1]          fQynsV0C    vVb(0,0) = cov0[0]+cov1[0];
+    vVb(1,1) = cov0[2]+cov1[2];
+    vVb(2,2) = cov0[5]+cov1[5];
+    vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
+    vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+    vVb.InvertFast();
+    if (!vVb.IsValid()) {printf("Singular Matrix\n"); return dist;}
+    dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+    +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+    return dist>0 ? TMath::Sqrt(dist) : -1;
+    
+}
+
+
+
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::plpMV(const AliAODEvent* aod)
+{
+    // check for multi-vertexer pile-up
+    //
+    const int    kMinPlpContrib = 5;
+    const double kMaxPlpChi2 = 5.0;
+    const double kMinWDist = 15;
+    //
+    const AliVVertex* vtPrm = 0;
+    const AliVVertex* vtPlp = 0;
+    int nPlp = 0;
+    //
+    if ( !(nPlp=aod->GetNumberOfPileupVerticesTracks()) ) return kFALSE;
+    vtPrm = aod->GetPrimaryVertex();
+    if (vtPrm == aod->GetPrimaryVertexSPD()) return kTRUE; // there are pile-up vertices but no primary
+    
+    //int bcPrim = vtPrm->GetBC();
+    //
+    for (int ipl=0;ipl<nPlp;ipl++) {
+        vtPlp = (const AliVVertex*)aod->GetPileupVertexTracks(ipl);
+        //
+        if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
+        if (vtPlp->GetChi2perNDF() > kMaxPlpChi2) continue;
+        //  int bcPlp = vtPlp->GetBC();
+        //  if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other BC
+        //
+        double wDst = GetWDist(vtPrm,vtPlp);
+        if (wDst<kMinWDist) continue;
+        //
+        return kTRUE; // pile-up: well separated vertices
+    }
+    //
+    return kFALSE;
+    //
+}
+
 //_____________________________________________________________________________
