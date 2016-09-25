@@ -40,12 +40,16 @@ class AliTPCChebDist : public AliTPCChebCorr
   Int_t    X2Slice(float x) const;
   Float_t  Slice2X(int ix)  const;
   //
+  Float_t  GetScaleDnDeta2pp13TeV() const  {return fScaleDnDeta2pp13TeV;}
+  Float_t  SetScaleDnDeta2pp13TeV(float v) {fScaleDnDeta2pp13TeV = v;}
+  //
  protected:
   //
   Float_t  fXMin;                                       // min X
   Float_t  fXMax;                                       // max X
   Float_t  fDX;                                         // X step
   Float_t  fDXInv;                                      // inverse of X step
+  Float_t  fScaleDnDeta2pp13TeV;                        // dndeta_current / dndeta_pp@13TeV
   //
   static Float_t fgRMinTPC;                             // def. min radius
   static Float_t fgRMaxTPC;                             // def. max radius
@@ -62,7 +66,7 @@ class AliTPCChebDist : public AliTPCChebCorr
   AliTPCChebDist(const AliTPCChebDist& src);            // dummy
   AliTPCChebDist& operator=(const AliTPCChebDist& rhs); // dummy
   //
-  ClassDef(AliTPCChebDist,1)
+  ClassDef(AliTPCChebDist,2)
 };
 
 //_________________________________________________________________

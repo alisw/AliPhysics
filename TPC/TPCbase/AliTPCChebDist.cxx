@@ -16,6 +16,7 @@
 #include "AliCheb2DStackF.h"
 #include "AliCheb2DStackS.h"
 #include "AliTPCChebDist.h"
+#include "AliLumiTools.h"
 #include "AliLog.h"
 #include <TMath.h>
 
@@ -32,6 +33,7 @@ AliTPCChebDist::AliTPCChebDist()
   ,fXMax(fgRMaxTPC)
   ,fDX(0)
   ,fDXInv(0)
+  ,fScaleDnDeta2pp13TeV(0)
   ,fCacheValid(kFALSE)
   ,fCacheY2X(0),fCacheZ2X(0),fCacheSector(0),fCacheIXLow(0)
 {
@@ -47,6 +49,7 @@ AliTPCChebDist::AliTPCChebDist(const char* name, const char* title,
   ,fXMax(fgRMaxTPC)
   ,fDX(0)
   ,fDXInv(0)
+  ,fScaleDnDeta2pp13TeV(0)
   ,fCacheValid(kFALSE)
   ,fCacheY2X(0),fCacheZ2X(0),fCacheSector(0),fCacheIXLow(0)
 {
@@ -105,5 +108,6 @@ void AliTPCChebDist::Init()
 {
   // mark cach invalid and proceed to initialization
   fCacheValid = kFALSE;
+  //  if (fScaleDnDeta2pp13TeV==0) fScaleDnDeta2pp13TeV = AliLumiTools::GetScaleDnDeta2pp13TeV(GetRun()); // for old objects
   AliTPCChebCorr::Init();
 }

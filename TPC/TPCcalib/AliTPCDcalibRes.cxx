@@ -4270,7 +4270,7 @@ Bool_t AliTPCDcalibRes::InvertCorrection(int sect36,const float vecIn[AliTPCDcal
   // apply distortion (inverse of the correction map cheb) to point vecIn, producing vecOut
   //
   // Do Newton-Raphson inversion: original Cheb.correction Corr implements
-  // \vec[r_corr] = \vec[r_meas] + Corr(\vec[r_meas]), where \vec[r_corr] is corrected coordinat
+  // \vec[r_corr] = \vec[r_meas] + Corr(\vec[r_meas]), where \vec[r_corr] is corrected coordinate
   // of ionization point and \vec[r_meas] is its distorted image in the chamber.
   //
   // Hence we need to find an inverse vector f-n F^-1 of \vec[r_corr] of the vector f-n 
@@ -4501,6 +4501,10 @@ void AliTPCDcalibRes::CreateDistortionObject()
   // register tracks rate for lumi weighting
   fChebDist->SetTracksRate(ExtractTrackRate());
   //
+  // store ratio of dndeta to pp@13TeV
+  float rat2pp = AliLumiTools::GetScaleDnDeta2pp13TeV(fRun);
+  fChebDist->SetScaleDnDeta2pp13TeV(rat2pp);
+
   AliSysInfo::AddStamp("CreateDistortionObject",1,0,0,0);
 }
 

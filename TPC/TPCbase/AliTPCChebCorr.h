@@ -95,7 +95,7 @@ class AliTPCChebCorr : public TNamed
   void     EvalDeriv(int sector, int row, int dimD, float tz[2], float* d2ddim) const;
   Bool_t   IsRowMasked(int sector72,int row)                         const;
   Int_t    GetNMaskedRows(int sector72, TBits* masked=0)             const;
-  void     Init();
+  virtual  void     Init();
   Int_t    GetDimOut() const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
   static const float* GetPadRowX()              {return fgkPadRowX;}
