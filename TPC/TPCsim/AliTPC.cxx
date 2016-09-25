@@ -1610,7 +1610,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
     transform->SetCurrentRecoParam(tpcrecoparam);
     transform->SetCorrectionMapMode(kFALSE); // set distortion mode
     transform->SetCurrentTimeStamp(fLoader->GetRunLoader()->GetHeader()->GetTimeStamp()); // force to upload time dependent maps
-    float strFluct = gRandom->Gaus(); // RSTMP
+    float strFluct = tpcrecoparam->GetDistortionFluctMCAmp() *gRandom->Gaus(); // RSTMP
     AliInfoF("Impose %+.2f fluctuation for distortion map in event %d",strFluct,eventnumber);
     transform->SetCurrentMapFluctStrenght(strFluct);
   }
@@ -2407,7 +2407,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       //-----------------------------------------------
       for(Int_t nel=0;nel<qI;nel++) {
 	// skip if electron lost due to the attachment
-	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
+	// RS: check only case of multiple electrons, case of 1 is already checked
+	if(qI>1 && (gRandom->Rndm(0)) < attProb) continue; // electron lost!
 	// start from primary electron in vicinity of the readout, simulate diffusion
 	for (int idim=3;idim--;) {xyz[idim] = xyzHit[idim]; index[idim] = indexHit[idim];}
 	//
