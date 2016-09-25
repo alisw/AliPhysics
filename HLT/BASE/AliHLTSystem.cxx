@@ -708,9 +708,16 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
       AliHLTTask* pTask=(AliHLTTask*)obj;
       AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
       AliHLTUInt32_t timestamp = 0;
-      AliGRPManager grp;
-      grp.ReadGRPEntry();
-      const AliGRPObject *grpObj = grp.GetGRPData();
+      static bool grpInitialized = false;
+      static const AliGRPObject *grpObj;
+      if (grpInitialized == false)
+      {
+        static AliGRPManager grp;
+        grp.ReadGRPEntry();
+        const AliGRPObject *grpObjTmp = grp.GetGRPData();
+        grpObj = grpObjTmp;
+        grpInitialized = true;
+      }
       if (dt==kAliHLTDataTypeSOR)
       {
         eventType=gkAliEventTypeStartOfRun;
