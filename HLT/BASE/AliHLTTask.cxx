@@ -125,9 +125,16 @@ int AliHLTTask::CreateComponent(AliHLTConfiguration* pConfiguration, AliHLTCompo
 	// currently just set to NULL.
 	iResult=pCH->CreateComponent(pConf->GetComponentID(), pComponent);
 	if (pComponent && iResult>=0) {
-	  AliGRPManager grp;
-	  grp.ReadGRPEntry();
-	  const AliGRPObject *grpObj = grp.GetGRPData();
+	  static bool grpInitialized = false;
+	  static const AliGRPObject *grpObj;
+	  if (grpInitialized == false)
+	  {
+	    static AliGRPManager grp;
+	    grp.ReadGRPEntry();
+	    const AliGRPObject *grpObjTmp = grp.GetGRPData();
+	    grpObj = grpObjTmp;
+	    grpInitialized = true;
+	  }
 	  pComponent->SetTimeStamp(grpObj->GetTimeStart());
 	
 	  TString description;
@@ -166,9 +173,16 @@ int AliHLTTask::Deinit()
   fpComponent=NULL;
   if (pComponent) {
     //HLTDebug("delete component %s (%p)", pComponent->GetComponentID(), pComponent); 
-    AliGRPManager grp;
-    grp.ReadGRPEntry();
-    const AliGRPObject *grpObj = grp.GetGRPData();
+    static bool grpInitialized = false;
+    static const AliGRPObject *grpObj;
+    if (grpInitialized == false)
+    {
+      static AliGRPManager grp;
+      grp.ReadGRPEntry();
+      const AliGRPObject *grpObjTmp = grp.GetGRPData();
+      grpObj = grpObjTmp;
+      grpInitialized = true;
+    }
     pComponent->SetTimeStamp(grpObj->GetTimeEnd());
 
     pComponent->Deinit();
