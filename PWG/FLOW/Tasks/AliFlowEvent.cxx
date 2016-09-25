@@ -922,6 +922,14 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   fDivSigma = poiCuts->GetDivSigma();
  }
 
+ if (sourceRP == AliFlowTrackCuts::kHotfixHI) {
+  SetHotfixVZEROCalibrationForTrackCuts(rpCuts);
+ }
+ if (sourcePOI == AliFlowTrackCuts::kHotfixHI) {
+  SetHotfixVZEROCalibrationForTrackCuts(poiCuts);
+ }
+
+
  if (sourceRP == AliFlowTrackCuts::kVZERO) {
       SetVZEROCalibrationForTrackCuts(rpCuts);
       if(!rpCuts->GetApplyRecentering()) {
@@ -1431,6 +1439,133 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
    } // end of if(n < 4)
   }
  
+
+
+ if(fApplyRecentering == 20152){
+
+
+  Int_t fNHarm = 2;
+  Float_t v0Centr = -1.;
+  Float_t spdCentr = -1.;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+  if( !MultSelection) AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+  else {
+    v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+    spdCentr = MultSelection->GetMultiplicityPercentile("CL1");
+  }
+  Int_t iCentSPD = (Int_t)spdCentr;
+
+
+
+  Short_t centrCode = -10;    
+  if (v0Centr< 5.)
+    centrCode = 0;
+  else if ((v0Centr >= 5.) && (v0Centr < 10.))
+    centrCode = 1;
+  else if ((v0Centr >= 10.) && (v0Centr < 20.))
+    centrCode = 2;
+  else if ((v0Centr >= 20.) && (v0Centr < 30.))
+    centrCode = 3;
+  else if ((v0Centr >= 30.) && (v0Centr < 40.))
+    centrCode = 4;
+  else if ((v0Centr >= 40.) && (v0Centr < 50.))
+    centrCode = 5;
+  else if ((v0Centr >= 50.) && (v0Centr < 60.))
+    centrCode = 6;
+  else if ((v0Centr >= 60.) && (v0Centr < 70.))
+    centrCode = 7;
+  else if ((v0Centr >= 70.) && (v0Centr < 80.))
+    centrCode = 8;
+
+  if (centrCode < 0)
+    return;
+ 
+  // the super lazy way of mapping here to members to only locally defined histos
+  // at first iteration i just want to see if all this works, before spending a lot of time
+  // on making it pretty
+  
+ TH1D* fQxnmV0A = reinterpret_cast<TH1D*>(fQxavsV0[0]);
+ TH1D* fQynmV0A = reinterpret_cast<TH1D*>(fQyavsV0[0]);
+ TH1D* fQxnsV0A = reinterpret_cast<TH1D*>(fQxavsV0[1]);
+ TH1D* fQynsV0A = reinterpret_cast<TH1D*>(fQyavsV0[1]);
+ TH1D* fQxnmV0C = reinterpret_cast<TH1D*>(fQxcvsV0[0]);
+ TH1D* fQynmV0C = reinterpret_cast<TH1D*>(fQycvsV0[0]);
+ TH1D* fQxnsV0C = reinterpret_cast<TH1D*>(fQxcvsV0[1]);
+ TH1D* fQynsV0C = reinterpret_cast<TH1D*>(fQycvsV0[1]);
+ TH1D* fMultV0 = reinterpret_cast<TH1D*>(fQxavsV0[4]);
+
+  //V0 info
+  Double_t Qxan = 0, Qyan = 0;
+  Double_t Qxcn = 0, Qycn = 0;
+  Double_t sumMa = 0, sumMc = 0;
+  
+  AliAODVZERO* aodV0 = static_cast<AliAODVZERO*>(fEvent->GetVZEROData());
+  
+  for (Int_t iV0 = 0; iV0 < 64; iV0++) {
+      Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+      Float_t multv0 = aodV0->GetMultiplicity(iV0);
+      if (iV0 < 32){
+          Double_t multCorC = -10;
+          if (iV0 < 8)
+              multCorC = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(1);
+          else if (iV0 >= 8 && iV0 < 16)
+              multCorC = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(9);
+          else if (iV0 >= 16 && iV0 < 24)
+              multCorC = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(17);
+          else if (iV0 >= 24 && iV0 < 32)
+              multCorC = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(25);
+          
+          if (multCorC < 0)
+              cout<<"Problem with multiplicity in V0C"<<endl;
+          
+          Qxcn += TMath::Cos(fNHarm*phiV0) * multCorC;
+          Qycn += TMath::Sin(fNHarm*phiV0) * multCorC;
+                  
+          sumMc = sumMc + multCorC;
+          
+      } else {
+          
+          Double_t multCorA = -10;
+          
+          if (iV0 >= 32 && iV0 < 40)
+              multCorA = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(33);
+          else if (iV0 >= 40 && iV0 < 48)
+              multCorA = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(41);
+          else if (iV0 >= 48 && iV0 < 56)
+              multCorA = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(49);
+          else if (iV0 >= 56 && iV0 < 64)
+              multCorA = multv0/fMultV0->GetBinContent(iV0+1)*fMultV0->GetBinContent(57);
+          
+          if (multCorA < 0)
+              cout<<"Problem with multiplicity in V0A"<<endl;
+          
+          Qxan += TMath::Cos(fNHarm*phiV0) * multCorA;
+          Qyan += TMath::Sin(fNHarm*phiV0) * multCorA;
+          
+          sumMa = sumMa + multCorA;
+          
+      }
+  }
+  
+  if (sumMa <=0 || sumMc <= 0)
+      return;
+
+  Double_t QxanCor = Qxan;
+  Double_t QyanCor = (Qyan - fQynmV0A->GetBinContent(iCentSPD+1))/fQynsV0A->GetBinContent(iCentSPD+1);
+  Double_t QxcnCor = Qxcn;
+  Double_t QycnCor = (Qycn - fQynmV0C->GetBinContent(iCentSPD+1))/fQynsV0C->GetBinContent(iCentSPD+1);
+  
+  if (fNHarm != 4.){
+      QxanCor = (Qxan - fQxnmV0A->GetBinContent(iCentSPD+1))/fQxnsV0A->GetBinContent(iCentSPD+1);
+      QxcnCor = (Qxcn - fQxnmV0C->GetBinContent(iCentSPD+1))/fQxnsV0C->GetBinContent(iCentSPD+1);
+  }
+
+  vA.Set(QxcnCor, QycnCor);
+  vB.Set(QxanCor, QyanCor);
+ 
+ }
+
  Qarray[0] = vA;
  Qarray[1] = vB;
 }
@@ -2030,6 +2165,226 @@ void AliFlowEvent::SetKappaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) 
  // FIXME as an ugly hack, for now I mark this as 999 to denote the experimental nature
  // of this and use it transparently without disrupting the existing calbiration
  fApplyRecentering = 999;
+}
+
+
+//_____________________________________________________________________________
+void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
+ // implementation of delta vzero calibration for LHC2015o Low Intensity Runs
+
+ fEvent = cuts->GetEvent();
+ if(!fEvent) return; // coverity. we need to know the event to get the runnumber and centrality
+ // get the vzero centrality percentile (cc dependent calibration)
+
+ // if this event is from the same run as the previous event
+ // we can use the cached calibration values, no need to re-open the
+ // aodb file, else cache the new run
+ Int_t run(fEvent->GetRunNumber());
+ if(fCachedRun == run){
+	 return;
+ }else{
+	 fCachedRun = run;
+ }
+
+ Int_t fNHarm = 2; // note: for now I've only mapped the second harmonic, but using the first index 
+                   // it's trivial to add also 3 or 4, on the agenda (first see if this works)
+                   //
+ TFile* foadb = TFile::Open("alien:////alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+ 
+ if(!foadb){
+     printf("OADB V0 calibration file cannot be opened\n");
+     return;
+ }
+ 
+ 
+ // we need to do some mapping because I don't want to add another set of histograms to an already
+ // cluttered class
+ // so, here goes the mapping of the names
+ //
+ // fQxavsV0[0]          fQxnmV0A
+ // fQyavsV0[0]          fQynmV0A
+ // fQxavsV0[1]          fQxnsV0A
+ // fQyavsV0[1]          fQynsV0A
+ // fQxcvsV0[0]          fQxnmV0C
+ // fQycvsV0[0]          fQynmV0C
+ // fQxcvsV0[1]          fQxnsV0C
+ // fQycvsV0[1]          fQynsV0C
+ //
+ // so the rationale: index zero is mean, index 1 is width, the rest is in the name
+ //
+ // the odd one out
+ // fQxavsV0[4] = fMultV0                    
+
+
+
+ AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
+ if(!cont){
+     printf("OADB object hMultV0BefCorr is not available in the file\n");
+     return;
+ }
+ if(!(cont->GetObject(run))){
+     printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", run);
+     return;
+ }
+ fQxavsV0[4] = ((TH1D*) cont->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQxnam = 0;
+ if (fNHarm == 2.)
+     contQxnam = (AliOADBContainer*) foadb->Get("fqxa2m");
+ //else if (fNHarm == 3.)
+ else
+     contQxnam = (AliOADBContainer*) foadb->Get("fqxa3m");
+ 
+ if(!contQxnam){
+     printf("OADB object fqxanm is not available in the file\n");
+     return;
+ }
+ if(!(contQxnam->GetObject(run))){
+     printf("OADB object fqxanm is not available for run %i\n", run);
+     return;
+ }
+ fQxavsV0[0] = ((TH1D*) contQxnam->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQynam = 0;
+ if (fNHarm == 2.)
+    contQynam = (AliOADBContainer*) foadb->Get("fqya2m");
+ else if (fNHarm == 3.)
+     contQynam = (AliOADBContainer*) foadb->Get("fqya3m");
+ else if (fNHarm == 4.)
+     contQynam = (AliOADBContainer*) foadb->Get("fqya4m");
+ 
+ if(!contQynam){
+     printf("OADB object fqyanm is not available in the file\n");
+     return;
+ }
+ if(!(contQynam->GetObject(run))){
+     printf("OADB object fqyanm is not available for run %i\n", run);
+     return;
+ }
+ fQyavsV0[0] = ((TH1D*) contQynam->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQxnas = 0;
+ if (fNHarm == 2.)
+     contQxnas = (AliOADBContainer*) foadb->Get("fqxa2s");
+ //else if (fNHarm == 3.)
+ else
+     contQxnas = (AliOADBContainer*) foadb->Get("fqxa3s");
+ 
+ if(!contQxnas){
+     printf("OADB object fqxans is not available in the file\n");
+     return;
+ }
+ if(!(contQxnas->GetObject(run))){
+     printf("OADB object fqxans is not available for run %i\n", run);
+     return;
+ }
+ fQxavsV0[1] = ((TH1D*) contQxnas->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQynas = 0;
+ if (fNHarm == 2.)
+     contQynas = (AliOADBContainer*) foadb->Get("fqya2s");
+ else if (fNHarm == 3.)
+     contQynas = (AliOADBContainer*) foadb->Get("fqya3s");
+ else if (fNHarm == 4.)
+     contQynas = (AliOADBContainer*) foadb->Get("fqya4s");
+ 
+ if(!contQynas){
+     printf("OADB object fqyans is not available in the file\n");
+     return;
+ }
+ if(!(contQynas->GetObject(run))){
+     printf("OADB object fqyans is not available for run %i\n", run);
+     return;
+ }
+ fQyavsV0[1] = ((TH1D*) contQynas->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQxncm = 0;
+ if (fNHarm == 2.)
+     contQxncm = (AliOADBContainer*) foadb->Get("fqxc2m");
+ //else if (fNHarm == 3.)
+ else
+     contQxncm = (AliOADBContainer*) foadb->Get("fqxc3m");
+ 
+ if(!contQxncm){
+     printf("OADB object fqxcnm is not available in the file\n");
+     return;
+ }
+ if(!(contQxncm->GetObject(run))){
+     printf("OADB object fqxcnm is not available for run %i\n", run);
+     return;
+ }
+ fQxcvsV0[0] = ((TH1D*) contQxncm->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQyncm = 0;
+ if (fNHarm == 2.)
+     contQyncm = (AliOADBContainer*) foadb->Get("fqyc2m");
+ else if (fNHarm == 3.)
+     contQyncm = (AliOADBContainer*) foadb->Get("fqyc3m");
+ else if (fNHarm == 4.)
+     contQyncm = (AliOADBContainer*) foadb->Get("fqyc4m");
+ 
+ if(!contQyncm){
+     printf("OADB object fqyc2m is not available in the file\n");
+     return;
+ }
+ if(!(contQyncm->GetObject(run))){
+     printf("OADB object fqyc2m is not available for run %i\n", run);
+     return;
+ }
+ fQycvsV0[0] = ((TH1D*) contQyncm->GetObject(run));
+ 
+
+
+ AliOADBContainer* contQxncs = 0;
+ if (fNHarm == 2.)
+     contQxncs = (AliOADBContainer*) foadb->Get("fqxc2s");
+ //else if (fNHarm == 3.)
+ else
+     contQxncs = (AliOADBContainer*) foadb->Get("fqxc3s");
+ 
+ if(!contQxncs){
+     printf("OADB object fqxc2s is not available in the file\n");
+     return;
+ }
+ if(!(contQxncs->GetObject(run))){
+     printf("OADB object fqxc2s is not available for run %i\n", run);
+     return;
+ }
+ fQxcvsV0[1] = ((TH1D*) contQxncs->GetObject(run));
+ 
+ 
+ 
+ AliOADBContainer* contQyncs = 0;
+ if (fNHarm == 2.)
+     contQyncs = (AliOADBContainer*) foadb->Get("fqyc2s");
+ else if (fNHarm == 3.)
+     contQyncs = (AliOADBContainer*) foadb->Get("fqyc3s");
+ else if (fNHarm == 4.)
+     contQyncs = (AliOADBContainer*) foadb->Get("fqyc4s");
+ 
+ if(!contQyncs){
+     printf("OADB object fqycnm is not available in the file\n");
+     return;
+ }
+ if(!(contQyncs->GetObject(run))){
+     printf("OADB object fqycns is not available for run %i\n", run);
+     return;
+ }
+ fQycvsV0[1] = ((TH1D*) contQyncs->GetObject(run));
+
+ fApplyRecentering = 20152;
 }
 
 //-----------------------------------------------------------------------------
