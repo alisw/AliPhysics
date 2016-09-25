@@ -1612,8 +1612,6 @@ private:
  TProfile *fFlowSPZDCv1Pro[4]; //!
  TProfile *fFlowSPZDCv1etaPro[4]; //!
   TH1D *fFlowSPZDCv1etaHist[4]; //!
-  Double_t fv1odd;
-  Double_t fv1eve;
  
  // Flow QC
  TList *fFlowQCList;    //! QC List
