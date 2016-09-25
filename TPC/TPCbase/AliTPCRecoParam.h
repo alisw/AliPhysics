@@ -58,6 +58,14 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t GetDistFluctCorrelation()       const {return fDistFluctCorrelation;}
   void    SetSystCovAmplitude(float v)          {fSystCovAmplitude = v;}
   void    SetDistFluctCorrelation(float v)      {fDistFluctCorrelation = v;}
+  //
+  // for simulation of distortions fluctuations 
+  Float_t GetDistortionFluctMCAmp()           const {return fDistortionFluctMCAmp;}
+  void    SetDistortionFluctMCAmp(float v=1.)   {fDistortionFluctMCAmp = v;}
+  Float_t GetMinDistFluctMCRef()              const {return fMinDistFluctMCRef;}
+  void    SetMinDistFluctMCRef(Float_t v=0)  {fMinDistFluctMCRef = v;}
+  Float_t GetDistFluctUncorrFracMC()          const {return fDistFluctUncorrFracMC;}
+  void    SetDistFluctUncorrFracMC(Float_t v=0)  {fDistFluctUncorrFracMC = v;}
 
   //
   // Outlier filtering configuration
@@ -290,6 +298,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t  fUseLumiType;          ///< luminosity graph to be used for different lumi scalings
   Float_t fSystCovAmplitude;    ///< apply syst correction to cov.matrix with this amplitude
   Float_t  fDistFluctCorrelation; ///< assumed correlation between fluctuating points
+  Float_t fDistortionFluctMCAmp; ///< mult. amplitude for distortions fluctuation sigma 
+  Float_t fMinDistFluctMCRef;    ///< min.fluctuation sigma at reference 850kHz pp@13TeV (==7.5kHz PbPb@5.02TeV), for MC
+  Float_t fDistFluctUncorrFracMC; ///< uncorrelated fraction of distortions fluctuations to impose in MC
   //  misscalibration
   //
   TVectorF* fSystErrClInnerRegZ;        //< center of region in Z to apply extra systematic error
@@ -313,7 +324,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 31)
+  ClassDef(AliTPCRecoParam, 32)
   /// \endcond
 };
 
