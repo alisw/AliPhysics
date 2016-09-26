@@ -173,6 +173,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskJetV3.cxx
+    UserTasks/AliAnalysisTaskJetSubstructure.cxx
     UserTasks/AliAnalysisTaskPID.cxx
     UserTasks/AliAnalysisTaskPIDV0base.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
