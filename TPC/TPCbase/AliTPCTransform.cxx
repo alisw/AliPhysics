@@ -909,12 +909,12 @@ void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
     if (fCurrentRecoParam->GetDistFluctUncorrFracMC()>0) {
       float a,b, flUnc = fCurrentRecoParam->GetDistFluctUncorrFracMC()*fLastCorr[3];
       gRandom->Rannor(a,b);
-      fLastCorr[1] = flUnc*a;
-      fLastCorr[2] = flUnc*b;
+      fLastCorr[1] += flUnc*a;
+      fLastCorr[2] += flUnc*b;
       fluct *= 1.-fCurrentRecoParam->GetDistFluctUncorrFracMC();
     } 
     fLastCorr[1] += fluct;
-    fLastCorr[2] += fluct; //??
+    fLastCorr[2] += fluct*0.3; //??
   }
   for (int i=3;i--;) xyzLab[i] += fLastCorr[i];
   RotatedGlobal2Global(roc,xyzLab);
