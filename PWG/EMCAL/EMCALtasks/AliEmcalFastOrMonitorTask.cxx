@@ -109,10 +109,23 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
 
     fHistos->FillTH2("hFastOrColRowFrequency", globCol, globRow);
     fHistos->FillTH1("hFastOrFrequency", fastOrID);
-    fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
-    fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
-    fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
+    if(!IsFastorMasked(fastOrID)){
+      fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
+      fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
+      fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
+    }
   }
 
   PostData(1, fHistos->GetListOfHistograms());
+}
+
+Bool_t AliEmcalFastOrMonitorTask::IsFastorMasked(int fastorID){
+  bool masked(false);
+  for(auto m : fMaskedFastors){
+    if(m == fastorID){
+      masked = true;
+      break;
+    }
+  }
+  return masked;
 }

@@ -9,6 +9,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskEGAMonitor.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALTriggerMapping.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerTypes.h"
 #include "AliInputEventHandler.h"
@@ -26,7 +27,8 @@ AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor() :
     fHistos(nullptr),
     fUseRecalcPatches(false),
     fRecalcLow(0.),
-    fRecalcHigh(0.)
+    fRecalcHigh(0.),
+    fMaskedFastors()
 {
   this->SetNeedEmcalGeom(true);
   this->SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -37,7 +39,8 @@ AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor(const char *name) :
     fHistos(nullptr),
     fUseRecalcPatches(false),
     fRecalcLow(0.),
-    fRecalcHigh(0.)
+    fRecalcHigh(0.),
+    fMaskedFastors()
 {
   this->SetNeedEmcalGeom(true);
   this->SetCaloTriggerPatchInfoName("EmcalTriggers");
@@ -95,6 +98,10 @@ bool AliAnalysisTaskEGAMonitor::Run(){
     for(auto p : *(this->fTriggerPatchInfo)){
       AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
       if(!patch->IsGammaLowRecalc()) continue;
+
+      // reject patches having a masked fastor
+      if(IsPatchRejected(patch->GetColStart(), patch->GetRowStart())) continue;
+
       for(const auto &t : triggers){
         fHistos->FillTH2(Form("hColRowGall%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
         fHistos->FillTH1(Form("hADCRecalcGall%s", t.c_str()), patch->GetADCAmp());
@@ -122,6 +129,7 @@ bool AliAnalysisTaskEGAMonitor::Run(){
       if(!(triggerbits & (BIT(kL1GammaHigh) | BIT(kL1GammaLow)))) continue;
 
       emctrigraw->GetPosition(col, row);
+      if(IsPatchRejected(col, row)) continue;
       if(triggerbits & BIT(kL1GammaHigh)){
         for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), col, row);
       }
@@ -132,6 +140,23 @@ bool AliAnalysisTaskEGAMonitor::Run(){
   }
 
   return true;
+}
+
+bool AliAnalysisTaskEGAMonitor::IsPatchRejected(int col, int row){
+  bool rejected(false);
+  for(int icol = col; icol < col + 2; icol++){
+    for(int irow = row; irow < row + 2; irow++){
+      int fabsID;
+      if(fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol,irow, fabsID));
+      for(auto m : fMaskedFastors){
+        if(fabsID == m){
+          rejected = true;
+          break;
+        }
+      }
+    }
+  }
+  return rejected;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
