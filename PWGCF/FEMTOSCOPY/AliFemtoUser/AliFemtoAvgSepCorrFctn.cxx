@@ -11,7 +11,7 @@ ClassImp(AliFemtoAvgSepCorrFctn)
 #endif
 
 //____________________________
-AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(char *title,
+AliFemtoAvgSepCorrFctn::AliFemtoAvgSepCorrFctn(const char *title,
                                                const int &nbins,
                                                const float &Low,
                                                const float &High):
