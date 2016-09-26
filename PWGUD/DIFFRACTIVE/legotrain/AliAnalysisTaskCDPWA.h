@@ -273,6 +273,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t DoVertexCut(const AliESDEvent *esd);
 		void DoCombinatorics(const AliESDEvent *esd);
 		Bool_t DoMCPWA();
+		void DetermineProcessType();
+		void FillPassMCInfo(const Bool_t isV0, const Bool_t isV0FMD);
 
 		//Member variables
 		Bool_t fIsRun2;
@@ -288,6 +290,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t fIsPhojet;
 		Bool_t fIsEPOS;
 		UInt_t fRunNumber;
+		Int_t fMCProcessType;
 
 		// Output objects-----------------------------------------------------
 		TTree *fTree; //! V0 2pion
@@ -368,6 +371,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH2D *fADTime[2];//!
 		TH1D *hDCAz_MS;//!
 		TH1D *hMultNG_Test[6];//!
+		TH1D *hMC_PassEta[14];//!
+		TH1D *hMC_PassType[2];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);
