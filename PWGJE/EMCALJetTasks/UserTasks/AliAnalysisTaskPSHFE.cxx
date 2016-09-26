@@ -3108,7 +3108,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
         Double_t InvMass=(elec1+elec2).M();
         Double_t OpAng=elec1.Angle(elec2.Vect());
 
-        if(aodtrack->GetSign()==aodtrackassoc->GetSign()){
+        if(aodtrack->Charge()==aodtrackassoc->Charge()){
 
             if(MBtrg){
                 fHistInvMassElecLike_MB->Fill(InvMass);
