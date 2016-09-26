@@ -1604,10 +1604,15 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   //
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
   AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+  //
   if (tpcrecoparam->GetUseCorrectionMap()) {
     AliTPCTransform* transform = (AliTPCTransform*) calib->GetTransform();
     transform->SetCurrentRecoParam(tpcrecoparam);
+    transform->SetCorrectionMapMode(kFALSE); // set distortion mode
     transform->SetCurrentTimeStamp(fLoader->GetRunLoader()->GetHeader()->GetTimeStamp()); // force to upload time dependent maps
+    float strFluct = tpcrecoparam->GetDistortionFluctMCAmp() *gRandom->Gaus(); // RSTMP
+    AliInfoF("Impose %+.2f fluctuation for distortion map in event %d",strFluct,eventnumber);
+    transform->SetCurrentMapFluctStrenght(strFluct);
   }
   //
   for(Int_t isec=0;isec<fTPCParam->GetNSector();isec++) 
@@ -1871,7 +1876,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 
   Int_t lp;
   Int_t i1;   
-  for(lp=0;lp<nofDigits;lp++)pList[lp]=0; // set all pointers to NULL
+  memset(pList,0,nofDigits*sizeof(Float_t*)); // set all pointers to NULL
   //
   //calculate signal 
   //
@@ -2271,6 +2276,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   Int_t previousTrack,currentTrack;
   previousTrack = -1; // nothing to store so far!
 
+  double maxDrift = fTPCParam->GetZLength(isec);
+
   for(Int_t track=0;track<ntracks;track++){
     Bool_t isInSector=kTRUE;
     ResetHits();
@@ -2338,70 +2345,76 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       //---------------------------------------------------
 
 
-      Float_t time = 1.e6*(fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))
-	/fTPCParam->GetDriftV(); 
-      // in microseconds!	
-      Float_t attProb = fTPCParam->GetAttCoef()*
-	fTPCParam->GetOxyCont()*time; //  fraction! 
+      Float_t time = 1.e6*(fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))/fTPCParam->GetDriftV();  // in microseconds!	
+      Float_t attProb = fTPCParam->GetAttCoef()*fTPCParam->GetOxyCont()*time; //  fraction! 
    
+      if (qI==1 && (gRandom->Rndm(0)<attProb)) {  // the only electron is lost!
+	tpcHit = (AliTPChit*)NextHit();
+	continue;
+      }
+
+      //RS: all electrons share the same deterministic transformations (of the same hit), up to diffusion
+
+      Int_t indexHit[3]={0},index[3];
+      indexHit[1]=isec;
+      float xyzHit[3] = {tpcHit->X(),tpcHit->Y(),tpcHit->Z()};
+
+      double yLab = xyzHit[1]; // for eventual P-gradient accounting
+      if (tpcrecoparam->GetUseCorrectionMap()) {
+	double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+	transform->ApplyDistortionMap(isec,xyzD);
+	for (int idim=3;idim--;) xyzHit[idim] = xyzD[idim];
+      }
+      else {
+	// ExB effect - distort hig if specifiend in the RecoParam
+	//
+	if (tpcrecoparam->GetUseExBCorrection()) {
+	  Double_t dxyz0[3]={xyzHit[0],xyzHit[1],xyzHit[2]},dxyz1[3];
+	  if (calib->GetExB()) {
+	    calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+	  }else{
+	    AliError("Not valid ExB calibration");
+	    for (int idim=3;idim--;) dxyz1[idim] = xyzHit[idim];
+	  }
+	  for (int idim=3;idim--;) xyzHit[idim] = dxyz1[idim];
+	} 
+	else if (tpcrecoparam->GetUseComposedCorrection()) {
+	  //      Use combined correction/distortion  class AliTPCCorrection
+	  if (correctionDist){
+	    Float_t distPoint[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+	    correctionDist->DistortPoint(distPoint, isec);
+	    for (int idim=3;idim--;) xyzHit[idim] = distPoint[idim];
+	  }      
+	}     
+      }
+      indexHit[0]=1;
+
+      // RS: there is a mess in the application of the aligmnent: in the old code it is applied
+      // here unconditionally, while in the reco it is subject of GetUseSectorAlignment. And for some
+      // reason it is ON in our RecoParams tailored for MC.
+      // For consistency, use the same condition here, although with the CorrectionMaps the alignment will
+      // be switched OFF
+      Bool_t sideC = ((isec/18)&0x1);
+      if ( tpcrecoparam->GetUseSectorAlignment() ) fTPCParam->Transform1to2(xyzHit,indexHit);
+      else {
+	fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
+	// account for A/C sides max drift L deficit to nominal 250 cm
+	xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
+      }
+      //
       //-----------------------------------------------
       //  Loop over electrons
       //-----------------------------------------------
-      Int_t index[3];
-      index[1]=isec;
-      for(Int_t nel=0;nel<qI;nel++){
+      for(Int_t nel=0;nel<qI;nel++) {
 	// skip if electron lost due to the attachment
-	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	// use default hit position
-	xyz[0]=tpcHit->X();
-	xyz[1]=tpcHit->Y();
-	xyz[2]=tpcHit->Z(); 
+	// RS: check only case of multiple electrons, case of 1 is already checked
+	if(qI>1 && (gRandom->Rndm(0)) < attProb) continue; // electron lost!
+	// start from primary electron in vicinity of the readout, simulate diffusion
+	for (int idim=3;idim--;) {xyz[idim] = xyzHit[idim]; index[idim] = indexHit[idim];}
 	//
-	if (tpcrecoparam->GetUseCorrectionMap()) {
-	  double xyzD[3] = {xyz[0],xyz[1],xyz[2]};
-	  transform->ApplyDistortionMap(isec,xyzD);
-	  for (int idim=3;idim--;) xyz[idim] = xyzD[idim];
-	}
-	else {
-	  // ExB effect - distort hig if specifiend in the RecoParam
-	  //
-	  if (tpcrecoparam->GetUseExBCorrection()) {
-	    Double_t dxyz0[3],dxyz1[3];
-	    dxyz0[0]=tpcHit->X();
-	    dxyz0[1]=tpcHit->Y();
-	    dxyz0[2]=tpcHit->Z(); 	
-	    if (calib->GetExB()){
-	      calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-	    }else{
-	      AliError("Not valid ExB calibration");
-	      dxyz1[0]=tpcHit->X();
-	      dxyz1[1]=tpcHit->Y();
-	      dxyz1[2]=tpcHit->Z(); 	
-	    }
-	    xyz[0]=dxyz1[0];
-	    xyz[1]=dxyz1[1];
-	    xyz[2]=dxyz1[2]; 	
-	  } else if (tpcrecoparam->GetUseComposedCorrection()) {
-	    //      Use combined correction/distortion  class AliTPCCorrection
-	    if (correctionDist){
-	      Float_t distPoint[3]={tpcHit->X(),tpcHit->Y(), tpcHit->Z()};
-	      correctionDist->DistortPoint(distPoint, isec);
-	      xyz[0]=distPoint[0];
-            xyz[1]=distPoint[1];
-            xyz[2]=distPoint[2];
-	    }      
-	  }
-	  //
-	}
-	//
-	//
-	// protection for the nonphysical avalanche size (10**6 maximum)
-	//
-	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
-
-        index[0]=1;
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
+	double driftEl = xyz[2];  // GetPadRow converts Z to timebin in a way incmpatible with real calib, save drift distance
 	Int_t padrow = fTPCParam->GetPadRow(xyz,index); 
 
         // get pad region
@@ -2412,7 +2425,11 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
             padRegion=2;
           }
         }
-
+	
+	// protection for the nonphysical avalanche size (10**6 maximum)
+	//
+	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
+	
         //         xyz[3]= (Float_t) (-gasgain*TMath::Log(rn));
         // JW: take into account different gain in the pad regions
         xyz[3]= (Float_t) (-gasGainRegions[padRegion]*TMath::Log(rn));
@@ -2448,24 +2465,32 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	    }
 	  }
         }
-        if (AliTPCcalibDB::Instance()->IsTrgL0()){  
-          // Modification 14.03
-          // distinguish between the L0 and L1 trigger as it is done in the reconstruction
-          // by defualt we assume L1 trigger is used - make a correction in case of  L0
-          AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
-          if (ctp){
-            //for TPC standalone runs no ctp info
+	if (!transform) { //RS old way of getting the time bin (not timestamp aware!)
+	  if (AliTPCcalibDB::Instance()->IsTrgL0()){  
+	    // Modification 14.03
+	    // distinguish between the L0 and L1 trigger as it is done in the reconstruction
+	    // by defualt we assume L1 trigger is used - make a correction in case of  L0
+	    AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+	    if (ctp){
+	      //for TPC standalone runs no ctp info
             Double_t delay = ctp->GetDelayL1L0()*0.000000025;
             xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
-          }
-        }
-	if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
-	xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
-	//
-	// Electron track time (for pileup simulation)
-	xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
-	xyz[4] =0;
+	    }
+	  }
+	  if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
+	  xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
+	  //
+	  // Electron track time (for pileup simulation)
+	  xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
+	}
+	else { // use Transform for time-aware Z -> Tbin conversion
+	  // go back from L drift to Z
+	  double z = maxDrift - driftEl;
+	  if (sideC) z = -z;
+	  xyz[2] = transform->Z2TimeBin(z,isec, yLab);
+	}
 
+	xyz[4] =0;	  
 	//
 	// row 0 - cross talk from the innermost row
 	// row fNRow+1 cross talk from the outermost row
@@ -2592,7 +2617,8 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
   // xyz and index must be already transformed to system 1
   //
 
-  fTPCParam->Transform1to2(xyz,index);  // mis-alignment applied in this step
+  // RS Ideal transformation to sector frame is already done in MakeSector
+  if (index[0]==1) fTPCParam->Transform1to2(xyz,index);  // mis-alignment applied in this step
   
   //add diffusion
   Float_t driftl=xyz[2];

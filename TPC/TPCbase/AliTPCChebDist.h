@@ -34,10 +34,14 @@ class AliTPCChebDist : public AliTPCChebCorr
   void     Eval(int sector, float xtz[3], float *distortion)               const;
   //
   virtual  Bool_t   IsCorrection()               const {return kFALSE;}
-  virtual  Bool_t   IsDistorttion()              const {return kTRUE;}
+  virtual  Bool_t   IsDistortion()               const {return kTRUE;}
+  virtual  void     Init();
   //
   Int_t    X2Slice(float x) const;
   Float_t  Slice2X(int ix)  const;
+  //
+  Float_t  GetScaleDnDeta2pp13TeV() const  {return fScaleDnDeta2pp13TeV;}
+  Float_t  SetScaleDnDeta2pp13TeV(float v) {fScaleDnDeta2pp13TeV = v;}
   //
  protected:
   //
@@ -45,15 +49,24 @@ class AliTPCChebDist : public AliTPCChebCorr
   Float_t  fXMax;                                       // max X
   Float_t  fDX;                                         // X step
   Float_t  fDXInv;                                      // inverse of X step
+  Float_t  fScaleDnDeta2pp13TeV;                        // dndeta_current / dndeta_pp@13TeV
   //
   static Float_t fgRMinTPC;                             // def. min radius
   static Float_t fgRMaxTPC;                             // def. max radius
   static Int_t   fgNSlices;                             // def. number of slices in X
  private:
+  mutable Bool_t  fCacheValid;                                  //! flag cache validity
+  mutable Float_t fCacheDistLow[4];                             //! cache value
+  mutable Float_t fCacheDistUp[4];                              //! cache value
+  mutable Float_t fCacheY2X;                                    //! cache value
+  mutable Float_t fCacheZ2X;                                    //! cache value
+  mutable Int_t   fCacheSector;                                 //! cache value
+  mutable Int_t   fCacheIXLow;                                  //! cache value
+  //
   AliTPCChebDist(const AliTPCChebDist& src);            // dummy
   AliTPCChebDist& operator=(const AliTPCChebDist& rhs); // dummy
   //
-  ClassDef(AliTPCChebDist,1)
+  ClassDef(AliTPCChebDist,2)
 };
 
 //_________________________________________________________________

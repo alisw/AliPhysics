@@ -2227,6 +2227,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	fTracker[iDet]->SetTimeStamp(fesd->GetTimeStamp());
 	fTracker[iDet]->SetRunNumber(fesd->GetRunNumber());
       }
+      //RS also some reconstructructors may need the time stamp
+      if (fReconstructor[iDet]) fReconstructor[iDet]->SetTimeStamp(fesd->GetTimeStamp());
     }
 
     //

@@ -19,6 +19,8 @@ class AliLumiTools : public TObject
   static Double_t GetMuEstimate()    {return fgMuEst;}
   static Double_t GetXSectEstimate() {return fgXSecEst;}
   //
+  static Float_t  GetScaleDnDeta2pp13TeV(int run=-1,const char * ocdbPathDef="raw://"); 
+
  protected:
   static Bool_t GetLumiCTPRefClass(int run, TString& refClass, double &refSigma, double &refEff);
   static TObject* GetCDBObjectForRun(int run, const char* path, const char* ocdbPathDef);

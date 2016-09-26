@@ -124,6 +124,7 @@ AliTPCReconstructor::~AliTPCReconstructor()
 void AliTPCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const {
   // single event local reconstruction
   // of TPC data
+  fClusterer->SetTimeStamp(GetTimeStamp());
   fClusterer->SetInput(digitsTree);
   fClusterer->SetOutput(clustersTree);
   fClusterer->Digits2Clusters();
@@ -133,7 +134,7 @@ void AliTPCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
 void AliTPCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
   // single event local reconstruction
   // of TPC data starting from raw data
-
+  fClusterer->SetTimeStamp(GetTimeStamp());
   fClusterer->SetOutput(clustersTree);
   fClusterer->Digits2Clusters(rawReader);
 }

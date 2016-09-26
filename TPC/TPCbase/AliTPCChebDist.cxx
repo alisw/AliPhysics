@@ -16,6 +16,7 @@
 #include "AliCheb2DStackF.h"
 #include "AliCheb2DStackS.h"
 #include "AliTPCChebDist.h"
+#include "AliLumiTools.h"
 #include "AliLog.h"
 #include <TMath.h>
 
@@ -32,8 +33,12 @@ AliTPCChebDist::AliTPCChebDist()
   ,fXMax(fgRMaxTPC)
   ,fDX(0)
   ,fDXInv(0)
+  ,fScaleDnDeta2pp13TeV(0)
+  ,fCacheValid(kFALSE)
+  ,fCacheY2X(0),fCacheZ2X(0),fCacheSector(0),fCacheIXLow(0)
 {
 // def. c-tor  
+  for (int i=4;i--;) fCacheDistLow[i]=fCacheDistUp[i] = 0;
 }
 
 //____________________________________________________________________
@@ -42,6 +47,11 @@ AliTPCChebDist::AliTPCChebDist(const char* name, const char* title,
   :AliTPCChebCorr(name,title,nps,nzs,zmaxAbs,0,0)
   ,fXMin(fgRMinTPC)
   ,fXMax(fgRMaxTPC)
+  ,fDX(0)
+  ,fDXInv(0)
+  ,fScaleDnDeta2pp13TeV(0)
+  ,fCacheValid(kFALSE)
+  ,fCacheY2X(0),fCacheZ2X(0),fCacheSector(0),fCacheIXLow(0)
 {
   // c-tor
   fNRows = fgNSlices;
@@ -49,6 +59,7 @@ AliTPCChebDist::AliTPCChebDist(const char* name, const char* title,
   fDX = (fXMax-fXMin)/(fNRows-1);
   if (fDX<=0)  AliFatalF("X boundaries are not increasing: %f %f",fXMin,fXMax);
   fDXInv = 1./fDX;
+  for (int i=4;i--;) fCacheDistLow[i]=fCacheDistUp[i] = 0;
   //
 }
 
@@ -59,15 +70,44 @@ void AliTPCChebDist::Eval(int sector, float x, float y2x, float z, float *distor
   int ixLow = X2Slice(x);
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
   const AliCheb2DStack* chpar = GetParam(sector,y2x,z);
-  float distUp[3], scl = (x-Slice2X(ixLow))*fDXInv; // lever arm for interpolation
-  chpar->Eval(ixLow  , tz, distortion);
+  //
+  const float kMaxY2XDiff=3.e-3; // y2x spans +-1.7632e-01, take ~1% precision
+  const float kMaxZ2XDiff=1.e-2; // z2x spans 0:1, take ~1% precision  
+  // check if cache is valid
+  if (fCacheValid && 
+      (sector!=fCacheSector || ixLow!=fCacheIXLow || 
+       TMath::Abs(y2x-fCacheY2X)>kMaxY2XDiff  || 
+       TMath::Abs(z-fCacheZ2X)>kMaxZ2XDiff))
+    fCacheValid = kFALSE;
+  //
+  float scl = (x-Slice2X(ixLow))*fDXInv; // lever arm for interpolation
+  if (!fCacheValid) chpar->Eval(ixLow  , tz, fCacheDistLow);
   if (ixLow<fNRows-1) {
-    chpar->Eval(ixLow+1, tz, distUp);
-    for (int i=3;i--;) distortion[i] += scl*(distUp[i]-distortion[i]); // linear interpolation
+    if (!fCacheValid) chpar->Eval(ixLow+1, tz, fCacheDistUp);
+    for (int i=4;i--;) distortion[i] = fCacheDistLow[i]+scl*(fCacheDistUp[i]-fCacheDistLow[i]); // linear interpolation
   }
   else { // we are at the last slice, extrapolate
-    chpar->Eval(ixLow-1, tz, distUp);
-    for (int i=3;i--;) distortion[i] += scl*(distortion[i]-distUp[i]); // linear extrapolation   
+    if (!fCacheValid) chpar->Eval(ixLow-1, tz, fCacheDistUp);
+    for (int i=4;i--;) distortion[i] = fCacheDistLow[i]+scl*(fCacheDistLow[i]-fCacheDistUp[i]); // linear extrapolation   
+  }
+  // protection against extrapolation of dispersion making it negative
+  if (distortion[3]<1e-3) distortion[3] = 1e-3;
+  //
+  if (!fCacheValid) { // memorize
+    fCacheValid = kTRUE;
+    fCacheY2X = y2x;
+    fCacheZ2X = z;
+    fCacheSector = sector;
+    fCacheIXLow = ixLow;
   }
   //
+}
+
+//____________________________________________________________________
+void AliTPCChebDist::Init()
+{
+  // mark cach invalid and proceed to initialization
+  fCacheValid = kFALSE;
+  //  if (fScaleDnDeta2pp13TeV==0) fScaleDnDeta2pp13TeV = AliLumiTools::GetScaleDnDeta2pp13TeV(GetRun()); // for old objects
+  AliTPCChebCorr::Init();
 }

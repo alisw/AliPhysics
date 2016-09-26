@@ -29,7 +29,7 @@ class AliESDpid;
 
 class AliReconstructor: public TObject {
 public:
-  AliReconstructor(): TObject(), fOption(), fRunInfo(0x0), fEventInfo(0x0), fhltesd(NULL) {};
+ AliReconstructor(): TObject(), fOption(), fRunInfo(0x0), fEventInfo(0x0), fhltesd(NULL), fTimeStamp(0) {};
   virtual ~AliReconstructor() {};
 
   virtual void         Init() {};
@@ -75,6 +75,10 @@ public:
   virtual void FinishEvent() {return; }
   virtual void Terminate() const {return; }
 
+  UInt_t   GetTimeStamp() const {return fTimeStamp;}
+  void     SetTimeStamp(UInt_t t) {fTimeStamp = t;}
+
+
 private:
 
   AliReconstructor(const AliReconstructor &); // Not implemented
@@ -85,7 +89,7 @@ private:
   AliRunInfo*                        fRunInfo;                                    //! pointer to the run info object
   AliEventInfo*                      fEventInfo;                                  //! pointer to the event info object
   AliESDEvent*                       fhltesd;                                     //! pointer to HLT ESD
-
+  UInt_t                             fTimeStamp;                                  //! event time stamp
   ClassDef(AliReconstructor, 0)   // base class for reconstruction algorithms
 };
 

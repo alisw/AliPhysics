@@ -609,7 +609,7 @@ inline void AliTPCParam::Transform1to2Ideal(Float_t *xyz, Int_t *index) const
   Float_t y1=-xyz[0]*sin + xyz[1]*cos;
   xyz[0]=x1;
   xyz[1]=y1;
-  xyz[2]=fZLength-TMath::Abs(xyz[2]);
+  xyz[2]= fZLength + (((index[1]/18)&0x1) ? xyz[2] : -xyz[2]);
   index[0]=2;
 }
 

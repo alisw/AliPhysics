@@ -630,6 +630,8 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
     }
     if (!transform->GetCurrentRecoParam()) { 
       transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
+    }
+    if (transform->GetCurrentTimeStamp()!=fTimeStamp) {
       transform->SetCurrentTimeStamp(fTimeStamp);
     }
     Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
