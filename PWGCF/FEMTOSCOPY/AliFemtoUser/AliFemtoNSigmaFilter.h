@@ -227,6 +227,9 @@ public:
 
   /// Default constructor - All cuts empty
   AliFemtoNSigmaFilter();
+  AliFemtoNSigmaFilter(const AliFemtoNSigmaFilter& aFilter);
+  AliFemtoNSigmaFilter& operator=(const AliFemtoNSigmaFilter& aFilter);
+  virtual ~AliFemtoNSigmaFilter();
 
   void CheckForOverlap(VecNSigmaCuts &aCollection);  ///< If overlapping values, there will exist a region with multiple NSigma values.  This is bad
   static bool ComparePMin(const NSigmaCut &aFirst, const NSigmaCut &aSecond);  ///< used by SortCollection to sort the cut collections by pMin
