@@ -118,6 +118,7 @@ set(SRCS
   Faddeeva.cxx
   AliFemtoESDTrackCutNSigmaFilter.cxx
   AliFemtoModelCorrFctnKStarFull.cxx
+  AliFemtoModelWeightGeneratorBasicLednicky.cxx
   )
 
 
