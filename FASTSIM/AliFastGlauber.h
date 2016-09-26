@@ -20,7 +20,7 @@ class AliFastGlauber : public TObject {
  public:
     static AliFastGlauber* Instance();
     virtual ~AliFastGlauber();
-    void Init(Int_t mode = 0);
+    virtual void Init(Int_t mode = 0);
 
     void SetWoodSaxonParameters(Double_t r0, Double_t d, Double_t w, Double_t n)
 	{fWSr0 = r0; fWSd = d; fWSw = w; fWSn = n;}
@@ -105,19 +105,19 @@ class AliFastGlauber : public TObject {
 
     void SetLengthDefinition(Int_t def=1) {fEllDef=def;}
     Int_t GetLengthDef() const {return fEllDef;}
-    void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
-    void GetRandomBHard(Double_t& b);
-    void GetRandomXY(Double_t& x,Double_t& y);
-    void GetSavedXY(Double_t xy[2]) const {xy[0] = fXY[0]; xy[1] = fXY[1];} 
-    void GetSavedI0I1(Double_t i0i1[2]) const {i0i1[0] = fI0I1[0]; i0i1[1] = fI0I1[1];}
-    void SaveXY(Double_t x, Double_t y) {fXY[0] = x; fXY[1] = y;}
-    void SaveI0I1(Double_t i0, Double_t i1) {fI0I1[0] = i0; fI0I1[1] = i1;}
+    virtual void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
+    virtual void GetRandomBHard(Double_t& b);
+    virtual void GetRandomXY(Double_t& x,Double_t& y);
+    virtual void GetSavedXY(Double_t xy[2]) const {xy[0] = fXY[0]; xy[1] = fXY[1];} 
+    virtual void GetSavedI0I1(Double_t i0i1[2]) const {i0i1[0] = fI0I1[0]; i0i1[1] = fI0I1[1];}
+    virtual void SaveXY(Double_t x, Double_t y) {fXY[0] = x; fXY[1] = y;}
+    virtual void SaveI0I1(Double_t i0, Double_t i1) {fI0I1[0] = i0; fI0I1[1] = i1;}
 
     void GetRandomPhi(Double_t& phi);
     Double_t CalculateLength(Double_t b=0.,Double_t x0=0.,Double_t y0=0.,
                              Double_t phi0=0.);
     void GetLengthAndPhi(Double_t& ell,Double_t &phi,Double_t b=-1.);
-    void GetLength(Double_t& ell,Double_t b=-1.);
+    virtual void GetLength(Double_t& ell,Double_t b=-1.);
     void GetLengthsBackToBackAndPhi(Double_t& ell1,Double_t& ell2,
 				    Double_t &phi,
 				    Double_t b=-1.);
@@ -130,7 +130,7 @@ class AliFastGlauber : public TObject {
 			 const char *fname="length.root");
     void PlotLengthB2BDistr(Int_t n=1000,Bool_t save=kFALSE,
 			    const char *fname="lengthB2B.root");
-    void CalculateI0I1(Double_t& integral0,Double_t& integral1,
+    virtual void CalculateI0I1(Double_t& integral0,Double_t& integral1,
 		       Double_t b=0.,
 		       Double_t x0=0.,Double_t y0=0.,Double_t phi0=0.,
 		       Double_t ellCut=20.) const;
@@ -184,15 +184,14 @@ class AliFastGlauber : public TObject {
     static Double_t WEnergyDensity (const Double_t *xx, const Double_t *par);
 
     void Reset() const;
- private:
+
+    static AliFastGlauber* fgGlauber;    // Singleton instance
     AliFastGlauber();
     AliFastGlauber(const AliFastGlauber& glauber);
-
+ private:
     static Float_t         fgBMax;       // Maximum Impact Parameter
     static const Int_t     fgkMCInts;    // Number of MC integrations
-    static AliFastGlauber* fgGlauber;    // Singleton instance
-     
-    
+         
     static TF1*    fgWSb;            // Wood-Saxon Function (b)
     static TF1*    fgRWSb;           // Wood-Saxon Function (b) with phase space factor
     static TF2*    fgWSbz;           // Wood-Saxon Function (b, z)
