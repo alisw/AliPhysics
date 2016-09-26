@@ -111,3 +111,4 @@
 
 #pragma link C++ class AliFemtoESDTrackCutNSigmaFilter+;
 #pragma link C++ class AliFemtoModelCorrFctnKStarFull+;
+#pragma link C++ class AliFemtoModelWeightGeneratorBasicLednicky+;
