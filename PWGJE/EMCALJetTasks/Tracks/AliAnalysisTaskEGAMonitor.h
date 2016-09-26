@@ -4,6 +4,7 @@
 class THistManager;
 
 #include "AliAnalysisTaskEmcal.h"
+#include <vector>
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -23,6 +24,9 @@ public:
     fRecalcHigh = recalcHigh;
   }
 
+  void AddMaskedFastor(int fastorAbsID) { fMaskedFastors.push_back(fastorAbsID); }
+  bool IsPatchRejected(int col, int row);
+
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool IsEventSelected();
@@ -34,6 +38,8 @@ private:
   Bool_t                                   fUseRecalcPatches; ///< Defined whether to use recalc patches
   Double_t                                 fRecalcLow;        ///< Low threshold for recalc gamma trigger
   Double_t                                 fRecalcHigh;       ///< High threshold for recalc gamma trigger
+
+  std::vector<int>                         fMaskedFastors;    ///< List of masked fastors
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEGAMonitor, 1);
