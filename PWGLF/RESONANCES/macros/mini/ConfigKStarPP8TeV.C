@@ -1,11 +1,11 @@
 /***************************************************************************
               fbellini@cern.ch - last modified on 02/07/2014
 
- *** Configuration script for K*, anti-K* analysis of 2010 pp 7TeV datasets ***
+ *** Configuration script for K*, anti-K* analysis of 2010 pp 8TeV datasets ***
 This analysis task is used to extend the pT reach of the K* spectra published in Eur.
 Phys. J. C72(2012)2183. 
 ****************************************************************************/
-Bool_t ConfigKStarPP7TeV
+Bool_t ConfigKStarPP8TeV
 (  
     AliRsnMiniAnalysisTask *task, 
     Bool_t                 isMC, 

@@ -24,7 +24,7 @@ enum eventMixConfig { kDisabled = -1,
                     };
 
 
-AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
+AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV
 (
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kTRUE,
@@ -184,8 +184,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP7TeV.C");
-   if (!ConfigKStarPP7TeV(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP8TeV.C");
+   if (!ConfigKStarPP8TeV(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //
