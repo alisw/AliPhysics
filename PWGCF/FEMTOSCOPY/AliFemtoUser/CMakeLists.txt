@@ -117,6 +117,7 @@ set(SRCS
   AliFemtoCutMonitorParticleYPtWithWeights.cxx
   Faddeeva.cxx
   AliFemtoESDTrackCutNSigmaFilter.cxx
+  AliFemtoModelCorrFctnKStarFull.cxx
   )
 
 
