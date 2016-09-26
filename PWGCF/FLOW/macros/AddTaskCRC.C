@@ -124,7 +124,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskFE->SetRejectPileUp(kTRUE);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetZDCGainAlpha(ZDCGainAlpha);
- taskFE->SetDataSet(sDataSet);
+  if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
+  if (sDataSet == "2011") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2011);
+  if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
  TString analysisType = "AUTOMATIC";

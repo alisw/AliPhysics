@@ -192,7 +192,7 @@ fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
-fDataSet("2010"),
+fDataSet(kAny),
 fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
@@ -244,7 +244,7 @@ fCachedRunNum(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, TString DataSet, UInt_t iseed, Bool_t bCandidates):
+AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates):
 AliAnalysisTaskSE(name),
 fAnalysisType("AUTOMATIC"),
 fRPType(RPtype),
@@ -334,7 +334,7 @@ fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
-fDataSet(DataSet),
+fDataSet(kAny),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
 fGenHeader(NULL),
@@ -686,17 +686,17 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   Int_t dRun15h[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
  
- if(fDataSet.EqualTo("2010")) {fCRCnRun=92;}
- if(fDataSet.EqualTo("2011")) {fCRCnRun=119;}
- if(fDataSet.EqualTo("2015")) {fCRCnRun=92;}
- if(fDataSet.EqualTo("MCkine")) {fCRCnRun=1;}
+ if(fDataSet==k2010) {fCRCnRun=92;}
+ if(fDataSet==k2011) {fCRCnRun=119;}
+ if(fDataSet==k2015) {fCRCnRun=92;}
+ if(fDataSet==kAny) {fCRCnRun=1;}
  
  Int_t d=0;
  for(Int_t r=0; r<fCRCnRun; r++) {
-  if(fDataSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
-  if(fDataSet.EqualTo("2011"))   fRunList[d] = dRun11h[r];
-  if(fDataSet.EqualTo("2015"))   fRunList[d] = dRun15h[r];
-  if(fDataSet.EqualTo("MCkine")) fRunList[d] = 1;
+  if(fDataSet==k2010)   fRunList[d] = dRun10h[r];
+  if(fDataSet==k2011)   fRunList[d] = dRun11h[r];
+  if(fDataSet==k2015)   fRunList[d] = dRun15h[r];
+  if(fDataSet==kAny) fRunList[d] = 1;
   d++;
  }
   
@@ -756,15 +756,29 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(fRunList[c]==RunNum) RunBin=bin;
     else bin++;
   }
-  if(fDataSet.EqualTo("MCkine")) RunBin=0;
+  if(fDataSet==kAny) RunBin=0;
  
  //DEFAULT - automatically takes care of everything
  if (fAnalysisType == "AUTOMATIC") {
   
   //check event cuts
   if (InputEvent()) {
-   if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
-   if(fRejectPileUp && fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+    if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+    if(fRejectPileUp) {
+      if(fDataSet!=k2015) {
+        if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+      } else {
+        // pile-up a la Dobrin for LHC15o
+        if (plpMV(aod)) return;
+        
+        Short_t isPileup = aod->IsPileupFromSPD(3);
+        if (isPileup != 0) return;
+        
+        if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) return;
+        
+        if (aod->IsIncompleteDAQ()) return;
+      }
+    }
   }
   
   //first attach all possible information to the cuts
@@ -775,7 +789,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fFlowEvent->Fill( fCutsRP, fCutsPOI );
   
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
-  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
+   // set centrality
+   if(fDataSet!=k2015) {
+     fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
+   } else {
+     Float_t centr = 300;
+     fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+     if(!fMultSelection) {
+       //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+       AliWarning("AliMultSelection object not found!");
+     }else{
+       centr = fMultSelection->GetMultiplicityPercentile("V0M");
+     }
+     fFlowEvent->SetCentrality(centr);
+   }
    
   fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
   fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
@@ -829,7 +856,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     // get centrality (from AliMultSelection or AliCentrality)
     Float_t centr = 300;
-    if(fDataSet == "2015") {
+    if(fDataSet==k2015) {
       fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
       if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -1361,6 +1388,71 @@ Int_t AliAnalysisTaskCRCZDC::GetCenBin(Double_t Centrality)
   if (fnCen==1) CenBin=0;
   return CenBin;
 } // end of AliFlowAnalysisCRC::GetCRCCenBin(Double_t Centrality)
+//_____________________________________________________________________________
+
+Double_t AliAnalysisTaskCRCZDC::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+{
+  // calculate sqrt of weighted distance to other vertex
+  if (!v0 || !v1) {
+    printf("One of vertices is not valid\n");
+    return 0;
+  }
+  static TMatrixDSym vVb(3);
+  double dist = -1;
+  double dx = v0->GetX()-v1->GetX();
+  double dy = v0->GetY()-v1->GetY();
+  double dz = v0->GetZ()-v1->GetZ();
+  double cov0[6],cov1[6];
+  v0->GetCovarianceMatrix(cov0);
+  v1->GetCovarianceMatrix(cov1);
+  
+  vVb(1,1) = cov0[2]+cov1[2];
+  vVb(2,2) = cov0[5]+cov1[5];
+  vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
+  vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+  vVb.InvertFast();
+  if (!vVb.IsValid()) {printf("Singular Matrix\n"); return dist;}
+  dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+  +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+  return dist>0 ? TMath::Sqrt(dist) : -1;
+  
+}
+//________________________________________________________________________
+
+Bool_t AliAnalysisTaskCRCZDC::plpMV(const AliAODEvent* aod)
+{
+  // check for multi-vertexer pile-up
+  
+  const int    kMinPlpContrib = 5;
+  const double kMaxPlpChi2 = 5.0;
+  const double kMinWDist = 15;
+  
+  const AliVVertex* vtPrm = 0;
+  const AliVVertex* vtPlp = 0;
+  int nPlp = 0;
+  
+  if ( !(nPlp=aod->GetNumberOfPileupVerticesTracks()) ) return kFALSE;
+  vtPrm = aod->GetPrimaryVertex();
+  if (vtPrm == aod->GetPrimaryVertexSPD()) return kTRUE; // there are pile-up vertices but no primary
+  
+  //int bcPrim = vtPrm->GetBC();
+  
+  for (int ipl=0;ipl<nPlp;ipl++) {
+    vtPlp = (const AliVVertex*)aod->GetPileupVertexTracks(ipl);
+    //
+    if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
+    if (vtPlp->GetChi2perNDF() > kMaxPlpChi2) continue;
+    //  int bcPlp = vtPlp->GetBC();
+    //  if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other BC
+    //
+    double wDst = GetWDist(vtPrm,vtPlp);
+    if (wDst<kMinWDist) continue;
+    //
+    return kTRUE; // pile-up: well separated vertices
+  }
+  
+  return kFALSE;
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskCRCZDC::SetCutsRP(AliFlowTrackCuts* cutsRP) {
