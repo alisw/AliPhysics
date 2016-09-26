@@ -437,7 +437,6 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       if(track->TestFilterBit(1<<jb)) fHistFilterBits->Fill(jb,ydum);
     }
-    if(trid<0) continue;
 
     Double_t pttrack=track->Pt();
     Double_t ptrack=track->P();
