@@ -887,7 +887,7 @@ void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
 {
   // apply distortion from the map to a point provided in LAB coordinate 
   // at given ROC and row (IROC/OROC convention)
-  const float kDistDispThresh = 300e-4; // assume fluctuation dispersion if D[3]>Dref[3]+threshold
+  const float kDistDispThresh = 20e-4; // assume fluctuation dispersion if D[3]>Dref[3]+threshold
   Global2RotatedGlobal(roc,xyzLab);  // now we are in sector coordinates
   EvalDistortionMap(roc, xyzLab, fLastCorrRef, kTRUE);
   EvalDistortionMap(roc, xyzLab, fLastCorr,    kFALSE);
@@ -898,6 +898,7 @@ void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
   }
   else {
     fLastCorr[3] = fLastCorr[3]>(fLastCorrRef[3]+kDistDispThresh) ? TMath::Sqrt(fLastCorr[3]*fLastCorr[3] - fLastCorrRef[3]*fLastCorrRef[3]) : 0;
+    if (fLastCorr[3]<fCurrentRecoParam->GetMinDistFluctMCRef()) fLastCorr[3] = fCurrentRecoParam->GetMinDistFluctMCRef();
     if (fCurrentMapScaling!=1.0f) {
       for (int i=3;i--;) fLastCorr[i] = (fLastCorr[i]-fLastCorrRef[i])*fCurrentMapScaling + fLastCorrRef[i];
       fLastCorr[3] *= fCurrentMapScaling;
@@ -905,6 +906,13 @@ void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
   }
   if (fLastCorr[3]>1e-6) { // apply SC fluctuation according to stored RMS Y
     float fluct = fLastCorr[3]*fCurrentMapFluctStrenght;
+    if (fCurrentRecoParam->GetDistFluctUncorrFracMC()>0) {
+      float a,b, flUnc = fCurrentRecoParam->GetDistFluctUncorrFracMC()*fLastCorr[3];
+      gRandom->Rannor(a,b);
+      fLastCorr[1] = flUnc*a;
+      fLastCorr[2] = flUnc*b;
+      fluct *= 1.-fCurrentRecoParam->GetDistFluctUncorrFracMC();
+    } 
     fLastCorr[1] += fluct;
     fLastCorr[2] += fluct; //??
   }

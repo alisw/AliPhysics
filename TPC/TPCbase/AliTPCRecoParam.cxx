@@ -119,7 +119,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSystCovAmplitude(2.0),
   fDistFluctCorrelation(0.99),
   fDistortionFluctMCAmp(1.0),
-  fMinDistFluctMCRef(0.05),
+  fMinDistFluctMCRef(0.0),
   fDistFluctUncorrFracMC(0.0),
   fSystErrClInnerRegZ(0),
   fSystErrClInnerRegZSigInv(0),
