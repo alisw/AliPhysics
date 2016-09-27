@@ -49,8 +49,6 @@
 #include "AliPBUtils.h"
 #include "AliPBTracks.h"
 
-
-
 //------------------------------------------------------------------------------
 AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	AliAnalysisTaskSE(name)
@@ -195,7 +193,8 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 
 	, fMAllTrackMass(0x0)
   
-  , fCEPEvent(0x0)
+  , fCEPEvents(new TClonesArray("CEPEventBuffer"))
+  , fevb(*fCEPEvents)
 {
 	//
 	// standard constructor (the one which should be used)
@@ -403,7 +402,8 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 
 	, fMAllTrackMass(0x0)
 
-  , fCEPEvent(0x0)
+  , fCEPEvents(new TClonesArray("CEPEventBuffer"))
+  , fevb(*fCEPEvents)
 {
 	//
 	// default constructor (should not be used)
@@ -1149,12 +1149,11 @@ void AliAnalysisTaskPB::UserCreateOutputObjects()
   fPIDCombined2->SetDetectorMask(Maskin);
   //fPIDCombined3->SetDetectorMask(Maskin);
   
-  fCEPEvent = new CEPEventBuffer();
-
+  // branch with CEPEventBuffer
   Int_t split = 2;                                  // branches are splitted
   Int_t bsize = 16000; 
-  fPWAtree->Branch("CEPEvents",&fCEPEvent, bsize, split);
- 
+  fPWAtree->Branch("CEPEvents",&fCEPEvents, bsize, split);
+   
 	PostOutputs();
 }
 
@@ -1165,12 +1164,12 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//
 	// Executed for every event which passed the physics selection
 	//
-	// printf("Entry: %ld\n", (Long_t)Entry()); // print current event number
+	//printf("Entry: %ld\n", (Long_t)Entry()); // print current event number
 
 	// increment event number
   fEvent++;
   //printf("\n\nNext Event ***********\n");
-  printf("Event number: %i\n",fEvent);
+  //printf("Event number: %i\n",fEvent);
   
   // 
   if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
@@ -1279,7 +1278,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	  	2., 	// nSigmaDiamXY, default = 2.
 	  	5.		// nSigmaDiamZ, default = 5.
 	  );
-	//printf("This is a pileup %i event\n",isPileup);
+  //printf("This is a pileup %i event\n",isPileup);
   
   if (isPileup) {
 		//PostOutputs();
@@ -1390,10 +1389,14 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   //printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
   //printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
   
-  fCEPEvent->Reset();
+  // Reset the event buffer
+  fevb.Clear();
   
   if (ncombined < 7) {
-  
+    
+    // prepare new CEPEventBuffer
+    CEPEventBuffer *evbuf = new(fevb[0]) CEPEventBuffer();
+    
     // prepare MC stack
     AliStack *stack = NULL;
     Int_t nPrimaries = 0;
@@ -1403,11 +1406,12 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     }
 
     // set event parameters
-    fCEPEvent->SetRunNumber(fRun);
-    fCEPEvent->SetEventNumber(fEvent);
-    fCEPEvent->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
-    fCEPEvent->SetGapCondition(fCurrentGapCondition);
-    fCEPEvent->SetVertexPos(fVtxX,fVtxY,fVtxZ);
+    // printf("setting event information ...\n");
+    evbuf->SetRunNumber(fRun);
+    evbuf->SetEventNumber(fEvent);
+    evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
+    evbuf->SetGapCondition(fCurrentGapCondition);
+    evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
   
     // add normal tracks to event buffer
     Double_t mom[3];
@@ -1467,13 +1471,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
         trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
       }
       
-      fCEPEvent->AddTrack(trk);
+      evbuf->AddTrack(trk);
     }
 
     // add soft tracks to event buffer
-    for (Int_t ii=0; ii<(ncombined-nch); ii++) {
+    for (Int_t ii=nch; ii<ncombined; ii++) {
     
-      AliVTrack *tmptrk = fTracks->GetTrack(nch+ii);
+      AliVTrack *tmptrk = fTracks->GetTrack(ii);
       
       // create new track
       CEPTrackBuffer *trk = new CEPTrackBuffer();
@@ -1525,23 +1529,22 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
         trk->SetMCMass(part->GetMass());
         trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
       }
-
-      fCEPEvent->AddTrack(trk);
+      
+      evbuf->AddTrack(trk);
     
     }
 
     // save event  
-    //printf("RunNumber: %i\n",fCEPEvent->GetRunNumber());
-    //printf("EventNumber: %i\n",fCEPEvent->GetEventNumber());
-    //printf("NumberTracks: %i\n",fCEPEvent->GetnumTracks());
-    //printf("NumberSoftTracks: %i\n",fCEPEvent->GetnumSoftTracks());
-    //printf("GapCondition: %i\n",fCEPEvent->GetGapCondition());
+    //printf("RunNumber: %i\n",evbuf->GetRunNumber());
+    //printf("EventNumber: %i\n",evbuf->GetEventNumber());
+    //printf("NumberTracks: %i\n",evbuf->GetnumTracks());
+    //printf("NumberSoftTracks: %i\n",evbuf->GetnumSoftTracks());
+    //printf("GapCondition: %i\n",evbuf->GetGapCondition());
     
     // fill tree
     fPWAtree->Fill();
     
     PostOutputs();
-  
   }
   
 }

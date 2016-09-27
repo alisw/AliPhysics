@@ -129,7 +129,10 @@ private:
 	AliESDEvent *fESDEvent;     // esd event object
 	AliAODEvent *fAODEvent;     // esd event object
 
-  CEPEventBuffer *fCEPEvent;
+  TClonesArray *fCEPEvents;
+  TClonesArray &fevb;
+  //TClonesArray *fCEPTracks;
+  //TClonesArray &ftrb;
   
 	AliPIDResponse *fPIDResponse; // esd pid object
   AliPIDCombined *fPIDCombined1; //! PID Combined object with priors
