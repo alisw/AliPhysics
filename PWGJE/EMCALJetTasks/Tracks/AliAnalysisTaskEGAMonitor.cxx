@@ -4,7 +4,10 @@
 
 #include <TClonesArray.h>
 #include <THistManager.h>
+#include <TGrid.h>
 #include <THashList.h>
+#include <TObjArray.h>
+#include <TParameter.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskEGAMonitor.h"
@@ -13,6 +16,7 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerTypes.h"
 #include "AliInputEventHandler.h"
+#include "AliOADBContainer.h"
 #include "AliVVertex.h"
 #include "AliVCaloTrigger.h"
 
@@ -28,6 +32,8 @@ AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor() :
     fUseRecalcPatches(false),
     fRecalcLow(0.),
     fRecalcHigh(0.),
+    fNameMaskedFastorOADB(""),
+    fMaskedFastorOADB(nullptr),
     fMaskedFastors()
 {
   this->SetNeedEmcalGeom(true);
@@ -40,6 +46,8 @@ AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor(const char *name) :
     fUseRecalcPatches(false),
     fRecalcLow(0.),
     fRecalcHigh(0.),
+    fNameMaskedFastorOADB(""),
+    fMaskedFastorOADB(nullptr),
     fMaskedFastors()
 {
   this->SetNeedEmcalGeom(true);
@@ -142,12 +150,33 @@ bool AliAnalysisTaskEGAMonitor::Run(){
   return true;
 }
 
+void AliAnalysisTaskEGAMonitor::ExecOnce(){
+  AliAnalysisTaskEmcal::ExecOnce();
+
+  if(!fLocalInitialized) return;
+
+  if(fNameMaskedFastorOADB.Length()){
+    if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
+    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
+    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
+  }
+}
+
+void AliAnalysisTaskEGAMonitor::RunChanged(Int_t runnumber){
+  if(fMaskedFastorOADB){
+    fMaskedFastors.clear();
+    for(auto p : *(static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber)))){
+      fMaskedFastors.push_back(static_cast<TParameter<int> *>(p)->GetVal());
+    }
+  }
+}
+
 bool AliAnalysisTaskEGAMonitor::IsPatchRejected(int col, int row){
   bool rejected(false);
   for(int icol = col; icol < col + 2; icol++){
     for(int irow = row; irow < row + 2; irow++){
       int fabsID;
-      if(fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol,irow, fabsID));
+      fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol,irow, fabsID);
       for(auto m : fMaskedFastors){
         if(fabsID == m){
           rejected = true;

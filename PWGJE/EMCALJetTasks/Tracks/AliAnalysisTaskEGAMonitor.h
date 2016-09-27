@@ -2,8 +2,10 @@
 #define ALIANALYSISTASKEGAMONITOR_H
 
 class THistManager;
+class AliOADBContainer;
 
 #include "AliAnalysisTaskEmcal.h"
+#include <TString.h>
 #include <vector>
 
 namespace EMCalTriggerPtAnalysis {
@@ -25,6 +27,7 @@ public:
   }
 
   void AddMaskedFastor(int fastorAbsID) { fMaskedFastors.push_back(fastorAbsID); }
+  void SetMaskedFastorOADB();
   bool IsPatchRejected(int col, int row);
 
 protected:
@@ -32,14 +35,19 @@ protected:
   virtual bool IsEventSelected();
   virtual bool Run();
 
+  virtual void ExecOnce();
+  virtual void RunChanged(Int_t newrun);
+
 private:
-  THistManager                            *fHistos;           //!<!  Histogram manager
+  THistManager                            *fHistos;                 //!<!  Histogram manager
 
-  Bool_t                                   fUseRecalcPatches; ///< Defined whether to use recalc patches
-  Double_t                                 fRecalcLow;        ///< Low threshold for recalc gamma trigger
-  Double_t                                 fRecalcHigh;       ///< High threshold for recalc gamma trigger
+  Bool_t                                   fUseRecalcPatches;       ///< Defined whether to use recalc patches
+  Double_t                                 fRecalcLow;              ///< Low threshold for recalc gamma trigger
+  Double_t                                 fRecalcHigh;             ///< High threshold for recalc gamma trigger
 
-  std::vector<int>                         fMaskedFastors;    ///< List of masked fastors
+  TString                                  fNameMaskedFastorOADB;   ///< Name of the OADB container with the masked fastor information
+  AliOADBContainer                        *fMaskedFastorOADB;       ///< OADB container with masked fastor information
+  std::vector<int>                         fMaskedFastors;          ///< List of masked fastors
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEGAMonitor, 1);
