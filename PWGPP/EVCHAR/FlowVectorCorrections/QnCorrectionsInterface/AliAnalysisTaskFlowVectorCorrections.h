@@ -19,7 +19,6 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliQnCorrectionsFillEventTask.h"
 
-class AliAnalysis;
 class AliQnCorrectionsManager;
 class AliQnCorrectionsCutsSet;
 class AliQnCorrectionsHistos;
