@@ -86,7 +86,7 @@ ClassImp(AliAnalysisTaskdNdEtapp13)
 
 
 //                                                     0     1     2     3     4     5    6      7      8        9      10          11        12       13    14
-const char* AliAnalysisTaskdNdEtapp13::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S", "MB", "RefMult08", "V0av"};
+const char* AliAnalysisTaskdNdEtapp13::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","SPDClusters1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S", "MB", "RefMult08", "V0av"};
 
 const char*  AliAnalysisTaskdNdEtapp13::fgkPDGNames[] = {
   "#pi^{+}",
@@ -263,6 +263,8 @@ AliAnalysisTaskdNdEtapp13::AliAnalysisTaskdNdEtapp13(const char *name)
     fIsSelected(kFALSE),
     fVtxOK(kFALSE),
     fUseSpecialOutput(kFALSE),
+    fUseBCMod(kFALSE),
+    fBCMod4(2),
     //
     fWeight(1.),
     fPPVsMultUtils(new AliPPVsMultUtils())
@@ -597,6 +599,17 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   AliVVZERO* vzero = fInputEvent->GetVZEROData();
   Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
   Double_t v0c3   = vzero->GetMRingV0C(3);
+
+if (fUseBCMod & !fUseMC){
+   Int_t  fBC = fInputEvent->GetBunchCrossNumber();
+  Int_t  bcmod4 = fBC%4;
+
+ fIsSelected &= (bcmod4 == fBCMod4);
+//if (bcmod4 ==2) fIsSelected &= (bcmod4 == 2);
+//else if (bcmod4 == 0)
+}
+
+
 
   //fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
   //fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));

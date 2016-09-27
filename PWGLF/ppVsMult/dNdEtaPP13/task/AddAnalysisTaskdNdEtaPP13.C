@@ -50,7 +50,11 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           float  ovlZetaCut  = 0.05,
                           Bool_t checkReconstructables = kFALSE,
                           UInt_t trigSel = AliVEvent::kINT7,//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
-                          Bool_t ridgeBins      = kFALSE             // VOM percentiles with ridge binning
+                          Bool_t ridgeBins      = kFALSE,             // VOM percentiles with ridge binning
+                          Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
+                          Int_t BCmod4      = 2              // set Bunch crossing mode 4
+
+
 )
 {
 
@@ -126,6 +130,13 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
       centBins = centBinsMultRef;
       nCentBins = sizeof(centBinsMultRef) / 8 - 1;
     }
+    else if(strCentr == "SPDClusters1"){
+      centBins = centBinsMultV0M;
+      nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+    }
+
+
+
 
     task->SetCentPercentiles(centBins, nCentBins);
     task->SetTriggerSelection(trigSel);
@@ -155,6 +166,10 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     task->SetPhiRot(phiRot);
     task->SetInjScale(injScale);
     task->SetRemoveOverlaps(remOvl);
+    task->SetUseBCMod(useBCmod);
+    task->SetBCMod(BCmod4);
+
+
     //
     //    task->Dump();
     return task;
