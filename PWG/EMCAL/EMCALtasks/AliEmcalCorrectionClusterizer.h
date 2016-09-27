@@ -55,6 +55,9 @@ protected:
   void           UpdateClusters();
   void           CalibrateClusters();
   
+  void           RemapMCLabelForAODs(Int_t &label);
+  void           SetClustersMCLabelFromOriginalClusters();
+  
   TClonesArray          *fDigitsArr;                      //!digits array
   TObjArray             *fClusterArr;                     //!recpoints array
   AliEMCALRecParam      *fRecParam;                       // reconstruction parameters container
@@ -90,6 +93,8 @@ protected:
   
   Bool_t                 fSetCellMCLabelFromEdepFrac;     // For MC generated with aliroot > v5-07-21, check the EDep information
   // stored in ESDs/AODs to set the cell MC labels
+  
+  Bool_t                 fRemapMCLabelForAODs;            // Remap AOD cells MC label
   
   Bool_t                 fRecalDistToBadChannels;         // recalculate distance to bad channel
   Bool_t                 fRecalShowerShape;               // switch for recalculation of the shower shape
