@@ -75,6 +75,8 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fNameDownscaleOADB(""),
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
+    fNameMaskedFastorOADB(),
+    fMaskedFastorOADB(nullptr),
     fMaskedFastors(),
     fSelectNoiseEvents(false),
     fRejectNoiseEvents(false),
@@ -107,6 +109,8 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fNameDownscaleOADB(""),
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
+    fNameMaskedFastorOADB(),
+    fMaskedFastorOADB(nullptr),
     fMaskedFastors(),
     fSelectNoiseEvents(false),
     fRejectNoiseEvents(false),
@@ -505,6 +509,12 @@ void AliAnalysisTaskChargedParticlesRef::ExecOnce(){
     fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
     fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
   }
+  // Load OADB container with masked fastors
+  if(fNameMaskedFastorOADB.Length()){
+    if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
+    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
+    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
+  }
 }
 
 /**
@@ -518,6 +528,14 @@ void AliAnalysisTaskChargedParticlesRef::RunChanged(Int_t runnumber){
  if(fDownscaleOADB){
     fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
   }
+ if(fMaskedFastorOADB){
+   fMaskedFastors.clear();
+   TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
+   for(auto m : *ids){
+     TParameter<int> *id = static_cast<TParameter<int> *>(m);
+     fMaskedFastors.push_back(id->GetVal());
+   }
+ }
 }
 
 /**
