@@ -73,6 +73,7 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fInputCellType(kFEEData),
   fSetCellMCLabelFromCluster(0),
   fSetCellMCLabelFromEdepFrac(0),
+  fRemapMCLabelForAODs(0),
   fCaloClusters(0),
   fEsd(0),
   fAod(0),
@@ -124,6 +125,11 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   GetProperty("w0", w0);
   GetProperty("recalDistToBadChannels", fRecalDistToBadChannels);
   GetProperty("recalShowerShape", fRecalShowerShape);
+  GetProperty("remapMcAod", fRemapMCLabelForAODs);
+  Bool_t enableFracEMCRecalc = kFALSE;
+  GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
+  Float_t diffEAggregation = 0.;
+  GetProperty("diffEAggregation", diffEAggregation);
 
   AddContainer(kCluster);
   
@@ -134,9 +140,15 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   fRecParam->SetTimeMin(timeMin);
   fRecParam->SetTimeMax(timeMax);
   fRecParam->SetTimeCut(timeCut);
+  fRecParam->SetLocMaxCut(diffEAggregation);      // Set minimum energy difference to start new cluster
   
   if (clusterizerType == AliEMCALRecParam::kClusterizerNxN)
     fRecParam->SetNxM(1,1); // -> (1,1) means 3x3!
+  
+  if(enableFracEMCRecalc){
+    fSetCellMCLabelFromEdepFrac = kTRUE;
+    fSetCellMCLabelFromCluster  = 0;
+  }
   
   fInputCellType = AliEmcalCorrectionClusterizer::kFEEData;
   Printf("inputCellType: %d",fInputCellType);
@@ -277,7 +289,12 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
         if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
           break;
         
-        if (fSetCellMCLabelFromCluster) cellMCLabel = fCellLabels[cellNumber];
+        //if (fSetCellMCLabelFromCluster) cellMCLabel = fCellLabels[cellNumber];
+        if(!fSetCellMCLabelFromEdepFrac)
+        {
+          if      (fSetCellMCLabelFromCluster) cellMCLabel = fCellLabels[cellNumber];
+          else if (fRemapMCLabelForAODs      ) RemapMCLabelForAODs(cellMCLabel);
+        }
         
         if (cellMCLabel > 0 && cellEFrac < 1e-6)
           cellEFrac = 1;
@@ -487,6 +504,7 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
 //________________________________________________________________________________________
 void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
 {
+  // Convert AliEMCALRecoPoints to AliESDCaloClusters/AliAODCaloClusters.
   // Cluster energy, global position, cells and their amplitude fractions are restored.
   
   const Int_t Ncls = fClusterArr->GetEntries();
@@ -623,6 +641,11 @@ void AliEmcalCorrectionClusterizer::UpdateClusters()
 {
   // Update cells in case re-calibration was done.
   
+  // Before destroying the orignal list, assign to the rec points the MC labels
+  // of the original clusters, if requested
+  if (fSetCellMCLabelFromCluster == 2)
+    SetClustersMCLabelFromOriginalClusters() ;
+  
   const Int_t nents = fCaloClusters->GetEntries();
   for (Int_t i=0;i<nents;++i) {
     AliVCluster *c = static_cast<AliVCluster*>(fCaloClusters->At(i));
@@ -658,6 +681,148 @@ void AliEmcalCorrectionClusterizer::CalibrateClusters()
   }
   
   fCaloClusters->Compress();
+}
+
+//___________________________________________________________
+void AliEmcalCorrectionClusterizer::RemapMCLabelForAODs(Int_t & label)
+{
+  // MC label for Cells not remapped after ESD filtering, do it here.
+  
+  if (label < 0) return;
+  
+  TClonesArray * arr = dynamic_cast<TClonesArray*>(fAod->FindListObject("mcparticles")) ;
+  if (!arr) return ;
+  
+  if (label < arr->GetEntriesFast())
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(label));
+    if (!particle) return ;
+    
+    if (label == particle->Label()) return ; // label already OK
+  }
+  
+  // loop on the particles list and check if there is one with the same label
+  for (Int_t ind = 0; ind < arr->GetEntriesFast(); ind++)
+  {
+    AliAODMCParticle * particle = dynamic_cast<AliAODMCParticle *>(arr->At(ind));
+    if (!particle) continue ;
+    
+    if (label == particle->Label())
+    {
+      label = ind;
+      return;
+    }
+  }
+  
+  label = -1;
+}
+
+//_____________________________________________________________________________________________
+void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
+{
+  // Get the original clusters that contribute to the new rec point cluster,
+  // assign the labels of such clusters to the new rec point cluster.
+  // Only approximatedly valid  when output are V1 clusters, or input/output clusterizer
+  // are the same handle with care
+  // Copy from same method in AliAnalysisTaskEMCALClusterize, but here modify the recpoint and
+  // not the output calocluster
+  
+  Int_t ncls = fClusterArr->GetEntriesFast();
+  for(Int_t irp=0; irp < ncls; ++irp)
+  {
+    TArrayI clArray(300) ; //Weird if more than a few clusters are in the origin ...
+    clArray.Reset();
+    Int_t nClu = 0;
+    Int_t nLabTotOrg = 0;
+    Float_t emax = -1;
+    Int_t idMax = -1;
+    
+    AliEMCALRecPoint *clus = static_cast<AliEMCALRecPoint*>(fClusterArr->At(irp));
+    
+    //Find the clusters that originally had the cells
+    const Int_t ncells = clus->GetMultiplicity();
+    Int_t *digList     = clus->GetDigitsList();
+    
+    for (Int_t iLoopCell = 0 ; iLoopCell < ncells ; iLoopCell++)
+    {
+      AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(digList[iLoopCell]));
+      Int_t idCell = digit->GetId();
+      
+      if (idCell>=0)
+      {
+        Int_t idCluster = fOrgClusterCellId[idCell];
+        Bool_t set = kTRUE;
+        for (Int_t icl =0; icl < nClu; icl++)
+        {
+          if (((Int_t)clArray.GetAt(icl))==-1) continue;
+          if (idCluster == ((Int_t)clArray.GetAt(icl))) set = kFALSE;
+        }
+        if (set && idCluster >= 0)
+        {
+          clArray.SetAt(idCluster,nClu++);
+          nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+          
+          //Search highest E cluster
+          AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+          if (emax < clOrg->E())
+          {
+            emax  = clOrg->E();
+            idMax = idCluster;
+          }
+        }
+      }
+    }// cell loop
+    
+    // Put the first in the list the cluster with highest energy
+    if (idMax != ((Int_t)clArray.GetAt(0))) // Max not at first position
+    {
+      Int_t maxIndex = -1;
+      Int_t firstCluster = ((Int_t)clArray.GetAt(0));
+      for (Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++)
+      {
+        if (idMax == ((Int_t)clArray.GetAt(iLoopCluster))) maxIndex = iLoopCluster;
+      }
+      
+      if (firstCluster >=0 && idMax >=0)
+      {
+        clArray.SetAt(idMax,0);
+        clArray.SetAt(firstCluster,maxIndex);
+      }
+    }
+    
+    // Get the labels list in the original clusters, assign all to the new cluster
+    TArrayI clMCArray(nLabTotOrg) ;
+    clMCArray.Reset();
+    
+    Int_t nLabTot = 0;
+    for (Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++)
+    {
+      Int_t idCluster = (Int_t) clArray.GetAt(iLoopCluster);
+      AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+      Int_t nLab = clOrg->GetNLabels();
+      
+      for (Int_t iLab = 0 ; iLab < nLab ; iLab++)
+      {
+        Int_t lab = clOrg->GetLabelAt(iLab) ;
+        if (lab>=0)
+        {
+          Bool_t set = kTRUE;
+          for(Int_t iLabTot =0; iLabTot < nLabTot; iLabTot++)
+          {
+            if (lab == ((Int_t)clMCArray.GetAt(iLabTot))) set = kFALSE;
+          }
+          if (set) clMCArray.SetAt(lab,nLabTot++);
+        }
+      }
+    }// cluster loop
+    
+    // Set the final list of labels to rec point
+    
+    Int_t *labels = new Int_t[nLabTot];
+    for(Int_t il = 0; il < nLabTot; il++) labels[il] = clMCArray.GetArray()[il];
+    clus->SetParents(nLabTot,labels);
+    
+  } // rec point array
 }
 
 //________________________________________________________________________________________
