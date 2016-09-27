@@ -316,9 +316,16 @@ void BuildSystematicMap ( TString runList, Double_t globalSyst = -0.02, TString 
         for ( Int_t iboard=0; iboard<234; iboard++ ) {
           Int_t idx = ich*234*3+iboard*3+icount;
           Int_t ibin = iboard+1;
-          Double_t countDiff = TMath::Nint(systDiff[idx] * auxHisto->GetBinContent(ibin));
+          Double_t countAll = auxHisto->GetBinContent(ibin);
+          Double_t countDiff = TMath::Nint(systDiff[idx] * countAll);
           Double_t countOrig = histo->GetBinContent(ibin);
           Double_t newCount = countOrig+countDiff;
+          if ( newCount < 0 || newCount > countAll ) {
+            printf("WARNING: ch %i  board %i  cath %i  systDiff %g  newEff %g / %g\n",11+ich,ibin,icount,systDiff[idx],newCount,countAll);
+            if ( newCount < 0 ) newCount = 0;
+            else newCount = countAll;
+            printf("  => setting numerator to %g\n",newCount);
+          }
           histo->SetBinContent(ibin,newCount);
           if ( histo->GetSumw2N() > 0 ) histo->SetBinError(ibin,TMath::Sqrt(newCount));
         }
