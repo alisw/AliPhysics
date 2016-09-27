@@ -67,13 +67,6 @@ public:
    */
   void AddMaskedFastor(int fastorID){ fMaskedFastors.push_back(fastorID); }
 
-  /**
-   * Checks if the fastor ID is in the list of masked fastors
-   * @param fastorID FastOR ID to check
-   * @return True if fastor is masked, false otherwise
-   */
-  bool IsFastorMasked(int fastorID);
-
 protected:
 
   /**
