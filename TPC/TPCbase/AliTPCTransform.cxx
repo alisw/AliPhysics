@@ -905,16 +905,23 @@ void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
     }
   }
   if (fLastCorr[3]>1e-6) { // apply SC fluctuation according to stored RMS Y
+    const float zfluctScale = 0.3; // the fluctuations in Z are smaller
     float fluct = fLastCorr[3]*fCurrentMapFluctStrenght;
+    /*
+    // fluctuation of charge acts leads to different sign of dist.fluct on left/right 
+    // sides of the sector. Potential problem: if average distortion ~0, this way of
+    // imposing fluctuations will lead to small discontinuity...
+    if (fLastCorr[1]<0) fluct = -fluct;
+    */
     if (fCurrentRecoParam->GetDistFluctUncorrFracMC()>0) {
       float a,b, flUnc = fCurrentRecoParam->GetDistFluctUncorrFracMC()*fLastCorr[3];
       gRandom->Rannor(a,b);
       fLastCorr[1] += flUnc*a;
-      fLastCorr[2] += flUnc*b;
+      fLastCorr[2] += flUnc*b*zfluctScale;
       fluct *= 1.-fCurrentRecoParam->GetDistFluctUncorrFracMC();
     } 
     fLastCorr[1] += fluct;
-    fLastCorr[2] += fluct*0.3; //??
+    fLastCorr[2] += fluct*zfluctScale; //??
   }
   for (int i=3;i--;) xyzLab[i] += fLastCorr[i];
   RotatedGlobal2Global(roc,xyzLab);
