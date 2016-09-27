@@ -12,9 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <algorithm>
 #include <array>
+#include <functional>
 #include <iostream>
-#include <vector>
 #include <map>
 
 #include <TArrayD.h>
@@ -74,6 +75,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fNameDownscaleOADB(""),
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
+    fMaskedFastors(),
+    fSelectNoiseEvents(false),
+    fRejectNoiseEvents(false),
     fCurrentRun(-1),
     fLocalInitialized(false)
 {
@@ -103,6 +107,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fNameDownscaleOADB(""),
     fDownscaleOADB(nullptr),
     fDownscaleFactors(nullptr),
+    fMaskedFastors(),
+    fSelectNoiseEvents(false),
+    fRejectNoiseEvents(false),
     fCurrentRun(-1),
     fLocalInitialized(false)
 {
@@ -277,6 +284,22 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches);
       isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches);
       isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches);
+  }
+  // Online selection / rejection
+  if(fRejectNoiseEvents || fSelectNoiseEvents){
+    if(fRejectNoiseEvents){
+      if(isEJ1) isEJ1 &= SelectOnlineTrigger(kCPREJ1);
+      if(isEJ2) isEJ2 &= SelectOnlineTrigger(kCPREJ2);
+      if(isEG1) isEG1 &= SelectOnlineTrigger(kCPREG1);
+      if(isEG2) isEG2 &= SelectOnlineTrigger(kCPREG2);
+      if(isEMC7) isEMC7 &= SelectOnlineTrigger(kCPREL0);
+    } else {
+      if(isEJ1) isEJ1 &= !SelectOnlineTrigger(kCPREJ1);
+      if(isEJ1) isEJ2 &= !SelectOnlineTrigger(kCPREJ2);
+      if(isEG1) isEG1 &= !SelectOnlineTrigger(kCPREG1);
+      if(isEG2) isEG2 &= !SelectOnlineTrigger(kCPREG2);
+      if(isEMC7) isEMC7 &= !SelectOnlineTrigger(kCPREL0);
+    }
   }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
@@ -588,6 +611,51 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
   fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta, weight);
   double datapoint[3] = {poverz, trk.GetTPCsignal(), beta};
   fHistos->FillTHnSparse(Form("hPIDcorrEMCAL%s", eventclass.c_str()), datapoint, weight);
+}
+
+/**
+ * Select events which contain good patches (at least one patch without noisy fastor).
+ * @param trg L0/L1 trigger class to be checked
+ * @return True if the event has at least one good patch, false otherwise
+ */
+bool AliAnalysisTaskChargedParticlesRef::SelectOnlineTrigger(OnlineTrigger_t trg){
+  int ngood(0);
+  const int kEJ1threshold = 223, kEJ2threshold = 140;
+  std::function<bool(const AliEMCALTriggerPatchInfo *)> PatchSelector[5] = {
+      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
+          return patch->IsGammaHigh();
+      },
+      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
+          return patch->IsGammaLow();
+      },
+      [kEJ1threshold](const AliEMCALTriggerPatchInfo * patch) -> bool {
+          return patch->IsJetLowRecalc() && patch->GetADCAmp() > kEJ1threshold;
+      },
+      [kEJ2threshold](const AliEMCALTriggerPatchInfo * patch) -> bool {
+          return patch->IsJetLowRecalc() && patch->GetADCAmp() > kEJ1threshold;
+      },
+      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
+          return patch->IsLevel0();
+      }
+  };
+  for(auto p : *fTriggerPatches){
+    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
+    if(PatchSelector[trg](patch)){
+      bool patchMasked(false);
+      for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++){
+        for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++){
+          int fastorAbs(-1);
+          fGeometry->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorAbs);
+          if(std::find(fMaskedFastors.begin(), fMaskedFastors.end(), fastorAbs) != fMaskedFastors.end()){
+            patchMasked = true;
+            break;
+          }
+        }
+      }
+      if(!patchMasked) ngood++;
+    }
+  }
+  return ngood > 0;
 }
 
 /**
