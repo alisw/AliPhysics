@@ -410,7 +410,7 @@ void AliTOFQADataMakerRec::InitRaws()
 
   //add lines for DQM shifter
   fLineExpTimeMin = new TLine(150., 0., 150., 0.);
-  fLineExpTimeMax = new TLine(225., 0., 225., 0.);
+  fLineExpTimeMax = new TLine(250., 0., 250., 0.);
   fLineExpTotMin = new TLine(10., 0., 10., 0.);
   fLineExpTotMax = new TLine(15., 0., 15., 0.);
 
@@ -478,7 +478,17 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h32, 32, !expert,  image, !saveCorr) ;
 
 //
+
+  /*for (int ir=fgCloningRequest->GetEntriesFast();ir--;) {
+    TNamed* rec = dynamic_cast<TNamed*>(fgCloningRequest->At(ir));
+    if (!rec) continue;
+    TString hfname = rec->GetName();
+    if(rec->TestBit(AliQAv1::GetImageBit())) printf("Bye\n");
+    if(!rec->TestBit(AliQAv1::GetImageBit())) printf("Hi\n");
+//    rec->SetBit(AliQAv1::GetOrigHistoKeptBit(), kFALSE);
+  }*/
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
+  
 }
 
 //____________________________________________________________________________ 
@@ -609,7 +619,6 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // AliLog::SetClassDebugLevel("AliTOFRawStream",0);
   // AliLog::SetClassDebugLevel("AliTOFDecoderV2",0);
   AliLog::SetGlobalLogLevel(AliLog::kError);
-
   if (rawReader->GetType()==7) {
    
     Double_t tdc2ns=AliTOFGeometry::TdcBinWidth()*1E-3;//in ns
@@ -840,11 +849,13 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     fIsSOC=kFALSE;
   }
   //enable options for DQM shifter
-  EnableDqmShifterOpt(kTRUE);
+
+ EnableDqmShifterOpt(kTRUE);
   //
   IncEvCountCycleRaws();
   IncEvCountTotalRaws();
   //
+
 }
 
 //____________________________________________________________________________
@@ -936,6 +947,7 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   IncEvCountCycleRecPoints();
   IncEvCountTotalRecPoints();
   //
+
 }
 
 //____________________________________________________________________________
@@ -1036,7 +1048,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	// Help make the raw qa histogram easier to interpret for the DQM shifter
 	if (!arrRW[ 0] || !arrRW[ 5] || !arrRW[10] || !arrRW[15] || !arrRW[16] || !arrRW[17]) continue;
 	
-	printf("=========>Processed %i physics raw of specie %s with TrigGlass %d\n",
+	printf("=========>Processed %i physics raw of specie %s with TrigClass %d\n",
 	       GetEvCountCycleRaws(itc),AliRecoParam::GetEventSpecieName(specie), itc);
 	 
 	//Double_t monitorPeriodLength=fProcessedRawEventN*600*1E-9;//in s
@@ -1126,7 +1138,6 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
       }//END ENABLE DQM SHIFTER OPT
     } // RS: loop over trigger classes
   } //end for
-  
   AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
 //____________________________________________________________________________

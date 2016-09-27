@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -25,18 +24,19 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
+#include "TList.h"
 #include "TH1.h"
 #include "TObjArray.h"
-
+#include "TString.h" 
 #include "AliLog.h"
-//#include "AliQAv1.h"
-//#include "AliQAChecker.h"
+#include "AliQAv1.h"
+#include "AliQAChecker.h"
+#include "AliQADataMakerRec.h"
 #include "AliTOFQAChecker.h"
 #include <TPaveText.h>
-#include <TList.h>
+//#include <TList.h>
 
 ClassImp(AliTOFQAChecker)
-
 //____________________________________________________________________________
 void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
 				  TObjArray ** list,
@@ -46,16 +46,15 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
   // look whether they are empty!
 
   Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
-
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
-      continue ;
-    test[specie] = 1.0 ; 
+       continue ;
+    test[specie] = 0.0 ; //setting to 1.0 the function SetQA called in AliQACheckerBase::Run doesn't set properly the flag since it's >1
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ; 
     if (list[specie]->GetEntries() == 0){  
       test[specie] = 0.0 ; // nothing to check
-    }
+    } //END IF: is there anything to check?
     else {
       TIter next(list[specie]) ; 
       TH1 * hdata ;
@@ -63,7 +62,6 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
       while ( (hdata = static_cast<TH1 *>(next())) ) {
         if (hdata && hdata->InheritsFrom("TH1")) { 
           Double_t rv = 0.;
-
 	  switch ( CheckRaws(hdata,specie) ) 
 	    {
 	    case AliQAv1::kINFO:
@@ -82,8 +80,7 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
 	      //AliError("Invalid ecc value. FIXME !");
 	      rv = AliQAv1::kNULLBit;
 	      break;
-	    }	  
-
+	    }	  //based on what CheckRaws returns rv is set to a value
           AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ; 
           count[specie]++ ; 
           test[specie] += rv ; 
@@ -102,8 +99,8 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
         }
         AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie])) ; 
       }
-    }
-  }
+    } //END ELSE: is there anything to check? 
+  }  //END FOR: cycle over all possible species
 }  
 
 //------------------------------------------------------
@@ -121,8 +118,20 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
   /*
   checker for RAWS
   */
+  Int_t nTrgCl=AliQADataMaker::GetNTrigClasses();
+  Int_t nToDrawTrgCl;
+
+  /*customize the summary image*/
+  Bool_t drawRawsSumImage=kTRUE; //hTOF_Raws: kTRUE shows it in the summary image, kFALSE does not
+  Bool_t drawRawsTimeSumImage=kTRUE; //hTOF_RawsTime: kTRUE shows it in the summary image, kFALSE does not
+  Bool_t drawRawsToTSumImage=kTRUE; //hTOF_RawsToT: kTRUE shows it in the summary image, kFALSE does not
+  TString ClToDraw[]={"kINT7", "kCalibBarell", "0"}; //trigger classes shown in the summary image (it MUST end with "0")
+  for(nToDrawTrgCl=0; !ClToDraw[nToDrawTrgCl].EqualTo("0"); nToDrawTrgCl++) {}
+
   Int_t flag = AliQAv1::kNULLBit;
-  
+  Int_t trgCl;
+  Int_t trigId=0;
+  Bool_t suffixTrgCl=kFALSE;
   if(histo->GetEntries()>0) flag = AliQAv1::kINFO; 
   
   Double_t binWidthTOFrawTime = 2.44;
@@ -131,19 +140,28 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     minTOFrawTime=150.;//ns
     maxTOFrawTime=250.;//ns
   } else {
-    minTOFrawTime=150.;//ns
-    maxTOFrawTime=225.;//ns
+    minTOFrawTime=200.;//ns 
+    maxTOFrawTime=275.;//ns 
   } 
   Float_t minTOFrawTot = 10.;
-  Double_t maxTOFrawTot = 15.;
+  Double_t maxTOFrawTot = 15.; 
   // Double_t minTOFrawTot = 200;
   // Double_t maxTOFrawTot = 250;
 
   TString histname = histo->GetName();
    // TPaveText text(0.65,0.5,0.9,0.75,"NDC");   
   TPaveText * text = 0x0;
-  
-  if (histname.EndsWith("TOFRaws")) {
+  for (trgCl=0; trgCl<nTrgCl; trgCl++) 
+    if (histname.EndsWith(AliQADataMaker::GetTrigClassName(trgCl))) suffixTrgCl=kTRUE;
+  if ((histname.EndsWith("TOFRaws")) || (histname.Contains("TOFRaws") && suffixTrgCl)) {
+    if (!suffixTrgCl) histo->SetBit(AliQAv1::GetImageBit(), drawRawsSumImage);
+    if (suffixTrgCl) {
+      histo->SetBit(AliQAv1::GetImageBit(), kFALSE); //clones not shown by default
+      for(int i=0; i<nToDrawTrgCl; i++) {
+        if(histname.EndsWith(ClToDraw[i]))
+          histo->SetBit(AliQAv1::GetImageBit(), kTRUE);
+       }
+    }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("hitsMsg");
     if (histo->GetEntries()==0) {
         if (text){
@@ -223,7 +241,15 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       }
     }
   }
-  if (histname.EndsWith("RawsTime")) {
+  if ((histname.EndsWith("RawsTime")) || (histname.Contains("RawsTime") && suffixTrgCl)) {
+    if (!suffixTrgCl) histo->SetBit(AliQAv1::GetImageBit(), drawRawsTimeSumImage);
+    if (suffixTrgCl) {
+      histo->SetBit(AliQAv1::GetImageBit(), kFALSE);
+      for(int i=0; i<nToDrawTrgCl; i++) {
+        if(histname.EndsWith(ClToDraw[i]))
+          histo->SetBit(AliQAv1::GetImageBit(), kTRUE);
+       }
+    }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("timeMsg");
     if (histo->GetEntries()==0) {
       //AliWarning("Raw time histogram is empty");
@@ -237,7 +263,7 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     } else {
       Float_t timeMean = histo->GetMean();
       Int_t lowBinId = TMath::Nint(200./binWidthTOFrawTime);
-      Int_t highBinId = TMath::Nint(250./binWidthTOFrawTime);
+      Int_t highBinId = TMath::Nint(255./binWidthTOFrawTime);
       Float_t peakIntegral = histo->Integral(lowBinId,highBinId);
       Float_t totIntegral = histo->Integral(1, histo->GetNbinsX());      
       if ( (timeMean > minTOFrawTime) && (timeMean < maxTOFrawTime) ) {
@@ -248,7 +274,7 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
 	text->SetFillColor(kGreen);
           }
       } else {
-	if ( (peakIntegral/totIntegral > 0.1) && (peakIntegral/totIntegral < 0.75)) {
+	if ( (peakIntegral/totIntegral > 0.1) && (peakIntegral/totIntegral < 0.75)) { 
 	  AliWarning(Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...",peakIntegral/totIntegral,timeMean));
         if (text){
             text->Clear();
@@ -272,7 +298,15 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     }
   }
 
-  if (histname.EndsWith("RawsToT")) {
+  if ((histname.EndsWith("RawsToT")) || (histname.Contains("RawsToT") && suffixTrgCl)) {
+    if (!suffixTrgCl) histo->SetBit(AliQAv1::GetImageBit(), drawRawsToTSumImage);
+    if (suffixTrgCl) {
+      histo->SetBit(AliQAv1::GetImageBit(), kFALSE);
+      for(int i=0; i<nToDrawTrgCl; i++) {
+        if(histname.EndsWith(ClToDraw[i]))
+          histo->SetBit(AliQAv1::GetImageBit(), kTRUE);
+       }
+    }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("totMsg");
     if (histo->GetEntries()==0) {
         if (text){

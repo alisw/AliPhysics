@@ -31,7 +31,7 @@ public:
 
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TObjArray ** list,
 		   const AliDetectorRecoParam * recoParam=0) ;
-  Int_t  CheckRaws(TH1* histo, Int_t specie);  
+  Int_t  CheckRaws(TH1* histo, Int_t specie); 
 
   ClassDef(AliTOFQAChecker,2)  // description 
 
