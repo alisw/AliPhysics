@@ -41,7 +41,7 @@ class AliTPCChebDist : public AliTPCChebCorr
   Float_t  Slice2X(int ix)  const;
   //
   Float_t  GetScaleDnDeta2pp13TeV() const  {return fScaleDnDeta2pp13TeV;}
-  Float_t  SetScaleDnDeta2pp13TeV(float v) {fScaleDnDeta2pp13TeV = v;}
+  void     SetScaleDnDeta2pp13TeV(float v) {fScaleDnDeta2pp13TeV = v;}
   //
  protected:
   //
