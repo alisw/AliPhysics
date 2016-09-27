@@ -128,6 +128,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   AliGRPManager mgr;
   mgr.ReadGRPEntry();
   fTPCPresent = ((mgr.GetGRPData()->GetDetectorMask() & AliDAQ::kTPC) != 0);
+  SetTimeStamp(mgr.GetGRPData()->GetTimeStart());
 
   if (!fTPCPresent) return(iResult);
 
