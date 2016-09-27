@@ -68,6 +68,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -124,6 +125,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fFillYHist;          /// flag to fill Y Histograms
   Bool_t    fFillImpParHist;      /// flag to fill Pt and Impact Parameter Histograms
   Bool_t    fUseSelectionBit;     /// flag to check or not the selection bit
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
 
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7
@@ -137,7 +139,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TList	   *fDetSignal;		//!<!Detector signal histograms (on output slot 8)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,20); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,21); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

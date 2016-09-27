@@ -91,6 +91,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fUseSelectionBit(kTRUE),
+  fAODProtection(1),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
@@ -136,6 +137,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fUseSelectionBit(kTRUE),
+  fAODProtection(1),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
@@ -1044,6 +1046,17 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+  }
+
   TString bname;
   if(fArray==0){ //D0 candidates
     // load D0->Kpi candidates
