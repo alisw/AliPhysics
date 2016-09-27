@@ -70,6 +70,7 @@ public:
   void SetExcludeNoiseEvents(Bool_t doExclude = true) { fRejectNoiseEvents = doExclude; }
   void SetSelectNoiseEvents(Bool_t doSelect = true) { fSelectNoiseEvents = doSelect; }
   void AddMaskedFastor(int fastorID) { fMaskedFastors.push_back(fastorID); }
+  void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
 
 protected:
   virtual void ExecOnce();
@@ -104,6 +105,8 @@ protected:
   TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
   AliOADBContainer                *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
   TObjArray                       *fDownscaleFactors;         //!<! Downscalfactors for given run
+  TString                         fNameMaskedFastorOADB;      ///< Name of the masked fastor OADB container
+  AliOADBContainer                *fMaskedFastorOADB;         //!<! Container with masked fastors
   std::vector<int>                fMaskedFastors;             ///< List of masked fastors
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
