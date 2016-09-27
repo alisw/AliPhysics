@@ -1463,21 +1463,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Double_t ptmin=0.;
   Double_t ptmax=40.;
 
-  Int_t nsigvertbins=25;
-  Double_t minsigvert=0.010;
-  Double_t maxsigvert=0.035;
-
   Int_t nselbins=2;
   Double_t minsel=0.5;
   Double_t maxsel=2.5;
-
-  Int_t ndeclbins=70;
-  Double_t mindecl=0.;
-  Double_t maxdecl=0.7;
-
-  Int_t ndeclxybins=70;
-  Double_t mindeclxy=0.;
-  Double_t maxdeclxy=0.7;
 
   Int_t nnormdlbins=30;
   Double_t minnormdl=0.;
@@ -1489,6 +1477,18 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Double_t minptmindau;
   Double_t maxptmindau;
 
+  Int_t nsigvertbins;
+  Double_t minsigvert;
+  Double_t maxsigvert;
+ 
+  Int_t ndeclbins;
+  Double_t mindecl;
+  Double_t maxdecl;
+    
+  Int_t ndeclxybins;
+  Double_t mindeclxy;
+  Double_t maxdeclxy;
+    
   Int_t ncospbins;
   Double_t mincosp;
   Double_t maxcosp;
@@ -1507,6 +1507,18 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     nptmindaubins=1;
     minptmindau=0.2;
     maxptmindau=1.2;
+      
+    nsigvertbins=8;
+    minsigvert=0.016;
+    maxsigvert=0.032;
+      
+    ndeclbins=35;
+    mindecl=0.;
+    maxdecl=0.35;
+      
+    ndeclxybins=35;
+    mindeclxy=0.;
+    maxdeclxy=0.35;
 
     ncospbins=10;
     mincosp=0.99;
@@ -1527,6 +1539,18 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     minptmindau=0.2;
     maxptmindau=1.2;
 
+    nsigvertbins=25;
+    minsigvert=0.010;
+    maxsigvert=0.035;
+      
+    ndeclbins=70;
+    mindecl=0.;
+    maxdecl=0.70;
+      
+    ndeclxybins=70;
+    mindeclxy=0.;
+    maxdeclxy=0.70;
+      
     ncospbins=100;
     mincosp=0.90;
     maxcosp=1.;
