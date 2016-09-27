@@ -63,7 +63,7 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
   //   Centre of mass energy 
   genP->SetEnergyCMS(e_cms); // in GeV
     
-  //genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
+  genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
 
   if(tune == 0){ // tune Perugia0
     genP->SetTune(320);
