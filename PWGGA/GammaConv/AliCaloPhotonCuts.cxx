@@ -2098,8 +2098,8 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
       trackParam = new AliExternalTrackParam(*in);
     } else {
       Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
-      aodt->PxPyPz(pxpypz);
-      aodt->XvYvZv(xyz);
+      aodt->GetPxPyPz(pxpypz);
+      aodt->GetXYZ(xyz);
       aodt->GetCovarianceXYZPxPyPz(cv);
       trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
     }
@@ -2253,8 +2253,8 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
 
       AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
       Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
-      aodt->PxPyPz(pxpypz);
-      aodt->XvYvZv(xyz);
+      aodt->GetPxPyPz(pxpypz);
+      aodt->GetXYZ(xyz);
       aodt->GetCovarianceXYZPxPyPz(cv);
       trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
     }
