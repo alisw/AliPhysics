@@ -155,7 +155,7 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pas
 ///
 /// Initialize default parameters
 ///
-//________________________________	________________________________________
+//________________________________________________________________________
 void AliAnaCaloChannelAnalysis::Init()
 {
 	//......................................................
