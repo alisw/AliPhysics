@@ -509,8 +509,8 @@ void AliAnalysisTaskChargedParticlesRef::ExecOnce(){
     fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
     fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
   }
-  // Load OADB container with masked fastors
-  if(fNameMaskedFastorOADB.Length()){
+  // Load OADB container with masked fastors (in case fastor masking is switched on)
+  if(fNameMaskedFastorOADB.Length() && (fRejectNoiseEvents || fSelectNoiseEvents)){
     if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
     fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
     fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
