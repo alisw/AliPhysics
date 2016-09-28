@@ -52,13 +52,10 @@ set(SRCS
     AliPWG4HighPtSpectra.cxx
     AliPWG4HighPtTrackQA.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFFTCF.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetAntenna.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetProtonCorr.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetShape.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPID.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPIDV0base.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPPJetSpectra.cxx
     ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliIDFFUtils.cxx
    )

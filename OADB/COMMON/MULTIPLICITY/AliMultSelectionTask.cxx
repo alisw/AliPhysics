@@ -1282,6 +1282,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
             AliVTrack *track = lVevent -> GetVTrack( itrack );
+            if ( !track ) continue;
             if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
             
             //Only for accepted tracks

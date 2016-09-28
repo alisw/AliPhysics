@@ -160,7 +160,7 @@ void AliEmcalCorrectionComponent::AddContainer(inputObjectType contType)
   else if (contType == kTrack) {
     containerBranchInConfiguration = "track" + containerBranchInConfiguration;
   } else {
-    AliFatal(TString::Format("%s: Must specify type of container when requesting branch.", GetName()));
+    AliFatal("Must specify type of container when requesting branch.");
   }
   
   // Retrieve branch name
@@ -168,7 +168,7 @@ void AliEmcalCorrectionComponent::AddContainer(inputObjectType contType)
   // Should be unnecessary, since the user can only do this if done explicitly.
   /*if (containerBranch == "")
   {
-    AliFatal(TString::Format("%s: Request %i container, but the container branch is empty!", GetName(), contType));
+    AliFatal(TString::Format("Request %i container, but the container branch is empty!", contType));
   }*/
 
   // Determine proper name if using "usedefault" pattern

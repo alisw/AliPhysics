@@ -58,6 +58,8 @@
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAnalysisTaskCheckPileup+;
+#pragma link C++ class AliAnalysisTaskCheckESDTracks+;
+#pragma link C++ class AliAnalysisTaskCheckAODTracks+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskITSTrackingCheck+;
 #pragma link C++ class AliAnalysisTaskITSsaTracks+;

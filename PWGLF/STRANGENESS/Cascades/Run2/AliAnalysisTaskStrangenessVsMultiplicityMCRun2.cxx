@@ -80,6 +80,8 @@ class AliAODv0;
 #include "AliAODEvent.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
+#include "AliLightV0vertexer.h"
+#include "AliLightCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -135,6 +137,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
 
 //---> Flags controlling Vertexers
         fkRunVertexers    ( kFALSE ),
+        fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
         fTrigType(AliVEvent::kMB),
@@ -274,6 +277,7 @@ fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
+fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -648,37 +652,37 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     
     if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityK0Short);
     }
     if(! fHistGeneratedPtVsYVsCentralityLambda ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityLambda);
     }
     if(! fHistGeneratedPtVsYVsCentralityAntiLambda ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiLambda);
     }
     if(! fHistGeneratedPtVsYVsCentralityXiMinus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityXiMinus);
     }
     if(! fHistGeneratedPtVsYVsCentralityXiPlus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityXiPlus);
     }
     if(! fHistGeneratedPtVsYVsCentralityOmegaMinus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaMinus);
     }
     if(! fHistGeneratedPtVsYVsCentralityOmegaPlus ) {
         //Histogram Output: Efficiency Denominator
-        fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",200,0,200,20,-1.0,1.0,100,0,100);
+        fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",200,0,20,20,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
     }
     
@@ -1247,16 +1251,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //    - Create another out histogram in AliV0Result to be able to do the momentum correlations?
                 ( ! (lV0Result->GetCutMCPhysicalPrimary())    || fTreeVariablePrimaryStatus == 1 ) &&
                 ( ! (lV0Result->GetCutMCLambdaFromPrimaryXi())|| (fTreeVariablePrimaryStatusMother == 1 && fTreeVariablePIDMother == lPDGCodeXiMother) ) &&
-                ( ! (lV0Result->GetCutMCPDGCodeAssociation()) || fTreeCascVarPID == lPDGCode     ) &&
-                
-                //FIXME: ADD REJECTION CUTS HERE//
+                ( ! (lV0Result->GetCutMCPDGCodeAssociation()) || fTreeVariablePID == lPDGCode     ) &&
                 
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
-                TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() ){
-                
+                TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
+            
+                //Check 5: Armenteros-Podolanski space cut (for K0Short analysis)
+                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
+                )
+            {
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, lMass, fTreeVariablePt );
+                histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1272,15 +1278,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     if( fkRunVertexers ) {
         lESDevent->ResetCascades();
         lESDevent->ResetV0s();
-
-        AliV0vertexer lV0vtxer;
-        AliCascadeVertexer lCascVtxer;
-
-        lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-        lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-
-        lV0vtxer.Tracks2V0vertices(lESDevent);
-        lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        
+        //Decide between regular and light vertexer (default: light)
+        if ( ! fkUseLightVertexer ){
+            AliV0vertexer lV0vtxer;
+            AliCascadeVertexer lCascVtxer;
+            
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        } else {
+            AliLightV0vertexer lV0vtxer;
+            AliLightCascadeVertexer lCascVtxer;
+            
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        }
     }
 
     //------------------------------------------------
@@ -1873,16 +1891,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( ! (lCascadeResult->GetCutMCPhysicalPrimary())    || fTreeCascVarIsPhysicalPrimary == kTRUE ) &&
                 ( ! (lCascadeResult->GetCutMCPDGCodeAssociation()) || fTreeCascVarPID == lPDGCode            ) &&
                 
-                //FIXME: ADD REJECTION CUTS HERE//
-                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
-                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx()
+                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
+                
+                //Check 5: Xi rejection for Omega analysis
+                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus || lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, lMass, fTreeCascVarPt );
+                histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

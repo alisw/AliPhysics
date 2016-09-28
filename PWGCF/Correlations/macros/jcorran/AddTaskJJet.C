@@ -94,8 +94,13 @@ AliJJetTask* AddTaskJJet(
     TString  aType     [nTrackJetFinder]={ "EMCAL", "EMCAL", "EMCAL", "TPC", "TPC", "TPC" };
 
     //================= Containers : Track, Cluster
-    AliParticleContainer *trackCont  = jtTask->AddParticleContainer( tracksName );
+    AliTrackContainer* partCont = new AliTrackContainer(tracksName);
+    partCont->SetFilterHybridTracks(kFALSE);
+    //partCont->SetFilterHybridTracks(kTRUE);
+    AliParticleContainer *trackCont = partCont; 
     trackCont->SetClassName("AliVTrack");
+    //AliParticleContainer *trackCont  = jtTask->AddParticleContainer( tracksName );
+    if (trackCont) jtTask->AdoptParticleContainer(trackCont);
     AliClusterContainer *clusterCont = jtTask->AddClusterContainer( clustersCorrName );
     clusterCont->SetClassName("AliAODCaloCluster");
 

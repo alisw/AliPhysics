@@ -132,6 +132,7 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   TH1D*         hTrackGhost;        //! No of multi-rec tracks
   TH1D*         hV0ButNoTracks;     //! No of V0s rec where daughters not found
 
+  TH1D*         hCentr;                //! 
   TH1D*         hCt;                //! 
   TH1D*         hDCAdaugh;          //! DCA between daughters
   TH1D*         hDecayR;            //! V0 decay radius
@@ -142,6 +143,17 @@ class AliAnaTaskV0EffDecomposition : public AliAnalysisTaskSE {
   TH1D*         hPdca;              //!
   TH1D*         hNdca;              //!
   TH1D*         hDcaV0;              //!
+
+  TH1D*         hCtHigh;                //! 
+  TH1D*         hDCAdaughHigh;          //! DCA between daughters
+  TH1D*         hDecayRHigh;            //! V0 decay radius
+  TH1D*         hCosPAHigh;             //! cosine of pointing angle
+  TH1D*         hInvMassHigh;           //!
+  TH1D*         hNclHigh;    //!
+  TH1D*         hChi2perNDFHigh;  //!
+  TH1D*         hPdcaHigh;              //!
+  TH1D*         hNdcaHigh;              //!
+  TH1D*         hDcaV0High;              //!
 
   ClassDef(AliAnaTaskV0EffDecomposition, 1);    //Analysis task for v0 eff decomposition 
 };

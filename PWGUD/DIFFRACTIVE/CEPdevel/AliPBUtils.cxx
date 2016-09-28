@@ -614,17 +614,10 @@ void AliPBUtils::GetMultFMD(const AliESDEvent *ESDEvent, Int_t& fmdA,
 	//
 	// Multiplicity seen by FMD
 	//
-	// WARNING: this function is only working with a modified AliRoot so far
-
-#ifdef STD_ALIROOT
-	fmdA = FMDHitCombinations(ESDEvent, 0);
-	fmdC = FMDHitCombinations(ESDEvent, 1);
-#else
 	AliTriggerAnalysis triggerAnalysis;
 	triggerAnalysis.SetFMDThreshold(0.3, 0.5); // parameters got from FMD
-	triggerAnalysis.FMDTrigger(ESDEvent, AliTriggerAnalysis::kASide, &fmdA);
-	triggerAnalysis.FMDTrigger(ESDEvent, AliTriggerAnalysis::kCSide, &fmdC);
-#endif
+  fmdA = triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDA);
+  fmdC = triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDC);
 
 	if (fmdSums) {
 		const AliESDFMD* fmdData =
@@ -712,10 +705,10 @@ Int_t AliPBUtils::GetFMD(const AliESDEvent *ESDEvent, TH2 *hitMapFMDa,
 	const Bool_t fmdC =
 		triggerAnalysis.FMDTrigger(ESDEvent, AliTriggerAnalysis::kCSide);
 
-	printf("<I - GetFMD> online : %i (A) : %i (C) \n",fmdA,fmdC);
-	printf("<I - GetFMD> offline: %i (A) : %i (C) \n",
-    triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDA),
-    triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDC) );
+	//printf("<I - GetFMD> online : %i (A) : %i (C) \n",fmdA,fmdC);
+	//printf("<I - GetFMD> offline: %i (A) : %i (C) \n",
+  //  triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDA),
+  //  triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDC) );
 
 	// prepartions for a charge summation algorithm
 	Bool_t hitMaps = (Bool_t)(hitMapFMDa && hitMapFMDc);
@@ -770,8 +763,8 @@ Int_t AliPBUtils::GetFMD(const AliESDEvent *ESDEvent, TH2 *hitMapFMDa,
 	}
 
 	if (calcSum) {
-		//printf("DEBUG -- SUM(%f,%f,%f,%f,%f)\n", sum[0], sum[1], sum[2], sum[3],
-		//       sum[4]);
+    //printf("DEBUG -- SUM(%f,%f,%f,%f,%f)\n", sum[0], sum[1], sum[2], sum[3],
+    //  sum[4]);
 		for (UInt_t i = 0; i < 5; i++) { // 
 			fmdSums[i]->Fill(sum[i]);
 		}

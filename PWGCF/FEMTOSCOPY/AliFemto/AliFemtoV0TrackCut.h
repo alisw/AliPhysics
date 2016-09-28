@@ -14,6 +14,9 @@
  * A particle cut object which tests AliFemtoV0 obects for a number of
  * conditions for the reconstructed V0 and the positive and negative
  * (measured) daughter tracks.
+ *
+ * NOTE: The class, AliFemtoV0TrackCutNSigmaFilter in the AliFemtoUser directory
+ *       makes it much easier to customize the NSigma cuts used in the V0 finder
  */
 class AliFemtoV0TrackCut : public AliFemtoParticleCut {
 public:
@@ -34,6 +37,7 @@ public:
 
   AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut);
   AliFemtoV0TrackCut& operator=(const AliFemtoV0TrackCut& aCut);
+  virtual AliFemtoV0TrackCut* Clone();
 
   virtual bool Pass(const AliFemtoV0* aV0);
 
@@ -44,8 +48,6 @@ public:
   void SetInvariantMassLambda(double,double);
   void SetInvariantMassK0s(double,double);
 
-  void SetInvariantMassRejectK0s(double,double);
-  
   void SetMinDaughtersToPrimVertex(double,double);
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
@@ -86,20 +88,38 @@ public:
   bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacutTPC=3.0, double nsigmacutTOF=3.0, bool requireTOF=true);
 
   //-----The fMinvPurityAidHistoV0 is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the V0 collection
-  void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidV0=true
-  TH1D* GetMinvPurityAidHistoV0();
-  //--If initiated, fMinvPurityAidHistoV0 will be in the output list after all other V0 cut monitors (pass and fail)
-  virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 in the output list 
+  void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and 
+                                                                                                                                            //automatically sets flag fBuildPurityAidV0=true
+  TH1D* GetMinvPurityAidHistoV0();  // If initiated, fMinvPurityAidHistoV0 will be in the output list after all other V0 cut monitors (pass and fail)
+  void SetLooseInvMassCut(bool aUseCut, double aInvMassMin, double aInvMassMax);
+
+  //--Members to help cut out misidentified V0s
+  //NOTE: For MUCH more control over the misidentification cut, use AliFemtoV0TrackCutNSigmaFilter class
+  void SetRemoveMisidentified(bool aRemove);
+  void SetUseSimpleMisIDCut(bool aUse);
+
+  void SetInvariantMassRejectK0s(double,double, bool aRemoveMisidentified=true);         // invariant mass window in which to reject misidentified K0s from (Anti)Lambda
+  void SetInvariantMassRejectLambda(double,double, bool aRemoveMisidentified=true);      // invariant mass window in which to reject misidentified Lambda from K0s
+  void SetInvariantMassRejectAntiLambda(double,double, bool aRemoveMisidentified=true);  // invariant mass window in which to reject misidentified AntiLambda from K0s
+  void SetInvMassReject(AliFemtoV0Type aV0Type, double aInvMassMin, double aInvMassMax, bool aRemoveMisidentified=true);  //aV0Type selects one of the above setters
+
+  void SetBuildMisIDHistograms(bool aBuild);
+  void SetMisIDHisto(AliFemtoV0Type aMisIDV0Type, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //allows control over binning
+  void SetDefaultMisIDHistos();
+  TObjArray *GetMisIDHistos();
+
+  bool IsMisIDK0s(const AliFemtoV0* aV0);
+  bool IsMisIDLambda(const AliFemtoV0* aV0);
+  bool IsMisIDAntiLambda(const AliFemtoV0* aV0);
+
+  virtual TList *GetOutputList();  //include fMinvPurityAidHistoV0 and fK0sMassOfMisIDV0 etc. in the output list 
 
  protected:   // here are the quantities I want to cut on...
 
-  double fInvMassLambdaMin;        ///< invariant mass lambda min
-  double fInvMassLambdaMax;        ///< invariant mass lambda max
-  double fInvMassK0sMin;           ///< invariant mass lambda min
-  double fInvMassK0sMax;           ///< invariant mass lambda max
-
-  double fInvMassRejectK0sMin;           ///< invariant mass lambda min
-  double fInvMassRejectK0sMax;           ///< invariant mass lambda max
+  double fInvMassLambdaMin;        ///< invariant mass Lambda min
+  double fInvMassLambdaMax;        ///< invariant mass Lambda max
+  double fInvMassK0sMin;           ///< invariant mass K0s min
+  double fInvMassK0sMax;           ///< invariant mass K0s max
   
   double fMinDcaDaughterPosToVert; ///< DCA of positive daughter to primary vertex
   double fMinDcaDaughterNegToVert; ///< DCA of negative daughter to primary vertex
@@ -140,6 +160,34 @@ public:
   
   bool fBuildPurityAidV0;
   TH1D* fMinvPurityAidHistoV0;
+
+  bool fUseLooseInvMassCut;  //Since inv. mass cut must come last in order to calculate the purity, 
+                             //this allows a looser cut to be implemented earlier in the process and same some time
+  double fLooseInvMassMin;
+  double fLooseInvMassMax;
+
+  //--Members to help cut out misidentified V0s
+  //NOTE: For MUCH more control over the misidentification cut, use AliFemtoV0TrackCutNSigmaFilter class
+  bool fRemoveMisidentified;         // attempt to remove V0 candidates (K0s, Lambda and AntiLambda) which are misidentified
+                                     //   i.e. check if Lambda or AntiLambda could be misidentified K0s,
+                                     //        or if K0s could be misidentified Lambda or AntiLambda
+                                     // Uses methods IsMisIDK0s, IsMisIDLambda, IsMisIDAntiLambda
+  bool fUseSimpleMisIDCut;	     // If set to true, the misidentification cut is based soley off of the invariant mass
+                                     // If set to false, it also considers the NSigma of the daughter particles when cutting
+  bool fBuildMisIDHistograms;
+
+  double fInvMassRejectK0sMin;           ///< invariant mass min to reject misidentified K0s from (Anti)Lambda
+  double fInvMassRejectK0sMax;           ///< invariant mass max to reject misidentified K0s from (Anti)Lambda
+  double fInvMassRejectLambdaMin;        ///< invariant mass min to reject misidentified Lambda from K0s
+  double fInvMassRejectLambdaMax;        ///< invariant mass min to reject misidentified Lambda from K0s
+  double fInvMassRejectAntiLambdaMin;    ///< invariant mass min to reject misidentified AntiLambda from K0s
+  double fInvMassRejectAntiLambdaMax;    ///< invariant mass min to reject misidentified AntiLambda from K0s
+
+  TH1D *fK0sMassOfMisIDV0;             // Mass asumming K0s hypothesis for V0s rejected by misidentification cut
+  TH1D *fLambdaMassOfMisIDV0;          // Mass assuming Lambda hypothesis for V0s rejected by misidentification cut
+  TH1D *fAntiLambdaMassOfMisIDV0;      // Mass assuming AntiLambda hypothesis for V0s rejected by misidentification cut
+
+
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

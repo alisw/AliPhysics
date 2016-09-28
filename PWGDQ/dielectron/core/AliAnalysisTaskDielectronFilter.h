@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#####################################################
-//#                                                   # 
+//#                                                   #
 //#        Dielectron even filter task                #
 //#                                                   #
 //#                                                   #
@@ -33,7 +33,7 @@ class AliTriggerAnalysis;
 class AliAODCaloCluster;
 
 class AliAnalysisTaskDielectronFilter : public AliAnalysisTaskSE {
-  
+
 public:
   AliAnalysisTaskDielectronFilter();
   AliAnalysisTaskDielectronFilter(const char *name);
@@ -47,7 +47,7 @@ public:
   virtual void LocalInit() {Init();}
   //temporary
   virtual void NotifyRun(){AliDielectronPID::SetCorrVal((Double_t)fCurrentRunNumber);}
-  
+
   void UsePhysicsSelection(Bool_t phy=kTRUE) {fSelectPhysics=phy;}
   void SetTriggerMask(UInt_t mask) {fTriggerMask=mask;}
   UInt_t GetTriggerMask() const { return fTriggerMask; }
@@ -64,8 +64,10 @@ public:
   void SetStoreEventsWithSingleTracks(Bool_t storeSingleTrk) { fStoreEventsWithSingleTracks = storeSingleTrk; }
   void SetCreateNanoAODs(Bool_t storeTrackRef) { fCreateNanoAOD = storeTrackRef; }
   void SetStoreHeader(Bool_t storeHeader) { fStoreHeader = storeHeader; }
+  void SetStoreEventplanes(Bool_t storeEventplanes) {fStoreEventplanes = storeEventplanes;}
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
+
 
 private:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
@@ -86,22 +88,23 @@ private:
   ETriggerLogig fTriggerLogic;       // trigger logic: any or all bits need to be matching
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis class
-  
+
   Bool_t fStoreLikeSign;        // flag to store like-sign candidates
   Bool_t fStoreRotatedPairs;    // flag to store rotation
-  Bool_t fStoreEventsWithSingleTracks;    // flag to store events with a least one reconstructed track 
-  Bool_t fCreateNanoAOD;        // flag to create nanoAODs 
+  Bool_t fStoreEventsWithSingleTracks;    // flag to store events with a least one reconstructed track
+  Bool_t fCreateNanoAOD;        // flag to create nanoAODs
   Bool_t fStoreHeader;          // flag to store header for all events
+  Bool_t fStoreEventplanes;     // flag to store eventplane information in a seperated tree
   Bool_t AddMetadataToUserInfo(); // Function to add ProdInfo to Nano AOD Tree
   Bool_t Notify();				// Function to add ProdInfo to Nano AOD Tree
 
 
   AliAnalysisCuts *fEventFilter;     // event filter
-  
+
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);
 
-  
+
   ClassDef(AliAnalysisTaskDielectronFilter, 1);
 };
 #endif

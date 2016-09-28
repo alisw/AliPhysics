@@ -50,6 +50,7 @@ fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
 fL0min(0.01),             fL0max(0.5),
 fL0Bkgmin(1.0),           fL0Bkgmax(3.0),
+fOpAnglemin(0.),          fOpAnglemax(3.0),
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
 fLogWeight(4.5),          fSameSM(kFALSE),          fChangeBkgShape(kFALSE),
@@ -170,6 +171,7 @@ fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
 fL0min(0.01),             fL0max(0.5),
 fL0Bkgmin(1.0),           fL0Bkgmax(3.0),
+fOpAnglemin(0.),          fOpAnglemax(3.0),
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
 fLogWeight(4.5),          fSameSM(kFALSE),          fChangeBkgShape(kFALSE),
@@ -490,7 +492,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       AliAODCaloCluster *c2 = (AliAODCaloCluster *) fCaloClustersArr->At(jClu);
       
       Float_t e2i = c2->E();
-      if(fChangeBkgShape && (((c2->GetM02() > fL0Bkgmin) && (c2->GetM02() < fL0Bkgmax)) && ((e2i < fEBkgmin) || (e2i > fEBkgmax)))) continue;
+      if(fChangeBkgShape && (((c2->GetM02() > fL0Bkgmin) && (c2->GetM02() < fL0Bkgmax)) && ((e2i < fEBkgmin) || (e2i > fEBkgmax)) && ((fMomentum1.Angle(fMomentum2.Vect()) < fOpAnglemin) || (fMomentum1.Angle(fMomentum2.Vect()) > fOpAnglemax)))) continue;
       if(fChangeBkgShape && (((c2->GetM02() < fL0Bkgmin) || (c2->GetM02() > fL0Bkgmax)) && (e2i < fEmin))) continue;
       else if (!fChangeBkgShape && e2i < fEmin) continue;
       else if (e2i > fEmax) continue;

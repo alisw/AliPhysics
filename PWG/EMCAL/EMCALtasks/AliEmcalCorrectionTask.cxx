@@ -286,6 +286,9 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   tempConfiguration << fDefaultConfiguration;
   fDefaultConfigurationString = tempConfiguration.str();
 
+  //AliInfo(TString::Format("User configuration: %s", fUserConfigurationString.c_str()));
+  //AliInfo(TString::Format("Default configuration: %s", fDefaultConfigurationString.c_str()));
+
   // Note that it is initialized properly so that the analysis can proceed
   fConfigurationInitialized = true;
 }
@@ -350,19 +353,6 @@ void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & 
  */
 void AliEmcalCorrectionTask::InitializeComponents()
 {
-  // YAML Objects cannot be streamed, so we need to reinitialize them here.
-  // They need reinitialize if they are null
-  if (fUserConfiguration.IsNull() == true && fUserConfigurationString != "")
-  {
-    AliInfo(TString::Format("%s: Reinitializing user configuration from string. Expected if running on grid!", GetName()));
-    fUserConfiguration = YAML::Load(fUserConfigurationString);
-  }
-  if (fDefaultConfiguration.IsNull() == true)
-  {
-    AliInfo(TString::Format("%s: Reinitializing default configuration from string. Expected if running on grid!", GetName()));
-    fDefaultConfiguration = YAML::Load(fDefaultConfigurationString);
-  }
-
   // Create a function to handle creation and configuration of the all of the created module
   std::vector<std::string> executionOrder;
   RetrieveExecutionOrder(executionOrder);
@@ -381,7 +371,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, componentName);
     if (componentEnabled == false)
     {
-      AliInfo(TString::Format("%s: Component %s is disabled and will not be run!", GetName(), componentName.c_str()));
+      AliInfo(TString::Format("Component %s is disabled and will not be run!", componentName.c_str()));
       continue;
     }
 
@@ -389,7 +379,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     component = AliEmcalCorrectionComponentFactory::createInstance(componentName);
     if (!component)
     {
-      AliFatal(TString::Format("%s: Failed to create requested component %s!", GetName(), componentName.c_str()));
+      AliFatal(TString::Format("Failed to create requested component %s!", componentName.c_str()));
     }
 
     // For setting names of tasks to differentiate between tasks of the same class
@@ -498,13 +488,40 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   //InitializeConfiguration();
   if (fConfigurationInitialized != true)
   {
-    AliFatal(TString::Format("%s: YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!", GetName()));
+    AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
   }
+
+  // Show the configurations info this is available
+  AliDebug(4, TString::Format("User configuration string: %s", fUserConfigurationString.c_str()));
+  AliDebugStream(4) << "User configuration: " << fUserConfiguration << std::endl;
+  AliDebug(4, TString::Format("Default configuration string: %s", fDefaultConfigurationString.c_str()));
+  AliDebugStream(4) << "Default configuration: " << fDefaultConfiguration << std::endl;
+
+  // YAML Objects cannot be streamed, so we need to reinitialize them here.
+  // They need reinitialize if they are null
+  if (fUserConfiguration.IsNull() == true && fUserConfigurationString != "")
+  {
+    AliInfo("Reinitializing user configuration from string. Expected if running on grid!");
+    fUserConfiguration = YAML::Load(fUserConfigurationString);
+  }
+  if (fDefaultConfiguration.IsNull() == true)
+  {
+    AliInfo("Reinitializing default configuration from string. Expected if running on grid!");
+    fDefaultConfiguration = YAML::Load(fDefaultConfigurationString);
+  }
+
+  // Debug to check that the configuration has been (re)initiailzied has been completed correctly
+  AliDebug(4, TString::Format("(Re)initialized user configuration: %s", fUserConfigurationString.c_str()));
+  AliDebugStream(4) << "(Re)initialized User configuration: " << fUserConfiguration << std::endl;
+  AliDebug(4, TString::Format("(Re)initialized default configuration: %s", fDefaultConfigurationString.c_str()));
+  AliDebugStream(4) << "(Re)initialized Default configuration: " << fDefaultConfiguration << std::endl;
 
   // Retrieve cells name from configruation
   std::string cellsName = "";
   AliEmcalCorrectionComponent::GetProperty("cellBranchName", cellsName, fUserConfiguration, fDefaultConfiguration, true, "");
-  if (cellsName == "usedefault") {
+  // In the case of fCreateNewObjectBranches, we need to get the default name to retrieve the normal cells
+  // We will then retrieve the new cells name later
+  if (cellsName == "usedefault" || fCreateNewObjectBranches) {
     cellsName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCaloCells, fIsEsd);
   }
   fCaloCellsName = cellsName;
@@ -535,15 +552,47 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
  */
 void AliEmcalCorrectionTask::CreateNewObjectBranches()
 {
+  // Create new cell branch
+  // cellBranchName doesn't belong to any particular component
+  AliEmcalCorrectionComponent::GetProperty("cellBranchName", fCreatedCellBranchName, fUserConfiguration, fDefaultConfiguration, true, "");
+  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
+  if (fCreatedCellBranchName == "usedefault") {
+    fCreatedCellBranchName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCaloCells, fIsEsd);
+  }
+
+  // Check to ensure that we are not trying to create a new branch on top of the old branch
+  TObject * existingObject = InputEvent()->FindListObject(fCreatedCellBranchName.c_str());
+  if (existingObject) {
+    AliFatal(TString::Format("Attempted to create a new cell branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedCellBranchName.c_str()));
+  }
+
+  // Create new branch and add it to the event
+  AliVCaloCells * newCells = 0;
+  if (fIsEsd) {
+    newCells = new AliESDCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
+  }
+  else {
+    newCells = new AliAODCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
+  }
+  InputEvent()->AddObject(newCells);
+  // Set fCaloCells here to avoid looking up every event
+  // newCells is the same address as that reference by the TList in the InputEvent
+  fCaloCells = newCells;
+
   // Create new cluster branch
   // Clusterizer is used since it is the first place that clusters are used.
   AliEmcalCorrectionComponent::GetProperty("clusterBranchName", fCreatedClusterBranchName, fUserConfiguration, fDefaultConfiguration, true, "Clusterizer");
+  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
+  if (fCreatedClusterBranchName == "usedefault") {
+    fCreatedClusterBranchName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCluster, fIsEsd);
+  }
 
   // Check to ensure that we are not trying to create a new branch on top of the old branch
-  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedClusterBranchName.c_str()));
-  if (existingArray) {
-    AliFatal(TString::Format("%s: Attempted to create a new cluster branch, \"%s\", with the same name as an existing branch!", GetName(), fCreatedClusterBranchName.c_str()));
+  existingObject = InputEvent()->FindListObject(fCreatedClusterBranchName.c_str());
+  if (existingObject) {
+    AliFatal(TString::Format("Attempted to create a new cluster branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedClusterBranchName.c_str()));
   }
+  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
   // Create new branch and add it to the event
   TClonesArray * newClusters = 0;
@@ -559,12 +608,17 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
   // Create new tracks branch
   // ClusterTrackMatcher is used since it is the first place that tracks are used.
   AliEmcalCorrectionComponent::GetProperty("trackBranchName", fCreatedTrackBranchName, fUserConfiguration, fDefaultConfiguration, true, "ClusterTrackMatcher");
+  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
+  if (fCreatedTrackBranchName == "usedefault") {
+    fCreatedTrackBranchName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kTrack, fIsEsd);
+  }
 
   // Check to ensure that we are not trying to create a new branch on top of the old branch
-  existingArray = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
-  if (existingArray) {
-    AliFatal(TString::Format("%s: Attempted to create a new track branch, \"%s\", with the same name as existing branch!", GetName(), fCreatedTrackBranchName.c_str()));
+  existingObject = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
+  if (existingObject) {
+    AliFatal(TString::Format("Attempted to create a new track branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedTrackBranchName.c_str()));
   }
+  existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
   // Create new branch and add it to the event
   TClonesArray * newTracks = 0;
@@ -585,18 +639,23 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
 void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
 {
   // Cells
-  // TODO: Handle ESD
   AliDebug(3, Form("Number of old cells: %d", fCaloCellsFromInputEvent->GetNumberOfCells()));
-  // The function CopyCaloCells() does not work!!!
+  // The function CopyCaloCells() does not work, so we use the assignment operator instead!
   if (fIsEsd)
   {
-    AliESDCaloCells * tempCells = dynamic_cast<AliESDCaloCells *>(fCaloCellsFromInputEvent);
-    fCaloCells = new AliESDCaloCells(*tempCells);
+    AliESDCaloCells * currentCells = dynamic_cast<AliESDCaloCells *>(fCaloCellsFromInputEvent);
+    AliESDCaloCells * newCells = dynamic_cast<AliESDCaloCells *>(fCaloCells);
+    fCaloCells = dynamic_cast<AliESDCaloCells *>(new (newCells) AliESDCaloCells(*currentCells));
+    // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
+    fCaloCells->SetName(fCreatedCellBranchName.c_str());
   }
   else
   {
-    AliAODCaloCells * tempCells = dynamic_cast<AliAODCaloCells *>(fCaloCellsFromInputEvent);
-    fCaloCells = new AliAODCaloCells(*tempCells);
+    AliAODCaloCells * currentCells = dynamic_cast<AliAODCaloCells *>(fCaloCellsFromInputEvent);
+    AliAODCaloCells * newCells = dynamic_cast<AliAODCaloCells *>(fCaloCells);
+    fCaloCells = dynamic_cast<AliAODCaloCells *>(new (newCells) AliAODCaloCells(*currentCells));
+    // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
+    fCaloCells->SetName(fCreatedCellBranchName.c_str());
   }
   AliDebug(3, Form("Number of old cells: %d \tNumber of new cells: %d", fCaloCellsFromInputEvent->GetNumberOfCells(), fCaloCells->GetNumberOfCells() ));
 
@@ -615,7 +674,6 @@ void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
   AliDebug(3, Form("before copy:\t currentTracks->GetEntries(): %d \t newTracks->GetEntries(): %d", currentTracks->GetEntries(), newTracks->GetEntries()));
   for (Int_t i = 0; i < currentTracks->GetEntriesFast(); i++)
   {
-    // TODO: Will the assignment operator work right with AliVTrack?
     if (fIsEsd)
     {
       AliESDtrack *currentTrack = dynamic_cast<AliESDtrack *>(currentTracks->At(i));
@@ -714,21 +772,6 @@ void AliEmcalCorrectionTask::CopyClusters(TClonesArray *orig, TClonesArray *dest
 }
 
 /**
- *
- *
- */
-void AliEmcalCorrectionTask::CleanupCreatedBranches()
-{
-  // This is a redundant check, strictly speaking, but it seems prudent to ensure
-  // that the CaloCells from an event are not deleted!
-  if (fCreateNewObjectBranches)
-  {
-    // We do this because we created a copy in CreateNewObjectBranches()
-    delete fCaloCells;
-  }
-}
-
-/**
  * Retrieve objects from event.
  * @return
  */
@@ -754,7 +797,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
       }
       else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        AliWarning("Could not retrieve centrality information! Assuming 99");
       }
     }
     else { // old centrality estimation < 2015
@@ -763,7 +806,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
       }
       else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        AliWarning("Could not retrieve centrality information! Assuming 99");
       }
     }
 
@@ -773,7 +816,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3;
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
         fCentBin = fNcentBins-1;
       }
     }
@@ -787,7 +830,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCentBin = 4;
       }
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
         fCentBin = fNcentBins-1;
       }
     }
@@ -800,7 +843,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCentBin = 0;
       }
       if (fCentBin>=fNcentBins) {
-        AliWarning(Form("%s: fCentBin too large: cent = %f fCentBin = %d. Assuming 99", GetName(),fCent,fCentBin));
+        AliWarning(Form("fCentBin too large: cent = %f fCentBin = %d. Assuming 99", fCent, fCentBin));
         fCentBin = fNcentBins-1;
       }
     }
@@ -835,14 +878,14 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
 void AliEmcalCorrectionTask::ExecOnce()
 {
   if (!InputEvent()) {
-    AliError(Form("%s: Could not retrieve event! Returning!", GetName()));
+    AliError("Could not retrieve event! Returning!");
     return;
   }
 
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
-      AliFatal(Form("%s: Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kF    ALSE).", GetName()));
+      AliFatal("Can not get EMCal geometry instance. If you do not need the EMCal geometry, disable it by setting task->SetNeedEmcalGeometry(kFALSE).");
       return;
     }
   }
@@ -867,7 +910,7 @@ void AliEmcalCorrectionTask::ExecOnce()
   if (!fCaloCellsName.IsNull() && !fCaloCellsFromInputEvent) {
     fCaloCellsFromInputEvent =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
     if (!fCaloCellsFromInputEvent) {
-      AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data())); 
+      AliError(Form("Could not retrieve cells %s!", fCaloCellsName.Data())); 
       return;
     }
   }
@@ -1032,9 +1075,6 @@ void AliEmcalCorrectionTask::UserExec(Option_t *option)
   // Call run for each correction
   if (!Run())
     return;
-
-  if (fCreateNewObjectBranches)
-    CleanupCreatedBranches();
 }
 
 /**

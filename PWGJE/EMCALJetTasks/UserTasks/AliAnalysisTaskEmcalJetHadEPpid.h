@@ -130,7 +130,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
 
   // set soft track min/max
-  void                    SetSoftTrackMinMaxPt_ep(Float_t min, Float_t max)          {fSoftTrackMinPt_ep = min; fSoftTrackMaxPt_ep = max;}
+  void                    SetSoftTrackMinMaxPt_ep(Double_t min, Double_t max)          {fSoftTrackMinPt_ep = min; fSoftTrackMaxPt_ep = max;}
   void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
 
   // set centrality classes up
@@ -170,6 +170,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   //virtual void            SetJetsNameMYTASK(const char *jn)           { fJetsName2 = jn; }
   virtual void            SetJetsName(const char *jn)           { fJetsName = jn; }
   virtual void            SetCaloClustersNameMYTASK(const char *cn)   { fCaloClustersName=cn; }
+  virtual void            SetRhoName(const char *rn)           { fRhoName = rn; }
 
   // bias and cuts - setters
   virtual void            SetAreaCut(Double_t a)                { fAreacut    = a; }
@@ -256,8 +257,8 @@ protected:
   detectorType           fDetectorType;            // type of detector
 
   // used for event plane resolution calculation
-  Float_t                fSoftTrackMinPt_ep;        // min pt for soft tracks
-  Float_t                fSoftTrackMaxPt_ep;        // max pt for soft tracks
+  Double_t                fSoftTrackMinPt_ep;        // min pt for soft tracks
+  Double_t                fSoftTrackMaxPt_ep;        // max pt for soft tracks
   Int_t                  fNAcceptedTracks;       //! number of accepted tracks
   AliEmcalJet*           fLeadingJet;            //! leading jet
   Float_t                fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
@@ -324,6 +325,7 @@ protected:
   TString        fTracksNameME; // name of mixed event track collection
   TString        fJetsName; // name of jet collection
   TString        fCaloClustersName; // name of Calo Cluster collection
+  TString        fRhoName; // name of Rho object
 
   // event counter
   Int_t	         event;

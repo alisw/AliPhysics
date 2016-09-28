@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <algorithm>
 #include <THashList.h>
 #include <THistManager.h>
 
@@ -109,10 +110,13 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
 
     fHistos->FillTH2("hFastOrColRowFrequency", globCol, globRow);
     fHistos->FillTH1("hFastOrFrequency", fastOrID);
-    fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
-    fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
-    fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
+    if(std::find(fMaskedFastors.begin(), fMaskedFastors.end(), fastOrID) == fMaskedFastors.end()){
+      fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
+      fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
+      fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
+    }
   }
 
   PostData(1, fHistos->GetListOfHistograms());
 }
+

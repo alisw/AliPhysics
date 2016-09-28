@@ -60,6 +60,13 @@ public:
     fTriggerPattern = triggerstring;
   }
 
+  /**
+   * Add masked fastor to the list of masked fastors. Masked fastors will be
+   * ignored in ADC spectrum.
+   * @param fastorID Abs ID of the fastor to be masked
+   */
+  void AddMaskedFastor(int fastorID){ fMaskedFastors.push_back(fastorID); }
+
 protected:
 
   /**
@@ -100,6 +107,8 @@ protected:
 
   ULong_t                                 fRequestTrigger;    ///< Trigger selection bits
   TString                                 fTriggerPattern;    ///< Trigger string pattern used in addition to the trigger selection bits
+
+  std::vector<int>                        fMaskedFastors;     ///< List of masked fastors
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalFastOrMonitorTask, 1);

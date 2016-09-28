@@ -65,7 +65,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   GetProperty("createHistos", fCreateHisto);
   
   fCalibrateTime = kTRUE;
-  //fCalibrateTimeL1Phase = kTRUE; // TO DO: This should be a configurable option?
+  GetProperty("calibrateTimeL1Phase", fCalibrateTimeL1Phase);
   
   if (fCreateHisto){
     fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_cell",1000,-10e-6,10e-6);

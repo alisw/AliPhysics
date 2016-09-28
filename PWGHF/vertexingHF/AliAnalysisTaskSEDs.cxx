@@ -69,7 +69,7 @@ fWriteOnlySignal(kFALSE),
 fDoCutVarHistos(kTRUE),
 fUseSelectionBit(kFALSE),
 fFillSparse(kTRUE),
-fAODProtection(kTRUE),
+fAODProtection(1),
 fNPtBins(0),
 fListCuts(0),
 fMassRange(0.8),
@@ -77,7 +77,8 @@ fMassBinSize(0.002),
 fCounter(0),
 fAnalysisCuts(0),
 fnSparse(0),
-fnSparseIP(0)
+fnSparseIP(0),
+fSystem(0)
 {
   /// Default constructor
   
@@ -135,7 +136,7 @@ fWriteOnlySignal(kFALSE),
 fDoCutVarHistos(kTRUE),
 fUseSelectionBit(kFALSE),
 fFillSparse(kTRUE),
-fAODProtection(kTRUE),
+fAODProtection(1),
 fNPtBins(0),
 fListCuts(0),
 fMassRange(0.8),
@@ -143,7 +144,8 @@ fMassBinSize(0.002),
 fCounter(0),
 fAnalysisCuts(analysiscuts),
 fnSparse(0),
-fnSparseIP(0)
+fnSparseIP(0),
+fSystem(0)
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
@@ -478,54 +480,56 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fPtVsMassK0st);
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
+    
+  Int_t nBinsReco[knVarForSparse]   = {350, 20,     30,    20,    20,   20,   20,    10,   10,    14,    6,    6,   12};
+  Double_t xminReco[knVarForSparse] = {1.6,  0.,  0.00,   0.0,   0.0,    0.,   0.,  0.9,  0.9,  0.00,  0.7,  0.0,   0.};
+  Double_t xmaxReco[knVarForSparse] = {2.3, 20., 0.015,   0.1,   0.1,   10.,  10.,  1.0,  1.0,  0.07,  1.0,   0.3,  6.};
+  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
+  if(fSystem == 1) { //pPb,PbPb
+      nBinsReco[2] = 15;
+      nBinsReco[3] = 10;
+      nBinsReco[4] = 10;
+  }
   
-  const Int_t nvarsReco = 16;
-  const Int_t nvarsAcc  = 2;
-  Int_t nBinsReco[nvarsReco] = {500,20,60,1000,1000,500,500,50,50,100,100,100,400,400,400,400};
-  Int_t nBinsAcc[nvarsAcc]   = {100,20};
-  Double_t xminAcc[nvarsAcc] = {0.,-1.};
-  Double_t xmaxAcc[nvarsAcc] = {100.,1.};
-  Double_t xminReco[nvarsReco] = {1.5,0.,0.,0.,0.,0.,0.,0.5,0.5,0.,0.,0.,-10.,-10.,-10.,-10.};
-  Double_t xmaxReco[nvarsReco] = {2.5,20.,0.03,5.,5.,500.,500.,1.,1.,0.1,1.,1.,10.,10.,10.,10.};
-  TString axis[nvarsReco] = {"invMassAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl","normdl_{xy}","cosP","cosP_{xy}",
-                             "sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP","normIP_kaon1","normIP_kaon2","normIP_pion"};
+  Int_t nBinsAcc[knVarForSparseAcc]   = {20,  20};
+  Double_t xminAcc[knVarForSparseAcc] = {0., -1.};
+  Double_t xmaxAcc[knVarForSparseAcc] = {20,  1.};
  
-  const Int_t nvarsIP = 6;
-  Int_t nBinsIP[nvarsIP]   = {20,400,400,400,400,3};
-  Double_t xminIP[nvarsIP] = {0.,-10.,-10.,-10.,-10.,0.};
-  Double_t xmaxIP[nvarsIP] = {20.,10.,10.,10.,10.,3.};
-  TString axisIP[nvarsIP]  = {"motherPt","maxNormImp","IP0","IP1","IP2","candType"};
+  Int_t nBinsIP[knVarForSparseIP]   = { 20,  400,  400,  400,  400,  3};
+  Double_t xminIP[knVarForSparseIP] = { 0., -10., -10., -10., -10., 0.};
+  Double_t xmaxIP[knVarForSparseIP] = {20.,  10.,  10.,  10.,  10., 3.};
+  TString axisIP[knVarForSparseIP]  = {"motherPt","maxNormImp","IP0","IP1","IP2","candType"};
   
   if(fFillSparse) {
     
     if(fReadMC) {
-      TString label[nvarsAcc] = {"fromC","fromB"};
+      TString label[knVarForSparseAcc] = {"fromC","fromB"};
       for (Int_t i=0; i<2; i++) {
         fnSparseMC[i] = new THnSparseF(Form("fnSparseAcc_%s",label[i].Data()),Form("MC nSparse (Acc.Step)- %s",label[i].Data()),
-                                       nvarsAcc, nBinsAcc, xminAcc, xmaxAcc);
+                                       knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
         fnSparseMC[i]->GetAxis(1)->SetTitle("y");
         fOutput->Add(fnSparseMC[i]);
       }
       for (Int_t i=2; i<4; i++) {
         fnSparseMC[i] = new THnSparseF(Form("fnSparseReco_%s",label[i-2].Data()),Form("MC nSparse (Reco Step)- %s",label[i-2].Data()),
-                                       nvarsReco, nBinsReco, xminReco, xmaxReco);
-        for (Int_t j=0; j<nvarsReco; j++) {
+                                       knVarForSparse, nBinsReco, xminReco, xmaxReco);
+        for (Int_t j=0; j<knVarForSparse; j++) {
           fnSparseMC[i]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
         }
         fOutput->Add(fnSparseMC[i]);
       }
       
-      fnSparseIP = new THnSparseF("fnSparseIP","nSparseIP", nvarsIP, nBinsIP, xminIP, xmaxIP);
-      for (Int_t j=0; j<nvarsIP; j++) {
+      fnSparseIP = new THnSparseF("fnSparseIP","nSparseIP", knVarForSparseIP, nBinsIP, xminIP, xmaxIP);
+      for (Int_t j=0; j<knVarForSparseIP; j++) {
         fnSparseIP->GetAxis(j)->SetTitle(Form("%s",axisIP[j].Data()));
       }
       fnSparseIP->GetAxis(5)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
       fOutput->Add(fnSparseIP);
     }
     else {
-      fnSparse = new THnSparseF("fnSparse","nSparse", nvarsReco, nBinsReco, xminReco, xmaxReco);
-      for (Int_t j=0; j<nvarsReco; j++) {
+      fnSparse = new THnSparseF("fnSparse","nSparse", knVarForSparse, nBinsReco, xminReco, xmaxReco);
+      for (Int_t j=0; j<knVarForSparse; j++) {
         fnSparse->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
       }
       fOutput->Add(fnSparse);
@@ -559,16 +563,18 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
   fHistNEvents->Fill(0); // all events
-  if(fAODProtection) {
+  if(fAODProtection>=0){
     //   Protection against different number of events in the AOD and deltaAOD
     //   In case of discrepancy the event is rejected.
-    if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
       fHistNEvents->Fill(2);
       return;
     }
-    fHistNEvents->Fill(1);  
+    fHistNEvents->Fill(1);
   }
-  
+
   TClonesArray *array3Prong = 0;
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -933,8 +939,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[1] = tmpNormIP[1];
 	    normIPprong[2] = tmpNormIP[2];
 	    
-	    Double_t var4nSparse[16] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
-					sigvert,cosPiDs,cosPiKPhi,normIP,normIPprong[0],normIPprong[1],normIPprong[2]};
+	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+					sigvert,cosPiDs,cosPiKPhi,TMath::Abs(normIP)};
 	    
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);
@@ -968,8 +974,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[1] = tmpNormIP[1];
 	    normIPprong[2] = tmpNormIP[0];
 	    
-	    Double_t var4nSparse[16] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
-					sigvert,cosPiDs,cosPiKPhi,normIP,normIPprong[0],normIPprong[1],normIPprong[2]};
+	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+					sigvert,cosPiDs,cosPiKPhi,TMath::Abs(normIP)};
 	    
 	    if(!fReadMC) {
 	      fnSparse->Fill(var4nSparse);

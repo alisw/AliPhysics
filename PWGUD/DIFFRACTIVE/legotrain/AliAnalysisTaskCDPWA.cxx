@@ -46,6 +46,9 @@
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliStack.h"
+#include "AliGenEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
 #include "TGeoManager.h"
 
 #include "AliAnalysisTaskCDPWA.h"
@@ -171,6 +174,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fESDEvent(0x0)
 	, fMult(0x0)
 	, fRunNumber(0)
+	, fMCProcessType(0)
 	//Hist
 	, fHistEvent(0x0)
 	, fHistTrigger(0x0)
@@ -241,6 +245,10 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 		}
 		fRunVsDG[i] = 0x0;
 	}
+	for (Int_t i = 0; i < 14; i++) {
+		if (i < 2) if (hMC_PassType[i]) hMC_PassType[i]=0x0;
+		if (hMC_PassEta[i]) hMC_PassEta[i]=0x0;
+	}
 	//
 	// standard constructor (the one which should be used)
 	//
@@ -277,6 +285,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fESDEvent(0x0)
 	, fMult(0x0)
 	, fRunNumber(0)
+	, fMCProcessType(0)
 	//Hist
 	, fHistEvent(0x0)
 	, fHistTrigger(0x0)
@@ -346,6 +355,10 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		if (i < 6) {
 			hMultNG_Test[i] = 0x0;
 		}
+	}
+	for (Int_t i = 0; i < 14; i++) {
+		if (i < 2) if (hMC_PassType[i]) hMC_PassType[i]=0x0;
+		if (hMC_PassEta[i]) hMC_PassEta[i]=0x0;
 	}
 }
 //______________________________________________________________________________
@@ -420,6 +433,11 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 		if (i < 5) delete hMultNG_Test[i];
 		
 	}
+	for (Int_t i = 0; i < 14; i++) {
+		if (i < 2) {if (hMC_PassType[i]) delete hMC_PassType[i];}
+		if (hMC_PassEta[i]) delete hMC_PassEta[i];
+	}
+
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
@@ -734,6 +752,18 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 			fMult_Rec_NG_Process = new TH2D("fMult_Rec_NG_Process","",kBinMCAll,0,kBinMCAll,500,0,500);
 			fList->Add(fMult_Rec_NG_Process);
 		}
+		for (Int_t i = 0; i < 14; i++) {
+			if (!hMC_PassEta[i]) {
+				hMC_PassEta[i] = new TH1D(Form("hMC_PassEta_%d",i),"",300,-15,15);
+				fList->Add(hMC_PassEta[i]);
+			}
+			if (i < 2) {
+				if (!hMC_PassType[i]) {
+					hMC_PassType[i] = new TH1D(Form("hMC_PassType_%d",i),"",kBinMCAll,0,kBinMCAll);
+					fList->Add(hMC_PassType[i]);
+				}
+			}
+		}
 	}
 	for (Int_t i = 0; i < 2; i++) {
 		if (!fV0Time[i]) {
@@ -751,8 +781,10 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fList->Add(hDCAz_MS);
 	}
 	for (Int_t i = 0; i < 6; i++) {
-		hMultNG_Test[i] = new TH1D(Form("hMultNG_Test_%d",i),Form("hMultNG_Test_%d",i),110,-10,100);
-		fList->Add(hMultNG_Test[i]);
+		if (!hMultNG_Test[i]) {
+			hMultNG_Test[i] = new TH1D(Form("hMultNG_Test_%d",i),Form("hMultNG_Test_%d",i),110,-10,100);
+			fList->Add(hMultNG_Test[i]);
+		}
 	}
 
 	// Track Cuts
@@ -815,7 +847,8 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//MC studies
 	Bool_t passMC = kFALSE;
 	if (fIsMC) {
-		if (fIsPWAMC) passMC = DoMCPWA();
+		DetermineProcessType();
+		passMC = DoMCPWA();
 		if (passMC) fHistEvent->Fill(kMCCheck);
 	}
 	
@@ -875,6 +908,8 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fEventInfo.fSysPileUp[0] = fCombInfo.fComb_IsPileUp;
 	fEventInfo.fSysPileUp[1] = fESDEvent->IsPileupFromSPD(pileup_Ncont+1,pileup_dist,3.,2.,5.);
 	fEventInfo.fSysPileUp[2] = fESDEvent->IsPileupFromSPD(pileup_Ncont+2,pileup_dist,3.,2.,5.);
+	fEventInfo.fSysPileUp[3] = fESDEvent->IsPileupFromSPD(pileup_Ncont,pileup_dist+0.1,3.,2.,5.);
+	fEventInfo.fSysPileUp[4] = fESDEvent->IsPileupFromSPD(pileup_Ncont,pileup_dist-0.1,3.,2.,5.);
 	if (normalCut) {
 		fHistEvent->Fill(kPileUpCut);
 		fRunFiducial[4]->Fill(fRunNumber);
@@ -992,6 +1027,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fRunVsDG[i]->Fill(fRunNumber);
 			}
 		}
+	}
+	if (fIsMC) {
+		FillPassMCInfo(fDG_Det[0], fDG_Det[5]);
 	}
 
 	//Standard track cuts in NG and DG
@@ -1404,6 +1442,9 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 		TParticle *part = (TParticle*)stack->Particle(iTracks);
 		if (!part) continue;
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1) {
+			for (Int_t i = 0; i < kBinMCAll; i++) {
+				if (i == fMCProcessType) fMC_Eta[i]->Fill(part->Eta());
+			}
 			if (part->Eta() > -0.9 && part->Eta() < 0.9) central++;
 			if (part->Eta() > 0.9 && part->Eta() < 6.3) gapA++;
 			if (part->Eta() > 2.8 && part->Eta() < 5.1) gapAv0++;
@@ -1459,6 +1500,77 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 
 	return kTRUE;
 
+}
+//______________________________________________________________________________
+void AliAnalysisTaskCDPWA::DetermineProcessType() {
+	//Determine MC process type
+	fMCProcessType = -1;
+	Int_t fMCprocess = -1;
+	if (fMCEvent) {
+		AliGenEventHeader* header = fMCEvent->GenEventHeader();
+		if (!header) return;
+		TString st_header = header->IsA()->GetName();
+		if (st_header == "AliGenPythiaEventHeader") {//Pythia
+			fIsPythia = kTRUE;
+			fMCprocess = ((AliGenPythiaEventHeader*)header)->ProcessType();
+			if (!fIsPythia8) {//Pythia6
+				switch(fMCprocess) {
+					case 91: fMCProcessType = kBinEL; break;
+					case 92: fMCProcessType = kBinSD1; break;
+					case 93: fMCProcessType = kBinSD2; break;
+					case 94: fMCProcessType = kBinDD; break;
+					case 95: fMCProcessType = kBinCD; break;//To be checked!!
+					default: fMCProcessType = kBinND; break;
+				}
+			}
+			else {//Pythia8
+				switch(fMCprocess) {
+					case 102: fMCProcessType = kBinEL; break;
+					case 103: fMCProcessType = kBinSD1; break;
+					case 104: fMCProcessType = kBinSD2; break;
+					case 105: fMCProcessType = kBinDD; break;
+					case 106: fMCProcessType = kBinCD; break;
+					default: fMCProcessType = kBinND; break;
+				}
+			}
+		}
+		else if (st_header == "AliGenDPMjetEventHeader") {//Phojet
+			fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
+			switch(fMCprocess) {
+				case 2: fMCProcessType = kBinEL; break;
+				case 5: fMCProcessType = kBinSD1; break;
+				case 6: fMCProcessType = kBinSD2; break;
+				case 7: fMCProcessType = kBinDD; break;
+				case 4: fMCProcessType = kBinCD; break;
+				default: fMCProcessType = kBinND; break;
+			}
+		}
+		else fMCProcessType = kBinND; 
+
+		for (Int_t i = 0; i < kBinMCAll; i++) {
+			if (i == fMCProcessType) fHistEventProcesses->Fill(i);
+		}
+	}
+
+	return;
+}
+//______________________________________________________________________________
+void AliAnalysisTaskCDPWA::FillPassMCInfo(const Bool_t isV0, const Bool_t isV0FMD) {
+	Bool_t isGap[2] = {isV0,isV0FMD};
+	AliStack *stack = fMCEvent->Stack();
+	if (!stack) return;
+	Int_t nPrimary = stack->GetNprimary();
+	TParticle *part1 = NULL;
+	for (Int_t i = 0; i < 2; i++) {
+		if (isGap[i]) {
+			hMC_PassType[i]->Fill(fMCProcessType);
+			for (Int_t iT = 0; iT < nPrimary; iT++) {
+				part1 = (TParticle*)stack->Particle(iT);
+				if (!part1) continue;
+				for (Int_t j = 0; j < kBinMCAll; j++) if (j == fMCProcessType) hMC_PassEta[7*i+j]->Fill(part1->Eta());
+			}
+		}
+	}
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::Terminate(Option_t *)

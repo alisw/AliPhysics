@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliCutValueRange.h"
 #include <string>
+#include <vector>
 #include <TCustomBinning.h>
 #include <TString.h>
 
@@ -37,6 +38,13 @@ public:
     kpPb = 1,
     kPbp = -1
   };
+  enum OnlineTrigger_t{
+    kCPREG1 = 0,
+    kCPREG2 = 1,
+    kCPREJ1 = 2,
+    kCPREJ2 = 3,
+    kCPREL0 = 4
+  };
   AliAnalysisTaskChargedParticlesRef();
   AliAnalysisTaskChargedParticlesRef(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesRef();
@@ -59,6 +67,10 @@ public:
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut.SetLimits(etamin, etamax); }
   void SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
   void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
+  void SetExcludeNoiseEvents(Bool_t doExclude = true) { fRejectNoiseEvents = doExclude; }
+  void SetSelectNoiseEvents(Bool_t doSelect = true) { fSelectNoiseEvents = doSelect; }
+  void AddMaskedFastor(int fastorID) { fMaskedFastors.push_back(fastorID); }
+  void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
 
 protected:
   virtual void ExecOnce();
@@ -69,6 +81,8 @@ protected:
   void FillTrackHistos(const std::string &eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   void FillPIDHistos(const std::string &eventclass, const AliVTrack &track);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
+
+  bool SelectOnlineTrigger(OnlineTrigger_t trigger);
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
@@ -91,6 +105,11 @@ protected:
   TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
   AliOADBContainer                *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
   TObjArray                       *fDownscaleFactors;         //!<! Downscalfactors for given run
+  TString                         fNameMaskedFastorOADB;      ///< Name of the masked fastor OADB container
+  AliOADBContainer                *fMaskedFastorOADB;         //!<! Container with masked fastors
+  std::vector<int>                fMaskedFastors;             ///< List of masked fastors
+  Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
+  Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
 
   Int_t                           fCurrentRun;                ///< Current run number (for RunChange method)
   Bool_t                          fLocalInitialized;          ///< Check for initialized

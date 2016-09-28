@@ -56,24 +56,24 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Bool_t      isMC,
  Bool_t      isPP,
  // Int_t     collSyst,
- Float_t     cutV = 10.0,
- Int_t       evtCutSetID = 0,
- Int_t       pairCutSetID = 0,
- Int_t       mixingConfigID = 0,
- Int_t       aodFilterBit = 5,
+ Float_t     cutV ,
+ Int_t       evtCutSetID,
+ Int_t       pairCutSetID,
+ Int_t       mixingConfigID,
+ Int_t       aodFilterBit,
  Bool_t      enableMonitor=kTRUE,
- TString     monitorOpt="PbPb", 
- Float_t     piPIDCut = 3.0,
- Float_t     pi_k0s_PIDCut = 5.0,
+ TString     monitorOpt, 
+ Float_t     piPIDCut  ,
+ Float_t     pi_k0s_PIDCut,
  //Float_t     trackDCAcut = 7.0,
- Float_t     massTol = 0.03,
- Float_t     k0sDCA = 0.3,
- Float_t     k0sCosPoinAn = 0.97,
- Float_t     k0sDaughDCA = 1.5,
- Int_t       NTPCcluster = 70,
- Float_t     maxDiffVzMix = 1.0,
- Float_t     maxDiffMultMix = 10.0,
- Float_t     maxDiffAngleMixDeg = 20.0,
+ Float_t     massTol,
+ Float_t     k0sDCA,
+ Float_t     k0sCosPoinAn,
+ Float_t     k0sDaughDCA,
+ Int_t       NTPCcluster,
+ Float_t     maxDiffVzMix,
+ Float_t     maxDiffMultMix,
+ Float_t     maxDiffAngleMixDeg,
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinusRun2",
  Int_t       centr = 0
@@ -115,7 +115,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    } 
    
    // create the task and configure 
-   TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
+   TString taskName = Form("KStarPlusMinus%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut,massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA);
    //TString taskName=Form("TOFKstar%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    

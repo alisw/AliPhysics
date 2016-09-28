@@ -1,3 +1,6 @@
+
+#include <iostream>
+
 #include "TChain.h"
 #include "TFile.h"
 #include "TF1.h"
@@ -12,6 +15,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDtrackCuts.h"
@@ -39,13 +43,15 @@ Contact: bhess@cern.ch
 
 ClassImp(AliAnalysisTaskPID)
 
-const Int_t AliAnalysisTaskPID::fgkNumJetAxes = 3; // Number of additional axes for jets
+const Int_t AliAnalysisTaskPID::fgkNumJetAxes = 5; // Number of additional axes for jets
 const Double_t AliAnalysisTaskPID::fgkEpsilon = 1e-8; // Double_t threshold above zero
 const Int_t AliAnalysisTaskPID::fgkMaxNumGenEntries = 500; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
 const Double_t AliAnalysisTaskPID::fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
 
 const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition
+
+AliAnalysisTaskPID::EventGenerator AliAnalysisTaskPID::fgEventGenerator = AliAnalysisTaskPID::kPythia6Perugia0;
 
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID()
@@ -64,8 +70,10 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fTakeIntoAccountMuons(kFALSE)
   , fUseITS(kFALSE)
   , fUseTOF(kFALSE)
+  , fStoreTOFInfo(kTRUE)
   , fUsePriors(kFALSE)
   , fTPCDefaultPriors(kFALSE)
+  , fStoreCharge(kTRUE)
   , fUseMCidForGeneration(kTRUE)
   , fUseConvolutedGaus(kFALSE) 
   , fkConvolutedGausNPar(3)
@@ -76,7 +84,6 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
-  , fPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionOff)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
@@ -158,6 +165,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
+  , fIsUEPID(kFALSE)
+  , fh2UEDensity(0x0)
+  , fh1JetArea(0x0)
 {
   // default Constructor
   
@@ -207,8 +217,10 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fTakeIntoAccountMuons(kFALSE)
   , fUseITS(kFALSE)
   , fUseTOF(kFALSE)
+  , fStoreTOFInfo(kTRUE)
   , fUsePriors(kFALSE)
   , fTPCDefaultPriors(kFALSE)
+  , fStoreCharge(kTRUE)
   , fUseMCidForGeneration(kTRUE)
   , fUseConvolutedGaus(kFALSE) 
   , fkConvolutedGausNPar(3)
@@ -219,7 +231,6 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
-  , fPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionOff)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
   , fSystematicScalingSplinesThreshold(50.)
   , fSystematicScalingSplinesBelowThreshold(1.0)
@@ -301,6 +312,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
+  , fIsUEPID(kFALSE)
+  , fh2UEDensity(0x0)
+  , fh1JetArea(0x0)
 {
   // Constructor
   
@@ -600,6 +614,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fOutputContainer->SetName(GetName());
   fOutputContainer->SetOwner(kTRUE);
   
+  if (fDebug > 2)
+    std::cout << "OutputContainer successfully created" << std::endl;
+  
   /* Old binning (coarser in the intermediate region and a real subset of the new binning)
   const Int_t nPtBins = 68;
   Double_t binsPt[nPtBins+1] = {0. ,  0.05, 0.1,  0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45,
@@ -609,9 +626,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
            4.0,  4.5 , 5.0,  5.5 , 6.0,  6.5 , 7.0,  8.0 , 9.0,  10.0,
            11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
            26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };*/
-  
-  const Int_t nPtBins = 73;
-  Double_t binsPt[nPtBins + 1] = {0.,  0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+
+      const Int_t nPtBins = 73;
+    Double_t binsPt[nPtBins + 1] = {0.,  0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
                                   0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
                                    1.,  1.1, 1.2,  1.3, 1.4,  1.5, 1.6,  1.7, 1.8,  1.9,
                                    2.,  2.1, 2.2,  2.3, 2.4,  2.5, 2.6,  2.7, 2.8,  2.9, 
@@ -619,6 +636,10 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                   6.5,   7.,  8.,   9., 10.,  11., 12.,  13., 14.,  15.,
                                   16.,  18., 20.,  22., 24.,  26., 28.,  30., 32.,  34., 
                                   36.,  40., 45.,  50. };
+
+ 
+//   const Int_t nPtBins = 59;
+//   Double_t binsPt[nPtBins + 1] = {0.01, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0};
   
   const Bool_t useITSTPCtrackletsCentEstimatorWithNewBinning = fCentralityEstimator.CompareTo("ITSTPCtracklets", TString::kIgnoreCase) == 0
                                                                && fStoreCentralityPercentile;
@@ -710,6 +731,27 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   const Double_t tofPIDinfoMin = kNoTOFinfo;
   const Double_t tofPIDinfoMax = kNoTOFinfo + kNumTOFpidInfoBins;
   
+  const Int_t nDistanceBins = 30;
+  const Double_t distanceBinsMin = 0.;
+  const Double_t distanceBinsMax = 0.6;
+  
+  // jT binning - to have binning down to zero and log binning at the same time,
+  // use first bin from zero extending to real start of log binning
+  const Int_t nJtBins = 30 + 1;
+  Double_t binsJt[nJtBins + 1];
+
+  const Double_t fromLowJt = 0.05;
+  const Double_t toHighJt = 10.;
+  const Double_t factorJt = TMath::Power(toHighJt/fromLowJt, 1./(nJtBins-1));
+
+  // Log binning for whole jT range
+  binsJt[0] = 0.;
+  binsJt[1] = fromLowJt;
+  for (Int_t i = 0 + 1 + 1; i <= nJtBins; i++) {
+    binsJt[i] = factorJt * binsJt[i - 1];
+  }
+  
+  
   // MC PID, SelectSpecies, pT, deltaPrimeSpecies, centrality percentile, jet pT, z = track_pT/jet_pT, xi = log(1/z)
   Int_t binsNoJets[nBinsNoJets] =    { nMCPIDbins,
                                        nSelSpeciesBins,
@@ -722,20 +764,22 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   Int_t binsJets[nBinsJets]     =    { nMCPIDbins,
                                        nSelSpeciesBins,
                                        nPtBins,
-                                       deltaPrimeNBins,           
+                                       deltaPrimeNBins,
                                        nCentBins,
                                        nJetPtBins,
                                        nZBins,
                                        nXiBins,
                                        nChargeBins,
-                                       nTOFpidInfoBins };
+                                       nTOFpidInfoBins,
+                                       nDistanceBins,
+                                       nJtBins };
   
   Int_t *bins = fStoreAdditionalJetInformation ? &binsJets[0] : &binsNoJets[0];
   
   Double_t xminNoJets[nBinsNoJets] = { mcPIDmin,  
                                        selSpeciesMin,
                                        binsPt[0],
-                                       deltaPrimeBins[0],                       
+                                       deltaPrimeBins[0],
                                        binsCent[0],
                                        binsCharge[0],
                                        tofPIDinfoMin };
@@ -743,13 +787,15 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   Double_t xminJets[nBinsJets] =     { mcPIDmin,
                                        selSpeciesMin,
                                        binsPt[0],
-                                       deltaPrimeBins[0],                       
+                                       deltaPrimeBins[0],
                                        binsCent[0],
                                        binsJetPt[0],
                                        zMin,
                                        xiMin,
                                        binsCharge[0],
-                                       tofPIDinfoMin };
+                                       tofPIDinfoMin,
+                                       distanceBinsMin,
+                                       binsJt[0] };
   
   Double_t *xmin = fStoreAdditionalJetInformation? &xminJets[0] : &xminNoJets[0];
 
@@ -770,7 +816,9 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                        zMax,
                                        xiMax,
                                        binsCharge[nChargeBins],
-                                       tofPIDinfoMax };
+                                       tofPIDinfoMax,
+                                       distanceBinsMax,
+                                       binsJt[nJtBins] };
   
   Double_t *xmax = fStoreAdditionalJetInformation? &xmaxJets[0] : &xmaxNoJets[0];
   
@@ -778,7 +826,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
 
   if (fDoPID) {
     fhPIDdataAll = new THnSparseD("hPIDdataAll","", nBins, bins, xmin, xmax);
-    SetUpHist(fhPIDdataAll, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    SetUpHist(fhPIDdataAll, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhPIDdataAll);
   }
   
@@ -792,28 +840,30 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
 
   if (fDoPID) {
     fhGenEl = new THnSparseD("hGenEl", "", nGenBins, genBins, genXmin, genXmax);
-    SetUpGenHist(fhGenEl, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    SetUpGenHist(fhGenEl, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenEl);
     
     fhGenKa = new THnSparseD("hGenKa", "", nGenBins, genBins, genXmin, genXmax);
-    SetUpGenHist(fhGenKa, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    SetUpGenHist(fhGenKa, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenKa);
     
     fhGenPi = new THnSparseD("hGenPi", "", nGenBins, genBins, genXmin, genXmax);
-    SetUpGenHist(fhGenPi, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    SetUpGenHist(fhGenPi, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenPi);
     
     if (fTakeIntoAccountMuons) {
       fhGenMu = new THnSparseD("hGenMu", "", nGenBins, genBins, genXmin, genXmax);
-      SetUpGenHist(fhGenMu, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+      SetUpGenHist(fhGenMu, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
       fOutputContainer->Add(fhGenMu);
     }
     
     fhGenPr = new THnSparseD("hGenPr", "", nGenBins, genBins, genXmin, genXmax);
-    SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
+    SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhGenPr);
   }
   
+    if (fDebug > 2)
+    std::cout << "Adding Event Histograms" << std::endl;
   
   fhEventsProcessed = new TH1D("fhEventsProcessed",
                                "Number of events passing trigger selection, vtx and zvtx cuts and pile-up rejection;Centrality Percentile", 
@@ -840,37 +890,49 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fOutputContainer->Add(fhEventsProcessedNoPileUpRejection);
   fhEventsProcessedNoPileUpRejection->Sumw2();
   
+  if (fDebug > 2)
+    std::cout << "Event Histograms added" << std::endl;  
   
   // Generated yields within acceptance
-  const Int_t nBinsGenYields = fStoreAdditionalJetInformation ? kGenYieldNumAxes : kGenYieldNumAxes - 3;
+  const Int_t nBinsGenYields = fStoreAdditionalJetInformation ? kGenYieldNumAxes : kGenYieldNumAxes - 5;
   Int_t genYieldsBins[kGenYieldNumAxes]    = { nMCPIDbins,         nPtBins,           nCentBins,            nJetPtBins, nZBins, nXiBins,
-                                               nChargeBins };
+                                               nChargeBins,   nDistanceBins,   nJtBins };
   genYieldsBins[GetIndexOfChargeAxisGenYield()] = nChargeBins;
   Double_t genYieldsXmin[kGenYieldNumAxes] = {   mcPIDmin,       binsPt[0],         binsCent[0],          binsJetPt[0],   zMin,   xiMin,
-                                               binsCharge[0] };
+                                               binsCharge[0], distanceBinsMin, binsJt[0] };
   genYieldsXmin[GetIndexOfChargeAxisGenYield()] = binsCharge[0];
   Double_t genYieldsXmax[kGenYieldNumAxes] = {   mcPIDmax, binsPt[nPtBins], binsCent[nCentBins], binsJetPt[nJetPtBins],   zMax,   xiMax, 
-                                               binsCharge[nChargeBins] };
+                                               binsCharge[nChargeBins], distanceBinsMax, binsJt[nJtBins] };
   genYieldsXmax[GetIndexOfChargeAxisGenYield()] = binsCharge[nChargeBins];
   
   if (fDoPID) {
     fhMCgeneratedYieldsPrimaries = new THnSparseD("fhMCgeneratedYieldsPrimaries", 
                                                   "Generated yields w/o reco and cuts inside acceptance (physical primaries)", 
                                                   nBinsGenYields, genYieldsBins, genYieldsXmin, genYieldsXmax);
-    SetUpGenYieldHist(fhMCgeneratedYieldsPrimaries, binsPt, binsCent, binsJetPt);
+    SetUpGenYieldHist(fhMCgeneratedYieldsPrimaries, binsPt, binsCent, binsJetPt, binsJt);
     fOutputContainer->Add(fhMCgeneratedYieldsPrimaries);
+  }
+  
+  if (fIsUEPID) {
+    fh2UEDensity = new TH2D("fh2UEDensity", "p_{T} density of the Underlying event;Centrality Percentile;UE p_{T}/Event", nCentBins, binsCent, 10, 0.0, 4.0);
+    fOutputContainer->Add(fh2UEDensity);
+    fh1JetArea = new TH1D("fh1JetArea", "Jet Area (real)/#Pi*#Rho^{2} of the Jets used in the UE;Centrality Percentile",nCentBins,binsCent);
+    fOutputContainer->Add(fh1JetArea);
   }
   
   // Container with several process steps (generated and reconstructed level with some variations)
   if (fDoEfficiency) {
+    
+    if (fDebug > 2)
+    std::cout << "Try OpenFile(2)" << std::endl;  
     OpenFile(2);
     
     if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(2) successful\n", (char*)__FILE__, __LINE__);
   
     // Array for the number of bins in each dimension
-    // Dimensions: MC-ID, trackPt, trackEta, trackCharge, cenrality percentile, jetPt, z, xi TODO phi???
-    const Int_t nEffDims = fStoreAdditionalJetInformation ? kEffNumAxes : kEffNumAxes - 3; // Number of dimensions for the efficiency
+    // Dimensions: MC-ID, trackPt, trackEta, trackCharge, cenrality percentile, jetPt, z, xi, distance, jT
+    const Int_t nEffDims = fStoreAdditionalJetInformation ? kEffNumAxes : kEffNumAxes - 5; // Number of dimensions for the efficiency
     
     const Int_t nMCIDbins = AliPID::kSPECIES;
     Double_t binsMCID[nMCIDbins + 1];
@@ -883,7 +945,8 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     const Double_t binsEta[nEtaBins+1] = {-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
                                           0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
     
-    const Int_t nEffBins[kEffNumAxes] = { nMCIDbins, nPtBins, nEtaBins, nChargeBins, nCentBins, nJetPtBins, nZBins, nXiBins };
+    const Int_t nEffBins[kEffNumAxes] = { nMCIDbins, nPtBins, nEtaBins, nChargeBins, nCentBins, nJetPtBins, nZBins, nXiBins,
+                                          nDistanceBins, nJtBins };
     
     fContainerEff = new AliCFContainer("containerEff", "Reconstruction Efficiency x Acceptance x Resolution and Secondary Correction",
                                       kNumSteps, nEffDims, nEffBins);
@@ -898,6 +961,8 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
       fContainerEff->SetBinLimits(kEffJetPt, binsJetPt);
       fContainerEff->SetBinLimits(kEffZ, zMin, zMax);
       fContainerEff->SetBinLimits(kEffXi, xiMin, xiMax);
+      fContainerEff->SetBinLimits(kEffDistance, distanceBinsMin, distanceBinsMax);
+      fContainerEff->SetBinLimits(kEffJt, binsJt);
     }
     
     fContainerEff->SetVarTitle(kEffMCID,"MC ID");
@@ -909,6 +974,8 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
       fContainerEff->SetVarTitle(kEffJetPt, "p_{T}^{jet} (GeV/c)");
       fContainerEff->SetVarTitle(kEffZ, "z = p_{T}^{track} / p_{T}^{jet}");
       fContainerEff->SetVarTitle(kEffXi, "#xi = ln(p_{T}^{jet} / p_{T}^{track})");
+      fContainerEff->SetVarTitle(kEffDistance, "R");
+      fContainerEff->SetVarTitle(kEffJt, "j_{T} (GeV/c)");
     }
     
     // Define clean MC sample
@@ -932,11 +999,11 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   if (fDoPID || fDoEfficiency) {
     // Generated jets
     fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
-                            nCentBins, binsCent, nJetPtBins, binsJetPt);
+                             nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtRec->Sumw2();
     fOutputContainer->Add(fh2FFJetPtRec);
     fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
-                            nCentBins, binsCent, nJetPtBins, binsJetPt);
+                             nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtGen->Sumw2();
     fOutputContainer->Add(fh2FFJetPtGen);
   }
@@ -1104,7 +1171,8 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     return;
   
   Double_t centralityPercentile = -1;
-  Double_t centralityPercentileNoEventSelection = -1;
+  Double_t centralityPercentileNoEventSelection = -1; 
+  
   if (fStoreCentralityPercentile) {
     if (fCentralityEstimator.Contains("ITSTPCtracklets", TString::kIgnoreCase)) {
       // Special pp centrality estimator
@@ -1119,7 +1187,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
     else {
       // Ordinary centrality estimator
-      centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+      centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());              //.Data() converts to const char
       centralityPercentileNoEventSelection = centralityPercentile; // Event selection not really implemented for this....
     }
   }
@@ -1128,23 +1196,38 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   const Bool_t nonNegativeCentralityPercentile = centralityPercentile >= 0;
   
   // MB
+  Bool_t passedVertexSelectionMult, passedVertexZSelectionMult;
+  Bool_t isPileUpMult;
+  Bool_t passedDAQCheck, passedTrackClustCut;
+  
+  //Checks for all run modes. Checks are different->Done in Functions
   // Check if vertex is ok, but don't apply cut on z position
   const Bool_t passedVertexSelectionMB = GetVertexIsOk(fEvent, kFALSE);
   // Now check again, but also require z position to be in desired range
   const Bool_t passedVertexZSelectionMB = GetVertexIsOk(fEvent, kTRUE);
   // Check pile-up
-  const Bool_t isPileUpMB = GetIsPileUp(fEvent, fPileUpRejectionType);
+  const Bool_t isPileUpMB = GetIsPileUp(fEvent);
   
-  // Mult (check only needed for non-negative centrality percentile, otherwise, event is not used anyway
-  // Check if is INEL > 0 (slight abuse of notation with "vertex selection"....)
-  const Bool_t passedVertexSelectionMult = nonNegativeCentralityPercentileNoEventSelection ? AliPPVsMultUtils::IsINELgtZERO(fEvent) : kFALSE;
-  // Check z position of vertex
-  const Bool_t passedVertexZSelectionMult = nonNegativeCentralityPercentileNoEventSelection ? AliPPVsMultUtils::IsAcceptedVertexPosition(fEvent) : kFALSE;
-  // Check pile-up  (and also consistency between SPD and track vertex, which is again a z cut, but is a check for pile-up!)
-  const Bool_t isPileUpMult = nonNegativeCentralityPercentileNoEventSelection ? (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvent)  ||
+  passedVertexSelectionMult = passedVertexZSelectionMult = kFALSE;
+  isPileUpMult = kTRUE;
+  passedDAQCheck = passedTrackClustCut = kFALSE;
+  
+  if (GetRunMode() == kJetPIDMode) {
+    // Mult (check only needed for non-negative centrality percentile, otherwise, event is not used anyway
+    // Check if is INEL > 0 (slight abuse of notation with "vertex selection"....)
+    passedVertexSelectionMult = nonNegativeCentralityPercentileNoEventSelection ? AliPPVsMultUtils::IsINELgtZERO(fEvent) : kFALSE;
+    // Check z position of vertex
+    passedVertexZSelectionMult = nonNegativeCentralityPercentileNoEventSelection ? AliPPVsMultUtils::IsAcceptedVertexPosition(fEvent) : kFALSE;
+    // Check pile-up  (and also consistency between SPD and track vertex, which is again a z cut, but is a check for pile-up!)
+    isPileUpMult = nonNegativeCentralityPercentileNoEventSelection ? (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvent)  ||
                                                                                  !AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fEvent)) : kTRUE;
-  
-  
+  }
+  if (GetRunMode() == kLightFlavorMode) {
+    // Check Incomplete DAQ rejection
+    passedDAQCheck = !fEvent->IsIncompleteDAQ();
+    //Check Tracklet vs. Cluster Cut
+    passedTrackClustCut = !fAnaUtils->IsSPDClusterVsTrackletBG(fEvent);
+  }
   
   if (fDoBinZeroStudy && fMC) {
     for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) { 
@@ -1196,56 +1279,70 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
   }
   
-  
-  // Flags that indicate whether the event passed all selections for MB and/or mult
+  //Increment event counters (trigger selection, vertex cuts and pile-up rejection) for MB and mult:
+  //MB
+  //Flags that indicate whether the event passed all selections for MB and/or mult
   Bool_t isMBSelected = kFALSE;
   Bool_t isMultSelected = kFALSE;
   
-  // Increment event counters (trigger selection, vertex cuts and pile-up rejection) for MB and mult:
-  // MB
-  IncrementEventCounter(-13, kTriggerSel);
-  if (passedVertexSelectionMB) {
-    IncrementEventCounter(-13, kTriggerSelAndVtxCut);
-    
-    if (passedVertexZSelectionMB) {
-      IncrementEventCounter(-13, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
-      if (!isPileUpMB) {
-        // ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
-        // which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
-        // rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to 
-        // number of events. But if it does change the spectra, this must somehow be corrected for.
-        // NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity 
-        // bins. Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it. 
-        // Pile-up rejection has only a minor impact, so maybe there is no need to dig further.
-        IncrementEventCounter(-13, kTriggerSelAndVtxCutAndZvtxCut);
-        isMBSelected = kTRUE;
+  
+  if(GetRunMode() == AliAnalysisTaskPID::kJetPIDMode) {
+    IncrementEventCounter(centralityPercentile, kTriggerSel);
+    if (passedVertexSelectionMB) {
+      IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut); 
+      if (passedVertexZSelectionMB) {
+        IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+        if (!isPileUpMB) {
+  /*      ATTENTION: Is this the right place for the pile-up rejection? Important to have still the proper bin-0 correction,
+          which is done solely with sel and selVtx, since the zvtx selection does ~not change the spectra. The question is whether the pile-up
+          rejection changes the spectra. If not, then it is perfectly fine to put it here and keep the usual histo for the normalisation to 
+          number of events. But if it does change the spectra, this must somehow be corrected for.
+          NOTE: multiplicity >= 0 usually implies a properly reconstructed vertex. Hence, the bin-0 correction cannot be done in multiplicity 
+          bins. Furthermore, there seems to be no MC simulation with pile-up rejection, so the bin-0 correction cannot be extracted with it. 
+          Pile-up rejection has only a minor impact, so maybe there is no need to dig further.*/
+          IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
+          isMBSelected = kTRUE;
+        }
+      }
+    }
+  
+//         Mult (again, only centrality percentile >= 0 considered)
+    if (nonNegativeCentralityPercentileNoEventSelection) {
+      IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSel);
+      if (passedVertexSelectionMult) {
+        IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSelAndVtxCut);
+        if (passedVertexZSelectionMult) {
+          IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
+          if (!isPileUpMult && nonNegativeCentralityPercentile) {
+            /*NOTE: Same comment as for MB
+            If nonNegativeCentralityPercentile is kFALSE, but nonNegativeCentralityPercentileNoEventSelection was true,
+            then this should only be due to pile-up*/
+            IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
+            isMultSelected = kTRUE;
+          }
+        }
       }
     }
   }
   
-  // Mult (again, only centrality percentile >= 0 considered)
-  if (nonNegativeCentralityPercentileNoEventSelection) {
-    IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSel);
-    if (passedVertexSelectionMult) {
-      IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSelAndVtxCut);
-      
-      if (passedVertexZSelectionMult) {
-        IncrementEventCounter(centralityPercentileNoEventSelection, kTriggerSelAndVtxCutAndZvtxCutNoPileUpRejection);
-        if (!isPileUpMult && nonNegativeCentralityPercentile) {
-          // NOTE: Same comment as for MB
-          // If nonNegativeCentralityPercentile is kFALSE, but nonNegativeCentralityPercentileNoEventSelection was true,
-          // then this should only be due to pile-up
+  if (GetRunMode() == AliAnalysisTaskPID::kLightFlavorMode) {
+    if (passedDAQCheck && passedTrackClustCut && !isPileUpMB) {
+      IncrementEventCounter(centralityPercentile, kTriggerSel);
+      if (passedVertexSelectionMB) {
+        IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut); 
+        if (passedVertexZSelectionMB) {
           IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
-          isMultSelected = kTRUE;
+	  isMBSelected = kTRUE;
         }
       }
     }
   }
   
   
-  // Done, if neither MB, nor mult requirements fulfilled.
+//   Done, if neither MB, nor mult requirements fulfilled.
   if (!isMBSelected && !isMultSelected)
     return;
+  
   
   
   Double_t magField = fEvent->GetMagneticField();
@@ -1279,7 +1376,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         if (fDoPID) {
           Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
-          valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
+          valuesGenYield[GetIndexOfChargeAxisGenYield(), -1, -1] = chargeMC;
           
           if (isMultSelected)
             fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
@@ -1293,10 +1390,9 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         if (fDoEfficiency) {
           Double_t valueEff[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
-                                            -1, -1, -1 };
+                                            -1, -1, -1, -1, -1 };
           
-          if (isMultSelected)
-            fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
+          if (isMultSelected)            fContainerEff->Fill(valueEff, kStepGenWithGenCuts);
           
           if (isMBSelected) {
             valueEff[kEffCentrality] = -13;
@@ -1368,7 +1464,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
           
           // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
           Double_t value[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3.,
-                                           centralityPercentile, -1, -1, -1 };
+                                           centralityPercentile, -1, -1, -1, -1, -1 };
           if (isMultSelected)
             fContainerEff->Fill(value, kStepRecWithGenCuts);
           
@@ -1378,7 +1474,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
           }
             
           Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), 
-                                               centralityPercentile, -1, -1, -1 };
+                                               centralityPercentile, -1, -1, -1, -1, -1 };
           if (isMultSelected)
             fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);
           
@@ -1414,7 +1510,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     if (fDoEfficiency) {
       if (mcTrack) {
         Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(), static_cast<Double_t>(track->Charge()), 
-                                                   centralityPercentile, -1, -1, -1 };
+                                                   centralityPercentile, -1, -1, -1, -1, -1 };
         Double_t weight = IsSecondaryWithStrangeMotherMC(fMC, TMath::Abs(label)) ? GetMCStrangenessFactorCMS(fMC, mcTrack) : 1.0;
         
         if (isMultSelected) {
@@ -1431,7 +1527,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t valueGenAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
-                                                   centralityPercentile, -1, -1, -1 };
+                                                   centralityPercentile, -1, -1, -1, -1, -1 };
         if (fMC->IsPhysicalPrimary(TMath::Abs(label))) {
           if (isMultSelected) {
             valueRecAllCuts[kEffCentrality] = centralityPercentile;
@@ -1553,16 +1649,21 @@ Int_t AliAnalysisTaskPID::PDGtoMCID(Int_t pdg)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi)
+void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi, Bool_t storeXi)
 {
   // Uses trackPt and jetPt to obtain z and xi.
   
   z = (jetPt > 0 && trackPt >= 0) ? (trackPt / jetPt) : -1;
-  xi = (z > 0) ? TMath::Log(1. / z) : -1;
+  if (storeXi) {
+    xi = (z > 0) ? TMath::Log(1. / z) : -1;
+  }
+  else {
+    xi = -1;
+  }
   
   if(trackPt > (1. - 1e-06) * jetPt && trackPt < (1. + 1e-06) * jetPt) { // case z=1 : move entry to last histo bin <1
     z  = 1. - 1e-06;
-    xi = 1e-06;
+    xi = storeXi ? 1e-06 : -1;
   }
 }
 
@@ -2005,84 +2106,170 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t
   
   const Int_t absMotherPDG = TMath::Abs(motherPDG);
   
-  if (absMotherPDG == 310 || absMotherPDG == 321) { // K0s / K+ / K-
-    if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.768049;
-    else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.732933;
-    else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.650298;
-    else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.571332;
-    else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.518734;
-    else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.492543;
-    else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.482704;
-    else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.488056;
-    else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.488861;
-    else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.492862;
-    else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.504332;
-    else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.501858;
-    else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.512970;
-    else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.524131;
-    else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.539130;
-    else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.554101;
-    else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.560348;
-    else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.568869;
-    else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.583310;
-    else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.604818;
-    else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.632630;
-    else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.710070;
-    else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.736365;
-    else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 0.835865;
+  if (GetEventGenerator() == kPythia6Perugia2011) {
+    // Values from mcplots.cern.ch for Pythia 6.425, tune 350 (= Perugia 2011) 
+  
+    if (absMotherPDG == 310 || absMotherPDG == 321) { // K0s / K+ / K-
+      if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.873424;
+      else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.854657;
+      else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.800455;
+      else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.738324;
+      else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.687298;
+      else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.650806;
+      else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.629848;
+      else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.619261;
+      else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.610045;
+      else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.601626;
+      else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.605392;
+      else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.596221;
+      else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.607561;
+      else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.604021;
+      else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.600392;
+      else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.603259;
+      else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.619247;
+      else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.614940;
+      else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.632294;
+      else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.633038;
+      else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.646769;
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.700733;
+      else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.664591;
+      else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 0.683853;
+    }
+
+    if (absMotherPDG == 3122) { // Lambda
+    //if (absMotherPDG == 3122 || absMotherPDG == 3112 || absMotherPDG == 3222) { // Lambda / Sigma- / Sigma+
+      if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.871675;
+      else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.892235;
+      else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.705598;
+      else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.630633;
+      else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.552697;
+      else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.505789;
+      else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.461067;
+      else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.433770;
+      else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.422565;
+      else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.398517;
+      else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.393404;
+      else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.394656;
+      else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.390861;
+      else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.380383;
+      else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.396162;
+      else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.388568;
+      else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.429110;
+      else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.427236;
+      else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.437851;
+      else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.470140;
+      else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.509113;
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.616101;
+      else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.832494;
+      else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 0.997015;
+    }
+
+    if (absMotherPDG == 3312 || absMotherPDG == 3322) { // xi
+      if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.946902;
+      else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.885799;
+      else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.712161;
+      else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.595333;
+      else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.531432;
+      else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.424845;
+      else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.378739;
+      else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.347243;
+      else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.366527;
+      else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.332981;
+      else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.314722;
+      else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.287927;
+      else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.285158;
+      else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.296892;
+      else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.291956;
+      else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.347254;
+      else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.348836;
+      else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.287240;
+      else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.325536;
+      else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.364368;
+      else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.405848;
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.439721;
+    }  
   }
-  
-  if (absMotherPDG == 3122) { // Lambda
-  //if (absMotherPDG == 3122 || absMotherPDG == 3112 || absMotherPDG == 3222) { // Lambda / Sigma- / Sigma+
-    if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.645162;
-    else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.627431;
-    else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.457136;
-    else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.384369;
-    else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.330597;
-    else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.309571;
-    else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.293620;
-    else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.283709;
-    else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.282047;
-    else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.277261;
-    else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.275772;
-    else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.280726;
-    else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.288540;
-    else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.288315;
-    else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.296619;
-    else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.302993;
-    else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.338121;
-    else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.349800;
-    else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.356802;
-    else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.391202;
-    else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.422573;
-    else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.573815;
-    else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.786984;
-    else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 1.020021;
-  } 
-  
-  if (absMotherPDG == 3312 || absMotherPDG == 3322) { // xi 
-    if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.666620;
-    else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.575908;
-    else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.433198;
-    else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.340901;
-    else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.290896;
-    else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.236074;
-    else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.218681;
-    else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.207763;
-    else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.222848;
-    else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.208806;
-    else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.197275;
-    else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.183645;
-    else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.188788;
-    else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.188282;
-    else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.207442;
-    else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.240388;
-    else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.241916;
-    else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.208276;
-    else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.234550;
-    else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.251689;
-    else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.310204;
-    else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.343492;  
+  else if (GetEventGenerator() == kPythia6Perugia0) {
+    // Values from mcplots.cern.ch for Pythia 6 (Perugia 0) 
+    if (absMotherPDG == 310 || absMotherPDG == 321) { // K0s / K+ / K-
+      if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.768049;
+      else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.732933;
+      else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.650298;
+      else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.571332;
+      else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.518734;
+      else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.492543;
+      else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.482704;
+      else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.488056;
+      else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.488861;
+      else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.492862;
+      else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.504332;
+      else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.501858;
+      else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.512970;
+      else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.524131;
+      else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.539130;
+      else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.554101;
+      else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.560348;
+      else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.568869;
+      else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.583310;
+      else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.604818;
+      else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.632630;
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.710070;
+      else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.736365;
+      else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 0.835865;
+    }
+    
+    if (absMotherPDG == 3122) { // Lambda
+    //if (absMotherPDG == 3122 || absMotherPDG == 3112 || absMotherPDG == 3222) { // Lambda / Sigma- / Sigma+
+      if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.645162;
+      else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.627431;
+      else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.457136;
+      else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.384369;
+      else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.330597;
+      else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.309571;
+      else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.293620;
+      else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.283709;
+      else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.282047;
+      else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.277261;
+      else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.275772;
+      else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.280726;
+      else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.288540;
+      else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.288315;
+      else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.296619;
+      else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.302993;
+      else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.338121;
+      else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.349800;
+      else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.356802;
+      else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.391202;
+      else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.422573;
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.573815;
+      else if(6.00 <= motherGenPt && motherGenPt < 8.00) fac = 0.786984;
+      else if(8.00 <= motherGenPt && motherGenPt < 10.00) fac = 1.020021;
+    } 
+    
+    if (absMotherPDG == 3312 || absMotherPDG == 3322) { // xi 
+      if (0.00 <= motherGenPt && motherGenPt < 0.20) fac = 0.666620;
+      else if(0.20 <= motherGenPt && motherGenPt < 0.40) fac = 0.575908;
+      else if(0.40 <= motherGenPt && motherGenPt < 0.60) fac = 0.433198;
+      else if(0.60 <= motherGenPt && motherGenPt < 0.80) fac = 0.340901;
+      else if(0.80 <= motherGenPt && motherGenPt < 1.00) fac = 0.290896;
+      else if(1.00 <= motherGenPt && motherGenPt < 1.20) fac = 0.236074;
+      else if(1.20 <= motherGenPt && motherGenPt < 1.40) fac = 0.218681;
+      else if(1.40 <= motherGenPt && motherGenPt < 1.60) fac = 0.207763;
+      else if(1.60 <= motherGenPt && motherGenPt < 1.80) fac = 0.222848;
+      else if(1.80 <= motherGenPt && motherGenPt < 2.00) fac = 0.208806;
+      else if(2.00 <= motherGenPt && motherGenPt < 2.20) fac = 0.197275;
+      else if(2.20 <= motherGenPt && motherGenPt < 2.40) fac = 0.183645;
+      else if(2.40 <= motherGenPt && motherGenPt < 2.60) fac = 0.188788;
+      else if(2.60 <= motherGenPt && motherGenPt < 2.80) fac = 0.188282;
+      else if(2.80 <= motherGenPt && motherGenPt < 3.00) fac = 0.207442;
+      else if(3.00 <= motherGenPt && motherGenPt < 3.20) fac = 0.240388;
+      else if(3.20 <= motherGenPt && motherGenPt < 3.40) fac = 0.241916;
+      else if(3.40 <= motherGenPt && motherGenPt < 3.60) fac = 0.208276;
+      else if(3.60 <= motherGenPt && motherGenPt < 3.80) fac = 0.234550;
+      else if(3.80 <= motherGenPt && motherGenPt < 4.00) fac = 0.251689;
+      else if(4.00 <= motherGenPt && motherGenPt < 5.00) fac = 0.310204;
+      else if(5.00 <= motherGenPt && motherGenPt < 6.00) fac = 0.343492;  
+    }
   }
   
   const Double_t weight = 1. / fac;
@@ -2157,6 +2344,9 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliM
 AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
 {
   // Get the (locally defined) particle type judged by TOF
+  if (!fStoreTOFInfo) {
+    return kNoTOFinfo;
+  }
   
   if (!fPIDResponse) {
     Printf("ERROR: fPIDResponse not available -> Cannot determine TOF type!");
@@ -2498,15 +2688,17 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   
   printf("\n");
   
-  printf("Pile up rejection type: %d\n", (Int_t)fPileUpRejectionType);
+  printf("Pile up rejection type: %d\n", (Int_t)GetPileUpRejectionType());
   
   printf("\n");
   
   printf("Use MC-ID for signal generation: %d\n", GetUseMCidForGeneration());
   printf("Use ITS: %d\n", GetUseITS());
   printf("Use TOF: %d\n", GetUseTOF());
+  printf("Store TOF: %d\n", GetStoreTOFInfo());
   printf("Use priors: %d\n", GetUsePriors());
   printf("Use TPC default priors: %d\n", GetUseTPCDefaultPriors());
+  printf("Store Charge: %d\n", GetStoreCharge());
   printf("Use convoluted Gauss: %d\n", GetUseConvolutedGaus());
   printf("Accuracy of non-Gaussian tail: %e\n", GetAccuracyNonGaussianTail());
   printf("Take into account muons: %d\n", GetTakeIntoAccountMuons());
@@ -2518,11 +2710,41 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   
   printf("\n");
   
+  std::cout << "Run Mode: ";
+  if (GetRunMode() == AliAnalysisTaskPID::kJetPIDMode) {
+    std::cout << "Jet PID Mode";
+  } 
+  else if (GetRunMode() == AliAnalysisTaskPID::kLightFlavorMode) {
+    std::cout << "Light Flavor Mode";
+  }
+  else {
+    std::cout << "No recognized Run mode";
+  }
+  std::cout << std::endl;
+  
+  std::cout << "Store Charge: " << std::endl;  
+  if (GetStoreCharge())
+    std::cout << "true";
+  else
+    std::cout << "false";
+  
+  std::cout << std::endl;
   printf("Do PID: %d\n", fDoPID);
   printf("Do Efficiency: %d\n", fDoEfficiency);
   printf("Do PtResolution: %d\n", fDoPtResolution);
   printf("Do dEdxCheck: %d\n", fDoDeDxCheck);
   printf("Do binZeroStudy: %d\n", fDoBinZeroStudy);
+  if (fDoEfficiency) {
+    if (GetEventGenerator() == kPythia6Perugia2011) {
+      std::cout << "Use Strangeness weighting factors for Pythia 6 (Perugia 2011)" << std::endl;
+    }
+    else if (GetEventGenerator() == kPythia6Perugia0) {
+      std::cout << "Use Strangeness weighting factors for Pythia 6 (Perugia 0)" << std::endl;
+    }
+    else {
+      std::cout << "Using kUnknown Strangeness weighting factors" << std::endl;
+    }
+  }
   
   printf("\n");
 
@@ -2558,10 +2780,10 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   printf("\n\n");
 }
 
-
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile,
-                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected) 
+                                        Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected, Bool_t storeXi,
+                                        Double_t radialDistanceToJet, Double_t jT) 
 {
   // Process the track (generate expected response, fill histos, etc.).
   // particlePDGcode == 0 means data. Otherwise, the corresponding MC ID will be assumed.
@@ -2614,10 +2836,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t pT = track->Pt();
   
   Double_t z = -1, xi = -1;
-  GetJetTrackObservables(pT, jetPt, z, xi);
+  GetJetTrackObservables(pT, jetPt, z, xi, storeXi);
   
-  
-  Double_t trackCharge = track->Charge();
+  Double_t trackCharge = fStoreCharge ? track->Charge() : -2;
   
   // TPC signal
   const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
@@ -2958,8 +3179,31 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t prob[AliPID::kSPECIESC];
   for (Int_t i = 0; i < AliPID::kSPECIESC; i++)
     prob[i] = 0;
-
+  
+//   //For Testing
+//   
+  
   fPIDcombined->ComputeProbabilities(track, fPIDResponse, prob);
+  
+  
+  //Testing
+  
+//   if (track->GetTPCsignal()<=50 && track->GetTPCmomentum()>=2.5) {
+//     std::cout << "Centrality in PID-Task: " << fPIDResponse->GetCurrentCentrality() << std::endl;
+//     std::cout << "Track: dEdx " << track->GetTPCsignal() << " pTPC " << track->GetTPCmomentum() << std::endl;
+//     Double_t priors[AliPID::kSPECIESC];
+//     memset(priors,0,AliPID::kSPECIESC*sizeof(Double_t));  
+//     fPIDcombined->GetPriors(track,priors,fPIDResponse->GetCurrentCentrality(),kTRUE);
+//     for (Int_t i=0;i<AliPID::kSPECIESC;i++) {
+//       std::cout << "Probabilities: " << prob[i] << std::endl;
+//     }
+//     for (Int_t i=0;i<AliPID::kSPECIESC;i++) {
+//       std::cout << "Priors: " << priors[i] << std::endl;
+//     }  
+//     std::cout << std::endl;
+//   }
+//   
+  //End of Test
   
   // If muons are not to be taken into account, just set their probability to zero and normalise the remaining probabilities later
   if (!fTakeIntoAccountMuons)
@@ -3181,6 +3425,8 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     entry[kDataJetPt] = jetPt;
     entry[kDataZ] = z;
     entry[kDataXi] = xi;
+    entry[kDataDistance] = radialDistanceToJet;
+    entry[kDataJt] = jT;
   }
   
   entry[GetIndexOfChargeAxisData()] = trackCharge;
@@ -3232,6 +3478,8 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     genEntry[kGenJetPt] = jetPt;
     genEntry[kGenZ] = z;
     genEntry[kGenXi] = xi;
+    genEntry[kGenDistance] = radialDistanceToJet;
+    genEntry[kGenJt] = jT;
   }
   
   genEntry[GetIndexOfChargeAxisGen()] = trackCharge;
@@ -3778,7 +4026,8 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(Dou
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const
+void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt,
+                                      Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
@@ -3786,9 +4035,11 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
   hist->SetBinEdges(kGenDeltaPrimeSpecies, binsDeltaPrime);
   hist->SetBinEdges(kGenCentrality, binsCent);
   
-  if (fStoreAdditionalJetInformation)
+  if (fStoreAdditionalJetInformation) {
     hist->SetBinEdges(kGenJetPt, binsJetPt);
-                          
+    hist->SetBinEdges(kGenJt, binsJt);
+  }
+  
   // Set axes titles
   hist->GetAxis(kGenMCID)->SetTitle("MC PID");
   hist->GetAxis(kGenMCID)->SetBinLabel(1, "e");
@@ -3815,6 +4066,10 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
     hist->GetAxis(kGenZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
     
     hist->GetAxis(kGenXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
+    
+    hist->GetAxis(kGenDistance)->SetTitle("R");
+  
+    hist->GetAxis(kGenJt)->SetTitle("j_{T} (GeV/c)");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGen())->SetTitle("Charge (e_{0})");
@@ -3830,14 +4085,17 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const
+void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt, Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
   hist->SetBinEdges(kGenYieldPt, binsPt);
   hist->SetBinEdges(kGenYieldCentrality, binsCent);
-  if (fStoreAdditionalJetInformation)
+  
+  if (fStoreAdditionalJetInformation) {
     hist->SetBinEdges(kGenYieldJetPt, binsJetPt);
+    hist->SetBinEdges(kGenYieldJt, binsJt);
+  }
   
   for (Int_t i = 0; i < 5; i++)
     hist->GetAxis(kGenYieldMCID)->SetBinLabel(i + 1, AliPID::ParticleLatexName(i));
@@ -3853,6 +4111,10 @@ void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Do
     hist->GetAxis(kGenYieldZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
     
     hist->GetAxis(kGenYieldXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
+    
+    hist->GetAxis(kGenYieldDistance)->SetTitle("R");
+  
+    hist->GetAxis(kGenYieldJt)->SetTitle("j_{T} (GeV/c)");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGenYield())->SetTitle("Charge (e_{0})");
@@ -3860,7 +4122,8 @@ void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Do
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const
+void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt,
+                                   Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
@@ -3868,8 +4131,10 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
   hist->SetBinEdges(kDataDeltaPrimeSpecies, binsDeltaPrime);
   hist->SetBinEdges(kDataCentrality, binsCent);
   
-  if (fStoreAdditionalJetInformation)
+  if (fStoreAdditionalJetInformation) {
     hist->SetBinEdges(kDataJetPt, binsJetPt);
+    hist->SetBinEdges(kDataJt, binsJt);
+  }
   
   // Set axes titles
   hist->GetAxis(kDataMCID)->SetTitle("MC PID");
@@ -3897,6 +4162,10 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
     hist->GetAxis(kDataZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
   
     hist->GetAxis(kDataXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
+    
+    hist->GetAxis(kDataDistance)->SetTitle("R");
+  
+    hist->GetAxis(kDataJt)->SetTitle("j_{T} (GeV/c)");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisData())->SetTitle("Charge (e_{0})");
@@ -3964,7 +4233,6 @@ void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* bin
   hist->GetAxis(kDeDxCheckPID)->SetBinLabel(3, "#pi");
   hist->GetAxis(kDeDxCheckPID)->SetBinLabel(4, "p");
   
-  
   hist->GetAxis(kDeDxCheckJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
   hist->GetAxis(kDeDxCheckEtaAbs)->SetTitle("|#eta|");  
   hist->GetAxis(kDeDxCheckP)->SetTitle("p_{TPC} (GeV/c)"); 
@@ -3983,4 +4251,30 @@ void AliAnalysisTaskPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* 
   hist->GetAxis(kBinZeroStudyCentrality)->SetTitle(Form("Centrality Percentile (%s)", GetPPCentralityEstimator().Data()));
   hist->GetAxis(kBinZeroStudyGenEta)->SetTitle("#it{#eta}^{gen}");  
   hist->GetAxis(kBinZeroStudyGenPt)->SetTitle("#it{p}_{T}^{gen} (GeV/#it{c})"); 
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::FillUEDensity(Double_t cent, Double_t UEpt) {
+  if (fIsUEPID) {
+    fh2UEDensity->Fill(cent, UEpt);
+  }
+}
+
+void AliAnalysisTaskPID::FillJetArea(Double_t cent, Double_t area) {
+  if (fIsUEPID) {
+    fh1JetArea->Fill(cent,area);
+  }
+}
+
+void AliAnalysisTaskPID::NormalizeJetArea(Double_t jetParameter) {
+  if (!fIsUEPID)
+    return;
+  
+  if (!fh2FFJetPtRec || !fh1JetArea) {
+    std::cout << "Cannot normalize Jet Area" << std::endl;
+    return;
+  }
+  
+  fh1JetArea->Scale(1.0/(fh2FFJetPtRec->GetEntries() * jetParameter * jetParameter * TMath::Pi()));
 }

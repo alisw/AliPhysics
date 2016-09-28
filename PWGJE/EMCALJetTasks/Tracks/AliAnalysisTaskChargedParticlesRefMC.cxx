@@ -226,6 +226,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
 }
 
 bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
+  fEventTriggers.clear();
   AliDebugStream(1) << GetName() << ": Using custom event selection" << std::endl;
   if(!MCEvent()) return false;
   if(!fTriggerPatchInfo) return false;
@@ -238,7 +239,6 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
 
 
   // select trigger
-  fEventTriggers.clear();
   bool isMinBias;
   if((isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fEventTriggers.push_back("MB");
   // In simulations triggered events are a subset of min. bias events

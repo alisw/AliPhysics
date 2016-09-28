@@ -36,7 +36,6 @@ class CEPTrackBuffer : public TObject {
     Float_t fMCMass;
     TVector3 fMCMomentum;
     
-    
   public:
     static const Int_t kdumval = -999;
     
@@ -44,6 +43,8 @@ class CEPTrackBuffer : public TObject {
     ~CEPTrackBuffer();
     
     // Modifiers
+    void Reset();
+    
     void SetisSoft(Int_t isSoft)        { fisSoft = isSoft; }
     void SetChargeSign(Int_t chsign)    { fChargeSign = chsign; }
     void SetMomentum(TVector3 mom)      { fMomentum = mom; }

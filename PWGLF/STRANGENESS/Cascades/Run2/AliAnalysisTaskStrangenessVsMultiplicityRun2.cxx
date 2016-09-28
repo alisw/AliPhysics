@@ -80,6 +80,8 @@ class AliAODv0;
 #include "AliAODEvent.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
+#include "AliLightV0vertexer.h"
+#include "AliLightCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -134,6 +136,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
 
 //---> Flags controlling Vertexers
         fkRunVertexers    ( kFALSE ),
+        fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
         fTrigType(AliVEvent::kMB),
@@ -247,6 +250,7 @@ fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
+fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -983,14 +987,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
                 
-                //FIXME: ADD REJECTION CUTS HERE//
-                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
-                TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() ){
-                
+                TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
+            
+                //Check 5: Armenteros-Podolanski space cut (for K0Short analysis)
+                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
+                )
+            {
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, lMass, fTreeVariablePt );
+                histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1006,15 +1012,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     if( fkRunVertexers ) {
         lESDevent->ResetCascades();
         lESDevent->ResetV0s();
-
-        AliV0vertexer lV0vtxer;
-        AliCascadeVertexer lCascVtxer;
-
-        lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-        lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-
-        lV0vtxer.Tracks2V0vertices(lESDevent);
-        lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        
+        //Decide between regular and light vertexer (default: light)
+        if ( ! fkUseLightVertexer ){
+            AliV0vertexer lV0vtxer;
+            AliCascadeVertexer lCascVtxer;
+            
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        } else {
+            AliLightV0vertexer lV0vtxer;
+            AliLightCascadeVertexer lCascVtxer;
+            
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+            lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+        }
     }
 
     //------------------------------------------------
@@ -1388,9 +1406,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Random denial
         Bool_t lKeepCascade = kTRUE;
         if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
-
-        if( fkSaveCascadeTree && lKeepCascade && ( (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) ||
-                                   (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) ) ) {
+        
+        if( fkSaveCascadeTree && lKeepCascade &&
+           (
+            (//START XI SELECTIONS
+             (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) &&
+             (//dE/dx Pre-selection for Xi, if requested
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 7.0 && fTreeCascVarCharge == -1  ) ) ||
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 7.0 && fTreeCascVarCharge == +1) )
+              )//end dE/dx Pre-selection
+             )//end Xi Selections
+            ||
+            (//START OMEGA SELECTIONS
+             (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) &&
+             (//dE/dx Pre-selection for Xi, if requested
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 7.0 && fTreeCascVarCharge == -1  ) ) ||
+              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 7.0 && fTreeCascVarCharge == +1) )
+              )//end dE/dx Pre-selection
+             )//end Xi Selections
+            )
+           )
+        {
             fTreeCascade->Fill();
         }
         //------------------------------------------------
@@ -1484,22 +1520,23 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeCascVarDistOverTotMom*lPDGMass < lCascadeResult->GetCutProperLifetime() &&
                 fTreeCascVarLeastNbrClusters > lCascadeResult->GetCutLeastNumberOfClusters() &&
                 
-                //FIXME: ADD REJECTION CUTS HERE//
-                
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
-                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx()
+                TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
+                
+                //Check 5: Xi rejection for Omega analysis
+                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus || lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, lMass, fTreeCascVarPt );
+                histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         // End Superlight adaptive output mode
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
+        
     }// end of the Cascade loop (ESD or AOD)
 
     // Post output data.
