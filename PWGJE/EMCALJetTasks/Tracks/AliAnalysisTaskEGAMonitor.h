@@ -27,7 +27,7 @@ public:
   }
 
   void AddMaskedFastor(int fastorAbsID) { fMaskedFastors.push_back(fastorAbsID); }
-  void SetMaskedFastorOADB();
+  void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
   bool IsPatchRejected(int col, int row);
 
 protected:
