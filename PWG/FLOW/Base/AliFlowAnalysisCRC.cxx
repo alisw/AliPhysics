@@ -16292,6 +16292,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
 //    }
     for(Int_t c=0;c<4;c++) {
       fCRCZDCQVecVtxPos[r][c] = NULL;
+      for (Int_t cb=0; cb<fCRCnCen; cb++) {
+        fCRCZDCQVecVtxPosCen[r][cb][c] = NULL;
+      }
     }
     for(Int_t h=0;h<fCRCnHar;h++) {
       fCRCQnRe[r][h] = NULL;
@@ -18241,6 +18244,12 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   if( fZNCen<=0. || fZNAen<=0. ) return;
   // cut on centroid position
   if(sqrt(QCRe*QCRe+QCIm*QCIm)>1.25 || sqrt(QARe*QARe+QAIm*QAIm)>1.25) return;
+  
+  // try 4D calibration
+  fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCRe);
+  fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCIm);
+  fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QARe);
+  fCRCZDCQVecVtxPosCen[fRunBin][fCenBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAIm);
   
   Double_t QCReR=0., QCImR=0., QAReR=0., QAImR=0.;
   
@@ -26883,6 +26892,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
                                                  Form("fCRCZDCQVecVtxPos[%d][%d]",fRunList[r],c),20,xmin,xmax,20,ymin,ymax,20,zmin,zmax,"s");
         fCRCZDCQVecVtxPos[r][c]->Sumw2();
         fCRCQVecListRun[r]->Add(fCRCZDCQVecVtxPos[r][c]);
+        for (Int_t cb=0; cb<fCRCnCen; cb++) {
+          fCRCZDCQVecVtxPosCen[r][cb][c] = new TProfile3D(Form("fCRCZDCQVecVtxPosCen[%d][%d][%d]",fRunList[r],cb,c),Form("fCRCZDCQVecVtxPosCen[%d][%d][%d]",fRunList[r],cb,c),10,xmin,xmax,10,ymin,ymax,10,zmin,zmax,"s");
+          fCRCZDCQVecVtxPosCen[r][cb][c]->Sumw2();
+          fCRCQVecListRun[r]->Add(fCRCZDCQVecVtxPosCen[r][cb][c]);
+        }
       }
     }
   } // end of if (fUseZDC)
