@@ -168,7 +168,7 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
   //======================================
   
   fhDetaNearMixAcceptance
-      << TH1D( "hDEtaNearMixAcceptance", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+      << TH1D( "hDEtaNearMixAcceptance", "",  160, -2*fmaxEtaRange, 2*fmaxEtaRange)
 	  <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
   
   fhDphiAssoc
@@ -192,7 +192,7 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 //	  <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
   fhDphiDetaPta
-	  << TH2D( "hDphiDetaPta", "", 40*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 72, -9./20, 31./20.)
+	  << TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -9./20, 31./20.)
 	  <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
   delete [] uEBinBorders;
