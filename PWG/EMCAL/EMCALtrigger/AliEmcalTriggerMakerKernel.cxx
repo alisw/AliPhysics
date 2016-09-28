@@ -60,6 +60,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fMaxAbsCellTime(1.),
   fMinCellAmplitude(0.),
   fApplyOnlineBadChannelsToOffline(kFALSE),
+  fConfigured(kFALSE),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
   fPatchADCSimple(NULL),
@@ -137,6 +138,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPbPb2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
@@ -153,6 +155,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPPb2013()
@@ -167,6 +170,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPPb2013()
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPP2012()
@@ -181,6 +185,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2012()
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit(), 16, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPbPb2011()
@@ -195,6 +200,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPbPb2011()
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit(), 16, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPP2011()
@@ -207,6 +213,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2011()
   fPatchFinder = new AliEMCALTriggerPatchFinder<double>;
 
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromStream(std::istream& stream)
