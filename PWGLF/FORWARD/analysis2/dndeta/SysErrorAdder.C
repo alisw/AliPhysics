@@ -236,7 +236,7 @@ struct SysErrorAdder
 			    Bool_t verb=false)
   {
     // --- Reaction key ------------------------------------------------
-    if (verb) Info("", "Making graph from %s %p", h->GetName(), l);
+    if (verb) Info("", "Making graph from %s %p eff=%f", h->GetName(), l, eff);
     TString reac = fSys;
     reac.ToUpper();
     reac.Insert(reac.Index("P", 1, 1, TString::kIgnoreCase), " ");
@@ -254,16 +254,16 @@ struct SysErrorAdder
     gse->SetMarkerStyle(h->GetMarkerStyle());
     gse->SetFillStyle(h->GetFillStyle());
     gse->SetXTitle("\\mathit{\\eta}");
-    gse->SetYTitle("1/N \\hbox{d}N_{ch}/\\hbox{d}\\eta");
+    gse->SetYTitle("\\mathrm{d}N_{ch}/\\mathrm{d}\\eta");
     gse->SetKey("laboratory", "CERN");
     gse->SetKey("accelerator", "LHC");
     gse->SetKey("detector", "FORWARD");
     gse->SetKey("reackey", reac);
     gse->SetKey("obskey", "DN/DETARAP");
-    gse->SetKey("title", "Systematic study of 1/N dNch/deta over widest "
+    gse->SetKey("title", "Systematic study of dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("author", "CHRISTENSEN");
-    gse->SetKey("comment", "We present 1/N dNch/deta over widest "
+    gse->SetKey("comment", "We present dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("dscomment", "The pseudo-rapidity density of charged particle");
     gse->AddQualifier(Form("SQRT(S)%s IN GEV",
@@ -450,6 +450,7 @@ struct NSDAdder : public SysErrorAdder
       switch (fSNN) {
       case  900:   fValue = 0.02; break;
       case 2760:   fValue = 0.03; break;
+      case 5023:   fValue = 0.00; break;
       case 7000: 
       case 8000:
       case 13000:  fValue = 0.02; break;
