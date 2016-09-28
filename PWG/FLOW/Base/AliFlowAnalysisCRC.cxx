@@ -18242,13 +18242,6 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   // cut on centroid position
   if(sqrt(QCRe*QCRe+QCIm*QCIm)>1.25 || sqrt(QARe*QARe+QAIm*QAIm)>1.25) return;
   
-  if(fCentralityEBE<70.) {
-    fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCRe);
-    fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCIm);
-    fCRCZDCQVecVtxPos[fRunBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QARe);
-    fCRCZDCQVecVtxPos[fRunBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAIm);
-  }
-  
   Double_t QCReR=0., QCImR=0., QAReR=0., QAImR=0.;
   
   if(AvQCRe && AvQCIm && QMC>0.) {
@@ -18271,8 +18264,31 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fZDCFlowVect[1].Set(QAReR,QAImR);
   }
   
+  if(fCentralityEBE>5. && fCentralityEBE<70.) {
+    fCRCZDCQVecVtxPos[fRunBin][0]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCReR);
+    fCRCZDCQVecVtxPos[fRunBin][1]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QCImR);
+    fCRCZDCQVecVtxPos[fRunBin][2]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAReR);
+    fCRCZDCQVecVtxPos[fRunBin][3]->Fill(fVtxPos[0],fVtxPos[1],fVtxPos[2],QAImR);
+  }
+  
   if (fZDCVtxHist[0] && fZDCVtxHist[1] && fZDCVtxHist[2] && fZDCVtxHist[3]) {
-    if(fVtxPos[0]>-0.035 && fVtxPos[0]<0.015 && fVtxPos[1]>0.145 && fVtxPos[1]<0.22) {
+    Double_t xmin=0.,xmax=0.,ymin=0.,ymax=0.,zmin=0.,zmax=0.;
+    if(fDataSet!=k2015) {
+      xmin=-0.035;
+      xmax=0.015;
+      ymin=0.145;
+      ymax=0.220;
+      zmin=-10.;
+      zmax=10.;
+    } else {
+      xmin=0.06;
+      xmax=0.082;
+      ymin=0.324;
+      ymax=0.345;
+      zmin=-10.;
+      zmax=10.;
+    }
+    if(fVtxPos[0]>xmin && fVtxPos[0]<xmax && fVtxPos[1]>ymin && fVtxPos[1]<ymax) {
       QCReR -= fZDCVtxHist[0]->GetBinContent(fZDCVtxHist[0]->FindBin(fVtxPos[0],fVtxPos[1],fVtxPos[2]));
       QCImR -= fZDCVtxHist[1]->GetBinContent(fZDCVtxHist[1]->FindBin(fVtxPos[0],fVtxPos[1],fVtxPos[2]));
       fZDCFlowVect[0].Set(QCReR,QCImR);
@@ -18288,7 +18304,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   fCRCZDCQVecACorr[fRunBin][0]->Fill(fCentralityEBE,QAReR);
   fCRCZDCQVecACorr[fRunBin][1]->Fill(fCentralityEBE,QAImR);
   
-  if(fCentralityEBE<70.) {
+  if(fCentralityEBE>5. &&  fCentralityEBE<70.) {
     fCRCZDCQVecCov[fRunBin][0]->Fill(fVtxPos[0],QCReR);
     fCRCZDCQVecCov[fRunBin][1]->Fill(fVtxPos[1],QCReR);
     fCRCZDCQVecCov[fRunBin][2]->Fill(fVtxPos[2],QCReR);
