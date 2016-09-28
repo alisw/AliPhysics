@@ -577,12 +577,20 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterion, Double_t nsigma,
 	//..For case 1 or 2
 	if(criterion < 3)   histogram = BuildHitAndEnergyMean(criterion, emin, emax,nsigma);
 	//..For case 3, 4 or 5
-	else if (criterion < 6) TestCellShapes(criterion, emin, emax, nsigma);
+	//else if (criterion < 6)
 
+	//..light systems p+p p+Pb
 	Double_t range=0.001;
 	if(emin>0.49)range=0.0005;
 	if(emin>0.99)range=0.0001;
 	if(emin>1.99)range=0.00005;
+
+	//..for Pb+Pb
+/*	Double_t range=0.1;
+	if(emin>0.49)range=0.05;
+	if(emin>0.99)range=0.01;
+	if(emin>1.99)range=0.0002;
+*/
 
 	if(criterion==1) FlagAsBad(criterion, histogram, nsigma, 200,-1);
 	if(criterion==2) FlagAsBad(criterion, histogram, nsigma, 600,range);
@@ -651,139 +659,6 @@ TH1F* AliAnaCaloChannelAnalysis::BuildTimeMean(Int_t crit, Double_t emin, Double
 
 	return Histogram;
 }
-///
-/// This method is currently not used
-/// Test cells shape using fit function f(x)=A*exp(-B*x)/x^2.
-/// Produce values per cell + distributions for A,B and chi2/ndf parameters.
-///
-/// \param crit -- criterium that distinguishs the type of distribution
-/// \param fitemin --
-/// \param fitemax --
-/// \param nsigma --
-///
-//_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma)
-{
-	//..binning parameters
-	Int_t  ncells = fCellAmplitude->GetNbinsY();
-	Double_t amin = fCellAmplitude->GetYaxis()->GetXmin();
-	Double_t amax = fCellAmplitude->GetYaxis()->GetXmax();
-	cout << "ncells " << ncells << " amin = " << amin << "amax = " << amax<< endl;
-
-	//..initialize histograms
-	TH1 *hFitA = new TH1F("hFitA_hCellAmplitude","Fit A value", ncells,amin,amax);
-	hFitA->SetXTitle("AbsId");
-	hFitA->SetYTitle("A");
-
-	TH1 *hFitB = new TH1F("hFitB_hCellAmplitude","Fit B value", ncells,amin,amax);
-	hFitB->SetXTitle("AbsIdhname");
-	hFitB->SetYTitle("B");
-
-	TH1 *hFitChi2Ndf = new TH1F("hFitChi2Ndf_hCellAmplitude","Fit #chi^{2}/ndf value", ncells,amin,amax);
-	hFitChi2Ndf->SetXTitle("AbsId");
-	hFitChi2Ndf->SetYTitle("#chi^{2}/ndf");
-
-	Double_t maxval1=0., maxval2=0., maxval3=0.;
-	Double_t prev=0., MSA=0., AvA = 0. ; //those param are used to automaticaly determined a reasonable maxval1
-	Double_t prev2=0., MSB=0., AvB = 0.  ; //those param are used to automaticaly determined a reasonable maxval2
-	Double_t prev3=0., MSki2=0., Avki2 = 0. ; //those param are used to automaticaly determined a reasonable maxval3
-	Double_t ki2=0.0 ;
-	for (Int_t k = 1; k <= fNoOfCells; k++)
-	{
-		TF1 *fit = new TF1("fit", "[0]*exp(-[1]*x)/x^2");
-		TH1 *hCell = fCellAmplitude->ProjectionX("",k,k);
-		if (hCell->GetEntries() == 0) continue;
-		// hCell->Rebin(3);
-		hCell->Fit(fit, "0QEM", "", fitemin, fitemax);
-		delete hCell;
-
-		if(fit->GetParameter(0) < 5000.)
-		{
-			hFitA->SetBinContent(k, fit->GetParameter(0));
-			if(k<3000)
-			{
-				AvA +=  fit->GetParameter(0);
-				if(k==2999)  maxval1  = AvA/3000. ;
-				if (prev < fit->GetParameter(0)) MSA += fit->GetParameter(0) - prev;
-				else MSA -= (fit->GetParameter(0) - prev) ;
-				prev = fit->GetParameter(0);
-			}
-			else
-			{
-				if((fit->GetParameter(0) - maxval1) > 0. && (fit->GetParameter(0) - maxval1) < (MSA/1000.))
-				{
-					maxval1 = fit->GetParameter(0);
-				}
-			}
-		}
-		else hFitA->SetBinContent(k, 5000.);
-
-		if(fit->GetParameter(1) < 5000.)
-		{
-			hFitB->SetBinContent(k, fit->GetParameter(1));
-			if(k<3000)
-			{
-				AvB +=  fit->GetParameter(1);
-				if(k==2999)  maxval2  = AvB/3000. ;
-				if (prev2 < fit->GetParameter(1)) MSB += fit->GetParameter(1) - prev2;
-				else MSB -= (fit->GetParameter(1) - prev2) ;
-				prev2 = fit->GetParameter(1);
-			}
-			else
-			{
-				if((fit->GetParameter(1) - maxval2) > 0. && (fit->GetParameter(1) - maxval2) < (MSB/1000.))
-				{
-					maxval2 = fit->GetParameter(1);
-				}
-			}
-		}
-		else hFitB->SetBinContent(k, 5000.);
-
-
-		if (fit->GetNDF() != 0 ) ki2 =  fit->GetChisquare()/fit->GetNDF();
-		else ki2 = 1000.;
-
-		if(ki2 < 1000.)
-		{
-			hFitChi2Ndf->SetBinContent(k, ki2);
-			if(k<3000)
-			{
-				Avki2 +=  ki2;
-				if(k==2999)  maxval3  = Avki2/3000. ;
-				if (prev3 < ki2) MSki2 += ki2 - prev3;
-				else MSki2 -= (ki2 - prev3) ;
-				prev3 = ki2;
-			}
-			else
-			{
-				if((ki2 - maxval3) > 0. && (ki2 - maxval3) < (MSki2/1000.))
-				{
-					maxval3 = ki2;
-				}
-			}
-		}
-		else hFitChi2Ndf->SetBinContent(k, 1000.);
-
-		delete fit ;
-	}
-
-	// if you have problem with automatic parameter :
-	//  maxval1 =
-	//  maxval2 =
-	//  maxval3 =
-	/*
-	if(crit==3)
-		Process(crit, hFitChi2Ndf, nsigma, dnbins, maxval3);
-	if(crit==4)
-		Process(crit, hFitA, nsigma, dnbins,  maxval1);
-	if(crit==5)
-		Process(crit, hFitB, nsigma, dnbins, maxval2);
-	 */
-
-	//ELI something like thie in the future:
-	//return histogram;
-}
-
 
 ///
 /// This function finds cells with zero entries
@@ -926,18 +801,19 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 	lowerPadRight->Draw();
 
 	upperPad->cd();
-	upperPad->SetLeftMargin(0.045);
+	upperPad->SetLeftMargin(0.05);
 	upperPad->SetRightMargin(0.05);
 	upperPad->SetLogy();
 	inhisto->SetTitleOffset(0.6,"Y");
 	inhisto->GetXaxis()->SetRangeUser(0,fNoOfCells+1);
-
+	inhisto->GetYaxis()->SetTitleOffset(0.7);
 	inhisto->SetLineColor(kBlue+1);
 	inhisto->Draw();
 
 	lowerPadRight->cd();
 	lowerPadRight->SetLeftMargin(0.09);
-	lowerPadRight->SetRightMargin(0.1);
+	lowerPadRight->SetRightMargin(0.12);
+	plot2D->GetYaxis()->SetTitleOffset(1.3);
 	plot2D->Draw("colz");
 
 	lowerPadLeft->cd();
@@ -945,6 +821,7 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t ns
 	lowerPadLeft->SetRightMargin(0.07);
 	lowerPadLeft->SetLogy();
 	distrib->SetLineColor(kBlue+1);
+	distrib->GetYaxis()->SetTitleOffset(1.3);
 	distrib->Draw();
 	distrib_wTRDStruc->SetLineColor(kGreen+1);
 	distrib_wTRDStruc->DrawCopy("same");
@@ -1092,10 +969,20 @@ void AliAnaCaloChannelAnalysis::SummarizeResultsByFlag()
 	//..    for each added period analysis
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	TArrayD periodArray;
-	Double_t emin,emax;
+	Double_t emin,emax,sig;
 	Int_t criterion;
 	TString output;
 	Int_t nb1=0;
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Save the results in a tWiki format for the webpage (https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalQABadChannels2)
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	TString aliceTwikiTable = Form("%s/%s/%s%s_TwikiTable_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial); ;
+	ofstream file2(aliceTwikiTable, ios::out | ios::trunc);
+	if(file2)
+	{
+		file2<<"|*Criterium* | *E_min !GeV* | *E_max !GeV* | *sigma* | *Excluded Cells* |"<<endl;
+	}
+	file2.close();
 
 	for(Int_t i=0;i<(Int_t)fAnalysisVector.size();i++)
 	{
@@ -1103,6 +990,7 @@ void AliAnaCaloChannelAnalysis::SummarizeResultsByFlag()
 		criterion  =periodArray.At(0);
 		emin       =periodArray.At(2);
 		emax       =periodArray.At(3);
+		sig        =periodArray.At(1);
 
 		//..Print the results on the screen and
 		//..write the results in a file
@@ -1129,6 +1017,15 @@ void AliAnaCaloChannelAnalysis::SummarizeResultsByFlag()
 		file.close();
 		cout<<"    o Total number of bad cells ("<<nb1<<")"<<endl;
 		cout<<endl;
+		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+		//..Save the results in a tWiki format for the webpage (https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalQABadChannels2)
+		//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+		ofstream file2(aliceTwikiTable, ios::out | ios::app);
+		if(file2)
+		{
+			file2<<"|     "<<criterion<<"      |    "<<emin<<"      |    "<<emax<<"      |    "<<sig<<"   |       "<<nb1<<"        |"<<endl;
+		}
+		file2.close();
 	}
 }
 ///
@@ -1140,14 +1037,16 @@ void AliAnaCaloChannelAnalysis::SummarizeResultsByFlag()
 //________________________________________________________________________
 void AliAnaCaloChannelAnalysis::SummarizeResults()
 {
-	Int_t cellID, nDCalCells = 0, nEMCalCells = 0;
-	TString cellSummaryFile, deadPdfName, badPdfName, ratioOfBad,goodCells;
+	Int_t cellID, nDeadDCalCells = 0, nDeadEMCalCells = 0, nDCalCells = 0, nEMCalCells = 0;
+	Double_t perDeadEMCal,perDeadDCal,perBadEMCal,perBadDCal,perWarmEMCal,perWarmDCal;
+	TString aliceTwikiTable, cellSummaryFile, deadPdfName, badPdfName, ratioOfBad,goodCells;
 	TH2F* cellAmp_masked= (TH2F*)fCellAmplitude->Clone("cellAmp_masked");
 	TH2F* cellTime_masked= (TH2F*)fCellTime->Clone("fCellTime");
 
 	deadPdfName     = Form("%s/%s/%s%s_Dead_Amplitudes_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial);
 	badPdfName      = Form("%s/%s/%s%s_Bad_Amplitudes_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial);
 	cellSummaryFile = Form("%s/%s/%s%s_Bad_Amplitudes_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial); ;
+	aliceTwikiTable = Form("%s/%s/%s%s_TwikiTable_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial); ;
 	ratioOfBad      = Form("%s/%s/%s%s_BCRatio_Amplitudes_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial);
 	goodCells       = Form("%s/%s/%s%s_Good_Amplitudes_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fPass.Data(), fTrigger.Data() ,fTrial);
 
@@ -1161,8 +1060,6 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	{
 		file<<"Dead cells : "<<endl;
 		cout<<"    o Dead cells : "<<endl;
-		nEMCalCells =0;
-		nDCalCells  =0;
 		for(cellID=0; cellID<fNoOfCells; cellID++)
 		{
 			if(cellID==0)
@@ -1182,19 +1079,19 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 				//file<<cellID<<"\n" ;
 				file<<cellID<<", ";
 				//cout<<cellID<<"," ;
-				if(cellID<fCellStartDCal)nEMCalCells++;
-				else                     nDCalCells++;
+				if(cellID<fCellStartDCal)nDeadEMCalCells++;
+				else                     nDeadDCalCells++;
 			}
 		}
 		//cout<<endl;
 		file<<"\n"<<endl;
-		file<<"EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
-		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+		perDeadEMCal=100*nDeadEMCalCells/(1.0*fCellStartDCal);
+		perDeadDCal=100*nDeadDCalCells/(1.0*fNoOfCells-fCellStartDCal);
+		file<<"EMCal ("<<nDeadEMCalCells<<" ="<<perDeadEMCal<<"%), DCal ("<<nDeadDCalCells<<" ="<<perDeadDCal<<"%)"<<endl;
+		cout<<"    o EMCal ("<<nDeadEMCalCells<<" ="<<perDeadEMCal<<"%), DCal ("<<nDeadDCalCells<<" ="<<perDeadDCal<<"%)"<<endl;
 
 		file<<"Bad cells: "<<endl;
 		cout<<"    o Bad cells: "<<endl;
-		nEMCalCells =0;
-		nDCalCells  =0;
 		for(cellID=0;cellID<fNoOfCells;cellID++)
 		{
 			if(cellID==0)
@@ -1220,11 +1117,28 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 		}
 		//cout<<endl;
 		file<<"\n"<<endl;
-		file<<"EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
-		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+		perBadEMCal=100*nEMCalCells/(1.0*fCellStartDCal);
+		perBadDCal =100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal);
+		file<<"EMCal ("<<nEMCalCells<<" ="<<perBadEMCal<<"%), DCal ("<<nDCalCells<<" ="<<perBadDCal<<"%)"<<endl;
+		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<perBadEMCal<<"%), DCal ("<<nDCalCells<<" ="<<perBadDCal<<"%)"<<endl;
 	}
 	file.close();
-
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Save the results in a tWiki format for the webpage (https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalQABadChannels2)
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	ofstream file2(aliceTwikiTable, ios::out | ios::app);
+	if(file2)
+	{
+		file2<<"1=energy/hit, 2= hit/event"<<endl;
+		file2<<"\n"<<endl;
+		file2<<"| *Detector* |    *No of cells*    |  *percentage*  |"<<endl;
+		file2<<"| Dead EMCal |    "<<nDeadEMCalCells<<"    |  "<<perDeadEMCal<<"%  |"<<endl;
+		file2<<"| Bad EMCal |    "<<nEMCalCells<<"    |  "<<perBadEMCal<<"%  |"<<endl;
+		file2<<"EMCal Warm cell row"<<endl;
+		file2<<"| Dead DCal |    "<<nDeadDCalCells<<"    |  "<<perDeadDCal<<"%  |"<<endl;
+		file2<<"| Bad DCal |    "<<nDCalCells<<"    |  "<<perBadDCal<<"%  |"<<endl;
+	}
+	file2.close();
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//..Save the flagged cells to .pdf files
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -1274,10 +1188,12 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	//lowerPadRight->SetRightMargin(0.06);
 	fCellAmplitude->SetXTitle("Cell Energy [GeV]");
 	fCellAmplitude->SetYTitle("Abs. Cell Id");
+	fCellAmplitude->GetYaxis()->SetTitleOffset(1.6);
 	fCellAmplitude->Draw("colz");
 	c1->cd(2)->SetLogz();
 	fCellTime->SetXTitle("Cell Time [ns]");
 	fCellTime->SetYTitle("Abs. Cell Id");
+	fCellTime->GetYaxis()->SetTitleOffset(1.6);
 	fCellTime->Draw("colz");
 	c1->cd(3)->SetLogz();
 	//lowerPadRight->SetLeftMargin(0.09);
@@ -1285,11 +1201,13 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	cellAmp_masked->SetTitle("Masked Cell Amplitude");
 	cellAmp_masked->SetXTitle("Cell Energy [GeV]");
 	cellAmp_masked->SetYTitle("Abs. Cell Id");
+	cellAmp_masked->GetYaxis()->SetTitleOffset(1.6);
 	cellAmp_masked->Draw("colz");
 	c1->cd(4)->SetLogz();
 	cellTime_masked->SetTitle("Masked Cell Time");
 	cellTime_masked->SetXTitle("Cell Time [ns]");
 	cellTime_masked->SetYTitle("Abs. Cell Id");
+	cellTime_masked->GetYaxis()->SetTitleOffset(1.6);
 	cellTime_masked->Draw("colz");
 	c1->Update();
 
@@ -1350,11 +1268,24 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 			}
 		}
 		file<<"\n"<<endl;
-		file<<"EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
-		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<100*nEMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<nDCalCells<<" ="<<100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+		perWarmEMCal= 100*nEMCalCells/(1.0*fCellStartDCal);
+		perWarmDCal = 100*nDCalCells/(1.0*fNoOfCells-fCellStartDCal);
+		file<<"EMCal ("<<nEMCalCells<<" ="<<perWarmEMCal<<"%), DCal ("<<nDCalCells<<" ="<<perWarmDCal<<"%)"<<endl;
+		cout<<"    o EMCal ("<<nEMCalCells<<" ="<<perWarmEMCal<<"%), DCal ("<<nDCalCells<<" ="<<perWarmDCal<<"%)"<<endl;
 	}
 	file.close();
-
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//..Save the results in a tWiki format for the webpage (https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalQABadChannels2)
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	ofstream file3(aliceTwikiTable, ios::out | ios::app);
+	if(file3)
+	{
+		file3<<"| Warm DCal |    "<<nDCalCells<<"    |  "<<perWarmDCal<<"%  |"<<endl;
+		file3<<"\n"<<endl;
+		file3<<"Insert above:"<<endl;
+		file3<<"| Warm EMCal |    "<<nEMCalCells<<"    |  "<<perWarmEMCal<<"%  |"<<endl;
+	}
+	file3.close();
 	//cout<<"    o Results can be found in : "<<endl;
 	//cout<<"    o "<<cellSummaryFile<<endl;
 	//cout<<"    o "<<badPdfName<<endl;
@@ -1755,7 +1686,7 @@ void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd
 	text->Draw();
 
 	c1->Update();
-	TString name =Form("%s/%s/%s.gif", fWorkdir.Data(),fAnalysisOutput.Data(), histoName.Data());
+	TString name =Form("%s/%s/%s_%s.gif", fWorkdir.Data(),fAnalysisOutput.Data(),fPeriod.Data() , histoName.Data());
 	c1->SaveAs(name);
 
 	fRootFile->WriteObject(plot2D,plot2D->GetName());
