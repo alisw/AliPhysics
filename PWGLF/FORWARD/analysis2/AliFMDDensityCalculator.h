@@ -206,6 +206,12 @@ public:
    */
   void SetOutlierCut(Double_t cut=0.50) { fOutlierCut = cut; }
   /** 
+   * Set the threshold cut 
+   * 
+   * @param cut Cut value 
+   */
+  void SetHitThreshold(Double_t cut=0.9) { fHitThreshold = cut; }
+  /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
@@ -491,6 +497,7 @@ protected:
   AliFMDMultCuts fCuts;    // Cuts
   Bool_t   fRecalculatePhi;  // Whether to correct for (X,Y) offset
   UShort_t fMinQuality;      // Least quality for fits
+  Double_t fHitThreshold;  // Threshold for hits 
   AliForwardUtil::Histos fCache;
   Bool_t                 fDoTiming;
   TProfile*              fHTiming;
