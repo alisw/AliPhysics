@@ -4287,7 +4287,7 @@ void AliAnaCalorimeterQA::MCHistograms()
   //printf("N primaries %d\n",nprim);
   for(Int_t i=0 ; i < nprim; i++)
   {
-    if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+    if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
     // Get the generated particles, check that it is primary (not parton, resonance)
     // and get its momentum. Different way to recover from ESD or AOD

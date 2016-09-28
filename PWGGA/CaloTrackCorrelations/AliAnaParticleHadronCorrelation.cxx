@@ -4759,6 +4759,8 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     
     for (iParticle = 0 ; iParticle <  nTracks ; iParticle++)
     {
+      if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
+      
       TParticle * particle = stack->Particle(iParticle);
       
       //keep only final state particles
@@ -4824,6 +4826,8 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(Int_t label, Int
     
     for (iParticle = 0; iParticle < nTracks; iParticle++)
     {
+      if ( !GetReader()->AcceptParticleMCLabel( iParticle ) ) continue ;
+      
       AliAODMCParticle *part = (AliAODMCParticle*) mcparticles->At(iParticle);
       
       if (!part->IsPhysicalPrimary() ) continue; // same as part->GetStatus() !=1
