@@ -102,10 +102,12 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
     kEtaScale = 0x0004,
     /** Do scaling by fully differential */
     kFullScale = 0x0008,
+    /** Correct for decay of strange to secondary  */
+    kDTFS = 0x0010,
     /** MC closure test */
     kClosure      = 0x01000,
     /** Default processing options */
-    kDefaultProc  = 0x00083 
+    kDefaultProc  = 0x0002 
   };
   enum {
     kTopBackground = kAzure-8
@@ -133,6 +135,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
   Double_t fMaxAlpha;
   /** Fudge factor */
   Double_t fFudge;
+  /** Strangeness enhancement factor - scale sim to real */
+  Double_t fSEF;
   //==================================================================
   /** The canvas to draw in */
   TCanvas* fCanvas;
@@ -174,6 +178,11 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 	   const char* simName  = "sim.root",
 	   const char* output   = 0,
 	   Double_t    fudge    = 1);
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Steer processing 
+   */
   /** 
    * Process the data 
    * 
@@ -224,7 +233,27 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 		    TDirectory* outTop, 
 		    TDirectory* outDir,
 		    Int_t       dimen);
-//__________________________________________________________________
+  /* @} */
+  //__________________________________________________________________
+  /** 
+   * @{ 
+   * @name Strangeness 
+   */
+  /** 
+   * Calculate the strangeness enhancement factor by looking at the
+   * species distributions relative to pions.
+   * 
+   * @param simCont  Simulation container 
+   * @param centAxis Centrality axis 
+   * @param out      Output directory 
+   * 
+   * @return true on success 
+   */
+  Bool_t CalculateSEF(Container*   simCont,
+		      const TAxis* centAxis,
+		      TDirectory*  out);
+  /* @} */
+  //__________________________________________________________________
   /** 
    * @{ 
    * @name @f$\Delta@f$ distributions 
@@ -384,8 +413,9 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * Calculate the result as 
    * @f[
    R_{\eta,\mathrm{IP}_z} = 
-   \frac{G\prime_{\eta,\mathrm{IP}_z}}{(1-\beta\prime)M\prime_{\eta,\mathrm{IP}_z}}
-   (1-\beta)M_{\eta,\mathrm{IP}_z}
+   \frac{G\prime_{\eta,\mathrm{IP}_z}}{
+     (1-\beta\prime)M\prime_{\eta,\mathrm{IP}_z}}
+     (1-\beta)M_{\eta,\mathrm{IP}_z}
    @f] 
    * where 
    *
@@ -752,6 +782,7 @@ AliTrackletdNdeta2::AliTrackletdNdeta2()
     fMinAlpha(0),
     fMaxAlpha(2.5),
     fFudge(0),
+    fSEF(1),
     fCanvas(0),
     fTop(0),
     fBody(0),
@@ -866,9 +897,11 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
   PrintAxis(*realCent->GetXaxis(), 2, "Real centrality");
   PrintAxis(*simCent ->GetXaxis(), 2, "Simulated centrality");
 
-  THStack* mids = new THStack("mids", "");
+  THStack* mids = 0;
   TH1*     publ = 0;
-  {
+  if (realCent->GetNbinsX() > 1) {
+    Printf("Creating stack for mid rapidity results");
+    mids            = new THStack("mids", "");
     Int_t    nbin   = 9;
     Double_t bins[] = { 0., 5., 10., 20., 30., 40., 50., 60., 70., 80.,  };
     Double_t vals[] = { 1948, 1590, 1180, 786, 512, 318, 183, 96.3, 44.9, };
@@ -888,13 +921,16 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
   // Make histogram for mid-rapidiy results
   for (Int_t d = 0; d < 4; d++) {
     if ((fProc & (1 << d)) == 0) continue;
+    Printf("Making directory for final result");
     TDirectory* dd  = outDir->mkdir(Form("final%dd", d));
-    TH1*        mid = Make1D(0,"mid",Form("%s|_{|#eta|<0.5}", ObsTitle()),
-			     2+d, 20, *(realCent->GetXaxis()));    
-    mid->SetDirectory(dd);
-    mid->SetXTitle("Centrality [%]");
-    mid->SetYTitle(mid->GetTitle());
-    mids->Add(mid);
+    if (realCent->GetNbinsX() > 1) {
+      TH1*        mid = Make1D(0,"mid",Form("%s|_{|#eta|<0.5}", ObsTitle()),
+			       2+d, 20, *(realCent->GetXaxis()));    
+      mid->SetDirectory(dd);
+      mid->SetXTitle("Centrality [%]");
+      mid->SetYTitle(mid->GetTitle());
+      mids->Add(mid);
+    }
     THStack* full = new THStack("full","");
     dd->cd();
     full->Write();
@@ -910,6 +946,13 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
   realCent->Write();
   simCent ->Write();
 
+  // Calculate strangeness enhancement factor
+  Printf("SEF");
+  CalculateSEF(simTop,simCent->GetXaxis(),outDir);
+
+  if (realCent->GetNbinsX() <= 1)
+    ProcessBin(0, 0, realTop, simTop, outDir);
+  
   // Loop over defined centrality bins 
   for (Int_t i = 1; i <= realCent->GetNbinsX() && i <= maxBins ; i++) {
     Double_t c1 = realCent->GetXaxis()->GetBinLowEdge(i);
@@ -919,24 +962,26 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
   }
   // Close output file
   outDir->cd();
-  mids->Write();
-
-  TH1* mid = static_cast<TH1*>(mids->GetHists()->At(1));
-  for (Int_t i = 1; i <= mid->GetNbinsX(); i++) {
-    Double_t c1 = mid->GetXaxis()->GetBinLowEdge(i);
-    Double_t c2 = mid->GetXaxis()->GetBinUpEdge(i);
-    Int_t    j  = publ->GetXaxis()->FindBin((c1+c2)/2);
-    if (j < 1 || j > publ->GetNbinsX()) continue;
-    Double_t vh = mid ->GetBinContent(i);
-    Double_t eh = mid ->GetBinError  (i);
-    Double_t vp = publ->GetBinContent(j);
-    Double_t ep = publ->GetBinError  (j);
-    Double_t er, r = RatioE(vh,eh, vp, ep, er);
-    Printf("%5.1f - %5.1f%%: "
-	   "Here %6.1f +/- %4.1f "
-	   "Published %6.1f +/- %4.1f "
-	   "Ratio %5.3f +/- %5.3f",
-	   c1, c2, vh, eh, vp, ep, r, er);
+  if (mids) {
+    mids->Write();
+    
+    TH1* mid = static_cast<TH1*>(mids->GetHists()->At(1));
+    for (Int_t i = 1; i <= mid->GetNbinsX(); i++) {
+      Double_t c1 = mid->GetXaxis()->GetBinLowEdge(i);
+      Double_t c2 = mid->GetXaxis()->GetBinUpEdge(i);
+      Int_t    j  = publ->GetXaxis()->FindBin((c1+c2)/2);
+      if (j < 1 || j > publ->GetNbinsX()) continue;
+      Double_t vh = mid ->GetBinContent(i);
+      Double_t eh = mid ->GetBinError  (i);
+      Double_t vp = publ->GetBinContent(j);
+      Double_t ep = publ->GetBinError  (j);
+      Double_t er, r = RatioE(vh,eh, vp, ep, er);
+      Printf("%5.1f - %5.1f%%: "
+	     "Here %6.1f +/- %4.1f "
+	     "Published %6.1f +/- %4.1f "
+	     "Ratio %5.3f +/- %5.3f",
+	     c1, c2, vh, eh, vp, ep, r, er);
+    }
   }
   
   return true;
@@ -952,7 +997,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 {
   // Form the folder name
   TString centName(CentName(c1,c2));
-  if (c1 >= c2) centName = "all";
+  if (TMath::Abs(c1 - c2) < 1e-6) centName = "all";
+
 		  
   // Get centrality containers 
   Container* realCont = GetC(realTop, centName);
@@ -979,6 +1025,13 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 				      TDirectory* outDir,
 				      Int_t       dimen)
 {
+  Printf("Processing %5.2f-%5.2f%% (%s %s) for D=%d",
+	 c1, c2, realCont->GetName(), simCont->GetName(), dimen);
+  if (!outDir) {
+    Warning("ProcessBin", "No directory passed for %s and %s",
+	    realCont->GetName(), simCont->GetName());
+    return false;
+  }  
   if (!Deltas(realCont, simCont, outDir, dimen)) return false;
   TH1* dndeta = Results(realCont, simCont, outDir, dimen);
   if (!dndeta) {
@@ -994,27 +1047,29 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 
   TH1*     mid  = GetH1(final, "mid");
   THStack* full = GetHS(final, "full");
-  if (!mid || !final) {
-    Warning("ProcessBin", "Missing one of mid (%p) or full (%p)", mid, full);
+  if (!final) {
+    Warning("ProcessBin", "Missing full (%p)", full);
     return false;
   }
 
-  TF1* f = static_cast<TF1*>(dndeta->GetListOfFunctions()->At(0));
-  if (!f) {
-    Warning("ProcessBin", "No fit found on %s", dndeta->GetTitle());
-    return false;
+  Int_t b = 10;
+  if (mid) {
+    TF1* f = static_cast<TF1*>(dndeta->GetListOfFunctions()->At(0));
+    if (!f) {
+      Warning("ProcessBin", "No fit found on %s", dndeta->GetTitle());
+      return false;
+    }
+    
+    Double_t c = (c1+c2)/2;
+    b          = mid->GetXaxis()->FindBin(c);
+    if (b < 1 || b > mid->GetNbinsX()) {
+      Warning("ProcessBin", "Centrality %f - %f out of range", c1, c2);
+      return false;
+    }   
+    mid->SetBinContent(b, f->GetParameter(0));
+    mid->SetBinError  (b, f->GetParError (0));
   }
-
-  Double_t c = (c1+c2)/2;
-  Int_t    b = mid->GetXaxis()->FindBin(c);
-  if (b < 1 || b > mid->GetNbinsX()) {
-    Warning("ProcessBin", "Centrality %f - %f out of range", c1, c2);
-    return false;
-  }
-
-  mid->SetBinContent(b, f->GetParameter(0));
-  mid->SetBinError  (b, f->GetParError (0));
-
+  
   Color_t tc   = CentColor(b);
   TH1*    copy = static_cast<TH1*>(dndeta->Clone(outDir->GetName()));
   copy->SetDirectory(final);
@@ -1040,7 +1095,62 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   
   return true;
 }
+
+//====================================================================
+Bool_t AliTrackletdNdeta2::CalculateSEF(Container*   simCont,
+					const TAxis* centAxis,
+					TDirectory*  out)
+{
+  Double_t c1 = centAxis->GetBinLowEdge(1);
+  Double_t c2 = centAxis->GetBinUpEdge(1);
+  Printf("c1=%g c2=%g", c1, c2);
+  TString  centName(CentName(c1,c2));
+  if (TMath::Abs(c1 - c2) < 1e-6) centName = "all";
+
+  Printf("Calculating strangeness enhancement factor from %s", centName.Data());
+  // Find the most central bin 
+
+  Container* centBin = GetC(simCont, centName);
+  if (!centBin) return false;
+
+  Container* generated = GetC(centBin, "generated");
+  if (!generated) return false;
+
+  Container* mix   = GetC(generated, "mix");
+  if (!mix) return false;
+
+  THStack* toPion = GetHS(mix, "toPion");
+  if (!toPion) return false;
+
+  TIter    next(toPion->GetHists());
+  TH1*     hist = 0;
+  Double_t sum  = 0;
+  Double_t sumw = 0;
+  while ((hist = static_cast<TH1*>(next()))) {
+    Double_t r2760 = hist->GetBinContent(0);
+    Double_t e2760 = 0.07*r2760; // Fixed 7% error 
+
+    TF1* f = new TF1("f", "pol0", -.5, +.5);
+    hist->Fit(f, "QN", "", -.5, +.5);
+    Double_t rHere = f->GetParameter(0);
+    Double_t eHere = f->GetParError (0);
+
+    Double_t eCh, rCh = RatioE(r2760, e2760, rHere, eHere, eCh);
+    Printf("%20s: @ 2.76TeV=%6.4f+/-%6.4f  here=%6.4f+/-%6.4f -> %6.4f+/-%6.4f",
+	   hist->GetTitle(), r2760, e2760, rHere, eHere, rCh, eCh);
+    delete f;
+
+    sum  += rHere*rCh;
+    sumw += rHere;
+  }
+  Double_t avg = sum / sumw;
+  Printf(" Weighted average of factor: %6.4f", avg);
+  Printf(" Preset:                     %6.4f", fSEF);
+  if (fSEF == 1) fSEF = avg;
+  Printf( "Strangeness enhancement factor set to %6.4f", fSEF);
   
+  return true;
+}
 
 //====================================================================
 Bool_t AliTrackletdNdeta2::Deltas(Container*  realCont,
@@ -1048,6 +1158,10 @@ Bool_t AliTrackletdNdeta2::Deltas(Container*  realCont,
 				  TDirectory* outParent,
 				  Int_t       dim)
 {
+  if (!outParent) {
+    Warning("Deltas", "No directory passed!");
+    return false;
+  }
   switch (dim) {
   case 0: return Deltas0D(realCont, simCont, outParent);
   case 1: return Deltas1D(realCont, simCont, outParent);
@@ -1131,7 +1245,11 @@ Bool_t AliTrackletdNdeta2::Deltas1D(Container*  realCont,
 				    Container*  simCont,
 				    TDirectory* outParent)
 {
-  // Make an output directory 
+  // Make an output directory
+  if (!outParent) {
+    Warning("Deltas1D", "No directory passed!");
+    return false;
+  }
   TDirectory* outDir = outParent->mkdir("delta1d");
 
   // Get the real and simulated measured folders 
@@ -1624,6 +1742,9 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   TH2* simS  = CopyH2(GetC(simCont,  "measured"),      "etaIPz", "simS");
   TH2* simA  = CopyH2(GetC(simCont,  "generated"),     "etaIPz", "simA");
   TH2* simB  = CopyH2(GetC(simCont,  "combinatorics"), "etaIPz", "simB");
+  TH2* simT  = (fProc & kDTFS ?
+		CopyH2(GetC(simCont, "secondaries"),   "dtfs",   "simT") :
+		0);
   TH2* realG = (!fRealIsSim ? 0 :
 		CopyH2(GetC(realCont,"generated"),     "etaIPz", "realG"));
   TH1* realZ = CopyH1(realCont, "ipz", "realZ");
@@ -1633,6 +1754,23 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   simB->Divide(simM);
   simB->SetTitle("#beta'");
   simB->SetZTitle("#beta'");
+
+  // Substract combinatorial background from measured to get signal 
+  simS->Add(simC, -1);
+  simS->SetTitle("S'");
+  simS->SetZTitle("S'");
+
+  // Possibly subtract secondaries from strange 
+  if (simT) {
+    simT->SetTitle("T'");
+    simT->SetZTitle("T'");
+    simS->Add(simT, -1);
+  }
+  
+  // Scale MC truth primaries by signal to get correction 
+  simA->Divide(simS);
+  simA->SetTitle("A'");
+  simA->SetZTitle("#alpha'");
 
   // Copy simulated beta to real beta, and scale by scalar
   TH2* realB = static_cast<TH2*>(simB->Clone("realB"));
@@ -1651,17 +1789,18 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   realS->Add(realC, -1);
   realS->SetTitle("S");
   realS->SetZTitle("S");
+
+  // Possibly subtract secondaries from strange
+  TH2* realT = 0;
+  if (simT) {
+    realT = static_cast<TH2*>(simT->Clone("realT"));
+    realT->SetDirectory(0);
+    realT->SetTitle("T");
+    realT->SetZTitle("T");
+    realT->Scale(fSEF);
+    realS->Add(realT, -1);
+  }
   
-  // Substract combinatorial background from measured to get signal 
-  simS->Add(simC, -1);
-  simS->SetTitle("S'");
-  simS->SetZTitle("S'");
-
-  // Scale MC truth primaries by signal to get correction 
-  simA->Divide(simS);
-  simA->SetTitle("A'");
-  simA->SetZTitle("#alpha'");
-
   // Make a fiducial distribution, and coerce the others to fit this
   TH2* fiducial = static_cast<TH2*>(simA->Clone("fiducial"));
   fiducial->SetTitle("F");
@@ -1673,7 +1812,6 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
       fiducial->SetBinError(i,j,0);
     }
   }
-#if 1
   realM->Multiply(fiducial);
   realC->Multiply(fiducial);
   realS->Multiply(fiducial);
@@ -1683,7 +1821,8 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   simS ->Multiply(fiducial);
   simB ->Multiply(fiducial);
   simA ->Multiply(fiducial);
-#endif
+  if (simT)  simT ->Multiply(fiducial);
+  if (realT) realT->Multiply(fiducial);
   
   // We can now make our result
   TH2* result = static_cast<TH2*>(realS->Clone("result"));
@@ -1705,21 +1844,23 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
     Float_t siz;
     const char* tit;
   };
-  Rec      sC = { simC,  simZ,  result, 0, 32, kMagenta+2, 1.4, "background" };
-  Rec      sS = { simS,  simZ,  result, 0, 27, kGreen+2,   1.8, "signal" };
-  Rec      sM = { simM,  simZ,  result, 0, 26, kBlue+2,    1.4, "measured" };
-  Rec      sG = { simG,  simZ,  0,      0, 24, kRed+2,     1.4, "generated" };
-  Rec      sB = { simB,  simZ,  0,      0, 28, kPink+2,    1.4, "#beta" };
-  Rec      rC = { realC, realZ, result, 0, 23, kMagenta+2, 1.2, "background" };
-  Rec      rS = { realS, realZ, result, 0, 33, kGreen+2,   1.6, "signal" };
-  Rec      rM = { realM, realZ, result, 0, 22, kBlue+2,    1.2, "measured" };
-  Rec      rR = { result,realZ, 0,      0, 20, kRed+2,     1.3, ObsTitle() };
-  Rec      rB = { realB, realZ, 0,      0, 34, kPink+2,    1.4, "#beta" };
-  Rec      sA = { simA,  simZ,  0,      0, 30, kSpring+2,  1.4, "#alpha" };
-  Rec      sF = { fiducial,simZ,0,      0, 31, kSpring+2,  1.4, "fiducial" };
-  Rec      rG = { realG, realZ, 0,      0, 24, kBlack,     1.4, "truth" };
+  Rec      sT = { simT,    simZ,  0,      0, 30, kSpring+2,  1.4,"strangeness"};
+  Rec      sC = { simC,    simZ,  result, 0, 32, kMagenta+2, 1.4,"background"};
+  Rec      sS = { simS,    simZ,  result, 0, 27, kGreen+2,   1.8,"signal" };
+  Rec      sM = { simM,    simZ,  result, 0, 26, kBlue+2,    1.4,"measured" };
+  Rec      sG = { simG,    simZ,  0,      0, 24, kRed+2,     1.4,"generated" };
+  Rec      sB = { simB,    simZ,  0,      0, 28, kPink+2,    1.4,"#beta" };
+  Rec      rC = { realC,   realZ, result, 0, 23, kMagenta+2, 1.2,"background"};
+  Rec      rT = { realT,   realZ, 0,      0, 29, kSpring+2,  1.4,"strangeness"};
+  Rec      rS = { realS,   realZ, result, 0, 33, kGreen+2,   1.6,"signal" };
+  Rec      rM = { realM,   realZ, result, 0, 22, kBlue+2,    1.2,"measured" };
+  Rec      rR = { result,  realZ, 0,      0, 20, kRed+2,     1.3,ObsTitle() };
+  Rec      rB = { realB,   realZ, 0,      0, 34, kPink+2,    1.4,"#beta" };
+  Rec      sA = { simA,    simZ,  0,      0, 30, kSpring+2,  1.4,"#alpha" };
+  Rec      sF = { fiducial,simZ,  0,      0, 31, kSpring+2,  1.4,"fiducial" };
+  Rec      rG = { realG,   realZ, 0,      0, 24, kBlack,     1.4,"truth" };
   Rec*     recs[]={ &rR, &sG, &rS, &sS, &rM, &sM, &rC, &sC,
-		    &rB, &sB, &sA, &sF, &rG, 0 };
+		    &rB, &sB, &sA, &sF, &rG, &rT, &sT, 0 };
   Rec**    ptr     = recs;
   TH1*     dndeta  = 0;
   THStack* all     = new THStack("all", "");
@@ -1752,18 +1893,26 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   // Show example calculation
   Int_t mi = result->GetXaxis()->FindBin(0.);
   Int_t mj = result->GetYaxis()->FindBin(0.);
+  TString simST;
+  TString realST;
+  if (simT) {
+    simST.Form("-%4.1f", simT->GetBinContent(mi,mj));
+    realST.Form("-%4.1f", realT->GetBinContent(mi,mj));
+  }
   printf("R=G'/[(1-beta')M'](1-beta)M="
-	 "%6.1f /((1-%6.3f)*%6.1f)*(1-%6.3f)*%6.1f="
-	 "%6.3f * %6.3f * %6.1f="
+	 "%6.1f /((1-%6.3f)*%6.1f%s)*(1-%6.3f)*(%6.1f%s)="
+	 "%6.3f * %6.3f="
 	 "%6.1f [%6.1f]",
 	 sG.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
 	 sB.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
 	 sM.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
+	 simST.Data(),
 	 rB.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
 	 rM.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
+	 realST.Data(),
 	 sA.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 1-rB.h->GetBinContent(mi,mj), // p->GetBinContent(mi),
-	 rM.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),	 
+	 // 1-rB.h->GetBinContent(mi,mj), // p->GetBinContent(mi),
+	 rS.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
 	 rR.h->GetBinContent(mi,mj),   // p->GetBinContent(mb));
 	 rG.h ? rG.h->GetBinContent(mi,mj) : -1);
 
@@ -1999,6 +2148,7 @@ void AliTrackletdNdeta2::ModLegend(TVirtualPad* p, TLegend* l,
 				   Double_t x1, Double_t y1,
 				   Double_t x2, Double_t y2)
 {
+  if (!p || !l) return;
   Double_t px1 = p->GetX1();
   Double_t px2 = p->GetX2();
   Double_t py1 = p->GetY1();
@@ -2018,9 +2168,10 @@ THStack* AliTrackletdNdeta2::Make2Stack(const char*      name,
 					Option_t*        simOpt)
 {
   TString  nme(name);
-  THStack* stack = new THStack(name, title);
   TH1*     real  = CopyH1(realList, name, Form("real%s",name));
   TH1*     sim   = CopyH1(simList,  name, Form("sim%s",name));
+  if (real->GetNbinsX() <= 1 && sim->GetNbinsX() <= 1) return 0;
+  THStack* stack = new THStack(name, title);
   real->SetMarkerStyle(20);
   sim ->SetMarkerStyle(24);
   real->SetFillStyle(3004);
@@ -2286,17 +2437,21 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   THStack* all = GetHS(dd, "full");
   TH1*     mid = GetH1(dd, "mid");
   TH1*     pub = GetH1(outDir, "published");
-  if (mid->GetMinimum() <= 0) mid->SetMinimum(all->GetMinimum("nostack"));
-  Double_t max = TMath::Max(all->GetMaximum("nostack"),mid->GetMaximum());
-  Double_t min = TMath::Min(all->GetMinimum("nostack"),mid->GetMinimum());
+  if (!mid) return;
+  
+  Double_t max = all->GetMaximum("nostack");
+  Double_t min = all->GetMinimum("nostack");
+  if (mid->GetMinimum() <= 0) mid->SetMinimum(min);
+  
+  max = TMath::Max(max,mid->GetMaximum());
+  min = TMath::Min(min,mid->GetMinimum());
   all->SetMinimum(.9*min);
-  mid->SetMinimum(.9*min);
   all->SetMaximum(1.2*max);
+  mid->SetMinimum(.9*min);
   mid->SetMaximum(1.2*max);
   mid->SetLineColor(kBlack);
   mid->SetFillColor(kBlack);
   mid->SetMarkerColor(kBlack);
-  
   ClearCanvas();
 
   TPad* p1 = new TPad("p1","p1",0,0,.4,1);
@@ -2327,7 +2482,7 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   l->SetMargin(0.2);
   l->SetEntrySeparation(0.1);
   l->SetTextSize(0.04);
-	    
+  
   l = DrawInPad(p2,0, all, "nostack logy grid leg");
   if (all && all->GetHistogram()) all->GetHistogram()->SetXTitle("#eta");
 
@@ -2494,7 +2649,7 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
 {
   // Form the folder name
   TString centName(CentName(c1,c2));
-  if (c1 >= c2) centName = "all";
+  if (TMath::Abs(c1 - c2) < 1e-6) centName = "all";
   fLastBin.Form("%.1f#minus%.1f%%", c1, c2);
   fLastShort = centName;
   

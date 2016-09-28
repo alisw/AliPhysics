@@ -1132,7 +1132,7 @@ public:
    * 
    * @return true on success 
    */
-  Bool_t SetHisto(Int_t bin, TH3* h);
+  Bool_t SetHisto(Int_t bin, TH1* h);
   /** 
    * Find the histogram corresponding to a centrality 
    * 
@@ -1140,7 +1140,7 @@ public:
    * 
    * @return Pointer to histogram or null
    */
-  TH3* FindHisto(Double_t cent) const;
+  TH1* FindHisto(Double_t cent) const;
   /** 
    * Find the bin on an axis that correspnd to the passed value.  If
    * the value is outside the defined range, the closest bin number is
@@ -1176,7 +1176,7 @@ public:
    * 
    * @return 
    */
-  TH1* Project(TH3* h, char which, const char* name);
+  TH1* Project(TH1* h, char which, const char* name);
   /** 
    * Draw the weights 
    * 
@@ -1193,12 +1193,14 @@ public:
    * Draw one stack 
    * 
    * @param pad 
+   * @param nPad
    * @param stack 
    * @param xtitle 
    * @param min 
    * @param max 
    */
   void DrawStack(TVirtualPad* pad,
+		 Int_t        nPad, 
 		 THStack*     stack,
 		 const char*  xtitle,
 		 Double_t     min=0,
@@ -1230,9 +1232,9 @@ AliTrackletDeltaWeights::AliTrackletDeltaWeights(const AliTrackletDeltaWeights& 
 {
   fHistos.SetOwner(true);
   for (Int_t i = 0; i < o.fHistos.GetEntriesFast(); i++) {
-    TH3*  h = static_cast<TH3*>(o.fHistos.At(i));
+    TH1*  h = static_cast<TH1*>(o.fHistos.At(i));
     if (!h) continue;
-    h = static_cast<TH3*>(h->Clone());
+    h = static_cast<TH1*>(h->Clone());
     h->SetDirectory(0);
     fHistos.Add(h);
   }    
@@ -1245,9 +1247,9 @@ AliTrackletDeltaWeights::operator=(const AliTrackletDeltaWeights& o)
   AliTrackletBaseWeights::operator=(o);
   fCentAxis = o.fCentAxis;
   for (Int_t i = 0; i < o.fHistos.GetEntriesFast(); i++) {
-    TH3*  h = static_cast<TH3*>(o.fHistos.At(i));
+    TH1*  h = static_cast<TH1*>(o.fHistos.At(i));
     if (!h) continue;
-    h = static_cast<TH3*>(h->Clone());
+    h = static_cast<TH1*>(h->Clone());
     h->SetDirectory(0);
     fHistos.Add(h);
   }
@@ -1279,7 +1281,7 @@ AliTrackletDeltaWeights::SetCentAxis(Int_t n, Double_t l, Double_t h)
 
 //____________________________________________________________________
 Bool_t
-AliTrackletDeltaWeights::SetHisto(Int_t bin, TH3* h)
+AliTrackletDeltaWeights::SetHisto(Int_t bin, TH1* h)
 {
   if (bin < 1 || bin > fCentAxis.GetNbins()) {
     Warning("SetHisto", "Centrality bin %d out of range [%d,%d]",
@@ -1292,7 +1294,7 @@ AliTrackletDeltaWeights::SetHisto(Int_t bin, TH3* h)
   name.Form("cent%03dd%02d_%03dd%02d",
 	    Int_t(c1), Int_t(c1 * 100) % 100,
 	    Int_t(c2), Int_t(c2 * 100) % 100);
-  TH3* cpy = static_cast<TH3*>(h->Clone(name));
+  TH1* cpy = static_cast<TH1*>(h->Clone(name));
   cpy->SetDirectory(0);
   cpy->SetTitle(Form("%6.2f%% - %6.2f%%", c1, c2));
   fHistos.AddAtAndExpand(cpy, bin-1);
@@ -1300,12 +1302,12 @@ AliTrackletDeltaWeights::SetHisto(Int_t bin, TH3* h)
 }
   
 //____________________________________________________________________
-TH3*
+TH1*
 AliTrackletDeltaWeights::FindHisto(Double_t cent) const
 {
   Int_t bin = FindBin(cent, &fCentAxis);
   if       (bin >= fHistos.GetEntriesFast()) return 0;
-  return static_cast<TH3*>(fHistos.At(bin-1));
+  return static_cast<TH1*>(fHistos.At(bin-1));
 }
 
 //____________________________________________________________________
@@ -1313,6 +1315,7 @@ Int_t
 AliTrackletDeltaWeights::FindBin(Double_t value,
 				 const TAxis*   axis) 
 {
+  if (!axis) return 1;
   Int_t bin = const_cast<TAxis*>(axis)->FindBin(value);
   if       (bin <  1)                bin = 1;
   else if  (bin >  axis->GetNbins()) bin = axis->GetNbins();
@@ -1323,11 +1326,12 @@ AliTrackletDeltaWeights::FindBin(Double_t value,
 //____________________________________________________________________
 Double_t
 AliTrackletDeltaWeights::CalcWeight(AliAODTracklet* tracklet,
-				      Double_t        cent,
-				      Double_t        ipZ,
-				      TH2*            corr) const
+				    Double_t        cent,
+				    Double_t        ipZ,
+				    TH2*            corr) const
 {
-  TH3* h = FindHisto(cent);
+  if (tracklet->IsGenerated()) return 1;
+  TH1* h = FindHisto(cent);
   if (!h) return 1;
 
   Double_t eta      = tracklet->GetEta();
@@ -1341,9 +1345,12 @@ AliTrackletDeltaWeights::CalcWeight(AliAODTracklet* tracklet,
 
 //____________________________________________________________________
 TH1*
-AliTrackletDeltaWeights::Project(TH3* h, char which, const char* name)
+AliTrackletDeltaWeights::Project(TH1* h, char which, const char* name)
 {
-  TAxis* a0  = 0;
+  TString n; n.Form("%s_%s",h->GetName(),name);
+  TString t(h->GetTitle());
+  TH1*    ret = 0;
+  TAxis*  a0  = 0;
   TAxis* a1  = 0;
   TAxis* a2  = 0;
   typedef
@@ -1369,14 +1376,8 @@ AliTrackletDeltaWeights::Project(TH3* h, char which, const char* name)
     func = &TH3::ProjectionZ;
     break;
   }
-#if 0
-  TH1* ret = (h->*func)(Form("%s_%s",h->GetName(),name),
-			1, a1->GetNbins(), 1, a2->GetNbins(),"");
-#endif
-  TString n; n.Form("%s_%s",h->GetName(),name);
-  TString t(h->GetTitle());
   Int_t   nx  = a0->GetNbins();
-  TH1*    ret = 0;
+  if (nx <= 1) return 0;
   if (a0->GetXbins() && a0->GetXbins()->GetArray())
     ret = new TH1D(n,t,nx,a0->GetXbins()->GetArray());
   else
@@ -1431,7 +1432,7 @@ AliTrackletDeltaWeights::Print(Option_t* option) const
   gROOT->IndentLevel();
   Printf("%d centrality bins", fCentAxis.GetNbins());
   for (Int_t i = 0; i < fHistos.GetEntriesFast(); i++) {
-    TH3*  h = static_cast<TH3*>(fHistos.At(i));
+    TH1*  h = static_cast<TH1*>(fHistos.At(i));
     if (!h) continue;
     h->Print(option);
   }    
@@ -1443,25 +1444,34 @@ AliTrackletDeltaWeights::DrawOne(Double_t cent,
 				 Double_t eta,
 				 Double_t ipz) const
 {
-  TH3* h3 = FindHisto(cent);
-  if (!h3) return;
+  TH1* h = FindHisto(cent);
+  if (!h) return;
 
-  Int_t etaBin = FindBin(eta, h3->GetXaxis());
-  Int_t ipzBin = FindBin(ipz, h3->GetZaxis());
+  Int_t etaBin = FindBin(eta, h->GetXaxis());
+  Int_t ipzBin = FindBin(ipz, h->GetZaxis());
 
-  TH1* h1 = h3->ProjectionY("tmp", etaBin, etaBin, ipzBin, ipzBin);
-  h1->SetDirectory(0);
-  h1->Draw();
+  TH1* tmp = 0;
+  if (h->IsA()->InheritsFrom(TH2::Class()))
+    tmp = static_cast<TH2*>(h)->ProjectionY("tmp", etaBin, etaBin);
+  if (h->IsA()->InheritsFrom(TH3::Class()))
+    tmp = static_cast<TH3*>(h)->ProjectionY("tmp", etaBin, etaBin);
+  else
+    tmp = static_cast<TH1*>(h->Clone("tmp"));
+  if (!tmp) return;
+  tmp->SetDirectory(0);
+  tmp->Draw();
 }
 				 
 //____________________________________________________________________
 void
 AliTrackletDeltaWeights::DrawStack(TVirtualPad* pad,
+				   Int_t        nPad,
 				   THStack*     stack,
 				   const char*  xtitle,
 				   Double_t     min,
 				   Double_t     max)
 {
+  if (!stack->GetHists()) return;
   stack->SetMinimum(min);
   stack->SetMaximum(max);
   pad->SetTicks();
@@ -1473,6 +1483,12 @@ AliTrackletDeltaWeights::DrawStack(TVirtualPad* pad,
   h->SetYTitle(stack->GetTitle());
   h->GetXaxis()->SetNdivisions(205);
   h->GetYaxis()->SetNdivisions(205);
+  h->GetXaxis()->SetLabelOffset(0.005*pad->GetWNDC());
+  h->GetXaxis()->SetTitleOffset(1.5*pad->GetWNDC());
+  h->GetXaxis()->SetLabelSize(0.03/pad->GetWNDC()/*nPad*/);
+  h->GetYaxis()->SetLabelSize(0.03/pad->GetWNDC()/*nPad*/);
+  h->GetXaxis()->SetTitleSize(0.03/pad->GetWNDC()/*nPad*/);
+  h->GetYaxis()->SetTitleSize(0.03/pad->GetWNDC()/*nPad*/);
   pad->Modified();
 }
   
@@ -1486,17 +1502,7 @@ AliTrackletDeltaWeights::Draw(Option_t* option)
     return;
   }
 
-  Int_t   nPad = 3;
-  Int_t   iPad = 0;
-  TString opt(option); opt.ToUpper();
-
-  master->SetTopMargin(0.01);
-  master->SetRightMargin(0.01);
-  if (opt.Contains("V"))
-    master->Divide(1,nPad);
-  else
-    master->Divide(nPad,1, 0, 0);
-
+  TString  opt(option); opt.ToUpper();
   THStack* stackEta   = new THStack("eta",   "#LTw#GT_{#Delta,IP_{z}}");
   THStack* stackDelta = new THStack("delta", "#LTw#GT_{#eta,IP_{z}}");
   THStack* stackIPz   = new THStack("ipz",   "#LTw#GT_{#eta,#Delta}");
@@ -1513,10 +1519,24 @@ AliTrackletDeltaWeights::Draw(Option_t* option)
     stackIPz  ->Add(ipzProj);
   }
 
-  DrawStack(master->cd(1), stackEta,   "#eta");
-  DrawStack(master->cd(2), stackDelta, "#Delta");
-  DrawStack(master->cd(3), stackIPz,   "IP_{z}");
+  Int_t   nPad = 0;
+  if (stackEta  ->GetHists()) nPad++;
+  if (stackDelta->GetHists()) nPad++;
+  if (stackIPz  ->GetHists()) nPad++;
+  
+  master->SetTopMargin(0.01);
+  master->SetRightMargin(0.01);
+  master->SetLeftMargin(0.07*nPad);
+  if (opt.Contains("V"))
+    master->Divide(1,nPad);
+  else
+    master->Divide(nPad,1, 0, 0);
 
+  if (nPad >= 1) DrawStack(master->cd(1), nPad, stackEta,   "#eta");
+  if (nPad >= 2) DrawStack(master->cd(2), nPad, stackDelta, "#Delta");
+  if (nPad >= 3) DrawStack(master->cd(3), nPad, stackIPz,   "IP_{z}");
+  master->GetPad(nPad)->SetRightMargin(0.01);
+  
   master->Modified();
 }
 

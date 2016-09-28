@@ -344,8 +344,11 @@ ExtractGSE2(const char* input, UShort_t sNN=5023)
 
   TString base = input; //gSystem->DirName(input); base.ReplaceAll(".root","");
   TFile*  file = TFile::Open(Form("%s/result.root",input), "READ");
-  if (!file) return;
-
+  if (!file) {
+    Warning("ExtractGSE2", "Failed to open %s/result.root", input);
+    return;
+  }
+  
   Int_t dimen = -1;
   if      (base.EndsWith("unit"))    dimen = 0;
   else if (base.EndsWith("const"))   dimen = 1;
