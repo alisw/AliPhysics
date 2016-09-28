@@ -57,6 +57,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
   void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
   void SetFillDistributionsForTrackEffChecks(Bool_t filldistrtrackeffcheckson=kFALSE){fFillDistrTrackEffChecks = filldistrtrackeffcheckson;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   /// getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -92,6 +93,8 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  Bool_t fUseSelectionBit;  /// flag to use or not the selection bit
  Bool_t fOnOff[5];         /// on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
  Bool_t fFillDistrTrackEffChecks;
+ Int_t fAODProtection;     /// flag to activate protection against AOD-dAOD mismatch.
+                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
  //___ Declaration of histograms
  TH1F* fHisNentries;                         //!<!  Histo. of output slot #1 (fOutputEntries)
@@ -236,7 +239,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TProfile2D *fHisQ[3];                       //!<!  Histo. of output slot #8 (fOutputFlowObs)
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,12); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,13); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

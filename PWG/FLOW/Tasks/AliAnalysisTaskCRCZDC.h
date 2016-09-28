@@ -42,6 +42,7 @@ class TH2F;
 class TProfile;
 class TProfile3D;
 class TH3D;
+class TH3F;
 
 class AliAnalysisTaskCRCZDC : public AliAnalysisTaskSE {
  
@@ -49,8 +50,15 @@ public:
  
  enum kAnalysisInput{kESD=1, kAOD=2};
  AliAnalysisTaskCRCZDC();
- AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, TString DataSet="2010", UInt_t seed=666, Bool_t bCandidates=kFALSE);
+ AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE);
  virtual ~AliAnalysisTaskCRCZDC();
+  
+  enum DataSet { k2010,
+    k2011,
+    k2015,
+    kAny
+  };
+  
  virtual void InitializeRunArrays();
  
  // Implementation of interface methods
@@ -138,11 +146,13 @@ public:
  void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
   fCentrUpLim=centrup;}
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
- void SetDataSet(TString DataSet) {fDataSet = DataSet;}
+ void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
  void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
-  void SetTowerEqList(TList* const kList) {this->fTowerEqList = kList;};
-  TList* GetTowerEqList() const {return this->fTowerEqList;};
+ void SetTowerEqList(TList* const kList) {this->fTowerEqList = kList;};
+ TList* GetTowerEqList() const {return this->fTowerEqList;};
  virtual Int_t GetCenBin(Double_t Centrality);
+  Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
+  Bool_t plpMV(const AliAODEvent* aod);
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -290,11 +300,13 @@ private:
  const static Int_t fnCen = 10;
  Int_t fCRCnRun;
  Float_t fZDCGainAlpha;
- TString fDataSet;
+ DataSet fDataSet;
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
- TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
- TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
+// TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
+// TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
+ TH3F *fPtPhiEtaRbRFB128[fCRCMaxnRun][10];		//! Pt-Phi-Eta distr. run-by-run, FB128
+ TH3F *fPtPhiEtaRbRFB768[fCRCMaxnRun][10];		//! Pt-Phi-Eta distr. run-by-run, FB768
  TClonesArray* fStack; //!
  TH1F *fPtSpecGen[10];		//! PtSpecGen
  TH1F *fPtSpecFB32[10];		//! PtSpecRec FB32
@@ -309,7 +321,7 @@ private:
   TH3D *fTowerGainEq[fnCen][8]; //!
   Int_t fCachedRunNum;   //
  
- ClassDef(AliAnalysisTaskCRCZDC,5);
+ ClassDef(AliAnalysisTaskCRCZDC,6);
  
 };
 

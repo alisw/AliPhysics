@@ -2,14 +2,21 @@
 #include <string>
 #include <vector>
 
+#include <TClonesArray.h>
 #include <THistManager.h>
+#include <TGrid.h>
 #include <THashList.h>
+#include <TObjArray.h>
+#include <TParameter.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskEGAMonitor.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALTriggerMapping.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerTypes.h"
 #include "AliInputEventHandler.h"
+#include "AliOADBContainer.h"
 #include "AliVVertex.h"
 #include "AliVCaloTrigger.h"
 
@@ -20,23 +27,31 @@ ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor)
 namespace EMCalTriggerPtAnalysis {
 
 AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor() :
-    AliAnalysisTaskSE(),
+    AliAnalysisTaskEmcal(),
     fHistos(nullptr),
-    fAnalysisUtils(nullptr),
-    fGeom(nullptr),
-    fLocalInitialized(false)
+    fUseRecalcPatches(false),
+    fRecalcLow(0.),
+    fRecalcHigh(0.),
+    fNameMaskedFastorOADB(""),
+    fMaskedFastorOADB(nullptr),
+    fMaskedFastors()
 {
-
+  this->SetNeedEmcalGeom(true);
+  this->SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor(const char *name) :
-    AliAnalysisTaskSE(name),
+    AliAnalysisTaskEmcal(name, true),
     fHistos(nullptr),
-    fAnalysisUtils(nullptr),
-    fGeom(nullptr),
-    fLocalInitialized(false)
+    fUseRecalcPatches(false),
+    fRecalcLow(0.),
+    fRecalcHigh(0.),
+    fNameMaskedFastorOADB(""),
+    fMaskedFastorOADB(nullptr),
+    fMaskedFastors()
 {
-  DefineOutput(1, TList::Class());
+  this->SetNeedEmcalGeom(true);
+  this->SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEGAMonitor::~AliAnalysisTaskEGAMonitor() {
@@ -45,57 +60,132 @@ AliAnalysisTaskEGAMonitor::~AliAnalysisTaskEGAMonitor() {
 }
 
 void AliAnalysisTaskEGAMonitor::UserCreateOutputObjects(){
-  fAnalysisUtils = new AliAnalysisUtils;
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  fAliAnalysisUtils = new AliAnalysisUtils;
 
   fHistos = new THistManager("EGAhistos");
-  std::array<std::string, 4> triggers = {"EG1", "EG2", "DG1", "DG2"};
+  fHistos->CreateTH1("hEventCountEGA", "Number of EGA triggered events", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCountINT7", "Number of INT7 triggered events", 1, 0.5, 1.5);
+  std::array<std::string, 5> triggers = {"EG1", "EG2", "DG1", "DG2", "MB"};
   for(const auto &t : triggers){
     fHistos->CreateTH2(Form("hColRowG1%s", t.c_str()), Form("Col-Row distribution of online G1 patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
     fHistos->CreateTH2(Form("hColRowG2%s", t.c_str()), Form("Col-Row distribution of online G2 patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+    fHistos->CreateTH2(Form("hColRowGall%s", t.c_str()), Form("Col-Row distribution of online gamma patches for trigger %s", t.c_str()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+    fHistos->CreateTH1(Form("hADCRecalcGall%s", t.c_str()), Form("ADC distribution of gamma recalc patches for trigger %s", t.c_str()), 2049, -0.5, 2048.5);
+    fHistos->CreateTH1(Form("hADCRecalcG1%s", t.c_str()), Form("ADC distribution of G1 recalc patches for trigger %s", t.c_str()), 2049, -0.5, 2048.5);
+    fHistos->CreateTH1(Form("hADCRecalcG2%s", t.c_str()), Form("ADC distribution of G2 recalc patches for trigger %s", t.c_str()), 2049, -0.5, 2048.5);
   }
+  for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
-  PostData(1, fHistos);
+  PostData(1, fOutput);
 }
 
-void AliAnalysisTaskEGAMonitor::UserExec(Option_t *){
-  if(!fLocalInitialized){
-    ExecOnce();
-    fLocalInitialized = true;
-  }
+bool AliAnalysisTaskEGAMonitor::IsEventSelected(){
+  if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return false;
+  if(fAliAnalysisUtils->IsPileUpEvent(InputEvent())) return false;
+  if(!(fInputHandler->IsEventSelected() & (AliVEvent::kEMCEGA | AliVEvent::kINT7))) return false;
+  return true;
+}
 
-  if(!fAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return;
-  if(fAnalysisUtils->IsPileUpEvent(InputEvent())) return;
-  if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)) return;
-
+bool AliAnalysisTaskEGAMonitor::Run(){
   std::vector<std::string> triggers;
-  if(InputEvent()->GetFiredTriggerClasses().Contains("EG1")) triggers.push_back("EG1");
-  if(InputEvent()->GetFiredTriggerClasses().Contains("EG2")) triggers.push_back("EG2");
-  if(InputEvent()->GetFiredTriggerClasses().Contains("DG1")) triggers.push_back("DG1");
-  if(InputEvent()->GetFiredTriggerClasses().Contains("DG2")) triggers.push_back("DG2");
+  if(fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA){
+    if(InputEvent()->GetFiredTriggerClasses().Contains("EG1")) triggers.push_back("EG1");
+    if(InputEvent()->GetFiredTriggerClasses().Contains("EG2")) triggers.push_back("EG2");
+    if(InputEvent()->GetFiredTriggerClasses().Contains("DG1")) triggers.push_back("DG1");
+    if(InputEvent()->GetFiredTriggerClasses().Contains("DG2")) triggers.push_back("DG2");
+    fHistos->FillTH1("hEventCountEGA", 1);
+  } else if(fInputHandler->IsEventSelected() & AliVEvent::kINT7){
+    triggers.push_back("MB");
+    fHistos->FillTH1("hEventCountINT7", 1);
+  }
+  if(!triggers.size()) return false;
 
-  AliVCaloTrigger *emctrigraw = InputEvent()->GetCaloTrigger("EMCAL");
+  if(fUseRecalcPatches){
+    for(auto p : *(this->fTriggerPatchInfo)){
+      AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
+      if(!patch->IsGammaLowRecalc()) continue;
 
-  emctrigraw->Reset();
-  Int_t col(-1), row(-1), triggerbits(0);
-  while(emctrigraw->Next()){
-    emctrigraw->GetTriggerBits(triggerbits);
-    if(!(triggerbits & (BIT(kL1GammaHigh) | BIT(kL1GammaLow)))) continue;
+      // reject patches having a masked fastor
+      if(IsPatchRejected(patch->GetColStart(), patch->GetRowStart())) continue;
 
-    emctrigraw->GetPosition(col, row);
-    if(triggerbits & BIT(kL1GammaHigh)){
-      for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), col, row);
+      for(const auto &t : triggers){
+        fHistos->FillTH2(Form("hColRowGall%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+        fHistos->FillTH1(Form("hADCRecalcGall%s", t.c_str()), patch->GetADCAmp());
+      }
+      if(patch->GetADCAmp() > fRecalcLow){
+        for(const auto &t : triggers){
+          fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+          fHistos->FillTH1(Form("hADCRecalcG2%s", t.c_str()), patch->GetADCAmp());
+        }
+      }
+      if(patch->GetADCAmp() > fRecalcHigh){
+        for(const auto &t : triggers){
+          fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), patch->GetColStart(), patch->GetRowStart());
+          fHistos->FillTH1(Form("hADCRecalcG1%s", t.c_str()), patch->GetADCAmp());
+        }
+      }
     }
-    if(triggerbits & BIT(kL1GammaLow)){
-      for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), col, row);
+  } else {
+    AliVCaloTrigger *emctrigraw = InputEvent()->GetCaloTrigger("EMCAL");
+
+    emctrigraw->Reset();
+    Int_t col(-1), row(-1), triggerbits(0);
+    while(emctrigraw->Next()){
+      emctrigraw->GetTriggerBits(triggerbits);
+      if(!(triggerbits & (BIT(kL1GammaHigh) | BIT(kL1GammaLow)))) continue;
+
+      emctrigraw->GetPosition(col, row);
+      if(IsPatchRejected(col, row)) continue;
+      if(triggerbits & BIT(kL1GammaHigh)){
+        for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), col, row);
+      }
+      if(triggerbits & BIT(kL1GammaLow)){
+        for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), col, row);
+      }
     }
   }
 
-  PostData(1, fHistos->GetListOfHistograms());
+  return true;
 }
 
 void AliAnalysisTaskEGAMonitor::ExecOnce(){
-  if(!fGeom) fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+  AliAnalysisTaskEmcal::ExecOnce();
+
+  if(!fLocalInitialized) return;
+
+  if(fNameMaskedFastorOADB.Length()){
+    if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
+    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
+    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
+  }
 }
 
+void AliAnalysisTaskEGAMonitor::RunChanged(Int_t runnumber){
+  if(fMaskedFastorOADB){
+    fMaskedFastors.clear();
+    for(auto p : *(static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber)))){
+      fMaskedFastors.push_back(static_cast<TParameter<int> *>(p)->GetVal());
+    }
+  }
+}
+
+bool AliAnalysisTaskEGAMonitor::IsPatchRejected(int col, int row){
+  bool rejected(false);
+  for(int icol = col; icol < col + 2; icol++){
+    for(int irow = row; irow < row + 2; irow++){
+      int fabsID;
+      fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol,irow, fabsID);
+      for(auto m : fMaskedFastors){
+        if(fabsID == m){
+          rejected = true;
+          break;
+        }
+      }
+    }
+  }
+  return rejected;
+}
 
 } /* namespace EMCalTriggerPtAnalysis */

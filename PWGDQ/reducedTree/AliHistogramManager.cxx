@@ -774,7 +774,7 @@ THashList* AliHistogramManager::AddHistogramsToOutputList() {
 }
 
 //____________________________________________________________________________________
-void AliHistogramManager::InitFile(const Char_t* filename) {
+void AliHistogramManager::InitFile(const Char_t* filename, const Char_t* mainListName /*=""*/) {
   //
   // Open an existing ROOT file containing lists of histograms and initialize the global list pointer
   //
@@ -792,8 +792,10 @@ void AliHistogramManager::InitFile(const Char_t* filename) {
       return;
     }
     TList* list1 = fHistFile->GetListOfKeys();
-    TKey* key1 = (TKey*)list1->At(0);
-    fMainDirectory = (TDirectoryFile*)key1->ReadObj();
+    TKey* key1 = 0x0; 
+    if(mainListName[0]) key1 = (TKey*)list1->FindObject(mainListName);
+    else key1 = (TKey*)list1->At(0);
+    fMainDirectory = (THashList*)key1->ReadObj();
   }
 }
 
@@ -807,7 +809,7 @@ void AliHistogramManager::CloseFile() {
 }
 
 //____________________________________________________________________________________
-TList* AliHistogramManager::GetHistogramList(const Char_t* listname) const {
+THashList* AliHistogramManager::GetHistogramList(const Char_t* listname) const {
   //
   // Retrieve a histogram list
   //
@@ -820,12 +822,17 @@ TList* AliHistogramManager::GetHistogramList(const Char_t* listname) const {
   }
   //if(fMainList) {
   if(fMainList.GetEntries()>0) {
+     cout << "fMainList entries :: " << fMainList.GetEntries() << endl;
     THashList* hList = (THashList*)fMainList.FindObject(listname);
+    cout << "hList" << hList << endl;
     return hList;
   }
-  TKey* listKey = fMainDirectory->FindKey(listname);
-  TDirectoryFile* hdir = (TDirectoryFile*)listKey->ReadObj();
-  return hdir->GetListOfKeys();
+  THashList* listHist = (THashList*)fMainDirectory->FindObject(listname);
+  cout << "fMainDirectory " << fMainDirectory << endl;
+  cout << "listHist " << listHist << endl;
+  //TDirectoryFile* hdir = (TDirectoryFile*)listKey->ReadObj();
+  //return hdir->GetListOfKeys();
+  return listHist;
 }
 
 //____________________________________________________________________________________
@@ -841,18 +848,19 @@ TObject* AliHistogramManager::GetHistogram(const Char_t* listname, const Char_t*
     return 0x0;
   }
   //if(fMainList) {
-  if(fMainList.GetEntries()==0) {
+  /*if(fMainList.GetEntries()==0) {
     THashList* hList = (THashList*)fMainList.FindObject(listname);
     if(!hList) {
       cout << "Warning in AliHistogramManager::GetHistogram(): Histogram list " << listname << " not found!" << endl;
       return 0x0;
     }
     return hList->FindObject(hname);
-  }
-  TKey* listKey = fMainDirectory->FindKey(listname);
-  TDirectoryFile* hlist = (TDirectoryFile*)listKey->ReadObj();
-  TKey* key = hlist->FindKey(hname);
-  return key->ReadObj();
+  }*/
+  THashList* hList = (THashList*)fMainDirectory->FindObject(listname);
+  //TDirectoryFile* hlist = (TDirectoryFile*)listKey->ReadObj();
+  //TKey* key = hlist->FindKey(hname);
+  //return key->ReadObj();
+  return hList->FindObject(hname);
 }
 
 //____________________________________________________________________________________

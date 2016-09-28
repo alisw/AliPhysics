@@ -279,7 +279,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd, const AliAODEvent* aod=0x0) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts, const AliAODEvent* aod=0x0) const;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) {return 1;}
-  static Bool_t CheckMatchingAODdeltaAODevents();
+  static Int_t CheckMatchingAODdeltaAODevents();
 
 
   void SetupPID(AliVEvent *event);

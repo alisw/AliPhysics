@@ -78,6 +78,9 @@ public:
     void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) {
         fkRunVertexers = lRunVertexers;
     }
+    void SetUseLightVertexers ( Bool_t lUseLightVertexers = kTRUE) {
+        fkUseLightVertexer = lUseLightVertexers;
+    }
 //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
@@ -175,6 +178,7 @@ private:
     
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
+    Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones 
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     

@@ -20,6 +20,7 @@ class AliFlowCandidateTrack;
 class AliFlowBayesianPID;
 class AliEventPoolManager;
 class AliPIDCombined;
+class AliVVertex;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -143,6 +144,9 @@ public:
        fUsePidResponse = kTRUE; // bayesian pid object will require some event info
        fCentrality = 5.;}        // should be set by user, skipping event selection will also forego centrality selection
    void                                 SetUsePidResponse(Bool_t s)     {fUsePidResponse = s;}
+   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
+   Bool_t                               plpMV(const AliAODEvent* aod);
+   void                                 SetRemovePileup(Bool_t p) {fPileUp = p;}
 
 private:
 
@@ -226,6 +230,8 @@ private:
    Bool_t               fSkipEventSelection;// skip event selection and set bayesian pid object to MC mode
    Bool_t               fUsePidResponse;//use pid response instead of aliflowbayesianpid object for pid
    AliPIDCombined*      fPIDCombined;   // pid combined
+   Bool_t               fPileUp;        // cut pile up
+
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
    void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[], Double_t p = 0., Double_t pz = 0.) const;

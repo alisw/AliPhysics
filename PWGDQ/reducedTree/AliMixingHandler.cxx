@@ -381,10 +381,10 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
   // NOTE: The mixingMask is a bit map with bits toggled for the pools which need mixing
   //       The type is the pair candidate type. It is used in AliReducedPairInfo::CandidateType, mainly to know which mass assumption to be made for the legs
   //
-  cout << "AliMixingHandler::RunEventMixing for mask " << flush;
-  AliReducedVarManager::PrintBits(mixingMask,fNParallelCuts);
-  cout << ";  (cent/vtx/ep): " << values[fCentralityVariable] << "/"
-       << values[fEventVertexVariable] << "/" << values[fEventPlaneVariable] << endl;
+  //cout << "AliMixingHandler::RunEventMixing for mask " << flush;
+  //AliReducedVarManager::PrintBits(mixingMask,fNParallelCuts);
+  //cout << ";  (cent/vtx/ep): " << values[fCentralityVariable] << "/"
+  //     << values[fEventVertexVariable] << "/" << values[fEventPlaneVariable] << endl;
   
   Int_t entries = leg1Pool->GetEntries();
   if(entries<2) return;

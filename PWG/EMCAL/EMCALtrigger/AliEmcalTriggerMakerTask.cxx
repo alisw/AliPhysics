@@ -211,7 +211,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   return true;
 }
 
-void AliEmcalTriggerMakerTask::RunChanged(){
+void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
   if(fLoadFastORMaskingFromOCDB) InitializeFastORMaskingFromOCDB();
 }

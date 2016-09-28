@@ -32,7 +32,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t doEffcorrSW    = 0,
    //Bool_t   doEventPlaneRes   = 0,
    Bool_t newFramework        = kTRUE,
-   Bool_t turnQualityCutsOFF      = 0,
+   Bool_t turnQualityCutsOFF  = 0,
    const char *tag            = ""
 )
 {  
@@ -150,7 +150,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   AliESDtrackCuts *esdTrackCuts = 0x0;
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   esdTrackCuts = CreateTrackCutsPWGJE(esdcuts);
-  correlationtask->SetTrackCuts(esdTrackCuts);
+  correlationtask->SetTrackCuts(esdTrackCuts);   // check this!!!!
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

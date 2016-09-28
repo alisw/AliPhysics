@@ -938,6 +938,11 @@ public:
  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
  void SetFlowQCSpectra(TH1D* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
  TH1D* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
+  
+  void SetFlowSCv2vsZNv1Pro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Pro[c][eg] = TP;};
+  TProfile* GetFlowSCv2vsZNv1Pro(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Pro[c][eg];};
+  void SetFlowSCv2vsZNv1Hist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Hist[c][eg] = TP;};
+  TH1D* GetFlowSCv2vsZNv1Hist(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Hist[c][eg];};
  
  // Flow SP ZDC
  void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
@@ -959,7 +964,14 @@ public:
  TProfile* GetFlowSPZDCIntPro(Int_t const r, Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntPro[r][c][eg];};
   void SetFlowSPZDCIntNUA(TProfile* const TP, Int_t const r, Int_t const eg) {this->fFlowSPZDCIntNUA[r][eg] = TP;};
   TProfile* GetFlowSPZDCIntNUA(Int_t const r, Int_t const eg) const {return this->fFlowSPZDCIntNUA[r][eg];};
-
+  
+  // v1
+  void SetFlowSPZDCv1Pro(TProfile* const TP, Int_t const r) {this->fFlowSPZDCv1Pro[r] = TP;};
+  TProfile* GetFlowSPZDCv1Pro(Int_t const r) const {return this->fFlowSPZDCv1Pro[r];};
+  void SetFlowSPZDCv1etaPro(TProfile* const TP, Int_t const r) {this->fFlowSPZDCv1etaPro[r] = TP;};
+  TProfile* GetFlowSPZDCv1etaPro(Int_t const r) const {return this->fFlowSPZDCv1etaPro[r];};
+  void SetFlowSPZDCv1etaHist(TH1D* const TP, Int_t const r) {this->fFlowSPZDCv1etaHist[r] = TP;};
+  TH1D* GetFlowSPZDCv1etaHist(Int_t const r) const {return this->fFlowSPZDCv1etaHist[r];};
  
  // Flow SP VZ
  void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
@@ -1597,6 +1609,9 @@ private:
  TH1D *fFlowSPZDCIntHist[fFlowNHarm][fFlowNPro]; //!
  TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
  TProfile *fFlowSPZDCIntNUA[fCRCMaxnRun][fFlowNNUA]; //!
+ TProfile *fFlowSPZDCv1Pro[4]; //!
+ TProfile *fFlowSPZDCv1etaPro[4]; //!
+  TH1D *fFlowSPZDCv1etaHist[4]; //!
  
  // Flow QC
  TList *fFlowQCList;    //! QC List
@@ -1629,6 +1644,9 @@ private:
  TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
  TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
  TH2F *fFlowQCMetricCent; //!
+  
+  TProfile *fFlowSCv2vsZNv1Pro[fFlowNHarm][3]; //!
+  TH1D *fFlowSCv2vsZNv1Hist[fFlowNHarm][3]; //!
  
  // Flow SP VZ
  TList *fFlowSPVZList;    //! SPVZ List

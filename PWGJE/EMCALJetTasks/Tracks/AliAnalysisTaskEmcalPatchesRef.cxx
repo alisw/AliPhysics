@@ -47,11 +47,10 @@ namespace EMCalTriggerPtAnalysis {
  * Dummy (I/O) onstructor
  */
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
-    AliAnalysisTaskSE(),
-    fAnalysisUtil(nullptr),
+    AliAnalysisTaskEmcal(),
     fTriggerSelection(nullptr),
+    fAcceptTriggers(),
     fHistos(nullptr),
-    fTriggerPatches(nullptr),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
     fCentralityRange(-999., 999.),
@@ -59,10 +58,9 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     fRequestCentrality(false),
     fNameDownscaleOADB(""),
     fDownscaleOADB(nullptr),
-    fDownscaleFactors(nullptr),
-    fCurrentRun(-1),
-    fLocalInitialized(false)
+    fDownscaleFactors(nullptr)
 {
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 /**
@@ -70,11 +68,10 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
  * @param name Name of the task
  */
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name):
-    AliAnalysisTaskSE(name),
-    fAnalysisUtil(nullptr),
+    AliAnalysisTaskEmcal(name, kTRUE),
     fTriggerSelection(nullptr),
+    fAcceptTriggers(),
     fHistos(nullptr),
-    fTriggerPatches(nullptr),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
     fCentralityRange(-999., 999.),
@@ -82,11 +79,9 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name)
     fRequestCentrality(false),
     fNameDownscaleOADB(""),
     fDownscaleOADB(nullptr),
-    fDownscaleFactors(nullptr),
-    fCurrentRun(-1),
-    fLocalInitialized(false)
+    fDownscaleFactors(nullptr)
 {
-  DefineOutput(1, TList::Class());
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 /**
@@ -102,7 +97,8 @@ AliAnalysisTaskEmcalPatchesRef::~AliAnalysisTaskEmcalPatchesRef() {
  */
 void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   AliInfoStream() <<  "Creating histograms for task " << GetName() << std::endl;
-  fAnalysisUtil = new AliAnalysisUtils;
+
+  if(fRequestAnalysisUtil && ! fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
 
   EnergyBinning energybinning;
   TLinearBinning etabinning(100, -0.7, 0.7);
@@ -129,29 +125,16 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
       }
     }
   }
-  PostData(1, fHistos->GetListOfHistograms());
+  for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
+  PostData(1, fOutput);
   AliDebugStream(1) << "Histograms done" << std::endl;
 }
 
-/**
- * Run event loop
- * @param Not used
- */
-void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
-  AliDebugStream(1) << GetName() << ": Start function" << std::endl;
-  if(!fLocalInitialized){
-    AliInfoStream() << GetName() << ": Initializing ..." << std::endl;
-    ExecOnce();
-    fLocalInitialized = kTRUE;
-  }
-  if(fCurrentRun != InputEvent()->GetRunNumber()){
-    AliDebugStream(1) << GetName() << ": Changing run from " <<  fCurrentRun << " to " << InputEvent()->GetRunNumber() << std::endl;
-    RunChanged(InputEvent()->GetRunNumber());
-    fCurrentRun = InputEvent()->GetRunNumber();
-  }
+bool AliAnalysisTaskEmcalPatchesRef::IsEventSelected(){
+  fAcceptTriggers.clear();
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
-    triggerstring = GetFiredTriggerClassesFromPatches(fTriggerPatches);
+    triggerstring = GetFiredTriggerClassesFromPatches(fTriggerPatchInfo);
   } else {
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
@@ -167,22 +150,22 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
       isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2"),
       isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1"),
       isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2");
-  if(fTriggerPatches && fTriggerSelection){
-      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches);
-      isEJ1 &=  fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatches);
-      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatches);
-      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches);
-      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches);
-      isDMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDL0, fTriggerPatches);
-      isDJ1 &=  fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ1, fTriggerPatches);
-      isDJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ2, fTriggerPatches);
-      isDG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG1, fTriggerPatches);
-      isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, fTriggerPatches);
+  if(fTriggerPatchInfo && fTriggerSelection){
+      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatchInfo);
+      isEJ1 &=  fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatchInfo);
+      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatchInfo);
+      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatchInfo);
+      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatchInfo);
+      isDMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDL0, fTriggerPatchInfo);
+      isDJ1 &=  fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ1, fTriggerPatchInfo);
+      isDJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDJ2, fTriggerPatchInfo);
+      isDG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG1, fTriggerPatchInfo);
+      isDG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgDG2, fTriggerPatchInfo);
 
   }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)){
     AliDebugStream(1) << GetName() << ": Reject trigger" << std::endl;
-    return;
+    return false;
   }
   AliDebugStream(1) << "Trigger selected" << std::endl;
   // In case a centrality estimator is used, event selection,
@@ -192,14 +175,14 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
     if(!mult){
       AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator available" << std::endl;
-      return;
+      return false;
     }
-    if(!mult->IsEventSelected()) return;
+    if(!mult->IsEventSelected()) return false;
     centrality =  mult->GetEstimator("V0M")->GetPercentile();
     AliDebugStream(1) << GetName()  << ": Centrality " << centrality << std::endl;
     if(!fCentralityRange.IsInRange(centrality)){
       AliDebugStream(1) << GetName() << ": reject centrality: " << centrality << std::endl;
-      return;
+      return false;
     } else {
       AliDebugStream(1) << GetName() << ": select centrality " << centrality << std::endl;
     }
@@ -211,101 +194,102 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1){
     AliDebug(1, Form("%s: Reject contributor\n", GetName()));
-    return;
+    return false;
   }
   // Fill reference distribution for the primary vertex before any z-cut
   if(fRequestAnalysisUtil){
     AliDebugStream(1) << GetName() << ": Reject analysis util" << std::endl;
-    if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
-    if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-    if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+    if(fInputEvent->IsA() == AliESDEvent::Class() && fAliAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return false;
+    if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent)) return false;       // Apply new vertex cut
+    if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;       // Apply new vertex cut
   }
   // Apply vertex z cut
   if(!fVertexRange.IsInRange(vtx->GetZ())){
     AliDebugStream(1) <<  GetName() << ": Reject Z(" << vtx->GetZ() << ")" << std::endl;
-    return;
+    return false;
   }
   AliDebugStream(1) << GetName() << ": Event Selected" << std::endl;
 
-  // Fill Event counter and reference vertex distributions for the different trigger classes
-  if(isMinBias) FillEventHistograms("MB", centrality, vtx->GetZ());
-
-  // L0 triggers
+  // Store trigger decision
+  if(isMinBias) fAcceptTriggers.push_back("MB");
   if(isEMC7){
-    FillEventHistograms("EMC7", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7)) FillEventHistograms("EMC7excl", centrality, vtx->GetZ());
+    fAcceptTriggers.push_back("EMC7");
+    if(!isMinBias) fAcceptTriggers.push_back("EMC7excl");
   }
   if(isDMC7){
-    FillEventHistograms("DMC7", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias  || isDMC7)) FillEventHistograms("DMC7excl", centrality, vtx->GetZ());
-  }
-
-  // L1 jet triggers
-  if(isEJ1){
-    FillEventHistograms("EJ1", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7 || isEJ2)) FillEventHistograms("EJ1excl", centrality, vtx->GetZ());
-  }
-  if(isDJ1){
-    FillEventHistograms("DJ1", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isDMC7 || isDJ2)) FillEventHistograms("DJ1excl", centrality, vtx->GetZ());
-  }
-
-  if(isEJ2){
-    FillEventHistograms("EJ2", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7)) FillEventHistograms("EJ2excl", centrality, vtx->GetZ());
-  }
-  if(isDJ2){
-    FillEventHistograms("DJ2", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isDMC7)) FillEventHistograms("DJ2excl", centrality, vtx->GetZ());
-  }
-
-  // L1 gamma triggers
-  if(isEG1){
-    FillEventHistograms("EG1", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7 || isEG2)) FillEventHistograms("EG1excl", centrality, vtx->GetZ());
-  }
-  if(isDG1){
-    FillEventHistograms("DG1", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isDMC7 || isDG2)) FillEventHistograms("DG1excl", centrality, vtx->GetZ());
+    fAcceptTriggers.push_back("DMC7");
+    if(!isMinBias) fAcceptTriggers.push_back("DMC7excl");
   }
   if(isEG2){
-    FillEventHistograms("EG2", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7)) FillEventHistograms("EG2excl", centrality, vtx->GetZ());
+    fAcceptTriggers.push_back("EG2");
+    if(!(isMinBias || isEMC7)) fAcceptTriggers.push_back("EG2excl");
+  }
+  if(isEG1){
+    fAcceptTriggers.push_back("EG1");
+    if(!(isMinBias || isEMC7 || isEG2)) fAcceptTriggers.push_back("EG1excl");
   }
   if(isDG2){
-    FillEventHistograms("DG2", centrality, vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isMinBias || isDMC7)) FillEventHistograms("DG2excl", centrality, vtx->GetZ());
+    fAcceptTriggers.push_back("DG2");
+    if(!(isMinBias || isDMC7)) fAcceptTriggers.push_back("DG2excl");
+  }
+  if(isDG1){
+    fAcceptTriggers.push_back("DG1");
+    if(!(isMinBias || isDMC7 || isDG2)) fAcceptTriggers.push_back("DG1excl");
+  }
+  if(isEJ2){
+    fAcceptTriggers.push_back("EJ2");
+    if(!(isMinBias || isEMC7)) fAcceptTriggers.push_back("EJ2excl");
+  }
+  if(isEJ1){
+    fAcceptTriggers.push_back("EJ1");
+    if(!(isMinBias || isEMC7 || isEJ2)) fAcceptTriggers.push_back("EJ1excl");
+  }
+  if(isDJ2){
+    fAcceptTriggers.push_back("DJ2");
+    if(!(isMinBias || isDMC7)) fAcceptTriggers.push_back("DJ2excl");
+  }
+  if(isDJ1){
+    fAcceptTriggers.push_back("DJ1");
+    if(!(isMinBias || isDMC7 || isDJ2)) fAcceptTriggers.push_back("DJ1excl");
   }
 
-  if(!fTriggerPatches){
+  return true;
+}
+
+/**
+ * Run event loop
+ * @param Not used
+ */
+bool AliAnalysisTaskEmcalPatchesRef::Run(){
+  AliDebugStream(1) << GetName() << ": Start function" << std::endl;
+
+  double centrality = -1;
+  AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  if(mult && mult->IsEventSelected()) centrality =  mult->GetEstimator("V0M")->GetPercentile();
+
+  // Fill Event counter and reference vertex distributions for the different trigger classes
+  for(const auto &trg : fAcceptTriggers) FillEventHistograms(TString(trg.c_str()), centrality, fVertex[2]);
+
+
+  if(!fTriggerPatchInfo){
     AliErrorStream() << GetName() << ": Trigger patch container not available" << std::endl;
-    return;
+    return false;
   }
 
-  AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatches->GetEntries() << std::endl;
+  AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatchInfo->GetEntries() << std::endl;
 
   Double_t vertexpos[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
 
   Double_t energy, eta, phi, et;
   Int_t col, row;
-  for(TIter patchIter = TIter(fTriggerPatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    if(!IsOfflineSimplePatch(*patchIter)) continue;
-    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
+  for(auto patchIter : *fTriggerPatchInfo){
+    if(!IsOfflineSimplePatch(patchIter)) continue;
+    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
 
-    bool isDCAL         = SelectDCALPatch(*patchIter),
-        isSingleShower  = SelectSingleShowerPatch(*patchIter),
-        isJetPatch      = SelectJetPatch(*patchIter);
+    bool isDCAL         = SelectDCALPatch(patchIter),
+        isSingleShower  = SelectSingleShowerPatch(patchIter),
+        isJetPatch      = SelectJetPatch(patchIter);
 
     std::vector<TString> patchnames;
     if(isJetPatch){
@@ -342,74 +326,18 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     et = patch->GetLorentzVectorCenterGeo().Et();
 
     // fill histograms allEta
-    for(std::vector<TString>::iterator nameit = patchnames.begin(); nameit != patchnames.end(); ++nameit){
-      if(isMinBias){
-        FillPatchHistograms("MB", *nameit, energy, et, eta, phi, col, row);
-      }
-
-      if(isEMC7){
-        FillPatchHistograms("EMC7", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!isMinBias) FillPatchHistograms("EMC7excl", *nameit, energy, et, eta, phi, col, row);
-      }
-      if(isDMC7){
-        FillPatchHistograms("DMC7", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!isMinBias) FillPatchHistograms("DMC7excl", *nameit, energy, et, eta, phi, col, row);
-      }
-
-      if(isEJ1){
-        FillPatchHistograms("EJ1", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isEMC7 || isEJ2))
-          FillPatchHistograms("EJ1excl", *nameit, energy, et, eta, phi, col, row);
-      }
-      if(isDJ1){
-        FillPatchHistograms("DJ1", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isDMC7 || isDJ2))
-          FillPatchHistograms("DJ1excl", *nameit, energy, et, eta, phi, col, row);
-      }
-
-      if(isEJ2){
-        FillPatchHistograms("EJ2", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isEMC7)) FillPatchHistograms("EJ2excl", *nameit, energy, et, eta, phi, col, row);
-      }
-      if(isDJ2){
-        FillPatchHistograms("DJ2", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isDMC7)) FillPatchHistograms("DJ2excl", *nameit, energy, et, eta, phi, col, row);
-      }
-
-      if(isEG1){
-        FillPatchHistograms("EG1", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isEMC7 || isEG2)) FillPatchHistograms("EG1excl", *nameit, energy, et, eta, phi, col, row);
-      }
-      if(isDG1){
-        FillPatchHistograms("DG1", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isEMC7 || isDG2)) FillPatchHistograms("DG1excl", *nameit, energy, et, eta, phi, col, row);
-      }
-
-      if(isEG2){
-        FillPatchHistograms("EG2", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isEMC7)) FillPatchHistograms("EG2excl", *nameit, energy, et, eta, phi, col, row);
-      }
-      if(isDG2){
-        FillPatchHistograms("DG2", *nameit, energy, et, eta, phi, col, row);
-        // check for exclusive classes
-        if(!(isMinBias || isDMC7)) FillPatchHistograms("DG2excl", *nameit, energy, et, eta, phi, col, row);
+    for(const auto &nameit : patchnames){
+      for(const auto &trg : fAcceptTriggers){
+        FillPatchHistograms("MB", nameit, energy, et, eta, phi, col, row);
       }
     }
   }
-  PostData(1, fHistos->GetListOfHistograms());
 }
 
 void AliAnalysisTaskEmcalPatchesRef::ExecOnce(){
-  fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+  AliAnalysisTaskEmcal::ExecOnce();
+  if(!fLocalInitialized) return;
+
   // Handle OADB container with downscaling factors
   if(fNameDownscaleOADB.Length()){
     if(fNameDownscaleOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");

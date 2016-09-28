@@ -907,7 +907,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
   
     //Init the EMCAL Framework
   AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized) {
+  if (!fLocalInitialized) {
     
     AliError(Form("AliAnalysisTask not initialized"));
     return;

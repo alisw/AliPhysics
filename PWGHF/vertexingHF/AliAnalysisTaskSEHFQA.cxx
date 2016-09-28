@@ -100,6 +100,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
+  , fAODProtection(1)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -272,6 +273,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
+  , fAODProtection(1)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -569,21 +571,22 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
 
   TString hnameEntries="hNentries";
-  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 13,-0.5,12.5);
+  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 14,-0.5,13.5);
   fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fHisNentries->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
-  fHisNentries->GetXaxis()->SetBinLabel(3,"nEvents Mismatched dAOD");
-  fHisNentries->GetXaxis()->SetBinLabel(4,"nEventsAnal");
-  fHisNentries->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
-  fHisNentries->GetXaxis()->SetBinLabel(6,"No VertexingHF");
-  fHisNentries->GetXaxis()->SetBinLabel(7,"nCandidates(AnCuts)");
-  fHisNentries->GetXaxis()->SetBinLabel(8,"EventsWithGoodVtx");
-  fHisNentries->GetXaxis()->SetBinLabel(9,"N candidates");
+  fHisNentries->GetXaxis()->SetBinLabel(3,"Mismatched dAOD (Event numbers)");
+  fHisNentries->GetXaxis()->SetBinLabel(4,"Mismatched dAOD (TProcessID)");
+  fHisNentries->GetXaxis()->SetBinLabel(5,"nEventsAnal");
+  fHisNentries->GetXaxis()->SetBinLabel(6,"Pile-up Rej");
+  fHisNentries->GetXaxis()->SetBinLabel(7,"No VertexingHF");
+  fHisNentries->GetXaxis()->SetBinLabel(8,"nCandidates(AnCuts)");
+  fHisNentries->GetXaxis()->SetBinLabel(9,"EventsWithGoodVtx");
+  fHisNentries->GetXaxis()->SetBinLabel(10,"N candidates");
   if(fReadMC){
-    fHisNentries->GetXaxis()->SetBinLabel(10,"MC Cand from c");
-    fHisNentries->GetXaxis()->SetBinLabel(11,"MC Cand from b");
-    fHisNentries->GetXaxis()->SetBinLabel(12,"N fake Trks");
-    fHisNentries->GetXaxis()->SetBinLabel(13,"N true Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(11,"MC Cand from c");
+    fHisNentries->GetXaxis()->SetBinLabel(12,"MC Cand from b");
+    fHisNentries->GetXaxis()->SetBinLabel(13,"N fake Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(14,"N true Trks");
   }
 
   fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
@@ -1464,12 +1467,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   fHisNentries->Fill(0);
-  // Protection against different events in AOD and deltaAOD files
-  if(AliRDHFCuts::CheckMatchingAODdeltaAODevents()==kFALSE){
-    fHisNentries->Fill(2);
-    return;
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel==-1) fHisNentries->Fill(2);
+    if (matchingAODdeltaAODlevel==0)  fHisNentries->Fill(3);
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+    fHisNentries->Fill(1);
   }
-  fHisNentries->Fill(1);
 
 
   TClonesArray *arrayProng =0;
@@ -1664,7 +1673,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only track related histograms\n");
     isSimpleMode=kTRUE;
-    fHisNentries->Fill(5);
+    fHisNentries->Fill(6);
   }
 
   TClonesArray *mcArray = 0;
@@ -1915,7 +1924,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   // count event
-  fHisNentries->Fill(3);
+  fHisNentries->Fill(4);
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -1925,11 +1934,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   const AliESDVertex vESD(pos,cov,100.,100);
 
   TString primTitle = vtx1->GetTitle();
-  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(7);
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(8);
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //TString trigclass=aod->GetFiredTriggerClasses();
-  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHisNentries->Fill(8); //tmp
+  //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHisNentries->Fill(9); //tmp
 
 
 
@@ -2515,8 +2524,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	Int_t label=0;
 	if(fReadMC){
 	  label=track->GetLabel();
-	  if (label<0) fHisNentries->Fill(11);
-	  else fHisNentries->Fill(12);
+	  if (label<0) fHisNentries->Fill(12);
+	  else fHisNentries->Fill(13);
 	}
 
 
@@ -2600,12 +2609,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if(mot){
 	      Int_t pdgMotCode = mot->GetPdgCode();
 
-	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(9); //from primary charm
-	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(10); //from beauty
+	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(10); //from primary charm
+	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(11); //from beauty
 	    }
 	  }
 	}//end MC
-	fHisNentries->Fill(8);//count the candidates (data and MC)
+	fHisNentries->Fill(9);//count the candidates (data and MC)
 
 	for(Int_t id=0;id<ndaugh;id++){
 	  //other histograms to be filled when the cut object is given
@@ -2744,7 +2753,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
-	       fHisNentries->Fill(6); //candidates passing analysis cuts
+	       fHisNentries->Fill(7); //candidates passing analysis cuts
 
 	    AliAODPid *pid = track->GetDetPid();
 	      if(pid){

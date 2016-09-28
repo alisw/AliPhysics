@@ -81,6 +81,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void SetMaxZvtxForSkipEventSelection(Double_t zmax){fZvtxUpgr=zmax;}
   void SetPtWeightsFromDataPbPb276overLHC12a17a();
   void SetFillImpParTree(Bool_t fillimppar){fFillTree=fillimppar;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
      Int_t GetPtBin(Double_t pt)const;
@@ -137,6 +138,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Double_t fsidebandInvMassWindow;          /// invariant mass cut to define side band region width
   Bool_t fUseMC;                            /// flag to use or not MC info
   Bool_t fCleanCandOwnVtx;                  /// flag to switch on/off cleaning of the candidate own vtx
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
   TH1F *fNentries;                          //!<! histo for #AOD analysed, container 1
   TH1F *fSignalType;                        //!<! histo for the type of MC signal , container 2
   TH1F *fSignalTypeLsCuts;                 //!<! histo for the type of MC signal with loose cuts , container 3
@@ -215,7 +217,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSECharmFraction,6); /// analysis task for prompt charm fraction
+  ClassDef(AliAnalysisTaskSECharmFraction,7); /// analysis task for prompt charm fraction
   /// \endcond 
 };
 

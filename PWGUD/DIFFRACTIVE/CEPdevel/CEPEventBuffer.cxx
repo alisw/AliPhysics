@@ -16,17 +16,16 @@ ClassImp(CEPEventBuffer)
 // ----------------------------------------------------------------------------
 CEPEventBuffer::CEPEventBuffer()
   : TObject()
-  , fRunNumber(0x0)
+  , fRunNumber(CEPTrackBuffer::kdumval)
   , fEventNumber(0)
   , fnumTracks(0)
   , fnumSoftTracks(0)
   , fnumResiduals(0)
   , fMCProcessType(-1)
   , fGapCondition(0)
-  , fTracks(0x0)
+  , fCEPTracks(new TClonesArray("CEPTrackBuffer"))
+  , ftrb(*fCEPTracks)
 {
-
-  fRunNumber = CEPTrackBuffer::kdumval;
 
 }
 
@@ -34,9 +33,8 @@ CEPEventBuffer::CEPEventBuffer()
 CEPEventBuffer::~CEPEventBuffer()
 {
 
-  // delete list of tracks
   this->Reset();
-
+  
 }
 
 // ----------------------------------------------------------------------------
@@ -46,15 +44,14 @@ void CEPEventBuffer::Reset()
   // reset all counters
   fRunNumber     = CEPTrackBuffer::kdumval;
   fEventNumber   = 0;
-  fnumTracks     = 0;
-  fnumSoftTracks = 0;
   fnumResiduals  = 0;
   fGapCondition  = 0;  
   fMCProcessType = -1;
 
   // clear the track list
-  //printf("I am reseting the ftracks TList!!\n");
-  if (fTracks) fTracks->Clear();  
+  ftrb.Clear();
+  fnumTracks     = 0;
+  fnumSoftTracks = 0;
 
 }
 
@@ -62,11 +59,8 @@ void CEPEventBuffer::Reset()
 void CEPEventBuffer::AddTrack(CEPTrackBuffer* trk)
 {
   
-  // make sure that fTracks is defined
-  if (!fTracks) fTracks = new TList();
-
-  // add new track
-  fTracks->Add((TObject*) trk);
+  // add track to next element
+  ftrb[ftrb.GetEntries()] = trk;
   
   // update track counter
   if (trk->GetisSoft()) {
@@ -81,14 +75,11 @@ void CEPEventBuffer::AddTrack(CEPTrackBuffer* trk)
 CEPTrackBuffer* CEPEventBuffer::GetTrack(Int_t ind)
 {
     
+  // initialize the result track
   CEPTrackBuffer *trk = NULL;
-  
-  // get track at position ind - if there are at least ind tracks in the buffer
-  if (fTracks) {
-    if (fTracks->GetEntries() > ind) {
-      trk = new CEPTrackBuffer();
-      trk = (CEPTrackBuffer*) fTracks->At(ind);
-    }
+
+  if (fCEPTracks->GetEntries() > ind) {
+    trk = (CEPTrackBuffer*) fCEPTracks->At(ind);
   }
   
   return trk;
@@ -96,15 +87,3 @@ CEPTrackBuffer* CEPEventBuffer::GetTrack(Int_t ind)
 }
 
 // ----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-

@@ -85,10 +85,11 @@ class AliJJetJtAnalysis{
     void ClearBeforeEvent();
     void CreateMCHistograms();
     void FillJtHistogram( TObjArray *Jets, int iContainer , int mc);
-    void FillRandomBackground(TObjArray *Jets , int iContainer, int MC);
-    void FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer, int MC);
+    void FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer);
 
     void FillCorrelation( TObjArray *Jets, TObjArray *mcJets, int iContainer);
+    void FillPythia(TObjArray *Jets, int iContainer); //FIXME Jets needed?
+    int FindPythiaJet(int iContainer, int itrack);
 
     void FillBgJtWithSmallerR(const TClonesArray &Jets, 
         double nR, int iHist);
@@ -159,11 +160,17 @@ class AliJJetJtAnalysis{
     float zVert;
     TClonesArray *fTracks;
     TClonesArray *fMCTracks;
+    int iConst;
 
     TVector *fTrackJt;
+    TVector *fConstJt;
     TVector *fTrackPt;
+    TVector *fConstPt;
+    TVector *fConstLabels;
     TVector *fJetPt;
+    TVector *fJetPt2;
     TVector *fTrackFound;
+    TVector *fConstFound;
     TVector *fBin2;
     TVector *fBin3;
     TVector *fpta;
@@ -206,6 +213,8 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJt ;
     AliJTH1D fhJtBin;
     AliJTH1D fhJtWeightBin;
+    AliJTH1D fhJtWeightBinTest;
+    AliJTH1D fhJtWeightBinTest2;
     AliJTH1D fhLogJtWeightBin;
     AliJTH1D fhLogJtWeight2Bin;
     AliJTH1D fhJtWithPtCutWeightBinBin;
@@ -225,6 +234,8 @@ class AliJJetJtAnalysis{
     AliJTH1D fhJetConeJt;
     AliJTH1D fhJetConeJtBin;
     AliJTH1D fhJetConeJtWeightBin;
+    AliJTH1D fhJetConeJtWeightBinTest;
+    AliJTH1D fhJetConeJtWeightBinTest2;
     AliJTH1D fhJetConeJtWeightWithTrackCutBinBin;
     AliJTH1D fhJetConeJtWeightWithMultiplicityCutBinBin;
     AliJTH1D fhJetConeLogJtWeightBin;
@@ -294,112 +305,53 @@ class AliJJetJtAnalysis{
     AliJTH2D fhTrackEtaPhi;
     AliJTH1D fhJetdPt;
 
-
-    //double   fJetPtMinCut;
-    //Monte Carlo Truth
-    AliJTH1D fhNumberMC;
-    AliJTH1D fhKNumberMC;
-    AliJTH1D fhJetPtMC ;
-
-    AliJTH1D fhJetPtBinMC;
-    AliJTH1D fhJetPtMultiplicityCutBinMC;
-    AliJTH1D fhJetPtTrackCutBinMC;
-    AliJTH1D fhJetPtWeightMC;
-    AliJTH1D fhJetPtWeightBinMC;
-    AliJTH1D fhJetMultiplicityBinMC;
-    AliJTH1D fhZMC;
-    AliJTH1D fhZBinMC;
-    AliJTH1D fhJtMC;
-    AliJTH1D fhJtBinMC;
-    AliJTH1D fhJtWeightBinMC;
-    AliJTH1D fhLogJtWeightBinMC;
-    AliJTH1D fhLogJtWeight2BinMC;
-    AliJTH1D fhJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhLogJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhLogJtWithPtCutWeight2BinBinMC;
-    AliJTH1D fhJtBinLimBinMC;
-    AliJTH1D fhJtWeightBinLimBinMC;
-    AliJTH1D fhLogJtWeightBinLimBinMC;
-    AliJTH1D fhLogJtWeight2BinLimBinMC;
-
-    //Histograms for jt in cone
-    AliJTH1D fhJetConeTrkPtMC; //
-    AliJTH1D fhJetConeTrkPtBinMC; //
-    AliJTH1D fhJetConeTrkPtWeightBinMC; //
-    AliJTH1D fhJetConeZMC;
-    AliJTH1D fhJetConeZBinMC;
-    AliJTH1D fhJetConeJtMC;
-    AliJTH1D fhJetConeJtBinMC;
-    AliJTH1D fhJetConeJtWeightWithTrackCutBinBinMC;
-    AliJTH1D fhJetConeJtWeightWithMultiplicityCutBinBinMC;
-    AliJTH1D fhJetConeJtWeightBinMC;
-    AliJTH1D fhJetConeLogJtWeightBinMC;
-    AliJTH1D fhJetConeLogJtWeight2BinMC;
-    AliJTH1D fhJetConeJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhJetConeLogJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhJetConeLogJtWithPtCutWeight2BinBinMC;
-
-    AliJTH1D fhJetBgPtMC;
-    AliJTH1D fhJetBgPtBinMC;
-    AliJTH1D fhBgZMC;
-    AliJTH1D fhBgZBinMC;
-    AliJTH1D fhBgJtMC;
-    AliJTH1D fhBgJtBinMC;
-    AliJTH1D fhBgJtWeightBinMC;
-    AliJTH1D fhBgLogJtWeightBinMC;
-    AliJTH1D fhBgLogJtWeight2BinMC;
-    AliJTH1D fhBgJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhBgLogJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhBgLogJtWithPtCutWeight2BinBinMC;
-    AliJTH1D fhBgJtWithPtCutWeightBinBinSmallerRMC;
-    AliJTH1D fhBgLogJtWithPtCutWeightBinBinSmallerRMC;
-    AliJTH1D fhBgLogJtWithPtCutWeight2BinBinSmallerRMC;
-    AliJTH1D fhBgJtWithPtCutWeightBinBinDiffRMC;
-    AliJTH1D fhBgLogJtWithPtCutWeightBinBinDiffRMC;
-    AliJTH1D fhBgLogJtWithPtCutWeight2BinBinDiffRMC;
-    AliJTH1D fhBgJtBinLimBinMC;
-    AliJTH1D fhBgJtWeightBinLimBinMC;
-    AliJTH1D fhBgLogJtWeightBinLimBinMC;
-    AliJTH1D fhBgLogJtWeight2BinLimBinMC;
-    AliJTH1D fhTrkPtMC;
-    AliJTH1D fhTrkPtBinMC;
-    AliJTH1D fhTrkPtWeightBinMC;
-    AliJTH1D fhLeadingTrkPtBinMC;
-    AliJTH1D fhBgTrkPtMC;
-    AliJTH1D fhBgTrkPtBinMC;
-    AliJTH1D fhBgTrkPtWeightBinMC;
-    AliJTH1D fhBgTrkNumberMC;
-    AliJTH1D fhBgTrkNumberBinMC;
-
-
-    //Randomized background histograms
-    AliJTH1D fhBgRndmTrkPtMC;
-    AliJTH1D fhBgRndmZMC;
-    AliJTH1D fhBgRndmJtMC;
-    AliJTH1D fhBgRndmLogJtMC;
-    AliJTH1D fhBgRndmJtWithPtCutWeightBinMC;
-    AliJTH1D fhBgRndmLogJtWithPtCutWeight2BinMC;
-    AliJTH1D fhBgRndmJtWithPtCutWeightBinBinMC;
-    AliJTH1D fhBgRndmLogJtWithPtCutWeight2BinBinMC;
-    AliJTH1D fhBgRndmTrkNumberMC;
-
-    AliJTH1D fhdeltaEMC;
-    AliJTH1D fhdeltaNMC;
-    AliJTH1D fhFullJetEChJetBinMC;
-    AliJTH1D fhFullChdRChJetBinMC;
-    AliJTH2D fh2DFullEvsChEdN0MC;
-    AliJTH2D fh2DFullEvsChEdNnot0MC;
-    AliJTH2D fhJetEtaPhiMC;
-    AliJTH2D fhTrackEtaPhiMC;
-
-
     //Jet Correlation Histograms
     AliJTH2D fhTrackJtCorrBin;	
+    //AliJTH3D fhTrackJtCorr2D; //FIXME
+    AliJTH2D fhTrackJtCorrBinTest;	
+    AliJTH2D fhTrackJtCorrBinTest2;
     AliJTH2D fhTrackPtCorr;	
+    AliJTH2D fhConstPtCorr;	
     AliJTH2D fhJetPtCorr;	
     AliJTH2D fhJetPtCorr2;	
+    AliJTH2D fhJetPtCorr3;	
+    AliJTH2D fhJetPtCorrCoarse;	
     AliJTH1D fhJetdR;
     AliJTH1D fhTrackMatchSuccess;
+    AliJTH2D fhConstJtCorrBin;	
+    AliJTH1D fhConstMatchSuccess;
+
+    //PYthia correlation histograms
+    AliJTH2D fhTrackJtCorrBinPythia;	
+    AliJTH2D fhTrackPtCorrPythia;	
+    AliJTH2D fhJetPtCorrPythia;	
+    AliJTH2D fhJetPtCorr2Pythia;	
+    AliJTH2D fhJetPtCorrPythiaCoarse;	
+    AliJTH1D fhJetdRPythia;
+    AliJTH1D fhTrackMatchSuccessPythia;
+    AliJTH1D fhJetdPtPythia;
+
+    //Pythia jets histograms
+    AliJTH1D fhJetPtPythia;
+    AliJTH1D fhJetPtBinPythia;
+    AliJTH1D fhJtPythia;
+    AliJTH1D fhJtBinPythia;
+    AliJTH1D fhJtWeightBinPythia;
+    AliJTH1D fhLogJtWeightBinPythia;
+    AliJTH1D fhLogJtWeight2BinPythia;
+    AliJTH1D fhJtWithPtCutWeightBinBinPythia;
+    AliJTH1D fhLogJtWithPtCutWeightBinBinPythia;
+    AliJTH1D fhLogJtWithPtCutWeight2BinBinPythia;
+
+    //Pythia background
+    AliJTH1D fhBgJtPythia;
+    AliJTH1D fhBgJtBinPythia;
+    AliJTH1D fhBgJtWeightBinPythia;
+    AliJTH1D fhBgLogJtWeightBinPythia;
+    AliJTH1D fhBgLogJtWeight2BinPythia;
+    AliJTH1D fhBgJtWithPtCutWeightBinBinPythia;
+    AliJTH1D fhBgLogJtWithPtCutWeightBinBinPythia;
+    AliJTH1D fhBgLogJtWithPtCutWeight2BinBinPythia;
 };
 
 #endif

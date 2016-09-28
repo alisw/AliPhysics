@@ -4,6 +4,7 @@
 #include "TObject.h"
 #include "TList.h"
 #include "AliPBBase.h"
+#include "TClonesArray.h"
 #include "CEPTrackBuffer.h"
 
 class CEPEventBuffer : public TObject {
@@ -21,7 +22,9 @@ class CEPEventBuffer : public TObject {
     // see AliPBBase.h for the definition of fGapCondition
     Int_t fGapCondition;
     
-    TList   *fTracks;
+    // list of tracks as TClonesArray
+    TClonesArray *fCEPTracks;
+    TClonesArray &ftrb;
     
   public:
     CEPEventBuffer();
@@ -65,7 +68,7 @@ class CEPEventBuffer : public TObject {
     
     CEPTrackBuffer* GetTrack(Int_t ind);
 
-  ClassDef(CEPEventBuffer,1)     // CEP event buffer
+  ClassDef(CEPEventBuffer,2)     // CEP event buffer
 
 };
 

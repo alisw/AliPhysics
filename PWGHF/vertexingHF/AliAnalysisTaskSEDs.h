@@ -43,13 +43,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
-  void SetAODMismatchProtection(Bool_t opt=kTRUE) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
   
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
+  void SetSystem(Int_t system){fSystem = system;}
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -63,7 +64,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
 
-  enum {kMaxPtBins=20};
+  enum {kMaxPtBins=20,knVarForSparse=13,knVarForSparseAcc=2,knVarForSparseIP=6};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source); 
@@ -101,14 +102,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
                                      /// 1 for filling ntuple for events through Phi
                                      /// 2 for filling ntuple for events through K0Star
                                      /// 3 for filling all
-                                    
-                                     
+  Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC;                    ///  flag for access to MC
   Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
-  Bool_t  fAODProtection;             /// flag to activate protection against AOD-dAOD mismatch
+  Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
+                                      /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
@@ -127,7 +128,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[3]: Selected FD Ds
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,17);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,18);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

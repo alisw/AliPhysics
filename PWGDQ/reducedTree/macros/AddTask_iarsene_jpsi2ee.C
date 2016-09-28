@@ -97,7 +97,7 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   trackCut2->SetRequestITSrefit();
   trackCut2->SetRequestTPCrefit();
   trackCut2->SetRequestSPDany();
-  processor->AddTrackCut(trackCut2);  
+  //processor->AddTrackCut(trackCut2);  
   AliReducedTrackCut* trackCut3 = new AliReducedTrackCut("Pt14","Pt selection");
   trackCut3->AddCut(AliReducedVarManager::kPt, 1.4,100.0);
   trackCut3->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
@@ -110,7 +110,7 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   trackCut3->SetRequestITSrefit();
   trackCut3->SetRequestTPCrefit();
   trackCut3->SetRequestSPDany();
-  processor->AddTrackCut(trackCut3);  
+  //processor->AddTrackCut(trackCut3);  
   AliReducedTrackCut* trackCut4 = new AliReducedTrackCut("Pt16","Pt selection");
   trackCut4->AddCut(AliReducedVarManager::kPt, 1.6,100.0);
   trackCut4->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
@@ -123,7 +123,7 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   trackCut4->SetRequestITSrefit();
   trackCut4->SetRequestTPCrefit();
   trackCut4->SetRequestSPDany();
-  processor->AddTrackCut(trackCut4);  
+  //processor->AddTrackCut(trackCut4);  
   
   // set track prefilter cuts
   AliReducedTrackCut* prefTrackCut1 = new AliReducedTrackCut("prefCutPt09","prefilter Pt selection");

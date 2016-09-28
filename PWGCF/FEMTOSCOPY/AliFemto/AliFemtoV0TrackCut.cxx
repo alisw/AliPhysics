@@ -14,8 +14,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fInvMassLambdaMax(99.0),
   fInvMassK0sMin(0.0),
   fInvMassK0sMax(99.0),
-  fInvMassRejectK0sMin(0.0),
-  fInvMassRejectK0sMax(0.0),
+
   fMinDcaDaughterPosToVert(0.0),
   fMinDcaDaughterNegToVert(0.0),
   fMaxDcaV0Daughters(99.0),
@@ -53,7 +52,25 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fRequireTOFProton(true),
   
   fBuildPurityAidV0(false),
-  fMinvPurityAidHistoV0(0)
+  fMinvPurityAidHistoV0(0),
+
+  fUseLooseInvMassCut(false),
+  fLooseInvMassMin(0),
+  fLooseInvMassMax(99),
+
+  fRemoveMisidentified(true),
+  fUseSimpleMisIDCut(true),
+  fBuildMisIDHistograms(false),
+  fInvMassRejectK0sMin(0.0),
+  fInvMassRejectK0sMax(9999.0),
+  fInvMassRejectLambdaMin(0.0),
+  fInvMassRejectLambdaMax(9999.0),
+  fInvMassRejectAntiLambdaMin(0.0),
+  fInvMassRejectAntiLambdaMax(9999.0),
+  fK0sMassOfMisIDV0(0),
+  fLambdaMassOfMisIDV0(0),
+  fAntiLambdaMassOfMisIDV0(0)
+
 {
   // Default constructor
 }
@@ -72,8 +89,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fInvMassLambdaMax(aCut.fInvMassLambdaMax),
   fInvMassK0sMin(aCut.fInvMassK0sMin),
   fInvMassK0sMax(aCut.fInvMassK0sMax),
-  fInvMassRejectK0sMin(aCut.fInvMassRejectK0sMin),
-  fInvMassRejectK0sMax(aCut.fInvMassRejectK0sMax),
+
   fMinDcaDaughterPosToVert(aCut.fMinDcaDaughterPosToVert),
   fMinDcaDaughterNegToVert(aCut.fMinDcaDaughterNegToVert),
   fMaxDcaV0Daughters(aCut.fMaxDcaV0Daughters),
@@ -111,11 +127,31 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fRequireTOFPion(aCut.fRequireTOFPion),
   fRequireTOFProton(aCut.fRequireTOFProton),
 
-  fBuildPurityAidV0(aCut.fBuildPurityAidV0)
+  fBuildPurityAidV0(aCut.fBuildPurityAidV0),
+
+  fUseLooseInvMassCut(aCut.fUseLooseInvMassCut),
+  fLooseInvMassMin(aCut.fLooseInvMassMin),
+  fLooseInvMassMax(aCut.fLooseInvMassMax),
+
+  fRemoveMisidentified(aCut.fRemoveMisidentified),
+  fUseSimpleMisIDCut(aCut.fUseSimpleMisIDCut),
+  fBuildMisIDHistograms(aCut.fBuildMisIDHistograms),
+  fInvMassRejectK0sMin(aCut.fInvMassRejectK0sMin),
+  fInvMassRejectK0sMax(aCut.fInvMassRejectK0sMax),
+  fInvMassRejectLambdaMin(aCut.fInvMassRejectLambdaMin),
+  fInvMassRejectLambdaMax(aCut.fInvMassRejectLambdaMax),
+  fInvMassRejectAntiLambdaMin(aCut.fInvMassRejectAntiLambdaMin),
+  fInvMassRejectAntiLambdaMax(aCut.fInvMassRejectAntiLambdaMax)
 {
   //copy constructor
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
-  else fMinvPurityAidHistoV0 = 0;
+    else fMinvPurityAidHistoV0 = 0;
+  if(aCut.fK0sMassOfMisIDV0) fK0sMassOfMisIDV0 = new TH1D(*aCut.fK0sMassOfMisIDV0);
+    else fK0sMassOfMisIDV0 = 0;
+  if(aCut.fLambdaMassOfMisIDV0) fLambdaMassOfMisIDV0 = new TH1D(*aCut.fLambdaMassOfMisIDV0);
+    else fLambdaMassOfMisIDV0 = 0;
+  if(aCut.fAntiLambdaMassOfMisIDV0) fAntiLambdaMassOfMisIDV0 = new TH1D(*aCut.fAntiLambdaMassOfMisIDV0);
+    else fAntiLambdaMassOfMisIDV0 = 0;
 }
 
 //------------------------------
@@ -130,8 +166,7 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fInvMassLambdaMax = aCut.fInvMassLambdaMax;
   fInvMassK0sMin = aCut.fInvMassK0sMin;
   fInvMassK0sMax = aCut.fInvMassK0sMax;
-  fInvMassRejectK0sMin = aCut.fInvMassRejectK0sMin;
-  fInvMassRejectK0sMax = aCut.fInvMassRejectK0sMax;
+
   fMinDcaDaughterPosToVert = aCut.fMinDcaDaughterPosToVert;
   fMinDcaDaughterNegToVert = aCut.fMinDcaDaughterNegToVert;
   fMaxDcaV0Daughters = aCut.fMaxDcaV0Daughters;
@@ -165,6 +200,10 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
 
   fBuildPurityAidV0 = aCut.fBuildPurityAidV0;
 
+  fUseLooseInvMassCut = aCut.fUseLooseInvMassCut;
+  fLooseInvMassMin = aCut.fLooseInvMassMin;
+  fLooseInvMassMax = aCut.fLooseInvMassMax;
+
   fRadiusV0Min = aCut.fRadiusV0Min;
   fRadiusV0Max = aCut.fRadiusV0Max;
 
@@ -172,9 +211,33 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fRequireTOFProton = aCut.fRequireTOFProton;
 
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
-  else fMinvPurityAidHistoV0 = 0;
+    else fMinvPurityAidHistoV0 = 0;
+
+  fRemoveMisidentified = aCut.fRemoveMisidentified;
+  fUseSimpleMisIDCut = aCut.fUseSimpleMisIDCut;
+  fBuildMisIDHistograms = aCut.fBuildMisIDHistograms;
+  fInvMassRejectK0sMin = aCut.fInvMassRejectK0sMin;
+  fInvMassRejectK0sMax = aCut.fInvMassRejectK0sMax;
+  fInvMassRejectLambdaMin = aCut.fInvMassRejectLambdaMin;
+  fInvMassRejectLambdaMax = aCut.fInvMassRejectLambdaMax;
+  fInvMassRejectAntiLambdaMin = aCut.fInvMassRejectAntiLambdaMin;
+  fInvMassRejectAntiLambdaMax = aCut.fInvMassRejectAntiLambdaMax;
+
+  if(aCut.fK0sMassOfMisIDV0) fK0sMassOfMisIDV0 = new TH1D(*aCut.fK0sMassOfMisIDV0);
+    else fK0sMassOfMisIDV0 = 0;
+  if(aCut.fLambdaMassOfMisIDV0) fLambdaMassOfMisIDV0 = new TH1D(*aCut.fLambdaMassOfMisIDV0);
+    else fLambdaMassOfMisIDV0 = 0;
+  if(aCut.fAntiLambdaMassOfMisIDV0) fAntiLambdaMassOfMisIDV0 = new TH1D(*aCut.fAntiLambdaMassOfMisIDV0);
+    else fAntiLambdaMassOfMisIDV0 = 0;
 
   return *this;
+}
+
+
+//------------------------------
+AliFemtoV0TrackCut* AliFemtoV0TrackCut::Clone()
+{
+  return(new AliFemtoV0TrackCut(*this));
 }
 
 
@@ -272,52 +335,104 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   bool pid_check = false;
   // Looking for lambdas = proton + pim
   if (fParticleType == kLambda) {
-
-    if(aV0->MassK0Short() > fInvMassRejectK0sMin && aV0->MassK0Short() < fInvMassRejectK0sMax)
-      return false;
-
-    
     if (IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFProton)) //proton
-      if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFPion)) { //pion
+    {
+      if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFPion)) //pion
+      {
         pid_check = true;
+        if(fUseLooseInvMassCut)
+        {
+          if(aV0->MassLambda()<fLooseInvMassMin || aV0->MassLambda()>fLooseInvMassMax) return false;
+        }
+        if(fRemoveMisidentified)
+        {
+          if(IsMisIDK0s(aV0))
+          {
+            if(fBuildMisIDHistograms)
+            {
+              fLambdaMassOfMisIDV0->Fill(aV0->MassLambda());
+              fK0sMassOfMisIDV0->Fill(aV0->MassK0Short());
+            }
+            return false;
+          }
+        }
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassLambda());
         //invariant mass lambda
-        if (aV0->MassLambda() < fInvMassLambdaMin || aV0->MassLambda() > fInvMassLambdaMax)
-	  return false;
-	  
-	  
-	    
+        if (aV0->MassLambda() < fInvMassLambdaMin || aV0->MassLambda() > fInvMassLambdaMax) return false;    
       }
+    }
+  }
 
-  }//Looking for antilambdas =  antiproton + pip
+  //Looking for antilambdas =  antiproton + pip
   else if (fParticleType == kAntiLambda) {
-
-    if(aV0->MassK0Short() > fInvMassRejectK0sMin && aV0->MassK0Short() < fInvMassRejectK0sMax)
-      return false;
-
-    
     if (IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFProton)) //proton
-      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFPion)) { //pion
+    {
+      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFPion)) //pion
+      {
         pid_check = true;
+        if(fUseLooseInvMassCut)
+        {
+          if(aV0->MassAntiLambda()<fLooseInvMassMin || aV0->MassAntiLambda()>fLooseInvMassMax) return false;
+        }
+        if(fRemoveMisidentified)
+        {
+          if(IsMisIDK0s(aV0))
+          {
+            if(fBuildMisIDHistograms)
+            {
+              fAntiLambdaMassOfMisIDV0->Fill(aV0->MassAntiLambda());
+              fK0sMassOfMisIDV0->Fill(aV0->MassK0Short());
+            }
+            return false;
+          }
+        }
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassAntiLambda());
         //invariant mass antilambda
-        if (aV0->MassAntiLambda() < fInvMassLambdaMin || aV0->MassAntiLambda() > fInvMassLambdaMax)
-          return false;
+        if (aV0->MassAntiLambda() < fInvMassLambdaMin || aV0->MassAntiLambda() > fInvMassLambdaMax) return false;
       }
-  }//Looking for K0s = pip + pim
+    }
+  }
+
+  //Looking for K0s = pip + pim
   else if (fParticleType == kK0s) {
     if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFPion)) //pion-
-      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFPion)) { //pion+
+    {
+      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFPion)) //pion+
+      {
         pid_check = true;
-        //invariant mass K0s
+        if(fUseLooseInvMassCut)
+        {
+          if(aV0->MassK0Short()<fLooseInvMassMin || aV0->MassK0Short()>fLooseInvMassMax) return false;
+        }
+        if(fRemoveMisidentified)
+        {
+          if(IsMisIDLambda(aV0))
+          {
+            if(fBuildMisIDHistograms)
+            {
+              fK0sMassOfMisIDV0->Fill(aV0->MassK0Short());
+              fLambdaMassOfMisIDV0->Fill(aV0->MassLambda());
+            }
+            return false;
+          }
+          else if(IsMisIDAntiLambda(aV0))
+          {
+            if(fBuildMisIDHistograms)
+            {
+              fK0sMassOfMisIDV0->Fill(aV0->MassK0Short());
+              fAntiLambdaMassOfMisIDV0->Fill(aV0->MassAntiLambda());
+            }
+            return false;
+          }
+        }
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassK0Short());
-        if (aV0->MassK0Short() < fInvMassK0sMin || aV0->MassK0Short() > fInvMassK0sMax)
-          return false;
+        //invariant mass K0s
+        if (aV0->MassK0Short() < fInvMassK0sMin || aV0->MassK0Short() > fInvMassK0sMax) return false;
       }
+    }
   }
 
   if (!pid_check) return false;
-
   return true;
 }
 //------------------------------
@@ -450,12 +565,6 @@ void AliFemtoV0TrackCut::SetInvariantMassK0s(double min, double max)
 {
   fInvMassK0sMin = min;
   fInvMassK0sMax = max;
-}
-
-void AliFemtoV0TrackCut::SetInvariantMassRejectK0s(double min, double max)
-{
-  fInvMassRejectK0sMin = min;
-  fInvMassRejectK0sMax = max;
 }
 
 void AliFemtoV0TrackCut::SetMinAvgSeparation(double minSep)
@@ -605,11 +714,243 @@ void AliFemtoV0TrackCut::SetMinvPurityAidHistoV0(const char* name, const char* t
   fMinvPurityAidHistoV0->Sumw2();
 }
 
+void AliFemtoV0TrackCut::SetLooseInvMassCut(bool aUseCut, double aInvMassMin, double aInvMassMax)
+{
+  fUseLooseInvMassCut = aUseCut;
+  fLooseInvMassMin = aInvMassMin;
+  fLooseInvMassMax = aInvMassMax;
+}
+
+
+void AliFemtoV0TrackCut::SetRemoveMisidentified(bool aRemove)
+{
+  fRemoveMisidentified = aRemove;
+}
+
+void AliFemtoV0TrackCut::SetUseSimpleMisIDCut(bool aUse)
+{
+  fUseSimpleMisIDCut = aUse;
+}
+
+void AliFemtoV0TrackCut::SetInvariantMassRejectK0s(double min, double max, bool aRemoveMisidentified)
+{
+  fInvMassRejectK0sMin = min;
+  fInvMassRejectK0sMax = max;
+
+  SetRemoveMisidentified(aRemoveMisidentified);
+}
+
+void AliFemtoV0TrackCut::SetInvariantMassRejectLambda(double min, double max, bool aRemoveMisidentified)
+{
+  fInvMassRejectLambdaMin = min;
+  fInvMassRejectLambdaMax = max;
+
+  SetRemoveMisidentified(aRemoveMisidentified);
+}
+
+void AliFemtoV0TrackCut::SetInvariantMassRejectAntiLambda(double min, double max, bool aRemoveMisidentified)
+{
+  fInvMassRejectAntiLambdaMin = min;
+  fInvMassRejectAntiLambdaMax = max;
+
+  SetRemoveMisidentified(aRemoveMisidentified);
+}
+
+void AliFemtoV0TrackCut::SetInvMassReject(AliFemtoV0Type aV0Type, double aInvMassMin, double aInvMassMax, bool aRemoveMisidentified)
+{
+  switch(aV0Type)
+  {
+    case kK0s:
+      SetInvariantMassRejectK0s(aInvMassMin,aInvMassMax,aRemoveMisidentified);
+      break;
+
+    case kLambda:
+      SetInvariantMassRejectLambda(aInvMassMin,aInvMassMax,aRemoveMisidentified);
+      break;
+
+    case kAntiLambda:
+      SetInvariantMassRejectAntiLambda(aInvMassMin,aInvMassMax,aRemoveMisidentified);
+      break;
+  }
+
+}
+
+void AliFemtoV0TrackCut::SetBuildMisIDHistograms(bool aBuild)
+{
+  fBuildMisIDHistograms = aBuild;
+  if(fBuildMisIDHistograms) SetDefaultMisIDHistos();
+}
+
+void AliFemtoV0TrackCut::SetMisIDHisto(AliFemtoV0Type aMisIDV0Type, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
+{
+  TString tTitle1, tTitle2, tTitle3, tTitle;
+  tTitle2 = TString("OfMisID");  
+
+  switch(fParticleType)
+  {
+    case kLambda:
+      tTitle3 = TString("Lambda");
+      break;
+    case kAntiLambda:
+      tTitle3 = TString("AntiLambda");
+      break;
+    case kK0s:
+      tTitle3 = TString("K0s");
+      break;
+  }
+
+  switch(aMisIDV0Type)
+  {
+    case kLambda:
+      tTitle1 = TString("LambdaMass");
+      tTitle = tTitle1+tTitle2+tTitle3;
+      fLambdaMassOfMisIDV0 = new TH1D(tTitle, "Mass ass. Lambda hyp. of MisID V0", nbins, aInvMassMin, aInvMassMax);
+      fLambdaMassOfMisIDV0->Sumw2();
+      break;
+    case kAntiLambda:
+      tTitle1 = TString("AntiLambdaMass");
+      tTitle = tTitle1+tTitle2+tTitle3;
+      fAntiLambdaMassOfMisIDV0 = new TH1D(tTitle, "Mass ass. AntiLambda hyp. of MisID V0", nbins, aInvMassMin, aInvMassMax);
+      fAntiLambdaMassOfMisIDV0->Sumw2();
+      break;
+    case kK0s:
+      tTitle1 = TString("K0sMass");
+      tTitle = tTitle1+tTitle2+tTitle3;
+      fK0sMassOfMisIDV0 = new TH1D(tTitle, "Mass ass. K0s hyp. of MisID V0", nbins, aInvMassMin, aInvMassMax);
+      fK0sMassOfMisIDV0->Sumw2();
+      break;
+  }
+
+}
+
+void AliFemtoV0TrackCut::SetDefaultMisIDHistos()
+{
+  double tK0ShortMass = 0.497614, tLambdaMass = 1.115683;
+  switch(fParticleType)
+  {
+    case kLambda:
+      SetMisIDHisto(kLambda,100,tLambdaMass-0.035,tLambdaMass+0.035);
+      SetMisIDHisto(kK0s,100,tK0ShortMass-0.070,tK0ShortMass+0.070);
+      break;
+    case kAntiLambda:
+      SetMisIDHisto(kAntiLambda,100,tLambdaMass-0.035,tLambdaMass+0.035);
+      SetMisIDHisto(kK0s,100,tK0ShortMass-0.070,tK0ShortMass+0.070);
+      break;
+    case kK0s:
+      SetMisIDHisto(kK0s,100,tK0ShortMass-0.070,tK0ShortMass+0.070);
+      SetMisIDHisto(kLambda,100,tLambdaMass-0.035,tLambdaMass+0.035);
+      SetMisIDHisto(kAntiLambda,100,tLambdaMass-0.035,tLambdaMass+0.035);
+      break;
+  }
+}
+
+TObjArray *AliFemtoV0TrackCut::GetMisIDHistos()
+{
+  TObjArray *tReturnArray = new TObjArray();
+  TString tArrayName = "MisID";
+
+  switch(fParticleType)
+  {
+    case kLambda:
+      tArrayName += TString("Lambda");
+      tReturnArray->SetName(tArrayName);
+      tReturnArray->Add(fLambdaMassOfMisIDV0);
+      tReturnArray->Add(fK0sMassOfMisIDV0);
+      break;
+    case kAntiLambda:
+      tArrayName += TString("AntiLambda");
+      tReturnArray->SetName(tArrayName);
+      tReturnArray->Add(fAntiLambdaMassOfMisIDV0);
+      tReturnArray->Add(fK0sMassOfMisIDV0);
+      break;
+    case kK0s:
+      tArrayName += TString("K0s");
+      tReturnArray->SetName(tArrayName);
+      tReturnArray->Add(fLambdaMassOfMisIDV0);
+      tReturnArray->Add(fAntiLambdaMassOfMisIDV0);
+      tReturnArray->Add(fK0sMassOfMisIDV0);
+      break;
+  }
+
+  return tReturnArray;
+}
+
+bool AliFemtoV0TrackCut::IsMisIDK0s(const AliFemtoV0* aV0)
+{
+  if(fUseSimpleMisIDCut)
+  {
+    if(aV0->MassK0Short()>fInvMassRejectK0sMin && aV0->MassK0Short()<fInvMassRejectK0sMax) return true;
+  }
+
+  else
+  {
+    if(aV0->MassK0Short()>fInvMassRejectK0sMin && aV0->MassK0Short()<fInvMassRejectK0sMax)
+    {
+      if(IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) //pi+
+      {
+        if(IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) //pi-
+	{
+	  return true;
+	}
+      }
+    }
+
+  }
+  return false;
+}
+
+bool AliFemtoV0TrackCut::IsMisIDLambda(const AliFemtoV0* aV0)
+{
+  if(fUseSimpleMisIDCut)
+  {
+    if(aV0->MassLambda()>fInvMassRejectLambdaMin && aV0->MassLambda()<fInvMassRejectLambdaMax) return true;
+  }
+  else
+  {
+    if(aV0->MassLambda()>fInvMassRejectLambdaMin && aV0->MassLambda()<fInvMassRejectLambdaMax)
+    {
+      if(IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP())) //proton+
+      {
+        if(IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) //pi-
+	{
+	  return true;
+	}
+      }
+    }
+  }
+  return false;
+}
+
+bool AliFemtoV0TrackCut::IsMisIDAntiLambda(const AliFemtoV0* aV0)
+{
+  if(fUseSimpleMisIDCut)
+  {
+    if(aV0->MassAntiLambda()>fInvMassRejectAntiLambdaMin && aV0->MassAntiLambda()<fInvMassRejectAntiLambdaMax) return true;
+  }
+
+  else
+  {
+    if(aV0->MassAntiLambda()>fInvMassRejectAntiLambdaMin && aV0->MassAntiLambda()<fInvMassRejectAntiLambdaMax)
+    {
+      if(IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) //antiproton-
+      {
+        if(IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) //pi+
+	{
+	  return true;
+	}
+      }
+    }
+
+  }
+  return false;
+}
+
 TList *AliFemtoV0TrackCut::GetOutputList()
 {
   TList *tOutputList = AliFemtoCutMonitorHandler::GetOutputList();  //add all of the typical objects
 
   if(fBuildPurityAidV0) tOutputList->Add(fMinvPurityAidHistoV0);
+  if(fBuildMisIDHistograms) tOutputList->Add(GetMisIDHistos());
 
   return tOutputList;
 }

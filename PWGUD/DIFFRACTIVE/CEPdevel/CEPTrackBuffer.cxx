@@ -17,24 +17,62 @@ ClassImp(CEPTrackBuffer)
 CEPTrackBuffer::CEPTrackBuffer()
   : TObject()
   , fisSoft(-1)
-  , fChargeSign(0x0)
-  , fMomentum()
+  , fChargeSign(0)
+  , fMomentum(TVector3(0,0,0))
   , fPID(0)
-  , fMCPID(-1)
-  , fMCMass(-999.9)
-  , fMCMomentum()
+  , fPIDTPCStatus(CEPTrackBuffer::kdumval)
+  , fPIDTPCSignal(0)
+  , fPIDTOFStatus(CEPTrackBuffer::kdumval)
+  , fPIDTOFSignal(0)
+  , fPIDBayesStatus(CEPTrackBuffer::kdumval)
+  , fMCPID(0)
+  , fMCMass(0)
+  , fMCMomentum(TVector3(0,0,0))
 {
 
-  fChargeSign = CEPTrackBuffer::kdumval;
-  fMomentum   = TVector3(0,0,0);
-  
+  this->Reset();
+
 }
 
 // ----------------------------------------------------------------------------
 CEPTrackBuffer::~CEPTrackBuffer()
 {
   
-  this->Delete();
+}
+
+// ----------------------------------------------------------------------------
+void CEPTrackBuffer::Reset()
+{
+
+  // general information
+  fisSoft = 0;   // 0: is not, 1: is soft, -1: undefined
+  fChargeSign = CEPTrackBuffer::kdumval;
+  fMomentum = TVector3(0,0,0);
+  
+  // PID information
+  fPID = CEPTrackBuffer::kdumval;
+  
+  // ... from TPC
+  fPIDTPCStatus = CEPTrackBuffer::kdumval;
+  fPIDTPCSignal = CEPTrackBuffer::kdumval;
+  fPIDTPCnSigma[AliPID::kSPECIES];
+  fPIDTPCnSigmaProb[AliPID::kSPECIES];
+  
+  // ... from TOF
+  fPIDTOFStatus = CEPTrackBuffer::kdumval;
+  fPIDTOFSignal = CEPTrackBuffer::kdumval;
+  fPIDTOFnSigma[AliPID::kSPECIES];
+  fPIDTOFnSigmaProb[AliPID::kSPECIES];
+  
+  // ... Bayes
+  fPIDBayesStatus = CEPTrackBuffer::kdumval;
+  fPIDBayesProb[AliPID::kSPECIES];
+  
+  // MC truth
+  fMCPID = CEPTrackBuffer::kdumval;
+  fMCMass = CEPTrackBuffer::kdumval;
+  fMCMomentum = TVector3(0,0,0);
+
 }
 
 // ----------------------------------------------------------------------------

@@ -89,6 +89,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   fsidebandInvMassWindow(),
   fUseMC(kTRUE),
   fCleanCandOwnVtx(kFALSE),
+  fAODProtection(1),
   fNentries(0),
   fSignalType(0),
   fSignalTypeLsCuts(0),
@@ -180,6 +181,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
       fsidebandInvMassWindow(-1.),
       fUseMC(kFALSE),
       fCleanCandOwnVtx(kFALSE),
+      fAODProtection(1),
       fNentries(0),
       fSignalType(0),
       fSignalTypeLsCuts(0),
@@ -294,6 +296,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fsidebandInvMassWindow(-1.),
     fUseMC(kFALSE),
     fCleanCandOwnVtx(kFALSE),
+    fAODProtection(1),
     fNentries(0),
     fSignalType(0),
     fSignalTypeLsCuts(0),
@@ -5725,6 +5728,17 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     Printf("ERROR: aod not available");
     return;
   }
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+  }
+
   TClonesArray *arrayD0toKpi=NULL;
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 

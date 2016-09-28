@@ -11,14 +11,14 @@ class AliFlowTrackCuts;
 class AliFlowTrackSimpleCuts;
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysis methods
+AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analysis methods
                                        Bool_t SPSUB = kTRUE,
-                                       Bool_t QC = kTRUE,
-                                       Bool_t EP = kTRUE,
+                                       Bool_t QC = kFALSE,
+                                       Bool_t EP = kFALSE,
                                        Bool_t EP3sub = kFALSE,
-                                       Bool_t VZERO_SP = kFALSE, // use vzero sp method
+                                       Bool_t VZERO_SP = kTRUE, // use vzero sp method
                                        Float_t centrMin = 20., // centrality selection
-                                       Float_t centrMax = 30.,
+                                       Float_t centrMax = 40.,
                                        Double_t ITSsigma = 0., // pid mode (see task implementation)
                                        Double_t ITSrange = 0.,
                                        Double_t TPCcontrol = 1.,
@@ -31,7 +31,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
                                        Float_t EtaGap = 0., // eta gap for SPSUB
                                        TString DCA = "pt", // dca mode (see task implementation)
                                        Int_t harm = 2, // harmonic vn
-                                       UInt_t poi_filter = 1, // aod filterbits
+                                       UInt_t poi_filter = 32, // aod filterbits
                                        UInt_t rp_filter = 1,
                                        Bool_t event_mixing = kFALSE,
                                        Bool_t highPtMode = kFALSE, // use with caution !!! disables invariant mass fit method
@@ -141,6 +141,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
        cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
        cutsRP->SetApplyRecentering(kTRUE);
+       cutsRP->SetParamType(AliFlowTrackCuts::kHotfixHI);
 //       cutsRP->SetUseVZERORing(7, kFALSE);
        SP = kFALSE; // disable other methods
        SPSUB = kTRUE; // calculate sp_qa and sp_qb
@@ -157,14 +158,17 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
        if(debug) cout << " Fatal error: no POI cuts (could be a library problem)!" << endl;
        return 0x0;
    }
-   AliFlowTrackCuts* cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
+//   AliFlowTrackCuts* cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
    cutsPOI->SetPtRange(POIPtMin, POIPtMax); // pt range of DAUGHTERS !!!
-   cutsPOI->SetMaxDCAToVertexXY(0.3); // FIXME not implemented in aod086 aod095 see PassesDCACut() in implementation
-   cutsPOI->SetMaxDCAToVertexZ(0.3);
+   cutsPOI->SetEtaRange(-.8, .8);
+//   cutsPOI->SetMaxDCAToVertexXY(0.3); // FIXME not implemented in aod086 aod095 see PassesDCACut() in implementation
+//   cutsPOI->SetMaxDCAToVertexZ(0.3);
+   
    if(poi_filter < 9999 ) {
        if(debug) cout << "  > set POI filterbit " << poi_filter << endl;     
        cutsPOI->SetAODfilterBit(poi_filter);
    }
+
    if(debug) cout << "    --> cutsPOI " << cutsPOI << endl;
    task->SetPOICuts(cutsPOI);
    //set POI cuts for aods XY Z - 3 distinct cases
