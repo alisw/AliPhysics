@@ -16,10 +16,10 @@ const Double_t thetamin = 0;
 const Double_t thetamax = TMath::Pi();
 const Double_t zvtxmin = -10.0;
 const Double_t zvtxmax =  10.0;
-const Double_t multmin = -1.0;
-const Double_t multmax = 102;
-const Double_t centmin = -1.0;
-const Double_t centmax = 100;
+const Float_t multmin = -1.0;
+const Float_t multmax = 103;// 102; (adding +-1 to the limit to include possible over(under)fow events in the projection)
+const Float_t centmin = -1.0;
+const Float_t centmax = 101;// 100; (adding +-1 to the limit to include possible over(under)fow events in the projection)
 
 
 const UInt_t ipt = 0;
