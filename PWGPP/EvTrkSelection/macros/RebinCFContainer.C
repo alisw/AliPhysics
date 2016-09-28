@@ -33,10 +33,10 @@ const Double_t thetamin = 0;
 const Double_t thetamax = TMath::Pi();
 const Double_t zvtxmin = -10.0;
 const Double_t zvtxmax =  10.0;
-const Double_t multmin = 0;
-const Double_t multmax = 102;
-const Double_t centmin = 0;
-const Double_t centmax = 100;
+const Float_t multmin = -1;
+const Float_t multmax = 103;//102; (adding +-1 to the limit to include possible over(under)fow events in the projection)
+const Float_t centmin = -1;
+const Float_t centmax = 101;//100; (adding +-1 to the limit to include possible over(under)fow events in the projection)
 
 void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0, Int_t myEff=3, const char * name="Nch"){
 
@@ -58,12 +58,12 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   
   TDirectoryFile *d = 0;
   AliCFContainer *dataIni = 0;
-  d = (TDirectoryFile*)file->Get(Form("PWGPP_CFSingleTrack%s",name));
+  d = (TDirectoryFile*)file->Get(Form("PWGPP_CFSingleTrack"));
   if(!d) {
     cout<<" no directory "<<endl;
     return;
   }
-  dataIni = (AliCFContainer*) (d->Get("container"));
+  dataIni = (AliCFContainer*) (d->Get(Form("container%s",name)));
   if(!dataIni){
     cout <<" no container"<<endl;
   }
