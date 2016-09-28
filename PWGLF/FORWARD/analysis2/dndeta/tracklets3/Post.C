@@ -9,6 +9,12 @@
  * @ingroup pwglf_forward_tracklets
  */
 /** 
+ * @{
+ * @name Post-processing steering code 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */ 
+/** 
  * Print out usage information 
  * 
  * @param o Output stream
@@ -58,6 +64,8 @@ void Usage(std::ostream& o)
  * @param shrt On return, the short name 
  * 
  * @return The input file name 
+ *
+ * @ingroup pwglf_forward_tracklets
  */
 const TString& FormatInput(const char* inp, TString& shrt)
 {
@@ -163,4 +171,5 @@ void Post(const char* sim,
 
   Printf("All output stored in %s", outFile.Data());
 }
+/* @} */
 // EOF
