@@ -71,6 +71,7 @@ public:
   void SetSelectNoiseEvents(Bool_t doSelect = true) { fSelectNoiseEvents = doSelect; }
   void AddMaskedFastor(int fastorID) { fMaskedFastors.push_back(fastorID); }
   void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
+  void SetOnlineSelectionMethodV1(bool doselect) { fUseOnlineTriggerSelectorV1 = true; }
 
 protected:
   virtual void ExecOnce();
@@ -83,6 +84,7 @@ protected:
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
   bool SelectOnlineTrigger(OnlineTrigger_t trigger);
+  bool SelectOnlineTriggerV1(OnlineTrigger_t trigger);
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
@@ -110,6 +112,7 @@ protected:
   std::vector<int>                fMaskedFastors;             ///< List of masked fastors
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
+  Bool_t                          fUseOnlineTriggerSelectorV1;  ///< Switch separating between different trigger selection methods
 
   Int_t                           fCurrentRun;                ///< Current run number (for RunChange method)
   Bool_t                          fLocalInitialized;          ///< Check for initialized

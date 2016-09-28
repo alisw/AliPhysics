@@ -80,6 +80,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fMaskedFastors(),
     fSelectNoiseEvents(false),
     fRejectNoiseEvents(false),
+    fUseOnlineTriggerSelectorV1(false),
     fCurrentRun(-1),
     fLocalInitialized(false)
 {
@@ -114,6 +115,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fMaskedFastors(),
     fSelectNoiseEvents(false),
     fRejectNoiseEvents(false),
+    fUseOnlineTriggerSelectorV1(false),
     fCurrentRun(-1),
     fLocalInitialized(false)
 {
@@ -291,18 +293,24 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   }
   // Online selection / rejection
   if(fRejectNoiseEvents || fSelectNoiseEvents){
+    std::function<bool (OnlineTrigger_t)> selector;
+    if(fUseOnlineTriggerSelectorV1){
+        selector = [this](OnlineTrigger_t t) -> bool { return this->SelectOnlineTriggerV1(t); } ;
+    } else{
+        selector = [this](OnlineTrigger_t t) -> bool { return this->SelectOnlineTrigger(t); };
+    }
     if(fRejectNoiseEvents){
-      if(isEJ1) isEJ1 &= SelectOnlineTrigger(kCPREJ1);
-      if(isEJ2) isEJ2 &= SelectOnlineTrigger(kCPREJ2);
-      if(isEG1) isEG1 &= SelectOnlineTrigger(kCPREG1);
-      if(isEG2) isEG2 &= SelectOnlineTrigger(kCPREG2);
-      if(isEMC7) isEMC7 &= SelectOnlineTrigger(kCPREL0);
+      if(isEJ1) isEJ1 &= selector(kCPREJ1);
+      if(isEJ2) isEJ2 &= selector(kCPREJ2);
+      if(isEG1) isEG1 &= selector(kCPREG1);
+      if(isEG2) isEG2 &= selector(kCPREG2);
+      if(isEMC7) isEMC7 &= selector(kCPREL0);
     } else {
-      if(isEJ1) isEJ1 &= !SelectOnlineTrigger(kCPREJ1);
-      if(isEJ1) isEJ2 &= !SelectOnlineTrigger(kCPREJ2);
-      if(isEG1) isEG1 &= !SelectOnlineTrigger(kCPREG1);
-      if(isEG2) isEG2 &= !SelectOnlineTrigger(kCPREG2);
-      if(isEMC7) isEMC7 &= !SelectOnlineTrigger(kCPREL0);
+      if(isEJ1) isEJ1 &= !selector(kCPREJ1);
+      if(isEJ1) isEJ2 &= !selector(kCPREJ2);
+      if(isEG1) isEG1 &= !selector(kCPREG1);
+      if(isEG2) isEG2 &= !selector(kCPREG2);
+      if(isEMC7) isEMC7 &= !selector(kCPREL0);
     }
   }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
@@ -637,6 +645,7 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
  * @return True if the event has at least one good patch, false otherwise
  */
 bool AliAnalysisTaskChargedParticlesRef::SelectOnlineTrigger(OnlineTrigger_t trg){
+  AliDebugStream(1) << "Using nominal online trigger selector" << std::endl;
   int ngood(0);
   const int kEJ1threshold = 223, kEJ2threshold = 140;
   std::function<bool(const AliEMCALTriggerPatchInfo *)> PatchSelector[5] = {
@@ -671,6 +680,28 @@ bool AliAnalysisTaskChargedParticlesRef::SelectOnlineTrigger(OnlineTrigger_t trg
         }
       }
       if(!patchMasked) ngood++;
+    }
+  }
+  return ngood > 0;
+}
+
+/**
+ * Second approach: We assume masked fastors are already handled in the
+ * trigger maker. In this case we treat masked fastors similarly to online
+ * masked fastors and apply online cuts on the recalc ADC value. Implemented
+ * for the moment only for L1 triggers.
+ * @return True if the event has at least 1 recalc patch above threshold
+ */
+bool AliAnalysisTaskChargedParticlesRef::SelectOnlineTriggerV1(OnlineTrigger_t trigger){
+  AliDebugStream(1) << "Using V1 online trigger selector" << std::endl;
+  if(trigger == kCPREL0) return true;
+  double onlinethresholds[5] = {140., 89., 260., 127., 0.};
+  int ngood(0);
+  for(auto p : *fTriggerPatches){
+    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
+    if(((trigger == kCPREG1 || trigger == kCPREG2) && patch->IsGammaLowRecalc()) ||
+        ((trigger == kCPREJ1 || trigger == kCPREJ2) && patch->IsJetLowRecalc())){
+      if(patch->GetADCAmp() > onlinethresholds[trigger]) ngood++;
     }
   }
   return ngood > 0;
