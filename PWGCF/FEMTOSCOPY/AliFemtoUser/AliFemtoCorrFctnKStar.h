@@ -61,7 +61,7 @@ public:
 
   float CalcMt(const AliFemtoPair* aPair);
 
-  //inline functions
+
   void SetCalculateDetaDphis(Bool_t, Double_t);
   void SetCalculatePairKinematics(Bool_t);
 
@@ -69,11 +69,15 @@ public:
   void SetBuildmTBinned(Bool_t aBuild);
   void SetBuild3d(Bool_t aBuild);
 
+  //inline functions
   TH1D* Numerator();
   TH1D* Denominator();
   TH1D* Ratio();
 
 protected:
+  const char* fTitle;
+  int fNbinsKStar;
+  double fKStarLow, fKStarHigh;
   TH1D* fNumerator;          // numerator - real pairs
   TH1D* fDenominator;        // denominator - mixed pairs
   TH1D* fRatio;              // unnormalized ratio num/den
@@ -109,13 +113,6 @@ protected:
   ClassDef(AliFemtoCorrFctnKStar, 1)
 #endif
 };
-
-inline void AliFemtoCorrFctnKStar::SetCalculateDetaDphis(Bool_t dedpsc, Double_t rad) {fDetaDphiscal = dedpsc; fRaddedps = rad;}
-inline void AliFemtoCorrFctnKStar::SetCalculatePairKinematics(Bool_t pk) {fPairKinematics = pk;}
-
-inline void AliFemtoCorrFctnKStar::SetBuildkTBinned(Bool_t aBuild) {fBuildkTBinned = aBuild;}
-inline void AliFemtoCorrFctnKStar::SetBuildmTBinned(Bool_t aBuild) {fBuildmTBinned = aBuild;}
-inline void AliFemtoCorrFctnKStar::SetBuild3d(Bool_t aBuild) {fBuild3d = aBuild;}
 
 inline TH1D* AliFemtoCorrFctnKStar::Numerator(){return fNumerator;}
 inline TH1D* AliFemtoCorrFctnKStar::Denominator(){return fDenominator;}
