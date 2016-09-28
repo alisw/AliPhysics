@@ -350,36 +350,22 @@ protected:
       << "// Will draw dN/deta results from produced files\n"
       << "// \n"
       << "void Collect(const char* other,\n"
+      << "             const char* output,\n"
       << "             UInt_t      proc=0x2,\n"
       << "             UInt_t      viz=0x32f,\n"
       << "             UInt_t      n=10)\n"
       << "{\n"
       << "  TString fwd=\n"
       << "    \"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dndeta/tracklets3\";\n"
-      << "  gSystem->AddIncludePath(Form(\"-I%s\",fwd.Data()));\n"
-      << "  gROOT->LoadMacro(Form(\"%s/AliTrackletAODUtils.C+g\",fwd.Data()));\n"
-      << "  gROOT->LoadMacro(Form(\"%s/AliTrackletdNdeta2.C+g\",fwd.Data()));\n";
-    TString oName(fEscapedName); oName.Append("/tracklet_dndeta.root");
-    if (fRailway->IsMC()) 
-      o << "  TString realFile = Form(\"%s/tracklet_dndeta.root\",other);\n"
-	<< "  TString simFile  = \"" << oName << "\";\n"
-	<< "  TString outFile  = Form(\""<<fEscapedName <<"_%s\",other);\n";
+      << "  if (gSystem->GetEnv(\"ANA_SRC\"))\n"
+      << "    fwd = \"$ANA_SRC/dndeta/trackldwets3\";\n"
+      << "  gROOT->LoadMacro(Form(\"%s/Post.C\",fwd.Data()));\n"
+      << "  const char* thisDir = \"" << fEscapedName << "\";\n";
+    if (fRailway->IsMC())
+      o << "  Post(thisDir,other,output,proc,viz,n);\n";
     else
-      o << "  TString realFile = \"" << oName << "\";\n"
-	<< "  TString simFile  = Form(\"%s/tracklet_dndeta.root\",other);\n"
-	<< "  TString outFile  = Form(\"%s_"<<fEscapedName <<"\",other);\n";    
-    o << "  AliTrackletdNdeta2* p = new AliTrackletdNdeta2;\n"
-      << "  if (proc & 0x1) outFile.Append(\"_unit\");\n"
-      << "  if (proc & 0x2) outFile.Append(\"_const\");\n"
-      << "  if (proc & 0x4) outFile.Append(\"_eta\");\n"
-      << "  if (proc & 0x8) outFile.Append(\"_etaipz\");\n"
-      << "  outFile.Append(\".root\");\n"
-      << "  \n"
-      << "  p->Run(proc,viz,n,realFile,simFile,outFile);\n"
-      << "  \n"
-      << "  gROOT->LoadMacro(Form(\"%s/ExtractGSE2.C\",fwd.Data()));\n"
-      << "  ExtractGSE2(outFile);\n"
-      << "}\n"
+      o << "  Post(other,thisDir,output,proc,viz,n);\n";
+    o << "}\n"
       << "// EOF\n"
       << std::endl;
     o.close();

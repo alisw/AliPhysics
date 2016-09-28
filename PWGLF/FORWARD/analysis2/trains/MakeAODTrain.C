@@ -48,9 +48,42 @@ public:
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("secmap",    "Use secondary maps to correct", false);
     fOptions.Add("mc-tracks", "Enable MC track filter", false);
+    fOptions.Add("hit-threshold", "CUT", "Threshold for hits", 0.9);
     fOptions.Set("type", "ESD");
   }
 protected:
+  /** 
+   * Set a parameter on the forward task 
+   * 
+   * @param task Task to set on
+   * @param call The call 
+   * @param arg  The argument(s) for the call
+   */
+  void SetOnFwd(AliAnalysisTask* task,
+		const TString& call,
+		const TString& arg)
+  {
+    TString cmd;
+    cmd.Form("((AliForwardMultiplicityBase*)%p)->%s(%s)",
+	     tsk, call.Data(), arg.Data())
+    gROOT->ProcessLine(cmd);
+  }
+  /** 
+   * Set a parameter on the forward task 
+   * 
+   * @param task Task to set on
+   * @param call The call 
+   * @param arg  The argument(s) for the call
+   */
+  void SetOnMCFwd(AliAnalysisTask* task,
+		  const TString& call,
+		  const TString& arg)
+  {
+    TString cmd;
+    cmd.Form("((AliForwardMCMultiplicityTask*)%p)->%s(%s)",
+	     tsk, call.Data(), arg.Data())
+    gROOT->ProcessLine(cmd);
+  }
   /** 
    * Create the tasks 
    * 
@@ -88,6 +121,7 @@ protected:
     UShort_t sNN  = fOptions.AsInt("snn", 0);
     UShort_t fld  = fOptions.AsInt("field", 0);
     UShort_t mSt  = fOptions.AsInt("max-strips", 2);
+    Double_t thr  = fOptions.AsDouble("hit-threshold". .9);
     Bool_t   sec  = fOptions.Has("secmap");
     TString  corr = "";
     TString  dead = "";
@@ -104,16 +138,11 @@ protected:
 		       dead.Data()), mask);
     if (!fwd)
       Fatal("CoupleCars", "Failed to add forward task");
-
-    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)%p)"
-			    "->GetCorrections().SetUseSecondaryMap(%d)",
-			    fwd, sec));
-    if (mc) { 
-      gROOT->ProcessLine(Form("((AliForwardMCMultiplicityTask*)%p)"
-			      "->GetTrackDensity()"
-			      ".SetMaxConsequtiveStrips(%d)", 
-			      fwd, mSt));
-    }
+    SetOnFwd(fwd, "GetCorrections().SetUseSecondaryMap", Form("%d",sec));
+    SetOnFwd(fwd, "GetDensityCalculator()->SetHitThreshold", Form("%f", thr));
+    if (mc)
+      SetOnMCFwd(fwd, "GetTrackDensity().SetMaxConsequtiveStrips",
+		 Form("%d",mSt));
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
     if (!corr.IsNull()) 
       fRailway->LoadAux(Form("%s/fmd_corrections.root",corr.Data()), true);
