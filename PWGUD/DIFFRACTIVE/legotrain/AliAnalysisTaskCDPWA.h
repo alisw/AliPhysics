@@ -91,9 +91,11 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 							 fVertexTracks[i] = 0;
 							 fVertexUsed[i] = 0;
 							 fSysVertex[i] = 0;
+						 }
+						 if (i < 5) {
+							 fSysCluster[i] = 0;
 							 fSysPileUp[i] = 0;
 						 }
-						 if (i < 5) fSysCluster[i] = 0;
 						 fCheckTwoTrack[i] = fCheckFourTrack[i] = 0;
 					 }
 				 }
@@ -117,7 +119,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Double_t fVertexTracks[3];//
 			Double_t fVertexUsed[3];//
 			Bool_t fSysVertex[3];//
-			Bool_t fSysPileUp[3];//
+			Bool_t fSysPileUp[5];//
 			Bool_t fSysCluster[5];//
 
 			ClassDef(EventInfo, 1);

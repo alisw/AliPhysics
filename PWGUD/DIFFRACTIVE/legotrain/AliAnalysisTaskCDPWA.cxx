@@ -908,6 +908,8 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fEventInfo.fSysPileUp[0] = fCombInfo.fComb_IsPileUp;
 	fEventInfo.fSysPileUp[1] = fESDEvent->IsPileupFromSPD(pileup_Ncont+1,pileup_dist,3.,2.,5.);
 	fEventInfo.fSysPileUp[2] = fESDEvent->IsPileupFromSPD(pileup_Ncont+2,pileup_dist,3.,2.,5.);
+	fEventInfo.fSysPileUp[3] = fESDEvent->IsPileupFromSPD(pileup_Ncont,pileup_dist+0.1,3.,2.,5.);
+	fEventInfo.fSysPileUp[4] = fESDEvent->IsPileupFromSPD(pileup_Ncont,pileup_dist-0.1,3.,2.,5.);
 	if (normalCut) {
 		fHistEvent->Fill(kPileUpCut);
 		fRunFiducial[4]->Fill(fRunNumber);
