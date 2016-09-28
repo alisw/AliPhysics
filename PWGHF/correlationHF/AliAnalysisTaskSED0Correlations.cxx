@@ -120,6 +120,7 @@ AliAnalysisTaskSE(),
   fMinDPt(2.),
   fFillTrees(kFALSE),
   fFractAccME(100),
+  fAODProtection(1),
   fBranchD(),
   fBranchTr(),
   fTreeD(0x0),
@@ -190,6 +191,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fMinDPt(2.),
   fFillTrees(kFALSE),
   fFractAccME(100),
+  fAODProtection(1),
   fBranchD(),
   fBranchTr(),
   fTreeD(0x0),
@@ -282,6 +284,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fMinDPt(source.fMinDPt),
   fFillTrees(source.fFillTrees),
   fFractAccME(source.fFractAccME),
+  fAODProtection(source.fAODProtection),
   fBranchD(source.fBranchD),
   fBranchTr(source.fBranchTr),
   fTreeD(source.fTreeD),
@@ -396,6 +399,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fMinDPt = orig.fMinDPt;
   fFillTrees = orig.fFillTrees;
   fFractAccME = orig.fFractAccME; 
+  fAODProtection = orig.fAODProtection;
   fBranchD = orig.fBranchD;
   fBranchTr = orig.fBranchTr;
   fTreeD = orig.fTreeD;
@@ -587,7 +591,7 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(2)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 21,-0.5,20.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 22,-0.5,21.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -608,6 +612,7 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(19,"nEventsSelected");
   fNentries->GetXaxis()->SetBinLabel(20,"D0 failed to be filled");
   if(fReadMC) fNentries->GetXaxis()->SetBinLabel(20,"nEvsWithProdMech");
+  fNentries->GetXaxis()->SetBinLabel(21,"mismatch AOD/dAOD");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName()));
@@ -648,6 +653,17 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   fEvents++;
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fNentries->Fill(21);
+      return;
+    }
+  }
 
   TString bname="D0toKpi";
 
