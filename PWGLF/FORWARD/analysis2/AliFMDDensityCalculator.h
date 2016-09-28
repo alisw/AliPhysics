@@ -504,7 +504,7 @@ protected:
   Double_t               fMaxOutliers; // Maximum ratio of outlier bins 
   Double_t               fOutlierCut;  // Maximum relative diviation 
 
-  ClassDef(AliFMDDensityCalculator,14); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,15); // Calculate Nch density 
 };
 
 #endif
