@@ -41,6 +41,7 @@ class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
 #include "AliLog.h"
+class AliMCEvent;
 
 // EMCAL includes
 class AliEMCALGeometry;
@@ -285,7 +286,7 @@ public:
   //----------------------------------------------------
   // Track matching
   //----------------------------------------------------
-  void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, const AliEMCALGeometry *geom=0x0);
+  void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, const AliEMCALGeometry *geom=0x0, AliMCEvent* mc = 0x0);
   Int_t    FindMatchedClusterInEvent(const AliESDtrack *track, const AliVEvent *event, 
                                      const AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
   Int_t    FindMatchedClusterInClusterArr(const AliExternalTrackParam *emcalParam, 
@@ -409,6 +410,19 @@ public:
   Bool_t   IsGoodCluster(AliVCluster *cluster, const AliEMCALGeometry *geom, 
                          AliVCaloCells* cells, Int_t bc =-1);
 
+  //----------------------------------------------------
+  // MC labels in cells
+  //----------------------------------------------------
+  void     SetNumberOfMCGeneratorsToAccept(Int_t nGen)    { fNMCGenerToAccept = nGen ; 
+    if      ( nGen > 5 ) fNMCGenerToAccept = 5 ; 
+    else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
+  void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }
+  
+  void     SwitchOffMCGeneratorToAcceptForTrackMatching() { fMCGenerToAcceptForTrack = kFALSE ; }
+  void     SwitchOnMCGeneratorToAcceptForTrackMatching () { fMCGenerToAcceptForTrack = kTRUE  ; }
+  
+  void     RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, AliVCluster* clus, AliMCEvent* mc,
+                                                      Float_t & amp, TArrayI & labeArr, TArrayF & eDepArr ) const;
 private:  
   
   // Position recalculation
@@ -503,8 +517,13 @@ private:
   Bool_t     fCutRequireITSStandAlone;   ///< Require ITSStandAlone
   Bool_t     fCutRequireITSpureSA;       ///< ITS pure standalone tracks
   
+  // MC labels in cells
+  Int_t      fNMCGenerToAccept;          ///<  Number of MC generators that should not be included in analysis
+  TString    fMCGenerToAccept[5];        ///<  List with name of generators that should not be included
+  Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
+  
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 24) ;
+  ClassDef(AliEMCALRecoUtils, 25) ;
   /// \endcond
 
 };

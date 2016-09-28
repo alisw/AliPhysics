@@ -34,6 +34,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliESDfriendTrack.h"
 #include "AliTrackerBase.h"
+#include "AliMCEvent.h"
 
 // EMCAL includes
 #include "AliEMCALRecoUtils.h"
@@ -75,10 +76,13 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
   fCutMaxDCAToVertexXY(0),                fCutMaxDCAToVertexZ(0),                 fCutDCAToVertex2D(kFALSE),
-  fCutRequireITSStandAlone(kFALSE),       fCutRequireITSpureSA(kFALSE)
+  fCutRequireITSStandAlone(kFALSE),       fCutRequireITSpureSA(kFALSE),             
+  fNMCGenerToAccept(0),                   fMCGenerToAcceptForTrack(1)
 {
   // Init parameters
   InitParameters();
+  
+  for(Int_t j = 0; j <  5;    j++)  fMCGenerToAccept[j] =  "";
   
   // Track matching arrays init
   fMatchedTrackIndex     = new TArrayI();
@@ -128,12 +132,14 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit),             fCutRequireITSRefit(reco.fCutRequireITSRefit),
   fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),     fCutMaxDCAToVertexXY(reco.fCutMaxDCAToVertexXY),    
   fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),             fCutDCAToVertex2D(reco.fCutDCAToVertex2D),
-  fCutRequireITSStandAlone(reco.fCutRequireITSStandAlone),   fCutRequireITSpureSA(reco.fCutRequireITSpureSA)
+  fCutRequireITSStandAlone(reco.fCutRequireITSStandAlone),   fCutRequireITSpureSA(reco.fCutRequireITSpureSA),
+  fNMCGenerToAccept(reco.fNMCGenerToAccept),                 fMCGenerToAcceptForTrack(reco.fMCGenerToAcceptForTrack)
 {  
   for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
                                     fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
   for (Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
+  for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]    = reco.fMCGenerToAccept[j]    ; }
 }
 
 ///
@@ -217,6 +223,11 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
   fCutRequireITSStandAlone   = reco.fCutRequireITSStandAlone; 
   fCutRequireITSpureSA       = reco.fCutRequireITSpureSA;
+
+  fNMCGenerToAccept          = reco.fNMCGenerToAccept;
+  fMCGenerToAcceptForTrack   = reco.fMCGenerToAcceptForTrack;
+  for (Int_t j = 0; j < 5  ; j++)  
+    fMCGenerToAccept[j]     = reco.fMCGenerToAccept[j];
 
   //
   // Assign or copy construct the different TArrays
@@ -1585,6 +1596,116 @@ void AliEMCALRecoUtils::RecalibrateCellTimeL1Phase(Int_t iSM, Int_t bc, Double_t
   }
 }
 
+/// 2 tasks:
+///    * Recover cell MC labels from the original cluster from the fraction of 
+///      deposited energy to pass them to the digitizer
+///    * If added generators have to be removed, check the origin of the label 
+///      and depending on the deposited energy, correct the amplitude. Quite crude.
+///
+/// This only works for MC productions done with aliroot release larger than v5-08
+///
+/// \param clus     Input AliVCaloCluster with the list of cell MC labels
+/// \param mc       MC event pointer, to identify the generator
+/// \param absID    ID of the cell
+/// \param amp      amplitude of the cell, to be recalculated if extra generators are removed
+/// \param labelArr list of MC labels associated to the cell
+/// \param eDepArr  list of MC energy depositions in the cell corresponding to each MC label
+///
+//______________________________________________________________________________
+void AliEMCALRecoUtils::RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, AliVCluster* clus, AliMCEvent* mc,
+                                                                   Float_t & amp, TArrayI & labeArr, TArrayF & eDepArr) const
+{
+  TString genName ;
+  Float_t eDepFrac[4];
+  
+  Float_t edepTotFrac = 1;
+  Bool_t  found       = kFALSE;
+  Float_t ampOrg      = amp;
+  
+  //
+  // Get the energy deposition fraction from cluster.
+  //
+  for(Int_t icluscell = 0; icluscell < clus->GetNCells(); icluscell++ )
+  {
+    if(absID == clus->GetCellAbsId(icluscell)) 
+    {
+      clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
+      
+      found = kTRUE;
+      
+      break;
+    }
+  } 
+  
+  if ( !found )
+  {
+    AliWarning(Form("Cell abs ID %d NOT found in cluster",absID));
+    return;
+  } 
+  
+  //
+  // Check if there is a particle contribution from a given generator name.
+  // If it is not one of the selected generators, 
+  // remove the constribution from the cell.
+  //
+  if ( mc && fNMCGenerToAccept > 0 )
+  {
+    //printf("Accept contribution from generator? \n");
+    for(Int_t imc = 0; imc < 4; imc++)
+    {
+      if ( eDepFrac[imc] > 0 && clus->GetNLabels() > imc )
+      {
+        mc->GetCocktailGenerator(clus->GetLabelAt(imc),genName);
+                
+        Bool_t generOK = kFALSE;
+        for(Int_t ig = 0; ig < fNMCGenerToAccept; ig++) 
+        {
+          if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
+        }
+        
+        if ( !generOK )
+        {
+          amp-=ampOrg*eDepFrac[imc];
+          
+          edepTotFrac-=eDepFrac[imc];
+          
+          eDepFrac[imc] = 0;
+        }
+        
+      } // eDep > 0      
+    } // 4 possible loop
+    
+  } // accept at least one kind of generator
+  
+  //
+  // Add MC label and Edep to corresponding array (to be used later in digits)
+  //
+  Int_t nLabels = 0;
+  for(Int_t imc = 0; imc < 4; imc++)
+  {
+    if ( eDepFrac[imc] > 0 && clus->GetNLabels() > imc && edepTotFrac > 0 )
+    {
+      nLabels++;
+      
+      labeArr.Set(nLabels);
+      labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
+      
+      eDepArr.Set(nLabels);
+      eDepArr.AddAt( (eDepFrac[imc]/edepTotFrac) * amp, nLabels-1);
+      // use as deposited energy a fraction of the simulated energy (smeared and with noise)
+    }  // edep > 0
+    
+  } // mc cell label loop
+  
+  //
+  // If no label found, reject cell
+  // It can happen to have this case (4 MC labels per cell is not enough for some cases)
+  // better to remove. To be treated carefully.
+  //
+  if ( nLabels == 0 ) amp = 0;
+  
+}
+
 ///
 /// For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
 ///
@@ -2231,7 +2352,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 //____________________________________________________________________________
 void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
                                     TObjArray * clusterArr,  
-                                    const AliEMCALGeometry *geom)
+                                    const AliEMCALGeometry *geom,
+                                    AliMCEvent * mc)
 {  
   fMatchedTrackIndex  ->Reset();
   fMatchedClusterIndex->Reset();
@@ -2284,11 +2406,12 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
   
   Int_t    matched=0;
   Double_t cv[21];
+  TString  genName;
   for (Int_t i=0; i<21;i++) cv[i]=0;
   for (Int_t itr=0; itr<event->GetNumberOfTracks(); itr++)
   {
     AliExternalTrackParam *trackParam = 0;
-    
+    Int_t mcLabel = -1;
     // If the input event is ESD, the starting point for extrapolation is TPCOut, if available, or TPCInner 
     AliESDtrack *esdTrack = 0;
     AliAODTrack *aodTrack = 0;
@@ -2312,6 +2435,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
         trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
       else
         trackParam =  new AliExternalTrackParam(*esdTrack); // If ITS Track Standing alone		
+      
+      mcLabel = TMath::Abs(esdTrack->GetLabel());
     }
     
     // If the input event is AOD, the starting point for extrapolation is at vertex
@@ -2357,12 +2482,14 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
                       itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
       
       trackParam= new AliExternalTrackParam(pos,mom,cv,aodTrack->Charge());
+      
+      mcLabel = TMath::Abs(aodTrack->GetLabel());
     }
     
     //Return if the input data is not "AOD" or "ESD"
     else
     {
-      printf("Wrong input data type! Should be \"AOD\" or \"ESD\"\n");
+      AliWarning("Wrong input data type! Should be \"AOD\" or \"ESD\" ");
       if (clusterArray) 
       {
         clusterArray->Clear();
@@ -2372,6 +2499,23 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
     }
     
     if (!trackParam) continue;
+    
+    //
+    // Check if track comes from a particular MC generator, do not include it
+    // if it is not a selected one
+    //
+    if( mc && fMCGenerToAcceptForTrack && fNMCGenerToAccept > 0 )
+    {
+      mc->GetCocktailGenerator(mcLabel,genName);
+            
+      Bool_t generOK = kFALSE;
+      for(Int_t ig = 0; ig < fNMCGenerToAccept; ig++) 
+      {
+        if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
+      }
+
+      if ( !generOK ) continue;
+    }
     
     // Extrapolate the track to EMCal surface
     AliExternalTrackParam emcalParam(*trackParam);
@@ -2570,9 +2714,9 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(const AliExternalTrackP
     } 
     else 
     {
-      printf("Error: please specify your cut criteria\n");
-      printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
-      printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
+      AliError("Please specify your cut criteria");
+      AliError("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()");
+      AliError("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()");
       return index;
     }
   }
