@@ -160,6 +160,41 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
     fV0 = (AliVVZERO*)InputEvent()->FindListObject(fV0InName);
   }
 
+  // Configure trigger maker
+  if(!fTriggerMaker->IsConfigured()){
+    AliInfoStream() << "Trigger maker not yet configure - automatically configuring ..." << std::endl;
+    int runnumber = InputEvent()->GetRunNumber();
+    std::string dataset = "";
+    if(runnumber >= 145144 && runnumber <= 165746){
+      fTriggerMaker->ConfigureForPP2011();
+      dataset = "pp 2011";
+    } else if(runnumber >= 167806 && runnumber <= 170593){
+      fTriggerMaker->ConfigureForPbPb2011();
+      dataset = "Pb-Pb 2011";
+    } else if(runnumber >= 176326 && runnumber <= 193766){
+      fTriggerMaker->ConfigureForPP2012();
+      dataset = "pp 2012";
+    } else if(runnumber >= 195344 && runnumber <= 197692){
+      // dataset contains also the setup for pp 2.76 TeV
+      fTriggerMaker->ConfigureForPPb2013();
+      dataset = "p-Pb 2013";
+    } else if((runnumber >= 224891 && runnumber <= 244628) || runnumber >= 253434){
+      // Configuration starting with LHC15f
+      fTriggerMaker->ConfigureForPbPb2015();
+      dataset = "pp 2015-2016";
+    } else if(runnumber >= 244824 && runnumber <= 246994){
+      fTriggerMaker->ConfigureForPbPb2015();
+      dataset = "Pb-Pb 2015";
+    }
+
+    if(fTriggerMaker->IsConfigured()){
+      AliInfoStream() << "Applying configuration for " << dataset << std::endl;
+    } else {
+      AliErrorStream() << "No valid configuration found for the given dataset - trigger maker disabled" << std::endl;
+      fLocalInitialized = false;
+    }
+  }
+
   fTriggerMaker->SetGeometry(fGeom);
   fTriggerMaker->Init();
 }

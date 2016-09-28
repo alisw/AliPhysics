@@ -277,6 +277,13 @@ public:
   void SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
 
   /**
+   * Check whether the trigger maker has been specially configured. Status has to
+   * be set in the functions ConfigureForXX.
+   * @return True if the trigger maker kernel is configured, false otherwise
+   */
+  Bool_t IsConfigured() const { return fConfigured; }
+
+  /**
    * Configure the class for 2015 PbPb
    */
   void ConfigureForPbPb2015();
@@ -368,6 +375,7 @@ protected:
   Double_t                                  fMaxAbsCellTime;              ///< Maximum allowed abs cell time (default - 1)
   Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
   Bool_t                                    fApplyOnlineBadChannelsToOffline;   ///< Apply online bad channels to offline ADC values
+  Bool_t                                    fConfigured;                  ///< Switch specifying whether the trigger maker kernel has been configured for a given data set
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
