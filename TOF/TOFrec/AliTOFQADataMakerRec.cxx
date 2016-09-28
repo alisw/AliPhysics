@@ -294,15 +294,15 @@ void AliTOFQADataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1I * h0 =  new TH1I("hTOFRaws","TOF raw hit multiplicity; TOF raw hits number; Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TH1I * h0 =  new TH1I("hTOFRawsMulti","TOF raw hit multiplicity; TOF raw hits number; Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
   TPaveText * hitsMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
   h0->GetListOfFunctions()->Add(hitsMsg);
   hitsMsg->SetName("hitsMsg");
 
-  TH1I * h1 =  new TH1I("hTOFRawsIA","TOF raw hit multiplicity - I/A side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  TH1I * h2 =  new TH1I("hTOFRawsOA","TOF raw hit multiplicity - O/A side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  TH1I * h3 =  new TH1I("hTOFRawsIC","TOF raw hit multiplicity - I/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  TH1I * h4 =  new TH1I("hTOFRawsOC","TOF raw hit multiplicity - O/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TH1I * h1 =  new TH1I("hTOFRawsMultiIA","TOF raw hit multiplicity - I/A side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TH1I * h2 =  new TH1I("hTOFRawsMultiOA","TOF raw hit multiplicity - O/A side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TH1I * h3 =  new TH1I("hTOFRawsMultiIC","TOF raw hit multiplicity - I/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
+  TH1I * h4 =  new TH1I("hTOFRawsMultiOC","TOF raw hit multiplicity - O/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
 
   TH1F * h5  = new TH1F("hTOFRawsTime", "TOF Raws - Hit time (ns);Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
   TPaveText * timeMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
@@ -410,7 +410,7 @@ void AliTOFQADataMakerRec::InitRaws()
 
   //add lines for DQM shifter
   fLineExpTimeMin = new TLine(150., 0., 150., 0.);
-  fLineExpTimeMax = new TLine(250., 0., 250., 0.);
+  fLineExpTimeMax = new TLine(225., 0., 225., 0.);
   fLineExpTotMin = new TLine(10., 0., 10., 0.);
   fLineExpTotMax = new TLine(15., 0., 15., 0.);
 

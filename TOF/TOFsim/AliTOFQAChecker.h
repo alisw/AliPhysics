@@ -21,19 +21,22 @@
 class AliTOFQAChecker: public AliQACheckerBase {
 
 public:
-  AliTOFQAChecker() : AliQACheckerBase("TOF","TOF Quality Assurance Data Maker") {;}          // ctor
-  AliTOFQAChecker(const AliTOFQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
+ AliTOFQAChecker() : AliQACheckerBase("TOF","TOF Quality Assurance Data Maker"), fCheckGolden(1) {;}          // ctor
+ AliTOFQAChecker(const AliTOFQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fCheckGolden(qac.fCheckGolden) {;} // cpy ctor
+
   AliTOFQAChecker& operator = (const AliTOFQAChecker& qac);
- 
   virtual ~AliTOFQAChecker() {;} // dtor
+  void SetCheckGolden(Bool_t doit) {fCheckGolden = doit; return;}
 
  protected:
-
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TObjArray ** list,
-		   const AliDetectorRecoParam * recoParam=0) ;
-  Int_t  CheckRaws(TH1* histo, Int_t specie); 
+		   const AliDetectorRecoParam * recoParam=0);
+  Int_t  CheckRaws(TH1* histo, Int_t specie);
 
-  ClassDef(AliTOFQAChecker,2)  // description 
+ private:
+  Bool_t fCheckGolden; //flag to enable automatic checks on the full list of histos
+
+  ClassDef(AliTOFQAChecker, 3)  // description 
 
 };
 

@@ -44,72 +44,60 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
 {
   // Super-basic check on the QA histograms on the input list: 
   // look whether they are empty!
+  Float_t rvarr[2][4] = {1.0, 0.75, 0.5, 0.25,
+			 1.0, 0.5, 0.002, 0.0};
 
   Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)) ) 
-       continue ;
-    test[specie] = 0.0 ; //setting to 1.0 the function SetQA called in AliQACheckerBase::Run doesn't set properly the flag since it's >1
+      continue ;
+    test[specie] = 0.0 ;
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-      continue ; 
-    if (list[specie]->GetEntries() == 0){  
-      test[specie] = 0.0 ; // nothing to check
-    } //END IF: is there anything to check?
-    else {
-      TIter next(list[specie]) ; 
+      continue ;
+    if (!list || (list[specie]->GetEntries() == 0)){
+      // nothing to check, setting to FATAL
+      test[specie] = -1.0 ;
+    } else {
+      TIter next(list[specie]) ;
       TH1 * hdata ;
-      count[specie] = 0 ; 
+      count[specie] = 0 ;
       while ( (hdata = static_cast<TH1 *>(next())) ) {
-        if (hdata && hdata->InheritsFrom("TH1")) { 
-          Double_t rv = 0.;
-	  switch ( CheckRaws(hdata,specie) ) 
-	    {
-	    case AliQAv1::kINFO:
-	      rv = 1.0;
-	      break;
-	    case AliQAv1::kWARNING:
-	      rv = 0.75;
-	      break;
-	    case AliQAv1::kERROR:
-	      rv = 0.25;
-	      break;
-	    case AliQAv1::kFATAL:
-	      rv = -1.0;
-	      break;
-	    default:
-	      //AliError("Invalid ecc value. FIXME !");
-	      rv = AliQAv1::kNULLBit;
-	      break;
-	    }	  //based on what CheckRaws returns rv is set to a value
-          AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv)) ; 
-          count[specie]++ ; 
-          test[specie] += rv ; 
-        }
-        else{
-          AliError("Data type cannot be processed") ;
-        }
+	if (!hdata || !hdata->InheritsFrom("TH1")) {
+	  AliError("Data type cannot be processed");
+	} else {
+	  TString histname = hdata->GetName();
+	  Bool_t isGoldenHisto = (histname.Contains("TOFRawsMulti") || histname.Contains("TOFRawsTime") || histname.Contains("hTOFRawsToT"));
+	  if (fCheckGolden && !isGoldenHisto) continue;
+	  Double_t rv = 0.;
+	  Int_t checkOutput = CheckRaws(hdata,specie);
+	  if (checkOutput>AliQAv1::kNULLBit && checkOutput<AliQAv1::kNBIT) rv = rvarr[fCheckGolden][checkOutput];
+	  else rv = AliQAv1::kNULLBit;
+	  AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv));
+	  count[specie]++;
+	  test[specie] += rv;
+	}   
+      } //end while loop on the list
+      if (count[specie]<=0) {
+	//the only case in which this condition is verified at this stage is
+	//when the golden plots are missing from the list and were requested,
+	//therefore this generates a FATAL
+	AliError("Error: cannot find requested golden histograms");
+	test[specie] = -1.0;
+      } else {
+	test[specie] /= count[specie] ;
+	AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie]));
       }
-      if (count[specie] != 0) { 
-        if (test[specie]==0) {
-          AliWarning("Histograms are there, but they are all empty: setting flag to kWARNING");
-          test[specie] = 0.5;  //upper limit value to set kWARNING flag for a task
-        }
-        else {
-	  test[specie] /= count[specie] ;
-        }
-        AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie])) ; 
-      }
-    } //END ELSE: is there anything to check? 
+    } //END ELSE: is there anything to check?
   }  //END FOR: cycle over all possible species
 }  
 
 //------------------------------------------------------
 AliTOFQAChecker& AliTOFQAChecker::operator = (const AliTOFQAChecker& qac)
 {
-
+  
   if (this==&qac) return *this;
   return *this;
-
+  
 }
 
 //____________________________________________________________________________
@@ -140,20 +128,17 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     minTOFrawTime=150.;//ns
     maxTOFrawTime=250.;//ns
   } else {
-    minTOFrawTime=200.;//ns 
-    maxTOFrawTime=275.;//ns 
+    minTOFrawTime=150.;//ns
+    maxTOFrawTime=225.;//ns
   } 
   Float_t minTOFrawTot = 10.;
   Double_t maxTOFrawTot = 15.; 
-  // Double_t minTOFrawTot = 200;
-  // Double_t maxTOFrawTot = 250;
 
   TString histname = histo->GetName();
-   // TPaveText text(0.65,0.5,0.9,0.75,"NDC");   
   TPaveText * text = 0x0;
   for (trgCl=0; trgCl<nTrgCl; trgCl++) 
     if (histname.EndsWith(AliQADataMaker::GetTrigClassName(trgCl))) suffixTrgCl=kTRUE;
-  if ((histname.EndsWith("TOFRaws")) || (histname.Contains("TOFRaws") && suffixTrgCl)) {
+  if ((histname.EndsWith("TOFRawsMulti")) || (histname.Contains("TOFRawsMulti") && suffixTrgCl)) {
     if (!suffixTrgCl) histo->SetBit(AliQAv1::GetImageBit(), drawRawsSumImage);
     if (suffixTrgCl) {
       histo->SetBit(AliQAv1::GetImageBit(), kFALSE); //clones not shown by default
@@ -252,7 +237,6 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("timeMsg");
     if (histo->GetEntries()==0) {
-      //AliWarning("Raw time histogram is empty");
         if (text){
       text->Clear();
       text->AddText("No entries. If TOF in the run"); 
