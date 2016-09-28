@@ -90,6 +90,7 @@ fCentrOrMult(-99),
 fMultiplicity(1),
 fEffTrack(kFALSE),
 fEffDplus(kFALSE),
+fAODProtection(1),
 fCentralityEstimator(0),
 fEvalCentrality(kFALSE),
 fMinCentrality(0),
@@ -129,6 +130,7 @@ fCentrOrMult(-99),
 fMultiplicity(1),
 fEffTrack(kFALSE),
 fEffDplus(kFALSE),
+fAODProtection(1),
 fCentralityEstimator(0),
 fEvalCentrality(kFALSE),
 fMinCentrality(0),
@@ -179,6 +181,7 @@ fCentrOrMult(source.fCentrOrMult),
 fMultiplicity(source.fMultiplicity),
 fEffTrack(source.fEffTrack),
 fEffDplus(source.fEffDplus),
+fAODProtection(source.fAODProtection),
 fCentralityEstimator(source.fCentralityEstimator),
 fEvalCentrality(source.fEvalCentrality),
 fMinCentrality(source.fMinCentrality),
@@ -237,6 +240,7 @@ AliAnalysisTaskSEDplusCorrelations& AliAnalysisTaskSEDplusCorrelations::operator
     fMultiplicity = orig.fMultiplicity;
     fEffTrack = orig.fEffTrack;
     fEffDplus = orig.fEffDplus;
+    fAODProtection = orig.fAODProtection;
     fCentralityEstimator = orig.fCentralityEstimator;
     fEvalCentrality=orig.fEvalCentrality;
     fMinCentrality=orig.fMinCentrality;
@@ -362,6 +366,13 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
     
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!aod) return;
+    
+    if(fAODProtection>=0){
+      //   Protection against different number of events in the AOD and deltaAOD
+      //   In case of discrepancy the event is rejected.
+      Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+      if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) return; // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+    }    
     
     TClonesArray *array3Prong = 0;
     array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
@@ -490,6 +501,11 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
     Int_t       labDp = -1;
     Bool_t    isDplus = kFALSE;
     Int_t pdgDgDplustoKpipi[3]={321,211,211};
+
+    // vHF object is needed to call the method that refills the missing info of the candidates
+    // if they have been deleted in dAOD reconstruction phase
+    // in order to reduce the size of the file
+    AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
     
     //printf("Number of D+->Kpipi: %d and of tracks: %d\n",nDplusKpipi,aod->GetNumberOfTracks());
     for (Int_t iDplusKpipi = 0; iDplusKpipi < nDplusKpipi; iDplusKpipi++){
@@ -497,6 +513,9 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         // D+ Primary Vertex Setting
         AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(iDplusKpipi); // D+
         if(!d)continue;
+        
+        if(!(vHF->FillRecoCand(aod,d))) continue; //Fill the data members of the candidate only if they are empty.   
+        
         fHistNDplus->Fill(0);
         
         if(d->Pt()<0.)fHistNDplus->Fill(1);
@@ -586,6 +605,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         if(!updated) AliInfo("Pool was not updated");
     }
     
+    delete vHF;
     
     // Posting Slots
     PostData(1,fOutput);
