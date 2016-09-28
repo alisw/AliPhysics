@@ -47,6 +47,10 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar():
 //____________________________
 AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title, const int& nbins, const float& KStarLo, const float& KStarHi):
   AliFemtoCorrFctn(),
+  fTitle(title),
+  fNbinsKStar(nbins),
+  fKStarLow(KStarLo),
+  fKStarHigh(KStarHi),
   fNumerator(0),
   fDenominator(0),
   fRatio(0),
@@ -83,72 +87,20 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title, const int& nbins
                             "kT Dependence; kT(GeV/c)",
                              DFLT_NbinskT,DFLT_kTMin,DFLT_kTMax);
 
-  fNumDEtaDPhiS   = new TH2D(TString::Format("NumDEtaDPhiS%s", title),
-                            "dPhiS vs dEta - Numerator",
-                             DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
-                             DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
-  fDenDEtaDPhiS   = new TH2D(TString::Format("DenDEtaDPhiS%s", title),
-                            "dPhiS vs dEta - Denominator",
-                             DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
-                             DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
-
-  fPairKStar      = new TNtuple(TString::Format("PairKStar%s", title),
-                               "Pair Kinematics", 
-                               "KStarMag:KStarOut:KStarSide:KStarLong");
-
-  fNumerator_kT   = new TH2F(TString::Format("KStarVskTNum%s", title),
-                             "KStar vs kT Numerator; k*(GeV); k_T (GeV);",
-                              nbins, KStarLo, KStarHi,
-                              DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
-
-  fDenominator_kT = new TH2F(TString::Format("KStarVskTDen%s", title),
-                         "KStar vs kT Denominator; k* (GeV); k_T (GeV)",
-                         nbins, KStarLo, KStarHi,
-                         DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
-
-  fNumerator_mT   = new TH2F(TString::Format("KStarVsmTNum%s", title),
-                             "KStar vs m_{T} Numerator; k*(GeV); m_{T} (GeV);",
-                              nbins, KStarLo, KStarHi,
-                              DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
-  fDenominator_mT = new TH2F(TString::Format("KStarVsmTDen%s", title),
-                             "KStar vs m_{T} Denominator; k* (GeV); m_{T} (GeV)",
-                              nbins, KStarLo, KStarHi,
-                              DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
-
-  fNumerator3d    = new TH3F(TString::Format("Num3d%s",title),
-                            "KStar3d - Numerator; k*(GeV/c);",
-                             DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
-                             DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
-                             DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
-  fDenominator3d  = new TH3F(TString::Format("Den3d%s",title),
-                            "KStar3d - Denominator; k*(GeV/c);",
-                             DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
-                             DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
-                             DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
-
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
   fDenominator->Sumw2();
   fRatio->Sumw2();
   fkTMonitor->Sumw2();
-
-  fNumDEtaDPhiS->Sumw2();
-  fDenDEtaDPhiS->Sumw2();
-
-  fNumerator_kT->Sumw2();
-  fDenominator_kT->Sumw2();
-
-  fNumerator_mT->Sumw2();
-  fDenominator_mT->Sumw2();
-
-  fNumerator3d->Sumw2();
-  fDenominator3d->Sumw2();
 }
 
 //____________________________
 AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrFctn) :
   AliFemtoCorrFctn(aCorrFctn),
+  fNbinsKStar(aCorrFctn.fNbinsKStar),
+  fKStarLow(aCorrFctn.fKStarLow),
+  fKStarHigh(aCorrFctn.fKStarHigh),
   fDetaDphiscal(aCorrFctn.fDetaDphiscal),
   fPairKinematics(aCorrFctn.fPairKinematics),
   fRaddedps(aCorrFctn.fRaddedps),
@@ -157,6 +109,13 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrF
   fBuild3d(aCorrFctn.fBuild3d)
 {
   // copy constructor
+  if(aCorrFctn.fTitle)
+  {
+    fTitle = new char[strlen(aCorrFctn.fTitle)+1];
+    strcpy(const_cast<char*>(fTitle), aCorrFctn.fTitle);
+  }
+  else fTitle = 0;
+
   if(aCorrFctn.fNumerator) fNumerator = new TH1D(*aCorrFctn.fNumerator);
     else fNumerator = 0;
   if(aCorrFctn.fDenominator) fDenominator = new TH1D(*aCorrFctn.fDenominator);
@@ -217,6 +176,9 @@ AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKS
 
   AliFemtoCorrFctn::operator=(aCorrFctn);
 
+  fNbinsKStar = aCorrFctn.fNbinsKStar;
+  fKStarLow = aCorrFctn.fKStarLow;
+  fKStarHigh = aCorrFctn.fKStarHigh;
   fDetaDphiscal = aCorrFctn.fDetaDphiscal;
   fRaddedps = aCorrFctn.fRaddedps;
   fPairKinematics = aCorrFctn.fPairKinematics;
@@ -224,6 +186,12 @@ AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKS
   fBuildmTBinned = aCorrFctn.fBuildmTBinned;
   fBuild3d = aCorrFctn.fBuild3d;
   
+  if(aCorrFctn.fTitle)
+  {
+    fTitle = new char[strlen(aCorrFctn.fTitle)+1];
+    strcpy(const_cast<char*>(fTitle), aCorrFctn.fTitle);
+  }
+  else fTitle = 0;
 
   if(fNumerator) delete fNumerator;
     fNumerator = new TH1D(*aCorrFctn.fNumerator);
@@ -285,6 +253,7 @@ TList* AliFemtoCorrFctnKStar::GetOutputList()
   tOutputList->Add(fNumerator);
   tOutputList->Add(fDenominator);
   tOutputList->Add(fkTMonitor);
+  tOutputList->Add(fRatio);
   if(fDetaDphiscal) {
     tOutputList->Add(fNumDEtaDPhiS);
     tOutputList->Add(fDenDEtaDPhiS);
@@ -425,33 +394,37 @@ void AliFemtoCorrFctnKStar::SetkTMonitorBins(int aNbinskT, double akTMin, double
 
 //____________________________
 void AliFemtoCorrFctnKStar::SetKStarVskTBins(int aNbinsKStar, double aKStarMin, double aKStarMax,
-                        int aNbinskT,    double akTMin,    double akTMax)
+                                             int aNbinskT,    double akTMin,    double akTMax)
 {
+  if(!fNumerator_kT || !fDenominator_kT) SetBuildkTBinned(true);
   fNumerator_kT->SetBins(aNbinsKStar,aKStarMin,aKStarMax, aNbinskT,akTMin,akTMax);
   fDenominator_kT->SetBins(aNbinsKStar,aKStarMin,aKStarMax, aNbinskT,akTMin,akTMax);
 }
 
 //____________________________
 void AliFemtoCorrFctnKStar::SetKStarVsmTBins(int aNbinsKStar, double aKStarMin, double aKStarMax,
-                        int aNbinsmT,    double amTMin,    double amTMax)
+                                             int aNbinsmT,    double amTMin,    double amTMax)
 {
+  if(!fNumerator_mT || !fDenominator_mT) SetBuildmTBinned(true);
   fNumerator_mT->SetBins(aNbinsKStar,aKStarMin,aKStarMax, aNbinsmT,amTMin,amTMax);
   fDenominator_mT->SetBins(aNbinsKStar,aKStarMin,aKStarMax, aNbinsmT,amTMin,amTMax);
 }
 
 //____________________________
 void AliFemtoCorrFctnKStar::SetDEtaDPhiSBins(int aNbinsDEta,  double aDEtaMin,  double aDEtaMax,
-                        int aNbinsDPhis, double aDPhiSMin, double aDPhiSMax)
+                                             int aNbinsDPhis, double aDPhiSMin, double aDPhiSMax)
 {
+  if(!fNumDEtaDPhiS || !fDenDEtaDPhiS) SetCalculateDetaDphis(true,fRaddedps);
   fNumDEtaDPhiS->SetBins(aNbinsDPhis,aDPhiSMin,aDPhiSMax, aNbinsDEta,aDEtaMin,aDEtaMax);
   fDenDEtaDPhiS->SetBins(aNbinsDPhis,aDPhiSMin,aDPhiSMax, aNbinsDEta,aDEtaMin,aDEtaMax);
 }
 
 //____________________________
 void AliFemtoCorrFctnKStar::Set3dBins(int aNbinsKStarOut,  double aKStarOutMin,  double aKStarOutMax,
-                 int aNbinsKStarSide, double aKStarSideMin, double aKStarSideMax,
-                 int aNbinsKStarLong, double aKStarLongMin, double aKStarLongMax)
+                                      int aNbinsKStarSide, double aKStarSideMin, double aKStarSideMax,
+                                      int aNbinsKStarLong, double aKStarLongMin, double aKStarLongMax)
 {
+  if(!fNumerator3d || !fDenominator3d) SetBuild3d(true);
   fNumerator3d->SetBins(aNbinsKStarOut, aKStarOutMin, aKStarOutMax,
                         aNbinsKStarSide,aKStarSideMin,aKStarSideMax,
                         aNbinsKStarLong,aKStarLongMin,aKStarLongMax);
@@ -469,3 +442,111 @@ float AliFemtoCorrFctnKStar::CalcMt(const AliFemtoPair* aPair)
   const double avg_mass = (mass_1 + mass_2) / 2.0;
   return TMath::Sqrt(avg_mass * avg_mass + ::pow(aPair->KT(), 2));
 }
+
+//____________________________
+void AliFemtoCorrFctnKStar::SetCalculateDetaDphis(Bool_t dedpsc, Double_t rad) 
+{
+  fDetaDphiscal = dedpsc;
+  fRaddedps = rad;
+
+  if(fDetaDphiscal && (!fNumDEtaDPhiS || !fDenDEtaDPhiS))
+  {
+    fNumDEtaDPhiS   = new TH2D(TString::Format("NumDEtaDPhiS%s", fTitle),
+                              "dPhiS vs dEta - Numerator",
+                               DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
+                               DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
+    fDenDEtaDPhiS   = new TH2D(TString::Format("DenDEtaDPhiS%s", fTitle),
+                              "dPhiS vs dEta - Denominator",
+                               DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
+                               DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
+    fNumDEtaDPhiS->Sumw2();
+    fDenDEtaDPhiS->Sumw2();
+  }
+}
+
+//____________________________
+void AliFemtoCorrFctnKStar::SetCalculatePairKinematics(Bool_t pk)
+{
+  fPairKinematics = pk;
+
+  if(fPairKinematics && !fPairKStar)
+  {
+    fPairKStar      = new TNtuple(TString::Format("PairKStar%s", fTitle),
+                                 "Pair Kinematics", 
+                                 "KStarMag:KStarOut:KStarSide:KStarLong");
+  }
+}
+
+//____________________________
+void AliFemtoCorrFctnKStar::SetBuildkTBinned(Bool_t aBuild) 
+{
+  fBuildkTBinned = aBuild;
+
+  if(fBuildkTBinned && (!fNumerator_kT || !fDenominator_kT))
+  {
+    fNumerator_kT   = new TH2F(TString::Format("KStarVskTNum%s", fTitle),
+                               "KStar vs kT Numerator; k*(GeV); k_T (GeV);",
+                                fNbinsKStar, fKStarLow, fKStarHigh,
+                                DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
+
+    fDenominator_kT = new TH2F(TString::Format("KStarVskTDen%s", fTitle),
+                           "KStar vs kT Denominator; k* (GeV); k_T (GeV)",
+                           fNbinsKStar, fKStarLow, fKStarHigh,
+                           DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
+    fNumerator_kT->Sumw2();
+    fDenominator_kT->Sumw2();
+  }
+}
+
+//____________________________
+void AliFemtoCorrFctnKStar::SetBuildmTBinned(Bool_t aBuild) 
+{
+  fBuildmTBinned = aBuild;
+
+  if(fBuildmTBinned && (!fNumerator_mT || !fDenominator_mT))
+  {
+    fNumerator_mT   = new TH2F(TString::Format("KStarVsmTNum%s", fTitle),
+                               "KStar vs m_{T} Numerator; k*(GeV); m_{T} (GeV);",
+                                fNbinsKStar, fKStarLow, fKStarHigh,
+                                DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
+    fDenominator_mT = new TH2F(TString::Format("KStarVsmTDen%s", fTitle),
+                               "KStar vs m_{T} Denominator; k* (GeV); m_{T} (GeV)",
+                                fNbinsKStar, fKStarLow, fKStarHigh,
+                                DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
+    fNumerator_mT->Sumw2();
+    fDenominator_mT->Sumw2();
+  }
+}
+
+//____________________________
+void AliFemtoCorrFctnKStar::SetBuild3d(Bool_t aBuild) 
+{
+  fBuild3d = aBuild;
+
+  if(fBuild3d && (!fNumerator3d || !fDenominator3d))
+  {
+    fNumerator3d    = new TH3F(TString::Format("Num3d%s",fTitle),
+                              "KStar3d - Numerator; k*(GeV/c);",
+                               DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
+                               DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
+                               DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
+    fDenominator3d  = new TH3F(TString::Format("Den3d%s",fTitle),
+                              "KStar3d - Denominator; k*(GeV/c);",
+                               DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
+                               DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
+                               DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
+    fNumerator3d->Sumw2();
+    fDenominator3d->Sumw2();
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
