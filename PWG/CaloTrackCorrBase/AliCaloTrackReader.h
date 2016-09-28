@@ -623,7 +623,7 @@ public:
   
   virtual AliStack*          GetStack()              const ;
   virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader()     const ;
+  virtual AliGenEventHeader* GetGenEventHeader(TString name = "") const ;
   
   // Filtered kinematics in AOD
   
@@ -660,11 +660,16 @@ public:
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
   
-  virtual Bool_t   IsHIJINGLabel(Int_t label);
-  void             SetGeneratorMinMaxParticles();
-  void             SwitchOnAcceptOnlyHIJINGLabels()          { fAcceptOnlyHIJINGLabels = kTRUE  ; }
-  void             SwitchOffAcceptOnlyHIJINGLabels()         { fAcceptOnlyHIJINGLabels = kFALSE ; }
-  Bool_t           AcceptOnlyHIJINGLabels()            const { return fAcceptOnlyHIJINGLabels   ; }
+  // Select particles or clusters depending on generator
+  virtual void     SetNumberOfMCGeneratorsToAccept(Int_t nGen) 
+  { fNMCGenerToAccept = nGen ; 
+    if      ( nGen > 5 ) fNMCGenerToAccept = 5 ; 
+    else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
+  
+  virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
+  { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  
+  Bool_t  AcceptParticleMCLabel(Int_t mcLabel);
   
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
@@ -931,6 +936,10 @@ public:
   
   TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
 
+  // MC labels to accept
+  Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
+  TString          fMCGenerToAccept[5];            ///<  List with name of generators that should not be included
+
   
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
@@ -939,7 +948,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,74) ;
+  ClassDef(AliCaloTrackReader,75) ;
   /// \endcond
 
 } ;

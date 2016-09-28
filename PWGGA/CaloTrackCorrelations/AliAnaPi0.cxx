@@ -1464,7 +1464,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
   
   for(Int_t i=0 ; i < nprim; i++)
   {
-    if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+    if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
     if(GetReader()->ReadStack())
     {
