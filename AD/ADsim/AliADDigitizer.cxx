@@ -64,7 +64,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 
-ClassImp(AliADDigitizer)
+ClassImp(AliADDigitizer);
 
 //____________________________________________________________________________
 AliADDigitizer::AliADDigitizer()
@@ -851,7 +851,6 @@ Float_t AliADDigitizer::SmearLeadingTime(Int_t i, Float_t time) const
 //_____________________________________________________________________________
 void AliADDigitizer::GetTimeSlewingSplines()
 {
-
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry *entry = man->Get("AD/Calib/TimeSlewing");
 
@@ -866,9 +865,8 @@ void AliADDigitizer::GetTimeSlewingSplines()
 //_____________________________________________________________________________
 void AliADDigitizer::ExtrapolateSplines()
 {
-  TH1F *hTimeVsSignal;
-
-  for(Int_t i=0; i<16; i++){
+  TH1F *hTimeVsSignal = NULL;
+  for (Int_t i=0; i<16; i++) {
     TCanvas *c = new TCanvas("c", " ",0,0,1,1);
     c->cd();
     fTimeSlewingSpline[i]->Paint();
