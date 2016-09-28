@@ -64,7 +64,6 @@ protected:
 
 	  TH1F* BuildHitAndEnergyMean(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
 	  TH1F* BuildTimeMean(Int_t crit, Double_t emin, Double_t emax, Double_t nsigma);
-	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
 
 	  void FlagAsDead();
 	  void FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
