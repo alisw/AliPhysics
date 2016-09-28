@@ -69,7 +69,25 @@ public:
     kGeneratedMask    = AliAODTracklet::kGenerated,
     kGeneratedVeto    = AliAODTracklet::kNeutral|AliAODTracklet::kSuppressed
   };
-    
+  // -----------------------------------------------------------------
+  /** Status of task */
+  enum {
+    kAll=1,          // Count all events
+    kEvent,          // Have event
+    kTracklets,      // Have tracklets
+    kTrigger,        // Have trigger 
+    kIP,             // Have IP
+    kCentrality,     // Have centrality
+    kCompleted       // Have completed
+  };
+  enum EStatus {
+    kOKEvent       = ((1<<(kAll      -1))|
+		      (1<<(kEvent    -1))|
+		      (1<<(kTracklets-1))),
+    kOKTrigger     = (kOKEvent|(1<<(kTrigger  -1))),
+    kOKIPz         = (kOKTrigger|(1<<kIP-1)),
+    kOkCentrality  = (kOKIPz|(1<<(kCentrality-1)))
+  };
   /** Type of containers */
   typedef TList Container;
   /** 
@@ -662,8 +680,7 @@ public:
     
     ClassDef(Histos,1); 
   };    
-
-
+      
   //__________________________________________________________________
   /**
    * A centrality bin.  Here, we need 
@@ -690,6 +707,7 @@ public:
 	fSubs(0),
 	fLow(0),
 	fHigh(0),
+	fStatus(0),
 	fIPz(0),
 	fCent(0),
 	fCentIPz(0),
@@ -713,6 +731,7 @@ public:
       : Sub(o),
 	fSubs(0),
 	fLow(o.fLow),
+	fStatus(0),
 	fIPz(0),
 	fCent(0),
 	fCentIPz(0),
@@ -769,12 +788,13 @@ public:
     /** 
      * Check if we should process this event 
      * 
-     * @param cent Event centrality 
-     * @param ipz  Event Z-coordinate of the interaction 
+     * @param status Event status 
+     * @param cent   Event centrality 
+     * @param ipz    Event Z-coordinate of the interaction 
      * 
      * @return true if we should process the event 
      */
-    Bool_t Accept(Double_t cent, Double_t ipz);
+    Bool_t Accept(UInt_t status, Double_t cent, Double_t ipz);
     /** 
      * Process a single tracklet 
      * 
@@ -789,6 +809,11 @@ public:
 			   Double_t        ipz,
 			   UShort_t        signal,
 			   Double_t        weight);
+    /** 
+     * Tell bin we're done with the processing. 
+     * 
+     */
+    void Completed();
     /** 
      * Initialize this sub-component at the time of finalizing the
      * job.  Should find sum container in @a parent and extract data
@@ -847,8 +872,9 @@ public:
     Container*  fSubs;
     Double_t    fLow;
     Double_t    fHigh;
-    TH1*        fIPz;  //! 
-    TH1*        fCent; //!
+    TH1*        fStatus;  //! 
+    TH1*        fIPz;     //! 
+    TH1*        fCent;    //!
     TProfile*   fCentIPz; //! 
     Histos*     fMeasured; 
     Histos*     fInjection;
@@ -912,15 +938,23 @@ protected:
    */
   virtual const char* GetBranchName() const { return "AliAODTracklets"; }
   /** 
+   * Calculate bit flag corresponding to the bin number 
+   * 
+   * @param bin Bin number 
+   * 
+   * @return Bit flag 
+   */
+  static UInt_t Bin2Flag(UInt_t bin);
+  /** 
    * Check event 
    * 
    * @param cent        On return, the event centrality 
    * @param ip          On return, the event interaction point 
    * @param tracklets   On return, the list of tracklets 
    * 
-   * @return true if all selections pass x5
+   * @return Bit mask of completed requirements
    */
-  Bool_t CheckEvent(Double_t&          cent,
+  UInt_t CheckEvent(Double_t&          cent,
 		    const AliVVertex*& ip,
 		    TClonesArray*&     tracklets);
   /** 
@@ -1058,11 +1092,15 @@ protected:
   /** 
    * Process tracklets of an event 
    * 
+   * @param status      The event status flags 
    * @param cent        Event centrality 
    * @param ip          Event interaction point 
    * @param tracklets   List of tracklets 
    */
-  void ProcessEvent(Double_t cent,const AliVVertex* ip,TClonesArray* tracklets);
+  void ProcessEvent(UInt_t            status,
+		    Double_t          cent,
+		    const AliVVertex* ip,
+		    TClonesArray*     tracklets);
   /* @} */
 
   // -----------------------------------------------------------------
@@ -1080,17 +1118,14 @@ protected:
   virtual Bool_t MasterFinalize(Container* results);
   /* @} */
 
-  // -----------------------------------------------------------------
-  /** Status of task */
-  enum {
-    kAll=1,          // Count all events
-    kEvent,          // Have event
-    kTracklets,      // Have tracklets
-    kTrigger,        // Have trigger 
-    kIP,             // Have IP
-    kCentrality,     // Have centrality
-    kCompleted       // Have completed
-  };
+  /** 
+   * Make status histogram 
+   * 
+   * @param container Container to add to 
+   * 
+   * @return The status histogram created 
+   */
+  static TH1* MakeStatus(Container* container);
   
   // -----------------------------------------------------------------
   /** Container */
@@ -1646,6 +1681,7 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   Printf(" %22s: %f",   "tail Delta",	           fTailDelta);
   Printf(" %22s: %f",   "tail maximum",	           tailMax);
   Printf(" %22s: %f%%", "Absolute least c",        fAbsMinCent);
+  Printf(" %22s: %s (%d)", "Centrality estimator", fCentMethod.Data(),fCentIdx);
   PrintAxis(fEtaAxis);
   PrintAxis(fPhiAxis);
   PrintAxis(fIPzAxis,1,"IPz");
@@ -1793,27 +1829,7 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fCentEst->SetYTitle(Form("#LT%s%GT",fCentMethod.Data()));
   TH1::SetDefaultSumw2(save);
 
-  fStatus = new TH1F("status", "Status of task",
-		     kCompleted, .5, kCompleted+.5);
-  fStatus->SetMarkerSize(2);
-  fStatus->SetMarkerColor(kMagenta+2);
-  fStatus->SetLineColor(kMagenta+2);
-  fStatus->SetFillColor(kMagenta+2);
-  fStatus->SetFillStyle(1001);
-  fStatus->SetBarOffset(0.1);
-  fStatus->SetBarWidth(0.4);
-  fStatus->SetDirectory(0);
-  fStatus->SetStats(0);
-  fStatus->SetXTitle("Event have");
-  fStatus->SetYTitle("# Events");
-  fStatus->GetXaxis()->SetBinLabel(kAll,            "Been seen");
-  fStatus->GetXaxis()->SetBinLabel(kEvent,          "Event data");
-  fStatus->GetXaxis()->SetBinLabel(kTracklets,      "Tracklets");
-  fStatus->GetXaxis()->SetBinLabel(kTrigger,        "Trigger");
-  fStatus->GetXaxis()->SetBinLabel(kIP,             "IP");
-  fStatus->GetXaxis()->SetBinLabel(kCentrality,     "Centrality");
-  fStatus->GetXaxis()->SetBinLabel(kCompleted,      "Completed");
-  fContainer->Add(fStatus);
+  fStatus = MakeStatus(fContainer);
 
   typedef TParameter<double> DP;
   typedef TParameter<bool>   BP;
@@ -1918,6 +1934,7 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
     fSubs(0),
     fLow(c1),
     fHigh(c2),
+    fStatus(0),
     fIPz(0),
     fCent(0),
     fCentIPz(0),
@@ -2000,6 +2017,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
   
   TAxis centAxis(20, fLow, fHigh);
   FixAxis(centAxis, "Centrality [%]");
+  fStatus    = MakeStatus(fContainer);
   fCent      = Make1D(fContainer,"cent","Centrality [%]",
 		      kMagenta+2,20,centAxis);
   fIPz       = Make1D(fContainer,"ipz","IP_{#it{z}} [cm]",kRed+2,20,ipzAxis);
@@ -2017,7 +2035,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
-						const TAxis& etaAxis,
+	  					const TAxis& etaAxis,
 						const TAxis& ipzAxis,
 						const TAxis& deltaAxis)
 {
@@ -2113,24 +2131,58 @@ AliTrackletAODdNdeta::UserExec(Option_t*)
   Double_t          cent      = -1;
   const AliVVertex* ip        = 0;
   TClonesArray*     tracklets = 0;
-  if (!CheckEvent(cent, ip, tracklets)) {
+  UInt_t            status    = CheckEvent(cent, ip, tracklets);
+  if ((status & kOKEvent) != kOKEvent) {
     AliWarningF("Event didn't pass %f, %p, %p", cent, ip, tracklets);
-    Printf("Argh, check data failed %f, %p, %p", cent, ip, tracklets);
     return;
   }
   if (DebugLevel() > 0) Printf("Got centrality=%f ipZ=%f %d tracklets",
 			       cent, ip->GetZ(), tracklets->GetEntriesFast());
-  ProcessEvent(cent, ip, tracklets);
+  ProcessEvent(status, cent, ip, tracklets);
 
   PostData(1,fContainer);
   fStatus->Fill(kCompleted);
 }
 
 //____________________________________________________________________
-Bool_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
+UInt_t AliTrackletAODdNdeta::Bin2Flag(UInt_t bin)
+{
+  return (1 << (bin-1));
+}
+
+//____________________________________________________________________
+TH1* AliTrackletAODdNdeta::MakeStatus(Container* container)
+{
+  TH1* status = new TH1F("status", "Status of task",
+			 kCompleted, .5, kCompleted+.5);
+  status->SetMarkerSize(2);
+  status->SetMarkerColor(kMagenta+2);
+  status->SetLineColor(kMagenta+2);
+  status->SetFillColor(kMagenta+2);
+  status->SetFillStyle(1001);
+  status->SetBarOffset(0.1);
+  status->SetBarWidth(0.4);
+  status->SetDirectory(0);
+  status->SetStats(0);
+  status->SetXTitle("Event have");
+  status->SetYTitle("# Events");
+  status->GetXaxis()->SetBinLabel(kAll,            "Been seen");
+  status->GetXaxis()->SetBinLabel(kEvent,          "Event data");
+  status->GetXaxis()->SetBinLabel(kTracklets,      "Tracklets");
+  status->GetXaxis()->SetBinLabel(kTrigger,        "Trigger");
+  status->GetXaxis()->SetBinLabel(kIP,             "IP");
+  status->GetXaxis()->SetBinLabel(kCentrality,     "Centrality");
+  status->GetXaxis()->SetBinLabel(kCompleted,      "Completed");
+  container->Add(status);
+  return status;
+}
+
+//____________________________________________________________________
+UInt_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
 					const AliVVertex*& ip,
 					TClonesArray*&     tracklets)
 {
+  UInt_t ret = Bin2Flag(kAll);
   // Count all events 
   fStatus->Fill(kAll);
 
@@ -2138,36 +2190,43 @@ Bool_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
   AliVEvent* event = InputEvent();
   if (!event) {
     AliWarning("No event");
-    return false;
+    return ret;
   }
+  ret |= Bin2Flag(kEvent);
   fStatus->Fill(kEvent);
 
   // Check if we have the tracklets 
   tracklets = FindTracklets(event);
-  if (!tracklets) return false;
+  if (!tracklets) return ret;
+  ret |= Bin2Flag(kTracklets);
   fStatus->Fill(kTracklets);
     
   // Check if event was triggered 
   Bool_t trg = FindTrigger();
-  if (!trg) return false;
+  if (!trg) return ret;
+  ret |= Bin2Flag(kTrigger);
   fStatus->Fill(kTrigger);
     
   // Check the interaction point 
   ip = FindIP(event);
-  if (!ip) return false;
+  if (!ip) return ret;
+  ret |= Bin2Flag(kIP);
   fStatus->Fill(kIP);
 
   // Check the centrality
   Int_t nTracklets = 0;
   cent = FindCentrality(event, nTracklets);
   // Do not fail on missing centrality 
-  if (cent >= 0) fStatus->Fill(kCentrality);
-
+  if (cent >= 0) {
+    ret |= Bin2Flag(kCentrality);
+    fStatus->Fill(kCentrality);
+  }
+  
   fIPz->Fill(ip->GetZ());
   fCent->Fill(cent);
   fCentTracklets->Fill(cent, nTracklets); 
   
-  return true;
+  return ret;
 }
 
 //____________________________________________________________________
@@ -2423,24 +2482,26 @@ UShort_t AliTrackletAODdNdeta::CheckTracklet(AliAODTracklet* tracklet) const
 
     
 //____________________________________________________________________
-void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
+void AliTrackletAODdNdeta::ProcessEvent(UInt_t            status,
+					Double_t          cent,
 					const AliVVertex* ip,
 					TClonesArray*     tracklets)
 {
   // Figure out which centrality bins to fill 
+  Double_t ipz        = (ip ? ip->GetZ() : -1000);
   Int_t    nAcc = 0;
   TIter    nextAcc(fCentBins);
   CentBin* bin = 0;
   TList    toRun;
   while ((bin = static_cast<CentBin*>(nextAcc()))) {
-    if (!bin->Accept(cent, ip->GetZ())) continue; // Not in range for this bin
+    // Not in range for this bin
+    if (!bin->Accept(status, cent, ipz)) continue; 
     toRun.Add(bin);
     nAcc++;
   }
   // If we have no centrality bins  to fill, we return immediately 
   if (nAcc <= 0) return;
 
-  Double_t        ipz        = ip->GetZ();
   Double_t        nBare      = 0;
   Double_t        nMeasured  = 0;
   Double_t        nGenerated = 0;
@@ -2466,6 +2527,10 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
       bin->ProcessTracklet(tracklet, ip->GetZ(), signal, weight);
     }    
   }
+  TIter nextBin(&toRun);
+  while ((bin = static_cast<CentBin*>(nextBin()))) {
+    bin->Completed();
+  }    
   fNBareVsFake     ->Fill(nBare,      nFake);
   fNBareVsGood     ->Fill(nBare,      nGood);
   fNTrackletVsFake ->Fill(nMeasured,  nFake);
@@ -2480,13 +2545,35 @@ Bool_t AliTrackletAODdNdeta::CentBin::IsAllBin() const
   return fLow >= fHigh;
 }
 //____________________________________________________________________
-Bool_t AliTrackletAODdNdeta::CentBin::Accept(Double_t cent, Double_t ipz)
+Bool_t AliTrackletAODdNdeta::CentBin::Accept(UInt_t   status,
+					     Double_t cent,
+					     Double_t ipz)
 {
-  if (!IsAllBin() && (cent < fLow || cent >= fHigh)) return false;
-  fCent   ->Fill(cent);
-  fIPz    ->Fill(ipz);
-  fCentIPz->Fill(ipz, cent);
-  return true;
+  Bool_t centOK = (IsAllBin() ||
+		   (status & Bin2Flag(kCentrality) &&
+		    cent >= fLow && cent < fHigh));
+  // We get out here already as we're not in this centrality bin 
+  if (!centOK) return false;
+  fStatus->Fill(kAll);
+  if (status & Bin2Flag(kEvent))     fStatus->Fill(kEvent);
+  if (status & Bin2Flag(kTracklets)) fStatus->Fill(kTracklets);
+  if (status & Bin2Flag(kTrigger))
+    fStatus->Fill(kTrigger);
+  else
+    return false; // In case we have no trigger
+  if (status & Bin2Flag(kCentrality)) {
+    fStatus->Fill(kCentrality);  
+    fCent->Fill(cent);
+  }
+  // We explicity check the IP status here, since we need that to
+  // calculate the per-bin vertex efficiency
+  if (status & Bin2Flag(kIP)) {
+    fStatus ->Fill(kIP);
+    fIPz    ->Fill(ipz);
+    fCentIPz->Fill(ipz, cent);
+    return true;
+  }
+  return false;
 }
 
 //____________________________________________________________________
@@ -2511,10 +2598,11 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
 {
   if (!fEtaIPz && !fEtaDeltaIPz) return true;
   // Get tracklet info 
-  Double_t eta    = tracklet->GetEta();
-  Double_t delta  = tracklet->GetDelta();
-  UChar_t  flags  = tracklet->GetFlags();
-  Int_t    pdgBin = -1;
+  Double_t eta     = tracklet->GetEta();
+  Double_t delta   = tracklet->GetDelta();
+  UChar_t  flags   = tracklet->GetFlags();
+  Int_t    pdgBin  = -1;
+  Int_t    pdgBin2 = -1;
 
   // For debugging 
   char m[7];
@@ -2528,8 +2616,11 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   }
 
   // If we need the PDG code, get that here
-  if (fEtaPdgIPz || fEtaPdg || fEtaDeltaPdg)
-    pdgBin = PdgBin(tracklet->GetParentPdg());
+  if (fEtaPdgIPz || fEtaPdg || fEtaDeltaPdg) {
+    pdgBin  = PdgBin(tracklet->GetParentPdg());
+    if (tracklet->IsCombinatorics())
+      pdgBin2 = PdgBin(tracklet->GetParentPdg(true));
+  }
   
   // If we have the eta-vs-pdg histogram, we should fill before the
   // veto, which filters out the neutral particles.
@@ -2547,10 +2638,9 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   
   // Fill PDG,eta dependent Delta distributions
   if (fEtaDeltaPdg) {
-    fEtaDeltaPdg->Fill(eta, delta, pdgBin, weight);
-    if (tracklet->IsCombinatorics())
-      // Fill both particles 
-      fEtaPdgIPz->Fill(eta,delta,PdgBin(tracklet->GetParentPdg(true)),weight);
+    fEtaDeltaPdg                ->Fill(eta, delta, pdgBin,  weight);
+    // Fill both particles 
+    if (pdgBin2 >= 0) fEtaPdgIPz->Fill(eta, delta, pdgBin2, weight);
   }
   
   // Both reguirements (Delta < cut, dPhi < cut)
@@ -2562,10 +2652,9 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   if (!fEtaPdgIPz && !fEtaPt) return true;
 
   if (fEtaPdgIPz) {
-    fEtaPdgIPz->Fill(eta, pdgBin, ipZ, weight);
-    if (tracklet->IsCombinatorics())
-      // Fill both particles 
-      fEtaPdgIPz->Fill(eta, PdgBin(tracklet->GetParentPdg(true)), ipZ, weight);
+    fEtaPdgIPz                  ->Fill(eta, pdgBin,  ipZ, weight);
+    // Fill both particles 
+    if (pdgBin2 >= 0) fEtaPdgIPz->Fill(eta, pdgBin2, ipZ, weight);
   }
 
   if (fEtaPt) fEtaPt ->Fill(eta, tracklet->GetParentPt(), weight);
@@ -2573,14 +2662,24 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   return true;
 }
 
+//____________________________________________________________________
+void AliTrackletAODdNdeta::CentBin::Completed()
+{
+  fStatus->Fill(kCompleted);
+}
 
 //____________________________________________________________________
 void 
 AliTrackletAODdNdeta::Terminate(Option_t*)
 {
+  TString resName; resName.Form("%sResults",GetName());
+  if (GetOutputData(2)) {
+    Warning("Terminate", "Already have a result container, making a new one");
+    resName.Append("New");
+  }
   Container* results = new Container;
-  results->SetName(Form("%sResults",GetName()));
-  results->SetOwner();
+  results->SetName(resName);
+  results->SetOwner();  
 
   Print("");
   fContainer = static_cast<Container*>(GetOutputData(1));
@@ -2608,10 +2707,11 @@ AliTrackletAODdNdeta::Terminate(Option_t*)
 Bool_t AliTrackletAODdNdeta::CentBin::FinalizeInit(Container* parent)
 {
   fContainer     = GetC(parent, fName);
+  fStatus        = GetH1(fContainer, "status");
   fCent          = GetH1(fContainer, "cent");
   fIPz           = GetH1(fContainer, "ipz");
   fCentIPz       = GetP1(fContainer, "centIpz");
-  if (!fContainer || !fCent || !fIPz) return false;
+  if (!fContainer || !fStatus || !fCent || !fIPz) return false;
   TIter next(fSubs);
   Histos* h = 0;
   while ((h = static_cast<Histos*>(next()))) 
@@ -2724,6 +2824,16 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
   result->SetOwner(true);
   parent->Add(result);
 
+  TH1* status = static_cast<TH1*>(CloneAndAdd(result, fStatus));
+  status->Scale(1./status->GetBinContent(kAll));
+
+  Double_t   trigEff = status->GetBinContent(kTrigger);
+  Double_t   vtxEff  = status->GetBinContent(kIP) / trigEff;
+  typedef TParameter<double> DP;
+
+  result->Add(new DP("triggerEfficiency", trigEff));
+  result->Add(new DP("ipEfficiency",      vtxEff));
+  
   Double_t   nEvents = fIPz->GetEntries();
   // Copy ipZ histogram and scale by number of events 
   TH1* ipZ = static_cast<TH1*>(CloneAndAdd(result, fIPz));
@@ -2732,6 +2842,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
   TH1* cent = static_cast<TH1*>(CloneAndAdd(result, fCent));
   cent->Scale(1./nEvents);
 
+				  
   CloneAndAdd(result, fCentIPz);
 
   Container* measCont = 0;
@@ -3173,6 +3284,7 @@ AliTrackletAODdNdeta::Histos::ProjectEtaPdgIPz(Container*     result,
   THStack*   pdgs   = new THStack("all","");
   THStack*   ratios = new THStack("toPion", "");
   TH1*       pion   = 0;
+  TH2*       dtfs   = 0;
   Container* pdgOut = new Container();
   pdgOut->SetName("types");
   result->Add(pdgOut);
@@ -3209,6 +3321,44 @@ AliTrackletAODdNdeta::Histos::ProjectEtaPdgIPz(Container*     result,
     pdgs->Add(h1);
     
     if (pdg == 211) pion = h1;
+    TH2* tmp = 0;
+    switch (pdg) {
+    case 321: 	  // Strange meson K^{+} 	     break;
+    case 323: 	  // Strange meson K^{*+} 	     break;
+    case 310: 	  // Strange meson K^{0}_{S} 	     break;
+    case 130: 	  // Strange meson K^{0}_{L} 	     break;
+    case 311: 	  // Strange meson K^{0} 	     break;
+    case 313: 	  // Strange meson K^{*} 	     break;
+    case 221: 	  // Strange meson #eta 	     break;
+    case 333: 	  // Strange meson #varphi 	     break;
+    case 331: 	  // Strange meson #eta' 	     break;
+    case 3112: 	  // Strange baryon #Sigma^{-}       break;
+    case 3222: 	  // Strange baryon #Sigma^{+}       break;
+    case 3114: 	  // Strange baryon #Sigma^{*-}      break;
+    case 3224: 	  // Strange baryon #Sigma^{*+}      break;
+    case 3312: 	  // Strange baryon #Xi^{-} 	     break;
+    case 3314: 	  // Strange baryon #Xi^{*-} 	     break;
+    case 3122: 	  // Strange baryon #Lambda 	     break;
+    case 3212: 	  // Strange baryon #Sigma^{0}       break;
+    case 3214: 	  // Strange baryon #Sigma^{*0}      break;
+    case 3322: 	  // Strange baryon #Xi^{0} 	     break;
+    case 3324: 	  // Strange baryon #Xi^{*0} 	     break;
+      tmp = h2;
+      break;
+    default: break;
+    }
+    if (tmp) {
+      if (!dtfs) {
+	dtfs = static_cast<TH2*>(tmp->Clone("dtfs"));
+	dtfs->SetDirectory(0);
+	dtfs->SetTitle("X_{s}#rightarrowX");
+	dtfs->SetYTitle("IP_{#it{z}} [cm]");
+	dtfs->Reset();
+	result->Add(dtfs);
+      }
+      // Add up contributions from strange particles 
+      dtfs->Add(tmp); 
+    }	
   }
   if (!pdgs->GetHists()) {
     yaxis->SetRange(first, last);    

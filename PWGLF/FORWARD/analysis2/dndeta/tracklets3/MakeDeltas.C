@@ -19,7 +19,9 @@
  */
 void
 MakeDeltas(const char* realFileName,
-	   const char* simFileName)
+	   const char* simFileName,
+	   Int_t       dimen=2,
+	   Bool_t      scaleToTail=true)
 {
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include "
 			  "-I${ALICE_PHYSICS}/include "
@@ -33,7 +35,8 @@ MakeDeltas(const char* realFileName,
 
   TCanvas* c1 = new TCanvas("c1","c1");
   MakeDeltaWeights* mdw = new MakeDeltaWeights;
-  AliTrackletBaseWeights* w = mdw->Run(realFileName,simFileName);
+  AliTrackletBaseWeights* w = mdw->Run(realFileName,simFileName,
+				       dimen, scaleToTail);
   TCanvas* c2 = new TCanvas("c2","c2");
   w->Draw();
 }

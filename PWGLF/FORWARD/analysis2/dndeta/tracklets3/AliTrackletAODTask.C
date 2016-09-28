@@ -629,7 +629,7 @@ Bool_t AliTrackletAODTask::HasField(AliVEvent* event)
 AliVEvent* AliTrackletAODTask::FindEvent()
 {
   AliVEvent* event = InputEvent();
-  if (!event) AliWarning("No event");
+  if (fDebug > 0 && !event) AliWarning("No event");
   return event;
 }
   
@@ -639,8 +639,9 @@ TTree* AliTrackletAODTask::FindClusters()
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliVEventHandler*   inh = mgr->GetInputEventHandler();
   if (!inh->IsA()->InheritsFrom(AliESDInputHandlerRP::Class())) {
-    AliWarningF("Not the right kind of input handler: %s",
-		inh->ClassName());
+    if (fDebug > 0)
+      AliWarningF("Clusters not available via input handler of class: %s",
+		  inh->ClassName());
     return 0;
   }
   AliESDInputHandlerRP* rph = static_cast<AliESDInputHandlerRP*>(inh);
@@ -659,7 +660,8 @@ const AliVVertex* AliTrackletAODTask::FindIP(AliVEvent* event,
 {
   const AliVVertex* ip   = event->GetPrimaryVertex();
   if (ip->GetNContributors() <= 0) {
-    AliWarning("Not enough contributors for IP");
+    if (fDebug > 0)
+      AliWarning("Not enough contributors for IP");
     return 0;
   }   
   // If this is from the Z vertexer, do some checks 
@@ -669,7 +671,8 @@ const AliVVertex* AliTrackletAODTask::FindIP(AliVEvent* event,
     ip->GetCovarianceMatrix(covar);
     Double_t sigmaZ = TMath::Sqrt(covar[5]);
     if (sigmaZ >= maxZError) {
-      AliWarningF("IPz resolution = %f >= %f", sigmaZ, maxZError);
+      if (fDebug) 
+	AliWarningF("IPz resolution = %f >= %f", sigmaZ, maxZError);
       return 0;
     }
       
@@ -678,8 +681,9 @@ const AliVVertex* AliTrackletAODTask::FindIP(AliVEvent* event,
       const AliVertex* ipv = static_cast<const AliVertex*>(ip);
       // Dispersion is the parameter used by the vertexer for finding the IP. 
       if (ipv->GetDispersion() >= maxDispersion) {
-	AliWarningF("IP dispersion = %f >= %f",
-		    ipv->GetDispersion(), maxDispersion);
+	if (fDebug > 0)
+	  AliWarningF("IP dispersion = %f >= %f",
+		      ipv->GetDispersion(), maxDispersion);
 	return 0;
       }
     }
@@ -1374,7 +1378,7 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
     }
     TParticlePDG* pdg = particle->GetPDG();
     if (!pdg) {
-      ::Warning("GetPDG", "Unknown PDG code: %d", particle->GetPdgCode());
+      AliWarningF("Unknown PDG code: %d", particle->GetPdgCode());
       // continue; // Unknown particle
     }
     // if (pdg->Charge() == 0) {
@@ -1386,8 +1390,9 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
     Double_t theta = particle->Theta();
     // Check for beam-like particle 
     if (theta < 1e-6 || TMath::Abs(theta-TMath::Pi()) < 1e-6) {
-      AliWarningF("Track # %6d is beam-like (%f)", trackNo,
-		  TMath::RadToDeg()*theta);    
+      if (fDebug > 0)
+	AliWarningF("Track # %6d is beam-like (%f)", trackNo,
+		    TMath::RadToDeg()*theta);    
       continue;
     }
     Double_t eta = -TMath::Log(TMath::ATan(theta/2));

@@ -83,7 +83,7 @@ class THStack;
  *   - Second cluster primary parent particle type 
  *
  *   During the AOD production, no cuts, except those defined for the
- *   re-reconstruction is imposed.  In this way, the AOD contains the
+ *   re-reconstruction are imposed.  In this way, the AOD contains the
  *   minimum bias information on tracklets for all events, 
  * 
  *   A second pass over the generated AODs is then needed - for both
@@ -229,8 +229,47 @@ class THStack;
  * 
  * (see @ref AliTrackletdNdeta2::Run for more information on arguments)
  *
- * By default, each plot will be made and the process paused.  To
- * advance, simple press the space-bar.  
+ * Alternatively one can use the script Post.C to do this.  The script
+ * is used like.
+ *
+ * @code 
+ Post(simFile,realFile,outDir,process,visualize,nCentralities)
+ @endcode 
+ *
+ * where 
+ *
+ * - @c simFile       is the simulation data input file (or directory)
+ * - @c realFile      is the real data input file (or directory)
+ * - @c outDir        is the output directory (created) 
+ * - @c process       are the processing options 
+ * - @c visualize     are the visualisation options 
+ * - @c nCentralities is the maximum number of centrality bins
+ *
+ * Processing options: 
+ *
+ * - @c 0x0001   Do scaling by unity
+ * - @c 0x0002   Do scaling by full average
+ * - @c 0x0004   Do scaling by eta differential
+ * - @c 0x0008   Do scaling by fully differential
+ * - @c 0x0010   Correct for decay of strange to secondary 
+ * - @c 0x1000   MC closure test
+ *
+ * Visualization options: 
+ *
+ * - @c 0x0001   Draw general information
+ * - @c 0x0002   Draw parameters
+ * - @c 0x0004   Draw weights
+ * - @c 0x0008   Draw dNch/deta
+ * - @c 0x0010   Draw alphas
+ * - @c 0x0020   Draw delta information
+ * - @c 0x0040   Draw backgrounds
+ * - @c 0x0100   Whether to make a PDF
+ * - @c 0x0200   Whether to pause after each plot
+ * - @c 0x0400   Draw in landscape
+ * - @c 0x0800   Alternative markers
+ *
+ * By default, each plot will be made and the process
+ * paused.  To advance, simple press the space-bar.
  * 
  * If we had made the histograms using ProofLite, we should do
  *
@@ -243,8 +282,7 @@ class THStack;
         "LHC15k1a1_245064_fp_dNdeta/AnalysisResult.root",
         "result.root");
  @endcode
- * 
- 
+ *  
  * @ingroup pwglf_forward
  */
 /**
@@ -2069,7 +2107,8 @@ TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
     }
     if (k == 0 || n == 0) {
       if (verb) 
-	::Warning("Average", "Eta bin # %3d has no data",etaBin);
+	::Warning("Average", "Eta bin # %3d of %10s has no data",
+		  etaBin, h->GetName());
       continue; // This eta bin empty!
     }
     Double_t norm = (mode > 0 ? n : dsum);
