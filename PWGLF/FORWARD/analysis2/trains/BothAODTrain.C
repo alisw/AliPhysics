@@ -46,6 +46,7 @@ public:
     fOptions.Add("cent",      "Use centrality");
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("secmap",    "Use secondary maps to correct", false);
+    fOptions.Add("hit-threshold", "CUT", "Threshold for hits", 0.9);
 
     // Other options 
     fOptions.Add("copy", "LIST",    "',' separated list to copy","cent");
@@ -60,7 +61,7 @@ public:
     fOptions.Add("dphi-shift",       "X","Bending shift",           0.0045);
     fOptions.Add("phi-overlap-cut",  "X","Phi overlap cut",         0.005);
     fOptions.Add("z-eta-overlap-cut","X","Z-Eta overlap cut",       0.05);
-    fOptions.Add("filter-k0s",           "Filter K0s clusters",     false);    
+    fOptions.Add("filter-str",       "X","Filter strange tracks",   0);    
     fOptions.Add("need-clusters",        "If set, insist on RecPoints",false);
     fOptions.Set("type", "ESD");
   }
@@ -113,7 +114,39 @@ protected:
     TString cpy = fOptions.Get("copy");
     Info("", "What to copy: %s", cpy.Data());
     CoupleSECar("AddTaskCopyHeader.C", Form("\"%s\"", cpy.Data()), mask);
-  }    
+  }
+  /** 
+   * Set a parameter on the forward task 
+   * 
+   * @param task Task to set on
+   * @param call The call 
+   * @param arg  The argument(s) for the call
+   */
+  void SetOnFwd(AliAnalysisTask* task,
+		const TString& call,
+		const TString& arg)
+  {
+    TString cmd;
+    cmd.Form("((AliForwardMultiplicityBase*)%p)->%s(%s)",
+	     tsk, call.Data(), arg.Data())
+    gROOT->ProcessLine(cmd);
+  }
+  /** 
+   * Set a parameter on the forward task 
+   * 
+   * @param task Task to set on
+   * @param call The call 
+   * @param arg  The argument(s) for the call
+   */
+  void SetOnMCFwd(AliAnalysisTask* task,
+		  const TString& call,
+		  const TString& arg)
+  {
+    TString cmd;
+    cmd.Form("((AliForwardMCMultiplicityTask*)%p)->%s(%s)",
+	     tsk, call.Data(), arg.Data())
+    gROOT->ProcessLine(cmd);
+  }
   /** 
    * Couple the forward multiplicity task 
    * 
@@ -132,6 +165,7 @@ protected:
     UShort_t sNN  = fOptions.AsInt("snn", 0);
     UShort_t fld  = fOptions.AsInt("field", 0);
     UShort_t mSt  = fOptions.AsInt("max-strips", 2);
+    Double_t thr  = fOptions.AsDouble("hit-threshold". .9);
     Bool_t   sec  = fOptions.Has("secmap");
     TString  corr = "";
     TString  dead = "";
@@ -149,15 +183,11 @@ protected:
     if (!fwd)
       Fatal("CoupleForwardCar", "Failed to add forward task");
 
-    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)%p)"
-			    "->GetCorrections().SetUseSecondaryMap(%d)",
-			    fwd, sec));
-    if (mc) { 
-      gROOT->ProcessLine(Form("((AliForwardMCMultiplicityTask*)%p)"
-			      "->GetTrackDensity()"
-			      ".SetMaxConsequtiveStrips(%d)", 
-			      fwd, mSt));
-    }
+    SetOnFwd(fwd, "GetCorrections().SetUseSecondaryMap", Form("%d",sec));
+    //SetOnFwd(fwd, "GetDensityCalculator()->SetHitThreshold", Form("%f", thr));
+    if (mc)
+      SetOnMCFwd(fwd, "GetTrackDensity().SetMaxConsequtiveStrips",
+		 Form("%d",mSt));
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
     if (!corr.IsNull()) 
       fRailway->LoadAux(Form("%s/fmd_corrections.root",corr.Data()), true);
@@ -240,7 +270,7 @@ protected:
     FromOption(task, "DPhiShift",	"dphi-shift",	     0.0045);
     FromOption(task, "PhiOverlapCut",	"phi-overlap-cut"  , 0.005);
     FromOption(task, "ZEtaOverlapCut",	"z-eta-overlap-cut", 0.05);
-    FromOption(task, "FilterK0S",       "filter-k0s",        false);        
+    FromOption(task, "FilterStrange",   "filter-str",        0);        
   }
   /** 
    * Couple tasks to run after main body 

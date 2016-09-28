@@ -913,8 +913,11 @@ struct OptionList
       opt->Help(o, nWidth);
       cur = cur->fNext;
     }
-    TString pre(prefix); // pre.ReplaceAll("-", " ");
-    HelpDesc(o);
+    TString pre(prefix);
+    pre.ReplaceAll("-", " ");
+    pre.ReplaceAll(" ", "");
+    if (!pre.IsNull()) pre.Append(" ");
+    HelpDesc(o, pre);
   }
   /** 
    * Show the values of options 
