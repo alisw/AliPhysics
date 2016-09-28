@@ -29,10 +29,9 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            TString suffix = "", // suffix for output
                                                            TString cutsDstarname = "DStartoKpipiCuts", // name of Dstar cut container
 							   TString cutsTrkname = "AssociatedCuts", // name of track cut container
-							   Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***
+							   Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
 							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10, 
-							   Double_t refMult=9.26, Bool_t usemultiplicity;
-                                                           )
+							   Double_t refMult=9.26, Bool_t usemultiplicity, Int_t AODprot=1)
 {
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -210,6 +209,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetMaxDStarEta(eta);
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
     task->SetUseMCEventType(UseMCEventType);
+    task->SetAODMismatchProtection(AODprot);
 
     if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
     if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);

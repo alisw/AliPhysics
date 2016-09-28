@@ -19,7 +19,8 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Bool_t isDplusEff = kFALSE,
                                                              TString fileDplusEff="",
                                                              Bool_t PoolbyPool=kFALSE,
-                                                             Bool_t useCentrality = kFALSE)
+                                                             Bool_t useCentrality = kFALSE,
+			  				     Int_t AODprot=1)
 {
     
     
@@ -133,7 +134,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetPoolByPoolCorr(PoolbyPool); //TRUE means pbpb Or pA
     if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator);
     dpluscorrTask->SetCheckCutDist(kTRUE);
-    
+    dpluscorrTask->SetAODMismatchProtection(AODprot);    
     
     //7. Create container for input/output
     TString finDirname = "";
