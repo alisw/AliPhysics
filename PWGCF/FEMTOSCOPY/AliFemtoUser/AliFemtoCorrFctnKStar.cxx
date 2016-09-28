@@ -62,15 +62,15 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title, const int& nbins
   fDenDEtaDPhiS(0),
   fPairKStar(0),
 
-  fBuildkTBinned(kTRUE),
+  fBuildkTBinned(kFALSE),
   fNumerator_kT(0),
   fDenominator_kT(0),
 
-  fBuildmTBinned(kTRUE),
+  fBuildmTBinned(kFALSE),
   fNumerator_mT(0),
   fDenominator_mT(0),
 
-  fBuild3d(kTRUE),
+  fBuild3d(kFALSE),
   fNumerator3d(0),
   fDenominator3d(0)
 {
