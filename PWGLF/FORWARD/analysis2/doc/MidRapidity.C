@@ -1,6 +1,6 @@
 #error This is not for compilation 
 /** 
- * @page pwglf_fwd_mid_doc The Mid-rapidity code 
+ * @page pwglf_fwd_mid_doc The  Mid-rapidity tracklet code for dN/deta
  *
  * Module: @ref pwglf_forward_tracklets
  *
@@ -12,10 +12,69 @@
  * charged-particle pseudorapidity density over @f$|\eta|<2@f$ using
  * SPD tracklets.
  *
- * The input to this analysis is the ESD information from the SPD, and
- * SPD clusters (Rec-points).  The code is derived from Ruben's
- * original code plus modifications from Roberto for reweighing the
- * simulation input.
+ * @section pwglf_fwd_mid_over Overview
+ * 
+ * The code in this module constitutes tools for analysing SPD
+ * tracklet data for the charged-particle pseudorapidity density.  It
+ * is based on Ruben's original code (see @ref
+ * pwglf_fwd_spd_tracklet_1), but differs in some important aspects.
+ *
+ * - Ruben's original code is designed to do a single pass of
+ *   real-data and simulated ESDs (AliTrackletTaskMulti).  The
+ *   information extracted from those passes is then combined to form
+ *   the final charged-particle pseudorapidity density using an
+ *   external script.
+ *
+ * - This code also requires a pass of real-data (AliTrackletAODTask)
+ *   and simulated (AliTrackletAODMCTask) ESDs, but the output is not
+ *   near-final histograms but an array of data structures
+ *   (AliAODTracklet) stored on the output AOD.  The data structure
+ *   contains basic information on each tracklet
+ *
+ *   - Polar angle @f$ \vartheta @f$ 
+ *   - Azimuthal angle @f$ \varphi@f$ 
+ *   - Polar opening angle @f$ \delta\vartheta@f$ 
+ *   - Azimuthal opening angle @f$ \delta\varphi@f$ 
+ *   - Quality (sum on square residuals) @f$ \Delta@f$ 
+ *   - A set of flags 
+ *
+ *   Tracklet structures from simulations contain in addition 
+ *
+ *   - First cluster primary parent transverse momentum 
+ *   - First cluster primary parent particle type 
+ *   - Second cluster primary parent transverse momentum 
+ *   - Second cluster primary parent particle type 
+ *
+ *   During the AOD production, no cuts, except those defined for the
+ *   re-reconstruction are imposed.  In this way, the AOD contains the
+ *   minimum bias information on tracklets for all events, 
+ * 
+ *   A second pass over the generated AODs is then needed - for both
+ *   real (AliTrackletAODdNdeta) and simulated
+ *   (AliTrackletAODMCdNdeta).  In this pass, we can
+ *
+ *   - Impose additional constrains on the events e.g., location of
+ *     primary vertex, centrality, event class and so on.
+ *   - Impose additional constrains on the tracklets 
+ * 
+ *   And for AODs corresponding to simulated data, we can also 
+ *
+ *   - Reweigh tracklets according to the cluster primary parents
+ *     transverse momentum and particle type.
+ *
+ *   In this way, we do a single pass of ESDs for real and simulated
+ *   data, and we can then process the generated AODs with various
+ *   cuts imposed.  The AODs are generally small enough that they can
+ *   be processed locally and quickly (for example using ProofLite).
+ *   This scheme allows for fast turn-around with the largest possible
+ *   flexibility.
+ *
+ *   The final charged-particle pseudorapidity density is produced by
+ *   an external class (AliTrackletdNdeta2).
+ *
+ *   Other differences to Ruben's code is that the output files are
+ *   far more structured, allowing for fast browsing of the data and
+ *   quality assurance.
  * 
  * @section pwglf_fwd_mid_analysis_flow Analysis flow
  *
@@ -149,9 +208,178 @@
  * particle specie(s) and transverse momentum (momenta) of the mother
  * primary particle(s).  AliTrackletWeights defines the interface used
  * for reqeighing the data.
+ * @section pwglf_fwd_tracklets_use To use 
  *
+ * @subsection pwglf_fwd_tracklets_use_aod AOD production 
+ * 
+ * To produce the AODs with the tracklet information in, one needs to
+ * run a train with a task of the class AliTrackletAODTask (or
+ * AliTrackletAODMCTask for simulated data) and a task of the class
+ * AliSimpleHeaderTask in it.  This is most easily done using the
+ * TrainSetup (@ref train_setup_doc) derived class TrackletAODTrain.
  *
- * @subsection pwglf_fwd_mid_misc Misc.
+ * For example for real data from run 245064 of LHC15o using the first
+ * physics pass
+ * 
+ * @verbatim 
+ runTrain --name=LHC15o_245064_fp_AOD \
+          --class=TrackletAODTrain.C \
+          --url="alien:///alice/data/2015/LHC15o?run=245064&pattern=pass_lowint_firstphys/&ast;/AliESDs.root&aliphysics=last,regular#esdTree"
+  @endverbatim
+ *
+ * or for simulated data from the LHC15k1a1 production anchored to run 245064 
+ * 
+ * @verbatim 
+ runTrain --name=LHC15k1a1_245064_fp_AOD \
+          --class=TrackletAODTrain.C \
+          --url=alien:///alice/sim/2015/LHC15k1a1?run=245064&pattern=&ast;/AliESDs.root&aliphysics=last,regular&mc#esdTree
+ @endverbatim
+ *
+ * (note the addition of the option &quot;&amp;mc&quot; to the URL argument) 
+ *
+ * In both cases a sub-directory - named of the name argument - of the
+ * current directory is created.  In that sub-directory there are
+ * scripts for merging the output, downloading results, and
+ * downloading the generated AODs.
+ * 
+ * It is highly recommended to download the generated AODs to your
+ * local work station to allow fast second step analysis.  To download
+ * the AODs, go to the generated sub-directory an run the @c
+ * DownloadAOD.C script.  For example, for the real data analysis of
+ * run 245064 of LHC15o, one would do
+ *
+ * @verbatim 
+ (cd LHC15o_245064_fp_AOD && root -l -b -q DownloadAOD.C) 
+ @endverbatim 
+ *
+ * and similar for the analysis of the simulated data. 
+ *
+ * @subsection pwglf_fwd_tracklets_use_hist Histogram production 
+ * 
+ * To produce the histograms for the final charged-particle
+ * pseudorapidity density , one needs to run a train with a task of
+ * the class AliTrackletAODdNdeta (or AliTrackletAODMCdNdeta for simulated
+ * data) in it.  This is
+ * most easily done using the TrainSetup derived class
+ * TrackletAODdNdeta.
+ *
+ * For example for real data from run 245064 of LHC15o where we store
+ * the AODs generated above on the grid
+ * 
+ * @verbatim 
+ runTrain --name=LHC15o_245064_fp_dNdeta \
+          --class=TrackletAODdNdeta.C \
+          --url="alien:///alice/cern.ch/user/a/auser/LHC15o_245064_fp_dNdeta/output?run=245064&pattern=* /AliAOD.root&aliphysics=last,regular#aodTree"
+  @endverbatim
+ *
+ * or for simulated data from the LHC15k1a1 production anchored to run 245064 
+ * 
+ * @verbatim 
+ runTrain --name=LHC15k1a1_245064_fp_dNdeta \
+          --class=TrackletAODdNdeta.C \
+          --url=alien:///alice/cern.ch/user/a/auser/LHC15k1a1_245064_fp_AOD/output?run=245064&pattern=* /AliAOD.root&aliphysics=last,regular&mc#esdTree
+ @endverbatim
+ * 
+ * (note the addition of the option &quot;&amp;mc&quot; to the URL argument) 
+ *
+ * If we had downloaded the AODs, we can use ProofLite to do this step 
+ *
+ * @verbatim 
+ runTrain --name=LHC15o_245064_fp_dNdeta \
+          --class=TrackletAODdNdeta.C \
+          --url="lite:///${PWD}/LHC15o_245064_fp_dNdeta?pattern=AliAOD_*.root#aodTree"
+ @endverbatim 
+ *
+ * and similar for simulated data 
+ *
+ * @verbatim
+ runTrain --name=LHC15k1a1_245064_fp_dNdeta \
+          --class=TrackletAODdNdeta.C \
+          --url="lite:///${PWD}/LHC15k1a1_245064_fp_dNdeta?pattern=AliAOD_*.root&mc#aodTree"
+ @endverbatim
+ *
+ * (note the addition of the option &quot;&amp;mc&quot; to the URL argument) 
+ *
+ * @subsection pwglf_fwd_tracklets_use_final Final result  
+ * 
+ * The final result is obtained by runnin the class AliTrackletdNdeta2
+ * over the histograms from both real data and simulations.  As an
+ * example, suppose we ran or histogram production on the Grid and
+ * have downloaded the merged results into @c
+ * LHC15o_245064_fp_dNdeta/root_archive_000245064/AnalysisResult.root
+ * (using @c LHC15o_245064_fp_dNdeta/Download.C) and
+ * LHC15k1a1_245064_fp_dNdeta/root_archive_245064/AnalysisResult.root
+ * (using @c LHC15k1a1_245064_fp_dNdeta/Download.C).  Then we should
+ * do 
+ * 
+ * @code 
+ gROOT->LoadMacro("AliTrackletAODUtils.C+g");  
+ gROOT->LoadMacro("AliTrackletdNdeta2.C+g");  
+ AliTrackletdNdeta2* p = new AliTrackletdNdeta2;
+ p->Run(0x8,0x3FF,9,
+        "LHC15o_245064_fp_dNdeta/root_archive_000245064/AnalysisResult.root",
+        "LHC15k1a1_245064_fp_dNdeta/root_archive_245064/AnalysisResult.root",
+        "result.root");
+ @endcode
+ * 
+ * (see @ref AliTrackletdNdeta2::Run for more information on arguments)
+ *
+ * Alternatively one can use the script Post.C to do this.  The script
+ * is used like.
+ *
+ * @code 
+ Post(simFile,realFile,outDir,process,visualize,nCentralities)
+ @endcode 
+ *
+ * where 
+ *
+ * - @c simFile       is the simulation data input file (or directory)
+ * - @c realFile      is the real data input file (or directory)
+ * - @c outDir        is the output directory (created) 
+ * - @c process       are the processing options 
+ * - @c visualize     are the visualisation options 
+ * - @c nCentralities is the maximum number of centrality bins
+ *
+ * Processing options: 
+ *
+ * - @c 0x0001   Do scaling by unity
+ * - @c 0x0002   Do scaling by full average
+ * - @c 0x0004   Do scaling by eta differential
+ * - @c 0x0008   Do scaling by fully differential
+ * - @c 0x0010   Correct for decay of strange to secondary 
+ * - @c 0x1000   MC closure test
+ *
+ * Visualization options: 
+ *
+ * - @c 0x0001   Draw general information
+ * - @c 0x0002   Draw parameters
+ * - @c 0x0004   Draw weights
+ * - @c 0x0008   Draw dNch/deta
+ * - @c 0x0010   Draw alphas
+ * - @c 0x0020   Draw delta information
+ * - @c 0x0040   Draw backgrounds
+ * - @c 0x0100   Whether to make a PDF
+ * - @c 0x0200   Whether to pause after each plot
+ * - @c 0x0400   Draw in landscape
+ * - @c 0x0800   Alternative markers
+ *
+ * By default, each plot will be made and the process
+ * paused.  To advance, simple press the space-bar.
+ * 
+ * If we had made the histograms using ProofLite, we should do
+ *
+ * @code
+ gROOT->LoadMacro("AliTrackletAODUtils.C+g");  
+ gROOT->LoadMacro("AliTrackletdNdeta2.C+g");  
+ AliTrackletdNdeta2* p = new AliTrackletdNdeta2;
+ p->Run(0x8,0x3FF,9,
+        "LHC15o_245064_fp_dNdeta/AnalysisResult.root",
+        "LHC15k1a1_245064_fp_dNdeta/AnalysisResult.root",
+        "result.root");
+ @endcode
+ *  
+ * @ingroup pwglf_forward
+ *
  *
  */
 //
