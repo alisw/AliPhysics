@@ -1271,7 +1271,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Float_t MulA=0., MulC=0.;
       for(Int_t i=0; i<4; i++) {
         if(towZNC[i+1]>0.) {
-          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
+          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i];
         }
         if(towZNA[i+1]>0.) {
           MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
