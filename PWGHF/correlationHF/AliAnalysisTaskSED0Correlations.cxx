@@ -611,8 +611,8 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(18,"Phys.Sel.Rej");
   fNentries->GetXaxis()->SetBinLabel(19,"nEventsSelected");
   fNentries->GetXaxis()->SetBinLabel(20,"D0 failed to be filled");
-  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(20,"nEvsWithProdMech");
-  fNentries->GetXaxis()->SetBinLabel(21,"mismatch AOD/dAOD");
+  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(21,"nEvsWithProdMech");
+  fNentries->GetXaxis()->SetBinLabel(22,"mismatch AOD/dAOD");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName()));
