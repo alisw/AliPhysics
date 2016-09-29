@@ -1,4 +1,5 @@
 #include <array>
+#include <bitset>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerTypes.h"
 #include "AliInputEventHandler.h"
+#include "AliLog.h"
 #include "AliOADBContainer.h"
 #include "AliVVertex.h"
 #include "AliVCaloTrigger.h"
@@ -85,6 +87,7 @@ bool AliAnalysisTaskEGAMonitor::IsEventSelected(){
   if(!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) return false;
   if(fAliAnalysisUtils->IsPileUpEvent(InputEvent())) return false;
   if(!(fInputHandler->IsEventSelected() & (AliVEvent::kEMCEGA | AliVEvent::kINT7))) return false;
+  AliDebugStream(1) << GetName() << ": Event is selected" << std::endl;
   return true;
 }
 
@@ -102,6 +105,7 @@ bool AliAnalysisTaskEGAMonitor::Run(){
   }
   if(!triggers.size()) return false;
 
+  AliDebugStream(1) << GetName() << ": Finding firing trigger patches" << std::endl;
   if(fUseRecalcPatches){
     for(auto p : *(this->fTriggerPatchInfo)){
       AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
@@ -134,7 +138,9 @@ bool AliAnalysisTaskEGAMonitor::Run(){
     Int_t col(-1), row(-1), triggerbits(0);
     while(emctrigraw->Next()){
       emctrigraw->GetTriggerBits(triggerbits);
-      if(!(triggerbits & (BIT(kL1GammaHigh) | BIT(kL1GammaLow)))) continue;
+      if(triggerbits) AliDebugStream(2) << "Trigger bits: " << std::bitset<sizeof(Int_t) * 8>(triggerbits) << std::endl;
+      if(!((triggerbits & (BIT(kL1GammaHigh) | BIT(kL1GammaLow))) || (triggerbits & (BIT(kL1GammaHigh+kTriggerTypeEnd) | BIT(kL1GammaLow+kTriggerTypeEnd))))) continue;
+      AliDebugStream(2) << "Found gamma trigger bits" << std::endl;
 
       emctrigraw->GetPosition(col, row);
       if(IsPatchRejected(col, row)) continue;
