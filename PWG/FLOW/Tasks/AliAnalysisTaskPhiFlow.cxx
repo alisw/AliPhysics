@@ -64,7 +64,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE)
 {
    // Default constructor
-   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 3.;
+   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 1000.;
    for(Int_t i(0); i < 5; i++) fDCAConfig[i] = 0.;
    for(Int_t i(0); i < 20; i++) {
        fVertexMixingBins[i] = 0;
@@ -81,7 +81,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTa
    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE)
 {
    // Constructor
-   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 3.;
+   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 1000.;
    for(Int_t i(0); i < 5; i++) fDCAConfig[i] = 0.;
    for(Int_t i(0); i < 20; i++) {
        fVertexMixingBins[i] = 0;
@@ -599,6 +599,17 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
    }*/
+  if(fQA) {
+      Float_t length = track->GetIntegratedLength();
+      Float_t time = track->GetTOFsignal();
+      Double_t beta = -.05;
+
+      if((length > 0) && (time > 0)) beta = length / 2.99792458e-2 / time;
+                
+      fNOPID->Fill(track->P(), track->GetTPCsignal());
+      fNOPIDTOF->Fill(track->P(), beta);
+  }
+
 
 
    //kaon stuff
@@ -638,13 +649,25 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
 
    Short_t minSigma = FindMinNSigma(nSigmaPi, nSigmaK, nSigmaP);
 
+
+
    if(minSigma == 0) return kFALSE;
    if((nSigmaK == nSigmaPi) && ( nSigmaK == nSigmaP)) return kFALSE;
 
    if(minSigma == 2 &&!GetDoubleCountingK(nSigmaK, minSigma)) {
        
-       
-       if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
+       if(fQA) {
+           Float_t length = track->GetIntegratedLength();
+           Float_t time = track->GetTOFsignal();
+           Double_t beta = -.05;
+
+           if((length > 0) && (time > 0)) beta = length / 2.99792458e-2 / time;
+                     
+           fPIDk->Fill(track->P(), track->GetTPCsignal());
+           fPIDTOF->Fill(track->P(), beta);
+       }
+
+
        return kTRUE;
    }
 
@@ -1192,7 +1215,6 @@ Short_t AliAnalysisTaskPhiFlow::FindMinNSigma(Double_t nSpi, Double_t nSk, Doubl
     
     if((nSk == nSpi) && (nSk == nSp))
         return kPID;
-    
     if((nSk < nSpi) && (nSk < nSp) && (nSk < fPIDConfig[0]))
         kPID = 2;
     
@@ -1201,7 +1223,6 @@ Short_t AliAnalysisTaskPhiFlow::FindMinNSigma(Double_t nSpi, Double_t nSk, Doubl
     
     if((nSp < nSk) && (nSp < nSpi) && (nSp < fPIDConfig[0]))
         kPID = 3;
-    
     return kPID;
     
 }
