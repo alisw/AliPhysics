@@ -1158,7 +1158,13 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	fEventInfo.fNtrk_MS = Nsel;
 
-	if (fDG_Det[0] == kFALSE || fDG_Det[1] == kFALSE) {
+	//Run2
+	if (fIsRun2 && (fDG_Det[0] == kFALSE && fDG_Det[1] == kFALSE)) {
+		PostOutputs();
+		return;
+	}
+	//Run1
+	if (!fIsRun2 && (fDG_Det[0] == kFALSE && fDG_Det[10] == kFALSE)) {
 		PostOutputs();
 		return;
 	}
