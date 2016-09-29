@@ -44,6 +44,7 @@
 #include "TVector3.h"
 #include "AliAODVZERO.h"
 #include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskVnV0.h"
 #include "AliEventPoolManager.h"
@@ -599,13 +600,54 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        return kTRUE;
    }*/
 
-   cout << TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2))<< endl;
 
-   if ((TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2)))< fPIDConfig[0]) 
-   {
+   //kaon stuff
+   Double_t nSigKTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+   Double_t nSigKTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+
+   Double_t nSigmaK = 999;
+
+   if(track->Pt() > .4) {
+       nSigmaK = TMath::Sqrt(nSigKTPC*nSigKTPC+nSigKTOF*nSigKTOF);
+   } else {
+       if(track->GetTPCsignal() > 110) nSigmaK = TMath::Abs(nSigKTPC);
+   }
+   // pion
+   Double_t nSigPiTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+   Double_t nSigPiTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+
+   Double_t nSigmaPi = 999;
+
+   if(track->Pt() > .4) {
+       nSigmaPi = TMath::Sqrt(nSigPiTPC*nSigPiTPC+nSigPiTOF*nSigPiTOF);
+   } else {
+       if(track->GetTPCsignal() < 60) nSigmaPi = TMath::Abs(nSigPiTPC);
+   }
+
+   //proton
+   Double_t nSigPTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+   Double_t nSigPTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+
+   Double_t nSigmaP = 999;
+
+   if(track->Pt() > .4) {
+       nSigmaP = TMath::Sqrt(nSigPTPC*nSigPTPC+nSigPTOF*nSigPTOF);
+   } else {
+       if(track->GetTPCsignal() > 110) nSigmaP = TMath::Abs(nSigPTPC);
+   }
+
+   Short_t minSigma = FindMinNSigma(nSigmaPi, nSigmaK, nSigmaP);
+
+   if(minSigma == 0) return kFALSE;
+   if((nSigmaK == nSigmaPi) && ( nSigmaK == nSigmaP)) return kFALSE;
+
+   if(minSigma == 2 &&!GetDoubleCountingK(nSigmaK, minSigma)) {
+       
+       
        if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
    }
+
    return kFALSE;
 }
 //_____________________________________________________________________________
@@ -1142,3 +1184,39 @@ Bool_t AliAnalysisTaskPhiFlow::plpMV(const AliAODEvent* aod)
 }
 
 //_____________________________________________________________________________
+//---------------------------------------------------
+Short_t AliAnalysisTaskPhiFlow::FindMinNSigma(Double_t nSpi, Double_t nSk, Double_t nSp) const
+{
+    
+    Short_t kPID = 0;
+    
+    if((nSk == nSpi) && (nSk == nSp))
+        return kPID;
+    
+    if((nSk < nSpi) && (nSk < nSp) && (nSk < fPIDConfig[0]))
+        kPID = 2;
+    
+    if((nSpi < nSk) && (nSpi < nSp) && (nSpi < fPIDConfig[0]))
+        kPID = 1;
+    
+    if((nSp < nSk) && (nSp < nSpi) && (nSp < fPIDConfig[0]))
+        kPID = 3;
+    
+    return kPID;
+    
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::GetDoubleCountingK(Double_t nSk, Short_t minNSigma) const
+{
+    
+    Bool_t kDC = kFALSE;
+    
+    if (nSk < fPIDConfig[0] && minNSigma != 2)
+        kDC = kTRUE;
+    
+    return kDC;
+    
+}
+

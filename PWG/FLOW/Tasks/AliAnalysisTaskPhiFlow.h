@@ -147,6 +147,8 @@ public:
    Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
    Bool_t                               plpMV(const AliAODEvent* aod);
    void                                 SetRemovePileup(Bool_t p) {fPileUp = p;}
+   Short_t                              FindMinNSigma(Double_t nSpi, Double_t nSk, Double_t nSp) const;
+   Bool_t                               GetDoubleCountingK(Double_t nSk, Short_t minNSigma) const;
 
 private:
 
