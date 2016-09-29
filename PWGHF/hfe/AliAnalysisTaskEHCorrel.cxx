@@ -50,6 +50,8 @@
 #include "TRefArray.h"
 #include "TVector.h"
 
+
+//#include "AliEventPoolManager.h"
 #include "AliESDInputHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliESDpid.h"
@@ -87,11 +89,13 @@
 #include "TRandom2.h"
 
 ClassImp(AliAnalysisTaskEHCorrel)
+ClassImp(AliehDPhiBasicParticle)
   //________________________________________________________________________
   AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
 : AliAnalysisTaskSE(name),
   fVevent(0),
   fAOD(0),
+  fpVtx(0),
   fpidResponse(0),
   fMultSelection(0),
   fCentrality(-1),
@@ -113,8 +117,11 @@ ClassImp(AliAnalysisTaskEHCorrel)
   fTPCNClsHad(80),
   fInvmassCut(0.1),
   fTPCnSigmaHadMin(-10),
-  fTPCnSigmaHadMax(-4),
+  fTPCnSigmaHadMax(-3.5),
   fHadCutCase(1),
+ // fTracksCloneMix(0),
+ // fPool(0),
+ // fPoolMgr(0),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -156,6 +163,9 @@ ClassImp(AliAnalysisTaskEHCorrel)
   fInvmassULS(0),
   fInvmassLSPt(0),
   fInvmassULSPt(0),
+  fNoMixedEvents(0),
+  fMixStatCent(0),
+  fMixStatVtxZ(0),
   fSprsHadHCorrl(0),
   fSprsInclusiveEHCorrl(0),
   fSprsLSEHCorrl(0),
@@ -178,6 +188,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEHCorrel"),
   fVevent(0),
   fAOD(0),
+  fpVtx(0),
   fpidResponse(0),
   fMultSelection(0),
   fCentrality(-1),
@@ -199,8 +210,11 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fTPCNClsHad(80),
   fInvmassCut(0.1),
   fTPCnSigmaHadMin(-10),
-  fTPCnSigmaHadMax(-4),
+  fTPCnSigmaHadMax(-3.5),
   fHadCutCase(1),
+//  fTracksCloneMix(0),
+//  fPool(0),
+//  fPoolMgr(0),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -242,6 +256,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fInvmassULS(0),
   fInvmassLSPt(0),
   fInvmassULSPt(0),
+  fNoMixedEvents(0),
+  fMixStatCent(0),
+  fMixStatVtxZ(0),
   fSprsHadHCorrl(0),
   fSprsInclusiveEHCorrl(0),
   fSprsLSEHCorrl(0),
@@ -268,6 +285,7 @@ AliAnalysisTaskEHCorrel::~AliAnalysisTaskEHCorrel()
   delete fSprsInclusiveEHCorrl;
   delete   fSprsLSEHCorrl;
   delete fSprsULSEHCorrl;
+ // delete fTracksCloneMix;
 }
 //_________________________________________
 void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
@@ -277,6 +295,44 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   AliDebug(3, "Creating Output Objects");
 
   Double_t pi = TMath::Pi();
+    
+    ////////////////////////
+    //Initiale mixed event//
+    ////////////////////////
+    Int_t trackDepth = 2000;
+    Int_t poolsize   = 1000;
+    Int_t nCentralityBins  = 6;
+    Int_t nCentralityBinsSC  = 6;
+    Int_t nZvtxBins  = 4;
+    Double_t CentralityBins[7];
+    Double_t vertexBins[5] = {-10,-5,0,5,10};
+    
+    if(fCentralityMax <= 20)
+    {
+        CentralityBins[0] = 0;
+    CentralityBins[1] =2;
+   CentralityBins[2] = 4;
+    CentralityBins[3] =6;
+    CentralityBins[4] =10;
+    CentralityBins[5] =15;
+    CentralityBins[6] =20;
+}
+    
+    if(fCentralityMax <= 50)
+    {
+        CentralityBins[0] = 20;
+        CentralityBins[1] = 25;
+        CentralityBins[2] = 30;
+        CentralityBins[3] = 35;
+        CentralityBins[4] = 40;
+        CentralityBins[5] = 45;
+        CentralityBins[6] = 50;
+    }
+    
+  //      fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
+
+  //  fTracksCloneMix = new TClonesArray();
+  //  fTracksCloneMix->SetOwner(kTRUE);
 
   ////////////////
   //Output list//
@@ -408,7 +464,15 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   fInvmassULSPt = new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
   fOutputList->Add(fInvmassULSPt);
-
+    
+    fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
+    fOutputList->Add(fNoMixedEvents);
+    
+    fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",500,0,500,nCentralityBins,(Double_t*)CentralityBins);
+    fOutputList->Add(fMixStatCent);
+    
+    fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",500,0,500,nZvtxBins,(Double_t*)vertexBins);
+    fOutputList->Add(fMixStatVtxZ);
 
   //------THnsparse------
   Int_t bin[4] = {50,50,64,100}; //ptElec, ptHad,Dphi, Deta
@@ -449,6 +513,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     // printf("fAOD available\n");
     //return;
   }
+  fpVtx = fVevent->GetPrimaryVertex();
+    
   ///////////////////
   //PID initialised//
   ///////////////////
@@ -585,6 +651,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
       //Inclusive E-H correl
       ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl);
+      //MixedEvent(track);
 
       ////////////////////
       //NonHFE selection//
@@ -593,7 +660,23 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       SelectNonHFElectron(iTracks,track,fFlagPhotonicElec);
     }
   }
+    
 
+    /////////////////////////
+    //Fill Mixed event pool//
+    /////////////////////////
+/*    Double_t pVtxZ = fpVtx->GetZ();
+    fPool = fPoolMgr->GetEventPool(fCentrality, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
+    if (!fPool)
+    {
+        AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue1, pVtxZ));
+        return;
+    }
+    
+    CloneAndReduceTrackList();
+    fPool->UpdatePool(fTracksCloneMix);
+    fTracksCloneMix->Clear("C");
+*/
   PostData(1, fOutputList);
 }
 //_________________________________________
@@ -698,7 +781,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   }
   if(fHadCutCase == 3)
   {
-    if(!HadTrack->TestFilterMask(AliAODTrack::kIsHybridGCG)) return kFALSE;
+    if(!HadTrack->IsHybridGlobalConstrainedGlobal()) return kFALSE;
   }
 
   if(HadTrack->GetTPCNcls() < fTPCNClsHad) return kFALSE;
@@ -832,14 +915,14 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
 
   fNevents->Fill(0); //all events
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
-  const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
-  Double_t NcontV = pVtx->GetNContributors();
+    
+  Double_t NcontV = fpVtx->GetNContributors();
   if(NcontV<2)return kFALSE;
   fNevents->Fill(1); //events with 2 tracks
 
-  Zvertex = pVtx->GetZ();
-  Yvertex = pVtx->GetY();
-  Xvertex = pVtx->GetX();
+  Zvertex = fpVtx->GetZ();
+  Yvertex = fpVtx->GetY();
+  Xvertex = fpVtx->GetX();
   fVtxZ->Fill(Zvertex);
   fVtxX->Fill(Xvertex);
   fVtxY->Fill(Yvertex);
@@ -998,6 +1081,52 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
   }
   fFlagPhotonicElec = flagPhotonicElec;
 }
+/*//___________________________________________
+void  AliAnalysisTaskEHCorrel::MixedEvent(AliVTrack *track)
+{
+    //Retrive mixed event pool
+    Double_t zVtx;
+    zVtx = fpVtx->GetZ();
+    
+    fPool = fPoolMgr->GetEventPool(fCentrality, zVtx); // Get the buffer associated with the current centrality and z-vtx
+    if (!fPool)
+    {
+        AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centvalue1, pVtxZ));
+        return;
+    }
+    //fPool->PrintInfo();
+    if (fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
+    {
+        Int_t nMix = fPool->GetCurrentNEvents();
+        fNoMixedEvents->Fill(0);
+        fMixStatCent->Fill(fPool->GetCurrentNEvents(),fCentrality);
+        fMixStatVtxZ->Fill(fPool->GetCurrentNEvents(),zVtx);
+    }
+}
+//___________________________________________
+void  AliAnalysisTaskEHCorrel::CloneAndReduceTrackList()
+{
+// clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
+    
+    for(Int_t ktracks = 0; ktracks<fVevent->GetNumberOfTracks(); ktracks++){
+        AliVParticle* Vtrack = fVevent->GetTrack(ktracks);
+        if (!Vtrack) {
+            printf("ERROR: Could not receive track %d\n", ktracks);
+            continue;
+        }
+        
+        AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+        if(!track) continue;
+        AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+        if(!atrack) continue;
+        
+        if(!PassHadronCuts(atrack)) continue; //apply hadron cuts;
+        
+        AliVParticle* particle = (AliVParticle*) fVevent->GetTrack(ktracks);
+        fTracksCloneMix->Add(new AliehDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+    }
+}
+ */
 //___________________________________________
 void AliAnalysisTaskEHCorrel::Terminate(Option_t *)
 {
@@ -1010,5 +1139,6 @@ void AliAnalysisTaskEHCorrel::Terminate(Option_t *)
     return;
   }
 }
+
 
 

@@ -102,4 +102,6 @@
 #pragma link C++ class  AliHFEUnfolding+;
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
 
+#pragma link C++ class  AliehDPhiBasicParticle+;
+
 #endif
