@@ -245,6 +245,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kNG_Data,// No-gap?
 			kSGA_Data,//Single-gap A-side
 			kSGC_Data,//Single-gap C-side
+			kDGFMDSPD,
 			k2Tracks,
 			k4Tracks,
 			k2Tracks_ITSSA,
@@ -329,7 +330,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fRunVsMBAND_AD;//!
 		TH1D *fRunVsMBOR_Global;//!
 		TH1D *fRunVsMBAND_Global;//!
-		TH1D *fRunVsDG[10];//!
+		TH1D *fRunVsDG[11];//!
 		TH1D *fRunVs2t;//!
 		TH1D *fRunVs2t_ITSSA;//!
 		TH1D *fRunVs4t;//!
@@ -375,6 +376,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *hMultNG_Test[6];//!
 		TH1D *hMC_PassEta[14];//!
 		TH1D *hMC_PassType[2];//!
+		TH1D *hRun_BF[12];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);
