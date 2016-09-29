@@ -963,10 +963,6 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC11h->SetZDCCorrParameters(0.5, 0, 4*0.7, 4*0.7);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC11h, 166529, 170593);
   
-  AliOADBTriggerAnalysis * oadbTrigAnalysisLHC15o1 = new AliOADBTriggerAnalysis("lhc15o_common_zna_tdc");
-  oadbTrigAnalysisLHC15o1->SetZDCCorrParameters(-123.1, 123.1, 2., 2.);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o1, 245726, 245793);
-  
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f1 = new AliOADBTriggerAnalysis("lhc15f_isolated_bunches");
   oadbTrigAnalysisLHC15f1->SetV0MOnVsOfA(0.);
   oadbTrigAnalysisLHC15f1->SetV0MOnVsOfB(0.);
@@ -1054,7 +1050,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC15n->SetSPDOnVsOfB(0.851104); 
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15n,244340,244628);
   
-  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15o = new AliOADBTriggerAnalysis("lhc15o");
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15o = new AliOADBTriggerAnalysis("lhc15o1");
   oadbTrigAnalysisLHC15o->SetV0MOnVsOfA(0.);
   oadbTrigAnalysisLHC15o->SetV0MOnVsOfB(0.);
   oadbTrigAnalysisLHC15o->SetSPDOnVsOfA(0.);
@@ -1063,7 +1059,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC15o->SetVIRBBCflags(33);
   oadbTrigAnalysisLHC15o->SetV0CasymA(0);
   oadbTrigAnalysisLHC15o->SetV0CasymB(0);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o,244824,246994);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o,244824,245725);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o->Clone("lhc15o2"),245794,246994);
+  
+  AliOADBTriggerAnalysis * oadbTrigAnalysisLHC15o1 = oadbTrigAnalysisLHC15o->Clone("lhc15o_common_zna_tdc");
+  oadbTrigAnalysisLHC15o1->SetZDCCorrParameters(-123.1, 123.1, 2., 2.);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o1, 245726, 245793);
   
   oadbTrigAnalysisZDC1->Print();
   oadbTrigAnalysisZDC2->Print();
