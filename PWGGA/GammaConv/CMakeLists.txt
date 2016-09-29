@@ -61,6 +61,7 @@ set(SRCS
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
+    AliAnalysisTaskHadronicCocktailMC.cxx
     AliAODConversionMother.cxx
     AliAODConversionParticle.cxx
     AliAODConversionPhoton.cxx
