@@ -45,7 +45,7 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   
   GetProperty("createHistos", fCreateHisto);
 
-  AddContainer(kCluster);
+  /*AddContainer(kCluster);
   Double_t minE = 0.;
   GetProperty("clusterEMin", minE);
   Double_t minPt = 0.;
@@ -53,7 +53,7 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   
   // Settings from sample run macro
   fClusCont->SetClusECut(minE);
-  fClusCont->SetClusPtCut(minPt);
+  fClusCont->SetClusPtCut(minPt);*/
   
   // init reco utils
   if (!fRecoUtils)

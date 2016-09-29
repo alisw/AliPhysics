@@ -76,7 +76,7 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   GetProperty("updateTracks", fUpdateTracks);
   fDoPropagation = fEsdMode;
   
-  AddContainer(kCluster);
+  /*AddContainer(kCluster);
   Float_t clusterNonLinCorrEnergyCut = 0.15;
   GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyCut);
   Float_t clusterECut = 0.0;
@@ -85,9 +85,9 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   GetProperty("clusterPtMin", clusterPtCut);
   fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyCut);
   fClusCont->SetClusECut(clusterECut);
-  fClusCont->SetClusPtCut(clusterPtCut);
+  fClusCont->SetClusPtCut(clusterPtCut);*/
   
-  AddContainer(kTrack);
+  //AddContainer(kTrack);
   fEmcalTracks = new TClonesArray("AliEmcalParticle");
   fEmcalTracks->SetName(Form("EmcalTracks_%s", fPartCont->GetArrayName().Data()));
   fEmcalClusters = new TClonesArray("AliEmcalParticle");

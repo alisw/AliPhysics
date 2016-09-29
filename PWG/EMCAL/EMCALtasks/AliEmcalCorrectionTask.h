@@ -6,14 +6,16 @@
 #include <yaml-cpp/yaml.h>
 #endif
 
-class AliEmcalCorrectionComponent;
 class AliEMCALGeometry;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEmcalCorrectionComponent.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
+#include "AliVCluster.h"
+#include "AliEmcalTrackSelection.h"
 
 /**
  * @class AliEmcalCorrectionTask
@@ -50,6 +52,32 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
     kAA       = 1, //!<! Nucleus-Nucleus
     kpA       = 2  //!<! Proton-Nucleus
   };
+
+  /** 
+   * @enum InputObject_t
+   * @brief Type of input object to be created
+   */
+  enum InputObject_t {
+    kCaloCells = 0,    //!< Calo cells
+    kCluster = 1,  //!< Cluster container
+    kTrack = 2,    //!< Track container
+  };
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  std::map <std::string, AliVCluster::VCluUserDefEnergy_t> clusterEnergyTypeMap = {
+    {"kNonLinCorr", AliVCluster::kNonLinCorr },
+    {"kHadCorr", AliVCluster::kHadCorr },
+    {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
+    {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
+  };
+
+  std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> trackFilterTypeMap = {
+    {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
+    {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
+    {"kHybridTracks",  AliEmcalTrackSelection::kHybridTracks },
+    {"kTPCOnlyTracks", AliEmcalTrackSelection::kTPCOnlyTracks }
+  };
+#endif
 
   AliEmcalCorrectionTask();
   AliEmcalCorrectionTask(const char * name);
@@ -108,6 +136,9 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   bool WriteConfigurationFile(std::string filename, bool userConfig = false);
 
+  // Determine branch name using the "usedefault" pattern
+  static std::string DetermineUseDefaultName(InputObject_t contType, bool esdMode, bool returnObjectType = false);
+
  private:
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
   AliEmcalCorrectionTask &operator=(const AliEmcalCorrectionTask &);  // Not implemented
@@ -118,7 +149,18 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void RetrieveExecutionOrder(std::vector <std::string> & componentsToAdd);
   void InitializeComponents();
 
+  std::string GetInputFieldNameFromInputObjectType(InputObject_t inputObjectType);
+  void CreateInputObjects(InputObject_t inputObjectType);
+  void AddContainersToComponent(AliEmcalCorrectionComponent * component, InputObject_t inputObjectType);
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  void SetupContainersFromInputNodes(InputObject_t inputObjectType, YAML::Node & userInputObjectNode, YAML::Node & defaultInputObjectNode, std::set <std::string> & requestedContainers);
+  void GetNodeForInputObjects(YAML::Node & inputNode, YAML::Node & nodeToRetrieveFrom, std::string & inputObjectName, bool requiredProperty);
+  void SetupContainer(InputObject_t inputObjectType, std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
+  AliEmcalContainer * AddContainer(InputObject_t contType, std::string & containerName, YAML::Node & userNode, YAML::Node & defaultNode);
+#endif
+
   void                        CreateNewObjectBranches();
+  void                        NewClusterOrTrackBranch(std::string objectTypeString, InputObject_t objectType, std::string & classMemberToStoreBranchName, std::string branchNameLocation);
   void                        CopyBranchesToNewObjects();
   void                        CopyClusters(TClonesArray *orig, TClonesArray *dest);
 
