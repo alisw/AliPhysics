@@ -75,9 +75,9 @@ fSelectedParticles(kGenHadrons)
 }
 
 // initialize static member
-TF1*  AliGenEMCocktailV2::fPtParametrization[]  = {0x0};
-TF1*  AliGenEMCocktailV2::fParametrizationProton = NULL;
-TH1D* AliGenEMCocktailV2::fMtScalingFactorHisto = NULL;
+TF1*  AliGenEMCocktailV2::fPtParametrization[]    = {0x0};
+TF1*  AliGenEMCocktailV2::fParametrizationProton  = NULL;
+TH1D* AliGenEMCocktailV2::fMtScalingFactorHisto   = NULL;
 
 //_________________________________________________________________________
 AliGenEMCocktailV2::~AliGenEMCocktailV2()
@@ -98,9 +98,9 @@ void AliGenEMCocktailV2::SetHeaviestHadron(ParticleGenerator_t part)
 //_________________________________________________________________________
 TF1* AliGenEMCocktailV2::GetPtParametrization(Int_t np) {
 
-  if (np<16)
+  if (np<18)
     return fPtParametrization[np];
-  else if (np==16)
+  else if (np==18)
     return fParametrizationProton;
   else
     return NULL;
@@ -305,7 +305,39 @@ void AliGenEMCocktailV2::CreateCocktail()
     fYieldArray[kK0s] = fPtK0short->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
 #endif
   }
+
+  // k0long
+  if(fSelectedParticles&kGenK0l){
+    AliGenParam * genkzerolong=0;
+    Char_t nameK0long[10];
+    snprintf(nameK0long, 10, "K0long");
+    genkzerolong = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kK0l, "DUMMY");
+    genkzerolong->SetYRange(fYMin, fYMax);
+    AddSource2Generator(nameK0long,genkzerolong);
+    TF1 *fPtK0long = genkzerolong->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kK0l] = fPtK0long->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kK0l] = fPtK0long->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
   
+  // Lambda
+  if(fSelectedParticles&kGenLambda){
+    AliGenParam * genLambda=0;
+    Char_t nameLambda[10];
+    snprintf(nameLambda, 10, "Lambda");
+    genLambda = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kLambda, "DUMMY");
+    genLambda->SetYRange(fYMin, fYMax);
+    AddSource2Generator(nameLambda,genLambda);
+    TF1 *fPtLambda = genLambda->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kLambda] = fPtLambda->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kLambda] = fPtLambda->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+#endif
+  }
+
   // Delta++
   if(fSelectedParticles&kGenDeltaPlPl){
     AliGenParam * genkdeltaPlPl=0;
@@ -497,10 +529,10 @@ void AliGenEMCocktailV2::Init()
 Bool_t AliGenEMCocktailV2::SetPtParametrizations() {
 
   TF1* tempFct = NULL;
-  for(Int_t i=0; i<17; i++) {
+  for(Int_t i=0; i<19; i++) {
     tempFct = AliGenEMlibV2::GetPtParametrization(i);
     if (!tempFct) return kFALSE;
-    if (i<16)
+    if (i<18)
       fPtParametrization[i] = new TF1(*tempFct);
     else
       fParametrizationProton = new TF1(*tempFct);
@@ -614,6 +646,12 @@ void AliGenEMCocktailV2::Generate()
         break;
       case 310:
         dNdy = fYieldArray[kK0s];
+        break;
+      case 130:
+        dNdy = fYieldArray[kK0l];
+        break;
+      case 3122:
+        dNdy = fYieldArray[kLambda];
         break;
       case 2224:
         dNdy = fYieldArray[kDeltaPlPl];
