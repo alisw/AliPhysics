@@ -35,12 +35,6 @@ class AliVEvent;
 
 class AliEmcalCorrectionComponent : public TNamed {
  public:
-  enum inputObjectType {
-    kCaloCells = 0,    //!<! Calo cells
-    kCluster = 1,  //!<! Cluster container
-    kTrack = 2,    //!<! Track container
-  };
-
   AliEmcalCorrectionComponent();
   AliEmcalCorrectionComponent(const char * name);
   virtual ~AliEmcalCorrectionComponent();
@@ -82,19 +76,14 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetDefaultConfiguration(YAML::Node & node) { fDefaultConfiguration = node; }
   
   /// Retrieve property
-  template<typename T> void GetProperty(std::string propertyName, T & property, bool requiredProperty = true, std::string correctionName = "");
+  template<typename T> bool GetProperty(std::string propertyName, T & property, bool requiredProperty = true, std::string correctionName = "");
 
   /// Retrieve property driver function. It is static so that it can be used by other classes
-  template<typename T> static void GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty = true, std::string correctionName = "");
+  template<typename T> static bool GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty = true, std::string correctionName = "");
 #endif
   static bool IsSharedValue(std::string & value);
 
-  // Determine branch name using the "usedefault" pattern
-  static std::string DetermineUseDefaultName(inputObjectType contType, Bool_t esdMode);
-
  protected:
-
-  void AddContainer(inputObjectType type);
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   template<typename T> static bool GetPropertyFromNodes(const YAML::Node & node, const YAML::Node & sharedParametersNode, std::string propertyName, T & property, const std::string correctionName, const std::string configurationType, int nodesDeep = 0);
@@ -144,14 +133,16 @@ class AliEmcalCorrectionComponent : public TNamed {
  *
  */
 template<typename T>
-void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, bool requiredProperty, std::string correctionName)
+bool AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, bool requiredProperty, std::string correctionName)
 {
   // Get proper correction name
   if (correctionName == "")
   {
     correctionName = GetName();
   }
-  GetProperty(propertyName, property, fUserConfiguration, fDefaultConfiguration, requiredProperty, correctionName);
+  bool result = GetProperty(propertyName, property, fUserConfiguration, fDefaultConfiguration, requiredProperty, correctionName);
+
+  return result;
 }
 
 /**
@@ -159,7 +150,7 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
  *
  */
 template<typename T>
-void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty, std::string correctionName)
+bool AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty, std::string correctionName)
 {
   // Remove AliEmcalCorrection if in name
   std::size_t prefixStringLocation = correctionName.find("AliEmcalCorrection");
@@ -183,7 +174,7 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
 
   if (setProperty != true)
   {
-    AliDebugClass(2, "Looking for parameter in defulat configuration");
+    AliDebugClass(2, "Looking for parameter in default configuration");
     YAML::Node sharedParameters = defaultConfiguration["sharedParameters"];
     //std::cout << std::endl << "Default Node: " << fDefaultConfiguration << std::endl;
     setProperty = AliEmcalCorrectionComponent::GetPropertyFromNodes(defaultConfiguration, sharedParameters, propertyName, property, correctionName, "default");
@@ -197,6 +188,9 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
         << propertyName << "\" from default config!" << std::endl;
     AliFatalClass(message.str().c_str());
   }
+
+  // Return whether the value was actually set
+  return setProperty;
 }
 
 /**

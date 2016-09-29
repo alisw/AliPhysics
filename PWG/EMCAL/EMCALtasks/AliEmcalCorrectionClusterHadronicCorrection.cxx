@@ -89,7 +89,7 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("hadCorr", fHadCorr);
   GetProperty("Eexcl", fEexclCell);
   GetProperty("doTrackClus", fDoTrackClus);
-  Double_t trackPtMin = 0.15;
+  /*Double_t trackPtMin = 0.15;
   GetProperty("trackPtMin", trackPtMin);
   Double_t clusterNonLinCorrEnergyMin = 0.15;
   GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyMin);
@@ -103,7 +103,7 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   AddContainer(kCluster);
   fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyMin);
   fClusCont->SetClusECut(clusterECut);
-  fClusCont->SetClusPtCut(clusterPtCut);
+  fClusCont->SetClusPtCut(clusterPtCut);*/
   
   // Create my user objects.
   
