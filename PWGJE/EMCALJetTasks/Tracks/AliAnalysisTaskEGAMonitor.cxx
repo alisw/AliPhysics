@@ -144,10 +144,10 @@ bool AliAnalysisTaskEGAMonitor::Run(){
 
       emctrigraw->GetPosition(col, row);
       if(IsPatchRejected(col, row)) continue;
-      if(triggerbits & BIT(kL1GammaHigh)){
+      if((triggerbits & BIT(kL1GammaHigh)) || (triggerbits & BIT(kL1GammaHigh+kTriggerTypeEnd))){
         for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG1%s", t.c_str()), col, row);
       }
-      if(triggerbits & BIT(kL1GammaLow)){
+      if((triggerbits & BIT(kL1GammaLow)) || (triggerbits & BIT(kL1GammaLow+kTriggerTypeEnd))){
         for(const auto &t : triggers) fHistos->FillTH2(Form("hColRowG2%s", t.c_str()), col, row);
       }
     }
