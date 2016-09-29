@@ -46,7 +46,7 @@ if(FASTJET_FOUND)
     add_definitions(${FASTJET_DEFINITIONS})
 
     if(ROOT_VERSION_MAJOR EQUAL 6)
-      set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
+      set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile -rml libfastjetplugins -rml libsiscone_spherical -rml libsiscone -rml libfastjettools -rml libfastjet")
       if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
 	set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
       endif()
