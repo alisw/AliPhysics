@@ -99,9 +99,10 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliV0Result, 3)
+    ClassDef(AliV0Result, 4)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
+    // 4 - fixes to constructor, destructor, tuning
 };
 #endif
