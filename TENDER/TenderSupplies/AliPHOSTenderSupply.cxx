@@ -288,7 +288,7 @@ void AliPHOSTenderSupply::InitTender()
 	}
 	else{
           const char*c=a->GetName();
-          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-1;
+          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-'0';
 	}
       }
     }
