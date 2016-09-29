@@ -32,7 +32,8 @@ public:
   
   enum Particle_t{kPizero=0, kEta=1, kRho0=2, kOmega=3, kEtaprime=4, kPhi=5, kJpsi=6,
     kSigma0=7, kK0s=8, kDeltaPlPl=9, kDeltaPl=10, kDeltaMi=11, kDeltaZero=12,
-    kRhoPl=13, kRhoMi=14, kK0star=15, kDirectRealGamma=16, kDirectVirtGamma=17};
+    kRhoPl=13, kRhoMi=14, kK0star=15, kK0l=16, kLambda=17,
+    kDirectRealGamma=18, kDirectVirtGamma=19};
   
   enum CollisionSystem_t {kpp900GeV=0x000, kpp2760GeV=0x64, kpp7TeV=0xC8, kpPb=0x12C, kPbPb=0x190};
   
@@ -84,8 +85,8 @@ public:
   static const Double_t fgkV2param[kCentralities][16];                     // parameters of pi v2
   static const Double_t fgkRawPtOfV2Param[kCentralities][10];              // parameters of the raw pt spectrum of v2 analysys
   static const Double_t fgkThermPtParam[kCentralities][2];                 // parameters of thermal gamma pt
-  static const Double_t fgkHM[16];                                         // particle masses
-  static const Double_t fgkMtFactor[3][16];                                // mt scaling factor
+  static const Double_t fgkHM[18];                                         // particle masses
+  static const Double_t fgkMtFactor[3][18];                                // mt scaling factor
 
   // direct gamma
   static Double_t PtPromptRealGamma(const Double_t *px, const Double_t *dummy);
@@ -155,7 +156,19 @@ public:
   static Int_t    IpK0short(TRandom *ran);
   static Double_t PtK0short( const Double_t *px, const Double_t *dummy );
   static Double_t YK0short(const Double_t *py, const Double_t *dummy);
-  static Double_t V2K0sshort( const Double_t *px, const Double_t *dummy );
+  static Double_t V2K0short( const Double_t *px, const Double_t *dummy );
+
+  // K0long
+  static Int_t    IpK0long(TRandom *ran);
+  static Double_t PtK0long( const Double_t *px, const Double_t *dummy );
+  static Double_t YK0long(const Double_t *py, const Double_t *dummy);
+  static Double_t V2K0long( const Double_t *px, const Double_t *dummy );
+
+  // Lambda
+  static Int_t    IpLambda(TRandom *ran);
+  static Double_t PtLambda( const Double_t *px, const Double_t *dummy );
+  static Double_t YLambda(const Double_t *py, const Double_t *dummy);
+  static Double_t V2Lambda( const Double_t *px, const Double_t *dummy );
   
   // Delta++
   static Int_t    IpDeltaPlPl(TRandom *ran);
@@ -200,11 +213,11 @@ public:
   static Double_t V2K0star( const Double_t *px, const Double_t *dummy );
 
 private:
-  static TF1*     fPtParametrization[16];     //! pt paramtrizations
-  static TF1*     fPtParametrizationProton;   //! pt paramtrizations
+  static TF1*     fPtParametrization[18];     //! pt paramtrizations
+  static TF1*     fPtParametrizationProton;   //! pt paramtrization
   static TH1D*    fMtFactorHisto;             //! mt scaling factors
 
-  ClassDef(AliGenEMlibV2,1);
+  ClassDef(AliGenEMlibV2,2);
   
 };
 
