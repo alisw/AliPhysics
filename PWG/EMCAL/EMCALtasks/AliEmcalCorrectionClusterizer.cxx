@@ -145,7 +145,7 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   GetProperty("removeMCGen2", removeMcGen2);
   TString removeMCGen2 = removeMcGen2.c_str();
 
-  AddContainer(kCluster);
+  //AddContainer(kCluster);
   
   fRecParam->SetClusterizerFlag(clusterizerType);
   fRecParam->SetMinECut(cellE);
