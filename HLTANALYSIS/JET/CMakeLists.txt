@@ -54,6 +54,7 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Check for FastJet installation to include proper headers
+set(EXTRA_DICT_DEFS "")
 if(FASTJET_FOUND)
     set(HDRS ${HDRS}
         fastjet/AliHLTJETFastJetHeader.h
@@ -64,12 +65,17 @@ if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
+
+    if(ROOT_VERSION_MAJOR LESS 6 AND NOT FASTJET_VERSION VERSION_LESS "3.2.0")
+      # Disable some C++11 constructs on ROOT 5
+      set(EXTRA_DICT_DEFS "${EXTRA_DICT_DEFS} -Doverride=")
+    endif()
 endif(FASTJET_FOUND)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRA_DICT_DEFS}")
 
 # Generate the ROOT map
 # Dependecies
