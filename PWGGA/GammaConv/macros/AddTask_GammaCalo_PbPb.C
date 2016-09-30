@@ -272,6 +272,27 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     cuts.AddCut("55910113","1111100060022220000","0163103100000050"); // 50-90
     cuts.AddCut("50010113","1111100060022220000","0163103100000050"); // 0-100
     
+  } else if (trainConfig == 205){ // EMCAL clusters - user defined header!
+    cuts.AddCut("20110123","1111100000022220000","0163103100000050"); // 0-10
+    cuts.AddCut("21210123","1111100000022220000","0163103100000050"); // 10-20
+    cuts.AddCut("22410123","1111100000022220000","0163103100000050"); // 20-40
+    cuts.AddCut("24910123","1111100000022220000","0163103100000050"); // 40-90
+    cuts.AddCut("20010123","1111100000022220000","0163103100000050"); // 0-100
+    
+  } else if (trainConfig == 206){ // EMCAL clusters - 205 duplicant for header setting
+    cuts.AddCut("20110123","1111100000022220000","0163103100000050"); // 0-10
+    cuts.AddCut("21210123","1111100000022220000","0163103100000050"); // 10-20
+    cuts.AddCut("22410123","1111100000022220000","0163103100000050"); // 20-40
+    cuts.AddCut("24910123","1111100000022220000","0163103100000050"); // 40-90
+    cuts.AddCut("20010123","1111100000022220000","0163103100000050"); // 0-100
+    
+  } else if (trainConfig == 207){ // EMCAL clusters - 205 duplicant for header setting
+    cuts.AddCut("20110123","1111100000022220000","0163103100000050"); // 0-10
+    cuts.AddCut("21210123","1111100000022220000","0163103100000050"); // 10-20
+    cuts.AddCut("22410123","1111100000022220000","0163103100000050"); // 20-40
+    cuts.AddCut("24910123","1111100000022220000","0163103100000050"); // 40-90
+    cuts.AddCut("20010123","1111100000022220000","0163103100000050"); // 0-100
+    
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -313,7 +334,20 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
     TObjString *Header1 = new TObjString("BOX");
     HeaderList->Add(Header1);
-  }  
+  } else if (periodName.CompareTo("LHC16h4b")==0 || periodName.CompareTo("LHC16h4b2")==0){
+    if (headerSelectionInt == 1){ 
+      TObjString *Header1 = new TObjString("Injector (pi0)_1");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 2){
+      TObjString *Header1 = new TObjString("Injector (eta)_2");
+      HeaderList->Add(Header1);
+    } else {
+      TObjString *Header1 = new TObjString("Injector (pi0)_1");
+      HeaderList->Add(Header1);
+      TObjString *Header2 = new TObjString("Injector (eta)_2");
+      HeaderList->Add(Header2);
+    }
+  }
 
   TList *EventCutList   = new TList();
   TList *ClusterCutList = new TList();
