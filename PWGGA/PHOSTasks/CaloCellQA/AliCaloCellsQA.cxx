@@ -108,6 +108,7 @@ AliCaloCellsQA::AliCaloCellsQA() :
   fAbsIdMax(0),
   fListOfHistos(0),
   fhNEventsProcessedPerRun(0),
+  fhTimeDDL(),
   fhCellLocMaxNTimesInClusterElow(),
   fhCellLocMaxNTimesInClusterEhigh(),
   fhCellLocMaxETotalClusterElow(),
@@ -153,6 +154,7 @@ AliCaloCellsQA::AliCaloCellsQA(Int_t nmods, Int_t det, Int_t startRunNumber, Int
   fAbsIdMax(0),
   fListOfHistos(0),
   fhNEventsProcessedPerRun(0),
+  fhTimeDDL(),
   fhCellLocMaxNTimesInClusterElow(),
   fhCellLocMaxNTimesInClusterEhigh(),
   fhCellLocMaxETotalClusterElow(),
@@ -517,8 +519,63 @@ void AliCaloCellsQA::InitHistosForRun(Int_t run)
       fListOfHistos->Add(fhPi0Mass[sm][sm2]);
     }
 
+  //L1 phase (PHOS)
+  if (GetDetector() == AliCaloCellsQA::kPHOS) {
+    TH2F * hTimeDDL[20] ;
+    
+    for(Int_t m=5; m<20; m++){
+      fhTimeDDL[m] = new TH2F(Form("run%i_timeDLL%d",run,m),"Time, HG (E_{clu}>0.5 GeV)",4,0.,4.,200,-5.e-7, 5.e-7);
+      fListOfHistos->Add( fhTimeDDL[m]);
+    }
+  }
+  
   // return to the previous add directory status
   TH1::AddDirectory(ads);
+}
+
+//________________________________________________________________________________
+void AliCaloCellsQA::FillTimeDDL(TObjArray *clusArray, UShort_t BC)
+{
+
+  Float_t position[3];
+  Int_t relId[4];
+  
+  AliPHOSGeometry *geomPHOS = AliPHOSGeometry::GetInstance();
+  
+  for (Int_t i=0; i<clusArray->GetEntriesFast(); i++) {
+    
+    AliVCluster * clu = (AliVCluster*) clusArray->At(i);
+    if(clu->E()<0.5) continue;
+
+    clu->GetPosition(position);
+    TVector3 global(position) ;
+    geomPHOS->GlobalPos2RelId(global,relId) ;
+    Int_t mod  = relId[0] ;
+    Int_t cellX = relId[2];
+    Int_t cellZ = relId[3] ;
+    Int_t ddlID = WhichDDL(mod,cellX) ;
+    Double_t tof = clu->GetTOF() ;
+    fhTimeDDL[ddlID]->Fill(float(BC%4),tof) ;  
+  }
+  
+}
+
+//_________________________________________________________________________
+Int_t AliCaloCellsQA::WhichDDL(Int_t module, Int_t cellx){
+  
+  const Int_t Nmod=5;//totally, 5 PHOS modules are designed.
+  Int_t ddl = -1;
+  
+  if(cellx<1 || 64<cellx) return -1;
+  
+  if(module<1 || 4<module){
+    printf("AliCaloCellsQA::WhichDDL module is wrong! ddl=-1 will return.\n");
+    return -1;
+  }
+  else{
+    ddl = (Nmod-module) * 4 + (cellx-1)/16;//convert offline module numbering to online.
+    return ddl;
+  }
 }
 
 //_________________________________________________________________________
@@ -559,9 +616,8 @@ void AliCaloCellsQA::FillCellsInCluster(TObjArray *clusArray, AliVCaloCells *cel
           }
         }
       } // cells loop
-
   } // cluster loop
-
+  
 }
 
 //_________________________________________________________________________
