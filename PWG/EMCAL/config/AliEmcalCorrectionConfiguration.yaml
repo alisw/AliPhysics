@@ -15,7 +15,6 @@ CellBadChannel:
 CellTimeCalib:
     enabled: true
     createHistos: true
-    calibrateTimeL1Phase: false        # Flag cell time calibration with L1phase shift
 Clusterizer:
     enabled: true
     createHistos: true
@@ -31,7 +30,7 @@ Clusterizer:
     recalShowerShape: false
     remapMcAod: false                  # Switch for the remaping for the MC labels in AOD productions
     enableFracEMCRecalc: false # Enables the recalculation of the MC labels including the fractional energy on cell level
-    diffEAggregation: 0.               # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
+    diffEAggregation: 0.03             # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
 ClusterExotics:
     enabled: true
     createHistos: true
