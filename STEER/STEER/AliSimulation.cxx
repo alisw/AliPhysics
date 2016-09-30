@@ -1350,6 +1350,15 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 Bool_t AliSimulation::RunGeneratorOnly()
 {
   // Execute Config.C
+  InitCDB();
+  InitRunNumber();  
+  if (fUseMagFieldFromGRP) {
+    AliGRPManager grpM;
+    grpM.ReadGRPEntry();
+    grpM.SetMagField();
+    AliInfo("Field is locked now. It cannot be changed in Config.C");
+  }
+
   TInterpreter::EErrorCode interpreterError=TInterpreter::kNoError;
   gROOT->LoadMacro(fConfigFileName.Data());
   Long_t interpreterResult=gInterpreter->ProcessLine(gAlice->GetConfigFunction(), &interpreterError);
