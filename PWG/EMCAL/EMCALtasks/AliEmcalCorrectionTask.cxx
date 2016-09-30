@@ -392,6 +392,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     
     // configure needed fields for components to properly initialize
     component->SetNcentralityBins(fNcentBins);
+    component->SetIsESD(fIsEsd);
     
     // Initialize each component
     component->Initialize();

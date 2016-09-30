@@ -202,9 +202,6 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
 {
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   
-  // Dynamic cast to see if event if ESD or AOD
-  fEsdMode = dynamic_cast<AliESDEvent*>(fEvent);
-  
   // Read in pass. If it is empty, set flag to automatically find the pass from the filename.
   std::string tempString = "";
   GetProperty("pass", tempString);
