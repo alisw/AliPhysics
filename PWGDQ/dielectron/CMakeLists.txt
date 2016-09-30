@@ -84,6 +84,7 @@ set(SRCS
       LMEE/AliAnalysisTaskMLTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
+      LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
   )
 
 # Headers from sources
