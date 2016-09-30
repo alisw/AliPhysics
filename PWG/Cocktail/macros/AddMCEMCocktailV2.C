@@ -25,7 +25,6 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
   
   // Create and Initialize Generator
   AliGenEMCocktailV2 *gener     = new AliGenEMCocktailV2();
-  if (externalDecayer) decayer->AliDecayerPythia::SetDecayerExodus();
   
   //=======================================================================
   // Set External decayer
