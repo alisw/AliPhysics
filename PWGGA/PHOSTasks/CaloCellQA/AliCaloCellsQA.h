@@ -41,7 +41,8 @@ public:
                                      Int_t nbinst = 250, Double_t tmin =-0.1e-6, Double_t tmax = 0.15e-6);
   virtual void InitTransientFindCurrentRun(Int_t runNumber);
   virtual void Fill(Int_t runNumber, TObjArray *clusArray, AliVCaloCells *cells, Double_t vertexXYZ[3]);  // main method
-
+  virtual void FillTimeDDL(TObjArray *clusArray, UShort_t BC);
+  
   // getters
   virtual Int_t      GetDetector()     { return fDetector; }
   virtual Int_t      GetNMods()        { return fNMods; }
@@ -66,13 +67,15 @@ protected:
   virtual void    FillCellsInCluster(TObjArray *clusArray, AliVCaloCells *cells);
   virtual void    FillJustCells(AliVCaloCells *cells);
   virtual void    FillPi0Mass(TObjArray *clusArray, Double_t vertexXYZ[3]);
-
+  
   virtual Int_t   CheckClusterGetSM(AliVCluster* clus);
   virtual Int_t   GetSM(Int_t absId);
   virtual Bool_t  IsCellLocalMaximum(Int_t c, AliVCluster* clus, AliVCaloCells* cells);
   virtual Bool_t  IsCellLocalMaximum(Int_t absId, AliVCaloCells* cells);
   virtual void    AbsIdToSMEtaPhi(Int_t absId, Int_t &sm, Int_t &eta, Int_t &phi);
-
+  
+  Int_t WhichDDL(Int_t module, Int_t cellx);
+  
 private:
 
   AliCaloCellsQA(const AliCaloCellsQA &);
@@ -117,6 +120,7 @@ private:
    */
 
   TH1D *fhNEventsProcessedPerRun;             //! number of processed events per run
+  TH2F *fhTimeDDL[20] ;                        //! per DDL: event bc vs cluster time. For L1 phase calculation.
 
   // current run histograms; X axis -- cell absId number;
   TH1F *fhCellLocMaxNTimesInClusterElow;      //! number of times cell was local maximum in a low energy cluster
@@ -127,12 +131,12 @@ private:
   TH1F *fhCellNonLocMaxNTimesInClusterEhigh;  //! number of times cell wasn't local maximum in a high energy cluster
   TH1F *fhCellNonLocMaxETotalClusterElow;     //! total cluster energy for not local maximum cell, low energy
   TH1F *fhCellNonLocMaxETotalClusterEhigh;    //! total cluster energy for not local maximum cell, high energy
-
+  
   // current run, per supermodule histograms; the maximum number of supermodules is 10
   TH1F *fhECells[10];                         //! cell amplitude distribution
   TH1F *fhPi0Mass[10][10];                    //! pi0 mass spectrum
   TH2F *fhNCellsInCluster[10];                //! distribution of number of cells in cluster vs cluster energy
-
+  
   // summary histograms: cells spectra at different conditions; X axis -- cell absId number
   TH2F *fhCellAmplitude;                      //! amplitude distribution per cell
   TH2F *fhCellAmplitudeEhigh;                 //! amplitude distribution per cell, high energies
