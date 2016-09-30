@@ -70,6 +70,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetCentralityBin(Int_t bin) { fCentBin = bin; }
   void SetCentrality(Double_t cent) { fCent = cent; }
   void SetNcentralityBins(Int_t n) { fNcentBins = n; }
+  void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   /// Make copy to ensure that the nodes do not point to each other (?)
