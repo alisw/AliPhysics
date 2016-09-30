@@ -6,7 +6,8 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
                                   Int_t numberOfParticles     = 1000,
                                   Double_t minPt              = 0.,
                                   Double_t maxPt              = 20,
-                                  Int_t pythiaErrorTolerance  = 2000
+                                  Int_t pythiaErrorTolerance  = 2000,
+                                  Bool_t externalDecayer      = 0
                                 )
 {
   // collisions systems defined:
@@ -24,11 +25,13 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
   
   // Create and Initialize Generator
   AliGenEMCocktailV2 *gener     = new AliGenEMCocktailV2();
+  if (externalDecayer) decayer->AliDecayerPythia::SetDecayerExodus();
   
   //=======================================================================
   // Set External decayer
   TVirtualMCDecayer *decayer  = new AliDecayerPythia();
-
+  if (externalDecayer) decayer->AliDecayerPythia::SetDecayerExodus();
+  
   gener->SetParametrizationFile(paramFile);
   gener->SetNPart(numberOfParticles);                         // source multiplicity per event
   gener->SetPtRange(minPt,maxPt);
