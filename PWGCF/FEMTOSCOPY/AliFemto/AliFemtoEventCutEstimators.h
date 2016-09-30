@@ -86,8 +86,8 @@ inline int  AliFemtoEventCutEstimators::NEventsFailed() const {return fNEventsFa
 inline AliFemtoEventCutEstimators* AliFemtoEventCutEstimators::Clone() { AliFemtoEventCutEstimators* c = new AliFemtoEventCutEstimators(*this); return c;}
 inline AliFemtoEventCutEstimators::AliFemtoEventCutEstimators(AliFemtoEventCutEstimators& c) : 
   AliFemtoEventCut(c), 
-  fUseMultEst1(0), fUseMultEst2(0), fUseMultEst3(0), 
-  fUseCentEst1(0), fUseCentEst2(0), fUseCentEst3(0), fUseCentEst4(0),
+  fUseMultEst1(c.fUseMultEst1), fUseMultEst2(c.fUseMultEst2), fUseMultEst3(c.fUseMultEst3), 
+  fUseCentEst1(c.fUseCentEst1), fUseCentEst2(c.fUseCentEst2), fUseCentEst3(c.fUseCentEst3), fUseCentEst4(c.fUseCentEst4),
   fNEventsPassed(0), fNEventsFailed(0) {
   fEventMultEst1[0] = c.fEventMultEst1[0];  fEventMultEst1[1] = c.fEventMultEst1[1];
   fEventMultEst2[0] = c.fEventMultEst2[0];  fEventMultEst2[1] = c.fEventMultEst2[1];
