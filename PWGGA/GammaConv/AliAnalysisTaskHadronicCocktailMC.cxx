@@ -775,8 +775,6 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
         return 5.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 111)
         return 6.;
-      else if (std::find(PdgDaughter->begin(), PdgDaughter->end(), 111) != PdgDaughter->end())
-        return 10.;
       else
         return 19.;
       break;
@@ -792,18 +790,16 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
         return 4.;
       else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11  && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 111)
         return 5.;
-      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -12  && PdgDaughter->at(2) == 11 && PdgDaughter->at(3) == 111)
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -12  && PdgDaughter->at(2) == 11 && PdgDaughter->at(3) == 111)   // don't know how this is handled by phythia
         return 6.;
       else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 12  && PdgDaughter->at(2) == 111 && PdgDaughter->at(3) == 211)
-        return 7.;
-      else if (std::find(PdgDaughter->begin(), PdgDaughter->end(), 111) != PdgDaughter->end())
-        return 10.;
+        return 6.;
       else
         return 19.;
       break;
       
     case 3122:
-      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211)
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2212)
         return 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2112)
         return 2.;
@@ -823,7 +819,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
       else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
         return 5.;
       else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111 && PdgDaughter->at(3) == 211)
-        return 5.;
+        return 6.;
       else
         return 19.;
       break;
@@ -848,12 +844,12 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
         return 2.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
         return 3.;
-      if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
         return 4.;
-      if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 111)
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 111)
         return 5.;
-      if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 5.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 6.;
       else
         return 19.;
       break;
@@ -885,7 +881,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
         return 5.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 223)
         return 6.;
-      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 111)
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
         return 7.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
         return 8.;
@@ -1029,14 +1025,14 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
           histo->SetBinContent(3, BR);
         else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 111)
           histo->SetBinContent(4, BR);
-        else if (nPart == 3 && pdgCodes[0] == 22 && pdgCodes[1] == 111 && pdgCodes[2] == 111)
+        else if (nPart == 3 && pdgCodes[0] == 22 && pdgCodes[1] == 22 && pdgCodes[2] == 111)
           histo->SetBinContent(5, BR);
         else if (nPart == 4 && pdgCodes[0] == -11 && pdgCodes[1] == 11 && pdgCodes[2] == 22 && pdgCodes[3] == 111)
           histo->SetBinContent(6, BR);
-        else if (nPart == 4 && pdgCodes[0] == -12 && pdgCodes[1] == 11 && pdgCodes[2] == 111 && pdgCodes[3] == 211)
-          histo->SetBinContent(6, BR+histo->GetBinContent(6));
+        else if (nPart == 4 && pdgCodes[0] == -12 && pdgCodes[1] == 11 && pdgCodes[2] == 111 && pdgCodes[3] == 211)   // don't know how this is handled by pythia
+          histo->SetBinContent(7, BR+histo->GetBinContent(7));
         else if (nPart == 4 && pdgCodes[0] == -211 && pdgCodes[1] == -11 && pdgCodes[2] == 12 && pdgCodes[3] == 111)
-          histo->SetBinContent(6, BR+histo->GetBinContent(6));
+          histo->SetBinContent(7, BR+histo->GetBinContent(7));
         else
           histo->SetBinContent(20, BR+histo->GetBinContent(20));
         pdgCodes.clear();
@@ -1064,7 +1060,7 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
         if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 2212)
           histo->SetBinContent(2, BR);
         else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 2112)
-          histo->SetBinContent(2, BR);
+          histo->SetBinContent(3, BR);
         else
           histo->SetBinContent(20, BR+histo->GetBinContent(20));
         pdgCodes.clear();
@@ -1100,7 +1096,7 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
         else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 111 && pdgCodes[2] == 211)
           histo->SetBinContent(6, BR);
         else if (nPart == 4 && pdgCodes[0] == -211 && pdgCodes[1] == 111 && pdgCodes[2] == 111 && pdgCodes[3] == 211)
-          histo->SetBinContent(6, BR);
+          histo->SetBinContent(7, BR);
         else
           histo->SetBinContent(20, BR+histo->GetBinContent(20));
         pdgCodes.clear();
@@ -1127,11 +1123,11 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
         std::sort(pdgCodes.begin(), pdgCodes.end());
         if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 211 && pdgCodes[2] == 221)
           histo->SetBinContent(2, BR);
-        if (nPart == 3 && pdgCodes[0] == 111 && pdgCodes[1] == 111 && pdgCodes[2] == 221)
+        else if (nPart == 3 && pdgCodes[0] == 111 && pdgCodes[1] == 111 && pdgCodes[2] == 221)
           histo->SetBinContent(3, BR);
-        if (nPart == 3 && pdgCodes[0] == 111 && pdgCodes[1] == 111 && pdgCodes[2] == 111)
+        else if (nPart == 3 && pdgCodes[0] == 111 && pdgCodes[1] == 111 && pdgCodes[2] == 111)
           histo->SetBinContent(4, BR);
-        if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 111 && pdgCodes[2] == 211)
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 111 && pdgCodes[2] == 211)
           histo->SetBinContent(5, BR);
         else
           histo->SetBinContent(20, BR+histo->GetBinContent(20));
@@ -1286,11 +1282,10 @@ void AliAnalysisTaskHadronicCocktailMC::FillPythiaBranchingRatio(TH1F* histo, In
             nPart++;
           }
         }
-        std::sort(pdgCodes.begin(), pdgCodes.end());
         if (std::find(pdgCodes.begin(), pdgCodes.end(), 111) != pdgCodes.end())
           histo->SetBinContent(2, BR+histo->GetBinContent(2));
         else if (std::find(pdgCodes.begin(), pdgCodes.end(), 221) != pdgCodes.end())
-          histo->SetBinContent(3, BR+histo->GetBinContent(2));
+          histo->SetBinContent(3, BR+histo->GetBinContent(3));
         else
           histo->SetBinContent(20, BR+histo->GetBinContent(20));
         pdgCodes.clear();
