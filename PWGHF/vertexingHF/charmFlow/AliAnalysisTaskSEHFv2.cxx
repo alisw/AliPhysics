@@ -71,6 +71,16 @@
 #include "AliFlowTrackCuts.h"
 #include "AliFlowEvent.h"
 
+#include "AliAnalysisVertexingHF.h"
+#include "AliEventplane.h"
+#include "AliFlowTrack.h"
+#include "AliFlowVector.h"
+#include "AliFlowTrackCuts.h"
+#include "AliFlowEvent.h"
+#include "AliMultSelection.h"
+#include "AliQnCorrectionsManager.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+
 #include "AliAnalysisTaskSEHFv2.h"
 
 ClassImp(AliAnalysisTaskSEHFv2)
@@ -97,7 +107,14 @@ AliAnalysisTaskSE(),
   fMaxCentr(80),
   fEtaGap(kFALSE),
   fSubEvents(2),
-  fCentBinSizePerMil(25)
+  fCentBinSizePerMil(25),
+  fAODProtection(1),
+  fSetName(kTRUE),
+  fUseNewQnCorrFw(kTRUE),
+  hEvPlaneQncorrTPC(0x0),
+  hEvPlaneQncorrVZEROA(0x0),
+  hEvPlaneQncorrVZEROC(0x0),
+  hEvPlaneQncorrResol(0x0)
 {
   // Default constructor
 }
@@ -123,7 +140,14 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fMaxCentr(80),
   fEtaGap(kFALSE),
   fSubEvents(2),
-  fCentBinSizePerMil(25)
+  fCentBinSizePerMil(25),
+  fAODProtection(1),
+  fSetName(kTRUE),
+  fUseNewQnCorrFw(kTRUE),
+  hEvPlaneQncorrTPC(0x0),
+  hEvPlaneQncorrVZEROA(0x0),
+  hEvPlaneQncorrVZEROC(0x0),
+  hEvPlaneQncorrResol(0x0)
 {
   // standard constructor
   Int_t pdg=421;
@@ -272,6 +296,15 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("MainOutput");
   
+  hEvPlaneQncorrTPC    = new TH1F("hEvPlaneQncorrTPC","hEvPlaneQncorrTPC;#phi Ev Plane;Entries",200,0.,TMath::Pi());
+  hEvPlaneQncorrVZEROA = new TH1F("hEvPlaneQncorrVZEROA","hEvPlaneQncorrVZEROA;#phi Ev Plane;Entries",200,0.,TMath::Pi());
+  hEvPlaneQncorrVZEROC = new TH1F("hEvPlaneQncorrVZEROC","hEvPlaneQncorrVZEROC;#phi Ev Plane;Entries",200,0.,TMath::Pi());
+  hEvPlaneQncorrResol  = new TH1F("hEvPlaneQncorrResol","hEvPlaneQncorrResol;#phi Ev Plane;Entries",220,-1.1,1.1);
+  fOutput->Add(hEvPlaneQncorrTPC);
+  fOutput->Add(hEvPlaneQncorrVZEROA);
+  fOutput->Add(hEvPlaneQncorrVZEROC);
+  fOutput->Add(hEvPlaneQncorrResol);
+    
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
@@ -358,6 +391,20 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+    
+  //   Protection against the mismatch of candidate TRefs:
+  //   Check if AOD and corresponding deltaAOD files contain the same number of events.
+  //   In case of discrepancy the event is rejected.
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+  }
+    
   if(fDebug>2) printf("Analysing decay %d\n",fDecChannel);
   // Post the data already here
   PostData(1,fhEventsInfo);
@@ -445,24 +492,77 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   }
 
   fhEventsInfo->Fill(0); // count event
-
   AliAODRecoDecayHF *d=0;
-
+  
   Int_t nCand = arrayProng->GetEntriesFast();
   if(fDebug>2) printf("Number of D2H: %d\n",nCand);
-
+  
   Bool_t isEvSel=fRDCuts->IsEventSelected(aod);
   if(!isEvSel){
     if(!fRDCuts->IsEventRejectedDueToCentrality())fhEventsInfo->Fill(4);
     return;
   }
-
+  
   fhEventsInfo->Fill(1);
   fhEventsInfo->Fill(4);
- 
+  
+  Double_t eventplaneqncorrTPC = 0.;
+  Double_t eventplaneqncorrVZEROA = 0.;
+  Double_t eventplaneqncorrVZEROC = 0.;
+  
+  if(fUseNewQnCorrFw) {
+    /////////////////////////////////////////////////////////////
+    //////////////          GET Qn vectors         //////////////
+    /////////////////////////////////////////////////////////////
+    
+    AliQnCorrectionsManager *flowQnVectorMgr;
+    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+    if (flowQnVectorTask != NULL) {
+      flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+    }
+    else {
+      AliWarning("This task needs the Flow Qn vector corrections framework and it is not present. Aborting!!!\n");
+      return;
+    }
+    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+    if (!qnlist) {
+      return;
+    }
+    const AliQnCorrectionsQnVector* qnVectTPC    = NULL;
+    const AliQnCorrectionsQnVector* qnVectVZEROA = NULL;
+    const AliQnCorrectionsQnVector* qnVectVZEROC = NULL;
+    
+    qnVectTPC    = GetQnVectorFromList(qnlist, "TPC", "latest", "latest");
+    qnVectVZEROA = GetQnVectorFromList(qnlist, "VZEROA", "latest", "latest");
+    qnVectVZEROC = GetQnVectorFromList(qnlist, "VZEROC", "latest", "latest");
+    if(!qnVectTPC || !qnVectVZEROA || !qnVectVZEROC) return;
+    
+    eventplaneqncorrTPC    = qnVectTPC->EventPlane(2);
+    eventplaneqncorrVZEROA = qnVectVZEROA->EventPlane(2);
+    eventplaneqncorrVZEROC = qnVectVZEROC->EventPlane(2);
+    
+    if(eventplaneqncorrTPC<0.)    eventplaneqncorrTPC+=TMath::Pi();
+    if(eventplaneqncorrVZEROA<0.) eventplaneqncorrVZEROA+=TMath::Pi();
+    if(eventplaneqncorrVZEROC<0.) eventplaneqncorrVZEROC+=TMath::Pi();
+    
+    ((TH1F*)fOutput->FindObject("hEvPlaneQncorrTPC"))->Fill(eventplaneqncorrTPC);
+    ((TH1F*)fOutput->FindObject("hEvPlaneQncorrVZEROA"))->Fill(eventplaneqncorrVZEROA);
+    ((TH1F*)fOutput->FindObject("hEvPlaneQncorrVZEROC"))->Fill(eventplaneqncorrVZEROC);
+    
+    double dPsi = eventplaneqncorrVZEROA - eventplaneqncorrVZEROC;
+    if(TMath::Abs(dPsi)>TMath::Pi()/2.){
+      if(dPsi>0.) dPsi-=TMath::Pi();
+      else dPsi +=TMath::Pi();
+    } // difference of subevents reaction plane angle cannot be bigger than phi/2
+    double resol = TMath::Cos(2.*dPsi); // reaction plane resolution
+    if(TMath::Abs(eventplaneqncorrTPC-eventplaneqncorrVZEROA)>fEventPlanesComp)return;
+    ((TH1F*)fOutput->FindObject("hEvPlaneQncorrResol"))->Fill(resol);
+  }
+  
+  
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
-    AliError("AliAnalysisTaskSEHFv2::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+    Printf("AliAnalysisTaskSEHFv2::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
     fhEventsInfo->Fill(6);
     return;
   }
@@ -503,50 +603,69 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)eventplane);
   }else{
     // TPC event plane
-    rpangleTPC = pl->GetEventplane("Q");
+    if(fUseNewQnCorrFw) rpangleTPC = eventplaneqncorrTPC;
+    else rpangleTPC = pl->GetEventplane("Q");
     if(rpangleTPC<0){
       fhEventsInfo->Fill(6);
       return;
     }
     rpangleeventA = rpangleTPC;
     if(fSubEvents==2||fEventPlaneMeth==kVZERO){
-      qsub1 = pl->GetQsub1();
-      qsub2 = pl->GetQsub2();
-      if(!qsub1 || !qsub2){
-	fhEventsInfo->Fill(6);
-	return;
+      if(fUseNewQnCorrFw) {
+	rpangleeventA = eventplaneqncorrVZEROA;
+	rpangleeventB = eventplaneqncorrVZEROC;
+        
       }
-      rpangleeventA = qsub1->Phi()/2.;
-      rpangleeventB = qsub2->Phi()/2.;
+      else {
+	qsub1 = pl->GetQsub1();
+	qsub2 = pl->GetQsub2();
+	if(!qsub1 || !qsub2){
+	  fhEventsInfo->Fill(6);
+	  return;
+	}
+	rpangleeventA = qsub1->Phi()/2.;
+	rpangleeventB = qsub2->Phi()/2.;
+      }
     }
     if(fEventPlaneMeth!=kTPC){
       //VZERO EP and resolution
-      rpangleVZERO=GetPhi0Pi(pl->GetEventplane("V0",aod,fV0EPorder));
-      rpangleeventC=rpangleVZERO;
-      if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
-	rpangleeventB=GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
-	rpangleeventC=GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
-	if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
-	else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
+      if(fUseNewQnCorrFw) {
+	rpangleeventC=eventplaneqncorrVZEROC;
+	if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
+	  rpangleeventB= eventplaneqncorrVZEROA;
+	  rpangleeventC= eventplaneqncorrVZEROC;
+	  if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
+	  else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
+	}
+      }
+      else {
+	rpangleVZERO=GetPhi0Pi(pl->GetEventplane("V0",aod,fV0EPorder));
+	rpangleeventC=rpangleVZERO;
+	if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
+	  rpangleeventB= GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
+	  rpangleeventC= GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
+	  if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
+	  else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
+	}
       }
     }
-
-
+    
+    
     if(fEventPlaneMeth>kTPCVZERO)eventplane=rpangleVZERO;
     else{
-      q = pl->GetQVector();
+      if(!fUseNewQnCorrFw) q = pl->GetQVector();
       eventplane=rpangleTPC;
     }
     deltaPsi =rpangleeventA-rpangleeventB;
   }
-
+  
   if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
     if(deltaPsi>0.) deltaPsi-=TMath::Pi();
     else deltaPsi +=TMath::Pi();
   } // difference of subevents reaction plane angle cannot be bigger than phi/2
   planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
   if(TMath::Abs(rpangleTPC-rpangleVZERO)>fEventPlanesComp)return;
-
+  
   if(fDebug>2)printf("Filling EP-related histograms\n");
   //Filling EP-related histograms
   ((TH2F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleTPC,rpangleVZERO); // reaction plane angle without autocorrelations removal
@@ -576,8 +695,12 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   }
 
   if(fDebug>2)printf("Loop on D candidates\n");
+
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
+
   //Loop on D candidates
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
+      
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
     Bool_t isSelBit=kTRUE;
     if(fDecChannel==0) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
@@ -585,6 +708,18 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fDecChannel==2) isSelBit=kTRUE;
     if(fDecChannel==3) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDsCuts);
     if(!isSelBit)continue;
+      
+    if(fDecChannel==0 || fDecChannel==3) {
+      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
+    }
+    else if(fDecChannel == 1) {
+      if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+    }
+    else if(fDecChannel == 2) {
+      if(!vHF->FillRecoCand(aod,(AliAODRecoCascadeHF*)d))continue;
+    }
+      
+      
     Int_t ptbin=fRDCuts->PtBin(d->Pt());
     if(ptbin<0) {
       fhEventsInfo->Fill(3);
@@ -625,6 +760,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     delete [] invMass;
   }
   
+  delete vHF;
   PostData(1,fhEventsInfo);
   PostData(2,fOutput);
 
@@ -905,7 +1041,7 @@ void AliAnalysisTaskSEHFv2::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
 	  ((TH2F*)fOutput->FindObject(Form("hMc2deltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[1]);
 	  ((TH2F*)fOutput->FindObject(Form("hMdeltaphiR_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
 	}
-     }else{
+      }else{
 	((TH2F*)fOutput->FindObject(Form("hMc2deltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[1]);
 	((TH2F*)fOutput->FindObject(Form("hMdeltaphiB_pt%dcentr%d_%d",ptbin,icentrmin,icentr)))->Fill(deltaphi,masses[1]);
       }
@@ -1109,6 +1245,47 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, c
 //   if(fDebug>15)printf("EPfromV0 phi %f\n",angleEP);
 //   return angleEP;
 // }
+//________________________________________________________________________
+const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFv2::GetQnVectorFromList(const TList *list,
+                                                                               const char *subdetector,
+                                                                               const char *expectedstep,
+                                                                               const char *altstep)
+{    
+  AliQnCorrectionsQnVector *theQnVector = NULL;
+  
+  TList *pQvecList = dynamic_cast<TList*> (list->FindObject(subdetector));
+  if (pQvecList != NULL) {
+    /* the detector is present */
+    if (TString(expectedstep).EqualTo("latest"))
+      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+    else
+      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
+        
+    if (theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) {
+      /* the Qn vector for the expected step was not there */
+      if (TString(altstep).EqualTo("latest"))
+	theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+      else
+	theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altstep);
+    }
+    if(fSetName) {
+      hEvPlaneQncorrTPC->SetTitle(theQnVector->GetName());
+      hEvPlaneQncorrVZEROA->SetTitle(theQnVector->GetName());
+      hEvPlaneQncorrVZEROC->SetTitle(theQnVector->GetName());
+      fSetName=kFALSE;
+    }
+  }
+  if (theQnVector != NULL) {
+    /* check the Qn vector quality */
+    if (!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0))
+      /* not good quality, discarded */
+      theQnVector = NULL;
+  }
+  return theQnVector;
+}
+
+
+
 //________________________________________________________________________
 void AliAnalysisTaskSEHFv2::Terminate(Option_t */*option*/)
 {
