@@ -262,7 +262,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",5001,-0.5,5000.5);
   fOutput->Add(fHistNTracks);
 
-  fHistFilterBits = new TH2F("hFilterBits", " ; Filter Bit ; Id ; N_{tracks}",10,-0.5,9.5,2,-1,1);
+  fHistFilterBits = new TH2D("hFilterBits", " ; Filter Bit ; Id ; N_{tracks}",kNumOfFilterBits,-0.5,kNumOfFilterBits-0.5,2,-1,1);
   fHistFilterBits->GetYaxis()->SetBinLabel(1,"Neg. ID");
   fHistFilterBits->GetYaxis()->SetBinLabel(2,"Pos. ID");
   fOutput->Add(fHistFilterBits);

@@ -62,7 +62,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
  private:
 
   enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=27};
-  enum EFiltBits {kNumOfFilterBits=9};
+  enum EFiltBits {kNumOfFilterBits=12};
 
   AliAnalysisTaskCheckAODTracks(const AliAnalysisTaskCheckAODTracks &source);
   AliAnalysisTaskCheckAODTracks& operator=(const AliAnalysisTaskCheckAODTracks &source);
@@ -71,7 +71,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
 
   TH1F* fHistNEvents;                //!<!  histo with N of events  
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
-  TH2F* fHistFilterBits;             //!<!  histo of fieter bits
+  TH2D* fHistFilterBits;             //!<!  histo of fieter bits
 
   TH3F* fHistEtaPhiPtTPCsel;           //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSref;     //!<!  histo of eta,phi,pt (ITSrefit)
