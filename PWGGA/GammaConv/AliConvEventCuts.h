@@ -161,7 +161,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16g1c,        // anchored LHC15o pass1 - general purpose 50-90%
         kLHC16h4a,        // anchored LHC15o pass1 - injected signals 0-10%
         kLHC16h4b,        // anchored LHC15o pass1 - injected signals 10-50%
-	kLHC16h4b2,        // anchored LHC15o pass1 - injected signals 10-50% with TPC gas corrections
+        kLHC16h4b2,       // anchored LHC15o pass1 - injected signals 10-50% with TPC gas corrections
         kLHC16h4c,        // anchored LHC15o pass1 - incected signals 50-90%
         kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%

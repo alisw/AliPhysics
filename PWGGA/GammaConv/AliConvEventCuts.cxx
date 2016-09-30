@@ -4202,7 +4202,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fPeriodEnum = kLHC16h4b;
     fEnergyEnum = kPbPb5TeV;
   } else if (periodName.Contains("LHC16h4b2")){
-    fPeriodEnum = kLHC16h4b;
+    fPeriodEnum = kLHC16h4b2;
     fEnergyEnum = kPbPb5TeV;
   } else if (periodName.Contains("LHC16h4c")){
     fPeriodEnum = kLHC16h4c;
