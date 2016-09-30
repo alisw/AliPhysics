@@ -1,9 +1,9 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDplustoKpipi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/,Float_t minC=20.,Float_t maxC=80.)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, Int_t useAODProtection=1)
 {
   //
-  // Test macro for the AliAnalysisTaskSE for  D 
+  // Test macro for the AliAnalysisTaskSE for  D
   // mesons v2 analysis with event plane method
-  // Authors: Chiara Bianchin, cbianchi@pd.infn.it, 
+  // Authors: Chiara Bianchin, cbianchi@pd.infn.it,
   //          Robert Grajcarek, grajcarek@physi.uni-heidelberg.de
   //          Giacomo Ortona, ortona@to.infn.it,
   //          Carlos Perez Lara, carlos.eugenio.perez.lara@cern.ch
@@ -15,11 +15,11 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
     ::Error("AddTaskHFv2", "No analysis manager to connect to.");
     return NULL;
   }
-
+  
   Bool_t stdcuts=kFALSE;
   TFile* filecuts;
   if( filename.EqualTo("") ) {
-    stdcuts=kTRUE; 
+    stdcuts=kTRUE;
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
@@ -30,97 +30,101 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCutsPbPb.root",
   AliRDHFCuts *analysiscuts=0x0;
   Int_t pdgmes=-1;
   //Analysis cuts
-
-  if(decCh==AliAnalysisTaskSEHFv2::kDplustoKpipi){
-    if(stdcuts){
+  
+  if(decCh==AliAnalysisTaskSEHFv2::kDplustoKpipi) {
+    if(stdcuts) {
       analysiscuts = new AliRDHFCutsDplustoKpipi();
       analysiscuts->SetStandardCutsPbPb2011();
-    }else  analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
+    } else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
     suffix.Prepend("Dplus");
     pdgmes=411;
-  }else if(decCh==AliAnalysisTaskSEHFv2::kD0toKpi){
+  } else if(decCh==AliAnalysisTaskSEHFv2::kD0toKpi) {
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpi();
       analysiscuts->SetStandardCutsPbPb2011();
-    }
-    else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
+    } else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
     suffix.Prepend("Dzero");
     pdgmes=421;
-  }else if(decCh==AliAnalysisTaskSEHFv2::kDstartoKpipi){
+  } else if(decCh==AliAnalysisTaskSEHFv2::kDstartoKpipi) {
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDStartoKpipi();
       analysiscuts->SetStandardCutsPbPb2011();
-    }
-    else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
+    } else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
     suffix.Prepend("Dstar");
     pdgmes=413;
   }
   else if(decCh==AliAnalysisTaskSEHFv2::kDstoKKpi) {
-    analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutsobjname);
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsDstoKKpi();
+      //analysiscuts->SetStandardCutsPbPb2011(); //to be implemented in AliRDHFCutsDstoKKpi
+    } else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutsobjname);
     suffix.Prepend("Ds");
     pdgmes=431;
   }
-
   if(pdgmes==-1){
     AliFatal("Wrong meson setting");
   }
   if(!analysiscuts){
     AliFatal("Specific AliRDHFCuts not found");
   }
-
-  // Analysis task    
+    
+  // Analysis task
   AliAnalysisTaskSEHFv2 *v2Task = new AliAnalysisTaskSEHFv2("HFv2Analysis",analysiscuts,decCh);
   v2Task->SetReadMC(readMC);
   v2Task->SetEtaGapFeatureForEventplaneFromTracks(kFALSE);
-  if(decCh == AliAnalysisTaskSEHFv2::kDstartoKpipi){
-     v2Task->SetNMassBins(200);
-  }else if(decCh == AliAnalysisTaskSEHFv2::kDplustoKpipi || decCh == AliAnalysisTaskSEHFv2::kD0toKpi || decCh == AliAnalysisTaskSEHFv2::kDstoKKpi) {
-     v2Task->SetNMassBins(104);
-     v2Task->SetMassLimits(0.2,pdgmes);
+  if(decCh == AliAnalysisTaskSEHFv2::kDstartoKpipi) {
+    v2Task->SetNMassBins(200);
+  } else if(decCh == AliAnalysisTaskSEHFv2::kDplustoKpipi || decCh == AliAnalysisTaskSEHFv2::kD0toKpi) {
+    v2Task->SetNMassBins(104);
+    v2Task->SetMassLimits(0.2,pdgmes);
+  } else if(decCh == AliAnalysisTaskSEHFv2::kDstoKKpi) {
+    v2Task->SetNMassBins(200);  // to be decided
   }
   v2Task->SetMinCentrality(minC);
   v2Task->SetMaxCentrality(maxC);
   v2Task->SetDebugLevel(0);
   v2Task->SetV0EventPlaneOrder(2);
-  if(flagep==0){
+  if(flagep==0) {
     v2Task->SetTPCEP();
     suffix+="TPC";
-  }else if(flagep==1){
+  } else if(flagep==1) {
     v2Task->SetVZEROEP();
     suffix+="VZERO";
-  }else if(flagep==2){
+  } else if(flagep==2) {
     v2Task->SetVZEROAEP();
     suffix+="VZEROA";
-  }else if(flagep==3){
+  }else if(flagep==3) {
     v2Task->SetVZEROCEP();
     suffix+="VZEROC";
   }
+  v2Task->SetUseNewQnCorrFw(useNewQnFw);
+  v2Task->SetAODMismatchProtection(AODProtection);
   mgr->AddTask(v2Task);
-
+    
   // Create containers for input/output
-
+    
   TString contname=Form("cinputv2%s",suffix.Data());
   AliAnalysisDataContainer *cinputv2 = mgr->CreateContainer(contname.Data(),TChain::Class(),AliAnalysisManager::kInputContainer);
-
+    
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  TString outputhistos = Form("%s:PWGHF_D2H_HFv2_%s",outputfile.Data(),suffix.Data()); 
-
+  TString outputhistos = Form("%s:PWGHF_D2H_HFv2_%s",outputfile.Data(),suffix.Data());
+    
   contname=Form("hEventsInfo%s",suffix.Data());
   AliAnalysisDataContainer *coutputstat = mgr->CreateContainer(contname.Data(),TH1F::Class(),AliAnalysisManager::kOutputContainer,outputhistos.Data());
-
+    
   contname=Form("coutputv2%s",suffix.Data());
   AliAnalysisDataContainer *coutputv2 = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputhistos.Data());
-
+    
   contname=Form("cutobj%s",suffix.Data());
   AliAnalysisDataContainer *cutobj = mgr->CreateContainer(contname.Data(),AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer,outputhistos.Data());
-
+    
   mgr->ConnectInput(v2Task,0,mgr->GetCommonInputContainer());
-  
+    
   mgr->ConnectOutput(v2Task,1,coutputstat);
-  
+    
   mgr->ConnectOutput(v2Task,2,coutputv2);
-
+    
   mgr->ConnectOutput(v2Task,3,cutobj);
- 
+    
   return v2Task;
 }
