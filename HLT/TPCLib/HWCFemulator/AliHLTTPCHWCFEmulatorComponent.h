@@ -148,7 +148,6 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   Bool_t fBypassMerger;            // flag to bypass cluster merging between pads
   AliHLTUInt32_t fClusterLowerLimit; // cut clusters at this total charge value
   AliHLTUInt32_t fClusterQMaxLowerLimit; // cut clusters at this max charge value
- 
   AliHLTUInt32_t fSingleSeqLimit;    // cut sequences at this charge value
   AliHLTUInt32_t fMergerDistance; // max. distance in mean time between two pads to be merged
   bool           fUseTimeBinWindow; // use timebin window
@@ -162,6 +161,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   AliHLTUInt32_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
   Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
   Bool_t fUseGain; // Use gain correction factor from OCDB
+  Double_t fIORatioCorrection; // multiplier for data size ratio Output/Input 
   Int_t fDebug; // debug level
   AliHLTTPCHWCFSupport fCFSupport;     // !transient
   AliHLTTPCHWCFEmulator fCFEmulator;   // !transient
