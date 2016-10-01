@@ -17,8 +17,8 @@
 // Fills a single-inclusive electron pt-spectrum
 // For further information see implementation file
 //
-#ifndef ALIANALYSISTASKHFE_H
-#define ALIANALYSISTASKHFE_H
+#ifndef ALIANALYSISTASKHFETEMPLATE_H
+#define ALIANALYSISTASKHFETEMPLATE_H
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -35,6 +35,7 @@
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 class AliHFEcontainer;
+class AliHFEparamBag;
 class AliHFEcollection;
 class AliHFEcuts;
 class AliHFEextraCuts;
@@ -60,7 +61,7 @@ class TH1I;
 class TList;
 class TClonesArray;
 
-class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
+class AliAnalysisTaskHFEtemplate : public AliAnalysisTaskSE{
   public:
     enum{
       kPIDqa = 0,
@@ -94,12 +95,12 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kPbPb = 2
     } ECollisionSystem_t;
 
-    AliAnalysisTaskHFE();
-    AliAnalysisTaskHFE(const char * name);
-    AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
-    AliAnalysisTaskHFE& operator=(const AliAnalysisTaskHFE &ref);
+    AliAnalysisTaskHFEtemplate();
+    AliAnalysisTaskHFEtemplate(const char * name);
+    AliAnalysisTaskHFEtemplate(const AliAnalysisTaskHFEtemplate &ref);
+    AliAnalysisTaskHFEtemplate& operator=(const AliAnalysisTaskHFEtemplate &ref);
     virtual void Copy(TObject &o) const;
-    virtual ~AliAnalysisTaskHFE();
+    virtual ~AliAnalysisTaskHFEtemplate();
 
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
@@ -182,6 +183,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
     void SetWeightHist() {SetBit(kWeightHist);};
+    void SetParams(AliHFEparamBag *pars) {fParams = pars;};
     Bool_t CheckTRDTriggerESD(AliESDEvent *ev);
     Bool_t CheckTRDTrigger(AliVEvent *ev);
     void DrawTRDTrigger(AliESDEvent *ev);
@@ -282,13 +284,14 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
     TList *fOutput;                       //! Container for Task Output
+    AliHFEparamBag *fParams;              //! parameters
     TList *fHistMCQA;                     //! Output container for MC QA histograms 
     TList *fHistSECVTX;                   //! Output container for sec. vertexing results
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
 
-    ClassDef(AliAnalysisTaskHFE, 4)       // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFEtemplate, 1)       // The electron Analysis Task
 };
 #endif
 

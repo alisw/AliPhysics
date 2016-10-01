@@ -1,5 +1,25 @@
+Bool_t ReadContaminationFunctionsBeauty(TString filename, TF1 **functions, double sigma){
+    TFile *in = TFile::Open(Form("ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+    gROOT->cd();
+    int isig = static_cast<int>(sigma * 100.);
+    if (isig == -44) isig = -42;
+    if (isig == 6) isig = 9;
+    printf("Getting hadron background for the sigma cut: %d\n", isig);
+    bool status = kTRUE;
+    for(int icent = 0; icent < 12; icent++){
+        functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_%d_%d", isig, icent)));
+        if(functions[icent]) printf("Config for centrality class %d found\n", icent);
+        else{
+            printf("Config for the centrality class %d not found\n", icent);
+            status = kFALSE;
+        }
+    }
+    delete in;
+    return status;
+}
+
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
-    TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
+    TFile *in = TFile::Open(Form("ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
     gROOT->cd();
     int isig = static_cast<int>(sigma * 100.);
     printf("Getting hadron background for the sigma cut: %d\n", isig);
@@ -16,39 +36,59 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
     return status;
 }
 
-Bool_t SetZVtxProfiles(AliAnalysisTaskHFEMulti *task, TString filename = "estimator_pPb_AOD139.root" ){
-    TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
-    gROOT->cd();
-    TProfile *lhc13b = dynamic_cast<TProfile *>(in->Get("profile_LHC13b"));
-    lhc13b->SetDirectory(gROOT);
-    TProfile *lhc13c = dynamic_cast<TProfile *>(in->Get("profile_LHC13c"));
-    lhc13c->SetDirectory(gROOT);
-    task->SetMultiProfileLHC13b(lhc13b);
-    task->SetMultiProfileLHC13c(lhc13c);
+AliAnalysisTask *AddTaskHFEsimple(Bool_t MCthere, Bool_t isAOD, TString str){
 
-    TProfile *lhc13bV0A = dynamic_cast<TProfile *>(in->Get("V0Aprofile_LHC13b"));
-    lhc13bV0A->SetDirectory(gROOT);
-    TProfile *lhc13cV0A = dynamic_cast<TProfile *>(in->Get("V0Aprofile_LHC13c"));
-    lhc13cV0A->SetDirectory(gROOT);
-    task->SetV0AProfileLHC13b(lhc13bV0A);
-    task->SetV0AProfileLHC13c(lhc13cV0A);
-    delete in;
+    TFile *f = TFile::Open(gSystem->ExpandPathName(str.Data()));
+    if(!f || f->IsZombie()){
+        printf("Could not read file %s\n",str.Data()); 
+        return NULL ;
+    }
+    if(f->TestBit(TFile::kRecovered)){
+        printf("File \"%s\" is corrupt!\n",str.Data());
+    }
+    gROOT->cd();
+    TKey *k;
+    TIter next(f->GetListOfKeys());
+    while ((k = dynamic_cast<TKey *>(next()))){
+        TString s(k->GetClassName());
+        if(s.EqualTo("AliHFEparamBag")){
+            AliHFEparamBag *b = dynamic_cast<AliHFEparamBag *>(k->ReadObj());
+            //set MC and AOD settings (from train)
+            b->useMC=MCthere;
+            b->isAOD=isAOD;
+            RegisterTask(b);
+            //maybe printf to state that task was submitted?
+            printf("*******************\nTask %s submitted!\n*******************\n",b->appendix.Data());
+        } else{
+            //report if something else is found
+        }
+
+    }
+    if(!k){
+        printf("No valid cut objects found!\n");
+        f->Close(); delete f;
+        return NULL;
+    } 
+    f->Close(); delete f;
+
+    return NULL;
 }
 
-Bool_t SetMCNtrWeight(AliAnalysisTaskHFEMulti *task, TString filename = "NtrWeighting.root" ){
-    TFile *in = TFile::Open(Form("ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
-    gROOT->cd();
-    TH1F *hweight = dynamic_cast<TH1F *>(in->Get("weight13d3"));
-    hweight->SetDirectory(gROOT);
-    task->SetMCNtrWeight(hweight);
-    delete in;
-}
+AliAnalysisTask *RegisterTask(AliHFEparamBag *abag){
 
-AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
+    AliHFEparamBag *bag = new AliHFEparamBag(*abag);
+
+
+    printf("Add macro appendix %s\n", bag->appendix.Data());
+
+    if(bag->useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
+        gROOT->LoadMacro("$TRAIN_ROOT/util/hfe/configs/ConfigWeightFactors.C");
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
     Bool_t kAnalyseTaggedTracks = kTRUE;
     Bool_t kApplyPreselection = kFALSE;
 
-    
     //***************************************//
     //        Setting up the HFE cuts        //
     //***************************************//
@@ -105,7 +145,7 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
     //        Setting up the task            //
     //***************************************//
 
-    AliAnalysisTaskHFEMulti *task = new AliAnalysisTaskHFEMulti(Form("HFEtask%s",bag->appendix.Data()));
+    AliAnalysisTaskHFEtemplate *task = new AliAnalysisTaskHFEtemplate(Form("HFEtask%s",bag->appendix.Data()));
     printf("task %p\n", task);
     task->SetpPbAnalysis();
     if(!bag->isAOD) task->SetRemoveFirstEventInChunk();
@@ -114,7 +154,6 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
     task->GetPIDQAManager()->SetHighResolutionHistos();
     task->SetRejectKinkMother(kFALSE);
 
-    
     task->SetParams(bag);
 
     // Determine the centrality estimator
@@ -150,20 +189,18 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
     //          Variable manager             //
     //***************************************//
     // Define Variables
-    //Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
-    //Double_t ptbinning[12] = {0., 0.5, 1., 1.5, 2., 3., 4., 6., 8., 10., 12., 24.};
-    //Double_t ptbinning[14] = {0., 0.4, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.};
-    Double_t ptbinning[15] = {0., 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0, 10.};
+    Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+    Double_t etabinning[17] = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
 
     Int_t sizept=(sizeof(ptbinning)/sizeof(double))-1;
-    Int_t sizeeta=8;
+    Int_t sizeeta=(sizeof(etabinning)/sizeof(double))-1;
 
     AliHFEvarManager *vm = task->GetVarManager();
     vm->AddVariable("pt", sizept, ptbinning);
     vm->AddVariable("eta", sizeeta, -0.8,0.8);
     //vm->AddVariable("phi",18, -0, 2*TMath::Pi());
-    //vm->AddVariable("phi",3, -0, 2*TMath::Pi());
-    //vm->AddVariable("charge");
+    vm->AddVariable("phi",3, -0, 2*TMath::Pi());
+    vm->AddVariable("charge");
     vm->AddVariable("source");
     vm->AddVariable("centrality");
 
@@ -209,6 +246,7 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
         params[2]=paramsTPCdEdxcutlow[0];
         pid->ConfigureTPCdefaultCut(cutmodel, params,bag->tpcdEdxcuthigh[0]);
     }
+
     // Configure TOF PID
     if (usetof){
         pid->ConfigureTOF(bag->TOFs);
@@ -218,13 +256,8 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
         }
     }
 
-    // To make different upper TOF cut to see contamination effect
-    // The below two lines should be removed after this check
-    //AliHFEpidTOF *tofpid = pid->GetDetPID(AliHFEpid::kTOFpid);
-    //if(bag->TOFs<3.) tofpid->SetTOFnSigmaBand(-3,bag->TOFs); //only to check the assymmetric tof cut
-
     // Load hadron background
-    if(!(bag->useMC)){
+    if(!bag->useMC){
         Bool_t status = kTRUE;
         TF1 *hBackground[12];
         if(bag->isAOD==1) {
@@ -232,7 +265,44 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
             else { 
                 if (bag->spdcheck == 0){
                     status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06.root", hBackground, bag->tpcdEdxcutlow[0]);
+                } else if (bag->spdcheck == 1){ 
+                    status = ReadContaminationFunctions("hadroncontamination_noTOFPID_pPb_AOD_eta06_TPCcut0_envelope_minsys.root", hBackground, bag->tpcdEdxcutlow[0]);	    
+                } else if (bag->spdcheck == 2){ 
+                    status = ReadContaminationFunctions("hadroncontamination_noTOFPID_pPb_AOD_eta06_TPCcut0_envelope_maxsys.root", hBackground, bag->tpcdEdxcutlow[0]);	    
+                } else if (bag->spdcheck == 3){ 
+                    status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06_polyFit.root", hBackground, bag->tpcdEdxcutlow[0]);	    
                 }
+            }
+        }
+        else if (bag->isBeauty==1) {
+            if (bag->spdcheck == 0){
+                printf("hadron cont standard beauty");
+
+                if(bag->TOFs==0){
+                    printf("hadron cont no TOF\n");
+                    status = ReadContaminationFunctions("hadroncontamination_noTOF_pPb_Beauty_ESD_eta06.root", hBackground, bag->tpcdEdxcutlow[0]);
+                }
+                else{
+                    printf("hadron cont with TOF\n");
+                    status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2.root", hBackground, bag->tpcdEdxcutlow[0]);
+                }
+            } else if (bag->spdcheck == 1){
+                printf("hadron cont min beauty");
+                if(bag->TOFs==0){
+                    printf("hadron cont no TOF\n");
+                    status = ReadContaminationFunctions("hadroncontamination_noTOF_pPb_Beauty_ESD_eta06_envelopemin.root", hBackground, bag->tpcdEdxcutlow[0]);
+                }
+                status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2_envelope_minsys.root", hBackground, bag->tpcdEdxcutlow[0]);
+            } else if (bag->spdcheck == 2){
+                printf("hadron cont max beauty");
+                if(bag->TOFs==0){
+                    printf("hadron cont no TOF\n");
+                    status = ReadContaminationFunctions("hadroncontamination_noTOF_pPb_Beauty_ESD_eta06_envelopemax.root", hBackground, bag->tpcdEdxcutlow[0]);
+                }
+                status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2_envelope_maxsys.root", hBackground, bag->tpcdEdxcutlow[0]);
+            } else if (bag->spdcheck == 3){
+                printf("hadron cont pol3 beauty");
+                status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2_pol3.root", hBackground, bag->tpcdEdxcutlow[0]);
             }
         }
         else  status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, bag->tpcdEdxcutlow[0]);
@@ -307,37 +377,80 @@ AliAnalysisTaskHFEMulti *ConfigHFEnpepPbMulti(AliHFEparamBag *bag){
     // apply opening angle cut to reduce file size
     backe->SetMaxInvMass(0.3);
     backe->SetPtBinning(sizept, ptbinning);
+    backe->SetEtaBinning(sizeeta, etabinning);
     //backe->SetAnaPairGen(kTRUE,2);
     //backe->SetDisplayMCStack();
     // MC weight
     if(bag->useMC) {
-        //printf("test put weight %d\n",bag->weightlevelback);
+        //printf("test put weight %d\n",weightlevelback);
         if((bag->weightlevelback >=0) && (bag->weightlevelback < 3)) backe->SetWithWeights(bag->weightlevelback);
     }
     task->SetHFEBackgroundSubtraction(backe);
 
-
-    //***************************************//
-    //       Configure Multiplicity          //
-    //***************************************//
-    
-    task->SetReferenceMultiplicity(bag->RefMulti);
-    SetZVtxProfiles(task);
-    SetMCNtrWeight(task);
-
-    task->SetWeightHist(); 
-    if(bag->mcQADebugTree) task->SetDebugStreaming();
+    //task->SetWeightHist(); 
+    //if(bag->useMC) task->SetDebugStreaming();
+    //task->SetCalcContamBeauty(kTRUE);
 
     // QA
     printf("task %p\n", task);
-    //task->SetQAOn(AliAnalysisTaskHFEMulti::kPIDqa);
-    task->SetQAOn(AliAnalysisTaskHFEMulti::kMCqa);
-    task->SwitchOnPlugin(AliAnalysisTaskHFEMulti::kNonPhotonicElectron);
+    //task->SetQAOn(AliAnalysisTaskHFEtemplate::kPIDqa);
+    task->SetQAOn(AliAnalysisTaskHFEtemplate::kMCqa);
+    task->SwitchOnPlugin(AliAnalysisTaskHFEtemplate::kDEstep);
+    if(bag->isBeauty){
+        if(nonPhotonicElectronBeauty)task->SwitchOnPlugin(AliAnalysisTaskHFEtemplate::kNonPhotonicElectronBeauty);
+    }
+    else task->SwitchOnPlugin(AliAnalysisTaskHFEtemplate::kNonPhotonicElectron);
 
     printf("*************************************\n");
     printf("Configuring standard Task:\n");
     task->PrintStatus();
     pid->PrintStatus();
     printf("*************************************\n");
-    return task;
+
+    if(bag->isAOD)
+        task->SetAODAnalysis();
+    else
+        task->SetESDAnalysis();
+
+    if (bag->useMC)	task->SetHasMCData(kTRUE);
+    else		task->SetHasMCData(kFALSE);
+
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+
+    if(bag->useMC&&(bag->isBeauty || (bag->weightlevelback>=0))) {
+        ConfigWeightFactors(task,bag->nonHFEsys,bag->WhichWei,"nonHFEcorrect_pPb.root");
+        task->SetNonHFEsystematics(bag->nonHFEsys);
+    }
+
+    //create data containers
+    AliAnalysisDataContainer *cOutputResults =
+        mgr->CreateContainer(Form("HFE_Results_%s",bag->appendix.Data()),
+                TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+                Form("HFE%s.root",bag->appendix.Data()));
+
+    AliAnalysisDataContainer *cOutputQA =
+        mgr->CreateContainer(Form("HFE_QA_%s",bag->appendix.Data()),
+                TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+                Form("HFE%s.root",bag->appendix.Data()));
+
+    AliAnalysisDataContainer *cOutputSettings =
+        mgr->CreateContainer(Form("HFE_SETTINGS_%s",bag->appendix.Data()),
+                TObject::Class(),
+                AliAnalysisManager::kParamContainer,
+                Form("HFE%s.root",bag->appendix.Data()));
+
+
+    mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(task, 1, cOutputResults );
+    mgr->ConnectOutput(task, 2, cOutputQA);
+    mgr->ConnectOutput(task, 3, cOutputSettings);
+
+    mgr->AddTask(task);
+
+    return NULL;
+
+
+
 }

@@ -42,7 +42,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
                 UChar_t ITScl=3, Double_t DCAxy=1000., Double_t DCAz=1000., 
                 Double_t* tpcdEdxcutlow=NULL, Double_t* tpcdEdxcuthigh=NULL, 
                 Double_t TOFs=3., Int_t TOFmis=0, 
-                Int_t itshitpixel = 0, Int_t icent, 
+                Int_t itshitpixel = 0, 
+		Int_t spdcheck = 0,
+		Int_t icent, 
 		Double_t etami=-0.8, Double_t etama=0.8,
 		Double_t phimi=-1., Double_t phima=-1.,
 		Double_t assETAm=-0.8, Double_t assETAp=0.8,
@@ -53,7 +55,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
                 Double_t assITSpid=-3., 
 		Double_t assTOFs=3.,
                 Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, Int_t weightlevelback = -1, 
-	        Bool_t nonPhotonicElectronBeauty = kFALSE, Bool_t ipCharge = kFALSE, Bool_t ipOpp = kFALSE, Int_t ipsys = 0)
+		Double_t etadalwei = 0.,
+	        Bool_t nonPhotonicElectronBeauty = kFALSE, Bool_t ipCharge = kFALSE, Bool_t ipOpp = kFALSE, Double_t *ipPar=NULL)
 {
   Bool_t kAnalyseTaggedTracks = kTRUE;
   Bool_t kApplyPreselection = kFALSE;
@@ -72,6 +75,10 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetCutITSpixel(itshitpixel);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
+  //if (spdcheck>0){
+  //hfecuts->SetCheckITSLayerStatus(kTRUE);
+  //printf("\n\nWe check the live status of the pixels\n\n");
+  //}
   hfecuts->SetEtaRange(etami,etama);
   if(phimi >= 0. && phima >= 0) hfecuts->SetPhiRange(phimi,phima);
   hfecuts->SetRejectKinkDaughters();
@@ -90,9 +97,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
 
   Bool_t ipSig = kFALSE;
 
-  hfecuts->SetIPcutParam(0.0054,0.078,-0.56,0,ipSig,ipCharge,ipOpp);
-  if(ipsys==1) hfecuts->SetIPcutParam(0.0054,0.057,-0.66,0,ipSig,ipCharge,ipOpp);
-  if(ipsys==2) hfecuts->SetIPcutParam(0.012,0.088,-0.65,0,ipSig,ipCharge,ipOpp);
+  if(!ipPar) hfecuts->SetIPcutParam(0.0054,0.078,-0.56,0,ipSig,ipCharge,ipOpp); // reference
+  else hfecuts->SetIPcutParam(ipPar[0],ipPar[1],ipPar[2],0,ipSig,ipCharge,ipOpp);
+  /*if(ipsys==1) hfecuts->SetIPcutParam(0.0054,0.057,-0.66,0,ipSig,ipCharge,ipOpp);
+  if(ipsys==2) hfecuts->SetIPcutParam(0.012,0.088,-0.65,0,ipSig,ipCharge,ipOpp);*/
+
 
   if(isBeauty) hfecuts->SetProductionVertex(0,100,0,100);
 
@@ -137,7 +146,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
   // the AOD analysis with the given filter//
   // bit. Not to be applied for AODS.      //
   // For pPb the cuts used are (bit 4)     //
-  // esdTrackCutsHG0 from file $ALICE_PHYSICS///
+  // esdTrackCutsHG0 from file $ALICE_ROOT///
   // ANALYSIS/macros/AddTaskESDFilter.C    //
   //***************************************//
 
@@ -165,7 +174,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
   AliHFEvarManager *vm = task->GetVarManager();
   vm->AddVariable("pt", sizept, ptbinning);
   vm->AddVariable("eta", sizeeta, -0.8,0.8);
-  vm->AddVariable("phi",18, -0, 2*TMath::Pi());
+  //vm->AddVariable("phi",18, -0, 2*TMath::Pi());
+  vm->AddVariable("phi",3, -0, 2*TMath::Pi());
   vm->AddVariable("charge");
   vm->AddVariable("source");
   vm->AddVariable("centrality");
@@ -246,10 +256,48 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
     TF1 *hBackground[12];
     if(isAOD==1) {
 	if (usetof)  status = ReadContaminationFunctions("hadroncontamination_AOD139_TOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
-	else status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
+	else { 
+	  if (spdcheck == 0){
+	    status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
+	  } else if (spdcheck == 1){ 
+	    status = ReadContaminationFunctions("hadroncontamination_noTOFPID_pPb_AOD_eta06_TPCcut0_envelope_minsys.root", hBackground, tpcdEdxcutlow[0]);	    
+	  } else if (spdcheck == 2){ 
+	    status = ReadContaminationFunctions("hadroncontamination_noTOFPID_pPb_AOD_eta06_TPCcut0_envelope_maxsys.root", hBackground, tpcdEdxcutlow[0]);	    
+	  } else if (spdcheck == 3){ 
+	    status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06_polyFit.root", hBackground, tpcdEdxcutlow[0]);	    
+	  }
+	}
     }
     else if (isBeauty==1) {
-	status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
+	if (spdcheck == 0){
+	    printf("hadron cont standard beauty");
+
+	    if(TOFs==0){
+		printf("hadron cont no TOF\n");
+		status = ReadContaminationFunctions("hadroncontamination_noTOF_pPb_Beauty_ESD_eta06.root", hBackground, tpcdEdxcutlow[0]);
+	    }
+	    else{
+                printf("hadron cont with TOF\n");
+		status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2.root", hBackground, tpcdEdxcutlow[0]);
+	    }
+	} else if (spdcheck == 1){
+	    printf("hadron cont min beauty");
+            if(TOFs==0){
+		printf("hadron cont no TOF\n");
+		status = ReadContaminationFunctions("hadroncontamination_noTOF_pPb_Beauty_ESD_eta06_envelopemin.root", hBackground, tpcdEdxcutlow[0]);
+	    }
+            status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2_envelope_minsys.root", hBackground, tpcdEdxcutlow[0]);
+	} else if (spdcheck == 2){
+	    printf("hadron cont max beauty");
+	    if(TOFs==0){
+		printf("hadron cont no TOF\n");
+		status = ReadContaminationFunctions("hadroncontamination_noTOF_pPb_Beauty_ESD_eta06_envelopemax.root", hBackground, tpcdEdxcutlow[0]);
+	    }
+            status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2_envelope_maxsys.root", hBackground, tpcdEdxcutlow[0]);
+	} else if (spdcheck == 3){
+	    printf("hadron cont pol3 beauty");
+            status = ReadContaminationFunctionsBeauty("hadroncontamination_ESD_Beauty_TOFPID_pPb_eta06_iter2_pol3.root", hBackground, tpcdEdxcutlow[0]);
+	}
     }
   else  status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
     for(Int_t a=0;a<12;a++) {
@@ -280,6 +328,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
 
   AliHFEpid *pidbackground = backe->GetPIDBackground();
   if(useMC) pidbackground->SetHasMCData(kTRUE);
+
+  if (etadalwei>0){
+    printf("\n\n\n\n\n WEIGHTS FOR ETA DALITZ !!!!!!!!!!!!!!!!!! \n\n\n\n");
+    backe->SetEtaDalitzWeightFactor(etadalwei);  
+  }   
 
   if (assTOFs>0.){
     pidbackground->AddDetector("TOF", 0);
@@ -327,6 +380,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
   backe->SetMaxInvMass(0.3);
   backe->SetPtBinning(sizept, ptbinning);
   backe->SetEtaBinning(sizeeta, etabinning);
+  //backe->SetAnaPairGen(kTRUE,2);
+  //backe->SetDisplayMCStack();
   // MC weight
   if(useMC) {
     //printf("test put weight %d\n",weightlevelback);
@@ -335,6 +390,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
   task->SetHFEBackgroundSubtraction(backe);
 
   //task->SetWeightHist(); 
+  //if(useMC) task->SetDebugStreaming();
+  //task->SetCalcContamBeauty(kTRUE);
 
   //***************************************//
   //          V0 tagged tracks             //
@@ -365,7 +422,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, Bool_t isBeauty,
   task->SetQAOn(AliAnalysisTaskHFE::kPIDqa);
   task->SetQAOn(AliAnalysisTaskHFE::kMCqa);
   task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
+  if(isBeauty){
   if(nonPhotonicElectronBeauty) task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectronBeauty);
+  }
   else task->SwitchOnPlugin(AliAnalysisTaskHFE::kNonPhotonicElectron);
 
   printf("*************************************\n");
