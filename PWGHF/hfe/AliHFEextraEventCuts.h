@@ -46,8 +46,9 @@ class AliHFEextraEventCuts: public AliCFCutBase
   void SetVertexZCut(Double_t zMin=-1.e99, Double_t zMax=1.e99) { fVtxZMin=zMin; fVtxZMax=zMax;} // cut values setter
 
   void SetVertexNContributors(Int_t min) {fVtxNCtrbMin=min;}
-  void SetUseMixedVertex() {fVtxMixed=kTRUE; fVtxSPD=kFALSE;} //default is vertex from tracks
-  void SetUseSPDVertex() {fVtxSPD=kTRUE; fVtxMixed=kFALSE;} //default is vertex from tracks
+  void SetUseMixedVertex() {fVtxMixed=kTRUE;fVtxTrack=kFALSE; fVtxSPD=kFALSE;} //default is vertex from mixed
+    void SetUseTrackVertex() {fVtxTrack=kTRUE; fVtxMixed=kFALSE; fVtxSPD=kFALSE;} //default is vertex from mixed
+    void SetUseSPDVertex() {fVtxSPD=kTRUE; fVtxTrack=kFALSE; fVtxMixed=kFALSE;} //default is vertex from mixed
   void SetCheckCorrelationSPDVtx() {fCheckCorrelationSPDVtx=kTRUE;} // check the correlation between z of different vertices
   void SetCheckSPDResolution() {fVtxResolution = kTRUE;} // check resolution on the SPD vertex
   void SetpAPileupCut() { fPApileupCut = kTRUE; } 
@@ -84,6 +85,7 @@ class AliHFEextraEventCuts: public AliCFCutBase
   Double_t fVtxZMin ;                   // Z vertex position, minimum value
   Int_t    fVtxNCtrbMin;                // Min number of contributors to vertex
   Bool_t   fVtxMixed;                   // Flag for use of mixed vertex (primary vertex with track, if not SPD vertex)
+  Bool_t   fVtxTrack;                     // Flag for use of vertex from tracks
   Bool_t   fVtxSPD;                     // Flag for use of SPD vertex 
   Bool_t   fCheckCorrelationSPDVtx;     // Check the correlation SPD, track vertex
   Bool_t   fVtxResolution;              // Check vertex resolution cut
@@ -93,7 +95,7 @@ class AliHFEextraEventCuts: public AliCFCutBase
 
   TH1F* fhQA[kNCuts][kNStepQA];		// QA Histograms
 
-  ClassDef(AliHFEextraEventCuts,3);
+  ClassDef(AliHFEextraEventCuts,4);
 };
 
 #endif

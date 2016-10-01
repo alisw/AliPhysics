@@ -133,6 +133,7 @@ AliHFEcuts::AliHFEcuts():
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
   fUseMixedVertex(kTRUE),
+  fUseTrackVertex(kFALSE),
   fUseSPDVertex(kFALSE),
   fUseCorrelationVertex(kFALSE),
   fSPDVtxResolution(kFALSE), 
@@ -195,6 +196,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(kFALSE),
   fUseMixedVertex(kTRUE),
+  fUseTrackVertex(kFALSE),
   fUseSPDVertex(kFALSE),
   fUseCorrelationVertex(kFALSE),
   fSPDVtxResolution(kFALSE),
@@ -257,6 +259,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fTPCPIDCLEANUPStep(kFALSE),
   fITSpatternCut(c.fITSpatternCut),
   fUseMixedVertex(kTRUE),
+  fUseTrackVertex(kFALSE),
   fUseSPDVertex(kFALSE),
   fUseCorrelationVertex(c.fUseCorrelationVertex),
   fSPDVtxResolution(c.fSPDVtxResolution),
@@ -320,6 +323,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fTOFMISMATCHStep = fTOFMISMATCHStep;
   target.fTPCPIDCLEANUPStep = fTPCPIDCLEANUPStep;
   target.fUseMixedVertex = fUseMixedVertex;
+  target.fUseTrackVertex = fUseTrackVertex;
   target.fUseSPDVertex = fUseSPDVertex;
   target.fUseCorrelationVertex = fUseCorrelationVertex;
   target.fSPDVtxResolution = fSPDVtxResolution;
@@ -536,6 +540,7 @@ void AliHFEcuts::SetEventCutList(Int_t istep){
     evRecCuts->SetRequireVtxCuts(kTRUE);
     if(fUseSPDVertex) evRecCuts->SetUseSPDVertex();
     if(fUseMixedVertex) evRecCuts->SetUseMixedVertex();
+    if(fUseTrackVertex) evRecCuts->SetUseTrackVertex();
     if(fUseCorrelationVertex) evRecCuts->SetCheckCorrelationSPDVtx();
     if(fSPDVtxResolution) evRecCuts->SetCheckSPDResolution();
     if(fPApileupCut) evRecCuts->SetpAPileupCut();
