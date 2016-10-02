@@ -80,7 +80,8 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulTPCselSPDanyGood(0x0),
   fHistImpParXYPtMulTPCselSPDanyFake(0x0),
   fHistImpParXYPtMulTPCselSPDanyPrim(0x0),
-  fHistImpParXYPtMulTPCselSPDanySec(0x0),
+  fHistImpParXYPtMulTPCselSPDanySecDec(0x0),
+  fHistImpParXYPtMulTPCselSPDanySecMat(0x0),
   fHistInvMassK0s(0x0),
   fHistInvMassLambda(0x0),
   fHistInvMassAntiLambda(0x0),
@@ -125,6 +126,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   }
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 
@@ -161,7 +163,8 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyGood;
     delete fHistImpParXYPtMulTPCselSPDanyFake;
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
-    delete fHistImpParXYPtMulTPCselSPDanySec;
+    delete fHistImpParXYPtMulTPCselSPDanySecDec;
+    delete fHistImpParXYPtMulTPCselSPDanySecMat;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
@@ -248,7 +251,6 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   for(Int_t ivar=0; ivar<usedVar; ivar++){
     fTrackTree->Branch(intVarName[ivar].Data(),&fTreeVarInt[ivar],Form("%s/I",intVarName[ivar].Data()));
   }
-  fOutput->Add(fTrackTree);
 
   fHistNEvents = new TH1F("hNEvents", "Number of processed events",15,-0.5,14.5);
   //fHistNEvents->Sumw2();
@@ -348,9 +350,11 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyFake);
 
   fHistImpParXYPtMulTPCselSPDanyPrim = new TH3F("hImpParXYPtMulTPCselSPDanyPrim"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
-  fHistImpParXYPtMulTPCselSPDanySec = new TH3F("hImpParXYPtMulTPCselSPDanySec"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
+  fHistImpParXYPtMulTPCselSPDanySecDec = new TH3F("hImpParXYPtMulTPCselSPDanySecDec"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
+  fHistImpParXYPtMulTPCselSPDanySecMat = new TH3F("hImpParXYPtMulTPCselSPDanySecMat"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyPrim);
-  fOutput->Add(fHistImpParXYPtMulTPCselSPDanySec);
+  fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
+  fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
 
   fHistInvMassK0s = new TH2F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ",200,0.4,0.6,25,0.,5.);
@@ -361,6 +365,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistInvMassAntiLambda);
 
   PostData(1,fOutput);
+  PostData(2,fTrackTree);
 
 }
 //______________________________________________________________________________
@@ -517,7 +522,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Float_t phigen=-999.;
     Int_t hadronSpecie=-1;
     Float_t invptgen=-999.;
-    Bool_t isPhysPrim=kFALSE;
+    Int_t isPhysPrim=-999;
     if(fReadMC){
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(trlabel)));
       ptgen=part->Pt();
@@ -528,7 +533,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(ptgen>0.) invptgen=1./ptgen;
       etagen=part->Eta();
       phigen=part->Phi();
-      isPhysPrim=part->IsPhysicalPrimary();
+      if(part->IsPhysicalPrimary()) isPhysPrim=1;
+      else if(part->IsSecondaryFromWeakDecay()) isPhysPrim=0;
+      else if(part->IsSecondaryFromMaterial()) isPhysPrim=-1;
       fTreeVarFloat[20]=pxgen;
       fTreeVarFloat[21]=pygen;
       fTreeVarFloat[22]=pzgen;
@@ -625,19 +632,20 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 	if(isKaon) fHistPtResidVsPtTPCselITSrefKaon->Fill(ptgen,(pttrack-ptgen));
 	if(isProton) fHistPtResidVsPtTPCselITSrefProton->Fill(ptgen,(pttrack-ptgen));
       }
-    }
-    if(trlabel>=0){
-      fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
-      if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(pttrack,impactXY*10000.,ncl1);
-    }else{
-      fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
-      if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(pttrack,impactXY*10000.,ncl1);
-    }
-
     
-    if(itsRefit && spdAny){
-      if(isPhysPrim) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(pttrack,impactXY*10000.,ncl1);
-      else fHistImpParXYPtMulTPCselSPDanySec->Fill(pttrack,impactXY*10000.,ncl1);
+      if(trlabel>=0){
+	fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
+	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(pttrack,impactXY*10000.,ncl1);
+      }else{
+	fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
+	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(pttrack,impactXY*10000.,ncl1);
+      }
+      
+      if(itsRefit && spdAny){
+	if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(pttrack,impactXY*10000.,ncl1);
+	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(pttrack,impactXY*10000.,ncl1);
+	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(pttrack,impactXY*10000.,ncl1);
+      }
     }
   }
 
@@ -718,6 +726,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
   }
   PostData(1,fOutput);
+  PostData(2,fTrackTree);
   
 }
 //______________________________________________________________________________
