@@ -241,7 +241,8 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2011PbPb3050();
   void InitDstartoD0pi2011PbPb010();
   void InitDstartoD0pi2013pPb0100();
-
+  void InitDstartoD0pi2010ppPass4();
+ 
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2010ppPass4();
   void InitDstoKKpi2011PbPb07half();
@@ -287,4 +288,3 @@ class AliHFSystErr : public TNamed
 };
 
 #endif
-
