@@ -174,7 +174,7 @@ void AliHLTTPCHWCFEmulatorComponent::GetOutputDataSize( unsigned long& constBase
 {
   // see header file for class documentation
   constBase = 1024*1024; // 1 MB
-  inputMultiplier = (fDoMC? 0.2 :1.0)*1.5*fIORatioCorrection; // realistic IORatio for MC/Data * 50% margin * extra margin
+  inputMultiplier = (fDoMC? 0.2 :2.0)*1.5*fIORatioCorrection; // realistic IORatio for MC/Data * 50% margin * extra margin
 }
 
 
