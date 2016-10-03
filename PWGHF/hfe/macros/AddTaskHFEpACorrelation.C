@@ -9,7 +9,9 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                         char * period                   = "b",
                                                         Int_t EMCalThreshould   = 0,
                                                         Bool_t ispp = kFALSE,
-                                                        Int_t HadronPtCut = 0
+                                                        Int_t HadronPtCut = 0,
+                                                        TString ElectronEfficiencyFile = "alien:///alice/cern.ch/user/h/hcorreia/Efficiency/Electron_Tracking.root",
+                                                        TString HadronEfficiencyFile = "alien:///alice/cern.ch/user/h/hcorreia/Efficiency/Hadron_Tracking.root"
                                                         )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -53,6 +55,18 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     {
         task->SelectCollisionCandidates(AliVEvent::kMB);
     }
+    
+    //Seting online efficiency in TH3s
+    TFile *fileE = TFile::Open(ElectronEfficiencyFile.Data());
+    TH3F* ElecEffHisto = (TH3F*) fileE->Get(Form("Eff_Elec_Config%d_C%d",configIndex,centralityIndex));
+    task->SetEfficiencyElectron(ElecEffHisto);
+
+    
+    TFile *fileH = TFile::Open(HadronEfficiencyFile.Data());
+    TH3F* HadronEffHisto = (TH3F*) fileH->Get(Form("Eff_Hadron_Config%d_C%d",((Int_t)configIndex/1000)*1000,centralityIndex));
+    task->SetEfficiencyHadron(HadronEffHisto);
+    
+    
     mgr->AddTask(task);
     
     TString containerName = mgr->GetCommonFileName();
