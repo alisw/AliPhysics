@@ -104,7 +104,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Long_t fCaloPhotonMotherMCLabels[20];
       
 	
-	ClassDef(AliAODConversionPhoton,4)
+    ClassDef(AliAODConversionPhoton,5)
 };
 
 
