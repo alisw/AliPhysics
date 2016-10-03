@@ -54,6 +54,7 @@ public:
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
     void SetCutMCLambdaFromPrimaryXi( Bool_t lCut ) { fCutMCLambdaFromPrimaryXi= lCut; }
     void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
+    void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
@@ -71,6 +72,7 @@ public:
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCLambdaFromPrimaryXi() const { return fCutMCLambdaFromPrimaryXi; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
+    Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
     
     TH3F* GetHistogram () { return fHisto; } 
     
@@ -96,13 +98,15 @@ private:
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCLambdaFromPrimaryXi; //Checking for feeddown contributions
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
+    Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliV0Result, 4)
+    ClassDef(AliV0Result, 5)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
     // 4 - fixes to constructor, destructor, tuning
+    // 5 - Use MC true pT, y flag added
 };
 #endif
