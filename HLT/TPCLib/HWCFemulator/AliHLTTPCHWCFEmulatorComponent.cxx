@@ -737,7 +737,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
   if( outBlock ) delete[] outBlock;
   if( allocOutMC ) delete[] allocOutMC;      
   
-  if( iResult==-ENOSPC ){    
+  if( iResult==-ENOSPC && fIORatioCorrection < 1.99 ){    
     fIORatioCorrection = 2.;
     HLTInfo("Estimation of Output/Input ratio increased by factor 2");
   }
