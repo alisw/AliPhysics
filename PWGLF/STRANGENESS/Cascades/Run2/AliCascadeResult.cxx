@@ -34,7 +34,8 @@ fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, pt, mass
@@ -64,7 +65,8 @@ fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -100,7 +102,8 @@ fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -146,7 +149,8 @@ fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutXiRejection(0.008),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
-fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
+fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -188,6 +192,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     //MC specific
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -240,6 +245,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     //MC specific
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     
     if (fHisto) {
         delete fHisto;
@@ -348,6 +354,7 @@ void AliCascadeResult::Print()
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
+    cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<"========================================"<<endl;
     return;
 }

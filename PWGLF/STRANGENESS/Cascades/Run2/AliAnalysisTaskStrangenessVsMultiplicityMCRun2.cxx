@@ -1224,6 +1224,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPDGCodeXiMother = -3312;
             }
             
+            //Override rapidity for true rapidity if requested to do so
+            if ( lV0Result -> GetCutMCUseMCProperties() ) {
+                lRap = fTreeVariableRapMC;
+            }
+            
             if (
                 //Check 1: Offline Vertexer
                 lOnFlyStatus == 0 &&
@@ -1262,7 +1267,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 )
             {
                 //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+                if( !lV0Result -> GetCutMCUseMCProperties() ){
+                    histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+                }else{
+                    histoout -> Fill ( fCentrality, fTreeVariablePtMC, lMass );
+                }
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1858,6 +1867,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPDGCode = -3334;
             }
             
+            //Override rapidity for true rapidity if requested to do so
+            if ( lCascadeResult -> GetCutMCUseMCProperties() ) {
+                lRap = fTreeVariableRapMC;
+            }
+            
+            
             if (
                 //Check 1: Charge consistent with expectations
                 fTreeCascVarCharge == lCharge &&
@@ -1902,6 +1917,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+                
+                //This satisfies all my conditionals! Fill histogram
+                if( !lCascadeResult -> GetCutMCUseMCProperties() ){
+                    histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+                }else{
+                    histoout -> Fill ( fCentrality, fTreeCascVarPtMC, lMass );
+                }
             }
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

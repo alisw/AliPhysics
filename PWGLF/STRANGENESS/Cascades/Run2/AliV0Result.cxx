@@ -28,7 +28,8 @@ fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
@@ -52,7 +53,8 @@ fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -81,7 +83,8 @@ fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -119,7 +122,8 @@ fCutArmenteros(lCopyMe.fCutArmenteros),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
-fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
+fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -152,6 +156,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     fCutMCPhysicalPrimary = lCopyMe->GetCutMCPhysicalPrimary();
     fCutMCLambdaFromPrimaryXi = lCopyMe->GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe->GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -195,6 +200,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCLambdaFromPrimaryXi = lCopyMe.GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     
     if (fHisto) {
         delete fHisto;
@@ -290,6 +296,7 @@ void AliV0Result::Print()
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" Lambda from Xi.....: "<<fCutMCLambdaFromPrimaryXi<<endl;
+    cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<"========================================"<<endl;
     return;
 }
