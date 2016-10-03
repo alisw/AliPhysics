@@ -22586,13 +22586,13 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
     Double_t v1Ter = fFlowSPZDCv1etaPro[1]->GetBinError(eb+1);
     Double_t QAQB = fFlowSPZDCv1etaPro[2]->GetBinContent(eb+1);
     
-    Double_t v1odd = (v1P-v1T)/sqrt(2.*fabs(QAQB));
-    Double_t v1odder = v1Per/sqrt(2.*fabs(QAQB)); // TBI
+    Double_t v1odd = (v1P-v1T)/(sqrt(fabs(QAQB))*2.);
+    Double_t v1odder = v1Per/(sqrt(fabs(QAQB))*2.); // TBI
     fFlowSPZDCv1etaHist[0]->SetBinContent(eb+1,v1odd);
     fFlowSPZDCv1etaHist[0]->SetBinError(eb+1,v1odder);
     
-    Double_t v1eve = (v1P+v1T)/sqrt(2.*fabs(QAQB));
-    Double_t v1eveer = v1Per/sqrt(2.*fabs(QAQB)); // TBI
+    Double_t v1eve = (v1P+v1T)/(sqrt(fabs(QAQB))*2.);
+    Double_t v1eveer = v1Per/(sqrt(fabs(QAQB))*2.); // TBI
     fFlowSPZDCv1etaHist[1]->SetBinContent(eb+1,v1eve);
     fFlowSPZDCv1etaHist[1]->SetBinError(eb+1,v1eveer);
   }
