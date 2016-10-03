@@ -500,10 +500,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Int_t  filtmap=track->GetFilterMap();
     
     Double_t nSigmaTPC[9]={-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
-    AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
-    if (status == AliPIDResponse::kDetPidOk){
-      for(Int_t jsp=0; jsp<9; jsp++){
-	nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
+    if(pidResp){
+      AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
+      if (status == AliPIDResponse::kDetPidOk){
+	for(Int_t jsp=0; jsp<9; jsp++){
+	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
+	}
       }
     }
     fTreeVarFloat[15]=dedx;
@@ -682,16 +684,18 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Bool_t keepLambda=kTRUE;
     Bool_t keepAntiLambda=kTRUE;
     if(!fReadMC){
-      Double_t nsigmap=-999.;
-      if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
-	nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
+      if(pidResp){
+	Double_t nsigmap=-999.;
+	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
+	  nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
+	}
+	Double_t nsigman=-999.;
+	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
+	  nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
+	}
+	if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
+	if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
       }
-      Double_t nsigman=-999.;
-      if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
-	nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
-      }
-      if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
-      if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
     }else{
       keepK0s=kFALSE;
       keepLambda=kFALSE;
