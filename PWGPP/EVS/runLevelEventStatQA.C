@@ -1295,13 +1295,19 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
   else {
     return NULL;
   }
+  // Set default parameters and restrict the width to values > 0
   slice_fit.SetParameters(1, 1, 1);
+  // Ensure that the width parameter > 0
+  slice_fit.SetParLimits(1, 0, 1e4);
   TF1 fit_lin_mean = TF1("linear_fit_means","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
   TF1 fit_lin_width = TF1("linear_fit_widths","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
   TGraphErrors widths = TGraphErrors();
   TGraphErrors means = TGraphErrors();
   TGraphErrors nevents = TGraphErrors();
   Int_t valid_fits = 0;
+  // Loop through each slice along the offline axis.  Fit each slice
+  // with the appropriate function and add this point to a graph which
+  // is latter fitted with a linear regression
   for (Int_t ibin = 1; ibin <= h2d->GetNbinsX(); ibin++) {
     TH1* h_py = h2d->ProjectionY("slice", ibin, ibin+1);
     if (h_py->Integral() < min_entries_per_slice) {
@@ -1312,13 +1318,15 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
       // Alice and Evgeny move to one lower bin for the upper edge! ie h_py.GetMaximumBin() - 1
       up_bin = h_py->GetMaximumBin() - 1;
       low_bin = findBinNtimesLessThanMax(*h_py, 0.1, -1);
-      if (up_bin - low_bin < 5) continue;
+      if (up_bin - low_bin < 5) {
+    continue;
+      }
       up_edge = h_py->GetXaxis()->GetBinCenter(up_bin);
       low_edge = TMath::Min(0.85 * up_edge, h_py->GetXaxis()->GetBinCenter(h_py->GetMaximumBin() -3));
       // Fix parameter [2]
       Float_t scalling = h_py->GetBinContent(up_bin);
-      slice_fit.SetParLimits(2, scalling*0.99, scalling*1.01);
       slice_fit.SetParameters(up_edge, up_edge/20.0, scalling);
+      slice_fit.FixParameter(2, scalling);
     }
     if (detector =="SPD") {
       up_bin = findBinNtimesLessThanMax(*h_py, 0, 1); // last filled bin
@@ -1342,7 +1350,8 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
   }
   // Quality assurance after each slice has been tried to fit
   // Require a minimum number of successful fits in order to perform a linear regression
-  if (valid_fits < 8) {
+  // Technically, only 2 points are necessary, of cause.
+  if (valid_fits < 3) {
     return NULL;
   }
   means.Fit(&fit_lin_mean, "QS");
@@ -1354,7 +1363,6 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
   ret[3] = fit_lin_mean.GetParError(1) + cut_width_factor*fit_lin_width.GetParError(1);
   return ret;
 }
-
 
 void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0){
   if (!hAll || !hCln) {
