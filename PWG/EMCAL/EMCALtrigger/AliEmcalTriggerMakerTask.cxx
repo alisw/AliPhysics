@@ -48,6 +48,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
   fBadFEEChannelOADB(""),
+  fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
   fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(0),
@@ -58,12 +59,13 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
 }
 
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA):
-  AliAnalysisTaskEmcal("AliEmcalTriggerMakerTask", doQA),
+  AliAnalysisTaskEmcal("AliEmcalTriggerMakerTask", kTRUE),
   fTriggerMaker(NULL),
   fV0(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
   fBadFEEChannelOADB(""),
+  fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
   fLoadFastORMaskingFromOCDB(kFALSE),
   fCaloTriggersOut(NULL),
@@ -78,45 +80,55 @@ AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
 }
 
 /**
- * Initialize output objets
+ * Initialize output objects
  */
 void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
   const TString kTriggerTypeNames[3] = {"EJE", "EGA", "EL0"},
                 kPatchTypes[3] = {"Online", "Offline", "Recalc"};
 
-  if(fDoQA && fOutput){
-    fQAHistos = new THistManager("TriggerQA");
+  if(fDoQA) std::cout << "Trigger maker - QA requested" << std::endl;
+  else std::cout << "Trigger maker - no QA requested" << std::endl;
+  if(!fOutput) std::cout << "No output container initialized" << std::endl;
 
-    for(const TString *triggertype = kTriggerTypeNames; triggertype < kTriggerTypeNames + sizeof(kTriggerTypeNames)/sizeof(TString); triggertype++){
-      for(const TString *patchtype = kPatchTypes; patchtype < kPatchTypes + sizeof(kPatchTypes)/sizeof(TString); ++patchtype){
-        fQAHistos->CreateTH2(
-            Form("RCPos%s%s", triggertype->Data(), patchtype->Data()),
-            Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", patchtype->Data(), triggertype->Data()),
-            48, -0.5, 47.5, 104, -0.5, 103.5
-            );
-        fQAHistos->CreateTH2(
-            Form("EPCentPos%s%s", triggertype->Data(), patchtype->Data()),
-            Form("Center position of the %s %s trigger patches;#eta;#phi", patchtype->Data(), triggertype->Data()),
-            20, -0.8, 0.8, 700, 0., 7.
-            );
-        fQAHistos->CreateTH2(
-            Form("PatchADCvsE%s%s", triggertype->Data(), patchtype->Data()),
-            Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
-            2000, 0., 2000, 200, 0., 200
-            );
-        fQAHistos->CreateTH2(
-            Form("PatchADCOffvsE%s%s", triggertype->Data(), patchtype->Data()),
-            Form("Patch offline ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
-            2000, 0., 2000, 200, 0., 200
-            );
+  if(fDoQA){
+    if(fOutput){
+      AliInfoStream() << "Enabling QA for trigger maker" << std::endl;
+      fQAHistos = new THistManager("TriggerQA");
+
+      for(const TString *triggertype = kTriggerTypeNames; triggertype < kTriggerTypeNames + sizeof(kTriggerTypeNames)/sizeof(TString); triggertype++){
+        for(const TString *patchtype = kPatchTypes; patchtype < kPatchTypes + sizeof(kPatchTypes)/sizeof(TString); ++patchtype){
+          fQAHistos->CreateTH2(
+              Form("RCPos%s%s", triggertype->Data(), patchtype->Data()),
+              Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", patchtype->Data(), triggertype->Data()),
+              48, -0.5, 47.5, 104, -0.5, 103.5
+              );
+          fQAHistos->CreateTH2(
+              Form("EPCentPos%s%s", triggertype->Data(), patchtype->Data()),
+              Form("Center position of the %s %s trigger patches;#eta;#phi", patchtype->Data(), triggertype->Data()),
+              20, -0.8, 0.8, 700, 0., 7.
+              );
+          fQAHistos->CreateTH2(
+              Form("PatchADCvsE%s%s", triggertype->Data(), patchtype->Data()),
+              Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
+              2000, 0., 2000, 200, 0., 200
+              );
+          fQAHistos->CreateTH2(
+              Form("PatchADCOffvsE%s%s", triggertype->Data(), patchtype->Data()),
+              Form("Patch offline ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
+              2000, 0., 2000, 200, 0., 200
+              );
+        }
       }
+      fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
+      fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches;bit nr", 64, -0.5, 63.5);
+      fQAHistos->CreateTH2("FastORMaskOnline", "Masked FastORs at online level; col; row", 48, -0.5, 47.5, 104, -0.5, 103.5);
+      fOutput->Add(fQAHistos->GetListOfHistograms());
+      PostData(1, fOutput);
+    } else {
+      AliWarningStream() << "QA requested but no output container initialized - QA needs to be disabled" << std::endl;
+      fDoQA = kFALSE;
     }
-    fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
-    fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches;bit nr", 64, -0.5, 63.5);
-    fQAHistos->CreateTH2("FastORMaskOnline", "Masked FastORs at online level; col; row", 48, -0.5, 47.5, 104, -0.5, 103.5);
-    fOutput->Add(fQAHistos->GetListOfHistograms());
-    PostData(1, fOutput);
   }
 }
 
@@ -217,13 +229,11 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   AliEMCALTriggerPatchInfo *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;
-  AliDebug(2,Form("Trigger maker - Found %d patches\n", patches->GetEntries()));
+  AliDebugStream(2) << GetName() << ": Found " << patches->GetEntries() << " patches" << std::endl;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     recpatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
     if(fDoQA){
-      //std::bitset<32> triggerbits = recpatch->GetTriggerBits();
-      std::stringstream triggerbitstring;
-      AliDebug(1, Form("Trigger maker - next patch: size %d, trigger bits %s", recpatch->GetPatchSize(), triggerbitstring.str().c_str()));
+      AliDebugStream(3) <<  GetName() << ": Next patch: size " << recpatch->GetPatchSize() << " , trigger bits " << std::bitset<sizeof(Int_t)*8>(recpatch->GetTriggerBits()) << std::endl;
       // Handle types different - online - offline - re
       if(recpatch->IsJetHigh() || recpatch->IsJetLow())                   FillQAHistos("EJEOnline", *recpatch);
       if(recpatch->IsGammaHigh() || recpatch->IsGammaLow())               FillQAHistos("EGAOnline", *recpatch);
@@ -247,11 +257,23 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
 }
 
 void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
+  fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
+  fTriggerMaker->ClearFastORBadChannels();
   if(fLoadFastORMaskingFromOCDB) InitializeFastORMaskingFromOCDB();
+  if(fMaskedFastorOADB.Length()) InitializeFastORMaskingFromOADB();
+  // QA: Monitor all channels which are masked in the current run
+  if(fDoQA && fQAHistos){
+    Int_t globCol(-1), globRow(-1) ;
+    for(const auto &ifastOrID : fTriggerMaker->GetListOfBadFastORAbsIDs()){
+      fGeom->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(ifastOrID, globCol, globRow);
+      fQAHistos->FillTH2("FastORMaskOnline", globCol, globRow);
+    }
+  }
 }
 
 void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
+  AliInfoStream() << "Loading additional bad FEE channels from OADB container " << fBadFEEChannelOADB << std::endl;
   fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
   AliOADBContainer badchannelDB("EmcalBadChannelsAdditional");
@@ -265,7 +287,7 @@ void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
-  fTriggerMaker->ClearFastORBadChannels();
+  AliInfoStream() << "Loading masked fastors from OCDB" << std::endl;
   AliCDBManager *cdb = AliCDBManager::Instance();
 
   AliCDBEntry *en = cdb->Get("EMCAL/Calib/Trigger");
@@ -309,12 +331,19 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
       }
     }
   }
+}
 
-  // QA: Monitor all channels which are masked in the current run
-  Int_t globCol(-1), globRow(-1) ;
-  for(const auto &ifastOrID : fTriggerMaker->GetListOfBadFastORAbsIDs()){
-    fGeom->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(ifastOrID, globCol, globRow);
-    fQAHistos->FillTH2("FastORMaskOnline", globCol, globRow);
+void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
+  AliInfoStream() << "Initializing masked fastors from OADB container " << fMaskedFastorOADB.Data() << std::endl;
+  if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
+  AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
+  badchannelDB.InitFromFile(fMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
+  TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+  if(!badchannelmap || !badchannelmap->GetEntries()) return;
+  for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+    TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+    AliDebugStream(1) << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
+    fTriggerMaker->AddFastORBadChannel(channelID->GetVal());
   }
 }
 
