@@ -1524,12 +1524,12 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     mindeclxy=0.;
     maxdeclxy=0.35;
 
-    ncospbins=10;
-    mincosp=0.99;
+    ncospbins=30;
+    mincosp=0.97;
     maxcosp=1.;
 
-    ncospxybins=10;
-    mincospxy=0.99;
+    ncospxybins=30;
+    mincospxy=0.97;
     maxcospxy=1.;
 
     nd0d0expbins=12;
