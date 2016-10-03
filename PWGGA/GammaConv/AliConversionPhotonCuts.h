@@ -345,7 +345,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,11)
+    ClassDef(AliConversionPhotonCuts,12)
 };
 
 #endif

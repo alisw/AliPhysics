@@ -228,7 +228,7 @@ private:
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvFlow, 8);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 9);
 };
 
 #endif
