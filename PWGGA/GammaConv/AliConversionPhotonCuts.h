@@ -212,6 +212,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
+
+    Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
       
   protected:
     TList*            fHistograms;                          //
@@ -269,6 +271,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fNSigmaMass;                          // nsigma cut
     Bool_t            fUseEtaMinCut;                        // flag
     Bool_t            fUseOnFlyV0Finder;                    // flag
+    Int_t             fUseOnFlyV0FinderSameSign;            // int to set same sign pairing
     Bool_t            fDoPhotonAsymmetryCut;                // flag to use the PhotonAsymetryCut
     Bool_t            fDoPhotonPDependentAsymCut;           // flag to use the PhotonAsymetryCut with P dependent cut
     TF1 *             fFAsymmetryCut;                       //

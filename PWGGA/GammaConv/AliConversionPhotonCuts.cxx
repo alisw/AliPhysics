@@ -147,6 +147,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fNSigmaMass(0.),
   fUseEtaMinCut(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
+  fUseOnFlyV0FinderSameSign(0),
   fDoPhotonAsymmetryCut(kTRUE),
   fDoPhotonPDependentAsymCut(kFALSE),
   fFAsymmetryCut(0),
@@ -278,6 +279,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fNSigmaMass(ref.fNSigmaMass),
   fUseEtaMinCut(ref.fUseEtaMinCut),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
+  fUseOnFlyV0FinderSameSign(ref.fUseOnFlyV0FinderSameSign),
   fDoPhotonAsymmetryCut(ref.fDoPhotonAsymmetryCut),
   fDoPhotonPDependentAsymCut(ref.fDoPhotonPDependentAsymCut),
   fFAsymmetryCut(ref.fFAsymmetryCut),
@@ -526,7 +528,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoTPCdEdxafter=new TH2F(Form("Gamma_dEdx_after %s",GetCutNumber().Data()),"dEdx Gamma after" ,150,0.03,20,800,0,200);
     fHistograms->Add(fHistoTPCdEdxafter);
 
-    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,0.03,20,100,0,10);
+    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,-20,20,100,0,10);
     fHistograms->Add(fHistoKappaafter);
 
     fHistoTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
@@ -1159,9 +1161,16 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   cutIndex++;
 
   // avoid like sign
-  if(negTrack->Charge() == posTrack->Charge()) {
-    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
-    return kFALSE;
+  if(fUseOnFlyV0FinderSameSign==0){
+    if(negTrack->Charge() == posTrack->Charge()) {
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      return kFALSE;
+    }
+  }else if(fUseOnFlyV0FinderSameSign==1){
+    if(negTrack->Charge() != posTrack->Charge()) {
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      return kFALSE;
+    }
   }
   cutIndex++;
 
@@ -1910,10 +1919,22 @@ Bool_t AliConversionPhotonCuts::SetV0Finder(Int_t v0FinderType){   // Set Cut
   case 0:  // on fly V0 finder
     cout << "have chosen onfly V0" << endl;
     fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=0;
     break;
   case 1:  // offline V0 finder
     cout << "have chosen offline V0" << endl;
     fUseOnFlyV0Finder=kFALSE;
+    fUseOnFlyV0FinderSameSign=0;
+    break;
+  case 2:  // on fly V0 finder with same signs
+    cout << "have chosen onfly V0 same sign pairing" << endl;
+    fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=1;
+    break;
+  case 3:  // on fly V0 finder with unlike signs and same signs
+    cout << "have chosen onfly V0 unlike sign and same signs pairing" << endl;
+    fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=2;
     break;
   default:
     AliError(Form(" v0FinderType not defined %d",v0FinderType));
@@ -2514,28 +2535,28 @@ Bool_t AliConversionPhotonCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut
 Bool_t AliConversionPhotonCuts::SetKappaTPCCut(Int_t kappaCut){   // Set Cut
   switch(kappaCut){
   case 0: // completely open
-    fKappaMaxCut=1000;
-    fKappaMinCut=-1;
+    fKappaMaxCut=200;
+    fKappaMinCut=-200;
     break;
-  case 1: // 0-3
-    fKappaMaxCut=3;
-    fKappaMinCut=0;
+  case 1: // mainly pi pi 
+    fKappaMaxCut=-13;
+    fKappaMinCut=-20;
     break;
-  case 2: // 0-2.5
-    fKappaMaxCut=2.5;
-    fKappaMinCut=0;
+  case 2: // mainly pi e
+    fKappaMaxCut=-6;
+    fKappaMinCut=-11;
     break;
-  case 3: // 0-2
-    fKappaMaxCut=2;
-    fKappaMinCut=0;
+  case 3: // signal
+    fKappaMaxCut=5;
+    fKappaMinCut=-3;
     break;
-  case 4: // 0-1.5
-    fKappaMaxCut=1.5;
-    fKappaMinCut=0;
+  case 4: // remaining
+    fKappaMaxCut=20;
+    fKappaMinCut=11;
     break;
-  case 5: // 0-1
-    fKappaMaxCut=1;
-    fKappaMinCut=0;
+  case 5: // -5-10 full signal peak(including background)
+    fKappaMaxCut=10;
+    fKappaMinCut=-5;
     break;
   default:
     AliError("KappaTPCCut not defined");
