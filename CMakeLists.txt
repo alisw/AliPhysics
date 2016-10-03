@@ -314,6 +314,10 @@ else()
 
   # General flags -> Should be moved into a configuration file
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+  # Avoid problems with -fPIE (set automatically by the previous line).
+  set(CMAKE_CXX_COMPILE_OPTIONS_PIE "")
+  set(CMAKE_C_COMPILE_OPTIONS_PIE "")
+  set(CMAKE_Fortran_COMPILE_OPTIONS_PIE "")
   set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
   # Use CMake cache as pseudo-"global" scope for those variables (list of PARfiles, list of DA RPMs)
