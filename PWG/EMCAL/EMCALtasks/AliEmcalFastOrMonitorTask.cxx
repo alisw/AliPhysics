@@ -60,11 +60,13 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   const int kMaxCol = 48, kMaxRow = 104, kMaxFastOr = kMaxRow * kMaxCol;
 
   fHistos->CreateTH1("hEvents", "Number of events", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hFastOrFrequency", "FastOr frequency", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
+  fHistos->CreateTH1("hFastOrFrequencyL0", "FastOr frequency at Level0", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
+  fHistos->CreateTH1("hFastOrFrequencyL1", "FastOr frequency at Level1", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
   fHistos->CreateTH2("hFastOrAmplitude", "FastOr amplitudes", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 513, -0.5, 512.5);
   fHistos->CreateTH2("hFastOrTimeSum", "FastOr time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
   fHistos->CreateTH2("hFastOrNL0Times", "FastOr Number of L0 times", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 16, -0.5, 15.5);
-  fHistos->CreateTH2("hFastOrColRowFrequency", "FastOr Frequency (col-row)", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
+  fHistos->CreateTH2("hFastOrColRowFrequencyL0", "FastOr Frequency (col-row) at Level1", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
+  fHistos->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level0", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
 
   PostData(1, fHistos->GetListOfHistograms());
 }
@@ -107,9 +109,14 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
     triggerdata->GetL1TimeSum(l1timesum);
     triggerdata->GetPosition(globCol, globRow);
     fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, fastOrID);
-
-    fHistos->FillTH2("hFastOrColRowFrequency", globCol, globRow);
-    fHistos->FillTH1("hFastOrFrequency", fastOrID);
+    if(amp > 1e-5){
+      fHistos->FillTH2("hFastOrColRowFrequencyL0", globCol, globRow);
+      fHistos->FillTH1("hFastOrFrequencyL0", fastOrID);
+    }
+    if(l1timesum){
+      fHistos->FillTH2("hFastOrColRowFrequencyL1", globCol, globRow);
+      fHistos->FillTH1("hFastOrFrequencyL1", fastOrID);
+    }
     if(std::find(fMaskedFastors.begin(), fMaskedFastors.end(), fastOrID) == fMaskedFastors.end()){
       fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
       fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
