@@ -72,7 +72,7 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish=false);
 //general multipart messages (aliZMQmsg)
 //to access, just iterate over it.
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
-int alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, TObject* object, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
+int alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, TObject* object, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, const std::string& data);
 int alizmq_msg_add(aliZMQmsg* message, const DataTopic* topic, void* buffer, int size);
 int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data);
@@ -94,13 +94,14 @@ int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data);
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, DataTopic& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object);
+int alizmq_msg_iter_data(aliZMQmsg::iterator it, void*& buffer, size_t& size);
 
 //string messages, no need to close, strings are copied
 int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags);
 int alizmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags);
 
 //send a single block (one header + payload), ZMQ_SNDMORE should not be used
-int alizmq_msg_send(const DataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
+int alizmq_msg_send(DataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_send(const DataTopic& topic, const std::string& data, void* socket, int flags);
 
 //deallocate an object - callback for ZMQ
@@ -111,59 +112,111 @@ const int kDataTypefIDsize = 8;
 const int kDataTypefOriginSize = 4;
 const int kDataTypeTopicSize = kDataTypefIDsize+kDataTypefOriginSize;
 
-//Helper function to compare topics
+//Helper functions
 bool Topicncmp(const char* topic, const char* reference, int topicSize=kDataTypeTopicSize, int referenceSize=kDataTypeTopicSize);
+uint64_t CharArr2uint32(const char* str);
+uint64_t CharArr2uint64(const char* str);
+
+struct BaseDataTopic
+{
+  static const uint32_t fgkMagicNumber;
+  uint32_t fMagicNumber;
+  uint32_t fHeaderSize;
+  uint32_t fFlags;
+  uint32_t fBaseHeaderVersion;
+  uint64_t fHeaderDescription;
+  uint64_t fHeaderSerialization;
+  BaseDataTopic();
+  BaseDataTopic(uint32_t size, uint64_t desc, uint64_t seri);
+  static BaseDataTopic* Get(void* buf) {
+    return (*reinterpret_cast<uint32_t*>(buf)==fgkMagicNumber)?
+           reinterpret_cast<BaseDataTopic*>(buf):
+           NULL;
+  }
+};
 
 //the data header, describes the data frame
-struct DataTopic
+struct DataTopic : public BaseDataTopic
 {
-  char fTopic[kDataTypeTopicSize]; /// Data type identifier + source id as char array.
-  int32_t fSpecification;                  /// data specification of the data block
- 
+  static const uint64_t fgkDataTopicDescription;
+  static const uint32_t fgkTopicSerialization;
+  uint64_t fDataDescription[2];
+  uint32_t fDataOrigin;
+  uint32_t fReserved;
+  uint64_t fDataSerialization;
+  uint64_t fSpecification;                  /// data specification of the data block
+  uint64_t fPayloadSize;
+
   //ctor
   DataTopic()
-    : fTopic()
+    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
+    , fDataDescription()
+    , fDataOrigin(0)
+    , fReserved(0)
+    , fDataSerialization(0)
     , fSpecification(0)
+    , fPayloadSize(0)
   {
+    fDataDescription[0]=0;
+    fDataDescription[1]=0;
   }
 
   //ctor
-  DataTopic(const char* id, const char* origin, int spec)
-    : fTopic()
+  DataTopic(const char* id, const char* origin, int spec )
+    : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
+    , fDataDescription()
+    , fDataOrigin(0)
+    , fReserved(0)
+    , fDataSerialization(0)
     , fSpecification(spec)
+    , fPayloadSize(0)
   {
-    memcpy(&fTopic[0], id, kDataTypefIDsize);
-    memcpy(&fTopic[kDataTypefIDsize], origin, kDataTypefOriginSize);
+    fDataDescription[0] = 0;
+    fDataDescription[1] = CharArr2uint64(id);
+    fDataOrigin = CharArr2uint32(origin);
   }
 
   bool operator==( const DataTopic& dt )
   {
-    bool topicMatch = Topicncmp(dt.fTopic, fTopic);
+    bool topicMatch = Topicncmp(dt.GetIDstr(),GetIDstr());
     return topicMatch;
   }
 
   std::string Description() const
   {
-    std::string description(fTopic, kDataTypeTopicSize);
+    std::string description(GetIDstr(),
+                            sizeof(fDataDescription[1])+sizeof(fDataOrigin));
     description+=" spec:";
     char numstr[21];
-    snprintf(numstr, 21, "%x", fSpecification);
+    snprintf(numstr, 21, "%llx", fSpecification);
     description+=numstr;
     return description;
   }
 
-  std::string GetOrigin() const
-  {
-    std::string origin(fTopic+kDataTypefIDsize, kDataTypefOriginSize);
+  inline std::string GetOrigin() const {
+    std::string origin(GetOriginStr(), sizeof(fDataOrigin));
     return origin;
   }
-
-  std::string GetID() const
-  {
-    std::string id(fTopic, kDataTypefIDsize);
+  inline std::string GetID() const {
+    std::string id(GetIDstr(), sizeof(fDataDescription[1]));
     return id;
   }
-
+  uint32_t GetSpecification() const {return fSpecification;}
+  inline const uint64_t* GetIDptr() const {return &fDataDescription[1];}
+  inline const char* GetIDstr() const {return reinterpret_cast<const char*>(GetIDptr());}
+  inline const uint32_t* GetOriginPtr() const {return &fDataOrigin;}
+  inline const char* GetOriginStr() const {return reinterpret_cast<const char*>(GetOriginPtr());}
+  inline void SetID(uint64_t id) {fDataDescription[1]=id;}
+  inline void SetOrigin(uint32_t origin) {fDataOrigin = origin;}
+  inline void SetID(const char* s) {fDataDescription[1]=*reinterpret_cast<const uint64_t*>(s);}
+  inline void SetOrigin(const char* s) {fDataOrigin = *reinterpret_cast<const uint32_t*>(s);}
+  inline void SetSpecification(uint32_t spec) {fSpecification=spec;}
+  inline void SetSerialization(uint64_t s) {fDataSerialization=s;}
+  static DataTopic* Get(void* buf) {
+    BaseDataTopic* bdt = BaseDataTopic::Get(buf);
+    return (bdt && bdt->fHeaderDescription==fgkDataTopicDescription)?
+            reinterpret_cast<DataTopic*>(buf):NULL;
+  }
 };
 
 //common data type definitions, compatible with AliHLTDataTypes v25
@@ -173,6 +226,8 @@ const DataTopic kDataTypeConfig("CONFIG__","***\n",0);
 const DataTopic kDataTypeTObject("ROOTTOBJ","***\n",0);
 const DataTopic kDataTypeTH1("ROOTHIST","***\n",0);
 
+extern const uint64_t kSerializationROOT;
+
 //a general utility to tokenize strings
 std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
 //parse 
@@ -181,6 +236,32 @@ std::string GetParamString(const std::string param, const std::string paramstrin
 
 //load ROOT libraries specified in comma separated string
 int LoadROOTlibs(std::string libstring, bool verbose=false);
+
+//helper function to print a hex/ASCII dump of some memory
+void hexDump (const char* desc, void* addr, int len);
+
+//______________________________________________________________________________
+inline uint64_t CharArr2uint64(const char* str)
+{
+	return((uint64_t) str[0] |
+         (str[0] ? ((uint64_t) str[1] << 8 |
+         (str[1] ? ((uint64_t) str[2] << 16 |
+         (str[2] ? ((uint64_t) str[3] << 24 |
+         (str[3] ? ((uint64_t) str[4] << 32 |
+         (str[4] ? ((uint64_t) str[5] << 40 |
+         (str[5] ? ((uint64_t) str[6] << 48 |
+         (str[6] ? ((uint64_t) str[7] << 56 )
+          : 0)) : 0)) : 0)) : 0)) : 0)) : 0)) : 0));
+}
+
+inline uint64_t CharArr2uint32(const char* str)
+{
+	return((uint32_t) str[0] |
+         (str[0] ? ((uint32_t) str[1] << 8 |
+         (str[1] ? ((uint32_t) str[2] << 16 |
+         (str[2] ? ((uint32_t) str[3] << 24)
+          : 0)) : 0)) : 0));
+}
 
 }  //end namespace AliZMQhelpers
 

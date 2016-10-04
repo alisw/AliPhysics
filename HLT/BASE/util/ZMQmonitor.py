@@ -49,6 +49,31 @@ if len(theMessage)<1:
 if len(theMessage)%2==1:
   theMessage.append("")
 
+for idx in range(0, len(theMessage)):
+    if idx%2:
+        continue
+    payloadSize=len(theMessage[idx+1])
+    origin=theMessage[idx][8:12]
+    if origin[:3]=="***":
+        origin=origin[:3]+'\0'
+    header=struct.pack(
+            "<4sIII8sQ8s8s4sI8sQQ"
+            ,"O2O2"
+            ,80
+            ,0
+            ,0
+            ,"DataHDR"
+            ,0
+            ,""
+            ,theMessage[idx]
+            ,origin
+            ,0
+            ,""
+            ,0
+            ,payloadSize
+            )
+    theMessage[idx]=header
+
 #  Prepare our context and sockets
 context = zmq.Context()
 
