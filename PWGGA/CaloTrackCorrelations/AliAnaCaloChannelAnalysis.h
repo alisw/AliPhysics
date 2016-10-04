@@ -77,6 +77,7 @@ protected:
 	  void PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd=-1);
 	  void SaveHistoToFile();
 
+	  //Test Test
 	  //Settings for analysed period
 	  Int_t   fCurrentRunNumber;            ///< A run number of an analyzed period. This is important for the AliCalorimeterUtils initialization
       TString fPeriod;                      ///< The name of the analyzed period
