@@ -839,9 +839,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           
           if(fCalculateCME) {
             Double_t SpecWeig = 1.;
-            if(fUseZDCESESpecWeights && fZDCESESpecWeightsHist[fZDCESEclEbE] && dPt>0.2 && dPt<20.) {
+            if(fUseZDCESESpecWeights && fZDCESESpecWeightsHist[fZDCESEclEbE] && dPt>0.2 && dPt<20.2) {
               Double_t weraw = fZDCESESpecWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESESpecWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,dPt));
-              if(std::isfinite(1./weraw)) SpecWeig = 1./weraw;
+              if(weraw > 0.) SpecWeig = 1./weraw;
             }
             fCMEQRe[cw][h]->Fill(dEta,SpecWeig*wPhiEta*TMath::Cos((h+1.)*dPhi));
             fCMEQIm[cw][h]->Fill(dEta,SpecWeig*wPhiEta*TMath::Sin((h+1.)*dPhi));
@@ -19318,7 +19318,8 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   
   Double_t MulWeig = 1.;
   if(fUseZDCESEMulWeights && fZDCESEMultWeightsHist[fZDCESEclEbE]) {
-    MulWeig = 1./fZDCESEMultWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESEMultWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,fNumberOfPOIsEBE));
+    Double_t weraw = fZDCESEMultWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESEMultWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,fNumberOfPOIsEBE));
+    if(weraw > 0.) MulWeig = 1./weraw;
   }
   
   Double_t uPRe=0., uPIm=0., uP2Re=0., uP2Im=0., uP2Re2=0., uP2Im2=0., uPM=0., uP2M=0.;
@@ -19347,7 +19348,7 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   
   Double_t EvPlTPC = TMath::ATan2(uP2Im+uN2Im,uP2Re+uN2Re)/2.;
   
-  if (uPM>1. && uNM>1.) {
+  if (uPM*uNM*MulWeig>0. && (uPM*uPM-uP2M)*MulWeig>0. && (uNM*uNM-uN2M)*MulWeig>0.) {
     
     Double_t TwoQpQn = (uPRe*uNRe+uPIm*uNIm)/(uPM*uNM) ;
     fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPM*uNM*MulWeig);
