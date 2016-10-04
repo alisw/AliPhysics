@@ -74,6 +74,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
 	, fResidualTrackletsFW(0)
+	, fMCGenerator("")
 	, fMCprocessType(0)
 	, fMCprocess(-1)
 
@@ -194,7 +195,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fMAllTrackMass(0x0)
   
   , fCEPEvents(new TClonesArray("CEPEventBuffer"))
-  , fevb(*fCEPEvents)
+  
 {
 	//
 	// standard constructor (the one which should be used)
@@ -255,6 +256,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	// reset track pair pointers
 	fTrkPair[0] = 0x0;
 	fTrkPair[1] = 0x0;
+
 }
 
 
@@ -283,6 +285,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
 	, fResidualTrackletsFW(0)
+	, fMCGenerator("")
 	, fMCprocessType(0)
 	, fMCprocess(-1)
 
@@ -403,7 +406,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fMAllTrackMass(0x0)
 
   , fCEPEvents(new TClonesArray("CEPEventBuffer"))
-  , fevb(*fCEPEvents)
+
 {
 	//
 	// default constructor (should not be used)
@@ -432,6 +435,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 
 	fTrkPair[0] = 0x0;
 	fTrkPair[1] = 0x0;
+
 }
 
 
@@ -1153,6 +1157,7 @@ void AliAnalysisTaskPB::UserCreateOutputObjects()
   Int_t split = 2;                                  // branches are splitted
   Int_t bsize = 16000; 
   fPWAtree->Branch("CEPEvents",&fCEPEvents, bsize, split);
+  // fPWAtree->Branch("CEPEvents",&fCEPEvents);
    
 	PostOutputs();
 }
@@ -1166,10 +1171,10 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//
 	//printf("Entry: %ld\n", (Long_t)Entry()); // print current event number
 
-	// increment event number
+  // increment event number
   fEvent++;
-  //printf("\n\nNext Event ***********\n");
-  //printf("Event number: %i\n",fEvent);
+  // printf("\n\nNext Event ***********\n");
+  // printf("Event number: %i\n",fEvent);
   
   // 
   if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
@@ -1177,7 +1182,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	}
 
 	//= INPUT DATA SANITY TESTS ==================================================
-	//printf("Checking Input ...\n");
+	printf("Checking Input ...\n");
   if (!CheckInput()) {
 		PostOutputs();
 		return;
@@ -1227,7 +1232,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//= MC TRUTH =================================================================
 	// for now only implemented on ESDs
 	Int_t nMCprimaries = 0;
-  //printf("\nDetermining MC process type ...\n");
+  printf("\nDetermining MC process type ...\n");
 	DetermineMCprocessType();
 	if (fAnalysisStatus & AliPBBase::kBitTHnMC) {
 		nMCprimaries = DoMCTruth();
@@ -1237,7 +1242,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	// applied cuts
   //  . vertex exists
   //  . vertex_z < 10 cm
-  //printf("\nDoing event selection ...\n");
+  printf("\nDoing event selection ...\n");
   Int_t kfo =
 		((fAnalysisStatus & AliPBBase::kBitFastORStudy) && !fDoAOD) ? 1 : 0;
 	Int_t ninnerp=-999, nouterp=-999;
@@ -1248,7 +1253,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       fhpriVtxDist, fhfo, fhFOchans, kfo, ninnerp,
       nouterp, fPriVtxX, fPriVtxY, fPriVtxZ);
 	
-  //printf("This is event is %i valid\n",eventIsValid);
+  printf("This is event is %i valid\n",eventIsValid);
   if (!eventIsValid) {
 		//PostOutputs();
 		//return;
@@ -1260,7 +1265,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= PILE UP ==================================================================
   // using only 2 instead of three contributors
-  //printf("\nChecking for pileup ...\n");
+  printf("\nChecking for pileup ...\n");
 	const Bool_t isPileup = (fDoAOD) ?
 	  fAODEvent->IsPileupFromSPD
 	  (
@@ -1278,7 +1283,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	  	2., 	// nSigmaDiamXY, default = 2.
 	  	5.		// nSigmaDiamZ, default = 5.
 	  );
-  //printf("This is a pileup %i event\n",isPileup);
+  printf("This is a pileup %i event\n",isPileup);
   
   if (isPileup) {
 		//PostOutputs();
@@ -1386,23 +1391,24 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   //  
 	Int_t nITSpureSA = fTracks->GetITSpureSACount();
 
-  //printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
-  //printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
-  
-  // Reset the event buffer
-  fevb.Clear();
+  // printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
+  // printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
   
   if (ncombined < 7) {
     
+    // Reset the event buffer
+    TClonesArray &evb = *fCEPEvents;
+    evb.Clear();
+  
     // prepare new CEPEventBuffer
-    CEPEventBuffer *evbuf = new(fevb[0]) CEPEventBuffer();
+    CEPEventBuffer *evbuf = new(evb[0]) CEPEventBuffer();
     
     // prepare MC stack
     AliStack *stack = NULL;
     Int_t nPrimaries = 0;
     if (fMCEvent) {
       stack = fMCEvent->Stack();
-      nPrimaries = stack->GetNprimary();
+      if (stack) nPrimaries = stack->GetNprimary();
     }
 
     // set event parameters
@@ -1412,6 +1418,10 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
     evbuf->SetGapCondition(fCurrentGapCondition);
     evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
+    
+    evbuf->SetMCGenerator(fMCGenerator);
+    evbuf->SetMCProcessType(fMCprocess);
+    
   
     // add normal tracks to event buffer
     Double_t mom[3];
@@ -1535,11 +1545,11 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     }
 
     // save event  
-    //printf("RunNumber: %i\n",evbuf->GetRunNumber());
-    //printf("EventNumber: %i\n",evbuf->GetEventNumber());
-    //printf("NumberTracks: %i\n",evbuf->GetnumTracks());
-    //printf("NumberSoftTracks: %i\n",evbuf->GetnumSoftTracks());
-    //printf("GapCondition: %i\n",evbuf->GetGapCondition());
+    // printf("RunNumber: %i\n",evbuf->GetRunNumber());
+    // printf("EventNumber: %i\n",evbuf->GetEventNumber());
+    // printf("NumberTracks: %i\n",evbuf->GetnumTracks());
+    // printf("NumberSoftTracks: %i\n",evbuf->GetnumSoftTracks());
+    // printf("GapCondition: %i\n",evbuf->GetGapCondition());
     
     // fill tree
     fPWAtree->Fill();
@@ -2387,8 +2397,10 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 
 	if (fMCEvent) {
 		AliGenEventHeader* header = fMCEvent->GenEventHeader();
-		if (header) {
-      printf("MC generator name: %s\n",TString(header->GetName()).Data());
+    
+    if (header) {
+		  fMCGenerator = TString(header->IsA()->GetName());
+      printf("MC generator name: %s\n",fMCGenerator.Data());
 			//printf("MC process: %i\n",header->ProcessType());
 
 			// Pythia6
