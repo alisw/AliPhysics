@@ -875,11 +875,11 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
   TString sub1                  = "";
   TString sub2                  = "";
   TString sub3                  = "";
-  for (Int_t i=0; i<scaledPt.Length(); i++) {
+  for (Int_t i=0; i<formulaBaseScaled.Length(); i++) {
     if (i>0) sub1               = formulaBaseScaled(i-1, 1);
     else sub1                   = "";
     sub2                        = formulaBaseScaled(i, 1);
-    if (i<scaledPt.Length()-1)
+    if (i<formulaBaseScaled.Length()-1)
       sub3                      = formulaBaseScaled(i+1, 1);
     else sub3                   = "";
     
