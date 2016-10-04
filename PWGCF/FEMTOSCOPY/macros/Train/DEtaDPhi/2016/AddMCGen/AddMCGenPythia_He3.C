@@ -10,15 +10,12 @@ AliGenerator* AddMCGenPythia_He3(Float_t e_cms = 2760., Double_t ptHardMin = 0.,
   AliGenLightNuclei* d = new AliGenLightNuclei();
   d->SetNucleusPdgCode(AliGenLightNuclei::kDeuteron);
   d->SetCoalescenceMomentum(0.100); // default
-  d->SetSpinProbability(1);
-  d->UsePerEventRates();
 
  // 3He and anti-3He nuclei
   AliGenLightNuclei* he3 = new AliGenLightNuclei();
   he3->SetNucleusPdgCode(AliGenLightNuclei::kHe3Nucleus);
   he3->SetCoalescenceMomentum(0.127);
-  he3->SetSpinProbability(1);
-  he3->UsePerEventRates();
+
 
   gener->AddGenerator(genP, "pythia8", 1);
   gener->AddGenerator(d,"deuteron",1);
@@ -63,7 +60,7 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
   //   Centre of mass energy 
   genP->SetEnergyCMS(e_cms); // in GeV
     
-  genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
+  //genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
 
   if(tune == 0){ // tune Perugia0
     genP->SetTune(320);
