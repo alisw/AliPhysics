@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemtoUser)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
 )
 
@@ -119,6 +120,7 @@ set(SRCS
   AliFemtoESDTrackCutNSigmaFilter.cxx
   AliFemtoModelCorrFctnKStarFull.cxx
   AliFemtoModelWeightGeneratorBasicLednicky.cxx
+  AliFemtoAnalysisLambdaKaon.cxx
   )
 
 
