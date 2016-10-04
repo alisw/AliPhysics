@@ -20,7 +20,7 @@ AliGenerator* AddMCGenPythia_He3(Float_t e_cms = 2760., Double_t ptHardMin = 0.,
 
 
   gener->AddGenerator(genP, "pythia8", 1);
-s  gener->AddGenerator(d,"deuteron",1);
+  gener->AddGenerator(d,"deuteron",1);
   gener->AddGenerator(he3,"He3",1);
   
   return gener;
