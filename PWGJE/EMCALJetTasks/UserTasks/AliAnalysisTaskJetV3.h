@@ -8,9 +8,9 @@
 // uncomment or define externally to enable debug information
 // 
 // flag for global and e-by-e debug info
-//#define ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+//#define ALIANALYSISTASKJETV3_DEBUG_FLAG_1
 // flag for debug statements that may be repeated multiple times per event
-//#define ALIANALYSISTASKJETV2_DEBUG_FLAG_2
+//#define ALIANALYSISTASKJETV3_DEBUG_FLAG_2
 
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
@@ -22,7 +22,7 @@
 #include <TArrayD.h>
 #include <TRandom3.h>
 #include <AliJetContainer.h>
-#include <AliParticleContainer.h>
+#include <AliTrackContainer.h>
 
 class TFile;
 class TF1;
@@ -157,7 +157,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         void                    SetEPWeightForVZERO(EPweightType type)          { fWeightForVZERO = type; }
         // getters 
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
-        TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
+        TString                 GetTracksName() const                           {return GetTrackContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayD*                GetCentralityClasses() const                    {return fCentralityClasses;}
 //        Float_t                 GetCentrality() const;
@@ -191,7 +191,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
                 Float_t &pt, 
                 Float_t &eta, 
                 Float_t &phi, 
-                AliParticleContainer* tracksCont,
+                AliTrackContainer* tracksCont,
                 AliClusterContainer* clusterCont = 0x0,
                 AliEmcalJet* jet = 0x0
                 ) const;
@@ -210,7 +210,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
-        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { UInt_t rejectionReason = 0; return GetParticleContainer(0)->AcceptParticle(track, rejectionReason); }
+        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { UInt_t rejectionReason = 0; return GetTrackContainer(0)->AcceptParticle(track, rejectionReason); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { 
             if(jet->MaxTrackPt() > fExcludeJetsWithTrackPt) return kFALSE;
             return AcceptJet(jet, 0); 
@@ -267,7 +267,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fEventPlaneWeights[10]; // weight histos for the event plane (centrality dependent)
         Bool_t                  fAcceptanceWeights;     // store centrality dependent acceptance weights
         Float_t                 fEventPlaneWeight;      //! the actual weight of an event
-        AliParticleContainer*   fTracksCont;            //! tracks
+        AliTrackContainer*   fTracksCont;            //! tracks
         AliClusterContainer*    fClusterCont;           //! cluster container
         AliJetContainer*        fJetsCont;              //! jets
         AliEmcalJet*            fLeadingJet;            //! leading jet

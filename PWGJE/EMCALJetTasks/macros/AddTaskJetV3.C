@@ -67,11 +67,12 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
   AliAnalysisTaskJetV3* jetTask = new AliAnalysisTaskJetV3(name, runMode, baseClassHistos);
   
   // create and connect data containers
-  AliParticleContainer* partCont = jetTask->AddParticleContainer(ntracks);
+  AliTrackContainer* partCont = jetTask->AddTrackContainer(ntracks);
   if(partCont) {
       partCont->SetName("Tracks");
       partCont->SetParticlePtCut(trackptcut);
       partCont->SetClassName("AliAODTrack");
+      partCont->SetCharge(AliParticleContainer::kCharged);
   }
   TString tmp(nclusters);
   AliClusterContainer* clusterCont = 0x0;
