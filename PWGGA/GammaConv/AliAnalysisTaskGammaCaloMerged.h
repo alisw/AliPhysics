@@ -125,7 +125,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                  fHistoMotherPtY;                                    //! array of histograms with signal +BG pt, Y
     TH2F**                  fHistoMotherPtAlpha;                                //! array of histograms with signal +BG  pt, alpha
-    TH2F**                  fHistoMotherPtOpenAngle;                            //! array of histograms with signal +BG  pt, openAngle
 
     // histograms for rec photon clusters/pi0 candidate
     TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
