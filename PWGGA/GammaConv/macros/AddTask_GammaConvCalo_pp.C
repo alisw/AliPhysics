@@ -1185,11 +1185,16 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     
   // ************************************* EMCAL cuts ****************************************************  
     // 13 TeV & 5 TeV
-  } else if (trainConfig == 401){ // EMCAL clusters pp 13 TeV
-    cuts.AddCut("00010113","00200009327000008250400000","1111111013032230000","0163103100000010"); // 1000ns timing cut, std NL INT7
-    cuts.AddCut("00052013","00200009327000008250400000","1111111013032230000","0163103100000010"); // 1000ns timing cut, std NL EMC7
-    
-    
+  } else if (trainConfig == 401){ // EMCAL clusters
+    cuts.AddCut("00010113","00200009327000008250400000","1111100013032230000","0163103100000010"); // 1000ns timing cut, no NL INT7
+    cuts.AddCut("00052013","00200009327000008250400000","1111100013032230000","0163103100000010"); // 1000ns timing cut, no NL EMC7
+    cuts.AddCut("00085013","00200009327000008250400000","1111100013032230000","0163103100000010"); // 1000ns timing cut, no NL EG2
+    cuts.AddCut("00083013","00200009327000008250400000","1111100013032230000","0163103100000010"); // 1000ns timing cut, no NL EG1
+  } else if (trainConfig == 402){ // EMCAL clusters
+    cuts.AddCut("00010113","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
+    cuts.AddCut("00052013","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EMC7
+    cuts.AddCut("00085013","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG2
+    cuts.AddCut("00083013","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG1
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
