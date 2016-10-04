@@ -46,7 +46,6 @@
 //#include <AliMultSelection.h>
 #include <AliInputEventHandler.h>
 // emcal jet framework includes
-#include <AliPicoTrack.h>
 #include <AliEmcalJet.h>
 #include <AliRhoParameter.h>
 #include <AliLocalRhoParameter.h>
@@ -804,7 +803,7 @@ void AliAnalysisTaskJetV3::UserCreateOutputObjects()
     }
 
     // get the containers
-    fTracksCont = GetParticleContainer("Tracks");
+    fTracksCont = GetTrackContainer("Tracks");
     fClusterCont = GetClusterContainer(0);      // get the default cluster container
     fJetsCont = GetJetContainer("Jets");
 }
@@ -1268,6 +1267,7 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneTPC(Double_t* tpc)
    }
    tpc[0] = .5*TMath::ATan2(qy2, qx2);
    tpc[1] = (1./3.)*TMath::ATan2(qy3, qx3);
+   fTracksCont->ResetCurrentID();
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
@@ -1321,6 +1321,7 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneResolution(Double_t vzero[2][2], D
    fProfV3Resolution[fInCentralitySelection]->Fill(8., TMath::Cos(3.*(vzeroComb[1] - tpca3)));
    fProfV3Resolution[fInCentralitySelection]->Fill(9., TMath::Cos(3.*(vzeroComb[1] - tpcb3)));
    fProfV3Resolution[fInCentralitySelection]->Fill(10., TMath::Cos(3.*(tpca3 - tpcb3))); 
+   fTracksCont->ResetCurrentID();
 }   
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2], Double_t Qa3[2], Double_t Qc3[2]) const
@@ -1515,7 +1516,7 @@ void AliAnalysisTaskJetV3::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, 
-        AliParticleContainer* tracksCont, AliClusterContainer* clusterCont, AliEmcalJet* jet) const
+        AliTrackContainer* tracksCont, AliClusterContainer* clusterCont, AliEmcalJet* jet) const
 {
     // get a random cone
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_2
@@ -1560,6 +1561,7 @@ void AliAnalysisTaskJetV3::CalculateRandomCone(Float_t &pt, Float_t &eta, Float_
             track = tracksCont->GetNextAcceptParticle();
         }
     }
+    
     // get the neutral energy (if clusters are provided)
     if(clusterCont) {
         TLorentzVector momentum;
@@ -1894,8 +1896,8 @@ Bool_t AliAnalysisTaskJetV3::CorrectRho(Double_t psi2, Double_t psi3)
     // if one uses e.g. semi-good tpc tracks, accepance in phi is reduced to 0 < phi < 4
     // the defaults (-10 < phi < 10) which accept all, are then overwritten
     Double_t lowBound(0.), upBound(TMath::TwoPi());     // bounds for fit
-    if(GetParticleContainer()->GetParticlePhiMin() > lowBound) lowBound = GetParticleContainer()->GetParticlePhiMin();
-    if(GetParticleContainer()->GetParticlePhiMax() < upBound) upBound = GetParticleContainer()->GetParticlePhiMax();
+    if(GetTrackContainer()->GetParticlePhiMin() > lowBound) lowBound = GetTrackContainer()->GetParticlePhiMin();
+    if(GetTrackContainer()->GetParticlePhiMax() < upBound) upBound = GetTrackContainer()->GetParticlePhiMax();
     fHistSwap->Reset(); // clear the histogram
     TH1F _tempSwap;     // on stack for quick access
     TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
@@ -1908,10 +1910,19 @@ Bool_t AliAnalysisTaskJetV3::CorrectRho(Double_t psi2, Double_t psi3)
     else _tempSwap = *fHistSwap;         // now _tempSwap holds the desired histo
     // non poissonian error when using pt weights
     Double_t totalpts(0.), totalptsquares(0.), totalns(0.);
-    for(Int_t i(0); i < iTracks; i++) {
-        AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(i));
-        if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
-        if(!PassesCuts(track) || track->Pt() > fSoftTrackMaxPt || track->Pt() < fSoftTrackMinPt) continue;
+
+    fTracksCont->ResetCurrentID();
+    AliVParticle* track = fTracksCont->GetNextAcceptParticle();
+    while(track) {
+        /*
+        if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) {
+            track = fTracksCont->GetNextAcceptParticle();
+            continue;
+        }
+        if(track->Pt() > fSoftTrackMaxPt || track->Pt() < fSoftTrackMinPt) {
+             track = fTracksCont->GetNextAcceptParticle();
+             continue;
+        }*/
         if(fUsePtWeight) {
             _tempSwap.Fill(track->Phi(), track->Pt());
             if(fUsePtWeightErrorPropagation) {
@@ -1922,6 +1933,7 @@ Bool_t AliAnalysisTaskJetV3::CorrectRho(Double_t psi2, Double_t psi3)
             }
         }
         else _tempSwap.Fill(track->Phi());
+        track = fTracksCont->GetNextAcceptParticle();
     }
     if(fUsePtWeight && fUsePtWeightErrorPropagation) {
         // in the case of pt weights overwrite the poissonian error estimate which is assigned by root by a more sophisticated appraoch
@@ -2005,6 +2017,9 @@ Bool_t AliAnalysisTaskJetV3::CorrectRho(Double_t psi2, Double_t psi3)
         for(int _binsI = 0; _binsI < _bins*_bins; _binsI++)  _tempSwap.Fill(_tempFit->GetRandom());
     }
     _tempSwap.Fit(fFitModulation, fFitModulationOptions.Data(), "", lowBound, upBound);
+
+
+
     // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
     // three methods are available, all with their drawbacks. all are stored, one is selected to do the cut
     Int_t NDF(_tempSwap.GetXaxis()->GetNbins()-freeParams);
@@ -2255,23 +2270,8 @@ void AliAnalysisTaskJetV3::FillQAHistograms(AliVTrack* vtrack) const
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_2
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    if(!vtrack) return;
-    AliPicoTrack* track = static_cast<AliPicoTrack*>(vtrack);
-    fHistRunnumbersPhi->Fill(fMappedRunNumber, track->Phi());
-    fHistRunnumbersEta->Fill(fMappedRunNumber, track->Eta());
-    Int_t type((int)(track->GetTrackType()));
-    switch (type) {
-        case 0:
-           fHistPicoCat1[fInCentralitySelection]->Fill(track->Eta(), track->Phi()); 
-           break;
-        case 1:
-           fHistPicoCat2[fInCentralitySelection]->Fill(track->Eta(), track->Phi()); 
-           break;
-        case 2:
-           fHistPicoCat3[fInCentralitySelection]->Fill(track->Eta(), track->Phi()); 
-           break;
-        default: break;
-    }
+
+    fHistPicoCat1[fInCentralitySelection]->Fill(vtrack->Eta(), vtrack->Phi()); 
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::FillQAHistograms(AliVEvent* vevent) 
@@ -2308,6 +2308,7 @@ void AliAnalysisTaskJetV3::FillWeightedTrackHistograms() const
         if(fFillQAHistograms) FillQAHistograms(track);
     }
     fHistPicoTrackMult[fInCentralitySelection]->Fill(iAcceptedTracks, fEventPlaneWeight);
+    fTracksCont->ResetCurrentID();
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::FillWeightedClusterHistograms() const
@@ -2390,7 +2391,7 @@ void AliAnalysisTaskJetV3::FillWeightedDeltaPtHistograms(Double_t psi3) const
     #endif
     Int_t i(0);
     const Float_t areaRC = GetJetRadius()*GetJetRadius()*TMath::Pi();
-    // we're retrieved the leading jet, now get a random cone
+    // we've retrieved the leading jet, now get a random cone
     for(i = 0; i < fMaxCones; i++) {
        Float_t pt(0), eta(0), phi(0);
        // get a random cone without constraints on leading jet position
@@ -2415,6 +2416,7 @@ void AliAnalysisTaskJetV3::FillWeightedDeltaPtHistograms(Double_t psi3) const
        if(pt > 0) {
            if(fFillQAHistograms) fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
+
            else fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
            fHistRCPtExLJ[fInCentralitySelection]->Fill(pt, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistDeltaPtDeltaPhi3ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
@@ -2483,22 +2485,8 @@ void AliAnalysisTaskJetV3::FillWeightedQAHistograms(AliVTrack* vtrack) const
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     if(!vtrack) return;
-    AliPicoTrack* track = static_cast<AliPicoTrack*>(vtrack);
-    fHistRunnumbersPhi->Fill(fMappedRunNumber, track->Phi(), fEventPlaneWeight);
-    fHistRunnumbersEta->Fill(fMappedRunNumber, track->Eta(), fEventPlaneWeight);
-    Int_t type((int)(track->GetTrackType()));
-    switch (type) {
-        case 0:
-           fHistPicoCat1[fInCentralitySelection]->Fill(track->Eta(), track->Phi(), fEventPlaneWeight); 
-           break;
-        case 1:
-           fHistPicoCat2[fInCentralitySelection]->Fill(track->Eta(), track->Phi(), fEventPlaneWeight); 
-           break;
-        case 2:
-           fHistPicoCat3[fInCentralitySelection]->Fill(track->Eta(), track->Phi(), fEventPlaneWeight); 
-           break;
-        default: break;
-    }
+    fHistRunnumbersPhi->Fill(fMappedRunNumber, vtrack->Phi(), fEventPlaneWeight);
+    fHistRunnumbersEta->Fill(fMappedRunNumber, vtrack->Eta(), fEventPlaneWeight);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::FillWeightedQAHistograms(AliVEvent* vevent) 
