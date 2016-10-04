@@ -82,6 +82,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliStack *fMCStack, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
+    Bool_t MesonIsSelectedAODMCDalitz(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliStack *fMCStack, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);

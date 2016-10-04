@@ -147,6 +147,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC, Double_t weight=1.);
     Bool_t      ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
+    Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
       
     void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}

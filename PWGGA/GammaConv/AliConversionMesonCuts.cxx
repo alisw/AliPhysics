@@ -492,6 +492,63 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
+
+  // Returns true for all pions within acceptance cuts for decay into 2 photons
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if( !AODMCArray )return kFALSE;
+
+  if(  fMCMother->GetPdgCode() != 111 && fMCMother->GetPdgCode() != 221 ) return kFALSE;
+
+  Double_t rMeson = sqrt( (fMCMother->Xv()*fMCMother->Xv()) + (fMCMother->Yv()*fMCMother->Yv()) ) ;
+  if(rMeson>fMaxR)  return kFALSE; // cuts on distance from collision point
+
+  Double_t rapidity = 10.;
+
+  if( fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0 ){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // Select only -> Dalitz decay channel
+  if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+  AliAODMCParticle *positron = 0x0;
+  AliAODMCParticle *electron = 0x0;
+  AliAODMCParticle    *gamma = 0x0;
+
+  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
+    if (!temp) continue;
+
+    switch( temp->GetPdgCode() ) {
+    case ::kPositron:
+      positron      =  temp;
+      labelpositron = index;
+      break;
+    case ::kElectron:
+      electron      =  temp;
+      labelelectron = index;
+      break;
+    case ::kGamma:
+      gamma         =  temp;
+      labelgamma    = index;
+      break;
+    }
+  }
+
+  if( positron && electron && gamma) return kTRUE;
+  return kFALSE;
+}
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
