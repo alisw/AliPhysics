@@ -1641,7 +1641,7 @@ void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd
 	histoName = Form("2DChannelMap_Flag%d",flagBegin);
 	if(flagBegin==0 && flagEnd==0)histoName = Form("2DChannelMap_Flag100");
 
-	TH2F *plot2D = new TH2F(histoName,histoName,fNMaxColsAbs+2,-1.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+2,-1.5,fNMaxRowsAbs+0.5);
+	TH2F *plot2D = new TH2F(histoName,histoName,fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
 	plot2D->GetXaxis()->SetTitle("cell column (#eta direction)");
 	plot2D->GetYaxis()->SetTitle("cell row (#phi direction)");
 
