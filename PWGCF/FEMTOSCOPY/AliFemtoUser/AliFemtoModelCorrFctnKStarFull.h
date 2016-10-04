@@ -61,16 +61,25 @@ public:
 
   int GetMotherBin(const AliFemtoModelHiddenInfo *info);
 
+  void SetBuildBaseClassHistograms(bool aBuild);
+  void SetBuildUnitWeights(bool aBuild);
+  void SetBuildParentInfo(bool aBuild);
+  void SetBuildTrueVsRec(bool aBuild);
+  void SetBuildRotated(bool aBuild);
+
   //inline
   void SetRemoveMisidentified(bool aSet);
 
 
 protected:
+  const char* fTitle;
+  int fNbinsKStar;
+  double fKStarLow, fKStarHigh;
 
   bool fRemoveMisidentified;
 
   int fExpectedTrack1Code, fExpectedTrack2Code;
-
+  bool fBuildBaseClassHistograms;
   //----- Defined in AliFemtoModelCorrFctn.h -----//
   /*
    *  TH1F *fNumeratorTrue;      // Numerator made with RECONSTRUCTED k* of pairs from SAME event
@@ -89,16 +98,19 @@ protected:
   */
   //----- END: Defined in AliFemtoModelCorrFctn.h -----//
 
-
+  bool fBuildUnitWeights;
   TH1F *fNumTrueUnitWeights;      // Numerator made with RECONSTRUCTED k* of pairs from SAME event with unit weights
   TH1F *fNumTrueIdealUnitWeights; // Numerator made with TRUE k* of pairs from SAME event with unit weights
 
+  bool fBuildParentInfo;
   TH3F *fNumTrueIdealwParentInfo;  //Same as fNumeratorTrueIdeal but additionally binned according to parent PIDs
   TH3F *fDenIdealwParentInfo;      //Same as fDenominatorIdeal but additionally binned according to parent PIDs
 
+  bool fBuildTrueVsRec;
   TH2F *fKTrueVsKRecSame;           // 2D histogram of k*_{True} vs k*_{Reconstructed} of pairs from SAME event
   TH2F *fKTrueVsKRecMixed;          // 2D histogram of k*_{True} vs k*_{Reconstructed} of pairs from MIXED events
 
+  bool fBuildRotated;
   TH2F *fKTrueVsKRecRotSame;        // fKTrueVsKRecSame rotated by 45 degrees
   TH2F *fKTrueVsKRecRotMixed;       // fKTrueVsKRecMixed rotated by 45 degrees
 
