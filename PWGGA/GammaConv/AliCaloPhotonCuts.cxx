@@ -983,6 +983,25 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecMC(TParticle *particle,AliStack *
   return kFALSE;
 }
 
+//________________________________________________________________________
+Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray){
+   // MonteCarlo Photon Selection
+
+  if(!aodmcArray)return kFALSE;
+  if(!particle) return kFALSE;
+
+  if (TMath::Abs(particle->GetPdgCode()) == 11){
+
+    if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
+    if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
+
+    if(particle->GetMother() >-1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 11){
+      return kFALSE;// no photon as mothers!
+    }
+    return kTRUE;
+  }
+  return kFALSE;
+}
 
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray){

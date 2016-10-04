@@ -44,10 +44,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetSelectedMesonID(Int_t anaMeson)               { fSelectedMesonID            = anaMeson                                                        ; }
     
     void ProcessMCParticles();
+    void ProcessAODMCParticles();
     // determine source according to pdg code of mother
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
       
     void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Float_t m02, AliAODConversionPhoton *TrueSubClusterCandidate1,
+                                    AliAODConversionPhoton *TrueSubClusterCandidate2);
+    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Float_t m02, AliAODConversionPhoton *TrueSubClusterCandidate1,
                                     AliAODConversionPhoton *TrueSubClusterCandidate2);
 // //     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     
