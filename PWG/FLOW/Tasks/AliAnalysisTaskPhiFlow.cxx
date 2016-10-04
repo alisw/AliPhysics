@@ -51,6 +51,7 @@
 #include "AliMultSelection.h"
 #include "TMatrixDSym.h"
 #include "AliVVertex.h"
+#include "AliAODVertex.h"
 
 class AliFlowTrackCuts;
 
@@ -833,7 +834,22 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
           if (bc1 != 0)
               return;
            */
-	
+
+          // add vertexer selection
+          AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
+          AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+          if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+          double covTrc[6],covSPD[6];
+          vtTrc->GetCovarianceMatrix(covTrc);
+          vtSPD->GetCovarianceMatrix(covSPD);
+          double dz = vtTrc->GetZ()-vtSPD->GetZ();
+          double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+          double errTrc = TMath::Sqrt(covTrc[5]);
+          double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+          if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing 
+
+
+
       }
        
       //new function for 2015 to remove incomplete events
