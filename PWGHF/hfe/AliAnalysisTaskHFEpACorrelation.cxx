@@ -7602,7 +7602,7 @@ Double_t AliAnalysisTaskHFEpACorrelation::GetHadronEfficiency(Double_t pT, Doubl
     if (!fEffHadron)
         return 1.;
     Int_t bin = fEffHadron->FindBin(pT,eta,zvtx);
-    if ( fEffHadron->IsBinUnderflow(bin) || fEffHadron->IsBinOverflow(bin) ) {printf("pt %f eta %f zvtx %f",pT,eta,zvtx); return 1.;}
+    if ( fEffHadron->IsBinUnderflow(bin) || fEffHadron->IsBinOverflow(bin) ) {return 1.;}
     //printf ("Setting hadron Eff as %f\n",fEffHadron->GetBinContent(bin));
     return fEffHadron->GetBinContent(bin);
 
