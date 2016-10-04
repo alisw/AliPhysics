@@ -1,4 +1,4 @@
-AliGenerator* AddMCGenPythia_He3(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2,Int_t cr=1,Float_t ptWeight=0) 
+AliGenerator* AddMCGenPythia_He3_NoNewMultInt(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2,Int_t cr=1,Float_t ptWeight=0) 
 {
   //Add Pythia generator: pt-hard bin or min bias
 
@@ -62,7 +62,7 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
   //   Centre of mass energy 
   genP->SetEnergyCMS(e_cms); // in GeV
     
-  genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
+  //genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
 
   if(tune == 0){ // tune Perugia0
     genP->SetTune(320);
