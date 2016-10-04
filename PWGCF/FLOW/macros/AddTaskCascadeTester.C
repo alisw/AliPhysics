@@ -130,7 +130,7 @@ AliAnalysisTaskCascadeTester* AddTaskCascadeTester(
        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
        cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
        cutsRP->SetApplyRecentering(kTRUE);
-       cutsRP->SetParamType(AliFlowTrackCuts::kHotfixHI);
+//       cutsRP->SetParamType(AliFlowTrackCuts::kHotfixHI);
 //       cutsRP->SetUseVZERORing(7, kFALSE);
        SP = kFALSE; // disable other methods
        SPSUB = kTRUE; // calculate sp_qa and sp_qb
