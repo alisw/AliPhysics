@@ -56,139 +56,79 @@ const double verySmall = std::numeric_limits < double >::min();
 //_________________________________________
 AliFemtoModelCorrFctnKStarFull::AliFemtoModelCorrFctnKStarFull() :
   AliFemtoModelCorrFctn(),
+  fTitle(""),
+  fNbinsKStar(200),
+  fKStarLow(0.),
+  fKStarHigh(1.),
   fRemoveMisidentified(false),
   fExpectedTrack1Code(3122),
   fExpectedTrack2Code(310),
+  fBuildBaseClassHistograms(true),
+
+  fBuildUnitWeights(false),
   fNumTrueUnitWeights(NULL),
   fNumTrueIdealUnitWeights(NULL),
+
+  fBuildParentInfo(false),
   fNumTrueIdealwParentInfo(NULL),
   fDenIdealwParentInfo(NULL),
+
+  fBuildTrueVsRec(true),
   fKTrueVsKRecSame(NULL),
   fKTrueVsKRecMixed(NULL),
+
+  fBuildRotated(false),
   fKTrueVsKRecRotSame(NULL),
   fKTrueVsKRecRotMixed(NULL)
 {
   //default constructor
-  fNumTrueUnitWeights = new TH1F("NumTrueUnitWeights","KStar - True Numerator w/ Unit Weights; k*(GeV);",200,0.,1.);
-  fNumTrueUnitWeights->Sumw2();
+  SetBuildUnitWeights(fBuildUnitWeights);
+  SetBuildParentInfo(fBuildParentInfo);
+  SetBuildTrueVsRec(fBuildTrueVsRec);
+  SetBuildRotated(fBuildRotated);
 
-  fNumTrueIdealUnitWeights = new TH1F("NumTrueIdealUnitWeights","KStar - True Ideal Numerator w/ Unit Weights; k*(GeV);",200,0.,1.);
-  fNumTrueIdealUnitWeights->Sumw2();
-
-  fNumTrueIdealwParentInfo = new TH3F("NumTrueIdealwParentInfo", "KStar - True Ideal Numerator binned in parent PIDs; k*(GeV);",
-                                            200, 0.0, 1.0,
-                                            true_type_count, -0.5, true_type_count - 0.5,
-                                            true_type_count, -0.5, true_type_count - 0.5);
-  fNumTrueIdealwParentInfo->Sumw2();
-
-  fDenIdealwParentInfo = new TH3F("DenIdealwParentInfo", "KStar - Ideal Denominator binned in parent PIDs; k*(GeV);",
-                                          200, 0.0, 1.0, 
-                                          true_type_count, -0.5, true_type_count - 0.5,
-                                          true_type_count, -0.5, true_type_count - 0.5);
-  fDenIdealwParentInfo->Sumw2();
-
-  for (size_t i = 0; i < true_type_count; ++i) {
-    fNumTrueIdealwParentInfo->GetYaxis()->SetBinLabel(i+1, true_types[i]);
-    fDenIdealwParentInfo->GetYaxis()->SetBinLabel(i+1, true_types[i]);
-  }
-
-  fKTrueVsKRecSame = new TH2F("fKTrueVsKRecSame","k*_{true} vs k*{rec} for Same Event Pairs; k*(GeV/c);",200,0.,1.,200,0.,1.);
-  fKTrueVsKRecSame->Sumw2();
-  fKTrueVsKRecMixed = new TH2F("fKTrueVsKRecMixed","k*_{true} vs k*{rec} for Mixed Event Pairs; k*(GeV/c);",200,0.,1.,200,0.,1.);
-  fKTrueVsKRecMixed->Sumw2();
-  fKTrueVsKRecRotSame = new TH2F("fKTrueVsKRecRotSame","(k*_{true} + k*{rec})/2 vs (k*_{true} - k*{rec})/sqrt(2) for Same Event Pairs; k*(GeV/c);",200,0.,1.,200,-0.5,0.5);
-  fKTrueVsKRecRotSame->Sumw2();
-  fKTrueVsKRecRotMixed = new TH2F("fKTrueVsKRecRotMixed","(k*_{true} + k*{rec})/2 vs (k*_{true} - k*{rec})/sqrt(2) for Mixed Event Pairs; k*(GeV/c);",200,0.,1.,200,-0.5,0.5);
-  fKTrueVsKRecRotMixed->Sumw2();
+  //I do not use this histogram, so I might as well delete it
+  delete fQgenQrec;
+  fQgenQrec = NULL;
 
 }
 
 AliFemtoModelCorrFctnKStarFull::AliFemtoModelCorrFctnKStarFull(const char *title, int aNbins, double aKStarLo, double aKStarHi) :
   AliFemtoModelCorrFctn(title,aNbins,aKStarLo,aKStarHi),
+  fTitle(title),
+  fNbinsKStar(aNbins),
+  fKStarLow(aKStarLo),
+  fKStarHigh(aKStarHi),
   fRemoveMisidentified(false),
   fExpectedTrack1Code(3122),
   fExpectedTrack2Code(310),
+  fBuildBaseClassHistograms(true),
+
+  fBuildUnitWeights(false),
   fNumTrueUnitWeights(NULL),
   fNumTrueIdealUnitWeights(NULL),
+
+  fBuildParentInfo(false),
   fNumTrueIdealwParentInfo(NULL),
   fDenIdealwParentInfo(NULL),
+
+  fBuildTrueVsRec(true),
   fKTrueVsKRecSame(NULL),
   fKTrueVsKRecMixed(NULL),
+
+  fBuildRotated(false),
   fKTrueVsKRecRotSame(NULL),
   fKTrueVsKRecRotMixed(NULL)
 {
   //normal constructor
-  fNumTrueUnitWeights = new TH1F(
-    TString::Format("NumTrueUnitWeights%s", title),
-    "KStar - True Numerator w/ Unit Weights; k*(GeV);",
-    aNbins, aKStarLo, aKStarHi
-  );
-  fNumTrueUnitWeights->Sumw2();
+  SetBuildUnitWeights(fBuildUnitWeights);
+  SetBuildParentInfo(fBuildParentInfo);
+  SetBuildTrueVsRec(fBuildTrueVsRec);
+  SetBuildRotated(fBuildRotated);
 
-  fNumTrueIdealUnitWeights = new TH1F(
-    TString::Format("NumTrueIdealUnitWeights%s", title),
-    "KStar - True Ideal Numerator w/ Unit Weights; k*(GeV);",
-    aNbins, aKStarLo, aKStarHi
-  );
-  fNumTrueIdealUnitWeights->Sumw2();
-
-
-  fNumTrueIdealwParentInfo = new TH3F(
-    TString::Format("NumTrueIdealwParentInfo%s", title),
-    "KStar - True Ideal Numerator binned in parent PIDs; k*(GeV);",
-    aNbins, aKStarLo, aKStarHi,
-    true_type_count, -0.5, true_type_count - 0.5,
-    true_type_count, -0.5, true_type_count - 0.5
-  );
-  fNumTrueIdealwParentInfo->Sumw2();
-
-  fDenIdealwParentInfo = new TH3F(
-    TString::Format("DenIdealwParentInfo%s", title),
-    "KStar - Ideal Denominator binned in parent PIDs; k*(GeV);",
-    aNbins, aKStarLo, aKStarHi,
-    true_type_count, -0.5, true_type_count - 0.5,
-    true_type_count, -0.5, true_type_count - 0.5
-  );
-  fDenIdealwParentInfo->Sumw2();
-
-  for (size_t i = 0; i < true_type_count; ++i) {
-    fNumTrueIdealwParentInfo->GetYaxis()->SetBinLabel(i+1, true_types[i]);
-    fDenIdealwParentInfo->GetYaxis()->SetBinLabel(i+1, true_types[i]);
-  }
-
-  fKTrueVsKRecSame = new TH2F(
-    TString::Format("KTrueVsKRecSame%s", title), 
-    "k*_{true} vs k*_{rec} for Same Event Pairs; k*(GeV/c);",
-     aNbins, aKStarLo, aKStarHi,
-     aNbins, aKStarLo, aKStarHi);
-  fKTrueVsKRecSame->Sumw2();
-
-  fKTrueVsKRecMixed = new TH2F(
-    TString::Format("KTrueVsKRecMixed%s", title), 
-    "k*_{true} vs k*_{rec} for Mixed Event Pairs; k*(GeV/c);",
-     aNbins, aKStarLo, aKStarHi,
-     aNbins, aKStarLo, aKStarHi);
-  fKTrueVsKRecMixed->Sumw2();
-
-  double tYRange = aKStarHi-aKStarLo;
-  double tRotYMin = -0.5*tYRange;
-  double tRotYMax = 0.5*tYRange;
-
-  fKTrueVsKRecRotSame = new TH2F(
-    TString::Format("KTrueVsKRecRotSame%s", title), 
-    "(k*_{true} + k*_{rec})/2 vs (k*_{true} - k*_{rec})/sqrt(2) for Same Event Pairs; k*(GeV/c);",
-     aNbins, aKStarLo, aKStarHi,
-     aNbins, tRotYMin, tRotYMax);
-  fKTrueVsKRecRotSame->Sumw2();
-
-  fKTrueVsKRecRotMixed = new TH2F(
-    TString::Format("KTrueVsKRecRotMixed%s", title), 
-    "(k*_{true} + k*_{rec})/2 vs (k*_{true} - k*_{rec})/sqrt(2) for Mixed Event Pairs; k*(GeV/c);",
-     aNbins, aKStarLo, aKStarHi,
-     aNbins, tRotYMin, tRotYMax);
-  fKTrueVsKRecRotMixed->Sumw2();
-
-
+  //I do not use this histogram, so I might as well delete it
+  delete fQgenQrec;
+  fQgenQrec = NULL;
 }
 
 //_________________________________________
@@ -208,11 +148,28 @@ AliFemtoModelCorrFctnKStarFull::~AliFemtoModelCorrFctnKStarFull()
 //_________________________________________
 AliFemtoModelCorrFctnKStarFull::AliFemtoModelCorrFctnKStarFull(const AliFemtoModelCorrFctnKStarFull& aCorrFctn) :
   AliFemtoModelCorrFctn(aCorrFctn),
+  fNbinsKStar(aCorrFctn.fNbinsKStar),
+  fKStarLow(aCorrFctn.fKStarLow),
+  fKStarHigh(aCorrFctn.fKStarHigh),
   fRemoveMisidentified(aCorrFctn.fRemoveMisidentified),
   fExpectedTrack1Code(aCorrFctn.fExpectedTrack1Code),
-  fExpectedTrack2Code(aCorrFctn.fExpectedTrack2Code)
+  fExpectedTrack2Code(aCorrFctn.fExpectedTrack2Code),
+  fBuildBaseClassHistograms(aCorrFctn.fBuildBaseClassHistograms),
+  fBuildUnitWeights(aCorrFctn.fBuildUnitWeights),
+  fBuildParentInfo(aCorrFctn.fBuildParentInfo),
+  fBuildTrueVsRec(aCorrFctn.fBuildTrueVsRec),
+  fBuildRotated(aCorrFctn.fBuildRotated)
+
 {
   //copy constructor
+  // copy constructor
+  if(aCorrFctn.fTitle)
+  {
+    fTitle = new char[strlen(aCorrFctn.fTitle)+1];
+    strcpy(const_cast<char*>(fTitle), aCorrFctn.fTitle);
+  }
+  else fTitle = 0;
+
   if (aCorrFctn.fNumTrueUnitWeights)
     fNumTrueUnitWeights = new TH1F(*(aCorrFctn.fNumTrueUnitWeights));
   else fNumTrueUnitWeights = 0;
@@ -255,9 +212,26 @@ AliFemtoModelCorrFctnKStarFull& AliFemtoModelCorrFctnKStarFull::operator=(const 
 
   AliFemtoModelCorrFctn::operator=(aCorrFctn);
 
+  fNbinsKStar = aCorrFctn.fNbinsKStar;
+  fKStarLow = aCorrFctn.fKStarLow;
+  fKStarHigh = aCorrFctn.fKStarHigh;
+
   fRemoveMisidentified = aCorrFctn.fRemoveMisidentified;
   fExpectedTrack1Code = aCorrFctn.fExpectedTrack1Code;
   fExpectedTrack2Code = aCorrFctn.fExpectedTrack2Code;
+  fBuildBaseClassHistograms = aCorrFctn.fBuildBaseClassHistograms;
+
+  fBuildUnitWeights = aCorrFctn.fBuildUnitWeights;
+  fBuildParentInfo = aCorrFctn.fBuildParentInfo;
+  fBuildTrueVsRec = aCorrFctn.fBuildTrueVsRec;
+  fBuildRotated = aCorrFctn.fBuildRotated;
+
+  if(aCorrFctn.fTitle)
+  {
+    fTitle = new char[strlen(aCorrFctn.fTitle)+1];
+    strcpy(const_cast<char*>(fTitle), aCorrFctn.fTitle);
+  }
+  else fTitle = 0;
 
   if (aCorrFctn.fNumTrueUnitWeights)
     fNumTrueUnitWeights = new TH1F(*(aCorrFctn.fNumTrueUnitWeights));
@@ -307,21 +281,33 @@ void AliFemtoModelCorrFctnKStarFull::AddRealPair(AliFemtoPair* aPair)
 //  if(tWeight != 0 && tKStarTrue != 0 && tKStarTrue > -999)  //make sure we have a good particle
   if(tWeight > 0. && tKStarTrue > 0. && tKStarRec > 0.)  //make sure we have a good particle
   {
-    fNumeratorTrue->Fill(tKStarRec,tWeight);
-    fNumeratorTrueIdeal->Fill(tKStarTrue,tWeight);
+    if(fBuildBaseClassHistograms)
+    {
+      fNumeratorTrue->Fill(tKStarRec,tWeight);
+      fNumeratorTrueIdeal->Fill(tKStarTrue,tWeight);
+    }
 
-    fNumTrueUnitWeights->Fill(tKStarRec,1.0);
-    fNumTrueIdealUnitWeights->Fill(tKStarTrue,1.0);
+    if(fBuildUnitWeights)
+    {
+      fNumTrueUnitWeights->Fill(tKStarRec,1.0);
+      fNumTrueIdealUnitWeights->Fill(tKStarTrue,1.0);
+    }
 
-    fKTrueVsKRecSame->Fill(tKStarTrue,tKStarRec);
+    if(fBuildTrueVsRec) fKTrueVsKRecSame->Fill(tKStarTrue,tKStarRec);
 
-    double tX = 0.5*(tKStarRec + tKStarTrue);
-    double tY = (tKStarRec - tKStarTrue)/sqrt(2);
-    fKTrueVsKRecRotSame->Fill(tX,tY);
+    if(fBuildRotated)
+    {
+      double tX = 0.5*(tKStarRec + tKStarTrue);
+      double tY = (tKStarRec - tKStarTrue)/sqrt(2);
+      fKTrueVsKRecRotSame->Fill(tX,tY);
+    }
 
-    int tMotherBin1 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track1()->GetHiddenInfo());
-    int tMotherBin2 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track2()->GetHiddenInfo());
-    fNumTrueIdealwParentInfo->Fill(tKStarTrue,tMotherBin1,tMotherBin2);
+    if(fBuildParentInfo)
+    {
+      int tMotherBin1 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track1()->GetHiddenInfo());
+      int tMotherBin2 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track2()->GetHiddenInfo());
+      fNumTrueIdealwParentInfo->Fill(tKStarTrue,tMotherBin1,tMotherBin2);
+    }
   }
 }
 
@@ -338,21 +324,30 @@ void AliFemtoModelCorrFctnKStarFull::AddMixedPair(AliFemtoPair* aPair)
 //  if(tWeight > 0 && tKStarTrue > 0 && tKStarTrue > -999)  //make sure we have a good particle
   if(tWeight > 0. && tKStarTrue > 0. && tKStarRec > 0.)  //make sure we have a good particle
   {
-    fNumeratorFake->Fill(tKStarRec,tWeight);
-    fDenominator->Fill(tKStarRec, 1.0);
+    if(fBuildBaseClassHistograms)
+    {
+      fNumeratorFake->Fill(tKStarRec,tWeight);
+      fDenominator->Fill(tKStarRec, 1.0);
 
-    fNumeratorFakeIdeal->Fill(tKStarTrue,tWeight);
-    fDenominatorIdeal->Fill(tKStarTrue, 1.0);
+      fNumeratorFakeIdeal->Fill(tKStarTrue,tWeight);
+      fDenominatorIdeal->Fill(tKStarTrue, 1.0);
+    }
 
-    fKTrueVsKRecMixed->Fill(tKStarTrue,tKStarRec);
+    if(fBuildTrueVsRec) fKTrueVsKRecMixed->Fill(tKStarTrue,tKStarRec);
 
-    double tX = 0.5*(tKStarRec + tKStarTrue);
-    double tY = (tKStarRec - tKStarTrue)/sqrt(2);
-    fKTrueVsKRecRotMixed->Fill(tX,tY);
+    if(fBuildRotated)
+    {
+      double tX = 0.5*(tKStarRec + tKStarTrue);
+      double tY = (tKStarRec - tKStarTrue)/sqrt(2);
+      fKTrueVsKRecRotMixed->Fill(tX,tY);
+    }
 
-    int tMotherBin1 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track1()->GetHiddenInfo());
-    int tMotherBin2 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track2()->GetHiddenInfo());
-    fDenIdealwParentInfo->Fill(tKStarTrue,tMotherBin1,tMotherBin2);
+    if(fBuildParentInfo)
+    {
+      int tMotherBin1 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track1()->GetHiddenInfo());
+      int tMotherBin2 = GetMotherBin((AliFemtoModelHiddenInfo*)aPair->Track2()->GetHiddenInfo());
+      fDenIdealwParentInfo->Fill(tKStarTrue,tMotherBin1,tMotherBin2);
+    }
   }
 }
 
@@ -360,25 +355,38 @@ void AliFemtoModelCorrFctnKStarFull::AddMixedPair(AliFemtoPair* aPair)
 void AliFemtoModelCorrFctnKStarFull::Write()
 {
   // Write out data histos
+  if(fBuildBaseClassHistograms)
+  {
+    fNumeratorTrue->Write();
+    fNumeratorFake->Write();
+    fDenominator->Write();
 
-  fNumeratorTrue->Write();
-  fNumeratorFake->Write();
-  fDenominator->Write();
+    fNumeratorTrueIdeal->Write();
+    fNumeratorFakeIdeal->Write();
+    fDenominatorIdeal->Write();
+  }
 
-  fNumeratorTrueIdeal->Write();
-  fNumeratorFakeIdeal->Write();
-  fDenominatorIdeal->Write();
+  if(fBuildUnitWeights)
+  {
+    fNumTrueUnitWeights->Write();
+    fNumTrueIdealUnitWeights->Write();
+  }
+  if(fBuildParentInfo)
+  {
+    fNumTrueIdealwParentInfo->Write();
+    fDenIdealwParentInfo->Write();
+  }
 
-  fNumTrueUnitWeights->Write();
-  fNumTrueIdealUnitWeights->Write();
-
-  fNumTrueIdealwParentInfo->Write();
-  fDenIdealwParentInfo->Write();
-
-  fKTrueVsKRecSame->Write();
-  fKTrueVsKRecMixed->Write();
-  fKTrueVsKRecRotSame->Write();
-  fKTrueVsKRecRotMixed->Write();
+  if(fBuildTrueVsRec)
+  {
+    fKTrueVsKRecSame->Write();
+    fKTrueVsKRecMixed->Write();
+  }
+  if(fBuildRotated)
+  {
+    fKTrueVsKRecRotSame->Write();
+    fKTrueVsKRecRotMixed->Write();
+  }
 }
 
 //_________________________
@@ -387,25 +395,38 @@ TList* AliFemtoModelCorrFctnKStarFull::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumeratorTrue);
-  tOutputList->Add(fNumeratorFake);
-  tOutputList->Add(fDenominator);
+  if(fBuildBaseClassHistograms)
+  {
+    tOutputList->Add(fNumeratorTrue);
+    tOutputList->Add(fNumeratorFake);
+    tOutputList->Add(fDenominator);
 
-  tOutputList->Add(fNumeratorTrueIdeal);
-  tOutputList->Add(fNumeratorFakeIdeal);
-  tOutputList->Add(fDenominatorIdeal);
+    tOutputList->Add(fNumeratorTrueIdeal);
+    tOutputList->Add(fNumeratorFakeIdeal);
+    tOutputList->Add(fDenominatorIdeal);
+  }
 
-  tOutputList->Add(fNumTrueUnitWeights);
-  tOutputList->Add(fNumTrueIdealUnitWeights);
+  if(fBuildUnitWeights)
+  {
+    tOutputList->Add(fNumTrueUnitWeights);
+    tOutputList->Add(fNumTrueIdealUnitWeights);
+  }
+  if(fBuildParentInfo)
+  {
+    tOutputList->Add(fNumTrueIdealwParentInfo);
+    tOutputList->Add(fDenIdealwParentInfo);
+  }
 
-  tOutputList->Add(fNumTrueIdealwParentInfo);
-  tOutputList->Add(fDenIdealwParentInfo);
-
-  tOutputList->Add(fKTrueVsKRecSame);
-  tOutputList->Add(fKTrueVsKRecMixed);
-  tOutputList->Add(fKTrueVsKRecRotSame);
-  tOutputList->Add(fKTrueVsKRecRotMixed);
-
+  if(fBuildTrueVsRec)
+  {
+    tOutputList->Add(fKTrueVsKRecSame);
+    tOutputList->Add(fKTrueVsKRecMixed);
+  }
+  if(fBuildRotated)
+  {
+    tOutputList->Add(fKTrueVsKRecRotSame);
+    tOutputList->Add(fKTrueVsKRecRotMixed);
+  }
 
   return tOutputList;
 }
@@ -500,4 +521,114 @@ int AliFemtoModelCorrFctnKStarFull::GetMotherBin(const AliFemtoModelHiddenInfo *
     case sigma_c_code: return sigma_c_bin;
   }
 }
+
+//_________________________________________
+void AliFemtoModelCorrFctnKStarFull::SetBuildBaseClassHistograms(bool aBuild)
+{
+  fBuildBaseClassHistograms = aBuild;
+}
+
+//_________________________________________
+void AliFemtoModelCorrFctnKStarFull::SetBuildUnitWeights(bool aBuild)
+{
+  fBuildUnitWeights = aBuild;
+
+  if(fBuildUnitWeights && (!fNumTrueUnitWeights || !fNumTrueIdealUnitWeights))
+  {
+    fNumTrueUnitWeights = new TH1F(
+      TString::Format("NumTrueUnitWeights%s", fTitle),
+      "KStar - True Numerator w/ Unit Weights; k*(GeV);",
+      fNbinsKStar, fKStarLow, fKStarHigh);
+    fNumTrueUnitWeights->Sumw2();
+
+    fNumTrueIdealUnitWeights = new TH1F(
+      TString::Format("NumTrueIdealUnitWeights%s", fTitle),
+      "KStar - True Ideal Numerator w/ Unit Weights; k*(GeV);",
+      fNbinsKStar, fKStarLow, fKStarHigh);
+    fNumTrueIdealUnitWeights->Sumw2();
+  }
+}
+
+//_________________________________________
+void AliFemtoModelCorrFctnKStarFull::SetBuildParentInfo(bool aBuild)
+{
+  fBuildParentInfo = aBuild;
+
+  if(fBuildParentInfo && (!fNumTrueIdealwParentInfo || !fDenIdealwParentInfo))
+  {
+    fNumTrueIdealwParentInfo = new TH3F(
+      TString::Format("NumTrueIdealwParentInfo%s", fTitle),
+      "KStar - True Ideal Numerator binned in parent PIDs; k*(GeV);",
+      fNbinsKStar, fKStarLow, fKStarHigh,
+      true_type_count, -0.5, true_type_count - 0.5,
+      true_type_count, -0.5, true_type_count - 0.5);
+    fNumTrueIdealwParentInfo->Sumw2();
+
+    fDenIdealwParentInfo = new TH3F(
+      TString::Format("DenIdealwParentInfo%s", fTitle),
+      "KStar - Ideal Denominator binned in parent PIDs; k*(GeV);",
+      fNbinsKStar, fKStarLow, fKStarHigh,
+      true_type_count, -0.5, true_type_count - 0.5,
+      true_type_count, -0.5, true_type_count - 0.5);
+    fDenIdealwParentInfo->Sumw2();
+
+    for (size_t i = 0; i < true_type_count; ++i) {
+      fNumTrueIdealwParentInfo->GetYaxis()->SetBinLabel(i+1, true_types[i]);
+      fDenIdealwParentInfo->GetYaxis()->SetBinLabel(i+1, true_types[i]);
+    }
+  }
+}
+
+//_________________________________________
+void AliFemtoModelCorrFctnKStarFull::SetBuildTrueVsRec(bool aBuild)
+{
+  fBuildTrueVsRec = aBuild;
+
+  if(fBuildTrueVsRec && (!fKTrueVsKRecSame || !fKTrueVsKRecMixed))
+  {
+    fKTrueVsKRecSame = new TH2F(
+      TString::Format("KTrueVsKRecSame%s", fTitle), 
+      "k*_{true} vs k*_{rec} for Same Event Pairs; k*(GeV/c);",
+       fNbinsKStar, fKStarLow, fKStarHigh,
+       fNbinsKStar, fKStarLow, fKStarHigh);
+    fKTrueVsKRecSame->Sumw2();
+
+    fKTrueVsKRecMixed = new TH2F(
+      TString::Format("KTrueVsKRecMixed%s", fTitle), 
+      "k*_{true} vs k*_{rec} for Mixed Event Pairs; k*(GeV/c);",
+       fNbinsKStar, fKStarLow, fKStarHigh,
+       fNbinsKStar, fKStarLow, fKStarHigh);
+    fKTrueVsKRecMixed->Sumw2();
+  }
+}
+
+
+//_________________________________________
+void AliFemtoModelCorrFctnKStarFull::SetBuildRotated(bool aBuild)
+{
+  fBuildRotated = aBuild;
+
+  if(fBuildRotated && (!fKTrueVsKRecRotSame || !fKTrueVsKRecRotMixed))
+  {
+
+    double tYRange = fKStarHigh-fKStarLow;
+    double tRotYMin = -0.5*tYRange;
+    double tRotYMax = 0.5*tYRange;
+
+    fKTrueVsKRecRotSame = new TH2F(
+      TString::Format("KTrueVsKRecRotSame%s", fTitle), 
+      "(k*_{true} + k*_{rec})/2 vs (k*_{true} - k*_{rec})/sqrt(2) for Same Event Pairs; k*(GeV/c);",
+       fNbinsKStar, fKStarLow, fKStarHigh,
+       fNbinsKStar, tRotYMin, tRotYMax);
+    fKTrueVsKRecRotSame->Sumw2();
+
+    fKTrueVsKRecRotMixed = new TH2F(
+      TString::Format("KTrueVsKRecRotMixed%s", fTitle), 
+      "(k*_{true} + k*_{rec})/2 vs (k*_{true} - k*_{rec})/sqrt(2) for Mixed Event Pairs; k*(GeV/c);",
+       fNbinsKStar, fKStarLow, fKStarHigh,
+       fNbinsKStar, tRotYMin, tRotYMax);
+    fKTrueVsKRecRotMixed->Sumw2();
+  }
+}
+
 
