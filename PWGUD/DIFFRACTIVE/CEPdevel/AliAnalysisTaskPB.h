@@ -130,9 +130,7 @@ private:
 	AliAODEvent *fAODEvent;     // esd event object
 
   TClonesArray *fCEPEvents;
-  TClonesArray &fevb;
-  //TClonesArray *fCEPTracks;
-  //TClonesArray &ftrb;
+//  TClonesArray &fevb;
   
 	AliPIDResponse *fPIDResponse; // esd pid object
   AliPIDCombined *fPIDCombined1; //! PID Combined object with priors
@@ -146,8 +144,10 @@ private:
 	Int_t fResidualTracks; // tracks rejected by cuts within the event
 	Int_t fResidualTrackletsCB; // SPD tracklets not assigned to tracks
 	Int_t fResidualTrackletsFW; // SPD tracklets not assigned to tracks
-	Int_t fMCprocessType; // MC process type, 0 for data
-	Int_t fMCprocess; // detailed MC sub process information
+
+	TString fMCGenerator;   // MC generator
+	Int_t fMCprocessType;   // MC process type, 0 for data
+	Int_t fMCprocess;       // detailed MC sub process information
 
 	// information about the trackpair which is currently processed
 	AliVTrack* fTrkPair[2]; // track objects
