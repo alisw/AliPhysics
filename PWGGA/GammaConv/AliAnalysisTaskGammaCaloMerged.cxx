@@ -1951,10 +1951,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     return;
   }
   Int_t pdgCodeParticle             = Photon->GetPdgCode();
-  TrueClusterCandidate->SetCaloPhotonMCFlags(fMCStack, fEnableSortForClusMC);
+  TrueClusterCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0 && fEnableDetailedPrintOut){
     cout << endl << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;
-    TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCStack);
+    //TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCStack);
     TrueClusterCandidate->PrintCaloMCFlags();
   }
 
@@ -1975,7 +1975,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     } else if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 0){
 //       cout << TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) << endl;
       if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()){
-        if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 111 || fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 221) ){
+        if (TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) > -1 && (((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0)))->GetPdgCode() == 111 || ((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0)))->GetPdgCode() == 221) ){
           if ( TrueClusterCandidate->IsConversion() && !TrueClusterCandidate->IsConversionFullyContained() ){
             clusterClass  = 3;
             motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0);
@@ -1988,7 +1988,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
         if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 1){
           if (fEnableDetailedPrintOut) cout << "Is Subleading EM: "<<  TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) << endl;
           if ( TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) > -1){
-            if (fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 111 || fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 221 ){
+            if (abs(((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1)))->GetPdgCode()) == 111 || abs(((AliAODMCParticle*) AODMCTrackArray->At(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1)))->GetPdgCode()) == 221 ){
               clusterClass  = 2;
               motherLab       = TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1);
             }
