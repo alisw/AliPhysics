@@ -60,27 +60,6 @@ void AddTask_GammaConvFlow_PbPb2(
                                Double_t MaxFilter = 0.2,
                                Bool_t isMC = kFALSE
                                ) {
-    
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
   
   Int_t isHeavyIon = 1;
   
