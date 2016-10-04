@@ -2,6 +2,8 @@ AliGenerator* AddMCGenPythia_He3(Float_t e_cms = 2760., Double_t ptHardMin = 0.,
 {
   //Add Pythia generator: pt-hard bin or min bias
 
+  gSystem->Load("liblhapdf");
+
   AliGenCocktail* gener = new AliGenCocktail();
 
   AliGenPythia *genP = CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, tune,cr,ptWeight);
