@@ -11,7 +11,9 @@ class AliFlowTrackCuts;
 class AliFlowTrackSimpleCuts;
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskCascadeTester* AddTaskCascadeTester(Bool_t SP = kFALSE, // select flow analysis methods
+AliAnalysisTaskCascadeTester* AddTaskCascadeTester(
+                                       TString suffixName = "UniqueID", // unique id for output objects
+        Bool_t SP = kFALSE, // select flow analysis methods
                                        Bool_t SPSUB = kTRUE,
                                        Bool_t QC = kFALSE,
                                        Bool_t EP = kFALSE,
@@ -26,7 +28,6 @@ AliAnalysisTaskCascadeTester* AddTaskCascadeTester(Bool_t SP = kFALSE, // select
                                        Double_t TPCrange = 0.,
                                        Double_t ITScontrol = -1.,
                                        Double_t Bpurity = 0.3,
-                                       TString suffixName = "UniqueID", // unique id for output objects
                                        Bool_t bCentralTrigger = kTRUE, // trigger selection
                                        Float_t EtaGap = 0., // eta gap for SPSUB
                                        TString DCA = "pt", // dca mode (see task implementation)
