@@ -17,25 +17,6 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	cout<<"doWeighting: "<<doWeighting<<endl;
 	cout<<"generatorName: "<<generatorName.Data()<<endl;
 	cout<<"cutnumberAODBranch: "<<cutnumberAODBranch.Data()<<endl;
-
-	// ================= Load Librariers =================================
-	gSystem->Load("libCore");  
-	gSystem->Load("libTree");
-	gSystem->Load("libGeom");
-	gSystem->Load("libVMC");
-	gSystem->Load("libPhysics");
-	gSystem->Load("libMinuit");
-	gSystem->Load("libSTEERBase");
-	gSystem->Load("libESD");
-	gSystem->Load("libAOD");
-	gSystem->Load("libANALYSIS");
-	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libPWGGAGammaConv");
-	gSystem->Load("libCDB");
-	gSystem->Load("libSTEER");
-	gSystem->Load("libSTEERBase");
-	gSystem->Load("libTender");
-	gSystem->Load("libTenderSupplies");
 	
 	Int_t isHeavyIon = 2;
 

@@ -79,28 +79,6 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
                                 TString periodNameAnchor        = "",
                                 Bool_t 	enableV0findingEffi     = kFALSE              // enables V0finding efficiency histograms
       ){
-
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");  
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-  
   
   Int_t IsHeavyIon = 0;
   // ================== GetAnalysisManager ===============================
