@@ -1443,7 +1443,6 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
 
  if(fApplyRecentering == 20152){
 
-
   Int_t fNHarm = 2;
   Float_t v0Centr = -1.;
   Float_t spdCentr = -1.;
@@ -1564,10 +1563,13 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
   vA.Set(QxcnCor, QycnCor);
   vB.Set(QxanCor, QyanCor);
  
+  vB.SetMult(sumMa);
+  vA.SetMult(sumMc);
  }
 
  Qarray[0] = vA;
  Qarray[1] = vB;
+
 }
 //_____________________________________________________________________________
 void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
@@ -2192,7 +2194,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  TFile* foadb = TFile::Open("alien:////alice/cern.ch/user/r/rbertens/calibV0HIR.root");
  
  if(!foadb){
-     printf("OADB V0 calibration file cannot be opened\n");
+     AliFatal("OADB V0 calibration file cannot be opened\n");
      return;
  }
  
@@ -2219,7 +2221,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
 
  AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
  if(!cont){
-     printf("OADB object hMultV0BefCorr is not available in the file\n");
+     AliFatal("OADB object hMultV0BefCorr is not available in the file\n");
      return;
  }
  if(!(cont->GetObject(run))){
