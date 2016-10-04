@@ -14,6 +14,11 @@
  *
  * @ingroup pwglf_forward_tracklets
  */
+/** 
+ * Make realistic weights
+ * 
+ * @relates AliTrackletBaseWeights
+ */
 void
 MakeRealistic()
 {

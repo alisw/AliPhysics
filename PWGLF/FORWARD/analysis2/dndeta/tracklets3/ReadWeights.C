@@ -14,6 +14,12 @@
  *
  * @ingroup pwglf_forward_tracklets
  */
+/** 
+ * Read in weights and plot
+ * 
+ * @param filename 
+ * @relates AliTrackletBaseWeights
+ */
 void ReadWeights(const char* filename="weights.root")
 {
   gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include");

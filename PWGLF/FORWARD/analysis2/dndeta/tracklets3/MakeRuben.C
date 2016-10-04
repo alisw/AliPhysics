@@ -14,6 +14,11 @@
  *
  * @ingroup pwglf_forward_tracklets
  */
+/** 
+ * Make Ruben's weights
+ * 
+ * @relates AliTrackletBaseWeights
+ */
 void
 MakeRuben()
 {

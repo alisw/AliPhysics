@@ -3,7 +3,7 @@
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Tue Sep 20 17:12:09 2016
  * 
- * @brief  
+ * @brief  Make K0short weights
  * 
  * 
  * @ingroup pwglf_forward_tracklets
@@ -14,6 +14,11 @@
  * @name Name @f$ K_S^0@f$ weights
  *
  * @ingroup pwglf_forward_tracklets
+ */
+/** 
+ * Make @f$ K^0_S@f$ weights
+ * 
+ * @relates AliTrackletBaseWeights
  */
 void
 MakeK0S()

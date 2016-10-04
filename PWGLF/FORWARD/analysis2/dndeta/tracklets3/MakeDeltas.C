@@ -16,6 +16,8 @@
  * @param simFileName 
  *
  * @ingroup pwglf_forward_tracklets
+ *
+ * @relates MakeDeltaWeights
  */
 void
 MakeDeltas(const char* realFileName,

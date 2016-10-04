@@ -14,6 +14,11 @@
  *
  * @ingroup pwglf_forward_tracklets
  */
+/** 
+ * Extract weights from Roberto's files 
+ * 
+ * @relates AliTrackletBaseWeights
+ */
 void
 MakeWeight()
 {

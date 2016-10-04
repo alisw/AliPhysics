@@ -26,6 +26,7 @@ class TCanvas;
  * species dependent) from one simulation to another.
  * 
  * @ingroup pwglf_forward_tracklets
+ * @relates AliTrackletBaseWeights
  */
 struct PureMCWeights : public AliTrackletAODUtils 
 {

@@ -14,6 +14,11 @@
  *
  * @ingroup pwglf_forward_tracklets
  */
+/** 
+ * Make strangeness weights
+ * 
+ * @relates AliTrackletBaseWeights
+ */
 void
 MakeStrange()
 {

@@ -14,6 +14,13 @@
  *
  * @ingroup pwglf_forward_tracklets
  */
+/** 
+ * Get a profile from file 
+ * 
+ * @param filename File to get it from 
+ * 
+ * @return Pointer or null
+ */
 TProfile* GetOne(const char* filename)
 {
   TFile* file = TFile::Open(filename, "READ");
@@ -36,6 +43,13 @@ TProfile* GetOne(const char* filename)
   return prf;
 }
 
+/** 
+ * Make EPOS weights 
+ * 
+ * @param file1 
+ * @param file2 
+ * @relates AliTrackletBaseWeights
+ */
 void
 MakeEposWeight(const char* file1, const char* file2)
 {

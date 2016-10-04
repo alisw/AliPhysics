@@ -120,6 +120,7 @@ const TString& FormatInput(const char* inp, TString& shrt)
  * - 0x0800   Alternative markers
  * 
  * @ingroup pwglf_forward_tracklets
+ * @relates AliTrackletdNdeta2
  */
 void Post(const char* sim,
 	  const char* real,

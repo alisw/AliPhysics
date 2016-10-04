@@ -1030,6 +1030,17 @@ protected:
    * AliCentrality structure.
    * 
    * @param event Event 
+   * @param nTracklets Number of tracklets for benchmarking centrality 
+   * 
+   * @return Centrality percentile, or negative number in case of
+   * problems
+   */
+  Double_t FindFakeCentrality(AliVEvent* event, Int_t& nTracklets);  
+  /** 
+   * Find the fake centrality of the event. This look at the number of
+   * tracklets
+   * 
+   * @param event Event 
    * 
    * @return Centrality percentile, or negative number in case of
    * problems
@@ -1826,7 +1837,7 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fCentTracklets->SetLineColor(kMagenta+2);
   fContainer->Add(fCentTracklets);
   fCentEst = Make1P(fContainer,"centEstimator","",kMagenta+2, 20, fCentAxis);
-  fCentEst->SetYTitle(Form("#LT%s%GT",fCentMethod.Data()));
+  fCentEst->SetYTitle(Form("#LT%s#GT",fCentMethod.Data()));
   TH1::SetDefaultSumw2(save);
 
   fStatus = MakeStatus(fContainer);
@@ -2407,7 +2418,25 @@ Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
 
   return estCent->GetPercentile();
 }
-  
+//____________________________________________________________________
+Double_t AliTrackletAODdNdeta::FindFakeCentrality(AliVEvent* event,
+						  Int_t& nTracklets)
+
+{
+  AliAODTracklet* tracklet   = 0;
+  TClonesArray*   tracklets  = FindTracklets(event);
+  TIter           nextTracklet(tracklets);
+  Int_t           nTracklet  = 0;
+  while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
+    if (tracklet->IsMeasured()) nTracklet++;
+  }
+  nTracklets = nTracklet;
+  Double_t c = 100*(1-Float_t(nTracklet)/8000);
+
+  fCentEst->Fill(c, nTracklet);
+  return c;
+}
+
 //____________________________________________________________________
 Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
 					      Int_t& nTracklets)
@@ -2417,7 +2446,9 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
     return 0;
   }
   Double_t centPer = -1;
-  if (fCentMethod.BeginsWith("OLD"))
+  if (fCentMethod.EqualTo("fake",TString::kIgnoreCase)) 
+    centPer = FindFakeCentrality(event, nTracklets);  
+  else if (fCentMethod.BeginsWith("OLD"))
     centPer = FindCompatCentrality(event);
   else
     centPer = FindMultCentrality(event, nTracklets);

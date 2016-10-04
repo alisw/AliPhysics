@@ -15,6 +15,7 @@
 /**
  * Structure to make weights for delta 
  * 
+ * @relates AliTrackletDeltaWeights
  * @ingroup pwglf_forward_tracklets
  */
 struct MakeDeltaWeights : public AliTrackletAODUtils
