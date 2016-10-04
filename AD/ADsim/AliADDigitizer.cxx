@@ -186,8 +186,8 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
 
   Int_t chOffline,chOnline;
   TClonesArray *f_Int[2] = { NULL, NULL };
-  Bool_t doExtrapolation[21];
-  Float_t extrapolationThresholds[21];
+  Bool_t  doExtrapolation[kADNClocks];
+  Float_t extrapolationThresholds[kADNClocks];
   fTS->SetBranchAddress("chOffline", &chOffline);
   fTS->SetBranchAddress("chOnline",  &chOnline);
   fTS->SetBranchAddress("f_Int0",    &f_Int[0]);
@@ -205,7 +205,7 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
     fTailVsTotalCharge[ch][1] = new TGraph;
 
     for (Int_t j=0; j<1000; ++j) {
-      const Float_t tail = j;
+      const Float_t tail = (j<20 ? 0.5*j : Float_t(j-10));
       Float_t charge0 = tail;
       Float_t charge1 = tail;
       for (Int_t bc=0; bc<fTailBegin; ++bc) {
@@ -216,7 +216,7 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
 	f1 = dynamic_cast<TF1*>(f_Int[ integrator]->At(bc));
 
 	if (!f0 || !f1) {
-	  AliWarning("");
+	  AliWarning("f0==NULL || f1==NULL");
 	  continue;
 	}
 
@@ -558,8 +558,8 @@ void AliADDigitizer::DigitizeSDigits()
 void AliADDigitizer::AdjustPulseShapeADC()
 {
   TClonesArray *f_Int[2] = { NULL, NULL };
-  Float_t extrapolationThresholds[21];
-  Bool_t doExtrapolation[21];
+  Float_t extrapolationThresholds[kADNClocks];
+  Bool_t  doExtrapolation[kADNClocks];
   fTS->SetBranchAddress("f_Int0", &f_Int[0]);
   fTS->SetBranchAddress("f_Int1", &f_Int[1]);
   fTS->SetBranchAddress("doExtrapolation",         &doExtrapolation);
@@ -571,48 +571,59 @@ void AliADDigitizer::AdjustPulseShapeADC()
     f_Int[1]->Clear();
     fTS->GetEntry(ch);
     Float_t totalCharge=0.0f;
-    for (Int_t bc=0; bc<21; ++bc) {
+    for (Int_t bc=0; bc<kADNClocks; ++bc) {
       totalCharge += fAdc[ch][bc];
     }
     const Float_t tail = fTailVsTotalCharge[ch][fEvenOrOdd]->Eval(totalCharge);
-    if (tail < 3.0f || !doExtrapolation[10]) // do not modify the pulse shape for small pulses or with default saturation object
-      continue;
+    if (tail < 3.0f || !doExtrapolation[kADNClocks/2])
+      continue; // do not modify the pulse shape for small pulses or with default saturation object
 
-    Float_t newADC[21];
-    Float_t ch15 = 0.0;
-    TF1 *f = NULL;
-    for (Int_t bc=0; bc<21; ++bc) {
+    Float_t newADC[kADNClocks];
+    Float_t chargeLastBC = 0.0; // charge in last extrapolated BC
+    for (Int_t bc=0; bc<kADNClocks; ++bc) {
       newADC[bc] = 0.0;
       if (!doExtrapolation[bc])
 	continue;
       const Bool_t integrator = ((bc+fEvenOrOdd) % 2);
-      f = dynamic_cast<TF1*>(f_Int[integrator]->At(bc));
-      newADC[bc] = f->Eval(tail);
-      if (bc == fTailBegin-1)
-	ch15 = 0.8*f->Eval(tail);
+      TF1 *f = dynamic_cast<TF1*>(f_Int[integrator]->At(bc));
+      chargeLastBC = newADC[bc] = f->Eval(tail);
     }
-    // for now we use a linear function for the tail starting at 80% of BC15
-    const Float_t n   = fTailEnd-fTailBegin;
-    const Float_t det = -n*(n+1)/2;
-    const Float_t a   = (n*(n+1)/2*ch15 - n*tail)/det;
-    const Float_t b   = ( -(n+1)  *ch15 +   tail)/det;
-    if (a <=0 || b <= 0)
-      continue;
+    // we use a linear function for the tail starting at 80% of the last BC before the tail
+    // [ (n+1) n(n+1)/2; 1 n] [a;b] = [tail; chargeLastBC]
+    const Float_t n = fTailEnd-fTailBegin;
+    if (n < 1)
+      AliFatalF("n=%f fTailBegin=%d fTailEnd=%d", n, fTailBegin, fTailEnd);
+    const Float_t det = n*(n+1)/2;
 
+    // allowed range for chargeLastBC for a>=0 and b>=0
+    const Float_t rangeChargeLastBC[2] = { tail/(n+1), 2*tail/(n+1) };
+    const Float_t eps=1e-6;
+    chargeLastBC = TMath::Min(rangeChargeLastBC[1]-eps, 0.8f*chargeLastBC);
+    chargeLastBC = TMath::Max(rangeChargeLastBC[0]+eps,      chargeLastBC);
+    const Float_t a = n*(-(n+1)/2*chargeLastBC + tail)/det;
+    const Float_t b =   ( (n+1)  *chargeLastBC - tail)/det;
+    if (a < 0 || b < 0) {
+      AliErrorF("charge redistribution failed for Ch%02d: n=%f a=%e b=%e chargeLastBC=%f tail=%f",
+		ch, n, a, b, chargeLastBC, tail);
+      continue;
+    }
+    // fill the tail BCs with linear function
     for (Int_t bc=fTailBegin; bc<=fTailEnd; ++bc) {
       newADC[bc] = a + b*(fTailEnd-bc);
     }
 
-    AliDebugF(5, "OLD: Ch%02d %5.1f %5.1f %5.1f %5.1f | %5.1f %5.1f", ch,
+    AliDebugF(5, "OLD: Ch%02d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f", ch,
 	      fAdc[ch][20], fAdc[ch][19], fAdc[ch][18], fAdc[ch][17], fAdc[ch][16], fAdc[ch][15]);
-    AliDebugF(5, "NEW: Ch%02d %5.1f %5.1f %5.1f %5.1f | %5.1f %5.1f", ch,
+    AliDebugF(5, "NEW: Ch%02d %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f", ch,
 	      newADC[20], newADC[19], newADC[18], newADC[17], newADC[16], newADC[15]);
     Float_t newCharge=0.0;
-    for (Int_t bc=0; bc<21; ++bc) {
+    for (Int_t bc=0; bc<kADNClocks; ++bc) {
       fAdc[ch][bc] = newADC[bc];
       newCharge   += newADC[bc];
     }
     AliDebugF(5, "Ch%02d: totalCharge,newCharge= %f %f  (tail=%f)", ch, totalCharge, newCharge, tail);
+    if (TMath::Abs(totalCharge - newCharge) > 2.0f)
+      AliWarningF("Ch%02d: difference between totalCharge=%f and newCharge=%f is too large (tail=%f)", ch, totalCharge, newCharge, tail);
   }
   fTS->ResetBranchAddresses();
 }
