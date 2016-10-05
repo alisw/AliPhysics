@@ -766,11 +766,11 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
   Int_t nentries = (Int_t) zdcSignal->GetEntries();
 
   Float_t *entry;
-  Int_t rnd[125], volume[2]={0,0}, iev=0;
-  for(int pl=0;pl<125;pl++) rnd[pl] = 0;
-  if(numEvents >= 125) {
-    AliDebug(2,Form("numEvents (%d) is larger than 125", numEvents));
-    numEvents = 125;
+  Int_t rnd[126], volume[2]={0,0}, iev=0;
+  for(int pl=0;pl<126;pl++) rnd[pl] = 0;
+  if(numEvents >= 126) {
+    AliDebug(2,Form("numEvents (%d) is larger than 126", numEvents));
+    numEvents = 126;
   }
   for(int pl=0;pl<numEvents;pl++){
      rnd[pl] = (Int_t) (9999*gRandom->Rndm());
