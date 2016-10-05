@@ -1419,8 +1419,8 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
       dThetaX /= (sint*sint);
     }
 
-       if (!(phi > 0 && phi < (2*TMath::Pi()/3))) continue;
-//       if (!(phi > (2*TMath::Pi()/3) && phi < (4*TMath::Pi()/3))) continue;
+//       if (!(phi > 0 && phi < (2*TMath::Pi()/3))) continue;
+       if (!(phi > (2*TMath::Pi()/3) && phi < (4*TMath::Pi()/3))) continue;
 //       if (!(phi > (4*TMath::Pi()/3) && phi < (2*TMath::Pi()))) continue;
 
 
