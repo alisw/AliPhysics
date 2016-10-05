@@ -2016,7 +2016,7 @@ void AliCaloTrackReader::FillInputEMCAL()
     }// cluster loop
     
     //Recalculate track matching
-    GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
+    GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent,0x0,fMC);
     
   }//Get the clusters from the input event
   else
@@ -2108,7 +2108,7 @@ void AliCaloTrackReader::FillInputEMCAL()
     
     // Recalculate track matching, not necessary if already done in the reclusterization task.
     // in case it was not done ...
-    GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent,clusterList);
+    GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent,clusterList,fMC);
     
   }
   
