@@ -21,6 +21,7 @@
 #include <TPad.h>
 #include <TFile.h>
 #include <TParticle.h>
+#include <AliMCEvent.h>
 
 // --- ANALYSIS system ---
 #include "AliCalorimeterUtils.h"
@@ -1926,11 +1927,12 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
 ///
 //________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
-                                                          TObjArray* clusterArray) 
+                                                          TObjArray* clusterArray,
+                                                          AliMCEvent* mc) 
 {   
   if (!fRecalculateMatching) return ; 
   
-  fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo) ;
+  fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo,mc) ;
   
   Float_t dZ  = 2000;
   Float_t dR  = 2000;
