@@ -1397,7 +1397,7 @@ void AliAnalysisTaskSigma0::UserExec(Option_t */*option*/)
        
     FillHistogram("hNvertexTracks",esdVertex5->GetNContributors());
     FillHistogram("hZvertex"      ,esdVertex5->GetZ());
-    if( !  (TMath::Abs(esdVertex5->GetZ()) < 10. ) ) return;
+    if( ! (TMath::Abs(esdVertex5->GetZ()) < 10. ) ) return;
    
     
     
@@ -2708,8 +2708,9 @@ void AliAnalysisTaskSigma0::SelectPhotonsFB()
   FillHistogram("hRecGammas",nRecGammas);
 
 
-  if(fV0Reader)  if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
-   
+  //25sep16-abb  if(fV0Reader)  if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
+  fV0Reader->GetConversionCuts();
+
   //    if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms()) 
   //  fOutputContainer->Add(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
  
@@ -2803,8 +2804,10 @@ void AliAnalysisTaskSigma0::SelectPhotonsFB()
 
       AliStack *fMCStack= fMCEvent->Stack();
 	
-      if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
+      //25sep16-abb      if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
 	
+      fV0Reader->GetConversionCuts();
+
       //Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
       //Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 	
@@ -3752,8 +3755,10 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                     }
                 }
             }
-            
-            if( abs( rapLam < fetaCut ) ) {
+
+	    // 25sep16-abb            
+	    //            if( abs( rapLam < fetaCut ) ) {
+	    if( abs( rapLam ) < fetaCut  ) {
                 FillHistogram("hMCgenLamEta1",  particle->Pt() );
                 if(  particle->GetPdgCode() == 3122 )    FillHistogram("hMCgenPLamEta1",  particle->Pt() );
                 else if( particle->GetPdgCode() == -3122 )    FillHistogram("hMCgenALamEta1",  particle->Pt() );
@@ -3878,8 +3883,9 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 
                 FillHistogram("hMCgenGamSig0", daught2->Pt() );
 
-
-               	if( abs(  daught2->Eta() < 0.12 ) ) {
+		// 25sep16
+		//               	if( abs(  daught2->Eta() < 0.12 ) ) {
+		if( abs(  daught2->Eta() ) < 0.12  ) {
 		  FillHistogram("hMCgenGamSig0PHOS",  daught2->Pt() );
 		  if( (daught2->Phi() > 220.*3.1415492/360. && daught2->Phi() < 320.*3.1415492/360.) ) { 
 		  FillHistogram("hMCgenGamSig0PHOSEta1",  daught2->Pt() );
