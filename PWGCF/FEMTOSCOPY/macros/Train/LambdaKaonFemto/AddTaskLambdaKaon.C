@@ -47,9 +47,6 @@
 //##     set with the identifier.
 //##
 
-#include "AliAnalysisTaskFemto.h"
-#include <TROOT.h>
-
 AliAnalysisTaskFemto* AddTaskLambdaKaon(TString aConfiguration,
                                         TString aParams,
                                         TString aSubwagonSuffix="")
