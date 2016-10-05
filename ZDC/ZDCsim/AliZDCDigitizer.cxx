@@ -57,10 +57,10 @@ ClassImp(AliZDCDigitizer)
 
 //____________________________________________________________________________
 AliZDCDigitizer::AliZDCDigitizer() :
-  fIsCalibration(0), 
+  fIsCalibration(0),
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
-  fPedData(0), 
+  fPedData(0),
   fSpectators2Track(kFALSE),
   fBeamEnergy(0.),
   fBeamType(""),
@@ -69,7 +69,7 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fSpectatorData(0x0),
   fSpectatorParam(1)
 {
-  // Default constructor    
+  // Default constructor
   for(Int_t i=0; i<2; i++) fADCRes[i]=0.;
 }
 
@@ -79,7 +79,7 @@ AliZDCDigitizer::AliZDCDigitizer(AliDigitizationInput* digInput):
   fIsCalibration(0), //By default the simulation doesn't create calib. data
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
-  fPedData(GetPedData()), 
+  fPedData(GetPedData()),
   fSpectators2Track(kFALSE),
   fBeamEnergy(0.),
   fBeamType(""),
@@ -103,7 +103,7 @@ AliZDCDigitizer::~AliZDCDigitizer()
    if(fSpectatorData!=NULL){
       fSpectatorData->Close();
       delete fSpectatorData;
-   } 
+   }
 }
 
 
@@ -126,7 +126,7 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
 
   for(Int_t i=0; i<5; i++){
      for(Int_t j=0; j<5; j++){
-        fPMGain[i][j]   = digitizer.fPMGain[i][j];           
+        fPMGain[i][j]   = digitizer.fPMGain[i][j];
      }
   }
   for(Int_t i=0; i<2; i++) fADCRes[i] = digitizer.fADCRes[i];
@@ -138,11 +138,11 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
 Bool_t AliZDCDigitizer::Init()
 {
   // Initialize the digitizer
-  
-  
+
+
   //printf(" **** Initializing AliZDCDigitizer fBeamEnergy = %1.0f GeV\n\n", fBeamEnergy);
   AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
-  if(!entry) AliFatal("No calibration data loaded!");  
+  if(!entry) AliFatal("No calibration data loaded!");
   AliGRPObject* grpData = 0x0;
   if(entry){
     TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
@@ -161,12 +161,12 @@ Bool_t AliZDCDigitizer::Init()
     AliError("No GRP entry found in OCDB! \n ");
     return kFALSE;
   }
-  
+
   fBeamType = grpData->GetBeamType();
   if(fBeamType==AliGRPObject::GetInvalidString()){
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
   }
-  
+
   // If beam energy is not set from Config.C (RELDIS / spectator generators)
   if(fBeamEnergy<0.01){
     fBeamEnergy = grpData->GetBeamEnergy();
@@ -176,20 +176,20 @@ Bool_t AliZDCDigitizer::Init()
       fBeamEnergy = 0.;
     }
   }
-  
+
   /*if(fIspASystem){
     fBeamType = "p-A";
     AliInfo(" AliZDCDigitizer -> Manually setting beam type to p-A\n");
   }*/
-  
+
   // Setting beam type for spectator generator and RELDIS generator
   if(((fBeamType.CompareTo("UNKNOWN")) == 0) || fIsRELDISgen){
      fBeamType = "A-A";
      AliInfo(" AliZDCDigitizer -> Manually setting beam type to A-A\n");
-  }    
+  }
   printf("\n\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
   if(fSpectators2Track) printf("\n\t  AliZDCDigitizer ->  spectator signal added at digit level\n\n");
-  
+
   if(fBeamEnergy>0.1){
     ReadPMTGains();
     //CalculatePMTGains();
@@ -197,11 +197,11 @@ Bool_t AliZDCDigitizer::Init()
   else{
     AliWarning("\n Beam energy is 0 -> ZDC PMT gains can't be set -> NO ZDC DIGITS!!!\n");
   }
-  
+
   // ADC Caen V965
   fADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
   fADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
-  
+
   if(fSpectatorParam==1) {printf("\t   AliZDCDigitizer -> spectator kinematic from AliGenZDC generator\n\n");}
   else if(fSpectatorParam==2)  {printf("\t   AliZDCDigitizer -> spectator kinematic properties from HIJING\n\n");}
   			//{printf("   AliZDCDigitizer -> spectator kinematic properties from HIJING generator\n\n");}
@@ -215,7 +215,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
   // Execute digitization
 
   // ------------------------------------------------------------
-  // !!! 2nd ZDC set added 
+  // !!! 2nd ZDC set added
   // *** 1st 3 arrays are digits from REAL (simulated) hits
   // *** last 2 are copied from simulated digits
   // --- pm[0][...] = light in ZN side C  [C, Q1, Q2, Q3, Q4]
@@ -224,18 +224,18 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
   // --- pm[3][...] = light in ZN side A [C, Q1, Q2, Q3, Q4] ->NEW!
   // --- pm[4][...] = light in ZP side A [C, Q1, Q2, Q3, Q4] ->NEW!
   // ------------------------------------------------------------
-  Float_t pm[5][5]; 
-  for(Int_t iSector1=0; iSector1<5; iSector1++) 
+  Float_t pm[5][5];
+  for(Int_t iSector1=0; iSector1<5; iSector1++)
     for(Int_t iSector2=0; iSector2<5; iSector2++){
       pm[iSector1][iSector2] = 0;
     }
-    
+
   // ------------------------------------------------------------
   // ### Out of time ADC added (22 channels)
   // --- same codification as for signal PTMs (see above)
   // ------------------------------------------------------------
   // Float_t pmoot[5][5];
-  // for(Int_t iSector1=0; iSector1<5; iSector1++) 
+  // for(Int_t iSector1=0; iSector1<5; iSector1++)
   //   for(Int_t iSector2=0; iSector2<5; iSector2++){
   //     pmoot[iSector1][iSector2] = 0;
   //   }
@@ -250,7 +250,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
   for(Int_t iInput = 0; iInput<fDigInput->GetNinputs(); iInput++){
 
     // get run loader and ZDC loader
-    AliRunLoader* runLoader = 
+    AliRunLoader* runLoader =
       AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(iInput));
     AliLoader* loader = runLoader->GetLoader("ZDCLoader");
     if(!loader) continue;
@@ -269,14 +269,14 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
       //
       if(!psdigit) continue;
       if((sdigit.GetSector(1) < 0) || (sdigit.GetSector(1) > 4)){
-	AliError(Form("\nsector[0] = %d, sector[1] = %d\n", 
+	AliError(Form("\nsector[0] = %d, sector[1] = %d\n",
                       sdigit.GetSector(0), sdigit.GetSector(1)));
 	continue;
       }
       // Checking if signal is inside ADC gate
       if(iSDigit==0) signalTime0 = sdigit.GetTrackTime();
       else{
-        // Assuming a signal lenght of 20 ns, signal is in gate if 
+        // Assuming a signal lenght of 20 ns, signal is in gate if
 	// signal ENDS in signalTime0+50. -> sdigit.GetTrackTime()+20<=signalTime0+50.
         if(sdigit.GetTrackTime()<=signalTime0+30.) fIsSignalInADCGate = kTRUE;
         if(sdigit.GetTrackTime()>signalTime0+30.){
@@ -285,21 +285,21 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 	  fFracLostSignal = (sdigit.GetTrackTime()-30)*(sdigit.GetTrackTime()-30)/280.;
 	}
       }
-      
+
       Float_t sdSignal = sdigit.GetLightPM();
       if(fIsSignalInADCGate == kFALSE){
         AliDebug(2,Form("\t Signal time %f -> fraction %f of ZDC signal for det.(%d, %d) out of ADC gate\n",
 		sdigit.GetTrackTime(),fFracLostSignal,sdigit.GetSector(0),sdigit.GetSector(1)));
 	sdSignal = (1-fFracLostSignal)*sdSignal;
       }
-      
+
       pm[(sdigit.GetSector(0))-1][sdigit.GetSector(1)] += sdigit.GetLightPM();
       //Ch. debug
       /*printf("\t Detector %d, Tower %d -> pm[%d][%d] = %.0f \n",
       	  sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1,
-      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]); 
+      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]);
       */
-      
+
     }
 
     loader->UnloadSDigits();
@@ -314,7 +314,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (genHeader);
     else if(genHeader->InheritsFrom(AliGenCocktailEventHeader::Class())){
       TList* listOfHeaders = ((AliGenCocktailEventHeader*) genHeader)->GetHeaders();
-      if(listOfHeaders){ 
+      if(listOfHeaders){
 	for(Int_t iH = 0; iH < listOfHeaders->GetEntries(); ++iH) {
 	  AliGenEventHeader *currHeader = dynamic_cast <AliGenEventHeader *> (listOfHeaders->At(iH));
 	  if (currHeader && currHeader->InheritsFrom(AliGenHijingEventHeader::Class())) {
@@ -327,11 +327,11 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
         printf(" No list of headers from generator \n");
       }
     }
-    if(!hijingHeader){ 
+    if(!hijingHeader){
         printf(" No HIJING header found in list of headers from generator\n");
     }
-    
-    if(hijingHeader && (!hijingHeader->GetSpectatorsInTheStack())){ 
+
+    if(hijingHeader && (!hijingHeader->GetSpectatorsInTheStack())){
         impPar = hijingHeader->ImpactParameter();
   	Int_t freeSpecNProj=0, freeSpecPProj=0;
   	Int_t freeSpecNTarg=0, freeSpecPTarg=0;
@@ -369,7 +369,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
 
   // get the output run loader and loader
-  AliRunLoader* runLoader = 
+  AliRunLoader* runLoader =
     AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
   if(!loader) {
@@ -395,7 +395,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     for(sector[1]=0; sector[1]<5; sector[1]++){
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
         for(Int_t res=0; res<2; res++){
-           digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
+           digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res)
 	            + Pedestal(sector[0], sector[1], res);
       	}
 	new(pdigit) AliZDCDigit(sector, digi);
@@ -404,7 +404,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 	//Ch. debug
 	//printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
 	  //   sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
-	
+
     }
   } // Loop over detector
   // Adding in-time digits for 2 reference PTM signals (after signal ch.)
@@ -422,11 +422,11 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
        sigRef[res] += Pedestal(sectorRef[0], sectorRef[1], res);
      }
      new(pdigit) AliZDCDigit(sectorRef, sigRef);
-     treeD->Fill();     
-     
+     treeD->Fill();
+
      //Ch. debug
      //printf("\t RefDigit added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-     //    sectorRef[0], sectorRef[1], sigRef[0], sigRef[1]); // Chiara debugging!     
+     //    sectorRef[0], sectorRef[1], sigRef[0], sigRef[1]); // Chiara debugging!
   }
   //
   // --- Adding digits for out-of-time channels after signal digits
@@ -441,7 +441,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
         //Ch. debug
 	//printf("\t DIGIToot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-	//     sector[0], sector[1], digioot[0], digioot[1]); // Chiara debugging!	
+	//     sector[0], sector[1], digioot[0], digioot[1]); // Chiara debugging!
     }
   }
   // Adding out-of-time digits for 2 reference PTM signals (after out-of-time ch.)
@@ -456,7 +456,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
      //Ch. debug
      //printf("\t RefDigitoot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
      //    sectorRef[0], sectorRef[1], sigRefoot[0], sigRefoot[1]); // Chiara debugging!
-     
+
   }
   //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
 
@@ -494,7 +494,7 @@ void AliZDCDigitizer::ReadPMTGains()
     bEne[ir] = data[4];
   }
   fclose(fdata);
-  
+
   if(((fBeamType.CompareTo("A-A")) == 0)){
     for(int i=0; i<12; i++){
       if(beam[i]==1){
@@ -506,7 +506,7 @@ void AliZDCDigitizer::ReadPMTGains()
 	  for(int iq=1; iq<3; iq++) fPMGain[2][iq] = gain[i]/(aEne[i]*scalGainFactor);
 	}
       }
-     }  
+     }
      //
      printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for %s @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamType.Data(),fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
@@ -565,7 +565,7 @@ void AliZDCDigitizer::ReadPMTGains()
     }
     //
     printf("\n    AliZDCDigitizer::ReadPMTGains -> ZDC PMT gains for %s @ %1.0f+%1.0f GeV: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
-      	fBeamType.Data(),fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);     
+      	fBeamType.Data(),fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
   }
 
 }
@@ -582,7 +582,7 @@ void AliZDCDigitizer::CalculatePMTGains()
       for(Int_t j = 0; j < 5; j++){
           fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000;
           fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;
-          fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000; 
+          fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000;
           fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;
       }
       fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
@@ -590,7 +590,7 @@ void AliZDCDigitizer::CalculatePMTGains()
       //
       printf("\n    AliZDCDigitizer::CalculatePMTGains -> ZDC PMT gains for p-p @ %1.0f+%1.0f GeV: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
-     
+
     }
   }
   else if(((fBeamType.CompareTo("A-A")) == 0)){
@@ -601,11 +601,11 @@ void AliZDCDigitizer::CalculatePMTGains()
     // ZN gains must be divided by 4, ZP gains by 10!
     Float_t scalGainFactor = fBeamEnergy/2760.;
     for(Int_t j = 0; j < 5; j++){
-       fPMGain[0][j] = 50000./(4*scalGainFactor);  // ZNC	         
-       fPMGain[1][j] = 100000./(5*scalGainFactor); // ZPC       
+       fPMGain[0][j] = 50000./(4*scalGainFactor);  // ZNC
+       fPMGain[1][j] = 100000./(5*scalGainFactor); // ZPC
        fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM
-       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA	         
-       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA    
+       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA
+       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA
     }
     printf("\n    AliZDCDigitizer::CalculatePMTGains -> ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
@@ -616,14 +616,14 @@ void AliZDCDigitizer::CalculatePMTGains()
     // WARNING! Energies are set by hand for 2011 pA RUN!!!
     Float_t scalGainFactor = fBeamEnergy/2760.;
     Float_t npartScalingFactor = 208./15.;
-    
+
     for(Int_t j = 0; j < 5; j++){
        fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000; //ZNC (p)
        fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;  //ZPC (p)
        if(j<2) fPMGain[2][j] = npartScalingFactor*100000./scalGainFactor; 	   // ZEM (Pb)
        // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
-       fPMGain[3][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNA (Pb)  	     
-       fPMGain[4][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPA (Pb)  
+       fPMGain[3][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNA (Pb)
+       fPMGain[4][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPA (Pb)
     }
     printf("\n    AliZDCDigitizer::CalculatePMTGains -> ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
@@ -633,13 +633,13 @@ void AliZDCDigitizer::CalculatePMTGains()
     // PTM gains rescaled to beam energy for p-p on side C
      Float_t scalGainFactor = fBeamEnergy/2760.;
     Float_t npartScalingFactor = 208./15.;
-    
+
     for(Int_t j = 0; j < 5; j++){
        fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000;  //ZNA (p)
        fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;   //ZPA (p)
        // Npart max scales from 400 in Pb-Pb to ~8 in pPb -> *40.
-       fPMGain[1][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNC (Pb)  	     
-       fPMGain[2][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPC (Pb)  
+       fPMGain[1][j] = npartScalingFactor*50000/(4*scalGainFactor);  // ZNC (Pb)
+       fPMGain[2][j] = npartScalingFactor*100000/(5*scalGainFactor); // ZPC (Pb)
     }
     fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000; // ZEM (pp)
     fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000; // ZEM (pp)
@@ -664,11 +664,11 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
   frag.AttachNeutrons();
   Int_t ztot = frag.GetZtot();
   Int_t ntot = frag.GetNtot();
-  
+
   // Removing fragments and alpha pcs
   freeSpecN = specN-ntot-2*nAlpha;
   freeSpecP = specP-ztot-2*nAlpha;
-  
+
   // Removing deuterons
   Int_t ndeu = (Int_t) (freeSpecN*frag.DeuteronNumber());
   freeSpecN -= ndeu;
@@ -680,10 +680,10 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
 }
 
 //_____________________________________________________________________________
-void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t pm[5][5]) 
+void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t pm[5][5])
 {
 // add signal of the spectators
-  
+
   if(!fSpectatorData) fSpectatorData = TFile::Open("$ALICE_ROOT/ZDC/SpectatorSignal.root");
   if(!fSpectatorData || !fSpectatorData->IsOpen()) {
     AliError((" No file $ALICE_ROOT/ZDC/SpectatorSignal.root found -> No spectators added!!!\n"));
@@ -691,7 +691,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
   }
 
   TNtuple* zdcSignal=0x0;
-  
+
   Float_t sqrtS = 2*fBeamEnergy;
   //
   if(TMath::Abs(sqrtS-5500) < 100.){
@@ -701,7 +701,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
     if(specType == 1) {	   // --- Signal for projectile spectator neutrons
       fSpectatorData->GetObject("energy5500/ZNCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
-    } 
+    }
     else if(specType == 2) { // --- Signal for projectile spectator protons
       fSpectatorData->GetObject("energy5500/ZPCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
@@ -722,7 +722,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
     if(specType == 1) {	   // --- Signal for projectile spectator neutrons
       fSpectatorData->GetObject("energy5020/ZNCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
-    } 
+    }
     else if(specType == 2) { // --- Signal for projectile spectator protons
       fSpectatorData->GetObject("energy5020/ZPCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
@@ -743,7 +743,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
     if(specType == 1) {	   // --- Signal for projectile spectator neutrons
       fSpectatorData->GetObject("energy2760/ZNCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
-    } 
+    }
     else if(specType == 2) { // --- Signal for projectile spectator protons
       fSpectatorData->GetObject("energy2760/ZPCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
@@ -757,30 +757,30 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
     }
   }
-  
+
   if(!zdcSignal){
     printf("\n No spectator signal available for ZDC digitization\n");
     return;
-  } 
-  
+  }
+
   Int_t nentries = (Int_t) zdcSignal->GetEntries();
-  
+
   Float_t *entry;
   Int_t rnd[125], volume[2]={0,0}, iev=0;
   for(int pl=0;pl<125;pl++) rnd[pl] = 0;
-  if(numEvents > 125) {
+  if(numEvents >= 125) {
     AliDebug(2,Form("numEvents (%d) is larger than 125", numEvents));
     numEvents = 125;
   }
   for(int pl=0;pl<numEvents;pl++){
      rnd[pl] = (Int_t) (9999*gRandom->Rndm());
      if(rnd[pl] >= 9999) rnd[pl] = 9998;
-     //printf("	rnd[%d] = %d\n",pl,rnd[pl]);     
+     //printf("	rnd[%d] = %d\n",pl,rnd[pl]);
   }
-  // Sorting vector in ascending order with C function QSORT 
+  // Sorting vector in ascending order with C function QSORT
   qsort((void*)rnd,numEvents,sizeof(Int_t),comp);
   do{
-     for(int i=0; i<nentries; i++){  
+     for(int i=0; i<nentries; i++){
   	zdcSignal->GetEvent(i);
   	entry = zdcSignal->GetArgs();
   	if(entry[0] == rnd[iev]){
@@ -794,8 +794,8 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
             pm[volume[0]-1][volume[1]] += lightQ;
 	    //printf("\n   pm[%d][0] = %.0f, pm[%d][%d] = %.0f\n",(volume[0]-1),pm[volume[0]-1][0],
 	    //	(volume[0]-1),volume[1],pm[volume[0]-1][volume[1]]);
-	  } 
-	  else { 
+	  }
+	  else {
             if(volume[1] == 1) pm[2][1] += lightC; // ZEM 1
             else               pm[2][2] += lightQ; // ZEM 2
 	    //printf("\n   pm[2][1] = %.0f, pm[2][2] = %.0f\n",pm[2][1],pm[2][2]);
@@ -807,7 +807,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t specType, Int_t numEvents, Float_t p
 	}
      }
   }while(iev<numEvents);
-  
+
 }
 
 //_____________________________________________________________________________
@@ -819,7 +819,7 @@ void AliZDCDigitizer::SpectatorsFromHijing(Int_t specType, Int_t numEvents, Floa
     AliError((" No file $ALICE_ROOT/ZDC/SpectatorsFromData.root found -> No spectators added!!!\n"));
     return;
   }
-    
+
   TNtuple* zdcSignal=0x0;
 
     AliInfo(" Extracting signal from SpectatorsFromData.root");
@@ -827,7 +827,7 @@ void AliZDCDigitizer::SpectatorsFromHijing(Int_t specType, Int_t numEvents, Floa
     if(specType == 1) {	   // --- Signal for projectile spectator neutrons
       fSpectatorData->GetObject("energy5020/ZNCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorsFromData.root file");
-    } 
+    }
     else if(specType == 2) { // --- Signal for projectile spectator protons
       fSpectatorData->GetObject("energy5020/ZPCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorsFromData.root file");
@@ -844,10 +844,10 @@ void AliZDCDigitizer::SpectatorsFromHijing(Int_t specType, Int_t numEvents, Floa
   if(!zdcSignal){
     printf(" !!!!!!!!!!!!! No spectator signal available for ZDC digitization\n");
     return;
-  } 
-  
+  }
+
   Int_t nentries = (Int_t) zdcSignal->GetEntries();
-  
+
   Float_t *entry;
   Int_t rnd[125], volume[2]={0,0}, iev=0, base=nentries/8.;
   for(int pl=0;pl<125;pl++) rnd[pl] = 0;
@@ -858,12 +858,12 @@ void AliZDCDigitizer::SpectatorsFromHijing(Int_t specType, Int_t numEvents, Floa
   for(int pl=0;pl<numEvents;pl++){
      rnd[pl] = (Int_t) (9999*gRandom->Rndm());
      if(rnd[pl] >= 9999) rnd[pl] = 9998;
-     //printf("	rnd[%d] = %d\n",pl,rnd[pl]);     
+     //printf("	rnd[%d] = %d\n",pl,rnd[pl]);
   }
-  // Sorting vector in ascending order with C function QSORT 
+  // Sorting vector in ascending order with C function QSORT
   qsort((void*)rnd,numEvents,sizeof(Int_t),comp);
   do{
-     for(int i=0; i<nentries; i++){  
+     for(int i=0; i<nentries; i++){
   	zdcSignal->GetEvent(i);
   	entry = zdcSignal->GetArgs();
   	if(entry[0] == rnd[iev]){
@@ -877,8 +877,8 @@ void AliZDCDigitizer::SpectatorsFromHijing(Int_t specType, Int_t numEvents, Floa
             pm[volume[0]-1][volume[1]] += lightQ;
 	    //printf("\n   pm[%d][0] = %.0f, pm[%d][%d] = %.0f\n",(volume[0]-1),pm[volume[0]-1][0],
 	    //	(volume[0]-1),volume[1],pm[volume[0]-1][volume[1]]);
-	  } 
-	  else { 
+	  }
+	  else {
             if(volume[1] == 1) pm[2][1] += lightC; // ZEM 1
             else               pm[2][2] += lightQ; // ZEM 2
 	    //printf("\n   pm[2][1] = %.0f, pm[2][2] = %.0f\n",pm[2][1],pm[2][2]);
@@ -890,18 +890,18 @@ void AliZDCDigitizer::SpectatorsFromHijing(Int_t specType, Int_t numEvents, Floa
 	}
      }
   }while(iev<numEvents);
-   
+
 }
 
 
 //_____________________________________________________________________________
-Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light, 
+Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
                                  Int_t Res) const
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
   Int_t vADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
   // Ch. debug
-  //printf("\t Phe2ADCch -> det %d quad %d - PMGain[%d][%d] %1.0f phe %1.2f  ADC %d\n", 
+  //printf("\t Phe2ADCch -> det %d quad %d - PMGain[%d][%d] %1.0f phe %1.2f  ADC %d\n",
   //	Det,Quad,Det-1,Quad,fPMGain[Det-1][Quad],Light,vADCch);
 
   return vADCch;
@@ -948,20 +948,20 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 }
 
 //_____________________________________________________________________________
-AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri) 
+AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri)
 {
 
   Bool_t deleteManager = kFALSE;
-  
+
   AliCDBManager *manager = AliCDBManager::Instance();
   AliCDBStorage *defstorage = manager->GetDefaultStorage();
-  
-  if(!defstorage || !(defstorage->Contains("ZDC"))){ 
+
+  if(!defstorage || !(defstorage->Contains("ZDC"))){
      AliWarning("No default storage set or default storage doesn't contain ZDC!");
      manager->SetDefaultStorage(uri);
      deleteManager = kTRUE;
   }
- 
+
   AliCDBStorage *storage = manager->GetDefaultStorage();
 
   if(deleteManager){
@@ -969,7 +969,7 @@ AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri)
     defstorage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
   }
 
-  return storage; 
+  return storage;
 }
 
 //_____________________________________________________________________________
@@ -979,11 +979,10 @@ AliZDCPedestals* AliZDCDigitizer::GetPedData() const
   // Getting pedestal calibration object for ZDC set
   AliZDCPedestals *calibdata = 0x0;
   AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Pedestals");
-  if(!entry) AliFatal("No calibration data loaded!");  
+  if(!entry) AliFatal("No calibration data loaded!");
   else{
     calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
     if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
   }
   return calibdata;
 }
-
