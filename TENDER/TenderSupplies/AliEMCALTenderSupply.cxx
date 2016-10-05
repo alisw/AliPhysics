@@ -464,6 +464,20 @@ AliVEvent* AliEMCALTenderSupply::GetEvent()
 }
 
 //_____________________________________________________
+AliMCEvent* AliEMCALTenderSupply::GetMCEvent()
+{
+  // Return the event pointer.
+  
+  if (fTender) {
+    return fTender->MCEvent();
+  } else if (fTask) {
+    return fTask->MCEvent();
+  }
+  
+  return 0;
+}
+
+//_____________________________________________________
 void AliEMCALTenderSupply::ProcessEvent()
 {
   // Event loop.
@@ -837,7 +851,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     event->InitMagneticField();
   }
 
-  fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
+  fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo,GetMCEvent());
   fEMCALRecoUtils->SetClusterMatchedToTrack(event);
   fEMCALRecoUtils->SetTracksMatchedToCluster(event);
 }
@@ -1712,7 +1726,7 @@ void AliEMCALTenderSupply::FillDigitsArray()
         
         // Select the MC label contributing, only if enough energy deposition
 
-        fEMCALRecoUtils->RecalculateCellLabelsRemoveAddedGenerator(cellNumber, clus, 0x0, cellAmplitude, labeArr, eDepArr);
+        fEMCALRecoUtils->RecalculateCellLabelsRemoveAddedGenerator(cellNumber, clus, GetMCEvent(), cellAmplitude, labeArr, eDepArr);
         nLabels = labeArr.GetSize();
       }
 
