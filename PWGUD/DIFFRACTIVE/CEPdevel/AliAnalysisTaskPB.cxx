@@ -1182,7 +1182,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	}
 
 	//= INPUT DATA SANITY TESTS ==================================================
-	printf("Checking Input ...\n");
+	// printf("Checking Input ...\n");
   if (!CheckInput()) {
 		PostOutputs();
 		return;
@@ -1232,7 +1232,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//= MC TRUTH =================================================================
 	// for now only implemented on ESDs
 	Int_t nMCprimaries = 0;
-  printf("\nDetermining MC process type ...\n");
+  // printf("\nDetermining MC process type ...\n");
 	DetermineMCprocessType();
 	if (fAnalysisStatus & AliPBBase::kBitTHnMC) {
 		nMCprimaries = DoMCTruth();
@@ -1242,7 +1242,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	// applied cuts
   //  . vertex exists
   //  . vertex_z < 10 cm
-  printf("\nDoing event selection ...\n");
+  // printf("\nDoing event selection ...\n");
   Int_t kfo =
 		((fAnalysisStatus & AliPBBase::kBitFastORStudy) && !fDoAOD) ? 1 : 0;
 	Int_t ninnerp=-999, nouterp=-999;
@@ -1253,7 +1253,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       fhpriVtxDist, fhfo, fhFOchans, kfo, ninnerp,
       nouterp, fPriVtxX, fPriVtxY, fPriVtxZ);
 	
-  printf("This is event is %i valid\n",eventIsValid);
+  // printf("This event is %i valid\n",eventIsValid);
   if (!eventIsValid) {
 		//PostOutputs();
 		//return;
@@ -1265,7 +1265,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= PILE UP ==================================================================
   // using only 2 instead of three contributors
-  printf("\nChecking for pileup ...\n");
+  // printf("\nChecking for pileup ...\n");
 	const Bool_t isPileup = (fDoAOD) ?
 	  fAODEvent->IsPileupFromSPD
 	  (
@@ -1283,7 +1283,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	  	2., 	// nSigmaDiamXY, default = 2.
 	  	5.		// nSigmaDiamZ, default = 5.
 	  );
-  printf("This is a pileup %i event\n",isPileup);
+  // printf("This is a pileup %i event\n",isPileup);
   
   if (isPileup) {
 		//PostOutputs();
