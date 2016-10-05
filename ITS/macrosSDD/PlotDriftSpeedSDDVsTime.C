@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=225900, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=256400,
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -173,6 +173,13 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=225900,
     TFile *f= TFile::Open(filnamalien);
     if(f==0x0)continue;
     AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
+    if(ent==0x0) continue;
+    AliCDBMetaData* md=ent ->GetMetaData();
+    TString comment=md->GetComment();
+    if(!(comment.Contains("injector"))){
+      printf(" --> Skipped: object from offline recalibration\n");
+      continue; 
+    }
     TObjArray *drspSDD = (TObjArray *)ent->GetObject();
     
     Int_t iGoodInj=0;
@@ -254,7 +261,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=225900,
       Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
       if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift0,temper);
 
-      printf("Module %d -- ",iMod+240);
+      //      printf("Module %d -- ",iMod+240);
 
       if(statusInj0>1){
 	iGoodInj++;
@@ -268,12 +275,12 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=225900,
 	  gvdrvstime[i0]->SetPoint(npt2,timeday,vdrift0);
 	  gvdrvstime[i0]->SetPointError(npt2,0,errSpeed[iMod]);
 	}
-	printf("Side 0: good injectors -- ");
+	//	printf("Side 0: good injectors -- ");
       }else if(statusInj0==1){
 	iRescaledSpeed++;
 	if(iMod<84)iRescaledSpeedL3++;
 	else iRescaledSpeedL4++;
-	printf("Side 0: bad injectors -- ");
+	//	printf("Side 0: bad injectors -- ");
       }else{ 
 	iAverSpeed++;
 	if(iMod<84)iAverSpeedL3++;
@@ -291,18 +298,18 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=225900,
 	  gvdrvstime[i1]->SetPoint(npt2,timeday,vdrift1);
 	  gvdrvstime[i1]->SetPointError(npt2,0,errSpeed[iMod]);
 	}
-	printf("Side 1: good injectors");
+	//	printf("Side 1: good injectors");
       }else if(statusInj1==1){
 	iRescaledSpeed++;
 	if(iMod<84)iRescaledSpeedL3++;
 	else iRescaledSpeedL4++;
-	printf("Side 1: BAD injectors");
+	//	printf("Side 1: BAD injectors");
       }else{
 	iAverSpeed++;
 	if(iMod<84)iAverSpeedL3++;
 	else iAverSpeedL4++;
       }
-      printf("\n");
+      //      printf("\n");
     }
 
     Int_t npt=gGoodInjVsRun->GetN();
