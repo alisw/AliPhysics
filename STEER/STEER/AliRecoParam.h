@@ -52,6 +52,8 @@ class AliRecoParam : public TObject
   void                          AddDetRecoParam(Int_t iDet, AliDetectorRecoParam* param);
   Bool_t                        AddDetRecoParamArray(Int_t iDet, TObjArray* parArray);
 
+  static EventSpecie_t          SuggestRunEventSpecie(const char* runTypeGRP,const char* beamTypeGRP, const char* lhcStateGRP);
+
   AliRecoParam(const AliRecoParam&);
   AliRecoParam& operator=(const AliRecoParam&);
 

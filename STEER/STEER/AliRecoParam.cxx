@@ -192,6 +192,43 @@ void  AliRecoParam::Print(Option_t *option) const {
   }
 }
 
+AliRecoParam::EventSpecie_t AliRecoParam::SuggestRunEventSpecie(const char* runTypeGRP,
+						  const char* beamTypeGRP, 
+						  const char* lhcStateGRP)
+{
+  // suggest eventSpecie according to provided runType, beamType and LHC state
+  TString runType(runTypeGRP);
+  if (runType != "PHYSICS") return kCalib;
+  //
+  TString lhcState(lhcStateGRP);
+  TString beamType(beamTypeGRP);
+  TRegexp reStable("^STABLE[_ ]BEAMS$");
+  TRegexp reNoBeam("^NO[_ ]BEAM$");
+  TRegexp reASthg("^A-");
+  TRegexp reSthgA(".*-A$");
+  TRegexp repSthg("^[pP]-.*");
+  TRegexp reSthgp(".*-[pP]$");
+  //
+  EventSpecie_t evSpecie = kDefault;
+  //
+  if(lhcState.Index(reStable)==0){
+    if(beamType.Index(repSthg)==0 || beamType.Index(reSthgp)==0){
+      // Proton run, the event specie is set to kLowMult
+      evSpecie = kLowMult;
+    }else if(beamType.Index(reASthg)==0 || beamType.Index(reSthgA)==0){
+      // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
+      evSpecie = kHighMult;
+    }
+  }
+  if(beamType=="-" || lhcState.Index(reNoBeam)==0 ) {
+    // No beams, we assume cosmic data
+    evSpecie = kCosmic;
+  }
+  //
+  return evSpecie;
+}
+
+
 void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo, const THashTable *cosmicTriggersList)
 {
     // Implemented according to the discussions
@@ -199,39 +236,20 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
 
     fEventSpecie = kDefault;
 
-    if (strcmp(runInfo->GetRunType(),"PHYSICS")) {
-	// Not a physics run, the event specie is set to kCalib
-	fEventSpecie = kCalib;
-	return;
-    }
-
     // Special DAQ events considered as calibration events
     if (evInfo.GetEventType() != 7) {
 	// START_OF_*, END_OF_*, CALIBRATION etc events
 	fEventSpecie = kCalib;
 	return;
     }
+    //
+    fEventSpecie = SuggestRunEventSpecie(runInfo->GetRunType(), runInfo->GetBeamType(),runInfo->GetLHCState());
+    if (fEventSpecie==kCalib) return;
 
-    TString lhcState(runInfo->GetLHCState());
-    TString beamType(runInfo->GetBeamType());
-    TRegexp reStable("^STABLE[_ ]BEAMS$");
-    TRegexp reASthg("^A-");
-    TRegexp reSthgA(".*-A$");
-    TRegexp repSthg("^[pP]-.*");
-    TRegexp reSthgp(".*-[pP]$");
-
-    if(lhcState.Index(reStable)==0){
-        if(beamType.Index(repSthg)==0 || beamType.Index(reSthgp)==0){
-            // Proton run, the event specie is set to kLowMult
-            fEventSpecie = kLowMult;
-        }else if(beamType.Index(reASthg)==0 || beamType.Index(reSthgA)==0){
-            // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
-            fEventSpecie = kHighMult;
-	}
-    }
-    if(beamType==TString("-")){
-	// No beams, we assume cosmic data
-	fEventSpecie = kCosmic;
+    if (strcmp(runInfo->GetRunType(),"PHYSICS")) {
+	// Not a physics run, the event specie is set to kCalib
+	fEventSpecie = kCalib;
+	return;
     }
 
     // Now we look into the trigger type in order to decide
