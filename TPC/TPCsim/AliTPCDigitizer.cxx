@@ -629,7 +629,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   // output stored in TreeTPCD 
   //  
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
-  AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
+  //  AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
+  AliTPCRecoParam *recoParam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
   AliDebug(1, Form(" recoParam->GetCrosstalkCorrection()  =   %f", recoParam->GetCrosstalkCorrection())); 
   AliDebug(1,Form(" recoParam->GetUseIonTailCorrection() =  %d ", recoParam->GetUseIonTailCorrection()));
   Int_t nROCs = 72;

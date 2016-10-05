@@ -1603,7 +1603,8 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
   fLoader->TreeD()->GetUserInfo()->Add(new TParameter<float>("lhcphase0",lhcph));
   //
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
-  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
+  //  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
   //
   if (tpcrecoparam->GetUseCorrectionMap()) {
     AliTPCTransform* transform = (AliTPCTransform*) calib->GetTransform();
@@ -2200,7 +2201,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
   AliTPCCorrection * correctionDist = calib->GetTPCComposedCorrection();  
 
-  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
+  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
+  //  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
 
   AliTPCTransform* transform = 0;
 
