@@ -55,18 +55,24 @@ void CEPTrackBuffer::Reset()
   // ... from TPC
   fPIDTPCStatus = CEPTrackBuffer::kdumval;
   fPIDTPCSignal = CEPTrackBuffer::kdumval;
-  fPIDTPCnSigma[AliPID::kSPECIES];
-  fPIDTPCnSigmaProb[AliPID::kSPECIES];
+  for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
+    fPIDTPCnSigma[ii]     = CEPTrackBuffer::kdumval;
+    fPIDTPCnSigmaProb[ii] = CEPTrackBuffer::kdumval;
+  }
   
   // ... from TOF
   fPIDTOFStatus = CEPTrackBuffer::kdumval;
   fPIDTOFSignal = CEPTrackBuffer::kdumval;
-  fPIDTOFnSigma[AliPID::kSPECIES];
-  fPIDTOFnSigmaProb[AliPID::kSPECIES];
+  for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
+    fPIDTOFnSigma[ii]     = CEPTrackBuffer::kdumval;
+    fPIDTOFnSigmaProb[ii] = CEPTrackBuffer::kdumval;
+  }
   
   // ... Bayes
   fPIDBayesStatus = CEPTrackBuffer::kdumval;
-  fPIDBayesProb[AliPID::kSPECIES];
+  for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
+    fPIDBayesProb[ii]     = CEPTrackBuffer::kdumval;
+  }
   
   // MC truth
   fMCPID = CEPTrackBuffer::kdumval;
