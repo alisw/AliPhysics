@@ -17,6 +17,7 @@ class AliTPCExB;
 #include "AliTPCCalPad.h"
 #include "TString.h"
 #include "AliSplineFit.h"
+#include "AliRecoParam.h"
 #include "TMap.h"
 
 class TGraphErrors;
@@ -136,6 +137,8 @@ class AliTPCcalibDB : public TObject
   //
   //Reco param getter
   AliTPCRecoParam *GetRecoParam(Int_t i) const;
+  AliTPCRecoParam *GetRecoParamFromGRP() const;
+  AliRecoParam::EventSpecie_t GetEventSpecieFromGRP() const {return fRunEventSpecie;}
   //GRP information
   static AliGRPObject * GetGRP(Int_t run);
   static TMap *  GetGRPMap(Int_t run);
@@ -264,6 +267,7 @@ protected:
   AliTPCAltroMapping **fMapping;   ///< Altro mapping
   //
   //
+  AliRecoParam::EventSpecie_t fRunEventSpecie;    ///< Event specie suggested for the run according to GRP
   AliTPCParam * fParam;                ///< TPC parameters
   AliTPCClusterParam * fClusterParam;  ///< TPC cluster error, shape and Q parameterization
   TObjArray * fRecoParamList;          ///< List of TPC reco param objects
@@ -296,7 +300,7 @@ protected:
    AliTPCcalibDB& operator= (const AliTPCcalibDB& );
   
    /// \cond CLASSIMP
-   ClassDef(AliTPCcalibDB, 2)
+   ClassDef(AliTPCcalibDB, 3)
    /// \endcond
 };
 

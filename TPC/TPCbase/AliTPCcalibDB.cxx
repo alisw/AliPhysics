@@ -196,6 +196,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fGrRunState(0x0),
   fTemperature(0),
   fMapping(0),
+  fRunEventSpecie(AliRecoParam::kDefault),
   fParam(0),
   fClusterParam(0),
   fRecoParamList(0),
@@ -261,6 +262,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fGrRunState(0x0),
   fTemperature(0),
   fMapping(0),
+  fRunEventSpecie(AliRecoParam::kDefault),
   fParam(0),
   fClusterParam(0),
   fRecoParamList(0),
@@ -326,9 +328,26 @@ AliTPCCalPad* AliTPCcalibDB::GetDistortionMap(Int_t i) const {
   return (fDistortionMap) ? (AliTPCCalPad*)fDistortionMap->At(i):0;
 }
 
+//_____________________________________________________________________________
 AliTPCRecoParam* AliTPCcalibDB::GetRecoParam(Int_t i) const {
   return (fRecoParamList) ? (AliTPCRecoParam*)fRecoParamList->At(i):0;
 }
+
+//_____________________________________________________________________________
+AliTPCRecoParam* AliTPCcalibDB::GetRecoParamFromGRP() const 
+{
+  // return recoparam for specie matching to current GRP
+  if (!fRecoParamList) return 0;
+  for (int i=fRecoParamList->GetEntriesFast();i--;) {
+    AliTPCRecoParam* par = (AliTPCRecoParam*)fRecoParamList->UncheckedAt(i);
+    if (!par || !(par->GetEventSpecie()&fRunEventSpecie)) continue;
+    return par;
+  }
+  AliWarningF("Did not find recoparam for EventSpecie %s suggested by GRP",AliRecoParam::GetEventSpecieName(fRunEventSpecie));
+  return 0;
+}
+
+
 
 //_____________________________________________________________________________
 AliCDBEntry* AliTPCcalibDB::GetCDBEntry(const char* cdbPath)
@@ -403,10 +422,9 @@ void AliTPCcalibDB::Update(){
       AliInfo("TPC not present in the run");
       return;
     }
+    fRunEventSpecie = AliRecoParam::SuggestRunEventSpecie(grpData->GetRunType(),grpData->GetBeamType(),grpData->GetLHCState());
+    AliInfoF("Run-specific EventSpecie set to %s",AliRecoParam::GetEventSpecieName(fRunEventSpecie));
   }
-
- 
-
 
   entry          = GetCDBEntry("TPC/Calib/PadGainFactor");
   if (entry){
@@ -1741,10 +1759,12 @@ Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
   }
   const int run = GetRun();
   // pick the recoparam matching to field (as low or high flux)
+  AliTPCRecoParam* param = GetRecoParamFromGRP();
+  /*  
   AliRecoParam::EventSpecie_t spec = fld->GetBeamType()==AliMagF::kBeamTypeAA ? AliRecoParam::kHighMult : AliRecoParam::kLowMult;
-  AliTPCRecoParam* param = 0;
   int parID=0;
   while( (param=GetRecoParam(parID++)) ) { if (param->GetEventSpecie()&spec) break;}
+  */
   if (!param) AliFatal("Failed to extract recoparam");
   //
   if (!param->GetUseCorrectionMap()) {
