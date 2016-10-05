@@ -1443,7 +1443,7 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
 
  if(fApplyRecentering == 20152){
 
-  Int_t fNHarm = 2;
+  Int_t fNHarm = n;
   Float_t v0Centr = -1.;
   Float_t spdCentr = -1.;
   AliMultSelection *MultSelection = 0x0;
