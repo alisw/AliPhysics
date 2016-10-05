@@ -786,7 +786,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTTrigg
 
     fBlockDataArray.clear();
 
- } else {
+  } else {
     HLTError("internal failure (not initialized component %p, data buffer %p)", fpComponent, fpDataBuffer);
     iResult=-EFAULT;
   }
