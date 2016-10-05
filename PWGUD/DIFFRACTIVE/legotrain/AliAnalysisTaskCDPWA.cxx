@@ -1181,7 +1181,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//Store normal version
 	Bool_t storeT = kFALSE;
 
-	if (!fIsMC) {
+	if (!fIsMC || fIsPythia || fIsPhojet || fIsEPOS) {
 		for (Int_t i = 0; i < 11; i++) {
 			Nsel = 0;
 			indices = 0x0;
@@ -1250,7 +1250,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	indices = 0x0;
 
-	if (!fIsMC && storeT) fTree->Fill();
+	if (storeT) fTree->Fill();
 
 	PostOutputs();
 	return;
@@ -1258,7 +1258,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::PostOutputs()
 {
-	if (fIsMC) {
+	if (fIsMC && fIsPWAMC) {
 		fTree->Fill();
 		if (fCombmode) fTree_Comb->Fill();
 	}
