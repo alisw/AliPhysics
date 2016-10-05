@@ -363,6 +363,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoBachPt;      //!<! Bachelor pT histogram
   TH1F* fHistoBachPtMCS;      //!<! Bachelor pT histogram (efficiency numerator)
   TH1F* fHistoBachPtMCGen;      //!<! Bachelor pT histogram (efficiency denominator)
+  TH1F* fHistoBachFracSharedITS;      //!<! Bachelor Fraction of shared ITS clusters
+  TH1F* fHistoBachChi2NclsITS;      //!<! Bachelor Chi2/Ncls ITS
   TH1F* fHistod0Bach;      //!<! Bachelor d0 histogram
   TH2F* fHistoLambdaMassvsPt;     //!<! Lambda mass vs pt histogram
   TH2F* fHistoLambdaMassvsPtMCS;     //!<! Lambda mass vs pt histogram
@@ -706,7 +708,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,38); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,39); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

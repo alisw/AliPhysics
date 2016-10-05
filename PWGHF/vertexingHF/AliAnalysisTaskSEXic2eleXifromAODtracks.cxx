@@ -1020,6 +1020,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
 		runnumber_offset = 195000;//lhc13bc
 	}else if(runnumber<=170593&&runnumber>=167902){
 		runnumber_offset = 167902;//lhc11h
+	}else if(runnumber<=246994&&runnumber>=244824){
+		runnumber_offset = 244824;//lhc15o
 	}
 	fHistonEvtvsRunNumber->Fill(runnumber-runnumber_offset,1.);
 
@@ -1245,6 +1247,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
 		runnumber_offset = 195000;//lhc13bc
 	}else if(runnumber<=170593&&runnumber>=167902){
 		runnumber_offset = 167902;//lhc11h
+	}else if(runnumber<=246994&&runnumber>=244824){
+		runnumber_offset = 244824;//lhc15o
 	}
 	fHistonElevsRunNumber->Fill(runnumber-runnumber_offset,nSeleTrks);
 	fHistonXivsRunNumber->Fill(runnumber-runnumber_offset,nSeleCasc);
@@ -2306,8 +2310,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
         else  fCorrelationVariables[9] = 1023;
       }
     }
-    fCorrelationVariables[14] = mcpdgele_array[1];
   }
+  if(fUseMCInfo) fCorrelationVariables[14] = mcpdgele_array[1];
 
   if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(casc))
   {
@@ -5331,6 +5335,8 @@ Int_t AliAnalysisTaskSEXic2eleXifromAODtracks::FromSemileptonicDecays(Int_t *his
   if(abs(history[1])==5232) return 2;
   if(abs(history[1])==5332) return 2;
 
+  if(abs(history[1])==130) return 3;
+  if(abs(history[1])==310) return 3;
   if(abs(history[1])==311) return 3;
   if(abs(history[1])==321) return 3;
   if(abs(history[1])==3122) return 3;
