@@ -65,6 +65,8 @@ AliRDHFCuts(name),
   fProdUseAODFilterBit(kTRUE),
   fProdAODFilterBit(4),
   fProdRejectTrackWithShared(kFALSE),
+  fProdITSSharedFractionMax(-9999),
+  fProdITSChi2OverNclsMax(-9999),
   fProdV0KinkRejection(kTRUE),
   fProdV0MassTolLambda(0.01),
   fProdV0MassTolLambdaRough(0.01),
@@ -79,6 +81,7 @@ AliRDHFCuts(name),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
   fProdDcaV0ToPrimVertexMin(0.),
+  fProdDcaV0ToPrimVertexMax(9999.),
   fProdDcaV0PrToPrimVertexMin(0.),
   fProdDcaV0PiToPrimVertexMin(0.),
   fProdV0ProperDecayLengthMax(99999.),
@@ -155,6 +158,8 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdAODFilterBit(source.fProdAODFilterBit),
   fProdRejectTrackWithShared(source.fProdRejectTrackWithShared),
+  fProdITSSharedFractionMax(source.fProdITSSharedFractionMax),
+  fProdITSChi2OverNclsMax(source.fProdITSChi2OverNclsMax),
   fProdV0KinkRejection(source.fProdV0KinkRejection),
   fProdV0MassTolLambda(source.fProdV0MassTolLambda),
   fProdV0MassTolLambdaRough(source.fProdV0MassTolLambdaRough),
@@ -169,6 +174,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
   fProdDcaV0ToPrimVertexMin(source.fProdDcaV0ToPrimVertexMin),
+  fProdDcaV0ToPrimVertexMax(source.fProdDcaV0ToPrimVertexMax),
   fProdDcaV0PrToPrimVertexMin(source.fProdDcaV0PrToPrimVertexMin),
   fProdDcaV0PiToPrimVertexMin(source.fProdDcaV0PiToPrimVertexMin),
   fProdV0ProperDecayLengthMax(source.fProdV0ProperDecayLengthMax),
@@ -226,6 +232,8 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fProdAODFilterBit = source.fProdAODFilterBit;
   fProdRejectTrackWithShared = source.fProdRejectTrackWithShared;
+  fProdITSSharedFractionMax = source.fProdITSSharedFractionMax;
+  fProdITSChi2OverNclsMax = source.fProdITSChi2OverNclsMax;
   fProdV0KinkRejection = source.fProdV0KinkRejection;
   fProdV0MassTolLambda = source.fProdV0MassTolLambda;
   fProdV0MassTolLambdaRough = source.fProdV0MassTolLambdaRough;
@@ -240,6 +248,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdRfidMinV0=source.fProdRfidMinV0;
   fProdRfidMaxV0=source.fProdRfidMaxV0;
   fProdDcaV0ToPrimVertexMin=source.fProdDcaV0ToPrimVertexMin;
+  fProdDcaV0ToPrimVertexMax=source.fProdDcaV0ToPrimVertexMax;
   fProdDcaV0PrToPrimVertexMin=source.fProdDcaV0PrToPrimVertexMin;
   fProdDcaV0PiToPrimVertexMin=source.fProdDcaV0PiToPrimVertexMin;
   fProdV0ProperDecayLengthMax=source.fProdV0ProperDecayLengthMax;
@@ -508,12 +517,38 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleTrkCuts(AliAODTrack *trk, Al
 		if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
 	}
 
-  if(fProdRejectTrackWithShared){
-    const TBits sharedMap = trk->GetTPCSharedMap();
-    if((sharedMap.CountBits()) >= 1){
-      return kFALSE;
-    }
-  }
+	if(fProdRejectTrackWithShared){
+		const TBits sharedMap = trk->GetTPCSharedMap();
+		if((sharedMap.CountBits()) >= 1){
+			return kFALSE;
+		}
+	}
+
+	if(fProdITSSharedFractionMax>0.){
+		Int_t ncls_its = 0;
+		Int_t ncls_its_shared = 0;
+		for(Int_t i=0;i<6;i++){
+			if(trk->HasPointOnITSLayer(i)) ncls_its++;
+			if(trk->HasPointOnITSLayer(i) && trk->HasSharedPointOnITSLayer(i)) ncls_its_shared++;
+		}
+
+		if(ncls_its>0){
+			Float_t frac_shared = (Float_t)ncls_its_shared/(Float_t)ncls_its;
+			if(frac_shared>fProdITSSharedFractionMax) return kFALSE;
+		}
+	}
+
+	if(fProdITSChi2OverNclsMax>0.){
+		Float_t chi2 = trk->GetITSchi2();
+		Int_t ncls_its = 0;
+		for(Int_t i=0;i<6;i++){
+			if(trk->HasPointOnITSLayer(i)) ncls_its++;
+		}
+		if(ncls_its>0){
+			Float_t chi2_ncls = chi2/(Float_t) ncls_its;
+			if(chi2_ncls>fProdITSChi2OverNclsMax) return kFALSE;
+		}
+	}
 
   if(fUsePID)
   {
@@ -776,6 +811,7 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 	Double_t lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
 	Double_t lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
 	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
+	if(lDcaV0ToPrimVertex > fProdDcaV0ToPrimVertexMax) return kFALSE;
   if(isparticle){
     if(lDcaPosToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
     if(lDcaNegToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
@@ -826,10 +862,10 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
         if(fabs(nSigmaTPCpr)>nsigmatpc_proton) isProton = 0;
         if(fabs(nSigmaTPCpi)>nsigmatpc_pion) isPion = 0;
         if(nsigmatof_proton>0.01 && nsigmatof_proton<999.){
-          if(fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0;
+          if(nSigmaTOFpr>-998 && fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0; // OR approach
         }
         if(nsigmatof_pion>0.01 && nsigmatof_pion<999.){
-          if(fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0;
+          if(nSigmaTOFpi>-998 && fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0; // OR approach
         }
       }else{
         Double_t nSigmaTPCpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kProton);
@@ -839,10 +875,10 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
         if(fabs(nSigmaTPCpr)>nsigmatpc_proton) isProton = 0;
         if(fabs(nSigmaTPCpi)>nsigmatpc_pion) isPion = 0;
         if(nsigmatof_proton>0.01 && nsigmatof_proton<999.){
-          if(fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0;
+          if(nSigmaTOFpr>-998 && fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0; // OR approach
         }
         if(nsigmatof_pion>0.01 && nsigmatof_pion<999.){
-          if(fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0;
+          if(nSigmaTOFpi>-998 && fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0; // OR approach
         }
       }
       if(isProton<1) return kFALSE;
