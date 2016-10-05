@@ -1273,7 +1273,7 @@ Double_t AliRDHFCutsLctoeleLambdafromAODtracks::dPhiSR125(Double_t *postrack1,Do
 }
 
 //________________________________________________________________________
-Double_t AliRDHFCutsLctoeleLambdafromAODtracks::GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,
+void AliRDHFCutsLctoeleLambdafromAODtracks::GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,
     AliAODTrack *trackn, Double_t bfield, Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep, 
     Double_t &dPhiS_en, Double_t &dEtaS_en)
 {
