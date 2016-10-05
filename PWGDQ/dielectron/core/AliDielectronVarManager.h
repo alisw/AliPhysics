@@ -452,9 +452,44 @@ public:
     kZDCACrpH1,                  // ZDC-AC reaction plane of the Q vector for 1st harmonic
     kZDCrpResH1,                  // 1st harmonic reaction plane resolution for ZDC
     kv0ZDCrpRes,                //ZDC reaction plane for 1st harmonic and VZERO reaction plane for 2nd harmonic correlation
-    kSPDrpH2,                // SPD eventplane from QnCorrections framework
-    kFMDArpH2,               // FMDA eventplane from QnCorrections framework
-    kFMDCrpH2,               // FMDA eventplane from QnCorrections framework
+    // Beginning of Eventplane variables from Qn Framework
+    // Eventplanes for 2nd harmonic from QnCorrections framework est. 2016
+    kQnTPCrpH2,                // TPC eventplane from QnCorrections framework
+    kQnTPCxH2,
+    kQnTPCyH2,
+    kQnV0ArpH2,                // V0A eventplane from QnCorrections framework
+    kQnV0AxH2,
+    kQnV0AyH2,
+    kQnV0CrpH2,                // V0C eventplane from QnCorrections framework
+    kQnV0CxH2,
+    kQnV0CyH2,
+    kQnSPDrpH2,                // SPD eventplane from QnCorrections framework
+    kQnSPDxH2,
+    kQnSPDyH2,
+    kQnFMDArpH2,               // FMDA eventplane from QnCorrections framework
+    kQnFMDAxH2,
+    kQnFMDAyH2,
+    kQnFMDCrpH2,               // FMDA eventplane from QnCorrections framework
+    kQnFMDCxH2,
+    kQnFMDCyH2,
+    // Avergae Eventplane differences for 2nd harmonics from QnCorrections framework est. 2016 - as input for 3 sub-detector method
+    // Returns cos(2(psi_DetA-psi_DetB))
+    kQnDiffTPC_V0A,
+    kQnDiffTPC_V0C,
+    kQnDiffTPC_SPD,
+    kQnDiffTPC_FMDA,
+    kQnDiffTPC_FMDC,
+    kQnDiffV0A_V0C,
+    kQnDiffV0A_SPD,
+    kQnDiffV0A_FMDA,
+    kQnDiffV0A_FMDC,
+    kQnDiffV0C_FMDA,
+    kQnDiffV0C_FMDC,
+    kQnDiffV0C_SPD,
+    kQnDiffSPD_FMDA,
+    kQnDiffSPD_FMDC,
+    kQnDiffFMDA_FMDC,
+    // End of Eventplane variables from Qn Framework
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // track after all cuts
@@ -590,6 +625,7 @@ private:
   static void FillVarAODEvent(const AliAODEvent *event,              Double_t * const values);
   static void FillVarMCEvent(const AliMCEvent *event,                Double_t * const values);
   static void FillVarTPCEventPlane(const AliEventplane *evplane,     Double_t * const values);
+  static void FillQnEventplanes(TList *qnlist,                       Double_t * const values);
 
   static void InitVZEROCalibrationHistograms(Int_t runNo);
   static void InitVZERORecenteringHistograms(Int_t runNo);
@@ -613,7 +649,7 @@ private:
 
   static TString          fgZDCRecenteringFile; // file with ZDC Q-vector averages needed for event plane recentering
   static TProfile3D      *fgZDCRecentering[3][2];   // 2 VZERO sides x 2 Q-vector components
-
+  static Double_t CalculateEPDiff(Double_t detArp, Double_t detBrp);
 
 
   static Double_t fgData[kNMaxValues];        //! data
@@ -898,10 +934,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   // TODO: for the moment we set the bethe bloch parameters manually
   //       this should be changed in future!
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
-  values[AliDielectronVarManager::kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)
-                                                     -AliDielectronPID::GetCorrVal()
-                                                     -AliDielectronPID::GetCntrdCorr(particle)
-                                                     ) / AliDielectronPID::GetWdthCorr(particle);
+  values[AliDielectronVarManager::kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
 
   values[AliDielectronVarManager::kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
   values[AliDielectronVarManager::kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
@@ -2163,66 +2196,12 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
 
   // If QnCorrections framework (est. 2016) task should be used run the AddTask with your train. The following function will overwrite the existing AliEventplane object with the information extracted from the QnCorrections Task. Then the following code can be used as usual. The current implementation uses only the second harmonic but this could be adaptet if needed.
-  Bool_t bQnCorrectionFramework = kFALSE;
   if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
       dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
   if(flowQnVectorTask != NULL){
-    bQnCorrectionFramework = kTRUE;
     AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-
-    // Reset the Eventplane and fill it afterwards with the new information
-    AliEventplane *qnEventplane = const_cast<AliVEvent*>(event)->GetEventplane();
-    qnEventplane->Reset();
-
-    // TPC Eventplane q-Vector
-    const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = flowQnVectorMgr->GetDetectorQnVector("TPC");
-    if(qVecQnFrameworkTPC != NULL){
-      TVector2 *qVectorTPC = new TVector2(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
-      qnEventplane->SetQVector(qVectorTPC);
-      qnEventplane->SetEventplaneQ(qVecQnFrameworkTPC->EventPlane(2));
-    }
-    // VZEROA Eventplane q-Vector
-    const AliQnCorrectionsQnVector *qVecQnFrameworkVZEROA = flowQnVectorMgr->GetDetectorQnVector("VZEROA","latest","raw");
-    TVector2 *qVectorVZEROA;
-    if(qVecQnFrameworkVZEROA != NULL){
-      qVectorVZEROA = new TVector2(qVecQnFrameworkVZEROA->Qx(2),qVecQnFrameworkVZEROA->Qy(2));
-    }
-    // VZEROC Eventplane q-Vector
-    const AliQnCorrectionsQnVector *qVecQnFrameworkVZEROC = flowQnVectorMgr->GetDetectorQnVector("VZEROC","latest","raw");
-    TVector2 *qVectorVZEROC;
-    if(qVecQnFrameworkVZEROC != NULL){
-      qVectorVZEROC = new TVector2(qVecQnFrameworkVZEROC->Qx(2),qVecQnFrameworkVZEROC->Qy(2));
-    }
-    if((qVecQnFrameworkVZEROA != NULL) && (qVecQnFrameworkVZEROC != NULL))   qnEventplane->SetQsub(qVectorVZEROA,qVectorVZEROC);
-
-    // SPD Eventplane q-Vector
-    if(Req(kSPDrpH2)){
-      const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = flowQnVectorMgr->GetDetectorQnVector("SPD","latest","latest");
-      TVector2 *qVectorSPD;
-      if(qVecQnFrameworkSPD != NULL){
-        qVectorSPD = new TVector2(qVecQnFrameworkSPD->Qx(2),qVecQnFrameworkSPD->Qy(2));
-        values[AliDielectronVarManager::kSPDrpH2] = TVector2::Phi_mpi_pi(qVectorSPD->Phi())/2;
-      }
-    }
-
-    // FMDA Eventplane q-Vector
-    if(Req(kFMDArpH2)){
-      const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = flowQnVectorMgr->GetDetectorQnVector("FMDA","latest","raw");
-      TVector2 *qVectorFMDA;
-      if(qVecQnFrameworkFMDA != NULL){
-        qVectorFMDA = new TVector2(qVecQnFrameworkFMDA->Qx(2),qVecQnFrameworkFMDA->Qy(2));
-        values[AliDielectronVarManager::kFMDArpH2] = TVector2::Phi_mpi_pi(qVectorFMDA->Phi())/2;
-      }
-    }
-    // FMDC Eventplane q-Vector
-    if(Req(kFMDCrpH2)){
-      const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = flowQnVectorMgr->GetDetectorQnVector("FMDC","latest","raw");
-      TVector2 *qVectorFMDC;
-      if(qVecQnFrameworkFMDC != NULL){
-        qVectorFMDC = new TVector2(qVecQnFrameworkFMDC->Qx(2),qVecQnFrameworkFMDC->Qy(2));
-        values[AliDielectronVarManager::kFMDCrpH2] = TVector2::Phi_mpi_pi(qVectorFMDC->Phi())/2;
-      }
-    }
+    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+    if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
   }
 
   // ep angle interval [todo, fill]
@@ -2264,14 +2243,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
 
     qx = qy = 0.;
-    if(bQnCorrectionFramework){
-      qVecQnFramework = ep->GetQsub1();
-      if(qVecQnFramework != NULL){
-        qx = qVecQnFramework->X();
-        qy = qVecQnFramework->Y();
-      }
-    }
-    else  ep->CalculateVZEROEventPlane(event, 8, 2, qy, qy);
+    ep->CalculateVZEROEventPlane(event, 8, 2, qy, qy);
     qvec.Set(qx,qy);
 
     values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
@@ -2280,14 +2252,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
 
     qx = qy = 0.;
-    if(bQnCorrectionFramework){
-      qVecQnFramework = ep->GetQsub2();
-      if(qVecQnFramework != NULL){
-        qx = qVecQnFramework->X();
-        qy = qVecQnFramework->Y();
-      }
-    }
-    else  ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);
+    ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);
     qvec.Set(qx,qy);
 
     values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
@@ -2549,61 +2514,17 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   if((!header->GetCentralityP()) && (centralityF == -1))
     values[AliDielectronVarManager::kCentrality] = header->GetCentrality();
   // (w/o AliEventPlane branch) tpc event plane stuff stored in the header
-  Bool_t bQnCorrectionFramework = kFALSE;
-  TVector2 qVectorVZEROA;
-  TVector2 qVectorVZEROC;
   if(!header->GetEventplaneP()) {
     //    values[AliDielectronVarManager::kNTrk] = header->GetRefMultiplicity();    // overwritten datamembers in "our" nanoAODs
     //    values[AliDielectronVarManager::kNacc] = header->GetRefMultiplicityPos(); // overwritten datamembers in "our" nanoAODs
 
     TVector2 qvec;
     // TPC
-    // if(AliQnCorrectionsQnVector *qVecQnFrameworkTPC = (AliQnCorrectionsQnVector*) event->FindListObject("")) qvec.Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
-    if(TList *qnlist = (TList*) event->FindListObject("qnVectorList")){
-      bQnCorrectionFramework = kTRUE;
-      AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","latest","latest");
-      if(qVecQnFrameworkTPC != NULL) qvec.Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
-      // VZEROA Eventplane q-Vector
-      AliQnCorrectionsQnVector *qVecQnFrameworkVZEROA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROA","latest","raw");
-      if(qVecQnFrameworkVZEROA != NULL){
-        qVectorVZEROA.Set(qVecQnFrameworkVZEROA->Qx(2),qVecQnFrameworkVZEROA->Qy(2));
-      }
-      // VZEROC Eventplane q-Vector
-      const AliQnCorrectionsQnVector *qVecQnFrameworkVZEROC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROC","latest","raw");
-      if(qVecQnFrameworkVZEROC != NULL){
-        qVectorVZEROC.Set(qVecQnFrameworkVZEROC->Qx(2),qVecQnFrameworkVZEROC->Qy(2));
-      }
-      // SPD Eventplane q-Vector
-      if(Req(kSPDrpH2)){
-        const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = AliDielectronVarManager::GetQnVectorFromList(qnlist,"SPD","latest","latest");
-        TVector2 *qVectorSPD;
-        if(qVecQnFrameworkSPD != NULL){
-          qVectorSPD = new TVector2(qVecQnFrameworkSPD->Qx(2),qVecQnFrameworkSPD->Qy(2));
-          values[AliDielectronVarManager::kSPDrpH2] = TVector2::Phi_mpi_pi(qVectorSPD->Phi())/2;
-        }
-      }
 
-      // FMDA Eventplane q-Vector
-      if(Req(kFMDArpH2)){
-        const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDA","latest","raw");
-        TVector2 *qVectorFMDA;
-        if(qVecQnFrameworkFMDA != NULL){
-          qVectorFMDA = new TVector2(qVecQnFrameworkFMDA->Qx(2),qVecQnFrameworkFMDA->Qy(2));
-          values[AliDielectronVarManager::kFMDArpH2] = TVector2::Phi_mpi_pi(qVectorFMDA->Phi())/2;
-        }
-      }
-      // FMDC Eventplane q-Vector
-      if(Req(kFMDCrpH2)){
-        const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDC","latest","raw");
-        TVector2 *qVectorFMDC;
-        if(qVecQnFrameworkFMDC != NULL){
-          qVectorFMDC = new TVector2(qVecQnFrameworkFMDC->Qx(2),qVecQnFrameworkFMDC->Qy(2));
-          values[AliDielectronVarManager::kFMDCrpH2] = TVector2::Phi_mpi_pi(qVectorFMDC->Phi())/2;
-        }
-      }
+    ///TODO adapt to new enum members
+    if(TList *qnlist = (TList*) event->FindListObject("qnVectorList"))     AliDielectronVarManager::FillQnEventplanes(qnlist, values);
 
-    }
-    else qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
+    qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
     values[AliDielectronVarManager::kTPCxH2uc]   = qvec.X();
     values[AliDielectronVarManager::kTPCyH2uc]   = qvec.Y();
     values[AliDielectronVarManager::kTPCmagH2uc] = qvec.Mod();
@@ -2625,21 +2546,17 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
 
-    if(bQnCorrectionFramework) qvec.Set(qVectorVZEROA.X(),qVectorVZEROA.Y());
-    else{
-      ep2.CalculateVZEROEventPlane(event, 8, 2, qx, qy);
-      qvec.Set(qx,qy);
-    }
+
+
+    ep2.CalculateVZEROEventPlane(event, 8, 2, qx, qy);
+    qvec.Set(qx,qy);
     values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
     values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
     values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
 
-    if(bQnCorrectionFramework) qvec.Set(qVectorVZEROC.X(),qVectorVZEROC.Y());
-    else {
-      ep2.CalculateVZEROEventPlane(event, 9, 2, qx, qy);
-      qvec.Set(qx,qy);
-    }
+    ep2.CalculateVZEROEventPlane(event, 9, 2, qx, qy);
+    qvec.Set(qx,qy);
     values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
     values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
     values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
@@ -3434,6 +3351,110 @@ inline AliQnCorrectionsQnVector* AliDielectronVarManager::GetQnVectorFromList(
       theQnVector = NULL;
   }
   return theQnVector;
+}
+//________________________________________________________________
+inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t * const values){
+  Bool_t bTPCqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE);
+  // TPC Eventplane q-Vector
+  const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","latest","latest");
+  TVector2 *qVectorTPC = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkTPC != NULL){
+    bTPCqVector = kTRUE;
+    qVectorTPC->Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
+    values[AliDielectronVarManager::kQnTPCrpH2] = TVector2::Phi_mpi_pi(qVectorTPC->Phi())/2;
+    values[AliDielectronVarManager::kQnTPCxH2]  = qVecQnFrameworkTPC->Qx(2);
+    values[AliDielectronVarManager::kQnTPCyH2]  = qVecQnFrameworkTPC->Qy(2);
+  }
+
+  // VZEROA Eventplane q-Vector
+  const AliQnCorrectionsQnVector *qVecQnFrameworkV0A = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROA","latest","raw");
+  TVector2 *qVectorV0A = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkV0A != NULL){
+    bV0AqVector = kTRUE;
+    qVectorV0A->Set(qVecQnFrameworkV0A->Qx(2),qVecQnFrameworkV0A->Qy(2));
+    values[AliDielectronVarManager::kQnV0ArpH2] = TVector2::Phi_mpi_pi(qVectorV0A->Phi())/2;
+    values[AliDielectronVarManager::kQnV0AxH2]  = qVecQnFrameworkV0A->Qx(2);
+    values[AliDielectronVarManager::kQnV0AyH2]  = qVecQnFrameworkV0A->Qy(2);
+  }
+
+  // VZEROC Eventplane q-Vector
+  const AliQnCorrectionsQnVector *qVecQnFrameworkV0C = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROC","latest","raw");
+  TVector2 *qVectorV0C = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkV0C != NULL){
+    bV0CqVector = kTRUE;
+    qVectorV0C->Set(qVecQnFrameworkV0C->Qx(2),qVecQnFrameworkV0C->Qy(2));
+    values[AliDielectronVarManager::kQnV0CrpH2] = TVector2::Phi_mpi_pi(qVectorV0C->Phi())/2;
+    values[AliDielectronVarManager::kQnV0CxH2]  = qVecQnFrameworkV0C->Qx(2);
+    values[AliDielectronVarManager::kQnV0CyH2]  = qVecQnFrameworkV0C->Qy(2);
+  }
+
+  // SPD Eventplane q-Vector
+  const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = AliDielectronVarManager::GetQnVectorFromList(qnlist,"SPD","latest","latest");
+  TVector2 *qVectorSPD = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkSPD != NULL){
+    bSPDqVector = kTRUE;
+    qVectorSPD->Set(qVecQnFrameworkSPD->Qx(2),qVecQnFrameworkSPD->Qy(2));
+    values[AliDielectronVarManager::AliDielectronVarManager::kQnSPDrpH2] = TVector2::Phi_mpi_pi(qVectorSPD->Phi())/2;
+    values[AliDielectronVarManager::kQnSPDxH2]  = qVecQnFrameworkSPD->Qx(2);
+    values[AliDielectronVarManager::kQnSPDyH2]  = qVecQnFrameworkSPD->Qy(2);
+  }
+
+  // FMDA Eventplane q-Vector
+  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDA","latest","raw");
+  TVector2 *qVectorFMDA = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkFMDA != NULL){
+    bFMDAqVector = kTRUE;
+    qVectorFMDA->Set(qVecQnFrameworkFMDA->Qx(2),qVecQnFrameworkFMDA->Qy(2));
+    values[AliDielectronVarManager::kQnFMDArpH2] = TVector2::Phi_mpi_pi(qVectorFMDA->Phi())/2;
+    values[AliDielectronVarManager::kQnFMDAxH2]  = qVecQnFrameworkFMDA->Qx(2);
+    values[AliDielectronVarManager::kQnFMDAyH2]  = qVecQnFrameworkFMDA->Qy(2);
+  }
+
+  // FMDC Eventplane q-Vector
+  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDC","latest","raw");
+  TVector2 *qVectorFMDC = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkFMDC != NULL){
+    bFMDCqVector = kTRUE;
+    qVectorFMDC->Set(qVecQnFrameworkFMDC->Qx(2),qVecQnFrameworkFMDC->Qy(2));
+    values[AliDielectronVarManager::kQnFMDCrpH2] = TVector2::Phi_mpi_pi(qVectorFMDC->Phi())/2;
+    values[AliDielectronVarManager::kQnFMDCxH2]  = qVecQnFrameworkFMDC->Qx(2);
+    values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
+  }
+
+  // TPC Diff
+  if(bTPCqVector){
+    if(bV0AqVector) values[AliDielectronVarManager::kQnDiffTPC_V0A] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0ArpH2]);
+    if(bV0CqVector) values[AliDielectronVarManager::kQnDiffTPC_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
+    if(bSPDqVector) values[AliDielectronVarManager::kQnDiffTPC_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
+    if(bFMDAqVector) values[AliDielectronVarManager::kQnDiffTPC_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+    if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+  }
+  // V0A Diff
+  if(bV0AqVector){
+    if(bV0CqVector) values[AliDielectronVarManager::kQnDiffV0A_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
+    if(bSPDqVector) values[AliDielectronVarManager::kQnDiffV0A_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
+    if(bFMDAqVector) values[AliDielectronVarManager::kQnDiffV0A_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+    if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffV0A_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
+  }
+  // V0C Diff
+  if(bV0CqVector){
+    if(bSPDqVector) values[AliDielectronVarManager::kQnDiffV0C_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
+    if(bFMDAqVector) values[AliDielectronVarManager::kQnDiffV0C_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+    if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffV0C_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
+  }
+  // SPD Diff
+  if(bSPDqVector){
+    if(bFMDAqVector) values[AliDielectronVarManager::kQnDiffSPD_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+    if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffSPD_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
+  }
+  // FMDA Diff
+  if(bFMDAqVector && bFMDCqVector) values[AliDielectronVarManager::kQnDiffFMDA_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnFMDArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
+}
+
+//________________________________________________________________
+inline Double_t AliDielectronVarManager::CalculateEPDiff(Double_t detArp, Double_t detBrp){
+  Double_t diff = TMath::Cos( 2.*(detArp - detBrp));
+  return diff;
 }
 
 #endif
