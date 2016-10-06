@@ -1271,7 +1271,7 @@ TProfile* AliAnalysisTaskSEDvsEventShapes::GetEstimatorHistogram(const AliVEvent
         if(runNo>114930 && runNo<117223) period = 0;
         if(runNo>119158 && runNo<120830) period = 1;
         if(runNo>122373 && runNo<126438) period = 2;
-        if(runNo>127711 && runNo<130841) period = 3;
+        if(runNo>127711 && runNo<130851) period = 3;
         if(period<0 || period>3) return 0;
     }
     
