@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double ProtonMass = 0.938272013;
 	double LambdaMass = 1.115683;
 	
-	const int numOfMultBins = 2;	
+	const int numOfMultBins = 1;	
 	const int numOfChTypes = 16; //13
 	const int numOfkTbins = 1;
 
