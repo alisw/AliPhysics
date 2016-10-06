@@ -1,0 +1,21 @@
+Calbration files for LHC10h pass2 - produced 20161006
+
+Significative fields in runoptions.txt
+
+Use multiplicity: no
+Is 2015 dataset: no
+Use ESD: yes
+Use AOD: no
+
+Centrality: 00-90
+zvertex: -10.0:10.0
+
+Use TPC: yes
+Use SPD: yes
+Use VZERO: yes
+Use TZERO: yes
+Use FMD: yes
+Use rawFMD: no
+Use ZDC: yes
+
+For detailed detector configuration check AddTaskFlowQnVectorCorrections.C macro version available 20161006
