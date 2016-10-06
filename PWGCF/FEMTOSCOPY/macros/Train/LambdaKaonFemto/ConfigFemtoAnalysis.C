@@ -118,8 +118,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
     rdr->SetReadV0(1);  //Read V0 information from the AOD and put it into V0Collection
     rdr->SetEPVZERO(kTRUE);  //to get event plane angle from VZERO
     rdr->SetCentralityFlattening(kFALSE);
-    rdr->SetPrimaryVertexCorrectionTPCPoints(tAnalysisConfig.implementVertexCorrections);
-    rdr->SetReadMC(tAnalysisConfig.isMCRun);
+//TODO    rdr->SetPrimaryVertexCorrectionTPCPoints(tAnalysisConfig.implementVertexCorrections);
+//    rdr->SetReadMC(tAnalysisConfig.isMCRun);
+    rdr->SetPrimaryVertexCorrectionTPCPoints(true);
+    rdr->SetReadMC(false);
   tManager->SetEventReader(rdr);
 
 
