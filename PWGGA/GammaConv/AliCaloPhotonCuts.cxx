@@ -3277,6 +3277,14 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
     if (!fUseM02) fUseM02=1;
     fMaxM02=0.4;
     break;
+  case 5: 
+    if (!fUseM02) fUseM02=1;
+    fMaxM02=0.3;
+    break;
+  case 6: 
+    if (!fUseM02) fUseM02=1;
+    fMaxM02=0.27;
+    break;
   default:
     AliError(Form("Max M02 Cut not defined %d",maxM02));
     return kFALSE;

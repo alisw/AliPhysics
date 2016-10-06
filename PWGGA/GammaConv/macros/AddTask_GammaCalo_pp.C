@@ -189,6 +189,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","1111121053031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00003113","1111121053033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00003113","1111121053032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00003113","1111121053032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("00003113","1111121053032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("00003113","1113121053032220000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("00003113","1111221053032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 4 ){ // EMCAL clusters 2.76 TeV NonLinearity
@@ -238,6 +240,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00051013","1111121053031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00051013","1111121053033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00051013","1111121053032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00051013","1111121053032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("00051013","1111121053032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("00051013","1113121053032220000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("00051013","1111221053032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 22){ // EMCAL clusters 2.76 TeV NonLinearity
@@ -310,11 +314,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111121063042220000","0163103100000050"); //0.8 GeV/c
     cuts.AddCut("00010113","1111121063052220000","0163103100000050"); //0.9 GeV/c
   } else if (trainConfig == 62){  // EMCAL clusters trigger
-    cuts.AddCut("00010113","1111121063031220000","0163103100000050"); //                      NCells >=1
-    cuts.AddCut("00010113","1111121063033220000","0163103100000050"); //                      NCells >=3
-    cuts.AddCut("00010113","1111121063032000000","0163103100000050"); //                                  no M02 cut
-    cuts.AddCut("00010113","1112121063032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00010113","1111321063032220000","0163103100000050"); //no modules with TRD infront    
+    cuts.AddCut("00010113","1111121063031220000","0163103100000050"); // NCells >=1
+    cuts.AddCut("00010113","1111121063033220000","0163103100000050"); // NCells >=3
+    cuts.AddCut("00010113","1111121063032000000","0163103100000050"); // no M02 cut
+    cuts.AddCut("00010113","1111121063032250000","0163103100000050"); // M02 < 0.3
+    cuts.AddCut("00010113","1111121063032260000","0163103100000050"); // M02 < 0.27
+    cuts.AddCut("00010113","1112121063032220000","0163103100000050"); // only modules with TRD infront
+    cuts.AddCut("00010113","1111321063032220000","0163103100000050"); // no modules with TRD infront    
     cuts.AddCut("00010113","1111121053032220000","0163103100000050"); //  50ns timing
   } else if (trainConfig == 63){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00010113","1111100063032220000","0163103100000050"); //  NonLinearity none
@@ -348,11 +354,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111121063042220000","0163103100000050"); //0.8 GeV/c
     cuts.AddCut("00052013","1111121063052220000","0163103100000050"); //0.9 GeV/c
   } else if (trainConfig == 71){  // EMCAL clusters
-    cuts.AddCut("00052013","1111121063031220000","0163103100000050"); //                      NCells >=1
-    cuts.AddCut("00052013","1111121063033220000","0163103100000050"); //                      NCells >=3
-    cuts.AddCut("00052013","1111121063032000000","0163103100000050"); //                                  no M02 cut
-    cuts.AddCut("00052013","1112121063032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00052013","1111321063032220000","0163103100000050"); //no modules with TRD infront    
+    cuts.AddCut("00052013","1111121063031220000","0163103100000050"); // NCells >=1
+    cuts.AddCut("00052013","1111121063033220000","0163103100000050"); // NCells >=3
+    cuts.AddCut("00052013","1111121063032000000","0163103100000050"); // no M02 cut
+    cuts.AddCut("00052013","1111121063032250000","0163103100000050"); // M02 < 0.3
+    cuts.AddCut("00052013","1111121063032260000","0163103100000050"); // M02 < 0.27
+    cuts.AddCut("00052013","1112121063032220000","0163103100000050"); // only modules with TRD infront
+    cuts.AddCut("00052013","1111321063032220000","0163103100000050"); // no modules with TRD infront    
     cuts.AddCut("00052013","1111121053032220000","0163103100000050"); //  50ns timing
   } else if (trainConfig == 72){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00052013","1111100063032220000","0163103100000050"); //  NonLinearity none
@@ -386,11 +394,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00085013","1111121063042220000","0163103100000050"); //0.8 GeV/c
     cuts.AddCut("00085013","1111121063052220000","0163103100000050"); //0.9 GeV/c
   } else if (trainConfig == 81){  // EMCAL clusters
-    cuts.AddCut("00085013","1111121063031220000","0163103100000050"); //                      NCells >=1
-    cuts.AddCut("00085013","1111121063033220000","0163103100000050"); //                      NCells >=3
-    cuts.AddCut("00085013","1111121063032000000","0163103100000050"); //                                  no M02 cut
-    cuts.AddCut("00085013","1112121063032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00085013","1111321063032220000","0163103100000050"); //no modules with TRD infront    
+    cuts.AddCut("00085013","1111121063031220000","0163103100000050"); // NCells >=1
+    cuts.AddCut("00085013","1111121063033220000","0163103100000050"); // NCells >=3
+    cuts.AddCut("00085013","1111121063032000000","0163103100000050"); // no M02 cut
+    cuts.AddCut("00085013","1111121063032250000","0163103100000050"); // M02 < 0.3
+    cuts.AddCut("00085013","1111121063032260000","0163103100000050"); // M02 < 0.27
+    cuts.AddCut("00085013","1112121063032220000","0163103100000050"); // only modules with TRD infront
+    cuts.AddCut("00085013","1111321063032220000","0163103100000050"); // no modules with TRD infront    
     cuts.AddCut("00085013","1111121053032220000","0163103100000050"); //  50ns timing
   } else if (trainConfig == 82){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00085013","1111100063032220000","0163103100000050"); //  NonLinearity none
@@ -424,12 +434,14 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00083013","1111121063042220000","0163103100000050"); //0.8 GeV/c
     cuts.AddCut("00083013","1111121063052220000","0163103100000050"); //0.9 GeV/c
   } else if (trainConfig == 92){  // EMCAL clusters, INT7 trigger
-    cuts.AddCut("00083013","1111121063031220000","0163103100000050"); //                      NCells >=1
-    cuts.AddCut("00083013","1111121063033220000","0163103100000050"); //                      NCells >=3
-    cuts.AddCut("00083013","1111121063032000000","0163103100000050"); //                                  no M02 cut
-    cuts.AddCut("00083013","1112121063032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00083013","1111321063032220000","0163103100000050"); //no modules with TRD infront    
-    cuts.AddCut("00083013","1111121053032220000","0163103100000050"); //  50ns timing
+    cuts.AddCut("00083013","1111121063031220000","0163103100000050"); // NCells >=1
+    cuts.AddCut("00083013","1111121063033220000","0163103100000050"); // NCells >=3
+    cuts.AddCut("00083013","1111121063032000000","0163103100000050"); // no M02 cut
+    cuts.AddCut("00083013","1111121063032250000","0163103100000050"); // M02 < 0.3
+    cuts.AddCut("00083013","1111121063032260000","0163103100000050"); // M02 < 0.27
+    cuts.AddCut("00083013","1112121063032220000","0163103100000050"); // only modules with TRD infront
+    cuts.AddCut("00083013","1111321063032220000","0163103100000050"); // no modules with TRD infront    
+    cuts.AddCut("00083013","1111121053032220000","0163103100000050"); // 50ns timing
   } else if (trainConfig == 93){  // EMCAL clusters 2.76TeV LHC13g
     cuts.AddCut("00083013","1111100063032220000","0163103100000050"); //  NonLinearity none
     cuts.AddCut("00083013","1111101063032220000","0163103100000050"); //  standard kSDMv5
@@ -485,6 +497,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111111063031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00010113","1111111063033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00010113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00010113","1111111063032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("00010113","1111111063032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("00010113","1113111063032220000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("00010113","1111211063032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 105){  // trackMatching variations
@@ -555,6 +569,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052113","1111111063031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00052113","1111111063033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00052113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00052113","1111111063032250000","0163103100000050"); //M02 < 0.27
+    cuts.AddCut("00052113","1111111063032260000","0163103100000050"); //M02 < 0.3
     cuts.AddCut("00052113","1113111063032220000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("00052113","1111211063032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 124){  // trackMatching variations
@@ -612,6 +628,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00081113","1111111063031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00081113","1111111063033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00081113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00081113","1111111063032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("00081113","1111111063032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("00081113","1113111063032220000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("00081113","1111211063032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 144){  // trackMatching variations
@@ -687,6 +705,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111063031220000","0163103100000050"); //n cells >= 1
     cuts.AddCut("00000113","1111111063033220000","0163103100000050"); //n cells >= 3
     cuts.AddCut("00000113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00000113","1111111063032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("00000113","1111111063032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("00000113","1113111063032220000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("00000113","1111211063032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 205){  // trackMatching variations
