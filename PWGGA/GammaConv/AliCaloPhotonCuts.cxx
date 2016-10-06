@@ -724,7 +724,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistDistanceTrackToClusterAfterQA->Sumw2();
     }
     //----------------
-    if(fExtendedMatchAndQA == 1 || fExtendedMatchAndQA > 2){
+    if(fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 ){
       fHistClusterdEtadPhiPosTracksBeforeQA           = new TH2F(Form("dEtaVsdPhi_posTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_posTracks_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
       fHistograms->Add(fHistClusterdEtadPhiPosTracksBeforeQA);
       fHistClusterdEtadPhiNegTracksBeforeQA           = new TH2F(Form("dEtaVsdPhi_negTracks_beforeClusterQA %s",GetCutNumber().Data()),"dEtaVsdPhi_negTracks_beforeClusterQA",nEtaBins,EtaRange[0],EtaRange[1],nPhiBins,PhiRange[0],PhiRange[1]);
@@ -2161,7 +2161,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 
       Float_t clusM02 = (Float_t) cluster->GetM02();
       Float_t clusM20 = (Float_t) cluster->GetM20();
-      if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA > 2)){
+      if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
         if(inTrack->Charge() > 0) {
           fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi, weight);
           fHistClusterdPhidPtPosTracksBeforeQA->Fill(dPhi, inTrack->Pt(), weight);
@@ -2202,7 +2202,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);
         if(fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR, weight);
-        if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA > 2)){
+        if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
           if(inTrack->Charge() > 0) fHistClusterdEtadPhiPosTracksAfterQA->Fill(dEta, dPhi, weight);
           else fHistClusterdEtadPhiNegTracksAfterQA->Fill(dEta, dPhi, weight);
           fHistClusterM20M02AfterQA->Fill(clusM20, clusM02, weight);
@@ -2353,7 +2353,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
 
       Float_t clusM02 = (Float_t) cluster->GetM02();
       Float_t clusM20 = (Float_t) cluster->GetM20();
-      if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA > 2)){
+      if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
         if(inTrack->Charge() > 0) {
           fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi, weight);
           fHistClusterdPhidPtPosTracksBeforeQA->Fill(dPhi, inTrack->Pt(), weight);
@@ -2385,7 +2385,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);
         if(fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR, weight);
-        if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA > 2)){
+        if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
           if(inTrack->Charge() > 0) fHistClusterdEtadPhiPosTracksAfterQA->Fill(dEta, dPhi, weight);
           else fHistClusterdEtadPhiNegTracksAfterQA->Fill(dEta, dPhi, weight);
           fHistClusterM20M02AfterQA->Fill(clusM20, clusM02, weight);
