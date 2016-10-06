@@ -64,7 +64,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
                                 TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
-                                Int_t     enableExtMatchAndQA           = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                Int_t     enableExtMatchAndQA           = 0,                      // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 TString   periodname                    = "LHC12f1x",             // period name
                                 Bool_t    doParticleWeighting           = kFALSE,                 // enables weighting
                                 Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
@@ -1371,7 +1371,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetUseTHnSparse(isUsingTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(doTreeConvGammaShape) task->SetDoTreeConvGammaShowerShape(kTRUE);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =
