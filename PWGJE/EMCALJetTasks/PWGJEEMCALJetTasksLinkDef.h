@@ -119,6 +119,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerPosition+;
 #pragma link C++ class AliAnalysisTaskEmcalNeutralJets+;
 #pragma link C++ namespace EMCalTriggerPtAnalysis+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerBase+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
