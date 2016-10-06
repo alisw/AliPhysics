@@ -29,10 +29,17 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
+  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t matchThreshold)
+  {
+    fJetMatchingMaxDistance = maxDistance;
+    fJetMatchingArrayName = matchArray;
+    fJetMatchingMinSharedFraction = minSharedFraction;
+    fJetMatchingThreshold = matchThreshold;
+  }
+
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
-  void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
 
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
   void                        SetPythiaExtractionMode(Int_t mode) {fPythiaExtractionMode = mode;}
@@ -68,11 +75,17 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
-  TClonesArray               *fJetsInput;                               //!<! Array of generated jets imported into task (toy model)
   TString                     fJetParticleArrayName;                    ///< Name of fJetsOutput array
   TString                     fTrackParticleArrayName;                  ///< Name of fTracksOutput array
+  TClonesArray               *fJetMatchingArray;                        //!<! Array of generated jets imported into task (toy model/embedding)
   TString                     fJetMatchingArrayName;                    ///< Name of array used to match jets
+  Double_t                    fJetMatchingMaxDistance;                  ///< Max distance allowed to accept a matching jet (for embedding)
+  Double_t                    fJetMatchingMinSharedFraction;            ///< An embedded jet must carry this pt fraction to be accepted
+  Double_t                    fJetMatchingThreshold;                    ///< Threshold applied on the matchArray jets
+  std::vector<AliEmcalJet*>   fMatchedJets;                             ///< Jets matched in an event (embedded)
+  std::vector<AliEmcalJet*>   fMatchedJetsReference;                    ///< Jets matched in an event (reference)
   TRandom3*                   fRandom;                                  ///< random number generator
+
 
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
@@ -89,8 +102,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
   AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
-  AliEmcalJet*                fMatchedJet;                              //!<!  jet matched to input jet (calculated event-by-event)
-  AliEmcalJet*                fMatchedJetReference;                     //!<!  matching input jet (calculated event-by-event)
   AliEmcalJet*                fInitialPartonMatchedJet1;                //!<!  On PYTHIA data and fJetOutputMode=6, this holds the PDG code of the initial collisions that was matched to this jet
   AliEmcalJet*                fInitialPartonMatchedJet2;                //!<!  On PYTHIA data and fJetOutputMode=6, this holds the PDG code of the initial collisions that was matched to this jet
   Int_t                       fAcceptedJets;                            //!<!  number accepted jets (calculated event-by-event)
