@@ -194,6 +194,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","1111141050031230000","0163103100000050"); //n cells >= 1
     cuts.AddCut("80000013","1111141050033230000","0163103100000050"); //n cells >= 3
     cuts.AddCut("80000013","1111141050032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("80000013","1111141050032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("80000013","1111141050032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("80000013","1112141050032230000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("80000013","1111341050032230000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 7){ // Validation EMCAL
@@ -267,6 +269,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 42){ // third set of variations CLUSTER
     cuts.AddCut("80000013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80000013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80000013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80000013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80000013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80000013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80000013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -294,6 +298,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 52){ // third set of variations CLUSTER
     cuts.AddCut("80052013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80052013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80052013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80052013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80052013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80052013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80052013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -321,6 +327,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 62){ // third set of variations CLUSTER
     cuts.AddCut("80083013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80083013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80083013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80083013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80083013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80083013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80083013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -347,6 +355,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 72){ // third set of variations CLUSTER
     cuts.AddCut("80085013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80085013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80085013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80085013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80085013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80085013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80085013","1111341051032230000","0163403100000050"); // no modules with TRD infront
