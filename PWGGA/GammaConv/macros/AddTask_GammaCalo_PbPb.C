@@ -66,7 +66,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               TString   periodName                      = "LHC13d2",            // name of the period for added signals and weighting
                               Bool_t    doWeighting                     = kFALSE,               // enable Weighting
                               Bool_t    isUsingTHnSparse                = kTRUE,                // enable or disable usage of THnSparses for background estimation
-                              Int_t     enableExtMatchAndQA             = 0,                    // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                              Int_t     enableExtMatchAndQA             = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                               TString   periodNameV0Reader              = "",                   // name of period for V0Reader
                               Bool_t    enableSortingMCLabels           = kTRUE,                // enable sorting for MC cluster labels
                               Bool_t    runLightOutput                  = kFALSE,               // switch to run light output (only essential histograms for afterburner)
@@ -462,7 +462,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
   task->SetDoClusterQA(enableQAClusterTask);    //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

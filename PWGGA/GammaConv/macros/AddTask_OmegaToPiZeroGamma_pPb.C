@@ -71,7 +71,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
                                 Int_t     doWeightingPart             = 0,                    // enable Weighting
                                 TString   generatorName               = "DPMJET",             // generator Name  
                                 TString   cutnumberAODBranch          = "800000006008400000001500000",  // cutnumber for AOD branch
-                                Int_t     enableExtMatchAndQA         = 0,                    // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                Int_t     enableExtMatchAndQA         = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 Bool_t    isUsingTHnSparse            = kTRUE,                // enable or disable usage of THnSparses for background estimation
                                 Bool_t    enableV0findingEffi         = kFALSE,               // enables V0finding efficiency histograms
                                 Bool_t    enableTriggerMimicking      = kFALSE,               // enable trigger mimicking
@@ -349,7 +349,7 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =
