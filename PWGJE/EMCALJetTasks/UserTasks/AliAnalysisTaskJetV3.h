@@ -40,7 +40,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
         enum fitGoodnessTest    { kChi2ROOT, kChi2Poisson, kKolmogorov, kKolmogorovTOY, kLinearFit };
-        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h, kJetFlowMC }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
+        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h, kJetFlowMC, kPbPb15o }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC};          // data type
@@ -222,6 +222,9 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
             return (jet/* && jet->Pt() > 1.*/ && jet->Eta() > minEta && jet->Eta() < maxEta && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
         }
         Bool_t                  PassesCuts(AliVEvent* event);
+        Bool_t                  PassesExperimentalHighLumiCuts(AliAODEvent* event);
+        Bool_t                  MultiVertexer(const AliAODEvent* event);
+        Double_t                GetWDist(const AliVVertex* v0, const AliVVertex* v1);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
@@ -246,7 +249,9 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);
         void                    ReadVZEROCalibration2010h();
         void                    ReadVZEROCalibration2011h();
+        void                    ReadVZEROCalibration2015o();
         Int_t                   GetVZEROCentralityBin() const;
+        Float_t                 GetCentrality(const char* estimator) const;
     private:
         // analysis flags and settings
         Bool_t                  fRunToyMC;              // run toy mc for fit routine
@@ -422,6 +427,8 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         Float_t                 fWidthQ[9][2][2];               //! recentering
         Float_t                 fMeanQv3[9][2][2];              //! recentering
         Float_t                 fWidthQv3[9][2][2];             //! recentering
+        TH1*                    fMQ[2][2];                      //! recentering
+        TH1*                    fWQ[2][2];                      //! recentering
         TH1*                    fVZEROgainEqualization;         //! equalization histo
         Float_t                 fVZEROApol;                     //! calibration info per disc
         Float_t                 fVZEROCpol;                     //! calibration info per disc
