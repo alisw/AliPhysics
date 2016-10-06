@@ -65,7 +65,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             TString   periodname                    = "LHC12f1x",                   // period name
                             Bool_t    doParticleWeighting           = kFALSE,                       // enables weighting
                             Bool_t    isUsingTHnSparse              = kTRUE,                        // enable or disable usage of THnSparses for background estimation
-                            Int_t     enableExtMatchAndQA           = 0,                            // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                            Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                             Bool_t    enableTriggerMimicking        = kFALSE,                       // enable trigger mimicking
                             Bool_t    enableTriggerOverlapRej       = kFALSE,                       // enable trigger overlap rejection
                             Float_t   maxFacPtHard                  = 3.,                           // maximum factor between hardest jet and ptHard generated
@@ -915,7 +915,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145 || trainConfig == 206){
     task->SetInOutTimingCluster(-30e-9,35e-9);
   }

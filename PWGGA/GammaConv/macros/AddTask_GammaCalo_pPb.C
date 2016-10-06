@@ -66,7 +66,7 @@ void AddTask_GammaCalo_pPb(
                             TString    generatorName              = "DPMJET",         // generator name for weighting
                             TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
                             Bool_t     isUsingTHnSparse           = kFALSE,           // enable or disable usage of THnSparses for background estimation
-                            Int_t      enableExtMatchAndQA        = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                            Int_t      enableExtMatchAndQA        = 0,                // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                             Bool_t     enableTriggerMimicking     = kFALSE,           // enable trigger mimicking
                             Bool_t     enableTriggerOverlapRej    = kTRUE,            // enable trigger overlap rejection
                             Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
@@ -467,7 +467,7 @@ void AddTask_GammaCalo_pPb(
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

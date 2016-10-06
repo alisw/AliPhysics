@@ -66,7 +66,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   TString   cutnumberAODBranch          = "000000006008400001001500000",
                                   TString   periodname                  = "LHC12f1x",         // period name
                                   Bool_t    doWeighting                 = kFALSE,             // enables weighting
-                                  Int_t     enableExtMatchAndQA         = 0,                  // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                                  Int_t     enableExtMatchAndQA         = 0,                  // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                   Bool_t    enableTriggerMimicking      = kFALSE,             // enable trigger mimicking
                                   Bool_t    enableTriggerOverlapRej     = kFALSE,             // enable trigger overlap rejection
                                   Float_t   maxFacPtHard                = 3.,                 // maximum factor between hardest jet and ptHard generated
@@ -896,7 +896,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);//Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
   //connect containers
   AliAnalysisDataContainer *coutput =

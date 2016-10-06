@@ -67,7 +67,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
                                   TString   cutnumberAODBranch              = "100000006008400000001500000",
                                   TString   periodName                      = "LHC13d2",              // name of the period for added signals and weighting
                                   Bool_t    doWeighting                     = kFALSE,                 // enable Weighting
-                                  Int_t     enableExtMatchAndQA             = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                  Int_t     enableExtMatchAndQA             = 0,                      // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                   Bool_t    isUsingTHnSparse                = kTRUE,                  // enable or disable usage of THnSparses for background estimation
                                   Bool_t    enableV0findingEffi             = kFALSE,                 // enables V0finding efficiency histograms
                                   TString   periodNameV0Reader              = "",                     // period Name for V0Reader
@@ -479,7 +479,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
     task->SetUseTHnSparse(isUsingTHnSparse);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   
   //connect containers
   AliAnalysisDataContainer *coutput =
