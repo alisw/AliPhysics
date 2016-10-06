@@ -1420,8 +1420,8 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
     }
 
 //       if (!(phi > 0 && phi < (2*TMath::Pi()/3))) continue;
-       if (!(phi > (2*TMath::Pi()/3) && phi < (4*TMath::Pi()/3))) continue;
-//       if (!(phi > (4*TMath::Pi()/3) && phi < (2*TMath::Pi()))) continue;
+//       if (!(phi > (2*TMath::Pi()/3) && phi < (4*TMath::Pi()/3))) continue;
+       if (!(phi > (4*TMath::Pi()/3) && phi < (2*TMath::Pi()))) continue;
 
 
      if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
