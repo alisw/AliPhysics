@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20, Int_t hadCutCase=1, TString ContNameExt = "")
+AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20, Int_t hadCutCase=1, Bool_t trigElePtcut=kFALSE, TString ContNameExt = "")
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -27,6 +27,7 @@ AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20, Int_t 
   taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
   taskHFEeh->SetCentralitySelection(centMin,centMax);
   taskHFEeh->SetHadronCutCase(hadCutCase);
+  taskHFEeh->SetTriggerElePtCut(trigElePtcut);
 
   TString containerName = mgr->GetCommonFileName();
   TString SubcontainerName = ContNameExt;
@@ -35,8 +36,7 @@ AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20, Int_t 
 
   mgr->ConnectInput(taskHFEeh,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHFEeh,1,coutput3);
-
-  mgr->AddTask(taskHFEeh);
+  //mgr->AddTask(taskHFEeh);
 
 
   // EMCal EGA EG1
@@ -45,6 +45,7 @@ AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20, Int_t 
   taskHFEehGA01->SetEMCalTriggerEG1(kTRUE);
   taskHFEehGA01->SetCentralitySelection(centMin,centMax);
   taskHFEehGA01->SetHadronCutCase(hadCutCase);
+  taskHFEehGA01->SetTriggerElePtCut(trigElePtcut);
 
   TString containerName01 = mgr->GetCommonFileName();
   TString SubcontainerName01 = ContNameExt;
@@ -54,7 +55,7 @@ AliAnalysisTask *AddTaskEHCorrel(Double_t centMin=0, Double_t centMax=20, Int_t 
 
   mgr->ConnectInput(taskHFEehGA01, 0, cinput);
   mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
-  mgr->AddTask(taskHFEehGA01);
+  //mgr->AddTask(taskHFEehGA01);
 
   return taskHFEeh;
 }
