@@ -1392,7 +1392,9 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052013","00200009327000008250400000","1111121067032230000","0163103100000010"); // EMC7
     cuts.AddCut("00083013","00200009327000008250400000","1111121067032230000","0163103100000010"); // EMCEG1,
     cuts.AddCut("00085013","00200009327000008250400000","1111121067032230000","0163103100000010"); // EMCEG2,
-    
+  } else if (trainConfig == 600){ // DCAL clusters 5.02 TeV LHC15
+    cuts.AddCut("00010113","00200009327000008250400000","3115500011001220000","0163103100000010"); //
+    cuts.AddCut("00010113","00200009327000008250400000","1115500011001220000","0163103100000010"); //  
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

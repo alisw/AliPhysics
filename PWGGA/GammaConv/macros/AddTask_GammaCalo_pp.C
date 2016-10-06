@@ -944,7 +944,6 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
   } else if (trainConfig == 221){ // EMCAL clusters pp 7 TeV, std matching
     cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // std
-
     // pp7TeV EMCal direct photons
   } else if (trainConfig == 251) {
     cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // pt const track matching, M02 < 0.7
@@ -1049,10 +1048,9 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111121067032220000","0163103100000050"); // EMC7
     cuts.AddCut("00083013","1111121067032220000","0163103100000050"); // EMCEG1,
     cuts.AddCut("00085013","1111121067032220000","0163103100000050"); // EMCEG2,
-
-    
-    
-    
+   // ************************************* DCal cuts ****************************************************
+  } else if (trainConfig == 601){ // DCAL clusters pp 5.02 TeV
+    cuts.AddCut("00010113","3115500011001220000","0163103100000000"); // with timing Cut & trackmatching 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
