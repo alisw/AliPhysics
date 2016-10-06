@@ -581,6 +581,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fNRPBins					(0), 
   fNOfPools(1),
   fPoolIndex(-9999),
+	fHistoPoolMonitor(0),
   nextResVec(),
   reservoirsReady(),
   m_ReservoirE(),
@@ -1098,6 +1099,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fNRPBins					(0), 
 	fNOfPools(1),
   fPoolIndex(-9999),
+	fHistoPoolMonitor(0),
   nextResVec(),
   reservoirsReady(),
   m_ReservoirE(),
@@ -4673,6 +4675,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHEventPlane = new TH1F("fHEventPlane","conter",100,-3.14,3.14);
   fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
   fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
+	fHistoPoolMonitor =  new TH2F("fHistoPoolMonitor","Pool ID vs depth",4000,-0.5,3999.5,50,-0.5,49.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
@@ -4680,6 +4683,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHEventPlane);
   fOutput->Add(fHNTrackletvsZ);
   fOutput->Add(fHNTrackletCorrvsZ);
+	fOutput->Add(fHistoPoolMonitor);
 
   return;
 }
@@ -6259,6 +6263,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
         FillBackground(m_ReservoirE[poolIndex][j],m_ReservoirVarsE[poolIndex][j],m_ReservoirL1[poolIndex][nextRes],m_ReservoirVarsL1[poolIndex][nextRes],1);
         FillBackground(m_ReservoirE[poolIndex][nextRes],m_ReservoirVarsE[poolIndex][nextRes],m_ReservoirL2[poolIndex][j],m_ReservoirVarsL2[poolIndex][j],-1);
         FillBackground(m_ReservoirE[poolIndex][j],m_ReservoirVarsE[poolIndex][j],m_ReservoirL2[poolIndex][nextRes],m_ReservoirVarsL2[poolIndex][nextRes],-1);
+				fHistoPoolMonitor->Fill(poolIndex,nextRes);
       }
     }
   }
