@@ -336,13 +336,13 @@ void AliAnalysisTaskLMeeCocktailMC::UserExec(Option_t *)
 {
 
   fInputEvent = InputEvent();
-  //   cout << "I found an Event" << endl;
+  //cout << "I found an Event" << endl;
   
   fMCEvent = MCEvent();
   if(fMCEvent == NULL) fIsMC = 0;
   
   if (fIsMC==0) return;
-  //   cout << "I found an MC header" << endl;
+  //cout << "I found an MC header" << endl;
     
   fMCStack = fMCEvent->Stack();
   if(fMCStack == NULL) fIsMC = 0;
@@ -391,6 +391,24 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     if(hasMother){
      //if(motherParticle->GetMother(0)>-1)motherIsPrimary = kTRUE;
      if(motherParticle->GetMother(0)==-1)motherIsPrimary = kTRUE;
+     
+     //skip for the moment other particles rather than pi0, eta, etaprime, omega, rho, phi.
+     switch(motherParticle->GetPdgCode()){
+      case 111:
+       break;
+      case 221:
+       break;
+      case 331:
+       break;
+      case 223:
+       break;
+      case 113:
+       break;
+      case 333:
+       break;
+      default:
+       continue;
+      }
     }
 
     // Not sure about this cut. From GammaConv group
