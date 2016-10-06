@@ -2386,6 +2386,15 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  }
  fQycvsV0[1] = ((TH1D*) contQyncs->GetObject(run));
 
+
+
+
+
+ for(Int_t i(0); i < 4; i++) {
+   cuts->SetVZEROApol(i, 1.);
+   cuts->SetVZEROCpol(i, 1.);
+ }
+
  fApplyRecentering = 20152;
 }
 
