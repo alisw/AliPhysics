@@ -121,6 +121,8 @@ AliAnalysisTaskJetV3::AliAnalysisTaskJetV3() : AliAnalysisTaskEmcalJet("AliAnaly
                fWidthQ[i][j][k] = 0.;  
                fMeanQv3[i][j][k] = 0.; 
                fWidthQv3[i][j][k] = 0.;
+               fMQ[j][k] = 0;
+               fWQ[j][k] = 0;
            }
        }
    }
@@ -191,6 +193,8 @@ AliAnalysisTaskJetV3::AliAnalysisTaskJetV3(const char* name, runModeType type, B
                fWidthQ[i][j][k] = 0.;  
                fMeanQv3[i][j][k] = 0.; 
                fWidthQv3[i][j][k] = 0.;
+               fMQ[j][k] = 0;
+               fWQ[j][k] = 0;
            }
        }
    }
