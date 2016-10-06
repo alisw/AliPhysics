@@ -12,7 +12,10 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <functional>
 #include <iostream>
+#include <map>
+#include <string>
 #include <TClonesArray.h>
 #include <THashList.h>
 #include <THistManager.h>
@@ -59,8 +62,25 @@ void AliAnalysisTaskEmcalMaxPatch::UserCreateOutputObjects(){
 
   fHistos = new THistManager("histMaxPatch");
   fHistos->CreateTH1("hTrueEventCount", "Maximum energy patch in the event", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hPatchEnergyMaxEGA", "Energy spectrum of the maximum EGA patch", 2000, 0., 200.);
-  fHistos->CreateTH1("hPatchEnergyMaxEJE", "Energy spectrum of the maximum EJE patch", 2000, 0., 200.);
+
+  const std::map<std::string, std::string> triggers {
+    {"EGAOffline", "offline EGA"}, {"EJEOffline", "offline EJE"}, {"EGARecalc", "recalc EGA"},
+    {"EJERecalc", "recalc EJE"}, {"EG1Online", "online EG1"}, {"EG2Online", "online EG2"},
+    {"DG1Online", "online DG1"}, {"DG2Online", "online DG2"}, {"EJ1Online", "online EJ1"},
+    {"EJ2Online", "online EJ2"}, {"DJ1Online", "online DJ1"}, {"DJ2Online", "online DJ2"},
+  };
+  // Calibrated FEE energy
+  for(const auto &t : triggers)
+    fHistos->CreateTH1(Form("hPatchEnergyMax%s", t.first.c_str()), Form("Energy spectrum of the maximum %s patch", t.second.c_str()), 2000, 0., 200.);
+
+  // Online ADC counts
+  for(const auto &t : triggers)
+    fHistos->CreateTH1(Form("hPatchADCMax%s", t.first.c_str()), Form("ADC spectrum of the maximum %s patch", t.second.c_str()), 2049, -0.5, 2048.5);
+
+  // ADC vs energy
+  for(const auto &t : triggers)
+    fHistos->CreateTH2(Form("hPatchADCvsEnergyMax%s", t.first.c_str()), Form("ADC vs. Energy of the maximum %s patch", t.second.c_str()), 300, 0., 3000, 200, 0., 200.);
+
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   PostData(1, fOutput);
@@ -96,23 +116,110 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::IsEventSelected(){
 Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
   fHistos->FillTH1("hTrueEventCount", 1);
 
-  double maxEGA(0), maxEJE(0);
-  int nEGA(0), nEJE(0);
-  AliEMCALTriggerPatchInfo *currentpatch(nullptr);
-  for(TIter patchiter = TIter(this->fTriggerPatchInfo).Begin(); patchiter != TIter::End(); ++patchiter){
-    currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(*patchiter);
-    if(!currentpatch->IsOfflineSimple()) continue;
-    if(currentpatch->IsGammaHighSimple()){
-      nEGA++;
-      maxEGA = currentpatch->GetPatchE() > maxEGA ? currentpatch->GetPatchE() : maxEGA;
-    } else if(currentpatch->IsJetHighSimple()) {
-      nEJE++;
-      maxEJE = currentpatch->GetPatchE() > maxEJE ? currentpatch->GetPatchE() : maxEJE;
+  const AliEMCALTriggerPatchInfo *currentpatch(nullptr),
+       *maxOfflineEGA(nullptr),
+       *maxOfflineEJE(nullptr),
+       *maxRecalcEGA(nullptr),
+       *maxRecalcEJE(nullptr),
+       *maxOnlineEG1(nullptr),
+       *maxOnlineEG2(nullptr),
+       *maxOnlineDG1(nullptr),
+       *maxOnlineDG2(nullptr),
+       *maxOnlineEJ1(nullptr),
+       *maxOnlineEJ2(nullptr),
+       *maxOnlineDJ1(nullptr),
+       *maxOnlineDJ2(nullptr);
+
+  // Find the maximum patch for each cathegory
+  for(auto patchiter : *fTriggerPatchInfo){
+    currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(patchiter);
+
+    // Offline patches - make cut on energy
+    if(currentpatch->IsOfflineSimple()){
+      if(currentpatch->IsGammaHighSimple()){
+        if(!maxOfflineEGA || currentpatch->GetPatchE() > maxOfflineEGA->GetPatchE())
+          maxOfflineEGA = currentpatch;
+      } else if(currentpatch->IsJetHighSimple()) {
+        if(!maxOfflineEJE || currentpatch->GetPatchE() > maxOfflineEJE->GetPatchE())
+          maxOfflineEJE = currentpatch;
+      }
+    }
+
+    // Recalc patches - make cut on FastOR ADC
+    if(currentpatch->IsRecalc()){
+      if(currentpatch->IsGammaHighRecalc()){
+        if(!maxRecalcEGA || currentpatch->GetADCAmp() > maxRecalcEGA->GetADCAmp())
+          maxRecalcEGA = currentpatch;
+      } else if(currentpatch->IsJetHighSimple()) {
+        if(!maxRecalcEJE || currentpatch->GetADCAmp() > maxRecalcEJE->GetADCAmp())
+          maxRecalcEJE = currentpatch;
+      }
+    }
+
+    // Online patches
+    if(currentpatch->IsGammaHigh() || currentpatch->IsGammaLow()){
+      if(currentpatch->IsEMCal()){
+        if(currentpatch->IsGammaHigh()){
+          if(!maxOnlineEG1 || currentpatch->GetADCAmp() > maxOnlineEG1->GetADCAmp())
+            maxOnlineEG1 = currentpatch;
+        }
+        if(currentpatch->IsGammaLow()){
+          if(!maxOnlineEG2 || currentpatch->GetADCAmp() > maxOnlineEG2->GetADCAmp())
+            maxOnlineEG2 = currentpatch;
+        }
+      } else {
+        if(currentpatch->IsGammaHigh()){
+          if(!maxOnlineDG1 || currentpatch->GetADCAmp() > maxOnlineDG1->GetADCAmp())
+            maxOnlineDG1 = currentpatch;
+        }
+        if(currentpatch->IsGammaLow()){
+          if(!maxOnlineDG2 || currentpatch->GetADCAmp() > maxOnlineDG2->GetADCAmp())
+            maxOnlineDG2 = currentpatch;
+        }
+      }
+    }
+
+    if(currentpatch->IsJetHigh() || currentpatch->IsJetLow()){
+      if(currentpatch->IsEMCal()){
+        if(currentpatch->IsJetHigh()){
+          if(!maxOnlineEJ1 || currentpatch->GetADCAmp() > maxOnlineEJ1->GetADCAmp())
+            maxOnlineEJ1 = currentpatch;
+        }
+        if(currentpatch->IsJetLow()){
+          if(!maxOnlineEJ2 || currentpatch->GetADCAmp() > maxOnlineEJ2->GetADCAmp())
+            maxOnlineEJ2 = currentpatch;
+        }
+      } else {
+        if(currentpatch->IsJetHigh()){
+          if(!maxOnlineDG1 || currentpatch->GetADCAmp() > maxOnlineDJ1->GetADCAmp())
+            maxOnlineDG1 = currentpatch;
+        }
+        if(currentpatch->IsJetLow()){
+          if(!maxOnlineDJ2 || currentpatch->GetADCAmp() > maxOnlineDJ2->GetADCAmp())
+            maxOnlineDJ2 = currentpatch;
+        }
+      }
     }
   }
 
-  if(nEGA) fHistos->FillTH1("hPatchEnergyMaxEGA", maxEGA);
-  if(nEJE) fHistos->FillTH1("hPatchEnergyMaxEJE", maxEJE);
+  std::function<void (const AliEMCALTriggerPatchInfo *, const std::string &)> FillHistos = [this](const AliEMCALTriggerPatchInfo * testpatch, const std::string & triggername){
+    fHistos->FillTH1(Form("hPatchEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
+    fHistos->FillTH1(Form("hPatchADCMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
+    fHistos->FillTH2(Form("hPatchADCvsEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0., testpatch ? testpatch->GetADCAmp() : 0);
+  };
+
+  FillHistos(maxOfflineEGA, "EGAOffline");
+  FillHistos(maxOfflineEJE, "EJEOffline");
+  FillHistos(maxRecalcEGA, "EGARecalc");
+  FillHistos(maxRecalcEJE, "EJERecalc");
+  FillHistos(maxOnlineEG1, "EG1Online");
+  FillHistos(maxOnlineEG2, "EG2Online");
+  FillHistos(maxOnlineDG1, "DG1Online");
+  FillHistos(maxOnlineDG2, "DG2Online");
+  FillHistos(maxOnlineEJ1, "EJ1Online");
+  FillHistos(maxOnlineEJ2, "EJ2Online");
+  FillHistos(maxOnlineDJ1, "DJ1Online");
+  FillHistos(maxOnlineDJ2, "DJ2Online");
 
   return true;
 }
