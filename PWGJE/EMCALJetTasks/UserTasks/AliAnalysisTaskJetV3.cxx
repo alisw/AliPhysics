@@ -43,7 +43,7 @@
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
 #include <AliOADBContainer.h>
-//#include <AliMultSelection.h>
+#include <AliMultSelection.h>
 #include <AliInputEventHandler.h>
 // emcal jet framework includes
 #include <AliEmcalJet.h>
@@ -291,6 +291,10 @@ Bool_t AliAnalysisTaskJetV3::Notify()
                 return kTRUE;
             } break;
             case kJetFlowMC : {
+                return kTRUE;
+            } break;
+            case kPbPb15o : {
+                ReadVZEROCalibration2015o();
                 return kTRUE;
             } break;
             default :  {
@@ -1115,6 +1119,57 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
             vzero[1][1] = (1./3.)*TMath::ATan2(QC3[1], QC3[0]);
             return;     // paranoid return
         } break;
+        case kPbPb15o : {
+            Double_t Qxan = 0, Qyan = 0;
+            Double_t Qxcn = 0, Qycn = 0;
+            Double_t Qxa3 = 0, Qya3 = 0;
+            Double_t Qxc3 = 0, Qyc3 = 0;
+            Double_t sumMa = 0, sumMc = 0;
+            AliVVZERO* aodV0 = (InputEvent())->GetVZEROData();
+            for (Int_t iV0 = 0; iV0 < 64; iV0++) {
+                Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+                Float_t multv0 = aodV0->GetMultiplicity(iV0);
+                if (iV0 < 32){
+                    Double_t multCorC = -10;
+                    if (iV0 < 8) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(1);
+                    else if (iV0 >= 8 && iV0 < 16) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(9);
+                    else if (iV0 >= 16 && iV0 < 24) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(17);
+                    else if (iV0 >= 24 && iV0 < 32) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(25);
+                    if (multCorC < 0) cout<<"Problem with multiplicity in V0C"<<endl;
+                    Qxcn += TMath::Cos(2.*phiV0) * multCorC;
+                    Qycn += TMath::Sin(2.*phiV0) * multCorC;
+                    Qxc3 += TMath::Cos(3.*phiV0) * multCorC;
+                    Qyc3 += TMath::Sin(3.*phiV0) * multCorC;
+                    sumMc = sumMc + multCorC;
+                } else {
+                    Double_t multCorA = -10;
+                    if (iV0 >= 32 && iV0 < 40) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(33);
+                    else if (iV0 >= 40 && iV0 < 48) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(41);
+                    else if (iV0 >= 48 && iV0 < 56) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(49);
+                    else if (iV0 >= 56 && iV0 < 64) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(57);
+                    if (multCorA < 0) cout<<"Problem with multiplicity in V0A"<<endl;
+                    Qxan += TMath::Cos(2.*phiV0) * multCorA;
+                    Qyan += TMath::Sin(2.*phiV0) * multCorA;
+                    Qxa3 += TMath::Cos(3.*phiV0) * multCorA;
+                    Qya3 += TMath::Sin(3.*phiV0) * multCorA;
+                    sumMa = sumMa + multCorA;
+                }
+            }
+            if (sumMa <=0 || sumMc <= 0) return;
+            Double_t iCentSPD = GetCentrality("CL1");
+            Double_t QyanCor = (Qyan - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
+            Double_t QycnCor = (Qycn - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
+            Double_t QxanCor = (Qxan - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
+            Double_t QxcnCor = (Qxcn - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            vzero[0][0] = .5*TMath::ATan2(QyanCor,QxanCor);
+            vzero[1][0] = .5*TMath::ATan2(QycnCor,QxcnCor);
+            QyanCor = (Qya3 - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
+            QycnCor = (Qyc3 - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
+            QxanCor = (Qxa3 - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
+            QxcnCor = (Qxc3 - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            vzero[0][1] = (1./3.)*TMath::ATan2(QyanCor,QxanCor);
+            vzero[1][1] = (1./3.)*TMath::ATan2(QycnCor,QxcnCor);
+        } break;
         default: {
             // by default use the ep from the event header (make sure EP selection task is enabeled!)
             Double_t a(0), b(0), c(0), d(0), e(0), f(0), g(0), h(0);
@@ -1145,6 +1200,55 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneCombinedVZERO(Double_t* comb) cons
             CalculateQvectorCombinedVZERO(Q2, Q3);
             comb[0] = .5*TMath::ATan2(Q2[1], Q2[0]);
             comb[1] = (1./3.)*TMath::ATan2(Q3[1], Q3[0]);
+        } break;
+        case kPbPb15o : {    //V0 info
+            Double_t Qxan = 0, Qyan = 0;
+            Double_t Qxcn = 0, Qycn = 0;
+            Double_t Qxa3 = 0, Qya3 = 0;
+            Double_t Qxc3 = 0, Qyc3 = 0;
+            Double_t sumMa = 0, sumMc = 0;
+            AliVVZERO* aodV0 =(InputEvent())->GetVZEROData();
+            for (Int_t iV0 = 0; iV0 < 64; iV0++) {
+                Double_t phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+                Float_t multv0 = aodV0->GetMultiplicity(iV0);
+                if (iV0 < 32){
+                    Double_t multCorC = -10;
+                    if (iV0 < 8) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(1);
+                    else if (iV0 >= 8 && iV0 < 16) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(9);
+                    else if (iV0 >= 16 && iV0 < 24) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(17);
+                    else if (iV0 >= 24 && iV0 < 32) multCorC = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(25);
+                    if (multCorC < 0) cout<<"Problem with multiplicity in V0C"<<endl;
+                    Qxcn += TMath::Cos(2.*phiV0) * multCorC;
+                    Qycn += TMath::Sin(2.*phiV0) * multCorC;
+                    Qxc3 += TMath::Cos(3.*phiV0) * multCorC;
+                    Qyc3 += TMath::Sin(3.*phiV0) * multCorC;
+                    sumMc = sumMc + multCorC;
+                } else {
+                    Double_t multCorA = -10;
+                    if (iV0 >= 32 && iV0 < 40) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(33);
+                    else if (iV0 >= 40 && iV0 < 48) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(41);
+                    else if (iV0 >= 48 && iV0 < 56) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(49);
+                    else if (iV0 >= 56 && iV0 < 64) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(57);
+                    if (multCorA < 0) cout<<"Problem with multiplicity in V0A"<<endl;
+                    Qxan += TMath::Cos(2.*phiV0) * multCorA;
+                    Qyan += TMath::Sin(2.*phiV0) * multCorA;
+                    Qxa3 += TMath::Cos(3.*phiV0) * multCorA;
+                    Qya3 += TMath::Sin(3.*phiV0) * multCorA;
+                    sumMa = sumMa + multCorA;
+                }
+            }
+            if (sumMa <=0 || sumMc <= 0) return;
+            Double_t iCentSPD = GetCentrality("CL1");
+            Double_t QyanCor = (Qyan - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
+            Double_t QycnCor = (Qycn - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
+            Double_t QxanCor = (Qxan - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
+            Double_t QxcnCor = (Qxcn - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            comb[0] = .5*TMath::ATan2(QyanCor+QycnCor,QxanCor+QxcnCor);
+            QyanCor = (Qya3 - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
+            QycnCor = (Qyc3 - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
+            QxanCor = (Qxa3 - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
+            QxcnCor = (Qxc3 - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            comb[1] = (1./3.)*TMath::ATan2(QyanCor+QycnCor,QxanCor+QxcnCor);
         } break;
         default : {
             // for all other types use calibrated event plane from the event header
@@ -2173,6 +2277,9 @@ Bool_t AliAnalysisTaskJetV3::PassesCuts(AliVEvent* event)
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
     switch (fCollisionType) {
+        case kPbPb15o : {
+            return PassesExperimentalHighLumiCuts(static_cast<AliAODEvent*>(event));
+        } break;
         case kJetFlowMC : {
             fInCentralitySelection = 0;
             return kTRUE;
@@ -2201,7 +2308,15 @@ Bool_t AliAnalysisTaskJetV3::PassesCuts(AliVEvent* event)
        } break;
        default: break;
     }
-    fCent = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+    
+    switch (fCollisionType) {
+        case kPbPb15o :  { 
+            fCent = GetCentrality("V0M");
+        } break;
+        default: {    
+            fCent = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+        } break;
+    }
     if(fCent <= fCentralityClasses->At(0) || fCent >= fCentralityClasses->At(fCentralityClasses->GetSize()-1) || TMath::Abs(fCent-InputEvent()->GetCentrality()->GetCentralityPercentile("TRK")) > 5.) return kFALSE;
     // determine centrality class
     fInCentralitySelection = -1;
@@ -2248,6 +2363,94 @@ Bool_t AliAnalysisTaskJetV3::PassesCuts(AliVEvent* event)
     }
     return kTRUE;
 }
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskJetV3::PassesExperimentalHighLumiCuts(AliAODEvent* event)
+{
+    // name of the function says it all
+    #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+
+    if (MultiVertexer(event)) return kFALSE;
+    
+    Short_t isPileup = event->IsPileupFromSPD(3);
+    if (isPileup != 0) return kFALSE;
+    
+    if (((AliAODHeader*)event->GetHeader())->GetRefMultiplicityComb08() < 0) return kFALSE;
+    
+    // add vertexer selection
+    AliAODVertex* vtTrc = event->GetPrimaryVertex();
+    AliAODVertex* vtSPD = event->GetPrimaryVertexSPD();
+    if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return kFALSE; // one of vertices is missing
+    double covTrc[6],covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    double dz = vtTrc->GetZ()-vtSPD->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return kFALSE; // bad vertexing 
+
+    //new function for 2015 to remove incomplete events
+    if (event->IsIncompleteDAQ()) return kFALSE;
+
+    return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskJetV3::MultiVertexer(const AliAODEvent* event)
+{
+    // check for multi-vertexer pile-up
+    const int    kMinPlpContrib = 5;
+    const double kMaxPlpChi2 = 5.0;
+    const double kMinWDist = 15;
+    const AliVVertex* vtPrm = 0;
+    const AliVVertex* vtPlp = 0;
+    int nPlp = 0;
+    if ( !(nPlp = event->GetNumberOfPileupVerticesTracks()) ) return kFALSE;
+    vtPrm = event->GetPrimaryVertex();
+    if (vtPrm == event->GetPrimaryVertexSPD()) return kTRUE; // there are pile-up vertices but no primary
+    
+    for (int ipl=0;ipl<nPlp;ipl++) {
+        vtPlp = (const AliVVertex*)event->GetPileupVertexTracks(ipl);
+        if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
+        if (vtPlp->GetChi2perNDF() > kMaxPlpChi2) continue;
+        double wDst = GetWDist(vtPrm,vtPlp);
+        if (wDst<kMinWDist) continue;
+        return kTRUE; // pile-up: well separated vertices
+    }
+    //
+    return kFALSE;
+    //
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskJetV3::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+{
+    
+    // calculate sqrt of weighted distance to other vertex
+    if (!v0 || !v1) {
+        printf("One of vertices is not valid\n");
+        return 0;
+    }
+    static TMatrixDSym vVb(3);
+    double dist = -1;
+    double dx = v0->GetX()-v1->GetX();
+    double dy = v0->GetY()-v1->GetY();
+    double dz = v0->GetZ()-v1->GetZ();
+    double cov0[6],cov1[6];
+    v0->GetCovarianceMatrix(cov0);
+    v1->GetCovarianceMatrix(cov1);
+    vVb(1,1) = cov0[2]+cov1[2];
+    vVb(2,2) = cov0[5]+cov1[5];
+    vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
+    vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+    vVb.InvertFast();
+    if (!vVb.IsValid()) {printf("Singular Matrix\n"); return dist;}
+    dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+    +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+    return dist>0 ? TMath::Sqrt(dist) : -1;
+    
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskJetV3::FillHistogramsAfterSubtraction(Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
 {
@@ -2954,13 +3157,194 @@ void AliAnalysisTaskJetV3::ReadVZEROCalibration2011h()
     if(!fSigma3C) fSigma3C = new TArrayD(9, sigmaC3);
 }
 //_____________________________________________________________________________
+void AliAnalysisTaskJetV3::ReadVZEROCalibration2015o() {
+     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+    if(!fOADB || fOADB->IsZombie()) fOADB = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+    if(fOADB->IsZombie()) {
+	printf("OADB file could not be opened CALIBRATION FAILED !");
+	return;
+    }
+
+    Int_t fNHarm = 2;
+    AliOADBContainer* cont = (AliOADBContainer*) fOADB->Get("hMultV0BefCorPfpx");
+    fVZEROgainEqualization= ((TH1D*) cont->GetObject(fRunNumber));
+
+
+    AliOADBContainer* contQxnam = 0;
+    if (fNHarm == 2.)
+       contQxnam = (AliOADBContainer*) fOADB->Get("fqxa2m");
+    else if (fNHarm == 3.)
+        contQxnam = (AliOADBContainer*) fOADB->Get("fqxa3m");
+    else if (fNHarm == 4.)
+        contQxnam = (AliOADBContainer*) fOADB->Get("fqxa4m");
+    
+    if(!contQxnam){
+        printf("OADB object fqyanm is not available in the file\n");
+        return;
+    }
+    if(!(contQxnam->GetObject(fRunNumber))){
+        printf("OADB object fqyanm is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fMQ[0][0] = ((TH1D*) contQxnam->GetObject(fRunNumber));
+
+
+
+    AliOADBContainer* contQynam = 0;
+    if (fNHarm == 2.)
+       contQynam = (AliOADBContainer*) fOADB->Get("fqya2m");
+    else if (fNHarm == 3.)
+        contQynam = (AliOADBContainer*) fOADB->Get("fqya3m");
+    else if (fNHarm == 4.)
+        contQynam = (AliOADBContainer*) fOADB->Get("fqya4m");
+    
+    if(!contQynam){
+        printf("OADB object fqyanm is not available in the file\n");
+        return;
+    }
+    if(!(contQynam->GetObject(fRunNumber))){
+        printf("OADB object fqyanm is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fMQ[1][0] = ((TH1D*) contQynam->GetObject(fRunNumber));
+    
+    
+    
+    AliOADBContainer* contQxnas = 0;
+    if (fNHarm == 2.)
+        contQxnas = (AliOADBContainer*) fOADB->Get("fqxa2s");
+    //else if (fNHarm == 3.)
+    else
+        contQxnas = (AliOADBContainer*) fOADB->Get("fqxa3s");
+    
+    if(!contQxnas){
+        printf("OADB object fqxans is not available in the file\n");
+        return;
+    }
+    if(!(contQxnas->GetObject(fRunNumber))){
+        printf("OADB object fqxans is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fWQ[0][0] = ((TH1D*) contQxnas->GetObject(fRunNumber));
+    
+    
+    
+    AliOADBContainer* contQynas = 0;
+    if (fNHarm == 2.)
+        contQynas = (AliOADBContainer*) fOADB->Get("fqya2s");
+    else if (fNHarm == 3.)
+        contQynas = (AliOADBContainer*) fOADB->Get("fqya3s");
+    else if (fNHarm == 4.)
+        contQynas = (AliOADBContainer*) fOADB->Get("fqya4s");
+    
+    if(!contQynas){
+        printf("OADB object fqyans is not available in the file\n");
+        return;
+    }
+    if(!(contQynas->GetObject(fRunNumber))){
+        printf("OADB object fqyans is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fWQ[1][0] = ((TH1D*) contQynas->GetObject(fRunNumber));
+    
+    
+    
+    AliOADBContainer* contQxncm = 0;
+    if (fNHarm == 2.)
+        contQxncm = (AliOADBContainer*) fOADB->Get("fqxc2m");
+    //else if (fNHarm == 3.)
+    else
+        contQxncm = (AliOADBContainer*) fOADB->Get("fqxc3m");
+    
+    if(!contQxncm){
+        printf("OADB object fqxcnm is not available in the file\n");
+        return;
+    }
+    if(!(contQxncm->GetObject(fRunNumber))){
+        printf("OADB object fqxcnm is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fMQ[0][1] = ((TH1D*) contQxncm->GetObject(fRunNumber));
+    
+    
+    
+    AliOADBContainer* contQyncm = 0;
+    if (fNHarm == 2.)
+        contQyncm = (AliOADBContainer*) fOADB->Get("fqyc2m");
+    else if (fNHarm == 3.)
+        contQyncm = (AliOADBContainer*) fOADB->Get("fqyc3m");
+    else if (fNHarm == 4.)
+        contQyncm = (AliOADBContainer*) fOADB->Get("fqyc4m");
+    
+    if(!contQyncm){
+        printf("OADB object fqyc2m is not available in the file\n");
+        return;
+    }
+    if(!(contQyncm->GetObject(fRunNumber))){
+        printf("OADB object fqyc2m is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fMQ[1][1] = ((TH1D*) contQyncm->GetObject(fRunNumber));
+    
+
+
+    AliOADBContainer* contQxncs = 0;
+    if (fNHarm == 2.)
+        contQxncs = (AliOADBContainer*) fOADB->Get("fqxc2s");
+    //else if (fNHarm == 3.)
+    else
+        contQxncs = (AliOADBContainer*) fOADB->Get("fqxc3s");
+    
+    if(!contQxncs){
+        printf("OADB object fqxc2s is not available in the file\n");
+        return;
+    }
+    if(!(contQxncs->GetObject(fRunNumber))){
+        printf("OADB object fqxc2s is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fWQ[0][1] = ((TH1D*) contQxncs->GetObject(fRunNumber));
+    
+    
+    
+    AliOADBContainer* contQyncs = 0;
+    if (fNHarm == 2.)
+        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc2s");
+    else if (fNHarm == 3.)
+        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc3s");
+    else if (fNHarm == 4.)
+        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc4s");
+    
+    if(!contQyncs){
+        printf("OADB object fqycnm is not available in the file\n");
+        return;
+    }
+    if(!(contQyncs->GetObject(fRunNumber))){
+        printf("OADB object fqycns is not available for run %i\n", fRunNumber);
+        return;
+    }
+    fWQ[1][1] = ((TH1D*) contQyncs->GetObject(fRunNumber));
+
+
+}
+//_____________________________________________________________________________
 Int_t AliAnalysisTaskJetV3::GetVZEROCentralityBin() const
 {
     // return cache index number corresponding to the event centrality
     #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    Float_t v0Centr(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+    Float_t v0Centr(-1.);
+    switch (fCollisionType) {
+        case kPbPb15o : {
+            v0Centr = GetCentrality("V0M");
+    } break;
+        default : {
+            v0Centr = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+        } break;
+    }
     if(v0Centr < 5) return 0;
     else if(v0Centr < 10) return 1;
     else if(v0Centr < 20) return  2;
@@ -3198,16 +3582,16 @@ void AliAnalysisTaskJetV3::DoSimpleSimulation(Int_t nEvents, Float_t v2, Float_t
    dNdphi4->DrawCopy("same");
 }
 //_____________________________________________________________________________
-//Float_t AliAnalysisTaskJetV3::GetCentrality() const
-//{
-//   // return centrality percentile using new framework
-//    // return -1 when something goes wrong
-//    #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
-//        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-//    #endif
-//    AliMultSelection *multSelection = 0x0; 
-//    if(!InputEvent()) return -1.;
-//    multSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-//    if(multSelection) multSelection->GetMultiplicityPercentile("V0M");
-//    return -1.;
-//}
+Float_t AliAnalysisTaskJetV3::GetCentrality(const char* estimator) const
+{
+   // return centrality percentile using new framework
+    // return -1 when something goes wrong
+    #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+    AliMultSelection *multSelection = 0x0; 
+    if(!InputEvent()) return -1.;
+    multSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+    if(multSelection) multSelection->GetMultiplicityPercentile(estimator);
+    return -1.;
+}
