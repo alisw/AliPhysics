@@ -378,6 +378,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
     TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                  fHistoVertexZ;                                      //! array of histos with vertex z distribution for selected events
+    TH1F**                  fHistoVertexX;                                      //! array of histos with vertex x distribution for selected events
+    TH1F**                  fHistoVertexY;                                      //! array of histos with vertex y distribution for selected events
     TH1F**                  fHistoNGammaCandidates;                             //! array of histos with number of gamma candidates per event
     TH2F**                  fHistoNGoodESDTracksVsNGammaCandidates;             //! array of histos with number of good tracks vs gamma candidates
     TH2F**                  fHistoSPDClusterTrackletBackground;                 //! array of histos with SPD tracklets vs SPD clusters for background rejection
@@ -425,7 +427,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 31);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 32);
 };
 
 #endif

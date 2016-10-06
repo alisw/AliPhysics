@@ -285,6 +285,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
   fHistoVertexZ(NULL),
+  fHistoVertexX(NULL),
+  fHistoVertexY(NULL),
   fHistoNGammaCandidates(NULL),
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
@@ -552,6 +554,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
   fHistoVertexZ(NULL),
+  fHistoVertexX(NULL),
+  fHistoVertexY(NULL),
   fHistoNGammaCandidates(NULL),
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
@@ -754,6 +758,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   }
   fHistoNGoodESDTracks        = new TH1F*[fnCuts];
   fHistoVertexZ               = new TH1F*[fnCuts];
+  if(!fDoLightOutput){
+    fHistoVertexX               = new TH1F*[fnCuts];
+    fHistoVertexY               = new TH1F*[fnCuts];
+  }
   fHistoNGammaCandidates      = new TH1F*[fnCuts];
   if(fIsHeavyIon==2) fProfileEtaShift = new TProfile*[fnCuts];
   if(!fDoLightOutput){
@@ -906,6 +914,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
     fHistoVertexZ[iCut]             = new TH1F("VertexZ","VertexZ",1000,-50,50);
     fESDList[iCut]->Add(fHistoVertexZ[iCut]);
+    if(!fDoLightOutput){
+      fHistoVertexX[iCut]             = new TH1F("VertexX","VertexX",200,-5,5);
+      fESDList[iCut]->Add(fHistoVertexX[iCut]);
+      fHistoVertexY[iCut]             = new TH1F("VertexY","VertexY",200,-5,5);
+      fESDList[iCut]->Add(fHistoVertexY[iCut]);
+    }
 
     if(fIsHeavyIon == 1) 
       fHistoNGammaCandidates[iCut]  = new TH1F("GammaCandidates","GammaCandidates",100,0,100);
@@ -955,6 +969,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoVertexZ[iCut]->Sumw2();
       fHistoNGammaCandidates[iCut]->Sumw2();
       if(!fDoLightOutput){
+        fHistoVertexX[iCut]->Sumw2();
+        fHistoVertexY[iCut]->Sumw2();
         fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
         fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
         fHistoNV0Tracks[iCut]->Sumw2();
@@ -2180,6 +2196,8 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
       fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
       fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
       if(!fDoLightOutput){
+        fHistoVertexX[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetX(), fWeightJetJetMC);
+        fHistoVertexY[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetY(), fWeightJetJetMC);
         fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)),fWeightJetJetMC);
         if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)  fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
         else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
