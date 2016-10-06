@@ -70,6 +70,7 @@ public:
     static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
     static Bool_t IsNotAsymmetricInVZERO               (AliVEvent *event);
     static Bool_t IsNotIncompleteDAQ                   (AliVEvent *event);
+    static Bool_t HasGoodVertex2016                    (AliVEvent *event);
     
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
@@ -215,7 +216,7 @@ private:
     Bool_t fEvSel_PassesTrackletVsCluster;  //!
     Bool_t fEvSel_IsNotAsymmetricInVZERO;   //!
     Bool_t fEvSel_IsNotIncompleteDAQ;       //!
-    
+    Bool_t fEvSel_HasGoodVertex2016;        //!
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.

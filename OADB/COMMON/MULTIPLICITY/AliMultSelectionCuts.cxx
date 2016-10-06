@@ -32,7 +32,8 @@ AliMultSelectionCuts::AliMultSelectionCuts() :
     fEvSel_CheckConsistencySPDandTrackVertices (kTRUE),
     fEvSel_NonZeroNContribs( kFALSE ),
     fEvSel_IsNotAsymmetricInVZERO( kFALSE ),
-    fEvSel_IsNotIncompleteDAQ(kFALSE)
+    fEvSel_IsNotIncompleteDAQ(kFALSE),
+    fEvSel_HasGoodVertex2016(kFALSE)
 {
   // Constructor
   
@@ -47,7 +48,8 @@ AliMultSelectionCuts::AliMultSelectionCuts(const char * name, const char * title
     fEvSel_CheckConsistencySPDandTrackVertices (kTRUE),
     fEvSel_NonZeroNContribs( kFALSE ),
     fEvSel_IsNotAsymmetricInVZERO( kFALSE ),
-    fEvSel_IsNotIncompleteDAQ ( kFALSE )
+    fEvSel_IsNotIncompleteDAQ ( kFALSE ),
+    fEvSel_HasGoodVertex2016(kFALSE)
 {
   // Constructor
   
@@ -69,6 +71,7 @@ AliMultSelectionCuts& AliMultSelectionCuts::operator=(const AliMultSelectionCuts
     fEvSel_NonZeroNContribs = o.fEvSel_NonZeroNContribs;
     fEvSel_IsNotAsymmetricInVZERO = o.fEvSel_IsNotAsymmetricInVZERO;
     fEvSel_IsNotIncompleteDAQ = o.fEvSel_IsNotIncompleteDAQ;
+    fEvSel_HasGoodVertex2016 = o.fEvSel_HasGoodVertex2016;
     return *this;
 }
 //________________________________________________________________
@@ -79,15 +82,16 @@ AliMultSelectionCuts::~AliMultSelectionCuts(){
 
 void AliMultSelectionCuts::Print(Option_t *option) const {
   Printf("Value of Cuts:");
-  Printf(" Vertex Z position.................: [%f]", fVzCut);
-  Printf(" Physics Selection.................: [%i]", fEvSel_Trig_kMB);
-  Printf(" INEL > 0..........................: [%i]", fEvSel_INELgtZERO);
-  Printf(" Tracklets vs Clusters.............: [%i]", fEvSel_TrackletsVsClusters);
-  Printf(" Reject Pileup SPD (mult bins).....: [%i]", fEvSel_RejectPileupInMultBins);
-  Printf(" SPD and Track vertex consistency..: [%i]", fEvSel_CheckConsistencySPDandTrackVertices);
-  Printf(" Non Zero NContribs to PV..........: [%i]", fEvSel_NonZeroNContribs);
-  Printf(" Reject Asymmetric in VZERO events.: [%i]", fEvSel_IsNotAsymmetricInVZERO);
-  Printf(" Reject IsIncompleteDAQ............: [%i]", fEvSel_IsNotIncompleteDAQ);
+  Printf(" Vertex Z position.....................: [%f]", fVzCut);
+  Printf(" Physics Selection.....................: [%i]", fEvSel_Trig_kMB);
+  Printf(" INEL > 0..............................: [%i]", fEvSel_INELgtZERO);
+  Printf(" Tracklets vs Clusters.................: [%i]", fEvSel_TrackletsVsClusters);
+  Printf(" Reject Pileup SPD (mult bins).........: [%i]", fEvSel_RejectPileupInMultBins);
+  Printf(" SPD and Track vertex consistency......: [%i]", fEvSel_CheckConsistencySPDandTrackVertices);
+  Printf(" Non Zero NContribs to PV..............: [%i]", fEvSel_NonZeroNContribs);
+  Printf(" Reject Asymmetric in VZERO events.....: [%i]", fEvSel_IsNotAsymmetricInVZERO);
+  Printf(" Reject IsIncompleteDAQ................: [%i]", fEvSel_IsNotIncompleteDAQ);
+  Printf(" Reject events if vtx not good (2016)..: [%i]", fEvSel_HasGoodVertex2016);
 }
 //________________________________________________________________
 /* Deprecated

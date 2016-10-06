@@ -158,6 +158,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       fEvSel_PassesTrackletVsCluster(0),
       fEvSel_IsNotAsymmetricInVZERO(0),
       fEvSel_IsNotIncompleteDAQ(0),
+      fEvSel_HasGoodVertex2016(0),
       fEvSel_VtxZ(0),
       fEvSelCode(0),
       fNDebug(1),
@@ -260,6 +261,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fEvSel_PassesTrackletVsCluster(0),
       fEvSel_IsNotAsymmetricInVZERO(0),
       fEvSel_IsNotIncompleteDAQ(0),
+      fEvSel_HasGoodVertex2016(0),
       fEvSel_VtxZ(0),
       fEvSelCode(0),
       fNDebug(1),
@@ -473,9 +475,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
         fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
         fTreeEvent->Branch("fEvSel_PassesTrackletVsCluster", &fEvSel_PassesTrackletVsCluster, "fEvSel_PassesTrackletVsCluster/O");
-	fTreeEvent->Branch("fEvSel_IsNotAsymmetricInVZERO", &fEvSel_IsNotAsymmetricInVZERO, "fEvSel_IsNotAsymmetricInVZERO/O");
-	fTreeEvent->Branch("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ, "fEvSel_IsNotIncompleteDAQ/O");
-
+        fTreeEvent->Branch("fEvSel_IsNotAsymmetricInVZERO", &fEvSel_IsNotAsymmetricInVZERO, "fEvSel_IsNotAsymmetricInVZERO/O");
+        fTreeEvent->Branch("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ, "fEvSel_IsNotIncompleteDAQ/O");
+        fTreeEvent->Branch("fEvSel_HasGoodVertex2016", &fEvSel_HasGoodVertex2016, "fEvSel_HasGoodVertex2016/O");
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
 
@@ -567,15 +569,16 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //Histogram Output: Event-by-Event
         fHistEventSelections = new TH2D( "fHistEventSelections", "",2,-.5,1.5,20,0,20);
         fHistEventSelections->GetYaxis()->SetBinLabel(1, "Triggered");
-	fHistEventSelections->GetYaxis()->SetBinLabel(2, "Vtx Z Cut");
-	fHistEventSelections->GetYaxis()->SetBinLabel(3, "Is Not Pileup");
-	fHistEventSelections->GetYaxis()->SetBinLabel(4, "Is Not Pileup MV");
-	fHistEventSelections->GetYaxis()->SetBinLabel(5, "Is Not Pileup in Mult Bins");
-	fHistEventSelections->GetYaxis()->SetBinLabel(6, "INELgtZERO");
-	fHistEventSelections->GetYaxis()->SetBinLabel(7, "No Inconsistent Vertices");
-	fHistEventSelections->GetYaxis()->SetBinLabel(8, "Passes Tracklet vs Cluster");
-	fHistEventSelections->GetYaxis()->SetBinLabel(9, "Is Not Asymmetric in VZERO");
-	fHistEventSelections->GetYaxis()->SetBinLabel(10, "Is Not IncompleteDAQ");
+        fHistEventSelections->GetYaxis()->SetBinLabel(2, "Vtx Z Cut");
+        fHistEventSelections->GetYaxis()->SetBinLabel(3, "Is Not Pileup");
+        fHistEventSelections->GetYaxis()->SetBinLabel(4, "Is Not Pileup MV");
+        fHistEventSelections->GetYaxis()->SetBinLabel(5, "Is Not Pileup in Mult Bins");
+        fHistEventSelections->GetYaxis()->SetBinLabel(6, "INELgtZERO");
+        fHistEventSelections->GetYaxis()->SetBinLabel(7, "No Inconsistent Vertices");
+        fHistEventSelections->GetYaxis()->SetBinLabel(8, "Passes Tracklet vs Cluster");
+        fHistEventSelections->GetYaxis()->SetBinLabel(9, "Is Not Asymmetric in VZERO");
+        fHistEventSelections->GetYaxis()->SetBinLabel(10, "Is Not IncompleteDAQ");
+        fHistEventSelections->GetYaxis()->SetBinLabel(11, "Has Good Vertex 2016");
         fListHist->Add(fHistEventSelections);
     }
     //QA Histograms - User-side output for cross-checking
@@ -671,6 +674,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_HasNoInconsistentVertices = kFALSE;
     fEvSel_INELgtZERO             = kFALSE;
     fEvSel_IsNotAsymmetricInVZERO = kFALSE;
+    fEvSel_IsNotIncompleteDAQ     = kFALSE;
+    fEvSel_HasGoodVertex2016      = kFALSE;
     //fnSPDClusters = -1;
     fnSPDClusters -> SetValueInteger(-1);
     fnSPDClusters0 -> SetValueInteger( -1) ;
@@ -830,7 +835,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_INELgtZERO                = IsINELgtZERO                        (lVevent);
     fEvSel_IsNotAsymmetricInVZERO    = IsNotAsymmetricInVZERO              (lVevent);
     fEvSel_IsNotIncompleteDAQ        = IsNotIncompleteDAQ                  (lVevent); 
-
+    fEvSel_HasGoodVertex2016         = HasGoodVertex2016                   (lVevent);
+    
     //classical Proton-proton like selection
     const AliVVertex *lPrimaryBestESDVtx     = lVevent->GetPrimaryVertex();
     const AliVVertex *lPrimarySPDVtx         = lVevent->GetPrimaryVertexSPD();
@@ -1153,6 +1159,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fHistEventSelections -> Fill ( fEvSel_PassesTrackletVsCluster   , 7.5 ); 
     fHistEventSelections -> Fill ( fEvSel_IsNotAsymmetricInVZERO    , 8.5 ); 
     fHistEventSelections -> Fill ( fEvSel_IsNotIncompleteDAQ        , 9.5 ); 
+    fHistEventSelections -> Fill ( fEvSel_HasGoodVertex2016         , 10.5 );
     
     //===============================================
     // End part which requires AOD/ESD separation
@@ -1217,12 +1224,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejNonZeroNContribs);
 
-	if( lMultCuts->GetIsNotAsymmetricInVZERO()    && ! fEvSel_IsNotAsymmetricInVZERO )
+        if( lMultCuts->GetIsNotAsymmetricInVZERO()    && ! fEvSel_IsNotAsymmetricInVZERO )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejAsymmetricInVZERO);
 	
-	if( lMultCuts->GetIsNotIncompleteDAQ()    && ! fEvSel_IsNotIncompleteDAQ )
+        if( lMultCuts->GetIsNotIncompleteDAQ()    && ! fEvSel_IsNotIncompleteDAQ )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejIncompleteDAQ);
-
+    
+        if( lMultCuts->GetHasGoodVertex2016()    && ! fEvSel_HasGoodVertex2016 )
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejIncompleteDAQ);
+        
         //Just in case you want to store it for debugging
         fEvSelCode = lSelection->GetEvSelCode();
 
@@ -1825,6 +1835,32 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
 {
     //Negation: this is kTRUE if this is NOT background
     Bool_t lReturnValue = !(fUtils->IsSPDClusterVsTrackletBG ( event ) );
+    return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliMultSelectionTask::HasGoodVertex2016(AliVEvent* event)
+{
+    //Good Vertex according to criteria discussed on the 05th October 2016
+    //Adaptation (virtual classes) of snippet from:
+    // https://indico.cern.ch/event/489471/contributions/2320075/attachments/1348724/2034963/DPG_PF_20161005.pdf
+    
+    Bool_t lReturnValue = kTRUE; //optimisitc: good until proven otherwise
+    const AliVVertex* vtTrc = event->GetPrimaryVertex();
+    const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+    if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) lReturnValue = kFALSE;// one of vertices is missing
+    double covTrc[6],covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    double dz = vtTrc->GetZ()-vtSPD->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    
+    //Check if good
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) lReturnValue = kFALSE; // bad vertexing
+    
+    //Return whatever decision we came to
     return lReturnValue;
 }
 

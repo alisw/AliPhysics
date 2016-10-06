@@ -95,6 +95,10 @@ private:
     // TList object for storing histograms
     TList *fCalibHists; 
 
-    ClassDef(AliMultSelectionCalibrator, 1);
+    ClassDef(AliMultSelectionCalibrator, 2);
+    //(this classdef is only for bookkeeping, class will not usually
+    // be streamed according to current workflow except in very specific
+    // tests!) 
+    //2 - Adjustments of extra event selections
 };
 #endif

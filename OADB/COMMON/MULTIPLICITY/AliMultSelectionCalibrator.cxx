@@ -27,8 +27,6 @@
 #include "TFile.h"
 #include "TStopwatch.h"
 
-
-
 ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
@@ -77,6 +75,9 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const 
     fMultSelectionCuts -> SetRejectPileupInMultBinsCut(kTRUE);
     fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
     fMultSelectionCuts -> SetNonZeroNContribs(kFALSE);
+    fMultSelectionCuts -> SetIsNotAsymmetricInVZERO(kFALSE);
+    fMultSelectionCuts -> SetIsNotIncompleteDAQ(kFALSE);
+    fMultSelectionCuts -> SetHasGoodVertex2016(kFALSE);
     
     //Basic I/O for MultSelection framework
     fInput     = new AliMultInput();
@@ -176,6 +177,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Bool_t fEvSel_INELgtZERO                 = kFALSE ;
     Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
     Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
+    Bool_t fEvSel_IsNotAsymmetricInVZERO     = kFALSE ;
+    Bool_t fEvSel_IsNotIncompleteDAQ         = kFALSE ;
+    Bool_t fEvSel_HasGoodVertex2016          = kFALSE ;
     Int_t fRunNumber;
     
     //FIXME/CAUTION: non-zero if using tree without that branch
@@ -190,7 +194,10 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
     fTree->SetBranchAddress("fnContributors", &fnContributors);
-
+    fTree->SetBranchAddress("fEvSel_IsNotAsymmetricInVZERO", &fEvSel_IsNotAsymmetricInVZERO);
+    fTree->SetBranchAddress("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ);
+    fTree->SetBranchAddress("fEvSel_HasGoodVertex2016", &fEvSel_HasGoodVertex2016);
+    
     //============================================================
     // Auto-configure Input
     //============================================================
@@ -333,6 +340,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices) lSaveThisEvent = kFALSE;
         if( fMultSelectionCuts->GetNonZeroNContribs()          &&  fnContributors < 1 ) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetIsNotAsymmetricInVZERO()    && ! fEvSel_IsNotAsymmetricInVZERO) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetIsNotIncompleteDAQ()        && ! fEvSel_IsNotIncompleteDAQ) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetHasGoodVertex2016()         && ! fEvSel_HasGoodVertex2016) lSaveThisEvent = kFALSE;
         
         Int_t lIndex = -1;
         if ( !lAutoDiscover ){

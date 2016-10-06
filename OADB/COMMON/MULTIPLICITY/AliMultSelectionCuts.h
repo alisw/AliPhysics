@@ -18,8 +18,9 @@ public:
         kRejConsistencySPDandTrackVertices  = 204,
         kRejTrackletsVsClusters             = 205,
         kRejNonZeroNContribs                = 206,
-	kRejAsymmetricInVZERO               = 207,
-	kRejIncompleteDAQ                   = 208
+        kRejAsymmetricInVZERO               = 207,
+        kRejIncompleteDAQ                   = 208,
+        kRejNotGoodVertex2016               = 209
     } CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
     
     AliMultSelectionCuts();
@@ -35,8 +36,9 @@ public:
         fEvSel_RejectPileupInMultBins(o.fEvSel_RejectPileupInMultBins),
         fEvSel_CheckConsistencySPDandTrackVertices(o.fEvSel_CheckConsistencySPDandTrackVertices),
         fEvSel_NonZeroNContribs(o.fEvSel_NonZeroNContribs),
-	fEvSel_IsNotAsymmetricInVZERO(o.fEvSel_IsNotAsymmetricInVZERO),
-	fEvSel_IsNotIncompleteDAQ(o.fEvSel_IsNotIncompleteDAQ)
+        fEvSel_IsNotAsymmetricInVZERO(o.fEvSel_IsNotAsymmetricInVZERO),
+        fEvSel_IsNotIncompleteDAQ(o.fEvSel_IsNotIncompleteDAQ),
+        fEvSel_HasGoodVertex2016(o.fEvSel_HasGoodVertex2016)
     {}
     AliMultSelectionCuts& operator=(const AliMultSelectionCuts& o);
     ~AliMultSelectionCuts();
@@ -63,7 +65,9 @@ public:
     void   SetIsNotAsymmetricInVZERO(Bool_t lSetting)         { fEvSel_IsNotAsymmetricInVZERO = lSetting; }
     Bool_t GetIsNotIncompleteDAQ()                        { return fEvSel_IsNotIncompleteDAQ; }
     void   SetIsNotIncompleteDAQ(Bool_t lSetting)         { fEvSel_IsNotIncompleteDAQ = lSetting; }
- 
+    Bool_t GetHasGoodVertex2016()                        { return fEvSel_HasGoodVertex2016; }
+    void   SetHasGoodVertex2016(Bool_t lSetting)         { fEvSel_HasGoodVertex2016 = lSetting; }
+    
     void SetErrorCode(Int_t lCode)   { fErrorCode = lCode; }
     Int_t GetErrorCode() const   { return fErrorCode; }
     
@@ -84,11 +88,13 @@ private:
     Bool_t fEvSel_CheckConsistencySPDandTrackVertices; //Check consistency
     Bool_t fEvSel_NonZeroNContribs; //at least one contributor to PV
     Bool_t fEvSel_IsNotAsymmetricInVZERO; //asymmetic in vzero
-    Bool_t fEvSel_IsNotIncompleteDAQ; //asymmetic in vzero
+    Bool_t fEvSel_IsNotIncompleteDAQ; //incomplete DAQ
+    Bool_t fEvSel_HasGoodVertex2016; //incomplete DAQ
     
-    ClassDef(AliMultSelectionCuts, 3)
+    ClassDef(AliMultSelectionCuts, 4)
     //1 - original implementation 
     //2 - added NonZeroNContribs
     //3 - added IsNotAsymmetricInVZERO, IsNotIncompleteDAQ
+    //4 - added HasGoodVertex2016
 };
 #endif
