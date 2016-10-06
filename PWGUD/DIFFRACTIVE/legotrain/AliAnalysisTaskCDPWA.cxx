@@ -1577,6 +1577,8 @@ void AliAnalysisTaskCDPWA::DetermineProcessType() {
 		}
 		else fMCProcessType = kBinND; 
 
+		fEventInfo.fProcessType = fMCProcessType;
+
 		for (Int_t i = 0; i < kBinMCAll; i++) {
 			if (i == fMCProcessType) fHistEventProcesses->Fill(i);
 		}

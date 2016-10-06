@@ -83,7 +83,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 ,fFMDGap(0)
 				 ,fZDCGap(0)
 				 ,fNtrk_ST(0)
-				 ,fNtrk_MS(0) {
+				 ,fNtrk_MS(0)
+		       		 ,fProcessType(0){
 					 for (Int_t i = 0; i < 11; i++) {
 						 if (i < 3) {
 							 fVertexSPD[i] = 0; 
@@ -121,6 +122,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Bool_t fSysVertex[3];//
 			Bool_t fSysPileUp[5];//
 			Bool_t fSysCluster[5];//
+			Int_t fProcessType;//for MC
 
 			ClassDef(EventInfo, 1);
 		};
