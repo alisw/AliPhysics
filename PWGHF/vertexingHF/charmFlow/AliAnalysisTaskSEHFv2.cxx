@@ -109,7 +109,9 @@ AliAnalysisTaskSE(),
   fSubEvents(2),
   fCentBinSizePerMil(25),
   fAODProtection(1),
-  fSetName(kTRUE),
+  fSetNameTPC(kTRUE),
+  fSetNameVZEROA(kTRUE),
+  fSetNameVZEROC(kTRUE),
   fUseNewQnCorrFw(kTRUE),
   hEvPlaneQncorrTPC(0x0),
   hEvPlaneQncorrVZEROA(0x0),
@@ -142,7 +144,9 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fSubEvents(2),
   fCentBinSizePerMil(25),
   fAODProtection(1),
-  fSetName(kTRUE),
+  fSetNameTPC(kTRUE),
+  fSetNameVZEROA(kTRUE),
+  fSetNameVZEROC(kTRUE),
   fUseNewQnCorrFw(kTRUE),
   hEvPlaneQncorrTPC(0x0),
   hEvPlaneQncorrVZEROA(0x0),
@@ -509,7 +513,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   Double_t eventplaneqncorrTPC = 0.;
   Double_t eventplaneqncorrVZEROA = 0.;
   Double_t eventplaneqncorrVZEROC = 0.;
-  
+  TList *qnlist = 0x0;
   if(fUseNewQnCorrFw) {
     /////////////////////////////////////////////////////////////
     //////////////          GET Qn vectors         //////////////
@@ -524,7 +528,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       AliWarning("This task needs the Flow Qn vector corrections framework and it is not present. Aborting!!!\n");
       return;
     }
-    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+    qnlist = flowQnVectorMgr->GetQnVectorList();
     if (!qnlist) {
       return;
     }
@@ -532,9 +536,9 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     const AliQnCorrectionsQnVector* qnVectVZEROA = NULL;
     const AliQnCorrectionsQnVector* qnVectVZEROC = NULL;
     
-    qnVectTPC    = GetQnVectorFromList(qnlist, "TPC", "latest", "latest");
-    qnVectVZEROA = GetQnVectorFromList(qnlist, "VZEROA", "latest", "latest");
-    qnVectVZEROC = GetQnVectorFromList(qnlist, "VZEROC", "latest", "latest");
+    qnVectTPC    = GetQnVectorFromList(qnlist, "TPC", "latest", "plain");
+    qnVectVZEROA = GetQnVectorFromList(qnlist, "VZEROA", "latest", "raw");
+    qnVectVZEROC = GetQnVectorFromList(qnlist, "VZEROC", "latest", "raw");
     if(!qnVectTPC || !qnVectVZEROA || !qnVectVZEROC) return;
     
     eventplaneqncorrTPC    = qnVectTPC->EventPlane(2);
@@ -741,12 +745,16 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     Float_t* invMass=0x0;
     Int_t nmasses;
     CalculateInvMasses(d,invMass,nmasses);
-
+    
     if(fEventPlaneMeth<=kTPCVZERO){
-      eventplane = GetEventPlaneForCandidate(d,q,pl,qsub1,qsub2); // remove autocorrelations
+      if(fUseNewQnCorrFw) {
+	eventplane = GetEventPlaneForCandidateNewQnFw(d,qnlist); // remove autocorrelations for new Qn fw
+	if(eventplane==-999) eventplane = rpangleTPC;
+      }
+      else eventplane = GetEventPlaneForCandidate(d,q,pl,qsub1,qsub2); // remove autocorrelations
       ((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",centrbinname.Data())))->Fill(rpangleTPC-eventplane);
     }
-
+    
     Double_t phi=d->Phi(); 
     if(fReadMC&&fUseAfterBurner)phi=fAfterBurner->GetNewAngle(d,arrayMC);
     Float_t deltaphi=GetPhi0Pi(phi-eventplane);
@@ -1245,9 +1253,80 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, c
 //   if(fDebug>15)printf("EPfromV0 phi %f\n",angleEP);
 //   return angleEP;
 // }
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *qnlist) {
+    
+  AliQnCorrectionsQnVector *theQnVectorCorr   = NULL;
+  AliQnCorrectionsQnVector *theQnVectorUncorr = NULL;
+  Float_t corrX, corrY;
+  Float_t eventplane = -999.;
+  Float_t ux = 0., uy = 0.; // to store qx, qy of the candidate's prongs
+  Float_t qxRec = -999., qyRec = -999.;     // to store Qx, Qy at the rec step
+  
+  TList *pQvecList = dynamic_cast<TList*> (qnlist->FindObject("TPC"));
+  if (pQvecList != NULL) {
+    /* the detector is present */
+    theQnVectorUncorr = (AliQnCorrectionsQnVector*) pQvecList->FindObject("plain"); //raw step for TPC
+    if (theQnVectorUncorr == NULL || !(theQnVectorUncorr->IsGoodQuality()) || theQnVectorUncorr->GetN() == 0) return eventplane;
+    Float_t qxPlain = theQnVectorUncorr->Qx(2);
+    Float_t qyPlain = theQnVectorUncorr->Qy(2);
+    
+    //auto-correlation removal from rec step (if present)
+    theQnVectorCorr   = (AliQnCorrectionsQnVector*) pQvecList->FindObject("rec"); //rec step for TPC
+    if (theQnVectorCorr == NULL || !(theQnVectorCorr->IsGoodQuality()) || theQnVectorUncorr->GetN() == 0) {
+      corrX = 0.;
+      corrY = 0.;
+      
+    }
+    else {
+      qxRec = theQnVectorCorr->Qx(2);
+      qyRec = theQnVectorCorr->Qy(2);
+      corrX = qxPlain - qxRec;
+      corrY = qyPlain - qyRec;
+    }
+    Int_t M = theQnVectorUncorr->GetN(); //# of tracks
+    
+    Int_t nProngs = 0;
+    if(fDecChannel==0) nProngs = 3;      //D+
+    else if(fDecChannel==1) nProngs = 2; //D0
+    else if(fDecChannel==2) nProngs = 3; //D*
+    else if(fDecChannel==3) nProngs = 3; //Ds
+    
+    AliAODTrack *track;
+    for(int i = 0; i < nProngs; i++) {
+      track = (AliAODTrack*)d->GetDaughter(i);
+      if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
+	ux += TMath::Cos(2*track->Phi());
+	uy += TMath::Sin(2*track->Phi());
+      }
+    }
+    Float_t qxRecSub = (qxPlain*M - ux)/(M-nProngs) - corrX;
+    Float_t qyRecSub = (qyPlain*M - uy)/(M-nProngs) - corrY;
+        
+    eventplane = (TMath::Pi()+TMath::ATan2(-qyRecSub,-qxRecSub))/2;
+    //auto-correlation removal from twist step (if present)
+    theQnVectorCorr   = (AliQnCorrectionsQnVector*) pQvecList->FindObject("twist"); //twist step for TPC
+    if (theQnVectorCorr == NULL || !(theQnVectorCorr->IsGoodQuality()) || theQnVectorUncorr->GetN() == 0) {
+      return eventplane;
+    }
+    else {
+      Float_t qxTwist = theQnVectorCorr->Qx(2);
+      Float_t qyTwist = theQnVectorCorr->Qy(2);
+      Float_t Lbplus  = (qyRec - qyTwist)/qxTwist;
+      Float_t Lbminus = (qxRec - qxTwist)/qyTwist;
+      Float_t qxTwistSub = (qxRecSub - Lbminus*qyRecSub)/(1-Lbminus*Lbplus);
+      Float_t qyTwistSub = (qyRecSub - Lbplus*qxRecSub)/(1-Lbminus*Lbplus);
+      
+      eventplane = (TMath::Pi()+TMath::ATan2(-qyTwistSub,-qxTwistSub))/2;
+    }
+  }
+  return eventplane;
+}
+
 //________________________________________________________________________
 const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFv2::GetQnVectorFromList(const TList *list,
-                                                                               const char *subdetector,
+									   const char *subdetector,
                                                                                const char *expectedstep,
                                                                                const char *altstep)
 {    
@@ -1260,7 +1339,7 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFv2::GetQnVectorFromList(const
       theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
     else
       theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
-        
+    
     if (theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) {
       /* the Qn vector for the expected step was not there */
       if (TString(altstep).EqualTo("latest"))
@@ -1268,11 +1347,17 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFv2::GetQnVectorFromList(const
       else
 	theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altstep);
     }
-    if(fSetName) {
+    if(fSetNameTPC && strncmp(subdetector,"TPC",3) == 0)  {
       hEvPlaneQncorrTPC->SetTitle(theQnVector->GetName());
+      fSetNameTPC=kFALSE;
+    }
+    if(fSetNameVZEROA && strncmp(subdetector,"VZEROA",5) == 0)  {
       hEvPlaneQncorrVZEROA->SetTitle(theQnVector->GetName());
+      fSetNameVZEROA=kFALSE;
+    }
+    if(fSetNameVZEROC && strncmp(subdetector,"VZEROC",5) == 0)  {
       hEvPlaneQncorrVZEROC->SetTitle(theQnVector->GetName());
-      fSetName=kFALSE;
+      fSetNameVZEROC=kFALSE;
     }
   }
   if (theQnVector != NULL) {
