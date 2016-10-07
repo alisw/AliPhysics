@@ -1461,6 +1461,7 @@ private:
  TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
  TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
  TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
+ TH2D* fCRCQVecPhiHist[fCRCMaxnRun]; //! phi ditribution POIs
  TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
  TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
  TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1747,7 +1748,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 21);
+ ClassDef(AliFlowAnalysisCRC, 22);
  
 };
 
