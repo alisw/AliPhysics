@@ -2148,7 +2148,9 @@ AliTrackletAODdNdeta::UserExec(Option_t*)
     return;
   }
   if (DebugLevel() > 0) Printf("Got centrality=%f ipZ=%f %d tracklets",
-			       cent, ip->GetZ(), tracklets->GetEntriesFast());
+			       cent,
+			       (ip ? ip->GetZ() : -1000),
+			       tracklets->GetEntriesFast());
   ProcessEvent(status, cent, ip, tracklets);
 
   PostData(1,fContainer);
@@ -2491,9 +2493,41 @@ Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
   Double_t w = fWeights->LookupWeight(tracklet, cent, ipz, fWeightCorr);
   if (tracklet->IsMeasured()) 
     fEtaWeight->Fill(tracklet->GetEta(), cent, w);
+
+  if (fDebug > 0) {
+    Bool_t ok=true;
+    switch (TMath::Abs(tracklet->GetParentPdg())) {
+    case 310:  printf("K0s   "); break;
+    case 321:  printf("K+-   "); break;
+    case 3122: printf("Lambda"); break;
+    case 3112: printf("Sigma-"); break;
+      // case 3212: printf("Sigma0"); break;// Old, wrong code
+    case 3222: printf("Sigma+"); break;
+    case 3312: printf("Xi-   "); break; 
+      // case 3322: printf("Xi0   "); break;// Old, wrong code 
+    default:   ok = false;        break;
+    }
+    if (ok) {
+      switch (TMath::Abs(tracklet->GetParentPdg(true))) {
+      case 0:    printf("       "); break;
+      case 310:  printf("-K0s   "); break;
+      case 321:  printf("-K+-   "); break;
+      case 3122: printf("-Lambda"); break;
+      case 3112: printf("-Sigma-"); break;
+	// case 3212: printf("-Sigma0"); break;// Old, wrong code
+      case 3222: printf("-Sigma+"); break;
+      case 3312: printf("-Xi-   "); break; 
+	// case 3322: printf("-Xi0   "); break;// Old, wrong code
+      default:   printf("-Other ");
+      }
+      printf(": %f", w); tracklet->Print();
+    }
+  }
     
-  // printf("Looking up weight of tracklet -> %f ", w);
-  // tracklet->Print();
+  if (fDebug > 3) {
+    printf("Looking up weight of tracklet -> %f ", w);
+    tracklet->Print();
+  }
   return w;
 }
 //____________________________________________________________________
@@ -2654,8 +2688,10 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   }
   
   // If we have the eta-vs-pdg histogram, we should fill before the
-  // veto, which filters out the neutral particles.
-  if (fEtaPdg) fEtaPdg->Fill(eta, pdgBin, weight);
+  // veto, which filters out the neutral particles.  We do however,
+  // check if the particle was suppressed
+  if (fEtaPdg && !(tracklet->IsSuppressed()))
+    fEtaPdg->Fill(eta, pdgBin, weight);
 
   // Check the veto mask 
   if (fVeto != 0 && (flags & fVeto) != 0) {
@@ -3215,8 +3251,9 @@ AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
       sigKpm += rS; eSigKpm += erS*erS; bgKpm += rB; eBgKpm += erB*erB; break; 
     case 310:                   // K^{0}_{S}
       sigK0s += rS; eSigK0s += erS*erS; bgK0s += rB; eBgK0s += erB*erB; break; 
-    case 3112:                  // #Sigma^{-}			 
-    case 3222:		        // #Sigma^{+}			 
+    case 3112:                  // #Sigma^{-}
+      // case 3212:                  // #Sigma^{0} // Old, wrong code
+    case 3222:	                // #Sigma^{+} // New, right code 	 
       // case 3114:		// #Sigma^{*-}		 
       // case 3224:		// #Sigma^{*+}		 
       // case 4214:		// #Sigma^{*+}_{c}		 
@@ -3224,8 +3261,9 @@ AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
       // case 3212: 	        // #Sigma^{0}			 
       // case 4114:      	// #Sigma^{*0}_{c}		 
       // case 3214:             // #Sigma^{*0}	
-      sigSig += rS; eSigSig += erS*erS; bgSig += rB; eBgSig += erB*erB; break;          
-    case 3312:                  // #Xi^{-}			 
+      sigSig += rS; eSigSig += erS*erS; bgSig += rB; eBgSig += erB*erB; break;
+      // case 3322:                  // #Xi^{0}   // Old, wrong code 
+    case 3312:                  // #Xi^{-}   // New, right code 
       // case 3314:             // #Xi^{*-}
       // case 3324:     	// #Xi^{*0}			 
       // case 4132:       	// #Xi^{0}_{c}		       

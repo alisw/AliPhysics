@@ -10,6 +10,7 @@
  */
 #include <AliAnalysisTaskSE.h>
 #include <TParameter.h>
+#include "AliTrackletAODUtils.C"
 #ifndef __CINT__
 #include "AliAODTracklet.C"
 #include "AliVVertex.h"
@@ -31,8 +32,11 @@
 #include <AliAODHandler.h>
 #include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
+#include <TH1.h>
+#include <TProfile2D.h>
 #include <climits>
 #else
+class AliTrackletAODUtils;
 class AliAODTracklet;
 class AliVEvent;
 class AliVVertex;
@@ -48,6 +52,8 @@ class TTree;
 class TGeoGlobalMagField;       // Auto-load
 class TGeoManager;              // Auto-load
 class TParticle;
+class TH1;
+class TProfile2D;
 #endif
 
 
@@ -57,9 +63,32 @@ class TParticle;
  * 
  * @ingroup pwglf_forward_tracklets
  */
-class AliTrackletAODTask : public AliAnalysisTaskSE
+class AliTrackletAODTask : public AliAnalysisTaskSE, public AliTrackletAODUtils
 {
 public:
+  /** 
+   * Status bins 
+   */
+  enum EStatus {
+    /** Event was seen */
+    kSeen,
+    /** Event has clusters */
+    kClusters,
+    /** Clusters was filtered */
+    kFilter,
+    /** Event has IP */
+    kIP,
+    /** Reconstruction was run */
+    kReconstruct,
+    /** Injection was run */
+    kInject,
+    /** Tracklets was processed */
+    kTracklets,
+    /** Event was stored */
+    kStored,
+    /** Counter of bins */
+    kNStatus
+  };
   /** 
    * Default constructor - for ROOT I/O only 
    */
@@ -332,25 +361,29 @@ protected:
   /* @} */
   
   /** Container of tracklets */
-  TClonesArray* fTracklets;
+  TClonesArray*       fTracklets;
   /* Output container */
-  // Container* fContainer;
+  Container*          fContainer;
+  /** Status histogram */
+  TH1*                fStatus; //!
+  /** Correlation of clusters and tracklets */
+  TProfile2D*         fNClustersVsNTracklets; //!
   /** Whether we should scale @f$ \Delta\theta@f$ by @f$\sin^{-2}(\theta)@f$ */ 
-  Bool_t     fScaleDTheta;
+  Bool_t              fScaleDTheta;
   /** Maximum @f$\Delta@f$ to consider */
-  Double_t   fMaxDelta;
+  Double_t            fMaxDelta;
   /** Shift in @f$\Delta\phi@f$ */
-  Double_t   fDPhiShift;
+  Double_t            fDPhiShift;
   /** Window in @f$ \Delta\theta @f$ */
-  Double_t   fDThetaWindow;  
+  Double_t            fDThetaWindow;  
   /** Window in @f$ \Delta\phi @f$ */
-  Double_t   fDPhiWindow;
+  Double_t            fDPhiWindow;
   /** Overlap cut in @f$\phi@f$ plane */
-  Double_t   fPhiOverlapCut;
+  Double_t            fPhiOverlapCut;
   /** Overlap cut in @f$ z,\eta@f$ plane */
-  Double_t   fZEtaOverlapCut;
+  Double_t            fZEtaOverlapCut;
   /** Pointer to current reconstruction object */
-  AliITSMultRecBg* fReco; //!
+  AliITSMultRecBg*    fReco; //!
   /** Whether to remove clusters corresponding to strange primary parents */
   Int_t fFilterStrange;
   /** Fraction of K^0_S clusters removed */
@@ -362,7 +395,9 @@ protected:
 AliTrackletAODTask::AliTrackletAODTask()
   : AliAnalysisTaskSE(),
     fTracklets(0),
-    // fContainer(0),
+    fContainer(0),
+    fStatus(0),
+    fNClustersVsNTracklets(0),
     fScaleDTheta(true),
     fMaxDelta(25),
     fDPhiShift(0.0045),
@@ -378,7 +413,9 @@ AliTrackletAODTask::AliTrackletAODTask()
 AliTrackletAODTask::AliTrackletAODTask(const char*)
   : AliAnalysisTaskSE("tracklets"),
     fTracklets(0),
-    // fContainer(0),
+    fContainer(0),
+    fStatus(0),
+    fNClustersVsNTracklets(0),
     fScaleDTheta(true),
     fMaxDelta(25),
     fDPhiShift(0.0045),
@@ -390,13 +427,15 @@ AliTrackletAODTask::AliTrackletAODTask(const char*)
     fFilterStrange(0),
     fStrangeLoss(0)
 {
-  // DefineOutput(1,TList::Class());
+  DefineOutput(1,TList::Class());
 }
 //____________________________________________________________________
 AliTrackletAODTask::AliTrackletAODTask(const AliTrackletAODTask& other)
   : AliAnalysisTaskSE(other),
     fTracklets(0),
-    // fContainer(0),
+    fContainer(0),
+    fStatus(0),
+    fNClustersVsNTracklets(0),
     fScaleDTheta(other.fScaleDTheta),
     fMaxDelta(other.fMaxDelta),
     fDPhiShift(other.fDPhiShift),
@@ -426,8 +465,14 @@ Bool_t AliTrackletAODTask::Connect()
   // Add to the manager 
   mgr->AddTask(this);
 
+  AliAnalysisDataContainer* sumCon =
+    mgr->CreateContainer(Form("%sSums", GetName()), TList::Class(),
+			 AliAnalysisManager::kOutputContainer,
+			 AliAnalysisManager::GetCommonFileName());
+  
   // Always connect input 
   mgr->ConnectInput(this, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(this, 1, sumCon);
   
   return true;
 }
@@ -455,10 +500,10 @@ AliTrackletAODTask& AliTrackletAODTask::operator=(const AliTrackletAODTask&)
 //____________________________________________________________________
 void AliTrackletAODTask::UserCreateOutputObjects()
 {
-  // fContainer = new Container;
-  // fContainer->SetOwner();
-  // fContainer->SetName(GetName());
-  // PostData(1, fContainer);
+  fContainer = new Container;
+  fContainer->SetOwner();
+  fContainer->SetName(GetName());
+  PostData(1, fContainer);
   
   // Create container of tracklets
   if (WorkerInit()) return;
@@ -552,6 +597,30 @@ Bool_t AliTrackletAODTask::InitBranch()
 //____________________________________________________________________
 Bool_t AliTrackletAODTask::WorkerInit()
 {
+  fStatus = new TH1D("status","Processing status",kNStatus,0,kNStatus);
+  fStatus->SetDirectory(0);
+  fStatus->SetYTitle("Events");
+  fStatus->GetXaxis()->SetBinLabel(kSeen       +1,"Seen");
+  fStatus->GetXaxis()->SetBinLabel(kClusters   +1,"w/Clusters");
+  fStatus->GetXaxis()->SetBinLabel(kFilter     +1,"Filtered");
+  fStatus->GetXaxis()->SetBinLabel(kIP         +1,"w/IP");
+  fStatus->GetXaxis()->SetBinLabel(kReconstruct+1,"Reconstructed");
+  fStatus->GetXaxis()->SetBinLabel(kInject     +1,"Injection");
+  fStatus->GetXaxis()->SetBinLabel(kTracklets  +1,"Processed");
+  fStatus->GetXaxis()->SetBinLabel(kStored     +1,"Stored");
+  fContainer->Add(fStatus);
+  
+  fNClustersVsNTracklets =
+    new TProfile2D("clustersVsTracklets",
+		   "Correlation of clusters and tracklets",
+		   1000,0,10000,
+		   1000,0,10000);
+  fNClustersVsNTracklets->SetXTitle("#it{N}_{cluster,0}");
+  fNClustersVsNTracklets->SetYTitle("#it{N}_{cluster,1}");
+  fNClustersVsNTracklets->SetZTitle("#it{N}_{tracklets}");
+  fNClustersVsNTracklets->SetDirectory(0);
+  fContainer->Add(fNClustersVsNTracklets);
+
   if (!InitCDB())      return false;
   if (!InitBranch())   return false;
   
@@ -572,6 +641,7 @@ void AliTrackletAODTask::UserExec(Option_t*)
   if (!ProcessEvent()) return;
   
   MarkForStore();
+  PostData(1, fContainer);
 }
 
 //____________________________________________________________________
@@ -579,7 +649,7 @@ Bool_t AliTrackletAODTask::ProcessEvent()
 {
   AliVEvent* event = FindEvent();
   if (!event) return false;
-  
+  fStatus->Fill(kSeen);
 
   TTree*            clusters = FindClusters();
   const AliVVertex* ip       = FindIP(event);
@@ -650,6 +720,7 @@ TTree* AliTrackletAODTask::FindClusters()
     AliWarning("Tree of clusters (rec.points) not found");
     return 0;
   }
+  fStatus->Fill(kClusters);
   return FilterClusters(tree);
 }
 
@@ -659,6 +730,7 @@ const AliVVertex* AliTrackletAODTask::FindIP(AliVEvent* event,
 					     Double_t   maxZError)
 {
   const AliVVertex* ip   = event->GetPrimaryVertex();
+  if (!ip) return 0;
   if (ip->GetNContributors() <= 0) {
     if (fDebug > 0)
       AliWarning("Not enough contributors for IP");
@@ -699,6 +771,7 @@ const AliVVertex* AliTrackletAODTask::FindIP(AliVEvent* event,
   }
 #endif 
   // Good vertex, return it
+  fStatus->Fill(kIP);
   return ip;
 }
 
@@ -712,6 +785,7 @@ Bool_t AliTrackletAODTask::MarkForStore()
   if (!ah) return false;
   ah->SetFillAOD(kTRUE);
   if (fDebug > 0) AliInfo("Storing event");
+  fStatus->Fill(kStored);
   return true;
 }
 
@@ -745,7 +819,8 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
 
   // Run normal reconstruction 
   reco.Run(clusters, ipv);
-
+  fStatus->Fill(kReconstruct);
+  
   // Save pointer to reco object - for MC combinatorics
   fReco = &reco; 
   // And fill results into output branch 
@@ -758,6 +833,7 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
   // Run again, but in injection mode
   reco.SetRecType(AliITSMultRecBg::kBgInj);
   reco.Run(clusters, ipv);
+  fStatus->Fill(kInject);
   
   // And fill results into output branch 
   if(!ProcessTracklets(false, reco.GetMultiplicity())) {
@@ -781,6 +857,18 @@ Bool_t AliTrackletAODTask::ProcessTracklets(Bool_t normal,
   Int_t nTracklets = mult->GetNumberOfTracklets();
   for (Int_t trackletNo = 0; trackletNo < nTracklets; trackletNo++) {
     if (!ProcessTracklet(normal,mult,trackletNo)) return false;
+  }
+  if (normal) {
+    if (fDebug > 0)
+      Printf("%d x %d clusters -> %d",
+	     mult->GetNumberOfITSClusters(0),
+	     mult->GetNumberOfITSClusters(1),
+	     nTracklets);
+      
+    fNClustersVsNTracklets->Fill(mult->GetNumberOfITSClusters(0),
+				 mult->GetNumberOfITSClusters(1),
+				 nTracklets);
+    fStatus->Fill(kTracklets);
   }
   return true; 
 }
@@ -845,14 +933,24 @@ public:
   /** 
    * Default constructor - for ROOT I/O only 
    */
-  AliTrackletAODMCTask() : AliTrackletAODTask() {}
+  AliTrackletAODMCTask()
+    : AliTrackletAODTask(),
+      fSeenTrackPDGs(0),
+      fUsedTrackPDGs(0),
+      fSeenClusterPDGs(0),
+      fUsedClusterPDGs(0)
+  {}
   /** 
    * Named user constructor 
    * 
    * @param name Name of the task 
    */  
   AliTrackletAODMCTask(const char* name)
-    : AliTrackletAODTask(name)
+    : AliTrackletAODTask(name),
+      fSeenTrackPDGs(0),
+      fUsedTrackPDGs(0),
+      fSeenClusterPDGs(0),
+      fUsedClusterPDGs(0)
   {}
   /** 
    * Copy constructor 
@@ -860,7 +958,11 @@ public:
    * @param other Object to copy from 
    */
   AliTrackletAODMCTask(const AliTrackletAODMCTask& other)
-    : AliTrackletAODTask(other)
+    : AliTrackletAODTask(other),
+      fSeenTrackPDGs(0),
+      fUsedTrackPDGs(0),
+      fSeenClusterPDGs(0),
+      fUsedClusterPDGs(0)
   {}
   /** 
    * Assignment operator 
@@ -1035,7 +1137,15 @@ protected:
    */
   Int_t CommonParent(Int_t label, const TArrayI& fill) const;
   /* @} */
-  
+
+  /** Number of tracks per PDG */
+  TH1* fSeenTrackPDGs; //!
+  /** Tracks that survive the filtering */
+  TH1* fUsedTrackPDGs; //!
+  /** Number of clusters per layer per PDG */
+  TH2* fSeenClusterPDGs; //!
+  /** Number of clusters that survive filter per layer per PDG */
+  TH2* fUsedClusterPDGs; //! 
   
   ClassDef(AliTrackletAODMCTask,1); 
 };
@@ -1048,6 +1158,19 @@ protected:
 Bool_t AliTrackletAODMCTask::WorkerInit()
 {
   if (!AliTrackletAODTask::WorkerInit()) return false;
+
+  const TAxis& pdgAxis = PdgAxis();
+  TAxis layerAxis(2,0,2);
+  FixAxis(layerAxis,"Layer");
+  fSeenTrackPDGs = Make1D(fContainer, "seenTrackPdg",
+			 "Seen track PDGs", kGreen+1,20, pdgAxis);  
+  fUsedTrackPDGs = Make1D(fContainer, "usedTrackPdg",
+			  "Used track PDGs", kBlue+1,24, pdgAxis);
+  fSeenClusterPDGs = Make2D(fContainer, "seenClusterPdg",
+			   "Seen cluster PDGs", kGreen+1,21,pdgAxis,layerAxis);
+  fUsedClusterPDGs = Make2D(fContainer, "usedClusterPdg",
+			   "Used cluster PDGs", kBlue+1,25,pdgAxis,layerAxis);
+  
   
   // Register additional particles from EPOS-LHC 
   TDatabasePDG* db  = TDatabasePDG::Instance();
@@ -1120,8 +1243,11 @@ namespace {
     case 310:  return k0s;
     case 321:  return kpm;
     case 3122: return lam;
-    case 3212: return sig;
-    case 3322: return xi;
+      // case 3212: return sig; // Old, wrong code 
+    case 3112:
+    case 3222: return sig;
+    case 3312: return xi;
+      // case 3322: return xi; // Old, wrong code 
     }
     return 1;
   }
@@ -1153,6 +1279,7 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
   savDir->cd();
   if (fDebug > 0)
     AliInfoF("Returning reduced cluster tree %p (original %p)", copy, t);
+  fStatus->Fill(kFilter);
   return copy;
 }
 
@@ -1262,6 +1389,9 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
       keep = KeepIt(weight);
       if (keep) nKept++;
     }
+    Int_t bin = PdgBin(par->GetPdgCode());
+    fSeenTrackPDGs->Fill(bin);
+    if (keep) fUsedTrackPDGs->Fill(bin);
     if (fDebug > 3) 
       Printf("Primary parent %6d from a %6d %6s (%f)",
 	     parent, par->GetPdgCode(), keep ? "kept" : "marked", weight);
@@ -1273,7 +1403,7 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
   // that correspond to these primary particles.
   if (fDebug > 0 && nTotal > 0)  {
     Double_t loss = 1-Float_t(nKept)/nTotal;
-    Printf("Kept %d out of %d strange primaries (%4.1f%%)",
+    Printf("Kept %d out of %d strange primaries (%4.1f%% loss)",
 	   nKept, nTotal, 100.*loss);
     if (fStrangeLoss) fStrangeLoss->SetVal(loss);
   }
@@ -1302,8 +1432,9 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
       AliITSRecPoint* inCl = static_cast<AliITSRecPoint*>(in->At(j));
       if (!inCl) continue;
       
-      // Loop over labels in the module
+      // Loop over labels of the cluster
       Bool_t toRemove = false;
+      Int_t  pdg      = 0;
       for (Int_t k = 0; k < 3; k++) {
 	Int_t label = inCl->GetLabel(k);
 	if (label <= 0) continue;
@@ -1312,6 +1443,7 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
 	Int_t parent = FindPrimaryParentID(label);
 	if (parent < 0) continue;
 
+	if (pdg == 0) pdg = stack->Particle(parent)->GetPdgCode();
 	if (!kept.TestBitNumber(parent)) toRemove = true;
 	if (fDebug > 3) {
 	  Printf("Cluster %6d from parent %6d (%7.5f) of type %6d %s",
@@ -1324,7 +1456,12 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
       // We've now looked at all primaries for this cluster, and if
       // any of these primaries was flagged for removal, then we
       // should remove the cluster.
+      if (fDebug > 3)
+	Printf("Cluster %2d/%3d from %4d is %s",
+	       i, j, pdg, toRemove ? "removed" : "kept");
+      fSeenClusterPDGs->Fill(PdgBin(pdg), i < max1);
       if (toRemove) continue;
+      fUsedClusterPDGs->Fill(PdgBin(pdg), i < max1);
       new ((*out)[outN++]) AliITSRecPoint(*inCl);
     }
     // Printf("Kept %d out of %d clusters", outN, inN);
@@ -1332,7 +1469,7 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
     copy->Fill();
   }
   if (fDebug > 0) 
-    Printf("Wrote out %6d out of %6d clusters (%4.1f%%)",
+    Printf("Wrote out %6d out of %6d clusters (%4.1f%% loss)",
 	   outT, inT, (inT > 0 ? 100*float(inT-outT)/inT : 100));
   delete in;
   delete out;

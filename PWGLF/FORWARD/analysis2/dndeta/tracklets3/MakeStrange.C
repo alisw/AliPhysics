@@ -56,8 +56,8 @@ MakeStrange()
   }
   
   TFile* strFile = TFile::Open("../tracklets/REWEIGHTstr.root","READ");
-  Short_t strs[] = { 321, 310, 3122, 3212, 3322 };
-  for (Int_t i = 0; i < 5; i++) {
+  Short_t strs[] = { 321, 310, 3122, 3112, 3222, 3312 /* 3212, 3322 */};
+  for (Int_t i = 0; i < 6; i++) {
     TString histName;
     Short_t pdg = strs[i];
     histName.Form("strWeight_%s", (pdg == 211  ? "pi" :
@@ -65,7 +65,10 @@ MakeStrange()
 				   pdg == 2212 ? "pr" :
 				   pdg == 310  ? "k0" :
 				   pdg == 3122 ? "la" :
+				   pdg == 3112 ? "si" :
+				   pdg == 3222 ? "si" : 
 				   pdg == 3212 ? "si" :
+				   pdg == 3312 ? "xi" : 
 				   pdg == 3322 ? "xi" : ""));
     TH1* hist = static_cast<TH1*>(strFile->Get(histName));
     if (!hist) {
