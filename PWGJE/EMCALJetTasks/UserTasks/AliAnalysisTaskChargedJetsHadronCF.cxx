@@ -217,7 +217,7 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
     AddHistogram2D<TH2D>("hEmbeddingDeltaR", "Matched jet #Delta R distribution", "", 200, -50., 150., 100, 0, 1.0, "p_{T, jet} (GeV/c)", "#Delta R", "dN^{Matched}/dp_{T}dR");
     AddHistogram2D<TH2D>("hEmbeddingDeltaEta", "Matched jet #Delta #eta distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #eta", "dN^{Matched}/dp_{T}d#eta");
     AddHistogram2D<TH2D>("hEmbeddingDeltaPhi", "Matched jet #Delta #phi distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #phi", "dN^{Matched}/dp_{T}d#phi");
-    AddHistogram2D<TH2D>("hEmbeddingPtCorr", "Matched jet p_{T} distributions", "", 200, -50., 150., 200, -50., 150., "p_{T, jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
+    AddHistogram2D<TH2D>("hEmbeddingPtCorr", "Matched jet p_{T} distributions", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
 
     AddHistogram1D<TH1D>("hEmbeddingJetPt", "Embedded jets p_{T} distribution", "", 200, -50., 150., "p_{T, jet} (GeV/c)", "dN/dp_{T}");
     AddHistogram2D<TH2D>("hEmbeddingJetPhiEta", "Embedded jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
@@ -647,7 +647,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       FillHistogram("hEmbeddingDeltaR", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaR);
       FillHistogram("hEmbeddingDeltaEta", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaPhi);
       FillHistogram("hEmbeddingDeltaPhi", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaEta);
-      FillHistogram("hEmbeddingPtCorr", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), fMatchedJetsReference[i]->Pt());
+      FillHistogram("hEmbeddingPtCorr", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
       FillHistogram("hEmbeddingJetPt", fMatchedJetsReference[i]->Pt());
       FillHistogram("hEmbeddingJetPhiEta", fMatchedJetsReference[i]->Phi(), fMatchedJetsReference[i]->Eta()); 
     }
