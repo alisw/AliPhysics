@@ -50,7 +50,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 		task->SetUseCentralitySPDTracklet(kFALSE);
 	}else{
 		task->SetUseCentralityV0M(kTRUE);
-		task->SetUseEventPlane(4);
+		task->SetUseEventPlane(14);
 	}
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
