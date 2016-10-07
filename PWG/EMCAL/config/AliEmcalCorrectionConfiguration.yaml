@@ -1,6 +1,6 @@
-configurationName: "Default configuration"
-period: ""
-pass: ""
+configurationName: "Default configuration"     # Optional - Simply for user convenience
+period: ""                          # Must match the value given to the correction add task
+pass: ""                            # Attempts to automatically retrieve the pass if not specified
 cellBranchName: "usedefault"
 sharedParameters:
     # These are parameters shared by multiple tasks
