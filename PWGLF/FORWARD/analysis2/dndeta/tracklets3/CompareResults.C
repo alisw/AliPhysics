@@ -24,6 +24,15 @@ class TLegend;
 #endif
 
 //____________________________________________________________________
+/** 
+ * Structure to compare results. 
+ * 
+ * This code compares the results
+ * (@f$\mathrm{d}N_{\mathrm{ch}}/\mathrm{d}\eta@f$) from the input
+ * files.
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 struct Compare
 {
   Double_t fMin;
@@ -171,7 +180,17 @@ struct Compare
     c->SaveAs(Form("%sover%s.png", newTitle, oldTitle));
   }  
 };
-
+/** 
+ * Compare results  
+ * 
+ * @param newFile 
+ * @param oldFile 
+ * @param newTit 
+ * @param oldTit 
+ *
+ * @relates Compare 
+ * @ingroup pwglf_forward_tracklets
+ */
 void CompareResults(const char* newFile, const char* oldFile,
 		    const char* newTit,  const char* oldTit)
 {
@@ -179,6 +198,14 @@ void CompareResults(const char* newFile, const char* oldFile,
   c->Run(newFile,oldFile,newTit,oldTit);
 }
 
+/** 
+ * Compare results  
+ * 
+ * @param argv Commmand line parameters 
+ *
+ * @relates Compare 
+ * @ingroup pwglf_forward_tracklets
+ */
 void CompareResults(const char** argv)
 {
   TString newFile;
@@ -211,6 +238,12 @@ void CompareResults(const char** argv)
   CompareResults(newFile, oldFile, newTit, oldTit);
 }
 
+/** 
+ * Compare results  
+ * 
+ * @relates Compare 
+ * @ingroup pwglf_forward_tracklets
+ */
 void CompareResults()
 {
   CompareResults(const_cast<const char**>(&(gApplication->Argv()[1])));
