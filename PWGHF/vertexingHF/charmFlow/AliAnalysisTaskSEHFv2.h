@@ -102,6 +102,7 @@ private:
     void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD);
     void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD);
     Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, const TVector2* q,AliEventplane *pl,const TVector2* qsub1,const TVector2* qsub2);
+    Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
     //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
     
     TH1F* hEvPlaneQncorrTPC;      //! histogram for EP
@@ -131,10 +132,12 @@ private:
     Int_t fCentBinSizePerMil;     // width of centrality bins
     Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-    Bool_t fSetName;              //to set name of histos
+    Bool_t fSetNameTPC;              //to set name of histos
+    Bool_t fSetNameVZEROA;              //to set name of histos
+    Bool_t fSetNameVZEROC;              //to set name of histos
     Bool_t fUseNewQnCorrFw;       //flag tu use the new Qn correction framework
     
-    ClassDef(AliAnalysisTaskSEHFv2,3); // AliAnalysisTaskSE for the HF v2 analysis
+    ClassDef(AliAnalysisTaskSEHFv2,4); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
