@@ -30,6 +30,7 @@
 #include <TKey.h>
 
 #include <TRandom3.h>
+#include <TVector2.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
@@ -1406,9 +1407,15 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     // prepare MC stack
     AliStack *stack = NULL;
     Int_t nPrimaries = 0;
+    Double_t MCVtxX, MCVtxY, MCVtxZ;
+    
+    TParticle* prot1 = NULL;
     if (fMCEvent) {
       stack = fMCEvent->Stack();
-      if (stack) nPrimaries = stack->GetNprimary();
+      if (stack) {
+        nPrimaries = stack->GetNprimary();
+        prot1 = stack->Particle(0);
+      }
     }
 
     // set event parameters
@@ -1419,10 +1426,12 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     evbuf->SetGapCondition(fCurrentGapCondition);
     evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
     
-    evbuf->SetMCGenerator(fMCGenerator);
-    evbuf->SetMCProcessType(fMCprocess);
+    if (fMCEvent) {
+      evbuf->SetMCGenerator(fMCGenerator);
+      evbuf->SetMCProcessType(fMCprocess);
+      evbuf->SetMCVertexPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
+    }
     
-  
     // add normal tracks to event buffer
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
@@ -2464,22 +2473,43 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
 	if (!fMCEvent) return -1;
 	AliStack* stack = fMCEvent->Stack();
 	if (!stack) return -1;
-  //printf("We got a MC stack ...\n");
+  printf("We got a MC stack ...\n");
 
 	//= Multiplicity =============================================================
 	// determine number of charged physical primaries on the stack
 	Int_t nPhysicalPrimaries = 0;
 	Int_t nPrimaries = stack->GetNprimary();
-  //printf("There are %i/%i/%i particles\n",
-  //  stack->GetNtrack(),nPrimaries,stack->GetNtransported());
-	for (Int_t iTracks = 0; iTracks < nPrimaries; ++iTracks) {
+  printf("There are %i/%i/%i particles\n",
+    stack->GetNtrack(),nPrimaries,stack->GetNtransported());
+  
+	//stack->DumpPStack ();
+  //TList *parentIDs = new TList();
+  //parentIDs->Add(new TVector2(-1,0));
+  //printDaughters(parentIDs,stack);
+  
+  for (Int_t iTracks = 0; iTracks < stack->GetNtrack(); ++iTracks) {
     
-    TParticle* part = stack->Particle(iTracks);
-    //printf("PDG code of primary %i: %i\n",iTracks,part->GetPdgCode());
+    // set current track
+    stack->SetCurrentTrack(iTracks);
+
+    // id of parent
+    Int_t dauID = stack->GetCurrentTrackNumber();
+    Int_t parID = stack->GetCurrentParentTrackNumber();
+    Int_t primID = stack->GetPrimary(dauID);
+    
+    TParticle* part = stack->Particle(dauID);
+    TParticle* prim = stack->Particle(primID);
+    
+    //printf("MC track IDs: %i (daughter), %i (parent), %i (primary)\n",
+    //  dauID,parID,primID);
+    //printf("PDG code of track/primary %i: %i/%i\n",
+        
+    //  iTracks,part->GetPdgCode(),prim->GetPdgCode());
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) &&
 		    (part->Eta() < 0.9) && (part->Eta() > -0.9)) { // TODO add parameter
 			++nPhysicalPrimaries;
 		}
+    
 	}
   
   
@@ -2772,4 +2802,47 @@ void AliAnalysisTaskPB::GetMyPriors(TString fnameMyPriors, TH1F** mypriors) {
   
 }
 
+// -----------------------------------------------------------------------------
+void AliAnalysisTaskPB::printDaughters (TList *parentIDs, AliStack *stack) {
+
+  // get the last parent ID, if it is last in stack you are done!
+  Int_t thisParentID = -1;
+  Int_t nParents     = parentIDs->GetEntries();
+  TVector2 *dummy    = (TVector2 *)parentIDs->Last();
+  Int_t lastParentID = (Int_t)dummy->X();
+
+  // print a line
+  if (nParents > 1) {
+    for (Int_t jj=1; jj<nParents; jj++) {
+      thisParentID = (Int_t) ((TVector2 *)parentIDs->At(jj))->X();
+      printf("%*d",6,thisParentID);
+    } 
+    printf(" : %s\n",stack->Particle(thisParentID)->GetName());
+  }
+  
+  // loop over particles in stack starting from lastParentID
+  TParticle* part = NULL;
+  for (Int_t ii=lastParentID+1; ii<stack->GetNtrack(); ii++) {
+    
+    // get next particle and check whether it descends from lastParentID
+    part = stack->Particle(ii);
+    stack->SetCurrentTrack(ii);
+    thisParentID = stack->GetCurrentParentTrackNumber();
+    
+    if (thisParentID == lastParentID) {
+    
+      // add it to the list of parents
+      parentIDs->AddLast(new TVector2(ii,0));
+    
+      // repeat printDaughters with updated list of parents
+      printDaughters (parentIDs,stack);
+      
+      // remove last entry from parentIDs
+      parentIDs->RemoveLast();
+      
+    }
+  }
+  
+  
+}
 // -----------------------------------------------------------------------------
