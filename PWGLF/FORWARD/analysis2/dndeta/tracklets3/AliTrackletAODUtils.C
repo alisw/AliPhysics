@@ -26,6 +26,7 @@
 # include <TProfile2D.h>
 # include <TDatabasePDG.h>
 # include <THStack.h>
+# include <cstdarg>
 #else
 class TList;
 class TH1;
@@ -687,7 +688,7 @@ public:
 			     UShort_t    mode,
 			     TH1*        ipz,
 			     TH2*        mask=0,
-			     Bool_t      verb=true);
+			     Bool_t      verb=false);
   /** 
    * Clone an object and add to container 
    * 
@@ -830,6 +831,54 @@ public:
    * @return Opened file handle or null 
    */
   static TFile* OpenFile(const char* filename);
+
+  //__________________________________________________________________
+  /**
+   * A guard idom for producing debug output 
+   * 
+   */
+  struct DebugGuard 
+  {
+    /** 
+     * Constructor 
+     * 
+     * @param lvl       Current level
+     * @param msgLvl    Target level 
+     * @param format    @c printf -like format
+     * 
+     * @return 
+     */
+    DebugGuard(Int_t lvl, Int_t msgLvl, const char* format, ...);
+    /** 
+     * Destructor
+     */
+    ~DebugGuard();
+    /** 
+     * Make a message 
+     * 
+     * @param lvl    Current level
+     * @param msgLvl Target level 
+     * @param format @c printf -like format
+     */
+    static void Message(Int_t lvl, Int_t msgLvl, const char* format, ...);
+  private:
+    /** 
+     * Output the message 
+     * 
+     * @param in    Direction
+     * @param msg   Message 
+     */
+    static void Output(int in, TString& msg);
+    /** 
+     * Format a message 
+     * 
+     * @param out     Output is stored here
+     * @param format  @c printf -like format
+     * @param ap      List of arguments
+     */
+    static void Format(TString& out, const char* format, va_list ap);
+    TString fMsg;
+  };
 protected:
   ClassDef(AliTrackletAODUtils,1); // Utilities
 };
@@ -2189,9 +2238,11 @@ TFile* AliTrackletAODUtils::OpenFile(const char* filename)
 const char* AliTrackletAODUtils::CentName(Double_t c1, Double_t c2)
 {
   static TString tmp;
-  tmp.Form("cent%03dd%02d_%03dd%02d",
-	   Int_t(c1), Int_t(c1*100)%100,
-	   Int_t(c2), Int_t(c2*100)%100);
+  tmp = "all";
+  if (c1 < c2) 
+    tmp.Form("cent%03dd%02d_%03dd%02d",
+	     Int_t(c1), Int_t(c1*100)%100,
+	     Int_t(c2), Int_t(c2*100)%100);
   return tmp.Data();
 }
 //____________________________________________________________________
@@ -2221,6 +2272,60 @@ Color_t AliTrackletAODUtils::CentColor(const TAxis& axis,
   return CentColor(binC);
 }
 
+//====================================================================
+AliTrackletAODUtils::DebugGuard::DebugGuard(Int_t lvl, Int_t msgLvl, 
+					    const char* format, ...)
+  : fMsg("")
+{
+  if (lvl < msgLvl) return; 
+  va_list ap;
+  va_start(ap, format);
+  Format(fMsg, format, ap);
+  va_end(ap);
+  Output(+1, fMsg);
+}
+//____________________________________________________________________
+AliTrackletAODUtils::DebugGuard::~DebugGuard()
+{
+  if (fMsg.IsNull()) return;
+  Output(-1, fMsg);
+}
+//____________________________________________________________________
+void
+AliTrackletAODUtils::DebugGuard::Message(Int_t lvl, Int_t msgLvl, 
+				    const char* format, ...)
+{
+  if (lvl < msgLvl) return; 
+  TString msg;
+  va_list ap;
+  va_start(ap, format);
+  Format(msg, format, ap);
+  va_end(ap);
+  Output(0, msg);
+}
+
+//____________________________________________________________________
+void
+AliTrackletAODUtils::DebugGuard::Format(TString& out, const char* format,
+					va_list ap)
+{
+  static char buf[512];
+  Int_t n = gROOT->GetDirLevel() + 2;
+  for (Int_t i = 0; i < n; i++) buf[i] = ' ';
+  vsnprintf(&(buf[n]), 511-n, format, ap);
+  buf[511] = '\0';
+  out = buf;  
+}
+//____________________________________________________________________
+void
+AliTrackletAODUtils::DebugGuard::Output(int in, TString& msg)
+{
+  msg[0] = (in > 0 ? '>' :  in < 0 ? '<' : '=');
+  if (in < 0) gROOT->DecreaseDirLevel();
+  // gROOT->IndentLevel();
+  Printf(msg);
+  if (in > 0) gROOT->IncreaseDirLevel();
+}
   
   
 #endif
