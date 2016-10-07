@@ -35,10 +35,14 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  DCAxy()                       const {return fDCA[0];}
   Float_t  DCAz()                        const {return fDCA[1];}
   Float_t  TrackLength()                 const {return fTrackLength;}
+  Float_t  MassForTracking()        const {return fMassForTracking;}
+  Float_t  Chi2TPCConstrainedVsGlobal()  const {return fChi2TPCConstrainedVsGlobal;}
   
   UShort_t ITSncls()                const;
   UChar_t  ITSclusterMap()          const {return fITSclusterMap;}
+  UChar_t  ITSSharedClusterMap()   const {return fITSSharedClusterMap;}
   Bool_t   ITSLayerHit(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSclusterMap&(1<<layer)) : kFALSE);};
+  Bool_t   ITSClusterIsShared(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSSharedClusterMap&(1<<layer)) : kFALSE);};
   Float_t  ITSsignal()              const {return fITSsignal;}
   Float_t  ITSnSig(Int_t specie)    const {return (specie>=0 && specie<=3 ? fITSnSig[specie] : -999.);}
   Float_t  ITSchi2()                const {return fITSchi2;}
@@ -54,6 +58,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
   Float_t TPCchi2()                        const {return fTPCchi2;}
+  Float_t TPCActiveLength()         const {return fTPCActiveLength;}
+  Float_t TPCGeomLength()       const {return fTPCGeomLength;}
   
   Float_t  TOFbeta()             const {return fTOFbeta;}
   Float_t  TOFtime()             const {return fTOFtime;}
@@ -88,9 +94,12 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fDCA[2];              // DCA xy,z
   Float_t fTPCDCA[2];           // TPConly DCA xy,z
   Float_t fTrackLength;         // track length
+  Float_t fMassForTracking;    // mass hypothesis used for tracking
+  Float_t fChi2TPCConstrainedVsGlobal;   // AliESDtrack::GetChi2TPCConstrainedVsGlobal()
   
   // ITS
   UChar_t  fITSclusterMap;      // ITS cluster map
+  UChar_t  fITSSharedClusterMap;  // ITS shared cluster map
   Float_t  fITSsignal;          // ITS signal
   Float_t  fITSnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t  fITSchi2;            // ITS chi2 / cls
@@ -105,6 +114,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t fTPCchi2;            // TPC chi2 / cls
+  Float_t fTPCActiveLength;   // track length in active parts of the TPC
+  Float_t fTPCGeomLength;   // geometrical track length in the TPC
     
   // TOF
   Float_t fTOFbeta;             // TOF pid info
@@ -135,7 +146,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   AliReducedTrackInfo(const AliReducedTrackInfo &c);
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
 
-  ClassDef(AliReducedTrackInfo, 2);
+  ClassDef(AliReducedTrackInfo, 3);
 };
 
 //_______________________________________________________________________________
