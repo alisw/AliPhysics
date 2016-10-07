@@ -56,6 +56,7 @@
 
 ClassImp(AliAnalysisTaskMLTreeMaker)
 
+Bool_t cutonTPCsignalN=  kFALSE;       
 Int_t num= 0;
 Int_t ev=0;
 
@@ -84,9 +85,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   KsigTPC(0),
   KsigTOF(0),
   KsigITS(0),
-  fESigITSMin(-4.),
+  fESigITSMin(-100.),
   fESigITSMax(1.),
-  fESigTPCMin(-1.5),
+  fESigTPCMin(-3.),
   fESigTPCMax(3.),
   fESigTOFMin(-3),
   fESigTOFMax(3),
@@ -94,7 +95,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   fPSigTPCMax(4.),
   fPionSigmas(kFALSE),
   fKaonSigmas(kFALSE),
-  fUsePionPIDTPC(kTRUE),
+  fUsePionPIDTPC(kFALSE),
   hasMC(kFALSE),
   MCpt(0),
   MCeta(0),
@@ -153,9 +154,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   KsigTPC(0),
   KsigTOF(0),
   KsigITS(0),
-  fESigITSMin(-4.),
+  fESigITSMin(-100.),
   fESigITSMax(1.),
-  fESigTPCMin(-1.5),
+  fESigTPCMin(-3.),
   fESigTPCMax(3.),
   fESigTOFMin(-3),
   fESigTOFMax(3),
@@ -163,7 +164,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   fPSigTPCMax(4.),
   fPionSigmas(kFALSE),
   fKaonSigmas(kFALSE),
-  fUsePionPIDTPC(kTRUE),
+  fUsePionPIDTPC(kFALSE),
   hasMC(kFALSE),
   MCpt(0),
   MCeta(0),
@@ -196,11 +197,18 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
 {
 
 
-    
-  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+  //Alberto Style ESD track cuts - according to analysis note v.6  
+  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
   fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kFirst);
-
+  
+  fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.00515869+0.0101668/pt^1.34489");
+  fESDTrackCuts->SetMaxDCAToVertexZ(0.1);
+  fESDTrackCuts->SetMinNClustersITS(4);
+  fESDTrackCuts->SetMinNCrossedRowsTPC(100);
+  fESDTrackCuts->SetMinNClustersTPC(70);
+  fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
+  cutonTPCsignalN = kTRUE;
   
   DefineOutput(1, TList::Class());
 }
@@ -457,14 +465,21 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           }
           //Reject non-Hijing BG tracks    
           if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))){
-            AliError(Form("Reject track!!"));
+            AliError(Form("Reject non-Hijing BG tracks!!"));
             continue;
           }
         }
       }
-      fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1);  
+      fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
+      
+      
       if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
 
+      
+      //Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
+      if(cutonTPCsignalN && esdTrack->GetTPCsignalN()<50) continue; 
+      
+      
       // Kinematic cuts
       Double_t pttemp = esdTrack->Pt();
       Double_t etatemp = esdTrack->Eta();
