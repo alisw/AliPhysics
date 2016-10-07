@@ -61,6 +61,9 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
+  fMCGenHandler(NULL),
+  fMCGenerator(NULL),
+  fMCCocktailGen(NULL),
   fDoLightOutput(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
@@ -74,8 +77,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fHistPtDeltaPhiInput(NULL),
   fHistDecayChannelsInput(NULL),
   fHistPythiaBR(NULL),
-  fHistPtGammaSourceInput(NULL),
-  fHistPhiGammaSourceInput(NULL),
+  fHistPtGammaSourcePtInput(NULL),
+  fHistPhiGammaSourcePhiInput(NULL),
   fHistPdgInputRest(NULL),
   fHistPdgGammaSourceRest(NULL),
   fParticleList(NULL),
@@ -99,6 +102,9 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fInputEvent(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
+  fMCGenHandler(NULL),
+  fMCGenerator(NULL),
+  fMCCocktailGen(NULL),
   fDoLightOutput(kFALSE),
   fHasMother{kFALSE},
   fHistNEvents(NULL),
@@ -112,8 +118,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fHistPtDeltaPhiInput(NULL),
   fHistDecayChannelsInput(NULL),
   fHistPythiaBR(NULL),
-  fHistPtGammaSourceInput(NULL),
-  fHistPhiGammaSourceInput(NULL),
+  fHistPtGammaSourcePtInput(NULL),
+  fHistPhiGammaSourcePhiInput(NULL),
   fHistPdgInputRest(NULL),
   fHistPdgGammaSourceRest(NULL),
   fParticleList(NULL),
@@ -162,48 +168,46 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
   fOutputTree = new TTree("cocktailSettings", "cocktailSettings");
   fUserInfo   = (TList*)fOutputTree->GetUserInfo();
   
-  AliMCGenHandler* mcGenHandler           = (AliMCGenHandler*)AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
-  const AliGenerator* mcGenerator         = mcGenHandler->GetGenerator();
-  TString mcGeneratorClassName;
-  if (mcGenerator)  mcGeneratorClassName  = mcGenerator->ClassName();
-  else              mcGeneratorClassName  = "";
+  fMCGenHandler                           = (AliMCGenHandler*)AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
+  fMCGenerator                            = fMCGenHandler->GetGenerator();
+  TString mcGeneratorClassName            = "";
+  if (fMCGenerator) mcGeneratorClassName  = fMCGenerator->ClassName();
   
-  if (mcGenerator && mcGeneratorClassName.CompareTo("AliGenEMCocktailV2") == 0) {
+  if (mcGeneratorClassName.CompareTo("AliGenEMCocktailV2") == 0) {
     
-    AliGenEMCocktailV2* mcCocktailGen = (AliGenEMCocktailV2*)mcGenerator;
+    fMCCocktailGen = (AliGenEMCocktailV2*)fMCGenerator;
     
     // has mother i
-    SetHasMother((UInt_t)mcCocktailGen->GetSelectedMothers());
+    SetHasMother((UInt_t)fMCCocktailGen->GetSelectedMothers());
     
     // pt parametrizations
-    GetAndSetPtParametrizations(mcCocktailGen);
-    for (Int_t i=0; i<14; i++) {
+    GetAndSetPtParametrizations(fMCCocktailGen);
+    for (Int_t i=0; i<17; i++) {
       if (fHasMother[i]) fUserInfo->Add(fPtParametrization[i]);
     }
     if (fPtParametrizationProton) fUserInfo->Add(fPtParametrizationProton);
     
     // cocktail settings
     Double_t ptMin, ptMax;
-    mcCocktailGen->GetPtRange(ptMin, ptMax);
-    fCocktailSettings[0] = new TObjString(Form("collSys_%d",  mcCocktailGen->GetCollisionSystem()));
-    fCocktailSettings[1] = new TObjString(Form("cent_%d",     mcCocktailGen->GetCentrality()));
-    fCocktailSettings[2] = new TObjString(Form("decayMode_%.0f", mcCocktailGen->GetDecayMode()));
-    fCocktailSettings[3] = new TObjString(Form("selectMothers_%d", mcCocktailGen->GetSelectedMothers()));
-    fCocktailSettings[4] = new TObjString(Form("paramFile_%s", (mcCocktailGen->GetParametrizationFile()).Data()));
-    fCocktailSettings[5] = new TObjString(Form("nParticles_%d", mcCocktailGen->GetNumberOfParticles()));
+    fMCCocktailGen->GetPtRange(ptMin, ptMax);
+    fCocktailSettings[0] = new TObjString(Form("collSys_%d",  fMCCocktailGen->GetCollisionSystem()));
+    fCocktailSettings[1] = new TObjString(Form("cent_%d",     fMCCocktailGen->GetCentrality()));
+    fCocktailSettings[2] = new TObjString(Form("decayMode_%.0f", fMCCocktailGen->GetDecayMode()));
+    fCocktailSettings[3] = new TObjString(Form("selectMothers_%d", fMCCocktailGen->GetSelectedMothers()));
+    fCocktailSettings[4] = new TObjString(Form("paramFile_%s", (fMCCocktailGen->GetParametrizationFile()).Data()));
+    fCocktailSettings[5] = new TObjString(Form("nParticles_%d", fMCCocktailGen->GetNumberOfParticles()));
     fCocktailSettings[6] = new TObjString(Form("ptMin_%.2f", ptMin));
     fCocktailSettings[7] = new TObjString(Form("ptMax_%.2f", ptMax));
-    fCocktailSettings[8] = new TObjString(Form("weightMode_%.0f", mcCocktailGen->GetWeightingMode()));
+    fCocktailSettings[8] = new TObjString(Form("weightMode_%.0f", fMCCocktailGen->GetWeightingMode()));
     for (Int_t i=0; i<9; i++) fUserInfo->Add(fCocktailSettings[i]);
 
     // mt scaling params
-    TH1D* mtFactorHisto = (TH1D*)mcCocktailGen->GetMtScalingFactors();
+    TH1D* mtFactorHisto = (TH1D*)fMCCocktailGen->GetMtScalingFactors();
     fMtScalingFactors   = new TH1D(*mtFactorHisto);
     fUserInfo->Add(fMtScalingFactors);
-
+    delete mtFactorHisto;
   } else {
-    for (Int_t i=0; i<14; i++)
-      fHasMother[i] = kTRUE;
+    for (Int_t i=0; i<17; i++) fHasMother[i] = kTRUE;
   }
   
 //   "22" Gamma
@@ -223,21 +227,21 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
 //   "2214" Delta+
 //   "2224" Delta++
 //   "3212" Sigma0
-  const Int_t nInputParticles         = 14;
-  Int_t   fParticleList_local[]       = {111,221,331,223,113,213,-213,333,443,1114,2114,2214,2224,3212};
-  TString fParticleListNames_local[]  = {"Pi0","Eta","EtaPrim","omega","rho0","rho+","rho-","phi","J/psi","Delta-","Delta0","Delta+","Delta++","Sigma0"};
-  fParticleList            = fParticleList_local;
-  fParticleListNames       = fParticleListNames_local;
-  fHistPtYInput            = new TH2F*[nInputParticles];
-  fHistPtYGammaSource      = new TH2F*[nInputParticles];
-  fHistPtAlphaInput        = new TH2F*[nInputParticles];
-  fHistPtDeltaPhiInput     = new TH2F*[nInputParticles];
-  fHistDecayChannelsInput  = new TH1F*[nInputParticles];
-  fHistPythiaBR            = new TH1F*[nInputParticles];
-  fHistPtPhiGammaSource    = new TH2F*[nInputParticles];
-  fHistPtPhiInput          = new TH2F*[nInputParticles];
-  fHistPtGammaSourceInput  = new TH2F*[nInputParticles];
-  fHistPhiGammaSourceInput = new TH2F*[nInputParticles];
+  const Int_t nInputParticles         = 17;
+  Int_t   fParticleList_local[]       = {111,221,331,223,113,213,-213,333,443,1114,2114,2214,2224,3212,310,130,3122};
+  TString fParticleListNames_local[]  = {"Pi0","Eta","EtaPrim","omega","rho0","rho+","rho-","phi","J/psi","Delta-","Delta0","Delta+","Delta++","Sigma0","K0s","K0l","Lambda"};
+  fParticleList                   = fParticleList_local;
+  fParticleListNames              = fParticleListNames_local;
+  fHistPtYInput                   = new TH2F*[nInputParticles];
+  fHistPtPhiInput                 = new TH2F*[nInputParticles];
+  fHistDecayChannelsInput         = new TH1F*[nInputParticles];
+  fHistPythiaBR                   = new TH1F*[nInputParticles];
+  fHistPtYGammaSource             = new TH2F*[nInputParticles];
+  fHistPtPhiGammaSource           = new TH2F*[nInputParticles];
+  fHistPtAlphaInput               = new TH2F*[nInputParticles];
+  fHistPtDeltaPhiInput            = new TH2F*[nInputParticles];
+  fHistPtGammaSourcePtInput       = new TH2F*[nInputParticles];
+  fHistPhiGammaSourcePhiInput     = new TH2F*[nInputParticles];
   
   // delta phi binning
   Double_t *binsDeltaPhi = new Double_t[83];
@@ -257,50 +261,67 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     
   for(Int_t i=0; i<nInputParticles; i++){
     
-    fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
-    if (fHasMother[i]) fOutputContainer->Add(fHistPtYInput[i]);
-    
-    //Gammas from certain mother
-    fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
-    if (fHasMother[i]) fOutputContainer->Add(fHistPtYGammaSource[i]);
-    
-    //phi distributions
-    fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
-    if (fHasMother[i]) fOutputContainer->Add(fHistPtPhiInput[i]);
-
-    fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
-    if (fHasMother[i]) fOutputContainer->Add(fHistPtPhiGammaSource[i]);
+    if (fHasMother[i]) {
+      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fOutputContainer->Add(fHistPtYInput[i]);
       
-    // correlation gamma from certain mother to mother
-    fHistPtGammaSourceInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourceInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",500,0,50,500,0,50,kTRUE);
-    if (fHasMother[i]) fOutputContainer->Add(fHistPtGammaSourceInput[i]);
-
-    fHistPhiGammaSourceInput[i] = (TH2F*)SetHist2D(fHistPhiGammaSourceInput[i],"f",Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",100,0,7,100,0,7,kTRUE);
-    if (fHasMother[i]) fOutputContainer->Add(fHistPhiGammaSourceInput[i]);
-    
-    // decay channels mother
-    fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f",Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
-    InitializeDecayChannelHist(fHistDecayChannelsInput[i], i);
-    if (fHasMother[i]) fOutputContainer->Add(fHistDecayChannelsInput[i]);
-    
-    // BR from pythia
-    fHistPythiaBR[i] = (TH1F*)SetHist1D(fHistPythiaBR[i],"f",Form("PythiaBR_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
-    InitializeDecayChannelHist(fHistPythiaBR[i], i);
-    FillPythiaBranchingRatio(fHistPythiaBR[i], i);
-    if (fHasMother[i]) fUserInfo->Add(fHistPythiaBR[i]);
+      //Gammas from certain mother
+      fHistPtYGammaSource[i] = (TH2F*)SetHist2D(fHistPtYGammaSource[i],"f",Form("Pt_Y_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fOutputContainer->Add(fHistPtYGammaSource[i]);
+      
+      //phi distributions
+      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+      fOutputContainer->Add(fHistPtPhiInput[i]);
+      
+      fHistPtPhiGammaSource[i] = (TH2F*)SetHist2D(fHistPtPhiGammaSource[i],"f",Form("Pt_Phi_Gamma_From_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+      fOutputContainer->Add(fHistPtPhiGammaSource[i]);
+      
+      // correlation gamma from certain mother to mother
+      fHistPtGammaSourcePtInput[i] = (TH2F*)SetHist2D(fHistPtGammaSourcePtInput[i],"f",Form("PtGamma_PtMother_%s",fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",500,0,50,500,0,50,kTRUE);
+      fOutputContainer->Add(fHistPtGammaSourcePtInput[i]);
+      
+      fHistPhiGammaSourcePhiInput[i] = (TH2F*)SetHist2D(fHistPhiGammaSourcePhiInput[i],"f",Form("PhiGamma_PhiMother_%s",fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",100,0,7,100,0,7,kTRUE);
+      fOutputContainer->Add(fHistPhiGammaSourcePhiInput[i]);
+      
+      // decay channels mother
+      fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f",Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
+      InitializeDecayChannelHist(fHistDecayChannelsInput[i], i);
+      fOutputContainer->Add(fHistDecayChannelsInput[i]);
+      
+      // BR from pythia
+      fHistPythiaBR[i] = (TH1F*)SetHist1D(fHistPythiaBR[i],"f",Form("PythiaBR_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
+      InitializeDecayChannelHist(fHistPythiaBR[i], i);
+      FillPythiaBranchingRatio(fHistPythiaBR[i], i);
+      fUserInfo->Add(fHistPythiaBR[i]);
+    } else {
+      fHistPtYInput[i]                = NULL;
+      fHistPtYGammaSource[i]          = NULL;
+      fHistPtPhiInput[i]              = NULL;
+      fHistPtPhiGammaSource[i]        = NULL;
+      fHistPtGammaSourcePtInput[i]    = NULL;
+      fHistPhiGammaSourcePhiInput[i]  = NULL;
+      fHistDecayChannelsInput[i]      = NULL;
+      fHistPythiaBR[i]                = NULL;
+    }
     
     // lightweight output
     if (!fDoLightOutput || (fDoLightOutput && (i < 4 || i == 7))) {
-      // gamma delta phi
-      fHistPtDeltaPhiInput[i] = (TH2F*)SetHist2D(fHistPtDeltaPhiInput[i],"f",Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#Delta#phi_{#gamma_{1}#gamma_{2}}",500,0,50,82,binsDeltaPhi,kTRUE);
-      if (fHasMother[i]) fOutputContainer->Add(fHistPtDeltaPhiInput[i]);
       
-      // alpha mother
-      fHistPtAlphaInput[i] = (TH2F*)SetHist2D(fHistPtAlphaInput[i],"f",Form("Pt_Alpha_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#alpha",500,0,50,100,-1,1,kTRUE);
-      if (fHasMother[i]) fOutputContainer->Add(fHistPtAlphaInput[i]);
+      if (fHasMother[i]) {
+        // gamma delta phi
+        fHistPtDeltaPhiInput[i] = (TH2F*)SetHist2D(fHistPtDeltaPhiInput[i],"f",Form("Pt_DeltaPhi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#Delta#phi_{#gamma_{1}#gamma_{2}}",500,0,50,82,binsDeltaPhi,kTRUE);
+        fOutputContainer->Add(fHistPtDeltaPhiInput[i]);
+        
+        // alpha mother
+        fHistPtAlphaInput[i] = (TH2F*)SetHist2D(fHistPtAlphaInput[i],"f",Form("Pt_Alpha_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#alpha",500,0,50,100,-1,1,kTRUE);
+        fOutputContainer->Add(fHistPtAlphaInput[i]);
+      } else {
+        fHistPtDeltaPhiInput[i] = NULL;
+        fHistPtAlphaInput[i]    = NULL;
+      }
     } else {
       fHistPtDeltaPhiInput[i] = NULL;
-      fHistPtAlphaInput[i] = NULL;
+      fHistPtAlphaInput[i]    = NULL;
     }
   }
   delete[] binsDeltaPhi;
@@ -322,53 +343,53 @@ void AliAnalysisTaskGammaCocktailMC::UserExec(Option_t *)
 {
   
   fInputEvent = InputEvent();
-//   cout << "I found an Event" << endl;
   
   fMCEvent = MCEvent();
   if(fMCEvent == NULL) fIsMC = 0;
   
   if (fIsMC==0) return;
-//   cout << "I found an MC header" << endl;
   
   fMCStack = fMCEvent->Stack();
   if(fMCStack == NULL) fIsMC = 0;
   if (fIsMC==0) return;
   
   fHistNEvents->Fill(0.5);
-//   cout << "the stack is intact" << endl;
   ProcessMCParticles();
 
   PostData(1, fOutputContainer);
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen)
+void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktailV2* fMCCocktailGen)
 {
-  if (!mcCocktailGen) return;
+  if (!fMCCocktailGen) return;
 
-  for (Int_t i=0; i<14; i++) fPtParametrization[i] = NULL;
+  for (Int_t i=0; i<17; i++) fPtParametrization[i] = NULL;
   fPtParametrizationProton = NULL;
   
   TF1* fct        = NULL;
   TString fctName = "";
   for (Int_t i=0; i<17; i++) {
-    fct = (TF1*)mcCocktailGen->GetPtParametrization(i);
+    fct = (TF1*)fMCCocktailGen->GetPtParametrization(i);
     if (fct) {
       fctName = fct->GetName();
-      if (fctName.BeginsWith("111_pt"))  fPtParametrization[0]   = new TF1(*fct);
-      if (fctName.BeginsWith("221_pt"))  fPtParametrization[1]   = new TF1(*fct);
-      if (fctName.BeginsWith("331_pt"))  fPtParametrization[2]   = new TF1(*fct);
-      if (fctName.BeginsWith("223_pt"))  fPtParametrization[3]   = new TF1(*fct);
-      if (fctName.BeginsWith("113_pt"))  fPtParametrization[4]   = new TF1(*fct);
-      if (fctName.BeginsWith("213_pt"))  fPtParametrization[5]   = new TF1(*fct);
-      if (fctName.BeginsWith("-213_pt")) fPtParametrization[6]   = new TF1(*fct);
-      if (fctName.BeginsWith("333_pt"))  fPtParametrization[7]   = new TF1(*fct);
-      if (fctName.BeginsWith("443_pt"))  fPtParametrization[8]   = new TF1(*fct);
-      if (fctName.BeginsWith("1114_pt")) fPtParametrization[9]   = new TF1(*fct);
-      if (fctName.BeginsWith("2114_pt")) fPtParametrization[10]  = new TF1(*fct);
-      if (fctName.BeginsWith("2214_pt")) fPtParametrization[11]  = new TF1(*fct);
-      if (fctName.BeginsWith("2224_pt")) fPtParametrization[12]  = new TF1(*fct);
-      if (fctName.BeginsWith("3212_pt")) fPtParametrization[13]  = new TF1(*fct);
+      if (fctName.BeginsWith("111_pt")  && fHasMother[0])  fPtParametrization[0]   = new TF1(*fct);
+      if (fctName.BeginsWith("221_pt")  && fHasMother[1])  fPtParametrization[1]   = new TF1(*fct);
+      if (fctName.BeginsWith("331_pt")  && fHasMother[2])  fPtParametrization[2]   = new TF1(*fct);
+      if (fctName.BeginsWith("223_pt")  && fHasMother[3])  fPtParametrization[3]   = new TF1(*fct);
+      if (fctName.BeginsWith("113_pt")  && fHasMother[4])  fPtParametrization[4]   = new TF1(*fct);
+      if (fctName.BeginsWith("213_pt")  && fHasMother[5])  fPtParametrization[5]   = new TF1(*fct);
+      if (fctName.BeginsWith("-213_pt") && fHasMother[6])  fPtParametrization[6]   = new TF1(*fct);
+      if (fctName.BeginsWith("333_pt")  && fHasMother[7])  fPtParametrization[7]   = new TF1(*fct);
+      if (fctName.BeginsWith("443_pt")  && fHasMother[8])  fPtParametrization[8]   = new TF1(*fct);
+      if (fctName.BeginsWith("1114_pt") && fHasMother[9])  fPtParametrization[9]   = new TF1(*fct);
+      if (fctName.BeginsWith("2114_pt") && fHasMother[10]) fPtParametrization[10]  = new TF1(*fct);
+      if (fctName.BeginsWith("2214_pt") && fHasMother[11]) fPtParametrization[11]  = new TF1(*fct);
+      if (fctName.BeginsWith("2224_pt") && fHasMother[12]) fPtParametrization[12]  = new TF1(*fct);
+      if (fctName.BeginsWith("3212_pt") && fHasMother[13]) fPtParametrization[13]  = new TF1(*fct);
+      if (fctName.BeginsWith("310_pt")  && fHasMother[14]) fPtParametrization[14]  = new TF1(*fct);
+      if (fctName.BeginsWith("130_pt")  && fHasMother[15]) fPtParametrization[15]  = new TF1(*fct);
+      if (fctName.BeginsWith("3122_pt") && fHasMother[16]) fPtParametrization[16]  = new TF1(*fct);
       if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = new TF1(*fct);
     }
   }
@@ -377,7 +398,7 @@ void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktai
 //_____________________________________________________________________________
 void AliAnalysisTaskGammaCocktailMC::SetHasMother(UInt_t selectedMothers) {
   
-  for (Int_t i=0; i<14; i++) fHasMother[i] = kFALSE;
+  for (Int_t i=0; i<17; i++) fHasMother[i] = kFALSE;
   
   if (selectedMothers&AliGenEMCocktailV2::kGenPizero)    fHasMother[0] = kTRUE;
   if (selectedMothers&AliGenEMCocktailV2::kGenEta)       fHasMother[1] = kTRUE;
@@ -393,6 +414,9 @@ void AliAnalysisTaskGammaCocktailMC::SetHasMother(UInt_t selectedMothers) {
   if (selectedMothers&AliGenEMCocktailV2::kGenDeltaPl)   fHasMother[11] = kTRUE;
   if (selectedMothers&AliGenEMCocktailV2::kGenDeltaPlPl) fHasMother[12] = kTRUE;
   if (selectedMothers&AliGenEMCocktailV2::kGenSigma0)    fHasMother[13] = kTRUE;
+  if (selectedMothers&AliGenEMCocktailV2::kGenK0s)       fHasMother[14] = kTRUE;
+  if (selectedMothers&AliGenEMCocktailV2::kGenK0l)       fHasMother[15] = kTRUE;
+  if (selectedMothers&AliGenEMCocktailV2::kGenLambda)    fHasMother[16] = kTRUE;
 }
 
 //________________________________________________________________________
@@ -437,93 +461,111 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     if (fabs(y) > fMaxY) continue;
     
     if(particle->GetPdgCode()==22 && hasMother==kTRUE){
-      if(motherIsPrimary){
+      if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){
         fHistPtYGamma->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
         fHistPtPhiGamma->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
         switch(motherParticle->GetPdgCode()){
         case 111:
           fHistPtYGammaSource[0]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[0]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[0]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[0]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[0]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[0]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 221:
           fHistPtYGammaSource[1]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[1]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[1]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[1]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[1]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[1]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 331:
           fHistPtYGammaSource[2]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[2]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[2]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[2]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[2]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[2]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 223:
           fHistPtYGammaSource[3]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[3]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[3]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[3]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[3]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[3]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 113:
           fHistPtYGammaSource[4]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[4]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[4]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[4]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[4]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[4]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 213:
           fHistPtYGammaSource[5]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[5]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[5]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[5]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[5]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[5]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case -213:
           fHistPtYGammaSource[6]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[6]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[6]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[6]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[6]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[6]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 333:
           fHistPtYGammaSource[7]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[7]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[7]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[7]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[7]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[7]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 443:
           fHistPtYGammaSource[8]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[8]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[8]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[8]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[8]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[8]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 1114:
           fHistPtYGammaSource[9]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[9]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[9]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[9]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[9]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[9]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 2114:
           fHistPtYGammaSource[10]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[10]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[10]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[10]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[10]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[10]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 2214:
           fHistPtYGammaSource[11]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[11]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[11]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[11]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[11]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[11]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 2224:
           fHistPtYGammaSource[12]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[12]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[12]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[12]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[12]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[12]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         case 3212:
           fHistPtYGammaSource[13]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
           fHistPtPhiGammaSource[13]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
-          fHistPtGammaSourceInput[13]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
-          fHistPhiGammaSourceInput[13]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[13]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[13]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          break;
+        case 310:
+          fHistPtYGammaSource[14]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[14]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[14]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[14]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          break;
+        case 130:
+          fHistPtYGammaSource[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[15]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[15]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
+          break;
+        case 3122:
+          fHistPtYGammaSource[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiGammaSource[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistPtGammaSourcePtInput[16]->Fill(particle->Pt(), motherParticle->Pt(), particle->GetWeight());
+          fHistPhiGammaSourcePhiInput[16]->Fill(particle->Phi(), motherParticle->Phi(), particle->GetWeight());
           break;
         default:
           fHistPdgGammaSourceRest->Fill(motherParticle->GetPdgCode());
@@ -532,9 +574,7 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
       }
     }
     
-//     fParticleList_local[] = {111,221,331,223,113,213,-213,333,443,1114,2114,2214,2224,3212};
-//     fParticleListNames_local[] = {"Pi0","Eta","EtaPrim","omega","rho0","rho+","rho-","phi","J/psi","Delta-","Delta0","Delta+","Delta++","Sigma0"};
-    if(particle->GetPdgCode()!=22 && particleIsPrimary){
+    if(particle->GetPdgCode()!=22 && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->GetPdgCode())]){
 
       Double_t alpha    = -999;
       Double_t deltaPhi = -999;
@@ -671,6 +711,30 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
           fHistDecayChannelsInput[13]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
           if (alpha>=-1 && fHistPtAlphaInput[13]) fHistPtAlphaInput[13]->Fill(particle->Pt(), alpha, particle->GetWeight());
           if (deltaPhi>=0 && fHistPtDeltaPhiInput[13]) fHistPtDeltaPhiInput[13]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          break;
+        case 310:
+          fHistPtYInput[14]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[14]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[14]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[14]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          if (alpha>=-1 && fHistPtAlphaInput[14]) fHistPtAlphaInput[14]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (deltaPhi>=0 && fHistPtDeltaPhiInput[14]) fHistPtDeltaPhiInput[14]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          break;
+        case 130:
+          fHistPtYInput[15]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[15]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[15]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[15]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          if (alpha>=-1 && fHistPtAlphaInput[15]) fHistPtAlphaInput[15]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (deltaPhi>=0 && fHistPtDeltaPhiInput[15]) fHistPtDeltaPhiInput[15]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
+          break;
+        case 3122:
+          fHistPtYInput[16]->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
+          fHistPtPhiInput[16]->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
+          fHistDecayChannelsInput[16]->Fill(0., particle->GetWeight());
+          fHistDecayChannelsInput[16]->Fill(GetDecayChannel(fMCStack, particle), particle->GetWeight());
+          if (alpha>=-1 && fHistPtAlphaInput[16]) fHistPtAlphaInput[16]->Fill(particle->Pt(), alpha, particle->GetWeight());
+          if (deltaPhi>=0 && fHistPtDeltaPhiInput[16]) fHistPtDeltaPhiInput[16]->Fill(particle->Pt(), deltaPhi, particle->GetWeight());
           break;
         default:
           fHistPdgInputRest->Fill(particle->GetPdgCode());
@@ -853,7 +917,43 @@ void AliAnalysisTaskGammaCocktailMC::InitializeDecayChannelHist(TH1F* hist, Int_
       hist->GetXaxis()->SetBinLabel(3,"#Lambda e^{+} e^{-}");
       hist->GetXaxis()->SetBinLabel(20,"rest");
       break;
+
+    case 14:
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{0} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{+} #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{0} #gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(6,"#gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
+    case 15:
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"#pi^{0} #pi^{0} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(3,"#pi^{+} #pi^{-} #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(4,"#pi^{#pm} e^{#mp} #nu #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"#pi^{#pm} #mu^{#mp} #nu #gamma");
+      hist->GetXaxis()->SetBinLabel(6,"#pi^{+} #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(7,"#pi^{0} #gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(8,"#pi^{0} e^{+} e^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(9,"#gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(10,"e^{+} e^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(11,"e^{+} e^{-} #gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(12,"#mu^{+} #mu^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(13,"#mu^{+} #mu^{-} #gamma #gamma");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
       
+    case 16:
+      hist->GetXaxis()->SetBinLabel(1,"all");
+      hist->GetXaxis()->SetBinLabel(2,"p #pi^{-}");
+      hist->GetXaxis()->SetBinLabel(3,"n #pi^{0}");
+      hist->GetXaxis()->SetBinLabel(4,"n #gamma");
+      hist->GetXaxis()->SetBinLabel(5,"p #pi^{-} #gamma");
+      hist->GetXaxis()->SetBinLabel(20,"rest");
+      break;
+
     default:
       break;
   }
@@ -888,6 +988,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 221:
       if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
         return 1.;
@@ -908,6 +1009,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 331:
       if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211 && PdgDaughter->at(2) == 221)
         return 1.;
@@ -924,6 +1026,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 223:
       if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
         return 1.;
@@ -940,6 +1043,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 113:
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211)
         return 1.;
@@ -956,6 +1060,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 213:
       if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 211)
         return 1.;
@@ -964,6 +1069,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case -213:
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111)
         return 1.;
@@ -972,6 +1078,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 333:
       if (nDaughters == 2 && PdgDaughter->at(0) == -321 && PdgDaughter->at(1) == 321)
         return 1.;
@@ -1004,6 +1111,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 443:
       if (nDaughters == 3 && (PdgDaughter->at(0) == 21 || PdgDaughter->at(0) == 9) && (PdgDaughter->at(1) == 21 || PdgDaughter->at(1) == 9) && (PdgDaughter->at(2) == 21 || PdgDaughter->at(2) == 9))
         return 1.;
@@ -1016,6 +1124,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 1114:
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2112)
         return 1.;
@@ -1024,6 +1133,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 2114:
       if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2112)
         return 1.;
@@ -1034,6 +1144,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 2214:
       if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 2112)
         return 1.;
@@ -1044,6 +1155,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 2224:
       if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 2212)
         return 1.;
@@ -1052,6 +1164,7 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
     case 3212:
       if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 3122)
         return 1.;
@@ -1060,6 +1173,65 @@ Float_t AliAnalysisTaskGammaCocktailMC::GetDecayChannel(AliStack* stack, TPartic
       else
         return 19.;
       break;
+      
+    case 310:
+      if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211)
+        return 2.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 211)
+        return 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 4.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
+        return 5.;
+      else
+        return 19.;
+      
+    case 130:
+      if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
+        return 1.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
+        return 2.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -12 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 211)
+        return 3.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -11 && PdgDaughter->at(2) == 12 && PdgDaughter->at(3) == 22)
+        return 3.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -14 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 211)
+        return 4.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -13 && PdgDaughter->at(2) == 14 && PdgDaughter->at(3) == 22)
+        return 4.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 211)
+        return 5.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 111)
+        return 6.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 111)
+        return 7.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
+        return 8.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22)
+        return 9.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 22)
+        return 10.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 22)
+        return 11.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 22)
+        return 12.;
+      else
+        return 19.;
+      
+    case 3122:
+      if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2212)
+        return 1.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2112)
+        return 2.;
+      else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 2112)
+        return 3.;
+      else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 2212)
+        return 4.;
+      else
+        return 19.;
+      
     default:
       return -1.;
       break;
@@ -1540,12 +1712,192 @@ void AliAnalysisTaskGammaCocktailMC::FillPythiaBranchingRatio(TH1F* histo, Int_t
       pdgCodes.clear();
       break;
       
+    case 14:
+      kc            = (AliPythia6::Instance())->Pycomp(310);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 111)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 211)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 22 && pdgCodes[2] == 211)
+          histo->SetBinContent(4, BR);
+        else if (nPart == 3 && pdgCodes[0] == 22 && pdgCodes[1] == 22 && pdgCodes[2] == 111)
+          histo->SetBinContent(5, BR);
+        else if (nPart == 2 && pdgCodes[0] == 22 && pdgCodes[1] == 22)
+          histo->SetBinContent(6, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
+    case 15:
+      kc            = (AliPythia6::Instance())->Pycomp(130);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 3 && pdgCodes[0] == 111 && pdgCodes[1] == 111 && pdgCodes[2] == 111)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 111 && pdgCodes[2] == 211)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 4 && pdgCodes[0] == -12 && pdgCodes[1] == 11 && pdgCodes[2] == 22 && pdgCodes[3] == 211)
+          histo->SetBinContent(4, BR+histo->GetBinContent(4));
+        else if (nPart == 4 && pdgCodes[0] == -211 && pdgCodes[1] == -11 && pdgCodes[2] == 12 && pdgCodes[3] == 22)
+          histo->SetBinContent(4, BR+histo->GetBinContent(4));
+        else if (nPart == 4 && pdgCodes[0] == -14 && pdgCodes[1] == 13 && pdgCodes[2] == 22 && pdgCodes[3] == 211)
+          histo->SetBinContent(5, BR+histo->GetBinContent(5));
+        else if (nPart == 4 && pdgCodes[0] == -211 && pdgCodes[1] == -13 && pdgCodes[2] == 14 && pdgCodes[3] == 22)
+          histo->SetBinContent(5, BR+histo->GetBinContent(5));
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 22 && pdgCodes[2] == 211)
+          histo->SetBinContent(6, BR);
+        else if (nPart == 3 && pdgCodes[0] == 22 && pdgCodes[1] == 22 && pdgCodes[2] == 111)
+          histo->SetBinContent(7, BR);
+        else if (nPart == 4 && pdgCodes[0] == -11 && pdgCodes[1] == 11 && pdgCodes[2] == 22 && pdgCodes[3] == 111)
+          histo->SetBinContent(8, BR);
+        else if (nPart == 2 && pdgCodes[0] == 22 && pdgCodes[1] == 22)
+          histo->SetBinContent(9, BR);
+        else if (nPart == 3 && pdgCodes[0] == -11 && pdgCodes[1] == 11 && pdgCodes[2] == 22)
+          histo->SetBinContent(10, BR);
+        else if (nPart == 4 && pdgCodes[0] == -11 && pdgCodes[1] == 11 && pdgCodes[2] == 22 && pdgCodes[3] == 22)
+          histo->SetBinContent(11, BR);
+        else if (nPart == 3 && pdgCodes[0] == -13 && pdgCodes[1] == 13 && pdgCodes[2] == 22)
+          histo->SetBinContent(12, BR);
+        else if (nPart == 4 && pdgCodes[0] == -13 && pdgCodes[1] == 13 && pdgCodes[2] == 22 && pdgCodes[3] == 22)
+          histo->SetBinContent(13, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+
+    case 16:
+      kc            = (AliPythia6::Instance())->Pycomp(3122);
+      firstChannel  = (AliPythia6::Instance())->GetMDCY(kc,2);
+      lastChannel   = firstChannel + (AliPythia6::Instance())->GetMDCY(kc,3) - 1;
+      BRtot         = 0.;
+      for (Int_t channel=firstChannel; channel<=lastChannel; channel++) {
+        BR          = (AliPythia6::Instance())->GetBRAT(channel);
+        BRtot       = BRtot + BR;
+        nPart       = 0;
+        for (Int_t i=1; i<=5; i++) {
+          if ((AliPythia6::Instance())->GetKFDP(channel,i)) {
+            pdgCodes.push_back((AliPythia6::Instance())->GetKFDP(channel,i));
+            nPart++;
+          }
+        }
+        std::sort(pdgCodes.begin(), pdgCodes.end());
+        if (nPart == 2 && pdgCodes[0] == -211 && pdgCodes[1] == 2212)
+          histo->SetBinContent(2, BR);
+        else if (nPart == 2 && pdgCodes[0] == 111 && pdgCodes[1] == 2112)
+          histo->SetBinContent(3, BR);
+        else if (nPart == 2 && pdgCodes[0] == 22 && pdgCodes[1] == 2112)
+          histo->SetBinContent(4, BR);
+        else if (nPart == 3 && pdgCodes[0] == -211 && pdgCodes[1] == 22 && pdgCodes[2] == 2212)
+          histo->SetBinContent(4, BR);
+        else
+          histo->SetBinContent(20, BR+histo->GetBinContent(20));
+        pdgCodes.clear();
+      }
+      histo->SetBinContent(1, BRtot);
+      pdgCodes.clear();
+      break;
+      
     default:
       break;
   }
 }
 
+//_________________________________________________________________________________
+Int_t AliAnalysisTaskGammaCocktailMC::GetParticlePosLocal(Int_t pdg) {
 
+  Int_t returnVal = -9999;
+  
+  switch (pdg) {
+    case 111:
+      returnVal = 0;
+      break;
+    case 221:
+      returnVal = 1;
+      break;
+    case 331:
+      returnVal = 2;
+      break;
+    case 223:
+      returnVal = 3;
+      break;
+    case 113:
+      returnVal = 4;
+      break;
+    case 213:
+      returnVal = 5;
+      break;
+    case -213:
+      returnVal = 6;
+      break;
+    case 333:
+      returnVal = 7;
+      break;
+    case 443:
+      returnVal = 8;
+      break;
+    case 1114:
+      returnVal = 9;
+      break;
+    case 2114:
+      returnVal = 10;
+      break;
+    case 2214:
+      returnVal = 11;
+      break;
+    case 2224:
+      returnVal = 12;
+      break;
+    case 3212:
+      returnVal = 13;
+      break;
+    case 310:
+      returnVal = 14;
+      break;
+    case 130:
+      returnVal = 15;
+      break;
+    case 3122:
+      returnVal = 16;
+      break;
+    default:
+      break;
+  }
+  
+  return returnVal;
+}
 
 //_________________________________________________________________________________
 TH1* AliAnalysisTaskGammaCocktailMC::SetHist1D(TH1* hist, TString histType, TString histName, TString xTitle, TString yTitle, Int_t nBinsX, Double_t xMin, Double_t xMax, Bool_t optSumw2) {
@@ -1597,4 +1949,3 @@ TH2* AliAnalysisTaskGammaCocktailMC::SetHist2D(TH2* hist, TString histType, TStr
   
   return hist;
 }
-
