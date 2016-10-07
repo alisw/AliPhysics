@@ -199,10 +199,8 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
     for (Int_t i=0; i<9; i++) fUserInfo->Add(fCocktailSettings[i]);
     
     // mt scaling params
-    TH1D* mtFactorHisto = (TH1D*)fMCCocktailGen->GetMtScalingFactors();
-    fMtScalingFactors   = new TH1D(*mtFactorHisto);
+    fMtScalingFactors = (TH1D*)fMCCocktailGen->GetMtScalingFactors();
     fUserInfo->Add(fMtScalingFactors);
-    delete mtFactorHisto;
   } else {
     for (Int_t i=0; i<13; i++) fHasMother[i] = kTRUE;
   }
@@ -344,20 +342,20 @@ void AliAnalysisTaskHadronicCocktailMC::GetAndSetPtParametrizations(AliGenEMCock
     fct = (TF1*)fMCCocktailGen->GetPtParametrization(i);
     if (fct) {
       fctName = fct->GetName();
-      if (fctName.BeginsWith("221_pt")  && fHasMother[0])  fPtParametrization[0]   = new TF1(*fct);
-      if (fctName.BeginsWith("310_pt")  && fHasMother[1])  fPtParametrization[1]   = new TF1(*fct);
-      if (fctName.BeginsWith("130_pt")  && fHasMother[2])  fPtParametrization[2]   = new TF1(*fct);
-      if (fctName.BeginsWith("3122_pt") && fHasMother[3])  fPtParametrization[3]   = new TF1(*fct);
-      if (fctName.BeginsWith("113_pt")  && fHasMother[4])  fPtParametrization[4]   = new TF1(*fct);
-      if (fctName.BeginsWith("331_pt")  && fHasMother[5])  fPtParametrization[5]   = new TF1(*fct);
-      if (fctName.BeginsWith("223_pt")  && fHasMother[6])  fPtParametrization[6]   = new TF1(*fct);
-      if (fctName.BeginsWith("213_pt")  && fHasMother[7])  fPtParametrization[7]   = new TF1(*fct);
-      if (fctName.BeginsWith("-213_pt") && fHasMother[8])  fPtParametrization[8]   = new TF1(*fct);
-      if (fctName.BeginsWith("333_pt")  && fHasMother[9])  fPtParametrization[9]   = new TF1(*fct);
-      if (fctName.BeginsWith("443_pt")  && fHasMother[10]) fPtParametrization[10]  = new TF1(*fct);
-      if (fctName.BeginsWith("2114_pt") && fHasMother[11]) fPtParametrization[11]  = new TF1(*fct);
-      if (fctName.BeginsWith("2214_pt") && fHasMother[12]) fPtParametrization[12]  = new TF1(*fct);
-      if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = new TF1(*fct);
+      if (fctName.BeginsWith("221_pt")  && fHasMother[0])  fPtParametrization[0]   = fct;
+      if (fctName.BeginsWith("310_pt")  && fHasMother[1])  fPtParametrization[1]   = fct;
+      if (fctName.BeginsWith("130_pt")  && fHasMother[2])  fPtParametrization[2]   = fct;
+      if (fctName.BeginsWith("3122_pt") && fHasMother[3])  fPtParametrization[3]   = fct;
+      if (fctName.BeginsWith("113_pt")  && fHasMother[4])  fPtParametrization[4]   = fct;
+      if (fctName.BeginsWith("331_pt")  && fHasMother[5])  fPtParametrization[5]   = fct;
+      if (fctName.BeginsWith("223_pt")  && fHasMother[6])  fPtParametrization[6]   = fct;
+      if (fctName.BeginsWith("213_pt")  && fHasMother[7])  fPtParametrization[7]   = fct;
+      if (fctName.BeginsWith("-213_pt") && fHasMother[8])  fPtParametrization[8]   = fct;
+      if (fctName.BeginsWith("333_pt")  && fHasMother[9])  fPtParametrization[9]   = fct;
+      if (fctName.BeginsWith("443_pt")  && fHasMother[10]) fPtParametrization[10]  = fct;
+      if (fctName.BeginsWith("2114_pt") && fHasMother[11]) fPtParametrization[11]  = fct;
+      if (fctName.BeginsWith("2214_pt") && fHasMother[12]) fPtParametrization[12]  = fct;
+      if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = fct;
     }
   }
 }

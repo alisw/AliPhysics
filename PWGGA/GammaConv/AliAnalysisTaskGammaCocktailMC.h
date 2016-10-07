@@ -80,7 +80,7 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
     TH1I*                       fHistPdgInputRest;              //! histo for rest
     TH1I*                       fHistPdgGammaSourceRest;        //! histo for gamma from rest
   
-    TF1*                        fPtParametrization[14];         //!
+    TF1*                        fPtParametrization[17];         //!
     TF1*                        fPtParametrizationProton;       //!
     TObjString*                 fCocktailSettings[9];           //!
     TH1D*                       fMtScalingFactors;              //!
