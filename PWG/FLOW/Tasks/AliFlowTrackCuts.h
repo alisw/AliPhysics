@@ -111,7 +111,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetMaxSharedITSCluster(Int_t b){fCutITSclusterShared = kTRUE; fMaxITSclusterShared = b;}
   void SetMaxChi2perITSCluster(Double_t b){fCutITSChi2 = kTRUE; fMaxITSChi2 = b;}
-    
+  void SetCutTPCSecbound( Bool_t a ) {fCutTPCSecbound = a;}
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
   void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
@@ -406,6 +406,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutDCAToVertexZ;       //dca z cut
   Bool_t fCutMinimalTPCdedx;    //cut on minimal dedx in TPC to reject noise tracks
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
+  Bool_t fCutTPCSecbound;         // cut tracks entering TPC close to TPC sector boundaries
   Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
  
   Int_t fCentralityPercentileMin; //centrality min
@@ -483,8 +484,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
   Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
- 
- 
     
   //TPC TOF nsigma Purity based cut functions
   TFile                 *fPurityFunctionsFile;       //! purity functions file
@@ -496,12 +495,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t  fMaxITSclusterShared;          // fMaxITSclusterShared 
   Bool_t fCutITSChi2;                   // cut fMaxITSChi2
   Double_t  fMaxITSChi2;                // fMaxITSChi2
-  
   Int_t         fRun;                   // run number
-    
-    
-
-  ClassDef(AliFlowTrackCuts,18)
+  
+  ClassDef(AliFlowTrackCuts,19)
 };
 
 #endif
