@@ -106,6 +106,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
     kDTFS = 0x0010,
     /** MC closure test */
     kClosure      = 0x01000,
+    /** Debug flat */
+    kDebug = 0x100,
     /** Default processing options */
     kDefaultProc  = 0x0002 
   };
@@ -712,6 +714,7 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 	       Style_t  fill=0,
 	       Style_t  line=1,
 	       Width_t  width=1);
+  static void StackMinMax(THStack* stack, Double_t& min, Double_t& max);
   /** 
    * The observable title 
    * 
@@ -876,6 +879,7 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
 				   TDirectory* outDir,
 				   Int_t       maxBins)
 {
+  DebugGuard g(fProc&kDebug,1,"Processing");
   TH1* realCent = CopyH1(realTop, "cent", "realCent");
   TH1* simCent  = CopyH1(simTop,  "cent", "simCent");
   TH1* realIPz  = GetH1(realTop,  "ipz");
@@ -947,7 +951,6 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
   simCent ->Write();
 
   // Calculate strangeness enhancement factor
-  Printf("SEF");
   CalculateSEF(simTop,simCent->GetXaxis(),outDir);
 
   if (realCent->GetNbinsX() <= 1)
@@ -998,13 +1001,21 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   // Form the folder name
   TString centName(CentName(c1,c2));
   if (TMath::Abs(c1 - c2) < 1e-6) centName = "all";
-
-		  
+  DebugGuard g(fProc&kDebug,1,"Processing bin %s", centName.Data());
+  
   // Get centrality containers 
   Container* realCont = GetC(realTop, centName);
   Container* simCont  = GetC(simTop,  centName);
   if (!realCont || !simCont) return false;
 
+  // Test if we have any data at all
+  TH1*       realDist  = GetH1(GetC(realCont, "measured"), "delta");
+  TH1*       simDist   = GetH1(GetC(realCont, "measured"), "delta");
+  if (realDist->GetEntries() <= 0 ||
+      simDist ->GetEntries() <= 0) {
+    Warning("ProcessBin", "No entries for bin %s", centName.Data());
+    return false;
+  }
   TDirectory* outDir = outTop->mkdir(centName);
 
   printf("%5.1f - %5.1f%%:", c1, c2);
@@ -1025,13 +1036,12 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 				      TDirectory* outDir,
 				      Int_t       dimen)
 {
-  Printf("Processing %5.2f-%5.2f%% (%s %s) for D=%d",
-	 c1, c2, realCont->GetName(), simCont->GetName(), dimen);
   if (!outDir) {
     Warning("ProcessBin", "No directory passed for %s and %s",
 	    realCont->GetName(), simCont->GetName());
     return false;
   }  
+  DebugGuard g(fProc&kDebug,1,"Processing bin %s", realCont->GetName());
   if (!Deltas(realCont, simCont, outDir, dimen)) return false;
   TH1* dndeta = Results(realCont, simCont, outDir, dimen);
   if (!dndeta) {
@@ -1101,15 +1111,13 @@ Bool_t AliTrackletdNdeta2::CalculateSEF(Container*   simCont,
 					const TAxis* centAxis,
 					TDirectory*  out)
 {
+  DebugGuard g(fProc&kDebug,1,"Calculating strangeness enhancement factor");
   Double_t c1 = centAxis->GetBinLowEdge(1);
   Double_t c2 = centAxis->GetBinUpEdge(1);
-  Printf("c1=%g c2=%g", c1, c2);
   TString  centName(CentName(c1,c2));
   if (TMath::Abs(c1 - c2) < 1e-6) centName = "all";
 
-  Printf("Calculating strangeness enhancement factor from %s", centName.Data());
   // Find the most central bin 
-
   Container* centBin = GetC(simCont, centName);
   if (!centBin) return false;
 
@@ -1136,14 +1144,17 @@ Bool_t AliTrackletdNdeta2::CalculateSEF(Container*   simCont,
     Double_t eHere = f->GetParError (0);
 
     Double_t eCh, rCh = RatioE(r2760, e2760, rHere, eHere, eCh);
+#if 0    
     Printf("%20s: @ 2.76TeV=%6.4f+/-%6.4f  here=%6.4f+/-%6.4f -> %6.4f+/-%6.4f",
 	   hist->GetTitle(), r2760, e2760, rHere, eHere, rCh, eCh);
+#endif 
     delete f;
 
     sum  += rHere*rCh;
     sumw += rHere;
-  }
-  Double_t avg = sum / sumw;
+  }  
+  Double_t avg = 1;
+  if (sumw>0) avg = sum / sumw;
   Printf(" Weighted average of factor: %6.4f", avg);
   Printf(" Preset:                     %6.4f", fSEF);
   if (fSEF == 1) fSEF = avg;
@@ -1158,6 +1169,7 @@ Bool_t AliTrackletdNdeta2::Deltas(Container*  realCont,
 				  TDirectory* outParent,
 				  Int_t       dim)
 {
+  DebugGuard g(fProc&kDebug,1,"Doing Delta calculations");
   if (!outParent) {
     Warning("Deltas", "No directory passed!");
     return false;
@@ -1175,6 +1187,7 @@ Bool_t AliTrackletdNdeta2::Deltas0D(Container*  realCont,
 				    Container*  simCont,
 				    TDirectory* outParent)
 {
+  DebugGuard g(fProc&kDebug,1,"Doing 0D Delta calculations");
   // Make an output directory 
   TDirectory* outDir = outParent->mkdir("delta0d");
 
@@ -1245,6 +1258,7 @@ Bool_t AliTrackletdNdeta2::Deltas1D(Container*  realCont,
 				    Container*  simCont,
 				    TDirectory* outParent)
 {
+  DebugGuard g(fProc&kDebug,1,"Doing 1D Delta calculations");
   // Make an output directory
   if (!outParent) {
     Warning("Deltas1D", "No directory passed!");
@@ -1337,6 +1351,7 @@ Bool_t AliTrackletdNdeta2::Deltas2D(Container*  realCont,
 				    Container*  simCont,
 				    TDirectory* outParent)
 {
+  DebugGuard g(fProc&kDebug,1,"Doing 2D Delta calculations");
   // Make an output directory 
   TDirectory* outDir = outParent->mkdir("delta2d");
 
@@ -1353,14 +1368,16 @@ Bool_t AliTrackletdNdeta2::Deltas2D(Container*  realCont,
   scale->Divide(simTail);
   scale->SetYTitle("k");
   Double_t sE, s     = MeanY(scale, sE);
-  TGraphErrors* g = new TGraphErrors(2);
-  g->SetLineStyle(2);
-  g->SetLineColor(kBlack);
-  g->SetFillColor(kYellow);
-  g->SetFillStyle(3002);
-  g->SetPoint(0, scale->GetXaxis()->GetXmin(), s); g->SetPointError(0, 0, sE);
-  g->SetPoint(1, scale->GetXaxis()->GetXmax(), s); g->SetPointError(1, 0, sE);
-  scale->GetListOfFunctions()->Add(g, "le3");
+  TGraphErrors* avgScale = new TGraphErrors(2);
+  avgScale->SetLineStyle(2);
+  avgScale->SetLineColor(kBlack);
+  avgScale->SetFillColor(kYellow);
+  avgScale->SetFillStyle(3002);
+  avgScale->SetPoint     (0, scale->GetXaxis()->GetXmin(), s); 
+  avgScale->SetPoint     (1, scale->GetXaxis()->GetXmax(), s);
+  avgScale->SetPointError(0, 0, sE);
+  avgScale->SetPointError(1, 0, sE);
+  scale->GetListOfFunctions()->Add(avgScale, "le3");
   
   // Create a flat 2D scaling histogram for later user 
   TH2*       h         = CopyH2(realMeas, "etaIPz", "scale");  
@@ -1460,6 +1477,7 @@ Bool_t AliTrackletdNdeta2::Deltas3D(Container*  realCont,
 				    Container*  simCont,
 				    TDirectory* outParent)
 {
+  DebugGuard g(fProc&kDebug,1,"Doing 3D Delta calculations");
   // Make an output directory 
   TDirectory* outDir = outParent->mkdir("delta3d");
 
@@ -1487,16 +1505,16 @@ Bool_t AliTrackletdNdeta2::Deltas3D(Container*  realCont,
   etaScale->SetDirectory(outDir);
   etaScale->SetMinimum(fMinK);
   etaScale->SetMaximum(fMaxK);
-  TGraphErrors* g = new TGraphErrors(2);
-  g->SetLineStyle(2);
-  g->SetLineColor(kBlack);
-  g->SetFillColor(kYellow);
-  g->SetFillStyle(3002);
-  g->SetPoint(0, etaScale->GetXaxis()->GetXmin(), s); 
-  g->SetPoint(1, etaScale->GetXaxis()->GetXmax(), s);
-  g->SetPointError(0, 0, sE);
-  g->SetPointError(1, 0, sE);
-  etaScale->GetListOfFunctions()->Add(g, "le3");
+  TGraphErrors* avgScale = new TGraphErrors(2);
+  avgScale->SetLineStyle(2);
+  avgScale->SetLineColor(kBlack);
+  avgScale->SetFillColor(kYellow);
+  avgScale->SetFillStyle(3002);
+  avgScale->SetPoint(0, etaScale->GetXaxis()->GetXmin(), s); 
+  avgScale->SetPoint(1, etaScale->GetXaxis()->GetXmax(), s);
+  avgScale->SetPointError(0, 0, sE);
+  avgScale->SetPointError(1, 0, sE);
+  etaScale->GetListOfFunctions()->Add(avgScale, "le3");
   
   // Get the raw projected Delta distributions for each component
   const char* nm = "etaDeltaIPz";
@@ -1612,6 +1630,7 @@ TH1* AliTrackletdNdeta2::FractionFit(TDirectory* outDir,
 				     TH1*        sDeltaP,
 				     TH1*        sDeltaS)
 {
+  DebugGuard g(fProc&kDebug,1,"Fraction fitting in %s", outDir->GetName());
   // We don't do this, as it doesn't seem to do much. 
   return 0;
   if (!rDeltaM || !sDeltaC || !sDeltaP || !sDeltaS) {
@@ -1667,6 +1686,8 @@ void AliTrackletdNdeta2::WriteDeltas(TDirectory* outDir,
 				     TH1* sDeltaS, TH1* sDeltaD,
 				     TH1* fit)
 {
+  DebugGuard g(fProc&kDebug,1,"Writing Deltas to %s", outDir->GetName());
+  
   THStack* all    = new THStack("all", "");
   SetAttr(rDeltaM, kRed+2,    20, 1.0);
   SetAttr(rDeltaI, kOrange+2, 21, 1.0);
@@ -1729,6 +1750,8 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
 				 TDirectory* outParent,
 				 Int_t       deltaDimen)
 {
+  DebugGuard g(fProc&kDebug,1,"Calculating results for %s",realCont->GetName());
+  
   TDirectory* outDir = outParent->mkdir(Form("results%dd", deltaDimen));
   TDirectory* delDir = outParent->GetDirectory(Form("delta%dd", deltaDimen));
 
@@ -1749,6 +1772,10 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
 		CopyH2(GetC(realCont,"generated"),     "etaIPz", "realG"));
   TH1* realZ = CopyH1(realCont, "ipz", "realZ");
   TH1* simZ  = CopyH1(simCont,  "ipz", "simZ");
+
+  if (scale->GetEntries() <= 0) {
+    Warning("Results", "Scale has no entries");
+  }
   
   // Scale combinatorial background to measured to get beta
   simB->Divide(simM);
@@ -2202,6 +2229,7 @@ Bool_t AliTrackletdNdeta2::Visualize(Container*  realSums,
 				     TDirectory* outDir,
 				     Int_t       maxBins)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing");
   // --- Visualization -----------------------------------------------
   TH1* realCent = GetH1(outDir, "realCent");
   if (!realCent) {
@@ -2235,6 +2263,7 @@ Bool_t AliTrackletdNdeta2::Visualize(Container*  realSums,
 void AliTrackletdNdeta2::VisualizeGeneral(Container* realList,
 					  Container* simList)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing general things");
   THStack*   ipz    = Make2Stack("ipz",   "IP_{#it{z}}",      realList,simList);
   THStack*   cent   = Make2Stack("cent",  "Centrality [%]",   realList,simList);
   THStack*   status = Make2Stack("status","Task status",      realList,simList,
@@ -2327,6 +2356,7 @@ namespace {
 //____________________________________________________________________
 void AliTrackletdNdeta2::VisualizeWeights(Container* simList)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing weights");
   TH1*       c = GetH1(simList, "cent");
   Container* w = GetC(simList,"weights", false);
   if (!w) return;
@@ -2429,8 +2459,30 @@ void AliTrackletdNdeta2::VisualizeWeights(Container* simList)
 }
 
 //____________________________________________________________________
+void AliTrackletdNdeta2::StackMinMax(THStack* stack,
+				     Double_t& min,
+				     Double_t& max)
+{
+  if (!stack->GetHists()) return;
+  min = +1e6;
+  max = -1e6;
+  TIter next(stack->GetHists());
+  TH1*  hist = 0;
+  while ((hist = static_cast<TH1*>(next()))) {
+    if (hist->GetEntries() <= 0) continue;
+    min = TMath::Min(min, hist->GetMinimum());
+    max = TMath::Max(max, hist->GetMaximum());
+  }
+  stack->SetMinimum(min);
+  stack->SetMaximum(max);
+}
+
+    
+ 
+//____________________________________________________________________
 void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing final @ %d", i);
   TDirectory* dd  = outDir->GetDirectory(Form("final%dd", i));
   if (!dd) return;
 
@@ -2438,10 +2490,12 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   TH1*     mid = GetH1(dd, "mid");
   TH1*     pub = GetH1(outDir, "published");
   if (!mid) return;
-  
-  Double_t max = all->GetMaximum("nostack");
-  Double_t min = all->GetMinimum("nostack");
+
+  Double_t min, max;
+  StackMinMax(all, min, max);
+  if (all->GetHists() && all->GetHists()->GetEntries() > 1 && min <= 0) min=2;
   if (mid->GetMinimum() <= 0) mid->SetMinimum(min);
+  if (fProc&kDebug) all->GetHists()->Print();
   
   max = TMath::Max(max,mid->GetMaximum());
   min = TMath::Min(min,mid->GetMinimum());
@@ -2503,6 +2557,7 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
 //____________________________________________________________________
 void AliTrackletdNdeta2::VisualizeClosure(TDirectory* outDir, Int_t i)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing closure @ %d", i);
   TDirectory* dd  = outDir->GetDirectory(Form("final%dd", i));
   if (!dd) return;
 
@@ -2595,6 +2650,7 @@ void AliTrackletdNdeta2::VisualizeParams(Container*  pars,
 void AliTrackletdNdeta2::VisualizeParams(Container* realSums,
 					 Container* simSums)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing parameters");
   ClearCanvas();
   fBody->Divide((fViz & kLandscape ? 3 : 1),
 		(fViz & kLandscape ? 1 : 3), 0, 0);
@@ -2650,6 +2706,8 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
   // Form the folder name
   TString centName(CentName(c1,c2));
   if (TMath::Abs(c1 - c2) < 1e-6) centName = "all";
+  DebugGuard g(fProc&kDebug,1,"Visualizing bin %s", centName.Data());
+
   fLastBin.Form("%.1f#minus%.1f%%", c1, c2);
   fLastShort = centName;
   
@@ -2680,6 +2738,7 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
 //____________________________________________________________________
 Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing species");
   if (!simCont) return true;
   ClearCanvas();
   Container* meas = GetC(simCont, "measured");
@@ -2751,6 +2810,7 @@ Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
 Bool_t AliTrackletdNdeta2::VisualizeSpeciesDelta(Container* simCont,
 						 TDirectory* outDir)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing species deltas");
   if (!simCont) return true;
   ClearCanvas();
   Container*  comb = GetC(GetC(simCont, "combinatorics"), "specie", false);
@@ -3013,6 +3073,7 @@ Bool_t AliTrackletdNdeta2::VisualizeSpeciesDelta(Container* simCont,
 //____________________________________________________________________
 Bool_t AliTrackletdNdeta2::VisualizePrimary(Container* simCont)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing primaries");
   if (!simCont) return true;
   ClearCanvas();
 
@@ -3135,6 +3196,8 @@ Bool_t AliTrackletdNdeta2::VisualizePrimary(Container* simCont)
 Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
 					  Int_t       dimen)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualizing delta in %s/%dD",
+	       outTop->GetName(), dimen);
   TDirectory* outDir = outTop->GetDirectory(Form("delta%dd", dimen));
   if (!outDir) {
     Warning("VisualizeDelta", "Directory detla%dd not found in %s",
@@ -3233,6 +3296,8 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
 Bool_t AliTrackletdNdeta2::VisualizeDetails(TDirectory* outTop,
 					    Int_t       dimen)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualize details for %s %dD",
+	       outTop->GetName(), dimen);
   TDirectory* outDir = outTop->GetDirectory(Form("results%dd", dimen));
   if (!outDir) {
     Warning("VisualizeDelta", "Directory results%dd not found in %s",
@@ -3314,6 +3379,8 @@ Bool_t AliTrackletdNdeta2::VisualizeDetails(TDirectory* outTop,
 Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
 					   Int_t       dimen)
 {
+  DebugGuard g(fProc&kDebug,1,"Visualize results for  %s %dD",
+	       outTop->GetName(), dimen);
   TDirectory* outDir = outTop->GetDirectory(Form("results%dd", dimen));
   if (!outDir) {
     Warning("VisualizeDelta", "Directory results%dd not found in %s",
