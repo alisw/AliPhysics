@@ -161,7 +161,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		};
 
 		struct TrackInfo : public TObject{//Track information for PWA
-			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL)//Constructor
+			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL, Bool_t fMC=kFALSE, AliMCEvent *fMCevt=NULL)//Constructor
 				:TObject()
 				 , fSign(0)
 				 , fPx(0)
@@ -176,6 +176,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 , fCrossedRows(0)
 				 , fTPCNCluster(0)
 				 , fTPCnclsS(0)
+				 , fMotherPDGCode(-999)
+				 , fMotherID(-999)
+				 , fMotherPrimary(0)
 			
 			{
 				for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
@@ -183,10 +186,10 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 						fITSBayesProb[i] = fTRDBayesProb[i] = fTPCProb[i] = fTOFProb[i] = fITSProb[i] = ftotBayesProb[i] = -999.;
 					fDetMask[i] = 0;
 				}
-				Fill(tr,pid,pidc);
+				Fill(tr,pid,pidc,fMC,fMCevt);
 			}
 
-			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *);
+			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *, Bool_t fMC, AliMCEvent *);
 
 			Double_t fSign;
 			Double_t fPx, fPy, fPz, fEnergy, fIntegratedLength;
@@ -206,6 +209,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Double_t fTOFProb[AliPID::kSPECIES];
 			Double_t fITSProb[AliPID::kSPECIES];
 			UInt_t fDetMask[5];
+			Int_t fMotherPDGCode;
+			Int_t fMotherID;
+			Bool_t fMotherPrimary;
 
 			ClassDef(TrackInfo, 1);
 

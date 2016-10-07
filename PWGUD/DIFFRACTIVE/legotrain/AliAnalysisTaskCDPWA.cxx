@@ -94,7 +94,7 @@ void AliAnalysisTaskCDPWA::CombInfo::Fill(const AliESDEvent *esdEvent)
 	if (NULL == esdEvent) return;
 }
 //______________________________________________________________________________
-void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse, AliPIDCombined *pidCombined) 
+void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse, AliPIDCombined *pidCombined, const Bool_t fMC, AliMCEvent *fMCevt) 
 {
 	if (NULL == tr || NULL == pidResponse || NULL == pidCombined) {
 		//AliError(Form("tr=%p pidResponse=%p pidCombined=%p", tr, pidResponse, pidCombined));
@@ -143,6 +143,23 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 		       	AliPIDResponse::kDetITS |
 			AliPIDResponse::kDetTRD);
 	fDetMask[4] = pidCombined->ComputeProbabilities(tr,pidResponse,ftotBayesProb);
+
+	//Fill MC track info
+	if (fMC) {
+		AliStack *stack = fMCevt->Stack();
+		if (!stack) return;
+		TParticle *cu_pt = (TParticle*)stack->Particle(tr->GetID());
+		if (!cu_pt) return;
+		if (cu_pt->GetFirstMother() == -1) {
+			fMotherPDGCode = -1;
+			return;
+		}
+		TParticle *mo_pt = (TParticle*)stack->Particle(cu_pt->GetFirstMother());
+		if (!mo_pt) return;
+		fMotherPDGCode = mo_pt->GetPdgCode();
+		fMotherID = cu_pt->GetFirstMother();
+		fMotherPrimary = mo_pt->IsPrimary();
+	}
 
 	return;
 }
@@ -1196,7 +1213,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			if (Nsel == 2) {
 				storeT = kTRUE;
 				for (Int_t iSel = 0; iSel < Nsel; iSel++) {
-					new (fTwoTrackInfo[2*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+					new (fTwoTrackInfo[2*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined,fIsMC,fMCEvent);
 				}
 			}
 			else {
@@ -1207,7 +1224,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			if (Nsel == 4) {
 				storeT = kTRUE;
 				for (Int_t iSel = 0; iSel < Nsel; iSel++) {
-					new (fFourTrackInfo[4*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+					new (fFourTrackInfo[4*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined,fIsMC,fMCEvent);
 				}
 			}
 			else {
