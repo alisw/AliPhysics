@@ -1340,7 +1340,6 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     for(Int_t nb=-4; nb<=4; nb++) {
       Double_t bnp = nb*TMath::Pi()/9.; // TPC boundary position
       if(cra<bnp+dpe && cra>bnp-dpe) {
-        printf("track excluded! %e \n",cra);
         pass=kFALSE;
       }
     }
