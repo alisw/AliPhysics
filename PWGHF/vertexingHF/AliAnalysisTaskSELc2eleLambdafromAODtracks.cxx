@@ -81,6 +81,9 @@
 #include "AliEventPoolManager.h"
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
+#include "AliQnCorrectionsManager.h"
+#include "AliQnCorrectionsQnVector.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
 
 using std::cout;
 using std::endl;
@@ -582,6 +585,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fNOfPools(1),
   fPoolIndex(-9999),
 	fHistoPoolMonitor(0),
+	fHistoPoolIDCounter(0),
   nextResVec(),
   reservoirsReady(),
   m_ReservoirE(),
@@ -1100,6 +1104,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fNOfPools(1),
   fPoolIndex(-9999),
 	fHistoPoolMonitor(0),
+	fHistoPoolIDCounter(0),
   nextResVec(),
   reservoirsReady(),
   m_ReservoirE(),
@@ -1420,31 +1425,68 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   fHCentrality->Fill(fCentrality);
 
   if(fUseEventPlane>0){
-    AliEventplane *pl=aodEvent->GetEventplane();
-    if(!pl){
-      AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
-      fCEvents->Fill(18);
-      return;
-    }
-    Double_t ep_v0m = GetPhi0Pi(pl->GetEventplane("V0",aodEvent,2));
-    Double_t ep_v0a = GetPhi0Pi(pl->GetEventplane("V0A",aodEvent,2));
-    Double_t ep_v0c = GetPhi0Pi(pl->GetEventplane("V0C",aodEvent,2));
-    Double_t ep_tpc = GetPhi0Pi(pl->GetEventplane("Q"));
-    if(fUseEventPlane==1)
-      fEventPlane = ep_v0m;
-    if(fUseEventPlane==2)
-      fEventPlane = ep_v0a;
-    if(fUseEventPlane==3)
-      fEventPlane = ep_v0c;
-    if(fUseEventPlane==4){
-      fEventPlane = ep_tpc;
-      fQSub1 = pl->GetQsub1();
-      fQSub2 = pl->GetQsub2();
-      fQ = pl->GetQVector();
-			if(!fQSub1 || !fQSub2){
-				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: no Q vectors");
-				fCEvents->Fill(19);
+		if(fUseEventPlane<10){
+			//OLD framework
+
+			AliEventplane *pl=aodEvent->GetEventplane();
+			if(!pl){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+				fCEvents->Fill(18);
 				return;
+			}
+
+			Double_t ep_v0m = GetPhi0Pi(pl->GetEventplane("V0",aodEvent,2));
+			Double_t ep_v0a = GetPhi0Pi(pl->GetEventplane("V0A",aodEvent,2));
+			Double_t ep_v0c = GetPhi0Pi(pl->GetEventplane("V0C",aodEvent,2));
+			Double_t ep_tpc = GetPhi0Pi(pl->GetEventplane("Q"));
+			if(fUseEventPlane==1)
+				fEventPlane = ep_v0m;
+			if(fUseEventPlane==2)
+				fEventPlane = ep_v0a;
+			if(fUseEventPlane==3)
+				fEventPlane = ep_v0c;
+			if(fUseEventPlane==4){
+				fEventPlane = ep_tpc;
+				fQSub1 = pl->GetQsub1();
+				fQSub2 = pl->GetQsub2();
+				fQ = pl->GetQVector();
+				if(!fQSub1 || !fQSub2){
+					AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: no Q vectors");
+					fCEvents->Fill(19);
+					return;
+				}
+			}
+		}else{
+			//New framework
+			AliQnCorrectionsManager *flowQnVectorMgr;
+			AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
+				dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+			if (flowQnVectorTask != NULL) {
+				flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+			}
+			else {
+				AliFatal("This task needs the Flow Qn vector corrections framework and it is not present. Aborting!!!");
+			}
+
+			if(fUseEventPlane==11){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: No such event plane method");
+				return;
+			}else if(fUseEventPlane==12){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: No such event plane method");
+				return;
+			}else if(fUseEventPlane==13){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: No such event plane method");
+				return;
+			}else if(fUseEventPlane==14){
+				const AliQnCorrectionsQnVector *myQnVector;
+				myQnVector = flowQnVectorMgr->GetDetectorQnVector("TPC");
+				if(!myQnVector) {
+					AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: no Q vectors");
+					fCEvents->Fill(19);
+					return;
+				}
+				Double_t ep_tpc = myQnVector->EventPlane(2);
+				fEventPlane = GetPhi0Pi((Float_t)ep_tpc);
 			}
 		}
   }
@@ -1624,6 +1666,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
   //
   if(fDoEventMixing){
     fPoolIndex=GetPoolIndex(fVtxZ,fCentrality,fEventPlane);
+		fHistoPoolIDCounter->Fill(fPoolIndex);
+		if(fPoolIndex<0) return;
+
     Int_t nextRes( nextResVec[fPoolIndex] );
     while(!m_ReservoirE[fPoolIndex][nextRes].empty()){
       delete m_ReservoirE[fPoolIndex][nextRes].back();
@@ -4676,6 +4721,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
   fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 	fHistoPoolMonitor =  new TH2F("fHistoPoolMonitor","Pool ID vs depth",4000,-0.5,3999.5,50,-0.5,49.5);
+	fHistoPoolIDCounter =  new TH1F("fHistoPoolIDCounter","Pool ID",4003,-3.5,3999.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
@@ -4684,6 +4730,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHNTrackletvsZ);
   fOutput->Add(fHNTrackletCorrvsZ);
 	fOutput->Add(fHistoPoolMonitor);
+	fOutput->Add(fHistoPoolIDCounter);
 
   return;
 }
@@ -6239,10 +6286,10 @@ Int_t AliAnalysisTaskSELc2eleLambdafromAODtracks::GetPoolIndex(Double_t zvert, D
   Int_t theBinZ=TMath::BinarySearch(fNzVtxBins,fZvtxBins,zvert);
   if(theBinZ<0 || theBinZ>=fNzVtxBins) return -1;
   Int_t theBinM=TMath::BinarySearch(fNCentBins,fCentBins,mult);
-  if(theBinM<0 || theBinM>=fNCentBins) return -1;
+  if(theBinM<0 || theBinM>=fNCentBins) return -2;
   //return fNCentBins*theBinZ+theBinM;
   Int_t theBinR=TMath::BinarySearch(fNRPBins,fRPBins,rp);
-  if(theBinR<0 || theBinR>=fNRPBins) return -1;
+  if(theBinR<0 || theBinR>=fNRPBins) return -3;
   return fNzVtxBins*fNCentBins*theBinR+fNCentBins*theBinZ+theBinM;
 }
 //_________________________________________________________________
@@ -7061,7 +7108,9 @@ Float_t AliAnalysisTaskSELc2eleLambdafromAODtracks::GetEventPlaneForCandidate(Al
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskSELc2eleLambdafromAODtracks::GetPhi0Pi(Float_t phi){
-  // Sets the phi angle in the range 0-pi
+	//
+	// Sets the phi angle in the range 0-pi
+	//
   Float_t result=phi;
   while(result<0){
     result=result+TMath::Pi();
