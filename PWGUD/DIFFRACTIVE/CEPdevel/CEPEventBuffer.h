@@ -21,6 +21,7 @@ class CEPEventBuffer : public TObject {
     // Monte Carlo information
     TString fMCGenerator;
     Int_t fMCProcessType; 
+    TVector3 fMCVertexPos;
     
     // see AliPBBase.h for the definition of fGapCondition
     Int_t fGapCondition;
@@ -46,7 +47,9 @@ class CEPEventBuffer : public TObject {
 
     void SetMCGenerator(TString MCGenerator) { fMCGenerator = MCGenerator; }
     void SetMCProcessType(Int_t MCProcess) { fMCProcessType = MCProcess; }
-    
+    void SetMCVertexPos(Double_t xp,Double_t yp,Double_t zp)
+      { fMCVertexPos.SetXYZ(xp,yp,zp); }
+
     // Accessors
     Int_t GetRunNumber()     const { return fRunNumber; }
     Int_t GetEventNumber()   const { return fEventNumber; }
@@ -56,6 +59,7 @@ class CEPEventBuffer : public TObject {
 
     TString GetMCGenerator() const { return fMCGenerator; }
     Int_t GetMCProcessType() const { return fMCProcessType; }
+    TVector3 GetMCVertexPos()const { return fMCVertexPos; }
   
     // readout gap condition
     Int_t  GetGapCondition() const { return fGapCondition; }
