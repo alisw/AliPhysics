@@ -73,6 +73,11 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
   TH2D* fHistFilterBits;             //!<!  histo of fieter bits
 
+  TH2F* fHistNtracksFb4VsV0befEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksFb5VsV0befEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksFb4VsV0aftEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksFb5VsV0aftEvSel;    //!<!  histo of tracks vs. centr.
+
   TH3F* fHistEtaPhiPtTPCsel;           //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSref;     //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDany;     //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
@@ -132,7 +137,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,2);
+  ClassDef(AliAnalysisTaskCheckAODTracks,3);
 };
 
 
