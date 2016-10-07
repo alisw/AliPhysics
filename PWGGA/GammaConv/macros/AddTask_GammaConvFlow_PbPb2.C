@@ -257,6 +257,16 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50200013", "30200009007000008250400000");
     cuts.AddCut("52400013", "30200009007000008250400000");
     cuts.AddCut("54800013", "30200009007000008250400000");
+  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+  } else if (trainConfig == 58) {
+    cuts.AddCut("50200013", "00200009007000008250400000");
+    cuts.AddCut("52400013", "00200009007000008250400000");
+    cuts.AddCut("54800013", "00200009007000008250400000");
+  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+  } else if (trainConfig == 59) {
+    cuts.AddCut("50200013", "00200009007000008250400000");
+    cuts.AddCut("52400013", "00200009007000008250400000");
+    cuts.AddCut("54800013", "00200009007000008250400000");
   //systematics 0-20%
   } else if (trainConfig == 60) {
     cuts.AddCut("50200013", "04200009007000008250400000"); //eta cut: |eta| <0.75
@@ -361,9 +371,9 @@ void AddTask_GammaConvFlow_PbPb2(
     flowEvent[i] = mgr->CreateContainer(Form("FlowContainer_%s_%s",uniqueID.Data(),totalCutString.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 2+i, flowEvent[i]);
     
+    Double_t NFilterBinValues[NFilterBins+1];
     if(FilterVariable==7 && NFilterBins == 4){
       task->SetFilterVariable(2,MinFilter,MaxFilter);
-      Double_t NFilterBinValues[8];
       NFilterBinValues[0] = -20;
       NFilterBinValues[1] = -13;
       NFilterBinValues[2] = -11;
@@ -374,7 +384,6 @@ void AddTask_GammaConvFlow_PbPb2(
       NFilterBinValues[7] = 20;
     }else{
       task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
-      Double_t NFilterBinValues[NFilterBins+1];
       if(NFilterBins > 1){
         for(Int_t k=0;k<NFilterBins+1;k++){
           NFilterBinValues[k] = MinFilter + k*(MaxFilter-MinFilter)/NFilterBins;
