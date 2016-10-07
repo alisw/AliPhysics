@@ -72,4 +72,7 @@
 //PHOSCalib
 #pragma link C++ class AliAnalysisTaskEmeanCalib+;
 
+//CPV performance
+#pragma link C++ class AliAnalysisTaskCPV+;
+
 #endif
