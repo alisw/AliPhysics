@@ -8,7 +8,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUseCRCRecenter,
                              Bool_t bCalculateCME=kFALSE,
                              Bool_t bUseVZERO=kFALSE,
-                             Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              Bool_t bDivSigma=kFALSE,
@@ -21,6 +20,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
                              Double_t dMinClusTPC=70,
+                             Bool_t bCutTPCbound=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
@@ -76,6 +76,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
  Bool_t bUsePhiEtaWeights=kFALSE;
+ Bool_t bCalculateCRCVZ=kFALSE;
  TString PhiEtaWeightsFileName="";
  Double_t dDCAxy=1000.;
  Double_t dDCAz=1000.;
@@ -286,6 +287,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
+  cutsPOI->SetCutTPCSecbound(bCutTPCbound); // new cut for LHC15o
   cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "ESD") {
