@@ -51,6 +51,10 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fOutput(0x0),
   fHistNEvents(0x0),
   fHistNTracks(0x0),
+  fHistNtracksTPCselVsV0befEvSel(0x0),
+  fHistNtracksSPDanyVsV0befEvSel(0x0),
+  fHistNtracksTPCselVsV0aftEvSel(0x0),
+  fHistNtracksSPDanyVsV0aftEvSel(0x0),
   fHistEtaPhiPtTPCsel(0x0),
   fHistEtaPhiPtTPCselITSref(0x0),
   fHistEtaPhiPtTPCselSPDany(0x0),
@@ -162,6 +166,10 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistNTracks;
+    delete fHistNtracksTPCselVsV0befEvSel;
+    delete fHistNtracksSPDanyVsV0befEvSel;
+    delete fHistNtracksTPCselVsV0aftEvSel;
+    delete fHistNtracksSPDanyVsV0aftEvSel;
     delete fHistEtaPhiPtTPCsel;
     delete fHistEtaPhiPtTPCselITSref;
     delete fHistEtaPhiPtTPCselSPDany;
@@ -317,11 +325,21 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
   fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",5001,-0.5,5000.5);
   fOutput->Add(fHistNTracks);
+  fHistNtracksTPCselVsV0befEvSel=new TH2F("hNtracksTPCselVsV0befEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksSPDanyVsV0befEvSel=new TH2F("hNtracksSPDanyVsV0befEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksTPCselVsV0aftEvSel=new TH2F("hNtracksTPCselVsV0aftEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksSPDanyVsV0aftEvSel=new TH2F("hNtracksSPDanyVsV0aftEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
+  fOutput->Add(fHistNtracksTPCselVsV0befEvSel);
+  fOutput->Add(fHistNtracksSPDanyVsV0befEvSel);
+  fOutput->Add(fHistNtracksTPCselVsV0aftEvSel);
+  fOutput->Add(fHistNtracksSPDanyVsV0aftEvSel);
+
   TString pNames[9]={"Elec","Muon","Pion","Kaon","Proton","Deuteron","Triton","He3","Alpha"};
   for(Int_t jsp=0; jsp<9; jsp++){ 
     fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
@@ -522,22 +540,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
-  const AliESDVertex *spdv=esd->GetPrimaryVertexSPD();
-  if(spdv->GetNContributors()<=0) return;
-  fHistNEvents->Fill(2);
-
-  Float_t xvert=spdv->GetX();
-  Float_t yvert=spdv->GetY();
-  Float_t zvert=spdv->GetZ();
-
-  if(TMath::Abs(zvert)>10) return;
-  fHistNEvents->Fill(3);
-
-  esd->InitMagneticField();
-
-  const Int_t ntSize=33;
-  Float_t xnt[ntSize];
-  
   Int_t ntracks = esd->GetNumberOfTracks();
   Int_t ntracklets = 0;
   Int_t ncl1 = 0;
@@ -546,6 +548,56 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     ntracklets = mult->GetNumberOfTracklets();
     ncl1 = mult->GetNumberOfITSClusters(1);
   }
+  Int_t ntracksTPCsel=0;
+  Int_t ntracksSPDany=0;
+  for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
+    AliESDtrack * track = (AliESDtrack*)esd->GetTrack(iTrack);
+    if (!track) continue;
+    if(fTrCutsTPC->AcceptTrack(track)){
+      ntracksTPCsel++;
+      Int_t statusTrack=track->GetStatus();
+      if(statusTrack&AliESDtrack::kITSrefit){
+	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
+	  ntracksSPDany++;
+	}
+      }
+    }
+  }
+  Double_t vZEROampl=0;
+  for(Int_t i=0;i<64;i++) vZEROampl+=esd->GetVZEROData()->GetMultiplicity(i);
+  fHistNtracksTPCselVsV0befEvSel->Fill(vZEROampl,ntracksTPCsel);
+  fHistNtracksSPDanyVsV0befEvSel->Fill(vZEROampl,ntracksSPDany);
+
+  const AliVVertex* vtTrc = esd->GetPrimaryVertex();
+  const AliVVertex* vtSPD = esd->GetPrimaryVertexSPD();
+  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+  fHistNEvents->Fill(2);
+
+  double covTrc[6],covSPD[6];
+  vtTrc->GetCovarianceMatrix(covTrc);
+  vtSPD->GetCovarianceMatrix(covSPD);
+  double dz = vtTrc->GetZ()-vtSPD->GetZ();
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]);
+  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
+  fHistNEvents->Fill(3);
+
+  Float_t xvert=vtTrc->GetX();
+  Float_t yvert=vtTrc->GetY();
+  Float_t zvert=vtTrc->GetZ();
+
+  if(TMath::Abs(zvert)>10) return;
+  fHistNEvents->Fill(4);
+
+  fHistNtracksTPCselVsV0aftEvSel->Fill(vZEROampl,ntracksTPCsel);
+  fHistNtracksSPDanyVsV0aftEvSel->Fill(vZEROampl,ntracksSPDany);
+
+  esd->InitMagneticField();
+
+  const Int_t ntSize=33;
+  Float_t xnt[ntSize];
+  
   Int_t nPureSAtracks=0;
   Int_t nITSTPCtracks=0;
   fHistNTracks->Fill(ntracks);
@@ -931,7 +983,7 @@ void AliAnalysisTaskCheckESDTracks::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  printf("AliAnalysisTaskCheckESDTracks::Terminate --- Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(4));
+  printf("AliAnalysisTaskCheckESDTracks::Terminate --- Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(5));
   return;
 }
 
