@@ -55,6 +55,10 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistNEvents(0x0),
   fHistNTracks(0x0),
   fHistFilterBits(0x0),
+  fHistNtracksFb4VsV0befEvSel(0x0),
+  fHistNtracksFb5VsV0befEvSel(0x0),
+  fHistNtracksFb4VsV0aftEvSel(0x0),
+  fHistNtracksFb5VsV0aftEvSel(0x0),
   fHistEtaPhiPtTPCsel(0x0),
   fHistEtaPhiPtTPCselITSref(0x0),
   fHistEtaPhiPtTPCselSPDany(0x0),
@@ -138,6 +142,10 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistNEvents;
     delete fHistNTracks;
     delete fHistFilterBits;
+    delete fHistNtracksFb4VsV0befEvSel;
+    delete fHistNtracksFb5VsV0befEvSel;
+    delete fHistNtracksFb4VsV0aftEvSel;
+    delete fHistNtracksFb5VsV0aftEvSel;
     delete fHistEtaPhiPtTPCsel;
     delete fHistEtaPhiPtTPCselITSref;
     delete fHistEtaPhiPtTPCselSPDany;
@@ -258,7 +266,8 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
   fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",5001,-0.5,5000.5);
@@ -268,6 +277,15 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistFilterBits->GetYaxis()->SetBinLabel(1,"Neg. ID");
   fHistFilterBits->GetYaxis()->SetBinLabel(2,"Pos. ID");
   fOutput->Add(fHistFilterBits);
+  
+  fHistNtracksFb4VsV0befEvSel=new TH2F("hNtracksFb4VsV0befEvSel"," ; V0 signal ; N_{tracks,FilBit4}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksFb5VsV0befEvSel=new TH2F("hNtracksFb5VsV0befEvSel"," ; V0 signal ; N_{tracks,FilBit5}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksFb4VsV0aftEvSel=new TH2F("hNtracksFb4VsV0aftEvSel"," ; V0 signal ; N_{tracks,FilBit4}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksFb5VsV0aftEvSel=new TH2F("hNtracksFb5VsV0aftEvSel"," ; V0 signal ; N_{tracks,FilBit5}",250,0.,15000.,250,0.,5000.);
+  fOutput->Add(fHistNtracksFb4VsV0befEvSel);
+  fOutput->Add(fHistNtracksFb5VsV0befEvSel);
+  fOutput->Add(fHistNtracksFb4VsV0aftEvSel);
+  fOutput->Add(fHistNtracksFb5VsV0aftEvSel);
   
 
   fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
@@ -402,26 +420,53 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  if(vtx1->GetNContributors()<=0) return;
-  fHistNEvents->Fill(2);
-
-  Float_t xvert=vtx1->GetX();
-  Float_t yvert=vtx1->GetY();
-  Float_t zvert=vtx1->GetZ();
-  if(TMath::Abs(zvert)>10) return;
-  fHistNEvents->Fill(3);
-
-  Double_t pos[3],cov[6];
-  vtx1->GetXYZ(pos);
-  vtx1->GetCovarianceMatrix(cov);
-  const AliESDVertex vESD(pos,cov,100.,100);
-
   Int_t ntracks = aod->GetNumberOfTracks();
   Int_t ntracklets = 0;
   AliAODTracklets *mult=aod->GetTracklets();
   if(mult) ntracklets=mult->GetNumberOfTracklets();
   Int_t ncl1 = aod->GetNumberOfITSClusters(1);
+  Int_t ntracksFB4=0;
+  Int_t ntracksFB5=0;
+  for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
+    AliAODTrack * track = (AliAODTrack*)aod->GetTrack(iTrack);
+    if (!track) continue;
+    if(track->TestFilterBit(1<<4)) ntracksFB4++;
+    if(track->TestFilterBit(1<<5)) ntracksFB5++;
+  }
+  Double_t vZEROampl=0;
+  for(Int_t i=0;i<64;i++) vZEROampl+=aod->GetVZEROData()->GetMultiplicity(i);
+  fHistNtracksFb4VsV0befEvSel->Fill(vZEROampl,ntracksFB4);
+  fHistNtracksFb5VsV0befEvSel->Fill(vZEROampl,ntracksFB5);
+
+  const AliVVertex* vtTrc = aod->GetPrimaryVertex();
+  const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
+  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+  fHistNEvents->Fill(2);
+
+  double covTrc[6],covSPD[6];
+  vtTrc->GetCovarianceMatrix(covTrc);
+  vtSPD->GetCovarianceMatrix(covSPD);
+  double dz = vtTrc->GetZ()-vtSPD->GetZ();
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]);
+  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
+  fHistNEvents->Fill(3);
+
+  Float_t xvert=vtTrc->GetX();
+  Float_t yvert=vtTrc->GetY();
+  Float_t zvert=vtTrc->GetZ();
+  if(TMath::Abs(zvert)>10) return;
+  fHistNEvents->Fill(4);
+
+  fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
+  fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
+
+  Double_t pos[3],cov[6];
+  vtTrc->GetXYZ(pos);
+  vtTrc->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
   fHistNTracks->Fill(ntracks);
 
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
@@ -459,7 +504,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     fTreeVarFloat[9]=track->Phi();
     
     Double_t d0z0[2],covd0z0[3];
-    Bool_t isOK=track->PropagateToDCA(vtx1,magField,99999.,d0z0,covd0z0);
+    Bool_t isOK=track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
     Float_t impactXY=-999, impactZ=-999;
     if(isOK){
       impactXY=d0z0[0];
@@ -743,7 +788,7 @@ void AliAnalysisTaskCheckAODTracks::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  printf("AliAnalysisTaskCheckAODTracks::Terminate --- Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(4));
+  printf("AliAnalysisTaskCheckAODTracks::Terminate --- Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(5));
   return;
 }
 
