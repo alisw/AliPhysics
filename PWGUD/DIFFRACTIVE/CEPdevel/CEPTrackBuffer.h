@@ -32,8 +32,8 @@ class CEPTrackBuffer : public TObject {
     Float_t fPIDBayesProb[AliPID::kSPECIES];
     
     // MC truth
-    Int_t fMCPID;
-    Float_t fMCMass;
+    Int_t    fMCPID;
+    Float_t  fMCMass;
     TVector3 fMCMomentum;
     
   public:
