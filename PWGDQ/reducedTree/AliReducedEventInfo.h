@@ -40,6 +40,8 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     IRIntClosestIntMap(Int_t id)      const {return (id>=0 && id<2 ? fIRIntClosestIntMap[id] : -999);}
   Float_t   VertexTPC(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxTPC[axis] : 0);}
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
+  Float_t   VertexSPD(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxSPD[axis] : 0);}
+  Int_t     VertexSPDContributors()           const {return fNVtxSPDContributors;}
   Float_t   VertexTZERO()                     const {return fT0zVertex;}
   Int_t     NpileupSPD()                      const {return fNpileupSPD;}
   Int_t     NpileupTracks()                   const {return fNpileupTracks;}
@@ -128,8 +130,10 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
   Int_t     fIRIntClosestIntMap[2]; // out of bunch interactions, [0]-Int1, [1]-Int2 
-  Float_t   fVtxTPC[3];             // TPC only event vertex           
+  Float_t   fVtxTPC[3];             // TPC only event vertex       
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
+  Float_t   fVtxSPD[3];             // SPD only event vertex
+  Int_t     fNVtxSPDContributors;  // SPD only event vertex contributors
   Int_t     fNpileupSPD;            // number of pileup vertices from SPD     
   Int_t     fNpileupTracks;         // number of pileup vertices from tracks  
   Int_t     fNPMDtracks;            // number of PMD tracks                   
@@ -164,7 +168,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 2);
+  ClassDef(AliReducedEventInfo, 3);
 };
 
 #endif
