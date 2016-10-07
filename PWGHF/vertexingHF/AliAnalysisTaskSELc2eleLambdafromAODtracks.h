@@ -699,6 +699,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Int_t  fNOfPools; /// number of pools
   Int_t fPoolIndex; /// pool index
   TH2F *fHistoPoolMonitor;//!<! PoolMonitor
+  TH1F *fHistoPoolIDCounter;//!<! PoolMonitor
   std::vector<Int_t> nextResVec; //!<! Vector storing next reservoir ID
   std::vector<Bool_t> reservoirsReady; //!<! Vector storing if the reservoirs are ready
   std::vector<std::vector< std::vector< TLorentzVector * > > > m_ReservoirE; //!<! reservoir
@@ -709,7 +710,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,40); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,41); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
