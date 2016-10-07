@@ -1486,8 +1486,8 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
           continue;
         Int_t pdgabs=TMath::Abs(particle->PdgCode());
         if(pdgabs==9902210)return -1; //no diffractive protons
-	//if(!(((AliMCEvent*)mc)->IsPhysicalPrimary(((particle->GetUniqueID())/10)%50000))) continue; // only primaries
         if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only charged pi+K+p
+	if(!(((AliMCEvent*)mc)->IsPhysicalPrimary(particle->GetLabel()))) continue; // only primaries (probably not necessary)
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
         if((eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7)) MultV0M += 1.;
@@ -1514,8 +1514,8 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
           continue;
         Int_t pdgabs=TMath::Abs(particle->PdgCode());
         if(pdgabs==9902210)return -1; //no diffractive protons
-	//if(!(((AliMCEvent*)mc)->IsPhysicalPrimary(((particle->GetUniqueID())/10)%50000))) continue; // only primaries
         if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only charged pi+K+p
+	if(!(((AliMCEvent*)mc)->IsPhysicalPrimary(particle->GetLabel()))) continue; // only primaries (probably not necessary)
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
         if(eta < 1.4 && eta > -1.4) MultCL1 += 1.;
