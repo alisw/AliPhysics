@@ -259,6 +259,11 @@ public:
    */
   virtual Short_t GetParentPdg(Bool_t second=false) const { return 0; }
   /* @} */
+  /** 
+   * Print information on the tracklet 
+   * 
+   * @param option Options 
+   */
   void Print(Option_t* option="") const;
 protected:
   /** Tracklet polar angle */
@@ -311,7 +316,7 @@ AliAODTracklet::operator=(const AliAODTracklet& other)
 //____________________________________________________________________
 void AliAODTracklet::Print(Option_t* option) const
 {
-  char flags[8];
+  char flags[9];
   if (IsMeasured())      flags[0] = 'M'; else flags[0] = '-';
   if (IsInjection())     flags[1] = 'I'; else flags[1] = '-';
   if (IsCombinatorics()) flags[2] = 'C'; else flags[2] = '-'; 
@@ -319,8 +324,9 @@ void AliAODTracklet::Print(Option_t* option) const
   if (IsSecondary())     flags[4] = 'S'; else flags[4] = '-';
   if (IsPrimary())       flags[5] = 'P'; else flags[5] = '-';
   if (IsGenerated())     flags[6] = 'G'; else flags[6] = '-';
-  flags[7] = '\0';
-  Printf("Tracklet 0x%02x %s (%6.2f,%6.2f)+/-(%6.2f,%6.2f) [eta=%5.2f]",
+  if (IsSuppressed())    flags[7] = 'S'; else flags[7] = '-';
+  flags[8] = '\0';
+  printf("Tracklet 0x%02x %s (%6.2f,%6.2f)+/-(%6.2f,%6.2f) [eta=%5.2f]",
 	 fFlags,
 	 flags,
 	 TMath::RadToDeg()*fTheta,
@@ -328,6 +334,8 @@ void AliAODTracklet::Print(Option_t* option) const
 	 TMath::RadToDeg()*fDTheta,
 	 TMath::RadToDeg()*fDPhi,
 	 GetEta());
+  if (option[0] == 'B') return;
+  printf("\n");
 }
 
   
@@ -409,6 +417,12 @@ public:
     if (!second) fPar1Pdg = pdg; else fPar2Pdg = pdg;
   }
   /* @} */
+  /** 
+   * Print information on the tracklet 
+   * 
+   * @param option Options 
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** First parent pt */
   Real_t fPar1Pt; 
@@ -451,6 +465,13 @@ AliAODMCTracklet::operator=(const AliAODMCTracklet& other)
   fPar1Pdg = other.fPar1Pdg;
   fPar2Pdg = other.fPar2Pdg;    
   return *this;
+}
+
+//____________________________________________________________________
+void AliAODMCTracklet::Print(Option_t* option) const
+{
+  AliAODTracklet::Print("B");
+  Printf(" [%5d,%5.2f %5d,%5.2f]", fPar1Pdg,fPar1Pt, fPar2Pdg, fPar2Pt);
 }
 
 #endif
