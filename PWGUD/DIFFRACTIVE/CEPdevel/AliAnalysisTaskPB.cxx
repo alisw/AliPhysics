@@ -1183,11 +1183,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	}
 
 	//= INPUT DATA SANITY TESTS ==================================================
-	// printf("Checking Input ...\n");
+	// printf("Checking Input ...");
   if (!CheckInput()) {
+	  printf("... FAIL!\n");
 		PostOutputs();
 		return;
 	}
+	// printf("... success\n");
 
 	if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinGoodInput); // stats flow
@@ -1213,7 +1215,6 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 			}
 		}
 	}
-
 
 	//= V0-AND/OR ================================================================
 	if (!fDoAOD) {
@@ -2408,14 +2409,37 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 		AliGenEventHeader* header = fMCEvent->GenEventHeader();
     
     if (header) {
-		  fMCGenerator = TString(header->IsA()->GetName());
+			// cover all possible generators
+      //
+      // this is the list of generators with a specific header
+      // status 10/07/2016
+      // Generator  Name in header
+      // cocktail
+      // DPMjet
+      // Epos3
+      // Epos
+      // GeVSim
+      // HepMC
+      // Herwig
+      // Hijing
+      // Pythia     Pythia
+      // Toy
+      // 
+      // this is the list of generators without specific header
+      // DIME       Dime
+      // Starlight
+		  
+      // get the name of this generator
+      fMCGenerator = TString(header->GetName());
       printf("MC generator name: %s\n",fMCGenerator.Data());
-			//printf("MC process: %i\n",header->ProcessType());
+      Int_t nprod = header->NProduced();
+			printf("Number of produced particles: %i\n",nprod);
 
-			// Pythia6
-			if (TString(header->IsA()->GetName()) == "AliGenPythiaEventHeader") {
+      // Pythia
+			if (fMCGenerator == "Pythia") {
 				fMCprocess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				switch(fMCprocess) {
+				printf("Pythia process type: %i\n",fMCprocess);
+        switch(fMCprocess) {
 				case 92:
 				case 93:
 				case 103:
@@ -2425,9 +2449,16 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 				default:  fMCprocessType = AliPBBase::kBinND; break;
 				}
 			}
-			// Phojet
-			else if (TString(header->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
+			
+      // DIME
+			else if (fMCGenerator == "Dime") {
+				fMCprocessType = AliPBBase::kBinCD;
+			}
+			
+      // DPMjet
+			else if (fMCGenerator == "DPMjet") {
 				fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
+				printf("DPMjet process type: %i\n",fMCprocess);
 				switch(fMCprocess) {
 				case 5:
 				case 6:  fMCprocessType = AliPBBase::kBinSD; break;
@@ -2436,6 +2467,7 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 				default: fMCprocessType = AliPBBase::kBinND; break;
 				}
 			}
+      
 		}
 	}
 }
@@ -2473,14 +2505,14 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
 	if (!fMCEvent) return -1;
 	AliStack* stack = fMCEvent->Stack();
 	if (!stack) return -1;
-  printf("We got a MC stack ...\n");
+  //printf("We got a MC stack ...\n");
 
 	//= Multiplicity =============================================================
 	// determine number of charged physical primaries on the stack
 	Int_t nPhysicalPrimaries = 0;
 	Int_t nPrimaries = stack->GetNprimary();
-  printf("There are %i/%i/%i particles\n",
-    stack->GetNtrack(),nPrimaries,stack->GetNtransported());
+  //printf("There are %i/%i/%i particles\n",
+  //  stack->GetNtrack(),nPrimaries,(Int_t)stack->GetNtransported());
   
 	//stack->DumpPStack ();
   //TList *parentIDs = new TList();
