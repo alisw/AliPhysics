@@ -30,6 +30,8 @@
 
 #include "CEPEventBuffer.h"
 #include "THnSparse.h"
+#include "TArrayI.h"
+#include "AliStack.h"
 
 class AliESDEvent;
 class AliVTrack;
@@ -105,6 +107,8 @@ private:
 	// analyzes track pairs in MC truth
 	void DetermineMCprocessType(); // determines the MC process ID
   void GetMyPriors(TString fname, TH1F** mypriors);
+  void printDaughters (TList *parentIDs, AliStack *stack);
+
 
 	// functions called by the DoTrackPair(...), not to be called elsewhere!
 	// ---------------------------------------------------------------------
