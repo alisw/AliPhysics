@@ -46,6 +46,10 @@ class AliCDBManager: public TObject {
     const TMap* GetStorageMap() const {return fStorageMap;}
     const TList* GetRetrievedIds() const {return fIds;}
 
+    const TMap* GetSnapshotMap() const;
+    const TList* GetSnapshotRetrievedIds() const;
+    void CreateMapListCopy(TMap& mapCopy, TList& listCopy) const;
+
     void SetDefaultStorage(const char* dbString);
     void SetDefaultStorage(const AliCDBParam* param);
     void SetDefaultStorage(AliCDBStorage *storage);

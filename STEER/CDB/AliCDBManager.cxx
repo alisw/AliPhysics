@@ -121,6 +121,7 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
 
   f->cd();
+  //
   if(singleKeys){
     f->WriteObject(&fEntryCache,"CDBentriesMap");
     f->WriteObject(fIds,"CDBidsList");
@@ -137,6 +138,9 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
       path.ReplaceAll("/","*");
       entry->Write(path.Data());
     }
+    // RS: always store the CDBMap/CDBList
+    f->WriteObject(fStorageMap,"CDBSnapshotEntriesMap");
+    f->WriteObject(fIds,"CDBSnapshotIdsList");
   }
   f->Close();
   delete f;
@@ -1110,6 +1114,24 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& queryId, Bool_t forceCaching) {
 }
 
 //_____________________________________________________________________________
+const TMap* AliCDBManager::GetSnapshotMap() const
+{
+  // get the map used for snapshot
+  if (!fSnapshotFile) return 0;
+  return dynamic_cast<TMap*>(fSnapshotFile->Get("CDBSnapshotEntriesMap"));
+  //
+}
+
+//_____________________________________________________________________________
+const TList* AliCDBManager::GetSnapshotRetrievedIds() const
+{
+  // get the list retrieved for snapshot
+  if (!fSnapshotFile) return 0;
+  return dynamic_cast<TList*>(fSnapshotFile->Get("CDBSnapshotIdsList"));
+  //
+}
+
+//_____________________________________________________________________________
 AliCDBEntry* AliCDBManager::GetEntryFromSnapshot(const char* path) {
 // get the entry from the open snapshot file
 
@@ -1998,3 +2020,67 @@ void AliCDBManager::PromptCacheEntry(const char* path, AliCDBEntry* entry)
   SetPromptCacheFlag(kTRUE);
 }
 
+//_______________________________________
+void AliCDBManager::CreateMapListCopy(TMap& cdbMapCopy, TList& cdbListCopy) const
+{
+  // populate used provided map and list with storages and retrieved object
+  // names, combining information from cdb, snapshot
+  cdbMapCopy.Clear();
+  cdbListCopy.Clear();
+  cdbMapCopy.SetOwner(1);
+  cdbListCopy.SetOwner(1);
+  const TMap* mapCDB = GetStorageMap(), *mapSNP = GetSnapshotMap();
+  const TList* lstCDB = GetRetrievedIds(), *lstSNP = GetSnapshotRetrievedIds();
+  //
+  if (!mapCDB || !lstCDB) return;
+  //
+  TPair* pair = 0;
+  // default storage of the snapshot (if any) becomes the new default
+  TString defSNP,defCDB;
+  //
+  // add only specific storages of CDBmap since they have priority over everything else
+  TIter iterCDBMap(mapCDB->GetTable());
+  while((pair = dynamic_cast<TPair*> (iterCDBMap.Next()))) {
+    TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());
+    TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+    if (!keyStr || !valStr) continue;
+    TString nms = keyStr->String();
+    if (nms=="default") {
+      defCDB = valStr->String();
+      if (mapSNP) continue; // skip it since the snapshot was provided!
+    }
+    cdbMapCopy.Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));
+  }
+  //
+  // now add defaul and specific storages of the snapshot unless they were overridden
+  if (mapSNP) {
+    TIter iterSNPMap(mapSNP->GetTable());
+    while((pair = dynamic_cast<TPair*> (iterSNPMap.Next()))) {
+      TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());
+      TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+      if (!keyStr || !valStr) continue;
+      TString nms = keyStr->String();
+      if (nms=="default") {
+        defSNP = valStr->String();
+      }
+      else { // check if it was not overridden by the cdbMap
+        if (mapCDB->FindObject(nms.Data())) continue; // skip it!
+      }
+      cdbMapCopy.Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));
+    }
+  }
+  //
+  // now add retrieved entries: those which were not found in the snapshot or cdbManager specific       
+  // storages were obtained from cdbManager default, which will be added as new specific storage...     
+  // 
+  TIter iterCDBLst(lstCDB);
+  AliCDBId* id=0;
+  while( (id = dynamic_cast<AliCDBId*>(iterCDBLst.Next())) ) {
+    TString path = id->GetPath();
+    if (!mapCDB->FindObject(path.Data()) && (lstSNP && !lstSNP->FindObject(path.Data())) ) {
+      cdbMapCopy.Add(new TObjString(path.Data()), new TObjString(defCDB.Data()));
+      // printf("%s: adding CDB default as specific storage %s\n",path.Data(),defCDB.Data());
+    }
+    cdbListCopy.Add(new TObjString(id->ToString().Data()));
+  }
+}
