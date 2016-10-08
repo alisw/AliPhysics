@@ -13,9 +13,9 @@ void AddRunNumbers(AliAnalysisAlien* plugin, const Char_t* filename);
 
 
 AliAnalysisGrid* CreateAlienHandlerPbPb(const Char_t* inputRunList, TString gridRunMode="test", 
-                                        TString dataDir = "", TString dataPattern = "", Int_t maxInputFilesPerJob = 10, 
-                                        TString workingDir = "", TString outputDir = "", TString outputFiles = "dstTree.root dstHistograms.root",
-                                        TString rootVersion="v5-34-30-alice5-2", TString alirootVersion="v5-08-16-1", TString aliphysicsVersion="vAN-20160912-1")
+                                        TString dataDir = "", TString dataPattern = "", Int_t maxInputFilesPerJob = 20, 
+                                        TString workingDir = "", TString outputDir = "", TString outputFiles = "dstTree.root",
+                                        TString rootVersion="v5-34-30-alice5-2", TString alirootVersion="v5-08-16-1", TString aliphysicsVersion="vAN-20160921-1")
 {
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then

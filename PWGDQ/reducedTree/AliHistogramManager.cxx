@@ -156,13 +156,13 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString hname = name;
   
   Int_t dimension = 1;
-  if(varY>=0) dimension = 2;
-  if(varZ>=0) dimension = 3;
+  if(varY>AliReducedVarManager::kNothing) dimension = 2;
+  if(varZ>AliReducedVarManager::kNothing) dimension = 3;
   
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
-  if(varT>=0) fUsedVars[varT] = kTRUE;
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varT>AliReducedVarManager::kNothing) fUsedVars[varT] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   TH1* h=0x0;
   switch(dimension) {
@@ -187,14 +187,14 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
 	h=new TProfile(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax);
         fBinsAllocated+=nXbins+2;
         h->SetUniqueID(1);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+1);
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
       }
       else {
 	h=new TH2F(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax);
         fBinsAllocated+=(nXbins+2)*(nYbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0); 
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
@@ -218,17 +218,17 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       break;
     case 3:
       if(isProfile) {
-        if(varT>=0) {
+        if(varT>AliReducedVarManager::kNothing) {
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax,nZbins,zmin,zmax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
-          if(varW>=0) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
         else {
 	  h=new TProfile2D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
           h->SetUniqueID(1);
-          if(varW>=0) h->SetUniqueID(100*(varW+1)+1); 
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
         }
       }
       else {
@@ -236,7 +236,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0); 
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
@@ -292,11 +292,11 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString hname = name;
   
   Int_t dimension = 1;
-  if(varY>=0) dimension = 2;
-  if(varZ>=0) dimension = 3;
+  if(varY>AliReducedVarManager::kNothing) dimension = 2;
+  if(varZ>AliReducedVarManager::kNothing) dimension = 3;
   
-  if(varT>=0) fUsedVars[varT] = kTRUE;
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varT>AliReducedVarManager::kNothing) fUsedVars[varT] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
@@ -308,7 +308,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       fBinsAllocated+=nXbins+2;
       h->Sumw2();
       h->SetUniqueID(0);
-      if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
+      if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0); 
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
@@ -324,14 +324,14 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
 	h=new TProfile(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins);
         fBinsAllocated+=nXbins+2;
         h->SetUniqueID(1);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+1); 
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
       }
       else {
 	h=new TH2F(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins);
         fBinsAllocated+=(nXbins+2)*(nYbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0);
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0);
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
@@ -356,17 +356,17 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       break;
     case 3:
       if(isProfile) {
-        if(varT>=0) {
+         if(varT>AliReducedVarManager::kNothing) {
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins,nZbins,zbins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
-          if(varW>=0) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
         else {
 	  h=new TProfile2D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
           h->SetUniqueID(1);
-          if(varW>=0) h->SetUniqueID(100*(varW+1)+1);
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
         }
       }
       else {
@@ -374,7 +374,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0);
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0);
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
@@ -432,11 +432,11 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
   
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   THnF* h=new THnF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
   h->Sumw2();
-  if(varW>=0) h->SetUniqueID(10+nDimensions+100*(varW+1));
+  if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(10+nDimensions+100*(varW+1));
   else h->SetUniqueID(10+nDimensions);
   ULong_t bins = 1;
   for(Int_t idim=0;idim<nDimensions;++idim) {
@@ -481,7 +481,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
   
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   Double_t* xmin = new Double_t[nDimensions];
   Double_t* xmax = new Double_t[nDimensions];
@@ -499,7 +499,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   }
   
   h->Sumw2();
-  if(varW>=0) h->SetUniqueID(10+nDimensions+100*(varW+1));
+  if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(10+nDimensions+100*(varW+1));
   else h->SetUniqueID(10+nDimensions);
   ULong_t bins = 1;
   for(Int_t idim=0;idim<nDimensions;++idim) {
@@ -639,7 +639,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
     varW = -1;
     if(uid>0) {
       varW = uid%(fNVars+1)-1;
-      if(varW==0) varW=-1;
+      if(varW==0) varW=AliReducedVarManager::kNothing;
       uid = (uid-(uid%(fNVars+1)))/(fNVars+1);
       if(uid>0) varT = uid - 1;
       //cout << "Filling " << h->GetName() << " with varT " << varT << endl;
@@ -653,7 +653,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
             if(isProfile) {
               varY = ((TH1*)h)->GetYaxis()->GetUniqueID();
               if(!fUsedVars[varY]) break;
-              if(varW>=0) { 
+              if(varW>AliReducedVarManager::kNothing) { 
                 if(!fUsedVars[varW]) break;
                 ((TProfile*)h)->Fill(values[varX],values[varY],values[varW]);
               }
@@ -661,7 +661,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
                 ((TProfile*)h)->Fill(values[varX],values[varY]);
             }
             else {
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TH1F*)h)->Fill(values[varX],values[varW]);
               }
@@ -675,7 +675,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
             if(isProfile) {
               varZ = ((TH1*)h)->GetZaxis()->GetUniqueID();
               if(!fUsedVars[varZ]) break;
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TProfile2D*)h)->Fill(values[varX],values[varY],values[varZ],values[varW]);
               }
@@ -683,7 +683,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
                 ((TProfile2D*)h)->Fill(values[varX],values[varY],values[varZ]);        
             }
             else {
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TH2F*)h)->Fill(values[varX],values[varY], values[varW]);
               }
@@ -698,7 +698,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
             if(!fUsedVars[varZ]) break;
             if(isProfile) {
               if(!fUsedVars[varT]) break;
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TProfile3D*)h)->Fill(values[varX],values[varY],values[varZ],values[varT],values[varW]);
               }
@@ -706,7 +706,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
                 ((TProfile3D*)h)->Fill(values[varX],values[varY],values[varZ],values[varT]);
             }
             else {
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TH3F*)h)->Fill(values[varX],values[varY],values[varZ],values[varW]);
               }
@@ -725,7 +725,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
         fillValues[idim] = values[((THnF*)h)->GetAxis(idim)->GetUniqueID()];
       }
       if(allVarsGood) {
-        if(varW>=0) {
+        if(varW>AliReducedVarManager::kNothing) {
           if(fUsedVars[varW])
             ((THnF*)h)->Fill(fillValues,values[varW]);
         }
