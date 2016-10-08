@@ -88,6 +88,7 @@
 #include "AliTPCTransform.h"
 #include "TTreeStream.h"
 #include "AliGRPObject.h"
+#include "AliSimulation.h"
 
 // for fast TMatrix operator()
 #include "AliFastContainerAccess.h"
@@ -198,7 +199,18 @@ AliTPC::AliTPC(const char *name, const char *title)
     fTPCParam=0;    
   }
 
+  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
+  if (tpcrecoparam && tpcrecoparam->GetUseCorrectionMap()) { // make sure collision time is properly generated 
+    AliSimulation* sim = AliSimulation::Instance();
+    if (!sim->GetUseTimeStampFromCDB()) {
+      sim->UseTimeStampFromCDB();
+      AliInfo("Time-dependent distortions requested: enforce generation of timeStamp according to CDB");
+    }
+  }
+
 }
+
 void AliTPC::CreateDebugStremer(){
   //
   // Create Debug streamer to check simulation
