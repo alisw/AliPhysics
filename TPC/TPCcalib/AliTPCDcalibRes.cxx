@@ -4438,8 +4438,16 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
   xyzPrim[AliTPCDcalibRes::kResY] = tzLoc[0]*xyzPrim[AliTPCDcalibRes::kResX];
   xyzPrim[AliTPCDcalibRes::kResZ] = tzLoc[1]*xyzPrim[AliTPCDcalibRes::kResX];
   //
-  AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance();
+  AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance(), 
+    *calibExt = AliTPCDcalibRes::GetUsedInstanceExt();
   calib->InvertCorrection(sector, xyzPrim, xyzCl); // calculate inverse distortion
+
+  if (calibExt) { // if ext is provided, average between the current and ext
+    float xyzClExt[AliTPCDcalibRes::kResDim] = {0};
+    calibExt->InvertCorrection(sector, xyzPrim, xyzClExt); // calculate inverse distortion 
+    for (int i=AliTPCDcalibRes::kResDim;i--;) xyzCl[i] = 0.5*(xyzCl[i]+xyzClExt[i]);
+  }
+
   for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j]-xyzPrim[j];
   distLoc[AliTPCDcalibRes::kResD] = xyzCl[AliTPCDcalibRes::kResD];
   //
