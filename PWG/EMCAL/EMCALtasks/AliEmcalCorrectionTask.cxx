@@ -8,14 +8,12 @@
 
 #include <vector>
 #include <fstream>
-#include <iostream>
 #include <sstream>
-
-#include <yaml-cpp/yaml.h>
 
 #include <TChain.h>
 #include <TSystem.h>
 #include <TGrid.h>
+#include <TFile.h>
 
 #include "AliVEventHandler.h"
 #include "AliEMCALGeometry.h"
@@ -25,11 +23,13 @@
 #include "AliVCluster.h"
 #include "AliAODCaloCluster.h"
 #include "AliESDCaloCluster.h"
-#include "AliVTrack.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliMultSelection.h"
+#include "AliCentrality.h"
+#include "AliESDEvent.h"
+#include "AliAnalysisManager.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionTask);

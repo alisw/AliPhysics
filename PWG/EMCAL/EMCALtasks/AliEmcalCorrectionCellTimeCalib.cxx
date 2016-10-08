@@ -7,20 +7,12 @@
 /// \author C. Loizides, make it work for AODs
 /// \author Gustavo Conesa, LPSC-Grenoble, several mods.
 
-#include <TGeoGlobalMagField.h>
-#include <TGeoManager.h>
-#include <TInterpreter.h>
 #include <TObjArray.h>
-#include <TROOT.h>
-#include <TTree.h>
-#include "AliEMCALAfterBurnerUF.h"
-#include "AliEMCALDigit.h"
+#include <TFile.h>
 #include "AliEMCALGeometry.h"
-#include "AliEMCALRecParam.h"
-#include "AliEMCALRecParam.h"
-#include "AliEMCALRecPoint.h"
-#include "AliMagF.h"
 #include "AliOADBContainer.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliAODEvent.h"
 
 #include "AliEmcalCorrectionCellTimeCalib.h"
 
