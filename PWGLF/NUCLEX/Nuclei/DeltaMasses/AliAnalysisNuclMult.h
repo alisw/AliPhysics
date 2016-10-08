@@ -96,12 +96,12 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   TH3F *fDca[18];                                 //! DCAxy vs DCAz
 
-  TH2F *fNsigmaTOF[18]; 
+  TH2F *fNsigmaTOF[18];                           //! NsigmaTOF vs. pT
   TH2F *fBetaTOFvspt[2];                          //! beta (TOF) vs pT
   TProfile *hBetaExp[9];                          //! TOF expected beta
   
-  TH2F *fM2tof[2];                                //! M2 computed with TOF
-  TH2F *fM2vspt[18];                              //! M2 computed with TOF (TPC cut)
+  TH2F *fM2tof[2];                                //! m2 vs pT
+  TH2F *fM2vspt[18];                              //! m2 vs pT (TPC cut)
 
   void EventSelectionMonitor();
 
@@ -123,7 +123,7 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   
   Double_t GetM2(Double_t p, Double_t beta);
 
-  ClassDef(AliAnalysisNuclMult, 4);
+  ClassDef(AliAnalysisNuclMult, 5);
 };
 
 #endif
