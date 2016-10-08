@@ -516,10 +516,15 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     
     AliESDZDC* zdc = esdEvent->GetESDZDC();
     if(zdc) {
+      eventInfo->fZDCnTotalEnergy[0] = zdc->GetZN2TowerEnergy()[0];
+      eventInfo->fZDCnTotalEnergy[1] = zdc->GetZN1TowerEnergy()[0];
+      eventInfo->fZDCpTotalEnergy[0] = zdc->GetZP2TowerEnergy()[0];
+      eventInfo->fZDCpTotalEnergy[1] = zdc->GetZP1TowerEnergy()[0];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZN1TowerEnergy()[i];
       for(Int_t i=5; i<10; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZN2TowerEnergy()[i-5];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCpEnergy[i]   = zdc->GetZP1TowerEnergy()[i];
       for(Int_t i=5; i<10; ++i)  eventInfo->fZDCpEnergy[i]   = zdc->GetZP2TowerEnergy()[i-5];
+      
     }
   }
   if(isAOD) {
@@ -541,6 +546,10 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     
     AliAODZDC* zdc = aodEvent->GetZDCData();
     if(zdc) {
+       eventInfo->fZDCnTotalEnergy[0] = zdc->GetZNATowerEnergy()[0];
+       eventInfo->fZDCnTotalEnergy[1] = zdc->GetZNCTowerEnergy()[0];
+       eventInfo->fZDCpTotalEnergy[0] = zdc->GetZPATowerEnergy()[0];
+       eventInfo->fZDCpTotalEnergy[1] = zdc->GetZPCTowerEnergy()[0];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZNATowerEnergy()[i];
       for(Int_t i=5; i<10; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZNCTowerEnergy()[i-5];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCpEnergy[i]   = zdc->GetZPATowerEnergy()[i];
@@ -595,6 +604,12 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   AliVVZERO* vzero = event->GetVZEROData();
   for(Int_t i=0;i<64;++i) 
     eventInfo->fVZEROMult[i] = vzero->GetMultiplicity(i);  
+  Float_t multVZERO = 0.0;
+  for(Int_t i=0;i<32;++i) multVZERO +=  vzero->GetMultiplicity(i);
+  eventInfo->fVZEROTotalMult[1] = multVZERO;
+  multVZERO = 0.0;
+  for(Int_t i=32;i<64;++i) multVZERO +=  vzero->GetMultiplicity(i);
+  eventInfo->fVZEROTotalMult[0] = multVZERO;
   
   if(fFillEventPlaneInfo) {
     AliReducedEventPlaneInfo* ep=new AliReducedEventPlaneInfo();     
