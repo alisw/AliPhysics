@@ -146,8 +146,11 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     fSPDnSingle;            // number of clusters in SPD layer 1, not associated to a tracklet on SPD layer 2
   Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                
   Float_t   fVZEROMult[64];         // VZERO multiplicity in all 64 channels
+  Float_t   fVZEROTotalMult[2];    // Total VZERO multiplicity
   Float_t   fZDCnEnergy[10];         // neutron ZDC energy in all 8 channels
-  Float_t   fZDCpEnergy[10];         // neutron ZDC energy in all 8 channels
+  Float_t   fZDCpEnergy[10];         // proton ZDC energy in all 8 channels
+  Float_t   fZDCnTotalEnergy[2];   // total neutron ZDC energy
+  Float_t   fZDCpTotalEnergy[2];  // total proton ZDC energy
   Float_t   fT0amplitude[26];         // T0 amplitude in all 24 channels
   Float_t   fT0TOF[3];               // T0 timing for A&C, A, and C (first time)
   Float_t   fT0TOFbest[3];           // T0 timing for A&C, A, and C (best time)
@@ -168,7 +171,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 3);
+  ClassDef(AliReducedEventInfo, 4);
 };
 
 #endif
