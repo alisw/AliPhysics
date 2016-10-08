@@ -10,16 +10,19 @@ class TStopwatch;
 class TTree;
 class TMemStatManager;
 using std::fstream;
-
+class  AliProdInfo;
 class AliOCDBtoolkit : public TObject {
 public:  
   static void MakeDiffExampleUseCase();    // example usage
   static void DumpOCDBAsTxt(const TString fInput,const TString fType, const TString outfile);
   static void MakeSnapshotFromTxt(const TString fInput,const TString outfile, Bool_t singleKeys); 
+  static void LoadAliOCDBtoolkitSetup(Int_t verbose);
+  static Bool_t IsEntrySelected(TString entry, TObjArray *selList);
   //
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion);   
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, AliCDBId &cdbId);
-  static TList  * ConvertListStringToCDBId(const TList */*cdbList0*/);   
+  static TList  * ConvertListStringToCDBId(TList */*cdbList0*/);   
+  static void  CleanCDBPath(TString &cdbPath, Bool_t useCVMFSPath);
   //
   // Load OCDB entries 
   //
@@ -41,6 +44,14 @@ public:
   // addopt OCDB entry
   //
   static Bool_t AddoptOCDBEntry( const char *finput, const char *output,  Int_t ustartRun, Int_t uendRun);
+  // settings
+  static TObjArray * fgExcludeList;         // list of excluded OCDB entries
+  static TObjArray * fgXmlOCDBDumpList;     // list of entries for XML dump to file
+  static TObjArray * fgPrintOCDBDumpList;   // list of entries for Print dump to file
+  static Int_t fgVerbose;                   // verbosity flag
+  static Int_t fgRun;                       // current run number
+  static TString fgPath;                    // path to the source of OCDB descriptor e.g. alien:///alice/data/2010/LHC10d/000126158/pass4/10000126158023.10/AliESDs.root
+  static AliProdInfo * fgProdInfo;          // production information
 private:
   AliOCDBtoolkit(const AliOCDBtoolkit& source);
   AliOCDBtoolkit& operator= (const AliOCDBtoolkit& rec);
