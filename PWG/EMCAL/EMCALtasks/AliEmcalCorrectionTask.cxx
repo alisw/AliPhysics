@@ -682,7 +682,13 @@ void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
       AliESDtrack *newTrack = dynamic_cast<AliESDtrack *>(new ((*newTracks)[i]) AliESDtrack(*currentTrack));
 
       // Assign new process ID so that it is from the current process as opposed to the old one copied from the current track
-      TProcessID::AssignID(newTrack);
+      //TProcessID::AssignID(newTrack);
+      // Reset properties of the track to fix TRefArray errors later.
+      // Particular combination is from AODTrackFilterTask
+      // Resetting the TProcessID of the track is not sufficient!
+      newTrack->SetUniqueID(0);
+      newTrack->ResetBit(TObject::kHasUUID);
+      newTrack->ResetBit(TObject::kIsReferenced);
     }
     else
     {
@@ -701,7 +707,13 @@ void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
       }*/
 
       // Assign new process ID so that it is from the current process as opposed to the old one copied from the current track
-      TProcessID::AssignID(newTrack);
+      //TProcessID::AssignID(newTrack);
+      // Reset properties of the track to fix TRefArray errors later.
+      // Particular combination is from AODTrackFilterTask
+      // Resetting the TProcessID of the track is not sufficient!
+      newTrack->SetUniqueID(0);
+      newTrack->ResetBit(TObject::kHasUUID);
+      newTrack->ResetBit(TObject::kIsReferenced);
 
       /*if (i == 5 || i == 7)
       {
