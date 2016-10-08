@@ -93,8 +93,12 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
   if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
 
+  fHistos = new THistManager(Form("Histos_%s", GetName()));
+
   CreateUserObjects();
   CreateUserHistos();
+
+  for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   PostData(1, fOutput);
 }
