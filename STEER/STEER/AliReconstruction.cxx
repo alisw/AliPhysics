@@ -2703,35 +2703,15 @@ void AliReconstruction::SlaveTerminate()
     fRunLoader->Write(0, TObject::kOverwrite);
   }
 
-  const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
-  const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
-	 	 
-   TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
-   cdbMapCopy->SetOwner(1);	 
-   cdbMapCopy->SetName("cdbMap");	 
-   TIter iter(cdbMap->GetTable());	 
- 	 
-   TPair* pair = 0;	 
-   while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
-         TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
-         TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
-	 if (keyStr && valStr)
-	   cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
-   }	 
- 	 
-   TList *cdbListCopy = new TList();	 
-   cdbListCopy->SetOwner(1);	 
-   cdbListCopy->SetName("cdbList");	 
- 	 
-   TIter iter2(cdbList);	 
- 	 
-	AliCDBId* id=0;
-	while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
-         cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
-   }	 
- 	 
-   ftree->GetUserInfo()->Add(cdbMapCopy);	 
-   ftree->GetUserInfo()->Add(cdbListCopy);
+  TMap *cdbMapCopy = new TMap();
+  cdbMapCopy->SetName("cdbMap");
+  TList *cdbListCopy = new TList();
+  cdbListCopy->SetName("cdbList");
+  // create map/list accounting for eventual snapshot
+  AliCDBManager::Instance()->CreateMapListCopy(*cdbMapCopy,*cdbListCopy);
+  
+  ftree->GetUserInfo()->Add(cdbMapCopy);	 
+  ftree->GetUserInfo()->Add(cdbListCopy);
 
    // Add the AliRoot version that created this file
    TString sVersion("aliroot ");
@@ -4819,8 +4799,12 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
   RectifyCDBurl(defSimStore);
   //
   // get reconstruction CDB
-  const TMap *cdbMapRec = AliCDBManager::Instance()->GetStorageMap();	 
-  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();
+  TMap cdbMapRecP, *cdbMapRec = &cdbMapRecP;
+  cdbMapRec->SetName("cdbMap");
+  TList cdbListRecP, *cdbListRec = &cdbListRecP;
+  cdbListRec->SetName("cdbList");
+  // create map/list accounting for eventual snapshot
+  AliCDBManager::Instance()->CreateMapListCopy(cdbMapRecP,cdbListRecP);
   //
   // get default path for reconstruction
   pair = (TPair*)cdbMapRec->FindObject("default");
@@ -4858,11 +4842,11 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
     // find cdbID used for rec
     TString idRec="",storRec="";
     TIter nextRec(cdbListRec);
-    AliCDBId* id=0;
-    while ((id=(AliCDBId*)nextRec())) {
-      idRec = id->ToString();
-      if (idRec.Contains(cdbent->GetName())) break;
-      idRec="";
+    while ((stro=(TObjString*)nextRec())) {
+      if (stro->GetString().Contains(cdbent->GetName())) {
+	idRec = stro->GetString();
+	break;
+      }
     }
     //
     // find storage used for the rec
