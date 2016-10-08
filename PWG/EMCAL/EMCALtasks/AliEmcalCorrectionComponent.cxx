@@ -3,9 +3,17 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
-#include <yaml-cpp/yaml.h>
+#include <TFile.h>
+#include <TH1.h>
 
 #include "AliEmcalList.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliAnalysisManager.h"
+#include "AliVEvent.h"
+#include "AliClusterContainer.h"
+#include "AliTrackContainer.h"
+#include "AliParticleContainer.h"
+#include "AliMCParticleContainer.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionComponent);

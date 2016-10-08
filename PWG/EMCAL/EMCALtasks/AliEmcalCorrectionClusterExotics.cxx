@@ -4,6 +4,12 @@
 
 #include "AliEmcalCorrectionClusterExotics.h"
 
+#include <TH2F.h>
+#include <TList.h>
+
+#include "AliClusterContainer.h"
+#include "AliEMCALRecoUtils.h"
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionClusterExotics);
 /// \endcond

@@ -16,7 +16,6 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
-#include <map>
 #include "AliEMCALRecParam.h"
 
 class AliEmcalCorrectionClusterizer : public AliEmcalCorrectionComponent {
