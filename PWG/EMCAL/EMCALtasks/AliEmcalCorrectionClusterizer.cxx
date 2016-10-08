@@ -16,10 +16,7 @@
  **************************************************************************/
 
 // --- Root ---
-#include <TGeoManager.h>
 #include <TObjArray.h>
-#include <TString.h>
-#include <TTree.h>
 #include <TArrayI.h>
 
 // --- AliRoot ---
@@ -37,6 +34,12 @@
 #include "AliEMCALRecParam.h"
 #include "AliEMCALRecPoint.h"
 #include "AliInputEventHandler.h"
+#include "AliClusterContainer.h"
+#include "AliAODMCParticle.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
+#include "AliAnalysisManager.h"
 
 #include "AliEmcalCorrectionClusterizer.h"
 
@@ -854,7 +857,8 @@ void AliEmcalCorrectionClusterizer::Init()
     if (fLoadGeomMatrices) {
       for(Int_t mod=0; mod < fGeom->GetNumberOfSuperModules(); ++mod) {
         if (fGeomMatrix[mod]){
-          // AliDebug(3, fGeomMatrix[mod]); need to "print"
+          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() > 2)
+            fGeomMatrix[mod]->Print();
         fGeom->SetMisalMatrix(fGeomMatrix[mod],mod);
         }
       }
@@ -871,7 +875,8 @@ void AliEmcalCorrectionClusterizer::Init()
           }
         }
         if (gm) {
-          //AliDebug(3, gm); need to "print"
+          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() > 2)
+            gm->Print();
         fGeom->SetMisalMatrix(gm,mod);
         }
       }

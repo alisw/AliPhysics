@@ -3,6 +3,9 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+class TH1;
+class TH2;
+
 class AliEmcalCorrectionClusterHadronicCorrection : public AliEmcalCorrectionComponent {
  public:
   AliEmcalCorrectionClusterHadronicCorrection();

@@ -4,6 +4,13 @@
 
 #include "AliEmcalCorrectionClusterHadronicCorrection.h"
 
+#include <TH2.h>
+#include <TList.h>
+
+#include "AliClusterContainer.h"
+#include "AliParticleContainer.h"
+#include "AliVTrack.h"
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionClusterHadronicCorrection);
 /// \endcond

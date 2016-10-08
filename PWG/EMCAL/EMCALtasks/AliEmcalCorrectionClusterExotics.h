@@ -3,6 +3,8 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+class TH2F;
+
 class AliEmcalCorrectionClusterExotics : public AliEmcalCorrectionComponent {
  public:
   AliEmcalCorrectionClusterExotics();

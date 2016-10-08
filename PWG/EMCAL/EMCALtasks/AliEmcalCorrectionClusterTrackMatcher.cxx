@@ -4,6 +4,18 @@
 
 #include "AliEmcalCorrectionClusterTrackMatcher.h"
 
+#include <TH1.h>
+#include <TList.h>
+
+#include "AliClusterContainer.h"
+#include "AliParticleContainer.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliESDCaloCluster.h"
+#include "AliAODCaloCluster.h"
+#include "AliVParticle.h"
+#include "AliEmcalParticle.h"
+#include "AliEMCALGeometry.h"
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionClusterTrackMatcher);
 /// \endcond

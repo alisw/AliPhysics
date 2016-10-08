@@ -4,6 +4,10 @@
 
 #include "AliEmcalCorrectionClusterNonLinearity.h"
 
+#include <TList.h>
+
+#include "AliClusterContainer.h"
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionClusterNonLinearity);
 /// \endcond
