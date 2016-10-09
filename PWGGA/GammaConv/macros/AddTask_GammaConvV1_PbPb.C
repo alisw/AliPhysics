@@ -82,27 +82,6 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
                                 TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
                           )  {
 
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-
   Int_t isHeavyIon = 1;
 
   // ================== GetAnalysisManager ===============================
@@ -1596,6 +1575,18 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("12510013", "00200009247602008250404000", "0652501500000000"); // 20-50%
     cuts.AddCut("15910013", "00200009247602008250404000", "0652501500000000"); // 50-90%
     cuts.AddCut("10010013", "00200009247602008250404000", "0652501500000000"); //  0-100%
+  } else if (trainConfig == 247){ // 11h photon and meson cuts, with kINT7 trigger, V0M - user defined header!
+    cuts.AddCut("10110023", "00200009247602008250404000", "0652501500000000"); //  0-10%
+    cuts.AddCut("11210023", "00200009247602008250404000", "0652501500000000"); // 10-20%
+    cuts.AddCut("12510023", "00200009247602008250404000", "0652501500000000"); // 20-50%
+    cuts.AddCut("15910023", "00200009247602008250404000", "0652501500000000"); // 50-90%
+    cuts.AddCut("10010023", "00200009247602008250404000", "0652501500000000"); //  0-100%
+  } else if (trainConfig == 248){ // 11h photon and meson cuts, with kINT7 trigger, V0M - user defined header!
+    cuts.AddCut("10110023", "00200009247602008250404000", "0652501500000000"); //  0-10%
+    cuts.AddCut("11210023", "00200009247602008250404000", "0652501500000000"); // 10-20%
+    cuts.AddCut("12510023", "00200009247602008250404000", "0652501500000000"); // 20-50%
+    cuts.AddCut("15910023", "00200009247602008250404000", "0652501500000000"); // 50-90%
+    cuts.AddCut("10010023", "00200009247602008250404000", "0652501500000000"); //  0-100%
 
   } else  if (trainConfig == 300){ // LHC10h standard, eta 0.65, y = 0.6
     cuts.AddCut("60100013", "03200009300002003220000000", "0152304500900000"); // 0-5%
@@ -1714,6 +1705,19 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
   } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
     TObjString *Header1 = new TObjString("BOX");
     HeaderList->Add(Header1);
+  } else if (periodName.CompareTo("LHC16h4b")==0 || periodName.CompareTo("LHC16h4b2")==0){
+    if (headerSelectionInt == 1){ 
+      TObjString *Header1 = new TObjString("Injector (pi0)_1");
+      HeaderList->Add(Header1);
+    } else if (headerSelectionInt == 2){
+      TObjString *Header1 = new TObjString("Injector (eta)_2");
+      HeaderList->Add(Header1);
+    } else {
+      TObjString *Header1 = new TObjString("Injector (pi0)_1");
+      HeaderList->Add(Header1);
+      TObjString *Header2 = new TObjString("Injector (eta)_2");
+      HeaderList->Add(Header2);
+    }
   }
 
   EventCutList->SetOwner(kTRUE);

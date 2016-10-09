@@ -171,14 +171,6 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE  ;  
                                                                    fSetCellMCLabelFromCluster = 0      ; }
   void           SwitchOffUseMCEdepFracLabelForCell()           { fSetCellMCLabelFromEdepFrac = kFALSE ; }
-
-  void           SetNumberOfMCGeneratorsToAccept(Int_t nGen)    { fNMCGenerToAccept = nGen ; 
-                                                                  if      ( nGen > 5 ) fNMCGenerToAccept = 5 ; 
-                                                                  else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
-  void           SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }
-  
-  void           RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, AliVCluster* clus, AliMCEvent* mc,
-                                                            Float_t & amp, TArrayI & labeArr, TArrayF & eDepArr ) const;
   
 private:
     
@@ -277,12 +269,8 @@ private:
     
   Bool_t                 fRemapMCLabelForAODs ;    ///<  Remap AOD cells MC label. Needed in old AOD productions.
 
-  
   Bool_t                 fInputFromFilter ;        ///<  Get the input from AODs from the filter.
-  
-  Int_t                  fNMCGenerToAccept;        ///<  Number of MC generators that should not be included in analysis
-  TString                fMCGenerToAccept[5];      ///<  List with name of generators that should not be included
-  
+    
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
     

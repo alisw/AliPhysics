@@ -810,16 +810,6 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
   fFuncWeightFONLL7overLHC10f7aLc=new TF1("funcWeightFONLL7overLHC10f7aLc","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",01.,20.);
 	fFuncWeightFONLL7overLHC10f7aLc->SetParameters(2.84268e+02,2.18850e+01,2.36298e+01,7.46144e+00,1.69747e-01,1.66993e+00,-5.54726e-02,-1.53869e+00,-1.18404e+00);
 
-
-	fOutput->Add(fFuncWeightPythia);
-	fOutput->Add(fFuncWeightFONLL7overLHC10f6a);
-	fOutput->Add(fFuncWeightFONLL5overLHC10f6a);
-	fOutput->Add(fFuncWeightFONLL5overLHC13d3);
-	fOutput->Add(fFuncWeightFONLL5overLHC13d3Lc);
-	fOutput->Add(fFuncWeightFONLL7overLHC11b2Lc);
-	fOutput->Add(fFuncWeightFONLL7overLHC10f7aLc);
-
-
 	// fhChi2 = new TH1F("fhChi2", "Chi2",100,0.,10.);
 	// fhChi2->Sumw2();
 	// fOutput->Add(fhChi2);

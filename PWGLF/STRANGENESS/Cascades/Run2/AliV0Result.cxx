@@ -5,6 +5,7 @@
 #include "TList.h"
 #include "TH3F.h"
 #include "AliV0Result.h"
+#include "AliLog.h"
 #include <iostream>
 #include <TROOT.h>
 using namespace std;
@@ -27,11 +28,12 @@ fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F("fHisto","", 20,0,100, 100,0,10, 400,0,2);
+    fHisto = new TH3F("fHisto","", 20,0,100, 200,0,20, 400,0,2);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -51,7 +53,8 @@ fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -60,7 +63,7 @@ fCutMCPDGCodeAssociation(kTRUE)
     if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -80,7 +83,8 @@ fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -93,7 +97,7 @@ fCutMCPDGCodeAssociation(kTRUE)
     
     Double_t lMassWindow = 0.1 ;
     Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
-    Double_t lMassBins[lNMassBins];
+    Double_t lMassBins[lNMassBins+1];
     
     for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-0.1) + ( ( (Double_t) ibound )*lMassDelta );
     
@@ -118,7 +122,8 @@ fCutArmenteros(lCopyMe.fCutArmenteros),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
-fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
+fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -127,7 +132,7 @@ fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -151,6 +156,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     fCutMCPhysicalPrimary = lCopyMe->GetCutMCPhysicalPrimary();
     fCutMCLambdaFromPrimaryXi = lCopyMe->GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe->GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -159,18 +165,16 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
-    // destructor: clean stuff up
-    
-    // Actual deletion of the objects causes corruption of event object
-    // - no idea why - on Proof(Lite). Hence it is disabled here.
-    //
-    //delete fEstimatorList;
-    //fEstimatorList=0x0;
+    // Proper destructor: delete pointer data member
+    if (fHisto) {
+        delete fHisto;
+        fHisto = 0x0;
+    }
 }
 
 //________________________________________________________________
@@ -196,6 +200,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCLambdaFromPrimaryXi = lCopyMe.GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     
     if (fHisto) {
         delete fHisto;
@@ -208,7 +213,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
     
     return *this;
@@ -226,7 +231,11 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
         AliV0Result *xh = 0;
         TIter nxh(hlist);
         while ((xh = (AliV0Result *) nxh())) {
-            // Add this histogram
+            // Check if you're not committing a crime
+            if( ! HasSameCuts( xh ) ){
+                AliFatal("FATAL: you're trying to sum output that was obtained with different selections!");
+            }
+            //... if all fine, add this histogram
             GetHistogram()->Add(xh->GetHistogram());
         }
     }
@@ -287,6 +296,7 @@ void AliV0Result::Print()
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" Lambda from Xi.....: "<<fCutMCLambdaFromPrimaryXi<<endl;
+    cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<"========================================"<<endl;
     return;
 }

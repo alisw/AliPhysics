@@ -30,6 +30,7 @@
 #include <TKey.h>
 
 #include <TRandom3.h>
+#include <TVector2.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
@@ -74,6 +75,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
 	, fResidualTrackletsFW(0)
+	, fMCGenerator("")
 	, fMCprocessType(0)
 	, fMCprocess(-1)
 
@@ -194,7 +196,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fMAllTrackMass(0x0)
   
   , fCEPEvents(new TClonesArray("CEPEventBuffer"))
-  , fevb(*fCEPEvents)
+  
 {
 	//
 	// standard constructor (the one which should be used)
@@ -255,6 +257,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	// reset track pair pointers
 	fTrkPair[0] = 0x0;
 	fTrkPair[1] = 0x0;
+
 }
 
 
@@ -283,6 +286,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
 	, fResidualTrackletsFW(0)
+	, fMCGenerator("")
 	, fMCprocessType(0)
 	, fMCprocess(-1)
 
@@ -403,7 +407,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fMAllTrackMass(0x0)
 
   , fCEPEvents(new TClonesArray("CEPEventBuffer"))
-  , fevb(*fCEPEvents)
+
 {
 	//
 	// default constructor (should not be used)
@@ -432,6 +436,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 
 	fTrkPair[0] = 0x0;
 	fTrkPair[1] = 0x0;
+
 }
 
 
@@ -1153,6 +1158,7 @@ void AliAnalysisTaskPB::UserCreateOutputObjects()
   Int_t split = 2;                                  // branches are splitted
   Int_t bsize = 16000; 
   fPWAtree->Branch("CEPEvents",&fCEPEvents, bsize, split);
+  // fPWAtree->Branch("CEPEvents",&fCEPEvents);
    
 	PostOutputs();
 }
@@ -1166,10 +1172,10 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//
 	//printf("Entry: %ld\n", (Long_t)Entry()); // print current event number
 
-	// increment event number
+  // increment event number
   fEvent++;
-  //printf("\n\nNext Event ***********\n");
-  //printf("Event number: %i\n",fEvent);
+  // printf("\n\nNext Event ***********\n");
+  // printf("Event number: %i\n",fEvent);
   
   // 
   if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
@@ -1177,11 +1183,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	}
 
 	//= INPUT DATA SANITY TESTS ==================================================
-	//printf("Checking Input ...\n");
+	// printf("Checking Input ...");
   if (!CheckInput()) {
+	  printf("... FAIL!\n");
 		PostOutputs();
 		return;
 	}
+	// printf("... success\n");
 
 	if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinGoodInput); // stats flow
@@ -1208,7 +1216,6 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 		}
 	}
 
-
 	//= V0-AND/OR ================================================================
 	if (!fDoAOD) {
 	  // check trigger status
@@ -1227,7 +1234,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//= MC TRUTH =================================================================
 	// for now only implemented on ESDs
 	Int_t nMCprimaries = 0;
-  //printf("\nDetermining MC process type ...\n");
+  // printf("\nDetermining MC process type ...\n");
 	DetermineMCprocessType();
 	if (fAnalysisStatus & AliPBBase::kBitTHnMC) {
 		nMCprimaries = DoMCTruth();
@@ -1237,7 +1244,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	// applied cuts
   //  . vertex exists
   //  . vertex_z < 10 cm
-  //printf("\nDoing event selection ...\n");
+  // printf("\nDoing event selection ...\n");
   Int_t kfo =
 		((fAnalysisStatus & AliPBBase::kBitFastORStudy) && !fDoAOD) ? 1 : 0;
 	Int_t ninnerp=-999, nouterp=-999;
@@ -1248,7 +1255,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       fhpriVtxDist, fhfo, fhFOchans, kfo, ninnerp,
       nouterp, fPriVtxX, fPriVtxY, fPriVtxZ);
 	
-  //printf("This is event is %i valid\n",eventIsValid);
+  // printf("This event is %i valid\n",eventIsValid);
   if (!eventIsValid) {
 		//PostOutputs();
 		//return;
@@ -1260,7 +1267,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= PILE UP ==================================================================
   // using only 2 instead of three contributors
-  //printf("\nChecking for pileup ...\n");
+  // printf("\nChecking for pileup ...\n");
 	const Bool_t isPileup = (fDoAOD) ?
 	  fAODEvent->IsPileupFromSPD
 	  (
@@ -1278,7 +1285,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	  	2., 	// nSigmaDiamXY, default = 2.
 	  	5.		// nSigmaDiamZ, default = 5.
 	  );
-  //printf("This is a pileup %i event\n",isPileup);
+  // printf("This is a pileup %i event\n",isPileup);
   
   if (isPileup) {
 		//PostOutputs();
@@ -1386,23 +1393,30 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   //  
 	Int_t nITSpureSA = fTracks->GetITSpureSACount();
 
-  //printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
-  //printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
-  
-  // Reset the event buffer
-  fevb.Clear();
+  // printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
+  // printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
   
   if (ncombined < 7) {
     
+    // Reset the event buffer
+    TClonesArray &evb = *fCEPEvents;
+    evb.Clear();
+  
     // prepare new CEPEventBuffer
-    CEPEventBuffer *evbuf = new(fevb[0]) CEPEventBuffer();
+    CEPEventBuffer *evbuf = new(evb[0]) CEPEventBuffer();
     
     // prepare MC stack
     AliStack *stack = NULL;
     Int_t nPrimaries = 0;
+    Double_t MCVtxX, MCVtxY, MCVtxZ;
+    
+    TParticle* prot1 = NULL;
     if (fMCEvent) {
       stack = fMCEvent->Stack();
-      nPrimaries = stack->GetNprimary();
+      if (stack) {
+        nPrimaries = stack->GetNprimary();
+        prot1 = stack->Particle(0);
+      }
     }
 
     // set event parameters
@@ -1412,7 +1426,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
     evbuf->SetGapCondition(fCurrentGapCondition);
     evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
-  
+    
+    if (fMCEvent) {
+      evbuf->SetMCGenerator(fMCGenerator);
+      evbuf->SetMCProcessType(fMCprocess);
+      evbuf->SetMCVertexPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
+    }
+    
     // add normal tracks to event buffer
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
@@ -1535,11 +1555,11 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     }
 
     // save event  
-    //printf("RunNumber: %i\n",evbuf->GetRunNumber());
-    //printf("EventNumber: %i\n",evbuf->GetEventNumber());
-    //printf("NumberTracks: %i\n",evbuf->GetnumTracks());
-    //printf("NumberSoftTracks: %i\n",evbuf->GetnumSoftTracks());
-    //printf("GapCondition: %i\n",evbuf->GetGapCondition());
+    // printf("RunNumber: %i\n",evbuf->GetRunNumber());
+    // printf("EventNumber: %i\n",evbuf->GetEventNumber());
+    // printf("NumberTracks: %i\n",evbuf->GetnumTracks());
+    // printf("NumberSoftTracks: %i\n",evbuf->GetnumSoftTracks());
+    // printf("GapCondition: %i\n",evbuf->GetGapCondition());
     
     // fill tree
     fPWAtree->Fill();
@@ -2387,14 +2407,39 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 
 	if (fMCEvent) {
 		AliGenEventHeader* header = fMCEvent->GenEventHeader();
-		if (header) {
-      printf("MC generator name: %s\n",TString(header->GetName()).Data());
-			//printf("MC process: %i\n",header->ProcessType());
+    
+    if (header) {
+			// cover all possible generators
+      //
+      // this is the list of generators with a specific header
+      // status 10/07/2016
+      // Generator  Name in header
+      // cocktail
+      // DPMjet
+      // Epos3
+      // Epos
+      // GeVSim
+      // HepMC
+      // Herwig
+      // Hijing
+      // Pythia     Pythia
+      // Toy
+      // 
+      // this is the list of generators without specific header
+      // DIME       Dime
+      // Starlight
+		  
+      // get the name of this generator
+      fMCGenerator = TString(header->GetName());
+      printf("MC generator name: %s\n",fMCGenerator.Data());
+      Int_t nprod = header->NProduced();
+			printf("Number of produced particles: %i\n",nprod);
 
-			// Pythia6
-			if (TString(header->IsA()->GetName()) == "AliGenPythiaEventHeader") {
+      // Pythia
+			if (fMCGenerator == "Pythia") {
 				fMCprocess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				switch(fMCprocess) {
+				printf("Pythia process type: %i\n",fMCprocess);
+        switch(fMCprocess) {
 				case 92:
 				case 93:
 				case 103:
@@ -2404,9 +2449,16 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 				default:  fMCprocessType = AliPBBase::kBinND; break;
 				}
 			}
-			// Phojet
-			else if (TString(header->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
+			
+      // DIME
+			else if (fMCGenerator == "Dime") {
+				fMCprocessType = AliPBBase::kBinCD;
+			}
+			
+      // DPMjet
+			else if (fMCGenerator == "DPMjet") {
 				fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
+				printf("DPMjet process type: %i\n",fMCprocess);
 				switch(fMCprocess) {
 				case 5:
 				case 6:  fMCprocessType = AliPBBase::kBinSD; break;
@@ -2415,6 +2467,7 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 				default: fMCprocessType = AliPBBase::kBinND; break;
 				}
 			}
+      
 		}
 	}
 }
@@ -2459,15 +2512,36 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
 	Int_t nPhysicalPrimaries = 0;
 	Int_t nPrimaries = stack->GetNprimary();
   //printf("There are %i/%i/%i particles\n",
-  //  stack->GetNtrack(),nPrimaries,stack->GetNtransported());
-	for (Int_t iTracks = 0; iTracks < nPrimaries; ++iTracks) {
+  //  stack->GetNtrack(),nPrimaries,(Int_t)stack->GetNtransported());
+  
+	//stack->DumpPStack ();
+  //TList *parentIDs = new TList();
+  //parentIDs->Add(new TVector2(-1,0));
+  //printDaughters(parentIDs,stack);
+  
+  for (Int_t iTracks = 0; iTracks < stack->GetNtrack(); ++iTracks) {
     
-    TParticle* part = stack->Particle(iTracks);
-    //printf("PDG code of primary %i: %i\n",iTracks,part->GetPdgCode());
+    // set current track
+    stack->SetCurrentTrack(iTracks);
+
+    // id of parent
+    Int_t dauID = stack->GetCurrentTrackNumber();
+    Int_t parID = stack->GetCurrentParentTrackNumber();
+    Int_t primID = stack->GetPrimary(dauID);
+    
+    TParticle* part = stack->Particle(dauID);
+    TParticle* prim = stack->Particle(primID);
+    
+    //printf("MC track IDs: %i (daughter), %i (parent), %i (primary)\n",
+    //  dauID,parID,primID);
+    //printf("PDG code of track/primary %i: %i/%i\n",
+        
+    //  iTracks,part->GetPdgCode(),prim->GetPdgCode());
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) &&
 		    (part->Eta() < 0.9) && (part->Eta() > -0.9)) { // TODO add parameter
 			++nPhysicalPrimaries;
 		}
+    
 	}
   
   
@@ -2760,4 +2834,47 @@ void AliAnalysisTaskPB::GetMyPriors(TString fnameMyPriors, TH1F** mypriors) {
   
 }
 
+// -----------------------------------------------------------------------------
+void AliAnalysisTaskPB::printDaughters (TList *parentIDs, AliStack *stack) {
+
+  // get the last parent ID, if it is last in stack you are done!
+  Int_t thisParentID = -1;
+  Int_t nParents     = parentIDs->GetEntries();
+  TVector2 *dummy    = (TVector2 *)parentIDs->Last();
+  Int_t lastParentID = (Int_t)dummy->X();
+
+  // print a line
+  if (nParents > 1) {
+    for (Int_t jj=1; jj<nParents; jj++) {
+      thisParentID = (Int_t) ((TVector2 *)parentIDs->At(jj))->X();
+      printf("%*d",6,thisParentID);
+    } 
+    printf(" : %s\n",stack->Particle(thisParentID)->GetName());
+  }
+  
+  // loop over particles in stack starting from lastParentID
+  TParticle* part = NULL;
+  for (Int_t ii=lastParentID+1; ii<stack->GetNtrack(); ii++) {
+    
+    // get next particle and check whether it descends from lastParentID
+    part = stack->Particle(ii);
+    stack->SetCurrentTrack(ii);
+    thisParentID = stack->GetCurrentParentTrackNumber();
+    
+    if (thisParentID == lastParentID) {
+    
+      // add it to the list of parents
+      parentIDs->AddLast(new TVector2(ii,0));
+    
+      // repeat printDaughters with updated list of parents
+      printDaughters (parentIDs,stack);
+      
+      // remove last entry from parentIDs
+      parentIDs->RemoveLast();
+      
+    }
+  }
+  
+  
+}
 // -----------------------------------------------------------------------------

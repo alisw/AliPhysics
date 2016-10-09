@@ -21,11 +21,14 @@ CEPEventBuffer::CEPEventBuffer()
   , fnumTracks(0)
   , fnumSoftTracks(0)
   , fnumResiduals(0)
-  , fMCProcessType(-1)
   , fGapCondition(0)
   , fCEPTracks(new TClonesArray("CEPTrackBuffer"))
   , ftrb(*fCEPTracks)
+  , fMCProcessType(-1)
+  , fMCGenerator("")
 {
+
+  // printf("A CEPEventBuffer was created...\n");
 
 }
 
@@ -34,6 +37,7 @@ CEPEventBuffer::~CEPEventBuffer()
 {
 
   this->Reset();
+  // printf("A CEPEventBuffer was reset...\n");
   
 }
 
@@ -47,9 +51,10 @@ void CEPEventBuffer::Reset()
   fnumResiduals  = 0;
   fGapCondition  = 0;  
   fMCProcessType = -1;
+  fMCGenerator   = "";
 
   // clear the track list
-  ftrb.Clear();
+  //ftrb.Clear();
   fnumTracks     = 0;
   fnumSoftTracks = 0;
 

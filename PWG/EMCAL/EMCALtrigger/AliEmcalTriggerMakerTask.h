@@ -151,6 +151,8 @@ public:
    */
   void SetLoadFastORMaskingFromOCDB(Bool_t doLoad = kTRUE) { fLoadFastORMaskingFromOCDB = doLoad; }
 
+  void SetMaskedFastorOADBContainer(const TString &name) { fMaskedFastorOADB = name; }
+
   /**
    * Apply online bad channels (FastOR masking) to offline FEE energies. Using this
    * the same acceptance which was available online can be applied to offline patches.
@@ -217,12 +219,18 @@ protected:
    */
   void InitializeFastORMaskingFromOCDB();
 
+  /**
+   * Initialize the FastOR masking from the OADB
+   */
+  void InitializeFastORMaskingFromOADB();
+
   AliEmcalTriggerMakerKernel              *fTriggerMaker;             ///< The actual trigger maker kernel
   AliVVZERO                               *fV0;                       //!<! VZERO data
 
   TString                                 fCaloTriggersOutName;       ///< name of output track array
   TString                                 fV0InName;                  ///< name of output track array
   TString                                 fBadFEEChannelOADB;         ///< name of the OADB container containing channels to be masked inside the trigger maker
+  TString                                 fMaskedFastorOADB;          ///< name of the OADB container containing fastors to be masked inside the trigger maker
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
   Bool_t                                  fLoadFastORMaskingFromOCDB; ///< Load FastOR masking from the OCDB
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out

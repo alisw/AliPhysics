@@ -42,6 +42,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts() :
   fVtxZMin(-1.e99),
   fVtxNCtrbMin(0),
   fVtxMixed(0),
+  fVtxTrack(0),
   fVtxSPD(0),
   fCheckCorrelationSPDVtx(0),
   fVtxResolution(kFALSE),
@@ -62,6 +63,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(Char_t* name, Char_t* title) :
   fVtxZMin(-1.e99),
   fVtxNCtrbMin(0),
   fVtxMixed(0),
+  fVtxTrack(0),
   fVtxSPD(0),
   fCheckCorrelationSPDVtx(0),
   fVtxResolution(kFALSE),
@@ -85,6 +87,7 @@ AliHFEextraEventCuts::AliHFEextraEventCuts(const AliHFEextraEventCuts& c) :
   fVtxZMin(c.fVtxZMin),
   fVtxNCtrbMin(c.fVtxNCtrbMin),
   fVtxMixed(c.fVtxMixed),
+  fVtxTrack(c.fVtxTrack),
   fVtxSPD(c.fVtxSPD),
   fCheckCorrelationSPDVtx(c.fCheckCorrelationSPDVtx),
   fVtxResolution(c.fVtxResolution),
@@ -149,6 +152,7 @@ AliHFEextraEventCuts& AliHFEextraEventCuts::operator=(const AliHFEextraEventCuts
     fVtxZMin=c.fVtxZMin;
     fVtxNCtrbMin=c.fVtxNCtrbMin;
     fVtxMixed=c.fVtxMixed;
+        fVtxTrack=c.fVtxTrack;
     fVtxSPD=c.fVtxSPD;
     fCheckCorrelationSPDVtx=c.fCheckCorrelationSPDVtx;
     fVtxResolution = c.fVtxResolution;
@@ -215,7 +219,7 @@ void AliHFEextraEventCuts::SelectionBitMap(TObject* obj) {
     else if(vtxSPD && vtxSPD->GetNContributors() > 0) vtxPrim = vtxSPD;
   } else if(fVtxSPD){
     if(vtxSPD && vtxSPD->GetNContributors () > 0) vtxPrim = vtxSPD;
-  } else {
+    } else if(fVtxTrack){
     if(vtxTracks && vtxTracks->GetNContributors() > 0) vtxPrim = vtxTracks;
   }
   if(!vtxPrim){

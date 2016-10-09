@@ -6,19 +6,8 @@ AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Dou
  
   AliGenerator *genP = NULL;
   genP = CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, tune,cr,ptWeight);
-
-
-  // deuterons and anti-deuterons
-  AliGenLightNuclei* gener = new AliGenLightNuclei();
-  gener->SetNucleusPdgCode(AliGenLightNuclei::kDeuteron);
-  gener->SetCoalescenceMomentum(0.100); // default
-  gener->SetSpinProbability(1);
-  gener->UsePerEventRates();
-
-
-  gener->AddGenerator(genP, "pythia8", 1);
   
-  return gener;
+  return genP;
 }
 
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr,Float_t ptWeight) {
@@ -71,8 +60,5 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
   }
 
   genP->Print();
-
-  
-
   return genP;
 }

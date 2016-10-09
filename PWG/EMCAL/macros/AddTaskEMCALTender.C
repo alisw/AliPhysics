@@ -26,7 +26,11 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t  remapMcAod          = kFALSE,   // switch on the remaping for the MC labels in AOD productions,
   TString cdbStorage          = "raw://", // "local://"
   Float_t diffEAggregation    = 0.,       // difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
-  Bool_t enableFracEMCRecalc  = kFALSE    // enables the recalculation of the MC labels including the fractional eneryg on cell level
+  Bool_t enableFracEMCRecalc  = 0,        // enables the recalculation of the MC labels including the fractional eneryg on cell level
+  Int_t  removeNMCGenerators  = 0,        // set number of accepted MC generators input (only for enableFracEMCRecalc=1)
+  Bool_t enableMCGenRemovTrack= 1,        // apply the MC generators rejection also for track matching  
+  TString removeMCGen1        = "",       // name of generator input to be accepted
+  TString removeMCGen2        = ""        // name of generator input to be accepted
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -44,7 +48,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   AliAnalysisTaskSE *ana = 0;
   AliAnalysisDataContainer *coutput1 = 0;
-
+  AliEMCALTenderSupply *EMCALSupply = 0;
+  
   #ifdef __CLING__
     // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
     std::stringstream configbuilder;
@@ -72,14 +77,14 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     configbuilder << ")";
     std::string configbuilderstring = configbuilder.str();
     std::cout << "Running config macro " << configbuilderstring << std::endl;
-    AliEMCALTenderSupply *EMCALSupply = (AliEMCALTenderSupply *)gROOT->ProcessLine(configbuilderstring.c_str());
+    EMCALSupply = (AliEMCALTenderSupply *)gROOT->ProcessLine(configbuilderstring.c_str());
   #else
     // ROOT5 version, allows loading a macro
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
-    AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus, 
-                      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
-                      cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut, diffEAggregation);
+  EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus, 
+                                        fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
+                                        cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut, diffEAggregation);
   #endif
 
   if (pass) 
@@ -115,11 +120,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     
     if (remapMcAod)
         EMCALSupply->SwitchOnRemapMCLabelForAODs();
-    if (enableFracEMCRecalc)
-        EMCALSupply->SwitchOnUseMCEdepFracLabelForCell();
     
-    
-    emcaltender->SetEMCALTenderSupply(EMCALSupply);
+     emcaltender->SetEMCALTenderSupply(EMCALSupply);
     
     ana = emcaltender;
     
@@ -132,6 +134,25 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     return NULL;
   }
 
+  if (enableFracEMCRecalc)
+  {
+    EMCALSupply->SwitchOnUseMCEdepFracLabelForCell();
+    
+    printf("Enable frac MC recalc, remove generators %d \n",removeNMCGenerators);
+    if(removeNMCGenerators > 0)
+    {
+      printf("\t gen1 <%s>, gen2 <%s>, remove tracks %d\n",removeMCGen1.Data(),removeMCGen2.Data(),enableMCGenRemovTrack);
+      AliEMCALRecoUtils* ru = new AliEMCALRecoUtils;
+      ru->SetNumberOfMCGeneratorsToAccept(removeNMCGenerators) ;
+      ru->SetNameOfMCGeneratorsToAccept(0,removeMCGen1);
+      ru->SetNameOfMCGeneratorsToAccept(1,removeMCGen2);
+      
+      if(!enableMCGenRemovTrack) ru->SwitchOffMCGeneratorToAcceptForTrackMatching() ;
+      
+      EMCALSupply->SetRecoUtils(ru);
+    }
+  }
+  
   mgr->AddTask(ana);
 
   // Create ONLY the output containers for the data produced by the task.

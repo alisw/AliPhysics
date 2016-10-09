@@ -66,7 +66,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
                                 Int_t     doWeightingPart             = 0,                    // enable Weighting
                                 TString   generatorName               = "DPMJET",             // generator Name  
                                 TString   cutnumberAODBranch          = "800000006008400000001500000",  // cutnumber for AOD branch
-                                Int_t     enableExtMatchAndQA         = 0,                    // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                Int_t     enableExtMatchAndQA         = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 Bool_t    isUsingTHnSparse            = kTRUE,                // enable or disable usage of THnSparses for background estimation
                                 Bool_t    enableV0findingEffi         = kFALSE,               // enables V0finding efficiency histograms
                                 Bool_t    enableTriggerMimicking      = kFALSE,               // enable trigger mimicking
@@ -76,27 +76,6 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
                                 Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
                                 Bool_t    runLightOutput              = kFALSE                // switch to run light output (only essential histograms for afterburner)
 ) {
-
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");  
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");  
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
 
   Int_t isHeavyIon = 2;
   
@@ -246,6 +225,8 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     cuts.AddCut("80000013","00200009327000008250400000","1111141053031230000","0163103100000010"); //n cells >= 1
     cuts.AddCut("80000013","00200009327000008250400000","1111141053033230000","0163103100000010"); //n cells >= 3
     cuts.AddCut("80000013","00200009327000008250400000","1111141053032200000","0163103100000010"); //no max M02 cut
+    cuts.AddCut("80000013","00200009327000008250400000","1111141053032250000","0163103100000010"); //M02 < 0.3
+    cuts.AddCut("80000013","00200009327000008250400000","1111141053032260000","0163103100000010"); //M02 < 0.27
     cuts.AddCut("80000013","00200009327000008250400000","1112141053032230000","0163103100000010"); //only modules with TRD infront
     cuts.AddCut("80000013","00200009327000008250400000","1111341053032230000","0163103100000010"); //no modules with TRD infront
   } else if (trainConfig == 23){ // EMCAL track matching variations 
@@ -435,7 +416,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(isUsingTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

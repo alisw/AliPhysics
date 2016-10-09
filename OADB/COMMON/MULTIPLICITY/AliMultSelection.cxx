@@ -36,7 +36,8 @@ fThisEvent_INELgtZERO(0),
 fThisEvent_HasNoInconsistentVertices(0),
 fThisEvent_PassesTrackletVsCluster(0),
 fThisEvent_IsNotAsymmetricInVZERO(0),
-fThisEvent_IsNotIncompleteDAQ(0)
+fThisEvent_IsNotIncompleteDAQ(0),
+fThisEvent_HasGoodVertex2016(0)
 {
   // Constructor
     fEstimatorList = new TList();
@@ -53,7 +54,8 @@ fThisEvent_INELgtZERO(0),
 fThisEvent_HasNoInconsistentVertices(0),
 fThisEvent_PassesTrackletVsCluster(0),
 fThisEvent_IsNotAsymmetricInVZERO(0),
-fThisEvent_IsNotIncompleteDAQ(0)
+fThisEvent_IsNotIncompleteDAQ(0),
+fThisEvent_HasGoodVertex2016(0)
 {
   // Constructor
     fEstimatorList = new TList();
@@ -73,8 +75,9 @@ fThisEvent_Triggered(lCopyMe.fThisEvent_Triggered),
 fThisEvent_INELgtZERO(lCopyMe.fThisEvent_INELgtZERO),
 fThisEvent_HasNoInconsistentVertices(lCopyMe.fThisEvent_HasNoInconsistentVertices),
 fThisEvent_PassesTrackletVsCluster(lCopyMe.fThisEvent_PassesTrackletVsCluster),
-      fThisEvent_IsNotAsymmetricInVZERO(lCopyMe.fThisEvent_IsNotAsymmetricInVZERO),
-      fThisEvent_IsNotIncompleteDAQ(lCopyMe.fThisEvent_IsNotIncompleteDAQ)
+fThisEvent_IsNotAsymmetricInVZERO(lCopyMe.fThisEvent_IsNotAsymmetricInVZERO),
+fThisEvent_IsNotIncompleteDAQ(lCopyMe.fThisEvent_IsNotIncompleteDAQ),
+fThisEvent_HasGoodVertex2016(lCopyMe.fThisEvent_HasGoodVertex2016)
 {
     TIter next(lCopyMe.fEstimatorList);
     AliMultEstimator* est = 0;
@@ -99,7 +102,8 @@ AliMultSelection::AliMultSelection(AliMultSelection *lCopyMe)
     fThisEvent_PassesTrackletVsCluster = lCopyMe->GetThisEventPassesTrackletVsCluster();
     fThisEvent_IsNotAsymmetricInVZERO = lCopyMe->GetThisEventIsNotAsymmetricInVZERO();
     fThisEvent_IsNotIncompleteDAQ = lCopyMe->GetThisEventIsNotIncompleteDAQ();
-
+    fThisEvent_HasGoodVertex2016 = lCopyMe->GetThisEventHasGoodVertex2016();
+    
     TIter next(lCopyMe->fEstimatorList);
     AliMultEstimator* est = 0;
     while ((est = static_cast<AliMultEstimator*>(next())))
@@ -121,6 +125,7 @@ void AliMultSelection::Set(AliMultSelection* s)
     fThisEvent_PassesTrackletVsCluster = s->GetThisEventPassesTrackletVsCluster();
     fThisEvent_IsNotAsymmetricInVZERO = s->GetThisEventIsNotAsymmetricInVZERO();
     fThisEvent_IsNotIncompleteDAQ = s->GetThisEventIsNotIncompleteDAQ();
+    fThisEvent_HasGoodVertex2016 = s->GetThisEventHasGoodVertex2016();
     TIter next(s->fEstimatorList);
     AliMultEstimator* e = 0;
     while ((e = static_cast<AliMultEstimator*>(next()))) {

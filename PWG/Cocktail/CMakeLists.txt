@@ -73,3 +73,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/Cocktail)
+install (DIRECTORY parametrisations DESTINATION PWG/Cocktail)

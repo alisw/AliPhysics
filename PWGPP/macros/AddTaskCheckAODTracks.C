@@ -50,14 +50,25 @@ AliAnalysisTaskCheckAODTracks *AddTaskCheckAODTracks(TString suffix="",
 
   TString listname="clistCheckAODTracks";
   listname+=suffix.Data();
+  
+  TString treeFileName="TreeOfAODTracks.root";
+  treeFileName += ":CheckAODTracksTree";
+  treeFileName += suffix.Data();
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName.Data() );
   
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ctreeAODTracks",
+							    TTree::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    treeFileName.Data() );
+  coutput2->SetSpecialOutput();
+
   mgr->ConnectInput(tasktr, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(tasktr, 1, coutput1);
+  mgr->ConnectOutput(tasktr, 2, coutput2);
   return tasktr;
 }   
 

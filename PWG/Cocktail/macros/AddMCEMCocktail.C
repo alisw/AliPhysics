@@ -1,14 +1,16 @@
-AliGenerator* AddMCEMCocktail(Int_t collisionsSystem  = 200,
-                              Int_t centrality        = 0,
-                              Int_t decayMode         = 1,
-                              Int_t selectedMothers   = 62591,
-                              Int_t paramPi0          = 0,
-                              Int_t paramEta          = 3,
-                              Int_t paramOmega        = 3,
-                              Int_t paramPhi          = 0,
-                              Int_t numberOfParticles	= 1000,
-                              Double_t minPt          = 0.,
-                              Double_t maxPt          = 20
+AliGenerator* AddMCEMCocktail(Int_t collisionsSystem      = 200,
+                              Int_t centrality            = 0,
+                              Int_t decayMode             = 1,
+                              Int_t selectedMothers       = 62591,
+                              Int_t paramPi0              = 0,
+                              Int_t paramEta              = 3,
+                              Int_t paramOmega            = 3,
+                              Int_t paramPhi              = 0,
+                              Int_t numberOfParticles	    = 1000,
+                              Double_t minPt              = 0.,
+                              Double_t maxPt              = 20,
+                              Int_t pythiaErrorTolerance  = 2000,
+                              Bool_t externalDecayer      = 0
 )
 {
   // collisions systems defined:
@@ -30,7 +32,8 @@ AliGenerator* AddMCEMCocktail(Int_t collisionsSystem  = 200,
   //=======================================================================
   // Set External decayer
   TVirtualMCDecayer *decayer  = new AliDecayerPythia();
-
+  if (externalDecayer) decayer->AliDecayerPythia::SetDecayerExodus();
+  
   gener->SetNPart(numberOfParticles);               // source multiplicity per event
   gener->SetPtRange(minPt,maxPt);
   gener->SetYRange(-1.,1.);

@@ -13,6 +13,10 @@ void rec()
   {
     reco.SetRunReconstruction("VZERO T0 MUON ITS FMD");
   }
+  else if ( VAR_USE_MC_VERTEX )
+  {
+    reco.SetRunReconstruction("MUON ITS");
+  }
   else
   {
     reco.SetRunReconstruction("MUON");

@@ -937,7 +937,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 21,-0.5,20.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 23,-0.5,22.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -965,6 +965,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(19,"D0 failed to be filled");
   fNentries->GetXaxis()->SetBinLabel(20,"fisFilled is 0");
   fNentries->GetXaxis()->SetBinLabel(21,"fisFilled is 1");
+  fNentries->GetXaxis()->SetBinLabel(22,"AOD/dAOD mismatch");
+  fNentries->GetXaxis()->SetBinLabel(23,"AOD/dAOD #events ok");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -1047,16 +1049,6 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
-  if(fAODProtection>=0){
-    //   Protection against different number of events in the AOD and deltaAOD
-    //   In case of discrepancy the event is rejected.
-    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
-    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
-      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-      return;
-    }
-  }
-
   TString bname;
   if(fArray==0){ //D0 candidates
     // load D0->Kpi candidates
@@ -1116,6 +1108,18 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fNentries->Fill(21);
+      return;
+    }
+    fNentries->Fill(22);
+  }
+
   fCounter->StoreEvent(aod,fCuts,fReadMC); 
   //fCounter->StoreEvent(aod,fReadMC); 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL

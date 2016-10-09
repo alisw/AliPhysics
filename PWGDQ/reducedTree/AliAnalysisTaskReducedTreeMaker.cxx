@@ -444,21 +444,57 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   AliReducedEventInfo* eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
   if(!eventInfo) return;
   
+  AliVVertex* eventVtxSPD = 0x0;
+  if(isESD) eventVtxSPD = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexSPD());
+  if(isAOD) eventVtxSPD = const_cast<AliAODVertex*>(aodEvent->GetPrimaryVertexSPD());
+  if(eventVtxSPD) {
+     eventInfo->fVtxSPD[0] = (isESD ? ((AliESDVertex*)eventVtxSPD)->GetX() : ((AliAODVertex*)eventVtxSPD)->GetX());
+     eventInfo->fVtxSPD[1] = (isESD ? ((AliESDVertex*)eventVtxSPD)->GetY() : ((AliAODVertex*)eventVtxSPD)->GetY());
+     eventInfo->fVtxSPD[2] = (isESD ? ((AliESDVertex*)eventVtxSPD)->GetZ() : ((AliAODVertex*)eventVtxSPD)->GetZ());
+     eventInfo->fNVtxSPDContributors = eventVtxSPD->GetNContributors();
+  }
+  
+  // ------------------------------------------------------------------------------------------------------------------
+  // Improved cut on the distance between SPD and track vertices 
+  // See Francesco Prino's slides during Physics Forum from 5 october 2016, slide 33
+  //  based on input from Ruben Shahoyan and Alex Dobrin
+  //------------------------------------------------------------------------------------------------------------------
+  Bool_t vertexDistanceSelected = kTRUE;
+  if(!eventVtx) vertexDistanceSelected = kFALSE;
+  if(!eventVtxSPD) vertexDistanceSelected = kFALSE;
+  if(vertexDistanceSelected) {
+     if(eventVtx->GetNContributors()<2 || eventVtxSPD->GetNContributors()<1) vertexDistanceSelected = kFALSE;   
+  }
+  if(vertexDistanceSelected) {
+     Double_t covTracks[6], covSPD[6];
+     eventVtx->GetCovarianceMatrix(covTracks);
+     eventVtxSPD->GetCovarianceMatrix(covSPD);
+     Double_t dz = eventVtx->GetZ() - eventVtxSPD->GetZ();
+     Double_t errTot = TMath::Sqrt(covTracks[5]+covSPD[5]);
+     Double_t errTrk = TMath::Sqrt(covTracks[5]);
+     Double_t nsigTot = TMath::Abs(dz)/errTot;
+     Double_t nsigTrk = TMath::Abs(dz)/errTrk;
+     if(TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrk>20) vertexDistanceSelected = kFALSE;
+  }
+  if(vertexDistanceSelected) fReducedEvent->fEventTag |= (ULong64_t(1)<<13);
+  //-------------------------------------------------------------------------------------------------------------------------
+  
   eventInfo->fBC          = event->GetBunchCrossNumber();
   eventInfo->fEventType   = event->GetEventType();
-  eventInfo->fTriggerMask = event->GetTriggerMask();
+  //eventInfo->fTriggerMask = event->GetTriggerMask();
+  eventInfo->fTriggerMask = inputHandler->IsEventSelected();
   eventInfo->fIsPhysicsSelection = (isSelected!=0 ? kTRUE : kFALSE);
   eventInfo->fIsSPDPileup = event->IsPileupFromSPD(3,0.8,3.,2.,5.);
   eventInfo->fIsSPDPileupMultBins = event->IsPileupFromSPDInMultBins();
   
   if(isESD) {
-    eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
     eventInfo->fEventNumberInFile = esdEvent->GetEventNumberInFile();
     eventInfo->fL0TriggerInputs = esdEvent->GetHeader()->GetL0TriggerInputs();
     eventInfo->fL1TriggerInputs = esdEvent->GetHeader()->GetL1TriggerInputs();
     eventInfo->fL2TriggerInputs = esdEvent->GetHeader()->GetL2TriggerInputs();
     eventInfo->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
     eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
+    eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
     if(eventVtx) {
       eventInfo->fVtxTPC[0] = ((AliESDVertex*)eventVtx)->GetX();
       eventInfo->fVtxTPC[1] = ((AliESDVertex*)eventVtx)->GetY();
@@ -480,10 +516,15 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     
     AliESDZDC* zdc = esdEvent->GetESDZDC();
     if(zdc) {
+      eventInfo->fZDCnTotalEnergy[0] = zdc->GetZN2TowerEnergy()[0];
+      eventInfo->fZDCnTotalEnergy[1] = zdc->GetZN1TowerEnergy()[0];
+      eventInfo->fZDCpTotalEnergy[0] = zdc->GetZP2TowerEnergy()[0];
+      eventInfo->fZDCpTotalEnergy[1] = zdc->GetZP1TowerEnergy()[0];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZN1TowerEnergy()[i];
       for(Int_t i=5; i<10; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZN2TowerEnergy()[i-5];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCpEnergy[i]   = zdc->GetZP1TowerEnergy()[i];
       for(Int_t i=5; i<10; ++i)  eventInfo->fZDCpEnergy[i]   = zdc->GetZP2TowerEnergy()[i-5];
+      
     }
   }
   if(isAOD) {
@@ -505,6 +546,10 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     
     AliAODZDC* zdc = aodEvent->GetZDCData();
     if(zdc) {
+       eventInfo->fZDCnTotalEnergy[0] = zdc->GetZNATowerEnergy()[0];
+       eventInfo->fZDCnTotalEnergy[1] = zdc->GetZNCTowerEnergy()[0];
+       eventInfo->fZDCpTotalEnergy[0] = zdc->GetZPATowerEnergy()[0];
+       eventInfo->fZDCpTotalEnergy[1] = zdc->GetZPCTowerEnergy()[0];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZNATowerEnergy()[i];
       for(Int_t i=5; i<10; ++i)  eventInfo->fZDCnEnergy[i]   = zdc->GetZNCTowerEnergy()[i-5];
       for(Int_t i=0; i<5; ++i)  eventInfo->fZDCpEnergy[i]   = zdc->GetZPATowerEnergy()[i];
@@ -559,6 +604,12 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   AliVVZERO* vzero = event->GetVZEROData();
   for(Int_t i=0;i<64;++i) 
     eventInfo->fVZEROMult[i] = vzero->GetMultiplicity(i);  
+  Float_t multVZERO = 0.0;
+  for(Int_t i=0;i<32;++i) multVZERO +=  vzero->GetMultiplicity(i);
+  eventInfo->fVZEROTotalMult[1] = multVZERO;
+  multVZERO = 0.0;
+  for(Int_t i=32;i<64;++i) multVZERO +=  vzero->GetMultiplicity(i);
+  eventInfo->fVZEROTotalMult[0] = multVZERO;
   
   if(fFillEventPlaneInfo) {
     AliReducedEventPlaneInfo* ep=new AliReducedEventPlaneInfo();     
@@ -920,6 +971,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTPCnSig[3]   = values[AliDielectronVarManager::kTPCnSigmaPro];
     trackInfo->fTPCClusterMap = EncodeTPCClusterMap(particle, isAOD);
     trackInfo->fTPCchi2       = values[AliDielectronVarManager::kTPCchi2Cl];
+    trackInfo->fTPCActiveLength = values[AliDielectronVarManager::kTPCActiveLength];
+    trackInfo->fTPCGeomLength = values[AliDielectronVarManager::kTPCGeomLength];
         
     trackInfo->fTOFbeta      = values[AliDielectronVarManager::kTOFbeta];
     trackInfo->fTOFtime      = values[AliDielectronVarManager::kTOFsignal]-pidResponse->GetTOFResponse().GetTimeZero();
@@ -931,9 +984,17 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
    
     Double_t trdProbab[AliPID::kSPECIES]={0.0};
     if(isESD) {
+       trackInfo->fMassForTracking = esdTrack->GetMassForTracking();
+       
+       AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
+       AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
+       trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+       
       trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
 
+      trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
+      
       Float_t xyDCA,zDCA;
       if(tpcInner){
         trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
@@ -997,6 +1058,11 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       }
     }  // end if(isESD)
     if(isAOD) {
+      trackInfo->fMassForTracking = aodTrack->GetMassForTracking();
+      trackInfo->fChi2TPCConstrainedVsGlobal = aodTrack->GetChi2TPCConstrainedVsGlobal(); 
+      
+      trackInfo->fITSSharedClusterMap = aodTrack->GetITSSharedClusterMap();
+      
       const AliExternalTrackParam* tpcInner = aodTrack->GetInnerParam();
       trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
       trackInfo->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);

@@ -94,7 +94,7 @@ void AliAnalysisTaskCDPWA::CombInfo::Fill(const AliESDEvent *esdEvent)
 	if (NULL == esdEvent) return;
 }
 //______________________________________________________________________________
-void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse, AliPIDCombined *pidCombined) 
+void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse, AliPIDCombined *pidCombined, const Bool_t fMC, AliMCEvent *fMCevt) 
 {
 	if (NULL == tr || NULL == pidResponse || NULL == pidCombined) {
 		//AliError(Form("tr=%p pidResponse=%p pidCombined=%p", tr, pidResponse, pidCombined));
@@ -143,6 +143,23 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 		       	AliPIDResponse::kDetITS |
 			AliPIDResponse::kDetTRD);
 	fDetMask[4] = pidCombined->ComputeProbabilities(tr,pidResponse,ftotBayesProb);
+
+	//Fill MC track info
+	if (fMC) {
+		AliStack *stack = fMCevt->Stack();
+		if (!stack) return;
+		TParticle *cu_pt = (TParticle*)stack->Particle(tr->GetID());
+		if (!cu_pt) return;
+		if (cu_pt->GetFirstMother() == -1) {
+			fMotherPDGCode = -1;
+			return;
+		}
+		TParticle *mo_pt = (TParticle*)stack->Particle(cu_pt->GetFirstMother());
+		if (!mo_pt) return;
+		fMotherPDGCode = mo_pt->GetPdgCode();
+		fMotherID = cu_pt->GetFirstMother();
+		fMotherPrimary = mo_pt->IsPrimary();
+	}
 
 	return;
 }
@@ -234,7 +251,6 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 			fV0Time[i] = 0x0;
 			fADTime[i] = 0x0;
 		}
-		if (i < 6) fRunFiducial[i] = 0x0;
 		if (i < 7) {
 			fMC_Eta[i] = 0x0;
 			fMC_DiffMass[i] = 0x0;
@@ -243,12 +259,13 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 		if (i < 6) {
 			hMultNG_Test[i] = 0x0;
 		}
-		fRunVsDG[i] = 0x0;
 	}
 	for (Int_t i = 0; i < 14; i++) {
+		if (i < 11) fRunVsDG[i] = 0x0;
 		if (i < 2) if (hMC_PassType[i]) hMC_PassType[i]=0x0;
 		if (hMC_PassEta[i]) hMC_PassEta[i]=0x0;
 	}
+	for (Int_t i = 0; i < 7; i++) for (Int_t j = 0; j < 12; j++) fRunFiducial[i][j]=0x0;
 	//
 	// standard constructor (the one which should be used)
 	//
@@ -345,8 +362,6 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 			fV0Time[i] = 0x0;
 			fADTime[i] = 0x0;
 		}
-		if (i < 6) fRunFiducial[i] = 0x0;
-		fRunVsDG[i] = 0x0;
 		if (i < 7) {
 			fMC_Eta[i] = 0x0;
 			fMC_DiffMass[i] = 0x0;
@@ -357,9 +372,11 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		}
 	}
 	for (Int_t i = 0; i < 14; i++) {
+		if (i < 11) fRunVsDG[i] = 0x0;
 		if (i < 2) if (hMC_PassType[i]) hMC_PassType[i]=0x0;
 		if (hMC_PassEta[i]) hMC_PassEta[i]=0x0;
 	}
+	for (Int_t i = 0; i < 7; i++) for (Int_t j = 0; j < 12; j++) fRunFiducial[i][j]=0x0;
 }
 //______________________________________________________________________________
 AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
@@ -428,15 +445,18 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 			if (fV0Time[i]) delete fV0Time[i];
 			if (fADTime[i]) delete fADTime[i];
 		}
-		if (i<6 && fRunFiducial[i]) delete fRunFiducial[i];
-		if (fRunVsDG[i]) delete fRunVsDG[i];
 		if (i < 5) delete hMultNG_Test[i];
 		
 	}
+	for (Int_t i = 0; i < 12; i++) {
+		if (i < 11 && fRunVsDG[i]) delete fRunVsDG[i];
+	}
+
 	for (Int_t i = 0; i < 14; i++) {
 		if (i < 2) {if (hMC_PassType[i]) delete hMC_PassType[i];}
 		if (hMC_PassEta[i]) delete hMC_PassEta[i];
 	}
+	for (Int_t i = 0; i < 7; i++) for (Int_t j = 0; j < 12; j++) if (fRunFiducial[i][j]) delete fRunFiducial[i][j];
 
 }
 //______________________________________________________________________________
@@ -491,6 +511,8 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fHistEvent->GetXaxis()->SetBinLabel(kNG_Data+1,"No-gap");
 		fHistEvent->GetXaxis()->SetBinLabel(kSGA_Data+1,"Single-gap A");
 		fHistEvent->GetXaxis()->SetBinLabel(kSGC_Data+1,"Single-gap C");
+		fHistEvent->GetXaxis()->SetBinLabel(kDGFMDSPD+1,"DG_FMDSPD");
+		fHistEvent->GetXaxis()->SetBinLabel(kMBOR+1,"MBOR");
 		fHistEvent->GetXaxis()->SetBinLabel(k2Tracks+1,"2Tracks");
 		fHistEvent->GetXaxis()->SetBinLabel(k4Tracks+1,"4Tracks");
 		fHistEvent->GetXaxis()->SetBinLabel(k2Tracks_ITSSA+1,"2Tracks_ITSSA");
@@ -585,7 +607,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fRunOnline[i] = new TH1D(tname,"",diff,minRn,maxRn);
 		fList->Add(fRunOnline[i]);
 	}
-	for (Int_t i = 0; i < 10; i++) {
+	for (Int_t i = 0; i < 11; i++) {
 		if (!fRunVsDG[i]) {
 			fRunVsDG[i] = new TH1D(Form("fRunVsDG_%d",i),"",diff,minRn,maxRn);
 			fList->Add(fRunVsDG[i]);
@@ -715,10 +737,12 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fTRDSignal = new TH2D("fTRDSignal","",500,0,5,400,0,50);
 		fList->Add(fTRDSignal);
 	}
-	for (Int_t i = 0; i < 6; i++) {
-		if (!fRunFiducial[i]) {
-			fRunFiducial[i] = new TH1D(Form("fRunFiducial_%d",i),"",diff,minRn,maxRn);
-			fList->Add(fRunFiducial[i]);
+	for (Int_t i = 0; i < 7; i++) {
+		for (Int_t j = 0; j < 12; j++) {
+			if (!fRunFiducial[i][j]) {
+				fRunFiducial[i][j] = new TH1D(Form("fRunFiducial_%d_%d",i,j),"",diff,minRn,maxRn);
+				fList->Add(fRunFiducial[i][j]);
+			}
 		}
 	}
 	if (fIsMC) {
@@ -842,7 +866,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//Fill Event information
 	fEventInfo.Fill(fESDEvent);
 	fHistEvent->Fill(kInput);
-	fRunFiducial[0]->Fill(fRunNumber);
+	for (Int_t i = 0; i < 12; i++) fRunFiducial[0][i]->Fill(fRunNumber);
 
 	//MC studies
 	Bool_t passMC = kFALSE;
@@ -858,7 +882,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		return;
 	}
 	fHistEvent->Fill(kOnlineTrigger);
-	fRunFiducial[1]->Fill(fRunNumber);
+	for (Int_t i = 0; i < 12; i++) fRunFiducial[1][i]->Fill(fRunNumber);
 
 	//Offline MB_OR cut (Ground condition)
 	//Time measurement before cut
@@ -870,7 +894,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		if (inputHandler->IsEventSelected() & AliVEvent::kMB) {//passed
 			fCombInfo.fComb_IsPassMBOR = kTRUE;
 			fHistEvent->Fill(kOfflineCut);
-			fRunFiducial[2]->Fill(fRunNumber);
+			for (Int_t i = 0; i < 12; i++) fRunFiducial[2][i]->Fill(fRunNumber);
 			lstPass = kTRUE;
 			normalCut = kTRUE;
 		}
@@ -880,13 +904,46 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		if (inputHandler->IsEventSelected() & AliVEvent::kUserDefined) {
 			fCombInfo.fComb_IsPassMBOR = kTRUE;
 			fHistEvent->Fill(kOfflineCut);
-			fRunFiducial[2]->Fill(fRunNumber);
+			for (Int_t i = 0; i < 12; i++) fRunFiducial[2][i]->Fill(fRunNumber);
 			lstPass = kTRUE;
 			normalCut = kTRUE;
 		}
 		else fCombInfo.fComb_IsPassMBOR = kFALSE;
 	}
 	if (lstPass) DoTimeMeasurements(fESDEvent, 1);
+
+	//Trigger analysis
+	//Combinatorics and Fill eventinfo.Gap
+	DoCombinatorics(fESDEvent);
+	Bool_t IsMBOR_V0 = (fCombInfo.fComb_DetHit[1] || fCombInfo.fComb_DetHit[2] || fCombInfo.fComb_DetHit[0]) ? kTRUE : kFALSE;
+	Bool_t IsMBAND_V0 = (fCombInfo.fComb_DetHit[1] && fCombInfo.fComb_DetHit[2]) ? kTRUE : kFALSE;
+	Bool_t IsMBOR_AD = (fCombInfo.fComb_DetHit[7] || fCombInfo.fComb_DetHit[8] || fCombInfo.fComb_DetHit[0]) ? kTRUE : kFALSE;
+	Bool_t IsMBAND_AD = (fCombInfo.fComb_DetHit[7] && fCombInfo.fComb_DetHit[8]) ? kTRUE : kFALSE;
+	Bool_t IsMBOR_Global = (fCombInfo.fComb_DetHit[0] || fCombInfo.fComb_DetHit[1] || fCombInfo.fComb_DetHit[2] || fCombInfo.fComb_DetHit[7] || fCombInfo.fComb_DetHit[8]) ? kTRUE : kFALSE;
+	Bool_t IsMBAND_Global = ((fCombInfo.fComb_DetHit[1] || fCombInfo.fComb_DetHit[7]) && (fCombInfo.fComb_DetHit[2] || fCombInfo.fComb_DetHit[8])) ? kTRUE : kFALSE;
+	Bool_t fDG_Det[12];
+	for (Int_t i = 0; i < 12; i++) fDG_Det[i] = kFALSE;
+	fDG_Det[0] = (fEventInfo.fV0Gap & fEventInfo.fSPDFired);//V0SPD
+	fDG_Det[1] = (fEventInfo.fADGap & fEventInfo.fSPDFired);//ADSPD
+	if (!fIsRun2) fDG_Det[1] = kTRUE;
+	fDG_Det[2] = (fEventInfo.fADGap & fDG_Det[0]);//V0ADSPD
+	fDG_Det[3] = (fEventInfo.fFMDGap & fDG_Det[2]);//V0ADFMDSPD
+	fDG_Det[4] = (fEventInfo.fZDCGap & fDG_Det[3]);//V0ADFMDZDCSPD
+	fDG_Det[5] = (fEventInfo.fFMDGap & fDG_Det[0]);//V0FMDSPD
+	fDG_Det[6] = (fEventInfo.fZDCGap & fDG_Det[5]);//V0FMDZDCSPD
+	//No-gap and single-gap
+	fDG_Det[8] = (!fCombInfo.fComb_DetHit[1] & fCombInfo.fComb_DetHit[2]);//Single-gap at A-side
+	fDG_Det[9] = (!fCombInfo.fComb_DetHit[2] & fCombInfo.fComb_DetHit[1]);//Single-gap at C-side
+	fDG_Det[7] = (!fDG_Det[0] & !fDG_Det[8] & !fDG_Det[9]);//No-gap
+	//Only FMD gap
+	fDG_Det[10] = (fEventInfo.fFMDGap & fEventInfo.fSPDFired);//FMDSPD
+	//MBOR
+	fDG_Det[11] = IsMBOR_V0;
+	for (Int_t i = 0; i < 12; i++) {
+		if (fDG_Det[i]) {
+			fRunFiducial[3][i]->Fill(fRunNumber);
+		}
+	}
 
 	//Event Selection 1: Vertex Cut
 	//10cm: default but 15cm is allowed to do systematic study
@@ -895,7 +952,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	normalCut &= fEventInfo.fSysVertex[0];
 	if (normalCut) {
 		fHistEvent->Fill(kVtxCut);
-		fRunFiducial[3]->Fill(fRunNumber);
+		for (Int_t i = 0; i < 12; i++) {
+			if (fDG_Det[i]) {
+				fRunFiducial[4][i]->Fill(fRunNumber);
+			}
+		}
 	}
 
 	//Event Selection 2: Pileup Cut
@@ -912,7 +973,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fEventInfo.fSysPileUp[4] = fESDEvent->IsPileupFromSPD(pileup_Ncont,pileup_dist-0.1,3.,2.,5.);
 	if (normalCut) {
 		fHistEvent->Fill(kPileUpCut);
-		fRunFiducial[4]->Fill(fRunNumber);
+		for (Int_t i = 0; i < 12; i++) {
+			if (fDG_Det[i]) {
+				fRunFiducial[5][i]->Fill(fRunNumber);
+			}
+		}
 	}
 
 	//Event Selection 3: Cluster cut
@@ -943,12 +1008,13 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	if (normalCut) {
 		fHistEvent->Fill(kClusterCut);
-		fRunFiducial[5]->Fill(fRunNumber);
+		for (Int_t i = 0; i < 12; i++) {
+			if (fDG_Det[i]) {
+				fRunFiducial[6][i]->Fill(fRunNumber);
+			}
+		}
 		fhClusterVsTracklets_af->Fill(nTracklets,nClustersLayer0+nClustersLayer1);
 	}
-
-	//Combinatorics and Fill eventinfo.Gap
-	DoCombinatorics(fESDEvent);
 
 	//Reject not lst events to reduce memory leak
 	if (fCombmode) fTree_Comb->Fill();
@@ -985,14 +1051,6 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		if (normalCut) fTOFSignal->Fill(trk->P(),fBeta);
 	}
 
-	//Trigger analysis
-	Bool_t IsMBOR_V0 = (fCombInfo.fComb_DetHit[1] || fCombInfo.fComb_DetHit[2] || fCombInfo.fComb_DetHit[0]) ? kTRUE : kFALSE;
-	Bool_t IsMBAND_V0 = (fCombInfo.fComb_DetHit[1] && fCombInfo.fComb_DetHit[2]) ? kTRUE : kFALSE;
-	Bool_t IsMBOR_AD = (fCombInfo.fComb_DetHit[7] || fCombInfo.fComb_DetHit[8] || fCombInfo.fComb_DetHit[0]) ? kTRUE : kFALSE;
-	Bool_t IsMBAND_AD = (fCombInfo.fComb_DetHit[7] && fCombInfo.fComb_DetHit[8]) ? kTRUE : kFALSE;
-	Bool_t IsMBOR_Global = (fCombInfo.fComb_DetHit[0] || fCombInfo.fComb_DetHit[1] || fCombInfo.fComb_DetHit[2] || fCombInfo.fComb_DetHit[7] || fCombInfo.fComb_DetHit[8]) ? kTRUE : kFALSE;
-	Bool_t IsMBAND_Global = ((fCombInfo.fComb_DetHit[1] || fCombInfo.fComb_DetHit[7]) && (fCombInfo.fComb_DetHit[2] || fCombInfo.fComb_DetHit[8])) ? kTRUE : kFALSE;
-
 	if (normalCut) {
 		if (IsMBOR_V0) {fHistEvent->Fill(kMBOR_V0); fRunVsMBOR_V0->Fill(fRunNumber);}
 		if (IsMBAND_V0) {fHistEvent->Fill(kMBAND_V0); fRunVsMBAND_V0->Fill(fRunNumber);}
@@ -1002,26 +1060,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		if (IsMBAND_Global) {fHistEvent->Fill(kMBAND_Global); fRunVsMBAND_Global->Fill(fRunNumber);}
 	}
 
-	//Gap analysis
-	//V0+SPD, AD+SPD are basic gap def.
-	Bool_t fDG_Det[10];
-	for (Int_t i = 0; i < 10; i++) fDG_Det[i] = kFALSE;
-	fDG_Det[0] = (fEventInfo.fV0Gap & fEventInfo.fSPDFired);//V0SPD
-	fDG_Det[1] = (fEventInfo.fADGap & fEventInfo.fSPDFired);//ADSPD
-	if (!fIsRun2) fDG_Det[1] = kTRUE;
-	fDG_Det[2] = (fEventInfo.fADGap & fDG_Det[0]);//V0ADSPD
-	fDG_Det[3] = (fEventInfo.fFMDGap & fDG_Det[2]);//V0ADFMDSPD
-	fDG_Det[4] = (fEventInfo.fZDCGap & fDG_Det[3]);//V0ADFMDZDCSPD
-	fDG_Det[5] = (fEventInfo.fFMDGap & fDG_Det[0]);//V0FMDSPD
-	fDG_Det[6] = (fEventInfo.fZDCGap & fDG_Det[5]);//V0FMDZDCSPD
-	//No-gap and single-gap
-	fDG_Det[8] = (!fCombInfo.fComb_DetHit[1] & fCombInfo.fComb_DetHit[2]);//Single-gap at A-side
-	fDG_Det[9] = (!fCombInfo.fComb_DetHit[2] & fCombInfo.fComb_DetHit[1]);//Single-gap at C-side
-	fDG_Det[7] = (!fDG_Det[0] & !fDG_Det[8] & !fDG_Det[9]);//No-gap
-
 	//Fill histo
 	if (normalCut) {
-		for (Int_t i = 0; i < 10; i++) {
+		for (Int_t i = 0; i < 11; i++) {
 			if (fDG_Det[i]) {
 				fHistEvent->Fill(kDGV0SPD+i);
 				fRunVsDG[i]->Fill(fRunNumber);
@@ -1143,7 +1184,13 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	fEventInfo.fNtrk_MS = Nsel;
 
-	if (fDG_Det[0] == kFALSE || fDG_Det[1] == kFALSE) {
+	//Run2
+	if (fIsRun2 && (fDG_Det[0] == kFALSE && fDG_Det[1] == kFALSE)) {
+		PostOutputs();
+		return;
+	}
+	//Run1
+	if (!fIsRun2 && (fDG_Det[0] == kFALSE && fDG_Det[10] == kFALSE)) {
 		PostOutputs();
 		return;
 	}
@@ -1151,7 +1198,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//Store normal version
 	Bool_t storeT = kFALSE;
 
-	if (!fIsMC) {
+	if (!fIsMC || fIsPythia || fIsPhojet || fIsEPOS) {
 		for (Int_t i = 0; i < 11; i++) {
 			Nsel = 0;
 			indices = 0x0;
@@ -1166,7 +1213,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			if (Nsel == 2) {
 				storeT = kTRUE;
 				for (Int_t iSel = 0; iSel < Nsel; iSel++) {
-					new (fTwoTrackInfo[2*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+					new (fTwoTrackInfo[2*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined,fIsMC,fMCEvent);
 				}
 			}
 			else {
@@ -1177,7 +1224,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			if (Nsel == 4) {
 				storeT = kTRUE;
 				for (Int_t iSel = 0; iSel < Nsel; iSel++) {
-					new (fFourTrackInfo[4*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+					new (fFourTrackInfo[4*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined,fIsMC,fMCEvent);
 				}
 			}
 			else {
@@ -1220,7 +1267,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	indices = 0x0;
 
-	if (!fIsMC && storeT) fTree->Fill();
+	if (storeT) fTree->Fill();
 
 	PostOutputs();
 	return;
@@ -1228,7 +1275,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::PostOutputs()
 {
-	if (fIsMC) {
+	if (fIsMC && fIsPWAMC) {
 		fTree->Fill();
 		if (fCombmode) fTree_Comb->Fill();
 	}
@@ -1546,6 +1593,8 @@ void AliAnalysisTaskCDPWA::DetermineProcessType() {
 			}
 		}
 		else fMCProcessType = kBinND; 
+
+		fEventInfo.fProcessType = fMCProcessType;
 
 		for (Int_t i = 0; i < kBinMCAll; i++) {
 			if (i == fMCProcessType) fHistEventProcesses->Fill(i);

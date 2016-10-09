@@ -723,12 +723,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
   fCRCQVecListRun[r]->SetOwner(kTRUE);
   fOutput->Add(fCRCQVecListRun[r]);
-   for(Int_t i=0;i<fnCen;i++) {
-     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
-     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
-   }
+//   for(Int_t i=0;i<fnCen;i++) {
+//     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
+//     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
+//   }
  }
  
  PostData(2, fOutput);
@@ -761,52 +761,55 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  //DEFAULT - automatically takes care of everything
  if (fAnalysisType == "AUTOMATIC") {
   
-  //check event cuts
-  if (InputEvent()) {
-    if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
-    if(fRejectPileUp) {
-      if(fDataSet!=k2015) {
-        if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
-      } else {
-        // pile-up a la Dobrin for LHC15o
-        if (plpMV(aod)) return;
-        
-        Short_t isPileup = aod->IsPileupFromSPD(3);
-        if (isPileup != 0) return;
-        
-        if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) return;
-        
-        if (aod->IsIncompleteDAQ()) return;
-      }
-    }
-  }
-  
-  //first attach all possible information to the cuts
-  fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
-  fCutsPOI->SetEvent( InputEvent(), MCEvent() );
-  
-  //then make the event
-  fFlowEvent->Fill( fCutsRP, fCutsPOI );
-  
-  fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
-   // set centrality
+   // get centrality
+   Float_t centr=300, centrCL1=300;
    if(fDataSet!=k2015) {
-     fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
+     centr = fCutsEvent->GetCentrality(InputEvent(),McEvent);
    } else {
-     Float_t centr = 300;
      fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
      if(!fMultSelection) {
        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
        AliWarning("AliMultSelection object not found!");
      }else{
        centr = fMultSelection->GetMultiplicityPercentile("V0M");
+       centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
      }
-     fFlowEvent->SetCentrality(centr);
    }
    
-  fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
-  fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
-  fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
+   //check event cuts
+   if (InputEvent()) {
+     if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+     if(fRejectPileUp) {
+       if(fDataSet!=k2015) {
+         if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+       } else {
+         // pile-up a la Dobrin for LHC15o
+         if (plpMV(aod)) return;
+         
+         Short_t isPileup = aod->IsPileupFromSPD(3);
+         if (isPileup != 0) return;
+         
+         if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) return;
+         
+         if (aod->IsIncompleteDAQ()) return;
+         
+         if(fabs(centr-centrCL1)>7.5) return;
+       }
+     }
+   }
+   
+   //first attach all possible information to the cuts
+   fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
+   fCutsPOI->SetEvent( InputEvent(), MCEvent() );
+   
+   //then make the event
+   fFlowEvent->Fill( fCutsRP, fCutsPOI );
+   
+   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
+   fFlowEvent->SetCentrality(centr);
+   fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
+   fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
+   fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
    
    Double_t vtxpos[3]={0.,0.,0.};
    vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
@@ -814,23 +817,22 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
    fFlowEvent->SetVertexPosition(vtxpos);
    
-  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
    
    // run-by-run QA
-   Double_t centr = fFlowEvent->GetCentrality();
-   fCenDis->Fill(centr);
+   centr = fFlowEvent->GetCentrality();
    Int_t CenBin = -1;
    CenBin = GetCenBin(centr);
    if(CenBin==-1) return;
    
-   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
-     AliAODTrack* track = (AliAODTrack*)aod->GetTrack(jTracks);
-     if(!track) continue;
-     // general kinematic & quality cuts
-     if (track->Pt() < .2 || track->Pt() > 20. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
-     if (track->TestFilterBit(128)) fPtPhiEtaRbRFB128[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
-     if (track->TestFilterBit(768)) fPtPhiEtaRbRFB768[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
-   }
+//   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
+//     AliAODTrack* track = (AliAODTrack*)aod->GetTrack(jTracks);
+//     if(!track) continue;
+//     // general kinematic & quality cuts
+//     if (track->Pt() < .2 || track->Pt() > 20. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
+//     if (track->TestFilterBit(128)) fPtPhiEtaRbRFB128[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
+//     if (track->TestFilterBit(768)) fPtPhiEtaRbRFB768[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
+//   }
   
  }
  
@@ -1271,7 +1273,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Float_t MulA=0., MulC=0.;
       for(Int_t i=0; i<4; i++) {
         if(towZNC[i+1]>0.) {
-          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
+          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i];
         }
         if(towZNA[i+1]>0.) {
           MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4];

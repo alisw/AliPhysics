@@ -2,7 +2,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 								   Bool_t theMCon=kFALSE,
 									 Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kFALSE,
-									 Bool_t domixing=kFALSE,
+									 Int_t domixing=0,
 									 Bool_t reconstructPrimVert=kFALSE,
 								   Bool_t writeEachVariableTree=kFALSE,
 								   Bool_t writeMCVariableTree=kFALSE,
@@ -50,53 +50,222 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 		task->SetUseCentralitySPDTracklet(kFALSE);
 	}else{
 		task->SetUseCentralityV0M(kTRUE);
-		task->SetUseEventPlane(4);
+		task->SetUseEventPlane(14);
 	}
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
   task->SetWriteEachVariableTree(writeEachVariableTree);
   task->SetWriteMCVariableTree(writeMCVariableTree);
-  if(domixing)
+  if(domixing>0)
     task->SetEventMixingWithPools();
   else
     task->SetEventMixingOff();
 
-	//PVz Binning for pool PP or PbPb	
-	Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
-	Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
-	//Cent Binning for pool	pPb 
-	Double_t cent_mult_binlimitspPb[] = { 0,10,20,30,40,50,60,70,80,90,100};
-	Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
-	Double_t cent_mult_binlimitspp[] = { 0,100};
-	Int_t cent_mult_bin_numbpp = sizeof(cent_mult_binlimitspp)/sizeof(Double_t) - 1;
-	Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
-	Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
-
-	task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 	if(iscoltype==0){
-		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
-		task->SetNumberOfEventsForMixing(10);//pp
-  }else if(iscoltype==1){
-		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-		task->SetNumberOfEventsForMixing(10);//pPb
-  }else if(iscoltype==2){
-		task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
-		task->SetNumberOfEventsForMixing(10);//PbPb
-	}
+		Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+		Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+		task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 
-  if(iscoltype==0 || iscoltype == 1){
-    Int_t nrpbin = 1.;
-    Double_t rpbinlimits[2] = {-3.2,3.2};
-    task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
-  }else{
-    Int_t nrpbin = 8;
-    Double_t rpbinlimits[9];
-    Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
-    for(Int_t ir=0;ir<9;ir++){
-      rpbinlimits[ir] = steprp * (Double_t) ir;
-    }
-    task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
-  }
+		Double_t cent_mult_binlimitspp[] = { 0,100};
+		Int_t cent_mult_bin_numbpp = sizeof(cent_mult_binlimitspp)/sizeof(Double_t) - 1;
+		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
+
+		Int_t nrpbin = 1.;
+		Double_t rpbinlimits[2] = {-3.2,3.2};
+		task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+		task->SetNumberOfEventsForMixing(10);//pp
+	}else if(iscoltype==1){
+		Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+		Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+		task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+		Double_t cent_mult_binlimitspPb[] = { 0,10,20,30,40,50,60,70,80,90,100};
+		Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
+		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
+
+		Int_t nrpbin = 1.;
+		Double_t rpbinlimits[2] = {-3.2,3.2};
+		task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+		task->SetNumberOfEventsForMixing(10);//pPb
+	}else if(iscoltype==2){
+		if(domixing==1){
+			//Standard
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else if(domixing==2){
+			//Depth x 1/2
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(5);//PbPb
+		}else if(domixing==3){
+			//Depth x 2
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(20);//PbPb
+		}else if(domixing==4){
+			//z binning x1/2
+			Double_t pvzbinlimits[] = {-12,-10,-6,-2,2,6,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else if(domixing==5){
+			//z binning  x2
+			Double_t pvzbinlimits[] = {-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else if(domixing==6){
+			//Cent x 2
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,15.,20,25.,30,35.,40,45.,50,55.,60,65.,70,75.,80,85.,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else if(domixing==7){
+			//Cent x 1/2
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,5,10,30,50,70,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 8;
+			Double_t rpbinlimits[9];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<9;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else if(domixing==8){
+			//RP x 2
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 16;
+			Double_t rpbinlimits[17];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<17;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else if(domixing==9){
+			//RP x 2
+			Double_t pvzbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12};
+			Int_t pvzbinnumb = sizeof(pvzbinlimits)/sizeof(Double_t) - 1;
+			task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
+
+			Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+			Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
+			task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+
+			Int_t nrpbin = 4;
+			Double_t rpbinlimits[5];
+			Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+			for(Int_t ir=0;ir<5;ir++){
+				rpbinlimits[ir] = steprp * (Double_t) ir;
+			}
+			task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+
+			task->SetNumberOfEventsForMixing(10);//PbPb
+		}else{
+			cout<<"Such pool binning option is not supported"<<endl;
+			exit(1);
+		}
+	}
 
   //multiplicity study
   if(iscoltype==0){

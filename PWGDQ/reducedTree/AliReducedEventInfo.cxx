@@ -41,6 +41,8 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fIRIntClosestIntMap(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fVtxSPD(),
+  fNVtxSPDContributors(0),
   fNpileupSPD(0),
   fNpileupTracks(0),
   fNPMDtracks(0),
@@ -49,8 +51,11 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fSPDntracklets(0),
   fSPDnSingle(0),
   fVZEROMult(),
+  fVZEROTotalMult(),
   fZDCnEnergy(),
   fZDCpEnergy(),
+  fZDCnTotalEnergy(),
+  fZDCpTotalEnergy(),
   fT0amplitude(),
   fT0TOF(),
   fT0TOFbest(),
@@ -69,13 +74,17 @@ AliReducedEventInfo::AliReducedEventInfo() :
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
+  for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
   for(Int_t i=0; i<10; ++i) fZDCpEnergy[i]=0.0;
+  for(Int_t i=0; i<2; ++i) fZDCnTotalEnergy[i]=0.0;
+  for(Int_t i=0; i<2; ++i) fZDCpTotalEnergy[i]=0.0;
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
@@ -99,6 +108,8 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fIRIntClosestIntMap(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fVtxSPD(),
+  fNVtxSPDContributors(0),
   fNpileupSPD(0),
   fNpileupTracks(0),
   fNPMDtracks(0),
@@ -107,8 +118,11 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fSPDntracklets(0),
   fSPDnSingle(0),
   fVZEROMult(),
+  fVZEROTotalMult(),
   fZDCnEnergy(),
   fZDCpEnergy(),
+  fZDCnTotalEnergy(),
+  fZDCpTotalEnergy(),
   fT0amplitude(),
   fT0TOF(),
   fT0TOFbest(),
@@ -127,13 +141,17 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
+  for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
   for(Int_t i=0; i<10; ++i) fZDCpEnergy[i]=0.0;
+  for(Int_t i=0; i<2; ++i) fZDCnTotalEnergy[i]=0.0;
+  for(Int_t i=0; i<2; ++i) fZDCpTotalEnergy[i]=0.0;
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
@@ -175,6 +193,7 @@ void AliReducedEventInfo::ClearEvent() {
   fIsSPDPileup = kFALSE;
   fIsSPDPileupMultBins = kFALSE;
   fNVtxTPCContributors = 0;
+  fNVtxSPDContributors = 0;
   fNpileupSPD=0;
   fNpileupTracks=0;
   fNPMDtracks=0;
@@ -187,9 +206,13 @@ void AliReducedEventInfo::ClearEvent() {
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
+  for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
   for(Int_t i=0; i<10; ++i) fZDCpEnergy[i]=0.0;
+  for(Int_t i=0; i<2; ++i) fZDCnTotalEnergy[i]=0.0;
+  for(Int_t i=0; i<2; ++i) fZDCpTotalEnergy[i]=0.0;
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
@@ -495,13 +518,14 @@ Float_t AliReducedEventInfo::EnergyZDCA() const
   //
   // Total ZDC energy in A side
   //
-  Float_t energy=0.0;
+  /*Float_t energy=0.0;
   for(Int_t i=6;i<10;++i){
       if(fZDCnEnergy[i]>0.) {
   Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], fgkZdcNalpha);
     energy += zdcNenergyAlpha;}
   }
-  return energy;
+  return energy;*/
+  return fZDCnTotalEnergy[0];
 }
 
 
@@ -511,13 +535,14 @@ Float_t AliReducedEventInfo::EnergyZDCC() const
   //
   // Total ZDC energy in C side
   //
-  Float_t energy=0.0;
+  /*Float_t energy=0.0;
   for(Int_t i=1;i<5;++i){
       if(fZDCnEnergy[i]>0.) {
     Float_t zdcNenergyAlpha = TMath::Power(fZDCnEnergy[i], fgkZdcNalpha);
     energy += zdcNenergyAlpha;}
   }
-  return energy;
+  return energy;*/
+  return fZDCnTotalEnergy[1];
 }
 
 
@@ -552,10 +577,11 @@ Float_t AliReducedEventInfo::MultVZEROA() const
   //
   // Total VZERO multiplicity in A side
   //
-  Float_t mult=0.0;
+  /*Float_t mult=0.0;
   for(Int_t i=32;i<64;++i)
     mult += fVZEROMult[i];
-  return mult;
+  return mult;*/
+  return fVZEROTotalMult[0];
 }
 
 
@@ -565,10 +591,11 @@ Float_t AliReducedEventInfo::MultVZEROC() const
   //
   // Total VZERO multiplicity in C side
   //
-  Float_t mult=0.0;
+  /*Float_t mult=0.0;
   for(Int_t i=0;i<32;++i)
     mult += fVZEROMult[i];
-  return mult;
+  return mult;*/
+  return fVZEROTotalMult[1];
 }
 
 

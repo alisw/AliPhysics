@@ -8,9 +8,9 @@
 // uncomment or define externally to enable debug information
 // 
 // flag for global and e-by-e debug info
-//#define ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+//#define ALIANALYSISTASKJETV3_DEBUG_FLAG_1
 // flag for debug statements that may be repeated multiple times per event
-//#define ALIANALYSISTASKJETV2_DEBUG_FLAG_2
+//#define ALIANALYSISTASKJETV3_DEBUG_FLAG_2
 
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
@@ -22,7 +22,7 @@
 #include <TArrayD.h>
 #include <TRandom3.h>
 #include <AliJetContainer.h>
-#include <AliParticleContainer.h>
+#include <AliTrackContainer.h>
 
 class TFile;
 class TF1;
@@ -40,7 +40,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
         enum fitGoodnessTest    { kChi2ROOT, kChi2Poisson, kKolmogorov, kKolmogorovTOY, kLinearFit };
-        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h, kJetFlowMC }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
+        enum collisionType      { kPbPb, kPythia, kPbPb10h, kPbPb11h, kJetFlowMC, kPbPb15o }; // collision type, kPbPb = 11h, kept for backward compatibilitiy
         enum qcRecovery         { kFixedRho, kNegativeVn, kTryFit };    // how to deal with negative cn value for qcn value
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC};          // data type
@@ -157,7 +157,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         void                    SetEPWeightForVZERO(EPweightType type)          { fWeightForVZERO = type; }
         // getters 
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
-        TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
+        TString                 GetTracksName() const                           {return GetTrackContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayD*                GetCentralityClasses() const                    {return fCentralityClasses;}
 //        Float_t                 GetCentrality() const;
@@ -191,7 +191,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
                 Float_t &pt, 
                 Float_t &eta, 
                 Float_t &phi, 
-                AliParticleContainer* tracksCont,
+                AliTrackContainer* tracksCont,
                 AliClusterContainer* clusterCont = 0x0,
                 AliEmcalJet* jet = 0x0
                 ) const;
@@ -210,7 +210,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
-        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { UInt_t rejectionReason = 0; return GetParticleContainer(0)->AcceptParticle(track, rejectionReason); }
+        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { UInt_t rejectionReason = 0; return GetTrackContainer(0)->AcceptParticle(track, rejectionReason); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { 
             if(jet->MaxTrackPt() > fExcludeJetsWithTrackPt) return kFALSE;
             return AcceptJet(jet, 0); 
@@ -222,6 +222,9 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
             return (jet/* && jet->Pt() > 1.*/ && jet->Eta() > minEta && jet->Eta() < maxEta && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
         }
         Bool_t                  PassesCuts(AliVEvent* event);
+        Bool_t                  PassesExperimentalHighLumiCuts(AliAODEvent* event);
+        Bool_t                  MultiVertexer(const AliAODEvent* event);
+        Double_t                GetWDist(const AliVVertex* v0, const AliVVertex* v1);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
         void                    FillHistogramsAfterSubtraction(Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
@@ -246,7 +249,9 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);
         void                    ReadVZEROCalibration2010h();
         void                    ReadVZEROCalibration2011h();
+        void                    ReadVZEROCalibration2015o();
         Int_t                   GetVZEROCentralityBin() const;
+        Float_t                 GetCentrality(const char* estimator) const;
     private:
         // analysis flags and settings
         Bool_t                  fRunToyMC;              // run toy mc for fit routine
@@ -267,7 +272,7 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         TH1F*                   fEventPlaneWeights[10]; // weight histos for the event plane (centrality dependent)
         Bool_t                  fAcceptanceWeights;     // store centrality dependent acceptance weights
         Float_t                 fEventPlaneWeight;      //! the actual weight of an event
-        AliParticleContainer*   fTracksCont;            //! tracks
+        AliTrackContainer*   fTracksCont;            //! tracks
         AliClusterContainer*    fClusterCont;           //! cluster container
         AliJetContainer*        fJetsCont;              //! jets
         AliEmcalJet*            fLeadingJet;            //! leading jet
@@ -422,6 +427,8 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         Float_t                 fWidthQ[9][2][2];               //! recentering
         Float_t                 fMeanQv3[9][2][2];              //! recentering
         Float_t                 fWidthQv3[9][2][2];             //! recentering
+        TH1*                    fMQ[2][2];                      //! recentering
+        TH1*                    fWQ[2][2];                      //! recentering
         TH1*                    fVZEROgainEqualization;         //! equalization histo
         Float_t                 fVZEROApol;                     //! calibration info per disc
         Float_t                 fVZEROCpol;                     //! calibration info per disc

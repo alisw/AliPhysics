@@ -4,7 +4,6 @@ class AliVEvent;
 class AliAnalysisManager;
 class AliPhysicsSelectionTask;
 class AliCentralitySelectionTask;
-class AliEmcalSetupTask;
 class AliAnalysisGrid;
 
 void LoadMacros();
@@ -22,7 +21,7 @@ AliAnalysisManager* runEMCalSampleTask(
     const UInt_t  kPhysSel       = AliVEvent::kAnyINT |
     AliVEvent::kCentral | AliVEvent::kSemiCentral,                          // physics selection
     const char   *cTaskName      = "EMCalAna",                              // sets name of analysis manager
-    const char   *cOCDBpath      = "raw://",                                // change to "raw://" if running on the grid
+    const char   *obsolete       = "",                                      // Previous handled the ocdb settings, but obsolete due to CDBconnect task
     // 0 = only prepare the analysis manager but do not start the analysis
     // 1 = prepare the analysis manager and start the analysis
     // 2 = launch a grid analysis
@@ -109,10 +108,9 @@ AliAnalysisManager* runEMCalSampleTask(
     pCentralityTask->SelectCollisionCandidates(AliVEvent::kAny);
   }
 
-  // Setup task
-  AliEmcalSetupTask *pSetupTask = AddTaskEmcalSetup();
-  pSetupTask->SelectCollisionCandidates(AliVEvent::kAny);
-  pSetupTask->SetOcdbPath(cOCDBpath);
+  // CDBconnect task
+  AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+  taskCDB->SetFallBackToRaw(kTRUE);
 
   if (bDoTender) {
     // Only cell energy/time recalibration (and bad channel) is switched on
@@ -252,7 +250,7 @@ void LoadMacros()
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddESDHandler.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); 

@@ -86,10 +86,9 @@ AliEmcalTriggerMakerTask* AddTaskEmcalTriggerMakerNew(
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   mgr->ConnectInput  (eTask, 0,  cinput1 );
 
-  if(doQA){
-    TString commonoutput = mgr->GetCommonFileName();
-    commonoutput += ":TriggerQA";
-    mgr->ConnectOutput(eTask, 1, mgr->CreateContainer("TriggerQA", TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
-  }
+  TString commonoutput = mgr->GetCommonFileName();
+  commonoutput += ":TriggerQA";
+  mgr->ConnectOutput(eTask, 1, mgr->CreateContainer("TriggerQA", TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
+
   return eTask;
 }

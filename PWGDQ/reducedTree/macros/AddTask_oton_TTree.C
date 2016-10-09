@@ -1,87 +1,87 @@
-//void AddFMDTask(); //is this actually necessary???                                                                          
+//void AddFMDTask(); //is this actually necessary???
 
-//__________________________________________________________________________________________                                  
+//__________________________________________________________________________________________
 AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE){
 
-  // Get the current analysis manager                                                                                         
-  //---------------------------------                                                                                         
+  // Get the current analysis manager
+  //---------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskTree", "No analysis manager found.");
     return 0;
   }
 
-  // Do we have an MC handler?                                                                                                
-  //--------------------------                                                                                                
+  // Do we have an MC handler?
+  //--------------------------
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-
-  //create task and add it to the manager                                                                                     
-  //-------------------------------------                                                                                     
+  
+  //create task and add it to the manager
+  //-------------------------------------
   AliAnalysisTaskReducedTreeMaker *task=new AliAnalysisTaskReducedTreeMaker("DSTTreeMaker", kTRUE);
   task->SetTriggerMask(AliVEvent::kINT7);
-
-  // Pile up, Physics Selection, Analysis Utils                                                                               
-  //-------------------------------------------                                                                               
-  //if(trainConfig=="pp") task->SetRejectPileup();                                                                            
-  //task->UsePhysicsSelection(kTRUE);                                                                                         
-  //task->UsePhysicsSelection(kFALSE); // No phys sel // is this necessary???                                                 
-  task->SetUseAnalysisUtils(kTRUE); // ??????                                                                                 
-
-  // Toggle on/off information branches                                                                                       
-  //----------------------------------------                                                                                  
+  
+  // Pile up, Physics Selection, Analysis Utils
+  //-------------------------------------------
+  //if(trainConfig=="pp") task->SetRejectPileup();
+  //task->UsePhysicsSelection(kTRUE);
+  //task->UsePhysicsSelection(kFALSE); // No phys sel // is this necessary???
+  task->SetUseAnalysisUtils(kTRUE); // ??????
+  
+  // Toggle on/off information branches
+  //----------------------------------------
   task->SetFillV0Info(kFALSE);
   task->SetFillGammaConversions(kFALSE);
   task->SetFillK0s(kFALSE);
   task->SetFillLambda(kFALSE);
   task->SetFillALambda(kFALSE);
   task->SetFillCaloClusterInfo(kFALSE);
-  //task->SetFillDielectronInfo(kFALSE);                                                                                      
-  //task->SetFillFriendInfo(kFALSE);                                                                                          
-  //task->SetFillBayesianPIDInfo(kFALSE);                                                                                     
-
-  // Event and track selection                                                                                                
-  //--------------------------                                                                                                
+  //task->SetFillDielectronInfo(kFALSE);
+  //task->SetFillFriendInfo(kFALSE);
+  //task->SetFillBayesianPIDInfo(kFALSE);
+  
+  // Event and track selection
+  //--------------------------
   task->SetEventFilter(CreateEventFilter(isAOD));
   task->SetTrackFilter(CreateGlobalTrackFilter(isAOD));
-  //  task->SetFlowTrackFilter(CreateFlowTrackFilter(isAOD));                                                                 
-  //task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));                                                                           
-  //task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));                                                                 
-  //task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));                                                                     
-  //task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));                                                           
-  //task->SetK0sMassRange(0.44,0.55);                                                                                         
-  //task->SetLambdaMassRange(1.090,1.14);                                                                                     
-  //task->SetGammaConvMassRange(0.0,0.1);                                                                                     
-  //task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));                                
-  //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));                            
+  //  task->SetFlowTrackFilter(CreateFlowTrackFilter(isAOD));
+  //task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
+  //task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
+  //task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
+  //task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
+  //task->SetK0sMassRange(0.44,0.55);
+  //task->SetLambdaMassRange(1.090,1.14);
+  //task->SetGammaConvMassRange(0.0,0.1);
+  //task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
+  //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kPurity, AliESDv0KineCuts::kPbPb));
   task->SetFillFMDInfo(kFALSE);
-  //AddFMDTask();                                                                                                             
-  //NEW: for Reaction plane:                                                                                                  
+  //AddFMDTask();
+  //NEW: for Reaction plane:
   task->SetFillEventPlaneInfo(kFALSE);
 
-  // Set Writting options                                                                                                     
-  //---------------------                                                                                                     
-  //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kFullEventsWithFullTracks);                                   
-  //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kBaseEventsWithBaseTracks);                                   
+  // Set Writting options
+  //---------------------
+  //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kFullEventsWithFullTracks);
+  //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kBaseEventsWithBaseTracks);
   if(reducedEventType!=-1)
     task->SetTreeWritingOption(reducedEventType);
   task->SetWriteTree(writeTree);
 
-  // For MC:                                                                                                                  
-  //--------                                                                                                                  
+  // For MC:
+  //--------
   task->SetFillMCInfo(kTRUE);
 
-  // You can define the active branches of the tree, all other branches will be set to inactive                               
-  //-------------------------------------------------------------------------------------------                               
-  //task->SetTreeActiveBranch("Event");                                                                                       
-  //task->SetTreeActiveBranch("fRunNo");                                                                                      
-  // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active                
+  // You can define the active branches of the tree, all other branches will be set to inactive
+  //-------------------------------------------------------------------------------------------
+  //task->SetTreeActiveBranch("Event");
+  //task->SetTreeActiveBranch("fRunNo");
+  // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active
   task->SetTreeInactiveBranch("fUniqueID");
   task->SetTreeInactiveBranch("fBits");
   task->SetTreeInactiveBranch("fEventTag");
   task->SetTreeInactiveBranch("fNVtxContributors");
   task->SetTreeInactiveBranch("fCentQuality");
-  task->SetTreeInactiveBranch("fNtracks[2]");
+  //task->SetTreeInactiveBranch("fNtracks[2]");
   task->SetTreeInactiveBranch("fNV0candidates[2]");
   task->SetTreeInactiveBranch("fTracks.fUniqueID");
   task->SetTreeInactiveBranch("fTracks.fBits");
@@ -89,7 +89,7 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTracks.fFlags");
   task->SetTreeInactiveBranch("fTracks.fQualityFlags");
   task->SetTreeInactiveBranch("fTracks.fTrackId");
-  //task->SetTreeInactiveBranch("fTracks.fStatus");       
+  //task->SetTreeInactiveBranch("fTracks.fStatus");
   task->SetTreeInactiveBranch("fTracks.fStatus");
   task->SetTreeInactiveBranch("fTracks.fTPCPhi");
   task->SetTreeInactiveBranch("fTracks.fTPCPt");
@@ -98,7 +98,7 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTracks.fDCA[2]");
   task->SetTreeInactiveBranch("fTracks.fTPCDCA[2]");
   task->SetTreeInactiveBranch("fTracks.fTrackLength");
-  task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
+  //task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
   task->SetTreeInactiveBranch("fTracks.fITSsignal");
   task->SetTreeInactiveBranch("fTracks.fITSchi2");
   task->SetTreeInactiveBranch("fTracks.fTPCNcls");
@@ -161,35 +161,35 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fT0start");
   task->SetTreeInactiveBranch("fT0pileup");
   task->SetTreeInactiveBranch("fT0sattelite");
-
-  // Add task to the manager                                                                                                  
-  //------------------------                                                                                                  
+  
+  // Add task to the manager
+  //------------------------
   mgr->AddTask(task);
-
-  // Output containers                                                                                                        
-  //------------------                                                                                                        
+    
+  // Output containers
+  //------------------
   AliAnalysisDataContainer *cReducedTree = 0x0;
   if(task->WriteTree())
     cReducedTree = mgr->CreateContainer("dstTree", TTree::Class(),
-					AliAnalysisManager::kOutputContainer, "dstTree.root");
+                                          AliAnalysisManager::kOutputContainer, "dstTree.root");
   AliAnalysisDataContainer *cReducedEvent =
-    mgr->CreateContainer("ReducedEventDQ",
+  mgr->CreateContainer("ReducedEventDQ",
                          AliReducedBaseEvent::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          "reducedEvent");
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, cReducedEvent);
   if(task->WriteTree()) mgr->ConnectOutput(task, 2, cReducedTree );
-
+  
   return task;
 }
 
 
-//_______________________________________________________________________________________________                             
+//_______________________________________________________________________________________________
 AliAnalysisCuts* CreateEventFilter(Bool_t isAOD) {
-  //                                                                                                                          
-  // Event wise cuts                                                                                                          
-  //                                                                                                                          
+  //
+  // Event wise cuts
+  //
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
   if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
@@ -199,41 +199,41 @@ AliAnalysisCuts* CreateEventFilter(Bool_t isAOD) {
 }
 
 
-//_______________________________________________________________________________________________                             
+//_______________________________________________________________________________________________
 AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
-  
-  // General track cuts                                                                                                       
-  //-------------------                                                                                                       
-  
-  // -- cuts group                                                                                                            
-  AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
 
-  // -- Recommended Pb-Pb runII cuts:                                                                                         
-  //static AliESDtrackCuts* GetStandardITSTPCTrackCuts2015PbPb(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1, Bool_t cutAcceptanceEdges = kTRUE, Bool_t removeDistortedRegions = kFALSE);                                                                  
+  // General track cuts
+  //-------------------
+
+  // -- cuts group
+  AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
+ 
+  // -- Recommended Pb-Pb runII cuts:
+  //static AliESDtrackCuts* GetStandardITSTPCTrackCuts2015PbPb(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1, Bool_t cutAcceptanceEdges = kTRUE, Bool_t removeDistortedRegions = kFALSE);
   AliESDtrackCuts* esdTrackCuts = 0x0;
   esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kTRUE, 1, kTRUE, kFALSE);
-  
-  // -- Additional cuts:                                                                                                      
+
+  // -- Additional cuts:
   AliESDtrackCuts *esdTrackCuts2 = new AliESDtrackCuts;
-  esdTrackCuts2->SetPtRange( 0.2 , 200.0);
-  esdTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  //esdTrackCuts2->SetPtRange( 0.2 , 200.0);
+  esdTrackCuts2->SetPtRange( 0.4 , 200.0);
+  //esdTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  esdTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   cuts->AddCut(esdTrackCuts2);
-  
+
   cuts->AddCut(esdTrackCuts);
-  
-  // PID cuts                                                                                                                 
-  //---------                                                                                                                 
-  
-  //pass2_lowIR for production (TOF-IF) pT>0.2GeV:                                                                            
+
+  // PID cuts
+  //---------
+
+  //pass2_lowIR for production (TOF-IF) pT>0.2GeV:
   AliDielectronPID *ePID = new AliDielectronPID("noTOF","noTOF");
   ePID->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -3., 3.,     0.2, 1.5,    kFALSE );
   ePID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron ,    -2., 2.,     0.2, 100.,   kFALSE );
   ePID->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100., 6.,     0.2, 100.,   kTRUE  );
   ePID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3., 3.,     0.2,   5.,   kFALSE , AliDielectronPID::kIfAvailable );
-  
-  cuts->AddCut(ePID);
 
+  cuts->AddCut(ePID);
+ 
   return cuts;
 }
-
-

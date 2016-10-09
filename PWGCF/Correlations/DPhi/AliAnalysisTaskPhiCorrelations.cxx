@@ -377,9 +377,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fCentralityMethod == "ZNAC")
     fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
   if (fCentralityMethod == "MCGen_V0M")
-    fListOfHistos->Add(new TH1D("Mult_MCGen_V0M", "Mult_MCGen_V0M", 4100, -100, 4000));
+    fListOfHistos->Add(new TH2D("Mult_MCGen_V0M", "Mult_MCGen_V0M", 1010, -9.5, 1000.5, 1010, -9.5, 1000.5));
   if (fCentralityMethod == "MCGen_CL1")
-    fListOfHistos->Add(new TH1D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 4100, -100, 4000));
+    fListOfHistos->Add(new TH2D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 1010, -9.5, 1000.5, 1010, -9.5, 1000.5));
   if (fCentralityMethod == "TRACKS_MANUAL")
     fListOfHistos->Add(new TH3F("t0time", "t0time;Centrality;Side;Time", 42, -0.5, 41.5, 3, -0.5, 2.5, 200, 0, 2000));
 
@@ -1478,40 +1478,56 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
       TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
       Float_t MultV0M=0.;
+      Float_t dNchdeta = 0.;
+      Float_t INEL0 = 0.;
       for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
         AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
         if (!particle)
           continue;
         Int_t pdgabs=TMath::Abs(particle->PdgCode());
         if(pdgabs==9902210)return -1; //no diffractive protons
-        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only charged pi+K+p
+	if(!(((AliMCEvent*)mc)->IsPhysicalPrimary(particle->GetLabel()))) continue; // only primaries (probably not necessary)
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
-        if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
+        if((eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7)) MultV0M += 1.;
+	if(eta < 0.5 && eta > -0.5) dNchdeta += 1.;
+	if(eta < 1. && eta > -1.) INEL0 += 1.;
       }
-      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
-      if(fCentralityMCGen_V0M)centrality = MultV0M/fCentralityMCGen_V0M->GetMean();
-      else centrality=-1.;
+      if(INEL0 < 0.5) centrality = -1.; // INEL>0 cut
+      else{
+	((TH2D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M,dNchdeta);
+	if(fCentralityMCGen_V0M)centrality = fCentralityMCGen_V0M->GetBinContent(fCentralityMCGen_V0M->GetXaxis()->FindBin(MultV0M));
+	else centrality=-1.;
+      }
     }
     else if (fCentralityMethod == "MCGen_CL1")
     {
 //      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
       TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
       Float_t MultCL1=0.;
+      Float_t dNchdeta = 0.;
+      Float_t INEL0 = 0.;
       for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
         AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
         if (!particle)
           continue;
         Int_t pdgabs=TMath::Abs(particle->PdgCode());
         if(pdgabs==9902210)return -1; //no diffractive protons
-        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only charged pi+K+p
+	if(!(((AliMCEvent*)mc)->IsPhysicalPrimary(particle->GetLabel()))) continue; // only primaries (probably not necessary)
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
-        if( eta > -1.4 && eta < 1.4)MultCL1++;
+        if(eta < 1.4 && eta > -1.4) MultCL1 += 1.;
+	if(eta < 0.5 && eta > -0.5) dNchdeta += 1.;
+	if(eta < 1. && eta > -1.) INEL0 += 1.;
       }
-      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
-      if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();
-      else centrality=-1.;
+      if(INEL0 < 0.5) centrality = -1.; // INEL>0 cut
+      else{
+	((TH2D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1,dNchdeta);
+	if(fCentralityMCGen_CL1)centrality = fCentralityMCGen_CL1->GetBinContent(fCentralityMCGen_CL1->GetXaxis()->FindBin(MultCL1));
+	else centrality=-1.;
+      }
     }
     else
     {

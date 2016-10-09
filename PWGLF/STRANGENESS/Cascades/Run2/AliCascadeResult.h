@@ -63,7 +63,8 @@ public:
     //MC specific
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
     void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
-
+    void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
+    
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     
     //Getters for V0 Cuts
@@ -89,7 +90,8 @@ public:
     
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
-
+    Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
+    
     TH3F* GetHistogram () { return fHisto; }
     
     Bool_t HasSameCuts( AliCascadeResult *lCompare );
@@ -122,13 +124,16 @@ private:
     
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
+    Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 4)
+    ClassDef(AliCascadeResult, 6)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
     // 4 - Xi rejection added
+    // 5 - fixes to constructor, destructor, tuning
+    // 6 - addition of UseMCProperties flag
 };
 #endif

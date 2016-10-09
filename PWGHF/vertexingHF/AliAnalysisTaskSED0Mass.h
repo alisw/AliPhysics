@@ -125,7 +125,8 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fFillYHist;          /// flag to fill Y Histograms
   Bool_t    fFillImpParHist;      /// flag to fill Pt and Impact Parameter Histograms
   Bool_t    fUseSelectionBit;     /// flag to check or not the selection bit
-  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+  Int_t     fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
+                                  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7

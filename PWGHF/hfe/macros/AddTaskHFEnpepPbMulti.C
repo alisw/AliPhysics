@@ -23,7 +23,7 @@ AliAnalysisTask *AddTaskHFEnpepPbMulti(Bool_t MCthere, Bool_t isAOD, Bool_t kNPE
     bag_npepPbMulti->assMinPt=0.1;
     bag_npepPbMulti->assITS=2;
     bag_npepPbMulti->assTPCcl=60;
-    bag_npepPbMulti->assTPCclPID=60;
+    bag_npepPbMulti->assTPCPIDcl=60;
     bag_npepPbMulti->assDCAr=1.0;
     bag_npepPbMulti->assDCAz=2.0;
     bag_npepPbMulti->assITSpid=3.0;
@@ -33,8 +33,10 @@ AliAnalysisTask *AddTaskHFEnpepPbMulti(Bool_t MCthere, Bool_t isAOD, Bool_t kNPE
     bag_npepPbMulti->ipCharge=kFALSE;
     bag_npepPbMulti->ipOpp=kFALSE;
     bag_npepPbMulti->mcQADebugTree=kFALSE;
+    bag_npepPbMulti->appendix = "TT_";
 
     bag_npepPbMulti->RefMulti=19.44;
+    //bag_npepPbMulti->RefMulti=19.88;
     bag_npepPbMulti->MultiSystem=AliAnalysisTaskHFEMulti::kNtrk10;
 
     //bag_npepPbMulti->RefMulti=82.7;
@@ -123,6 +125,7 @@ AliAnalysisTask *AddTaskHFEnpepPbMulti(Bool_t MCthere, Bool_t isAOD, Bool_t kNPE
     };
 
     memcpy(bag_npepPbMulti->tpcdEdxcuthigh, dEdxhmAOD, sizeof(Double_t)*12);
+    memcpy(bag_npepPbMulti->tpcdEdxcutlow, tpcl2AOD, sizeof(Double_t)*12);
     memcpy(bag_npepPbMulti->assTPCSminus,   dEdxaclm,  sizeof(Double_t)*12);
     memcpy(bag_npepPbMulti->assTPCSplus,    dEdxachm, sizeof(Double_t)*12);
     bag_npepPbMulti->icent=kHFEV0A;
@@ -142,90 +145,378 @@ AliAnalysisTask *AddTaskHFEnpepPbMulti(Bool_t MCthere, Bool_t isAOD, Bool_t kNPE
 
 
         if(isAOD==1){
-    //bag_npepPbMulti->RefMulti=82.7;
-    //bag_npepPbMulti->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
-            //TPC1
-            AliHFEparamBag *bag1 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag1->appendix = "TPCTOF1";
-            memcpy(bag1->tpcdEdxcutlow,  tpcl5AOD,  sizeof(Double_t)*12);
-            RegisterTaskNPEpPbMulti(bag1);
+            AliHFEparamBag *bag;
 
-            AliHFEparamBag *bagX = new AliHFEparamBag(*bag_npepPbMulti);
-            bagX->RefMulti=82.7;
-            bagX->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
-            bagX->appendix = "TPCTOF_NV0A";
-            RegisterTaskNPEpPbMulti(bagX);
+            // default task, should always run
+            bag = new AliHFEparamBag(*bag_npepPbMulti);
+            bag->appendix = "TT_ref";
+            RegisterTaskNPEpPbMulti(bag);
+            delete bag;
+
+            // default task, should always run
+            bag = new AliHFEparamBag(*bag_npepPbMulti);
+            bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+            bag->RefMulti=82.7;
+            bag->appendix = "TTNV0A_ref";
+            RegisterTaskNPEpPbMulti(bag);
+            delete bag;
+
+
+            // special train to check different reweighting function
+            Bool_t kReweight = kFALSE;
+            if(kReweight){
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=41;
+                bag->appendix = "TT_reweightCent1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=42;
+                bag->appendix = "TT_reweightCent2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=43;
+                bag->appendix = "TT_reweightCent3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=44;
+                bag->appendix = "TT_reweightCent4";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=45;
+                bag->appendix = "TT_reweightCent5";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=46;
+                bag->appendix = "TT_reweightCent6";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=47;
+                bag->appendix = "TT_reweightCent7";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=41;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=42;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=43;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=44;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent4";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=45;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent5";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=46;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent6";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->WhichWei=47;
+                bag->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag->RefMulti=82.7;
+                bag->appendix = "TTNV0A_reweightCent7";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+            }
+
+            Bool_t kSysInc = kFALSE;
+            Bool_t kSysAsc = kFALSE;
+
+            Bool_t kNV0A = kFALSE;
+
+            
+            //for NV0A analysis 
+            if(kNV0A){
+                bag_npepPbMulti->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+                bag_npepPbMulti->RefMulti=82.7;
+                bag_npepPbMulti->appendix = "TTNV0A_";
+            }
+
+            //systematics inclusive leg
+            if(kSysInc){
 //DCA
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->DCAxy=0.5;
+                bag->DCAz=1;
+                bag->appendix += "DCA1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->DCAxy=2;
+                bag->DCAz=5;
+                bag->appendix += "DCA2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
 //ITS
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->ITScl=3;
+                bag->appendix += "ITS1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->ITScl=4;
+                bag->appendix += "ITS2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->ITScl=6;
+                bag->appendix += "ITS3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
 //SPD
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->ITScl=4;
+                bag->itshitpixel=AliHFEextraCuts::kFirst;
+                bag->appendix += "SPD1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->ITScl=5;
+                bag->itshitpixel=AliHFEextraCuts::kFirst;
+                bag->appendix += "SPD2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
 //TPC cluster
-/*
-            //TPC2
-            AliHFEparamBag *bag2 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag2->TPCcl=90;
-            bag2->appendix = new TString("TPCTOF_TPCcl1");
-            RegisterTaskNPEpPbMulti(bag2);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCcl=90;
+                bag->appendix += "TPCcl1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC3
-            AliHFEparamBag *bag3 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag3->TPCcl=95;
-            bag3->appendix = new TString("TPCTOF_TPCcl2");
-            RegisterTaskNPEpPbMulti(bag3);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCcl=95;
+                bag->appendix += "TPCcl2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC4
-            AliHFEparamBag *bag4 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag4->TPCcl=105;
-            bag4->appendix = new TString("TPCTOF_TPCcl3");
-            RegisterTaskNPEpPbMulti(bag4);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCcl=105;
+                bag->appendix += "TPCcl3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC5
-            AliHFEparamBag *bag5 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag5->TPCcl=110;
-            bag5->appendix = new TString("TPCTOF_TPCcl4");
-            RegisterTaskNPEpPbMulti(bag5);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCcl=110;
+                bag->appendix += "TPCcl4";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC6
-            AliHFEparamBag *bag6 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag6->TPCcl=115;
-            bag6->appendix = new TString("TPCTOF_TPCcl5");
-            RegisterTaskNPEpPbMulti(bag6);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCcl=115;
+                bag->appendix += "TPCcl5";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC7
-            AliHFEparamBag *bag7 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag7->TPCcl=120;
-            bag7->appendix = new TString("TPCTOF_TPCcl6");
-            RegisterTaskNPEpPbMulti(bag7);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCcl=120;
+                bag->appendix += "TPCcl6";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
 //TPC PID cluster
-            //TPC2
-            AliHFEparamBag *bag8 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag8->TPCclPID=60;
-            bag8->appendix = new TString("TPCTOF_TPCclPID1");
-            RegisterTaskNPEpPbMulti(bag8);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCclPID=60;
+                bag->appendix += "TPCclPID1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC3
-            AliHFEparamBag *bag9 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag9->TPCclPID=70;
-            bag9->appendix = new TString("TPCTOF_TPCclPID2");
-            RegisterTaskNPEpPbMulti(bag9);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCclPID=70;
+                bag->appendix += "TPCclPID2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC4
-            AliHFEparamBag *bag10 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag10->TPCclPID=90;
-            bag10->appendix = new TString("TPCTOF_TPCclPID3");
-            RegisterTaskNPEpPbMulti(bag10);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCclPID=90;
+                bag->appendix += "TPCclPID3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
-            //TPC5
-            AliHFEparamBag *bag11 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag11->TPCclPID=100;
-            bag11->appendix = new TString("TPCTOF_TPCclPID4");
-            RegisterTaskNPEpPbMulti(bag11);
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TPCclPID=100;
+                bag->appendix += "TPCclPID4";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
 //TOF PID
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TOFs=1.5;
+                bag->appendix += "TOFs1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TOFs=2.0;
+                bag->appendix += "TOFs2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TOFs=2.5;
+                bag->appendix += "TOFs3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->TOFs=4.0;
+                bag->appendix += "TOFs4";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
 //TPC PID
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->appendix += "TPCs1";
+                memcpy(bag->tpcdEdxcutlow,  tpcl5AOD,  sizeof(Double_t)*12);
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
 
- */
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->appendix += "TPCs2";
+                memcpy(bag->tpcdEdxcutlow,  tpcl3AOD,  sizeof(Double_t)*12);
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->appendix += "TPCs3";
+                memcpy(bag->tpcdEdxcutlow,  tpcl0AOD,  sizeof(Double_t)*12);
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+            }
 
 
+            //systematics associate leg
+            if(kSysAsc){
+                //DCA
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assDCAr=0.5;
+                bag->assDCAz=1;
+                bag->appendix += "assDCA1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assDCAr=2.0;
+                bag->assDCAz=5.0;
+                bag->appendix += "assDCA2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                //ITS
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assITS=3;
+                bag->appendix += "assITS1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assITS=4;
+                bag->appendix += "assITS2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assITS=5;
+                bag->appendix += "assITS3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                //TPC cluster & PID cluster
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assTPCcl=80;
+                bag->assTPCPIDcl=70;
+                bag->appendix += "assTPCcl1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assTPCcl=100;
+                bag->assTPCPIDcl=60;
+                bag->appendix += "assTPCcl2";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assTPCcl=100;
+                bag->assTPCPIDcl=80;
+                bag->appendix += "assTPCcl3";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                //TOF PID
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->assTOFs=3.0;
+                bag->appendix += "assTOFs1";
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                //TPC PID
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->appendix += "assTPCs1";
+                memcpy(bag->assTPCSminus,   dEdxaclm1,  sizeof(Double_t)*12);
+                memcpy(bag->assTPCSplus,    dEdxachm1, sizeof(Double_t)*12);
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+
+                bag = new AliHFEparamBag(*bag_npepPbMulti);
+                bag->appendix += "assTPCs2";
+                memcpy(bag->assTPCSminus,   dEdxaclm2,  sizeof(Double_t)*12);
+                memcpy(bag->assTPCSplus,    dEdxachm2, sizeof(Double_t)*12);
+                RegisterTaskNPEpPbMulti(bag);
+                delete bag;
+            }
         }
         else {
             // Reference
@@ -242,57 +533,23 @@ AliAnalysisTask *AddTaskHFEnpepPbMulti(Bool_t MCthere, Bool_t isAOD, Bool_t kNPE
         // **************************************************************
         if(isAOD==1){
             // Reference: 50% PID cut. For the moment, old contamination file
+            AliHFEparamBag *bagT;
 
-            AliHFEparamBag *bagY = new AliHFEparamBag(*bag_npepPbMulti);
-            bagY->TOFs=0;
-            bagY->appendix = "TPConly1";
-            memcpy(bagY->tpcdEdxcutlow,  tpcl5AOD,  sizeof(Double_t)*12);
-            RegisterTaskNPEpPbMulti(bagY);
+            bagT = new AliHFEparamBag(*bag_npepPbMulti);
+            bagT->TOFs=0;
+            bagT->appendix = "To_ref";
+            memcpy(bagT->tpcdEdxcutlow,  tpcl5AOD,  sizeof(Double_t)*12);
+            RegisterTaskNPEpPbMulti(bagT);
+            delete bagT;
 
-            AliHFEparamBag *bagY2 = new AliHFEparamBag(*bag_npepPbMulti);
-            bagY2->TOFs=0;
-            bagY2->appendix = "TPConly_NV0A";
-            bagY2->RefMulti=82.7;
-            bagY2->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
-            RegisterTaskNPEpPbMulti(bagY2);
-/*
- *
-            //TPC2
-            AliHFEparamBag *bag9 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag9->TPCcl=120;
-            bag9->appendix = new TString("TPConly2");
-            RegisterTaskNPEpPbMulti(bag9);
-
-            //TPC3
-            AliHFEparamBag *bag10 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag10->TPCcl=80;
-            bag10->appendix = new TString("TPConly3");
-            RegisterTaskNPEpPbMulti(bag10);
-
-            //TPC4
-            AliHFEparamBag *bag11 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag11->appendix = new TString("TPConly4");
-            memcpy(bag11->tpcdEdxcutlow,  tpcl2AOD,  sizeof(Double_t)*12);
-            RegisterTaskNPEpPbMulti(bag11);
-
-            //TPC5
-            AliHFEparamBag *bag12 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag12->appendix = new TString("TPConly5");
-            memcpy(bag12->tpcdEdxcutlow,  tpcl7AOD,  sizeof(Double_t)*12);
-            RegisterTaskNPEpPbMulti(bag12);
-
-            //TPC6
-            AliHFEparamBag *bag13 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag13->TPCclPID=100;
-            bag13->appendix = new TString("TPConly6");
-            RegisterTaskNPEpPbMulti(bag13);
-
-            //TPC7
-            AliHFEparamBag *bag14 = new AliHFEparamBag(*bag_npepPbMulti);
-            bag14->TPCclPID=60;
-            bag14->appendix = new TString("TPConly7");
-            RegisterTaskNPEpPbMulti(bag14);
- */
+            bagT = new AliHFEparamBag(*bag_npepPbMulti);
+            bagT->TOFs=0;
+            bagT->appendix = "ToNV0A_ref";
+            bagT->MultiSystem=AliAnalysisTaskHFEMulti::kVZERO;
+            bagT->RefMulti=82.7;
+            memcpy(bagT->tpcdEdxcutlow,  tpcl5AOD,  sizeof(Double_t)*12);
+            RegisterTaskNPEpPbMulti(bagT);
+            delete bagT;
         }
     }
     return NULL;
@@ -305,9 +562,9 @@ AliAnalysisTask RegisterTaskNPEpPbMulti(AliHFEparamBag *abag){
 
     printf("Add macro appendix %s\n", bag->appendix.Data());
 
- if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
+ if(bag->useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors")) 
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/ConfigWeightFactors.C");
- if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepPbTOFworkaround")) 
+ if(!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigHFEnpepPbMulti")) 
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigHFEnpepPbMulti.C");
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -325,12 +582,14 @@ AliAnalysisTask RegisterTaskNPEpPbMulti(AliHFEparamBag *abag){
     task->SelectCollisionCandidates(AliVEvent::kINT7);
 
     if(bag->useMC&&(bag->isBeauty || (bag->weightlevelback>=0))) {
-        ConfigWeightFactors(task,bag->nonHFEsys,bag->WhichWei);
+        ConfigWeightFactors(task,bag->nonHFEsys,bag->WhichWei,"nonHFEcorrect_pPb.root");
         task->SetNonHFEsystematics(bag->nonHFEsys);
     }
 
     //Set multiplicity estimator
     task->SetMultiEstimator(bag->MultiSystem);
+    //SetZVtxProfiles(task,"estimator_pPb_Dmeson.root");
+    SetZVtxProfiles(task,"estimator_pPb_AOD139.root");
 
     //create data containers
     AliAnalysisDataContainer *cOutputResults =

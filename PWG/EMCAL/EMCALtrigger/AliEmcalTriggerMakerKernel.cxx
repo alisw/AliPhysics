@@ -60,6 +60,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fMaxAbsCellTime(1.),
   fMinCellAmplitude(0.),
   fApplyOnlineBadChannelsToOffline(kFALSE),
+  fConfigured(kFALSE),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
   fPatchADCSimple(NULL),
@@ -137,6 +138,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPbPb2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
@@ -153,6 +155,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPPb2013()
@@ -167,6 +170,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPPb2013()
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPP2012()
@@ -181,6 +185,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2012()
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit(), 16, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPbPb2011()
@@ -195,6 +200,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPbPb2011()
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit(), 16, 4);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ConfigureForPP2011()
@@ -207,6 +213,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2011()
   fPatchFinder = new AliEMCALTriggerPatchFinder<double>;
 
   SetL0TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
+  fConfigured = true;
 }
 
 void AliEmcalTriggerMakerKernel::ReadOfflineBadChannelFromStream(std::istream& stream)
@@ -286,24 +293,55 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     trigger->GetPosition(globCol, globRow);
     Int_t absId = -1;
     fGeometry->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absId);
+
+    // trigger bits can also occur on online masked fastors. Therefore trigger
+    // bits are handled before ADC values, and independently whether fastor is
+    // masked or not
+    trigger->GetTriggerBits(bitmap);
+    try {
+      (*fTriggerBitMap)(globCol, globRow) = bitmap;
+    }
+    catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+      std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<int>::OutOfBoundsException::kColDir ? "Col" : "Row";
+      AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
+    }
+
+    // also Level0 times need to be handled without masking of the fastor ...
+    // @TODO cross check
+    Int_t nl0times(0);
+    trigger->GetNL0Times(nl0times);
+    if(nl0times){
+      TArrayI l0times(nl0times);
+      trigger->GetL0Times(l0times.GetArray());
+      for(int itime = 0; itime < nl0times; itime++){
+        try{
+          (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
+          break;
+        }
+        catch (AliEMCALTriggerDataGrid<char>::OutOfBoundsException &e) {
+          std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<char>::OutOfBoundsException::kColDir ? "Col" : "Row";
+          AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
+        }
+      }
+    }
+
     // exclude channel completely if it is masked as hot channel
-    if (fBadChannels.find(absId) != fBadChannels.end()) continue;
+    if (fBadChannels.find(absId) != fBadChannels.end()){
+      AliDebugStream(1) << "Found ADC for masked fastor " << absId << ", rejecting" << std::endl;
+      continue;
+    }
     // for some strange reason some ADC amps are initialized in reconstruction
     // as -1, neglect those
     trigger->GetL1TimeSum(adcAmp);
     if (adcAmp < 0) adcAmp = 0;
-    trigger->GetTriggerBits(bitmap);
 
     if (adcAmp >= fMinL1FastORAmp) {
       try {
         (*fPatchADC)(globCol,globRow) = adcAmp;
       }
       catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
-      }
-      try {
-        (*fTriggerBitMap)(globCol, globRow) = bitmap;
-      }
-      catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+        std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<double>::OutOfBoundsException::kColDir ? "Col" : "Row";
+        AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
       }
     }
 
@@ -319,16 +357,12 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     amplitude -= fFastORPedestal[absId];
     if(amplitude < 0) amplitude = 0;
     if (amplitude >= fMinL0FastORAmp) {
-      (*fPatchAmplitudes)(globCol,globRow) = amplitude;
-      Int_t nl0times(0);
-      trigger->GetNL0Times(nl0times);
-      if(nl0times){
-        TArrayI l0times(nl0times);
-        trigger->GetL0Times(l0times.GetArray());
-        for(int itime = 0; itime < nl0times; itime++){
-          (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
-          break;
-        }
+      try{
+        (*fPatchAmplitudes)(globCol,globRow) = amplitude;
+      }
+      catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+        std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<int>::OutOfBoundsException::kColDir ? "Col" : "Row";
+        AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
       }
     }
   }
@@ -343,7 +377,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
 
     // Check bad channel map
     if (fOfflineBadChannels.find(cellId) != fOfflineBadChannels.end()) {
-      AliDebug(10, Form("%hd is a bad channel, skipped.", cellId));
+      AliDebugStream(1) << "Cell " << cellId << " masked as bad channel, rejecting." << std::endl;
       continue;
     }
 
@@ -358,7 +392,10 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
       // Exclude FEE amplitudes from cells which are within a TRU which is masked at
       // online level. Using this the online acceptance can be applied to offline
       // patches as well.
-      if(fBadChannels.find(absId) != fBadChannels.end()) continue;
+      if(fBadChannels.find(absId) != fBadChannels.end()){
+        AliDebugStream(1) << "Cell " << cellId << " corresponding to masked fastor " << absId << ", rejecting." << std::endl;
+        continue;
+      }
     }
     Int_t globCol=-1, globRow=-1;
     fGeometry->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);

@@ -122,6 +122,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
+  fCutTPCSecbound(kFALSE),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -249,6 +250,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
+  fCutTPCSecbound(kFALSE),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -379,6 +381,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutDCAToVertexZ(that.fCutDCAToVertexZ),
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
+  fCutTPCSecbound(that.fCutTPCSecbound),
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
@@ -531,6 +534,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
+  fCutTPCSecbound=that.fCutTPCSecbound;
   fPtTOFPIDoff=that.fPtTOFPIDoff;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
@@ -611,7 +615,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fNsigmaCut2 = that.fNsigmaCut2;
  
   fRun = that.fRun;
-
+  
   return *this;
 }
 
@@ -1326,10 +1330,23 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   }
   Double_t time[9];
   track->GetIntegratedTimes(time);
-  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
-    {
-      if (!PassesAODpidCut(track)) pass=kFALSE;
+  
+  if(fCutTPCSecbound) {
+    Double_t xyz[3]={-9999.,-9999.,-9999.};
+    const double r = 84.; // TPC IROC radius
+    if (!track->GetXYZatR(r, fEvent->GetMagneticField(), xyz, NULL)) pass=kFALSE;
+    Double_t cra = TMath::ATan2(xyz[1],xyz[0]); // crossing angle
+    Double_t dpe = TMath::TwoPi()/360.;// excluded region (\pm 1 degree)
+    for(Int_t nb=-8; nb<=8; nb++) {
+      Double_t bnp = nb*TMath::Pi()/9.; // TPC boundaries azimuthal angle
+      if(cra<bnp+dpe && cra>bnp-dpe) pass=kFALSE;
     }
+  }
+
+  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
+  {
+    if (!PassesAODpidCut(track)) pass=kFALSE;
+  }
 
   if (fQA) {
     // changed 04062014 used to be filled before possible PID cut

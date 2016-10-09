@@ -3,7 +3,7 @@
  * analysis, meant as a QA process for two-particle effects			  *
  *																	  *
  * Author: Adam Kisiel (Adam.Kisiel@cern.ch)						  *
- *																	  *
+ * Developed by: Wojciech Brylinski									  *
  *********************************************************************/
 #if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
@@ -65,14 +65,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double ProtonMass = 0.938272013;
 	double LambdaMass = 1.115683;
 	
-	const int numOfMultBins = 2;	
+	const int numOfMultBins = 1;	
 	const int numOfChTypes = 16; //13
 	const int numOfkTbins = 1;
 
 	bool performSharedDaughterCut = false;
 	bool enablePairMonitors = true;
 
-	char *parameter[21];
+	char *parameter[31];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
@@ -117,7 +117,30 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	    cout<<"Parameter [19]: (monitors)"<<parameter[19]<<" "<<endl;
 	    parameter[20] = strtok(NULL, ",");
 	    cout<<"Parameter [20]: (nSigma2)"<<parameter[20]<<" "<<endl;
+	    parameter[21] = strtok(NULL, ","); // PP
+		parameter[22] = strtok(NULL, ","); //aPaP
+		parameter[23] = strtok(NULL, ","); //PaP
+		parameter[24] = strtok(NULL, ","); //KpKp
+		parameter[25] = strtok(NULL, ","); //KmKm
+		parameter[26] = strtok(NULL, ","); //KpKm
+		parameter[27] = strtok(NULL, ","); //PIpPIp
+		parameter[28] = strtok(NULL, ","); //PImPIm
+		parameter[29] = strtok(NULL, ","); //PIpPIm
+		parameter[30] = strtok(NULL, ","); //all
 	  }
+	int PP = atoi(parameter[21]);
+	int aPaP = atoi(parameter[22]);
+	int PaP = atoi(parameter[23]);
+	int KpKp = atoi(parameter[24]);
+	int KmKm = atoi(parameter[25]);
+	int KpKm = atoi(parameter[26]);
+	int PIpPIp = atoi(parameter[27]);
+	int PImPIm = atoi(parameter[28]);
+	int PIpPIm = atoi(parameter[29]);
+
+	int all = atoi(parameter[30]);
+	int runch[numOfChTypes] = {PP, aPaP, PaP, KpKp, KmKm, KpKm, PIpPIp, PImPIm, PIpPIm, 0, 0, 0, all, 0, 0, 0};
+	 
 	int filterbit = atoi(parameter[0]); //128  (768 / 128) 
 	int runktdep = atoi(parameter[1]); //0
 	int runmultdep = atoi(parameter[2]); //0
@@ -145,10 +168,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
 
-	int runmults[numOfMultBins] = {1,1};
-	int multbins[numOfMultBins+1] = {0, 50, 100};
+	int runmults[numOfMultBins] = {1};
+	int multbins[numOfMultBins+1] = {0, 100};
 	
-	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0}; // 1 - wlacza czastki do analizy
+	
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "V0LL", "V0aLaL", "V0LaL", "all", "plus", "minus", "mixed"};
 	
 

@@ -52,6 +52,7 @@ class AliAnalysisUtils;
 // --- ROOT system ---
 #include <TObject.h>
 #include <TString.h>
+#include <TH3F.h>
 #include <TObjArray.h>
 class TArrayF;
 #include <TH2I.h>
@@ -113,6 +114,9 @@ public:
     void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
     void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
     
+    void SetEfficiencyHadron(TH3F *hMap){if(fEffHadron) delete fEffHadron;fEffHadron = (TH3F*)hMap->Clone();}
+    void SetEfficiencyElectron(TH3F *hMap){if(fEffElec) delete fEffElec; fEffElec = (TH3F*)hMap->Clone();}
+    
     //DCA cut main particle
     void SetdcaCut(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutr = DCAcutr; fDCAcutz = DCAcutz;};
     
@@ -167,13 +171,16 @@ private:
     //DiHadron Correlation Background
     void DiHadronCorrelation(AliVTrack *track, Int_t trackIndex);
     //Find Mothers (Finde HFE and NonHFE from MC information)
+    
     Bool_t FindMother(Int_t mcIndex);
     Bool_t ContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
     TArrayI GetTriggerPatches(Bool_t IsEventEMCALL0, Bool_t IsEventEMCALL1);
     Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
     Double_t SetEoverPCutPtDependentMC(Double_t pt);
     //Do the Online Correction for the efficiency
-    Double_t GetHadronWCorrection(Double_t pt);
+    Double_t GetElectronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
+    Double_t GetHadronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
+
     
     //Flags for specifics analysis
     Bool_t 				fCorrelationFlag;
@@ -240,6 +247,10 @@ private:
     TH2F                    *fpTEtaSecPartPhysPri;
     TH2F                    *fpTPhiSecPartNonPhysPri;
     TH2F                    *fpTEtaSecPartNonPhysPri;
+    
+    //Efficiency Maps
+    TH3F                    *fEffElec;
+    TH3F                    *fEffHadron;
     
 
     
@@ -685,13 +696,14 @@ private:
 ///Author: Christoph Mayer
 class AliHFEHCParticle : public TObject {
 public:
-    AliHFEHCParticle(Double_t eta=0, Double_t phi=0, Double_t pt=0)
-    : fEta(eta), fPhi(phi), fPt(pt) {}
+    AliHFEHCParticle(Double_t eta=0, Double_t phi=0, Double_t pt=0, Double_t weight = 1)
+    : fEta(eta), fPhi(phi), fPt(pt) , fWeight(weight){}
     virtual ~AliHFEHCParticle() {}
     
     Double_t Eta() const { return fEta; }
     Double_t Phi() const { return fPhi; }
     Double_t Pt() const { return fPt; }
+    Double_t GetWeight() const { return fWeight; }
     
 protected:
 private:
@@ -703,6 +715,7 @@ private:
     Double_t fEta;
     Double_t fPhi;
     Double_t fPt;
+    Double_t fWeight;
     
     ClassDef(AliHFEHCParticle, 1);
 } ;

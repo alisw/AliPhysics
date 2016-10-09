@@ -381,11 +381,14 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       const Int_t ncells   = fCaloCells->GetNumberOfCells();
       for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
       {
-        Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
+        Float_t cellAmplitude=0;  
+        Double_t cellTime=0, amp = 0, cellEFrac = 0;
         Short_t  cellNumber=0;
         Int_t cellMCLabel=-1;
-        if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
+        if (fCaloCells->GetCell(icell, cellNumber, amp, cellTime, cellMCLabel, cellEFrac) != kTRUE)
           break;
+        
+        cellAmplitude = amp; // compilation problem
         
         if (fSetCellMCLabelFromCluster) cellMCLabel = fCellLabels[cellNumber];
         
@@ -414,9 +417,50 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
         
         if(!AcceptCell(cellNumber)) continue;
         
+        //
+        // New way to set the cell MC labels, 
+        // valid only for MC productions with aliroot > v5-07-21
+        //
+        TArrayI labeArr(0);
+        TArrayF eDepArr(0);
+        Int_t nLabels = 0;
+
+        if(fSetCellMCLabelFromEdepFrac && fOrgClusterCellId[cellNumber] >= 0) // index can be negative if noisy cell that did not form cluster 
+        {
+          cellMCLabel = -1;
+          
+          fCellLabels[cellNumber] = idigit; 
+          
+          Int_t iclus = fOrgClusterCellId[cellNumber];
+          
+          if(iclus < 0)
+          {
+            AliInfo("Negative original cluster index, skip \n");
+            continue;
+          }
+          
+          AliVCluster *clus = InputEvent()->GetCaloCluster(iclus);
+
+          for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
+          {
+            if(cellNumber != clus->GetCellAbsId(icluscell)) continue ;
+            
+            // Select the MC label contributing, only if enough energy deposition
+            
+            fRecoUtils->RecalculateCellLabelsRemoveAddedGenerator(cellNumber, clus, MCEvent(),cellAmplitude, labeArr, eDepArr);
+            nLabels = labeArr.GetSize();
+          }
+        }
+        
         AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
-                                                                        (Float_t)cellAmplitude, (Float_t)cellTime,
+                                                                        cellAmplitude, (Float_t)cellTime,
                                                                         AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
+        
+        if(nLabels > 0)
+        {
+          digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
+        }
+
         
         if (!fDoClusterize||fSubBackground) 
         {
@@ -426,58 +470,6 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
           digit->SetAmplitude(energy);
           avgE += energy;
         }
-        
-        // New way to set the cell MC labels, 
-        // valid only for MC productions with aliroot > v5-07-21
-        if(fSetCellMCLabelFromEdepFrac && fOrgClusterCellId[cellNumber] >= 0) // index can be negative if noisy cell that did not form cluster 
-        {
-          fCellLabels[cellNumber] = idigit; 
-
-          AliVCluster *clus = 0;
-          Int_t iclus = fOrgClusterCellId[cellNumber];
-          
-          if(iclus < 0)
-          {
-            AliInfo("Negative original cluster index, skip \n");
-            continue;
-          }
-          
-          clus = InputEvent()->GetCaloCluster(iclus);
-          
-          for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
-          {
-            if(cellNumber != clus->GetCellAbsId(icluscell)) continue ;
-            
-            // Get the energy deposition fraction.
-            Float_t eDepFrac[4];
-            clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
-            
-            // Select the MC label contributing, only if enough energy deposition
-            TArrayI labeArr(0);
-            TArrayF eDepArr(0);
-            Int_t nLabels = 0;
-            for(Int_t imc = 0; imc < 4; imc++)
-            {
-              if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
-              {
-                nLabels++;
-                
-                labeArr.Set(nLabels);
-                labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
-                
-                eDepArr.Set(nLabels);
-                eDepArr.AddAt(eDepFrac[imc]*cellAmplitude, nLabels-1);
-                // use as deposited energy a fraction of the simulated energy (smeared and with noise)
-              }
-            }
-            
-            if(nLabels > 0)
-            {
-              digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
-            }
-          }
-        }
-        
         
         idigit++;
       }

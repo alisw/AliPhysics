@@ -68,7 +68,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 Double_t  lowerFactor                   = 0.75,                   // scale factor for lower limit in pi0-gamma angle cut
                                 Double_t  upperFactor                   = 2.5,                    // scale factor for upper limit in pi0-gamma angle cut
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
-                                Int_t     enableExtMatchAndQA           = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
+                                Int_t     enableExtMatchAndQA           = 0,                      // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
                                 Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
                                 Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
@@ -496,7 +496,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

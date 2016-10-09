@@ -635,16 +635,43 @@ const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCur
 
   if(!(charge==1||charge==-1)){AliError("Charge not defined");return 0x0;}
 
-  // Check for sign flip
-  if(fCurrentV0){
-    if(!fCurrentV0->GetParamN()||!fCurrentV0->GetParamP())return 0x0;
-    if(!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex())||!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))return 0x0;
-    if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==charge){
-      tracklabel=fCurrentV0->GetPindex();
-      return fCurrentV0->GetParamP();}
-    if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()==charge){
-      tracklabel=fCurrentV0->GetNindex();
-      return fCurrentV0->GetParamN();}
+  if(fConversionCuts->GetV0FinderSameSign()==1){
+    if(fCurrentV0){
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()!=(fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge())return 0x0;
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==(fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()){
+        if(charge==1){
+          tracklabel=fCurrentV0->GetPindex();
+          return fCurrentV0->GetParamP();
+        }else{
+          tracklabel=fCurrentV0->GetNindex();
+          return fCurrentV0->GetParamN();
+        }
+      }
+    }
+  }else if(fConversionCuts->GetV0FinderSameSign()==2){
+    if(fCurrentV0){
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==(fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()){
+        if(charge==1){
+          tracklabel=fCurrentV0->GetPindex();
+          return fCurrentV0->GetParamP();
+        }else{
+          tracklabel=fCurrentV0->GetNindex();
+          return fCurrentV0->GetParamN();
+        }
+      }
+    }
+  }else{
+    // Check for sign flip
+    if(fCurrentV0){
+      if(!fCurrentV0->GetParamN()||!fCurrentV0->GetParamP())return 0x0;
+      if(!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex())||!fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))return 0x0;
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==charge){
+        tracklabel=fCurrentV0->GetPindex();
+        return fCurrentV0->GetParamP();}
+      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()==charge){
+        tracklabel=fCurrentV0->GetNindex();
+        return fCurrentV0->GetParamN();}
+    }
   }
   return 0x0;
 }

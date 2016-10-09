@@ -62,7 +62,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Int_t       mixingConfigID,
  Int_t       aodFilterBit,
  Bool_t      enableMonitor=kTRUE,
- TString     monitorOpt, 
+ TString     monitorOpt= "", 
  Float_t     piPIDCut  ,
  Float_t     pi_k0s_PIDCut,
  //Float_t     trackDCAcut = 7.0,
@@ -200,7 +200,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusRun2.C");
+   gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
    //gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
    if (isMC) {
      Printf("========================== MC analysis - PID cuts not used"); 

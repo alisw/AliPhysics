@@ -114,11 +114,11 @@ void AliTender::ConnectInputData(Option_t* option)
      printf("AliTender: #### Setting run to: %d\n", fRun);
   }   
 
+  fCDB = AliCDBManager::Instance();
   // Initialize OCDB (only done when explicitly requested)
   if(fHandleCDB){
     // Create CDB manager
     if (!fDefaultStorage.Length()) AliFatal("Default CDB storage not set.");
-    fCDB = AliCDBManager::Instance();
     // SetDefault storage. Specific storages must be set by AliTenderSupply::Init()
     fCDB->SetDefaultStorage(fDefaultStorage);
     // Unlock CDB
@@ -161,6 +161,7 @@ void AliTender::UserExec(Option_t* option)
   if (fRun != fESD->GetRunNumber()) {
     fRunChanged = kTRUE;
     fRun = fESD->GetRunNumber();
+    fCDB = AliCDBManager::Instance();
     if(fHandleCDB){
       // Unlock CDB
       fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);

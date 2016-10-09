@@ -711,35 +711,7 @@ void AliAnalysisTaskSigma0::UserCreateOutputObjects()
     Double_t mSigmax2=1.4;  Double_t mSigmin2=1.1;  Int_t nBinMass2 = 280 ;
     
     //------------------------------------------------
-
-    /* 18jan16   for(Int_t isol=0;   isol<1 ; isol++){       //  isol<12; isol++){   -offi
-        
-        sprintf(key,"hMCsig0MassPt%dAll",isol) ;
-        fOutputContainer->Add(new TH2F(key,"Mass vs pt Sigma0",nBinMass,1.,1.7,npt,0.,ptmax)) ;
   
-        sprintf(key,"hMCsig0RPt%dAll",isol) ;
-        fOutputContainer->Add(new TH2F(key,"R vs pt Sigma0",npt,0.,Rmax, nR,0.,ptmax )) ;
-        
-        sprintf(key,"hMCsig0PtLamdaVSGamma%d",isol) ;
-        fOutputContainer->Add(new TH2F(key,"pT L  vs g from Sigma0",nR,0., 5, nR,0., 2.5 )) ;
-                
-        sprintf(key,"hMCrecSig0PtLamdaVSGamma%d",isol) ;
-        fOutputContainer->Add(new TH2F(key,"pT L  vs g from Sigma0rec",nR,0., 5, nR,0., 2.5 )) ;
-        
-        sprintf(key,"hMCrec2Sig0PtLamdaVSGamma%d",isol) ;
-        fOutputContainer->Add(new TH2F(key,"pT L  vs g from Sigma0rec2",nR,0., 5, nR,0., 2.5 )) ;
-        
-        sprintf(key,"hMCrec3Sig0PtLamdaVSGamma%d",isol) ;
-        fOutputContainer->Add(new TH2F(key,"pT L  vs g from Sigma0rec2",nR,0., 5, nR,0., 5. )) ;
-        
-        // sprintf(key,"hMClam0MassPt%dAll",isol) ;
-        // fOutputContainer->Add(new TH2F(key,"Mass vs pt Lambda0",nBinMass,1.,1.7,npt,0.,ptmax)) ;
-        
-	//        sprintf(key,"hMClam0RPt%dAll",isol) ;
-        // fOutputContainer->Add(new TH2F(key,"Radius vs pt Lambda0",npt,0.,Rmax,  nR,0.,ptmax)) ;
-	} */
-
-   
     printf(" INIT V0Reader ------------------------------- \n");
     fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
     if(!fV0Reader){printf("START Error: No V0 Reader");return;} // GetV0Reader
@@ -2708,8 +2680,9 @@ void AliAnalysisTaskSigma0::SelectPhotonsFB()
   FillHistogram("hRecGammas",nRecGammas);
 
 
-  if(fV0Reader)  if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
-   
+  //25sep16-abb  if(fV0Reader)  if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
+  fV0Reader->GetConversionCuts();
+
   //    if(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms()) 
   //  fOutputContainer->Add(((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
  
@@ -2803,8 +2776,10 @@ void AliAnalysisTaskSigma0::SelectPhotonsFB()
 
       AliStack *fMCStack= fMCEvent->Stack();
 	
-      if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
+      //25sep16-abb      if( (AliConversionCuts*) fV0Reader->GetConversionCuts() );
 	
+      fV0Reader->GetConversionCuts();
+
       //Int_t labelp=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelPositive())->GetLabel());
       //Int_t labeln=TMath::Abs(fConversionCuts->GetTrack(fInputEvent,fCurrentMotherKF->GetTrackLabelNegative())->GetLabel());
 	
@@ -3752,8 +3727,10 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                     }
                 }
             }
-            
-            if( abs( rapLam < fetaCut ) ) {
+
+	    // 25sep16-abb            
+	    //            if( abs( rapLam < fetaCut ) ) {
+	    if( abs( rapLam ) < fetaCut  ) {
                 FillHistogram("hMCgenLamEta1",  particle->Pt() );
                 if(  particle->GetPdgCode() == 3122 )    FillHistogram("hMCgenPLamEta1",  particle->Pt() );
                 else if( particle->GetPdgCode() == -3122 )    FillHistogram("hMCgenALamEta1",  particle->Pt() );
@@ -3878,8 +3855,9 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 
                 FillHistogram("hMCgenGamSig0", daught2->Pt() );
 
-
-               	if( abs(  daught2->Eta() < 0.12 ) ) {
+		// 25sep16
+		//               	if( abs(  daught2->Eta() < 0.12 ) ) {
+		if( abs(  daught2->Eta() ) < 0.12  ) {
 		  FillHistogram("hMCgenGamSig0PHOS",  daught2->Pt() );
 		  if( (daught2->Phi() > 220.*3.1415492/360. && daught2->Phi() < 320.*3.1415492/360.) ) { 
 		  FillHistogram("hMCgenGamSig0PHOSEta1",  daught2->Pt() );
@@ -4182,23 +4160,6 @@ Bool_t AliAnalysisTaskSigma0::TestLambda(Double_t pt,Double_t l1,Double_t l2){
     return (R2<2.5*2.5) ;    
 }
 
-//_________________________________________________________________________________
-void AliAnalysisTaskSigma0::REvalIsolation(TLorentzVector * ph,const Int_t isolation ){
-    //OLD  printf("  Check if this particle is isolated ITYPE %d  \n",isolation);
-    Int_t nbin=9 ;
-}
-
-//_________________________________________________________________________________
-Int_t AliAnalysisTaskSigma0::EvalIsolation(TLorentzVector * ph ){
-    //OLD We use several cone radii and epsilons looking on charged particles and EMCAL ones    
-    Int_t nbin=9 ;
-}
-
-//_________________________________________________________________________________
-Int_t AliAnalysisTaskSigma0::EvalMCIsolation(TParticle * ph){
-  //OLD Check if this particle is isolated. 
-  Int_t isolation = 15;
-}
 
 //_____________________________________________________
 void AliAnalysisTaskSigma0::FillCorr(TLorentzVector * trig, const Int_t itype  )

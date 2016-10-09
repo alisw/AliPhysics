@@ -94,6 +94,15 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4, 
     if(kTRange==4){
      int    runktdeprange[4]={1,1,1,1};
     }
+    if(kTRange==5){
+        int    runktdeprange[4]={0,0,0,1};
+    }
+    if(kTRange==6){
+        int    runktdeprange[4]={0,0,1,1};
+    }
+    if(kTRange==7){
+        int    runktdeprange[4]={0,1,1,0};
+    }
     char *nametest="sysstudy";
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
@@ -111,7 +120,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4, 
     //const char *detadphistar[5]={"nocuts","test1","test2","test3","test4"};
     const char *detadphistar[5]={"test1a","test2a","test3a","nocuts","b"};
     
-    double ktrng[5] = {0.2, 0.3, 0.4, 0, 0};
+    double ktrng[5] = {0.2, 0.3, 0.4, 0.5, 0.7};
     //int phirange[7] = {-15, 15, 45, 75, 105, 135, 165};
     //   int phirange[10] = {-15, 5, 25,45,65,85,105,125,145,165};
    // int phirange2[11] = {1, 12, 24, 36, 48, 60, 72, 84, 96, 108, 119};// Moe

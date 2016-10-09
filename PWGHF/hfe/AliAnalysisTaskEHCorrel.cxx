@@ -50,6 +50,8 @@
 #include "TRefArray.h"
 #include "TVector.h"
 
+
+#include "AliEventPoolManager.h"
 #include "AliESDInputHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliESDpid.h"
@@ -86,12 +88,14 @@
 #include "TVector3.h"
 #include "TRandom2.h"
 
-ClassImp(AliAnalysisTaskEHCorrel)
+  ClassImp(AliAnalysisTaskEHCorrel)
+ClassImp(AliehDPhiBasicParticle)
   //________________________________________________________________________
   AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
 : AliAnalysisTaskSE(name),
   fVevent(0),
   fAOD(0),
+  fpVtx(0),
   fpidResponse(0),
   fMultSelection(0),
   fCentrality(-1),
@@ -113,8 +117,10 @@ ClassImp(AliAnalysisTaskEHCorrel)
   fTPCNClsHad(80),
   fInvmassCut(0.1),
   fTPCnSigmaHadMin(-10),
-  fTPCnSigmaHadMax(-4),
+  fTPCnSigmaHadMax(-3.5),
   fHadCutCase(1),
+  fPoolMgr(0x0),
+  fTrigElePtCut(kFALSE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -156,10 +162,16 @@ ClassImp(AliAnalysisTaskEHCorrel)
   fInvmassULS(0),
   fInvmassLSPt(0),
   fInvmassULSPt(0),
+  fNoMixedEvents(0),
+  fMixStatCent(0),
+  fMixStatVtxZ(0),
   fSprsHadHCorrl(0),
   fSprsInclusiveEHCorrl(0),
   fSprsLSEHCorrl(0),
-  fSprsULSEHCorrl(0)
+  fSprsULSEHCorrl(0),
+  fSprsMixInclusiveEHCorrl(0),
+  fSprsMixLSEHCorrl(0),
+  fSprsMixULSEHCorrl(0)
 {
   //Named constructor
 
@@ -178,6 +190,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEHCorrel"),
   fVevent(0),
   fAOD(0),
+  fpVtx(0),
   fpidResponse(0),
   fMultSelection(0),
   fCentrality(-1),
@@ -199,8 +212,10 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fTPCNClsHad(80),
   fInvmassCut(0.1),
   fTPCnSigmaHadMin(-10),
-  fTPCnSigmaHadMax(-4),
+  fTPCnSigmaHadMax(-3.5),
   fHadCutCase(1),
+  fPoolMgr(0x0),
+  fTrigElePtCut(kFALSE),
   fOutputList(0),
   fNevents(0),
   fVtxZ(0),
@@ -242,10 +257,16 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fInvmassULS(0),
   fInvmassLSPt(0),
   fInvmassULSPt(0),
+  fNoMixedEvents(0),
+  fMixStatCent(0),
+  fMixStatVtxZ(0),
   fSprsHadHCorrl(0),
   fSprsInclusiveEHCorrl(0),
   fSprsLSEHCorrl(0),
-  fSprsULSEHCorrl(0)
+  fSprsULSEHCorrl(0),
+  fSprsMixInclusiveEHCorrl(0),
+  fSprsMixLSEHCorrl(0),
+  fSprsMixULSEHCorrl(0)
 {
   //Default constructor
   // Constructor
@@ -266,8 +287,11 @@ AliAnalysisTaskEHCorrel::~AliAnalysisTaskEHCorrel()
   delete fOutputList;
   delete fSprsHadHCorrl;
   delete fSprsInclusiveEHCorrl;
-  delete   fSprsLSEHCorrl;
+  delete fSprsLSEHCorrl;
   delete fSprsULSEHCorrl;
+  delete fSprsMixInclusiveEHCorrl;
+  delete fSprsMixLSEHCorrl;
+  delete fSprsMixULSEHCorrl;
 }
 //_________________________________________
 void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
@@ -278,7 +302,49 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   Double_t pi = TMath::Pi();
 
-  ////////////////
+  ////////////////////////
+  //Initiale mixed event//
+  ////////////////////////
+  Int_t trackDepth = 2000;
+  Int_t poolsize   = 1000;
+
+  Int_t nZvtxBins  = 4;
+  Double_t vertexBins[5] = {-10,-5,0,5,10};
+  Int_t nCentralityBins  = 6;
+  Double_t CentralityBins[7];
+  if(fCentralityMax == 20)
+  {
+    CentralityBins[0] = 0;
+    CentralityBins[1] =2;
+    CentralityBins[2] = 4;
+    CentralityBins[3] =6;
+    CentralityBins[4] =10;
+    CentralityBins[5] =15;
+    CentralityBins[6] =20;
+  }
+  if(fCentralityMax == 50)
+  {
+    CentralityBins[0] = 20;
+    CentralityBins[1] = 25;
+    CentralityBins[2] = 30;
+    CentralityBins[3] = 35;
+    CentralityBins[4] = 40;
+    CentralityBins[5] = 45;
+    CentralityBins[6] = 50;
+  }
+  if(fCentralityMax > 50)
+  {
+    CentralityBins[0] = 50;
+    CentralityBins[1] = 55;
+    CentralityBins[2] = 60;
+    CentralityBins[3] = 65;
+    CentralityBins[4] = 70;
+    CentralityBins[5] = 75;
+    CentralityBins[6] = 80;
+  }
+  fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, (Double_t*) CentralityBins, nZvtxBins, (Double_t*) vertexBins);
+
+  ///////////////
   //Output list//
   ///////////////
   fOutputList = new TList();
@@ -409,6 +475,19 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fInvmassULSPt = new TH2F("fInvmassULSPt", "Inv mass of ULS (e,e) vs pT; p_{T}(GeV/c); mass(GeV/c^2); counts;", 500,0,50,1000,0,1.0);
   fOutputList->Add(fInvmassULSPt);
 
+  fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
+  fOutputList->Add(fNoMixedEvents);
+
+  Int_t nEventBins =100;
+  Double_t EventBins[nEventBins+1];
+  for(int i=0; i < nEventBins+1; i++)
+    EventBins[i] = i;
+
+  fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBins,CentralityBins);
+  fOutputList->Add(fMixStatCent);
+
+  fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
+  fOutputList->Add(fMixStatVtxZ);
 
   //------THnsparse------
   Int_t bin[4] = {50,50,64,100}; //ptElec, ptHad,Dphi, Deta
@@ -426,6 +505,15 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   fSprsULSEHCorrl = new THnSparseD("fSprsULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsULSEHCorrl);
+
+  fSprsMixInclusiveEHCorrl = new THnSparseD("fSprsMixInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron for mixed event;p_{T}^{e};p_{T}^{mixTrk};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fOutputList->Add(fSprsMixInclusiveEHCorrl);
+
+  fSprsMixLSEHCorrl = new THnSparseD("fSprsMixLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fOutputList->Add(fSprsMixLSEHCorrl);
+
+  fSprsMixULSEHCorrl = new THnSparseD("fSprsMixULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fOutputList->Add(fSprsMixULSEHCorrl);
 
   PostData(1,fOutputList);
 }
@@ -449,6 +537,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     // printf("fAOD available\n");
     //return;
   }
+  fpVtx = fVevent->GetPrimaryVertex();
+
   ///////////////////
   //PID initialised//
   ///////////////////
@@ -585,6 +675,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
       //Inclusive E-H correl
       ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl);
+      MixedEvent(track, fSprsMixInclusiveEHCorrl);
 
       ////////////////////
       //NonHFE selection//
@@ -593,6 +684,21 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       SelectNonHFElectron(iTracks,track,fFlagPhotonicElec);
     }
   }
+
+  /////////////////////////
+  //Fill Mixed event pool//
+  /////////////////////////
+  Double_t pVtxZ = fpVtx->GetZ();
+  AliEventPool *fPool;
+  fPool = fPoolMgr->GetEventPool(fCentrality, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
+  if (!fPool)
+  {
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, pVtxZ));
+    return;
+  }
+  TObjArray * fArrayTracksMix = CloneAndReduceTrackList();
+  fArrayTracksMix->SetOwner(kTRUE);
+  fPool->UpdatePool(fArrayTracksMix);
 
   PostData(1, fOutputList);
 }
@@ -603,6 +709,11 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
 
   Double_t fvalueDphi[4] = {-999,999,-999,-999}; //ptElec, ptHad,Dphi, Deta
   Double_t pi = TMath::Pi();
+
+  Double_t ptHad= -999;
+  Double_t ptEle = -999;
+  Double_t phiEle = -999, phiHad = -999, Dphi = -999;
+  Double_t etaEle = -999, etaHad = -999, Deta = -999;
 
   for(Int_t ktracks = 0; ktracks<fVevent->GetNumberOfTracks(); ktracks++){
     if(ktracks == itrack) continue; //do not select the same electron
@@ -616,11 +727,6 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     AliAODTrack *atrackHad = dynamic_cast<AliAODTrack*>(VtrackHad);
     if(!atrackHad) continue;
 
-    Double_t ptHad= -999;
-    Double_t ptEle = -999;
-    Double_t phiEle = -999, phiHad = -999, Dphi = -999;
-    Double_t etaEle = -999, etaHad = -999, Deta = -999;
-
     ptHad = trackHad->Pt();
     ptEle = track->Pt();
     phiEle = track->Phi();
@@ -629,7 +735,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     etaHad = trackHad->Eta();
 
     if(!PassHadronCuts(atrackHad)) continue; //apply hadron cuts;
-    // if(ptHad > ptEle) continue;
+    if(fTrigElePtCut)
+      if(ptHad > ptEle) continue;
 
     Dphi = phiEle - phiHad;
     if (Dphi > 3*pi/2)
@@ -698,7 +805,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   }
   if(fHadCutCase == 3)
   {
-    if(!HadTrack->TestFilterMask(AliAODTrack::kIsHybridGCG)) return kFALSE;
+    if(!HadTrack->IsHybridGlobalConstrainedGlobal()) return kFALSE;
   }
 
   if(HadTrack->GetTPCNcls() < fTPCNClsHad) return kFALSE;
@@ -832,14 +939,14 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
 
   fNevents->Fill(0); //all events
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
-  const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
-  Double_t NcontV = pVtx->GetNContributors();
+
+  Double_t NcontV = fpVtx->GetNContributors();
   if(NcontV<2)return kFALSE;
   fNevents->Fill(1); //events with 2 tracks
 
-  Zvertex = pVtx->GetZ();
-  Yvertex = pVtx->GetY();
-  Xvertex = pVtx->GetX();
+  Zvertex = fpVtx->GetZ();
+  Yvertex = fpVtx->GetY();
+  Xvertex = fpVtx->GetX();
   fVtxZ->Fill(Zvertex);
   fVtxX->Fill(Xvertex);
   fVtxY->Fill(Yvertex);
@@ -989,14 +1096,116 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     if(fFlagLS) fInvmassLSPt->Fill(track->Pt(),mass);
     if(fFlagULS) fInvmassULSPt->Fill(track->Pt(),mass);
 
-    if(fFlagLS && mass<fInvmassCut) ElectronHadCorrel(itrack, track, fSprsLSEHCorrl);
-    if(fFlagULS && mass<fInvmassCut) ElectronHadCorrel(itrack, track, fSprsULSEHCorrl);
+    if(fFlagLS && mass<fInvmassCut) {
+      ElectronHadCorrel(itrack, track, fSprsLSEHCorrl);
+      MixedEvent(track, fSprsMixLSEHCorrl);
+    }
+    if(fFlagULS && mass<fInvmassCut){
+      ElectronHadCorrel(itrack, track, fSprsULSEHCorrl);
+      MixedEvent(track, fSprsMixULSEHCorrl);
+    }
 
     if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
       flagPhotonicElec = kTRUE;
     }
   }
   fFlagPhotonicElec = flagPhotonicElec;
+}
+//___________________________________________
+void  AliAnalysisTaskEHCorrel::MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl)
+{
+  //Retrive mixed event pool
+  Double_t zVtx;
+  zVtx = fpVtx->GetZ();
+
+  Double_t fvalueMixDphi[4] = {-999,999,-999,-999}; //ptElec, ptHad,Dphi, Deta
+  Double_t pi = TMath::Pi();
+
+  AliEventPool* fPool;
+  fPool = fPoolMgr->GetEventPool(fCentrality, zVtx); // Get the buffer associated with the current centrality and z-vtx
+  if (!fPool)
+  {
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, zVtx));
+    return;
+  }
+  //fPool->PrintInfo();
+  if (fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
+  {
+    Int_t nMix = fPool->GetCurrentNEvents();
+    fNoMixedEvents->Fill(0);
+    fMixStatCent->Fill(fPool->GetCurrentNEvents(),fCentrality);
+    fMixStatVtxZ->Fill(fPool->GetCurrentNEvents(),zVtx);
+
+    Double_t ptMixTrk= -999;
+    Double_t ptEle = -999;
+    Double_t phiEle = -999, phiMixTrk = -999, Dphi = -999;
+    Double_t etaEle = -999, etaMixTrk = -999, Deta = -999;
+
+    // cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+    for (Int_t jMix=0; jMix<nMix; jMix++)  // mix with each event in the buffer
+    {
+      TObjArray* bgTracks = fPool->GetEvent(jMix);
+      for (Int_t i=0;i<bgTracks->GetEntriesFast(); i++)
+      {
+        AliVParticle* mixtrk = (AliVParticle*) bgTracks->At(i);
+
+        if (!mixtrk) {
+          printf("ERROR: Could not receive mix pool track %d\n",i);
+          continue;
+        }
+
+        ptEle = track->Pt();
+        phiEle = track->Phi();
+        etaEle = track->Eta();
+        phiMixTrk = mixtrk->Phi();
+        ptMixTrk = mixtrk->Pt();
+        etaMixTrk = mixtrk->Eta();
+
+        if(fTrigElePtCut)
+          if(ptMixTrk > ptEle) continue;
+
+        Dphi = phiEle - phiMixTrk;
+        if (Dphi > 3*pi/2)
+          Dphi = Dphi - 2*pi;
+        if (Dphi < -pi/2)
+          Dphi = Dphi + 2*pi;
+
+        Deta = etaEle - etaMixTrk;
+
+        fvalueMixDphi[0] = ptEle;
+        fvalueMixDphi[1] = ptMixTrk;
+        fvalueMixDphi[2] = Dphi;
+        fvalueMixDphi[3] = Deta;
+        SparseMixEHCorrl->Fill(fvalueMixDphi);
+      }
+    }
+  }
+}
+//___________________________________________
+TObjArray* AliAnalysisTaskEHCorrel::CloneAndReduceTrackList()
+{
+  // clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
+  TObjArray* fArrayTracksMix = new TObjArray;
+  fArrayTracksMix->SetOwner(kTRUE);
+
+  for(Int_t ktracks = 0; ktracks<fVevent->GetNumberOfTracks(); ktracks++){
+    AliVParticle* Vtrack = fVevent->GetTrack(ktracks);
+    if (!Vtrack) {
+      printf("ERROR: Could not receive track %d\n", ktracks);
+      continue;
+    }
+
+    AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
+    if(!track) continue;
+    AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+    if(!atrack) continue;
+
+    if(!PassHadronCuts(atrack)) continue; //apply hadron cuts;
+
+    AliVParticle* particle = (AliVParticle*) fVevent->GetTrack(ktracks);
+    fArrayTracksMix->Add(new AliehDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+  }
+  return fArrayTracksMix;
 }
 //___________________________________________
 void AliAnalysisTaskEHCorrel::Terminate(Option_t *)
@@ -1010,5 +1219,6 @@ void AliAnalysisTaskEHCorrel::Terminate(Option_t *)
     return;
   }
 }
+
 
 

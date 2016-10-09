@@ -70,7 +70,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
   AliAnalysisTaskMultiDielectron *task;
   // create one multi task
   task = new AliAnalysisTaskMultiDielectron(Form("MultiDieJB"));
-  task->SetBeamEnergy(3.5);
+  task->SetBeamEnergy(2510.);
   task->SetTriggerMask(triggers);
   if(!hasMC) task->UsePhysicsSelection();
 

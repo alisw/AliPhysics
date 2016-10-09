@@ -464,6 +464,20 @@ AliVEvent* AliEMCALTenderSupply::GetEvent()
 }
 
 //_____________________________________________________
+AliMCEvent* AliEMCALTenderSupply::GetMCEvent()
+{
+  // Return the event pointer.
+  
+  if (fTender) {
+    return fTender->MCEvent();
+  } else if (fTask) {
+    return fTask->MCEvent();
+  }
+  
+  return 0;
+}
+
+//_____________________________________________________
 void AliEMCALTenderSupply::ProcessEvent()
 {
   // Event loop.
@@ -837,7 +851,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     event->InitMagneticField();
   }
 
-  fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
+  fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo,GetMCEvent());
   fEMCALRecoUtils->SetClusterMatchedToTrack(event);
   fEMCALRecoUtils->SetTracksMatchedToCluster(event);
 }
@@ -1657,12 +1671,15 @@ void AliEMCALTenderSupply::FillDigitsArray()
   Int_t ncells = cells->GetNumberOfCells();
   for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) 
   {
-    Double_t cellAmplitude=0, cellTime=0, efrac = 0;
+    Double_t amp=0, cellTime=0, efrac = 0;
+    Float_t cellAmplitude=0;
     Short_t  cellNumber=0;
     Int_t mcLabel=-1;
 
-    if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime, mcLabel, efrac) != kTRUE)
+    if (cells->GetCell(icell, cellNumber, amp, cellTime, mcLabel, efrac) != kTRUE)
       break;
+
+    cellAmplitude = amp; // compilation problem
 
     // Do not add if energy already too low (some cells set to 0 if bad channels)
     if (cellAmplitude < fRecParam->GetMinECut())
@@ -1678,21 +1695,20 @@ void AliEMCALTenderSupply::FillDigitsArray()
       else if (fRemapMCLabelForAODs      ) RemapMCLabelForAODs(mcLabel);
     }
     
-    if (mcLabel > 0 && efrac < 1e-6) efrac = 1;
-    
-    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(mcLabel, mcLabel, cellNumber,
-                                                                    (Float_t)cellAmplitude, (Float_t)cellTime,
-                                                                    AliEMCALDigit::kHG,idigit, 0, 0, efrac*cellAmplitude);
-    
-    
+    //
     // New way to set the cell MC labels, 
     // valid only for MC productions with aliroot > v5-07-21
+    //
+    TArrayI labeArr(0);
+    TArrayF eDepArr(0);
+    Int_t nLabels = 0;
+    
     if(fSetCellMCLabelFromEdepFrac && fOrgClusterCellId[cellNumber] >= 0) // index can be negative if noisy cell that did not form cluster 
     {
-      
+      mcLabel = -1;
+
       fCellLabels[cellNumber] = idigit;
       
-      AliVCluster *clus = 0;
       Int_t iclus = fOrgClusterCellId[cellNumber];
       
       if(iclus < 0)
@@ -1701,40 +1717,32 @@ void AliEMCALTenderSupply::FillDigitsArray()
         continue;
       }
       
-      clus = event->GetCaloCluster(iclus);
+      AliVCluster *clus = event->GetCaloCluster(iclus);
+      
       
       for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
       {
         if(cellNumber != clus->GetCellAbsId(icluscell)) continue ;
         
-        // Get the energy deposition fraction.
-        Float_t eDepFrac[4];
-        clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
-        
         // Select the MC label contributing, only if enough energy deposition
-        TArrayI labeArr(0);
-        TArrayF eDepArr(0);
-        Int_t nLabels = 0;
-        for(Int_t imc = 0; imc < 4; imc++)
-        {
-          if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
-          {
-            nLabels++;
-            
-            labeArr.Set(nLabels);
-            labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
-            
-            eDepArr.Set(nLabels);
-            eDepArr.AddAt(eDepFrac[imc]*cellAmplitude, nLabels-1);
-            // use as deposited energy a fraction of the simulated energy (smeared and with noise)
-          }
-        }
-        
-        if(nLabels > 0)
-        {
-          digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
-        }
+
+        fEMCALRecoUtils->RecalculateCellLabelsRemoveAddedGenerator(cellNumber, clus, GetMCEvent(), cellAmplitude, labeArr, eDepArr);
+        nLabels = labeArr.GetSize();
       }
+
+      if(cellAmplitude <= 0.01) continue ; // accept if > 10 MeV
+    } // recalculate MC labels 
+
+    
+    if (mcLabel > 0 && efrac < 1e-6) efrac = 1;
+    
+    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(mcLabel, mcLabel, cellNumber,
+                                                                    cellAmplitude, (Float_t)cellTime,
+                                                                    AliEMCALDigit::kHG,idigit, 0, 0, efrac*cellAmplitude);
+    
+    if(nLabels > 0)
+    {
+      digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
     }
     
     idigit++;

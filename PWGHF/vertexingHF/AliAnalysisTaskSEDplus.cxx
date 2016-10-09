@@ -1102,10 +1102,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(fSystem==1) dd0max = TMath::Abs(dd0max);
 
 	//for all THnSparses except for FD
-	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max};
+	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max};
 	//for THnSparses for FD
-	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
-
+	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
+        
 	//for imppar THnSparses
 	Double_t arrayForImpPar[kVarForImpPar]={invMass,ptCand,impparXY};
 	//for imppar THnSparse with true FD imppar
@@ -1470,9 +1470,13 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Int_t nnormdlbins=30;
   Double_t minnormdl=0.;
   Double_t maxnormdl=30.;
-
+  
   Double_t maxmult;
-
+  
+  Int_t nd0bins=15;
+  Double_t d0min=0.;
+  Double_t d0max=300;
+  
   Int_t nptmindaubins;
   Double_t minptmindau;
   Double_t maxptmindau;
@@ -1520,12 +1524,12 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     mindeclxy=0.;
     maxdeclxy=0.35;
 
-    ncospbins=10;
-    mincosp=0.99;
+    ncospbins=30;
+    mincosp=0.97;
     maxcosp=1.;
 
-    ncospxybins=10;
-    mincospxy=0.99;
+    ncospxybins=30;
+    mincospxy=0.97;
     maxcospxy=1.;
 
     nd0d0expbins=12;
@@ -1564,12 +1568,11 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
     maxd0d0=10.;
   }
   //dimensions for THnSparse which are NOT for BFeed
-  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","passTopolPID","min. daughter p_{T} (GeV/c)",
-				"sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp"};
+  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp"};
 
-  Int_t nbins[kVarForSparse]={nmassbins,nptbins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins};
-  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0};
-  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
+  Int_t nbins[kVarForSparse]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins};
+  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0};
+  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
 
   //dimensions for THnSparse for BFeed
   Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};

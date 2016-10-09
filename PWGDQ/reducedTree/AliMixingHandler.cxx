@@ -360,6 +360,8 @@ void AliMixingHandler::RunLeftoverMixing(Int_t type) {
   for(Int_t icateg=0; icateg<fPoolsLeg1.GetEntries(); ++icateg) {
     TClonesArray *leg1Pool = static_cast<TClonesArray*>(fPoolsLeg1.At(icateg));
     TClonesArray *leg2Pool = static_cast<TClonesArray*>(fPoolsLeg2.At(icateg));
+    if(!leg1Pool) continue;
+    if(!leg2Pool) continue;
     Int_t centBin = GetCentralityBin(icateg);
     Int_t zBin = GetEventVertexBin(icateg);
     Int_t epBin = GetEventPlaneBin(icateg);

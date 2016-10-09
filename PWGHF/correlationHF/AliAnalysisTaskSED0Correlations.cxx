@@ -611,8 +611,8 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(18,"Phys.Sel.Rej");
   fNentries->GetXaxis()->SetBinLabel(19,"nEventsSelected");
   fNentries->GetXaxis()->SetBinLabel(20,"D0 failed to be filled");
-  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(20,"nEvsWithProdMech");
-  fNentries->GetXaxis()->SetBinLabel(21,"mismatch AOD/dAOD");
+  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(21,"nEvsWithProdMech");
+  fNentries->GetXaxis()->SetBinLabel(22,"mismatch AOD/dAOD");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName()));
@@ -890,7 +890,12 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
     for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
- 
+
+      if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
+        fNentries->Fill(19); //monitor how often this fails 
+        continue;
+      }
+
       if(d->Pt() < fMinDPt) continue; //to save time and merging memory...
 
       if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
@@ -898,11 +903,6 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   	continue; //skip the D0 from Dstar  
       }
     
-      if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
-        fNentries->Fill(19); //monitor how often this fails 
-        continue;
-      }
-
       if(fCutsD0->IsInFiducialAcceptance(d->Pt(),d->Y(421))) {
         nSelectedloose++;
         nSelectedtight++;      

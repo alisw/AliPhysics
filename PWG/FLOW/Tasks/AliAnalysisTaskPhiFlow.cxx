@@ -44,12 +44,14 @@
 #include "TVector3.h"
 #include "AliAODVZERO.h"
 #include "AliPIDResponse.h"
+#include "AliTPCPIDResponse.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskVnV0.h"
 #include "AliEventPoolManager.h"
 #include "AliMultSelection.h"
 #include "TMatrixDSym.h"
 #include "AliVVertex.h"
+#include "AliAODVertex.h"
 
 class AliFlowTrackCuts;
 
@@ -63,7 +65,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE)
 {
    // Default constructor
-   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 3.;
+   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 1000.;
    for(Int_t i(0); i < 5; i++) fDCAConfig[i] = 0.;
    for(Int_t i(0); i < 20; i++) {
        fVertexMixingBins[i] = 0;
@@ -80,7 +82,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTa
    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE)
 {
    // Constructor
-   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 3.;
+   for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 1000.;
    for(Int_t i(0); i < 5; i++) fDCAConfig[i] = 0.;
    for(Int_t i(0); i < 20; i++) {
        fVertexMixingBins[i] = 0;
@@ -598,14 +600,78 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
        if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
        return kTRUE;
    }*/
+  if(fQA) {
+      Float_t length = track->GetIntegratedLength();
+      Float_t time = track->GetTOFsignal();
+      Double_t beta = -.05;
 
-   cout << TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2))<< endl;
+      if((length > 0) && (time > 0)) beta = length / 2.99792458e-2 / time;
+                
+      fNOPID->Fill(track->P(), track->GetTPCsignal());
+      fNOPIDTOF->Fill(track->P(), beta);
+  }
 
-   if ((TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon),2)+ TMath::Power(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon),2)))< fPIDConfig[0]) 
-   {
-       if(fQA) {fPIDk->Fill(track->P(), track->GetTPCsignal());fPIDTOF->Fill(track->P(), track->GetTOFsignal());}
+
+
+   //kaon stuff
+   Double_t nSigKTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+   Double_t nSigKTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+
+   Double_t nSigmaK = 999;
+
+   if(track->Pt() > .4) {
+       nSigmaK = TMath::Sqrt(nSigKTPC*nSigKTPC+nSigKTOF*nSigKTOF);
+   } else {
+       if(track->GetTPCsignal() > 110) nSigmaK = TMath::Abs(nSigKTPC);
+   }
+   // pion
+   Double_t nSigPiTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+   Double_t nSigPiTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+
+   Double_t nSigmaPi = 999;
+
+   if(track->Pt() > .4) {
+       nSigmaPi = TMath::Sqrt(nSigPiTPC*nSigPiTPC+nSigPiTOF*nSigPiTOF);
+   } else {
+       if(track->GetTPCsignal() < 60) nSigmaPi = TMath::Abs(nSigPiTPC);
+   }
+
+   //proton
+   Double_t nSigPTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+   Double_t nSigPTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+
+   Double_t nSigmaP = 999;
+
+   if(track->Pt() > .4) {
+       nSigmaP = TMath::Sqrt(nSigPTPC*nSigPTPC+nSigPTOF*nSigPTOF);
+   } else {
+       if(track->GetTPCsignal() > 110) nSigmaP = TMath::Abs(nSigPTPC);
+   }
+
+   Short_t minSigma = FindMinNSigma(nSigmaPi, nSigmaK, nSigmaP);
+
+
+
+   if(minSigma == 0) return kFALSE;
+   if((nSigmaK == nSigmaPi) && ( nSigmaK == nSigmaP)) return kFALSE;
+
+   if(minSigma == 2 &&!GetDoubleCountingK(nSigmaK, minSigma)) {
+       
+       if(fQA) {
+           Float_t length = track->GetIntegratedLength();
+           Float_t time = track->GetTOFsignal();
+           Double_t beta = -.05;
+
+           if((length > 0) && (time > 0)) beta = length / 2.99792458e-2 / time;
+                     
+           fPIDk->Fill(track->P(), track->GetTPCsignal());
+           fPIDTOF->Fill(track->P(), beta);
+       }
+
+
        return kTRUE;
    }
+
    return kFALSE;
 }
 //_____________________________________________________________________________
@@ -768,7 +834,22 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
           if (bc1 != 0)
               return;
            */
-	
+
+          // add vertexer selection
+          AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
+          AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+          if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+          double covTrc[6],covSPD[6];
+          vtTrc->GetCovarianceMatrix(covTrc);
+          vtSPD->GetCovarianceMatrix(covSPD);
+          double dz = vtTrc->GetZ()-vtSPD->GetZ();
+          double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+          double errTrc = TMath::Sqrt(covTrc[5]);
+          double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+          if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing 
+
+
+
       }
        
       //new function for 2015 to remove incomplete events
@@ -1142,3 +1223,37 @@ Bool_t AliAnalysisTaskPhiFlow::plpMV(const AliAODEvent* aod)
 }
 
 //_____________________________________________________________________________
+//---------------------------------------------------
+Short_t AliAnalysisTaskPhiFlow::FindMinNSigma(Double_t nSpi, Double_t nSk, Double_t nSp) const
+{
+    
+    Short_t kPID = 0;
+    
+    if((nSk == nSpi) && (nSk == nSp))
+        return kPID;
+    if((nSk < nSpi) && (nSk < nSp) && (nSk < fPIDConfig[0]))
+        kPID = 2;
+    
+    if((nSpi < nSk) && (nSpi < nSp) && (nSpi < fPIDConfig[0]))
+        kPID = 1;
+    
+    if((nSp < nSk) && (nSp < nSpi) && (nSp < fPIDConfig[0]))
+        kPID = 3;
+    return kPID;
+    
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskPhiFlow::GetDoubleCountingK(Double_t nSk, Short_t minNSigma) const
+{
+    
+    Bool_t kDC = kFALSE;
+    
+    if (nSk < fPIDConfig[0] && minNSigma != 2)
+        kDC = kTRUE;
+    
+    return kDC;
+    
+}
+

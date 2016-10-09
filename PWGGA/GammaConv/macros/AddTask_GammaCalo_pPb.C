@@ -66,7 +66,7 @@ void AddTask_GammaCalo_pPb(
                             TString    generatorName              = "DPMJET",         // generator name for weighting
                             TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
                             Bool_t     isUsingTHnSparse           = kFALSE,           // enable or disable usage of THnSparses for background estimation
-                            Int_t      enableExtMatchAndQA        = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                            Int_t      enableExtMatchAndQA        = 0,                // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                             Bool_t     enableTriggerMimicking     = kFALSE,           // enable trigger mimicking
                             Bool_t     enableTriggerOverlapRej    = kTRUE,            // enable trigger overlap rejection
                             Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
@@ -74,27 +74,6 @@ void AddTask_GammaCalo_pPb(
                             Bool_t     enableSortingMCLabels      = kTRUE,            // enable sorting for MC cluster labels
                             Bool_t     runLightOutput             = kFALSE            // switch to run light output (only essential histograms for afterburner)
                            ) {
-
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");  
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");  
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
 
   Int_t isHeavyIon = 2;
   
@@ -215,6 +194,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","1111141050031230000","0163103100000050"); //n cells >= 1
     cuts.AddCut("80000013","1111141050033230000","0163103100000050"); //n cells >= 3
     cuts.AddCut("80000013","1111141050032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("80000013","1111141050032250000","0163103100000050"); //M02 < 0.3
+    cuts.AddCut("80000013","1111141050032260000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("80000013","1112141050032230000","0163103100000050"); //only modules with TRD infront
     cuts.AddCut("80000013","1111341050032230000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 7){ // Validation EMCAL
@@ -288,6 +269,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 42){ // third set of variations CLUSTER
     cuts.AddCut("80000013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80000013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80000013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80000013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80000013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80000013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80000013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -315,6 +298,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 52){ // third set of variations CLUSTER
     cuts.AddCut("80052013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80052013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80052013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80052013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80052013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80052013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80052013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -342,6 +327,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 62){ // third set of variations CLUSTER
     cuts.AddCut("80083013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80083013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80083013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80083013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80083013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80083013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80083013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -368,6 +355,8 @@ void AddTask_GammaCalo_pPb(
   } else if(trainConfig == 72){ // third set of variations CLUSTER
     cuts.AddCut("80085013","1111141051032030000","0163403100000050"); // min/max M02  0<M<0.5
     cuts.AddCut("80085013","1111141051032200000","0163403100000050"); // min/max M02  0.1<M<100
+    cuts.AddCut("80085013","1111141051032250000","0163403100000050"); // min/max M02  0.1<M<0.3
+    cuts.AddCut("80085013","1111141051032260000","0163403100000050"); // min/max M02  0.1<M<0.27
     cuts.AddCut("80085013","1111141051031230000","0163403100000050"); // min number of cells variation 1  1 cell
     cuts.AddCut("80085013","1112141051032230000","0163403100000050"); // only modules with TRD infront
     cuts.AddCut("80085013","1111341051032230000","0163403100000050"); // no modules with TRD infront
@@ -478,7 +467,7 @@ void AddTask_GammaCalo_pPb(
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

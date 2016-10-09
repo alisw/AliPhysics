@@ -62,7 +62,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
  private:
 
   enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=27};
-  enum EFiltBits {kNumOfFilterBits=9};
+  enum EFiltBits {kNumOfFilterBits=12};
 
   AliAnalysisTaskCheckAODTracks(const AliAnalysisTaskCheckAODTracks &source);
   AliAnalysisTaskCheckAODTracks& operator=(const AliAnalysisTaskCheckAODTracks &source);
@@ -71,7 +71,12 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
 
   TH1F* fHistNEvents;                //!<!  histo with N of events  
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
-  TH2F* fHistFilterBits;             //!<!  histo of fieter bits
+  TH2D* fHistFilterBits;             //!<!  histo of fieter bits
+
+  TH2F* fHistNtracksFb4VsV0befEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksFb5VsV0befEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksFb4VsV0aftEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksFb5VsV0aftEvSel;    //!<!  histo of tracks vs. centr.
 
   TH3F* fHistEtaPhiPtTPCsel;           //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSref;     //!<!  histo of eta,phi,pt (ITSrefit)
@@ -112,7 +117,8 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyGood;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanyFake;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
-  TH3F* fHistImpParXYPtMulTPCselSPDanySec;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
 
   TH2F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
@@ -131,7 +137,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,1);
+  ClassDef(AliAnalysisTaskCheckAODTracks,3);
 };
 
 

@@ -81,6 +81,9 @@
 #include "AliEventPoolManager.h"
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
+#include "AliQnCorrectionsManager.h"
+#include "AliQnCorrectionsQnVector.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
 
 using std::cout;
 using std::endl;
@@ -272,6 +275,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoBachPt(0),
   fHistoBachPtMCS(0),
   fHistoBachPtMCGen(0),
+  fHistoBachFracSharedITS(0),
+  fHistoBachChi2NclsITS(0),
   fHistod0Bach(0),
   fHistoLambdaMassvsPt(0),
   fHistoLambdaMassvsPtMCS(0),
@@ -579,6 +584,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fNRPBins					(0), 
   fNOfPools(1),
   fPoolIndex(-9999),
+	fHistoPoolMonitor(0),
+	fHistoPoolIDCounter(0),
   nextResVec(),
   reservoirsReady(),
   m_ReservoirE(),
@@ -787,6 +794,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoBachPt(0),
   fHistoBachPtMCS(0),
   fHistoBachPtMCGen(0),
+  fHistoBachFracSharedITS(0),
+  fHistoBachChi2NclsITS(0),
   fHistod0Bach(0),
   fHistoLambdaMassvsPt(0),
   fHistoLambdaMassvsPtMCS(0),
@@ -1094,6 +1103,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fNRPBins					(0), 
 	fNOfPools(1),
   fPoolIndex(-9999),
+	fHistoPoolMonitor(0),
+	fHistoPoolIDCounter(0),
   nextResVec(),
   reservoirsReady(),
   m_ReservoirE(),
@@ -1395,8 +1406,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   if(fIsINT7&fIsEMC7) fHTrigger->Fill(12);
 
 	if(fUseCentralityV0M){
-		AliCentrality *cent = aodEvent->GetCentrality();
-		fCentrality = cent->GetCentralityPercentile("V0M");
+		fCentrality = fAnalCuts->GetCentrality(aodEvent);
   }else if(fUseCentralitySPDTracklet){
     if(countCorr>=0 && countCorr<=0) fCentrality = 5.;
     else if(countCorr>=1 && countCorr<=8) fCentrality = 15.;
@@ -1415,31 +1425,68 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   fHCentrality->Fill(fCentrality);
 
   if(fUseEventPlane>0){
-    AliEventplane *pl=aodEvent->GetEventplane();
-    if(!pl){
-      AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
-      fCEvents->Fill(18);
-      return;
-    }
-    Double_t ep_v0m = GetPhi0Pi(pl->GetEventplane("V0",aodEvent,2));
-    Double_t ep_v0a = GetPhi0Pi(pl->GetEventplane("V0A",aodEvent,2));
-    Double_t ep_v0c = GetPhi0Pi(pl->GetEventplane("V0C",aodEvent,2));
-    Double_t ep_tpc = GetPhi0Pi(pl->GetEventplane("Q"));
-    if(fUseEventPlane==1)
-      fEventPlane = ep_v0m;
-    if(fUseEventPlane==2)
-      fEventPlane = ep_v0a;
-    if(fUseEventPlane==3)
-      fEventPlane = ep_v0c;
-    if(fUseEventPlane==4){
-      fEventPlane = ep_tpc;
-      fQSub1 = pl->GetQsub1();
-      fQSub2 = pl->GetQsub2();
-      fQ = pl->GetQVector();
-			if(!fQSub1 || !fQSub2){
-				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: no Q vectors");
-				fCEvents->Fill(19);
+		if(fUseEventPlane<10){
+			//OLD framework
+
+			AliEventplane *pl=aodEvent->GetEventplane();
+			if(!pl){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+				fCEvents->Fill(18);
 				return;
+			}
+
+			Double_t ep_v0m = GetPhi0Pi(pl->GetEventplane("V0",aodEvent,2));
+			Double_t ep_v0a = GetPhi0Pi(pl->GetEventplane("V0A",aodEvent,2));
+			Double_t ep_v0c = GetPhi0Pi(pl->GetEventplane("V0C",aodEvent,2));
+			Double_t ep_tpc = GetPhi0Pi(pl->GetEventplane("Q"));
+			if(fUseEventPlane==1)
+				fEventPlane = ep_v0m;
+			if(fUseEventPlane==2)
+				fEventPlane = ep_v0a;
+			if(fUseEventPlane==3)
+				fEventPlane = ep_v0c;
+			if(fUseEventPlane==4){
+				fEventPlane = ep_tpc;
+				fQSub1 = pl->GetQsub1();
+				fQSub2 = pl->GetQsub2();
+				fQ = pl->GetQVector();
+				if(!fQSub1 || !fQSub2){
+					AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: no Q vectors");
+					fCEvents->Fill(19);
+					return;
+				}
+			}
+		}else{
+			//New framework
+			AliQnCorrectionsManager *flowQnVectorMgr;
+			AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
+				dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+			if (flowQnVectorTask != NULL) {
+				flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+			}
+			else {
+				AliFatal("This task needs the Flow Qn vector corrections framework and it is not present. Aborting!!!");
+			}
+
+			if(fUseEventPlane==11){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: No such event plane method");
+				return;
+			}else if(fUseEventPlane==12){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: No such event plane method");
+				return;
+			}else if(fUseEventPlane==13){
+				AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: No such event plane method");
+				return;
+			}else if(fUseEventPlane==14){
+				const AliQnCorrectionsQnVector *myQnVector;
+				myQnVector = flowQnVectorMgr->GetDetectorQnVector("TPC");
+				if(!myQnVector) {
+					AliError("AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec: no Q vectors");
+					fCEvents->Fill(19);
+					return;
+				}
+				Double_t ep_tpc = myQnVector->EventPlane(2);
+				fEventPlane = GetPhi0Pi((Float_t)ep_tpc);
 			}
 		}
   }
@@ -1455,6 +1502,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 		runnumber_offset = 195000;//lhc13bc
 	}else if(runnumber<=170593&&runnumber>=167902){
 		runnumber_offset = 167902;//lhc11h
+	}else if(runnumber<=246994&&runnumber>=244824){
+		runnumber_offset = 244824;//lhc15o
 	}
 	fHistonEvtvsRunNumber->Fill(runnumber-runnumber_offset,1.);
 
@@ -1617,6 +1666,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
   //
   if(fDoEventMixing){
     fPoolIndex=GetPoolIndex(fVtxZ,fCentrality,fEventPlane);
+		fHistoPoolIDCounter->Fill(fPoolIndex);
+		if(fPoolIndex<0) return;
+
     Int_t nextRes( nextResVec[fPoolIndex] );
     while(!m_ReservoirE[fPoolIndex][nextRes].empty()){
       delete m_ReservoirE[fPoolIndex][nextRes].back();
@@ -1681,6 +1733,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
 		runnumber_offset = 195000;//lhc13bc
 	}else if(runnumber<=170593&&runnumber>=167902){
 		runnumber_offset = 167902;//lhc11h
+	}else if(runnumber<=246994&&runnumber>=244824){
+		runnumber_offset = 244824;//lhc15o
 	}
 	fHistonElevsRunNumber->Fill(runnumber-runnumber_offset,nSeleTrks);
 	fHistonLambdavsRunNumber->Fill(runnumber-runnumber_offset,nSeleV0);
@@ -3020,8 +3074,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
         else  fCorrelationVariables[9] = 1023;
       }
     }
-    fCorrelationVariables[14] = mcpdgele_array[1];
   }
+  if(fUseMCInfo) fCorrelationVariables[14] = mcpdgele_array[1];
 
 	if(fAnalCuts->IsSelected(elobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(v0))
 	{
@@ -3434,7 +3488,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineSingleTreeVariables()
 
   const char* nameoutput = GetOutputSlot(11)->GetContainer()->GetName();
   fSingleVariablesTree = new TTree(nameoutput,"single variables tree");
-  Int_t nVar = 16;
+  Int_t nVar = 30;
   fCandidateSingleVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -3454,6 +3508,20 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineSingleTreeVariables()
   fCandidateVariableNames[13]="Vars2";//e: nSigma TPC, L: trk ID (neg)
   fCandidateVariableNames[14]="Vars3";//e: nSigma TOF L: DCA V0 to PV
   fCandidateVariableNames[15]="Vars4";//e: nSigma ITS  L: DCA V0 daughters
+  fCandidateVariableNames[16]="MCVars0";// PDG 
+  fCandidateVariableNames[17]="MCVars1";// Mother PDG
+  fCandidateVariableNames[18]="MCVars2";// Grand Mother PDG
+  fCandidateVariableNames[19]="MCVars3";// Matched Label
+  fCandidateVariableNames[20]="MCVars4";// Matched PDG
+  fCandidateVariableNames[21]="Vars5";//e: Golden chi2  L: Pos dca to PV
+  fCandidateVariableNames[22]="Vars6";//e: nCls ITS  L: Neg dca to PV
+  fCandidateVariableNames[23]="Vars7";//e: Chi2 ITS  L: V0 cosine of pointing angle
+  fCandidateVariableNames[24]="Vars8";//e: nCls shared ITS  L: Fraction of shared cluster TPC (POS)
+  fCandidateVariableNames[25]="Vars9";//e: Not used  L: Fraction of shared cluster TPC (POS)
+  fCandidateVariableNames[26]="Vars10";//e: Not used  L: nSigmaTPC proton
+  fCandidateVariableNames[27]="Vars11";//e: Not used  L: nSigmaTPC pion
+  fCandidateVariableNames[28]="Vars12";//e: Not used  L: nSigmaTOF proton
+  fCandidateVariableNames[29]="Vars13";//e: Not used  L: nSigmaTOF pion
   //fCandidateVariableNames[10]="PdgMother";
   //fCandidateVariableNames[14]="LabMother";
   //fCandidateVariableNames[15]="PdgGrMother";
@@ -3529,6 +3597,24 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
 
 	fHistoBachPt->Fill(trk->Pt());
 	fHistoElectronQovPtvsPhi->Fill(trk->Phi(),(Double_t)trk->Charge()/trk->Pt());
+
+  //Int_t ncls_its = trk->GetITSclusters(0);
+  Int_t ncls_its = 0;
+  for(Int_t i=0;i<6;i++){
+    if(trk->HasPointOnITSLayer(i)) ncls_its++;
+  }
+  Int_t ncls_its_shared = 0;
+  for(Int_t i=0;i<6;i++){
+    if(trk->HasPointOnITSLayer(i) && trk->HasSharedPointOnITSLayer(i)) ncls_its_shared++;
+  }
+
+	if(ncls_its>0){
+		fHistoBachFracSharedITS->Fill((Float_t)ncls_its_shared/(Float_t)ncls_its);
+		fHistoBachChi2NclsITS->Fill(trk->GetITSchi2()/(Float_t)ncls_its);
+	}else{
+		fHistoBachFracSharedITS->Fill(-9999);
+		fHistoBachChi2NclsITS->Fill(-9999);
+	}
 
   Double_t d0z0[2],covd0z0[3];
   trk->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0,covd0z0);
@@ -3693,7 +3779,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
 	for(Int_t i=0;i<26;i++){
 		fCandidateEleVariables[i] = -9999.;
 	}
-	for(Int_t i=0;i<16;i++){
+	for(Int_t i=0;i<30;i++){
 		fCandidateSingleVariables[i] = -9999.;
 	}
   fCandidateSingleVariables[ 0] = trk->Px();
@@ -3724,6 +3810,18 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
     fCandidateSingleVariables[14] = nSigmaTOFele;
     fCandidateSingleVariables[15] = nSigmaITSele;
   }
+  fCandidateSingleVariables[16] = pdgEle;
+  fCandidateSingleVariables[17] = pdgarray_ele[0];
+  fCandidateSingleVariables[18] = pdgarray_ele[1];
+  fCandidateSingleVariables[19] = -9999;//mcinfo[0];
+  fCandidateSingleVariables[20] = -9999;//mcinfo[1];
+
+  fCandidateSingleVariables[21] = -9999;//trk->GetChi2TPCConstrainedVsGlobal(fVtx1);
+  fCandidateSingleVariables[22] = (Float_t) ncls_its;
+  fCandidateSingleVariables[23] = trk->GetITSchi2();
+  fCandidateSingleVariables[24] = (Float_t)ncls_its_shared;
+  fCandidateSingleVariables[25] = -9999.;//not used
+  //26-30 not used
 
 //  if(fUseMCInfo){
 //    fCandidateSingleVariables[10] = pdgarray_ele[0];
@@ -3985,67 +4083,66 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
         fHistoLambdaPtvsEtaMCS->Fill(v0->Pt(),v0->Eta());
         fHistoLambdaArmenterosMCS->Fill(cont_arm);
       }
-		}
-		if(labV0<0) return;
-		AliAODMCParticle *mcv0trk = (AliAODMCParticle*)mcArray->At(labV0);
-		if(!mcv0trk) return;
 
-    if(mcv0trk){
-      GetMCDecayHistory(mcv0trk,mcArray,pdgarray_v0,labelarray_v0,ngen_v0);
-    }else{
-      for(Int_t i=0;i<100;i++){
-        pdgarray_v0[i] = -9999;
-        labelarray_v0[i] = -9999;
-      }
-      ngen_v0 = -9999;
-    }
+			AliAODMCParticle *mcv0trk = (AliAODMCParticle*)mcArray->At(labV0);
+			if(mcv0trk){
+				mcv0px = mcv0trk->Px();
+				mcv0py = mcv0trk->Py();
+				mcv0pz = mcv0trk->Pz();
 
-		Bool_t hfv0_flag = kFALSE;
-		Bool_t promptv0_flag = kFALSE;
-		v0pdgcode = mcv0trk->GetPdgCode();
-		Int_t labv0mother = mcv0trk->GetMother();
-		if(labv0mother>=0){
-			AliAODMCParticle *motherv0 = (AliAODMCParticle*)mcArray->At(labv0mother);
-			if(motherv0){
-				v0motherpdgcode = motherv0->GetPdgCode();
-				if(abs(v0motherpdgcode)>4000&&abs(v0motherpdgcode)<4400){
-					hfv0_flag = kTRUE;
+				Int_t labptrk = cptrack->GetLabel();
+				if(labptrk>=0){
+					AliAODMCParticle *mcv0ptrk = (AliAODMCParticle*)mcArray->At(labptrk);
+					if(mcv0ptrk){
+						mcv0vertx = mcv0ptrk->Xv();
+						mcv0verty = mcv0ptrk->Yv();
+						mcv0vertz = mcv0ptrk->Zv();
+					}
 				}
-				if(abs(v0motherpdgcode)==3322){
-					fHistoLambdaPtvsDlFeeddownXi0MCS->Fill(v0->Pt(),v0propdl);
-				}else if(abs(v0motherpdgcode)==3312){
-					fHistoLambdaPtvsDlFeeddownXiMinusMCS->Fill(v0->Pt(),v0propdl);
-				}else if(abs(v0motherpdgcode)==3334){
-					fHistoLambdaPtvsDlFeeddownOmegaMCS->Fill(v0->Pt(),v0propdl);
-				}else{
-					fHistoLambdaPtvsDlMCS->Fill(v0->Pt(),v0propdl);
-          promptv0_flag = kTRUE;
+
+				GetMCDecayHistory(mcv0trk,mcArray,pdgarray_v0,labelarray_v0,ngen_v0);
+
+				Bool_t hfv0_flag = kFALSE;
+				Bool_t promptv0_flag = kFALSE;
+				v0pdgcode = mcv0trk->GetPdgCode();
+				Int_t labv0mother = mcv0trk->GetMother();
+				if(labv0mother>=0){
+					AliAODMCParticle *motherv0 = (AliAODMCParticle*)mcArray->At(labv0mother);
+					if(motherv0){
+						v0motherpdgcode = motherv0->GetPdgCode();
+						if(abs(v0motherpdgcode)>4000&&abs(v0motherpdgcode)<4400){
+							hfv0_flag = kTRUE;
+						}
+						if(abs(v0motherpdgcode)==3322){
+							fHistoLambdaPtvsDlFeeddownXi0MCS->Fill(v0->Pt(),v0propdl);
+						}else if(abs(v0motherpdgcode)==3312){
+							fHistoLambdaPtvsDlFeeddownXiMinusMCS->Fill(v0->Pt(),v0propdl);
+						}else if(abs(v0motherpdgcode)==3334){
+							fHistoLambdaPtvsDlFeeddownOmegaMCS->Fill(v0->Pt(),v0propdl);
+						}else{
+							fHistoLambdaPtvsDlMCS->Fill(v0->Pt(),v0propdl);
+							promptv0_flag = kTRUE;
+						}
+					}
+					//if(!hfv0_flag) return;
+					//if(!promptv0_flag) return;
 				}
+
+			}else{
+				for(Int_t i=0;i<100;i++){
+					pdgarray_v0[i] = -9999;
+					labelarray_v0[i] = -9999;
+				}
+				ngen_v0 = -9999;
 			}
 		}
-		//if(!hfv0_flag) return;
-		//if(!promptv0_flag) return;
-
-		mcv0px = mcv0trk->Px();
-		mcv0py = mcv0trk->Py();
-		mcv0pz = mcv0trk->Pz();
-
-    Int_t labptrk = cptrack->GetLabel();
-		if(labptrk>=0){
-      AliAODMCParticle *mcv0ptrk = (AliAODMCParticle*)mcArray->At(labptrk);
-      if(mcv0ptrk){
-        mcv0vertx = mcv0ptrk->Xv();
-        mcv0verty = mcv0ptrk->Yv();
-        mcv0vertz = mcv0ptrk->Zv();
-      }
-    }
 	}
 
 	for(Int_t i=0;i<36;i++){
 		fCandidateV0Variables[i] = -9999.;
 	}
 
-	for(Int_t i=0;i<16;i++){
+	for(Int_t i=0;i<30;i++){
 		fCandidateSingleVariables[i] = -9999.;
 	}
 
@@ -4082,6 +4179,37 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
   fCandidateSingleVariables[13] = cntrack->GetID();
   fCandidateSingleVariables[14] = v0->DcaV0ToPrimVertex();
   fCandidateSingleVariables[15] = v0->DcaV0Daughters();
+
+  fCandidateSingleVariables[16] = v0pdgcode;
+  fCandidateSingleVariables[17] = pdgarray_v0[0];
+  fCandidateSingleVariables[18] = pdgarray_v0[1];
+  fCandidateSingleVariables[19] = -9999;//mcinfo[0];
+  fCandidateSingleVariables[20] = -9999;//mcinfo[1];
+
+  fCandidateSingleVariables[21] = v0->DcaPosToPrimVertex();
+  fCandidateSingleVariables[22] = v0->DcaNegToPrimVertex();
+  fCandidateSingleVariables[23] = v0->CosPointingAngle(posVtx);
+  Float_t fracsharedpostpc = -9999;
+  if(cptrack->GetTPCNcls()>0) fracsharedpostpc = (Float_t)cptrack->GetTPCnclsS()/(Float_t)cptrack->GetTPCncls();
+  Float_t fracsharednegtpc = -9999;
+  if(cntrack->GetTPCNcls()>0) fracsharednegtpc = (Float_t)cntrack->GetTPCnclsS()/(Float_t)cntrack->GetTPCncls();
+
+  fCandidateSingleVariables[24] = fracsharedpostpc;
+  fCandidateSingleVariables[25] = fracsharednegtpc;
+  if(fAnalCuts->GetUseLambdaPID())
+  {
+    if(isparticle){
+      fCandidateSingleVariables[26] = fAnalCuts->GetPidProton()->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kProton);
+      fCandidateSingleVariables[27] = fAnalCuts->GetPidPion()->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kPion);
+      fCandidateSingleVariables[28] = fAnalCuts->GetPidProton()->GetPidResponse()->NumberOfSigmasTOF(cptrack,AliPID::kProton);
+      fCandidateSingleVariables[29] = fAnalCuts->GetPidPion()->GetPidResponse()->NumberOfSigmasTOF(cntrack,AliPID::kPion);
+    }else{
+      fCandidateSingleVariables[26] = fAnalCuts->GetPidProton()->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kProton);
+      fCandidateSingleVariables[27] = fAnalCuts->GetPidPion()->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kPion);
+      fCandidateSingleVariables[28] = fAnalCuts->GetPidProton()->GetPidResponse()->NumberOfSigmasTOF(cntrack,AliPID::kProton);
+      fCandidateSingleVariables[29] = fAnalCuts->GetPidPion()->GetPidResponse()->NumberOfSigmasTOF(cptrack,AliPID::kPion);
+    }
+  }
 
 //  if(fUseMCInfo){
 //    fCandidateSingleVariables[10] = pdgarray_v0[0];
@@ -4592,6 +4720,8 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHEventPlane = new TH1F("fHEventPlane","conter",100,-3.14,3.14);
   fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
   fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
+	fHistoPoolMonitor =  new TH2F("fHistoPoolMonitor","Pool ID vs depth",4000,-0.5,3999.5,50,-0.5,49.5);
+	fHistoPoolIDCounter =  new TH1F("fHistoPoolIDCounter","Pool ID",4003,-3.5,3999.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
@@ -4599,6 +4729,8 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHEventPlane);
   fOutput->Add(fHNTrackletvsZ);
   fOutput->Add(fHNTrackletCorrvsZ);
+	fOutput->Add(fHistoPoolMonitor);
+	fOutput->Add(fHistoPoolIDCounter);
 
   return;
 }
@@ -4902,9 +5034,6 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fHistoElePtvsLambdaPtFeeddownXicPlusMCGen = new THnSparseF("fHistoElePtvsLambdaPtFeeddownXicPlusMCGen","",3,bins_eleptvslambdapt,xmin_eleptvslambdapt,xmax_eleptvslambdapt);
   fOutputAll->Add(fHistoElePtvsLambdaPtFeeddownXicPlusMCGen);
 
-  fHistoBachPt = new TH1F("fHistoBachPt","Bachelor p_{T}",100,0.0,5.0);
-  fOutputAll->Add(fHistoBachPt);
-
   //------------------------------------------------
   // checking histograms
   //------------------------------------------------
@@ -4914,6 +5043,10 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoBachPtMCS);
   fHistoBachPtMCGen = new TH1F("fHistoBachPtMCGen","Bachelor p_{T}",100,0.0,5.0);
   fOutputAll->Add(fHistoBachPtMCGen);
+  fHistoBachFracSharedITS = new TH1F("fHistoBachFracSharedITS","Fraction shared",100,0.0,1.0);
+  fOutputAll->Add(fHistoBachFracSharedITS);
+  fHistoBachChi2NclsITS = new TH1F("fHistoBachChi2NclsITS","#chi^{2}/Ncls",100,0.0,50.0);
+  fOutputAll->Add(fHistoBachChi2NclsITS);
   fHistod0Bach = new TH1F("fHistod0Bach","Bachelor d_{0}",100,-0.5,0.5);
   fOutputAll->Add(fHistod0Bach);
   fHistoLambdaMassvsPt=new TH2F("fHistoLambdaMassvsPt","Lambda mass",100,1.116-0.05,1.116+0.05,20,0.,10.);
@@ -6153,10 +6286,10 @@ Int_t AliAnalysisTaskSELc2eleLambdafromAODtracks::GetPoolIndex(Double_t zvert, D
   Int_t theBinZ=TMath::BinarySearch(fNzVtxBins,fZvtxBins,zvert);
   if(theBinZ<0 || theBinZ>=fNzVtxBins) return -1;
   Int_t theBinM=TMath::BinarySearch(fNCentBins,fCentBins,mult);
-  if(theBinM<0 || theBinM>=fNCentBins) return -1;
+  if(theBinM<0 || theBinM>=fNCentBins) return -2;
   //return fNCentBins*theBinZ+theBinM;
   Int_t theBinR=TMath::BinarySearch(fNRPBins,fRPBins,rp);
-  if(theBinR<0 || theBinR>=fNRPBins) return -1;
+  if(theBinR<0 || theBinR>=fNRPBins) return -3;
   return fNzVtxBins*fNCentBins*theBinR+fNCentBins*theBinZ+theBinM;
 }
 //_________________________________________________________________
@@ -6177,6 +6310,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
         FillBackground(m_ReservoirE[poolIndex][j],m_ReservoirVarsE[poolIndex][j],m_ReservoirL1[poolIndex][nextRes],m_ReservoirVarsL1[poolIndex][nextRes],1);
         FillBackground(m_ReservoirE[poolIndex][nextRes],m_ReservoirVarsE[poolIndex][nextRes],m_ReservoirL2[poolIndex][j],m_ReservoirVarsL2[poolIndex][j],-1);
         FillBackground(m_ReservoirE[poolIndex][j],m_ReservoirVarsE[poolIndex][j],m_ReservoirL2[poolIndex][nextRes],m_ReservoirVarsL2[poolIndex][nextRes],-1);
+				fHistoPoolMonitor->Fill(poolIndex,nextRes);
       }
     }
   }
@@ -6857,6 +6991,8 @@ Int_t AliAnalysisTaskSELc2eleLambdafromAODtracks::FromSemileptonicDecays(Int_t *
   if(abs(history[1])==5232) return 2;
   if(abs(history[1])==5332) return 2;
 
+  if(abs(history[1])==130) return 3;
+  if(abs(history[1])==310) return 3;
   if(abs(history[1])==311) return 3;
   if(abs(history[1])==321) return 3;
   if(abs(history[1])==3122) return 3;
@@ -6972,7 +7108,9 @@ Float_t AliAnalysisTaskSELc2eleLambdafromAODtracks::GetEventPlaneForCandidate(Al
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskSELc2eleLambdafromAODtracks::GetPhi0Pi(Float_t phi){
-  // Sets the phi angle in the range 0-pi
+	//
+	// Sets the phi angle in the range 0-pi
+	//
   Float_t result=phi;
   while(result<0){
     result=result+TMath::Pi();

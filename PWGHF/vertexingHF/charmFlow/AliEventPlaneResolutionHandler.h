@@ -23,6 +23,9 @@ class AliEventPlaneResolutionHandler : public TObject{
   AliEventPlaneResolutionHandler(TString filename);
   virtual ~AliEventPlaneResolutionHandler(){};
 
+  void SetRootInputFile(TString filn){
+    fRootFileName=filn.Data();
+  }
   void SetCentralityRange(Double_t minC, Double_t maxC){
     fMinCent=minC;
     fMaxCent=maxC;

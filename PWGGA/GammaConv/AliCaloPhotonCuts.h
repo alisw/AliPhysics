@@ -147,6 +147,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, Int_t isMC, Double_t weight=1.);
     Bool_t      ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
+    Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
       
     void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
@@ -179,7 +180,6 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        InitializePHOS(AliVEvent *event);
     
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
-    void        SetExtendedQA(Int_t extendedQA)                 {if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
     void        FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
@@ -196,7 +196,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      AreNeighbours(Int_t absCellId1, Int_t absCellId2);
     Int_t       GetModuleNumberAndCellPosition(Int_t absCellId, Int_t & icol, Int_t & irow);
     void        SplitEnergy(Int_t absCellId1, Int_t absCellId2, AliVCluster* cluster, AliVEvent* event, 
-                  Int_t isMC, AliAODCaloCluster* cluster1, AliAODCaloCluster* cluster2);
+                            Int_t isMC, AliAODCaloCluster* cluster1, AliAODCaloCluster* cluster2);
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Int_t       FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
@@ -284,7 +284,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMinDistTrackToClusterPhi;                // minimum distance between track and cluster in phi
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
     Bool_t    fUseDistTrackToCluster;                   // flag for switching on distance between track and cluster cut
-    Int_t     fExtendedMatchAndQA;                      // switching on extended matching histograms (1) + extended QA (2) / only extended QA (3) or both off (0)
+    Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
     Bool_t    fUseExoticCluster;                        // flag for switching on exotic cluster cut
@@ -402,7 +402,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,27)
+    ClassDef(AliCaloPhotonCuts,28)
 };
 
 #endif

@@ -60,27 +60,6 @@ void AddTask_GammaConvFlow_PbPb2(
                                Double_t MaxFilter = 0.2,
                                Bool_t isMC = kFALSE
                                ) {
-    
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
   
   Int_t isHeavyIon = 1;
   
@@ -95,7 +74,7 @@ void AddTask_GammaConvFlow_PbPb2(
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
+  TString cutnumberPhoton = "30000008400100001500000000";
   TString cutnumberEvent = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -268,20 +247,43 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("50200013", "00200009007000008250400000");
     cuts.AddCut("52400013", "00200009007000008250400000");
     cuts.AddCut("54800013", "00200009007000008250400000");
+  //Full standard cut output open TPC cuts same sign pairing
+  } else if (trainConfig == 56) {
+    cuts.AddCut("50200013", "20200009007000008250400000");
+    cuts.AddCut("52400013", "20200009007000008250400000");
+    cuts.AddCut("54800013", "20200009007000008250400000");
+  //Full standard cut output open TPC cuts same and unline sign pairing
+  } else if (trainConfig == 57) {
+    cuts.AddCut("50200013", "30200009007000008250400000");
+    cuts.AddCut("52400013", "30200009007000008250400000");
+    cuts.AddCut("54800013", "30200009007000008250400000");
+  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+  } else if (trainConfig == 58) {
+    cuts.AddCut("50200013", "00200009007000008250400000");
+    cuts.AddCut("52400013", "00200009007000008250400000");
+    cuts.AddCut("54800013", "00200009007000008250400000");
+  //Full standard cut output open TPC cuts duplicant for changed addtask parameters
+  } else if (trainConfig == 59) {
+    cuts.AddCut("50200013", "00200009007000008250400000");
+    cuts.AddCut("52400013", "00200009007000008250400000");
+    cuts.AddCut("54800013", "00200009007000008250400000");
   //systematics 0-20%
   } else if (trainConfig == 60) {
     cuts.AddCut("50200013", "04200009007000008250400000"); //eta cut: |eta| <0.75
     cuts.AddCut("50200013", "00500009007000008250400000"); //minR= 10 maxR = 180
     cuts.AddCut("50200013", "00200049007000008250400000"); //singleptcut = 75MeV
     cuts.AddCut("50200013", "00200019007000008250400000"); //singleptcut = 100MeV
+    cuts.AddCut("50200013", "00200029007000008250400000"); //singleptcut = 150MeV
   } else if (trainConfig == 61) {
     cuts.AddCut("50200013", "00200009007000009250400000"); // Qtmax = 0.03
-    cuts.AddCut("50200013", "00200009007000001250400000"); // Qtmax = 0.1
+    cuts.AddCut("50200013", "00200009007000002250400000"); // Qtmax = 0.06
+    cuts.AddCut("50200013", "00200009007000006250400000"); // Qtmax = 0.02
     cuts.AddCut("50200013", "00200009007000008750400000"); //chi2cut = 10
     cuts.AddCut("50200013", "00200009007000008150400000"); //chi2cut = 50
   } else if (trainConfig == 62) {
     cuts.AddCut("50200013", "00200009007000008260400000"); //psipaircut = 0.05
     cuts.AddCut("50200013", "00200009007000008280400000"); //psipaircut = 0.2
+    cuts.AddCut("50200013", "00200009007000008270400000"); //psipaircut = 0.07
     cuts.AddCut("50200013", "00200009007000008250600000"); //cos p angle cut = 0.9
     cuts.AddCut("50200013", "00200009007000008250300000"); //cos p angle cut = 0.75
   //systematics 20-40%
@@ -290,14 +292,17 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("52400013", "00500009007000008250400000"); //minR= 10 maxR = 180
     cuts.AddCut("52400013", "00200049007000008250400000"); //singleptcut = 75MeV
     cuts.AddCut("52400013", "00200019007000008250400000"); //singleptcut = 100MeV
+    cuts.AddCut("52400013", "00200029007000008250400000"); //singleptcut = 150MeV
   } else if (trainConfig == 64) {
     cuts.AddCut("52400013", "00200009007000009250400000"); // Qtmax = 0.03
-    cuts.AddCut("52400013", "00200009007000001250400000"); // Qtmax = 0.1
+    cuts.AddCut("52400013", "00200009007000002250400000"); // Qtmax = 0.06
+    cuts.AddCut("52400013", "00200009007000006250400000"); // Qtmax = 0.02
     cuts.AddCut("52400013", "00200009007000008750400000"); //chi2cut = 10
     cuts.AddCut("52400013", "00200009007000008150400000"); //chi2cut = 50
   } else if (trainConfig == 65) {
     cuts.AddCut("52400013", "00200009007000008260400000"); //psipaircut = 0.05
     cuts.AddCut("52400013", "00200009007000008280400000"); //psipaircut = 0.2
+    cuts.AddCut("52400013", "00200009007000008270400000"); //psipaircut = 0.07
     cuts.AddCut("52400013", "00200009007000008250600000"); //cos p angle cut = 0.9
     cuts.AddCut("52400013", "00200009007000008250300000"); //cos p angle cut = 0.75
   //systematics 40-80%
@@ -306,14 +311,17 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("54800013", "00500009007000008250400000"); //minR= 10 maxR = 180
     cuts.AddCut("54800013", "00200049007000008250400000"); //singleptcut = 75MeV
     cuts.AddCut("54800013", "00200019007000008250400000"); //singleptcut = 100MeV
+    cuts.AddCut("54800013", "00200029007000008250400000"); //singleptcut = 150MeV
   } else if (trainConfig == 67) {
     cuts.AddCut("54800013", "00200009007000009250400000"); // Qtmax = 0.03
-    cuts.AddCut("54800013", "00200009007000001250400000"); // Qtmax = 0.1
+    cuts.AddCut("54800013", "00200009007000002250400000"); // Qtmax = 0.06
+    cuts.AddCut("54800013", "00200009007000006250400000"); // Qtmax = 0.02
     cuts.AddCut("54800013", "00200009007000008750400000"); //chi2cut = 10
     cuts.AddCut("54800013", "00200009007000008150400000"); //chi2cut = 50
   } else if (trainConfig == 68) {
     cuts.AddCut("54800013", "00200009007000008260400000"); //psipaircut = 0.05
     cuts.AddCut("54800013", "00200009007000008280400000"); //psipaircut = 0.2
+    cuts.AddCut("54800013", "00200009007000008270400000"); //psipaircut = 0.07
     cuts.AddCut("54800013", "00200009007000008250600000"); //cos p angle cut = 0.9
     cuts.AddCut("54800013", "00200009007000008250300000"); //cos p angle cut = 0.75
   } else {
@@ -363,9 +371,9 @@ void AddTask_GammaConvFlow_PbPb2(
     flowEvent[i] = mgr->CreateContainer(Form("FlowContainer_%s_%s",uniqueID.Data(),totalCutString.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 2+i, flowEvent[i]);
     
+    Double_t NFilterBinValues[NFilterBins+1];
     if(FilterVariable==7 && NFilterBins == 4){
       task->SetFilterVariable(2,MinFilter,MaxFilter);
-      Double_t NFilterBinValues[8];
       NFilterBinValues[0] = -20;
       NFilterBinValues[1] = -13;
       NFilterBinValues[2] = -11;
@@ -376,7 +384,6 @@ void AddTask_GammaConvFlow_PbPb2(
       NFilterBinValues[7] = 20;
     }else{
       task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
-      Double_t NFilterBinValues[NFilterBins+1];
       if(NFilterBins > 1){
         for(Int_t k=0;k<NFilterBins+1;k++){
           NFilterBinValues[k] = MinFilter + k*(MaxFilter-MinFilter)/NFilterBins;

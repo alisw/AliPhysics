@@ -74,6 +74,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetMCGevEventType(Bool_t sel1=kFALSE){fMCGenEvType=sel1;}
     void SetPoolByPoolCorr(Bool_t sel2=kFALSE){fPoolByPool=sel2;}
     void SetCheckCutDist(Bool_t sel3=kFALSE){fCheckCutDist=sel3;}
+    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
     // void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
     
     
@@ -113,6 +114,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Double_t fMultiplicity; //Multiplicity for maps
     Bool_t fEffTrack; //Track eff ON/OFF
     Bool_t fEffDplus; //Dplus eff ON/OFF
+    Int_t fAODProtection;            // flag to activate protection against AOD-dAOD mismatch.
     
     Int_t  fCentralityEstimator;   // enum from AliRDHFCuts..
     Bool_t    fEvalCentrality; // Switch to ON/OFF the centrality interface
@@ -121,7 +123,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Bool_t  fPoolByPool;
     Int_t  fWhichPool;
     Bool_t fCheckCutDist; //flag to check topological cuts distribuition
-    ClassDef(AliAnalysisTaskSEDplusCorrelations,5); // class for D+ meson correlations
+    ClassDef(AliAnalysisTaskSEDplusCorrelations,6); // class for D+ meson correlations
     
 };
 

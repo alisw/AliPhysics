@@ -538,6 +538,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fpTEtaSecPartPhysPri(0)
 ,fpTPhiSecPartNonPhysPri(0)
 ,fpTEtaSecPartNonPhysPri(0)
+,fEffElec(0)
+,fEffHadron(0)
 //,fEMCALRecoUtils(0)//exotic
 {
     //Named constructor
@@ -965,6 +967,8 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fpTEtaSecPartPhysPri(0)
 ,fpTPhiSecPartNonPhysPri(0)
 ,fpTEtaSecPartNonPhysPri(0)
+,fEffElec(0)
+,fEffHadron(0)
 //,fEMCALRecoUtils(0)//exotic
 {
     // Constructor
@@ -5004,7 +5008,7 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         if(!fUseEMCal)
         {
             
-            fPtElec_Inc->Fill(fPt);
+            fPtElec_Inc->Fill(fPt,1./GetElectronEfficiency(track->Pt(), track->Eta(), fZvtx));
             
             if(fCorrelationFlag)
             {
@@ -6112,9 +6116,9 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 
                 
             }
-            
-            if(fNonHFE->IsULS()) fPtElec_ULS_NoPid->Fill(fPtE,fNonHFE->GetNULS());
-            if(fNonHFE->IsLS()) fPtElec_LS_NoPid->Fill(fPtE,fNonHFE->GetNLS());
+            Double_t WeightBKG = (1./GetElectronEfficiency(fPtE,fEtaE,fZvtx));
+            if(fNonHFE->IsULS()) fPtElec_ULS_NoPid->Fill(fPtE,fNonHFE->GetNULS()*WeightBKG);
+            if(fNonHFE->IsLS()) fPtElec_LS_NoPid->Fill(fPtE,fNonHFE->GetNLS()*WeightBKG);
         }
         else
         {
@@ -6131,8 +6135,9 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     ///_________________________________________________________________
     else
     {
-        if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-        if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
+        Double_t WeightBKG = (1./GetElectronEfficiency(fPtE,fEtaE,fZvtx));
+        if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS()*WeightBKG);
+        if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS()*WeightBKG);
     }
     
     
@@ -6219,13 +6224,14 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                     {
                         if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
                         {
-                            fCEtaPhi_Inc_EM[i]->Fill(fDphi,fDeta);
+                            Double_t Weight = (1./GetElectronEfficiency(fPtE,fEtaE,fZvtx)) * MixedTrack->GetWeight();
+                            fCEtaPhi_Inc_EM[i]->Fill(fDphi,fDeta,Weight);
                             
-                            if(fNonHFE->IsULS()) fCEtaPhi_ULS_EM[i]->Fill(fDphi,fDeta);
-                            if(fNonHFE->IsLS()) fCEtaPhi_LS_EM[i]->Fill(fDphi,fDeta);
+                            if(fNonHFE->IsULS()) fCEtaPhi_ULS_EM[i]->Fill(fDphi,fDeta,Weight);
+                            if(fNonHFE->IsLS()) fCEtaPhi_LS_EM[i]->Fill(fDphi,fDeta,Weight);
                             
-                            if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-                            if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+                            if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*Weight);
+                            if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*Weight);
                             
                             
                         }
@@ -6362,17 +6368,18 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         {
             if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
             {
-                Double_t HadronWeight = GetHadronWCorrection(fPtH);
+                Double_t Weight = 1./(GetHadronEfficiency(fPtH,fEtaH,fZvtx) *GetElectronEfficiency(fPtE,fEtaE,fZvtx));
+                
                 //Filling histograms
-                fCEtaPhi_Inc[i]->Fill(fDphi,fDeta,HadronWeight);
-                if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta,HadronWeight);
-                if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta,HadronWeight);
-                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta,HadronWeight);
-                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta,HadronWeight);
-                if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*HadronWeight);
-                if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*HadronWeight);
-                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*HadronWeight);
-                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*HadronWeight);
+                fCEtaPhi_Inc[i]->Fill(fDphi,fDeta,Weight);
+                if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta,Weight);
+                if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta,Weight);
+                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta,Weight);
+                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta,Weight);
+                if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*Weight);
+                if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*Weight);
+                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*Weight);
+                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*Weight);
                 
                 if(fIsMC)
                 {
@@ -6454,7 +6461,7 @@ TObjArray* AliAnalysisTaskHFEpACorrelation::SelectedHadrons()
             if(TMath::Abs(DCAxy) >= fDCAcutrHadron || TMath::Abs(DCAz)>=fDCAcutzHadron) continue;
         }
         
-        fTracksClone->Add(new AliHFEHCParticle(track2->Eta(), track2->Phi(), track2->Pt()));
+        fTracksClone->Add(new AliHFEHCParticle(track2->Eta(), track2->Phi(), track2->Pt(), 1./(GetHadronEfficiency(track2->Pt(),track2->Eta(), fZvtx)) ) );
     }
     return fTracksClone;
 }
@@ -7590,58 +7597,26 @@ Double_t AliAnalysisTaskHFEpACorrelation::SetEoverPCutPtDependentMC(Double_t pt)
     
 }
 
-Double_t AliAnalysisTaskHFEpACorrelation::GetHadronWCorrection(Double_t pt)
+Double_t AliAnalysisTaskHFEpACorrelation::GetHadronEfficiency(Double_t pT, Double_t eta, Double_t zvtx)
 {
-    Double_t Bins[] = {0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
-    Int_t NumberofBins = 17;
-    //Compatibility with old analysis
-    Double_t HadronWeight = 1.0;
-    
+    if (!fEffHadron)
+        return 1.;
+    Int_t bin = fEffHadron->FindBin(pT,eta,zvtx);
+    if ( fEffHadron->IsBinUnderflow(bin) || fEffHadron->IsBinOverflow(bin) ) {return 1.;}
+    //printf ("Setting hadron Eff as %f\n",fEffHadron->GetBinContent(bin));
+    return fEffHadron->GetBinContent(bin);
 
-    
-    //"new Default" analysis
-    if (fDCAcutrHadron == 0.25)
-    {
-        if (fCentralityMin == 0)
-        {
-            Double_t HadronEfficiency[] = {0.7629649, 0.8005948, 0.8202776, 0.8292172, 0.8325606, 0.8336015, 0.8340769, 0.8343634, 0.8341395, 0.8338822, 0.8333004, 0.8319232,0.8291333, 0.8251111, 0.8183794,0.8098981, 0.8009887};
-            
-            for(Int_t i = 0; i <NumberofBins; i++)
-            {
-                if ( (pt > Bins[i]) && (pt<Bins[i+1]))
-                    HadronWeight = (1.0/HadronEfficiency[i]);
-            }
-            
-        }
-        if (fCentralityMin == 20)
-        {
-            Double_t HadronEfficiency[] = {0.7651311, 0.8022282, 0.8214875, 0.8302184, 0.8336327, 0.8348229, 0.8352569, 0.8350877, 0.8349991, 0.8346928, 0.8342593, 0.8326481, 0.8300479, 0.8258925, 0.8192205, 0.8104965, 0.8022359};
-            
-            for(Int_t i = 0; i <NumberofBins; i++)
-            {
-                if ( (pt > Bins[i]) && (pt<Bins[i+1]))
-                    HadronWeight = (1.0/HadronEfficiency[i]);
-            }
-            
-        }
-        
-        if (fCentralityMin == 60)
-        {
-            Double_t HadronEfficiency[] = {0.7675255, 0.8038748, 0.8230401,0.831619,0.8348156, 0.8356443, 0.8358399, 0.8360357, 0.8360404, 0.8354132, 0.8337131,0.8318167, 0.8296427, 0.8254036, 0.8188907, 0.8112107, 0.8027191};
-                for(Int_t i = 0; i <NumberofBins; i++)
-                {
-                    if ( (pt > Bins[i]) && (pt<Bins[i+1]))
-                        HadronWeight = (1.0/HadronEfficiency[i]);
-                }
-
-            
-        }
-
-    }
-    //printf("Using pt: %f HW: %f\n",pt, HadronWeight);
-    
-    return HadronWeight; //other configurations not implemeted yet - need the update in the Config file;
-    
-    
 }
+
+Double_t AliAnalysisTaskHFEpACorrelation::GetElectronEfficiency(Double_t pT, Double_t eta, Double_t zvtx)
+{
+    if (!fEffElec)
+        return 1.;
+    Int_t bin = fEffElec->FindBin(pT,eta,zvtx);
+    if ( fEffElec->IsBinUnderflow(bin) || fEffElec->IsBinOverflow(bin) ) return 1.;
+    //printf ("Setting Electron Eff as %f\n",fEffElec->GetBinContent(bin));
+    return fEffElec->GetBinContent(bin);
+}
+
+
 

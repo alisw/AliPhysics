@@ -104,7 +104,7 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     void SetUseHadronicChannelAtKineLevel (Bool_t use){fUseHadronicChannelAtKineLevel = use;}
     void SetUseRemoveMoreThanOneCDmesonCandidate (Bool_t use){fRemoveMoreThanOneDmesonCandidate = use;}
     void SetLimitAcceptanceForMC (Bool_t use){fLimitAcceptanceForMC = use;}
-   
+    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}   
     
     void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;} // number of delta phi bins
     void SetLevelOfDebug(Int_t debug){fDebugLevel=debug;} // set debug level
@@ -214,6 +214,7 @@ private:
   Bool_t fMCEventType; // Use MC event type 
   
   Double_t fRefMult;   // refrence multiplcity (period b)
+  Int_t fAODProtection;            // flag to activate protection against AOD-dAOD mismatch.
   
   TList *fOutput;                  //! user output data
   TList *fDmesonOutput; //!output related to d meson
@@ -230,7 +231,7 @@ private:
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
   TProfile* fMultEstimatorAvg[4]; 
-  ClassDef(AliAnalysisTaskDStarCorrelations,9); // class for D meson correlations
+  ClassDef(AliAnalysisTaskDStarCorrelations,10); // class for D meson correlations
   
 };
 

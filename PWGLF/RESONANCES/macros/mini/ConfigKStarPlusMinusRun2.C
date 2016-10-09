@@ -20,7 +20,7 @@ Bool_t ConfigKStarPlusMinusRun2
    Int_t                   aodFilterBit,
    //Float_t                 trackDCAcut,
    Bool_t                  enableMonitor=kFALSE,
-   TString                monitorOpt="",
+   TString                 monitorOpt="",
    Float_t                 massTol,
    Float_t                 k0sDCA,
    Float_t                 k0sCosPoinAn,

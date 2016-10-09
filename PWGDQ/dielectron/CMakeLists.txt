@@ -82,8 +82,10 @@ set(SRCS
       LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
       LMEE/AliAnalysisTaskMLTreeMaker.cxx
+      LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
+      LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
   )
 
 # Headers from sources

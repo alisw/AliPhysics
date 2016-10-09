@@ -72,6 +72,10 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
   TH1F* fHistNEvents;                //!<!  histo with N of events  
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
+  TH2F* fHistNtracksTPCselVsV0befEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksSPDanyVsV0befEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksTPCselVsV0aftEvSel;    //!<!  histo of tracks vs. centr.
+  TH2F* fHistNtracksSPDanyVsV0aftEvSel;    //!<!  histo of tracks vs. centr.
 
   TH2F* fHistdEdxVsP[9];              //!<!  histo of dE/dx for hypos (all tracks)
   TH2F* fHistdEdxVsPTPCsel[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
@@ -166,7 +170,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,1);
+  ClassDef(AliAnalysisTaskCheckESDTracks,2);
 };
 
 

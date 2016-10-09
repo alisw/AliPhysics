@@ -55,6 +55,10 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistNEvents(0x0),
   fHistNTracks(0x0),
   fHistFilterBits(0x0),
+  fHistNtracksFb4VsV0befEvSel(0x0),
+  fHistNtracksFb5VsV0befEvSel(0x0),
+  fHistNtracksFb4VsV0aftEvSel(0x0),
+  fHistNtracksFb5VsV0aftEvSel(0x0),
   fHistEtaPhiPtTPCsel(0x0),
   fHistEtaPhiPtTPCselITSref(0x0),
   fHistEtaPhiPtTPCselSPDany(0x0),
@@ -80,7 +84,8 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulTPCselSPDanyGood(0x0),
   fHistImpParXYPtMulTPCselSPDanyFake(0x0),
   fHistImpParXYPtMulTPCselSPDanyPrim(0x0),
-  fHistImpParXYPtMulTPCselSPDanySec(0x0),
+  fHistImpParXYPtMulTPCselSPDanySecDec(0x0),
+  fHistImpParXYPtMulTPCselSPDanySecMat(0x0),
   fHistInvMassK0s(0x0),
   fHistInvMassLambda(0x0),
   fHistInvMassAntiLambda(0x0),
@@ -125,6 +130,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   }
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 
@@ -136,6 +142,10 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistNEvents;
     delete fHistNTracks;
     delete fHistFilterBits;
+    delete fHistNtracksFb4VsV0befEvSel;
+    delete fHistNtracksFb5VsV0befEvSel;
+    delete fHistNtracksFb4VsV0aftEvSel;
+    delete fHistNtracksFb5VsV0aftEvSel;
     delete fHistEtaPhiPtTPCsel;
     delete fHistEtaPhiPtTPCselITSref;
     delete fHistEtaPhiPtTPCselSPDany;
@@ -161,7 +171,8 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyGood;
     delete fHistImpParXYPtMulTPCselSPDanyFake;
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
-    delete fHistImpParXYPtMulTPCselSPDanySec;
+    delete fHistImpParXYPtMulTPCselSPDanySecDec;
+    delete fHistImpParXYPtMulTPCselSPDanySecMat;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
@@ -248,7 +259,6 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   for(Int_t ivar=0; ivar<usedVar; ivar++){
     fTrackTree->Branch(intVarName[ivar].Data(),&fTreeVarInt[ivar],Form("%s/I",intVarName[ivar].Data()));
   }
-  fOutput->Add(fTrackTree);
 
   fHistNEvents = new TH1F("hNEvents", "Number of processed events",15,-0.5,14.5);
   //fHistNEvents->Sumw2();
@@ -256,16 +266,26 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
   fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",5001,-0.5,5000.5);
   fOutput->Add(fHistNTracks);
 
-  fHistFilterBits = new TH2F("hFilterBits", " ; Filter Bit ; Id ; N_{tracks}",10,-0.5,9.5,2,-1,1);
+  fHistFilterBits = new TH2D("hFilterBits", " ; Filter Bit ; Id ; N_{tracks}",kNumOfFilterBits,-0.5,kNumOfFilterBits-0.5,2,-1,1);
   fHistFilterBits->GetYaxis()->SetBinLabel(1,"Neg. ID");
   fHistFilterBits->GetYaxis()->SetBinLabel(2,"Pos. ID");
   fOutput->Add(fHistFilterBits);
+  
+  fHistNtracksFb4VsV0befEvSel=new TH2F("hNtracksFb4VsV0befEvSel"," ; V0 signal ; N_{tracks,FilBit4}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksFb5VsV0befEvSel=new TH2F("hNtracksFb5VsV0befEvSel"," ; V0 signal ; N_{tracks,FilBit5}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksFb4VsV0aftEvSel=new TH2F("hNtracksFb4VsV0aftEvSel"," ; V0 signal ; N_{tracks,FilBit4}",250,0.,15000.,250,0.,5000.);
+  fHistNtracksFb5VsV0aftEvSel=new TH2F("hNtracksFb5VsV0aftEvSel"," ; V0 signal ; N_{tracks,FilBit5}",250,0.,15000.,250,0.,5000.);
+  fOutput->Add(fHistNtracksFb4VsV0befEvSel);
+  fOutput->Add(fHistNtracksFb5VsV0befEvSel);
+  fOutput->Add(fHistNtracksFb4VsV0aftEvSel);
+  fOutput->Add(fHistNtracksFb5VsV0aftEvSel);
   
 
   fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
@@ -348,9 +368,11 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyFake);
 
   fHistImpParXYPtMulTPCselSPDanyPrim = new TH3F("hImpParXYPtMulTPCselSPDanyPrim"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
-  fHistImpParXYPtMulTPCselSPDanySec = new TH3F("hImpParXYPtMulTPCselSPDanySec"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
+  fHistImpParXYPtMulTPCselSPDanySecDec = new TH3F("hImpParXYPtMulTPCselSPDanySecDec"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
+  fHistImpParXYPtMulTPCselSPDanySecMat = new TH3F("hImpParXYPtMulTPCselSPDanySecMat"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",200,0.,4.,400,-1500.,1500,50,0.,10000.);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyPrim);
-  fOutput->Add(fHistImpParXYPtMulTPCselSPDanySec);
+  fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
+  fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
 
   fHistInvMassK0s = new TH2F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ",200,0.4,0.6,25,0.,5.);
@@ -361,6 +383,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistInvMassAntiLambda);
 
   PostData(1,fOutput);
+  PostData(2,fTrackTree);
 
 }
 //______________________________________________________________________________
@@ -397,26 +420,53 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  if(vtx1->GetNContributors()<=0) return;
-  fHistNEvents->Fill(2);
-
-  Float_t xvert=vtx1->GetX();
-  Float_t yvert=vtx1->GetY();
-  Float_t zvert=vtx1->GetZ();
-  if(TMath::Abs(zvert)>10) return;
-  fHistNEvents->Fill(3);
-
-  Double_t pos[3],cov[6];
-  vtx1->GetXYZ(pos);
-  vtx1->GetCovarianceMatrix(cov);
-  const AliESDVertex vESD(pos,cov,100.,100);
-
   Int_t ntracks = aod->GetNumberOfTracks();
   Int_t ntracklets = 0;
   AliAODTracklets *mult=aod->GetTracklets();
   if(mult) ntracklets=mult->GetNumberOfTracklets();
   Int_t ncl1 = aod->GetNumberOfITSClusters(1);
+  Int_t ntracksFB4=0;
+  Int_t ntracksFB5=0;
+  for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
+    AliAODTrack * track = (AliAODTrack*)aod->GetTrack(iTrack);
+    if (!track) continue;
+    if(track->TestFilterBit(1<<4)) ntracksFB4++;
+    if(track->TestFilterBit(1<<5)) ntracksFB5++;
+  }
+  Double_t vZEROampl=0;
+  for(Int_t i=0;i<64;i++) vZEROampl+=aod->GetVZEROData()->GetMultiplicity(i);
+  fHistNtracksFb4VsV0befEvSel->Fill(vZEROampl,ntracksFB4);
+  fHistNtracksFb5VsV0befEvSel->Fill(vZEROampl,ntracksFB5);
+
+  const AliVVertex* vtTrc = aod->GetPrimaryVertex();
+  const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
+  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
+  fHistNEvents->Fill(2);
+
+  double covTrc[6],covSPD[6];
+  vtTrc->GetCovarianceMatrix(covTrc);
+  vtSPD->GetCovarianceMatrix(covSPD);
+  double dz = vtTrc->GetZ()-vtSPD->GetZ();
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]);
+  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
+  fHistNEvents->Fill(3);
+
+  Float_t xvert=vtTrc->GetX();
+  Float_t yvert=vtTrc->GetY();
+  Float_t zvert=vtTrc->GetZ();
+  if(TMath::Abs(zvert)>10) return;
+  fHistNEvents->Fill(4);
+
+  fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
+  fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
+
+  Double_t pos[3],cov[6];
+  vtTrc->GetXYZ(pos);
+  vtTrc->GetCovarianceMatrix(cov);
+  const AliESDVertex vESD(pos,cov,100.,100);
+
   fHistNTracks->Fill(ntracks);
 
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
@@ -454,7 +504,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     fTreeVarFloat[9]=track->Phi();
     
     Double_t d0z0[2],covd0z0[3];
-    Bool_t isOK=track->PropagateToDCA(vtx1,magField,99999.,d0z0,covd0z0);
+    Bool_t isOK=track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
     Float_t impactXY=-999, impactZ=-999;
     if(isOK){
       impactXY=d0z0[0];
@@ -495,10 +545,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Int_t  filtmap=track->GetFilterMap();
     
     Double_t nSigmaTPC[9]={-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
-    AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
-    if (status == AliPIDResponse::kDetPidOk){
-      for(Int_t jsp=0; jsp<9; jsp++){
-	nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
+    if(pidResp){
+      AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
+      if (status == AliPIDResponse::kDetPidOk){
+	for(Int_t jsp=0; jsp<9; jsp++){
+	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
+	}
       }
     }
     fTreeVarFloat[15]=dedx;
@@ -517,7 +569,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Float_t phigen=-999.;
     Int_t hadronSpecie=-1;
     Float_t invptgen=-999.;
-    Bool_t isPhysPrim=kFALSE;
+    Int_t isPhysPrim=-999;
     if(fReadMC){
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(trlabel)));
       ptgen=part->Pt();
@@ -528,7 +580,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(ptgen>0.) invptgen=1./ptgen;
       etagen=part->Eta();
       phigen=part->Phi();
-      isPhysPrim=part->IsPhysicalPrimary();
+      if(part->IsPhysicalPrimary()) isPhysPrim=1;
+      else if(part->IsSecondaryFromWeakDecay()) isPhysPrim=0;
+      else if(part->IsSecondaryFromMaterial()) isPhysPrim=-1;
       fTreeVarFloat[20]=pxgen;
       fTreeVarFloat[21]=pygen;
       fTreeVarFloat[22]=pzgen;
@@ -625,19 +679,20 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 	if(isKaon) fHistPtResidVsPtTPCselITSrefKaon->Fill(ptgen,(pttrack-ptgen));
 	if(isProton) fHistPtResidVsPtTPCselITSrefProton->Fill(ptgen,(pttrack-ptgen));
       }
-    }
-    if(trlabel>=0){
-      fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
-      if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(pttrack,impactXY*10000.,ncl1);
-    }else{
-      fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
-      if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(pttrack,impactXY*10000.,ncl1);
-    }
-
     
-    if(itsRefit && spdAny){
-      if(isPhysPrim) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(pttrack,impactXY*10000.,ncl1);
-      else fHistImpParXYPtMulTPCselSPDanySec->Fill(pttrack,impactXY*10000.,ncl1);
+      if(trlabel>=0){
+	fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
+	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(pttrack,impactXY*10000.,ncl1);
+      }else{
+	fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
+	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(pttrack,impactXY*10000.,ncl1);
+      }
+      
+      if(itsRefit && spdAny){
+	if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(pttrack,impactXY*10000.,ncl1);
+	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(pttrack,impactXY*10000.,ncl1);
+	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(pttrack,impactXY*10000.,ncl1);
+      }
     }
   }
 
@@ -674,16 +729,18 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Bool_t keepLambda=kTRUE;
     Bool_t keepAntiLambda=kTRUE;
     if(!fReadMC){
-      Double_t nsigmap=-999.;
-      if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
-	nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
+      if(pidResp){
+	Double_t nsigmap=-999.;
+	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
+	  nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
+	}
+	Double_t nsigman=-999.;
+	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
+	  nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
+	}
+	if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
+	if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
       }
-      Double_t nsigman=-999.;
-      if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
-	nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
-      }
-      if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
-      if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
     }else{
       keepK0s=kFALSE;
       keepLambda=kFALSE;
@@ -718,6 +775,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
   }
   PostData(1,fOutput);
+  PostData(2,fTrackTree);
   
 }
 //______________________________________________________________________________
@@ -730,7 +788,7 @@ void AliAnalysisTaskCheckAODTracks::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  printf("AliAnalysisTaskCheckAODTracks::Terminate --- Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(4));
+  printf("AliAnalysisTaskCheckAODTracks::Terminate --- Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(5));
   return;
 }
 

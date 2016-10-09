@@ -2,23 +2,27 @@ AliGenerator* AddMCGenPythia_He3(Float_t e_cms = 2760., Double_t ptHardMin = 0.,
 {
   //Add Pythia generator: pt-hard bin or min bias
 
-  AliGenCocktail* gener = new AliGenCocktail();
+  if(tune==3)  gSystem->Load("libpythia6_4_28");
+  if(tune<3)  gSystem->Load("libpythia6_4_25");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libAliPythia6");
+  
+  gSystem->Load("liblhapdf");
 
   AliGenPythia *genP = CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, tune,cr,ptWeight);
+
+  AliGenCocktail* gener = new AliGenCocktail();
 
   // deuterons and anti-deuterons
   AliGenLightNuclei* d = new AliGenLightNuclei();
   d->SetNucleusPdgCode(AliGenLightNuclei::kDeuteron);
   d->SetCoalescenceMomentum(0.100); // default
-  d->SetSpinProbability(1);
-  d->UsePerEventRates();
 
  // 3He and anti-3He nuclei
   AliGenLightNuclei* he3 = new AliGenLightNuclei();
   he3->SetNucleusPdgCode(AliGenLightNuclei::kHe3Nucleus);
   he3->SetCoalescenceMomentum(0.127);
-  he3->SetSpinProbability(1);
-  he3->UsePerEventRates();
+
 
   gener->AddGenerator(genP, "pythia8", 1);
   gener->AddGenerator(d,"deuteron",1);
@@ -34,10 +38,7 @@ AliGenerator* AddMCGenPythia_He3(Float_t e_cms = 2760., Double_t ptHardMin = 0.,
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr,Float_t ptWeight) {
 
   
-  if(tune==3)  gSystem->Load("libpythia6_4_28");
-   if(tune<3)  gSystem->Load("libpythia6_4_25");
-  gSystem->Load("libEGPythia6");
-  gSystem->Load("libAliPythia6");
+
   
 
   AliGenPythia* genP = new AliGenPythia(1);

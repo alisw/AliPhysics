@@ -18,14 +18,9 @@
 #include <iostream>
 #include <map>
 
-#include <TArrayD.h>
 #include <TMath.h>
-#include <TGrid.h>
-#include <THashList.h>
 #include <THistManager.h>
 #include <TLinearBinning.h>
-#include <TObjArray.h>
-#include <TParameter.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliAODInputHandler.h"
@@ -35,11 +30,9 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTrackSelection.h"
-#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
-#include "AliOADBContainer.h"
 #include "AliPIDResponse.h"
 #include "AliTOFPIDResponse.h"
 #include "AliVVertex.h"
@@ -57,33 +50,16 @@ namespace EMCalTriggerPtAnalysis {
  * Dummy constructor
  */
 AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
-    AliAnalysisTaskSE(),
+    AliAnalysisTaskEmcalTriggerBase(),
     fTrackCuts(nullptr),
-    fAnalysisUtil(nullptr),
-    fTriggerSelection(nullptr),
-    fHistos(nullptr),
-    fGeometry(nullptr),
-    fTriggerPatches(nullptr),
-    fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1),
     fEtaLabCut(-0.5, 0.5),
     fEtaCmsCut(-0.13, 0.13),
     fPhiCut(0., TMath::TwoPi()),
     fKineCorrelation(false),
-    fStudyPID(false),
-    fNameDownscaleOADB(""),
-    fDownscaleOADB(nullptr),
-    fDownscaleFactors(nullptr),
-    fNameMaskedFastorOADB(),
-    fMaskedFastorOADB(nullptr),
-    fMaskedFastors(),
-    fSelectNoiseEvents(false),
-    fRejectNoiseEvents(false),
-    fCurrentRun(-1),
-    fLocalInitialized(false)
+    fStudyPID(false)
 {
-  // Restrict analysis to the EMCAL acceptance
 }
 
 /**
@@ -91,34 +67,18 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
  * @param[in] name Name of the task
  */
 AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const char *name) :
-    AliAnalysisTaskSE(name),
+    AliAnalysisTaskEmcalTriggerBase(name),
     fTrackCuts(nullptr),
-    fAnalysisUtil(nullptr),
-    fTriggerSelection(nullptr),
-    fHistos(nullptr),
-    fGeometry(nullptr),
-    fTriggerPatches(nullptr),
-    fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1),
     fEtaLabCut(-0.5, 0.5),
     fEtaCmsCut(-0.13, 0.13),
     fPhiCut(0., TMath::TwoPi()),
     fKineCorrelation(false),
-    fStudyPID(false),
-    fNameDownscaleOADB(""),
-    fDownscaleOADB(nullptr),
-    fDownscaleFactors(nullptr),
-    fNameMaskedFastorOADB(),
-    fMaskedFastorOADB(nullptr),
-    fMaskedFastors(),
-    fSelectNoiseEvents(false),
-    fRejectNoiseEvents(false),
-    fCurrentRun(-1),
-    fLocalInitialized(false)
+    fStudyPID(false)
 {
-  // Restrict analysis to the EMCAL acceptance
-  DefineOutput(1, TList::Class());
+  SetNeedEmcalGeom(true);
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 /**
@@ -126,36 +86,25 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
  */
 AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
   //if(fTrackCuts) delete fTrackCuts;
-  if(fAnalysisUtil) delete fAnalysisUtil;
-  if(fTriggerSelection) delete fTriggerSelection;
-  if(fHistos) delete fHistos;
-  if(fDownscaleOADB) delete fDownscaleOADB;
+}
+
+void AliAnalysisTaskChargedParticlesRef::CreateUserObjects(){
+  if(!fTrackCuts) InitializeTrackCuts("standard", fInputHandler->IsA() == AliAODInputHandler::Class());
 }
 
 /**
  * Create the output histograms
  */
-void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
-  fAnalysisUtil = new AliAnalysisUtils;
-
-  if(!fTrackCuts) InitializeTrackCuts("standard", fInputHandler->IsA() == AliAODInputHandler::Class());
+void AliAnalysisTaskChargedParticlesRef::CreateUserHistos() {
 
   NewPtBinning newbinning;
 
-  fHistos = new THistManager("Ref");
-  // Exclusive means classes without lower trigger classes (which are downscaled) - in order to make samples statistically independent:
-  // MBExcl means MinBias && !EMCAL trigger
-  std::array<TString, 11> triggers = {
-      "MB", "EMC7",
-      "EJ1", "EJ2", "EG1", "EG2",
-      "EMC7excl", "EG1excl", "EG2excl", "EJ1excl", "EJ2excl"
-  };
   std::array<Double_t, 5> ptcuts = {1., 2., 5., 10., 20.};
   // Binning for the PID histogram
   const int kdimPID = 3;
   const int knbinsPID[kdimPID] = {1000, 200, 300};
   const double kminPID[kdimPID] = {-100., 0.,  0.}, kmaxPID[kdimPID] = {100., 200., 1.5};
-  for(auto trg : triggers){
+  for(auto trg : GetSupportedTriggers()){
     fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event Counter for trigger class %s", trg.Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hVertexBefore%s", trg.Data()), Form("Vertex distribution before z-cut for trigger class %s", trg.Data()), 500, -50, 50);
     fHistos->CreateTH1(Form("hVertexAfter%s", trg.Data()), Form("Vertex distribution after z-cut for trigger class %s", trg.Data()), 100, -10, 10);
@@ -243,8 +192,6 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
           );
     }
   }
-  fHistos->GetListOfHistograms()->Add(fTrackCuts);
-  PostData(1, fHistos->GetListOfHistograms());
 }
 
 /**
@@ -255,107 +202,10 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
  * - Fill distributions
  * @param option Not used
  */
-void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
-  if(!fLocalInitialized){
-    AliInfoStream() << GetName() << ": Initializing ..." << std::endl;
-    ExecOnce();
-    fLocalInitialized = kTRUE;
-  }
-  if(InputEvent()->GetRunNumber() != fCurrentRun){
-    AliInfoStream() << GetName() << ": Changing run from " <<  fCurrentRun << " to " << InputEvent()->GetRunNumber() << std::endl;
-    RunChanged(InputEvent()->GetRunNumber());
-    fCurrentRun = InputEvent()->GetRunNumber();
-  }
+Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
   Bool_t hasPIDresponse = fInputHandler->GetPIDResponse() != nullptr;
   if(fStudyPID && !hasPIDresponse) AliErrorStream() << "PID requested but PID response not available" << std::endl;
-  // Select event
-  TString triggerstring = "";
-  if(fTriggerStringFromPatches){
-    triggerstring = GetFiredTriggerClassesFromPatches(fTriggerPatches);
-  } else {
-    triggerstring = fInputEvent->GetFiredTriggerClasses();
-  }
-  UInt_t selectionstatus = fInputHandler->IsEventSelected();
-  Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
-  if(fTriggerPatches && fTriggerSelection){
-      isEJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatches);
-      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatches);
-      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches);
-      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches);
-      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches);
-  }
-  // Online selection / rejection
-  if(fRejectNoiseEvents || fSelectNoiseEvents){
-    if(fRejectNoiseEvents){
-      if(isEJ1) isEJ1 &= SelectOnlineTrigger(kCPREJ1);
-      if(isEJ2) isEJ2 &= SelectOnlineTrigger(kCPREJ2);
-      if(isEG1) isEG1 &= SelectOnlineTrigger(kCPREG1);
-      if(isEG2) isEG2 &= SelectOnlineTrigger(kCPREG2);
-      if(isEMC7) isEMC7 &= SelectOnlineTrigger(kCPREL0);
-    } else {
-      if(isEJ1) isEJ1 &= !SelectOnlineTrigger(kCPREJ1);
-      if(isEJ1) isEJ2 &= !SelectOnlineTrigger(kCPREJ2);
-      if(isEG1) isEG1 &= !SelectOnlineTrigger(kCPREG1);
-      if(isEG2) isEG2 &= !SelectOnlineTrigger(kCPREG2);
-      if(isEMC7) isEMC7 &= !SelectOnlineTrigger(kCPREL0);
-    }
-  }
-  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
-  const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
-  //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
-  if(vtx->GetNContributors() < 1) return;
-  if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
-  bool isSelected  = kTRUE;
-  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) isSelected = kFALSE;       // Apply new vertex cut
-  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) isSelected = kFALSE;       // Apply new vertex cut
-  // Apply vertex z cut
-  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) isSelected = kFALSE;
 
-  // Fill Event counter and reference vertex distributions for the different trigger classes
-  if(isMinBias){
-    FillEventCounterHists("MB", vtx->GetZ(), isSelected);
-  }
-  if(isEMC7){
-    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected);
-    if(!isMinBias){
-      FillEventCounterHists("EMC7excl", vtx->GetZ(), isSelected);
-    }
-  }
-  if(isEJ2){
-    FillEventCounterHists("EJ2", vtx->GetZ(), isSelected);
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7)){
-      FillEventCounterHists("EJ2excl", vtx->GetZ(), isSelected);
-    }
-  }
-  if(isEJ1){
-    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected);
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7 || isEJ2)){
-      FillEventCounterHists("EJ1excl", vtx->GetZ(), isSelected);
-    }
-  }
-  if(isEG2){
-    FillEventCounterHists("EG2", vtx->GetZ(), isSelected);
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7)){
-      FillEventCounterHists("EG2excl", vtx->GetZ(), isSelected);
-    }
-  }
-  if(isEG1){
-    FillEventCounterHists("EG1", vtx->GetZ(), isSelected);
-    // Check for exclusive classes
-    if(!(isMinBias || isEMC7 || isEG2)){
-      FillEventCounterHists("EG1excl", vtx->GetZ(), isSelected);
-    }
-  }
-
-  if(!isSelected) return;
 
   // Loop over tracks, fill select particles
   // Histograms
@@ -388,7 +238,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       phiEMCAL = copytrack.GetTrackPhiOnEMCal();
     }
     Int_t supermoduleID = -1;
-    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
+    isEMCAL = fGeom->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
@@ -403,140 +253,32 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
 
     if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
-    // fill histograms allEta
-    if(isMinBias){
-      FillTrackHistos("MB", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+    for(const auto &t : fSelectedTriggers){
+      FillTrackHistos(t, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
       if(fStudyPID && hasPIDresponse)
-        if(isEMCAL) FillPIDHistos("MB", *checktrack);
-    }
-    if(isEMC7){
-      FillTrackHistos("EMC7", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-      if(fStudyPID && hasPIDresponse)
-        if(isEMCAL) FillPIDHistos("EMC7", *checktrack);
-      if(!isMinBias){
-        FillTrackHistos("EMC7excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(fStudyPID && hasPIDresponse)
-          if(isEMCAL) FillPIDHistos("EMC7excl", *checktrack);
-      }
-    }
-    if(isEJ2){
-      FillTrackHistos("EJ2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-      if(fStudyPID && hasPIDresponse)
-        if(isEMCAL) FillPIDHistos("EJ2", *checktrack);
-      // check for exclusive classes
-      if(!(isMinBias || isEMC7)){
-        FillTrackHistos("EJ2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(fStudyPID && hasPIDresponse)
-          if(isEMCAL) FillPIDHistos("EJ2excl", *checktrack);
-      }
-    }
-    if(isEJ1){
-      FillTrackHistos("EJ1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-      if(fStudyPID && hasPIDresponse)
-        if(isEMCAL) FillPIDHistos("EJ1", *checktrack);
-      // check for exclusive classes
-      if(!(isMinBias ||isEMC7 || isEJ2)){
-        FillTrackHistos("EJ1excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(fStudyPID && hasPIDresponse)
-          if(isEMCAL) FillPIDHistos("EJ1excl", *checktrack);
-      }
-    }
-    if(isEG2){
-      FillTrackHistos("EG2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-      if(fStudyPID && hasPIDresponse)
-        if(isEMCAL) FillPIDHistos("EG2", *checktrack);
-      // check for exclusive classes
-      if(!(isMinBias || isEMC7)){
-        FillTrackHistos("EG2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(fStudyPID && hasPIDresponse)
-          if(isEMCAL) FillPIDHistos("EG2excl", *checktrack);
-      }
-    }
-    if(isEG1){
-      FillTrackHistos("EG1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-      if(fStudyPID && hasPIDresponse)
-        if(isEMCAL) FillPIDHistos("EG1", *checktrack);
-      if(!(isMinBias || isEMC7 || isEG2)){
-        FillTrackHistos("EG1excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(fStudyPID && hasPIDresponse)
-          if(isEMCAL) FillPIDHistos("EG1excl", *checktrack);
-      }
+        if(isEMCAL) FillPIDHistos(t, *checktrack);
     }
   }
-  PostData(1, fHistos->GetListOfHistograms());
+  return true;
 }
 
-/**
- * Fill event counter histogram for a given trigger class
- * @param triggerclass Trigger class firing the trigger
- * @param vtxz z-position of the primary vertex
- * @param isSelected Check whether track is selected
- */
-void AliAnalysisTaskChargedParticlesRef::FillEventCounterHists(
-    const std::string &triggerclass,
-    double vtxz,
-    bool isSelected
-)
-{
-  Double_t weight = GetTriggerWeight(triggerclass);
-  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in event histograms." << std::endl;
-  // Fill reference distribution for the primary vertex before any z-cut
-  fHistos->FillTH1(Form("hVertexBefore%s", triggerclass.c_str()), vtxz, weight);
-  if(isSelected){
+void AliAnalysisTaskChargedParticlesRef::UserFillHistosBeforeEventSelection(){
+  // Apply vertex z cut
+  for(const auto &t : fSelectedTriggers){
+    Double_t weight = GetTriggerWeight(t);
+    fHistos->FillTH1(Form("hVertexBefore%s", t.Data()), fVertex[2], weight);
+  }
+}
+
+void AliAnalysisTaskChargedParticlesRef::UserFillHistosAfterEventSelection(){
+  for(const auto &t : fSelectedTriggers) {
+    Double_t weight = GetTriggerWeight(t);
     // Fill Event counter and reference vertex distributions after event selection
-    fHistos->FillTH1(Form("hEventCount%s", triggerclass.c_str()), 1, weight);
-    fHistos->FillTH1(Form("hVertexAfter%s", triggerclass.c_str()), vtxz, weight);
+    fHistos->FillTH1(Form("hEventCount%s", t.Data()), 1, weight);
+    fHistos->FillTH1(Form("hVertexAfter%s", t.Data()), fVertex[2], weight);
   }
 }
 
-/**
- * Perform gloabl initializations
- * Used for the moment for
- * - Connect EMCAL geometry
- * - Initialize OADB container with downscaling factors
- */
-void AliAnalysisTaskChargedParticlesRef::ExecOnce(){
-  // Handle geometry
-  if(!fGeometry){
-    fGeometry = AliEMCALGeometry::GetInstance();
-    if(!fGeometry)
-      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
-  }
-  fTriggerPatches = static_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  // Handle OADB container with downscaling factors
-  if(fNameDownscaleOADB.Length()){
-    if(fNameDownscaleOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
-    fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
-    fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
-  }
-  // Load OADB container with masked fastors
-  if(fNameMaskedFastorOADB.Length()){
-    if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
-    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
-    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
-  }
-}
-
-/**
- * Run change method. Called when the run number of the new event
- * is different compared to the run number of the previous event.
- * Used for loading of the downscale factor for a given
- * run from the downscale OADB.
- * @param[in] runnumber Number of the new run.
- */
-void AliAnalysisTaskChargedParticlesRef::RunChanged(Int_t runnumber){
- if(fDownscaleOADB){
-    fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
-  }
- if(fMaskedFastorOADB){
-   fMaskedFastors.clear();
-   TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
-   for(auto m : *ids){
-     TParameter<int> *id = static_cast<TParameter<int> *>(m);
-     fMaskedFastors.push_back(id->GetVal());
-   }
- }
-}
 
 /**
  * Fill track histograms
@@ -549,7 +291,7 @@ void AliAnalysisTaskChargedParticlesRef::RunChanged(Int_t runnumber){
  * @param inEmcal Track in EMCAL \f$ \phi \f$ acceptance
  */
 void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
-    const std::string &eventclass,
+    const TString &eventclass,
     Double_t pt,
     Double_t etalab,
     Double_t etacent,
@@ -561,49 +303,49 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
 {
   Double_t weight = GetTriggerWeight(eventclass);
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in particle histograms." << std::endl;
-  fHistos->FillTH1(Form("hPtEtaAll%s", eventclass.c_str()), TMath::Abs(pt), weight);
+  fHistos->FillTH1(Form("hPtEtaAll%s", eventclass.Data()), TMath::Abs(pt), weight);
   double kinepoint[3] = {TMath::Abs(pt), etalab, phi};
-  if(fKineCorrelation) fHistos->FillTH3(Form("hPtEtaPhiAll%s", eventclass.c_str()),kinepoint , weight);
+  if(fKineCorrelation) fHistos->FillTH3(Form("hPtEtaPhiAll%s", eventclass.Data()),kinepoint , weight);
   if(inEmcal){
-    fHistos->FillTH1(Form("hPtEMCALEtaAll%s", eventclass.c_str()), TMath::Abs(pt), weight);
-    if(fKineCorrelation) fHistos->FillTH3(Form("hPtEtaPhiEMCALAll%s", eventclass.c_str()), kinepoint, weight);
+    fHistos->FillTH1(Form("hPtEMCALEtaAll%s", eventclass.Data()), TMath::Abs(pt), weight);
+    if(fKineCorrelation) fHistos->FillTH3(Form("hPtEtaPhiEMCALAll%s", eventclass.Data()), kinepoint, weight);
     if(hasTRD){
-      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAll%s", eventclass.c_str()), TMath::Abs(pt), weight);
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAll%s", eventclass.Data()), TMath::Abs(pt), weight);
     } else {
-      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAll%s", eventclass.c_str()), TMath::Abs(pt), weight);
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAll%s", eventclass.Data()), TMath::Abs(pt), weight);
     }
   }
 
   std::array<int, 5> ptmin = {1,2,5,10,20}; // for eta distributions
   for(auto ptmincut : ptmin){
     if(TMath::Abs(pt) > static_cast<double>(ptmincut)){
-      fHistos->FillTH1(Form("hPhiDistAllPt%d%s", ptmincut, eventclass.c_str()), phi, weight);
-      fHistos->FillTH1(Form("hEtaLabDistAllPt%d%s", ptmincut, eventclass.c_str()), etalab, weight);
-      fHistos->FillTH1(Form("hEtaCentDistAllPt%d%s", ptmincut, eventclass.c_str()), etacent, weight);
+      fHistos->FillTH1(Form("hPhiDistAllPt%d%s", ptmincut, eventclass.Data()), phi, weight);
+      fHistos->FillTH1(Form("hEtaLabDistAllPt%d%s", ptmincut, eventclass.Data()), etalab, weight);
+      fHistos->FillTH1(Form("hEtaCentDistAllPt%d%s", ptmincut, eventclass.Data()), etacent, weight);
       if(inEmcal){
-        fHistos->FillTH1(Form("hEtaLabDistAllEMCALPt%d%s", ptmincut, eventclass.c_str()), etalab, weight);
-        fHistos->FillTH1(Form("hEtaCentDistAllEMCALPt%d%s", ptmincut, eventclass.c_str()), etacent, weight);
+        fHistos->FillTH1(Form("hEtaLabDistAllEMCALPt%d%s", ptmincut, eventclass.Data()), etalab, weight);
+        fHistos->FillTH1(Form("hEtaCentDistAllEMCALPt%d%s", ptmincut, eventclass.Data()), etacent, weight);
       }
     }
   }
 
   if(etacut){
-    fHistos->FillTH1(Form("hPtEtaCent%s", eventclass.c_str()), TMath::Abs(pt), weight);
+    fHistos->FillTH1(Form("hPtEtaCent%s", eventclass.Data()), TMath::Abs(pt), weight);
     if(inEmcal){
-      fHistos->FillTH1(Form("hPtEMCALEtaCent%s", eventclass.c_str()), TMath::Abs(pt), weight);
+      fHistos->FillTH1(Form("hPtEMCALEtaCent%s", eventclass.Data()), TMath::Abs(pt), weight);
       if(hasTRD){
-        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCent%s", eventclass.c_str()), TMath::Abs(pt), weight);
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCent%s", eventclass.Data()), TMath::Abs(pt), weight);
       } else {
-        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCent%s", eventclass.c_str()), TMath::Abs(pt), weight);
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCent%s", eventclass.Data()), TMath::Abs(pt), weight);
       }
     }
     for(auto ptmincut : ptmin){
       if(TMath::Abs(pt) > static_cast<double>(ptmincut)){
-        fHistos->FillTH1(Form("hEtaLabDistCutPt%d%s", ptmincut, eventclass.c_str()), etalab, weight);
-        fHistos->FillTH1(Form("hEtaCentDistCutPt%d%s", ptmincut, eventclass.c_str()), etacent, weight);
+        fHistos->FillTH1(Form("hEtaLabDistCutPt%d%s", ptmincut, eventclass.Data()), etalab, weight);
+        fHistos->FillTH1(Form("hEtaCentDistCutPt%d%s", ptmincut, eventclass.Data()), etacent, weight);
         if(inEmcal){
-          fHistos->FillTH1(Form("hEtaLabDistCutEMCALPt%d%s", ptmincut, eventclass.c_str()), etalab, weight);
-          fHistos->FillTH1(Form("hEtaCentDistCutEMCALPt%d%s", ptmincut, eventclass.c_str()), etacent, weight);
+          fHistos->FillTH1(Form("hEtaLabDistCutEMCALPt%d%s", ptmincut, eventclass.Data()), etalab, weight);
+          fHistos->FillTH1(Form("hEtaCentDistCutEMCALPt%d%s", ptmincut, eventclass.Data()), etacent, weight);
         }
       }
     }
@@ -611,7 +353,7 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
 }
 
 void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
-    const std::string &eventclass,
+    const TString &eventclass,
     const AliVTrack &trk
 ) {
   Double_t weight = GetTriggerWeight(eventclass);
@@ -621,81 +363,16 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
   if(!((trk.GetStatus() & AliVTrack::kTOFout) && (trk.GetStatus() & AliVTrack::kTIME))) return;
 
   double poverz = TMath::Abs(trk.P())/static_cast<double>(trk.Charge());
-  fHistos->FillTH2(Form("hTPCdEdxEMCAL%s", eventclass.c_str()), poverz, trk.GetTPCsignal(), weight);
+  fHistos->FillTH2(Form("hTPCdEdxEMCAL%s", eventclass.Data()), poverz, trk.GetTPCsignal(), weight);
   // correct for units - TOF in ps, track length in cm
   Double_t trtime = (trk.GetTOFsignal() - pid->GetTOFResponse().GetTimeZero()) * 1e-12;
   Double_t v = trk.GetIntegratedLength()/(100. * trtime);
   Double_t beta =  v / TMath::C();
-  fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta, weight);
+  fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.Data()), poverz, beta, weight);
   double datapoint[3] = {poverz, trk.GetTPCsignal(), beta};
-  fHistos->FillTHnSparse(Form("hPIDcorrEMCAL%s", eventclass.c_str()), datapoint, weight);
+  fHistos->FillTHnSparse(Form("hPIDcorrEMCAL%s", eventclass.Data()), datapoint, weight);
 }
 
-/**
- * Select events which contain good patches (at least one patch without noisy fastor).
- * @param trg L0/L1 trigger class to be checked
- * @return True if the event has at least one good patch, false otherwise
- */
-bool AliAnalysisTaskChargedParticlesRef::SelectOnlineTrigger(OnlineTrigger_t trg){
-  int ngood(0);
-  const int kEJ1threshold = 223, kEJ2threshold = 140;
-  std::function<bool(const AliEMCALTriggerPatchInfo *)> PatchSelector[5] = {
-      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsGammaHigh();
-      },
-      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsGammaLow();
-      },
-      [kEJ1threshold](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsJetLowRecalc() && patch->GetADCAmp() > kEJ1threshold;
-      },
-      [kEJ2threshold](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsJetLowRecalc() && patch->GetADCAmp() > kEJ1threshold;
-      },
-      [](const AliEMCALTriggerPatchInfo * patch) -> bool {
-          return patch->IsLevel0();
-      }
-  };
-  for(auto p : *fTriggerPatches){
-    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
-    if(PatchSelector[trg](patch)){
-      bool patchMasked(false);
-      for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++){
-        for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++){
-          int fastorAbs(-1);
-          fGeometry->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorAbs);
-          if(std::find(fMaskedFastors.begin(), fMaskedFastors.end(), fastorAbs) != fMaskedFastors.end()){
-            patchMasked = true;
-            break;
-          }
-        }
-      }
-      if(!patchMasked) ngood++;
-    }
-  }
-  return ngood > 0;
-}
-
-/**
- * Get a trigger class dependent event weight. The weight
- * is defined as 1/downscalefactor. The downscale factor
- * is taken from the OADB. For triggers which are not downscaled
- * the weight is always 1.
- * @param[in] triggerclass Class for which to obtain the trigger.
- * @return Downscale facror for the trigger class (1 if trigger is not downscaled or no OADB container is available)
- */
-Double_t AliAnalysisTaskChargedParticlesRef::GetTriggerWeight(const std::string &triggerclass) const {
-  if(fDownscaleFactors){
-    TParameter<double> *result(nullptr);
-    // Downscaling only done on MB, L0 and the low threshold triggers
-    if(triggerclass.find("MB") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
-    else if(triggerclass.find("EMC7") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
-    else if(triggerclass.find("EJ2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
-    else if(triggerclass.find("EG2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
-    if(result) return 1./result->GetVal();
-  }
-  return 1.;
-}
 
 /**
  * Set the track selection
@@ -704,42 +381,6 @@ Double_t AliAnalysisTaskChargedParticlesRef::GetTriggerWeight(const std::string 
  */
 void AliAnalysisTaskChargedParticlesRef::InitializeTrackCuts(TString cutname, bool isAOD){
   SetEMCALTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
-}
-
-/**
- * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
- * @param triggerpatches Trigger patches found by the trigger maker
- * @return String with EMCAL trigger decision
- */
-TString AliAnalysisTaskChargedParticlesRef::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
-  TString triggerstring = "";
-  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
-  double  minADC_EJ1 = 260.,
-          minADC_EJ2 = 127.,
-          minADC_EG1 = 140.,
-          minADC_EG2 = 89.;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
-    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;
-    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_EG1) nEG1++;
-    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_EG2) nEG2++;
-  }
-  if(nEJ1) triggerstring += "EJ1";
-  if(nEJ2){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "EJ2";
-  }
-  if(nEG1){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "EG1";
-  }
-  if(nEG2){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "EG2";
-  }
-  return triggerstring;
 }
 
 /**

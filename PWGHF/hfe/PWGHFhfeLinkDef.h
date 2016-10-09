@@ -98,8 +98,11 @@
 #pragma link C++ class  AliAnalysisTaskBeautyCal+;
 #pragma link C++ class  AliAnalysisTaskFlowITSTPCTOFQCSP+;
 #pragma link C++ class  AliAnalysisTaskHFEMulti+;
+#pragma link C++ class  AliAnalysisTaskHFEtemplate+;
 #pragma link C++ class  AliHFEhadronicbackground+;
 #pragma link C++ class  AliHFEUnfolding+;
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
+
+#pragma link C++ class  AliehDPhiBasicParticle+;
 
 #endif

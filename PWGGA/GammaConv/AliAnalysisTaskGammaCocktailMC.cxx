@@ -180,7 +180,7 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     for (Int_t i=0; i<14; i++) {
       if (fHasMother[i]) fUserInfo->Add(fPtParametrization[i]);
     }
-    fUserInfo->Add(fPtParametrizationProton);
+    if (fPtParametrizationProton) fUserInfo->Add(fPtParametrizationProton);
     
     // cocktail settings
     Double_t ptMin, ptMax;
@@ -347,6 +347,7 @@ void AliAnalysisTaskGammaCocktailMC::GetAndSetPtParametrizations(AliGenEMCocktai
   if (!mcCocktailGen) return;
 
   for (Int_t i=0; i<14; i++) fPtParametrization[i] = NULL;
+  fPtParametrizationProton = NULL;
   
   TF1* fct        = NULL;
   TString fctName = "";

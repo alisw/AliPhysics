@@ -5,6 +5,7 @@
 #include "TList.h"
 #include "TH3F.h"
 #include "AliCascadeResult.h"
+#include "AliLog.h"
 #include <iostream>
 #include <TROOT.h>
 using namespace std;
@@ -33,11 +34,12 @@ fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, pt, mass
-    fHisto = new TH3F("fHisto","", 20,0,100, 100,0,10, 400,0,2 );
+    fHisto = new TH3F("fHisto","", 20,0,100, 200,0,20, 400,0,2 );
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -63,7 +65,8 @@ fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -73,7 +76,7 @@ fCutMCPDGCodeAssociation(kTRUE)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -99,7 +102,8 @@ fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
-fCutMCPDGCodeAssociation(kTRUE)
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -113,7 +117,7 @@ fCutMCPDGCodeAssociation(kTRUE)
     
     Double_t lMassWindow = 0.1 ;
     Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
-    Double_t lMassBins[lNMassBins];
+    Double_t lMassBins[lNMassBins+1];
     
     for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-0.1) + ( ( (Double_t) ibound )*lMassDelta );
     
@@ -145,7 +149,8 @@ fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutXiRejection(0.008),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
-fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
+fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -155,7 +160,7 @@ fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -187,6 +192,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     //MC specific
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -196,18 +202,16 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
 }
 //________________________________________________________________
 AliCascadeResult::~AliCascadeResult(){
-    // destructor: clean stuff up
-    
-    // Actual deletion of the objects causes corruption of event object
-    // - no idea why - on Proof(Lite). Hence it is disabled here.
-    //
-    //delete fEstimatorList;
-    //fEstimatorList=0x0;
+    // Proper destructor: delete pointer data member
+    if (fHisto) {
+        delete fHisto;
+        fHisto = 0x0;
+    }
 }
 
 //________________________________________________________________
@@ -241,6 +245,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     //MC specific
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
+    fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     
     if (fHisto) {
         delete fHisto;
@@ -254,7 +259,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 100,0,10, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
     fHisto->Sumw2();
     
     return *this;
@@ -272,7 +277,11 @@ Long64_t AliCascadeResult::Merge(TCollection *hlist)
         AliCascadeResult *xh = 0;
         TIter nxh(hlist);
         while ((xh = (AliCascadeResult *) nxh())) {
-            // Add this histogram
+            // Check if you're not committing a crime
+            if( ! HasSameCuts( xh ) ){
+                AliFatal("FATAL: you're trying to sum output that was obtained with different selections!");
+            }
+            //... if all fine, add this histogram
             GetHistogram()->Add(xh->GetHistogram());
         }
     }
@@ -345,6 +354,7 @@ void AliCascadeResult::Print()
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
+    cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<"========================================"<<endl;
     return;
 }

@@ -83,7 +83,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 ,fFMDGap(0)
 				 ,fZDCGap(0)
 				 ,fNtrk_ST(0)
-				 ,fNtrk_MS(0) {
+				 ,fNtrk_MS(0)
+		       		 ,fProcessType(0){
 					 for (Int_t i = 0; i < 11; i++) {
 						 if (i < 3) {
 							 fVertexSPD[i] = 0; 
@@ -121,6 +122,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Bool_t fSysVertex[3];//
 			Bool_t fSysPileUp[5];//
 			Bool_t fSysCluster[5];//
+			Int_t fProcessType;//for MC
 
 			ClassDef(EventInfo, 1);
 		};
@@ -159,7 +161,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		};
 
 		struct TrackInfo : public TObject{//Track information for PWA
-			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL)//Constructor
+			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL, Bool_t fMC=kFALSE, AliMCEvent *fMCevt=NULL)//Constructor
 				:TObject()
 				 , fSign(0)
 				 , fPx(0)
@@ -174,6 +176,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 , fCrossedRows(0)
 				 , fTPCNCluster(0)
 				 , fTPCnclsS(0)
+				 , fMotherPDGCode(-999)
+				 , fMotherID(-999)
+				 , fMotherPrimary(0)
 			
 			{
 				for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
@@ -181,10 +186,10 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 						fITSBayesProb[i] = fTRDBayesProb[i] = fTPCProb[i] = fTOFProb[i] = fITSProb[i] = ftotBayesProb[i] = -999.;
 					fDetMask[i] = 0;
 				}
-				Fill(tr,pid,pidc);
+				Fill(tr,pid,pidc,fMC,fMCevt);
 			}
 
-			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *);
+			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *, Bool_t fMC, AliMCEvent *);
 
 			Double_t fSign;
 			Double_t fPx, fPy, fPz, fEnergy, fIntegratedLength;
@@ -204,6 +209,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Double_t fTOFProb[AliPID::kSPECIES];
 			Double_t fITSProb[AliPID::kSPECIES];
 			UInt_t fDetMask[5];
+			Int_t fMotherPDGCode;
+			Int_t fMotherID;
+			Bool_t fMotherPrimary;
 
 			ClassDef(TrackInfo, 1);
 
@@ -245,6 +253,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kNG_Data,// No-gap?
 			kSGA_Data,//Single-gap A-side
 			kSGC_Data,//Single-gap C-side
+			kDGFMDSPD,
+			kMBOR,
 			k2Tracks,
 			k4Tracks,
 			k2Tracks_ITSSA,
@@ -329,7 +339,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fRunVsMBAND_AD;//!
 		TH1D *fRunVsMBOR_Global;//!
 		TH1D *fRunVsMBAND_Global;//!
-		TH1D *fRunVsDG[10];//!
+		TH1D *fRunVsDG[11];//!
 		TH1D *fRunVs2t;//!
 		TH1D *fRunVs2t_ITSSA;//!
 		TH1D *fRunVs4t;//!
@@ -364,7 +374,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMC_Eta[7];//!
 		TH1D *fMC_DiffMass[7];//!
 		TH1D *fMC_DiffMass_PDG[7];//!
-		TH1D *fRunFiducial[6];//!
+		TH1D *fRunFiducial[7][12];//!
 		TH1D *fMult_Gen;//!
 		TH2D *fMult_Gen_Process;//!
 		TH2D *fMult_Rec_DG_Process;//!

@@ -63,8 +63,8 @@ const Double_t AliGenEMlibV2::fgkV2param[kCentralities][16] = {
   ,{ 6.516808e-02, 1.449877e+00, 4.705013e-02, 3.025555e+00, 3.391947e+00, 2.364841e-02, 2.303211e+00, 4.443068e+00, 5.989572e-02, 2.079546e-03, 8.365175e-01, 0, 1, 2.079546e-03, 8.365175e-01, 6.0 }  // 0-5
   ,{ 1.199628e-01, 1.288148e+00, 4.230109e-02, 3.071488e+00, 3.649381e+00, 4.643994e-02, 1.210442e+00, 5.055715e+00, 1.089290e-01, 2.561783e-03, 7.907385e-01, 0, 1, 2.561783e-03, 7.907385e-01, 7.0 }  // 5-10
   ,{ 1.672604e-01, 1.367064e+00, 4.704060e-02, 3.005428e+00, 3.816287e+00, 5.845636e-02, 8.660308e-01, 4.587477e+00, 1.819530e-01, 2.945173e-03, 7.256487e-01, 0, 1, 2.945173e-03, 7.256487e-01, 8.0 }  // 10-20
-  ,{ 2.079093e-01, 1.480510e+00, 5.518112e-02, 2.845102e+00, 3.485697e+00, 3.363945e-02, 3.599748e-01, 3.207685e+00, 3.494331e-01, 4.398452e-03, 6.399492e-01, 0, 1, 4.398452e-03, 6.399492e-01, 16.0}  // 20-30
-  ,{ 2.275701e-01, 1.622512e+00, 6.793718e-02, 2.742464e+00, 3.229573e+00, 3.316905e-02, 3.128005e-01, 2.465896e+00, 4.296590e-01, 4.837696e-03, 6.855293e-01, 0, 1, 4.837696e-03, 6.855293e-01, 17.0}  // 30-40
+  ,{ 2.079093e-01, 1.480510e+00, 5.518112e-02, 2.845102e+00, 3.485697e+00, 3.363945e-02, 3.599748e-01, 3.207685e+00, 3.494331e-01, 4.398452e-03, 6.399492e-01, 0, 1, 4.398452e-03, 6.399492e-01, 16.0 }  // 20-30
+  ,{ 2.275701e-01, 1.622512e+00, 6.793718e-02, 2.742464e+00, 3.229573e+00, 3.316905e-02, 3.128005e-01, 2.465896e+00, 4.296590e-01, 4.837696e-03, 6.855293e-01, 0, 1, 4.837696e-03, 6.855293e-01, 17.0 }  // 30-40
   ,{ 2.394412e-01, 1.663730e+00, 7.163620e-02, 2.406896e+00, 2.343323e+00, 1.033637e-01, 1.028906e+00, 4.512137e+00, 2.383232e-01, 5.013671e-03, 7.776760e-01, 0, 1, 5.013671e-03, 7.776760e-01, 8.0 }  // 40-50
   ,{ 2.115576e-01, 1.981979e+00, 8.221619e-02, 2.203373e+00, 3.213309e+00, 1.113934e-01, 7.620465e-01, 3.575663e+00, 2.673220e-01, 4.555673e-03, 9.927123e-01, 0, 1, 4.555673e-03, 9.927123e-01, 7.0 }  // 50-60
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000, 10 }  // 0-10
@@ -116,10 +116,10 @@ const Double_t AliGenEMlibV2::fgkThermPtParam[kCentralities][2] = {
   ,{ 0.0000000000, 0.0000000000 } // 40-80
 };
 
-// MASS   0=>PIZERO, 1=>ETA, 2=>RHO0, 3=>OMEGA, 4=>ETAPRIME, 5=>PHI, 6=>JPSI, 7=>SIGMA, 8=>K0s, 9=>DELTA++, 10=>DELTA+, 11=>DELTA-, 12=>DELTA0, 13=>Rho+, 14=>Rho-, 15=>K0*
-const Double_t AliGenEMlibV2::fgkHM[16] = {0.1349766, 0.547853, 0.77549, 0.78265, 0.95778, 1.019455, 3.096916, 1.192642, 0.497614, 1.2311, 1.2349, 1.2349, 1.23340, 0.77549, 0.77549, 0.896};
+// MASS   0=>PIZERO, 1=>ETA, 2=>RHO0, 3=>OMEGA, 4=>ETAPRIME, 5=>PHI, 6=>JPSI, 7=>SIGMA, 8=>K0s, 9=>DELTA++, 10=>DELTA+, 11=>DELTA-, 12=>DELTA0, 13=>Rho+, 14=>Rho-, 15=>K0*, 16=>K0l, 17=>Lambda
+const Double_t AliGenEMlibV2::fgkHM[18] = {0.1349766, 0.547853, 0.77549, 0.78265, 0.95778, 1.019455, 3.096916, 1.192642, 0.497614, 1.2311, 1.2349, 1.2349, 1.23340, 0.77549, 0.77549, 0.896, 0.497614, 1.115683};
 
-const Double_t AliGenEMlibV2::fgkMtFactor[3][16] = {
+const Double_t AliGenEMlibV2::fgkMtFactor[3][18] = {
   // {1.0, 0.5, 1.0, 0.9, 0.4, 0.23, 0.054},  // factor for pp from arXiv:1110.3929
   // {1.0, 0.55, 1.0, 0.9, 0.4, 0.25, 0.004}    // factor for PbPb from arXiv:1110.3929
   //{1., 0.48, 1.0, 0.9, 0.25, 0.4}, (old values)
@@ -133,9 +133,9 @@ const Double_t AliGenEMlibV2::fgkMtFactor[3][16] = {
   /*best guess:
    - pp values for eta/pi0 [arXiv:1205.5724], omega/pi0 [arXiv:1210.5749], phi/(pi+/-) [arXiv:1208.5717] from measured 7 Tev data
    */
-  {1., 0.476, 1.0, 0.85, 0.4, 0.13, 1., 0.49, 0.575, 1, 1, 1, 1, 1.0, 1.0, 1.0}, //pp
-  {1., 0.476, 1.0, 0.85, 0.4, 0.25, 1., 0.49, 0.575, 1, 1, 1, 1, 1.0, 1.0, 1.0}, //pPb
-  {1., 0.476, 1.0, 0.85, 0.4, 0.25, 1., 0.49, 0.575, 1, 1, 1, 1, 1.0, 1.0, 1.0}  //PbPb
+  {1., 0.476, 1.0, 0.85, 0.4, 0.13, 1., 0.49, 0.575, 1, 1, 1, 1, 1.0, 1.0, 1.0, 0.575, 0.18}, //pp
+  {1., 0.476, 1.0, 0.85, 0.4, 0.25, 1., 0.49, 0.575, 1, 1, 1, 1, 1.0, 1.0, 1.0, 0.575, 0.18}, //pPb
+  {1., 0.476, 1.0, 0.85, 0.4, 0.25, 1., 0.49, 0.575, 1, 1, 1, 1, 1.0, 1.0, 1.0, 0.575, 0.18}  //PbPb
 };
 
 // Exponential
@@ -555,9 +555,67 @@ Double_t AliGenEMlibV2::YK0short( const Double_t *py, const Double_t */*dummy*/ 
   
 }
 
-Double_t AliGenEMlibV2::V2K0sshort( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlibV2::V2K0short( const Double_t *px, const Double_t */*dummy*/ )
 {
   return KEtScal(*px,kK0s);
+}
+
+
+//--------------------------------------------------------------------------
+//
+//                              K0long
+//
+//--------------------------------------------------------------------------
+Int_t AliGenEMlibV2::IpK0long(TRandom *)
+{
+  // Return kzerolong pdg code
+  return 130;
+}
+
+Double_t AliGenEMlibV2::PtK0long( const Double_t *px, const Double_t */*dummy*/ )
+{
+  const double &pt=px[0];
+  return fPtParametrization[kK0l]->Eval(pt);
+}
+
+Double_t AliGenEMlibV2::YK0long( const Double_t *py, const Double_t */*dummy*/ )
+{
+  return YFlat(*py);
+  
+}
+
+Double_t AliGenEMlibV2::V2K0long( const Double_t *px, const Double_t */*dummy*/ )
+{
+  return KEtScal(*px,kK0l);
+}
+
+
+//--------------------------------------------------------------------------
+//
+//                              Lambda
+//
+//--------------------------------------------------------------------------
+Int_t AliGenEMlibV2::IpLambda(TRandom *)
+{
+  // Return kzerolong pdg code
+  return 3122;
+}
+
+Double_t AliGenEMlibV2::PtLambda( const Double_t *px, const Double_t */*dummy*/ )
+{
+  const double &pt=px[0];
+  return fPtParametrization[kLambda]->Eval(pt);
+}
+
+Double_t AliGenEMlibV2::YLambda( const Double_t *py, const Double_t */*dummy*/ )
+{
+  return YFlat(*py);
+  
+}
+
+Double_t AliGenEMlibV2::V2Lambda( const Double_t *px, const Double_t */*dummy*/ )
+{
+  return KEtScal(*px,kLambda);
 }
 
 
@@ -817,11 +875,11 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
   TString sub1                  = "";
   TString sub2                  = "";
   TString sub3                  = "";
-  for (Int_t i=0; i<scaledPt.Length(); i++) {
+  for (Int_t i=0; i<formulaBaseScaled.Length(); i++) {
     if (i>0) sub1               = formulaBaseScaled(i-1, 1);
     else sub1                   = "";
     sub2                        = formulaBaseScaled(i, 1);
-    if (i<scaledPt.Length()-1)
+    if (i<formulaBaseScaled.Length()-1)
       sub3                      = formulaBaseScaled(i+1, 1);
     else sub3                   = "";
     
@@ -951,14 +1009,14 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
   TRandom* rndm;
 
   // get parametrizations from file
-  for (Int_t i=1; i<16; i++) {
+  for (Int_t i=1; i<18; i++) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
     fPtParametrizationTemp = (TF1*)fParametrizationFile->Get(Form("%d_pt", ip));
     if (fPtParametrizationTemp) {
       fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
     } else {
-      if (i==7 || i==9 || i==10 || i==11 || i==12)
+      if (i==7 || i==9 || i==10 || i==11 || i==12 || i==17)
         fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 0);
       else
         fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 1);
@@ -978,9 +1036,9 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
 //
 //--------------------------------------------------------------------------
 TF1* AliGenEMlibV2::GetPtParametrization(Int_t np) {
-  if (np<16)
+  if (np<18)
     return fPtParametrization[np];
-  else if (np==16)
+  else if (np==18)
     return fPtParametrizationProton;
   else
     return NULL;
@@ -1025,13 +1083,13 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
   if (fMtFactorFile) fMtFactorHistoTemp = (TH1D*)fMtFactorFile->Get("histoMtScaleFactor");
   if (fMtFactorHistoTemp) {
     fMtFactorHisto                      = new TH1D(*fMtFactorHistoTemp);
-    for (Int_t i=1; i<17; i++) {
+    for (Int_t i=1; i<19; i++) {
       if (fMtFactorHisto->GetBinContent(i) < 0) {
         fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
       }
     }
   } else {
-    fMtFactorHisto = new TH1D("histoMtScaleFactor", "", 16, 0.5, 16.5);
+    fMtFactorHisto = new TH1D("histoMtScaleFactor", "", 18, 0.5, 18.5);
     fMtFactorHisto->GetYaxis()->SetTitle("mt scaling factor");
     fMtFactorHisto->GetXaxis()->SetBinLabel(1,"111");
     fMtFactorHisto->GetXaxis()->SetBinLabel(2,"221");
@@ -1049,7 +1107,10 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
     fMtFactorHisto->GetXaxis()->SetBinLabel(14,"213");
     fMtFactorHisto->GetXaxis()->SetBinLabel(15,"-213");
     fMtFactorHisto->GetXaxis()->SetBinLabel(16,"313");
-    for (Int_t i=1; i<17; i++)
+    fMtFactorHisto->GetXaxis()->SetBinLabel(17,"130");
+    fMtFactorHisto->GetXaxis()->SetBinLabel(18,"3122");
+
+    for (Int_t i=1; i<19; i++)
       fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
   }
 }
@@ -1113,6 +1174,12 @@ GenFunc AliGenEMlibV2::GetPt(Int_t param, const char * tname) const
       break;
     case kK0s:
       func= PtK0short;
+      break;
+    case kK0l:
+      func= PtK0long;
+      break;
+    case kLambda:
+      func= PtLambda;
       break;
     case kDeltaPlPl:
       func= PtDeltaPlPl;
@@ -1182,6 +1249,12 @@ GenFunc AliGenEMlibV2::GetY(Int_t param, const char * tname) const
     case kK0s:
       func=YK0short;
       break;
+    case kK0l:
+      func=YK0long;
+      break;
+    case kLambda:
+      func=YLambda;
+      break;
     case kDeltaPlPl:
       func=YDeltaPlPl;
       break;
@@ -1250,6 +1323,12 @@ GenFuncIp AliGenEMlibV2::GetIp(Int_t param, const char * tname) const
     case kK0s:
       func=IpK0short;
       break;
+    case kK0l:
+      func=IpK0long;
+      break;
+    case kLambda:
+      func=IpLambda;
+      break;
     case kDeltaPlPl:
       func=IpDeltaPlPl;
       break;
@@ -1316,7 +1395,13 @@ GenFunc AliGenEMlibV2::GetV2(Int_t param, const char * tname) const
       func=V2Sigma0;
       break;
     case kK0s:
-      func=V2K0sshort;
+      func=V2K0short;
+      break;
+    case kK0l:
+      func=V2K0long;
+      break;
+    case kLambda:
+      func=V2Lambda;
       break;
     case kDeltaPlPl:
       func=V2DeltaPlPl;
