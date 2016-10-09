@@ -349,7 +349,11 @@ Int_t AliAnalysisTriggerScalers::GetFillNumberFromRunNumber(Int_t runNumber)
       // manual hack because GRP info incorrect for this run
       fillNumber = 4690;
     }
-    
+    if ( runNumber == 262717 ) 
+    {
+        // one more manual hack due to incorrect GRP info
+        fillNumber = 5351;
+    }
     return fillNumber;
   }
   return -1;
