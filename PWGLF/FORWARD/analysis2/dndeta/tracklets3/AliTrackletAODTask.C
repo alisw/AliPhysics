@@ -13,6 +13,7 @@
 #include "AliTrackletAODUtils.C"
 #ifndef __CINT__
 #include "AliAODTracklet.C"
+#include "AliTrackletWeights.C"
 #include "AliVVertex.h"
 #include <AliVEvent.h>
 #include <AliAODEvent.h>
@@ -34,9 +35,11 @@
 #include <TGeoGlobalMagField.h>
 #include <TH1.h>
 #include <TProfile2D.h>
+#include <TUrl.h>
 #include <climits>
 #else
 class AliTrackletAODUtils;
+class AliTrackletBaseWeights;
 class AliAODTracklet;
 class AliVEvent;
 class AliVVertex;
@@ -122,7 +125,7 @@ public:
    * 
    * @return Pointer to newly created task, or null
    */
-  static AliTrackletAODTask* Create();
+  static AliTrackletAODTask* Create(const char* weights="");
   /** 
    * @{ 
    * @name Task interface 
@@ -208,7 +211,13 @@ public:
    * - 1 Random filtering 
    * - 2 Track filtering  
    */
-  virtual void SetFilterStrange(Int_t mode) { fFilterStrange = mode; }
+  virtual void SetFilterMode(Int_t mode) { fFilterMode = mode; }
+  /** 
+   * Set weights to use for filtering. 
+   * 
+   * @param w Weights 
+   */
+  virtual void SetFilterWeights(AliTrackletBaseWeights* w) {}
   /* @} */
 protected:
   /** 
@@ -385,7 +394,7 @@ protected:
   /** Pointer to current reconstruction object */
   AliITSMultRecBg*    fReco; //!
   /** Whether to remove clusters corresponding to strange primary parents */
-  Int_t fFilterStrange;
+  Int_t fFilterMode;
   /** Fraction of K^0_S clusters removed */
   TParameter<double>* fStrangeLoss; //! 
   
@@ -406,7 +415,7 @@ AliTrackletAODTask::AliTrackletAODTask()
     fPhiOverlapCut(0.005),
     fZEtaOverlapCut(0.05),
     fReco(0),
-    fFilterStrange(0),
+    fFilterMode(0),
     fStrangeLoss(0)
 {}
 //____________________________________________________________________
@@ -424,7 +433,7 @@ AliTrackletAODTask::AliTrackletAODTask(const char*)
     fPhiOverlapCut(0.005),
     fZEtaOverlapCut(0.05),
     fReco(0),
-    fFilterStrange(0),
+    fFilterMode(0),
     fStrangeLoss(0)
 {
   DefineOutput(1,TList::Class());
@@ -444,7 +453,7 @@ AliTrackletAODTask::AliTrackletAODTask(const AliTrackletAODTask& other)
     fPhiOverlapCut(other.fPhiOverlapCut),
     fZEtaOverlapCut(other.fZEtaOverlapCut),
     fReco(0),
-    fFilterStrange(other.fFilterStrange),
+    fFilterMode(other.fFilterMode),
     fStrangeLoss(0)
 {}
 //____________________________________________________________________
@@ -488,8 +497,8 @@ void AliTrackletAODTask::Print(Option_t*) const
   Printf(" %22s: %f",   "phi overlap cut",	   fPhiOverlapCut);
   Printf(" %22s: %f",   "z-eta overlap cut",	   fZEtaOverlapCut);
   Printf(" %22s: %s",   "Filter strange",
-	 fFilterStrange==0 ? "no" :
-	 fFilterStrange==1 ? "random" : "track");
+	 fFilterMode==0 ? "no" :
+	 fFilterMode==1 ? "random" : "track");
 }
 
 //____________________________________________________________________
@@ -587,7 +596,7 @@ Bool_t AliTrackletAODTask::InitBranch()
   // aod->Print();
   // ah->GetTree()->Print();
 
-  if (fFilterStrange > 0) {
+  if (fFilterMode > 0) {
     fStrangeLoss = new TParameter<double>("strLoss", 0);
     ah->AddBranch("TParameter<double>", &fStrangeLoss);
   }
@@ -797,11 +806,11 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
   ipv[0] = ip->GetX();
   ipv[1] = ip->GetY();
   ipv[2] = ip->GetZ();
-    if (fDebug > 0)
-      AliInfoF("Reconstructing from cluster tree %p with (%4.2f,%4.2f,%7.4f",
-	       clusters, ipv[0], ipv[1], ipv[2]);
-
-  // Make the reconstructor
+  if (fDebug > 0)
+    AliInfoF("Reconstructing from cluster tree %p with (%4.2f,%4.2f,%7.4f",
+	     clusters, ipv[0], ipv[1], ipv[2]);
+  
+  // --- Make the reconstructor --------------------------------------
   fReco =  0;
   AliITSMultRecBg reco;
   reco.SetCreateClustersCopy        (true);
@@ -817,10 +826,13 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
   reco.SetHistOn                    (false);
   reco.SetRecType                   (AliITSMultRecBg::kData);
 
-  // Run normal reconstruction 
+  // --- Run normal reconstruction -----------------------------------
   reco.Run(clusters, ipv);
   fStatus->Fill(kReconstruct);
-  
+  fNClustersVsNTracklets->Fill(reco.GetNClustersLayer1(),
+			       reco.GetNClustersLayer2(),
+			       reco.GetMultiplicity()->GetNumberOfTracklets());
+
   // Save pointer to reco object - for MC combinatorics
   fReco = &reco; 
   // And fill results into output branch 
@@ -830,7 +842,7 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
   }
   fReco = 0;
   
-  // Run again, but in injection mode
+  // --- Run again, but in injection mode ----------------------------
   reco.SetRecType(AliITSMultRecBg::kBgInj);
   reco.Run(clusters, ipv);
   fStatus->Fill(kInject);
@@ -859,15 +871,12 @@ Bool_t AliTrackletAODTask::ProcessTracklets(Bool_t normal,
     if (!ProcessTracklet(normal,mult,trackletNo)) return false;
   }
   if (normal) {
+    Int_t n0 = mult->GetNumberOfITSClusters(0);
+    Int_t n1 = mult->GetNumberOfITSClusters(1); 
     if (fDebug > 0)
-      Printf("%d x %d clusters -> %d",
-	     mult->GetNumberOfITSClusters(0),
-	     mult->GetNumberOfITSClusters(1),
-	     nTracklets);
-      
-    fNClustersVsNTracklets->Fill(mult->GetNumberOfITSClusters(0),
-				 mult->GetNumberOfITSClusters(1),
-				 nTracklets);
+      Printf("%d x %d clusters -> %d", n0, n1, nTracklets);
+    if (n0 > 0 || n1 >> 0) 
+      fNClustersVsNTracklets->Fill(n0, n1, nTracklets);
     fStatus->Fill(kTracklets);
   }
   return true; 
@@ -910,6 +919,7 @@ AliTrackletAODTask::ProcessTracklet(Bool_t            normal,
 #include <AliStack.h>
 #include <AliMCEvent.h>
 #include <AliGenEventHeader.h>
+#include <TArrayF.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
@@ -935,6 +945,7 @@ public:
    */
   AliTrackletAODMCTask()
     : AliTrackletAODTask(),
+      fFilterWeights(0),
       fSeenTrackPDGs(0),
       fUsedTrackPDGs(0),
       fSeenClusterPDGs(0),
@@ -947,6 +958,7 @@ public:
    */  
   AliTrackletAODMCTask(const char* name)
     : AliTrackletAODTask(name),
+      fFilterWeights(0),
       fSeenTrackPDGs(0),
       fUsedTrackPDGs(0),
       fSeenClusterPDGs(0),
@@ -959,6 +971,7 @@ public:
    */
   AliTrackletAODMCTask(const AliTrackletAODMCTask& other)
     : AliTrackletAODTask(other),
+      fFilterWeights(0),
       fSeenTrackPDGs(0),
       fUsedTrackPDGs(0),
       fSeenClusterPDGs(0),
@@ -975,6 +988,12 @@ public:
   {
     return *this;
   }
+  /** 
+   * Set weights to use for filtering. 
+   * 
+   * @param w Weights 
+   */
+  virtual void SetFilterWeights(AliTrackletBaseWeights* w) { fFilterWeights=w; }
 protected:
   /** 
    * @{ 
@@ -984,6 +1003,24 @@ protected:
    * Initialize the worker 
    */
   Bool_t WorkerInit();
+  /** 
+   * Process a single event
+   * 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t ProcessEvent();
+  /** 
+   * Process MC truth 
+
+   * @return true on success
+   */
+  Bool_t ProcessGenerated();
+  /* @} */
+  /** 
+   * @{ 
+   * @name Filtering of tracks and clusters 
+   */
   /** 
    * Pre-process clusters.  This can remove clusters, etc. 
    *
@@ -999,8 +1036,11 @@ protected:
    *
    * @param t    Tree of clusters
    * @param copy Tree to fill with clusters 
+   * @param cent Centrality (mostly 0)
+   * @param ipz  Collision point z-coordinate
    */
-  virtual void FilterClustersRandom(TTree* t, TTree* copy);
+  virtual void FilterClustersRandom(TTree* t, TTree* copy,
+				    Double_t cent, Double_t ipz);
   /** 
    * Pre-process clusters.  For all primary particles in the stack, we
    * compute a weight @f$ w@f$.  We then throw a dice, and if the
@@ -1011,8 +1051,11 @@ protected:
    *
    * @param t    Tree of clusters
    * @param copy Tree to fill with clusters 
+   * @param cent Centrality (mostly 0)
+   * @param ipz  Collision point z-coordinate
    */
-  virtual void FilterClustersTrack(TTree* t, TTree* copy);
+  virtual void FilterClustersTrack(TTree* t, TTree* copy,
+				    Double_t cent, Double_t ipz);
   /** 
    * Clean up possible copy of tree of clusters 
    * 
@@ -1020,18 +1063,23 @@ protected:
    */
   virtual void CleanClusters(TTree*& t);
   /** 
-   * Process a single event
+   * Find the particle weight 
    * 
+   * @param particle The particle 
    * 
-   * @return true on success
+   * @return The weight
    */
-  virtual Bool_t ProcessEvent();
+  Double_t LookupWeight(TParticle* particle,
+			Double_t   cent=0,
+			Double_t   ipz=0) const;
   /** 
-   * Process MC truth 
-
-   * @return true on success
+   * Pick random number to see if we should keep a track 
+   * 
+   * @param weight The weight 
+   * 
+   * @return true if we're to keep it 
    */
-  Bool_t ProcessGenerated();
+  Bool_t KeepIt(Double_t weight) const;
   /* @} */
   /** 
    * @{ 
@@ -1137,7 +1185,8 @@ protected:
    */
   Int_t CommonParent(Int_t label, const TArrayI& fill) const;
   /* @} */
-
+  /** Filter weights */
+  AliTrackletBaseWeights* fFilterWeights;
   /** Number of tracks per PDG */
   TH1* fSeenTrackPDGs; //!
   /** Tracks that survive the filtering */
@@ -1161,6 +1210,8 @@ Bool_t AliTrackletAODMCTask::WorkerInit()
 
   const TAxis& pdgAxis = PdgAxis();
   TAxis layerAxis(2,0,2);
+  layerAxis.SetBinLabel(1,"Layer 0");
+  layerAxis.SetBinLabel(2,"Layer 1");
   FixAxis(layerAxis,"Layer");
   fSeenTrackPDGs = Make1D(fContainer, "seenTrackPdg",
 			 "Seen track PDGs", kGreen+1,20, pdgAxis);  
@@ -1229,41 +1280,11 @@ Bool_t AliTrackletAODMCTask::WorkerInit()
   return true;
 }  
 
-namespace {
-  const Double_t k0s    = 1.52233299626516083e+00; // 310 - K^0_S weight
-  const Double_t kpm    = (1.43744204476109627e+00*
-			   9.82150320171071400e-01); // 321  - K^{+/-}
-  const Double_t lam    = 2.75002089647900005e+00;   // 3122 - lambda
-  const Double_t sig    = 2.75002089647899961e+00;   // 3212 - sigma
-  const Double_t xi     = 3.24109605656453548e+00;   // 3322 - Xi
-
-  Double_t GetWeight(Int_t pdg)
-  {
-    switch (TMath::Abs(pdg)) {
-    case 310:  return k0s;
-    case 321:  return kpm;
-    case 3122: return lam;
-      // case 3212: return sig; // Old, wrong code 
-    case 3112:
-    case 3222: return sig;
-    case 3312: return xi;
-      // case 3322: return xi; // Old, wrong code 
-    }
-    return 1;
-  }
-
-  Bool_t KeepIt(Double_t weight)
-  {
-    if (weight <= 1) return true;
-    Double_t chance = 1 - 1 / weight; // chance is 1 minus inverse 	
-    return (gRandom->Uniform() >= chance);
-  }
-}
 //____________________________________________________________________
 TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
 {
   if (fStrangeLoss) fStrangeLoss->SetVal(0);
-  if (!t || fFilterStrange <= 0) {
+  if (!t || fFilterMode <= 0) {
     if (fDebug > 0) AliInfo("Returning original cluster tree");
     return t;
   }
@@ -1272,9 +1293,17 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
   gDirectory            = gROOT;
   TTree*         copy   = new TTree("TreeR", "TreeR");
   copy->SetAutoFlush(0);// Keep in memory 
+
+  Double_t cent = 0;
+  Double_t ipz  = 0;
+  if (MCEvent()->GenEventHeader()) {
+    TArrayF v(3);
+    MCEvent()->GenEventHeader()->PrimaryVertex(v);
+    ipz = v[2];
+  }
   
-  if (fFilterStrange == 1) FilterClustersRandom(t, copy);
-  else                     FilterClustersTrack(t, copy);
+  if (fFilterMode == 1) FilterClustersRandom(t, copy, cent, ipz);
+  else                  FilterClustersTrack(t, copy, cent, ipz);
     
   savDir->cd();
   if (fDebug > 0)
@@ -1285,7 +1314,10 @@ TTree* AliTrackletAODMCTask::FilterClusters(TTree* t)
 
   
 //____________________________________________________________________
-void AliTrackletAODMCTask::FilterClustersRandom(TTree* t, TTree* copy)
+void AliTrackletAODMCTask::FilterClustersRandom(TTree*   t,
+						TTree*   copy,
+						Double_t cent,
+						Double_t ipz)
 {
   TClonesArray*  in     = new TClonesArray("AliITSRecPoint");
   TClonesArray*  out    = new TClonesArray("AliITSRecPoint");
@@ -1327,7 +1359,8 @@ void AliTrackletAODMCTask::FilterClustersRandom(TTree* t, TTree* copy)
 	TParticle* parent = FindPrimaryParent(label);
 	if (!parent) continue;
 
-	weight *= GetWeight(parent->GetPdgCode());
+	// weight *= GetWeight(parent->GetPdgCode());
+	weight *= LookupWeight(parent,cent,ipz);
 	if (weight > 1)
 	  Printf("Cluster from %+5d: %7.5f", parent->GetPdgCode(), weight);
 	// Printf("Parent %d is a K^0_S: %d", k+1, parent->GetPdgCode());
@@ -1355,7 +1388,10 @@ void AliTrackletAODMCTask::FilterClustersRandom(TTree* t, TTree* copy)
 }
 
 //____________________________________________________________________
-void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
+void AliTrackletAODMCTask::FilterClustersTrack(TTree*   t,
+					       TTree*   copy,
+					       Double_t cent,
+					       Double_t ipz)
 {
   TClonesArray*  in     = new TClonesArray("AliITSRecPoint");
   TClonesArray*  out    = new TClonesArray("AliITSRecPoint");
@@ -1372,6 +1408,7 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
   TBits     seen(nTracks);
   kept.ResetAllBits(true);
   seen.ResetAllBits(false);
+
   for (Int_t trackNo = nTracks; trackNo--; ) {
     // Get the primary parent identifier 
     Int_t      parent = FindPrimaryParentID(trackNo);
@@ -1382,7 +1419,8 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
     
     // Get the primary parent track and weight
     TParticle* par    = stack->Particle(parent);
-    Double_t   weight = GetWeight(par->GetPdgCode());
+    // Double_t   weight = GetWeight(par->GetPdgCode());
+    Double_t   weight = LookupWeight(par,cent,ipz);
     Bool_t     keep   = true;
     if (weight > 1) {
       nTotal++;
@@ -1476,9 +1514,48 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree* t, TTree* copy)
 }
 
 //____________________________________________________________________
+Double_t AliTrackletAODMCTask::LookupWeight(TParticle* particle,
+					    Double_t   cent,
+					    Double_t   ipz) const
+{
+#if 1
+  if (!fFilterWeights) return 1;
+  return fFilterWeights->LookupWeight(particle,cent,ipz);
+#else
+  const Double_t k0s    = 1.52233299626516083e+00; // 310 - K^0_S weight
+  const Double_t kpm    = (1.43744204476109627e+00*
+			   9.82150320171071400e-01); // 321  - K^{+/-}
+  const Double_t lam    = 2.75002089647900005e+00;   // 3122 - lambda
+  const Double_t sig    = 2.75002089647899961e+00;   // 3212 - sigma
+  const Double_t xi     = 3.24109605656453548e+00;   // 3322 - Xi
+
+  switch (TMath::Abs(particle->GetPdgCode())) {
+  case 310:  return k0s;
+  case 321:  return kpm;
+  case 3122: return lam;
+    // case 3212: return sig; // Old, wrong code 
+  case 3112:
+  case 3222: return sig;
+  case 3312: return xi;
+    // case 3322: return xi; // Old, wrong code 
+  }
+  return 1;
+  }
+#endif
+}
+
+//____________________________________________________________________
+Bool_t AliTrackletAODMCTask::KeepIt(Double_t weight) const
+{
+  if (weight <= 1) return true;
+  Double_t chance = 1 - 1 / weight; // chance is 1 minus inverse 	
+  return (gRandom->Uniform() >= chance);
+}
+
+//____________________________________________________________________
 void AliTrackletAODMCTask::CleanClusters(TTree*& t)
 {
-  if (!t || fFilterStrange <= 0) return;
+  if (!t || fFilterMode <= 0) return;
  
   delete t;
   t = 0;
@@ -1710,7 +1787,7 @@ Int_t AliTrackletAODMCTask::FindPrimaryParentID(Int_t label) const
   return trackNo;
 }
 //====================================================================
-AliTrackletAODTask* AliTrackletAODTask::Create()
+AliTrackletAODTask* AliTrackletAODTask::Create(const char* weights)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -1723,12 +1800,38 @@ AliTrackletAODTask* AliTrackletAODTask::Create()
     ::Error("Create","No AOD output handler!");
     return 0;
   }
+  
   Bool_t              mc  = mgr->GetMCtruthEventHandler() != 0;
   AliTrackletAODTask* ret = 0;
   if (mc)             ret = new AliTrackletAODMCTask("MidRapidityMC");
   else                ret = new AliTrackletAODTask("MidRapidity");
   if (ret)            ret->Connect();
 
+  if (weights && weights[0] != '\0') {
+    TUrl   wurl(weights);
+    TFile* wfile = TFile::Open(wurl.GetFile());
+    if (!wfile) {
+      ::Warning("Create", "Failed to open weights file: %s",
+		wurl.GetUrl());
+      return 0;
+    }
+    TString wnam(wurl.GetAnchor());
+    if (wnam.IsNull()) wnam = "weights";
+
+    TObject* wobj = wfile->Get(wnam);
+    if (!wobj) {
+      ::Warning("Create", "Failed to get weights %s from file %s",
+		wnam.Data(), wfile->GetName());
+      return 0;
+    }
+    if (!wobj->IsA()->InheritsFrom(AliTrackletBaseWeights::Class())) {
+      ::Warning("Create", "Object %s from file %s not an "
+		"AliTrackletBaseWeights but a %s",
+		wnam.Data(), wfile->GetName(), wobj->ClassName());
+      return 0;
+    }
+    ret->SetFilterWeights(static_cast<AliTrackletBaseWeights*>(wobj));
+  }
   return ret;  
 }
 

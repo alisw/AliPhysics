@@ -25,6 +25,7 @@
 # include <TClass.h>
 # include "AliAODTracklet.C"
 # include <TParameter.h>
+# include <TParticle.h>
 #else
 class TH1D;
 class TH2D;
@@ -38,6 +39,7 @@ class THStack;
 class AliAODTracklet;
 class TCanvas; // Autoload
 class TVirtualPad;
+class TParticle;
 #endif
 
 //====================================================================
@@ -286,6 +288,23 @@ public:
     return w;
   }
   /** 
+   * Look-up weight of a particle 
+   * 
+   * @param particle Particle 
+   * @param cent     Centrality 
+   * @param ipz      Interaction point z-coordinate 
+   * 
+   * @return The weight
+   */
+  Double_t LookupWeight(TParticle* particle,
+			Double_t   cent,
+			Double_t   ipz) const
+  {
+    Double_t w = CalcWeight(particle, cent, ipz);
+    if (fInverse) w = 1/w;
+    return w;
+  }
+  /** 
    * Calculate the weight of a tracklet.  This member function must be
    * overloaded.
    * 
@@ -300,6 +319,18 @@ public:
 			      Double_t        cent,
 			      Double_t        ipz,
 			      TH2*            corr) const = 0;
+  /** 
+   * Calculate weight of a particle 
+   * 
+   * @param particle Particle 
+   * @param cent     Centrality 
+   * @param ipZ      Interaction point 
+   * 
+   * @return The weight
+   */
+  virtual Double_t CalcWeight(TParticle* particle,
+			      Double_t   cent,
+			      Double_t   ipZ) const = 0;
   /** 
    * Store values 
    * 
@@ -438,6 +469,9 @@ public:
 			      Double_t        cent,
 			      Double_t        ipz,
 			      TH2*            corr=0) const;
+  virtual Double_t CalcWeight(TParticle* particle,
+			      Double_t   cent,
+			      Double_t   ipZ) const;
   /** 
    * Add a histogram to weight particle abundances 
    * 
@@ -823,6 +857,17 @@ AliTrackletPtPidStrWeights::CalcWeight(Double_t pT,
 
 //____________________________________________________________________
 Double_t
+AliTrackletPtPidStrWeights::CalcWeight(TParticle* particle,
+				       Double_t   cent,
+				       Double_t   ipz) const
+{
+  Int_t    pdg = particle->GetPdgCode();
+  Double_t pT  = particle->Pt();
+  return CalcWeight(pT, pdg, cent);
+}
+
+//____________________________________________________________________
+Double_t
 AliTrackletPtPidStrWeights::CalcWeight(AliAODTracklet* tracklet,
 				       Double_t        cent,
 				       Double_t        ipz,
@@ -1166,7 +1211,9 @@ public:
 			      Double_t        cent,
 			      Double_t        ipZ,
 			      TH2*            corr=0) const;
-  
+  virtual Double_t CalcWeight(TParticle* particle,
+			      Double_t   cent,
+			      Double_t   ipZ) const;
   /** 
    * Project 3D histogram on 1 axis 
    * 
@@ -1322,6 +1369,24 @@ AliTrackletDeltaWeights::FindBin(Double_t value,
   return bin;
 }
   
+//____________________________________________________________________
+Double_t
+AliTrackletDeltaWeights::CalcWeight(TParticle* particle,
+				    Double_t   cent,
+				    Double_t   ipZ) const
+{
+  // Perhaps this method doesn't really make much sense 
+  TH1* h = FindHisto(cent);
+  if (!h) return 1;
+
+  Double_t eta      = particle->Eta();
+  Double_t delta    = 0;
+  Int_t    etaBin   = FindBin(eta,   h->GetXaxis());
+  Int_t    deltaBin = FindBin(delta, h->GetYaxis());
+  Int_t    ipzBin   = FindBin(ipZ,   h->GetZaxis());
+
+  return h->GetBinContent(etaBin, deltaBin, ipzBin);
+}  
 				   
 //____________________________________________________________________
 Double_t
