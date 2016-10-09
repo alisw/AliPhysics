@@ -8,8 +8,8 @@
  * @ingroup pwglf_forward_tracklets
  * 
  */
-#include "AliTrackletAODUtils.C"
 #ifndef __CINT__
+# include "AliTrackletAODUtils.C"
 # include <vector>
 # include <TFile.h>
 # include <TError.h>
@@ -42,8 +42,12 @@ class TLegend;
  * 
  * @ingroup pwglf_forward_tracklets
  */
-struct Calculations : public AliTrackletAODUtils 
+struct YieldCalculations
 {
+#ifndef __CINT__
+  typedef AliTrackletAODUtils U;
+#endif 
+  
   struct One
   {
     THStack* fStack;
@@ -71,12 +75,12 @@ struct Calculations : public AliTrackletAODUtils
 	fOther(0),
 	fYields(0)
     {
-      TString    cntN = CentName(c1,c2);
-      TFile*     file = OpenFile(filename);
-      Container* top  = GetC(file, "MidRapidityMCResults");
-      Container* cent = GetC(top,  cntN);
-      Container* gen  = GetC(cent, "generated");
-      Container* mix  = GetC(gen,  "mix");
+      TString       cntN = U::CentName(c1,c2);
+      TFile*        file = U::OpenFile(filename);
+      U::Container* top  = U::GetC(file, "MidRapidityMCResults");
+      U::Container* cent = U::GetC(top,  cntN);
+      U::Container* gen  = U::GetC(cent, "generated");
+      U::Container* mix  = U::GetC(gen,  "mix");
 
       fStack  = new THStack("dists", title);
       fYields = new TH1D("yields", title, 6, 0, 6);
@@ -100,11 +104,11 @@ struct Calculations : public AliTrackletAODUtils
 	case 310:   h = &fK0S;    break;
 	case 321:   h = &fKpm;    break;
 	case 3122:  h = &fLambda; break;
-	case 3322:  h = &fXi;     break; // Old, wrong code
-	  // case 3312:  h = &fXi;     break; // New, right code
+	  // case 3322:  h = &fXi;     break; // Old, wrong code
+	case 3312:  h = &fXi;     break; // New, right code
 	case 3112:  h = &fSigma;  break;
-	case 3212:  h = &fSigma;  break; // Old, wrong code
-	  // case 3222:  h = &fSigma;  break; // New, right code
+	  // case 3212:  h = &fSigma;  break; // Old, wrong code
+	case 3222:  h = &fSigma;  break; // New, right code
 	default:    h = &fOther;  break;
 	}
 	if (!h) {
@@ -117,6 +121,8 @@ struct Calculations : public AliTrackletAODUtils
 	}
 	(*h)->Add(t);
       }
+      if (!fOther || !fK0S || !fKpm || !fLambda || !fXi || !fSigma)
+	return;
       fOther ->SetTitle("Other");
       fOther ->SetMarkerStyle(20); fOther ->SetMarkerSize(1.2);
       fK0S   ->SetMarkerStyle(21); fK0S   ->SetMarkerSize(1);
@@ -197,18 +203,22 @@ struct Calculations : public AliTrackletAODUtils
       e->SetFillStyle(1001);      
     }      
   };
-  void Run()
+  void Run(Double_t c1, Double_t c2)
   {
-    One*  stk    = new One("stk.root",   "Reduced",   kRed+1,     0.15);
-    One*  expe   = new One("stk.root",   "Expected",  kMagenta+1, 0.35);
-    One*  wstk   = new One("wstk.root",  "Reweighed", kBlue+1,    0.55);
-    One*  hijing = new One("hijing.root","As-is",     kGreen+1,   0.75);
+    One*  stk    = new One("stk.root",   "Reduced",  kRed+1,    .15,.15,c1,c2);
+    One*  expe   = new One("stk.root",   "Expected", kMagenta+1,.35,.15,c1,c2);
+    One*  wstk   = new One("wstk.root",  "Reweighed",kBlue+1,   .55,.15,c1,c2);
+    One*  hijing = new One("hijing.root","As-is",    kGreen+1,  .75,.15,c1,c2);
     One*  ones[] = { stk, expe, wstk, hijing, 0 };
     One** ptr    = ones;
 
     gStyle->SetPaintTextFormat("5.0f");
     gStyle->SetErrorX(0.2);
-    TCanvas* c = new TCanvas("c","c",1200,900);
+    Int_t    mode = 1; // 0: square, 1: landscape, 2: portrait
+    Int_t    cw   = (mode == 1 ? 1600 : mode == 2 ? 800    : 1000);
+    Int_t    ch   = (mode == 1 ? cw/2 : mode == 2 ? 1.5*cw : cw);
+    TCanvas* c    = new TCanvas(Form("yieldExpectation_%s",U::CentName(c1,c2)),
+				"YieldCanvas",cw,ch);
     c->Divide(2,1);
     TVirtualPad* p = c->GetPad(1);
     TVirtualPad* q = c->GetPad(2);
@@ -256,20 +266,36 @@ struct Calculations : public AliTrackletAODUtils
 					   dists->GetHistogram()->GetYaxis()
 					   ->GetTitle()));
     ly->Draw();
-  }
-    
-    
+
+    c->Modified();
+    c->Update();
+    c->cd();
+    c->SaveAs(Form("%s.png", c->GetName()));
+  }    
 };
-
-
 
 /** 
  * 
  * 
  * @ingroup pwglf_forward_tracklets
  */
-void YieldExpectations()
+void YieldExpectations(Double_t c1=0, Double_t c2=0)
 {
-  Calculations c;
-  c.Run();
+  if (!gROOT->GetClass("AliTrackletAODUtils")) {
+    Printf("Loading utilities");    
+    gROOT->LoadMacro("$ANA_SRC/dndeta/tracklets3/AliTrackletAODUtils.C+g");
+  }
+#if 0
+  gSystem->AddIncludePath("-DSELF_COMPILE__");
+  if (!gROOT->GetClass("YieldCalculations")) { 
+    gInterpreter->ClearFileBusy();
+    // gInterpreter->UnloadFile("YieldExpectations.C");
+    Printf("Reload self compiled");  
+    gROOT->LoadMacro("$ANA_SRC/dndeta/tracklets3/YieldExpectations.C+g");
+  }
+#endif
+  YieldCalculations c;
+  c.Run(c1,c2);
 }
+
+

@@ -186,7 +186,7 @@ struct Utilities
  * 
  * @ingroup pwglf_forward_tracklets
  */
-struct Calculation : public Utilities
+struct DeltaCalculations : public Utilities
 {
   enum EColumn {
     kPs,
@@ -547,7 +547,7 @@ struct Calculation : public Utilities
     if (mode==2 || (p->GetNumber() % (mode==1 ? 4 : 2)) == 0)
       p->SetRightMargin(0.01);
     if (!abso) {
-      stack->SetMinimum(0.019);
+      stack->SetMinimum(0.003);
       stack->SetMaximum(logy ? (mode == 2 ? 900 : 400) : 110);
     }
     gStyle->SetTitleFontSize(0.02/p->GetHNDC());
@@ -610,7 +610,9 @@ struct Calculation : public Utilities
 
     Int_t    cw = (mode == 1 ? 1600 : mode == 2 ? 800    : 1000);
     Int_t    ch = (mode == 1 ? cw/2 : mode == 2 ? 1.5*cw : cw);
-    TCanvas* c  = new TCanvas("c","c",cw,ch);
+    TCanvas* c  = new TCanvas(Form("deltaExpectation_%s_%s",
+				   bin.Data(), mid?"mid":"fwd"),
+			      "DeltaCanvas",cw,ch);
     c->SetTopMargin(0.01);
     c->SetRightMargin(0.01);
     c->SetLeftMargin(mode == 1 ? 0.09 : 0.13);
@@ -635,7 +637,7 @@ struct Calculation : public Utilities
     l->SetFillStyle(0);
     l->SetBorderSize(0);
 
-    c->SaveAs(Form("expected_%s_%s.png", bin.Data(), mid ? "mid" : "fwd"));
+    c->SaveAs(Form("%s.png",c->GetName()));
   }
 };
 
@@ -649,10 +651,12 @@ struct Calculation : public Utilities
  *
  * @ingroup pwglf_forward_tracklets
  */  
-void DeltaExpectations(Bool_t mid=true, Double_t c1=0, Double_t c2=5)
+void DeltaExpectations(Bool_t mid=true, Double_t c1=0, Double_t c2=0)
 {
-  Calculation c;
-  c.Run(c1, c2, mid);
+  DeltaCalculations cm;
+  cm.Run(c1, c2, mid);
+  DeltaCalculations cf;
+  cf.Run(c1, c2, !mid);
 }
 //
 // EOF
