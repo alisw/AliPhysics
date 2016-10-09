@@ -340,50 +340,30 @@ void DrawEvolution(const char* file, bool normalized=true)
   gStyle->SetOptTitle(kFALSE);
 
   DrawPeriod(runmin,runmax,115881,117222,0,ymax,"10b");
-
   DrawPeriod(runmin,runmax,119159,120824,0,ymax,"10c");
-
   DrawPeriod(runmin,runmax,122374,126424,0,ymax,"10d");
-
   DrawPeriod(runmin,runmax,127724,130850,0,ymax,"10e");
-
   DrawPeriod(runmin,runmax,133005,134929,0,ymax,"10f");
-
   DrawPeriod(runmin,runmax,135658,136376,0,ymax,"10g");
-
   DrawPeriod(runmin,runmax,137133,139513,0,ymax,"10h");
-
   DrawPeriod(runmin,runmax,143856,146860,0,ymax,"11a");
-
   DrawPeriod(runmin,runmax,148370,150702,0,ymax,"11b");
-
   DrawPeriod(runmin,runmax,151566,154583,0,ymax,"11c");
-
   DrawPeriod(runmin,runmax,158084,159606,0,ymax,"11d");
-
   DrawPeriod(runmin,runmax,160677,162717,0,ymax,"11e");
-
   DrawPeriod(runmin,runmax,162933,165744,0,ymax,"11f");
-
   DrawPeriod(runmin,runmax,167703,170593,0,ymax,"11h");
 
   // 2012
 
-    DrawPeriod(runmin,runmax,176661,177295,0,ymax,"12a");
-
-    DrawPeriod(runmin,runmax,177384,178053,0,ymax,"12b");
-
-    DrawPeriod(runmin,runmax,179603,180569,0,ymax,"12c");
-
-    DrawPeriod(runmin,runmax,183913,186320,0,ymax,"12d");
-
-    DrawPeriod(runmin,runmax,186365,186602,0,ymax,"12e");
-
-    DrawPeriod(runmin,runmax,186668,188123,0,ymax,"12f");
-
-    DrawPeriod(runmin,runmax,188362,188503,0,ymax,"12g");
-
-    DrawPeriod(runmin,runmax,189122,190110,0,ymax,"12h");
+  DrawPeriod(runmin,runmax,176661,177295,0,ymax,"12a");
+  DrawPeriod(runmin,runmax,177384,178053,0,ymax,"12b");
+  DrawPeriod(runmin,runmax,179603,180569,0,ymax,"12c");
+  DrawPeriod(runmin,runmax,183913,186320,0,ymax,"12d");
+  DrawPeriod(runmin,runmax,186365,186602,0,ymax,"12e");
+  DrawPeriod(runmin,runmax,186668,188123,0,ymax,"12f");
+  DrawPeriod(runmin,runmax,188362,188503,0,ymax,"12g");
+  DrawPeriod(runmin,runmax,189122,190110,0,ymax,"12h");
 
   // 2013
 
@@ -402,7 +382,6 @@ void DrawEvolution(const char* file, bool normalized=true)
   DrawPeriod(runmin,runmax,220050,223195,0,ymax,"15d");
   DrawPeriod(runmin,runmax,223227,224779,0,ymax,"15e");
   DrawPeriod(runmin,runmax,224826,226606,0,ymax,"15f");
-
   DrawPeriod(runmin,runmax,228936,231321,0,ymax,"15g");
   DrawPeriod(runmin,runmax,232914,234050,0,ymax,"15h");
   DrawPeriod(runmin,runmax,235196,236866,0,ymax,"15i");
@@ -411,6 +390,24 @@ void DrawEvolution(const char* file, bool normalized=true)
   DrawPeriod(runmin,runmax,239319,241544,0,ymax,"15l");
   DrawPeriod(runmin,runmax,244340,244628,0,ymax,"15n");
   DrawPeriod(runmin,runmax,244918,246994,0,ymax,"15o");
+
+  // 2016
+  DrawPeriod(runmin,runmax,247189,247193,0,ymax,"16a");
+  DrawPeriod(runmin,runmax,247723,250585,0,ymax,"16b");
+  DrawPeriod(runmin,runmax,250647,252091,0,ymax,"16c");
+  
+  DrawPeriod(runmin,runmax,252191,252518,0,ymax,"16d");
+  DrawPeriod(runmin,runmax,252598,253609,0,ymax,"16e");
+  DrawPeriod(runmin,runmax,253613,253979,0,ymax,"16f");
+  DrawPeriod(runmin,runmax,253991,254332,0,ymax,"16g");
+  DrawPeriod(runmin,runmax,254373,255469,0,ymax,"16h");
+  DrawPeriod(runmin,runmax,255515,255650,0,ymax,"16i");
+  DrawPeriod(runmin,runmax,256083,256420,0,ymax,"16j");
+  DrawPeriod(runmin,runmax,256504,258574,0,ymax,"16k");
+  DrawPeriod(runmin,runmax,258883,260187,0,ymax,"16l");
+  DrawPeriod(runmin,runmax,260216,260647,0,ymax,"16m");
+  DrawPeriod(runmin,runmax,260649,261812,0,ymax,"16n");
+  DrawPeriod(runmin,runmax,262394,262858,0,ymax,"16o");
 
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
@@ -453,7 +450,7 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
     return;
   }
 
-  int year(2015);
+  int year(2016);
 
   if ( runs[0] <= 139699 ) year=2010;
 
@@ -462,6 +459,8 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   if ( runs[0] <= 195344 ) year = 2012;
 
   if ( runs[0] <= 198000 ) year = 2013;
+
+  if ( runs[0] <= 246994 ) year = 2015;
 
   TString defaultOCDB;
 
@@ -492,10 +491,6 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   gnbadhv->SetName("nbadhv");
   glist.Add(gnbadhv);
 
-  TGraph* gnbadlv = new TGraph(runs.size());
-  gnbadlv->SetName("nbadlv");
-  glist.Add(gnbadlv);
-
   TGraph* gnmissing = new TGraph(runs.size());
   gnmissing->SetName("nmissing");
   glist.Add(gnmissing);
@@ -503,6 +498,10 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   TGraph* gnreco = new TGraph(runs.size());
   gnreco->SetName("nreco");
   glist.Add(gnreco);
+
+  TGraph* gnbadlv = new TGraph(runs.size());
+  gnbadlv->SetName("nbadlv");
+  glist.Add(gnbadlv);
 
   for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
   {
@@ -530,8 +529,8 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   Int_t index(0);
 
   TFile f(outfile,"recreate");
-  Int_t  color[] = {  1 ,  2 ,  3 ,  4,  6, 8 };
-  Int_t marker[] = { 28 , 24 , 23 , 26, 30, 5 };
+  Int_t  color[] = {  1 ,  2 ,  3 ,  4,  6,  8,  7 };
+  Int_t marker[] = { 28 , 24 , 23 , 26, 30,  5, 32 };
 
   while ( ( g = static_cast<TGraph*>(next() ) ) )
   {
