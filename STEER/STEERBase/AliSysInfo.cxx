@@ -78,7 +78,7 @@
 //
 
 // The log file can be transformed to the tree - to make a visualization
-// See $ALICE_ROOT/macros/PlotSysInfo.C as an example
+// See $ALICE_PHYSICS/PWGLF/FORWARD/analysis2/sim/PlotSysInfo.C as an example
 
 
 #include <Riostream.h>
@@ -445,15 +445,23 @@ TTree * AliSysInfo::MakeDUTree(const char *lname, const char * fout){
     
     or dump JIRA table
     AliSysInfo::PrintJiraTable(tree,"sizeGB:dir","depth==3","col=10:50");
+    // drawing summary statistic:
+    du->Draw("basename>>his","size*strstr(basename,\".root\")","goff"); // histogram size per root files
+    his->LabelsOption(">","X"); his->GetXaxis()->SetRange(0,20); his->Draw()
   */
 
   if (lname==NULL) lname="du.txt";
   if (fout==NULL) fout="du.root";
   gSystem->GetFromPipe(TString::Format("cat %s | gawk '{print $1\" \"$2\" \"(split($2,a,\"/\")-1)}' | sort -g -r   > %s.tree",lname,fout).Data());
+  // non trivial pipe to process the du output
+  //    get directory depth -  (split($2,a,\"/\")-1)} - count slashes
+  //    get basename        -  {(split($2,b,\"/\")-1); print "  " b[length(b)]\} - without escape 
+  gSystem->GetFromPipe(TString::Format("cat %s | gawk '{printf $1\" \"$2\" \"(split($2,a,\"/\")-1)}  {printf \" \"}  {(split($2,b,\"/\")-1); print \"  \" b[length(b)]}   ' | sort -g -r   > %s.tree",lname,fout).Data());
+
   //
   TFile *ftout=TFile::Open(fout,"recreate");
   TTree * tree = new TTree("du","du");
-  tree->ReadFile(TString::Format("%s.tree",fout).Data(),"size/D:dir/C:depth/d");
+  tree->ReadFile(TString::Format("%s.tree",fout).Data(),"size/D:dir/C:depth/d:basename/C");
   tree->SetAlias("sizeMB","size/(1024)");
   tree->SetAlias("sizeGB","size/(1024*1024)");
   tree->SetAlias("sizeTB","size/(1024*1024*1024)");
