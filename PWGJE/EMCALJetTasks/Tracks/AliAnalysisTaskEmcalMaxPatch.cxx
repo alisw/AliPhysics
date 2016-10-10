@@ -92,12 +92,12 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::IsEventSelected(){
     AliErrorStream() << GetName() << ": Trigger patch container not found but required" << std::endl;
     return false;
   }
-  if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
+  if(!(fInputHandler->IsEventSelected() & fSelectTrigger)) return false;
   if(fTriggerPattern.Length()){
     TString triggerstring = InputEvent()->GetFiredTriggerClasses();
     if(!triggerstring.Contains(fTriggerPattern)) return false;
   }
-  AliDebugStream(3) << GetName() << "Event is an INT7 event" << std::endl;
+  AliDebugStream(3) << GetName() << "Event is selected for the given trigger" << std::endl;
 
   // Generall event quality cuts
   // The vertex cut also contains cuts on the number
