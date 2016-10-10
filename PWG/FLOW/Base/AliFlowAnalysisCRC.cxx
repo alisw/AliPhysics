@@ -342,7 +342,6 @@ fMaxDevZN(5.)
   this->InitializeArraysForDiffFlow();
   this->InitializeArraysForDistributions();
   this->InitializeArraysForVarious();
-  this->InitializeArraysForParticleWeights();
   this->InitializeArraysForNestedLoops();
   this->InitializeArraysForMixedHarmonics();
   this->InitializeArraysForControlHistograms();
@@ -352,6 +351,7 @@ fMaxDevZN(5.)
   
   // CRC
   this->InitializeCostantsForCRC();
+  this->InitializeArraysForParticleWeights();
   this->InitializeArraysForCRC();
   this->InitializeArraysForCRCVZ();
   this->InitializeArraysForCRCZDC();
@@ -529,41 +529,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   if(fRunBin<0 || fRunBin>=fCRCnRun) {return;}
   fCenBin = GetCRCCenBin(fCentralityEBE);
   if(fCenBin<0 || fCenBin>=fCRCnCen) {return;}
-  
-  // determine phi,eta weight for POI && RP particle:
-  if(fUsePhiEtaWeights && fWeightsList) {
-    
-    if(fRunNum!=fCachedRunNum) {
-      for(Int_t h=0;h<fCRCnCen;h++) {
-        for(Int_t k=0; k<2; k++) {
-          fRunPhiEtaHist[h][k] = (TH2D*)(fWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCPhiHist[%d][%d][%d]",fRunNum,h,k)));
-        }
-      }
-    }
-    
-    Int_t nBinsEta = fRunPhiEtaHist[0][0]->GetNbinsY();
-    Int_t nBinsPhi = fRunPhiEtaHist[0][0]->GetNbinsX();
-    
-    Double_t PhiEtaAv = 0.;
-    for(Int_t k=0; k<2; k++) {
-      PhiEtaAv = 0.;
-      if(fRunPhiEtaHist[fCenBin][k]) {
-        for(Int_t i=1; i<=nBinsEta; i++) {
-          for (Int_t j=1; j<=nBinsPhi; j++) {
-            PhiEtaAv += fRunPhiEtaHist[fCenBin][k]->GetBinContent(j,i);
-          }
-        }
-        PhiEtaAv /= 1.*nBinsPhi*nBinsEta;
-        for(Int_t i=1; i<=nBinsEta; i++) {
-          for (Int_t j=1; j<=nBinsPhi; j++) {
-            Double_t Val = fRunPhiEtaHist[fCenBin][k]->GetBinContent(j,i);
-            fPhiEtaWeights[k]->SetBinContent(j,i,PhiEtaAv/Val);
-          }
-        }
-      } else cout << " WARNING: fPhiEtaWeights not found !!! " << endl;
-    } // end of for(Int_t k=0; k<2; k++)
-    
-  } // end of if(fUsePhiEtaWeights && fWeightsList)
   
   // VZERO *********************************************************************************************************
   
@@ -769,13 +734,12 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         //    {
         //     wEta = fEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
         //    }
-        if(fUsePhiEtaWeights && fPhiEtaWeights[cw]) // determine phieta weight for POI:
+        if(fUsePhiEtaWeights && fPhiEtaWeights[fRunBin]) // determine phieta weight for POI:
         {
-          wPhiEta = fPhiEtaWeights[cw]->GetBinContent(fPhiEtaWeights[cw]->FindBin(dPhi,dEta));
+          wPhiEta *= 1./fPhiEtaWeights[fRunBin]->GetBinContent(fPhiEtaWeights[fRunBin]->FindBin(dPhi,dEta,dPt));
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
-          if(dPt>0.2 && dPt<20.) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
-          else wPhiEta = 1.;
+          if(dPt>0.2 && dPt<20.) wPhiEta *= 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
         }
         if(fUseEtaWeights && fEtaWeightsHist[fCenBin][0][0]) {
           Int_t ptbin = GetCRCPtBin(dPt);
@@ -878,10 +842,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           fEtaDiffMul[h]->Fill(dEta,wPhiEta);
         }
         
-        if(fUsePhiEtaWeights && fCRCPhiHist[fRunBin][fCenBin][cw]) {
-          fCRCPhiHist[fRunBin][fCenBin][cw]->Fill(dPt,dEta,wPhiEta);
-        }
-        
         if(fCalculateFlowQC && fCalculateFlowZDC) {
           
           fFlowSPZDCIntPro[fRunBin][0][4]->Fill(fCentralityEBE,TMath::Cos(2.*dPhi)*(ZARe*ZCRe-ZAIm*ZCIm)+TMath::Sin(2.*dPhi)*(ZARe*ZCIm+ZCRe*ZAIm),ZCM*ZAM);
@@ -901,7 +861,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fCalculateEbEFlow) {
           if(fEBEFlowMulBin>=0) fEbEFlowAzimDis[fEBEFlowMulBin]->Fill(dPhi,wPhiEta);
         }
-        fCRCQVecPhiHist[fRunBin]->Fill(dPhi,dPt);
+        fCRCQVecPhiHist[fRunBin]->Fill(dPhi,dPt,dEta,wPhiEta);
       } // end of if(pTrack->InPOISelection())
     } else // to if(aftsTrack)
     {
@@ -2025,9 +1985,9 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
   fUseParticleWeights->Fill(4.5,(Int_t)fUsePhiEtaWeights);
   fWeightsList->Add(fUseParticleWeights);
   
-  for(Int_t c=0; c<2; c++) {
-    fPhiEtaWeights[c] = new TH2D(Form("fPhiEtaWeights[%d]",c),
-                                 Form("fPhiEtaWeights[%d]",c),32,0.,TMath::TwoPi(),32,-0.8,0.8);
+  for(Int_t r=0;r<fCRCnRun;r++) {
+    fPhiEtaWeights[r] = new TH3F();
+    fWeightsList->Add(fPhiEtaWeights[r]);
   }
   
   // // POIs
@@ -2112,22 +2072,6 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
   //   }
   //  } // end of if(fUseEtaWeights)
   //
-  //  if(fUsePhiEtaWeights)
-  //  {
-  //   if(fWeightsList->FindObject(Form("fPhiEtaHist[%d][%d]",c,h)))
-  //   {
-  //    fPhiEtaDistrRefPOIs[c] = dynamic_cast<TH2D*>(fWeightsList->FindObject(Form("fPhiEtaHist[%d][%d]",c,h)));
-  //    if(!fPhiEtaDistrRefPOIs[c])
-  //    {
-  //     printf("\n WARNING (QC): fPhiEtaDistrRefPOIs is NULL in AFAWQC::BAFWH() !!!!\n\n");
-  //     exit(0);
-  //    }
-  //   } else
-  //   {
-  //    cout<<"WARNING: fWeightsList->FindObject(\"fPhiEtaHist\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
-  //    exit(0);
-  //   }
-  //  } // end of if(fUsePhiEtaWeights)
   //
   // } // end of for(Int_t c=0; c<2; c++)
   
@@ -2210,22 +2154,6 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
   //  }
   // } // end of if(fUseEtaWeights)
   //
-  // if(fUsePhiEtaWeights)
-  // {
-  //  if(fWeightsList->FindObject("fPhiEtaDistrRPs"))
-  //  {
-  //   fPhiEtaDistrRefRPs = dynamic_cast<TH2D*>(fWeightsList->FindObject("fPhiEtaDistrRPs"));
-  //   if(!fPhiEtaDistrRefRPs)
-  //   {
-  //    printf("\n WARNING (QC): fPhiEtaDistrRefRPs is NULL in AFAWQC::BAFWH() !!!!\n\n");
-  //    exit(0);
-  //   }
-  //  } else
-  //  {
-  //   cout<<"WARNING: fWeightsList->FindObject(\"fPhiEtaDistrRPs\") is NULL in AFAWQC::BAFWH() !!!!"<<endl;
-  //   exit(0);
-  //  }
-  // } // end of if(fUsePhiEtaWeights)
   
 } // end of AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
 
@@ -16273,9 +16201,6 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     for(Int_t c=0;c<fCRCnCen;c++) {
       fCRCVZEPA[r][c] = NULL;
       fCRCVZEPC[r][c] = NULL;
-      for(Int_t i=0;i<2;i++) {
-        fCRCPhiHist[r][c][i] = NULL;
-      }
     }
     for(Int_t i=0;i<2;i++) {
       fCRCZDCQVecA[r][i] = NULL;
@@ -16307,12 +16232,6 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
   }
   for (Int_t h=0;h<fCRCnHar;h++) {
     fTPCQnRecenter[h] = AliFlowVector();
-  }
-  // run-by-run cached histograms
-  for(Int_t h=0;h<fCRCnCen;h++) {
-    for(Int_t k=0; k<2; k++) {
-      fRunPhiEtaHist[h][k] = NULL;
-    }
   }
   for(Int_t h=0; h<fCRCnHar; h++) {
     for(Int_t k=0; k<2; k++) {
@@ -16973,19 +16892,8 @@ void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
 {
   fWeightsList = new TList();
   // Initialize all arrays used for various unclassified objects.
-  for(Int_t c=0; c<2; c++)
-  {
-    //  fPhiDistrRefPOIs[c] = NULL;
-    //  fPtDistrRefPOIs[c] = NULL;
-    //  fEtaDistrRefPOIs[c] = NULL;
-    //  fPhiEtaDistrRefPOIs[c] = NULL;
-    //
-    //  fPhiWeightsPOIs[c] = NULL;
-    //  fPtWeightsPOIs[c] = NULL;
-    //  fEtaWeightsPOIs[c] = NULL;
-    //  fPhiEtaWeightsPOIs[c] = NULL;
-    
-    fPhiEtaWeights[c] = NULL;
+  for(Int_t r=0;r<fCRCnRun;r++) {
+    fPhiEtaWeights[r] = NULL;
   }
   
   // fPhiDistrRefRPs = NULL;
@@ -25619,15 +25527,7 @@ void AliFlowAnalysisCRC::GetPointersForQVec()
     if (CRCQVecListRun) {
       this->SetCRCQVecListRun(CRCQVecListRun,r);
     } else { cout<<"WARNING: CRCQVecRunList is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
-    if(fUsePhiEtaWeights) {
-      for(Int_t c=0;c<fCRCnCen;c++) {
-        for(Int_t i=0;i<2;i++) {
-          TH2D *CRCPhiHist = dynamic_cast<TH2D*>(fCRCQVecListRun[r]->FindObject(Form("fCRCPhiHist[%d][%d][%d]",fRunList[r],c,i)));
-          if(CRCPhiHist) { this->SetCRCPhiHist(CRCPhiHist,r,c,i); }
-          else { cout<<"WARNING: CRCPhiHist is NULL in AFAWQC::GPFCRC() !!!!"<<endl; }
-        }
-      }
-    }
+
     if(fUseCRCRecenter) {
       for(Int_t h=0;h<fCRCnHar;h++) {
         TProfile *CRCQnRe = dynamic_cast<TProfile*>(fCRCQVecListRun[r]->FindObject(Form("fCRCQnRe[%d][%d]",fRunList[r],h)));
@@ -26893,13 +26793,6 @@ void AliFlowAnalysisCRC::BookEverythingForCRC2()
 
 void AliFlowAnalysisCRC::BookEverythingForQVec()
 {
-  // run-by-run cached histograms
-  for(Int_t h=0;h<fCRCnCen;h++) {
-    for(Int_t k=0; k<2; k++) {
-      fRunPhiEtaHist[h][k] = new TH2D();
-      fTempList->Add(fRunPhiEtaHist[h][k]);
-    }
-  }
   for(Int_t h=0; h<fCRCnHar; h++) {
     for(Int_t k=0; k<2; k++) {
       fTPCQHist[h][k] = new TProfile();
@@ -27071,29 +26964,16 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
 //      fCRCQVecListRun[r]->Add(fCRCVZSinnC[r][h]);
 //    }
     
-    Double_t ptbinsforphihist[] = {0.2,1.,2.,5.,20.};
-    fCRCQVecPhiHist[r] = new TH2D(Form("fCRCQVecPhiHist[%d]",fRunList[r]),
-                                  Form("fCRCQVecPhiHist[%d]",fRunList[r]),100,0.,TMath::TwoPi(),4,ptbinsforphihist);
+    Double_t phibinsforphihist[101] = {0.};
+    for (Int_t phib=0; phib<101; phib++) {
+      phibinsforphihist[phib] = phib*TMath::TwoPi()/100.;
+    }
+    Double_t ptbinsforphihist[] = {0.2,0.5,1.,2.,20.2};
+    Double_t etabinsforphihist[] = {-0.8,-0.533,-0.267,0.,0.267,0.533,0.8};
+    fCRCQVecPhiHist[r] = new TH3F(Form("fCRCQVecPhiHist[%d]",fRunList[r]),
+                                  Form("fCRCQVecPhiHist[%d]",fRunList[r]),100,phibinsforphihist,4,ptbinsforphihist,6,etabinsforphihist);
     fCRCQVecListRun[r]->Add(fCRCQVecPhiHist[r]);
     
-    for(Int_t c=0;c<fCRCnCen;c++) {
-//      fCRCVZEPA[r][c] = new TH1D(Form("fCRCVZEPA[%d][%d]",fRunList[r],c),
-//                                Form("fCRCVZEPA[%d][%d]",fRunList[r],c),100,-TMath::Pi(),TMath::Pi());
-//      fCRCVZEPA[r][c]->Sumw2();
-//      fCRCQVecListRun[r]->Add(fCRCVZEPA[r][c]);
-//      fCRCVZEPC[r][c] = new TH1D(Form("fCRCVZEPC[%d][%d]",fRunList[r],c),
-//                                 Form("fCRCVZEPC[%d][%d]",fRunList[r],c),100,-TMath::Pi(),TMath::Pi());
-//      fCRCVZEPC[r][c]->Sumw2();
-//      fCRCQVecListRun[r]->Add(fCRCVZEPC[r][c]);
-      if(fUsePhiEtaWeights) {
-        for(Int_t i=0;i<2;i++) {
-          fCRCPhiHist[r][c][i] = new TH2D(Form("fCRCPhiHist[%d][%d][%d]",fRunList[r],c,i),
-                                          Form("fCRCPhiHist[%d][%d][%d]",fRunList[r],c,i),21,fCRCPtBins,32,-0.8,0.8);
-          fCRCPhiHist[r][c][i]->Sumw2();
-          fCRCQVecListRun[r]->Add(fCRCPhiHist[r][c][i]);
-        }
-      }
-    }
     if(fUseCRCRecenter) {
       for(Int_t h=0;h<fCRCnHar;h++) {
         fCRCQnRe[r][h] = new TProfile(Form("fCRCQnRe[%d][%d]",fRunList[r],h),

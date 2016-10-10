@@ -118,10 +118,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
     rdr->SetReadV0(1);  //Read V0 information from the AOD and put it into V0Collection
     rdr->SetEPVZERO(kTRUE);  //to get event plane angle from VZERO
     rdr->SetCentralityFlattening(kFALSE);
-//TODO    rdr->SetPrimaryVertexCorrectionTPCPoints(tAnalysisConfig.implementVertexCorrections);
-//    rdr->SetReadMC(tAnalysisConfig.isMCRun);
-    rdr->SetPrimaryVertexCorrectionTPCPoints(true);
-    rdr->SetReadMC(false);
+    rdr->SetPrimaryVertexCorrectionTPCPoints(tAnalysisConfig.implementVertexCorrections);
+    rdr->SetReadMC(tAnalysisConfig.isMCRun);
   tManager->SetEventReader(rdr);
 
 
@@ -491,7 +489,7 @@ BuildParticleConfiguration(
       const TString tParticleType = ((TObjString*)tCutFullLine->At(1))->String().Strip(TString::kBoth, ' ');
       const TString tParticleCut = ((TObjString*)tCutFullLine->At(2))->String().Strip(TString::kBoth, ' ');
 
-      if(tParticleType.EqualTo(tDesiredName)) tCmd = tV0CutVarName + "." + tParticleCut(0, tParticleCut.Length() - 1);
+      if(tParticleType.EqualTo(tDesiredName)) tCmd = tV0CutVarName + "." + tParticleCut(0, tParticleCut.Length());
     }
 
     if(!tCmd.IsNull())
@@ -553,7 +551,7 @@ BuildParticleConfiguration(
       const TString tParticleType = ((TObjString*)tCutFullLine->At(1))->String().Strip(TString::kBoth, ' ');
       const TString tParticleCut = ((TObjString*)tCutFullLine->At(2))->String().Strip(TString::kBoth, ' ');
 
-      if(tParticleType.EqualTo(tDesiredName)) tCmd = tESDCutVarName + "." + tParticleCut(0, tParticleCut.Length() - 1);
+      if(tParticleType.EqualTo(tDesiredName)) tCmd = tESDCutVarName + "." + tParticleCut(0, tParticleCut.Length());
     }
 
     if(!tCmd.IsNull())
@@ -607,7 +605,7 @@ BuildParticleConfiguration(
       const TString tParticleType = ((TObjString*)tCutFullLine->At(1))->String().Strip(TString::kBoth, ' ');
       const TString tParticleCut = ((TObjString*)tCutFullLine->At(2))->String().Strip(TString::kBoth, ' ');
 
-      if(tParticleType.EqualTo(tDesiredName)) tCmd = tXiCutVarName + "." + tParticleCut(0, tParticleCut.Length() - 1);
+      if(tParticleType.EqualTo(tDesiredName)) tCmd = tXiCutVarName + "." + tParticleCut(0, tParticleCut.Length());
     }
 
     if(!tCmd.IsNull())

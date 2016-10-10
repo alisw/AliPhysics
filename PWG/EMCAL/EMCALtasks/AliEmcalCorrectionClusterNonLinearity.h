@@ -3,7 +3,6 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
-#include <map>
 #include "AliEMCALRecoUtils.h"
 
 class AliEmcalCorrectionClusterNonLinearity : public AliEmcalCorrectionComponent {

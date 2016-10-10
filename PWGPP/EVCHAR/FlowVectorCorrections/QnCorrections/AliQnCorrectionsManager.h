@@ -119,10 +119,10 @@ public:
   /// Gets the Qn vector tree
   /// \return the list of detector configurations Qn vectors
   TList *GetQnVectorList() const { return fQnVectorList; }
-  /// Gets the name of the calibration histograms container
-  /// \return the calibration histograms container name
   const TList *GetDetectorQnVectorList(const char *subdetector) const;
   const AliQnCorrectionsQnVector *GetDetectorQnVector(const char *subdetector, const char *expectedstep = "latest", const char *altstep = "latest") const;
+  /// Gets the name of the calibration histograms container
+  /// \return the calibration histograms container name
   const char *GetCalibrationHistogramsContainerName() const
   { return szCalibrationHistogramsKeyName; }
   /// Gets the name of the calibration QA histograms container

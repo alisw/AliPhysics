@@ -1,20 +1,15 @@
 #ifndef ALIEMCALCORRECTIONTASK_H
 #define ALIEMCALCORRECTIONTASK_H
 
-
-
+// CINT can't handle the yaml header!
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 #include <yaml-cpp/yaml.h>
 #endif
 
-#include "AliAnalysisTaskSE.h"
-#include <Rtypes.h>
-
-// Base component
 class AliEmcalCorrectionComponent;
-// Geometry
 class AliEMCALGeometry;
 
+#include "AliAnalysisTaskSE.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
 #include "AliTrackContainer.h"

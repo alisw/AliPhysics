@@ -53,6 +53,8 @@ set(SRCS
   Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
+  Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
+  Nuclei/NucleiPbPb/AliNuclexEventCuts.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
   Nuclei/Nucleipp/AliLnAODtrackCuts.cxx

@@ -427,10 +427,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessCorrections(const Float_t
             Double_t LambdaPlus = Y2n / Aplus;
             Double_t LambdaMinus = Y2n / Aminus;
 
-            if (TMath::Abs(Aplus) > fMaxThreshold) continue;
-            if (TMath::Abs(Aminus) > fMaxThreshold) continue;
-            if (TMath::Abs(LambdaPlus) > fMaxThreshold) continue;
-            if (TMath::Abs(LambdaMinus) > fMaxThreshold) continue;
+            if (TMath::Abs(Aplus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (TMath::Abs(Aminus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (TMath::Abs(LambdaPlus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (TMath::Abs(LambdaMinus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
 
             Double_t Qx = fTwistCorrectedQnVector->Qx(harmonic);
             Double_t Qy = fTwistCorrectedQnVector->Qy(harmonic);
@@ -447,6 +447,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessCorrections(const Float_t
             }
             newQx = newQx / Aplus;
             newQy = newQy / Aminus;
+
+            if (Aplus == 0.0) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (Aminus == 0.0) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+
             if (fApplyRescale) {
               fCorrectedQnVector->SetQx(harmonic, newQx);
               fCorrectedQnVector->SetQy(harmonic, newQy);
@@ -494,10 +498,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessCorrections(const Float_t
             Double_t LambdaPlus = XAYB / XAXB;
             Double_t LambdaMinus = XAYB / YAYB;
 
-            if (TMath::Abs(Aplus) > fMaxThreshold) continue;
-            if (TMath::Abs(Aminus) > fMaxThreshold) continue;
-            if (TMath::Abs(LambdaPlus) > fMaxThreshold) continue;
-            if (TMath::Abs(LambdaMinus) > fMaxThreshold) continue;
+            if (TMath::Abs(Aplus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (TMath::Abs(Aminus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (TMath::Abs(LambdaPlus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (TMath::Abs(LambdaMinus) > fMaxThreshold) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
 
             Double_t Qx = fTwistCorrectedQnVector->Qx(harmonic);
             Double_t Qy = fTwistCorrectedQnVector->Qy(harmonic);
@@ -514,6 +518,10 @@ Bool_t AliQnCorrectionsQnVectorTwistAndRescale::ProcessCorrections(const Float_t
             }
             newQx = newQx / Aplus;
             newQy = newQy / Aminus;
+
+            if (Aplus == 0.0) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+            if (Aminus == 0.0) { harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic); continue; }
+
             if (fApplyRescale) {
               fCorrectedQnVector->SetQx(harmonic, newQx);
               fCorrectedQnVector->SetQy(harmonic, newQy);

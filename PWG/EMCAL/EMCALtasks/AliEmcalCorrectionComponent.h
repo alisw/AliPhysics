@@ -5,29 +5,26 @@
 //
 
 #include <map>
-// For std::pair
-#include <utility>
 #include <string>
-#include <iostream>
 
 // CINT can't handle the yaml header!
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 #include <yaml-cpp/yaml.h>
 #endif
 
-#include <Rtypes.h>
+class TH1F;
 #include <TNamed.h>
-#include <TFile.h>
 
-#include "AliAnalysisTaskEmcal.h"
+class AliClusterContainer;
+class AliParticleContainer;
+class AliMCEvent;
+class AliEMCALRecoUtils;
+class AliVCaloCells;
+class AliVTrack;
+class AliVCluster;
+class AliEMCALGeometry;
+class AliVEvent;
 #include "AliLog.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAODEvent.h"
-#include "AliESDEvent.h"
-#include "AliAODCaloCluster.h"
-#include "AliEmcalParticle.h"
-#include "AliEMCALGeometry.h"
-#include "AliAnalysisManager.h"
 
 class AliEmcalCorrectionComponent : public TNamed {
  public:

@@ -3,6 +3,10 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+class TH1;
+
+class AliVParticle;
+
 class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent {
  public:
   AliEmcalCorrectionClusterTrackMatcher();

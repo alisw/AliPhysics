@@ -49,7 +49,10 @@ public:
   void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
   void SetAddCellNoise(Double_t rms=0.008){fAddNoiseMC=kTRUE; fNoiseMC=rms;} //Add some noise to MC data 
-
+  
+  void UseLGForTime(Bool_t toUse=kFALSE){fUseLGForTime=toUse;} //Switch off LowGain digits from time calculation
+  void AverageDigitsTime(Bool_t toAverage=kTRUE){fAverageDigitsTime=toAverage;} //turn on averaging of clusters digits time
+  
   void   InitTender();
 
 protected:
@@ -84,6 +87,8 @@ private:
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
   Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)
+  Bool_t fUseLGForTime ;                     //Switch to use LG digits in time calculation  or not
+  Bool_t fAverageDigitsTime;                 //Make averaging of time of digits of a cluster or use time at maximum
 
   AliPHOSCalibData *fPHOSCalibData;          // PHOS calibration object
   AliAnalysisTaskSE     *fTask;              // analysis task
@@ -91,7 +96,7 @@ private:
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
  
-  ClassDef(AliPHOSTenderSupply, 4); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 5); // PHOS tender task
 };
 
 

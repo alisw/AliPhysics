@@ -996,6 +996,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
       
       Float_t xyDCA,zDCA;
+      Double_t helixinfo[6];
       if(tpcInner){
         trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
         trackInfo->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
@@ -1003,6 +1004,13 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         esdTrack->GetImpactParametersTPC(xyDCA,zDCA);
         trackInfo->fTPCDCA[0]     = xyDCA;
         trackInfo->fTPCDCA[1]     = zDCA;
+        
+        // helix information (Alex Chauvin)
+        tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
+        if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
+        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kNFclsTPCr]));
+        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kNFclsTPCr]));
+        trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
       }
       
       trackInfo->fTOFdeltaBC    = esdTrack->GetTOFDeltaBC();

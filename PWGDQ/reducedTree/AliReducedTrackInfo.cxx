@@ -28,6 +28,8 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTrackLength(0.0),
   fMassForTracking(0.0),
   fChi2TPCConstrainedVsGlobal(0.0),
+  fHelixCenter(),
+  fHelixRadius(0.0),
   fITSclusterMap(0),
   fITSSharedClusterMap(0),
   fITSsignal(0.0),
@@ -67,6 +69,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   //
   fDCA[0] = 0.0; fDCA[1]=0.0;
   for(Int_t i=0; i<4; ++i) {fTPCnSig[i]=-999.; fTOFnSig[i]=-999.; fITSnSig[i]=-999.; }
+  fHelixCenter[0] = 0.0; fHelixCenter[1] = 0.0;
   fTRDntracklets[0]=0; fTRDntracklets[1]=0;
   fTRDpid[0]=-999.; fTRDpid[1]=-999.;
   fTRDpidLQ2D[0] = -999.; fTRDpidLQ2D[1] = -999.;
