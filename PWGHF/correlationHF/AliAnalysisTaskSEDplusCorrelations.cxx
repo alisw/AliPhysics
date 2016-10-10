@@ -1,5 +1,3 @@
-
-
 /**************************************************************************
  * Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliAnalysisTaskSEDplusCorrelations.cxx 58883 2012-10-02 09:41:01Z prino $ */
-/* AliAnalysisTask for HF(DPlus:3Prongs)-Hadron/Kaon/K0 azimuthal correlations
- By: Jitendra Kumar (edited for pool by pool on 31.01.2016)
+/*$Id: AliAnalysisTask for HF(DPlus:3Prongs)-Hadron/Kaon/K0 azimuthal correlation
+ By: Jitendra Kumar: (jikumar@cern.ch)
+ Last edited for MC Reco Corr + QA on 08.10.2016)
  */
 
 #include <Riostream.h>
@@ -66,38 +64,39 @@ ClassImp(AliAnalysisTaskSEDplusCorrelations)
 //____________________| Default Constructor
 AliAnalysisTaskSEDplusCorrelations::AliAnalysisTaskSEDplusCorrelations():
 AliAnalysisTaskSE(),
-fSelect(0),
-fOutput(0x0),
-fOutputCorr(0X0),
-fReadMC(kFALSE),
-fReco(kFALSE),
-fMontecarlo(kFALSE),
-fMCGenEvType(kFALSE),
-fMixing(kFALSE),
-farrayMC(0x0),
 fSystem(kFALSE),
-fUseBit(kTRUE),
-fTCconfig(kFALSE),
-fHistNEvents(0),
-fHistNDplus(0),
-fCounter(0x0),
+fReadMC(kFALSE),
+fRecoTrk(kFALSE),
+fMCParticle(kFALSE),
+fMCGenEvType(kFALSE),
+farrayMC(0x0),
+fMixing(kFALSE),
+fAssoParType(0),
 fDplusCuts(0),
 fAssoCuts(0),
-fCorrelator(0x0),
-fNPtBins(0),
-fBinWidth(0),
-fCentrOrMult(-99),
-fMultiplicity(1),
 fEffTrack(kFALSE),
 fEffDplus(kFALSE),
-fAODProtection(1),
 fCentralityEstimator(0),
 fEvalCentrality(kFALSE),
 fMinCentrality(0),
 fMaxCentrality(100),
+fCentrOrMult(-99),
+fTCconfig(kFALSE),
+fUseBit(kTRUE),
+fCorrelator(0x0),
+fNPtBins(0),
+fHistNEvents(0),
+fHistNDplus(0),
+fCounter(0x0),
+fBinWidth(0),
 fPoolByPool(kFALSE),
 fWhichPool(0),
-fCheckCutDist(kFALSE)
+fCheckCutDist(kFALSE),
+fAODProtection(1),
+fCutSuffix(0x0),
+fRawCutQA(0x0),
+fOutput(0x0),
+fOutputCorr(0X0)
 {
     // Default constructor
 }
@@ -106,38 +105,39 @@ fCheckCutDist(kFALSE)
 //____________________| Specific Constructor
 AliAnalysisTaskSEDplusCorrelations::AliAnalysisTaskSEDplusCorrelations(const Char_t* name,AliRDHFCutsDplustoKpipi* DplusCuts, AliHFAssociatedTrackCuts *AsscCuts) :
 AliAnalysisTaskSE(name),
-fSelect(0),
-fOutput(0x0),
-fOutputCorr(0X0),
-fReadMC(kFALSE),
-fReco(kFALSE),
-fMontecarlo(kFALSE),
-fMCGenEvType(kFALSE),
-fMixing(kFALSE),
-farrayMC(0x0),
 fSystem(kFALSE),
-fUseBit(kTRUE),
-fTCconfig(kFALSE),
-fHistNEvents(0),
-fHistNDplus(0),
-fCounter(0x0),
+fReadMC(kFALSE),
+fRecoTrk(kFALSE),
+fMCParticle(kFALSE),
+fMCGenEvType(kFALSE),
+farrayMC(0x0),
+fMixing(kFALSE),
+fAssoParType(0),
 fDplusCuts(0),
 fAssoCuts(AsscCuts),
-fCorrelator(0x0),
-fNPtBins(0),
-fBinWidth(0.002),
-fCentrOrMult(-99),
-fMultiplicity(1),
 fEffTrack(kFALSE),
 fEffDplus(kFALSE),
-fAODProtection(1),
 fCentralityEstimator(0),
 fEvalCentrality(kFALSE),
 fMinCentrality(0),
 fMaxCentrality(100),
+fCentrOrMult(-99.0),
+fTCconfig(kFALSE),
+fUseBit(kTRUE),
+fCorrelator(0x0),
+fNPtBins(0),
+fHistNEvents(0),
+fHistNDplus(0),
+fCounter(0x0),
+fBinWidth(0.002),
 fPoolByPool(kFALSE),
 fWhichPool(0),
-fCheckCutDist(kFALSE)
+fCheckCutDist(kFALSE),
+fAODProtection(1),
+fCutSuffix(0x0),
+fRawCutQA(0x0),
+fOutput(0x0),
+fOutputCorr(0X0)
 {
     
     Info("AliAnalysisTaskSEDplusCorrelations","Calling Constructor");
@@ -157,38 +157,39 @@ fCheckCutDist(kFALSE)
 //____________________| Soruce Operator
 AliAnalysisTaskSEDplusCorrelations::AliAnalysisTaskSEDplusCorrelations(const AliAnalysisTaskSEDplusCorrelations &source):
 AliAnalysisTaskSE(source),
-fSelect(source.fSelect),
-fOutput(source.fOutput),
-fOutputCorr(source.fOutputCorr),
+fSystem(source.fSystem),
 fReadMC(source.fReadMC),
-fReco(source.fReadMC),
-fMontecarlo(source.fMontecarlo),
+fRecoTrk(source.fRecoTrk),
+fMCParticle(source.fMCParticle),
 fMCGenEvType(source.fMCGenEvType),
-fMixing(source.fMixing),
 farrayMC(source.farrayMC),
-fSystem(source.fMixing),
-fUseBit(source.fUseBit),
-fTCconfig(source.fTCconfig),
-fHistNEvents(source.fHistNEvents),
-fHistNDplus(source.fHistNDplus),
-fCounter(source.fCounter),
+fMixing(source.fMixing),
+fAssoParType(source.fAssoParType),
 fDplusCuts(source.fDplusCuts),
 fAssoCuts(source.fAssoCuts),
-fCorrelator(source.fCorrelator),
-fNPtBins(source.fNPtBins),
-fBinWidth(source.fBinWidth),
-fCentrOrMult(source.fCentrOrMult),
-fMultiplicity(source.fMultiplicity),
 fEffTrack(source.fEffTrack),
 fEffDplus(source.fEffDplus),
-fAODProtection(source.fAODProtection),
 fCentralityEstimator(source.fCentralityEstimator),
 fEvalCentrality(source.fEvalCentrality),
 fMinCentrality(source.fMinCentrality),
 fMaxCentrality(source.fMaxCentrality),
+fCentrOrMult(source.fCentrOrMult),
+fTCconfig(source.fTCconfig),
+fUseBit(source.fUseBit),
+fCorrelator(source.fCorrelator),
+fNPtBins(source.fNPtBins),
+fHistNEvents(source.fHistNEvents),
+fHistNDplus(source.fHistNDplus),
+fCounter(source.fCounter),
+fBinWidth(source.fBinWidth),
 fPoolByPool(source.fPoolByPool),
 fWhichPool(source.fWhichPool),
-fCheckCutDist(source.fCheckCutDist)
+fCheckCutDist(source.fCheckCutDist),
+fAODProtection(source.fAODProtection),
+fCutSuffix(source.fCutSuffix),
+fRawCutQA(source.fRawCutQA),
+fOutput(source.fOutput),
+fOutputCorr(source.fOutputCorr)
 {
     
 }
@@ -216,38 +217,39 @@ AliAnalysisTaskSEDplusCorrelations& AliAnalysisTaskSEDplusCorrelations::operator
 {
     if (&orig == this) return *this; //if address is the same (same object), returns itself
     AliAnalysisTaskSE::operator=(orig); //Uses the AliAnalysisTaskSE operator to assign the inherited part of the class
-    fSelect = orig.fSelect;
-    fOutput = orig.fOutput;
-    fOutputCorr = orig.fOutputCorr;
-    fReadMC = orig.fReadMC;
-    fReco = orig.fReco;
-    fMontecarlo = orig.fMontecarlo;
-    fMCGenEvType = orig.fMCGenEvType;
-    fMixing = orig.fMixing;
-    farrayMC = orig.farrayMC;
     fSystem = orig.fSystem;
-    fUseBit = orig.fUseBit;
-    fTCconfig=orig.fTCconfig;
-    fHistNEvents = orig.fHistNEvents;
-    fHistNDplus = orig.fHistNDplus;
-    fCounter = orig.fCounter;
+    fReadMC = orig.fReadMC;
+    fRecoTrk = orig.fRecoTrk;
+    fMCParticle = orig.fMCParticle;
+    fMCGenEvType = orig.fMCGenEvType;
+    farrayMC = orig.farrayMC;
+    fMixing = orig.fMixing;
+    fAssoParType = orig.fAssoParType;
     fDplusCuts = orig.fDplusCuts;
     fAssoCuts = orig.fAssoCuts;
-    fCorrelator = orig.fCorrelator;
-    fNPtBins = orig.fNPtBins;
-    fBinWidth = orig.fBinWidth;
-    fCentrOrMult = orig.fCentrOrMult;
-    fMultiplicity = orig.fMultiplicity;
     fEffTrack = orig.fEffTrack;
-    fEffDplus = orig.fEffDplus;
-    fAODProtection = orig.fAODProtection;
+    fEffDplus=orig.fEffDplus;
     fCentralityEstimator = orig.fCentralityEstimator;
-    fEvalCentrality=orig.fEvalCentrality;
-    fMinCentrality=orig.fMinCentrality;
-    fMaxCentrality=orig.fMaxCentrality;
+    fEvalCentrality = orig.fEvalCentrality;
+    fMinCentrality = orig.fMinCentrality;
+    fMaxCentrality = orig.fMaxCentrality;
+    fCentrOrMult = orig.fCentrOrMult;
+    fTCconfig=orig.fTCconfig;
+    fUseBit=orig.fUseBit;
+    fCorrelator=orig.fCorrelator;
+    fNPtBins=orig.fNPtBins;
+    fHistNEvents=orig.fHistNEvents;
+    fHistNDplus=orig.fHistNDplus;
+    fCounter=orig.fCounter;
+    fBinWidth=orig.fBinWidth;
     fPoolByPool=orig.fPoolByPool;
     fWhichPool=orig.fWhichPool;
     fCheckCutDist=orig.fCheckCutDist;
+    fAODProtection=orig.fAODProtection;
+    fCutSuffix=orig.fCutSuffix;
+    fRawCutQA=orig.fRawCutQA;
+    fOutput=orig.fOutput;
+    fOutputCorr=orig.fOutputCorr;
     return *this; //returns pointer of the class
     
 }
@@ -267,7 +269,7 @@ void AliAnalysisTaskSEDplusCorrelations::Init()
     
     if(fEvalCentrality){
         Bool_t isCentEstimatorOk = kFALSE;
-        if(fCentralityEstimator==fDplusCuts->GetUseCentrality())isCentEstimatorOk = kTRUE; //
+        if(fCentralityEstimator==fDplusCuts->GetUseCentrality())isCentEstimatorOk = kTRUE;
         if(!isCentEstimatorOk) {
             AliFatal(Form("Chosen centrality estimator is conflict with D cuts file"));
             return;
@@ -296,7 +298,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     fOutputCorr->SetOwner();
     fOutputCorr->SetName("DplushCorrHisto");
     
-    fHistNEvents = new TH1F("fHistNEvents", "Events Stats", 9, -0.5 , 8.5);
+    fHistNEvents = new TH1F("fHistNEvents", "Events Stats", 10, -0.5 , 9.5);
     fHistNEvents->GetXaxis()->SetBinLabel(1,"All");
     fHistNEvents->GetXaxis()->SetBinLabel(2,"Pileup Rej");
     fHistNEvents->GetXaxis()->SetBinLabel(3,"Cent-Mult Rej");
@@ -306,6 +308,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     fHistNEvents->GetXaxis()->SetBinLabel(7,"PS Rej");
     fHistNEvents->GetXaxis()->SetBinLabel(8,"HFCorr Interface Rej");
     fHistNEvents->GetXaxis()->SetBinLabel(9,"Accepted");
+    fHistNEvents->GetXaxis()->SetBinLabel(10,"mismatch AOD/dAOD");
     fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
     fHistNEvents->SetFillColor(kBlue);
     fHistNEvents->SetFillStyle(3015);
@@ -313,7 +316,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     //fHistNEvents->Sumw2();
     fOutput->Add(fHistNEvents);
     
-    fHistNDplus = new TH1F("fHistNDplus", "Dplus Stats ", 8, -0.5 , 7.5);
+    fHistNDplus = new TH1F("fHistNDplus", "Dplus Stats ", 9, -0.5 , 8.5);
     fHistNDplus->GetXaxis()->SetBinLabel(1,"All");
     fHistNDplus->GetXaxis()->SetBinLabel(2,"-pT Rej");
     fHistNDplus->GetXaxis()->SetBinLabel(3,"<2GeV Rej");
@@ -322,6 +325,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     fHistNDplus->GetXaxis()->SetBinLabel(6,"TC Rej");
     fHistNDplus->GetXaxis()->SetBinLabel(7,"FiduAcc Rej");
     fHistNDplus->GetXaxis()->SetBinLabel(8,"Accepted");
+    fHistNDplus->GetXaxis()->SetBinLabel(9,"D+ failed");
     fHistNDplus->GetXaxis()->SetNdivisions(1,kFALSE);
     fHistNDplus->SetMinimum(0);
     fHistNDplus->SetFillColor(kRed);
@@ -329,8 +333,10 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     //fHistNDplus->Sumw2();
     fOutput->Add(fHistNDplus);
     
-    HistoNomenclature();// Hist Nomenclature function
+    if(fRawCutQA)fCutSuffix = "BeforeDSel";
+    else if(!fRawCutQA)fCutSuffix = "AfterDSel";
     
+    HistoNomenclature();// Hist Nomenclature function
     TString normName="NormalizationCounter";
     AliAnalysisDataContainer *cont = GetOutputSlot(5)->GetContainer();
     if(cont)normName=(TString)cont->GetName();
@@ -342,10 +348,10 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
     fCorrelator = new AliHFCorrelator("Correlator",fAssoCuts,fSystem,fDplusCuts);
     fCorrelator->SetDeltaPhiInterval(-0.5*Pi, 1.5*Pi);
     fCorrelator->SetEventMixing(fMixing);
-    fCorrelator->SetAssociatedParticleType(fSelect);
+    fCorrelator->SetAssociatedParticleType(fAssoParType);
     //fCorrelator->SetApplyDisplacementCut(fDisplacement); //set kFALSE/kTRUE for using the displacement cut
-    fCorrelator->SetUseReco(fReco);
-    fCorrelator->SetUseMC(fMontecarlo);
+    fCorrelator->SetUseReco(fRecoTrk);
+    fCorrelator->SetUseMC(fReadMC);
     
     Bool_t pooldef = fCorrelator->DefineEventPool();
     if(!pooldef) AliInfo("Warning:: Event pool not defined properly");
@@ -362,22 +368,20 @@ void AliAnalysisTaskSEDplusCorrelations::UserCreateOutputObjects()
 //____________________| UserExec
 void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
     
+    
     Info("AliAnalysisTaskSEDplusCorrelations","Running... UserExec");
-    
     AliAODEvent *aod = dynamic_cast<AliAODEvent*>(InputEvent());
-    if(!aod) return;
-    
-    if(fAODProtection>=0){
-      //   Protection against different number of events in the AOD and deltaAOD
-      //   In case of discrepancy the event is rejected.
-      Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
-      if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) return; // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-    }    
-    
     TClonesArray *array3Prong = 0;
-    array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
-    if(!aod && AODEvent() && IsStandardAOD()) {
-        
+    
+    if(fAODProtection>=0){ //New added 05.10
+        Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+        if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)){
+            fHistNEvents->Fill(9);
+            return;
+        }
+    }
+    
+    if(!aod && AODEvent() && IsStandardAOD()){
         aod = dynamic_cast<AliAODEvent*> (AODEvent());
         AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
         
@@ -386,26 +390,26 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
             AliAODEvent *aodFromExt = ext->GetAOD();
             array3Prong=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
         }
-    }
-    else if(!aod || !array3Prong){
-        printf("AliAnalysisTaskSEDplusCorrelations::UserExec: AOD  Charm3Prong branch not found!\n");
+    }else if(aod)array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+    
+    if(!aod || !array3Prong){
+        printf("AliAnalysisTaskSEDplusCorrelationselation::UserExec: AOD  Charm3Prong branch not found!\n");
         return;
     }
     
     if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
     
-    fCounter->StoreEvent(aod,fDplusCuts,fMontecarlo);
+    fCounter->StoreEvent(aod,fDplusCuts,fReadMC);
     fHistNEvents->Fill(0);
     
     //MC Kinemactics
-    if(fReadMC && fMontecarlo){
+    if(fReadMC){
         
         farrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
         if(!farrayMC){
             printf("AliAnalysisTaskSEDplusCorrelations::UserExec: MC particles branch not found!\n");
             return;
         }
-        fCorrelator->SetMCArray(farrayMC);
         
         AliAODMCHeader  *mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
         if(!mcHeader) {
@@ -424,29 +428,30 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
             for(Int_t k=0; k<NMCevents; k++){
                 Int_t * MCEventType = fAssoCuts->GetMCEventType();
                 if(eventType == MCEventType[k]) isMCeventgood= kTRUE;
-                // ((TH1D*)fOutputBasic->FindObject("EventTypeMC"))->Fill(eventType);
             }
             if(NMCevents && !isMCeventgood){
                 if(fDebug>2) std::cout << "The MC event " << eventType << " not interesting for this analysis: skipping" << std::endl;
                 return;
             }
         }
+        fCorrelator->SetMCArray(farrayMC);
     }
     
     //Event Selection
-    if(!fReadMC && !fDplusCuts->IsEventSelected(aod)){
+    if(fRecoTrk && !fDplusCuts->IsEventSelected(aod)){
+        //Remarks 1. ON for Data+MC=Reco
         if(fDplusCuts->GetWhyRejection()==1)fHistNEvents->Fill(1);//pileup
         if(fDplusCuts->GetWhyRejection()==5)fHistNEvents->Fill(4);//triggers
         if(fDplusCuts->GetWhyRejection()==6)fHistNEvents->Fill(5);//Zvtx
         if(fDplusCuts->GetWhyRejection()==7)fHistNEvents->Fill(6);//PS
         return;
-    }else if(fReadMC){
+    }else if(fReadMC && !fRecoTrk){
+        //Kinematics-Montecarlo
         AliAODVertex *vertex = (AliAODVertex*)aod->GetPrimaryVertex();
         if(!vertex)return;
         Double_t zVtxMCreco = vertex->GetZ();
         if(TMath::Abs(zVtxMCreco)>10) return;
     }
-    
     
     if(fEvalCentrality){
         fMinCentrality = fDplusCuts->GetMinCentrality();
@@ -464,11 +469,8 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
             Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
             if(eta>mineta && eta<maxeta) count++;
         }
-        //fMultiplicity = count;
-        //fCentrOrMult = fMultiplicity;
         fCentrOrMult = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
-        ((TH2F*)fOutput->FindObject("h2SPDTrkVsTrkMult"))->Fill(aod->GetNumberOfTracks(),fCentrOrMult);
-        //if(fCentrOrMult<fMinMult || fCentrOrMult >fMaxMult)fHistNEvents->Fill(2);
+        if(!fMixing)((TH2F*)fOutput->FindObject("h2SPDTrkVsTrkMult"))->Fill(aod->GetNumberOfTracks(),fCentrOrMult);
     }
     
     AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -480,8 +482,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         return;
     }
     
-    
-    //Pool by Pool Seetting
+    //Pool by Pool Setting
     if(fPoolByPool)fWhichPool = fAssoCuts->GetPoolBin(fCentrOrMult, vtx1->GetZ());
     else if(!fPoolByPool)fWhichPool=0; //integrated pools
     
@@ -499,24 +500,26 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
     //D+ Particle loop and Correlation
     Int_t nDplusKpipi = array3Prong->GetEntriesFast();
     Int_t       labDp = -1;
-    Bool_t    isDplus = kFALSE;
     Int_t pdgDgDplustoKpipi[3]={321,211,211};
-
-    // vHF object is needed to call the method that refills the missing info of the candidates
-    // if they have been deleted in dAOD reconstruction phase
-    // in order to reduce the size of the file
+    //printf("Number of D+->Kpipi: %d and of tracks: %d\n",nDplusKpipi,aod->GetNumberOfTracks());
+    
     AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
     
-    //printf("Number of D+->Kpipi: %d and of tracks: %d\n",nDplusKpipi,aod->GetNumberOfTracks());
+    TString isDataOrMC = "";
+    if(!fReadMC)isDataOrMC = "Data";
+    else if(fReadMC)isDataOrMC = "MC";
+    
+    
     for (Int_t iDplusKpipi = 0; iDplusKpipi < nDplusKpipi; iDplusKpipi++){
         
-        // D+ Primary Vertex Setting
         AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(iDplusKpipi); // D+
         if(!d)continue;
-        
-        if(!(vHF->FillRecoCand(aod,d))) continue; //Fill the data members of the candidate only if they are empty.   
-        
         fHistNDplus->Fill(0);
+        
+        if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
+            fHistNDplus->Fill(8); //monitor how often this fails
+            continue;
+        }
         
         if(d->Pt()<0.)fHistNDplus->Fill(1);
         
@@ -529,6 +532,8 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
             fHistNDplus->Fill(3);
             continue;
         }
+        
+        if(!fMixing && fRecoTrk && fCheckCutDist && fRawCutQA)DoDplusCutDistFill(d);
         
         //Tight cuts
         Int_t passTightCuts = fDplusCuts->IsSelected(d,AliRDHFCuts::kAll,aod);
@@ -563,6 +568,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
             else fDplusCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
         }
         
+        
         Double_t ptDplusCand = d->Pt();
         Double_t rapDplusCand=d->YDplus();
         Int_t iPtDplus = fDplusCuts->PtBin(ptDplusCand);
@@ -574,23 +580,30 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         }
         
         // D+ Fiducial Acceptance in pt and eta
-        if(!fDplusCuts->IsInFiducialAcceptance(ptDplusCand,rapDplusCand)) {
+        if(!fMixing && fRecoTrk && fCheckCutDist && !fRawCutQA){
+            ((TH2F*)fOutput->FindObject(Form("hDistDpluswoYCutVsPt_Bin%d",iPtDplus)))->Fill(d->Pt(),d->YDplus());
+        }
+        
+        if(!fDplusCuts->IsInFiducialAcceptance(ptDplusCand,rapDplusCand)){
             //Vertexing cleaning...
             if(recVtx)fDplusCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
             if(unsetvtx) d->UnsetOwnPrimaryVtx();
             fHistNDplus->Fill(6);
             continue;
         }
-        if(fMontecarlo){
+        
+        Int_t fDPlusorig = 0;
+        if(fReadMC){
+            //Match to MC
             labDp = d->MatchToMC(411,farrayMC,3,pdgDgDplustoKpipi);
-            if(labDp>=0){
-                isDplus = kTRUE;
-            }
+            if(labDp>=0)fDPlusorig = CheckOriginPartOfDPlus(farrayMC,(AliAODMCParticle*)farrayMC->At(labDp));
+            //cout << "Origin of Particle --> " << fDPlusorig << endl;
         }
         fHistNDplus->Fill(7);
         
+        
         //Computing Correlations: Below Funtions
-        HadronCorrelations(d,farrayMC,isDplus);
+        HadronCorrelations(d,fDPlusorig);
         
         //Vertexing cleaning...
         if(recVtx)fDplusCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -606,7 +619,6 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
     }
     
     delete vHF;
-    
     // Posting Slots
     PostData(1,fOutput);
     PostData(2,fOutputCorr);
@@ -618,18 +630,23 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
 
 
 //____________________| Calculating Correlation
-void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Prong* d,  TClonesArray *arrayMC, Bool_t isDplus) {
+void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Prong* d, Int_t fMCDplusMom){
+    
     
     //Switch for String for Hist name
     TString parttype = "", datatype = "";
-    if(fSelect==1)parttype += "Hdron";
-    else if(fSelect==2)parttype += "Kaons";
-    else if(fSelect==3)parttype += "kZero";
+    if(fAssoParType==1)parttype += "Hdron";
+    else if(fAssoParType==2)parttype += "Kaons";
+    else if(fAssoParType==3)parttype += "kZero";
     
-    if(fReco){
+    if(fRecoTrk){
         if(!fReadMC)datatype += "Data";
-        else if(fReadMC)datatype += "Reco";
+        else if(fReadMC)datatype += "MCrc";
     }
+    
+    TString isDataOrMC = "";
+    if(!fReadMC)isDataOrMC = "Data";
+    else if(fReadMC)isDataOrMC = "MC";
     
     // D+ Quantities
     Double_t mDplus       = d->InvMassDplus();
@@ -644,70 +661,32 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
     Int_t iPtBin = fDplusCuts->PtBin(ptDplusCand); // Pt bins
     if(iPtBin<0) return ;
     
-    
-    ((TH2F*)fOutput->FindObject("DplusMVsPhi"))->Fill(d->InvMassDplus(),d->Phi());
-    ((TH2F*)fOutput->FindObject("DplusMVsPt"))->Fill(d->InvMassDplus(),d->Pt());
-    ((TH2F*)fOutput->FindObject("DplusMVsEta"))->Fill(d->InvMassDplus(),d->Eta());
-    
-    if(fCheckCutDist && !fMixing){
-    	((TH1F*)fOutput->FindObject(Form("hPtDaughterPion1_Bin%d",iPtBin)))->Fill(d->PtProng(0)); //Prong (0)= Pion1 from line 133 of AliAODRecoDecayHF3Prong.cxx
-        ((TH1F*)fOutput->FindObject(Form("hPtDaughterKaon_Bin%d",iPtBin)))->Fill(d->PtProng(1)); //Prong (1)= Kaon from line 133 of AliAODRecoDecayHF3Prong.cxx
-        ((TH1F*)fOutput->FindObject(Form("hPtDaughterPion2_Bin%d",iPtBin)))->Fill(d->PtProng(2)); //Prong (2)= Pion2 from line 133 of AliAODRecoDecayHF3Prong.cxx
-        ((TH1F*)fOutput->FindObject(Form("hd0DaughterPion1_Bin%d",iPtBin)))->Fill(d->Getd0Prong(0)*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hd0DaughterKaon_Bin%d",iPtBin)))->Fill(d->Getd0Prong(1)*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hd0DaughterPion2_Bin%d",iPtBin)))->Fill(d->Getd0Prong(2)*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hdist12_Bin%d",iPtBin)))->Fill(d->GetDist12toPrim()*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hdist23_Bin%d",iPtBin)))->Fill(d->GetDist23toPrim()*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hCosPA_Bin%d",iPtBin)))->Fill(d->CosPointingAngle());
-        ((TH1F*)fOutput->FindObject(Form("hCosPAXY_Bin%d",iPtBin)))->Fill(d->CosPointingAngleXY());
-        ((TH1F*)fOutput->FindObject(Form("hNDeacyLenXY_Bin%d",iPtBin)))->Fill(d->NormalizedDecayLengthXY()*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hDecayLen_Bin%d",iPtBin)))->Fill(d->DecayLength()*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hDecayLenXY_Bin%d",iPtBin)))->Fill(d->DecayLengthXY()*10.0);
-        ((TH2F*)fOutput->FindObject(Form("hCosPAvsdPS_Bin%d",iPtBin)))->Fill(d->DecayLength()*10.0,d->CosPointingAngle());
-        ((TH2F*)fOutput->FindObject(Form("hd0DaughterKaonvsPtK_Bin%d",iPtBin)))->Fill(d->PtProng(1),d->Getd0Prong(1)*10.0);
-        ((TH2F*)fOutput->FindObject(Form("hd0DaughterPion1vsPtPi1_Bin%d",iPtBin)))->Fill(d->PtProng(0),d->Getd0Prong(0)*10.0);
-        ((TH2F*)fOutput->FindObject(Form("hd0DaughterPion2vsPtPi2_Bin%d",iPtBin)))->Fill(d->PtProng(2),d->Getd0Prong(2)*10.0);
-
-        Double_t MaxDCA = -9999.;
-        for(Int_t i=0; i<3; i++){
-            if(d->GetDCA(i)>MaxDCA)MaxDCA=d->GetDCA(i);
-        }
-        ((TH1F*)fOutput->FindObject(Form("hDCA_Bin%d",iPtBin)))->Fill(MaxDCA*10.0);
-        
-        Double_t d0Square = d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-        ((TH1F*)fOutput->FindObject(Form("hd0square_Bin%d",iPtBin)))->Fill(d0Square*100.0);
-        ((TH1F*)fOutput->FindObject(Form("hSigmaVert_Bin%d",iPtBin)))->Fill(d->GetSigmaVert()*10.0);
-        ((TH1F*)fOutput->FindObject(Form("hDrapidty_Bin%d",iPtBin)))->Fill(d->YDplus());
-    }
+    if(!fMixing && fRecoTrk && fCheckCutDist && !fRawCutQA)DoDplusCutDistFill(d);
     
     //Correlation with SE or ME
     Double_t nSparceCorrDplusinfo[1] = {mDplus};
     if(!fMixing){
-        if(fReco){ // data/MC-Reco
-            ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseM_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrDplusinfo,1.0/effDplus);
-            if(fEffDplus){
-                ((TH1F*)fOutput->FindObject(Form("hDplsMOrG_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(mDplus); //Dplus efficiency
-            }
-        }
-        if(fMontecarlo){
-            ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseM_%s_%s_Trth_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrDplusinfo);
+        ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseMa_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrDplusinfo,1.0/effDplus);
+        if(fEffDplus && !fReadMC){
+            ((TH1F*)fOutput->FindObject(Form("histgrm1Ma_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(mDplus); //Dplus mass w/o efficiency
         }
     }
     
-    //Dplus parameter resetting and storage
     Double_t phiDplus = fCorrelator->SetCorrectPhiRange(phiDplusCand);
     fCorrelator->SetTriggerParticleProperties(ptDplusCand,phiDplus,etaDplusCand);
     
     //Pool Setting and Pool events
+    Int_t NofEventsinPool = 1; // SE
     Bool_t execPool = fCorrelator->ProcessEventPool();
-    if(fMixing && !execPool) {
-        AliInfo("Mixed event analysis: pool is not ready");
+    if(fMixing){
+        if(!execPool){
+            AliInfo("Mixed event analysis: pool is not ready");
+            NofEventsinPool = 0;
+        }else if(execPool){
+            NofEventsinPool = fCorrelator->GetNofEventsInPool();
+        }
     }
     
-    Int_t NofEventsinPool = 1; // SE
-    if(fMixing) {
-        NofEventsinPool = fCorrelator->GetNofEventsInPool();
-    }
     
     //D+ Daughters ids
     Int_t nIDs[3] = {-9999999};
@@ -730,6 +709,7 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
         Double_t DeltaphiLead=0, DeltaetaLead=0;
         
         //Correlation with associated tracks
+        Int_t DCount = 0;
         for (Int_t iTrack = 0; iTrack<fCorrelator->GetNofTracks(); iTrack++) {
             
             // Correlation using HFCorrelator
@@ -744,11 +724,12 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
             Int_t label = redpart->GetLabel();
             Int_t trackid = redpart->GetID();
             
-            if(!fMixing) {
-                //SE only
-                ((TH1F*)fOutput->FindObject("AssoTrkPhi"))->Fill(redpart->Phi());
-                ((TH1F*)fOutput->FindObject("AssoTrkPt"))->Fill(redpart->Pt());
-                ((TH1F*)fOutput->FindObject("AssoTrkEta"))->Fill(redpart->Eta());
+            DCount++;
+            if(!fMixing && DCount==1){
+                //SE only + on request
+                ((TH1F*)fOutput->FindObject(Form("AssoTrkPhi_%s",isDataOrMC.Data())))->Fill(redpart->Phi());
+                ((TH1F*)fOutput->FindObject(Form("AssoTrkEta_%s",isDataOrMC.Data())))->Fill(redpart->Eta());
+                ((TH1F*)fOutput->FindObject(Form("AssoTrkPt_%s",isDataOrMC.Data())))->Fill(redpart->Pt());
             }
             
             phiHad = fCorrelator->SetCorrectPhiRange(phiHad);
@@ -761,6 +742,7 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
             if(trackid < 0) continue;
             if (!fMixing)if( trackid == nIDs[0] || trackid == nIDs[1] || trackid == nIDs[2]) continue;
             
+            
             // leading particle correlation
             if (ptHad > refpt) {
                 refpt = ptHad;
@@ -771,51 +753,39 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
                 TotaleffLead = effLead*effDplus;
             }
             
-            //filling correlations in ThnSparce format
-            if(fReco){
-                Bool_t* partSource = NULL;
-                CorrelationNSparsePlots(d, redpart, iPtBin, partSource, 1.0/effTotal);
-                delete[] partSource;
-            }
+            CorrelationNSparsePlots(d, redpart, iPtBin, fMCDplusMom, 1.0/effTotal);
             
-            if(fMontecarlo && isDplus){
-                Bool_t* partSource = fAssoCuts->IsMCpartFromHF(label,arrayMC); // check source for 1/2/3
-                CorrelationNSparsePlots(d, redpart, iPtBin, partSource, 1.0/effTotal);
-                delete[] partSource;
-            } // MC Gen Origin ends
         }//track loop end here
-        //Leading particle correlations
         
+        //Leading particle correlations
         //pT bins setting
         Double_t ptLim_Sparse = 0.0;
-        if(!fMixing) {
-            if(fReco)ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseL_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
-            if(fMontecarlo)ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
+        if(!fMixing){
+            if(!fReadMC)ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLa_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
+            if(fReadMC)ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLc_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
+        }else if(fMixing){
+            ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLa_%s_%s_Bin%d_evMix",parttype.Data(), datatype.Data(), iPtBin)))->GetAxis(3)->GetXmax();
         }
-        else if(fMixing){
-            ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseL_%s_%s_Bin%d_evMix", parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
-        }
-        if(ptleadHadron > ptLim_Sparse) ptleadHadron = ptLim_Sparse-0.01; //filling all above pT in last bin
-
         
+        if(ptleadHadron > ptLim_Sparse) ptleadHadron = ptLim_Sparse-0.01; //filling all above pT in last bin
         Double_t nSparceCorrLeadPart[5] = {mDplus, DeltaphiLead, DeltaetaLead, ptleadHadron, fWhichPool+0.5};
         if(!fMixing){
-            if(fReco)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseL_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
-            if(fMontecarlo)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d", parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
-            //montecarlo temp: need fixs
-        }
-        
-        if(fMixing) {
-            ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseL_%s_%s_Bin%d_evMix", parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
+            if(!fReadMC)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLa_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
+            if(fReadMC){
+                if(fMCDplusMom==4)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLc_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
+                else if(fMCDplusMom==5)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLb_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
+                else ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLX_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
+            }
+        }else if(fMixing){
+            ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseLa_%s_%s_Bin%d_evMix",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorrLeadPart);
         }
     }  // event loop.
-    
     
 }
 
 
 //____________________|Correlation with ThnSparse Histograms
-void AliAnalysisTaskSEDplusCorrelations::CorrelationNSparsePlots(AliAODRecoDecayHF3Prong *d, AliReducedParticle* track, Int_t iPtBin, Bool_t *origDplus, Double_t weightEff) {
+void AliAnalysisTaskSEDplusCorrelations::CorrelationNSparsePlots(AliAODRecoDecayHF3Prong *d, AliReducedParticle* track, Int_t iPtBin, Int_t origDplus, Double_t weightEff) {
     
     iPtBin = fDplusCuts->PtBin(d->Pt());
     Double_t mDplus = d->InvMassDplus();
@@ -823,59 +793,87 @@ void AliAnalysisTaskSEDplusCorrelations::CorrelationNSparsePlots(AliAODRecoDecay
     Double_t deltaEta = fCorrelator->GetDeltaEta();
     Double_t ptTrack = track->Pt();
     
-    TString partype = "", datatype = "";
-    if(fSelect==1)partype += "Hdron";
-    else if(fSelect==2)partype += "Kaons";
-    else if(fSelect==3)partype += "kZero";
+    TString parttype = "", datatype = "";
+    if(fAssoParType==1)parttype += "Hdron";
+    else if(fAssoParType==2)parttype += "Kaons";
+    else if(fAssoParType==3)parttype += "kZero";
     
-    
-    if(fReco){
+    if(fRecoTrk){
         if(!fReadMC)datatype += "Data";
-        else if(fReadMC)datatype += "Reco";
+        else if(fReadMC)datatype += "MCrc";
     }
     
-    if(fMontecarlo){
-        origDplus = new Bool_t[4];
-        if(origDplus[0] && origDplus[2]) datatype += "Frmc"; // is from charm ->D
-        else if(origDplus[1] && origDplus[2])datatype += "Frmb"; // is from beauty ->D
-        else if(origDplus[1] && origDplus[3])datatype += "FrmB"; // is from beauty ->B
-        else   datatype += "Trth";
-    }
-    
-    //pT bins setting
     Double_t ptLim_Sparse = 0.0;
-    if(!fMixing) {
-        if(fReco)ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d",partype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
-        if(fMontecarlo)ptLim_Sparse = ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d",partype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
-        //montecarlo temp: need fixs
+    if(!fMixing){
+        if(!fReadMC)ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCa_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
+        if(fReadMC)ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCc_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->GetAxis(3)->GetXmax();
+    }else if(fMixing){
+        ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCa_%s_%s_Bin%d_evMix",parttype.Data(), datatype.Data(), iPtBin)))->GetAxis(3)->GetXmax();
     }
-    else if(fMixing){
-        ptLim_Sparse=((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d_evMix",partype.Data(), datatype.Data(), iPtBin)))->GetAxis(3)->GetXmax();
-    }
+    
     if(ptTrack > ptLim_Sparse) ptTrack = ptLim_Sparse-0.01; //filling all above pT in last bin
-    
-    
-    
-    //Correlations
     Double_t nSparceCorr[5] = {mDplus, deltaPhi, deltaEta, ptTrack, fWhichPool+0.5};
-    if(!fMixing) {
-        if(fReco)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d",partype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);
-        if(fMontecarlo)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d",partype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);
-    }
-    else if(fMixing) {
-        ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseC_%s_%s_Bin%d_evMix",partype.Data(), datatype.Data(), iPtBin)))->Fill(nSparceCorr);
+    if(!fMixing){
+        if(!fReadMC)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCa_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);
+        if(fReadMC){
+            if(origDplus==4)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCc_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);
+            else if(origDplus==5)((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCb_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);//FIX
+            else ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCX_%s_%s_Bin%d",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);
+        }
+    }else if(fMixing){
+        ((THnSparseI*)fOutputCorr->FindObject(Form("hnSparseCa_%s_%s_Bin%d_evMix",parttype.Data(), datatype.Data(),iPtBin)))->Fill(nSparceCorr,weightEff);
     }
     
-    delete[] origDplus;
     return;
-    
 }
 
+
+
+//____________________|  Cut Distributions
+void AliAnalysisTaskSEDplusCorrelations::DoDplusCutDistFill(AliAODRecoDecayHF3Prong *d) {
+    
+    TString isDataOrMC = "";
+    if(!fReadMC)isDataOrMC = "Data";
+    else if(fReadMC)isDataOrMC = "MC";
+    
+    Int_t iPtBin = fDplusCuts->PtBin(d->Pt());
+    
+    Double_t MaxDCA = -9999.;
+    for(Int_t i=0; i<3; i++)if(d->GetDCA(i)>MaxDCA)MaxDCA=d->GetDCA(i);
+    Double_t d0Square = d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+    
+    //DPlus Cuts dist
+    ((TH2F*)fOutput->FindObject(Form("hDistPtvsd0_DauPion1_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->PtProng(0), d->Getd0Prong(0));
+    ((TH2F*)fOutput->FindObject(Form("hDistPtvsd0_DauKaon_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->PtProng(1), d->Getd0Prong(1));
+    ((TH2F*)fOutput->FindObject(Form("hDistPtvsd0_DauPion2_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->PtProng(2), d->Getd0Prong(2));
+    ((TH2F*)fOutput->FindObject(Form("hDistCosPAvsDCA_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->CosPointingAngle(), MaxDCA);
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusCosPA_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->CosPointingAngle());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusCosPAxy_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->CosPointingAngleXY());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusDCA_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(MaxDCA);
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusd0Square_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d0Square);
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusSigmaVert_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->GetSigmaVert());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusDecayLen_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->DecayLength());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusDecayLenxy_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->DecayLengthXY());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusNormDecayLenxy_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->NormalizedDecayLengthXY());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusDist12_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->GetDist12toPrim());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusDist23_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->GetDist23toPrim());
+    
+    //DPlus QA
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusRap_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->YDplus());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusEta_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->Eta());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusPhi_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->Phi());
+    ((TH1F*)fOutput->FindObject(Form("hDistDplusMass_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->InvMassDplus());
+    ((TH2F*)fOutput->FindObject(Form("hDistDplusMassVsPhi_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->InvMassDplus(), d->Phi());
+    ((TH2F*)fOutput->FindObject(Form("hDistDplusMassVsEta_Bin%d_%s_%s",iPtBin,isDataOrMC.Data(),fCutSuffix.Data())))->Fill(d->InvMassDplus(), d->Eta());
+    
+    
+}
 
 //____________________|  Histograms Nomenclature
 void AliAnalysisTaskSEDplusCorrelations::HistoNomenclature() {
     
     Double_t Pi = TMath::Pi();
+    
     //D+ Candidate Vars: InvMass
     Float_t         range  = 0.200;
     Float_t fLowmasslimit  = 1.865 - range;
@@ -901,282 +899,364 @@ void AliAnalysisTaskSEDplusCorrelations::HistoNomenclature() {
     Double_t nMinimumEdgeBins[5] = {fLowmasslimit,   -Pi/2,    -1.6,    0.00,  0.};  //is the minimum for all the bins
     Double_t nMaximumEdgeBins[5] = {fUpmasslimit,   3*Pi/2,     1.6,    3.00,  static_cast<double>(nPoolCorr)};  //is the maximum for all the bins
     
-    //Other QA -- more to be added
-    TH2F* hDplusMVsPhi = new TH2F("DplusMVsPhi", "D^{+} Inv Mass Dist; D^{+} InvMass; Phi;",nbins,fLowmasslimit,fUpmasslimit,32,0,2*Pi);
-    TH2F* hDplusMVsEta = new TH2F("DplusMVsEta", "D^{+} Inv Mass Dist; D^{+} InvMass; Eta;",nbins,fLowmasslimit,fUpmasslimit,40,-2.0,2.0);
-    TH2F* hDplusMVsPt  = new TH2F("DplusMVsPt",  "D^{+} Inv Mass Dist; D^{+} InvMass; Pt(GeV/c);",nbins,fLowmasslimit,fUpmasslimit,28,2,16);
-    TH1F* hTrackPhi = new TH1F("AssoTrkPhi", "Associated Trk Phi Dist", 32, 0, 2*Pi);
-    TH1F* hTrackEta = new TH1F("AssoTrkEta", "Associated Trk Eta Dist", 36,-0.9, 0.9);
-    TH1F* hTrackPt  = new TH1F("AssoTrkPt",  "Associated Trk Pt Dist", 80,0.0,20);
-    hDplusMVsPhi->Sumw2();
-    hDplusMVsEta->Sumw2();
-    hDplusMVsPt->Sumw2();
     
-    hTrackPhi->SetMarkerStyle(29);
-    hTrackPhi->SetMarkerSize(0.9);
-    hTrackPhi->Sumw2();
-    hTrackEta->SetMarkerStyle(29);
-    hTrackEta->SetMarkerSize(0.9);
-    hTrackEta->Sumw2();
-    hTrackPt->SetMarkerStyle(29);
-    hTrackPt->SetMarkerSize(0.9);
-    hTrackPt->Sumw2();
-    fOutput->Add(hDplusMVsPhi);
-    fOutput->Add(hDplusMVsEta);
-    fOutput->Add(hDplusMVsPt);
-    fOutput->Add(hTrackPhi);
-    fOutput->Add(hTrackEta);
-    fOutput->Add(hTrackPt);
+    //Data
+    TString namePlotThnRecoWOeffMass = "histgrm1" ;
+    TString namePlotThnRecoMass      = "hnSparse" ;
+    TString namePlotThnRecoCorr      = "hnSparse" ;
+    TString namePlotThnRecoCorrL     = "hnSparse" ;
     
-    Double_t MaxTrklets=100;
-    if(fSystem==0)MaxTrklets=150;
-    else MaxTrklets=2000;
-    TH2F* h2SPDTrkVsTrkMult = new TH2F("h2SPDTrkVsTrkMult", "Tracklets Vs Track Mult", 200, 0., MaxTrklets, 200, 0., MaxTrklets);
-    h2SPDTrkVsTrkMult->SetDrawOption("SURF1");
-    h2SPDTrkVsTrkMult->Sumw2();
-    fOutput->Add(h2SPDTrkVsTrkMult);
+    //MC reco + origin
+    TString namePlotThnRecoMassOrgnAll= "hnSparse" ;
+    TString namePlotThnRecoCorrOrgnc  = "hnSparse" ;
+    TString namePlotThnRecoCorrOrgnb  = "hnSparse" ;
+    TString namePlotThnRecoCorrOrgnX  = "hnSparse" ;
+    TString namePlotThnRecoCorrLOrgnc = "hnSparse" ;
+    TString namePlotThnRecoCorrLOrgnb = "hnSparse" ;
+    TString namePlotThnRecoCorrLOrgnX = "hnSparse" ;
     
     TString nameMasterStting   = "";
-    TString namePlotThnDplus   = "hnSparse" ;
-    TString namePlotThnDplusOrg= "hDplsMOr" ;
-    TString namePlotThnDplusMC = "hnSparse" ;
-    TString namePlotThn        = "hnSparse" ;
-    TString namePlotThnL       = "hnSparse" ;
-    TString namePlotThnMC      = "hnSparse" ;
-    TString namePlotThnLMC     = "hnSparse" ;
-    TString namePlotThnMCc     = "hnSparse" ;
-    TString namePlotThnMCb     = "hnSparse" ;
-    TString namePlotThnMCB     = "hnSparse" ;
-    
-    if(fSelect==1)nameMasterStting += "_Hdron";
-    else  if(fSelect==2)nameMasterStting += "_Kaons";
-    else  if(fSelect==3)nameMasterStting += "_kZero";
+    if(fAssoParType==1)nameMasterStting += "_Hdron";
+    else  if(fAssoParType==2)nameMasterStting += "_Kaons";
+    else  if(fAssoParType==3)nameMasterStting += "_kZero";
     else  nameMasterStting = "_Nulls";
     
-    if(fReco){
-        if(!fReadMC)nameMasterStting +="_Data";
-        if(fReadMC)nameMasterStting +="_Reco";
-        namePlotThnDplus    += Form("M%s_Bin", nameMasterStting.Data());
-        namePlotThnDplusOrg += Form("G%s_Bin", nameMasterStting.Data());
-        namePlotThn         += Form("C%s_Bin", nameMasterStting.Data());
-        namePlotThnL        += Form("L%s_Bin", nameMasterStting.Data());
+    if(!fReadMC){
+        nameMasterStting +="_Data";
+        namePlotThnRecoWOeffMass  += Form("Ma%s_Bin", nameMasterStting.Data());
+        namePlotThnRecoMass  += Form("Ma%s_Bin", nameMasterStting.Data());
+        namePlotThnRecoCorr  += Form("Ca%s_Bin", nameMasterStting.Data());
+        namePlotThnRecoCorrL += Form("La%s_Bin", nameMasterStting.Data());
+    }else if(fReadMC){
+        if(fRecoTrk){
+            nameMasterStting +="_MCrc";
+            namePlotThnRecoMassOrgnAll+=  Form("Ma%s_Bin", nameMasterStting.Data());
+            namePlotThnRecoCorrOrgnc  +=  Form("Cc%s_Bin", nameMasterStting.Data());
+            namePlotThnRecoCorrOrgnb  +=  Form("Cb%s_Bin", nameMasterStting.Data());
+            namePlotThnRecoCorrOrgnX  +=  Form("CX%s_Bin", nameMasterStting.Data());
+            namePlotThnRecoCorrLOrgnc +=  Form("Lc%s_Bin", nameMasterStting.Data());
+            namePlotThnRecoCorrLOrgnb +=  Form("Lb%s_Bin", nameMasterStting.Data());
+            namePlotThnRecoCorrLOrgnX +=  Form("LX%s_Bin", nameMasterStting.Data());
+        }
     }
     
-    if(fMontecarlo){
-        namePlotThnDplusMC  +=  Form("M%s_Trth_Bin", nameMasterStting.Data());
-        namePlotThnMCc      +=  Form("C%s_Frmc_Bin", nameMasterStting.Data());
-        namePlotThnMCb      +=  Form("C%s_Frmb_Bin", nameMasterStting.Data());
-        namePlotThnMCB      +=  Form("C%s_FrmB_Bin", nameMasterStting.Data());
-        namePlotThnLMC      +=  Form("L%s_Trth_Bin", nameMasterStting.Data());
+    TString isDataOrMC = "";
+    if(!fReadMC)isDataOrMC = "Data";
+    else if(fReadMC)isDataOrMC = "MC";
+    
+    
+    if(!fMixing && fCheckCutDist && fRecoTrk){
+        
+        for(Int_t i=2;  i<fNPtBins;  i++){
+            
+            //DPlus related QA
+            TH2F* hDistPtvsd0_DauPion1  = new TH2F(Form("hDistPtvsd0_DauPion1_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "#pi_{1}: d_{0} vs. #it{p}_{T} dist.", 100, 0., 10., 50, 0., 5.);
+            hDistPtvsd0_DauPion1->GetXaxis()->SetTitle("p_{T}^{#pi_{1}} distribution");
+            hDistPtvsd0_DauPion1->GetYaxis()->SetTitle("d_{0}^{#pi_{1}} distribution");
+            hDistPtvsd0_DauPion1->Sumw2();
+            fOutput->Add(hDistPtvsd0_DauPion1);
+            
+            TH2F* hDistPtvsd0_DauKaon  = new TH2F(Form("hDistPtvsd0_DauKaon_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "K: d_{0} vs. #it{p}_{T} dist.", 100, 0., 10., 50, 0., 5.);
+            hDistPtvsd0_DauKaon->GetXaxis()->SetTitle("p_{T}^{K} distribution");
+            hDistPtvsd0_DauKaon->GetYaxis()->SetTitle("d_{0}^{K} distribution");
+            hDistPtvsd0_DauKaon->Sumw2();
+            fOutput->Add(hDistPtvsd0_DauKaon);
+            
+            TH2F* hDistPtvsd0_DauPion2  = new TH2F(Form("hDistPtvsd0_DauPion2_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "#pi_{2}: d_{0} vs. #it{p}_{T} dist.", 100, 0., 10., 50, 0., 5.);
+            hDistPtvsd0_DauPion2->GetXaxis()->SetTitle("p_{T}^{#pion_{2}} distribution");
+            hDistPtvsd0_DauPion2->GetYaxis()->SetTitle("d_{0}^{#pion_{2}} distribution");
+            hDistPtvsd0_DauPion2->Sumw2();
+            fOutput->Add(hDistPtvsd0_DauPion2);
+            
+            TH2F* hDistCosPAvsDCA  = new TH2F(Form("hDistCosPAvsDCA_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "cos(#theta) vs. DCA", 500, 0.5, 1., 100, 0., 0.1);
+            hDistCosPAvsDCA->GetXaxis()->SetTitle("cos(#theta)");
+            hDistCosPAvsDCA->GetYaxis()->SetTitle("DCA");
+            hDistCosPAvsDCA->Sumw2();
+            fOutput->Add(hDistCosPAvsDCA);
+            
+            TH1F* hDistDplusCosPA   = new TH1F(Form("hDistDplusCosPA_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "cos(#theta) dist.", 500, 0.5, 1.0);
+            hDistDplusCosPA->GetXaxis()->SetTitle("cos(#theta)");
+            hDistDplusCosPA->GetYaxis()->SetTitle("#entries");
+            hDistDplusCosPA->Sumw2();
+            fOutput->Add(hDistDplusCosPA);
+            
+            TH1F* hDistDplusCosPAxy   = new TH1F(Form("hDistDplusCosPAxy_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "cos(#theta_{xy}) dist.", 500, 0.5, 1.0);
+            hDistDplusCosPAxy->GetXaxis()->SetTitle("cos(#theta_{xy})");
+            hDistDplusCosPAxy->GetYaxis()->SetTitle("#entries");
+            hDistDplusCosPAxy->Sumw2();
+            fOutput->Add(hDistDplusCosPAxy);
+            
+            TH1F* hDistDplusDCA   = new TH1F(Form("hDistDplusDCA_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "DCA dist.", 100, 0.0, 0.10);
+            hDistDplusDCA->GetXaxis()->SetTitle("DCA");
+            hDistDplusDCA->GetYaxis()->SetTitle("#entries");
+            hDistDplusDCA->Sumw2();
+            fOutput->Add(hDistDplusDCA);
+            
+            TH1F* hDistDplusd0Square   = new TH1F(Form("hDistDplusd0Square_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "d_{0}^{2} dist.", 150, 0.0, 1.5);
+            hDistDplusd0Square->GetXaxis()->SetTitle("d_{0}^{2}");
+            hDistDplusd0Square->GetYaxis()->SetTitle("#entries");
+            hDistDplusd0Square->Sumw2();
+            fOutput->Add(hDistDplusd0Square);
+            
+            TH1F* hDistDplusSigmaVert   = new TH1F(Form("hDistDplusSigmaVert_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "#sigma_{vert} dist.", 500, 0.0, 0.10);
+            hDistDplusSigmaVert->GetXaxis()->SetTitle("#sigma_{vert}");
+            hDistDplusSigmaVert->GetYaxis()->SetTitle("#entries");
+            hDistDplusSigmaVert->Sumw2();
+            fOutput->Add(hDistDplusSigmaVert);
+            
+            TH1F* hDistDplusDecayLen   = new TH1F(Form("hDistDplusDecayLen_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Decay length dist.", 1500, 0.0, 1.5);
+            hDistDplusDecayLen->GetXaxis()->SetTitle("Decay length");
+            hDistDplusDecayLen->GetYaxis()->SetTitle("#entries");
+            hDistDplusDecayLen->Sumw2();
+            fOutput->Add(hDistDplusDecayLen);
+            
+            TH1F* hDistDplusDecayLenxy   = new TH1F(Form("hDistDplusDecayLenxy_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Decay length-XY dist.", 1000, 0.0, 1.5);
+            hDistDplusDecayLenxy->GetXaxis()->SetTitle("Decay length xy");
+            hDistDplusDecayLenxy->GetYaxis()->SetTitle("#entries");
+            hDistDplusDecayLenxy->Sumw2();
+            fOutput->Add(hDistDplusDecayLenxy);
+            
+            TH1F* hDistDplusNormDecayLenxy   = new TH1F(Form("hDistDplusNormDecayLenxy_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Norm:Decay length-XY dist.", 1500, 0.0, 15.);
+            hDistDplusNormDecayLenxy->GetXaxis()->SetTitle("Norm Decay length xy");
+            hDistDplusNormDecayLenxy->GetYaxis()->SetTitle("#entries");
+            hDistDplusNormDecayLenxy->Sumw2();
+            fOutput->Add(hDistDplusNormDecayLenxy);
+            
+            TH1F* hDistDplusDist12   = new TH1F(Form("hDistDplusDist12_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "dist1-2 dist.", 5000, 0.0, 50.0);
+            hDistDplusDist12->GetXaxis()->SetTitle("dist1-2");
+            hDistDplusDist12->GetYaxis()->SetTitle("#entries");
+            hDistDplusDist12->Sumw2();
+            fOutput->Add(hDistDplusDist12);
+            
+            TH1F* hDistDplusDist23   = new TH1F(Form("hDistDplusDist23_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "dist2-3 dist.", 5000, 0.0, 50.0);
+            hDistDplusDist23->GetXaxis()->SetTitle("dist2-3");
+            hDistDplusDist23->GetYaxis()->SetTitle("#entries");
+            hDistDplusDist23->Sumw2();
+            fOutput->Add(hDistDplusDist23);
+            
+            //DPlus QA
+            TH1F* hDistDplusRap   = new TH1F(Form("hDistDplusRap_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Rapidity dist.", 180, -0.9, 0.9);
+            hDistDplusRap->GetXaxis()->SetTitle("Y^{D^{+}}");
+            hDistDplusRap->GetYaxis()->SetTitle("#entries");
+            hDistDplusRap->Sumw2();
+            fOutput->Add(hDistDplusRap);
+            
+            TH1F* hDistDplusEta   = new TH1F(Form("hDistDplusEta_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Eta dist.", 200, -1.0, 1.0);
+            hDistDplusEta->GetXaxis()->SetTitle("#eta^{D^{+}}");
+            hDistDplusEta->GetYaxis()->SetTitle("#entries");
+            hDistDplusEta->Sumw2();
+            fOutput->Add(hDistDplusEta);
+            
+            TH1F* hDistDplusPhi   = new TH1F(Form("hDistDplusPhi_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "#varphi dist.", 360, 0, 2*Pi);
+            hDistDplusPhi->GetXaxis()->SetTitle("#varphi^{D^{+}}");
+            hDistDplusPhi->GetYaxis()->SetTitle("#entries");
+            hDistDplusPhi->Sumw2();
+            fOutput->Add(hDistDplusPhi);
+            
+            TH1F* hDistDplusMass   = new TH1F(Form("hDistDplusMass_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Inv Mass dist.", nbins,fLowmasslimit,fUpmasslimit);
+            hDistDplusMass->GetXaxis()->SetTitle("D^{+} Inv. Mass");
+            hDistDplusMass->GetYaxis()->SetTitle("#entries");
+            hDistDplusMass->Sumw2();
+            fOutput->Add(hDistDplusMass);
+            
+            TH2F* hDistDplusMassVsPhi = new TH2F(Form("hDistDplusMassVsPhi_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Inv Mass vs. #varphi dist.", nbins,fLowmasslimit,fUpmasslimit,64,0,2*Pi);
+            hDistDplusMassVsPhi->GetXaxis()->SetTitle("Invariant Mass (GeV/c^{2})");
+            hDistDplusMassVsPhi->GetYaxis()->SetTitle("D^{+} #varphi");
+            hDistDplusMassVsPhi->Sumw2();
+            fOutput->Add(hDistDplusMassVsPhi);
+            
+            TH2F* hDistDplusMassVsEta = new TH2F(Form("hDistDplusMassVsEta_Bin%d_%s_%s", i, isDataOrMC.Data(), fCutSuffix.Data()), "Inv Mass vs. #eta dist.", nbins,fLowmasslimit,fUpmasslimit,36,-0.9,0.9);
+            hDistDplusMassVsEta->GetXaxis()->SetTitle("Invariant Mass (GeV/c^{2})");
+            hDistDplusMassVsEta->GetYaxis()->SetTitle("D^{+} #eta");
+            hDistDplusMassVsEta->Sumw2();
+            fOutput->Add(hDistDplusMassVsEta);
+            
+            TH2F* hDistDpluswoYCutVsPt = new TH2F(Form("hDistDpluswoYCutVsPt_Bin%d", i), "Rap vs. p_{T} dist.", 240, 0, 24.0, 100, -5., 5.);
+            hDistDpluswoYCutVsPt->GetXaxis()->SetTitle("D^{+} Y");
+            hDistDpluswoYCutVsPt->GetYaxis()->SetTitle("D^{+} p_{T}");
+            hDistDpluswoYCutVsPt->Sumw2();
+            fOutput->Add(hDistDpluswoYCutVsPt);
+            
+        }
     }
     
     
-    for(Int_t i=0;  i<fNPtBins;  i++){
+    if(!fMixing){
+        //Track related QA
+        TH1F* hTrackPhi = new TH1F(Form("AssoTrkPhi_%s",isDataOrMC.Data()), "Associated Trk #varphi Dist", 320, 0, 2*Pi);
+        hTrackPhi->SetMarkerStyle(29);
+        hTrackPhi->SetMarkerSize(0.9);
+        hTrackPhi->GetXaxis()->SetTitle("Track #varphi");
+        hTrackPhi->GetYaxis()->SetTitle("#entries");
+        hTrackPhi->Sumw2();
+        fOutput->Add(hTrackPhi);
         
-        namePlotThnDplus.Resize(24);
-        namePlotThnDplusOrg.Resize(24);
-        namePlotThnDplusMC.Resize(24);
+        TH1F* hTrackEta = new TH1F(Form("AssoTrkEta_%s",isDataOrMC.Data()), "Associated Trk #eta Dist", 800,-1.0, 1.0);
+        hTrackEta->SetMarkerStyle(29);
+        hTrackEta->SetMarkerSize(0.9);
+        hTrackEta->GetXaxis()->SetTitle("Track #eta");
+        hTrackEta->GetYaxis()->SetTitle("#entries");
+        hTrackEta->Sumw2();
+        fOutput->Add(hTrackEta);
         
-        namePlotThnDplus    +=  i;
-        namePlotThnDplusOrg +=  i;
-        namePlotThnDplusMC  +=  i;
+        TH1F* hTrackPt  = new TH1F(Form("AssoTrkPt_%s",isDataOrMC.Data()), "Associated Trk p_{T} Dist", 300,0.0,30);
+        hTrackPt->SetMarkerStyle(29);
+        hTrackPt->SetMarkerSize(0.9);
+        hTrackPt->GetXaxis()->SetTitle("Track p_{T}");
+        hTrackPt->GetYaxis()->SetTitle("#entries");
+        hTrackPt->Sumw2();
+        fOutput->Add(hTrackPt);
+        
+        Double_t MaxTrklets=100;
+        if(fSystem==0)MaxTrklets=150;
+        else MaxTrklets=450;
+        TH2F* h2SPDTrkVsTrkMult = new TH2F("h2SPDTrkVsTrkMult", "Tracklets Vs Track Mult", 150, 0., MaxTrklets, 150, 0., MaxTrklets);
+        h2SPDTrkVsTrkMult->GetXaxis()->SetTitle("SPD tracklets");
+        h2SPDTrkVsTrkMult->GetYaxis()->SetTitle("Trk Multiplicity");
+        h2SPDTrkVsTrkMult->SetDrawOption("SURF1");
+        h2SPDTrkVsTrkMult->Sumw2();
+        fOutput->Add(h2SPDTrkVsTrkMult);
+    }
+    
+    
+    for(Int_t i=2;  i<fNPtBins;  i++){
+        
+        if(!fReadMC){
+            namePlotThnRecoWOeffMass.Resize(25);
+            namePlotThnRecoMass.Resize(25);
+            namePlotThnRecoCorr.Resize(25);
+            namePlotThnRecoCorrL.Resize(25);
+            namePlotThnRecoWOeffMass+=i;
+            namePlotThnRecoMass     +=i;
+            namePlotThnRecoCorr     +=i;
+            namePlotThnRecoCorrL    +=i;
+        }else if(fReadMC & !fMixing){
+            if(fRecoTrk){
+                namePlotThnRecoMassOrgnAll.Resize(25);
+                namePlotThnRecoCorrOrgnc.Resize(25);
+                namePlotThnRecoCorrOrgnb.Resize(25);
+                namePlotThnRecoCorrOrgnX.Resize(25);
+                namePlotThnRecoCorrLOrgnc.Resize(25);
+                namePlotThnRecoCorrLOrgnb.Resize(25);
+                namePlotThnRecoCorrLOrgnX.Resize(25);
+                namePlotThnRecoMassOrgnAll+=i;
+                namePlotThnRecoCorrOrgnc  +=i;
+                namePlotThnRecoCorrOrgnb  +=i;
+                namePlotThnRecoCorrOrgnX  +=i;
+                namePlotThnRecoCorrLOrgnc +=i;
+                namePlotThnRecoCorrLOrgnb +=i;
+                namePlotThnRecoCorrLOrgnX +=i;
+            }
+        }
+        
         
         if(!fMixing){
-            if(fReco){
-                TH1F *hDplusHistowoEff = new TH1F(namePlotThnDplusOrg.Data(), "Reco D^{+} Inv Mass WOEff", nbins,fLowmasslimit,fUpmasslimit);
-                hDplusHistowoEff->Sumw2();
-                fOutput->Add(hDplusHistowoEff);
+            if(!fReadMC){
+                TH1F *hDplusHistoWoEff = new TH1F(namePlotThnRecoWOeffMass.Data(), "Data D^{+} Inv Mass WO Eff", nbins,fLowmasslimit,fUpmasslimit);
+                hDplusHistoWoEff->Sumw2();
+                fOutput->Add(hDplusHistoWoEff);
                 
-                THnSparseI *DplusHisto = new THnSparseI(namePlotThnDplus.Data(), "Reco_Dplus_Mass_Histo; D^{+} Inv Mass;",1,nBinsDinfo,binMinDinfo,binMaxDinfo);
-                DplusHisto->Sumw2();
-                fOutputCorr->Add(DplusHisto);
-            }
-            if(fMontecarlo){
-                THnSparseI *DplusHistoMC = new THnSparseI(namePlotThnDplusMC.Data(), "MCGen_Dplus_Mass_Histo; D^{+} Inv Mass;",1,nBinsDinfo,binMinDinfo,binMaxDinfo);
-                DplusHistoMC->Sumw2();
-                fOutputCorr->Add(DplusHistoMC);
+                THnSparseI *hDplusHistoWEff = new THnSparseI(namePlotThnRecoMass.Data(), "Data_Dplus_Mass_Histo; D^{+} Inv Mass;",1,nBinsDinfo,binMinDinfo,binMaxDinfo);
+                hDplusHistoWEff->Sumw2();
+                fOutputCorr->Add(hDplusHistoWEff);
+            }else if(fReadMC){
+                if(fRecoTrk){
+                    THnSparseI *hDplusHistoWoEffFrmc = new THnSparseI(namePlotThnRecoMassOrgnAll.Data(), "Reco_Dplus_Mass_Histo; D^{+} Inv Mass;",1,nBinsDinfo,binMinDinfo,binMaxDinfo);
+                    hDplusHistoWoEffFrmc->Sumw2();
+                    fOutputCorr->Add(hDplusHistoWoEffFrmc);
+                }
             }
         }
         
-        if(fCheckCutDist){
-            TH1F* hPtDauKaon   = new TH1F(Form("hPtDaughterKaon_Bin%d", i), "Dist. Pt Daughter-Kaon (GeV/c)", 100, 0., 50.);
-            TH1F* hPtDauPion1  = new TH1F(Form("hPtDaughterPion1_Bin%d", i), "Dist. Pt Daughter-Pion1 (GeV/c)", 100, 0., 50.);
-            TH1F* hPtDauPion2  = new TH1F(Form("hPtDaughterPion2_Bin%d", i), "Dist. Pt Daughter-Pion2 (GeV/c)", 100, 0., 50.);
-            TH1F* hd0DauKaon   = new TH1F(Form("hd0DaughterKaon_Bin%d", i), "Dist. d0 Daughter-Kaon (mm)", 100, 0., 50.);
-            TH1F* hd0DauPion1  = new TH1F(Form("hd0DaughterPion1_Bin%d", i), "Dist. d0 Daughter-Pion1 (mm)", 100, 0., 50.);
-            TH1F* hd0DauPion2  = new TH1F(Form("hd0DaughterPion2_Bin%d", i), "Dist. d0 Daughter-Pion2 (mm)", 100, 0., 50.);
-            TH1F* hdist12      = new TH1F(Form("hdist12_Bin%d", i), "Dist. Prim-dist12", 100, 0.0, 50.);
-            TH1F* hdist23      = new TH1F(Form("hdist23_Bin%d", i), "Dist. Prim-dist23", 100, 0.0, 50.);
-            TH1F* hSigmaVert   = new TH1F(Form("hSigmaVert_Bin%d", i), "Dist. Sigma Vtx (mm)", 100, 0., 50.0);
-            TH1F* hCosPA       = new TH1F(Form("hCosPA_Bin%d", i), "Dist. CosTheta PA", 100, 0.0, 1.);
-            TH1F* hCosPAXY     = new TH1F(Form("hCosPAXY_Bin%d", i), "Dist. CosTheta PAXY", 100, 0.0, 1.);
-            TH1F* hNDeacyLen   = new TH1F(Form("hNDeacyLenXY_Bin%d", i), "Dist. Normalized decay length (mm)", 100, -100., 100.);
-            TH1F* hDecayLen    = new TH1F(Form("hDecayLen_Bin%d", i), "Dist. Decay length (mm)", 100, 0., 100.0);
-            TH1F* hDecayLenxy  = new TH1F(Form("hDecayLenXY_Bin%d", i), "Dist. Decay length XY (mm)", 100, 0., 100.);
-            TH1F* hDCA         = new TH1F(Form("hDCA_Bin%d", i), "Dist. Max DCA (mm)", 100, 0.,50.0);
-            TH1F* hd0Square    = new TH1F(Form("hd0square_Bin%d", i), "Dist. d0Square length (mm^{2})", 100, 0., 100.0);
-            TH1F* hDrapidity   = new TH1F(Form("hDrapidty_Bin%d", i), "Dist. D Rapidity", 100, -5., 5.);
-            TH2F* hCosPAvsdPS  = new TH2F(Form("hCosPAvsdPS_Bin%d", i), "Dist. CosPA vs Decay Length", 100, 0., 50.,100, 0.0, 1.0);
-            TH2F* hd0KvsPtK    = new TH2F(Form("hd0DaughterKaonvsPtK_Bin%d", i), "Dist. d0 Daughter-Kaon (mm) vs Pt K (GeV/c)", 100, 0., 50.,100, 0.0, 50.0);
-            TH2F* hd0Pi1vsPtPi1  = new TH2F(Form("hd0DaughterPion1vsPtPi1_Bin%d", i), "Dist. d0 Daughter-Pion1 (mm) vs Pt Pi1 (GeV/c)", 100, 0., 50.,100, 0.0, 50.0);
-            TH2F* hd0Pi2vsPtPi2  = new TH2F(Form("hd0DaughterPion2vsPtPi2_Bin%d", i), "Dist. d0 Daughter-Pion2 (mm) vs Pt Pi2 (GeV/c)", 100, 0., 50.,100, 0.0, 50.0);
-            hPtDauKaon->SetMarkerStyle(29);
-            hPtDauKaon->SetMarkerSize(0.9);
-            hPtDauKaon->Sumw2();
-            hPtDauPion1->SetMarkerStyle(29);
-            hPtDauPion1->SetMarkerSize(0.9);
-            hPtDauPion1->Sumw2();
-            hPtDauPion2->SetMarkerStyle(29);
-            hPtDauPion2->SetMarkerSize(0.9);
-            hPtDauPion2->Sumw2();
-            hd0DauKaon->SetMarkerStyle(29);
-            hd0DauKaon->SetMarkerSize(0.9);
-            hd0DauKaon->Sumw2();
-            hd0DauPion1->SetMarkerStyle(29);
-            hd0DauPion1->SetMarkerSize(0.9);
-            hd0DauPion1->Sumw2();
-            hd0DauPion2->SetMarkerStyle(29);
-            hd0DauPion2->SetMarkerSize(0.9);
-            hd0DauPion2->Sumw2();
-            hdist12->SetMarkerStyle(29);
-            hdist12->SetMarkerSize(0.9);
-            hdist12->Sumw2();
-            hdist23->SetMarkerStyle(29);
-            hdist23->SetMarkerSize(0.9);
-            hdist23->Sumw2();
-            hSigmaVert->SetMarkerStyle(29);
-            hSigmaVert->SetMarkerSize(0.9);
-            hSigmaVert->Sumw2();
-            hCosPA->SetMarkerStyle(29);
-            hCosPA->SetMarkerSize(0.9);
-            hCosPA->Sumw2();
-            hCosPAXY->SetMarkerStyle(29);
-            hCosPAXY->SetMarkerSize(0.9);
-            hCosPAXY->Sumw2();
-            hNDeacyLen->SetMarkerStyle(29);
-            hNDeacyLen->SetMarkerSize(0.9);
-            hNDeacyLen->Sumw2();
-            hDecayLen->SetMarkerStyle(29);
-            hDecayLen->SetMarkerSize(0.9);
-            hDecayLen->Sumw2();
-            hDecayLenxy->SetMarkerStyle(29);
-            hDecayLenxy->SetMarkerSize(0.9);
-            hDecayLenxy->Sumw2();
-            hDCA->SetMarkerStyle(29);
-            hDCA->SetMarkerSize(0.9);
-            hDCA->Sumw2();
-            hd0Square->SetMarkerStyle(29);
-            hd0Square->SetMarkerSize(0.9);
-            hd0Square->Sumw2();
-            hDrapidity->SetMarkerStyle(29);
-            hDrapidity->SetMarkerSize(0.9);
-            hDrapidity->Sumw2();
-            hCosPAvsdPS->SetMarkerStyle(29);
-            hCosPAvsdPS->SetMarkerSize(0.9);
-            hCosPAvsdPS->Sumw2();
-            hd0KvsPtK->SetMarkerStyle(29);
-            hd0KvsPtK->SetMarkerSize(0.9);
-            hd0KvsPtK->Sumw2();
-            hd0Pi1vsPtPi1->SetMarkerStyle(29);
-            hd0Pi1vsPtPi1->SetMarkerSize(0.9);
-            hd0Pi1vsPtPi1->Sumw2();
-            hd0Pi2vsPtPi2->SetMarkerStyle(29);
-            hd0Pi2vsPtPi2->SetMarkerSize(0.9);
-            hd0Pi2vsPtPi2->Sumw2();
-            fOutput->Add(hPtDauKaon);
-            fOutput->Add(hPtDauPion1);
-            fOutput->Add(hPtDauPion2);
-            fOutput->Add(hd0DauKaon);
-            fOutput->Add(hd0DauPion1);
-            fOutput->Add(hd0DauPion2);
-            fOutput->Add(hdist12);
-            fOutput->Add(hdist23);
-            fOutput->Add(hSigmaVert);
-            fOutput->Add(hCosPA);
-            fOutput->Add(hCosPAXY);
-            fOutput->Add(hNDeacyLen);
-            fOutput->Add(hDecayLen);
-            fOutput->Add(hDecayLenxy);
-            fOutput->Add(hDCA);
-            fOutput->Add(hd0Square);
-            fOutput->Add(hDrapidity);
-            fOutput->Add(hCosPAvsdPS);
-            fOutput->Add(hd0KvsPtK);
-            fOutput->Add(hd0Pi1vsPtPi1);
-            fOutput->Add(hd0Pi2vsPtPi2);
-        }
         
-        namePlotThn.Resize(24);
-        namePlotThnL.Resize(24);
-        namePlotThnMC.Resize(24);
-        namePlotThnLMC.Resize(24);
-        namePlotThnMCc.Resize(24);
-        namePlotThnMCb.Resize(24);
-        namePlotThnMCB.Resize(24);
         
-        namePlotThn        +=  i;
-        namePlotThnL       +=  i;
-        namePlotThnMC      +=  i;
-        namePlotThnLMC     +=  i;
-        namePlotThnMCc     +=  i;
-        namePlotThnMCb     +=  i;
-        namePlotThnMCB     +=  i;
-        
-            // Correlations in ThnSparce
-            if(!fMixing) {
-                if(fReco){//D-h
-                    THnSparseI *hPhiCorr = new THnSparseI(namePlotThn.Data(), "Reco_SE_Corr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hPhiCorr->Sumw2();
-                    fOutputCorr->Add(hPhiCorr);
-                    
-                    //D-Leading Particles
-                    THnSparseI *hCorrLead = new THnSparseI(namePlotThnL.Data(), "Reco_SE_LeadingCorr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt Pool;", 5, nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hCorrLead->Sumw2();
-                    fOutputCorr->Add(hCorrLead);
-                }
+        // Correlations in ThnSparce
+        if(!fMixing){
+            if(!fReadMC){
+                THnSparseI *hPhiSEThnCorr = new THnSparseI(namePlotThnRecoCorr.Data(), "Data_SE_Corr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorr->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorr);
                 
-                if(fMontecarlo){
-                    THnSparseI *hPhiCorrMCc = new THnSparseI(namePlotThnMCc.Data(), "MCGen_SE_CorrCharm_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hPhiCorrMCc->Sumw2();
-                    fOutputCorr->Add(hPhiCorrMCc);
-                    
-                    THnSparseI *hPhiCorrMCb = new THnSparseI(namePlotThnMCb.Data(), "MCGen_SE_CorrBeauty_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hPhiCorrMCb->Sumw2();
-                    fOutputCorr->Add(hPhiCorrMCb);
-                    
-                    THnSparseI *hPhiCorrMCB = new THnSparseI(namePlotThnMCB.Data(), "MCGen_SE_CorrBMeson_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hPhiCorrMCB->Sumw2();
-                    fOutputCorr->Add(hPhiCorrMCB);
-                    
-                    THnSparseI *hCorrLeadMC = new THnSparseI(namePlotThnLMC.Data(), "MCGen_SE_LeadingCorr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hCorrLeadMC->Sumw2();
-                    fOutputCorr->Add(hCorrLeadMC);
-                }
+                //D-Leading Particles
+                THnSparseI *hPhiSEThnCorrL = new THnSparseI(namePlotThnRecoCorrL.Data(), "Data_SE_LCorr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;", 5, nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrL->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrL);
+            }else if(fReadMC){
+                THnSparseI *hPhiSEThnCorrFromc = new THnSparseI(namePlotThnRecoCorrOrgnc.Data(), "MCrc_SE_Corr_ThnSparse_Fromc; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrFromc->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrFromc);
+                
+                THnSparseI *hPhiSEThnCorrFromb = new THnSparseI(namePlotThnRecoCorrOrgnb.Data(), "MCrc_SE_Corr_ThnSparse_Fromb; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrFromb->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrFromb);
+                
+                THnSparseI *hPhiSEThnCorrFromX = new THnSparseI(namePlotThnRecoCorrOrgnX.Data(), "MCrc_SE_Corr_ThnSparse_FromX; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrFromX->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrFromX);
+                
+                THnSparseI *hPhiSEThnCorrLFromc = new THnSparseI(namePlotThnRecoCorrLOrgnc.Data(), "MCrc_SE_LCorr_ThnSparse_Fromc; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrLFromc->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrLFromc);
+                
+                THnSparseI *hPhiSEThnCorrLFromb = new THnSparseI(namePlotThnRecoCorrLOrgnb.Data(), "MCrc_SE_LCorr_ThnSparse_Fromb; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrLFromb->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrLFromb);
+                
+                THnSparseI *hPhiSEThnCorrLFromX = new THnSparseI(namePlotThnRecoCorrLOrgnX.Data(), "MCrc_SE_LCorr_ThnSparse_FromX; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+                hPhiSEThnCorrLFromX->Sumw2();
+                fOutputCorr->Add(hPhiSEThnCorrLFromX);
             }
+        }else if(fMixing && fRecoTrk){
+            // Histogram for Event Mixing
+            namePlotThnRecoCorr+="_evMix";
+            namePlotThnRecoCorrL+="_evMix";
             
+            THnSparseI *hPhiMEThnCorr = new THnSparseI(namePlotThnRecoCorr.Data(), "Data_ME_Corr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+            hPhiMEThnCorr->Sumw2();
+            fOutputCorr->Add(hPhiMEThnCorr);
             
+            THnSparseI *hPhiMEThnCorrL = new THnSparseI(namePlotThnRecoCorrL.Data(), "Data_ME_LCorr_ThnSparse; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T; Evt_Pool;", 5, nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
+            hPhiMEThnCorrL->Sumw2();
+            fOutputCorr->Add(hPhiMEThnCorrL);
             
-            if(fMixing){  // Histogram for Event Mixing
-                if(fReco){
-                    namePlotThn+="_evMix";
-                    THnSparseI *hPhiCorrMixing = new THnSparseI(namePlotThn.Data(), "Reco_ME_Corr_ThnSparse_EvMix; D^{+} Inv. Mass; #Delta#phi; #Delta#eta; track p_T;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hPhiCorrMixing->Sumw2();
-                    fOutputCorr->Add(hPhiCorrMixing);
-                    
-                    // Correlations 2D for Leading Particles
-                    namePlotThnL+="_evMix";
-                    THnSparseI *hCorrLead = new THnSparseI(namePlotThnL.Data(), "Reco_ME_LeadingCorr_ThnSparse_EvMix; D^{+} Inv Mass; #Delta#phi; #Delta#eta; track p_T;",5,nVarsBins,nMinimumEdgeBins,nMaximumEdgeBins);
-                    hCorrLead->Sumw2();
-                    fOutputCorr->Add(hCorrLead);
-                }
-            }
-            
-    
+        }
     }
 }
 
+
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDplusCorrelations::CheckOriginPartOfDPlus(TClonesArray* arrayMC, AliAODMCParticle *mcDplus) const {
+    
+    //Checking origin of D+ and retrun the PDF of the mother particle
+    printf("AliAnalysisTaskSEDplusCorrelations::CheckOriginPartOfDPlus() \n");
+    
+    Int_t DpMomPDG = 0;
+    Int_t mcDplusMomLabel = mcDplus->GetMother();
+    Bool_t isFromB=kFALSE, isQuarkFound=kFALSE;
+    
+    while (mcDplusMomLabel > 0){
+        AliAODMCParticle* mcDplusMom = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcDplusMomLabel));
+        if(mcDplusMom){
+            DpMomPDG = TMath::Abs(mcDplusMom->GetPdgCode());
+            if ((DpMomPDG > 500 && DpMomPDG < 600) || (DpMomPDG > 5000 && DpMomPDG < 6000))isFromB=kTRUE;
+            if(DpMomPDG==4 || DpMomPDG==5) isQuarkFound=kTRUE;
+            mcDplusMomLabel = mcDplusMom->GetMother();
+        }else{
+            break;
+        }
+    }
+    
+    if(isQuarkFound) {
+        if(isFromB) return 5;
+        else return 4;
+    }
+    else return -1;
+}
+
+
 //____________________| Terminate
-void AliAnalysisTaskSEDplusCorrelations::Terminate(Option_t */*option*/) {
+void AliAnalysisTaskSEDplusCorrelations::Terminate(Option_t *) {
     
     fOutputCorr = dynamic_cast<TList*> (GetOutputData(2));
     if (!fOutputCorr) {
