@@ -18,6 +18,7 @@ public:
   static void MakeSnapshotFromTxt(const TString fInput,const TString outfile, Bool_t singleKeys); 
   static void LoadAliOCDBtoolkitSetup(Int_t verbose);
   static Bool_t IsEntrySelected(TString entry, TObjArray *selList);
+  static Double_t SetXRDTimeOutAll(Double_t timeOut); //timeout to read OCDB
   //
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion);   
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, AliCDBId &cdbId);

@@ -30,49 +30,50 @@
   b.) on the level of content itself 
   - by by byte comparison dif
   - data member by data member comparison
-
+  
   Implementation assumption:
   All input formats (a .. f) will  be converted to the TMap storages and TList if AliCDBIds 
 
-  Example usage:
-  AliOCDBtoolkit::MakeDiffExampleUseCase();
-  or from the AliOCDBtoolkit.sh in propmpt
-  ocdbMakeTable AliESDs.root ESD OCDBrec.list
-  ocdbMakeTable galice.root MC OCDBsim.list
-
   
-   
-
 
 
   //=============================================================================
-  // Functionality to dump content of  objects in human readable format
+  // Functionality to dump content of  objects in human readable format in root prompt
   //=============================================================================
-  Use case examples 
+  Use case examples: 
   1.) compare content of alignent OCDB files for different yers
   2.) compare ClusterParam for different periods
-  
-  
-   
   =================================================================================================================
-  // 1.)
-  // Compare alignment example:
-  // Compare TPC alignemnt 2013 and 2010
-  //
-  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2013.dump",1,1);
-  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2010.dump",1,1);
+  // 1.) Compare alignment example:
+  //    Compare TPC alignemnt 2013 and 2010
+  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice-ocdb.cern.ch/calibration/data/2013/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2013.dump",1,"docdb");
+  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2010.dump",1,"docdb");
   diff  TPCalign2013.dump TPCalign2010.dump > TPCalign2013_TPCalign2010.diff
-  //
-  //    
   =================================================================================================================
-  //  2.) 
-  // Compare ClusterParam OCDB etry
-  //
-  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Calib/ClusterParam/Run131541_999999999_v2_s0.root","2010_TPC_Calib_ClusterParam_Run131541_999999999_v2_s0.dump",1);
-  AliOCDBtoolkit:: AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Calib/ClusterParam/Run0_999999999_v1_s0.root","2010_TPC_Calib_ClusterParam_Run0_999999999_v1_s0.dump",1);
-  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Calib/ClusterParam/Run0_999999999_v1_s0.root","2013_TPC_Calib_ClusterParam_Run0_999999999_v1_s0.dump",1);
+  //  2.) Compare ClusterParam OCDB etry
+  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB/TPC/Calib/ClusterParam/Run131541_999999999_v2_s0.root","2010_TPC_Calib_ClusterParam_Run131541_999999999_v2_s0.dump",1,"docdb");
+  AliOCDBtoolkit::AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB/TPC/Calib/ClusterParam/Run0_999999999_v1_s0.root","2010_TPC_Calib_ClusterParam_Run0_999999999_v1_s0.dump",1,"docdb");
+  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice-ocdb.cern.ch/calibration/data/2013/OCDB/TPC/Calib/ClusterParam/Run0_999999999_v1_s0.root","2013_TPC_Calib_ClusterParam_Run0_999999999_v1_s0.dump",1,"docdb");
   diff 2010_TPC_Calib_ClusterParam_Run131541_999999999_v2_s0.dump 2010_TPC_Calib_ClusterParam_Run0_999999999_v1_s0.dump
- 
+
+
+  //=============================================================================
+  // Infovke OCDB toolkit functionality from prompt
+  //=============================================================================
+  More examples : AliOCDBtoolkit.sh in shell prompt (see examples in $ALICE_PHYSCS/PWGPP/CalibMacros/AliOCDBtoolkit.sh) 
+  E.g: 
+  1.) source  AliOCDBtoolkit.sh
+      source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh
+  2.) make human readable OCDB tables, CDBids trees, OCDB obejct dumps .... specifying approprate input (ESD,galice.root, log files, snapshot) 
+      (object dump only for selected items - configured by $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.cfg
+      (Examples for logs and snapshots to be rechecked)
+    
+      ocdbMakeTable alien:///alice/data/2010/LHC10d/000126158/pass4/10000126158023.10/AliESDs.root ESD OCDBrec.list   
+               ===> Output: OCDBrec.list, OCDBrec.list.root *.xml and *.print files for selected OCDB entries 
+      ocdbMakeTable alien:///alice/sim/2016/LHC16d1/244983/301/galice.root MC OCDBsim.list
+               ===> Output: OCDBsim.list, OCDBsim.list.root  and *.print files for selected OCDB entries
+      dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.xml
+
 
 */
 
@@ -99,6 +100,7 @@
 #include "TTree.h"
 #include "TMessage.h"
 #include <TGrid.h>
+#include <TEnv.h>
 //
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -440,7 +442,7 @@ void AliOCDBtoolkit::LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList){
     try {
       //      AliCDBEntry * cdbEntry = (AliCDBEntry*) man->Get(*cdbId,kTRUE);
       
-      man->Get(*cdbId,kTRUE);
+      man->Get(*cdbId);
     } catch(const exception &e){
       cerr << "OCDB retrieval failed!" << endl;
       cerr << "Detailes: " << e.what() << endl;
@@ -511,7 +513,10 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
   // OCDB entries are sorted alphabetically
   // e.g:
   // TPC/Calib/RecoParam /hera/alice/jwagner/software/aliroot/AliRoot_TPCdev/OCDB/ TPC/Calib/RecoParam/Run0_999999999_v0_s0.root $SIZE_AliCDBEntry_Object $HASH_AliCDBEntry_Object
-  if (!fgExcludeList)  LoadAliOCDBtoolkitSetup(1);
+  if (!fgExcludeList)  {
+    LoadAliOCDBtoolkitSetup(1);
+  }
+  SetXRDTimeOutAll(-1);
   AliCDBManager * man = AliCDBManager::Instance();
   AliOCDBtoolkit::SetStorage(cdbMap0);  
   TList * cdbList = (TList*) cdbList0;   // sorted array
@@ -570,7 +575,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
       if (iter > 0 && !(IsEntrySelected( cdbName.Data(),fgExcludeList))) {  //get detailed information
 	try {
 	  ::Info("AliOCDBtoolkit::DumpOCDB","%s",cdbName.Data());
-	  cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kTRUE);
+	  cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kFALSE);
 	}catch(const exception &e){
 	  cerr << "OCDB retrieval failed!" << endl;
 	  cerr << "Detailes: " << e.what() << endl;
@@ -604,7 +609,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
 
 	  // XML dump
 	}
-	if (IsEntrySelected( cdbName.Data(),fgPrintOCDBDumpList)){
+	if (IsEntrySelected( cdbName.Data(),fgPrintOCDBDumpList)){  // !!!! code crash in case stdout redirected to the log file
 	  // Print dump
 	  gSystem->mkdir(cdbName.Data(),1);
 	  TString fname=TString::Format("%s/Run%d_%d_v%d_s%d.print", cdbName.Data(), CDBId->GetFirstRun(), CDBId->GetLastRun(),
@@ -1046,5 +1051,25 @@ Bool_t AliOCDBtoolkit::IsEntrySelected(TString entry, TObjArray *selList){
     if (entry.Contains(pregexp)>0) isSelected=kTRUE;
   }
   return isSelected;
+}
+
+
+Double_t AliOCDBtoolkit::SetXRDTimeOutAll(Double_t timeOut ){
+  //
+  // Set timeout for XRD
+  //   Problems oberved accessing small UserInfo objects (waiting for minutes and afterwards failing in some T2,T3)
+  //   normally access aroud 2 seconds
+  //   
+  if (timeOut<0 && gSystem->Getenv("XRDCLIENTMAXWAIT")){
+    timeOut=TString(gSystem->Getenv("XRDCLIENTMAXWAIT")).Atoi();
+  }
+  if (timeOut>0){
+    gEnv->SetValue("XNet.RequestTimeout", timeOut);
+    gEnv->SetValue("XNet.ConnectTimeout", timeOut);
+    gEnv->SetValue("XNet.TransactionTimeout", timeOut);
+    gEnv->SetValue("XNet.FirstConnectMaxCnt", 5);
+    TFile::SetOpenTimeout(timeOut);
+  }
+  return timeOut;
 }
 
