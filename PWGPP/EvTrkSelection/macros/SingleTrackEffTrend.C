@@ -18,6 +18,10 @@ Int_t SingleTrackEffTrend(char *infile="", Int_t runN=117222) {
   Int_t run = runN;
   
     AliCFContainer *LoadSlice1 = CalcSingleTrackEffQAC(infile,"NchFbit0");
+    if(!LoadSlice1) {
+        Printf("ERROR: (SingleTrackEffTrend.C) Directory or container not found. Skipping this file!");
+        return -1;
+    }
     CalcSingleTrackEffQAV(LoadSlice1, "pt", 0.5,  24.0,   2,  0,  "Nch",  kFALSE, runN);
     Float_t AvgpTeff_1_2_Nch_fbit0_type2   = CalcSingleTrackEffQAV(LoadSlice1,  "pt", 1.0,  2.0,   2,  0,  "Nch",  kTRUE, runN); //runN is not used here
     Float_t AvgpTeff_2_6_Nch_fbit0_type2   = CalcSingleTrackEffQAV(LoadSlice1,  "pt", 2.0,  6.0,   2,  0,  "Nch",  kTRUE, runN); //runN is not used here
