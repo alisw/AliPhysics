@@ -1,17 +1,6 @@
-#ifndef ALIANALYSISTASKSEDPLUSCORRELATIONS_H
-#define ALIANALYSISTASKSEDPLUSCORRELATIONS_H
 
-
-/* Copyright(c) 1998-2012, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id: AliAnalysisTaskSEDplusCorrelations.h 58883 2012-10-02 09:41:01Z prino $ */
-
-//*************************************************************************
-// Class AliAnalysisTaskSEDplusCorrelations
-// AliAnalysisTaskSE for Dplus candidates (3Prongs) and hadrons correlations
-// Authors: Jitendra
-
+#ifndef AliAnalysisTaskSEDplusCorrelations_H
+#define AliAnalysisTaskSEDplusCorrelations_H
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -58,13 +47,13 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     virtual void Terminate(Option_t *option);
     
     // Setters.
-    void SetCorrFormPart(Bool_t genMC){fMontecarlo=genMC;}
-    void SetCorrFormTrack(Bool_t reco){fReco=reco;}
+    void SetCorrFormPart(Bool_t genMC){fMCParticle=genMC;}
+    void SetCorrFormTrack(Bool_t reco){fRecoTrk=reco;}
     void SetDataOrMC(Bool_t readMC){fReadMC=readMC;}
     void SetEventMixing(Bool_t mixing){fMixing=mixing;}
-    void SetCorrelator(Int_t number) {fSelect = number;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
+    void SetCorrelator(Int_t number) {fAssoParType = number;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
     void SetSystem(Bool_t system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
-    void SetEtaRagne(Double_t etacorr) {fEtaRange=etacorr;}
+    //void SetEtaRange(Double_t etacorr) {fEtaRange=etacorr;}
     void SetUseBit(Bool_t bits=kTRUE){fUseBit=bits;}
     void SetTCConfig(Bool_t TCcong=kFALSE){fTCconfig=TCcong;}
     void SetTrackEffActive(Bool_t effTrack=kFALSE){fEffTrack=effTrack;}
@@ -73,9 +62,9 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetBinWidth(Float_t BinW){fBinWidth=BinW;}
     void SetMCGevEventType(Bool_t sel1=kFALSE){fMCGenEvType=sel1;}
     void SetPoolByPoolCorr(Bool_t sel2=kFALSE){fPoolByPool=sel2;}
-    void SetCheckCutDist(Bool_t sel3=kFALSE){fCheckCutDist=sel3;}
-    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
-    // void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
+    void SetCheckCutDistandChoice(Bool_t sel3=kFALSE, Bool_t sel4=kFALSE){fCheckCutDist=sel3;fRawCutQA=sel4;}
+    void SetAODMismatchProtection(Int_t sel5=1) {fAODProtection=sel5;}
+    //void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
     
     
     private :
@@ -84,46 +73,47 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     AliAnalysisTaskSEDplusCorrelations& operator=(const AliAnalysisTaskSEDplusCorrelations& source);
     
     //correlation methods
+    void DoDplusCutDistFill(AliAODRecoDecayHF3Prong *d);
     void HistoNomenclature();
-    void HadronCorrelations(AliAODRecoDecayHF3Prong* d,TClonesArray *arrayMC, Bool_t isDplus);
-    void CorrelationNSparsePlots(AliAODRecoDecayHF3Prong *d, AliReducedParticle* track, Int_t iPtBin, Bool_t *origDplus, Double_t weightEff);
-    
-    
-    Int_t fSelect; // Correlation Option between D+ and (1-chargedtracks,2-chargedkaons,3-k0s )
-    TList *fOutput;                  //! user output data
-    TList *fOutputCorr;                  //! user output data
-    Bool_t fReadMC; //  MC Switch
-    Bool_t fReco; // Switch to reco track
-    Bool_t fMontecarlo; // Switch to Montecarlo Gen level
-    Bool_t fMCGenEvType; //Gen MC event type
-    Bool_t fMixing;// switch for event mixing
-    TClonesArray* farrayMC; //! mcarray
+    void HadronCorrelations(AliAODRecoDecayHF3Prong* d, Int_t isDplus);
+    void CorrelationNSparsePlots(AliAODRecoDecayHF3Prong *d, AliReducedParticle* track, Int_t iPtBin, Int_t origDplus, Double_t weightEff);
+    Int_t CheckOriginPartOfDPlus(TClonesArray* arrayMC, AliAODMCParticle *mcDplus) const;
+
+    //variables..
     Bool_t fSystem; // pp or PbPb
-    Bool_t fUseBit; //  filterbit option
-    Bool_t fTCconfig; //  TC Cuts option
-    TH1F *fHistNEvents; //!hist. for No. of events
-    TH1F *fHistNDplus; //!hist. for No. of Dplus
-    AliNormalizationCounter *fCounter; // counter
+    Bool_t fReadMC; //  MC Switch
+    Bool_t fRecoTrk; // Switch to reco track
+    Bool_t fMCParticle; // Switch to Montecarlo Gen level
+    Bool_t fMCGenEvType; //Gen MC event type
+    TClonesArray* farrayMC; //! mcarray
+    Bool_t fMixing;// switch for event mixing
+    Int_t fAssoParType; // Correlation Option between D+ and (1-chargedtracks,2-chargedkaons,3-k0s )
     AliRDHFCutsDplustoKpipi *fDplusCuts;  // Cuts D+
     AliHFAssociatedTrackCuts *fAssoCuts; // cuts for associated track
-    AliHFCorrelator  *fCorrelator; //object for correlations
-    Double_t  fEtaRange;		// cut for Dplus eta to
-    Int_t fNPtBins; // number of event at different Stages
-    Float_t fBinWidth;//width of one bin in output histos
-    Double_t fCentrOrMult; // Multiplicity of Event for D eff
-    Double_t fMultiplicity; //Multiplicity for maps
     Bool_t fEffTrack; //Track eff ON/OFF
     Bool_t fEffDplus; //Dplus eff ON/OFF
-    Int_t fAODProtection;            // flag to activate protection against AOD-dAOD mismatch.
-    
     Int_t  fCentralityEstimator;   // enum from AliRDHFCuts..
     Bool_t    fEvalCentrality; // Switch to ON/OFF the centrality interface
     Double_t  fMinCentrality; // Minimun Centrality Value
     Double_t  fMaxCentrality; // Maximum Centrality Value
+    Double_t fCentrOrMult; // Multiplicity of Event for D eff
+    Bool_t fTCconfig; //  TC Cuts option
+    Bool_t fUseBit; //  filterbit option
+    AliHFCorrelator  *fCorrelator; //object for correlations
+    Int_t fNPtBins; // number of event at different Stages
+    TH1F *fHistNEvents; //!hist. for No. of events
+    TH1F *fHistNDplus; //!hist. for No. of Dplus
+    AliNormalizationCounter *fCounter; // counter
+    Float_t fBinWidth;//width of one bin in output histos
     Bool_t  fPoolByPool;
     Int_t  fWhichPool;
-    Bool_t fCheckCutDist; //flag to check topological cuts distribuition
-    ClassDef(AliAnalysisTaskSEDplusCorrelations,6); // class for D+ meson correlations
+    Bool_t fCheckCutDist;
+    Int_t fAODProtection; //New by Fabio
+    TString fCutSuffix; //suffix for cut
+    Bool_t fRawCutQA; //if D cut before sel
+    TList *fOutput;     //! user output data
+    TList *fOutputCorr; //! user output data
+    ClassDef(AliAnalysisTaskSEDplusCorrelations,7); // class for D+ meson correlations
     
 };
 
