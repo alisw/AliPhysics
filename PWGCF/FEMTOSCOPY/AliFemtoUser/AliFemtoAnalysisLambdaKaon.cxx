@@ -1273,7 +1273,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.minCollectionSize = 1;
 
 
-  tReturnParams.verbose = true;
+  tReturnParams.verbose = false;
   tReturnParams.implementAvgSepCuts = true;
   tReturnParams.writePairKinematics = false;
   tReturnParams.isMCRun = false;
