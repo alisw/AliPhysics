@@ -26,6 +26,9 @@
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
+#pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
+/// * EventCuts
+#pragma link C++ class AliNuclexEventCuts+;
 /// * Nucleipp
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
