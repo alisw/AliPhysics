@@ -60,6 +60,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
+  ,fUseLGForTime(kTRUE)
+  ,fAverageDigitsTime(kFALSE)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
@@ -86,6 +88,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
+  ,fUseLGForTime(kTRUE)
+  ,fAverageDigitsTime(kFALSE)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
@@ -990,57 +994,107 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
   Int_t mulDigit=clu->GetNCells() ;
 
+    //Sluing correction from LHC16eghklmn
+    const Float_t sA =-2.57668e-09; 
+    const Float_t sB = 8.19737e-09;
+    const Float_t sC =-3.16538e-09;
+    const Float_t sD = 1.02124e-09;
+    const Float_t sE =-1.11128e-10;
+    
+  
   Float_t tMax= 0.; //Time at the maximum
   Float_t eMax=0. ;
+  Float_t tMaxHG=0.; //HighGain only
+  Float_t eMaxHG=0.; //High Gain only
+  Bool_t isHGMax=kTRUE;
+  Int_t absIdMax,absIdMaxHG ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
     Bool_t isHG=cells->GetCellHighGain(absId) ;
-    if( elist[iDigit]>eMax){
-      tMax=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
-      eMax=elist[iDigit] ;
+    Float_t ei=elist[iDigit] ;
+    if(isHG && (ei>eMaxHG)){ //only HG channels
+      eMaxHG=ei ;
+      absIdMaxHG=absId ;
+    }
+    if(ei>eMax){
+      eMax=ei ;
+      absIdMax=absId ;
+      isHGMax=isHG ;
     }
   }
-  return tMax ;
-/*  
-   //Try to improve accuracy 
-  //Do not account time of soft cells:
-  //  const Double_t part=0.5 ;
-  Double_t eMin=TMath::Min(0.5,0.2*eMax) ;
-  Float_t wtot = 0.;
-  Double_t t = 0. ;
-  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
-    Int_t absId=clu->GetCellAbsId(iDigit) ;
-    Bool_t isHG=cells->GetCellHighGain(absId) ;
+  if(fUseLGForTime){
+      tMax=CalibrateTOF(cells->GetCellTime(absIdMax),absIdMax,isHGMax) ;
+    //Sluing correction
+    if(eMax>0) 
+       tMax-= sA+sB/eMax+sC/eMax/eMax+sD/eMax/eMax/eMax+sE/eMax/eMax/eMax/eMax ;
+  }
+  else{
+      tMax=CalibrateTOF(cells->GetCellTime(absIdMaxHG),absIdMaxHG,kTRUE) ;
+    //Sluing correction
+    if(eMaxHG>0) 
+       tMax-= sA+sB/eMaxHG+sC/eMaxHG/eMaxHG+sD/eMaxHG/eMaxHG/eMaxHG+sE/eMaxHG/eMaxHG/eMaxHG/eMaxHG ;
+  }
+    
+
+  if(!fAverageDigitsTime){
+     return tMax ;
+  }
+  else{
+    //Try to improve accuracy 
       
-    Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
-    if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
-      continue ;
+    //Parameterization of resolution      
+    const Float_t wA = 1.90098 ;
+    const Float_t wB = 1.25522e+01 ;
+    const Float_t wC = 1.24940e+00 ;
+    const Float_t wD = 8.73154e-01 ;    
     
-    //Remove too soft cells
-    if(elist[iDigit]<eMin)
-      continue ;
+    Double_t eMin=TMath::Max(0.5,0.2*eMax) ;
     
-    if(elist[iDigit]>0){ 
+     //Do not account time of soft cells:
+   if(eMin>eMaxHG)//no digits to improve
+      return tMax ;    
+    Float_t wtot = 0.;
+
+    Double_t t = 0. ;
+    for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+      Int_t absId=clu->GetCellAbsId(iDigit) ;
+      Bool_t isHG=cells->GetCellHighGain(absId) ;
+      Float_t ei =elist[iDigit];
+      if(!isHG)
+          continue; 
+      
+     //Remove too soft cells
+      if(ei<eMin)
+        continue ;
+      
+      Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
+      if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
+        continue ;
+      
+      //Sluing correction
+        ti-= sA+sB/ei+sC/ei/ei+sD/ei/ei/ei+sE/ei/ei/ei/ei ;
+   
+//      if(elist[iDigit]>0){  //already Checked
       //weight = 1./sigma^2
       //Sigma is parameterization of TOF resolution 16.05.2013
-      Double_t wi2=0.;
-      if(isHG)
-	wi2=1./(2.4 + 3.9/elist[iDigit]) ;
-      else
-	wi2=1./(2.4 + 3.9/(0.1*elist[iDigit])) ; //E of LG digit is 1/16 of correcponding HG  
+      Double_t wi2 = wA+wB*TMath::Exp(-ei*wC) + wD/ei/ei  ;
+      if(wi2 <=0.)
+          continue ;
+      wi2=1./wi2/wi2 ;
+
       t+=ti*wi2 ;
       wtot+=wi2 ;
     }
-  }
-  if(wtot>0){
-    t=t/wtot ;
-  }
-  else{
-   t=tMax ; 
-  }    
   
-  return t ;*/
-     
+    if(wtot>0){
+      t=t/wtot ;
+    }
+    else{
+     t=tMax ; 
+    }    
+  
+    return t ;
+  }   
 } 
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG){
