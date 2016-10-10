@@ -5,7 +5,6 @@
 AliAnalysisTaskJetV3* AddTaskJetV3(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "",
-  const char *njets              = "Jets",
   const char *nrho               = "Rho",
   Double_t   jetradius          = 0.2,
   Double_t   jetptcut           = 1,
@@ -24,7 +23,10 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
   Bool_t     addEPweights       = kFALSE,
   Bool_t     baseClassHistos    = kTRUE,
   Float_t    minEta             = -.7,
-  Float_t    maxEta             = .7)
+  Float_t    maxEta             = .7,
+  UInt_t     acceptance         = AliEmcalJet::kTPCfid,
+  AliJetContainer::EJetType_t jetType = AliJetContainer::kChargedJet,
+  AliJetContainer::ERecoScheme_t rscheme = AliJetContainer::pt_scheme)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -48,10 +50,10 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
   //-------------------------------------------------------
 
   TString name(taskname);
-  if (strcmp(njets,"")) {
+  /*if (strcmp(njets,"")) {
     name += "_";
     name += njets;
-  }
+  }*/
   if (strcmp(nrho,"")) {
     name += "_";
     name += nrho;
@@ -80,9 +82,9 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
       clusterCont = jetTask->AddClusterContainer(nclusters);
       jetTask->SetAnalysisType(AliAnalysisTaskJetV3::kFull);
   }
-  AliJetContainer* jetCont = jetTask->AddJetContainer(njets, type, jetradius);
+  AliJetContainer* jetCont = jetTask->AddJetContainer(jetType, AliJetContainer::antikt_algorithm, rscheme, jetradius, acceptance, "Jet");
   if(jetCont) {
-      jetCont->SetName("Jets");
+//      jetCont->SetName("Jets");
       jetCont->SetPercAreaCut(jetareacut);
       jetCont->SetRhoName(nrho);
       if(minEta > -.7 || maxEta < 0.7) {
