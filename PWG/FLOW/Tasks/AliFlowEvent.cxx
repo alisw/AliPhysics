@@ -2191,7 +2191,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  Int_t fNHarm = 2; // note: for now I've only mapped the second harmonic, but using the first index 
                    // it's trivial to add also 3 or 4, on the agenda (first see if this works)
                    //
- TFile* foadb = TFile::Open("alien:////alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+ TFile* foadb = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
  
  if(!foadb){
      AliFatal("OADB V0 calibration file cannot be opened\n");
