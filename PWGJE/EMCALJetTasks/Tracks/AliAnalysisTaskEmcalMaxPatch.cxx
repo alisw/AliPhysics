@@ -204,8 +204,8 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
 
   std::function<void (const AliEMCALTriggerPatchInfo *, const std::string &)> FillHistos = [this](const AliEMCALTriggerPatchInfo * testpatch, const std::string & triggername){
     fHistos->FillTH1(Form("hPatchEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
-    fHistos->FillTH1(Form("hPatchADCMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
-    fHistos->FillTH2(Form("hPatchADCvsEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0., testpatch ? testpatch->GetADCAmp() : 0);
+    fHistos->FillTH1(Form("hPatchADCMax%s", triggername.c_str()), testpatch ? testpatch->GetADCAmp() : 0.);
+    fHistos->FillTH2(Form("hPatchADCvsEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetADCAmp() : 0, testpatch ? testpatch->GetPatchE() : 0.);
   };
 
   FillHistos(maxOfflineEGA, "EGAOffline");
