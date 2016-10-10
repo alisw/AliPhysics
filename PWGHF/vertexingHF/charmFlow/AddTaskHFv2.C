@@ -98,7 +98,7 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user
     suffix+="VZEROC";
   }
   v2Task->SetUseNewQnCorrFw(useNewQnFw);
-  v2Task->SetAODMismatchProtection(AODProtection);
+  v2Task->SetAODMismatchProtection(useAODProtection);
   mgr->AddTask(v2Task);
     
   // Create containers for input/output
