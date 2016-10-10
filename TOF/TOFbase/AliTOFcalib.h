@@ -126,7 +126,7 @@ public:
   Bool_t ReadParOfflineFromCDB(const Char_t *sel, Int_t nrun);
   void WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
   void WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun, TObjArray *arr);
-  AliTOFRecoParam * ReadRecParFromCDB(const Char_t *sel, Int_t nrun, Int_t eventType=0);
+  AliTOFRecoParam * ReadRecParFromCDB(const Char_t *sel, Int_t nrun, Int_t eventType=-1); // -1 means to ask to  AliRecoParam::SuggestRunEventSpecie
   void CreateTreeFromCDB(Int_t minrun, Int_t maxrun);
   void CreateTreeFromFile(Int_t minrun, Int_t maxrun);
   void CreateTreeFromGrid(Int_t minrun, Int_t maxrun);
