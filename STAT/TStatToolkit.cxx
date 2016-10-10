@@ -1085,17 +1085,32 @@ THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const 
 
 TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName){
   //
-  //  Get metadata description
+  //  Get metadata description  // too much sting operations - to be speed up using cahr array arithmetic
   //
   if (!tree) return 0;
-  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  TTree * treeMeta=tree;
+  TString metaName(vartagName);
+  Int_t nDots= metaName.CountChar('.');
+  if (nDots>1){
+    TObjArray * dotArray = metaName.Tokenize(".");
+    for (Int_t iDot=0; iDot<nDots-1; iDot++){
+      if (treeMeta->GetListOfFriends()->FindObject(dotArray->At(iDot)->GetName())){
+	treeMeta=treeMeta->GetFriend((dotArray->At(iDot)->GetName()));
+	metaName.ReplaceAll(TString::Format("%s.",dotArray->At(0)->GetName()),"");
+      }
+    }
+    delete dotArray;    
+  }
+
+
+  THashList * metaData = (THashList*) treeMeta->GetUserInfo()->FindObject("metaTable");
   if (metaData == NULL){  
     metaData=new THashList;
     metaData->SetName("metaTable");
     tree->GetUserInfo()->AddLast(metaData);
     return 0;
   } 
-  TNamed * named = (TNamed*)metaData->FindObject(vartagName);
+  TNamed * named = (TNamed*)metaData->FindObject(metaName.Data());
   return named;
 }
 
