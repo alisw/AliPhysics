@@ -37,6 +37,9 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  TrackLength()                 const {return fTrackLength;}
   Float_t  MassForTracking()        const {return fMassForTracking;}
   Float_t  Chi2TPCConstrainedVsGlobal()  const {return fChi2TPCConstrainedVsGlobal;}
+  Float_t  HelixX()                      const {return fHelixCenter[0];}
+  Float_t  HelixY()                      const {return fHelixCenter[1];}
+  Float_t  HelixR()                      const {return fHelixRadius;}
   
   UShort_t ITSncls()                const;
   UChar_t  ITSclusterMap()          const {return fITSclusterMap;}
@@ -96,6 +99,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fTrackLength;         // track length
   Float_t fMassForTracking;    // mass hypothesis used for tracking
   Float_t fChi2TPCConstrainedVsGlobal;   // AliESDtrack::GetChi2TPCConstrainedVsGlobal()
+  Float_t fHelixCenter[2];      // Helix Center x,y
+  Float_t fHelixRadius;         // Radius of the Helix
   
   // ITS
   UChar_t  fITSclusterMap;      // ITS cluster map
@@ -146,7 +151,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   AliReducedTrackInfo(const AliReducedTrackInfo &c);
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
 
-  ClassDef(AliReducedTrackInfo, 3);
+  ClassDef(AliReducedTrackInfo, 4);
 };
 
 //_______________________________________________________________________________
