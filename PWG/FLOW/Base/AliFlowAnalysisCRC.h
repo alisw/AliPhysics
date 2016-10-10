@@ -766,8 +766,6 @@ public:
  TProfile* GetCRCQnReCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQnReCorr[r][h];};
  void SetCRCQnImCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnImCorr[r][h] = TH;};
  TProfile* GetCRCQnImCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQnImCorr[r][h];};
- void SetCRCPhiHist(TH2D* const TH, Int_t const r, Int_t const c, Int_t const i) {this->fCRCPhiHist[r][c][i] = TH;};
- TH2D* GetCRCPhiHist(Int_t const r, Int_t const c, Int_t const i) const {return this->fCRCPhiHist[r][c][i];};
  
  void SetCRCVZQVecAHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecA[r][c] = TH;};
  TProfile* GetCRCVZQVecAHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecA[r][c];};
@@ -1128,7 +1126,6 @@ private:
  // TH1D *fEtaDistrRefRPs; //!
  // TH2D *fPhiEtaDistrRefRPs; //!
  // TH1D *fPtWeights[2]; //! histogram holding pt weights
- TH2D *fPhiEtaWeights[2]; //!
  
  // 2b.) event weights:
  TString *fMultiplicityWeight; //! event-by-event weights for multiparticle correlations
@@ -1426,6 +1423,8 @@ private:
   const static Int_t fCRCnHar = 3;
   const static Int_t fCRCMaxnRun = 211;
   
+  TH3F *fPhiEtaWeights[fCRCMaxnRun]; //!
+  
   TList *fCRCIntRbRList; //! CRC list of histograms RbR
   TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
   TH1D *fCRCQRe[2][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
@@ -1458,10 +1457,9 @@ private:
  TProfile *fCRCQnIm[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
  TProfile *fCRCQnReCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
  TProfile *fCRCQnImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
- TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
  TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
  TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
- TH2D* fCRCQVecPhiHist[fCRCMaxnRun]; //! phi ditribution POIs
+ TH3F* fCRCQVecPhiHist[fCRCMaxnRun]; //! phi ditribution POIs
  TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
  TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
  TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1469,7 +1467,6 @@ private:
  AliFlowVector fTPCQnRecenter[fCRCnHar];
  
  // temp
- TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
  TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
  TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
@@ -1748,7 +1745,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 22);
+ ClassDef(AliFlowAnalysisCRC, 23);
  
 };
 
