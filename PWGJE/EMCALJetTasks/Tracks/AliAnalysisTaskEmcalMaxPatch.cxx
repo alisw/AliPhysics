@@ -92,12 +92,12 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::IsEventSelected(){
     AliErrorStream() << GetName() << ": Trigger patch container not found but required" << std::endl;
     return false;
   }
-  if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
+  if(!(fInputHandler->IsEventSelected() & fSelectTrigger)) return false;
   if(fTriggerPattern.Length()){
     TString triggerstring = InputEvent()->GetFiredTriggerClasses();
     if(!triggerstring.Contains(fTriggerPattern)) return false;
   }
-  AliDebugStream(3) << GetName() << "Event is an INT7 event" << std::endl;
+  AliDebugStream(3) << GetName() << "Event is selected for the given trigger" << std::endl;
 
   // Generall event quality cuts
   // The vertex cut also contains cuts on the number
@@ -204,8 +204,8 @@ Bool_t AliAnalysisTaskEmcalMaxPatch::Run(){
 
   std::function<void (const AliEMCALTriggerPatchInfo *, const std::string &)> FillHistos = [this](const AliEMCALTriggerPatchInfo * testpatch, const std::string & triggername){
     fHistos->FillTH1(Form("hPatchEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
-    fHistos->FillTH1(Form("hPatchADCMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0.);
-    fHistos->FillTH2(Form("hPatchADCvsEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetPatchE() : 0., testpatch ? testpatch->GetADCAmp() : 0);
+    fHistos->FillTH1(Form("hPatchADCMax%s", triggername.c_str()), testpatch ? testpatch->GetADCAmp() : 0.);
+    fHistos->FillTH2(Form("hPatchADCvsEnergyMax%s", triggername.c_str()), testpatch ? testpatch->GetADCAmp() : 0, testpatch ? testpatch->GetPatchE() : 0.);
   };
 
   FillHistos(maxOfflineEGA, "EGAOffline");

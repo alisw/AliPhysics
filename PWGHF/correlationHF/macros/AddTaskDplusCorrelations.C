@@ -2,9 +2,9 @@
 
 /* $Id: AddTaskDplusCorrelations.C 58712 2012-09-20 08:38:36Z prino $ */
 //AddTask for the Dplus - Hadron (or Kaon/K0) Corelation with same/mixed event
-//Jitendra Kumar (Last updated on 31.01.2016)
-
+//Jitendra Kumar (Last updated on 02.10.2016) //AOD production setting
 AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
+                                                             TString  fSys = "PP",
                                                              Int_t  fOption = 1,
                                                              Bool_t fMixing = kFALSE,
                                                              Bool_t readMC  = kFALSE,
@@ -20,9 +20,10 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              TString fileDplusEff="",
                                                              Bool_t PoolbyPool=kFALSE,
                                                              Bool_t useCentrality = kFALSE,
-			  				     Int_t AODprot=1)
+                                                             Int_t AODproduction=1,
+                                                             Bool_t IncDCutQA=kTRUE,
+                                                             Bool_t IncDCutQABefore=kFALSE)
 {
-    
     
     const Int_t centralityEstimator = 7; // enum from AliRDHFCuts.h
     Double_t etacorr  =  0.9;
@@ -122,7 +123,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetEventMixing(fMixing);
     dpluscorrTask->SetCorrelator(fOption);
     dpluscorrTask->SetDebugLevel(0);
-    dpluscorrTask->SetEtaRagne(etacorr);
+    //dpluscorrTask->SetEtaRagne(etacorr);
     dpluscorrTask->SetCorrFormPart(genMC);
     dpluscorrTask->SetCorrFormTrack(tracks);
     dpluscorrTask->SetDataOrMC(readMC);
@@ -133,13 +134,14 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetSystem(useCentrality); //TRUE means pbpb Or pA
     dpluscorrTask->SetPoolByPoolCorr(PoolbyPool); //TRUE means pbpb Or pA
     if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator);
-    dpluscorrTask->SetCheckCutDist(kTRUE);
-    dpluscorrTask->SetAODMismatchProtection(AODprot);    
+    dpluscorrTask->SetCheckCutDistandChoice(IncDCutQA, IncDCutQABefore);
+    dpluscorrTask->SetAODMismatchProtection(AODproduction);
     
     //7. Create container for input/output
     TString finDirname = "";
-    if(PPstdcuts)finDirname+="PP_Dplus";
-    else if(!PPstdcuts)finDirname+="pPb_Dplus";
+    if(fSys=="pp" || fSys=="PP"|| fSys=="p-p")finDirname+="PP";
+    else if(fSys=="pPb" || fSys=="p-Pb" || fSys=="PPb")finDirname+="pPb";
+    else if(fSys=="PbPb" || fSys=="Pb-Pb" || fSys=="PbPb")finDirname+="PbPb";
     
     if(fOption==1)finDirname+="HadCorr";
     else if(fOption==2)finDirname+="KaonCorr";
@@ -154,7 +156,10 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     if(isDplusEff)finDirname+="_wDkEff_";
     else if(!isDplusEff)finDirname+="_woDkEff_";
     finDirname += suffix.Data();
-    
+
+    if(PPstdcuts)finDirname+="DefCuts";
+    else if(!PPstdcuts)finDirname+="FileCuts";
+
     TString inname             = "cin_";
     TString outBasicname       = "coutBasicPlots_";
     TString outCorrname        = "coutHistos_";
@@ -195,10 +200,6 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     mgr->ConnectOutput(dpluscorrTask,4,coutputCorrDplus4);
     mgr->ConnectOutput(dpluscorrTask,5,coutputCorrDplus5);
     
-    
     return dpluscorrTask;
-    
 }
-
-
 //EOF
