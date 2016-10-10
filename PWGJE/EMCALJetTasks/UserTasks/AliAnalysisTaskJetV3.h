@@ -427,8 +427,8 @@ class AliAnalysisTaskJetV3 : public AliAnalysisTaskEmcalJet {
         Float_t                 fWidthQ[9][2][2];               //! recentering
         Float_t                 fMeanQv3[9][2][2];              //! recentering
         Float_t                 fWidthQv3[9][2][2];             //! recentering
-        TH1*                    fMQ[2][2];                      //! recentering
-        TH1*                    fWQ[2][2];                      //! recentering
+        TH1*                    fMQ[2][2][2];                   //! recentering
+        TH1*                    fWQ[2][2][2];                   //! recentering
         TH1*                    fVZEROgainEqualization;         //! equalization histo
         Float_t                 fVZEROApol;                     //! calibration info per disc
         Float_t                 fVZEROCpol;                     //! calibration info per disc

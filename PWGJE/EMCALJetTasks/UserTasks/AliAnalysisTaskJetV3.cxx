@@ -121,8 +121,10 @@ AliAnalysisTaskJetV3::AliAnalysisTaskJetV3() : AliAnalysisTaskEmcalJet("AliAnaly
                fWidthQ[i][j][k] = 0.;  
                fMeanQv3[i][j][k] = 0.; 
                fWidthQv3[i][j][k] = 0.;
-               fMQ[j][k] = 0;
-               fWQ[j][k] = 0;
+               fMQ[j][k][0] = 0;
+               fWQ[j][k][0] = 0;
+               fMQ[j][k][1] = 0;
+               fWQ[j][k][1] = 0;
            }
        }
    }
@@ -193,8 +195,10 @@ AliAnalysisTaskJetV3::AliAnalysisTaskJetV3(const char* name, runModeType type, B
                fWidthQ[i][j][k] = 0.;  
                fMeanQv3[i][j][k] = 0.; 
                fWidthQv3[i][j][k] = 0.;
-               fMQ[j][k] = 0;
-               fWQ[j][k] = 0;
+               fMQ[j][k][0] = 0;
+               fWQ[j][k][0] = 0;
+               fMQ[j][k][1] = 0;
+               fWQ[j][k][1] = 0;
            }
        }
    }
@@ -790,8 +794,8 @@ void AliAnalysisTaskJetV3::UserCreateOutputObjects()
     fHistQyV0c = BookTH2F("fHistQyV0c", "Q_{y} V0C", "centrality class", 100, -10, 10, 10, -.5, 9.5);
     fHistMultVsCellBC = BookTH2F("fHistMultVsCellBC", "channel", "multiplicty", 64, -.5, 63.5, 100, 0, 1000);
     fHistMultVsCell = BookTH2F("fHistMultVsCell", "channel", "multiplicty", 64, -.5, 63.5, 100, 0, 1000);
-    fHistEPBC = BookTH1F("fHistEPBC", "#Psi_{EP, 2}, uncalibrated", 100, -0.5*TMath::Pi(), 0.5*TMath::Pi());
-    fHistEP = BookTH1F("fHistEP", "#Psi_{EP, 2}, calibrated", 100, -0.5*TMath::Pi(), 0.5*TMath::Pi());
+    fHistEPBC = BookTH1F("fHistEPBC", "#Psi_{EP, 3}, uncalibrated", 100, -0.34*TMath::Pi(), 0.34*TMath::Pi());
+    fHistEP = BookTH1F("fHistEP", "#Psi_{EP, 3}, calibrated", 100, -0.34*TMath::Pi(), 0.34*TMath::Pi());
 
 
 
@@ -1124,10 +1128,13 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
             return;     // paranoid return
         } break;
         case kPbPb15o : {
+            Int_t VZEROcentralityBin(GetVZEROCentralityBin());
             Double_t Qxan = 0, Qyan = 0;
             Double_t Qxcn = 0, Qycn = 0;
             Double_t Qxa3 = 0, Qya3 = 0;
             Double_t Qxc3 = 0, Qyc3 = 0;
+            Double_t Qxa3_raw = 0, Qya3_raw = 0;
+            Double_t Qxc3_raw = 0, Qyc3_raw = 0;
             Double_t sumMa = 0, sumMc = 0;
             AliVVZERO* aodV0 = (InputEvent())->GetVZEROData();
             for (Int_t iV0 = 0; iV0 < 64; iV0++) {
@@ -1143,8 +1150,14 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
                     Qxcn += TMath::Cos(2.*phiV0) * multCorC;
                     Qycn += TMath::Sin(2.*phiV0) * multCorC;
                     Qxc3 += TMath::Cos(3.*phiV0) * multCorC;
+                    Qxc3_raw += TMath::Cos(3.*phiV0) * multv0;
                     Qyc3 += TMath::Sin(3.*phiV0) * multCorC;
+                    Qyc3_raw += TMath::Sin(3.*phiV0) * multv0;
                     sumMc = sumMc + multCorC;
+                    if(fFillQAHistograms) {
+                        fHistMultVsCellBC->Fill(iV0, multv0);
+                        fHistMultVsCell->Fill(iV0, multCorC);
+                    }
                 } else {
                     Double_t multCorA = -10;
                     if (iV0 >= 32 && iV0 < 40) multCorA = multv0/fVZEROgainEqualization->GetBinContent(iV0+1)*fVZEROgainEqualization->GetBinContent(33);
@@ -1155,24 +1168,43 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneVZERO(Double_t vzero[2][2]) const
                     Qxan += TMath::Cos(2.*phiV0) * multCorA;
                     Qyan += TMath::Sin(2.*phiV0) * multCorA;
                     Qxa3 += TMath::Cos(3.*phiV0) * multCorA;
+                    Qxa3_raw += TMath::Cos(3.*phiV0) * multv0;
                     Qya3 += TMath::Sin(3.*phiV0) * multCorA;
+                    Qya3_raw += TMath::Sin(3.*phiV0) * multv0;
                     sumMa = sumMa + multCorA;
+                    if(fFillQAHistograms) {
+                        fHistMultVsCellBC->Fill(iV0, multv0);
+                        fHistMultVsCell->Fill(iV0, multCorA);
+                    }
                 }
             }
             if (sumMa <=0 || sumMc <= 0) return;
             Double_t iCentSPD = GetCentrality("CL1");
-            Double_t QyanCor = (Qyan - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
-            Double_t QycnCor = (Qycn - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
-            Double_t QxanCor = (Qxan - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
-            Double_t QxcnCor = (Qxcn - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            Double_t QyanCor = (Qyan - fMQ[1][0][0]->GetBinContent(iCentSPD+1))/fWQ[1][0][0]->GetBinContent(iCentSPD+1);
+            Double_t QycnCor = (Qycn - fMQ[1][1][0]->GetBinContent(iCentSPD+1))/fWQ[1][1][0]->GetBinContent(iCentSPD+1);
+            Double_t QxanCor = (Qxan - fMQ[0][0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0][0]->GetBinContent(iCentSPD+1);
+            Double_t QxcnCor = (Qxcn - fMQ[0][1][0]->GetBinContent(iCentSPD+1))/fWQ[0][1][0]->GetBinContent(iCentSPD+1);
             vzero[0][0] = .5*TMath::ATan2(QyanCor,QxanCor);
             vzero[1][0] = .5*TMath::ATan2(QycnCor,QxcnCor);
-            QyanCor = (Qya3 - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
-            QycnCor = (Qyc3 - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
-            QxanCor = (Qxa3 - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
-            QxcnCor = (Qxc3 - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            QyanCor = (Qya3 - fMQ[1][0][1]->GetBinContent(iCentSPD+1))/fWQ[1][0][1]->GetBinContent(iCentSPD+1);
+            QycnCor = (Qyc3 - fMQ[1][1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1][1]->GetBinContent(iCentSPD+1);
+            QxanCor = (Qxa3 - fMQ[0][0][1]->GetBinContent(iCentSPD+1))/fWQ[0][0][1]->GetBinContent(iCentSPD+1);
+            QxcnCor = (Qxc3 - fMQ[0][1][1]->GetBinContent(iCentSPD+1))/fWQ[0][1][1]->GetBinContent(iCentSPD+1);
             vzero[0][1] = (1./3.)*TMath::ATan2(QyanCor,QxanCor);
             vzero[1][1] = (1./3.)*TMath::ATan2(QycnCor,QxcnCor);
+            if(fFillQAHistograms) {
+                fHistQxV0aBC->Fill(Qxa3_raw, VZEROcentralityBin);
+                fHistQyV0aBC->Fill(Qya3_raw, VZEROcentralityBin); 
+                fHistQxV0cBC->Fill(Qxc3_raw, VZEROcentralityBin); 
+                fHistQyV0cBC->Fill(Qyc3_raw, VZEROcentralityBin); 
+                fHistQxV0a->Fill(QxanCor, VZEROcentralityBin);   
+                fHistQyV0a->Fill(QyanCor, VZEROcentralityBin);   
+                fHistQxV0c->Fill(QxcnCor, VZEROcentralityBin);   
+                fHistQyV0c->Fill(QycnCor, VZEROcentralityBin);   
+                fHistEPBC->Fill((1./3.)*TMath::ATan2(Qyc3_raw+Qya3_raw,Qxc3_raw+Qxa3_raw));
+                fHistEP->Fill((1./3.)*TMath::ATan2(QycnCor+QyanCor,QxcnCor+QxanCor));
+;
+            }
         } break;
         default: {
             // by default use the ep from the event header (make sure EP selection task is enabeled!)
@@ -1243,15 +1275,15 @@ void AliAnalysisTaskJetV3::CalculateEventPlaneCombinedVZERO(Double_t* comb) cons
             }
             if (sumMa <=0 || sumMc <= 0) return;
             Double_t iCentSPD = GetCentrality("CL1");
-            Double_t QyanCor = (Qyan - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
-            Double_t QycnCor = (Qycn - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
-            Double_t QxanCor = (Qxan - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
-            Double_t QxcnCor = (Qxcn - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            Double_t QyanCor = (Qyan - fMQ[1][0][0]->GetBinContent(iCentSPD+1))/fWQ[1][0][0]->GetBinContent(iCentSPD+1);
+            Double_t QycnCor = (Qycn - fMQ[1][1][0]->GetBinContent(iCentSPD+1))/fWQ[1][1][0]->GetBinContent(iCentSPD+1);
+            Double_t QxanCor = (Qxan - fMQ[0][0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0][0]->GetBinContent(iCentSPD+1);
+            Double_t QxcnCor = (Qxcn - fMQ[0][1][0]->GetBinContent(iCentSPD+1))/fWQ[0][1][0]->GetBinContent(iCentSPD+1);
             comb[0] = .5*TMath::ATan2(QyanCor+QycnCor,QxanCor+QxcnCor);
-            QyanCor = (Qya3 - fMQ[1][0]->GetBinContent(iCentSPD+1))/fWQ[1][0]->GetBinContent(iCentSPD+1);
-            QycnCor = (Qyc3 - fMQ[1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1]->GetBinContent(iCentSPD+1);
-            QxanCor = (Qxa3 - fMQ[0][0]->GetBinContent(iCentSPD+1))/fWQ[0][0]->GetBinContent(iCentSPD+1);
-            QxcnCor = (Qxc3 - fMQ[0][1]->GetBinContent(iCentSPD+1))/fWQ[0][1]->GetBinContent(iCentSPD+1);
+            QyanCor = (Qya3 - fMQ[1][0][1]->GetBinContent(iCentSPD+1))/fWQ[1][0][1]->GetBinContent(iCentSPD+1);
+            QycnCor = (Qyc3 - fMQ[1][1][1]->GetBinContent(iCentSPD+1))/fWQ[1][1][1]->GetBinContent(iCentSPD+1);
+            QxanCor = (Qxa3 - fMQ[0][0][1]->GetBinContent(iCentSPD+1))/fWQ[0][0][1]->GetBinContent(iCentSPD+1);
+            QxcnCor = (Qxc3 - fMQ[0][1][1]->GetBinContent(iCentSPD+1))/fWQ[0][1][1]->GetBinContent(iCentSPD+1);
             comb[1] = (1./3.)*TMath::ATan2(QyanCor+QycnCor,QxanCor+QxcnCor);
         } break;
         default : {
@@ -3171,168 +3203,88 @@ void AliAnalysisTaskJetV3::ReadVZEROCalibration2015o() {
 	return;
     }
 
-    Int_t fNHarm = 2;
     AliOADBContainer* cont = (AliOADBContainer*) fOADB->Get("hMultV0BefCorPfpx");
     fVZEROgainEqualization= ((TH1D*) cont->GetObject(fRunNumber));
 
+    for(Int_t i(0); i < 2; i++) {
+        Int_t fNHarm = i+2;
 
-    AliOADBContainer* contQxnam = 0;
-    if (fNHarm == 2.)
-       contQxnam = (AliOADBContainer*) fOADB->Get("fqxa2m");
-    else if (fNHarm == 3.)
-        contQxnam = (AliOADBContainer*) fOADB->Get("fqxa3m");
-    else if (fNHarm == 4.)
-        contQxnam = (AliOADBContainer*) fOADB->Get("fqxa4m");
-    
-    if(!contQxnam){
-        printf("OADB object fqyanm is not available in the file\n");
-        return;
-    }
-    if(!(contQxnam->GetObject(fRunNumber))){
-        printf("OADB object fqyanm is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fMQ[0][0] = ((TH1D*) contQxnam->GetObject(fRunNumber));
+        AliOADBContainer* contQxnam = 0;
+        if (fNHarm == 2)       contQxnam = (AliOADBContainer*) fOADB->Get("fqxa2m");
+        else if (fNHarm == 3)  contQxnam = (AliOADBContainer*) fOADB->Get("fqxa3m");
+        if(!contQxnam || !(contQxnam->GetObject(fRunNumber))) {
+            printf("OADB object fqyanm is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fMQ[0][0][i] = ((TH1D*) contQxnam->GetObject(fRunNumber));
 
-
-
-    AliOADBContainer* contQynam = 0;
-    if (fNHarm == 2.)
-       contQynam = (AliOADBContainer*) fOADB->Get("fqya2m");
-    else if (fNHarm == 3.)
-        contQynam = (AliOADBContainer*) fOADB->Get("fqya3m");
-    else if (fNHarm == 4.)
-        contQynam = (AliOADBContainer*) fOADB->Get("fqya4m");
-    
-    if(!contQynam){
-        printf("OADB object fqyanm is not available in the file\n");
-        return;
+        AliOADBContainer* contQynam = 0;
+        if (fNHarm == 2)       contQynam = (AliOADBContainer*) fOADB->Get("fqya2m");
+        else if (fNHarm == 3)  contQynam = (AliOADBContainer*) fOADB->Get("fqya3m");
+        if(!contQynam || !(contQynam->GetObject(fRunNumber))) {
+            printf("OADB object fqyanm is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fMQ[1][0][i] = ((TH1D*) contQynam->GetObject(fRunNumber));
+        
+        AliOADBContainer* contQxnas = 0;
+        if (fNHarm == 2)       contQxnas = (AliOADBContainer*) fOADB->Get("fqxa2s");
+        else if (fNHarm == 3)  contQxnas = (AliOADBContainer*) fOADB->Get("fqxa3s");
+        
+        if(!contQxnas || !(contQxnas->GetObject(fRunNumber))) {
+            printf("OADB object fqxans is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fWQ[0][0][i] = ((TH1D*) contQxnas->GetObject(fRunNumber));
+        
+        AliOADBContainer* contQynas = 0;
+        if (fNHarm == 2)       contQynas = (AliOADBContainer*) fOADB->Get("fqya2s");
+        else if (fNHarm == 3)  contQynas = (AliOADBContainer*) fOADB->Get("fqya3s");
+        
+        if(!contQynas || !(contQynas->GetObject(fRunNumber))){
+            printf("OADB object fqyans is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fWQ[1][0][i] = ((TH1D*) contQynas->GetObject(fRunNumber));
+        
+        AliOADBContainer* contQxncm = 0;
+        if (fNHarm == 2)       contQxncm = (AliOADBContainer*) fOADB->Get("fqxc2m");
+        else if (fNHarm == 3)  contQxncm = (AliOADBContainer*) fOADB->Get("fqxc3m");
+        
+        if(!contQxncm || !(contQxncm->GetObject(fRunNumber))) {
+            printf("OADB object fqxcnm is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fMQ[0][1][i] = ((TH1D*) contQxncm->GetObject(fRunNumber));
+        
+        AliOADBContainer* contQyncm = 0;
+        if (fNHarm == 2)       contQyncm = (AliOADBContainer*) fOADB->Get("fqyc2m");
+        else if (fNHarm == 3)  contQyncm = (AliOADBContainer*) fOADB->Get("fqyc3m");
+        if(!contQyncm || !(contQyncm->GetObject(fRunNumber))) {
+            printf("OADB object fqyc2m is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fMQ[1][1][i] = ((TH1D*) contQyncm->GetObject(fRunNumber));
+        
+        AliOADBContainer* contQxncs = 0;
+        if (fNHarm == 2)        contQxncs = (AliOADBContainer*) fOADB->Get("fqxc2s");
+        else if (fNHarm == 3)   contQxncs = (AliOADBContainer*) fOADB->Get("fqxc3s");
+        if(!contQxncs || !(contQxncs->GetObject(fRunNumber))) {
+            printf("OADB object fqxc2s is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fWQ[0][1][i] = ((TH1D*) contQxncs->GetObject(fRunNumber));
+        
+        AliOADBContainer* contQyncs = 0;
+        if (fNHarm == 2)        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc2s");
+        else if (fNHarm == 3)   contQyncs = (AliOADBContainer*) fOADB->Get("fqyc3s");
+        if(!contQyncs || !(contQyncs->GetObject(fRunNumber))){
+            printf("OADB object fqycns is not available for run %i\n", fRunNumber);
+            return;
+        }
+        fWQ[1][1][i] = ((TH1D*) contQyncs->GetObject(fRunNumber));
     }
-    if(!(contQynam->GetObject(fRunNumber))){
-        printf("OADB object fqyanm is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fMQ[1][0] = ((TH1D*) contQynam->GetObject(fRunNumber));
-    
-    
-    
-    AliOADBContainer* contQxnas = 0;
-    if (fNHarm == 2.)
-        contQxnas = (AliOADBContainer*) fOADB->Get("fqxa2s");
-    //else if (fNHarm == 3.)
-    else
-        contQxnas = (AliOADBContainer*) fOADB->Get("fqxa3s");
-    
-    if(!contQxnas){
-        printf("OADB object fqxans is not available in the file\n");
-        return;
-    }
-    if(!(contQxnas->GetObject(fRunNumber))){
-        printf("OADB object fqxans is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fWQ[0][0] = ((TH1D*) contQxnas->GetObject(fRunNumber));
-    
-    
-    
-    AliOADBContainer* contQynas = 0;
-    if (fNHarm == 2.)
-        contQynas = (AliOADBContainer*) fOADB->Get("fqya2s");
-    else if (fNHarm == 3.)
-        contQynas = (AliOADBContainer*) fOADB->Get("fqya3s");
-    else if (fNHarm == 4.)
-        contQynas = (AliOADBContainer*) fOADB->Get("fqya4s");
-    
-    if(!contQynas){
-        printf("OADB object fqyans is not available in the file\n");
-        return;
-    }
-    if(!(contQynas->GetObject(fRunNumber))){
-        printf("OADB object fqyans is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fWQ[1][0] = ((TH1D*) contQynas->GetObject(fRunNumber));
-    
-    
-    
-    AliOADBContainer* contQxncm = 0;
-    if (fNHarm == 2.)
-        contQxncm = (AliOADBContainer*) fOADB->Get("fqxc2m");
-    //else if (fNHarm == 3.)
-    else
-        contQxncm = (AliOADBContainer*) fOADB->Get("fqxc3m");
-    
-    if(!contQxncm){
-        printf("OADB object fqxcnm is not available in the file\n");
-        return;
-    }
-    if(!(contQxncm->GetObject(fRunNumber))){
-        printf("OADB object fqxcnm is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fMQ[0][1] = ((TH1D*) contQxncm->GetObject(fRunNumber));
-    
-    
-    
-    AliOADBContainer* contQyncm = 0;
-    if (fNHarm == 2.)
-        contQyncm = (AliOADBContainer*) fOADB->Get("fqyc2m");
-    else if (fNHarm == 3.)
-        contQyncm = (AliOADBContainer*) fOADB->Get("fqyc3m");
-    else if (fNHarm == 4.)
-        contQyncm = (AliOADBContainer*) fOADB->Get("fqyc4m");
-    
-    if(!contQyncm){
-        printf("OADB object fqyc2m is not available in the file\n");
-        return;
-    }
-    if(!(contQyncm->GetObject(fRunNumber))){
-        printf("OADB object fqyc2m is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fMQ[1][1] = ((TH1D*) contQyncm->GetObject(fRunNumber));
-    
-
-
-    AliOADBContainer* contQxncs = 0;
-    if (fNHarm == 2.)
-        contQxncs = (AliOADBContainer*) fOADB->Get("fqxc2s");
-    //else if (fNHarm == 3.)
-    else
-        contQxncs = (AliOADBContainer*) fOADB->Get("fqxc3s");
-    
-    if(!contQxncs){
-        printf("OADB object fqxc2s is not available in the file\n");
-        return;
-    }
-    if(!(contQxncs->GetObject(fRunNumber))){
-        printf("OADB object fqxc2s is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fWQ[0][1] = ((TH1D*) contQxncs->GetObject(fRunNumber));
-    
-    
-    
-    AliOADBContainer* contQyncs = 0;
-    if (fNHarm == 2.)
-        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc2s");
-    else if (fNHarm == 3.)
-        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc3s");
-    else if (fNHarm == 4.)
-        contQyncs = (AliOADBContainer*) fOADB->Get("fqyc4s");
-    
-    if(!contQyncs){
-        printf("OADB object fqycnm is not available in the file\n");
-        return;
-    }
-    if(!(contQyncs->GetObject(fRunNumber))){
-        printf("OADB object fqycns is not available for run %i\n", fRunNumber);
-        return;
-    }
-    fWQ[1][1] = ((TH1D*) contQyncs->GetObject(fRunNumber));
-
-
-}
+}    
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskJetV3::GetVZEROCentralityBin() const
 {
