@@ -341,7 +341,12 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       }
       Int_t thetaAbsBin = ( thetaAbsEndDeg < 3. ) ? kThetaAbs23 : kThetaAbs310;
 
-      if ( fUseMCKineForRecoTracks && istep == kStepReconstructed && track->GetLabel() >= 0 ) track = MCEvent()->GetTrack(track->GetLabel());
+      AliVParticle* recoTrack = 0x0;
+      if ( fUseMCKineForRecoTracks && istep == kStepReconstructed && track->GetLabel() >= 0 ) {
+        // Switch to the matching MC track in order to use its kinematic parameters
+        recoTrack = track;
+        track = MCEvent()->GetTrack(track->GetLabel());
+      }
 
       containerInput[kHvarPt]         = track->Pt();
       containerInput[kHvarEta]        = track->Eta();
@@ -350,6 +355,9 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       containerInput[kHvarCharge]     = track->Charge()/3.;
       containerInput[kHvarThetaAbs]   = (Double_t)thetaAbsBin;
       containerInput[kHvarMotherType] = (Double_t)trackSources[itrack];
+
+      // Switch back to the reconstructed track (to correctly fill the information for different trigger classes)
+      if ( recoTrack ) track = recoTrack;
       
       for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
         TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
