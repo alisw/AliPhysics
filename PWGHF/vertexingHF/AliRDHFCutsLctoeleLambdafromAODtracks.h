@@ -140,6 +140,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF* GetPidPion() const {return fPidObjPion;}
 	void GetSigmaElectronTPCRange(Double_t &a,Double_t &b){a=fSigmaElectronTPCMin;b=fSigmaElectronTPCMax;}
 	void GetSigmaElectronTOFRange(Double_t &a,Double_t &b){a=fSigmaElectronTOFMin;b=fSigmaElectronTOFMax;}
+	void GetSigmaElectronITSRange(Double_t &a,Double_t &b){a=fSigmaElectronITSMin;b=fSigmaElectronITSMax;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b,Double_t &c){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;c=fSigmaElectronTPCPtDepPar2;}
 	Double_t GetConversionMassMax(){return fConversionMassMax;}
@@ -153,6 +154,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	void SetExcludenSigmaKaonTPC(Double_t a){fExcludenSigmaKaonTPC=a;}
 	void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
 	void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
+	void SetSigmaElectronITSRange(Double_t a,Double_t b){fSigmaElectronITSMin=a;fSigmaElectronITSMax=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
 	void SetConversionMassMax(Double_t a){fConversionMassMax=a;}
@@ -224,19 +226,21 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fExcludenSigmaPionTPC; /// nSigma to exclude for pion band
 	Double_t fExcludenSigmaProtonTPC; /// nSigma to exclude for proton band
 	Double_t fExcludenSigmaKaonTPC; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTPCMin;  /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCMin;  /// nSigma to select electron band
 	Double_t fSigmaElectronTPCPtDepPar0; /// nSigma electron lower limit (par0)
 	Double_t fSigmaElectronTPCPtDepPar1; /// nSigma electron lower limit (par1)
 	Double_t fSigmaElectronTPCPtDepPar2; /// nSigma electron lower limit (par2)
-	Double_t fSigmaElectronTPCMax; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCMax; /// nSigma to electron band
+	Double_t fSigmaElectronTOFMin; /// nSigma to electron band
+	Double_t fSigmaElectronTOFMax; /// nSigma to electron band
+	Double_t fSigmaElectronITSMin; /// nSigma to select electron band
+	Double_t fSigmaElectronITSMax; /// nSigma to select electron band
 
 	Double_t fConversionMassMax; /// Conversion mass
 	Double_t fEleLambdaMassMax; /// e-L mass max
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,11);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,12);
   /// \endcond
 };
 
