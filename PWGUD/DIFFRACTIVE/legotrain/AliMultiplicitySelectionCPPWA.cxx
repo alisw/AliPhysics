@@ -319,6 +319,7 @@ Int_t AliMultiplicitySelectionCPPWA::GetNumberOfITSTPCtracks(AliESDEvent *esd, T
 		if(!AcceptTrack(tr, kTRUE))
 			return -3;
 	}
+	if (isSave) hMult[4]->Fill(NtracksSel);
 
 	const AliMultiplicity *mult = esd->GetMultiplicity();
 

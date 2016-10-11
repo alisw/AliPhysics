@@ -259,6 +259,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 		if (i < 6) {
 			hMultNG_Test[i] = 0x0;
 		}
+		if (i < 3) {
+			hMult_Ref[i] = 0x0;
+		}
 	}
 	for (Int_t i = 0; i < 14; i++) {
 		if (i < 11) fRunVsDG[i] = 0x0;
@@ -370,6 +373,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		if (i < 6) {
 			hMultNG_Test[i] = 0x0;
 		}
+		if (i < 3) {
+			hMult_Ref[i] = 0x0;
+		}
 	}
 	for (Int_t i = 0; i < 14; i++) {
 		if (i < 11) fRunVsDG[i] = 0x0;
@@ -445,7 +451,8 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 			if (fV0Time[i]) delete fV0Time[i];
 			if (fADTime[i]) delete fADTime[i];
 		}
-		if (i < 5) delete hMultNG_Test[i];
+		if (i < 5) if (hMultNG_Test[i]) delete hMultNG_Test[i];
+		if (i < 3) if (hMult_Ref[i]) delete hMult_Ref[i];
 		
 	}
 	for (Int_t i = 0; i < 12; i++) {
@@ -810,6 +817,12 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 			fList->Add(hMultNG_Test[i]);
 		}
 	}
+	for (Int_t i = 0; i < 3; i++) {
+		if (!hMult_Ref[i]) {
+			hMult_Ref[i] = new TH1D(Form("hMult_Ref_%d",i),"",200,0,200);
+			fList->Add(hMult_Ref[i]);
+		}
+	}
 
 	// Track Cuts
 	if (!fIsRun2) {
@@ -1068,6 +1081,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fRunVsDG[i]->Fill(fRunNumber);
 			}
 		}
+		hMult_Ref[0]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC, 3));
+		hMult_Ref[1]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSSA, 3));
+		hMult_Ref[2]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTracklets, 3));
 	}
 	if (fIsMC) {
 		FillPassMCInfo(fDG_Det[0], fDG_Det[5]);
