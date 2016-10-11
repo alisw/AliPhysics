@@ -613,9 +613,8 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
     dca_dp = trackD->GetDCA(trackP,bz,xthiss,xpp);
 
     fHistDCAdeupro->Fill(dca_dp);
-    if(fTriangularDCAtracks){
-      if(dca_dp > fDCAdp) continue;
-    }
+
+    if(dca_dp > fDCAdp) continue;
 
 
     for(Int_t s=0; s<arrPi.GetSize(); s++ ){ // candidate pion loop cpion.size()
@@ -653,7 +652,7 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
         if(dca_dpi > fDCAdpi) continue;
         if(dca_ppi > fDCApip) continue;
       }
-      
+
       fHistDCApiondeu->Fill(dca_dpi);
       fHistDCApionpro->Fill(dca_ppi);
 
@@ -683,30 +682,42 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
       fHistDecayLengthH3L->Fill(decayLengthH3L);
       fHistNormalizedDecayL->Fill(normalizedDecayL);
 
-      trackD->PropagateToDCA(decayVtx, bz, 10,dcad);
-      fHistDCAXYdeuvtx->Fill(dcad[0]);
-      fHistDCAZdeuvtx->Fill(dcad[1]);
-      fHistDCAdeuvtx->Fill(TMath::Sqrt((dcad[0]*dcad[0]) + (dcad[1]*dcad[1])));
-
-      trackP->PropagateToDCA(decayVtx, bz, 10,dcap);
-      fHistDCAXYprovtx->Fill(dcap[0]);
-      fHistDCAZprovtx->Fill(dcap[1]);
-      fHistDCAprovtx->Fill(TMath::Sqrt((dcap[0]*dcap[0]) + (dcap[1]*dcap[1])));
+      if(normalizedDecayL < fMinNormalizedDecL) continue;
 
       trackNPi->PropagateToDCA(decayVtx, bz, 10,dcapi);
       fHistDCAXYpionvtx->Fill(dcapi[0]);
       fHistDCAZpionvtx->Fill(dcapi[1]);
       fHistDCApionvtx->Fill(TMath::Sqrt((dcapi[0]*dcapi[0]) + (dcapi[1]*dcapi[1])));
 
-      delete decayVtx;
+      if(TMath::Abs(dcapi[0]) > fDCAPiSVxymax || TMath::Abs(dcapi[1]) > fDCAPiSVzmax) {
+        delete decayVtx;
+        continue;
+      }
+
+      trackP->PropagateToDCA(decayVtx, bz, 10,dcap);
+      fHistDCAXYprovtx->Fill(dcap[0]);
+      fHistDCAZprovtx->Fill(dcap[1]);
+      fHistDCAprovtx->Fill(TMath::Sqrt((dcap[0]*dcap[0]) + (dcap[1]*dcap[1])));
+
+      if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) {
+        delete decayVtx;
+        continue;
+      }
+
+      trackD->PropagateToDCA(decayVtx, bz, 10,dcad);
+      fHistDCAXYdeuvtx->Fill(dcad[0]);
+      fHistDCAZdeuvtx->Fill(dcad[1]);
+      fHistDCAdeuvtx->Fill(TMath::Sqrt((dcad[0]*dcad[0]) + (dcad[1]*dcad[1])));
+
+      if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) {
+        delete decayVtx;
+        continue;
+      }
+
+
 
       if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
-      if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) continue;
-      if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
-      if(TMath::Abs(dcapi[0]) > fDCAPiSVxymax) continue;
-      if(TMath::Abs(dcapi[1]) > fDCAPiSVzmax) continue;
 
-      if(normalizedDecayL < fMinNormalizedDecL) continue;
 
       posD.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),1.87561);
 
