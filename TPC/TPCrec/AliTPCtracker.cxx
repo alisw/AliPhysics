@@ -7437,11 +7437,24 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
   //
   RemoveUsed2(array,0.5,0.4,30);
   UnsignClusters();
+  // RS: the cluster pointers are not permanently attached to the seed during the tracking, need to attach temporarily   
+  AliTPCclusterMI* seedClusters[kMaxRow] = {0};                                                                          
+  //
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
     if (!track0) continue;
+    //RS: if needed, attach temporary cluster array    
+    const AliTPCclusterMI** seedClustersSave = track0->GetClusters();
+    if (!seedClustersSave) { //RS: temporary attach clusters
+      for (int ir=kMaxRow;ir--;) {
+	int idx = track0->GetClusterIndex2(ir);
+	seedClusters[ir] = idx<0 ? 0 : GetClusterMI(idx);
+      }
+      track0->SetClustersArrayTMP(seedClusters);
+    }
     track0->CookdEdx(0.02,0.6);
     track0->CookPID();
+    if (!seedClustersSave) track0->SetClustersArrayTMP(0);
   }
   //
   // RS use stack allocation instead of the heap
@@ -8100,8 +8113,11 @@ Int_t AliTPCtracker::Clusters2Tracks() {
   // 
   nseed=fSeeds->GetEntriesFast();
   found = 0;
+  // RS: the cluster pointers are not permanently attached to the seed during the tracking, need to attach temporarily
+  AliTPCclusterMI* seedClusters[kMaxRow];
+  //
   for (Int_t i=0; i<nseed; i++) {
-    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
+    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t = *pt;
     if (!pt) continue;    
     Int_t nc=t.GetNumberOfClusters();
     if (nc<15) {
@@ -8109,69 +8125,31 @@ Int_t AliTPCtracker::Clusters2Tracks() {
       continue;
     }
     t.SetUniqueID(i);
-    t.CookdEdx(0.02,0.6);
+    
     //    CheckKinkPoint(&t,0.05);
-    //if ((pt->IsActive() || (pt->fRemoval==10) )&& nc>50 &&pt->GetNumberOfClusters()>0.4*pt->fNFoundable){
     if ((pt->IsActive() || (pt->GetRemoval()==10) )){
       found++;
-      if (fDebug>0){
-	cerr<<found<<'\r';      
-      }
+      if (fDebug>0) cerr<<found<<'\r';
       pt->SetLab2(i);
     }
-    else
-      MarkSeedFree( fSeeds->RemoveAt(i) );
-    //AliTPCseed * seed1 = ReSeed(pt,0.05,0.5,1);
-    //if (seed1){
-    //  FollowProlongation(*seed1,0);
-    //  Int_t n = seed1->GetNumberOfClusters();
-    //  printf("fP4\t%f\t%f\n",seed1->GetC(),pt->GetC());
-    //  printf("fN\t%d\t%d\n", seed1->GetNumberOfClusters(),pt->GetNumberOfClusters());
+    else {MarkSeedFree( fSeeds->RemoveAt(i) );}
     //
-    //}
-    //AliTPCseed * seed2 = ReSeed(pt,0.95,0.5,0.05);
-    
+    // temporarilly attach clusters and cook dedx
+    const AliTPCclusterMI** seedClustersSave = t.GetClusters();
+    if (!seedClustersSave) { //RS: temporary attach clusters
+      for (int ir=kMaxRow;ir--;) {
+	int idx = t.GetClusterIndex2(ir);
+	seedClusters[ir] = idx<0 ? 0 : GetClusterMI(idx);
+      }
+      t.SetClustersArrayTMP(seedClusters);
+    }
+    t.CookdEdx(0.02,0.6);
+    if (!seedClustersSave) t.SetClustersArrayTMP(0);
+    //
   }
 
   SortTracks(fSeeds, 1);
-  
-  /*    
-  fIteration = 1;
-  PrepareForBackProlongation(fSeeds,5.);
-  PropagateBack(fSeeds);
-  printf("Time for back propagation: \t");timer.Print();timer.Start();
-  
-  fIteration = 2;
-  
-  PrepareForProlongation(fSeeds,5.);
-  PropagateForard2(fSeeds);
    
-  printf("Time for FORWARD propagation: \t");timer.Print();timer.Start();
-  // RemoveUsed(fSeeds,0.7,0.7,6);
-  //RemoveOverlap(fSeeds,0.9,7,kTRUE);
-   
-  nseed=fSeeds->GetEntriesFast();
-  found = 0;
-  for (Int_t i=0; i<nseed; i++) {
-    AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
-    if (!pt) continue;    
-    Int_t nc=t.GetNumberOfClusters();
-    if (nc<15) {
-      MarkSeedFree( fSeeds->RemoveAt(i) );
-      continue;
-    }
-    t.CookdEdx(0.02,0.6);
-    //    CookLabel(pt,0.1); //For comparison only
-    //if ((pt->IsActive() || (pt->fRemoval==10) )&& nc>50 &&pt->GetNumberOfClusters()>0.4*pt->fNFoundable){
-    if ((pt->IsActive() || (pt->fRemoval==10) )){
-      cerr<<found++<<'\r';      
-    }
-    else
-      MarkSeedFree( fSeeds->RemoveAt(i) );
-    pt->fLab2 = i;
-  }
-  */
- 
   //  fNTracks = found;
   if (fDebug>0){
     Info("Clusters2Tracks","Time for overlap removal, track writing and dedx cooking: \t"); timer.Print();timer.Start();

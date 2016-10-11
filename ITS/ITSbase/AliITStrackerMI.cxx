@@ -629,6 +629,9 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
      for (fCurrentEsdTrack=0; fCurrentEsdTrack<nentr; fCurrentEsdTrack++) {
        AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(fCurrentEsdTrack);
        if (t==0) continue;              //this track has been already tracked
+       Int_t tpcLabel=t->GetESDtrack()->GetLabel(); //save the TPC track label       
+       AliDebug(2,Form("LABEL %d pass %d",tpcLabel,fPass));
+       
        //cout<<"========== "<<fPass<<"    "<<fCurrentEsdTrack<<" =========\n";
        if (t->GetReconstructed()&&(t->GetNUsed()<1.5)) continue;  //this track was  already  "succesfully" reconstructed
        Float_t dz[2]={0}; t->GetDZ(GetX(),GetY(),GetZ(),dz);              //I.B.
@@ -637,8 +640,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 	     TMath::Abs(dz[1])>AliITSReconstructor::GetRecoParam()->GetMaxDZToUseConstraint()) continue;
        }
 
-       Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
-       AliDebug(2,Form("LABEL %d pass %d",tpcLabel,fPass));
        fI = 6;
        ResetTrackToFollow(*t);
        ResetBestTrack();
