@@ -2386,6 +2386,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  }
  fQycvsV0[1] = ((TH1D*) contQyncs->GetObject(run));
 
+// cuts->SetVZEROgainEqualisation(fMultVZERO);
 
 
 
