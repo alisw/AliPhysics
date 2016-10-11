@@ -295,11 +295,16 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoK0sMassvsPt(0),
   fHistoElectronTPCPID(0),
   fHistoElectronTOFPID(0),
+  fHistoElectronITSPID(0),
   fHistoElectronTPCSelPID(0),
   fHistoElectronTOFSelPID(0),
+  fHistoElectronITSSelPID(0),
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
+  fHistoElectronITSPIDSelTPCTOF(0),
+  fHistoElectronITSPIDSelTPCTOFSmallEta(0),
+  fHistoElectronITSPIDSelTPCTOFLargeEta(0),
   fHistoMassConversionsMin(0),
   fHistoMassConversionsSameSignMin(0),
 	fHistoElectronQovPtvsPhi(0),
@@ -605,6 +610,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	}
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
+		fHistoElectronITSPIDSelTPCTOFEtaDep[i] = 0;
 	}
 	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
@@ -814,11 +820,16 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoK0sMassvsPt(0),
   fHistoElectronTPCPID(0),
   fHistoElectronTOFPID(0),
+  fHistoElectronITSPID(0),
   fHistoElectronTPCSelPID(0),
   fHistoElectronTOFSelPID(0),
+  fHistoElectronITSSelPID(0),
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
+  fHistoElectronITSPIDSelTPCTOF(0),
+  fHistoElectronITSPIDSelTPCTOFSmallEta(0),
+  fHistoElectronITSPIDSelTPCTOFLargeEta(0),
   fHistoMassConversionsMin(0),
   fHistoMassConversionsSameSignMin(0),
 	fHistoElectronQovPtvsPhi(0),
@@ -1126,6 +1137,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	}
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
+		fHistoElectronITSPIDSelTPCTOFEtaDep[i] = 0;
 	}
 	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 
@@ -5088,16 +5100,27 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElectronTPCPID);
   fHistoElectronTOFPID=new TH2F("fHistoElectronTOFPID","",50,0.,5.,50,-20.,20.);
   fOutputAll->Add(fHistoElectronTOFPID);
+  fHistoElectronITSPID=new TH2F("fHistoElectronITSPID","",50,0.,5.,50,-20.,20.);
+  fOutputAll->Add(fHistoElectronITSPID);
   fHistoElectronTPCSelPID=new TH2F("fHistoElectronTPCSelPID","",50,0.,5.,50,-20.,20.);
   fOutputAll->Add(fHistoElectronTPCSelPID);
   fHistoElectronTOFSelPID=new TH2F("fHistoElectronTOFSelPID","",50,0.,5.,50,-20.,20.);
   fOutputAll->Add(fHistoElectronTOFSelPID);
+  fHistoElectronITSSelPID=new TH2F("fHistoElectronITSSelPID","",50,0.,5.,50,-20.,20.);
+  fOutputAll->Add(fHistoElectronITSSelPID);
   fHistoElectronTPCPIDSelTOF=new TH2F("fHistoElectronTPCPIDSelTOF","",10,0.,5.,500,-10.,10.);
   fOutputAll->Add(fHistoElectronTPCPIDSelTOF);
   fHistoElectronTPCPIDSelTOFSmallEta=new TH2F("fHistoElectronTPCPIDSelTOFSmallEta","",10,0.,5.,500,-10.,10.);
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFSmallEta);
   fHistoElectronTPCPIDSelTOFLargeEta=new TH2F("fHistoElectronTPCPIDSelTOFLargeEta","",10,0.,5.,500,-10.,10.);
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFLargeEta);
+  fHistoElectronITSPIDSelTPCTOF=new TH2F("fHistoElectronITSPIDSelTPCTOF","",10,0.,5.,500,-10.,10.);
+  fOutputAll->Add(fHistoElectronITSPIDSelTPCTOF);
+  fHistoElectronITSPIDSelTPCTOFSmallEta=new TH2F("fHistoElectronITSPIDSelTPCTOFSmallEta","",10,0.,5.,500,-10.,10.);
+  fOutputAll->Add(fHistoElectronITSPIDSelTPCTOFSmallEta);
+  fHistoElectronITSPIDSelTPCTOFLargeEta=new TH2F("fHistoElectronITSPIDSelTPCTOFLargeEta","",10,0.,5.,500,-10.,10.);
+  fOutputAll->Add(fHistoElectronITSPIDSelTPCTOFLargeEta);
+
   fHistoMassConversionsMin=new TH1F("fHistoMassConversionsMin","",500,0,0.5);
   fOutputAll->Add(fHistoMassConversionsMin);
   fHistoMassConversionsSameSignMin=new TH1F("fHistoMassConversionsSameSignMin","",500,0,0.5);
@@ -5106,6 +5129,8 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i]=new TH2F(Form("fHistoElectronTPCPIDSelTOFEtaDep[%d]",i),"",10,0.,5.,500,-10.,10.);
 		fOutputAll->Add(fHistoElectronTPCPIDSelTOFEtaDep[i]);
+		fHistoElectronITSPIDSelTPCTOFEtaDep[i]=new TH2F(Form("fHistoElectronITSPIDSelTPCTOFEtaDep[%d]",i),"",10,0.,5.,500,-10.,10.);
+		fOutputAll->Add(fHistoElectronITSPIDSelTPCTOFEtaDep[i]);
 	}
   fHistoElectronQovPtvsPhi=new TH2F("fHistoElectronQovPtvsPhi","",70,0.,7.,50,-2.,2.);
   fOutputAll->Add(fHistoElectronQovPtvsPhi);
@@ -6214,14 +6239,17 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::SelectTrack( const AliVEvent *e
 
 		Double_t nsigma_tpcele = -9999;
 		Double_t nsigma_tofele = -9999;
+		Double_t nsigma_itsele = -9999;
 		if(fAnalCuts->GetIsUsePID()){
 			nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
 			nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
+			nsigma_itsele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasITS(aodtpid,AliPID::kElectron);
 		}
 
     if(fAnalCuts->SingleTrkCutsNoPID(aodt,aodtpid,fVtx1)){
 			fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFPID->Fill(aodt->Pt(),nsigma_tofele);
+			fHistoElectronITSPID->Fill(aodt->Pt(),nsigma_itsele);
 			if(fabs(nsigma_tofele)<3.){
 				fHistoElectronTPCPIDSelTOF->Fill(aodt->Pt(),nsigma_tpcele);
 				Double_t eleeta = aodt->Eta();
@@ -6246,6 +6274,33 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::SelectTrack( const AliVEvent *e
 				}else if(eleeta>0.6&&eleeta<0.8){
 					fHistoElectronTPCPIDSelTOFEtaDep[7]->Fill(aodt->Pt(),nsigma_tpcele);
 				}
+
+				if(nsigma_tpcele>-0.5 && nsigma_tpcele<3.){
+					fHistoElectronITSPIDSelTPCTOF->Fill(aodt->Pt(),nsigma_itsele);
+					if(fabs(eleeta)<0.6)
+						fHistoElectronITSPIDSelTPCTOFSmallEta->Fill(aodt->Pt(),nsigma_itsele);
+					
+					if(fabs(eleeta)>0.6 && fabs(eleeta)<0.8)
+						fHistoElectronITSPIDSelTPCTOFLargeEta->Fill(aodt->Pt(),nsigma_itsele);
+					
+					if(eleeta>-0.8 && eleeta<-0.6){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[0]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>-0.6&&eleeta<-0.4){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[1]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>-0.4&&eleeta<-0.2){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[2]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>-0.2&&eleeta<0.0){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[3]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>0.0&&eleeta<0.2){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[4]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>0.2&&eleeta<0.4){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[5]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>0.4&&eleeta<0.6){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[6]->Fill(aodt->Pt(),nsigma_itsele);
+					}else if(eleeta>0.6&&eleeta<0.8){
+						fHistoElectronITSPIDSelTPCTOFEtaDep[7]->Fill(aodt->Pt(),nsigma_itsele);
+					}
+				}
 			}
 		}
 
@@ -6254,6 +6309,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::SelectTrack( const AliVEvent *e
       nSeleTrks++;
 			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
+			fHistoElectronITSSelPID->Fill(aodt->Pt(),nsigma_itsele);
     }
   } // end loop on tracks
 }

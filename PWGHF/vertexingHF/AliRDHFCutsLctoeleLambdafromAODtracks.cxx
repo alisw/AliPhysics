@@ -105,6 +105,8 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.),
+	fSigmaElectronITSMin(-9999.),
+	fSigmaElectronITSMax(9999.),
 	fConversionMassMax(-1.),
 	fEleLambdaMassMax(2.3)
 {
@@ -198,6 +200,8 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax),
+	fSigmaElectronITSMin(source.fSigmaElectronITSMin),
+	fSigmaElectronITSMax(source.fSigmaElectronITSMax),
 	fConversionMassMax(source.fConversionMassMax),
 	fEleLambdaMassMax(source.fEleLambdaMassMax)
 {
@@ -272,6 +276,8 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
+	fSigmaElectronITSMin = source.fSigmaElectronITSMin;
+	fSigmaElectronITSMax = source.fSigmaElectronITSMax;
 	fConversionMassMax = source.fConversionMassMax;
 	fEleLambdaMassMax = source.fEleLambdaMassMax;
 
@@ -681,11 +687,14 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedeID(AliAODTrac
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
+	Double_t nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk,AliPID::kElectron);
 
 	if(nSigmaTPCele<fSigmaElectronTPCMin) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
 	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+	if(nSigmaITSele<fSigmaElectronITSMin) return kFALSE;
+	if(nSigmaITSele>fSigmaElectronITSMax) return kFALSE;
 
 	return kTRUE;
 }
@@ -719,11 +728,18 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedPtDepeID(AliAO
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
+	Double_t nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trkpid,AliPID::kElectron);
 
   if(fabs(fSigmaElectronTOFMin)<999.|| fabs(fSigmaElectronTOFMax)<999.)
   {
     if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
     if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+  }
+
+  if(fabs(fSigmaElectronITSMin)<999.|| fabs(fSigmaElectronITSMax)<999.)
+  {
+    if(nSigmaITSele<fSigmaElectronITSMin) return kFALSE;
+    if(nSigmaITSele>fSigmaElectronITSMax) return kFALSE;
   }
 
 	Double_t pte = trk->Pt();
