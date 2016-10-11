@@ -486,9 +486,27 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   Double_t xmaxReco[knVarForSparse] = {2.3, 20., 0.015,   0.1,   0.1,   10.,  10.,  1.0,  1.0,  0.07,  1.0,   0.3,  6.};
   TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
   if(fSystem == 1) { //pPb,PbPb
-      nBinsReco[2] = 15;
-      nBinsReco[3] = 10;
-      nBinsReco[4] = 10;
+      nBinsReco[0] = 200; //Ds mass
+      xminReco[0]  = 1.75;
+      xmaxReco[0]  = 2.15;
+      
+      nBinsReco[1] = 15; //pt
+      xminReco[1]  = 0.;
+      xmaxReco[1]  = 15.;
+      
+      nBinsReco[2] = 15; //#Delta Mass(KK)
+      nBinsReco[3] = 10; //dlen
+      nBinsReco[4] = 10; //dlenxy
+      nBinsReco[5] = 10; //ndlen
+      nBinsReco[6] = 10; //ndlenxy
+      
+      nBinsReco[7] = 6; //cosP
+      xminReco[7]  = 0.94;
+      xmaxReco[7]  = 1.0;
+      
+      nBinsReco[8] = 6; //cosPxy
+      xminReco[8]  = 0.94;
+      xmaxReco[8]  = 1.0;
   }
   
   Int_t nBinsAcc[knVarForSparseAcc]   = {20,  20};
