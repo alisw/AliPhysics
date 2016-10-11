@@ -385,6 +385,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *hMultNG_Test[6];//!
 		TH1D *hMC_PassEta[14];//!
 		TH1D *hMC_PassType[2];//!
+		TH1D *hMult_Ref[3];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);
