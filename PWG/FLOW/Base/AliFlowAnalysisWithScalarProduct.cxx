@@ -359,6 +359,13 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
   dNq = fNormalizationType ? dNq: vQm.Mod(); // SP corresponds to true
 
   //fill some EP control histograms
+  //
+  //11102016: fHistProQaQbNorm keeps being plagued by NaN values
+  //which should never happen because the input is checked at an earlier stage
+  //just to see if the input is really the issue, filter brute force here
+  //all the configurations which could give issues
+  if(dNa <= 0. || dNb <= 0. || dWa*dWb <= 0) return;
+
   fHistProQaQbNorm->Fill(1.,dQaQb/dNa/dNb,dWa*dWb);  //Fill (QaQb/NaNb) with weight (WaWb).
   //needed for the error calculation:
   fHistSumOfWeights -> Fill(1.,dWa*dWb);
