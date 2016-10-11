@@ -663,9 +663,12 @@ Bool_t AliAnalysisTaskPhiFlow::IsKaon(AliAODTrack* track) const
            Double_t beta = -.05;
 
            if((length > 0) && (time > 0)) beta = length / 2.99792458e-2 / time;
+
+           // additional selection to bruteforce throw away bad betas
+           if(beta < 0.4) return kFALSE;
                      
            fPIDk->Fill(track->P(), track->GetTPCsignal());
-           fPIDTOF->Fill(track->P(), beta);
+           if(track->Pt() > .4) fPIDTOF->Fill(track->P(), beta);
        }
 
 
