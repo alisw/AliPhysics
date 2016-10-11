@@ -383,12 +383,18 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoK0sMassvsPt;     //!<! K0s mass vs pt histogram
   TH2F* fHistoElectronTPCPID;     //!<! TPC electron PID
   TH2F* fHistoElectronTOFPID;     //!<! TOF electron PID
+  TH2F* fHistoElectronITSPID;     //!<! ITS electron PID
   TH2F* fHistoElectronTPCSelPID;     //!<! TPC electron PID after selection
   TH2F* fHistoElectronTOFSelPID;     //!<! TOF electron PID after selection
+  TH2F* fHistoElectronITSSelPID;     //!<! ITS electron PID after selection
   TH2F* fHistoElectronTPCPIDSelTOF;     //!<! TPC electron PID after TOF 3 sigma cut
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //!<! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //!<! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
-  TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //!<! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
+  TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //!<! TPC electron PID after TOF 3 sigma cut in different eta ranges
+  TH2F* fHistoElectronITSPIDSelTPCTOF;     //!<! ITS electron PID after TPC/TOF 3 sigma cut
+  TH2F* fHistoElectronITSPIDSelTPCTOFSmallEta;     //!<! ITS electron PID after TPC/TOF 3 sigma cut (|eta|<0.6)
+  TH2F* fHistoElectronITSPIDSelTPCTOFLargeEta;     //!<! ITS electron PID after TPC/TOF 3 sigma cut (0.8>|eta|>0.6)
+  TH2F* fHistoElectronITSPIDSelTPCTOFEtaDep[8];     //!<! ITS electron PID after TPC/TOF 3 sigma cut in different eta ranges
   TH1F* fHistoMassConversionsMin; //!<! electron-any mass
   TH1F* fHistoMassConversionsSameSignMin; //!<! electron-any mass
   THnSparse* fHistoElePtvsCutVarsRS[17];         //!<! e pt- cut variables (Right-sign)
@@ -710,7 +716,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,41); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,42); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
