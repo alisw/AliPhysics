@@ -748,6 +748,9 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       if(allData[ipmt + offsetCDF][0]>0 /*&& type == 7 */) numPmtA++;
     }
     Int_t nhitsPMT=0; //count hits for this pmt
+    Bool_t  tvdcon=kFALSE;
+    Bool_t orcon=kFALSE;
+    Bool_t oraon=kFALSE;
 
     for (Int_t iHt=0; iHt<5; iHt++) {
       //cfd
@@ -826,8 +829,8 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       AliDebug(50,Form("orA-orC phys tvdc all  %i  data %s", 219,  GetRawsData(219)->GetName()));
       FillRawsData(219,(allData[kTZeroOrC][iHt] - allData[kTZeroOrA][iHt])*ch2cm);
     }
-
-
+    
+    
     for (Int_t itr=0; itr<6; itr++) {//T0_MEAN,TO_VERTX,ORA,ORC,T0_mult,T0_mult
       if (allData[trChannel[itr]][iHt] >0) {
 	//
@@ -838,33 +841,40 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	AliDebug(50,Form(" triggers %i  data %s", 170+itr,  GetRawsData(170+itr)->GetName()));
 	
 	FillRawsData(170+itr,allData[trChannel[itr]][iHt]);
-    
+	
         if( trChannel[itr] == kTZeroVertex){ //T0_VERTEX minus mean from config files
 	  FillRawsData(230, allData[kTZeroVertex][iHt] - fMeanRawVertexParam );
         }
       }
     }
-
-    if(allData[kTZeroOrA][iHt] > 0  &&  allData[kTZeroOrC][iHt] > 0  ){ //FK// ORC-mean   ORA -mean 
-      Float_t  diffORA =  allData[kTZeroOrA][iHt] - fMeanORAParam;
-      Float_t  diffORC =  allData[kTZeroOrC][iHt] - fMeanORCParam;
-      if(allData[kTZeroVertex][iHt]>0){ //TVDC on
-	FillRawsData(234, diffORA, diffORC);     
-         //Estimate mean orA and orC based on these
-       //cout<<"ORA  "<<allData[kTZeroOrA][iHt]<<endl;
-       //cout<<"ORC  "<<allData[kTZeroOrC][iHt]<<endl;
-
-      }else{//TVDC off
+    Bool_t  tvdcon=kFALSE;
+    Bool_t orcon=kFALSE;
+    Bool_t oraon=kFALSE;
+    Float_t  diffORA=-999999,  diffORC=-999999;
+    
+    // ORC-mean   ORA -mean  //Alla 
+    if(allData[kTZeroOrA][iHt] > fMeanORAParam-400 && allData[kTZeroOrA][iHt] < fMeanORAParam+400 ) {
+      diffORA =  allData[kTZeroOrA][iHt] - fMeanORAParam;
+      oraon=kTRUE;
+    }
+    if(  allData[kTZeroOrC][iHt] > fMeanORCParam-400 && allData[kTZeroOrC][iHt] < fMeanORCParam+400 ) { 
+      diffORC =  allData[kTZeroOrC][iHt] - fMeanORCParam;
+      orcon=kTRUE; 
+    }
+    if (allData[kTZeroVertex][iHt]>fMeanRawVertexParam-400 && allData[kTZeroVertex][iHt]<fMeanRawVertexParam+400 ) tvdcon=kTRUE;
+    
+    if (oraon&&orcon) {
+      if(tvdcon)   //TVDC on
+      FillRawsData(234, diffORA, diffORC);     
+      else //TVDC off
 	FillRawsData(235, diffORA, diffORC);
-      }
     }
     
-    /*   if(type == 7) */if(allData[kTZeroOrA][iHt] >0){
-                             nhitsOrA++;
-                         } 
-    /* if(type == 7) */if(allData[kTZeroOrC][iHt] >0){
-                             nhitsOrC++;
-                         }
+    
+  /*   if(type == 7) */if(allData[kTZeroOrA][iHt] >0)    nhitsOrA++;
+    
+    /* if(type == 7) */if(allData[kTZeroOrC][iHt] >0)   nhitsOrC++;
+    
     //mult trigger signals phys
     //A side
     if(allData[kT0multAQ0][iHt]>0 && allData[kT0multAQ1][iHt]>0) {
@@ -878,7 +888,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     //C side 
     if(allData[kT0multCQ0][iHt]>0 && allData[kT0multCQ1][iHt]>0) {
       AliDebug(50,Form(" mpdC %i  data %s", 204,  GetRawsData(204)->GetName()));
-	
+      
       FillRawsData(204,allData[kT0multCQ0][iHt]-allData[kT0multCQ1][iHt]);
       if(allData[kTZeroMultSemi][iHt]>0) FillRawsData(205,allData[kT0multCQ0][iHt]-allData[kT0multCQ1][iHt]);
       if(allData[kTZeroMultCent][iHt]>0) FillRawsData(206,allData[kT0multCQ0][iHt]-allData[kT0multCQ1][iHt]);
