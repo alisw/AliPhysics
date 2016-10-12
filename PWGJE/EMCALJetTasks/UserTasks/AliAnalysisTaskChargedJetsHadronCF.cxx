@@ -83,6 +83,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
   fJetMatchingThreshold(4.0),
+  fJetMatchingUseOnlyNLeading(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -128,6 +129,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
   fJetMatchingThreshold(4.0),
+  fJetMatchingUseOnlyNLeading(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -212,7 +214,7 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_10", "Jet constituent count vs. jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
 
   // Embedding plots
-  if(fJetOutputMode == 4  || fJetOutputMode == 7)
+  if(fJetOutputMode == 4  || fJetOutputMode == 5)
   {
     AddHistogram2D<TH2D>("hEmbeddingDeltaR", "Matched jet #Delta R distribution", "", 200, -50., 150., 100, 0, 1.0, "p_{T, jet} (GeV/c)", "#Delta R", "dN^{Matched}/dp_{T}dR");
     AddHistogram2D<TH2D>("hEmbeddingDeltaEta", "Matched jet #Delta #eta distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #eta", "dN^{Matched}/dp_{T}d#eta");
@@ -302,8 +304,8 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
     if(!fJetMatchingArray)
       AliFatal(Form("Importing jets for matching failed! Array '%s' not found!", fJetMatchingArrayName.Data()));
   }
-  else if(fJetOutputMode==4 || fJetOutputMode==5 || fJetOutputMode==7)
-    AliFatal(Form("fJetMatchingArrayName must be set in jet output mode 4,5, or 7."));
+  else if(fJetOutputMode==4 || fJetOutputMode==5)
+    AliFatal(Form("fJetMatchingArrayName must be set in jet output mode 4 or 5."));
 
 
   // ### Jets tree (optional)
@@ -392,7 +394,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
       return kFALSE;
   }
 
-  if((fJetOutputMode==4) || (fJetOutputMode==7)) // matching jets only
+  if(fJetOutputMode==4) // matching jets only
     return (std::find(fMatchedJets.begin(), fMatchedJets.end(), jet) != fMatchedJets.end());
   else if(fJetOutputMode==5) // non-matching jets only
     return (std::find(fMatchedJets.begin(), fMatchedJets.end(), jet) == fMatchedJets.end());
@@ -632,8 +634,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     AddTrackToOutputArray(track);
   }
 
-  // ####### Embedding plots (we currently embed only one jet)
-  if( (fJetOutputMode == 4  || fJetOutputMode == 7))
+  // ####### Embedding plots
+  if( (fJetOutputMode == 4) || (fJetOutputMode == 5))
   {
     for(Int_t i=0; i<fMatchedJets.size(); i++)
     {
@@ -767,6 +769,67 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
     }
   }
 
+  // ############ On demand, search for matches of leading and subleading jet in MC and delete rest
+  if(fJetMatchingUseOnlyNLeading)
+  {
+    Int_t jetLeadingIndex = -1;
+    Int_t jetSubLeadingIndex = -1;
+    Double_t     tmpLeadingPt = 0;
+    Double_t     tmpSubleadingPt = 0;
+
+    // Search leading/subleading in matched MC jets
+    for(Int_t i=0; i<fMatchedJetsReference.size(); i++)
+    {
+      AliEmcalJet* matchedJet = fMatchedJetsReference[i];
+      if      (matchedJet->Pt() > tmpLeadingPt)
+      {
+        jetSubLeadingIndex = jetLeadingIndex;
+        jetLeadingIndex = i;
+        tmpSubleadingPt = tmpLeadingPt;
+        tmpLeadingPt = matchedJet->Pt();
+      }
+      else if (matchedJet->Pt() > tmpSubleadingPt)
+      {
+        jetSubLeadingIndex = i;
+        tmpSubleadingPt = matchedJet->Pt();
+      }
+    }
+
+    AliEmcalJet* matchedLeading = 0;
+    AliEmcalJet* refLeading = 0;
+    AliEmcalJet* matchedSubLeading = 0;
+    AliEmcalJet* refSubLeading = 0;
+
+    // Cache leading jet, if found
+    if(jetLeadingIndex >= 0)
+    {
+      matchedLeading = fMatchedJets[jetLeadingIndex];
+      refLeading = fMatchedJetsReference[jetLeadingIndex];
+    }
+    // Cache subleading jet, if found
+    if(jetSubLeadingIndex >= 0)
+    {
+      matchedSubLeading = fMatchedJets[jetSubLeadingIndex];
+      refSubLeading = fMatchedJetsReference[jetSubLeadingIndex];
+    }
+
+    // Delete old list
+    fMatchedJets.clear();
+    fMatchedJetsReference.clear();
+
+    // Add jets
+    if(matchedLeading)
+    {
+      fMatchedJets.push_back(matchedLeading);
+      fMatchedJetsReference.push_back(refLeading);
+    }
+    if(matchedSubLeading && fJetMatchingUseOnlyNLeading >= 2)
+    {
+      fMatchedJets.push_back(matchedSubLeading);
+      fMatchedJetsReference.push_back(refSubLeading);
+    }
+  }
+
 }
 
 //________________________________________________________________________
@@ -795,7 +858,7 @@ void AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()
   GetLeadingJets("rho", fLeadingJet, fSubleadingJet);
   if(fJetOutputMode==6)
     GetInitialCollisionJets();
-  else if(fJetOutputMode==4 || fJetOutputMode==5 || fJetOutputMode==7)
+  else if(fJetOutputMode==4 || fJetOutputMode==5)
     GetMatchingJets();
 }
 
