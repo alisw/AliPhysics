@@ -958,8 +958,8 @@ void AliTOFcalib::WriteRecParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxrun
   delete md;
 }
 //_____________________________________________________________________________
-AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun, Int_t eventType)
-{
+AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t /*nrun*/, Int_t eventType)
+{ // nrun obsolete
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry *entry;
 
@@ -972,11 +972,11 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun, 
     else{
       AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
       if(grpData) runEventSpecie = AliRecoParam::SuggestRunEventSpecie(grpData->GetRunType(),grpData->GetBeamType(),grpData->GetLHCState());
-      else AliWarning(Form("Failed to get GRP data in AliTOFcalib for run %d",nrun));
+      else AliWarning(Form("Failed to get GRP data in AliTOFcalib"));
     }
 
 
-    if(runEventSpecie == AliRecoParam::kDefault || runEventSpecie == AliRecoParam::kHighMult) eventType = 0;
+    if(runEventSpecie == AliRecoParam::kHighMult) eventType = 0;
     else eventType=1;
 
   }
@@ -984,7 +984,7 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun, 
   //Read reconstruction parameters from the CDB
   const Char_t *sel1 = "RecoParam" ;
   TString out(Form("%s/%s",sel,sel1));
-  entry = man->Get(out,nrun);
+  entry = man->Get(out);
   if (!entry) { 
     AliFatal("Exiting, no CDB object (RecoParam) found!!!");
     exit(0);  
@@ -999,7 +999,7 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(const Char_t *sel, Int_t nrun, 
 
   if (eventType>=0 || eventType<array->GetEntries()){
     param=(AliTOFRecoParam*)array->At(eventType);
-    AliInfo(Form("TOF resolution from OCDB = %f",param->GetTimeResolution()));
+    AliInfo(Form("TOF resolution from OCDB = %f (event type=%i)",param->GetTimeResolution(),eventType));
   }
   else{
     AliError(Form("Event type %i non available (max value = %i)",eventType,array->GetEntries()-1));
