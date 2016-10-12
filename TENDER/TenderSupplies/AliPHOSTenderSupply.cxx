@@ -1032,7 +1032,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     //Slewing correction
     if(eMax>0 && fRunNumber>209122){ //Run2
        if(fRunNumber<252603) //before LHC16e
-         tMax-= sA15+sB15/eMax;
+         tMax-= sA15+sB15/clu->E();
        else           
          tMax-= sA+sB/eMax+sC/eMax/eMax+sD/eMax/eMax/eMax+sE/eMax/eMax/eMax/eMax ;
     }
@@ -1042,7 +1042,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     //Slewing correction
     if(eMaxHG>0 && fRunNumber>209122 ){ 
        if(fRunNumber<252603) //before LHC16e
-         tMax-= sA15+sB15/eMax;
+         tMax-= sA15+sB15/clu->E();
        else           
          tMax-= sA+sB/eMaxHG+sC/eMaxHG/eMaxHG+sD/eMaxHG/eMaxHG/eMaxHG+sE/eMaxHG/eMaxHG/eMaxHG/eMaxHG ;
     }
