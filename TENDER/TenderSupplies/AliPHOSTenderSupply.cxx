@@ -994,13 +994,18 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
   Int_t mulDigit=clu->GetNCells() ;
 
-    //Sluing correction from LHC16eghklmn
+    //Slewing correction from LHC16eghklmn
     const Float_t sA =-2.57668e-09; 
     const Float_t sB = 8.19737e-09;
     const Float_t sC =-3.16538e-09;
     const Float_t sD = 1.02124e-09;
     const Float_t sE =-1.11128e-10;
     
+    //Slewing correction LHC15xx  2 values does not depend on trigger.
+    const Double_t sA15 = -3.37e-9;//-3.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+    const Double_t sB15 = 6.37e-9;//6.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+
+
   
   Float_t tMax= 0.; //Time at the maximum
   Float_t eMax=0. ;
@@ -1024,15 +1029,23 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   }
   if(fUseLGForTime){
       tMax=CalibrateTOF(cells->GetCellTime(absIdMax),absIdMax,isHGMax) ;
-    //Sluing correction
-    if(eMax>0) 
-       tMax-= sA+sB/eMax+sC/eMax/eMax+sD/eMax/eMax/eMax+sE/eMax/eMax/eMax/eMax ;
+    //Slewing correction
+    if(eMax>0 && fRunNumber>209122){ //Run2
+       if(fRunNumber<252603) //before LHC16e
+         tMax-= sA15+sB15/eMax;
+       else           
+         tMax-= sA+sB/eMax+sC/eMax/eMax+sD/eMax/eMax/eMax+sE/eMax/eMax/eMax/eMax ;
+    }
   }
   else{
       tMax=CalibrateTOF(cells->GetCellTime(absIdMaxHG),absIdMaxHG,kTRUE) ;
-    //Sluing correction
-    if(eMaxHG>0) 
-       tMax-= sA+sB/eMaxHG+sC/eMaxHG/eMaxHG+sD/eMaxHG/eMaxHG/eMaxHG+sE/eMaxHG/eMaxHG/eMaxHG/eMaxHG ;
+    //Slewing correction
+    if(eMaxHG>0 && fRunNumber>209122 ){ 
+       if(fRunNumber<252603) //before LHC16e
+         tMax-= sA15+sB15/eMax;
+       else           
+         tMax-= sA+sB/eMaxHG+sC/eMaxHG/eMaxHG+sD/eMaxHG/eMaxHG/eMaxHG+sE/eMaxHG/eMaxHG/eMaxHG/eMaxHG ;
+    }
   }
     
 
@@ -1048,7 +1061,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     const Float_t wC = 1.24940e+00 ;
     const Float_t wD = 8.73154e-01 ;    
     
-    Double_t eMin=TMath::Max(0.5,0.2*eMax) ;
+    const Double_t eMin=0.5 ; //do not use time from soft digits
     
      //Do not account time of soft cells:
    if(eMin>eMaxHG)//no digits to improve
@@ -1071,7 +1084,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
       if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
         continue ;
       
-      //Sluing correction
+      //Slewing correction
         ti-= sA+sB/ei+sC/ei/ei+sD/ei/ei/ei+sE/ei/ei/ei/ei ;
    
 //      if(elist[iDigit]>0){  //already Checked
