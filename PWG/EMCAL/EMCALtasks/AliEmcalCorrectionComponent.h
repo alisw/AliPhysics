@@ -1,9 +1,6 @@
 #ifndef ALIEMCALCORRECTIONCOMPONENT_H
 #define ALIEMCALCORRECTIONCOMPONENT_H
 
-// AliEmcalCorrectionComponent
-//
-
 #include <map>
 #include <string>
 
@@ -26,12 +23,22 @@ class AliEMCALGeometry;
 class AliVEvent;
 #include "AliLog.h"
 
+/**
+ * @class AliEmcalCorrectionComponent
+ * @brief Base class for correction components in the EMCal correction framework
+ * @ingroup EMCALCOREFW
+ *
+ * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
+ * @author James Mulligan <james.mulligan@yale.edu>, Yale University
+ * @date Jul 8, 2016
+ */
+
 class AliEmcalCorrectionComponent : public TNamed {
  public:
   enum inputObjectType {
-    kCaloCells = 0,    //!< Calo cells
-    kCluster = 1,  //!< Cluster container
-    kTrack = 2,    //!< Track container
+    kCaloCells = 0,    //!<! Calo cells
+    kCluster = 1,  //!<! Cluster container
+    kTrack = 2,    //!<! Track container
   };
 
   AliEmcalCorrectionComponent();
@@ -97,13 +104,13 @@ class AliEmcalCorrectionComponent : public TNamed {
   YAML::Node              fDefaultConfiguration;
 #endif
 
-  Bool_t                  fCreateHisto;                   // flag to make some basic histograms
-  Int_t                   fRun;                           //!run number
-  TString                 fFilepass;                      // input data pass number
-  Bool_t                  fGetPassFromFileName;           // get fFilepass from file name
-  AliVEvent              *fEvent;                         // pointer to event
-  Bool_t                  fEsdMode;                       // flag for ESD
-  AliMCEvent             *fMCEvent;                       // MC
+  Bool_t                  fCreateHisto;                   ///< flag to make some basic histograms
+  Int_t                   fRun;                           //!<!run number
+  TString                 fFilepass;                      ///< input data pass number
+  Bool_t                  fGetPassFromFileName;           ///< get fFilepass from file name
+  AliVEvent              *fEvent;                         //!<!pointer to event
+  Bool_t                  fEsdMode;                       ///< flag for ESD
+  AliMCEvent             *fMCEvent;                       //!<!MC
   Double_t                fCent;                          //!<!event centrality
   Int_t                   fNcentBins;                     ///< how many centrality bins (this member copied from AliAnalysisTaskEmcal)
   Int_t                   fCentBin;                       //!<!event centrality bin
@@ -120,13 +127,15 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEMCALRecoUtils      *fRecoUtils;                     //!<! pointer to reco utils
   TList                  *fOutput;                        //!<! list of output histograms
   
-  TString                fBasePath;                       // base folder path to get root files
+  TString                fBasePath;                       ///< base folder path to get root files
 
  private:
   AliEmcalCorrectionComponent(const AliEmcalCorrectionComponent &);               // Not implemented
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
-  ClassDef(AliEmcalCorrectionComponent, 1) // EMCal correction component
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalCorrectionComponent, 1); // EMCal correction component
+  /// \endcond
 };
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))

@@ -5,6 +5,21 @@
 
 class TH2F;
 
+/**
+ * @class AliEmcalCorrectionClusterExotics
+ * @brief Exotic cluster removal in the EMCal correction framework
+ * @ingroup EMCALCOREFW
+ *
+ * Based on code in AliEmcalClusterMaker.
+ *
+ * @author Constantin Loizides, LBNL, AliEmcalClusterMaker
+ * @author Salvatore Aiola, LBNL, AliEmcalClusterMaker
+ * @author James Mulligan <james.mulligan@yale.edu>, Yale University, centralize EMCal corrections using components
+ * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University, centralize EMCal corrections using components
+ * @date Jul 8, 2016
+ */
+
+
 class AliEmcalCorrectionClusterExotics : public AliEmcalCorrectionComponent {
  public:
   AliEmcalCorrectionClusterExotics();
@@ -26,7 +41,9 @@ protected:
   // Allows the registration of the class so that it is availble to be used by the correction task.
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterExotics> reg;
 
-  ClassDef(AliEmcalCorrectionClusterExotics, 1) // EMCal cluster exotics correction component
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalCorrectionClusterExotics, 1); // EMCal cluster exotics correction component
+  /// \endcond
 };
 
 #endif /* ALIEMCALCORRECTIONCLUSTEREXOTICS_H */

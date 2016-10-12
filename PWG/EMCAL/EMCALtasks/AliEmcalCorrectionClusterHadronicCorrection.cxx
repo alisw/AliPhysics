@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterHadronicCorrection
 //
-// Author: R.Reed, C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterHadronicCorrection.h"
 
