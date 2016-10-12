@@ -29,12 +29,13 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
-  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t matchThreshold)
+  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t matchThreshold, Int_t nLeading)
   {
     fJetMatchingMaxDistance = maxDistance;
     fJetMatchingArrayName = matchArray;
     fJetMatchingMinSharedFraction = minSharedFraction;
     fJetMatchingThreshold = matchThreshold;
+    fJetMatchingUseOnlyNLeading = nLeading; // currently only 1,2, or 0 (all) possible
   }
 
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
@@ -82,6 +83,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Double_t                    fJetMatchingMaxDistance;                  ///< Max distance allowed to accept a matching jet (for embedding)
   Double_t                    fJetMatchingMinSharedFraction;            ///< An embedded jet must carry this pt fraction to be accepted
   Double_t                    fJetMatchingThreshold;                    ///< Threshold applied on the matchArray jets
+  Int_t                       fJetMatchingUseOnlyNLeading;              ///< Number of matched leading jets that will be used
   std::vector<AliEmcalJet*>   fMatchedJets;                             ///< Jets matched in an event (embedded)
   std::vector<AliEmcalJet*>   fMatchedJetsReference;                    ///< Jets matched in an event (reference)
   TRandom3*                   fRandom;                                  ///< random number generator
