@@ -274,6 +274,7 @@ AliESDtrack::AliESDtrack() :
   fTRDslices(0x0),
   fVertexID(-2),// -2 means an orphan track 
   fPIDForTracking(AliPID::kPion),
+  fPIDForTrackingIn(AliPID::kPion),
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
@@ -395,6 +396,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDslices(0x0),
   fVertexID(track.fVertexID),
   fPIDForTracking(AliPID::kPion),
+  fPIDForTrackingIn(AliPID::kPion),
   fESDEvent(track.fESDEvent),
   fCacheNCrossedRows(track.fCacheNCrossedRows),
   fCacheChi2TPCConstrainedVsGlobal(track.fCacheChi2TPCConstrainedVsGlobal),
@@ -574,6 +576,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTRDslices(0x0),
   fVertexID(-2),  // -2 means an orphan track
   fPIDForTracking(track->GetPIDForTracking()),
+  fPIDForTrackingIn(track->GetPIDForTracking()),
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
@@ -774,6 +777,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTRDslices(0x0),
   fVertexID(-2),  // -2 means an orphan track
   fPIDForTracking(AliPID::kPion),
+  fPIDForTrackingIn(AliPID::kPion),
   fESDEvent(0),
   fCacheNCrossedRows(-10),
   fCacheChi2TPCConstrainedVsGlobal(-10),
@@ -853,7 +857,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   if (pdgCode<0) pdgCode = -pdgCode;
   for (i=0;i<AliPID::kSPECIESC;i++) if (pdgCode==AliPID::ParticleCode(i)) {indexPID = i; break;}
 
-  if (indexPID < AliPID::kSPECIESC) fPIDForTracking = indexPID;
+  if (indexPID < AliPID::kSPECIESC) fPIDForTrackingIn = fPIDForTracking = indexPID;
 
   // AliESD track label
   SetLabel(part->GetUniqueID());
@@ -1049,6 +1053,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
   else {delete[] fHMPIDr; fHMPIDr = 0;}
   
   fPIDForTracking = source.fPIDForTracking;
+  fPIDForTrackingIn = source.fPIDForTrackingIn;
 
   fHMPIDtrkTheta = source.fHMPIDtrkTheta;
   fHMPIDtrkPhi   = source.fHMPIDtrkPhi;
@@ -1148,6 +1153,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
   fTRDntracklets  = source.fTRDntracklets; 
   fVertexID = source.fVertexID;
   fPIDForTracking = source.fPIDForTracking;
+  fPIDForTrackingIn = source.fPIDForTrackingIn;
 
   fCacheNCrossedRows = source.fCacheNCrossedRows;
   fCacheChi2TPCConstrainedVsGlobal = source.fCacheChi2TPCConstrainedVsGlobal;
@@ -1407,7 +1413,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fGlobalChi2 = 0;
 
   fVertexID = -2; // an orphan track
-  fPIDForTracking = AliPID::kPion;
+  fPIDForTrackingIn = fPIDForTracking = AliPID::kPion;
   //
   delete fFriendTrack; fFriendTrack = 0;
 } 

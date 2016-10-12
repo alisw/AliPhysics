@@ -97,8 +97,9 @@ public:
   //
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
   Double_t GetMassForTracking() const;
-  void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid;}
+  void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid; if (!IsOn(kTPCout)) fPIDForTrackingIn=pid;}
   Int_t    GetPIDForTracking() const    {return fPIDForTracking;}
+  Int_t    GetPIDForTracking0() const   {return fPIDForTrackingIn;}
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
@@ -658,6 +659,7 @@ protected:
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
   Char_t  fPIDForTracking;           // mass used for tracking
+  Char_t  fPIDForTrackingIn;         // mass used for tracking set during TPCin 
 
   mutable const AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
@@ -682,7 +684,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,72)  //ESDtrack 
+  ClassDef(AliESDtrack,73)  //ESDtrack 
 };
 
 
