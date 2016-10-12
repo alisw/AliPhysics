@@ -5,10 +5,12 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Bool_t      InputDoMixing          = 0,      //same event=0 mixed event =1 (currenlty used to init the pool=1, throw out events without clusters=0)
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
-  const char *cellName               = "usedefault",   //probably delete this this is nowhere used
+  const char *cellName               = "usedefault",       //probably delete this this is nowhere used
   Double_t    trackptcut             = 0.15,
   Double_t    clusptcut              = 0.30,
-  Bool_t      SavePool               = 0,              //saves a mixed event pool to the output event
+  Bool_t      SavePool               = 0,                  //saves a mixed event pool to the output event
+  UInt_t      evtTriggerType         = AliVEvent::kEMCEGA, //use this type of events to combine gammas(trigger) with hadrons
+  UInt_t      evtMixingType          = AliVEvent::kAnyINT, //use only this type of events to fill your mixed event pool with tracks
   const char *taskname               = "AliAnalysisTask",
   const char *suffix                 = ""
 )
@@ -126,8 +128,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //..some additional input for the analysis
   AnalysisTask->SetNeedEmcalGeom(kTRUE);
   AnalysisTask->SetSavePool(SavePool);
-  AnalysisTask->SetEvtTriggerType(AliVEvent::kEMCEGA);   //..Trigger to be used for filling same event histograms
-  AnalysisTask->SetEvtMixType(AliVEvent::kAnyINT);       //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
+  AnalysisTask->SetEvtTriggerType(evtTriggerType);   //..Trigger to be used for filling same event histograms
+  AnalysisTask->SetEvtMixType(evtMixingType);        //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 

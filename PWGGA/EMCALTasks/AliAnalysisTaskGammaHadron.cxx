@@ -220,10 +220,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	min[2] = -100;
 	max[2] = 300;
 	//settings for delta eta (g-h) distribution
-	nbins[3] = 30;
+	nbins[3] = 60;
 	min[3] = -2;
 	max[3] = 2;
-	//settings for delta phi (g-h) distribution
+	//settings for phi distribution for QA
 	nbins[4] = 50;
 	min[4] = -10;
 	max[4] = 370;
