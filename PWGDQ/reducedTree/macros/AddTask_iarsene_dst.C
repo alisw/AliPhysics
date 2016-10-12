@@ -164,7 +164,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   trackCuts->AddCut(AliDielectronVarManager::kImpactParZ,-10.0,10.0);
   trackCuts->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
   trackCuts->AddCut(AliDielectronVarManager::kP,0.9,1.0e+30);
-  trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,50.0,161.0);
+  trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,30.0,161.0);
   //  trackCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.1,4.0);
   
   //trackCuts->AddCut(AliDielectronVarManager::kP,1.0,1.0e+30);
@@ -194,8 +194,8 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   }*/
   
   AliDielectronPID *electronPid = new AliDielectronPID("PID","PID cut");
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron    
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,3.0, 1.0e+30, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron     
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron    
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,2.0, 1.0e+30, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron     
   electronPid->AddCut(AliDielectronPID::kTOF,AliPID::kProton,  -3.0, 3.0, -2.0, 2.0, kTRUE, AliDielectronPID::kIfAvailable, AliDielectronVarManager::kTPCnSigmaPro); // TPC exclusion for proton   
   cuts->AddCut(electronPid);
   
