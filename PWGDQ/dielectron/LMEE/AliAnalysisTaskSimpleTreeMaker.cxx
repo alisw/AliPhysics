@@ -45,10 +45,20 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   fPtMax(10),
   fEtaMin(-0.8),
   fEtaMax(0.8),
+  fESigITSMin(-3.),
+  fESigITSMax(3.),
   fESigTPCMin(-5.),
   fESigTPCMax(5.),
+  fESigTOFMin(-3.),
+  fESigTOFMax(3.),
+  fPSigTPCMin(-99.),
+  fPSigTPCMax(-3.),
+  fPIDcutITS(kFALSE),
+  fPIDcutTOF(kFALSE),
+  fPionPIDcutTPC(kFALSE),
+  isIonColl(kFALSE),
   fIsMC(kTRUE)
-  {
+{
 
 }
 
@@ -67,14 +77,23 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fPtMax(10),
   fEtaMin(-0.8),
   fEtaMax(0.8),
+  fESigITSMin(-3.),
+  fESigITSMax(3.),
   fESigTPCMin(-5.),
-  fESigTPCMax(5.),	
+  fESigTPCMax(5.),
+  fESigTOFMin(-3.),
+  fESigTOFMax(3.),
+  fPSigTPCMin(-99.),
+  fPSigTPCMax(-3.),
+  fPIDcutITS(kFALSE),
+  fPIDcutTOF(kFALSE),
+  fPionPIDcutTPC(kFALSE),
+  isIonColl(kFALSE),
   fIsMC(kTRUE)
-
 {
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-
+  Printf("sup");
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   DefineOutput(1, TTree::Class()); //will be connected to fTree
@@ -195,27 +214,41 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     Double_t eta  = track->Eta();
     if( eta < fEtaMin || eta > fEtaMax ) { continue; } 
     fQAhist->Fill("Tracks_KineCuts", 1);
-    //Get electron nSigma in TPC for cut
+
+    //Get electron nSigma in TPC for cut (inclusive cut)
     Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
     if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue; }
     
     fQAhist->Fill("Tracks_PIDcuts",1); 
     numTracks += 1;
     
-    Double_t phi  = track->Phi();
     
-    //Get rest of nSigma values for ITS, TPC and TOF
+    //Get rest of electron nSigma values and apply cuts if requested (inclusive cuts)
     Double_t EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
+    if(fPIDcutITS){
+      if(EnSigmaITS < fESigITSMin || EnSigmaITS > fESigITSMax){ continue; }
+    }
     Double_t EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
-    
-    Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion);
+    if(fPIDcutTOF){
+      if(EnSigmaTOF < fESigTOFMin || EnSigmaTOF > fESigTOFMax){ continue; }
+    }
+
+    //Get pion nSigma for TPC and apply cut if requested (exclusive cut)
     Double_t PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion);
+    if(fPionPIDcutTPC){
+      if(fPionPIDcutTPC > fPSigTPCMin && fPionPIDcutTPC < fPSigTPCMax){ continue; }
+    }
+    
+    //Get rest of nSigma values for pion and kaon
+    Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion);
     Double_t PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion);
     
     Double_t KnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon);
     Double_t KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon);
     Double_t KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon);
     
+    Double_t phi  = track->Phi();
+
     //Get ITS and TPC signals
     Double_t ITSsignal = track->GetITSsignal();
     Double_t TPCsignal = track->GetTPCsignal();
@@ -312,6 +345,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     "pdg="        << iPdg <<
     "pdgMother="  << iPdgMother <<
     "runNumber="  << runNumber << 
+    "numEvents="  << numEvents <<
     "\n";
   }
 

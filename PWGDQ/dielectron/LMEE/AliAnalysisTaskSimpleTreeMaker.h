@@ -48,8 +48,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     Printf("Set: eta = %f - %f",fEtaMin,fEtaMax);
   }
 
-
-
   void SetESigRangeTPC(Double_t min, Double_t max){
     fESigTPCMin = min;
     fESigTPCMax = max;
@@ -58,6 +56,53 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   }
 
   void SetMC(Bool_t answer){ fIsMC = answer; }
+
+  void SetIsIonColl(Bool_t answer){ isIonColl = answer; }
+    
+  //Flags for ITS and TOF PID usage
+  void UseITSPID(Bool_t answer){ fPIDcutITS = answer; }
+  void UseTOFPID(Bool_t answer){ fPIDcutTOF = answer; }
+
+  //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+  void SetTPCminClusters(Int_t number){
+    fESDtrackCuts->SetMinNClustersTPC(number);
+  }
+
+  void SetTPCminCrossedRows(Int_t number){
+    fESDtrackCuts->SetMinNCrossedRowsTPC(number);
+  }
+
+  void SetTPCRatio(Double_t number){
+    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(number);
+  }
+
+  void SetTPCChi2PerCluster(Float_t number){
+    fESDtrackCuts->SetMaxChi2PerClusterTPC(number);
+  }
+
+  void SetITSclusterRequirements(AliESDtrackCuts::Detector detector, AliESDtrackCuts::ITSClusterRequirement requirement){
+    fESDtrackCuts->SetClusterRequirementITS(detector, requirement);
+  }
+
+  void SetITSChi2PerCluster(Float_t number){
+    fESDtrackCuts->SetMaxChi2PerClusterITS(number);
+  }
+
+  void SetMaxDCAxy(Float_t number){
+    fESDtrackCuts->SetMaxDCAToVertexXY(number);
+  }
+
+  void SetMaxDCAPtDep(const char* dist){
+    fESDtrackCuts->SetMaxDCAToVertexXYPtDep(dist);
+  }
+
+  void SetMaxDCAz(Double_t number){
+    fESDtrackCuts->SetMaxDCAToVertexZ(number);
+  }
+
+  void SetTPCconstrainedGlobalChi2(Double_t number){
+    fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
+  }
   
  private:
  
@@ -89,10 +134,25 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   Double_t fEtaMin;// minimum eta threshold (default = -10)
   Double_t fEtaMax;// maximum eta threshold (default = 10)
 
-  //Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
  
   Double_t fESigTPCMin; 
   Double_t fESigTPCMax; 
+
+    //Values and flags for PID cuts in ITS and TOF
+  Double_t fESigITSMin;
+  Double_t fESigITSMax;
+  Double_t fESigTOFMin;
+  Double_t fESigTOFMax;
+
+  Bool_t fPIDcutITS;
+  Bool_t fPIDcutTOF;
+
+  //Values and flag for pion PID cuts in TPC
+  Double_t fPSigTPCMin;
+  Double_t fPSigTPCMax;
+
+  Bool_t fPionPIDcutTPC;
+  Bool_t isIonColl;
 
   ClassDef(AliAnalysisTaskSimpleTreeMaker, 1); //
 
