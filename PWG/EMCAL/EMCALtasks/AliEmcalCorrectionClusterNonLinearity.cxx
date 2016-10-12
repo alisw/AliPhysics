@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterNonLinearity
 //
-// Author: C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterNonLinearity.h"
 
