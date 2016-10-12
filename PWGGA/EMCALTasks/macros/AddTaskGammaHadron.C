@@ -2,7 +2,7 @@
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Bool_t      InputGammaOrPi0        = 0,      //gamma analysis=0, pi0 analyis=1
-  Bool_t      InputDoMixing          = 0,      //same event=0 mixed event =1
+  Bool_t      InputDoMixing          = 0,      //same event=0 mixed event =1 (currenlty used to init the pool=1, throw out events without clusters=0)
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
   const char *cellName               = "usedefault",   //probably delete this this is nowhere used
@@ -126,6 +126,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //..some additional input for the analysis
   AnalysisTask->SetNeedEmcalGeom(kTRUE);
   AnalysisTask->SetSavePool(SavePool);
+  AnalysisTask->SetEvtTriggerType(AliVEvent::kEMCEGA);   //..Trigger to be used for filling same event histograms
+  AnalysisTask->SetEvtMixType(AliVEvent::kAnyINT);       //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 
