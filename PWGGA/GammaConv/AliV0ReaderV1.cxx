@@ -650,7 +650,6 @@ const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCur
     }
   }else if(fConversionCuts->GetV0FinderSameSign()==2){
     if(fCurrentV0){
-      if((fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetPindex()))->Charge()==(fConversionCuts->GetTrack(fInputEvent,fCurrentV0->GetNindex()))->Charge()){
         if(charge==1){
           tracklabel=fCurrentV0->GetPindex();
           return fCurrentV0->GetParamP();
@@ -658,7 +657,6 @@ const AliExternalTrackParam *AliV0ReaderV1::GetExternalTrackParam(AliESDv0 *fCur
           tracklabel=fCurrentV0->GetNindex();
           return fCurrentV0->GetParamN();
         }
-      }
     }
   }else{
     // Check for sign flip

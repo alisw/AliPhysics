@@ -371,7 +371,7 @@ void AddTask_GammaConvFlow_PbPb2(
     flowEvent[i] = mgr->CreateContainer(Form("FlowContainer_%s_%s",uniqueID.Data(),totalCutString.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 2+i, flowEvent[i]);
     
-    Double_t NFilterBinValues[NFilterBins+1];
+    Double_t NFilterBinValues[20];
     if(FilterVariable==7 && NFilterBins == 4){
       task->SetFilterVariable(2,MinFilter,MaxFilter);
       NFilterBinValues[0] = -20;
