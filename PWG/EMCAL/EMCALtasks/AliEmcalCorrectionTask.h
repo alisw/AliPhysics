@@ -45,10 +45,10 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    * @brief Switch for the beam type
    */
   enum BeamType {
-    kNA       = -1,//!< Undefined
-    kpp       = 0, //!< Proton-Proton
-    kAA       = 1, //!< Nucleus-Nucleus
-    kpA       = 2  //!< Proton-Nucleus
+    kNA       = -1,//!<! Undefined
+    kpp       = 0, //!<! Proton-Proton
+    kAA       = 1, //!<! Nucleus-Nucleus
+    kpA       = 2  //!<! Proton-Nucleus
   };
 
   AliEmcalCorrectionTask();

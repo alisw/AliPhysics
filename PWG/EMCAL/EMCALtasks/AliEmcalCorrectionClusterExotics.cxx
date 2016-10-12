@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterExotics
 //
-// Author: C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterExotics.h"
 

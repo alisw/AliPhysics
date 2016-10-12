@@ -3,6 +3,23 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+/**
+ * @class AliEmcalCorrectionCellBadChannel
+ * @brief Bad channel correction component in the EMCal correction framework
+ * @ingroup EMCALCOREFW
+ *
+ * Based on code in AliEMCALTenderSupply.
+ *
+ * @author Deepa Thomas (Utrecht University), AliEMCALTenderSupply
+ * @author Jiri Kral (University of Jyvaskyla), AliEMCALTenderSupply mods/rewrite
+ * @author Salvatore Aiola, make AliEMCALTenderSupply work for AODs
+ * @author C. Loizides, make AliEMCALTenderSupply work for AODs
+ * @author Gustavo Conesa, LPSC-Grenoble, AliEMCALTenderSupply several mods.
+ * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University, centralize EMCal corrections using components
+ * @author James Mulligan <james.mulligan@yale.edu>, Yale University, centralize EMCal corrections using components
+ * @date Jul 8, 2016
+ */
+
 class AliEmcalCorrectionCellBadChannel : public AliEmcalCorrectionComponent {
  public:
   AliEmcalCorrectionCellBadChannel();
@@ -13,8 +30,8 @@ class AliEmcalCorrectionCellBadChannel : public AliEmcalCorrectionComponent {
   Bool_t Run();
   
 protected:
-  TH1F* fCellEnergyDistBefore;
-  TH1F* fCellEnergyDistAfter;
+  TH1F* fCellEnergyDistBefore;              //!<! cell energy distribution, before bad channel correction
+  TH1F* fCellEnergyDistAfter;               //!<! cell energy distribution, after bad channel correction
   
 private:
   Int_t      InitBadChannels();
@@ -25,7 +42,9 @@ private:
   // Allows the registration of the class so that it is availble to be used by the correction task.
   static RegisterCorrectionComponent<AliEmcalCorrectionCellBadChannel> reg;
 
-  ClassDef(AliEmcalCorrectionCellBadChannel, 1) // EMCal cell bad channel correction component
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalCorrectionCellBadChannel, 1); // EMCal cell bad channel correction component
+  /// \endcond
 };
 
 #endif /* ALIEMCALCORRECTIONCELLBADCHANNEL_H */

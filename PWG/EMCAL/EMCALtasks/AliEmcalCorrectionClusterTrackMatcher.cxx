@@ -1,6 +1,5 @@
 // AliEmcalCorrectionClusterTrackMatcher
 //
-// Author: C.Loizides, S.Aiola
 
 #include "AliEmcalCorrectionClusterTrackMatcher.h"
 

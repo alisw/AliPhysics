@@ -1,11 +1,5 @@
 // AliEmcalCorrectionCellTimeCalib
 //
-//  Based on elements of AliEMCALTenderSupply:
-/// \author Deepa Thomas (Utrecht University)
-/// \author Jiri Kral (University of Jyvaskyla), mods/rewrite
-/// \author Salvatore Aiola, make it work for AODs
-/// \author C. Loizides, make it work for AODs
-/// \author Gustavo Conesa, LPSC-Grenoble, several mods.
 
 #include <TObjArray.h>
 #include <TFile.h>
