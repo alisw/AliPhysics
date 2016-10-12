@@ -18,28 +18,28 @@ void logbookAddMetadata(TTree*tree, Int_t verbose=0){
   // Set metadata infomation 
   //
   if (tree==NULL) {
-    ::Error("logbookAddMetadata","Start processing. Emtpy tree",tree);
+    ::Error("logbookAddMetadata","Start processing. Emtpy tree");
     return;
   }
   ::Info("logbookAddMetadata","Start processing Tree %s",tree->GetName());
   TObjArray * branches=tree->GetListOfBranches();
   for (Int_t ibr=0; ibr<branches->GetEntriesFast(); ibr++){
     TStatToolkit::AddMetadata(tree,TString::Format("%s.Description",branches->At(ibr)->GetName()).Data(),
-			      TString::Format("Source alice logbook.\n\t\t %s",tree->GetTitle()).Data());
-    Bool_t isEventBranch= TString(branches->At(ibr)->GetName()).Contains("Events")!=NULL;
-    Bool_t isDataBranch= TString(branches->At(ibr)->GetName()).Contains("Data")!=NULL;
-    Bool_t isMagnet= TString(branches->At(ibr)->GetName()).Contains("magnetCurrent")!=NULL;
+			      TString::Format("Source alice logbook https.\n\t\t %s",tree->GetTitle()).Data());
+    Bool_t isEventBranch= TString(branches->At(ibr)->GetName()).Contains("Events");
+    Bool_t isDataBranch= TString(branches->At(ibr)->GetName()).Contains("Data");
+    Bool_t isMagnet= TString(branches->At(ibr)->GetName()).Contains("magnetCurrent");
     TString brClass="Logbook";
     if (isEventBranch) {
       brClass+=" Stat";
       TStatToolkit::AddMetadata(tree,TString::Format("%s.AxisTitle",branches->At(ibr)->GetName()).Data(),
-				TString::Format("counts",tree->GetTitle()).Data());      
+				TString::Format("counts").Data());      
     }
 
     if (isDataBranch)  {
       brClass+=" Data";
       TStatToolkit::AddMetadata(tree,TString::Format("%s.AxisTitle",branches->At(ibr)->GetName()).Data(),
-				TString::Format("size (By)",tree->GetTitle()).Data());      
+				TString::Format("size (By)").Data());      
     }
     if (isMagnet) brClass+=" Setup";
 
@@ -65,7 +65,7 @@ void logbookAddMetadata(TTree*tree, Int_t verbose=0){
   TStatToolkit::AddMetadata(tree,"HLTmode.class","Base Logbook Setup");
   TStatToolkit::AddMetadata(tree,"numberOfDetectors.class","Base Logbook Setup");  
   //
-  TList * mlist = tree->GetUserInfo()->FindObject("metaTable");
+  TList * mlist = (TList*)(tree->GetUserInfo()->FindObject("metaTable"));
   mlist->Sort();
   if (verbose==1){
     mlist->Print();
