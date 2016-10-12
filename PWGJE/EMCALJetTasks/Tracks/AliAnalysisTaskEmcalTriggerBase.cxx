@@ -182,7 +182,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       if(isEMC7) isEMC7 &= selector(kCPREL0);
     } else {
       if(isEJ1) isEJ1 &= !selector(kCPREJ1);
-      if(isEJ1) isEJ2 &= !selector(kCPREJ2);
+      if(isEJ2) isEJ2 &= !selector(kCPREJ2);
       if(isEG1) isEG1 &= !selector(kCPREG1);
       if(isEG2) isEG2 &= !selector(kCPREG2);
       if(isEMC7) isEMC7 &= !selector(kCPREL0);
