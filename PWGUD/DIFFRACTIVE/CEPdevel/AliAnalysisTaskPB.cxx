@@ -51,11 +51,12 @@
 #include "AliPBTracks.h"
 
 //------------------------------------------------------------------------------
-AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
+AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state, Int_t numTracksMax):
 	AliAnalysisTaskSE(name)
 	, fDoAOD(kFALSE)
 	, fAnalysisStatus(state)
 	, fAnalysisStatusString(new TObjString(Form("0x%lx", fAnalysisStatus)))
+  , fnumTracksMax(numTracksMax)
 	, fNoGapFraction(0.01)
 	, fReducedGapFraction(0.02)
 	, fMaxVtxDst(0.5) // value to be checked with the vertex study histograms
@@ -66,7 +67,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fPIDCombined1(0x0)
 	, fPIDCombined2(0x0)
 	, fPIDCombined3(0x0)
-	, fPhysicsSelection(0x0)
+	, fPhysicsSelection(new AliPhysicsSelection())
 	, fTracks(new AliPBTracks())
 	, fVtxDst(-1.)
 	, fVtxX(0)
@@ -194,9 +195,9 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	, fMCProcessLs(0x0)
 
 	, fMAllTrackMass(0x0)
-  
+    
   , fCEPEvents(new TClonesArray("CEPEventBuffer"))
-  
+  , fMCCDSystem(TLorentzVector(0,0,0,0))
 {
 	//
 	// standard constructor (the one which should be used)
@@ -228,7 +229,6 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state):
 	}
 
 	if (fAnalysisStatus & AliPBBase::kBitEEStudy) { // empty event study
-		fPhysicsSelection = new AliPhysicsSelection;
 		fPhysicsSelection->SetSkipTriggerClassSelection();
 		// accept all (A,C,E and I) triggers of a certain class
 	}
@@ -267,6 +267,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fDoAOD(kFALSE)
 	, fAnalysisStatus(0x0)
 	, fAnalysisStatusString(0x0)
+  , fnumTracksMax(7)
 	, fNoGapFraction(0.01)
 	, fReducedGapFraction(0.02)
 	, fMaxVtxDst(0.5)
@@ -277,7 +278,7 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fPIDCombined1(0x0)
 	, fPIDCombined2(0x0)
 	, fPIDCombined3(0x0)
-	, fPhysicsSelection(0x0)
+	, fPhysicsSelection(new AliPhysicsSelection())
 	, fTracks(0x0)
 	, fVtxDst(-1.)
 	, fVtxX(0)
@@ -405,8 +406,9 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fMCProcessLs(0x0)
 
 	, fMAllTrackMass(0x0)
-
+  
   , fCEPEvents(new TClonesArray("CEPEventBuffer"))
+  , fMCCDSystem(TLorentzVector(0,0,0,0))
 
 {
 	//
@@ -1060,6 +1062,8 @@ void AliAnalysisTaskPB::UserCreateOutputObjects()
 	if (!fAnalysisStatus || fAnalysisStatus & AliPBBase::kBitPWAtree) {
 		fPWAtree = new TTree("cd_pwa", "pwa");
 
+		fPWAtree->Branch("MCCDsystem", &fMCCDSystem);
+
 		for (Int_t ii=0; ii<2; ii++) {
       for (Int_t kk=0; kk<=AliPID::kSPECIES; kk++) {
         fPWAtree->Branch(Form("pid_nSigmaTPC_%i_%i",ii,kk),&fPIDnSigmaTPC[ii][kk]);
@@ -1170,14 +1174,12 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//
 	// Executed for every event which passed the physics selection
 	//
-	//printf("Entry: %ld\n", (Long_t)Entry()); // print current event number
-
-  // increment event number
-  fEvent++;
-  // printf("\n\nNext Event ***********\n");
-  // printf("Event number: %i\n",fEvent);
   
-  // 
+  // increment event number
+  fEvent = ((TTree*)GetInputData(0))->GetTree()->GetReadEntry();
+  printf("\nEvent %ld ************************************************\n",fEvent);  
+  
+  // events running through UserExec
   if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinTotalInput); // stats flow
 	}
@@ -1189,11 +1191,26 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 		PostOutputs();
 		return;
 	}
-	// printf("... success\n");
-
 	if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinGoodInput); // stats flow
 	}
+	// printf("... success\n");
+
+  // Reset the event buffer
+  TClonesArray &evb = *fCEPEvents;
+  evb.Clear();
+  
+  // prepare new CEPEventBuffer
+  CEPEventBuffer *evbuf = new(evb[0]) CEPEventBuffer();
+  evbuf->SetRunNumber(fRun);
+  evbuf->SetEventNumber(fEvent);
+    
+  // check event with ALiPhysicsSelection
+  if (fMCEvent)  fPhysicsSelection->SetAnalyzeMC(kTRUE);
+  evbuf->SetPhyssel(fPhysicsSelection->IsCollisionCandidate(fESDEvent)>0);      
+  // printf("Event is selected: %u\n",
+  //  fPhysicsSelection->IsCollisionCandidate(fESDEvent));
+  //fPhysicsSelection->Print();
 
 	//= ANALYZE ONLY PHOJET CD EVENTS ============================================
 	if (fAnalysisStatus & AliPBBase::kBitCDonly) {
@@ -1233,11 +1250,27 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= MC TRUTH =================================================================
 	// for now only implemented on ESDs
+  AliStack *stack;
+  if (fMCEvent) {
+    evbuf->SetMCGenerator(fMCGenerator);
+    evbuf->SetMCProcessType(fMCprocess);
+
+    // get MC vertex
+    TParticle* prot1 = NULL;
+    if (fMCEvent) {
+      stack = fMCEvent->Stack();
+      if (stack) {
+        Int_t nPrimaries = stack->GetNprimary();
+        prot1 = stack->Particle(0);
+      }
+    }
+    evbuf->SetMCVertexPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
+  }
+    
 	Int_t nMCprimaries = 0;
-  // printf("\nDetermining MC process type ...\n");
 	DetermineMCprocessType();
-	if (fAnalysisStatus & AliPBBase::kBitTHnMC) {
-		nMCprimaries = DoMCTruth();
+  if (fAnalysisStatus & AliPBBase::kBitTHnMC) {
+    nMCprimaries = DoMCTruth();
 	}
 
 	//= EVENT SELECTION ==========================================================
@@ -1396,42 +1429,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   // printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
   // printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
   
-  if (ncombined < 7) {
+  if (ncombined <= fnumTracksMax) {
     
-    // Reset the event buffer
-    TClonesArray &evb = *fCEPEvents;
-    evb.Clear();
-  
-    // prepare new CEPEventBuffer
-    CEPEventBuffer *evbuf = new(evb[0]) CEPEventBuffer();
-    
-    // prepare MC stack
-    AliStack *stack = NULL;
-    Int_t nPrimaries = 0;
-    Double_t MCVtxX, MCVtxY, MCVtxZ;
-    
-    TParticle* prot1 = NULL;
-    if (fMCEvent) {
-      stack = fMCEvent->Stack();
-      if (stack) {
-        nPrimaries = stack->GetNprimary();
-        prot1 = stack->Particle(0);
-      }
-    }
-
     // set event parameters
     // printf("setting event information ...\n");
-    evbuf->SetRunNumber(fRun);
-    evbuf->SetEventNumber(fEvent);
     evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
     evbuf->SetGapCondition(fCurrentGapCondition);
     evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
-    
-    if (fMCEvent) {
-      evbuf->SetMCGenerator(fMCGenerator);
-      evbuf->SetMCProcessType(fMCprocess);
-      evbuf->SetMCVertexPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
-    }
     
     // add normal tracks to event buffer
     Double_t mom[3];
@@ -1478,7 +1482,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       
       // get MC truth
       Int_t MCind = tmptrk->GetLabel();
-      if (nPrimaries > 0 && MCind >= 0) {
+      if (fMCEvent && MCind >= 0) {
         TParticle* part = stack->Particle(MCind);
         //printf("MC mass: %f\n", part->GetMass());
         
@@ -1537,7 +1541,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       
       // get MC truth
       Int_t MCind = tmptrk->GetLabel();
-      if (nPrimaries > 0 && MCind >= 0) {
+      if (fMCEvent && MCind >= 0) {
         TParticle* part = stack->Particle(MCind);
         //printf("MC mass: %f\n", part->GetMass());
         
@@ -1561,9 +1565,15 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     // printf("NumberSoftTracks: %i\n",evbuf->GetnumSoftTracks());
     // printf("GapCondition: %i\n",evbuf->GetGapCondition());
     
-    // fill tree
+    // fill tree if not all events are to be saved
+    if ( !(fAnalysisStatus & AliPBBase::kBitSaveAll)) {
+      fPWAtree->Fill();
+      PostOutputs();
+    }
+  }
+  // fill tree if all events are to be saved
+  if ( (fAnalysisStatus & AliPBBase::kBitSaveAll)) {
     fPWAtree->Fill();
-    
     PostOutputs();
   }
   
@@ -1654,6 +1664,7 @@ Bool_t AliAnalysisTaskPB::CheckInput()
 	if (const AliESDInputHandler *esdH =
 	    dynamic_cast<AliESDInputHandler*>(fInputHandler)) {
 	  fESDEvent = (AliESDEvent*)esdH->GetEvent();
+
 	}
 	else if (const AliAODInputHandler *aodH =
 	         dynamic_cast<AliAODInputHandler*>(fInputHandler)) {
@@ -1674,7 +1685,7 @@ Bool_t AliAnalysisTaskPB::CheckInput()
 	if(!fPIDResponse){
 		printf("AliAnalysisTaskPB No PIDd\n");
 		// PID is fixed to unknown
-		//return kFALSE;
+		return kFALSE;
 	}
 
 	if(fDoAOD && fAODEvent && TMath::Abs(fAODEvent->GetMagneticField())<1){
@@ -2431,14 +2442,14 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 		  
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
-      printf("MC generator name: %s\n",fMCGenerator.Data());
+      // printf("MC generator name: %s\n",fMCGenerator.Data());
       Int_t nprod = header->NProduced();
-			printf("Number of produced particles: %i\n",nprod);
+			// printf("Number of produced particles: %i\n",nprod);
 
       // Pythia
 			if (fMCGenerator == "Pythia") {
 				fMCprocess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-				printf("Pythia process type: %i\n",fMCprocess);
+				// printf("Pythia process type: %i\n",fMCprocess);
         switch(fMCprocess) {
 				case 92:
 				case 93:
@@ -2498,15 +2509,56 @@ void AliAnalysisTaskPB::FillMChists(Int_t combCh)
 Int_t AliAnalysisTaskPB::DoMCTruth()
 {
 	//
-	// analyses the MC truth and do a gap selection based on the eta values of
+	// analyse the MC truth and do a gap selection based on the eta values of
 	// the primaries
 	//
 
-	if (!fMCEvent) return -1;
+	// get the MC stack
+  if (!fMCEvent) return -1;
 	AliStack* stack = fMCEvent->Stack();
 	if (!stack) return -1;
   //printf("We got a MC stack ...\n");
 
+  // print the MC stack
+	if (kFALSE)stack->DumpPStack ();
+  if (kFALSE) {
+    TList *parentIDs = new TList();
+    parentIDs->Add(new TVector2(-1,0));
+    printDaughters(parentIDs,stack);
+  }
+  
+  // distinguish between different generators
+  // DIME:
+  //    . select 2/4 daughters of Mx and compute Mx and pt(Mx)
+  //      (can also be done with missing mass of scattered protons)
+  //
+  // PYTHIA:
+  //    .
+  fMCCDSystem = TLorentzVector(0,0,0,0);
+  // printf("MC generator: %s\n",fMCGenerator.Data());
+  if (fMCGenerator == "Dime") {
+  
+    // loop over stack and add all 4-vectors of 2nd generation particles
+    // should give CM energy
+    TParticle* part = NULL;
+    
+    for (Int_t ii=0; ii<stack->GetNtrack();ii++) {
+      part = stack->Particle(ii);
+   
+      // 2nd generation and not proton?
+      stack->SetCurrentTrack(ii);
+      if (stack->GetCurrentParentTrackNumber() == 0 &&
+        part->GetPdgCode() != 2212) {
+        fMCCDSystem += TLorentzVector(part->Px(),part->Py(),part->Pz(),part->Energy());
+        
+        // printf("2nd generation particle: %f/%f/%f - %f\n",
+        //   part->Px(),part->Py(),part->Pz(),part->Energy());
+      }
+    }
+    // printf("Total energy and mass of 2nd generation particles: %f / %f \n",fMCCDSystem.E(),fMCCDSystem.M());
+  
+  }  
+  
 	//= Multiplicity =============================================================
 	// determine number of charged physical primaries on the stack
 	Int_t nPhysicalPrimaries = 0;
@@ -2514,10 +2566,6 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
   //printf("There are %i/%i/%i particles\n",
   //  stack->GetNtrack(),nPrimaries,(Int_t)stack->GetNtransported());
   
-	//stack->DumpPStack ();
-  //TList *parentIDs = new TList();
-  //parentIDs->Add(new TVector2(-1,0));
-  //printDaughters(parentIDs,stack);
   
   for (Int_t iTracks = 0; iTracks < stack->GetNtrack(); ++iTracks) {
     

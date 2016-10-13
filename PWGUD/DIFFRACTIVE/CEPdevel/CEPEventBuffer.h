@@ -12,6 +12,7 @@ class CEPEventBuffer : public TObject {
   private:
     Int_t fRunNumber;
     Int_t fEventNumber;
+    Bool_t fPhysel;
     Int_t fnumTracks;
     Int_t fnumSoftTracks;
     Int_t fnumResiduals;
@@ -38,6 +39,7 @@ class CEPEventBuffer : public TObject {
     void Reset();
     void SetRunNumber(Int_t runnum)     { fRunNumber = runnum; }
     void SetEventNumber(Int_t evnum)    { fEventNumber = evnum; }
+    void SetPhyssel(Bool_t physsel)     { fPhysel = physsel; }
     void SetnumResiduals(Int_t nres)    { fnumResiduals = nres; }
     void SetGapCondition(Int_t gapcond) { fGapCondition = gapcond; }
     void SetPileup(Bool_t isPileup)     { fisPileup = isPileup; }
@@ -53,6 +55,7 @@ class CEPEventBuffer : public TObject {
     // Accessors
     Int_t GetRunNumber()     const { return fRunNumber; }
     Int_t GetEventNumber()   const { return fEventNumber; }
+    Bool_t GetPhyssel()      const { return fPhysel; }
     Int_t GetnumTracks()     const { return fnumTracks; }
     Int_t GetnumSoftTracks() const { return fnumSoftTracks; }
     TVector3 GetVertexPos()  const { return fVertexPos; }
