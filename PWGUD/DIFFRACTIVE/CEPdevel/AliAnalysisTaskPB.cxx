@@ -2576,10 +2576,6 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
     
     if ( fMCprocessType == AliPBBase::kBinCD ) {
       // printf("DPMjet process type: %i\n",fMCprocess);
-      TList *parentIDs = new TList();
-      parentIDs->Add(new TVector2(-1,0));
-      printDaughters(parentIDs,stack);
-  
       // loop over stack and add all 4-vectors of 2nd generation particles
       // should give CM energy
       for (Int_t ii=2; ii<stack->GetNtrack();ii++) {
