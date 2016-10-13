@@ -82,7 +82,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetMatchingArrayName(""),
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
-  fJetMatchingThreshold(4.0),
+  fJetMatchingMinPt(0.0),
+  fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
   fMatchedJets(),
   fRandom(0),
@@ -128,7 +129,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetMatchingArrayName(""),
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
-  fJetMatchingThreshold(4.0),
+  fJetMatchingMinPt(0.0),
+  fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
   fMatchedJets(),
   fRandom(0),
@@ -732,7 +734,7 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
     UInt_t   dummy = 0;
     if(!fJetsCont->AcceptJet(probeJet , dummy))
       continue;
-    if(probeJet->Pt() < fJetMatchingThreshold)
+    if((probeJet->Pt() < fJetMatchingMinPt) || (probeJet->Pt() >= fJetMatchingMaxPt))
       continue;
 
     AliEmcalJet* matchedJet = 0;
