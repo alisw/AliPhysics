@@ -120,6 +120,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEmcalMaxPatch.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
+    Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
