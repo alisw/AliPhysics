@@ -56,4 +56,5 @@ vector<Double_t> MomPDGBin = makeArbBinning(PID_bins,sizeof(PID_bins)/sizeof(PID
 vector<Double_t> ClustPDGBin = makeArbBinning(PID_bins,sizeof(PID_bins)/sizeof(PID_bins[0]));
 vector<Double_t> DxBin = makeLinBinning(-1.,1.,2);
 vector<Double_t> DzBin = makeLinBinning(-1.,1.,2);
-vector<Double_t> DecayBin = makeLinBinning(0.,10.,10);
+vector<Double_t> DecayBin = makeLinBinning(0.,12.,12);
+Int_t minNLM = 1;
