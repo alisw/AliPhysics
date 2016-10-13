@@ -36,6 +36,7 @@
 /// \author Marian Ivanov
 
 #include <TTree.h>
+#include <TGrid.h>
 #include <TEnv.h>
 #include <TString.h>
 #include <TObjArray.h>
@@ -124,6 +125,7 @@ TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, 
     //    }
     
     //    delete f;
+    if (currentFile.BeginsWith("alien://") && !gGrid) TGrid::Connect("alien");
   }
 
   in.close();
