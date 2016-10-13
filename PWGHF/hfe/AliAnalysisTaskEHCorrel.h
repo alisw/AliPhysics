@@ -78,6 +78,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fCentrality;//!
     Double_t            fCentralityMin;//
     Double_t            fCentralityMax;//
+    Double_t            fMultiplicity;//!
     Bool_t              fEMCEG1;//
     Bool_t              fEMCEG2;//
     Bool_t              fFlagClsTypeEMC;//switch to select EMC clusters
@@ -106,6 +107,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fVtxY;//!
     TH1F                *fCentralityNoPass;//!
     TH1F                *fCentralityPass;//!
+    TH1F                *fMultiplicityNoPass;//!
+    TH1F                *fMultiplicityPass;//!
     TH1F                *fHistClustE;//!
     TH2F                *fEMCClsEtaPhi;//!
 
