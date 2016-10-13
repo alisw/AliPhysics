@@ -96,7 +96,7 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fUtils(0),
+    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
       fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -119,6 +119,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       fNTracks(0),
       fNTracksGlobal2015(0),
       fNTracksGlobal2015Trigger(0),
+      fNTracksITSsa2010(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -187,7 +188,18 @@ AliMultSelectionTask::AliMultSelectionTask()
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
-      fHistQASelected_PtVsV0M(0), 
+      fHistQASelected_NTracksGlobalVsV0M(0),
+      fHistQASelected_NTracksGlobalVsCL0(0),
+      fHistQASelected_NTracksGlobalVsCL1(0),
+      fHistQASelected_PtGlobalVsV0M(0), 
+      fHistQASelected_PtGlobalVsCL0(0), 
+      fHistQASelected_PtGlobalVsCL1(0), 
+      fHistQASelected_NTracksITSsaVsV0M(0),
+      fHistQASelected_NTracksITSsaVsCL0(0),
+      fHistQASelected_NTracksITSsaVsCL1(0),
+      fHistQASelected_PtITSsaVsV0M(0),
+      fHistQASelected_PtITSsaVsCL0(0),
+      fHistQASelected_PtITSsaVsCL1(0),
 
       //Objects
       fOadbMultSelection(0),
@@ -199,7 +211,7 @@ AliMultSelectionTask::AliMultSelectionTask()
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
-    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fUtils(0),
+    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
       fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
       fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ),
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
@@ -222,6 +234,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fNTracks(0),
       fNTracksGlobal2015(0),
       fNTracksGlobal2015Trigger(0),
+      fNTracksITSsa2010(0),
       fCurrentRun(-1),
       fMultiplicity_ADA (0),
       fMultiplicity_ADC (0),
@@ -290,7 +303,18 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fHistQASelected_TrackletsVsV0M(0),
       fHistQASelected_TrackletsVsCL0(0),
       fHistQASelected_TrackletsVsCL1(0),
-      fHistQASelected_PtVsV0M(0), 
+      fHistQASelected_NTracksGlobalVsV0M(0),
+      fHistQASelected_NTracksGlobalVsCL1(0),
+      fHistQASelected_NTracksGlobalVsCL0(0),
+      fHistQASelected_PtGlobalVsV0M(0), 
+      fHistQASelected_PtGlobalVsCL0(0), 
+      fHistQASelected_PtGlobalVsCL1(0), 
+      fHistQASelected_NTracksITSsaVsV0M(0),
+      fHistQASelected_NTracksITSsaVsCL0(0),
+      fHistQASelected_NTracksITSsaVsCL1(0),
+      fHistQASelected_PtITSsaVsV0M(0),
+      fHistQASelected_PtITSsaVsCL0(0),
+      fHistQASelected_PtITSsaVsCL1(0),
       
       //Objects
       fOadbMultSelection(0),
@@ -331,8 +355,19 @@ AliMultSelectionTask::~AliMultSelectionTask()
         delete fESDtrackCuts;
         fESDtrackCuts = 0x0;
     }
-    if(fTrackCuts) delete fTrackCuts;
-    if (fUtils) {
+    if ( fTrackCuts ){
+        delete fTrackCuts;
+        fTrackCuts = 0x0;
+    }
+    if ( fTrackCutsITSsa2010  ){
+        delete fTrackCutsITSsa2010;
+        fTrackCutsITSsa2010 = 0x0;
+    }
+    if ( fTrackCutsGlobal2015 ){
+        delete fTrackCutsGlobal2015;
+        fTrackCutsGlobal2015 = 0x0;
+    }
+    if ( fUtils) {
         delete fUtils;
         fUtils = 0x0;
     }
@@ -484,6 +519,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
         fTreeEvent->Branch("fNTracksGlobal2015",      &fNTracksGlobal2015, "fNTracksGlobal2015/I");
         fTreeEvent->Branch("fNTracksGlobal2015Trigger",      &fNTracksGlobal2015Trigger, "fNTracksGlobal2015Trigger/I");
+        fTreeEvent->Branch("fNTracksITSsa2010",     &fNTracksITSsa2010, "fNTracksITSsa2010/I");
         
         if( fkDebugIsMC ) {
             fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
@@ -533,6 +569,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
    
     //Create TPC only track cuts
     if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+
+    //Create ITSsa track cuts
+    if(!fTrackCutsITSsa2010) fTrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     
     if(! fUtils ) {
         fUtils = new AliAnalysisUtils();
@@ -636,9 +675,55 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     }
     
     //In development: QA with global track information 
-        if ( !fHistQASelected_PtVsV0M ) {
-        fHistQASelected_PtVsV0M = new TProfile("fHistQASelected_PtVsV0M", ";V0M Percentile;#LTp_{T}#GT", 105,0,105);
-        fListHist->Add(fHistQASelected_PtVsV0M);
+    if ( !fHistQASelected_NTracksGlobalVsV0M ) {
+        fHistQASelected_NTracksGlobalVsV0M = new TProfile("fHistQASelected_NTracksGlobalVsV0M", ";V0M Percentile;#LTGlobal Tracks#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_NTracksGlobalVsV0M);
+    }
+    if ( !fHistQASelected_NTracksGlobalVsCL0 ) {
+        fHistQASelected_NTracksGlobalVsCL0 = new TProfile("fHistQASelected_NTracksGlobalVsCL0", ";CL0 Percentile;#LTGlobal Tracks#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_NTracksGlobalVsCL0);
+    }
+    if ( !fHistQASelected_NTracksGlobalVsCL1 ) {
+        fHistQASelected_NTracksGlobalVsCL1 = new TProfile("fHistQASelected_NTracksGlobalVsCL1", ";CL1 Percentile;#LTGlobal Tracks#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_NTracksGlobalVsCL1);
+    }
+    if ( !fHistQASelected_PtGlobalVsV0M ) {
+        fHistQASelected_PtGlobalVsV0M = new TProfile("fHistQASelected_PtGlobalVsV0M", ";V0M Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtGlobalVsV0M);
+    }
+    if ( !fHistQASelected_PtGlobalVsCL0 ) {
+        fHistQASelected_PtGlobalVsCL0 = new TProfile("fHistQASelected_PtGlobalVsCL0", ";CL0 Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtGlobalVsCL0);
+    }
+    if ( !fHistQASelected_PtGlobalVsCL1 ) {
+        fHistQASelected_PtGlobalVsCL1 = new TProfile("fHistQASelected_PtGlobalVsCL1", ";CL1 Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtGlobalVsCL1);
+    }
+
+    //In development: QA with ITSsa track information
+    if ( !fHistQASelected_NTracksITSsaVsV0M ) {
+        fHistQASelected_NTracksITSsaVsV0M = new TProfile("fHistQASelected_NTracksITSsaVsV0M", ";V0M Percentile;#LTITSsa Tracks#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_NTracksITSsaVsV0M);
+    }
+    if ( !fHistQASelected_NTracksITSsaVsCL0 ) {
+        fHistQASelected_NTracksITSsaVsCL0 = new TProfile("fHistQASelected_NTracksITSsaVsCL0", ";CL0 Percentile;#LTITSsa Tracks#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_NTracksITSsaVsCL0);
+    }
+    if ( !fHistQASelected_NTracksITSsaVsCL1 ) {
+        fHistQASelected_NTracksITSsaVsCL1 = new TProfile("fHistQASelected_NTracksITSsaVsCL1", ";CL1 Percentile;#LTITSsa Tracks#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_NTracksITSsaVsCL1);
+    }
+    if ( !fHistQASelected_PtITSsaVsV0M ) {
+        fHistQASelected_PtITSsaVsV0M = new TProfile("fHistQASelected_PtITSsaVsV0M", ";V0M Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtITSsaVsV0M);
+    }
+    if ( !fHistQASelected_PtITSsaVsCL0 ) {
+        fHistQASelected_PtITSsaVsCL0 = new TProfile("fHistQASelected_PtITSsaVsCL0", ";CL0 Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtITSsaVsCL0);
+    }
+    if ( !fHistQASelected_PtITSsaVsCL1 ) {
+        fHistQASelected_PtITSsaVsCL1 = new TProfile("fHistQASelected_PtITSsaVsCL1", ";CL1 Percentile;#LTp_{T}#GT", 105,0,105);
+        fListHist->Add(fHistQASelected_PtITSsaVsCL1);
     }
 
     //List of Histograms: Normal
@@ -1289,20 +1374,38 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Track information
         fNTracksGlobal2015        = 0 ;
         fNTracksGlobal2015Trigger = 0;
+        fNTracksITSsa2010 = 0;
         
         for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
             AliVTrack *track = lVevent -> GetVTrack( itrack );
             if ( !track ) continue;
+
+            //Only ITSsa tracks
+            if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
+                fNTracksITSsa2010 ++; // count them
+                fHistQASelected_PtITSsaVsV0M -> Fill( lV0M, track->Pt() );
+                fHistQASelected_PtITSsaVsCL0 -> Fill( lCL0, track->Pt() );
+                fHistQASelected_PtITSsaVsCL1 -> Fill( lCL1, track->Pt() );
+            }
+
             if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
             
             //Only for accepted tracks
             fNTracksGlobal2015 ++; //count them
-            fHistQASelected_PtVsV0M -> Fill( lV0M, track->Pt() );
+            fHistQASelected_PtGlobalVsV0M -> Fill( lV0M, track->Pt() );
+            fHistQASelected_PtGlobalVsCL0 -> Fill( lCL0, track->Pt() );
+            fHistQASelected_PtGlobalVsCL1 -> Fill( lCL1, track->Pt() );
             
             //Count accepted + TOF time window (info from Alberica)
             //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
             if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 ) fNTracksGlobal2015Trigger ++;
         }
+        fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015 );
+        fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, fNTracksGlobal2015 );
+        fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, fNTracksGlobal2015 );
+        fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, fNTracksITSsa2010 );
+        fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010 );
+        fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010 );
         //=============================================================================
         
         //Add to AliVEvent

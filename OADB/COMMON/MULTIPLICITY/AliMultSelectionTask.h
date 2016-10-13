@@ -225,6 +225,7 @@ private:
     // A.T.
     AliESDtrackCuts* fTrackCuts;        // optional track cuts
     AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
+    AliESDtrackCuts* fTrackCutsITSsa2010; // optional track cuts
     
     AliMultVariable *fZnaFired;
     AliMultVariable *fZncFired;
@@ -234,6 +235,7 @@ private:
     Int_t    fNTracks;             //!  no. tracks
     Int_t    fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
     Int_t    fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
+    Int_t    fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
     Int_t fCurrentRun;
     
     Float_t fQuantiles[100]; //! percentiles
@@ -270,8 +272,20 @@ private:
     TProfile *fHistQASelected_TrackletsVsV0M; 
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
-    
-    TProfile *fHistQASelected_PtVsV0M; 
+
+    TProfile *fHistQASelected_NTracksGlobalVsV0M; 
+    TProfile *fHistQASelected_NTracksGlobalVsCL0; 
+    TProfile *fHistQASelected_NTracksGlobalVsCL1; 
+    TProfile *fHistQASelected_PtGlobalVsV0M; 
+    TProfile *fHistQASelected_PtGlobalVsCL0; 
+    TProfile *fHistQASelected_PtGlobalVsCL1; 
+
+    TProfile *fHistQASelected_NTracksITSsaVsV0M;
+    TProfile *fHistQASelected_NTracksITSsaVsCL0;
+    TProfile *fHistQASelected_NTracksITSsaVsCL1;
+    TProfile *fHistQASelected_PtITSsaVsV0M;
+    TProfile *fHistQASelected_PtITSsaVsCL0;
+    TProfile *fHistQASelected_PtITSsaVsCL1;
 
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;
