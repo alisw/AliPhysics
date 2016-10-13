@@ -2518,6 +2518,7 @@ void AliAnalysisTaskHFJetIPQA::GetGeometricalMatchingLevel(AliEmcalJet *jet1, Al
 
 // ######################################################################################## Monte Carlo correction factors
 Double_t AliAnalysisTaskHFJetIPQA::GetMonteCarloCorrectionFactor(AliVTrack* track,Int_t &pCorr_indx){
+  if(fDisableWeightingMC) return 1;
 
   AliAODMCParticle *pMCAOD = 0x0;
   AliMCParticle *pMCESD = 0x0;
