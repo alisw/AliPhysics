@@ -230,6 +230,8 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut Gamma Pi0 Eta pp 13TeV, V0AND
   } else if (trainConfig == 28){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); //New standard cut pp 5 TeV
+  } else if (trainConfig == 29){
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152103500000000"); //New standard cut pp 5 TeV
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
