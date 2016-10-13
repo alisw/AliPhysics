@@ -3,6 +3,7 @@
 #include <TH1D.h>
 #include <TH1I.h>
 #include <TH2D.h>
+#include <TList.h>
 
 #include <AliAnalysisManager.h>
 #include <AliCentrality.h>
@@ -10,6 +11,8 @@
 #include <AliMultSelection.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
+
+const string AliNuclexEventCuts::fgkLabels[2] = {"raw","selected"};
 
 ClassImp(AliNuclexEventCuts);
 
@@ -28,97 +31,8 @@ AliNuclexEventCuts::AliNuclexEventCuts() : TNamed("AliNuclexEventCuts","AliNucle
   fCentEstimators{"V0M","CL0"},
   fCentPercentiles{-1.f},
   fMaxDeltaEstimators{7.5f},
-  fTriggerMask{AliVEvent::kINT7},
-  fCutStats{new TH1I("fCutStats",";;Number of selected events",7,-.5,6.5)},
-  fVtz{0x0},
-  fDeltaTrackSPDvtz{0x0},
-  fCentrality{0x0},
-  fEstimCorrelation{0x0},
-  fMultCentCorrelation{0x0}
+  fTriggerMask{AliVEvent::kINT7}
 {
-  string labels[2] = {"raw","selected"};
-  string titles[2] = {"before event cuts","after event cuts"};
-  for (int iS = 0; iS < 2; ++iS) {
-    fVtz[iS] = new TH1D(Form("Vtz_%s",labels[iS].data()),Form("Vertex z %s; #it{v_{z}} (cm); Events",titles[iS].data()),400,-20.,20.);
-    fDeltaTrackSPDvtz[iS] = new TH1D(Form("DeltaVtz_%s",labels[iS].data()),Form("Vertex tracks - Vertex SPD %s; #Delta#it{v_{z}} (cm); Events",titles[iS].data()),400,-2.,2.);
-    fCentrality[iS] = new TH1D(Form("Centrality_%s",labels[iS].data()),Form("Centrality percentile %s; Centrality (%); Events",titles[iS].data()),100,0.,100.);
-    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",labels[iS].data()),Form("Correlation estimators %s",titles[iS].data()),100,0.,100.,100,0.,100.);
-    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",labels[iS].data()),Form("Correlation multiplicity-centrality %s;Centrality (%); Number of tracklets",titles[iS].data()),100,0.,100.,2000,0.,10000.);
-  }
-
-  string bin_labels[7] = {"No cuts","DAQ Incomplete","Trigger selection","Vertex selection","Pile-up","Centrality selection","All cuts"};
-  for (int iB = 1; iB <= 7; ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
-}
-
-AliNuclexEventCuts::AliNuclexEventCuts(const AliNuclexEventCuts& ev) : TNamed("AliNuclexEventCuts","AliNuclexEventCuts"),
-  fRequireTrackVertex{ev.fRequireTrackVertex},
-  fMinVtz{ev.fMinVtz},
-  fMaxVtz{ev.fMaxVtz},
-  fMaxDeltaSpdTrackAbsolute{ev.fMaxDeltaSpdTrackAbsolute},
-  fMaxDeltaSpdTrackNsigmaSPD{ev.fMaxDeltaSpdTrackNsigmaSPD},
-  fMaxDeltaSpdTrackNsigmaTrack{ev.fMaxDeltaSpdTrackNsigmaTrack},
-  fRejectDAQincomplete{ev.fRejectDAQincomplete},
-  fRejectPileupSPD{ev.fRejectPileupSPD},
-  fCentralityFramework{ev.fCentralityFramework},
-  fMinCentrality{ev.fMinCentrality},
-  fMaxCentrality{ev.fMaxCentrality},
-  fCentEstimators{ev.fCentEstimators[0],ev.fCentEstimators[1]},
-  fCentPercentiles{ev.fCentPercentiles[0],ev.fCentPercentiles[1]},
-  fMaxDeltaEstimators{ev.fMaxDeltaEstimators},
-  fTriggerMask{ev.fTriggerMask},
-  fCutStats{new TH1I(*ev.fCutStats)},
-  fVtz{0x0},
-  fDeltaTrackSPDvtz{0x0},
-  fCentrality{0x0},
-  fEstimCorrelation{0x0},
-  fMultCentCorrelation{0x0}
-{
-  for (int iS = 0; iS < 2; ++iS) {
-    fVtz[iS] = new TH1D(*ev.fVtz[iS]);
-    fDeltaTrackSPDvtz[iS] = new TH1D(*ev.fDeltaTrackSPDvtz[iS]);
-    fCentrality[iS] = new TH1D(*ev.fCentrality[iS]);
-    fEstimCorrelation[iS] = new TH2D(*ev.fEstimCorrelation[iS]);
-  }
-}
-
-AliNuclexEventCuts& AliNuclexEventCuts::operator=(const AliNuclexEventCuts& ev) {
-  if (this != &ev) {
-    fRequireTrackVertex = ev.fRequireTrackVertex;
-    fMinVtz = ev.fMinVtz;
-    fMaxVtz = ev.fMaxVtz;
-    fMaxDeltaSpdTrackAbsolute = ev.fMaxDeltaSpdTrackAbsolute;
-    fMaxDeltaSpdTrackNsigmaSPD = ev.fMaxDeltaSpdTrackNsigmaSPD;
-    fMaxDeltaSpdTrackNsigmaTrack = ev.fMaxDeltaSpdTrackNsigmaTrack;
-    fRejectDAQincomplete = ev.fRejectDAQincomplete;
-    fRejectPileupSPD = ev.fRejectPileupSPD;
-    fCentralityFramework = ev.fCentralityFramework;
-    fMinCentrality = ev.fMinCentrality;
-    fMaxCentrality = ev.fMaxCentrality;
-    fCentEstimators[0] = ev.fCentEstimators[0];
-    fCentEstimators[1] = ev.fCentEstimators[1];
-    fCentPercentiles[0] = ev.fCentPercentiles[0];
-    fCentPercentiles[1] = ev.fCentPercentiles[1];
-    fMaxDeltaEstimators = ev.fMaxDeltaEstimators;
-    fTriggerMask = ev.fTriggerMask;
-    fCutStats = new TH1I(*ev.fCutStats);
-    for (int iS = 0; iS < 2; ++iS) {
-      fVtz[iS] = new TH1D(*ev.fVtz[iS]);
-      fDeltaTrackSPDvtz[iS] = new TH1D(*ev.fDeltaTrackSPDvtz[iS]);
-      fCentrality[iS] = new TH1D(*ev.fCentrality[iS]);
-      fEstimCorrelation[iS] = new TH2D(*ev.fEstimCorrelation[iS]);
-    }
-  }
-  return *this;
-}
-
-AliNuclexEventCuts::~AliNuclexEventCuts() {
-  if (fCutStats) delete fCutStats;
-  for (int iS = 0; iS < 2; ++iS) {
-    if (fVtz[iS]) delete fVtz[iS];
-    if (fDeltaTrackSPDvtz[iS]) delete fDeltaTrackSPDvtz[iS];
-    if (fCentrality[iS]) delete fCentrality[iS];
-    if (fEstimCorrelation[iS]) delete fEstimCorrelation[iS];      
-  }
 }
 
 void AliNuclexEventCuts::SetupLHC15o() {
@@ -144,22 +58,39 @@ void AliNuclexEventCuts::SetupLHC15o() {
 
 }
 
-bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
+bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev, TList *qaList) {
+  TH1I* fCutStats = nullptr;
+  TH1D* fVtz[2] = {nullptr};
+  TH1D* fDeltaTrackSPDvtz[2] = {nullptr};
+  TH1D* fCentrality[2] = {nullptr};
+  TH2D* fEstimCorrelation[2] = {nullptr};
+  TH2D* fMultCentCorrelation[2] = {nullptr};
+  if (qaList) {
+    fCutStats = (TH1I*)qaList->FindObject("fCutStats");
+    for (int iS = 0; iS < 2; ++iS) {
+      fVtz[iS] = (TH1D*)qaList->FindObject(Form("Vtz_%s",fgkLabels[iS].data()));
+      fDeltaTrackSPDvtz[iS] = (TH1D*)qaList->FindObject(Form("DeltaVtz_%s",fgkLabels[iS].data()));
+      fCentrality[iS] = (TH1D*)qaList->FindObject(Form("Centrality_%s",fgkLabels[iS].data()));
+      fEstimCorrelation[iS] = (TH2D*)qaList->FindObject(Form("EstimCorrelation_%s",fgkLabels[iS].data()));
+      fMultCentCorrelation[iS] = (TH2D*)qaList->FindObject(Form("MultCentCorrelation_%s",fgkLabels[iS].data()));
+    }
+  }
+
   /// The first bin of the cut stats corresponds to the total number of events
-  fCutStats->Fill(0);
+  if (fCutStats != nullptr) fCutStats->Fill(0);
 
   /// Event selection flag, as soon as the event does not pass one cut this becomes false.
   int pass = true;
 
   /// Rejection of the DAQ incomplete events
   if (ev->IsIncompleteDAQ()) pass = false;
-  else fCutStats->Fill(1);
+  else if (fCutStats != nullptr) fCutStats->Fill(1);
 
   /// Trigger mask
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  if (handl->IsEventSelected() & fTriggerMask != fTriggerMask) pass = false;
-  else fCutStats->Fill(2);
+  if ((handl->IsEventSelected() & fTriggerMask) != fTriggerMask) pass = false;
+  else if (fCutStats != nullptr) fCutStats->Fill(2);
 
   /// Vertex selection
   const AliVVertex* vtTrc = ev->GetPrimaryVertex();
@@ -176,11 +107,11 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
       (TMath::Abs(dz) > fMaxDeltaSpdTrackAbsolute || nsigTot > fMaxDeltaSpdTrackNsigmaSPD || nsigTrc > fMaxDeltaSpdTrackNsigmaTrack) || // discrepancy track-SPD vertex
       (vtx->GetZ() < fMinVtz || vtx->GetZ() > fMaxVtz)) // min-max limits of the vertex z
     pass = false;
-  else fCutStats->Fill(3);
+  else if (fCutStats != nullptr) fCutStats->Fill(3);
 
   /// SPD pile-up rejection
   if (ev->IsPileupFromSPD(fRejectPileupSPD,0.8,3.,2.,5.)) pass = false; // pile-up
-  else fCutStats->Fill(4);
+  else if (fCutStats != nullptr) fCutStats->Fill(4);
 
   /// Centrality cuts:
   /// * Check for min and max centrality
@@ -201,21 +132,49 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     fEstimCorrelation[0]->Fill(fCentPercentiles[0],fCentPercentiles[1]);
     if (TMath::Abs(fCentPercentiles[1] - fCentPercentiles[0]) > fMaxDeltaEstimators 
         || fCentPercentiles[0] < fMinCentrality || fCentPercentiles[0] > fMaxCentrality) pass = false;
-    else fCutStats->Fill(5);
-  } else fCutStats->Fill(5);
+    else if (fCutStats != nullptr) fCutStats->Fill(5);
+  } else if (fCutStats != nullptr) fCutStats->Fill(5);
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
   for (int befaft = 0; befaft < 2; ++befaft) {
-    fCentrality[befaft]->Fill(fCentPercentiles[0]);
-    fEstimCorrelation[befaft]->Fill(fCentPercentiles[0],fCentPercentiles[1]);
-    fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
-    fVtz[befaft]->Fill(vtx->GetZ());
-    fDeltaTrackSPDvtz[befaft]->Fill(dz);
+    if (fCentrality[befaft] != nullptr) fCentrality[befaft]->Fill(fCentPercentiles[0]);
+    if (fEstimCorrelation[befaft] != nullptr) fEstimCorrelation[befaft]->Fill(fCentPercentiles[0],fCentPercentiles[1]);
+    if (fMultCentCorrelation[befaft] != nullptr) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
+    if (fVtz[befaft] != nullptr) fVtz[befaft]->Fill(vtx->GetZ());
+    if (fDeltaTrackSPDvtz[befaft] != nullptr) fDeltaTrackSPDvtz[befaft]->Fill(dz);
     if (!pass) return pass; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 
   /// Last bin of the cut stats contains the number of selected events
-  fCutStats->Fill(6);
+  if (fCutStats != nullptr) fCutStats->Fill(6);
 
   return pass;
+}
+
+void AliNuclexEventCuts::AddQAplotsToList(TList *qaList) {
+  TH1I* fCutStats = new TH1I("fCutStats",";;Number of selected events",7,-.5,6.5);
+  string bin_labels[7] = {"No cuts","DAQ Incomplete","Trigger selection","Vertex selection","Pile-up","Centrality selection","All cuts"};
+  for (int iB = 1; iB <= 7; ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
+  qaList->Add(fCutStats);
+
+  TH1D* fVtz[2];                 //<! Vertex z distribution
+  TH1D* fDeltaTrackSPDvtz[2];    //<! Difference between the vertex computed using SPD and the track vertex
+  TH1D* fCentrality[2];          //<! Centrality percentile distribution
+  TH2D* fEstimCorrelation[2];    //<! Correlation between centrality estimators
+  TH2D* fMultCentCorrelation[2]; //<! Correlation between main centrality estimator and multiplicity
+  string titles[2] = {"before event cuts","after event cuts"};
+  for (int iS = 0; iS < 2; ++iS) {
+    fVtz[iS] = new TH1D(Form("Vtz_%s",fgkLabels[iS].data()),Form("Vertex z %s; #it{v_{z}} (cm); Events",titles[iS].data()),400,-20.,20.);
+    fDeltaTrackSPDvtz[iS] = new TH1D(Form("DeltaVtz_%s",fgkLabels[iS].data()),Form("Vertex tracks - Vertex SPD %s; #Delta#it{v_{z}} (cm); Events",titles[iS].data()),400,-2.,2.);
+    fCentrality[iS] = new TH1D(Form("Centrality_%s",fgkLabels[iS].data()),Form("Centrality percentile %s; Centrality (%%); Events",titles[iS].data()),100,0.,100.);
+    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fgkLabels[iS].data()),Form("Correlation estimators %s",titles[iS].data()),100,0.,100.,100,0.,100.);
+    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fgkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Centrality (%%); Number of tracklets",titles[iS].data()),100,0.,100.,2000,0.,10000.);
+    
+    qaList->Add(fVtz[iS]);
+    qaList->Add(fDeltaTrackSPDvtz[iS]);
+    qaList->Add(fCentrality[iS]);
+    qaList->Add(fEstimCorrelation[iS]);
+    qaList->Add(fMultCentCorrelation[iS]);
+  }
+
 }
