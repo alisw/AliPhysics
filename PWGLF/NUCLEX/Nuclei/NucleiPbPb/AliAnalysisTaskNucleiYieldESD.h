@@ -19,6 +19,7 @@ class TH3F;
 class TList;
 class AliESDtrackCuts;
 class AliEventCuts;
+class TDirectory;
 
 class AliAnalysisTaskNucleiYieldESD : public AliAnalysisTaskSE {
 public:
@@ -106,7 +107,7 @@ private:
   TH3F               *fTOFtemplates[5];       //!<! *(Data only)* TOF signal templates for pi/k/p/d/t
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskNucleiYieldESD, 1);
+  ClassDef(AliAnalysisTaskNucleiYieldESD, 2);
   /// \endcond
 };
 
