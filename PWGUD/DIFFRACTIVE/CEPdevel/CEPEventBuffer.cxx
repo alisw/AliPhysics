@@ -18,6 +18,7 @@ CEPEventBuffer::CEPEventBuffer()
   : TObject()
   , fRunNumber(CEPTrackBuffer::kdumval)
   , fEventNumber(CEPTrackBuffer::kdumval)
+  , fisPileup(kFALSE)
   , fnumTracks(0)
   , fnumSoftTracks(0)
   , fnumResiduals(0)
@@ -50,6 +51,7 @@ void CEPEventBuffer::Reset()
   // reset all counters
   fRunNumber     = CEPTrackBuffer::kdumval;
   fEventNumber   = CEPTrackBuffer::kdumval;
+  fisPileup      = kFALSE;
   fGapCondition  = 0;  
   fMCProcessType = CEPTrackBuffer::kdumval;
   fMCGenerator   = "";
@@ -62,8 +64,8 @@ void CEPEventBuffer::Reset()
   fnumSoftTracks = 0;
   fnumResiduals  = 0;
   
-  fVertexPos     = TVector3(0,0,0);
-  fMCVertexPos   = TVector3(0,0,0);
+  fVertexPos     = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
+  fMCVertexPos   = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
     
  }
 

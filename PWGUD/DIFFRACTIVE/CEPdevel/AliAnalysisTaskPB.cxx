@@ -69,10 +69,10 @@ AliAnalysisTaskPB::AliAnalysisTaskPB(const char* name, Long_t state, Int_t numTr
 	, fPIDCombined3(0x0)
 	, fPhysicsSelection(new AliPhysicsSelection())
 	, fTracks(new AliPBTracks())
-	, fVtxDst(-1.)
-	, fVtxX(0)
-	, fVtxY(0)
-	, fVtxZ(-20)
+	, fVtxDst(-999)
+	, fVtxX(-999)
+	, fVtxY(-999)
+	, fVtxZ(-999)
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
 	, fResidualTrackletsFW(0)
@@ -280,10 +280,10 @@ AliAnalysisTaskPB::AliAnalysisTaskPB():
 	, fPIDCombined3(0x0)
 	, fPhysicsSelection(new AliPhysicsSelection())
 	, fTracks(0x0)
-	, fVtxDst(-1.)
-	, fVtxX(0)
-	, fVtxY(0)
-	, fVtxZ(-20)
+	, fVtxDst(-999)
+	, fVtxX(-999)
+	, fVtxY(-999)
+	, fVtxZ(-999)
 	, fResidualTracks(0)
 	, fResidualTrackletsCB(0)
 	, fResidualTrackletsFW(0)
@@ -1430,9 +1430,9 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   // printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
   
   if (ncombined <= fnumTracksMax) {
-    
     // set event parameters
     // printf("setting event information ...\n");
+    evbuf->SetPileup(isPileup);
     evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
     evbuf->SetGapCondition(fCurrentGapCondition);
     evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
