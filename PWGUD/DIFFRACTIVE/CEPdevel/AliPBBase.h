@@ -167,7 +167,7 @@ public:
 		kBitFastORmultStudy = (1<<27),
 		kBitFulltree = (1<<28),
 		kBitADStudies = (1<<29),
-		kBitSaveAll = (1<<30),
+		kBitSaveAllCD = (1<<30),
 		kBitConfigurationVersion = (1<<31) // always set, last bit
 	
   };
