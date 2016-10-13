@@ -1209,9 +1209,14 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   std::vector<fastjet::PseudoJet> SubJet_Axes;
   fj::PseudoJet SubJet1_Axis;
   fj::PseudoJet SubJet2_Axis;
+  cout <<"Before Filter Jet Print Outs"<<endl;
+  cout << "Filter Jet E, pT" << fFilteredJets[0].E() << "  " <<fFilteredJets[0].perp()<<endl;
   if (Algorithm==0){
+    cout << "Before Nsubjettiness fastjet function called" <<endl;
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    cout << "Before Nsubjettiness fastjet result called" <<endl;
     Result= nSub.result(fFilteredJets[0]);
+    cout << "Before Nsubjettiness fastjet Axed called" <<endl;
     SubJet_Axes=nSub.currentAxes();
   }
   else if (Algorithm==1) {
@@ -1283,7 +1288,7 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     if(DeltaPhi < -1*TMath::Pi()) DeltaPhi += (2*TMath::Pi());
     else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
   }
-    
+   cout << "Before Nsubjettiness fjwrapper result returned" <<endl; 
   if (Option==0) return Result;
   else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
