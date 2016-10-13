@@ -792,16 +792,18 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("15010113", "00200009227302008254404000", "0152101500000000"); // mult.: 50-100%
     cuts.AddCut("10110113", "00200009227302008254404000", "0152101500000000"); // mult.: 0-10%
     cuts.AddCut("11010113", "00200009227302008254404000", "0152101500000000"); // mult.: 10-100%
-    } else if (trainConfig == 120) { // like last last two in 70 and dalitz standard 7TeV
+  } else if (trainConfig == 120) { // like last last two in 70 and dalitz standard 7TeV
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
     cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
     cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
-
   } else if (trainConfig == 121) {
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
     cuts.AddCut("00000113", "00200009227302008254400000", "0152103500000000"); //asym pt dep
     cuts.AddCut("00000113", "00200009227302008255400000", "0152103500000000"); //asym tight pt dep
-
+  } else if (trainConfig == 122) {
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152503500000000"); //y < 0.85
+    cuts.AddCut("00000113", "00200009227302008250404000", "0152303500000000"); //y < 0.60
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
