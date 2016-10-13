@@ -1275,9 +1275,13 @@ Bool_t   AliTPCtracker::GetProlongation(Double_t x1, Double_t x2, Double_t x[5],
   
   Double_t dx=x2-x1;
   Double_t c1=x[4]*x1 - x[2];
-  if (TMath::Abs(c1) >= 0.999) return kFALSE;
+  if (TMath::Abs(c1) >= 0.999) {
+    return kFALSE;
+  }
   Double_t c2=x[4]*x2 - x[2];
-  if (TMath::Abs(c2) >= 0.999) return kFALSE;
+  if (TMath::Abs(c2) >= 0.999) {
+    return kFALSE;
+  }
   Double_t r1=TMath::Sqrt((1.-c1)*(1.+c1)),r2=TMath::Sqrt((1.-c2)*(1.+c2));  
   y = x[0];
   z = x[1];
@@ -4234,8 +4238,8 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	//
 	//
 	// do we have cluster at the middle ?
-	Double_t ym,zm;
-	GetProlongation(x1,xm,x,ym,zm);
+	Double_t ym=0,zm=0;
+	if (!GetProlongation(x1,xm,x,ym,zm)) continue;
 	UInt_t dummy; 
 	AliTPCclusterMI * cm=0;
 	if (TMath::Abs(ym)-ymaxm<0){	  
@@ -4251,7 +4255,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	  Double_t xr2  =  x0*cs+yr1*sn*dsec;
 	  Double_t xr[5]={kcl->GetY(),kcl->GetZ(), xr2, dip, c0};
 	  //
-	  GetProlongation(xx2,xm,xr,ym,zm);
+	  if (!GetProlongation(xx2,xm,xr,ym,zm)) continue;
 	  if (TMath::Abs(ym)-ymaxm<0){
 	    cm = kr2m.FindNearest2(ym,zm,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,dummy);
 	    if ((!cm) || (cm->IsUsed(10))) {	  
@@ -4556,11 +4560,11 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	//
 	//
 	// do we have cluster at the middle ?
-	Double_t xm = GetXrow(imiddle), ym, zm; // radius of middle pad-row
-	GetProlongation(x1,xm,x,ym,zm);
+	Double_t xm = GetXrow(imiddle), ym=0, zm=0; // radius of middle pad-row
+	if (!GetProlongation(x1,xm,x,ym,zm)) continue;
 	// account for distortion
 	double dxDist = GetDistortionX(xm,ym,zm,sec,imiddle);
-	if (TMath::Abs(dxDist)>0.05) GetProlongation(x1,xm+dxDist,x,ym,zm); //RS:? can we use straight line here?
+	if (TMath::Abs(dxDist)>0.05 && !GetProlongation(x1,xm+dxDist,x,ym,zm)) continue; //RS:? can we use straight line here?
 	UInt_t dummy; 
 	AliTPCclusterMI * cm=0;
 	double ymEdgeDist = ym;
@@ -4576,9 +4580,9 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	  Double_t xr2  =  x0*cs+yr1*sn*dsec;
 	  Double_t xr[5]={kcl->GetY(),kcl->GetZ(), xr2, dip, c0};
 	  //
-	  GetProlongation(kcl->GetX(),xm,xr,ym,zm);
+	  if (!GetProlongation(kcl->GetX(),xm,xr,ym,zm)) continue;
 	  double dxDist = GetDistortionX(xm,ym,zm,sec2,imiddle);
-	  if (TMath::Abs(dxDist)>0.05) GetProlongation(x1,xm+dxDist,x,ym,zm); //RS:? can we use straight line here?
+	  if (TMath::Abs(dxDist)>0.05 && !GetProlongation(x1,xm+dxDist,x,ym,zm)) continue; //RS:? can we use straight line here?
 	  //
 	  ymEdgeDist = ym;
 	  if (fAccountDistortions) ymEdgeDist -= GetYSectEdgeDist(sec2,imiddle,ym,zm); // ym shifted by edge distortion
