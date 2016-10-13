@@ -5,7 +5,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
                              Bool_t bCalculateEbEFlow=kFALSE,
-                             Bool_t bUseCRCRecenter,
+                             Bool_t bUseCRCRecenter=kFALSE,
                              Bool_t bCalculateCME=kFALSE,
                              Bool_t bUseVZERO=kFALSE,
                              Bool_t bUseZDC=kFALSE,
@@ -26,8 +26,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t DeltaEta=0.4,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
-                             Bool_t bUseEtaWeights=kFALSE,
-                             TString EtaWeightsFileName="",
+                             Bool_t bUsePhiEtaWeights=kFALSE,
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
@@ -75,7 +74,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Int_t CRC2nEtaBins=6;
  Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
- Bool_t bUsePhiEtaWeights=kFALSE;
  Bool_t bCalculateCRCVZ=kFALSE;
  TString PhiEtaWeightsFileName="";
  Double_t dDCAxy=1000.;
@@ -500,30 +498,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       }
     }
   }
-  
-  if(bUseEtaWeights) {
-    taskQC->SetUseEtaWeights(bUseEtaWeights);
-    TFile* EtaWeightsFile = TFile::Open(EtaWeightsFileName,"READ");
-    if(!EtaWeightsFile) {
-      cout << "ERROR: EtaWeightsFile not found!" << endl;
-      exit(1);
-    }
-    for(Int_t c=0; c<10; c++) {
-      for(Int_t b=0; b<21; b++) {
-        for(Int_t k=0; k<2; k++) {
-          TH1D* EtaWeightsHist = dynamic_cast<TH1D*>(EtaWeightsFile->Get(Form("Eta_Weights_cen%d_ptbin%d_ch%d",c,b+1,k)));
-          if(EtaWeightsHist) {
-            taskQC->SetEtaWeightsHist(EtaWeightsHist,c,b,k);
-            printf("Eta_Weights_cen%d_ptbin%d_ch%d set (from %s)\n",c,b+1,k,EtaWeightsFileName.Data());
-          }
-          else {
-            printf("ERROR: Eta_Weights_cen%d_ptbin%d_ch%d not found! \n",c,b+1,k);
-            exit(1);
-          }
-        }
-      }
-    }
-  } // end of if(bUseEtaWeights)
  
   if(bUseCRCRecenter) {
     TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
@@ -564,18 +538,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  } // end of if(bUseZDC)
  taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
  if(bUsePhiEtaWeights) {
+   TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+   if(sDataSet=="2015") {
+     if(AODfilterBit==32) PhiEtaWeightsFileName += "15oHI_FB32_PhiEtaPtWeights.root";
+     if(AODfilterBit==96) PhiEtaWeightsFileName += "15oHI_FB96_PhiEtaPtWeights.root";
+     if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_PhiEtaPtWeights.root";
+   }
   TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
   if(!PhiEtaWeightsFile) {
    cout << "ERROR: PhiEtaWeightsFile not found!" << endl;
    exit(1);
   }
-  TList* PhiEtaWeightsList = dynamic_cast<TList*>(PhiEtaWeightsFile->FindObjectAny("PhiEta Weights"));
+  TList* PhiEtaWeightsList = dynamic_cast<TList*>(PhiEtaWeightsFile->FindObjectAny("PhiEtaPt Weights"));
   if(PhiEtaWeightsList) {
    taskQC->SetWeightsList(PhiEtaWeightsList);
-   cout << "PhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
+   cout << "PhiPtEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
   }
   else {
-   cout << "ERROR: PhiEtaWeightsList not found!" << endl;
+   cout << "ERROR: PhiPtEtaWeightsList not found!" << endl;
    exit(1);
   }
  } // end of if(bUsePhiEtaWeights)
