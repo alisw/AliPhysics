@@ -169,6 +169,8 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCALTriggerPatchADCInfo+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;
