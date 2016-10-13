@@ -123,7 +123,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetMean4Smear(iMean_SSsmear);
   task->SetExtraIsoCuts(iExtraIsoCuts);
   task->SetAnalysispPb(i_pPb);
-  task->SetNLMCut(bNLMCut,NLMCut);
+  task->SetNLMCut(bNLMCut,NLMCut,minNLM);
   task->SetPtBinning(ptBin);
   task->SetM02Binning(M02Bin);
   task->SetEtisoBinning(EtisoBin);

@@ -82,8 +82,8 @@ public:
   void                     SetMC (Bool_t MC)                                               { fIsMC = MC;}
   void                     SetUSEofTPC (Bool_t TPC)                                        { fTPC4Iso = TPC;}
   void                     SetLCAnalysis (Bool_t LC)                                       { fisLCAnalysis = LC;}
-  void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut)                       { fIsNLMCut = isNLMCut;
-    fNLMCut = NLMCut;}
+  void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut, Int_t NLMmin)                       { fIsNLMCut = isNLMCut;
+    fNLMCut = NLMCut; fNLMmin = NLMmin;}
   void                     SetSmearForClusters( Int_t whichNLM)                            { fWhich= whichNLM;}
   void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
   void                     SetTMClusterRejectioninCone (Bool_t tm)                         { fTMClusterInConeRejected = tm;}
@@ -185,6 +185,7 @@ protected:
   Bool_t      fisLCAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
   Bool_t      fIsNLMCut;                       // NLM cut available
   Int_t       fNLMCut;                         // number of NLM cut
+  Int_t       fNLMmin;                         // minimum number of NLM
   Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
   Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
   Bool_t      fRejectionEventWithoutTracks;    // able/disable rejction of events without tracks

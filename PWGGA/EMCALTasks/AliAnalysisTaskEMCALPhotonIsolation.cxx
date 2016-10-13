@@ -87,6 +87,7 @@ fMCQAdim(0),
 fisLCAnalysis(0),
 fIsNLMCut(kFALSE),
 fNLMCut(0),
+fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
 fRejectionEventWithoutTracks(kFALSE),
@@ -242,6 +243,7 @@ fMCQAdim(0),
 fisLCAnalysis(0),
 fIsNLMCut(kFALSE),
 fNLMCut(0),
+fNLMmin(0),
 fTMClusterRejected(kTRUE),
 fTMClusterInConeRejected(kTRUE),
 fRejectionEventWithoutTracks(kFALSE),
@@ -996,17 +998,19 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     mcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindObject(AliAODMCHeader::StdBranchName()));
       //AliError(Form("Passe analyze MC"));
     if (!fIsMC)
-      return kTRUE;
+      return kFALSE;
       //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
-    if(!fStack && !fAODMCParticles)
-    {cout<<"no stack saved\n"; return kTRUE;}
+    if(!fStack && !fAODMCParticles){
+        AliError("no MC stack saved\n");
+        return kFALSE;
+    }
     
       //cout<<"there's a List of particles"<<endl;
       //DO THIS ALSO FOR ESDs
     
     if(fAODMCParticles->GetEntries() < 1){
-      AliError("number of tracks insufficient");
-      return kTRUE;
+      AliError("number of MC particles insufficient");
+      return kFALSE;
     }
     AnalyzeMC();
   }
@@ -1093,8 +1097,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
         
-        if(fIsNLMCut && fNLMCut>0)
-          if(nlm > fNLMCut)
+        if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
+          if(nlm > fNLMCut || nlm < fNLMmin)
             continue;
       }
       else
@@ -2394,15 +2398,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     //cout<<"\n\n\n\n\n\n\nInside Look4Particle \n For Cluster "<<clusterlabel<<"\t\t"<<energyCLS<<"\t\t"<<etaCLS<<"\t\t"<<phiCLS<<"\t\t"<<ss<<"\t\t"<<isolation<<"\n\n\n\n"<<endl;
   
   if (!fIsMC){
-    cout<<"not a montecarlo run!!!!!!"<<endl;
+    AliWarning("not a montecarlo run!!!!!!");
     return;
   } //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
   if(!fStack && !fAODMCParticles){
-    cout<<"No Particle Stack !!!!!"<<endl;
+    AliWarning("No Particle Stack !!!!!");
+    //cout<<"No Particle Stack !!!!!"<<endl;
     return;
   }
   if(fAODMCParticles->GetEntries() < 1){
-    cout<<"number of tracks insufficient"<<endl;
+    AliWarning("number of tracks insufficient!!!!");
     return;
   }
   
@@ -2416,7 +2421,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   
   AliAODMCParticle *particle2Check, *momP2Check;
   
-  Int_t clustPDG, p2clabel;
+  Int_t clustPDG, p2clabel, p2ccharge;
   Double_t enTrue,phiTrue, etaTrue;
   Double_t dPhi,dEta ;
   Int_t clusterFromPromptPhoton=-1;
@@ -2426,12 +2431,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   int mom2checkidx = particle2Check->GetMother();
   momP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
   
-    //Direct Photon or e+/e- coming from Photon Conversion
-  if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && momP2Check->GetPdgCode() == 22)){
-    phiTrue = particle2Check->Phi(); //
-    etaTrue = particle2Check->Eta(); //Basic quantities from MCtruth.
-    enTrue  = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
+  phiTrue = particle2Check->Phi(); //
+  etaTrue = particle2Check->Eta(); //Basic quantities from MCtruth.
+  enTrue  = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
+  dPhi = phiCLS-phiTrue;
+  dEta = etaCLS-etaTrue;
+  p2ccharge = particle2Check->Charge();
     
+  if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && momP2Check->GetPdgCode() == 22)){
+    //Direct Photon or e+/e- coming from Photon Conversion
       //Checking if the Photon is a decay product of pi0 or eta meson. //Maybe include omega?
       //printf("Cluster Label: %d Asso. with a MCpar w/ PDG %d",clusterlabel,clustPDG);
     if(clustPDG==22){
@@ -2550,28 +2558,38 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
       }
     }
     
-    dPhi = phiCLS-phiTrue;
-    dEta = etaCLS-etaTrue;
       //printf("\nCluster %d  PDG: %d  (Mom is a %d) with pT: %f  ",clusterlabel,clustPDG,momP2Check->GetPdgCode(),energyCLS);
       //printf(" with clusterFromPromptPhoton stored: %d for cluster w/label %d\n",clusterFromPromptPhoton,clusterlabel);
-    outputvalueMCmix[0] = energyCLS;
-    outputvalueMCmix[1] = ss;
-    outputvalueMCmix[2] = clustPDG;
-    outputvalueMCmix[3] = momP2Check->GetPdgCode();
-    outputvalueMCmix[4] = enTrue;
-    outputvalueMCmix[5] = dPhi;
-    outputvalueMCmix[6] = dEta;
-    outputvalueMCmix[7] = isolation;
-    outputvalueMCmix[8] = clusterFromPromptPhoton;
-      //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
-      //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
-      //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
-      //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
-      //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
-      //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
-    
-    if(fWho==1) fOutClustMC->Fill(outputvalueMCmix);
+   
   }
+  else{
+      if(p2ccharge==0){
+        clusterFromPromptPhoton=10;
+      }
+      else{
+          clusterFromPromptPhoton=11;
+      }
+      //AliWarning(Form("Hadronic cluster with energy: %f, M02: %f, cluster PDG: %d, mother PDG: %d, truth energy: %f, dphi: %f, deta %f, isolation energy: %f, cluster label: %d, charge: %d",energyCLS, ss, clustPDG, momP2Check->GetPdgCode(), enTrue, dPhi, dEta, isolation, clusterFromPromptPhoton, p2ccharge ));
+  }
+  outputvalueMCmix[0] = energyCLS;
+  outputvalueMCmix[1] = ss;
+  outputvalueMCmix[2] = clustPDG;
+  outputvalueMCmix[3] = momP2Check->GetPdgCode();
+  outputvalueMCmix[4] = enTrue;
+  outputvalueMCmix[5] = dPhi;
+  outputvalueMCmix[6] = dEta;
+  outputvalueMCmix[7] = isolation;
+  outputvalueMCmix[8] = clusterFromPromptPhoton;
+    //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
+    //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
+    //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
+    //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
+    //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
+    //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
+    //clusterFromPP=10 -> clusterlabel= Neutral hadronic particle.
+    //clusterFromPP=11 -> clusterlabel= Charged hadronic particle.
+  
+  if(fWho==1) fOutClustMC->Fill(outputvalueMCmix);
   return;
 }
   //__________________________________________________________________________________________________________________________
