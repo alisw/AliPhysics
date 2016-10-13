@@ -34,6 +34,8 @@
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
 #pragma link C++ class  AliEmcalCorrectionTask+;
+#pragma link C++ class  AliEmcalCorrectionCellContainer+;
+#pragma link C++ class  std::vector<AliEmcalCorrectionCellContainer *>+;
 #pragma link C++ class  AliEmcalCorrectionComponent+;
 #pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
 #pragma link C++ class  AliEmcalCorrectionCellEnergy+;
