@@ -50,7 +50,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
 
-    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void CheckMCgen(AliAODMCHeader* mcHeader);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
@@ -64,6 +65,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
     AliEMCALGeometry *fEMCALGeo;
 
@@ -167,7 +169,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fITShitPhi;//!ele cand SPD or
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
-    TH1F        *fMCcheckMother;
+    TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
+    THnSparse        *fInvmassPi0Dalitz;//!Invmass of ULS
+    TH2F        *fMCcheckMother;
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
