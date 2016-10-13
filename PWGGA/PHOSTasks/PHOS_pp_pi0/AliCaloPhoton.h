@@ -58,6 +58,10 @@ class AliCaloPhoton :public TLorentzVector{
    Bool_t   IsTrig(void)    const{ return fTrig ; }
    Bool_t   IsntUnfolded(void)const{return fUnfolded;}
 
+   Double_t GetNsigmaCPV()      {return fNsigmaCPV;}
+   Double_t GetNsigmaFullDisp() {return fNsigmaFullDisp;}
+   Double_t GetNsigmaCoreDisp() {return fNsigmaCoreDisp;}
+
    //ConvertedPair bit is set for events when photon's FirstMother is not e+/e- but pi0, but after pi0 decayed
 //there is conversion of one or both of the photons and results of their conversion are registered by PHOS.
 //This process is marked as tagged photons but actually the energy of photons is changed and pi0 can't be
@@ -105,6 +109,11 @@ class AliCaloPhoton :public TLorentzVector{
    void SetUnfolded(Bool_t wasNotUnfolded){fUnfolded=wasNotUnfolded;} 
    void SetWeight(Double_t w){fWeight=w;}
 
+   void SetNsigmaCPV(Double_t nsigma)      {fNsigmaCPV      = nsigma;}
+   void SetNsigmaFullDisp(Double_t nsigma) {fNsigmaFullDisp = nsigma;}
+   void SetNsigmaCoreDisp(Double_t nsigma) {fNsigmaCoreDisp = nsigma;}
+
+
    AliVCluster* GetCluster() { return fCluster; }
 
 private:
@@ -145,9 +154,13 @@ private:
   Double_t  fTime ;     //time of the cluster
   Double_t  fPartnerPt;
   Double_t  fWeight ;   //Weight of parent particle
+  Double_t  fNsigmaCPV ;      //distance to a matched track in unit of sigma
+  Double_t  fNsigmaFullDisp ; //shower dispersion of a full cluster in unit of sigma
+  Double_t  fNsigmaCoreDisp ; //shower dispersion at a core of a cluster in unit of sigma
+
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,7);
+  ClassDef(AliCaloPhoton,8);
 
 };
 

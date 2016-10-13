@@ -57,6 +57,9 @@ AliCaloPhoton::AliCaloPhoton() :
   fTime(0.),
   fPartnerPt(0),
   fWeight(1.),
+  fNsigmaCPV(-1),
+  fNsigmaFullDisp(-1),
+  fNsigmaCoreDisp(-1),
   fCluster(0x0)
 {
 
@@ -98,6 +101,9 @@ AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy
   fTime(0.),
   fPartnerPt(0),
   fWeight(1.),
+  fNsigmaCPV(-1),
+  fNsigmaFullDisp(-1),
+  fNsigmaCoreDisp(-1),
   fCluster(0x0)
 {
   
