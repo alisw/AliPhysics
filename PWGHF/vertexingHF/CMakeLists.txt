@@ -175,6 +175,8 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent.C
             ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C
 	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP_Central.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP_SemiCentral.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C
