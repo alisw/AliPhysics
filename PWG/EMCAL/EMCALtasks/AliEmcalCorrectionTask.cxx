@@ -37,6 +37,10 @@
 ClassImp(AliEmcalCorrectionTask);
 /// \endcond
 
+/// \cond CLASSIMP
+ClassImp(AliEmcalCorrectionCellContainer);
+/// \endcond
+
 /**
  *
  *
@@ -68,13 +72,10 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fUseNewCentralityEstimation(kFALSE),
   fNVertCont(0),
   fBeamType(kNA),
-  fCaloCellsName(),
   fNeedEmcalGeom(kTRUE),
   fGeom(0),
   fParticleCollArray(),
   fClusterCollArray(),
-  fCaloCells(0),
-  fCaloCellsFromInputEvent(0),
   fOutput(0)
 {
   // Default constructor
@@ -119,13 +120,10 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fUseNewCentralityEstimation(kFALSE),
   fNVertCont(0),
   fBeamType(kNA),
-  fCaloCellsName(),
   fNeedEmcalGeom(kTRUE),
   fGeom(0),
   fParticleCollArray(),
   fClusterCollArray(),
-  fCaloCells(0),
-  fCaloCellsFromInputEvent(0),
   fOutput(0)
 {
   // Standard constructor
@@ -149,7 +147,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
  *
  * \return True if the file exists.
  */
-inline bool AliEmcalCorrectionTask::doesFileExist(const std::string & filename)
+inline bool AliEmcalCorrectionTask::DoesFileExist(const std::string & filename)
 {
   std::ifstream inFile(filename);
   return inFile.good();
@@ -214,7 +212,7 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   // Default
   SetupConfigurationFilePath(fDefaultConfigurationFilename);
 
-  if (doesFileExist(fDefaultConfigurationFilename) == true)
+  if (DoesFileExist(fDefaultConfigurationFilename) == true)
   {
     AliInfo(TString::Format("Using default EMCal corrections configuration located at %s", fDefaultConfigurationFilename.c_str()));
 
@@ -233,7 +231,7 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   // User
   SetupConfigurationFilePath(fUserConfigurationFilename, true);
 
-  if (doesFileExist(fUserConfigurationFilename) == true)
+  if (DoesFileExist(fUserConfigurationFilename) == true)
   {
     AliInfo(TString::Format("Using user EMCal corrections configuration located at %s", fUserConfigurationFilename.c_str()));
 
@@ -410,7 +408,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
     }*/
 
     // Add the require containers to the component
-    // TODO: How to handle cells?
+    // Cells are set during Run() because we need to add them as a pointer
     AddContainersToComponent(component, kCluster);
     AddContainersToComponent(component, kTrack);
 
@@ -482,9 +480,9 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   }
 
   // Show the configurations info this is available
-  AliDebug(4, TString::Format("User configuration string: %s", fUserConfigurationString.c_str()));
+  AliDebugStream(4) << "User configuration string: " << fUserConfigurationString << std::endl;
   AliDebugStream(4) << "User configuration: " << fUserConfiguration << std::endl;
-  AliDebug(4, TString::Format("Default configuration string: %s", fDefaultConfigurationString.c_str()));
+  AliDebugStream(4) << "Default configuration string: " << fDefaultConfigurationString << std::endl;
   AliDebugStream(4) << "Default configuration: " << fDefaultConfiguration << std::endl;
 
   // YAML Objects cannot be streamed, so we need to reinitialize them here.
@@ -501,14 +499,20 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   }
 
   // Debug to check that the configuration has been (re)initiailzied has been completed correctly
-  AliDebug(4, TString::Format("(Re)initialized user configuration: %s", fUserConfigurationString.c_str()));
-  AliDebugStream(4) << "(Re)initialized User configuration: " << fUserConfiguration << std::endl;
-  AliDebug(4, TString::Format("(Re)initialized default configuration: %s", fDefaultConfigurationString.c_str()));
-  AliDebugStream(4) << "(Re)initialized Default configuration: " << fDefaultConfiguration << std::endl;
+  AliDebugStream(4) << "(Re)initialized user configuration: " << fUserConfigurationString << std::endl;
+  AliDebugStream(4) << "(Re)initialized user configuration: " << fUserConfiguration << std::endl;
+  AliDebugStream(4) << "(Re)initialized default configuration: " << fDefaultConfigurationString << std::endl;
+  AliDebugStream(4) << "(Re)initialized default configuration: " << fDefaultConfiguration << std::endl;
 
   // Setup Cells
   // Cannot do this entirely yet because we need input objects
-  //CreateInputObjects(kCaloCells);
+  CreateInputObjects(kCaloCells);
+  // TEMP PRINT
+  AliDebugStream(2) << "Cell info: " << std::endl;
+  for (auto cellInfo : fCellCollArray) {
+    AliDebugStream(2) << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding:" << cellInfo->GetIsEmbedding() << std::endl;
+  }
+  // END TEMP PRINT
   // Create cluster input objects
   CreateInputObjects(kCluster);
   // TEMP PRINT
@@ -528,16 +532,6 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   std::cout << std::endl << "Finished creating track containers!" << std::endl;*/
   fParticleCollArray.Print();
   // END TEMP PRINT
-
-  // Retrieve cells name from configruation
-  std::string cellsName = "";
-  AliEmcalCorrectionComponent::GetProperty("cellBranchName", cellsName, fUserConfiguration, fDefaultConfiguration, true, "");
-  // In the case of fCreateNewObjectBranches, we need to get the default name to retrieve the normal cells
-  // We will then retrieve the new cells name later
-  if (cellsName == "usedefault" || fCreateNewObjectBranches) {
-    cellsName = DetermineUseDefaultName(kCaloCells, fIsEsd);
-  }
-  fCaloCellsName = cellsName;
 
   if (fForceBeamType == kpp)
     fNcentBins = 1;
@@ -603,8 +597,47 @@ void AliEmcalCorrectionTask::SetupContainersFromInputNodes(InputObject_t inputOb
 
     AliDebug(2, TString::Format("Processing container %s of inputType %d", containerName.c_str(), inputObjectType));
     //std::cout << "Container: " << containerName << std::endl << userInputObjectNode << std::endl << defaultInputObjectNode;
-    SetupContainer(inputObjectType, containerName, userInputObjectNode, defaultInputObjectNode);
+    if (inputObjectType == kCluster || inputObjectType == kTrack) {
+      SetupContainer(inputObjectType, containerName, userInputObjectNode, defaultInputObjectNode);
+    }
+    else if (inputObjectType == kCaloCells) {
+      SetupCellsInfo(containerName, userInputObjectNode, defaultInputObjectNode);
+    }
   }
+}
+
+/**
+ *
+ *
+ */
+void AliEmcalCorrectionTask::SetupCellsInfo(std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode)
+{
+  // Define cell info
+  AliEmcalCorrectionCellContainer * cellObj = new AliEmcalCorrectionCellContainer();
+
+  std::cout << "User: " << std::endl << userNode << std::endl << "default: " << std::endl << defaultNode << std::endl;
+
+  // Set properties
+  // Cells (object) name
+  cellObj->SetName(containerName);
+  // Branch name
+  std::string tempString = "";
+  AliEmcalCorrectionComponent::GetProperty("branchName", tempString, userNode, defaultNode, true, containerName);
+  if (tempString == "usedefault") {
+    tempString = DetermineUseDefaultName(kCaloCells, fIsEsd);
+  }
+  cellObj->SetBranchName(tempString);
+  // Where to copy the branch from
+  /*AliEmcalCorrectionComponent::GetProperty("branchToCopy", tempString, userNode, defaultNode, false, containerName);
+  cellObj->SetBranchToCopyName(tempString);*/
+
+  // IsEmbedding
+  bool tempBool = false;
+  AliEmcalCorrectionComponent::GetProperty("embedded", tempString, userNode, defaultNode, false, containerName);
+  cellObj->SetIsEmbedding(tempBool);
+
+  // Add to the array to keep track of it
+  fCellCollArray.push_back(cellObj);
 }
 
 /**
@@ -651,7 +684,7 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
     std::cout << "\t" << str << std::endl;;
   }
 
-  // Loop over user node
+  // Create all requested containers
   AliDebug(2, TString::Format("Setting up requested containers!"));
   SetupContainersFromInputNodes(inputObjectType, userInputObjectNode, defaultInputObjectNode, requestedContainers);
 }
@@ -721,7 +754,7 @@ void AliEmcalCorrectionTask::SetupContainer(InputObject_t inputObjectType, std::
   /*result = AliEmcalCorrectionComponent::GetProperty("IsEmbedded", tempBool, userNode, defaultNode, false, containerName);
   if (result) {
     AliDebugStream(2) << cont->GetName() << ": Setting embedding to " << (tempBool ? "enabled" : "disabled") << std::endl;
-    cont->SetIsEmbedded(tempBool);
+    cont->SetIsEmbedding(tempBool);
   }*/
 
   // Cluster specific properties
@@ -923,12 +956,13 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
   // Not required, because not all components need Clusters or Tracks
   AliEmcalCorrectionComponent::GetProperty(inputObjectName.c_str(), inputObjects, fUserConfiguration, fDefaultConfiguration, false, component->GetName());
 
-  //std::cout << "inputObjects.size(): " << inputObjects.size() << std::endl;
+  std::cout << "inputObjects.size(): " << inputObjects.size() << std::endl;
 
   // If it is not found, then there will be nothing to iterate over, so we don't need to check the return value
-  for (auto str : inputObjects)
+  for (auto const & str : inputObjects)
   {
-    // TODO: Generalize to arrays...
+    // TODO: Generalize to arrays for clusters and tracks...
+    // NOTE: The contianers operate differently than the cells. The containers should be executed during initialization while the cells should be executed during run time!
     if (inputObjectType == kCluster) {
       AliEmcalContainer * cont = GetClusterContainer(str.c_str());
       AliDebugStream(2) << "Adding cluster container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
@@ -939,6 +973,51 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       AliDebugStream(2) << "Adding particle container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
       component->SetParticleContainer(GetParticleContainer(str.c_str()));
     }
+    else if (inputObjectType == kCaloCells) {
+      // NOTE: This operates different than the others. This should be executed during run time rather than during initialization!
+      if (inputObjects.size() > 1) {
+        AliFatal(TString::Format("Component %s requested more than one cell branch, but this is not supported! Check the configuration!", component->GetName()));
+      }
+      // If we've made it here, this must be at least one entry
+      component->SetCaloCells(GetCellsFromContainerArray(str));
+    }
+  }
+}
+
+/**
+ *
+ *
+ */
+AliVCaloCells * AliEmcalCorrectionTask::GetCellsFromContainerArray(const std::string & cellsContainerName) const
+{
+  for (auto cellContainer : fCellCollArray)
+  {
+    if (cellContainer->GetName() == cellsContainerName) {
+      return cellContainer->GetCells();
+    }
+  }
+
+  return 0;
+}
+
+/**
+ *
+ *
+ */
+void AliEmcalCorrectionTask::SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer)
+{
+  AliDebugStream(2) << "Retrieving cells object " << cellContainer->GetName() << std::endl;
+  // Check for embedding and return object
+  if (cellContainer->GetIsEmbedding()) {
+    // TODO: Enable embedded when that branch is committed!
+    /*const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (!embedding) return 0;
+
+    AliVEvent * event = embedding->GetExternalEvent();
+    cellContainer->SetCells(dynamic_cast<AliVCaloCells *>(embedding->FindListObject(cellContainer->GetBranchName().c_str())));*/
+  }
+  else {
+    cellContainer->SetCells(dynamic_cast<AliVCaloCells *>(InputEvent()->FindListObject(cellContainer->GetBranchName().c_str())));
   }
 }
 
@@ -962,77 +1041,106 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
  */
 void AliEmcalCorrectionTask::CreateNewObjectBranches()
 {
-  // Create new cell branch
-  // cellBranchName doesn't belong to any particular component
-  AliEmcalCorrectionComponent::GetProperty("cellBranchName", fCreatedCellBranchName, fUserConfiguration, fDefaultConfiguration, true, "");
-  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message
-  if (fCreatedCellBranchName == "usedefault") {
-    fCreatedCellBranchName = DetermineUseDefaultName(kCaloCells, fIsEsd);
+  // Create new cell branches
+  for (auto cellContainer : fCellCollArray)
+  {
+    // Only create new branches if we want to make a copy
+    // The "usedefault" name should already be resolved, so we don't need to check here
+    /*if (cellContainer->GetBranchToCopyName() == "") {
+      continue;
+    }*/
+
+    // Check to ensure that we are not trying to create a new branch on top of the old branch
+    AliVEvent * event = 0;
+    if (cellContainer->GetIsEmbedding()) {
+      // TODO: Enable embedded when that branch is committed!
+      /*const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+      if (!embedding) return 0;
+
+      event = embedding->GetExternalEvent();*/
+    }
+    else {
+      event = InputEvent();
+    }
+
+    // Check for name complict with existing objects
+    TObject * existingObject = event->FindListObject(cellContainer->GetBranchName().c_str());
+    if (existingObject) {
+      AliFatal(TString::Format("Attempted to create a new cell branch \"%s\" for cell container \"%s\" with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", cellContainer->GetBranchName().c_str(), cellContainer->GetName().c_str()));
+    }
+
+    // Create new branch and add it to the event
+    AliVCaloCells * newCells = 0;
+    if (fIsEsd) {
+      newCells = new AliESDCaloCells(cellContainer->GetBranchName().c_str(), cellContainer->GetName().c_str(), AliVCaloCells::kEMCALCell);
+    }
+    else {
+      newCells = new AliAODCaloCells(cellContainer->GetBranchName().c_str(), cellContainer->GetName().c_str(), AliVCaloCells::kEMCALCell);
+    }
+
+    // Add to event
+    event->AddObject(newCells);
   }
 
-  // Check to ensure that we are not trying to create a new branch on top of the old branch
-  TObject * existingObject = InputEvent()->FindListObject(fCreatedCellBranchName.c_str());
-  if (existingObject) {
-    AliFatal(TString::Format("Attempted to create a new cell branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fCreatedCellBranchName.c_str()));
-  }
+  // Create new cluster branches
+  NewClusterOrTrackBranches("cluster",  kCluster, fClusterCollArray);
 
-  // Create new branch and add it to the event
-  AliVCaloCells * newCells = 0;
-  if (fIsEsd) {
-    newCells = new AliESDCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
-  }
-  else {
-    newCells = new AliAODCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
-  }
-  InputEvent()->AddObject(newCells);
-  // Set fCaloCells here to avoid looking up every event
-  // newCells is the same address as that reference by the TList in the InputEvent
-  fCaloCells = newCells;
-
-  // Create new cluster branch
-  // Clusterizer is used since it is the first place that clusters are used.
-  NewClusterOrTrackBranch("cluster",  kCluster, fCreatedClusterBranchName, "Clusterizer");
-
-  // Create new tracks branch
-  // ClusterTrackMatcher is used since it is the first place that tracks are used.
-  NewClusterOrTrackBranch("track",  kTrack, fCreatedTrackBranchName, "ClusterTrackMatcher");
+  // Create new tracks branches
+  NewClusterOrTrackBranches("track",  kTrack, fParticleCollArray);
 }
 
 /**
- * Importantly, classMemberToStoreBranchName must be a reference to the class member which is used to store the branch name,
- * such as fCreatedClusterBranchName!
+ * Importantly, classMemberToStoreBranchName must be a reference to the class member which is used to store
+ * the branch name, such as fCreatedClusterBranchName!
  *
  */
-void AliEmcalCorrectionTask::NewClusterOrTrackBranch(std::string objectTypeString, InputObject_t objectType, std::string & classMemberToStoreBranchName, std::string branchNameLocation)
+void AliEmcalCorrectionTask::NewClusterOrTrackBranches(std::string objectTypeString, InputObject_t objectType, TObjArray & inputArray)
 {
   // Get the name of the branch, given by "trackBranchName" or "clusterBranchName"
-  AliEmcalCorrectionComponent::GetProperty(objectTypeString + "BranchName", classMemberToStoreBranchName, fUserConfiguration, fDefaultConfiguration, true, branchNameLocation);
+  /*AliEmcalCorrectionComponent::GetProperty(objectTypeString + "BranchName", classMemberToStoreBranchName, fUserConfiguration, fDefaultConfiguration, true, branchNameLocation);
   // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message when it fails below
   if (classMemberToStoreBranchName == "usedefault") {
     classMemberToStoreBranchName = DetermineUseDefaultName(objectType, fIsEsd);
-  }
+  }*/
 
-  // Check to ensure that we are not trying to create a new branch on top of the old branch
-  TObject * existingObject = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(classMemberToStoreBranchName.c_str()));
-  if (existingObject) {
-    AliFatal(TString::Format("Attempted to create a new %s branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", objectTypeString.c_str(), classMemberToStoreBranchName.c_str()));
-  }
-  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
+  AliEmcalContainer * cont = 0;
+  TIter nextColl(&inputArray);
+  while ((cont = static_cast<AliEmcalContainer*>(nextColl())))
+  {
+    // Check to ensure that we are not trying to create a new branch on top of the old branch
+    AliVEvent * event = 0;
+    event = InputEvent();
+    // TODO: Enable embedded when that branch is committed!
+    /*if (cont->GetIsEmbedding()) {
+      const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+      if (!embedding) return 0;
 
-  // Determine relevant values to able to properly create the branch
-  // Branch object type name (the type which is going to be created in the TClonesArray)
-  std::string newObjectTypeName = DetermineUseDefaultName(objectType, fIsEsd, true);
+      event = embedding->GetExternalEvent();
+    }
+    else {
+      event = InputEvent();
+    }*/
+    TObject * existingObject = dynamic_cast<TClonesArray *>(event->FindListObject(cont->GetArrayName()));
+    if (existingObject) {
+      AliFatal(TString::Format("Attempted to create a new %s branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", objectTypeString.c_str(), cont->GetArrayName().Data()));
+    }
+    TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
-  // Create new branch and add it to the event
-  TClonesArray * newArray = 0;
-  if (fIsEsd) {
-    newArray = new TClonesArray(newObjectTypeName.c_str());
+    // Determine relevant values to able to properly create the branch
+    // Branch object type name (the type which is going to be created in the TClonesArray)
+    std::string newObjectTypeName = DetermineUseDefaultName(objectType, fIsEsd, true);
+
+    // Create new branch and add it to the event
+    TClonesArray * newArray = 0;
+    if (fIsEsd) {
+      newArray = new TClonesArray(newObjectTypeName.c_str());
+    }
+    else {
+      newArray = new TClonesArray(newObjectTypeName.c_str());
+    }
+    newArray->SetName(cont->GetArrayName());
+    event->AddObject(newArray);
   }
-  else {
-    newArray = new TClonesArray(newObjectTypeName.c_str());
-  }
-  newArray->SetName(classMemberToStoreBranchName.c_str());
-  InputEvent()->AddObject(newArray);
 }
 
 /**
@@ -1042,18 +1150,33 @@ void AliEmcalCorrectionTask::NewClusterOrTrackBranch(std::string objectTypeStrin
 void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
 {
   // Cells
-  AliDebug(3, Form("Number of old cells: %d", fCaloCellsFromInputEvent->GetNumberOfCells()));
-  // Copies from fCaloCellsFromInputEvent to fCaloCells!
-  fCaloCellsFromInputEvent->Copy(*fCaloCells);
-  // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
-  fCaloCells->SetName(fCreatedCellBranchName.c_str());
+  for (auto cellContainer : fCellCollArray)
+  {
+    // TODO: Remove string comparison...
+    /*if (cellContainer->GetBranchToCopyName() == "") {
+      continue;
+    }*/
 
-  AliDebug(3, Form("Number of old cells: %d \tNumber of new cells: %d", fCaloCellsFromInputEvent->GetNumberOfCells(), fCaloCells->GetNumberOfCells() ));
-  if (fCaloCellsFromInputEvent->GetNumberOfCells() != fCaloCells->GetNumberOfCells()) {
-    AliFatal(Form("Number of old cell: %d != number of new cells %d", fCaloCellsFromInputEvent->GetNumberOfCells(), fCaloCells->GetNumberOfCells()));
+    //AliVCaloCells * cellsToCopy = GetCellsFromContainerArray(cellContainer->GetBranchToCopyName());
+    AliVCaloCells * cellsToCopy = 0;
+    AliDebug(3, Form("Number of old cells: %d", cellsToCopy->GetNumberOfCells()));
+    // Copies from cellsToCopy to cells in cellContainer!
+    cellsToCopy->Copy(*(cellContainer->GetCells()));
+    // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
+    cellContainer->GetCells()->SetName(cellContainer->GetBranchName().c_str());
+    cellContainer->GetCells()->SetTitle(cellContainer->GetName().c_str());
+
+    AliDebug(3, Form("Number of old cells: %d \tNumber of new cells: %d", cellsToCopy->GetNumberOfCells(), cellContainer->GetCells()->GetNumberOfCells() ));
+    if (cellsToCopy->GetNumberOfCells() != cellContainer->GetCells()->GetNumberOfCells()) {
+      AliFatal(Form("Number of old cell: %d != number of new cells %d", cellsToCopy->GetNumberOfCells(), cellContainer->GetCells()->GetNumberOfCells()));
+    }
   }
 
   // Clusters
+  for (auto clusterCont : fClusterCollArray)
+  {
+
+  }
   TClonesArray * newClusters = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedClusterBranchName.c_str()));
   std::string currentClustersName = DetermineUseDefaultName(kCluster, fIsEsd);
   TClonesArray * currentClusters = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(currentClustersName.c_str()));
@@ -1313,12 +1436,11 @@ void AliEmcalCorrectionTask::ExecOnce()
     cont->SetArray(InputEvent());
   }
 
-  if (!fCaloCellsName.IsNull() && !fCaloCellsFromInputEvent) {
-    fCaloCellsFromInputEvent =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
-    if (!fCaloCellsFromInputEvent) {
-      AliError(Form("Could not retrieve cells %s!", fCaloCellsName.Data())); 
-      return;
-    }
+  // Determine the proper pointer for each cell object and save them to the cell contianer
+  // At this point, they should all be created
+  for (auto cellObj : fCellCollArray)
+  {
+    SetCellsObjectInCellContainerBasedOnProperties(cellObj);
   }
 
   fEventInitialized = kTRUE;
@@ -1445,7 +1567,6 @@ AliClusterContainer* AliEmcalCorrectionTask::GetClusterContainer(const char *nam
 }
 
 
-
 /**
  *
  *
@@ -1466,10 +1587,6 @@ void AliEmcalCorrectionTask::UserExec(Option_t *option)
   if (fCreateNewObjectBranches)
   {
     CopyBranchesToNewObjects();
-  }
-  else
-  {
-    fCaloCells = fCaloCellsFromInputEvent;
   }
 
   // Get the objects for each event
@@ -1495,23 +1612,15 @@ Bool_t AliEmcalCorrectionTask::Run()
   {
     component->SetEvent(InputEvent());
     component->SetMCEvent(MCEvent());
-    component->SetCaloCells(fCaloCells);
     component->SetEMCALGeometry(fGeom);
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);
     component->SetNcentralityBins(fNcentBins);
-    AliClusterContainer * tempClusterContainer = GetClusterContainer(component->GetName());
-    if (tempClusterContainer)
-    {
-      component->SetClusterContainer(tempClusterContainer);
-    }
-    AliParticleContainer * tempParticleContainer = GetParticleContainer(component->GetName());
-    if (tempParticleContainer)
-    {
-      // TEMP
-      //Printf("Particle container name: %s, branch: %s", tempParticleContainer->GetName(), tempParticleContainer->GetArrayName().Data());
-      component->SetParticleContainer(tempParticleContainer);
-    }
+
+    // Add the requested cells to the component
+    //std::cout << "Adding CaloCells" << std::endl;
+    AddContainersToComponent(component, kCaloCells);
+    //std::cout << "Added CaloCells" << std::endl;
 
     component->Run();
   }
