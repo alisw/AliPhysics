@@ -335,7 +335,7 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
   AliInfoStream() << "Initializing masked fastors from OADB container " << fMaskedFastorOADB.Data() << std::endl;
-  if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
+  if(fMaskedFastorOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
   AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
   badchannelDB.InitFromFile(fMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
   TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
