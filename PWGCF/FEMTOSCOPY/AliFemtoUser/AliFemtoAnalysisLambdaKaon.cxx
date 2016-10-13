@@ -1390,6 +1390,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAntiLambdaCutParams()
 
   tReturnParams.useSimpleMisID = true;
   tReturnParams.buildMisIDHistograms = true;
+  tReturnParams.useCustomMisID = false;
 
   tReturnParams.eta = 0.8;
   tReturnParams.minPt = 0.4;
@@ -1443,6 +1444,7 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
 
   tReturnParams.useSimpleMisID = true;
   tReturnParams.buildMisIDHistograms = true;
+  tReturnParams.useCustomMisID = false;
 
   tReturnParams.eta = 0.8;
   tReturnParams.minPt = 0.2;
