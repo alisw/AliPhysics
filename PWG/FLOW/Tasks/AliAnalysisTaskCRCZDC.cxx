@@ -71,6 +71,7 @@
 #include "AliCentrality.h"
 #include "AliAnalysisTaskCRCZDC.h"
 #include "AliMultSelection.h"
+#include "AliLumiTools.h"
 
 // ALICE Correction Framework
 #include "AliCFManager.h"
@@ -491,7 +492,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->Add(fCenDis);
   for(Int_t c=0; c<fnCen; c++) {
     for(Int_t k=0; k<8; k++) {
-      fTowerGainEq[c][k] =  new TH3D(Form("fTowerGainEq[%d][%d]",c,k),Form("fTowerGainEq[%d][%d]",c,k),20,-0.035,0.015,20,0.145,0.220,10,-10.,10.);
+      fTowerGainEq[c][k] =  new TH3D();
       fOutput->Add(fTowerGainEq[c][k]);
     }
   }
