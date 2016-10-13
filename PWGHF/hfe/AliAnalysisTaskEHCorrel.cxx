@@ -88,7 +88,7 @@
 #include "TVector3.h"
 #include "TRandom2.h"
 
-  ClassImp(AliAnalysisTaskEHCorrel)
+ClassImp(AliAnalysisTaskEHCorrel)
 ClassImp(AliehDPhiBasicParticle)
   //________________________________________________________________________
   AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
@@ -99,6 +99,7 @@ ClassImp(AliehDPhiBasicParticle)
   fpidResponse(0),
   fMultSelection(0),
   fCentrality(-1),
+  fMultiplicity(-1),
   fCentralityMin(0),
   fCentralityMax(20),
   fEMCEG1(kFALSE),
@@ -128,6 +129,8 @@ ClassImp(AliehDPhiBasicParticle)
   fVtxY(0),
   fCentralityNoPass(0),
   fCentralityPass(0),
+  fMultiplicityNoPass(0),
+  fMultiplicityPass(0),
   fHistClustE(0),
   fEMCClsEtaPhi(0),
   fNegTrkIDPt(0),
@@ -196,6 +199,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fCentrality(-1),
   fCentralityMin(0),
   fCentralityMax(20),
+  fMultiplicity(-1),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
@@ -223,6 +227,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fVtxY(0),
   fCentralityNoPass(0),
   fCentralityPass(0),
+  fMultiplicityNoPass(0),
+  fMultiplicityPass(0),
   fHistClustE(0),
   fEMCClsEtaPhi(0),
   fNegTrkIDPt(0),
@@ -305,11 +311,11 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
-  Int_t trackDepth = 2000;
+  Int_t trackDepth = 50000;
   Int_t poolsize   = 1000;
 
-  Int_t nZvtxBins  = 4;
-  Double_t vertexBins[5] = {-10,-5,0,5,10};
+  Int_t nZvtxBins  = 6;
+  Double_t vertexBins[7] = {-10,-3,-1,0,1,3,10};
   Int_t nCentralityBins  = 6;
   Double_t CentralityBins[7];
   if(fCentralityMax == 20)
@@ -366,11 +372,17 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fVtxX = new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
   fOutputList->Add(fVtxX);
 
-  fCentralityPass = new TH1F("fCentralityPass", "Centrality Pass", 101, -1, 100);
+  fCentralityPass = new TH1F("fCentralityPass", "Centrality Pass;centrality;counts", 101, -1, 100);
   fOutputList->Add(fCentralityPass);
 
-  fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass", 101, -1, 100);
+  fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass;centrality;counts", 101, -1, 100);
   fOutputList->Add(fCentralityNoPass);
+
+  fMultiplicityPass = new TH1F("fMultiplicityPass", "Multiplicity Pass;multiplicity;counts", 20000, 0, 20000);
+  fOutputList->Add(fMultiplicityPass);
+
+  fMultiplicityNoPass = new TH1F("fMultiplicityNoPass", "Multiplicity No Pass;multiplicity;counts", 20000, 0, 20000);
+  fOutputList->Add(fMultiplicityNoPass);
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
@@ -531,12 +543,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     printf("ERROR: fVEvent not available\n");
     return;
   }
-
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (fAOD) {
-    // printf("fAOD available\n");
-    //return;
-  }
   fpVtx = fVevent->GetPrimaryVertex();
 
   ///////////////////
@@ -807,6 +814,10 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   {
     if(!HadTrack->IsHybridGlobalConstrainedGlobal()) return kFALSE;
   }
+  if(fHadCutCase == 4)
+  {
+    if(!HadTrack->IsHybridTPCConstrainedGlobal()) return kFALSE;
+  }
 
   if(HadTrack->GetTPCNcls() < fTPCNClsHad) return kFALSE;
   if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0.9) return kFALSE;
@@ -969,14 +980,20 @@ void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &central
     fCentrality = fMultSelection->GetMultiplicityPercentile("V0M", false);
   }
 
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
+  if(!header) AliFatal("Not a standard AOD");
+  fMultiplicity = header->GetRefMultiplicity();
+
   if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
   {
     fCentralityNoPass->Fill(fCentrality);
+    fMultiplicityNoPass->Fill(fMultiplicity);
     //  cout << "--------------Fill no pass-------------------------"<<endl;
     centralitypass = kFALSE;
   }else
   {
     fCentralityPass->Fill(fCentrality);
+    fMultiplicityPass->Fill(fMultiplicity);
     //  cout << "--------------Fill pass-------------------------"<<endl;
     centralitypass = kTRUE;
   }
@@ -1129,12 +1146,13 @@ void  AliAnalysisTaskEHCorrel::MixedEvent(AliVTrack *track, THnSparse *SparseMix
     return;
   }
   //fPool->PrintInfo();
-  if (fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
+  fMixStatCent->Fill(fPool->GetCurrentNEvents(),fCentrality);
+  fMixStatVtxZ->Fill(fPool->GetCurrentNEvents(),zVtx);
+
+  if (fPool->GetCurrentNEvents() >= 3) // start mixing when 3 events are in the buffer
   {
     Int_t nMix = fPool->GetCurrentNEvents();
     fNoMixedEvents->Fill(0);
-    fMixStatCent->Fill(fPool->GetCurrentNEvents(),fCentrality);
-    fMixStatVtxZ->Fill(fPool->GetCurrentNEvents(),zVtx);
 
     Double_t ptMixTrk= -999;
     Double_t ptEle = -999;
