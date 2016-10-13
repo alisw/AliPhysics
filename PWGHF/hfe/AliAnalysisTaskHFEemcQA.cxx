@@ -56,6 +56,8 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALGeometry.h"
 
+//#include "AliQnCorrectionsManager.h"
+
 #include "AliAnalysisTaskHFEemcQA.h"
 
 using std::cout;
@@ -68,6 +70,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fVevent(0),
   fESD(0),
   fAOD(0),
+  fMCheader(0),
   fpidResponse(0),
   fEMCALGeo(0),
   fFlagSparse(kFALSE),
@@ -160,6 +163,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fITShitPhi(0), 
   fInvmassULS(0),
   fInvmassLS(0),
+  fInvmassULS_MCtrue(0),
+  fInvmassPi0Dalitz(0),
   fMCcheckMother(0),
   fSparseElectron(0),
   fvalueElectron(0)
@@ -180,6 +185,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fVevent(0),
   fESD(0),
   fAOD(0),
+  fMCheader(0),
   fpidResponse(0),
   fEMCALGeo(0),
   fFlagSparse(kFALSE),
@@ -272,7 +278,9 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fITShitPhi(0), 
   fInvmassULS(0),
   fInvmassLS(0),
-  fMCcheckMother(0), 
+  fInvmassULS_MCtrue(0),
+  fInvmassPi0Dalitz(0),
+  fMCcheckMother(0),
   fSparseElectron(0),
   fvalueElectron(0)
 {
@@ -315,6 +323,8 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     SetESDAnalysis();
   }
   printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
+
+  //AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
   //fEMCALGeo =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8");
   //fEMCALGeo =  AliEMCALGeometry::GetInstance();
@@ -556,7 +566,17 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fInvmassULS = new TH1F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
   fOutputList->Add(fInvmassULS);
 
-  fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
+  fInvmassULS_MCtrue = new TH2F("fInvmassULS_MCtrue", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 6,-0.5,5.5,1000,0,1.0);
+  fOutputList->Add(fInvmassULS_MCtrue);
+
+  /*
+  Int_t binsDal[6] =      {3,300,200,200,3,100};
+  Double_t mimDal[6] = {-0.5,0,0,0,-0.5,-5}; 
+  Double_t maxDal[6] = {2.5,0.3,40.0,40.0,2.5,5}; 
+  fInvmassPi0Dalitz = new THnSparseD("Pi0DalitzMC","Inv mass Dal;feed;mass;epT;pi0pT;prim;eta",6,binsDal,mimDal,maxDal);
+  fOutputList->Add(fInvmassPi0Dalitz);
+  */
+  fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
   fOutputList->Add(fMCcheckMother);
 
   Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
@@ -564,6 +584,8 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
   fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
+
+
 
   PostData(1,fOutputList);
 }
@@ -620,6 +642,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     //return;
   }
   if(fAOD)fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+
+  cout << "==========================" << endl;
+  if(fMCarray)CheckMCgen(fMCheader);
 
   ///////////////////
   //PID initialised//
@@ -970,21 +997,33 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     ///////////////////////
     Int_t ilabel = track->GetLabel();
     Int_t pdg = -999;
+    Int_t pidM = -1;
     Double_t pid_ele = 0.0;
     if(ilabel>0 && fMCarray)
     {
+      //cout << "ilabel =" << ilabel << endl; 
       fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
       Int_t pdg = fMCparticle->GetPdgCode();
+      //cout << "pdg =" << pdg << endl; 
       if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-      Int_t pidM = -1;
       Int_t ilabelM = -1;
       if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
-      if(pidM==22) // from pi0 & eta
-      {
-        AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-        FindMother(fMCparticleM, ilabelM, pidM);
-      }
-      fMCcheckMother->Fill(abs(pidM));
+      //cout << "labelM =" << ilabelM << endl; 
+  
+      //if(TMath::Abs(ilabelM)>0)
+      if(ilabelM>0)
+        {
+         AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+
+         if(pidM==22) // from pi0 & eta
+           {
+            AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+            FindMother(fMCparticleM, ilabelM, pidM);
+            }
+      
+            Double_t pTmom = fMCparticleM->Pt();
+            //fMCcheckMother->Fill(abs(pidM),pTmom);
+          }
     }
 
     ////////////////////
@@ -1152,7 +1191,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){ //rough cuts
         //-----Identify Non-HFE
-        SelectPhotonicElectron(iTracks,track,fFlagNonHFE);
+        SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM);
 
         fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
         fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
@@ -1177,7 +1216,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   PostData(1, fOutputList);
 }
 //________________________________________________________________________
-void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC)
 {
   ///////////////////////////////////////////
   //////Non-HFE - Invariant mass method//////
@@ -1264,6 +1303,25 @@ void AliAnalysisTaskHFEemcQA::SelectPhotonicElectron(Int_t itrack, AliVTrack *tr
     if(fFlagULS)
       if(track->Pt()>1) fInvmassULS->Fill(mass);
 
+    if(iMC>0)
+      {
+       Int_t iMCbin = -999;
+       if(iMC == 111) 
+          {
+           iMCbin = 1;
+          }
+        else if(iMC == 221)
+          {
+           iMCbin = 2;
+          }
+        else
+          {
+           iMCbin = -999;
+          }  
+
+       //if(fFlagULS && track->Pt()>1.5 && iMCbin!=-999)fInvmassULS_MCtrue->Fill(iMCbin,mass);  
+      }
+
     if(mass<100 && fFlagULS && !flagPhotonicElec)
       flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
   }
@@ -1293,6 +1351,7 @@ void AliAnalysisTaskHFEemcQA::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, 
 }
 
 //________________________________________________________________________
+//void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid)
 void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid)
 {
   // Find mother in case of MC
@@ -1303,6 +1362,118 @@ void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, Int_t &label, I
     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
     pid = partM->GetPdgCode();
   }
+  else
+  {
+   pid = -1;
+  }
+}
+
+void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
+{
+ TList *lh=fMCheader->GetCocktailHeaders();
+ Int_t NpureMC = 0;
+ if(lh)
+    {     
+     //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
+
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            //cout << "<------- imc = "<< gh->GetName() << endl;     
+            //cout << "<-------- Ncont = " << gh->NProduced() << endl;
+            if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+           }
+        }
+    }
+
+ for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+     {
+      Bool_t iEnhance = kFALSE;
+      if(imc>=NpureMC)iEnhance = kTRUE;
+      Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
+
+      fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+      Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+
+     
+      Int_t phyprim = 0;
+      if(fMCparticle->IsPrimary())phyprim = 1;
+
+      Double_t PtPi0 = 0.0;
+      Int_t pdgMom = -99;
+
+      Int_t labelMpi = -1;
+      FindMother(fMCparticle,labelMpi,pdgMom);
+      if(pdgMom==-1 && iEnhance)iHijing = 0;  // select particles orogonally from enhance
+
+      if(iHijing ==0)
+        {
+         if(pdgGen==411 || pdgGen==421 || pdgGen==413 || pdgGen==423 || pdgGen==431 || pdgGen==433)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+         if(pdgGen==511 || pdgGen==521 || pdgGen==513 || pdgGen==523 || pdgGen==531 || pdgGen==533)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+         if(pdgGen==111)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+         if(pdgGen==221)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+        }
+
+      if(pdgGen==111 || pdgGen==221)
+        {
+         PtPi0 = fMCparticle->Pt();
+         Int_t Ndecay = fMCparticle->GetNDaughters();
+         if(Ndecay==3)
+           {
+            Int_t firstCh = fMCparticle->GetDaughter(0);
+            Int_t lastCh = fMCparticle->GetDaughter(1);
+           //cout << "firstCh = " << firstCh << " ; lastCh = " << lastCh << endl;
+ 
+           AliAODMCParticle* fMCpar0 = (AliAODMCParticle*) fMCarray->At(firstCh);
+           AliAODMCParticle* fMCpar1 = (AliAODMCParticle*) fMCarray->At(firstCh+1);
+           AliAODMCParticle* fMCpar2 = (AliAODMCParticle*) fMCarray->At(firstCh+2);
+            
+           Int_t pdgCh0 = fMCpar0->GetPdgCode();
+           Int_t pdgCh1 = fMCpar1->GetPdgCode();
+           Int_t pdgCh2 = fMCpar2->GetPdgCode();
+           //cout << "pdg = " << pdgCh0  << " ;  " << pdgCh1 << " ; " << pdgCh2 << endl;
+
+           if(pdgCh0==22 && TMath::Abs(pdgCh1)==11 && TMath::Abs(pdgCh2)==11)
+              {
+                TLorentzVector chele1;
+                chele1.SetPxPyPzE(fMCpar1->Px(),fMCpar1->Py(),fMCpar1->Pz(),fMCpar1->E());
+                TLorentzVector chele2;
+                chele2.SetPxPyPzE(fMCpar2->Px(),fMCpar2->Py(),fMCpar2->Pz(),fMCpar2->E());
+ 
+                TLorentzVector Sumchele;
+                Sumchele = chele1 + chele2;
+               if(fMCpar1->Pt()>0.5)
+                 {
+                  if(pdgGen==111 && iHijing==0)fInvmassULS_MCtrue->Fill(1,Sumchele.M());  
+                  if(pdgGen==221 && iHijing==0)fInvmassULS_MCtrue->Fill(2,Sumchele.M());  
+                  if(pdgGen==111 && iHijing==1) fInvmassULS_MCtrue->Fill(3,Sumchele.M());  
+                  if(pdgGen==221 && iHijing==1) fInvmassULS_MCtrue->Fill(4,Sumchele.M());  
+
+                  /* 
+                  if(pdgGen==111)
+                     {
+                      Double_t par[6];
+                      if(iHijing==0)cout << "pi0 Dalitz ; "<< imc << " ; pdgMpi = " << pdgMom << " ; Enhance = " << iEnhance << " ; pi0 eta = " << fMCparticle->Eta() << endl;
+                      par[0] = iHijing;
+                      par[1] = Sumchele.M();
+                      par[2] = fMCpar1->Pt();
+                      par[3] = PtPi0;
+                      par[4] = phyprim;
+                      par[5] = fMCparticle->Eta();
+                      fInvmassPi0Dalitz->Fill(par);
+                     }
+                    */
+                 }
+              } 
+
+           } 
+        }
+
+     }
+
+ return;
 }
 
 //________________________________________________________________________
