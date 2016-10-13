@@ -45,6 +45,7 @@
 #include "AliFlowVector.h"
 #include "AliFlowTrackSimple.h"
 #include "AliFlowAnalysisCRC.h"
+#include "AliLog.h"
 #include "TRandom.h"
 #include "TF1.h"
 #include "TNtuple.h"
@@ -572,6 +573,14 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     if(fQAZDCCuts) fQAZDCCutsFlag = this->PassQAZDCCuts();
   }
   
+  if(fUsePhiEtaWeights && fRunNum!=fCachedRunNum) {
+    if(fWeightsList->FindObject(Form("fPhiEtaPtWeights[%d]",fRunNum))) {
+      fPhiEtaWeights = (TH3F*)(fWeightsList->FindObject(Form("fPhiEtaPtWeights[%d]",fRunNum)));
+    } else {
+      AliWarning(Form("WARNING: phipteta weights not found for run %d! \n",fRunNum));
+    }
+  }
+  
   // EbE flow *********************************************************************************************************
   
   if(fCalculateEbEFlow) {
@@ -734,9 +743,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         //    {
         //     wEta = fEtaWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth)));
         //    }
-        if(fUsePhiEtaWeights && fPhiEtaWeights[fRunBin]) // determine phieta weight for POI:
+        if(fUsePhiEtaWeights && fPhiEtaWeights) // determine phieta weight for POI:
         {
-          wPhiEta *= 1./fPhiEtaWeights[fRunBin]->GetBinContent(fPhiEtaWeights[fRunBin]->FindBin(dPhi,dEta,dPt));
+          wPhiEta *= 1./fPhiEtaWeights->GetBinContent(fPhiEtaWeights->FindBin(dPhi,dPt,dEta));
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
           if(dPt>0.2 && dPt<20.) wPhiEta *= 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
@@ -1985,9 +1994,9 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
   fUseParticleWeights->Fill(4.5,(Int_t)fUsePhiEtaWeights);
   fWeightsList->Add(fUseParticleWeights);
   
-  for(Int_t r=0;r<fCRCnRun;r++) {
-    fPhiEtaWeights[r] = new TH3F();
-    fWeightsList->Add(fPhiEtaWeights[r]);
+  if(fUsePhiEtaWeights) {
+    fPhiEtaWeights = new TH3F();
+    fWeightsList->Add(fPhiEtaWeights);
   }
   
   // // POIs
@@ -16891,10 +16900,7 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
 void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
 {
   fWeightsList = new TList();
-  // Initialize all arrays used for various unclassified objects.
-  for(Int_t r=0;r<fCRCnRun;r++) {
-    fPhiEtaWeights[r] = NULL;
-  }
+  fPhiEtaWeights = NULL;
   
   // fPhiDistrRefRPs = NULL;
   // fPtDistrRefRPs = NULL;
