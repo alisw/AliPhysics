@@ -481,10 +481,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
     
-  Int_t nBinsReco[knVarForSparse]   = {350, 20,     30,    20,    20,   20,   20,    10,   10,    14,    6,    6,   12};
-  Double_t xminReco[knVarForSparse] = {1.6,  0.,  0.00,   0.0,   0.0,    0.,   0.,  0.9,  0.9,  0.00,  0.7,  0.0,   0.};
-  Double_t xmaxReco[knVarForSparse] = {2.3, 20., 0.015,   0.1,   0.1,   10.,  10.,  1.0,  1.0,  0.07,  1.0,   0.3,  6.};
-  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
+  Int_t nBinsReco[knVarForSparse]   = {350, 20,     30,     14,    14,   20,   10,   10,    14,    6,    6,   12};
+  Double_t xminReco[knVarForSparse] = {1.6,  0.,  0.00,    0.0,   0.0,   0.,  0.9,  0.9,  0.00,  0.7,   0.0,  0.};
+  Double_t xmaxReco[knVarForSparse] = {2.3, 20., 0.015,   0.07,  0.07,  10.,  1.0,  1.0,  0.07,  1.0,   0.3,  6.};
+  TString  axis[knVarForSparse]     = {"invMassDsAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl_{xy}","cosP","cosP_{xy}","sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
   if(fSystem == 1) { //pPb,PbPb
       nBinsReco[0] = 200; //Ds mass
       xminReco[0]  = 1.75;
@@ -495,18 +495,17 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       xmaxReco[1]  = 15.;
       
       nBinsReco[2] = 15; //#Delta Mass(KK)
-      nBinsReco[3] = 10; //dlen
-      nBinsReco[4] = 10; //dlenxy
-      nBinsReco[5] = 10; //ndlen
-      nBinsReco[6] = 10; //ndlenxy
+      nBinsReco[3] = 7; //dlen
+      nBinsReco[4] = 7; //dlenxy
+      nBinsReco[5] = 10; //ndlenxy
       
-      nBinsReco[7] = 6; //cosP
+      nBinsReco[6] = 6; //cosP
+      xminReco[6]  = 0.94;
+      xmaxReco[6]  = 1.0;
+      
+      nBinsReco[7] = 6; //cosPxy
       xminReco[7]  = 0.94;
       xmaxReco[7]  = 1.0;
-      
-      nBinsReco[8] = 6; //cosPxy
-      xminReco[8]  = 0.94;
-      xmaxReco[8]  = 1.0;
   }
   
   Int_t nBinsAcc[knVarForSparseAcc]   = {20,  20};
@@ -957,7 +956,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[1] = tmpNormIP[1];
 	    normIPprong[2] = tmpNormIP[2];
 	    
-	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdlxy,cosp,cospxy,
 					sigvert,cosPiDs,cosPiKPhi,TMath::Abs(normIP)};
 	    
 	    if(!fReadMC) {
@@ -992,7 +991,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    normIPprong[1] = tmpNormIP[1];
 	    normIPprong[2] = tmpNormIP[0];
 	    
-	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+	    Double_t var4nSparse[knVarForSparse] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdlxy,cosp,cospxy,
 					sigvert,cosPiDs,cosPiKPhi,TMath::Abs(normIP)};
 	    
 	    if(!fReadMC) {
