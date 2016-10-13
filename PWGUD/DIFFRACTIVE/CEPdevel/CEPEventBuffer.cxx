@@ -17,7 +17,7 @@ ClassImp(CEPEventBuffer)
 CEPEventBuffer::CEPEventBuffer()
   : TObject()
   , fRunNumber(CEPTrackBuffer::kdumval)
-  , fEventNumber(0)
+  , fEventNumber(CEPTrackBuffer::kdumval)
   , fnumTracks(0)
   , fnumSoftTracks(0)
   , fnumResiduals(0)
@@ -26,6 +26,8 @@ CEPEventBuffer::CEPEventBuffer()
   , ftrb(*fCEPTracks)
   , fMCProcessType(-1)
   , fMCGenerator("")
+  , fVertexPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fMCVertexPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
 {
 
   // printf("A CEPEventBuffer was created...\n");
@@ -47,18 +49,23 @@ void CEPEventBuffer::Reset()
 
   // reset all counters
   fRunNumber     = CEPTrackBuffer::kdumval;
-  fEventNumber   = 0;
-  fnumResiduals  = 0;
+  fEventNumber   = CEPTrackBuffer::kdumval;
   fGapCondition  = 0;  
-  fMCProcessType = -1;
+  fMCProcessType = CEPTrackBuffer::kdumval;
   fMCGenerator   = "";
+  fPhysel        = kFALSE;
+  fisPileup      = kFALSE;
 
   // clear the track list
   //ftrb.Clear();
   fnumTracks     = 0;
   fnumSoftTracks = 0;
-
-}
+  fnumResiduals  = 0;
+  
+  fVertexPos     = TVector3(0,0,0);
+  fMCVertexPos   = TVector3(0,0,0);
+    
+ }
 
 // ----------------------------------------------------------------------------
 void CEPEventBuffer::AddTrack(CEPTrackBuffer* trk)
