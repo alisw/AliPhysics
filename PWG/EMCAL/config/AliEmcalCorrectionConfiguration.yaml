@@ -5,7 +5,12 @@ inputObjects:
     cells:
         # Not sure if this makes sense or is straightforward. More on this soon.
         cells0:
-            cellBranchName: "usedefault"
+            branchName: "usedefault"
+            #branchName: "emcalCellsNew"
+            #branchToCopy: "usedefault"
+        cells1:
+            branchName: "usedefault"
+            embedding: true
     clusterContainers:
         baseClusterContainer:
             # Sets the branch name
@@ -104,6 +109,8 @@ ClusterExotics:
     clusterContainersNames:
         - baseClusterContainer_1
         #- clusterContainer1
+    cellsNames:
+        - cells0
 ClusterNonLinearity:
     enabled: true
     createHistos: true
@@ -111,6 +118,8 @@ ClusterNonLinearity:
     clusterContainersNames:
         - baseClusterContainer_1
         #- clusterContainer1
+    cellsNames:
+        - cells0
 ClusterTrackMatcher:
     enabled: true
     createHistos: true
@@ -122,6 +131,8 @@ ClusterTrackMatcher:
         #- clusterContainer2
     trackContainersNames:
         - trackContName1
+    cellsNames:
+        - cells0
 ClusterHadronicCorrection:
     enabled: true
     createHistos: true
@@ -135,6 +146,8 @@ ClusterHadronicCorrection:
         #- clusterContainer2
     trackContainersNames:
         - trackContainerName2
+    cellsNames:
+        - cells0
 executionOrder:
     - CellEnergy
     - CellBadChannel

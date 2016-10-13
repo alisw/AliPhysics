@@ -6,10 +6,11 @@
 #include <yaml-cpp/yaml.h>
 #endif
 
+class AliEmcalCorrectionCellContainer;
+class AliEmcalCorrectionComponent;
 class AliEMCALGeometry;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliEmcalCorrectionComponent.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
 #include "AliTrackContainer.h"
@@ -123,7 +124,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   AliTrackContainer          *GetTrackContainer(const char* name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
   void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
-  void                        SetCaloCellsName(const char* name)                    { fCaloCellsName = name; }
+  AliVCaloCells              *GetCellsFromContainerArray(const std::string & cellsContainerName) const;
 
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
@@ -143,11 +144,13 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
   AliEmcalCorrectionTask &operator=(const AliEmcalCorrectionTask &);  // Not implemented
 
-  static inline bool doesFileExist(const std::string & filename);
+  static inline bool DoesFileExist(const std::string & filename);
   void SetupConfigurationFilePath(std::string & filename, bool userFile = false);
 
   void RetrieveExecutionOrder(std::vector <std::string> & componentsToAdd);
   void InitializeComponents();
+
+  void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
 
   std::string GetInputFieldNameFromInputObjectType(InputObject_t inputObjectType);
   void CreateInputObjects(InputObject_t inputObjectType);
@@ -155,12 +158,13 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   void SetupContainersFromInputNodes(InputObject_t inputObjectType, YAML::Node & userInputObjectNode, YAML::Node & defaultInputObjectNode, std::set <std::string> & requestedContainers);
   void GetNodeForInputObjects(YAML::Node & inputNode, YAML::Node & nodeToRetrieveFrom, std::string & inputObjectName, bool requiredProperty);
+  void SetupCellsInfo(std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
   void SetupContainer(InputObject_t inputObjectType, std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
   AliEmcalContainer * AddContainer(InputObject_t contType, std::string & containerName, YAML::Node & userNode, YAML::Node & defaultNode);
 #endif
 
   void                        CreateNewObjectBranches();
-  void                        NewClusterOrTrackBranch(std::string objectTypeString, InputObject_t objectType, std::string & classMemberToStoreBranchName, std::string branchNameLocation);
+  void                        NewClusterOrTrackBranches(std::string objectTypeString, InputObject_t objectType, TObjArray & inputArray);
   void                        CopyBranchesToNewObjects();
   void                        CopyClusters(TClonesArray *orig, TClonesArray *dest);
 
@@ -201,19 +205,55 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   Int_t                       fNVertCont;                  //!<!event vertex number of contributors
   BeamType                    fBeamType;                   //!<!event beam type
   BeamType                    fForceBeamType;              ///< forced beam type
-  TString                     fCaloCellsName;              ///< name of calo cell collection
   Bool_t                      fNeedEmcalGeom;              ///< whether or not the task needs the emcal geometry
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
 
   TObjArray                   fParticleCollArray;         ///< particle/track collection array
   TObjArray                   fClusterCollArray;          ///< cluster collection array
-  AliVCaloCells               *fCaloCells;                //!<! pointer to calo cells
-  AliVCaloCells               *fCaloCellsFromInputEvent;  //!<! pointer to calo cells from the input event
+  // TODO: This cannot be pointers!
+  std::vector <AliEmcalCorrectionCellContainer *> fCellCollArray; ///< Cells collection array
   
   TList * fOutput;                                        //!<! Output for histograms
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalCorrectionTask, 1); // EMCal correction task
+  /// \endcond
+};
+
+class AliEmcalCorrectionCellContainer {
+ public:
+  AliEmcalCorrectionCellContainer():
+    fBranchName(""),
+    fName(""),
+    fIsEmbedding(""),
+    fCells(0)
+  {}
+  AliEmcalCorrectionCellContainer(std::string branchName, std::string name, std::string branchToCopyName, bool isEmbedded):
+    fBranchName(branchName),
+    fName(name),
+    fIsEmbedding(isEmbedded),
+    fCells(0)
+  {}
+  virtual ~AliEmcalCorrectionCellContainer() {}
+
+  std::string GetBranchName() const { return fBranchName; }
+  std::string GetName() const { return fName; }
+  bool GetIsEmbedding() const { return fIsEmbedding; }
+  AliVCaloCells * GetCells() const { return fCells; }
+
+  void SetBranchName(std::string branchName) { fBranchName = branchName; }
+  void SetName(std::string name ) { fName = name; }
+  void SetIsEmbedding(bool isEmbedded) { fIsEmbedding = isEmbedded; }
+  void SetCells(AliVCaloCells * cells) { fCells = cells; }
+
+ protected:
+  std::string fBranchName;                        ///< Name of the cells branch
+  std::string fName;                              ///< Name of the cells object
+  bool fIsEmbedding;                              ///< Whether the cells should be taken from an external file (embedded)
+  AliVCaloCells *fCells;                          //!<! The actual cells object associated with this infomration
+
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalCorrectionCellContainer, 1); // EMCal correction cell container
   /// \endcond
 };
 
