@@ -23,8 +23,16 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
-
 #include "AliAnalysisTaskSimpleTreeMaker.h"
+
+/*************** Tree Maker Class **********************
+*                                                      *
+* Created: 05.10.2016                                  *
+* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
+*          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*                                                      *
+*******************************************************/
+
 
 ClassImp(AliAnalysisTaskSimpleTreeMaker)
 
@@ -93,7 +101,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 {
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-  Printf("sup");
+  
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   DefineOutput(1, TTree::Class()); //will be connected to fTree
@@ -123,8 +131,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
   if (!fPIDResponse){
 	  return;} 
 
-  AliInfo("Init");
-
   fStream = new TTreeStream("tracks");
   fTree   = (TTree*)fStream->GetTree();
    
@@ -132,7 +138,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
   PostData(1, fTree);
   PostData(2, fQAhist);
   
-  AliInfo("Finished setting up the output");
 }
 
 //________________________________________________________________________
@@ -166,7 +171,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
   // PID Response task active?
   fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
 
-  if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
+  if (!fPIDResponse){ AliFatal("This Task needs the PID response attached to the inputHandler"); }
   
   AliESDVertex* vertex = (AliESDVertex*)esdEvent->GetPrimaryVertex();
 
@@ -207,21 +212,17 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
     fQAhist->Fill("Tracks_all",1);
     //Apply global track filter
-    if(!fESDtrackCuts->AcceptTrack(track)){ continue;}
+    if(!fESDtrackCuts->AcceptTrack(track)){ continue; }
     //Apply momentum and eta cuts
     Double_t pt   = track->Pt();
-    if( pt < fPtMin || pt > fPtMax ) { continue; }
+    if( pt < fPtMin || pt > fPtMax ){ continue; }
     Double_t eta  = track->Eta();
-    if( eta < fEtaMin || eta > fEtaMax ) { continue; } 
+    if( eta < fEtaMin || eta > fEtaMax ){ continue; } 
     fQAhist->Fill("Tracks_KineCuts", 1);
 
     //Get electron nSigma in TPC for cut (inclusive cut)
     Double_t EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
     if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue; }
-    
-    fQAhist->Fill("Tracks_PIDcuts",1); 
-    numTracks += 1;
-    
     
     //Get rest of electron nSigma values and apply cuts if requested (inclusive cuts)
     Double_t EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
@@ -236,9 +237,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     //Get pion nSigma for TPC and apply cut if requested (exclusive cut)
     Double_t PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion);
     if(fPionPIDcutTPC){
-      if(fPionPIDcutTPC > fPSigTPCMin && fPionPIDcutTPC < fPSigTPCMax){ continue; }
+      if(PnSigmaTPC > fPSigTPCMin && PnSigmaTPC < fPSigTPCMax){ continue; }
     }
     
+    fQAhist->Fill("Tracks_PIDcuts",1); 
+    numTracks += 1;
+
     //Get rest of nSigma values for pion and kaon
     Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion);
     Double_t PnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion);
@@ -349,7 +353,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     "\n";
   }
 
-  Printf("Accepted- Event: %i, Tracks: %i", numEvents, numTracks);
 }
 
 //~ //________________________________________________________________________

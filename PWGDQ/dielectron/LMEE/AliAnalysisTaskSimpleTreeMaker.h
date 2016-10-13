@@ -14,6 +14,16 @@ class AliESDtrackCuts;
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
+/*************** Tree Maker Class **********************
+*Designed to create simple trees for use in training   *
+*MVA methods                                           *
+*                                                      *
+* Created: 05.10.2016                                  *
+* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
+*          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*                                                      *
+*******************************************************/
+
 
 class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
  public:
@@ -30,40 +40,49 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
-
-    Printf("Set: cent = %f - %f",fCentralityPercentileMin,fCentralityPercentileMax);
   }
 
   void SetPtRange(Double_t min, Double_t max){
     fPtMin = min;
     fPtMax = max;
-
-    Printf("Set: pT = %f - %f",fPtMin,fPtMax);
   }
 
   void SetEtaRange(Double_t min, Double_t max){
     fEtaMin = min;
     fEtaMax = max;
-
-    Printf("Set: eta = %f - %f",fEtaMin,fEtaMax);
   }
-
+  
+  //Set inclusive electron PID cuts
+  void SetESigRangeITS(Double_t min, Double_t max){
+    fPIDcutITS = kTRUE;
+    fESigITSMin = min;
+    fESigITSMax = max;
+  }
+  
   void SetESigRangeTPC(Double_t min, Double_t max){
     fESigTPCMin = min;
     fESigTPCMax = max;
-    Printf("TPC electron nSigma values (inclusive)");
-    Printf(" Min = %f, Max = %f", fESigTPCMin, fESigTPCMax);
+  }
+  
+  void SetESigRangeTOF(Double_t min, Double_t max){
+    fPIDcutTOF = kTRUE;
+    fESigTOFMin = min;
+    fESigTOFMax = max;
+  }
+
+  //Set pion PID exclusion cut
+  void SetPSigRangeTPC(Double_t min, Double_t max){
+    fPionPIDcutTPC = kTRUE;
+    fPSigTPCMin = min;
+    fPSigTPCMax = max;
   }
 
   void SetMC(Bool_t answer){ fIsMC = answer; }
 
+  //Set to request centrality value for events
   void SetIsIonColl(Bool_t answer){ isIonColl = answer; }
     
-  //Flags for ITS and TOF PID usage
-  void UseITSPID(Bool_t answer){ fPIDcutITS = answer; }
-  void UseTOFPID(Bool_t answer){ fPIDcutTOF = answer; }
-
-  //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+    //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
   void SetTPCminClusters(Int_t number){
     fESDtrackCuts->SetMinNClustersTPC(number);
   }
