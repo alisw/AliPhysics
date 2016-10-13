@@ -1098,8 +1098,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
         
         if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
-          if(nlm > fNLMCut || nlm < fNLMmin)
+          if(nlm > fNLMCut || nlm < fNLMmin ){
+            //AliWarning(Form("NLM = %d --- NLM min = %d --- NLMcut = %d",nlm,fNLMmin,fNLMCut));
             continue;
+          }
       }
       else
         AliDebug(1,Form("Can't retrieve EMCAL cells"));
