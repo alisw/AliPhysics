@@ -1566,13 +1566,19 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     // printf("GapCondition: %i\n",evbuf->GetGapCondition());
     
     // fill tree if not all events are to be saved
-    if ( !(fAnalysisStatus & AliPBBase::kBitSaveAll)) {
+    if ( !(fAnalysisStatus & AliPBBase::kBitSaveAllCD)) {
       fPWAtree->Fill();
       PostOutputs();
     }
+    
   }
-  // fill tree if all events are to be saved
-  if ( (fAnalysisStatus & AliPBBase::kBitSaveAll)) {
+  
+  
+  // fill tree if events needs to be saved
+  if ( 
+    ncombined <= fnumTracksMax ||
+    ( (fAnalysisStatus & AliPBBase::kBitSaveAllCD) &&
+      fMCprocessType == AliPBBase::kBinCD ) ) {
     fPWAtree->Fill();
     PostOutputs();
   }
@@ -2442,7 +2448,7 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 		  
       // get the name of this generator
       fMCGenerator = TString(header->GetName());
-      // printf("MC generator name: %s\n",fMCGenerator.Data());
+      printf("MC generator name: %s\n",fMCGenerator.Data());
       Int_t nprod = header->NProduced();
 			// printf("Number of produced particles: %i\n",nprod);
 
@@ -2457,6 +2463,7 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 				case 104: fMCprocessType = AliPBBase::kBinSD; break;
 				case 94:
 				case 105: fMCprocessType = AliPBBase::kBinDD; break;
+				case 106: fMCprocessType = AliPBBase::kBinCD; break;
 				default:  fMCprocessType = AliPBBase::kBinND; break;
 				}
 			}
@@ -2466,20 +2473,25 @@ void AliAnalysisTaskPB::DetermineMCprocessType()
 				fMCprocessType = AliPBBase::kBinCD;
 			}
 			
-      // DPMjet
-			else if (fMCGenerator == "DPMjet") {
-				fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
-				printf("DPMjet process type: %i\n",fMCprocess);
+      // DPMjet = Phojet
+			else if (fMCGenerator == "DPMJET") {
+				// see TDPMjet.h for definition of process codes
+        
+        fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
+				//printf("DPMjet process type: %i\n",fMCprocess);
 				switch(fMCprocess) {
-				case 5:
-				case 6:  fMCprocessType = AliPBBase::kBinSD; break;
-				case 7:  fMCprocessType = AliPBBase::kBinDD; break;
-				case 4:  fMCprocessType = AliPBBase::kBinCD; break;
+				case 1:  fMCprocessType = AliPBBase::kBinND; break;
+				case 3:  fMCprocessType = AliPBBase::kBinSD; break;
+				case 4:  fMCprocessType = AliPBBase::kBinDD; break;
+				case 5:  fMCprocessType = AliPBBase::kBinCD; break;
 				default: fMCprocessType = AliPBBase::kBinND; break;
 				}
 			}
       
 		}
+    
+    // if (fMCprocessType == AliPBBase::kBinCD)
+    //   printf("Central Diffractive Event detected!\n");
 	}
 }
 
@@ -2533,15 +2545,18 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
   //      (can also be done with missing mass of scattered protons)
   //
   // PYTHIA:
+  //
+  // DPMJET:
+  //      
   //    .
   fMCCDSystem = TLorentzVector(0,0,0,0);
+  TParticle* part = NULL;
+
   // printf("MC generator: %s\n",fMCGenerator.Data());
   if (fMCGenerator == "Dime") {
   
     // loop over stack and add all 4-vectors of 2nd generation particles
     // should give CM energy
-    TParticle* part = NULL;
-    
     for (Int_t ii=0; ii<stack->GetNtrack();ii++) {
       part = stack->Particle(ii);
    
@@ -2557,7 +2572,33 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
     }
     // printf("Total energy and mass of 2nd generation particles: %f / %f \n",fMCCDSystem.E(),fMCCDSystem.M());
   
-  }  
+  } else if (fMCGenerator == "DPMJET") {
+    
+    if ( fMCprocessType == AliPBBase::kBinCD ) {
+      // printf("DPMjet process type: %i\n",fMCprocess);
+      TList *parentIDs = new TList();
+      parentIDs->Add(new TVector2(-1,0));
+      printDaughters(parentIDs,stack);
+  
+      // loop over stack and add all 4-vectors of 2nd generation particles
+      // should give CM energy
+      for (Int_t ii=2; ii<stack->GetNtrack();ii++) {
+        part = stack->Particle(ii);
+   
+        // 2nd generation and not proton?
+        stack->SetCurrentTrack(ii);
+        if (stack->GetCurrentParentTrackNumber() == -1 &&
+          part->GetPdgCode() != 2212) {
+          fMCCDSystem += TLorentzVector(part->Px(),part->Py(),part->Pz(),part->Energy());
+        
+          // printf("2nd generation particle: %f/%f/%f - %f\n",
+          //  part->Px(),part->Py(),part->Pz(),part->Energy());
+        }
+      }
+      // printf("Total energy and mass of 2nd generation particles: %f / %f \n",fMCCDSystem.E(),fMCCDSystem.M());
+    }
+      
+  }
   
 	//= Multiplicity =============================================================
 	// determine number of charged physical primaries on the stack
