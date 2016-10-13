@@ -1336,7 +1336,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     const double r = 84.; // TPC IROC radius
     if (!track->GetXYZatR(r, fEvent->GetMagneticField(), xyz, NULL)) pass=kFALSE;
     Double_t cra = TMath::ATan2(xyz[1],xyz[0]); // crossing angle
-    Double_t dpe = TMath::TwoPi()/360.;// excluded region (\pm 1 degree)
+    Double_t dpe = 3.*TMath::TwoPi()/360.;// excluded region (\pm 3 degree)
     for(Int_t nb=-9; nb<=9; nb++) {
       Double_t bnp = nb*TMath::Pi()/9.; // TPC boundaries azimuthal angle
       if(cra<bnp+dpe && cra>bnp-dpe) pass=kFALSE;
