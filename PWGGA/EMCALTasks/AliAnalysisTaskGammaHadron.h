@@ -23,10 +23,11 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 virtual ~AliAnalysisTaskGammaHadron();
 
   //setters for the analysis, currently not many implemented
-  void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma       = h        ; }
-  void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron      = h        ; }
-  void                        SetSavePool(Bool_t input)                             { fSavePool           = input    ; }
-
+  void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
+  void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
+  void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
+  void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
+  void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
 
   //Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}

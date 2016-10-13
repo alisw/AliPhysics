@@ -36,6 +36,7 @@
 #include "AliESDUtils.h"
 #include "AliEventPoolManager.h"
 
+
 using std::cout;
 using std::endl;
 
@@ -51,7 +52,7 @@ fGammaOrPi0(0),fDoMixing(0),fSavePool(0),
 
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fPoolMgr(0x0),
-fTriggerType(AliVEvent::kEMCEGA), fMixingEventType(AliVEvent::kINT7),
+fTriggerType(AliVEvent::kAnyINT), fMixingEventType(AliVEvent::kAnyINT),//
 fHistEffGamma(0x0),fHistEffHadron(0x0),
 
 fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),fEventPoolOutputList(),
@@ -73,7 +74,7 @@ fGammaOrPi0(0),fDoMixing(0),fSavePool(0),
 
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fPoolMgr(0x0),
-fTriggerType(AliVEvent::kEMCEGA), fMixingEventType(AliVEvent::kINT7),
+fTriggerType(AliVEvent::kAnyINT), fMixingEventType(AliVEvent::kAnyINT),
 fHistEffGamma(0x0),fHistEffHadron(0x0),
 
 fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),fEventPoolOutputList(),
@@ -219,10 +220,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	min[2] = -100;
 	max[2] = 300;
 	//settings for delta eta (g-h) distribution
-	nbins[3] = 30;
+	nbins[3] = 60;
 	min[3] = -2;
 	max[3] = 2;
-	//settings for delta phi (g-h) distribution
+	//settings for phi distribution for QA
 	nbins[4] = 50;
 	min[4] = -10;
 	max[4] = 370;
@@ -521,18 +522,26 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 
 	//..check here some basic properties of the event
 	//is centrality and zvertex in range? - see if this is actually done in IsSelected in the EMCal Task
-/*
-	cout<<"- - - - - - - - - - - - - "<<endl;
+
+/*	cout<<"- - - - - - - - - - - - - "<<endl;
 	cout<<"eventTrigger :"<<fCurrentEventTrigger<<endl;
 	cout<<"fTriggerType :"<<fTriggerType<<endl;
 	cout<<"fMixedEventType :"<<fMixingEventType<<endl;
-	if(fCurrentEventTrigger != fTriggerType) cout<<"different"<<endl;
-	if(!(fCurrentEventTrigger & fTriggerType)) cout<<"! (&) operator"<<endl;
-	if((fCurrentEventTrigger & fTriggerType)) cout<<"& same trigger"<<endl;
-	if(fCurrentEventTrigger == fTriggerType) cout<<" = same trigger"<<endl;
-	if((fCurrentEventTrigger & fMixingEventType)) cout<<"(&) mixed event type"<<endl;
-	if(fCurrentEventTrigger == fMixingEventType) cout<<"= mixed event type"<<endl;
+	if(fCurrentEventTrigger & fTriggerType) cout<<" ---> contains EMCGA trigger"<<endl;
+	if(fCurrentEventTrigger & fMixingEventType) cout<<" ---> contains kInt7 trigger"<<endl;
 */
+	if(fCurrentEventTrigger & fTriggerType)
+	{
+		if(fCurrentEventTrigger & fMixingEventType)cout<<"contains both triggers!!"<<endl;
+	}
+	/*Char_t cr[100];
+ 	TBits bitNo;
+ 	bitNo.Set(fTriggerType,cr);
+	//TString binary;
+	//TString str(itoa(fCurrentEventTrigger,binary,2));
+	cout<<"convert trigger to decimal: "<<cr<<endl;
+	*/
+
 	//..for same event only analyse events when there is a cluster inside
 	//..and when the event has the correct trigger
 	if (fDoMixing==0 && !fCaloClusters)                         return kFALSE;
@@ -563,7 +572,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	//    of 1./nMix can be applied.
 
 	//..Get pool containing tracks from other events like this one
-	Double_t ZVertex = fVertex[2];
+	Double_t zVertex = fVertex[2];
 	AliParticleContainer* tracks =0x0;
 	tracks   = GetParticleContainer(0);
 
@@ -574,10 +583,10 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	if(fDoMixing==1)   //if(fSameEventAnalysis==0)
 	{
 		AliEventPool* pool = 0x0;
-		pool = fPoolMgr->GetEventPool(fCent, ZVertex);
+		pool = fPoolMgr->GetEventPool(fCent, zVertex);
 		if (!pool)
 		{
-			AliWarning(Form("No pool found. Centrality %f, ZVertex %f",fCent, ZVertex));
+			AliWarning(Form("No pool found. Centrality %f, ZVertex %f",fCent, zVertex));
 			return kFALSE;
 		}
 
@@ -604,7 +613,6 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 				else               CorrelatePi0AndTrack(0,bgTracks,1,1.0/nMix);    //correlate with mixed event
 			}
 		}
-
 		// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		//    Update the pool
 		// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
