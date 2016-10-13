@@ -1423,7 +1423,7 @@ private:
   const static Int_t fCRCnHar = 3;
   const static Int_t fCRCMaxnRun = 211;
   
-  TH3F *fPhiEtaWeights[fCRCMaxnRun]; //!
+  TH3F *fPhiEtaWeights; //!
   
   TList *fCRCIntRbRList; //! CRC list of histograms RbR
   TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
@@ -1745,7 +1745,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 23);
+ ClassDef(AliFlowAnalysisCRC, 24);
  
 };
 
