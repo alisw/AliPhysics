@@ -1144,7 +1144,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	nSelectednopid++;
 	fPtVsMassNoPid->Fill(invMass,ptCand);
 	fMassHistNoPid[index]->Fill(invMass);
-	if(fDoImpPar){
+	if(fDoImpPar && passTopolAndPIDCuts){
 	  fHistMassPtImpPar[0]->Fill(arrayForImpPar);
 	}
 	if(fDoSparse){
@@ -1239,7 +1239,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(fReadMC){
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
-	    if(fDoImpPar){
+	    if(fDoImpPar && passTopolAndPIDCuts){
 	      if(isPrimary) fHistMassPtImpPar[1]->Fill(arrayForImpPar);
 	      else if(isFeeddown){
 		fHistMassPtImpPar[2]->Fill(arrayForImpPar);
@@ -1254,7 +1254,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    }
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
-	    if(fDoImpPar)fHistMassPtImpPar[4]->Fill(arrayForImpPar);
+	    if(fDoImpPar && passTopolAndPIDCuts)fHistMassPtImpPar[4]->Fill(arrayForImpPar);
 	  }
 	  fMassHistNoPid[index]->Fill(invMass);
 	  if(passTopolAndPIDCuts){
