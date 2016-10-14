@@ -196,12 +196,13 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     fOldRun=fRun;
     }
     
-    Double_t xq[1] = {0.9};
-    Double_t yq[1];
+    const Int_t nq = 1;
+    const Double_t xq[nq] = {0.9};
+    Double_t yq[nq] = {0.0};
     UInt_t currentBins = ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetNbinsX();
     
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBins(currentBins+1,0,currentBins+1);
-    ((TH1F*)GetRawsData(kChargeADC_PC))->GetQuantiles(1,yq,xq);
+    if(((TH1F*)GetRawsData(kChargeADC_PC))->Integral() != 0)((TH1F*)GetRawsData(kChargeADC_PC))->GetQuantiles(nq,yq,xq);
     
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBinContent(currentBins,yq[0]);
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->GetXaxis()->LabelsOption("v");
@@ -209,7 +210,7 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     ((TH1F*)GetRawsData(kChargeADC_PC))->Reset("ICES");
     
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBins(currentBins+1,0,currentBins+1);
-    ((TH1F*)GetRawsData(kChargeADA_PC))->GetQuantiles(1,yq,xq);
+    if(((TH1F*)GetRawsData(kChargeADA_PC))->Integral() != 0)((TH1F*)GetRawsData(kChargeADA_PC))->GetQuantiles(1,yq,xq);
     
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBinContent(currentBins,yq[0]);
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->GetXaxis()->LabelsOption("v");
@@ -874,7 +875,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
   rawReader->Reset() ; 
   AliADRawStream* rawStream  = new AliADRawStream(rawReader); 
-  if(!(rawStream->Next())) return;  
+  if(!(rawStream->Next())){ delete rawStream; rawStream = 0x0; return;}  
  
   eventTypeType eventType = rawReader->GetType();
 
