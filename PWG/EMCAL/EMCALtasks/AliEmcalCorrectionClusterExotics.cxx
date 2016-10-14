@@ -44,16 +44,6 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   //if (!fInitialized) return;
   
   GetProperty("createHistos", fCreateHisto);
-
-  /*AddContainer(kCluster);
-  Double_t minE = 0.;
-  GetProperty("clusterEMin", minE);
-  Double_t minPt = 0.;
-  GetProperty("clusterPtMin", minPt);
-  
-  // Settings from sample run macro
-  fClusCont->SetClusECut(minE);
-  fClusCont->SetClusPtCut(minPt);*/
   
   // init reco utils
   if (!fRecoUtils)
@@ -61,6 +51,15 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
   fRecoUtils->SwitchOnRejectExoticCluster();
   if (fRecoUtils)
     fRecoUtils->Print("");
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionClusterExotics::UserCreateOutputObjects()
+{   
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
   
   // Create my user objects.
   if (fCreateHisto){
@@ -74,8 +73,6 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
     // Take ownership of output list
     fOutput->SetOwner(kTRUE);
   }
-  
-  return kTRUE;
 }
 
 //________________________________________________________________________

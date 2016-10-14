@@ -76,23 +76,20 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   GetProperty("updateTracks", fUpdateTracks);
   fDoPropagation = fEsdMode;
   
-  /*AddContainer(kCluster);
-  Float_t clusterNonLinCorrEnergyCut = 0.15;
-  GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyCut);
-  Float_t clusterECut = 0.0;
-  GetProperty("clusterEMin", clusterECut);
-  Float_t clusterPtCut = 0.0;
-  GetProperty("clusterPtMin", clusterPtCut);
-  fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyCut);
-  fClusCont->SetClusECut(clusterECut);
-  fClusCont->SetClusPtCut(clusterPtCut);*/
-  
-  //AddContainer(kTrack);
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
+{   
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
   fEmcalTracks = new TClonesArray("AliEmcalParticle");
   fEmcalTracks->SetName(Form("EmcalTracks_%s", fPartCont->GetArrayName().Data()));
   fEmcalClusters = new TClonesArray("AliEmcalParticle");
   fEmcalClusters->SetName(Form("EmcalClusters_%s", fClusCont->GetArrayName().Data()));
-  
+ 
   // Create my user objects.
   if (fCreateHisto){
     fHistMatchEtaAll = new TH1F("fHistMatchEtaAll", "fHistMatchEtaAll", 400, -0.2, 0.2);
@@ -117,8 +114,6 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
     }
     fOutput->SetOwner(kTRUE);
   }
-    
-  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -190,11 +185,11 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
     AliESDCaloCluster *ec = 0;
     if (ac) {
       const Int_t N = ac->GetNTracksMatched();
-      AliInfo(Form("Number of matched tracks: %d", N));
+      AliDebug(2, TString::Format("Number of matched tracks: %d", N));
       for (Int_t i = N - 1; i >= 0; i--) {
         TObject *ptr = ac->GetTrackMatched(i);
         ac->RemoveTrackMatched(ptr);
-        AliInfo(Form("N tracks matched: %i of %i", ac->GetNTracksMatched(), N));
+        AliDebug(2, TString::Format("N tracks matched: %i of %i", ac->GetNTracksMatched(), N));
       }
     }
     else {

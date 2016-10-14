@@ -46,22 +46,29 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
   AliWarning("Init EMCAL cell bad channel removal");
   
   GetProperty("createHistos", fCreateHisto);
- 
+
+  // init reco utils
+  if (!fRecoUtils)
+    fRecoUtils  = new AliEMCALRecoUtils;
+
+  // missalignment function -- TODO: do we need this?
+  fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionCellBadChannel::UserCreateOutputObjects()
+{
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
   if (fCreateHisto){
     fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
     fOutput->Add(fCellEnergyDistBefore);
     fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
     fOutput->Add(fCellEnergyDistAfter);
   }
-  
-  // init reco utils
-  if (!fRecoUtils)
-    fRecoUtils  = new AliEMCALRecoUtils;
-
-  // missalignment function -- TO DO: do we need this?
-  fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
-
-  return kTRUE;
 }
 
 //________________________________________________________________________

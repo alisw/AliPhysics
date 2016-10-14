@@ -51,22 +51,29 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   GetProperty("createHistos", fCreateHisto);
   
   fCalibrateTime = kTRUE;
-  
+
+  // init reco utils
+  if (!fRecoUtils)
+    fRecoUtils  = new AliEMCALRecoUtils;
+    
+  // missalignment function -- TODO: do we need this?
+  fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionCellTimeCalib::UserCreateOutputObjects()
+{
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
   if (fCreateHisto){
     fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_cell",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistBefore);
     fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_cell",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistAfter);
   }
-  
-  // init reco utils
-  if (!fRecoUtils)
-    fRecoUtils  = new AliEMCALRecoUtils;
-    
-  // missalignment function -- TO DO: do we need this?
-  fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
-  
-  return kTRUE;
 }
 
 //________________________________________________________________________

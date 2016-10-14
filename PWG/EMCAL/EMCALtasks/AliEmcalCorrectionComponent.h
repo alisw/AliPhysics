@@ -41,6 +41,7 @@ class AliEmcalCorrectionComponent : public TNamed {
 
   // Virtual functions to be overloaded 
   virtual Bool_t Initialize();
+  virtual void UserCreateOutputObjects();
   virtual void ExecOnce();
   virtual Bool_t Run();
   virtual Bool_t UserNotify();
@@ -110,10 +111,10 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEMCALGeometry       *fGeom;                          //!<!geometry object
   Bool_t                  fIsEmbedded;                    ///< trigger, embedded signal
   Int_t                   fMinMCLabel;                    ///< minimum MC label value for the tracks/clusters being considered MC particles
-  AliClusterContainer    *fClusCont;                      //!<! pointer to the cluster container
-  AliParticleContainer   *fPartCont;                      //!<! pointer to the track/particle container
+  AliClusterContainer    *fClusCont;                      ///< pointer to the cluster container
+  AliParticleContainer   *fPartCont;                      ///< pointer to the track/particle container
   AliVCaloCells          *fCaloCells;                     //!<! pointer to calo cells
-  AliEMCALRecoUtils      *fRecoUtils;                     //!<! pointer to reco utils
+  AliEMCALRecoUtils      *fRecoUtils;                     ///<  pointer to reco utils
   TList                  *fOutput;                        //!<! list of output histograms
   
   TString                fBasePath;                       ///< base folder path to get root files

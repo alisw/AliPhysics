@@ -50,16 +50,6 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = nonlinearityFunctionMap[nonLinFunctStr];
 
-  /*AddContainer(kCluster);
-  Double_t minE = 0.;
-  GetProperty("clusterEMin", minE);
-  Double_t minPt = 0.;
-  GetProperty("clusterPtMin", minPt);
-  
-  // Settings from sample run macro
-  fClusCont->SetClusECut(minE);
-  fClusCont->SetClusPtCut(minPt);*/
-  
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
@@ -69,6 +59,15 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
     fRecoUtils->InitNonLinearityParam();
     fRecoUtils->Print("");
   }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
+{   
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
   
   // Create my user objects.
   if (fCreateHisto){
@@ -84,8 +83,6 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
     // Take ownership of output list
     fOutput->SetOwner(kTRUE);
   }
-    
-  return kTRUE;
 }
 
 //________________________________________________________________________
