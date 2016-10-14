@@ -141,7 +141,9 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
 
 AliAnalysisTaskHadronicCocktailMC::~AliAnalysisTaskHadronicCocktailMC()
 {
-  
+  for (Int_t i=0; i<9; i++) {
+    if (fCocktailSettings[i]) delete fCocktailSettings[i];
+  }
 }
 
 //________________________________________________________________________

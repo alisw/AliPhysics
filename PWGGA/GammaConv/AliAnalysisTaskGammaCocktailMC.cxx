@@ -139,7 +139,9 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
 
 AliAnalysisTaskGammaCocktailMC::~AliAnalysisTaskGammaCocktailMC()
 {
-
+  for (Int_t i=0; i<9; i++) {
+    if (fCocktailSettings[i]) delete fCocktailSettings[i];
+  }
 }
 
 //________________________________________________________________________
@@ -190,15 +192,15 @@ void AliAnalysisTaskGammaCocktailMC::UserCreateOutputObjects(){
     // cocktail settings
     Double_t ptMin, ptMax;
     fMCCocktailGen->GetPtRange(ptMin, ptMax);
-    fCocktailSettings[0] = new TObjString(Form("collSys_%d",  fMCCocktailGen->GetCollisionSystem()));
-    fCocktailSettings[1] = new TObjString(Form("cent_%d",     fMCCocktailGen->GetCentrality()));
-    fCocktailSettings[2] = new TObjString(Form("decayMode_%.0f", fMCCocktailGen->GetDecayMode()));
-    fCocktailSettings[3] = new TObjString(Form("selectMothers_%d", fMCCocktailGen->GetSelectedMothers()));
-    fCocktailSettings[4] = new TObjString(Form("paramFile_%s", (fMCCocktailGen->GetParametrizationFile()).Data()));
-    fCocktailSettings[5] = new TObjString(Form("nParticles_%d", fMCCocktailGen->GetNumberOfParticles()));
-    fCocktailSettings[6] = new TObjString(Form("ptMin_%.2f", ptMin));
-    fCocktailSettings[7] = new TObjString(Form("ptMax_%.2f", ptMax));
-    fCocktailSettings[8] = new TObjString(Form("weightMode_%.0f", fMCCocktailGen->GetWeightingMode()));
+    fCocktailSettings[0] = new TObjString(Form("collSys_%d",fMCCocktailGen->GetCollisionSystem()));
+    fCocktailSettings[1] = new TObjString(Form("cent_%d",fMCCocktailGen->GetCentrality()));
+    fCocktailSettings[2] = new TObjString(Form("decayMode_%.0f",fMCCocktailGen->GetDecayMode()));
+    fCocktailSettings[3] = new TObjString(Form("selectMothers_%d",fMCCocktailGen->GetSelectedMothers()));
+    fCocktailSettings[4] = new TObjString(Form("paramFile_%s",(fMCCocktailGen->GetParametrizationFile()).Data()));
+    fCocktailSettings[5] = new TObjString(Form("nParticles_%d",fMCCocktailGen->GetNumberOfParticles()));
+    fCocktailSettings[6] = new TObjString(Form("ptMin_%.2f",ptMin));
+    fCocktailSettings[7] = new TObjString(Form("ptMax_%.2f",ptMax));
+    fCocktailSettings[8] = new TObjString(Form("weightMode_%.0f",fMCCocktailGen->GetWeightingMode()));
     for (Int_t i=0; i<9; i++) fUserInfo->Add(fCocktailSettings[i]);
     
     // mt scaling params
