@@ -283,7 +283,7 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
 
 
 //________________________________________________________________________
-Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets,  Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option){
+Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets,  Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option, Int_t Measure){
   
   fJetCount = 0;
   for (UInt_t j=0; j<fJetArray.size(); j++) {
@@ -331,8 +331,9 @@ Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pC
   if(fJetAlgorithm==0) fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  //this is for the jet clustering not the subjet reclustering. 
   // if(fJetAlgorithm==1) fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
   if(fRecombScheme>=0) fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
-  return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option);
-
+  if (Measure==1) return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option,1);
+  else return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option);
+  
 }
 
 

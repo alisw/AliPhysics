@@ -96,6 +96,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fSharedFractionPtMin(0.5),
   fDerivSubtrOrder(0),
   fFullTree(kFALSE),
+  fNsubMeasure(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
   fhJetPt_1(0x0),
@@ -243,6 +244,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fSharedFractionPtMin(0.5),
   fDerivSubtrOrder(0),
   fFullTree(kFALSE),
+  fNsubMeasure(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
   fhJetPt_1(0x0),
@@ -1554,7 +1556,8 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       }
       else{
 	Double_t dVtx[3]={1,1,1};
-	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+	if (!fNsubMeasure) return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+	else return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option,1);   
       }
     }
   }

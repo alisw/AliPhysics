@@ -77,6 +77,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetDerivativeSubtractionOrder(Int_t Order)              {fDerivSubtrOrder = Order;}
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
 
+  void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -120,6 +122,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            Background_Fluc;
   Int_t                               fDerivSubtrOrder;
   Bool_t                              fFullTree;
+
+  Bool_t                              fNsubMeasure;
   
   TH1F                                *fhPtTriggerHadron;
   TH1F                                *fhJetPt;
