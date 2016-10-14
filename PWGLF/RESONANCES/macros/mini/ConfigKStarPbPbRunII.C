@@ -15,6 +15,7 @@ Bool_t ConfigKStarPbPbRunII(AliRsnMiniAnalysisTask *task,
 			    Bool_t                 isMC, 
 			    Bool_t                 isPP,
 			    AliRsnCutSet           *cutsPair,
+			    Int_t                  Strcut = 2011,
 			    Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 			    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
 			    Float_t                nsigmaPi = 3.0,
@@ -34,7 +35,7 @@ Bool_t ConfigKStarPbPbRunII(AliRsnMiniAnalysisTask *task,
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(!trkQualityCut) return kFALSE;
 
-  if(SetCustomQualityCut(trkQualityCut,customQualityCutsID)){
+  if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
     cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi);
     cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK);
   }
@@ -93,7 +94,7 @@ Bool_t ConfigKStarPbPbRunII(AliRsnMiniAnalysisTask *task,
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 300, 0.0, 30.0);
+    out->AddAxis(ptID, 500, 0.0, 50.0);
     // axis Z: centrality-multiplicity
     if (!isPP)
       out->AddAxis(centID, 100, 0.0, 100.0);
@@ -106,7 +107,7 @@ Bool_t ConfigKStarPbPbRunII(AliRsnMiniAnalysisTask *task,
   }
   return kTRUE;
 }
-Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0)
+Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0,Int_t trCut = 2011)
 {
   //Sets configuration for track quality object different from std quality cuts.
   //Returns kTRUE if track quality cut object is successfully defined,
@@ -119,10 +120,15 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   }
 
   if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
-    //trkQualityCut = 0x0;
-    trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-    Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
-
+    if(trCut == 2011){
+      trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+      Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+    }
+    else if(trCut == 2015){
+      trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+      trkQualityCut->GetESDtrackCuts()->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+      Printf(Form("::::: SetCustomQualityCut:: using standard 2015 track quality cuts"));
+    }
     if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.015+0.05/pt^1.1");}//10Sig // D = 7*(0.0015+0.0050/pt^1.1)
     else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.02/pt^1.1");}//4Sig
     else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(3.);}// D = 2.
