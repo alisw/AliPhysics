@@ -279,14 +279,18 @@ Int_t AliAnalysisTaskBuildCorrTree::GetTracks(AliVEvent *pEvent)
     FillHistogram("trackTheta",t->Theta());
     fEvent->SetNtrks(fEvent->GetNtrks()+1);
   }
-  
+//   AliWarning("before if MCarray");
   if(fMcArray){
     int nofMCParticles = fMcArray->GetEntriesFast();
+    FillHistogram("trackCount",nofMCParticles);
     for (int i=0;i<nofMCParticles;i++){
       AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
       if (!t) continue;
+//       AliWarning("before selection");
       if( t->Charge()!=0){//check if they are physical primary particles
 	if (!IsSelected(t)) continue;
+// 	AliWarning("MCTrack");
+	FillHistogram("MCtrackPt",t->Pt());
 	TClonesArray& tracks = *(fEvent->GetTracks());
 	AliFilteredTrack *reducedParticle=new(tracks[fEvent->GetNtrks()]) AliFilteredTrack(*t);
 	reducedParticle->SetMC(true);
@@ -296,6 +300,7 @@ Int_t AliAnalysisTaskBuildCorrTree::GetTracks(AliVEvent *pEvent)
   }
   return nofTracks;
 }
+
 
 
 
@@ -445,6 +450,7 @@ void AliAnalysisTaskBuildCorrTree::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 12000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 100,  0, 20));
+  fOutput->Add(new TH1D("MCtrackPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackUnselectedTheta", "trackTheta",  180, 0, TMath::Pi()));

@@ -36,6 +36,7 @@
 #include "TParameter.h"
 #include "TF1.h"
 
+const double gkPii =  TMath::Pi();
 
 ClassImp(AliCorrelation3p_noQA)
 
@@ -297,6 +298,20 @@ int AliCorrelation3p_noQA::Fill(AliVParticle* ptrigger,AliVParticle* p1, const d
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
   HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
+  return 0;
+}
+
+int AliCorrelation3p_noQA::Filla(AliVParticle* p1,AliVParticle* p2,const double weight)
+{
+  /// fill histograms from particles
+  if (!p2 || !p1) return -EINVAL;
+  // phi difference associated  to trigger particle
+  Double_t DeltaPhi = p1->Phi() - p2->Phi();
+  if (DeltaPhi<-0.5*gkPii) DeltaPhi += 2*gkPii;
+  if (DeltaPhi>1.5*gkPii)  DeltaPhi -= 2*gkPii;
+  // eta difference
+  Double_t DeltaEta  = p1->Eta() - p2->Eta();
+  HistFill(GetNumberHist(khPhiEtaa,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
   return 0;
 }
 

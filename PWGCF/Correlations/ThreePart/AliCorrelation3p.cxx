@@ -227,6 +227,7 @@ int AliCorrelation3p::Init(const char* arguments)
     a->AddAt(new TH1D(GetNameHist("hNAssoc"			 ,i,j),"Number of associated"				 ,100,0	     ,500						       		    ),GetNumberHist(kHistNassoc			,i,j));
     a->AddAt(new TH1D(GetNameHist("hNTriggers"                   ,i,j),"Number of triggers in this bin filled."          ,1   ,0      ,1                                                        	    ),GetNumberHist(kHistNTriggers              ,i,j));
     a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	 ,i,j),"#Delta#Phi vs #Delta#eta"			 ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*gkPii,1.5*gkPii			       ),GetNumberHist(khPhiEta	   ,i,j));//"classical" 2 particle correlation
+    a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2a"	 ,i,j),"#Delta#Phi_{12} vs #Delta#eta_{12}"		 ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*gkPii,1.5*gkPii			       ),GetNumberHist(khPhiEtaa   ,i,j));// 2 particle correlation with two associated
     a->AddAt(new TH3F(GetNameHist("hDeltaPhiVsDeltaPhiVsDeltaEta",i,j),"#Delta#Phi_1 vs #Delta#Phi_2 vs #Delta#eta_{12}" ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*gkPii,1.5*gkPii,nbinsphi ,-0.5*gkPii,1.5*gkPii),GetNumberHist(khPhiPhiDEta,i,j));//3d, DPhiDPhiDEta
     a->AddAt(new TH1D(GetNameHist("khQAtocheckadressing"         ,i,j),"Will be filled once per event. Should match the centvzbin histogram."   ,1  ,0 ,2),GetNumberHist(khQAtocheckadressing,i,j));
     }
@@ -342,6 +343,20 @@ int AliCorrelation3p::Fill(AliVParticle* ptrigger,AliVParticle* p1,const double 
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
   HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
+  return 0;
+}
+
+int AliCorrelation3p::Filla(AliVParticle* p1,AliVParticle* p2,const double weight)
+{
+  /// fill histograms from particles
+  if (!p2 || !p1) return -EINVAL;
+  // phi difference associated  to trigger particle
+  Double_t DeltaPhi = p1->Phi() - p2->Phi();
+  if (DeltaPhi<-0.5*gkPii) DeltaPhi += 2*gkPii;
+  if (DeltaPhi>1.5*gkPii)  DeltaPhi -= 2*gkPii;
+  // eta difference
+  Double_t DeltaEta  = p1->Eta() - p2->Eta();
+  HistFill(GetNumberHist(khPhiEtaa,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
   return 0;
 }
 
