@@ -159,38 +159,37 @@ class AliThreeParticleCorrelator : public TNamed {
   
   /// add an analysis object, if ME analysis is enabled, a corresponding clone
   /// is automatically created
-  C* Add(C* o) {
+  C* Add(C* o, bool extramixed = true) {
     if (o) {
       fCorrelations.push_back(o);
       if (fEventPoolMgr) {
-	// create a clone for ME analysis
-	fMETriggerCorrelations.push_back(new C(*o));
-	TString name=fMETriggerCorrelations.back()->GetName();
-	name+="METrigger";
-	fMETriggerCorrelations.back()->SetName(name);
-	fMETriggerCorrelations.back()->Init();
-	fMETACorrelations.push_back(new C(*o));
-	name=fMETACorrelations.back()->GetName();
-	name+="META";
-	fMETACorrelations.back()->SetName(name);
-	fMETACorrelations.back()->Init();
 	fMECorrelations.push_back(new C(*o));
-	name=fMECorrelations.back()->GetName();
+	TString name=fMECorrelations.back()->GetName();
 	name+="MEAll";
 	fMECorrelations.back()->SetName(name);
 	fMECorrelations.back()->Init();
-	
-	fMETA2Correlations.push_back(new C(*o));
-	name=fMETA2Correlations.back()->GetName();
-	name+="META2";
-	fMETA2Correlations.back()->SetName(name);
-	fMETA2Correlations.back()->Init();
-	
+	if(extramixed){
+	  // create a clone for ME analysis
+	  fMETriggerCorrelations.push_back(new C(*o));
+	  name=fMETriggerCorrelations.back()->GetName();
+	  name+="METrigger";
+	  fMETriggerCorrelations.back()->SetName(name);
+	  fMETriggerCorrelations.back()->Init();
+	  fMETACorrelations.push_back(new C(*o));
+	  name=fMETACorrelations.back()->GetName();
+	  name+="META";
+	  fMETACorrelations.back()->SetName(name);
+	  fMETACorrelations.back()->Init();
+	  fMETA2Correlations.push_back(new C(*o));
+	  name=fMETA2Correlations.back()->GetName();
+	  name+="META2";
+	  fMETA2Correlations.back()->SetName(name);
+	  fMETA2Correlations.back()->Init();	  
+	  fMETriggerCorrelations.back()->SetMixedEvent(fMECorrelations.back());
+	  fMETACorrelations.back()->SetMixedEvent(fMECorrelations.back());
+	  fMETA2Correlations.back()->SetMixedEvent(fMECorrelations.back());
+	}
 	o->SetMixedEvent(fMECorrelations.back());
-	fMETriggerCorrelations.back()->SetMixedEvent(fMECorrelations.back());
-	fMETACorrelations.back()->SetMixedEvent(fMECorrelations.back());
-	fMETA2Correlations.back()->SetMixedEvent(fMECorrelations.back());
-	
       }
     }
     return fCorrelations.back();
@@ -342,6 +341,12 @@ class AliThreeParticleCorrelator : public TNamed {
 	    (*o)->Fill(*trigger,*assoc,*assoc2,weightt*weighta1*weighta2);//Fill histogram for number of triggers.
 	    (*o)->Fill(*trigger,*assoc2,*assoc,weightt*weighta1*weighta2);//Fill histogram for number of triggers.
 	  }
+	  if(trigger==activeTriggers.begin()){
+	    //once per event fill the a-a 2p correlation histogram
+	    for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {      
+		(*o)->Filla(*assoc,*assoc2,weighta1*weighta2);
+	    }
+	  }
 	}//loop over second associated
 	for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {      
 	  (*o)->Fill(*trigger,*assoc,weightt*weighta1);//Fill histogram for number of triggers.
@@ -386,6 +391,12 @@ class AliThreeParticleCorrelator : public TNamed {
 	  if(dynamic_cast<AliFilteredTrack*>(*assoc2))weighta2 = dynamic_cast<AliFilteredTrack*>(*assoc2)->GetEff();
 	  for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {      
 	    (*o)->Fill(*trigger,*assoc,*assoc2,weightt*weighta1*weighta2);//Fill histogram for number of triggers.
+	  }
+	  if(trigger==activeTriggers.begin()){
+	    //once per event fill the a-a 2p correlation histogram
+	    for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {      
+		(*o)->Filla(*assoc,*assoc2,weighta1*weighta2);
+	    }
 	  }
 	}//loop over second associated
 	if (twop){

@@ -179,6 +179,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fQA;//if true, correlations are not build.
   Bool_t 	    fqatask;//if true AliCorrelation3p_noQA is used.
   Bool_t	    fMoreOutputs;//If true, more outputs are given.
+  Bool_t	    fExtraMixed;//If true, META META2 and METrigger are explicitly correlated.
   TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
   TH2D * 	    fWeightshpt;//TH2D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex
   TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.

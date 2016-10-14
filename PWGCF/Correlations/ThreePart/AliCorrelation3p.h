@@ -52,6 +52,7 @@ class AliCorrelation3p : public TNamed {
   /// fill histograms from particles
   int Fill( AliVParticle* trigger		, AliVParticle* p1	, AliVParticle* p2	, const double weight=1.0);
   int Fill( AliVParticle* trigger		, AliVParticle* p1				, const double weight=1.0);
+  int Filla( AliVParticle* p1			, AliVParticle* p2				, const double weight=1.0);
   int FillTrigger( AliVParticle*ptrigger);
   int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool all=false);
   /// overloaded from TObject: cleanup
@@ -87,6 +88,7 @@ class AliCorrelation3p : public TNamed {
     kHistNTriggers, 	//TH1F
     khQAtocheckadressing, //TH1F
     khPhiEta,         // TH2F
+    khPhiEtaa,         // TH2F
 //     khPhiEtaDublicate, // TH2F
     khPhiPhiDEta, //TH3F
     khPhiPhiDEtaScaled, //TH3F
