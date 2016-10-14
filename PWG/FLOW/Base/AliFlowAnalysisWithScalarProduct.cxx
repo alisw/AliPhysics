@@ -458,6 +458,18 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
     Double_t dUQ = vU*vQm;
 
+    if(fV0SanityCheck) {
+      Double_t test = dUQ/dNq*dQaQb/dNa/dNb;
+      if(test > 1e9 || test < 1e-9) return;
+      test = dUQ/dNq*dQaQb/dNa/dNb;
+      if(test > 1e9 || test < 1e-9) return;
+      test = dNq*dWa*dWb;
+      if(test > 1e9 || test < 1e-9) return;
+    }
+
+
+
+
     //fill the profile histograms
     for(Int_t iPOI=0; iPOI!=2; ++iPOI) {
       if( (iPOI==0)&&(!pTrack->InRPSelection()) )
@@ -467,13 +479,16 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
       fHistProUQ[iPOI][0]->Fill(dPt ,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')
       fHistProUQ[iPOI][1]->Fill(dEta,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')
       //needed for the error calculation:
+      /////// very sensitive for NaN/inf for RPs with V0
       fHistProUQQaQb[iPOI][0]-> Fill(dPt ,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
       fHistProUQQaQb[iPOI][1]-> Fill(dEta,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      ///////end of sensitivity
       fHistSumOfWeightsu[iPOI][0][0]->Fill(dPt ,dWq);        // sum of Nq'     
       fHistSumOfWeightsu[iPOI][0][1]->Fill(dPt ,pow(dWq,2.));// sum of Nq'^2     
       fHistSumOfWeightsu[iPOI][0][2]->Fill(dPt ,dWq*dWa*dWb);// sum of Nq'*Na*Nb     
       fHistSumOfWeightsu[iPOI][1][0]->Fill(dEta,dWq);        // sum of Nq'     
       fHistSumOfWeightsu[iPOI][1][1]->Fill(dEta,pow(dWq,2.));// sum of Nq'^2     
+      ////// very sensitive for NaN/inf for RPs with V0
       fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta,dNq*dWa*dWb);// sum of Nq'*Na*Nb
       //NUA:
       fHistProNUAu[iPOI][0][0]->Fill(dPt,dUY,1.); //sin u
