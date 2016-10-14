@@ -3,61 +3,44 @@ period: ""                                     # Must match the value given to t
 pass: ""                                       # Attempts to automatically retrieve the pass if not specified
 inputObjects:
     cells:
-        # Not sure if this makes sense or is straightforward. More on this soon.
-        cells0:
+        defaultCells:
             branchName: "usedefault"
-            #branchName: "emcalCellsNew"
-            #branchToCopy: "usedefault"
-        cells1:
+        defaultCellsEmbedded:
             branchName: "usedefault"
             embedding: true
     clusterContainers:
-        baseClusterContainer:
+        defaultClusterContainer:
             # Sets the branch name
+            branchName: "usedefault"
             #branchName: "sharedParameters:clusterBranchName"
-            #branchName: "usedefault"
-            branchName: "caloClusters"
             # Takes all default cuts!
-        baseClusterContainer_1:
-            # Sets the branch name
-            #branchName: "sharedParameters:clusterBranchName"
-            #branchName: "usedefault"
-            #branchName: "caloClusters"
-            # We should be able to generically set minE and minPt for cluster or track containers
+        defaultClusterContainer_1:
+            # The branch name is inherited from defaultClusterContainer!
             minE: 0.0                        # Formerly clusterEMin
             minPt: 0.0                       # Formerly clusterPtMin
-        baseClusterContainer_2:
-            # Sets the branch name
-            #branchName: "sharedParameters:clusterBranchName"
-            #branchName: "usedefault"
-            #branchName: "caloClusters"
-            # We should be able to generically set minE and minPt for cluster or track containers
+        defaultClusterContainer_2:
+            # The branch name is inherited from defaultClusterContainer!
             minE: 0.0                        # Formerly clusterEMin
             minPt: 0.0                       # Formerly clusterPtMin
             # We will handle this particularly for cluster containers
             clusNonLinCorrEnergyCut: 0.15        # formerly "minPt" and then clusterNonLinCorrEnergyMin
     trackContainers:
         # The user can select the name of each container
-        trackContName1:
-            # Sets the branch name
-            #branchName: "sharedParameters:trackBranchName"
-            #branchName: "usedefault"
-            branchName: "tracks"
-            # Takes all default cuts!
         # The names don't need to correspond to any particular scheme
-        trackContainerName2:
+        defaultTrackContainer:
             # Sets the branch name
+            branchName: "usedefault"
             #branchName: "sharedParameters:trackBranchName"
-            #branchName: "usedefault"
-            branchName: "tracks"
-            # We should be able to generically set minE and minPt for cluster or track containers
+            # Takes all default cuts!
+        defaultTrackContainer_1:
+            # The branch name is inherited from defaultClusterContainer!
             minPt: 0.15                    # formerly "minPt"
-            # We need to think about what options we want to provide
+            # Can set AODFilterBits or track filters
+            trackFilterType: kHybridTracks
             #aodFilterBits: [16, 1]
             #aodFilterBits:
             #    - 16
             #    - 1
-            trackFilterType: kHybridTracks
 sharedParameters:
     # These are parameters shared by multiple tasks
     clusterBranchName: "usedefault"
@@ -66,17 +49,17 @@ CellEnergy:
     enabled: true
     createHistos: true
     cellsNames:
-        - cells0
+        - defaultCells
 CellBadChannel:
     enabled: true
     createHistos: true
     cellsNames:
-        - cells0
+        - defaultCells
 CellTimeCalib:
     enabled: true
     createHistos: true
     cellsNames:
-        - cells0
+        - defaultCells
 Clusterizer:
     enabled: true
     createHistos: true
@@ -97,42 +80,36 @@ Clusterizer:
     removeMCGen2: ""                   # name of generator input to be accepted
     diffEAggregation: 0.03             # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
     cellsNames:
-        - cells0
+        - defaultCells
     clusterContainersNames:
-        - baseClusterContainer
-        #- clusterContainer0
-    # Should this be specified by a namespace instead? It would be like sharedParameters
-    #clusterContainerNames: "inputObjects:clusterContainer0"
+        - defaultClusterContainer
 ClusterExotics:
     enabled: true
     createHistos: true
-    clusterContainersNames:
-        - baseClusterContainer_1
-        #- clusterContainer1
     cellsNames:
-        - cells0
+        - defaultCells
+    clusterContainersNames:
+        - defaultClusterContainer_1
 ClusterNonLinearity:
     enabled: true
     createHistos: true
     nonLinFunct: kBeamTestCorrectedv3
-    clusterContainersNames:
-        - baseClusterContainer_1
-        #- clusterContainer1
     cellsNames:
-        - cells0
+        - defaultCells
+    clusterContainersNames:
+        - defaultClusterContainer_1
 ClusterTrackMatcher:
     enabled: true
     createHistos: true
     maxDist: 0.1
     updateClusters: true
     updateTracks: true
-    clusterContainersNames:
-        - baseClusterContainer_2
-        #- clusterContainer2
-    trackContainersNames:
-        - trackContName1
     cellsNames:
-        - cells0
+        - defaultCells
+    clusterContainersNames:
+        - defaultClusterContainer_2
+    trackContainersNames:
+        - defaultTrackContainer
 ClusterHadronicCorrection:
     enabled: true
     createHistos: true
@@ -141,13 +118,12 @@ ClusterHadronicCorrection:
     hadCorr: 2.
     Eexcl: 0
     doTrackClus: true
-    clusterContainersNames:
-        - baseClusterContainer_2
-        #- clusterContainer2
-    trackContainersNames:
-        - trackContainerName2
     cellsNames:
-        - cells0
+        - defaultCells
+    clusterContainersNames:
+        - defaultClusterContainer_2
+    trackContainersNames:
+        - defaultTrackContainer_1
 executionOrder:
     - CellEnergy
     - CellBadChannel
