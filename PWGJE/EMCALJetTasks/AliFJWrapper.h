@@ -45,7 +45,7 @@ class AliFJWrapper
   virtual std::vector<double>             GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
   Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
   Bool_t                                  GetDoFilterArea()          { return fDoFilterArea; }
-  Double_t                                NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0);
+  Double_t                                NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0, Int_t Measure=0);
   Double32_t                              NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option=0);
 #ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass()        const {return fGenSubtractorInfoJetMass        ; }
@@ -1189,12 +1189,12 @@ void AliFJWrapper::SetupStrategyfromOpt(const char *option)
   if (!opt.compare("plugin"))          fStrategy = fj::plugin_strategy;
 }
 
-Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option){
+Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option, Int_t Measure){
 
 
   //Option 0=Nsubjettiness result, 1=opening angle between axes in Eta-Phi plane, 2=Distance between axes in Eta-Phi plane
   
-  fJetDef = new fj::JetDefinition(fAlgor, fR*100, fScheme, fStrategy ); //the *2 is becasue of a handful of jets that end up missing a track for some reason.
+  fJetDef = new fj::JetDefinition(fAlgor, fR*2, fScheme, fStrategy ); //the *2 is becasue of a handful of jets that end up missing a track for some reason.
 
   try {
     fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
@@ -1212,12 +1212,23 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   cout <<"Before Filter Jet Print Outs"<<endl;
   cout << "Filter Jet E, pT" << fFilteredJets[0].E() << "  " <<fFilteredJets[0].perp()<<endl;
   if (Algorithm==0){
-    cout << "Before Nsubjettiness fastjet function called" <<endl;
-    fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
-    cout << "Before Nsubjettiness fastjet result called" <<endl;
-    Result= nSub.result(fFilteredJets[0]);
-    cout << "Before Nsubjettiness fastjet Axed called" <<endl;
-    SubJet_Axes=nSub.currentAxes();
+    if (Measure==0){
+      cout << "Before Nsubjettiness fastjet function called" <<endl;
+      fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR*2));
+      cout << "Before Nsubjettiness fastjet result called" <<endl;
+      Result= nSub.result(fFilteredJets[0]);
+      cout << "Before Nsubjettiness fastjet Axed called" <<endl;
+      SubJet_Axes=nSub.currentAxes();
+    }
+    else if (Measure==1){
+      cout << "Unormalsied Measure for Nsubjettiness" <<endl;
+      cout << "Before Nsubjettiness fastjet function called" <<endl;
+      fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::UnnormalizedMeasure(Beta));
+      cout << "Before Nsubjettiness fastjet result called" <<endl;
+      Result= nSub.result(fFilteredJets[0]);
+      cout << "Before Nsubjettiness fastjet Axed called" <<endl;
+      SubJet_Axes=nSub.currentAxes();
+    }
   }
   else if (Algorithm==1) {
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
