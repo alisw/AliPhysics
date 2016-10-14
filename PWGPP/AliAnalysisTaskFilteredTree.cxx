@@ -164,13 +164,26 @@ Bool_t AliAnalysisTaskFilteredTree::Notify()
 {
   //
   //
+  
   static Int_t count = 0;
   count++;
   TTree *chain = (TChain*)GetInputData(0);
   if(chain){
     Printf("Processing %d. file: %s", count, chain->GetCurrentFile()->GetName());
   }  
-  fCurrentFileName=chain->GetCurrentFile()->GetName();
+  fCurrentFileName=chain->GetCurrentFile()->GetName();   // This is the way to get path infor processing on the Lego train
+  //  
+  if (fCurrentFileName.String().CountChar('/')<1){ 
+    //  in case path to input is not absolute use other handle to guess chunk ID
+    //  in case filtering done locally, use the Env varaible AliEn output path
+    //    this will work only in case we are doing alien processing
+    TString fns = gSystem->Getenv("OutputDir");
+    if (!fns.IsNull() && !fns.EndsWith("/")) fns += "/";
+    fns += chain->GetCurrentFile()->GetName();
+    Printf("Processing %d. file: %s", count, fns.Data());
+    fCurrentFileName = fns.Data();
+  }
+
   return kTRUE;
 }
 
