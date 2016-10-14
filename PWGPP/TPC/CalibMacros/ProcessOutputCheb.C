@@ -9,6 +9,12 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     
   Bool_t isGrid = kTRUE;
   TObjArray *listoffiles = new TObjArray();
+
+  int ntrminUser = -1;
+  TString ntrminUserS = gSystem->Getenv("distMinTracks");
+  if (!ntrminUserS.IsNull() && (ntrminUser=ntrminUserS.Atoi())>0) {
+    ::Info("ProcessOutput","User provided min tracks to validate object: %d",ntrminUser);
+  } 
   
   if (filesToProcess.Contains(".xml")) {
     // Merge files pointed by the xml 
@@ -82,6 +88,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     }
     int ntrUse = dcalibRes->GetNTracksUsed();
     int ntrMin = dcalibRes->GetMinTrackToUse();
+    if (ntrminUser>0) ntrMin = ntrminUser;
     if (ntrUse<ntrMin) {
       ::Error("ProcessOutput","Low stat:%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
       lowStatJobs++;
