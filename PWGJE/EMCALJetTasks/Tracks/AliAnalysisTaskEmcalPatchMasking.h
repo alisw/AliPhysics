@@ -74,7 +74,7 @@ public:
    * @param[in] row Row of the fastor position relative to the patch starting postition
    * @return Fastor ADC value at the given position of the patch
    */
-  UShort_t GetADC(UChar_t col, UChar_t row) const;
+  Int_t GetADC(UChar_t col, UChar_t row) const;
 
   /**
    * Get the size of the patch
@@ -97,11 +97,11 @@ public:
    * @param col Coloumn of the fastor postion relative to the patch starting position
    * @param row Row of the fastor position relative to the patch starting postition
    */
-  void SetADC(UShort_t ADC, UChar_t col, UChar_t row);
+  void SetADC(Int_t adc, UChar_t col, UChar_t row);
 
 private:
   UChar_t                               fPatchSize;       ///< Size of the patch
-  AliEMCALTriggerDataGrid<UShort_t>     fADCValues;       ///< underlying container with ADC data
+  AliEMCALTriggerDataGrid<Int_t>        fADCValues;       ///< underlying container with ADC data
 
   /// \cond CLASSIMP
   ClassDef(AliEMCALTriggerPatchADCInfo, 1)
@@ -199,7 +199,7 @@ protected:
   void ProcessMaxPatch(const AliEMCALTriggerPatchInfo &patch, const TString &maxtype);
 
   THistManager                                *fHistos;                 //!<! Histogram manager
-  AliEMCALTriggerDataGrid<int>                fL1ADC;                   ///< L1 ADC values
+  AliEMCALTriggerDataGrid<Int_t>              fL1ADC;                   ///< L1 ADC values
   ULong_t                                     fTriggerBits;             ///< Trigger bit selection
   TString                                     fTriggerPattern;          ///< Trigger pattern
 
