@@ -8,7 +8,7 @@
 // uncomment or define externally to enable debug information
 // 
 // flag for global and e-by-e debug info
-#define ALIANALYSISTASKJETV3_DEBUG_FLAG_1
+//#define ALIANALYSISTASKJETV3_DEBUG_FLAG_1
 // flag for debug statements that may be repeated multiple times per event
 //#define ALIANALYSISTASKJETV3_DEBUG_FLAG_2
 
