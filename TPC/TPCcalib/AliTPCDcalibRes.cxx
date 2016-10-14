@@ -4294,7 +4294,7 @@ Bool_t AliTPCDcalibRes::InvertCorrection(int sect36,const float vecIn[AliTPCDcal
   do {
     //
     // calculate corrected value and gradient of correction
-    GradValSmooth(sect36, vecOut[kResX],vecOut[kResY],vecOut[kResZ], fun, grad); 
+    if (!GradValSmooth(sect36, vecOut[kResX],vecOut[kResY],vecOut[kResZ], fun, grad)) break;
     if (it==0) {
       for (int id=3;id--;) {
 	deltaCorr0 += fun[id]*fun[id];
@@ -4381,6 +4381,7 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance(), 
     *calibExt = AliTPCDcalibRes::GetUsedInstanceExt();
 
+  for (int i=0;i<AliTPCDcalibRes::kResDim;i++) corrLoc[i] = 0;
   float x = AliTPCDcalibRes::GetTPCRowX(row);
   float dist[AliTPCDcalibRes::kResDim] = {0};
   int xbin = calib->GetNXBins()==AliTPCDcalibRes::kNPadRows ? row : calib->GetXBin(x);
@@ -4433,6 +4434,9 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
     return;
   }
   //
+  for (int i=0;i<AliTPCDcalibRes::kResDim;i++) distLoc[i] = 0;
+  distLoc[AliTPCDcalibRes::kResD] = -1; // invalidate
+  //
   float xyzPrim[AliTPCDcalibRes::kResDimG], xyzCl[AliTPCDcalibRes::kResDim];
   xyzPrim[AliTPCDcalibRes::kResX] = fgDistDest->Slice2X(xslice);
   xyzPrim[AliTPCDcalibRes::kResY] = tzLoc[0]*xyzPrim[AliTPCDcalibRes::kResX];
@@ -4440,6 +4444,23 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
   //
   AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance(), 
     *calibExt = AliTPCDcalibRes::GetUsedInstanceExt();
+  //
+  Bool_t ignore = kFALSE;
+  int xbinCorr = calib->GetXBin(xyzPrim[AliTPCDcalibRes::kResX]);
+  if (calib->GetXBinIgnored(sector,xbinCorr)) { // find 1st valid x-slice in correction param
+    int xValUp,xValDn, xSubst = 1;
+    for (xValDn=xbinCorr;xValDn--;) if (!calib->GetXBinIgnored(sector,xValDn)) break;
+    for (xValUp=xbinCorr+1;xValUp<calib->GetNXBins();xValUp++) if (!calib->GetXBinIgnored(sector,xValUp)) break;    
+    //
+    if (xValDn<0 && xValUp>=calib->GetNXBins()) return; // ignore
+    //
+    float dstDn = xValDn<0 ? 1e6 : TMath::Abs(calib->GetX(xValDn) - xyzPrim[AliTPCDcalibRes::kResX]);
+    float dstUp = xValUp>=calib->GetNXBins() ? 1e6 : TMath::Abs(calib->GetX(xValUp) - xyzPrim[AliTPCDcalibRes::kResX]);
+    // redefine query X to closed valid slice
+    xyzPrim[AliTPCDcalibRes::kResX] = dstDn<dstUp ? calib->GetX(xValDn) : calib->GetX(xValUp);
+    //
+  }
+  //
   calib->InvertCorrection(sector, xyzPrim, xyzCl); // calculate inverse distortion
 
   if (calibExt) { // if ext is provided, average between the current and ext
