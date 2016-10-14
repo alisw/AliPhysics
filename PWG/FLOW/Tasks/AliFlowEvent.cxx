@@ -20,6 +20,7 @@
   mods:     Redmer A. Bertens (rbertens@cern.ch)
 *****************************************************************/
 
+#include <TGrid.h>
 #include "Riostream.h"
 #include "TFile.h"
 #include "TList.h"
@@ -2191,6 +2192,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  Int_t fNHarm = 2; // note: for now I've only mapped the second harmonic, but using the first index 
                    // it's trivial to add also 3 or 4, on the agenda (first see if this works)
                    //
+ if (!gGrid) TGrid::Connect("alien");
  TFile* foadb = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
  
  if(!foadb){
@@ -2386,7 +2388,7 @@ void AliFlowEvent::SetHotfixVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts)
  }
  fQycvsV0[1] = ((TH1D*) contQyncs->GetObject(run));
 
-// cuts->SetVZEROgainEqualisation(fMultVZERO);
+ cuts->SetVZEROgainEqualisation(fQxavsV0[4]);
 
 
 
