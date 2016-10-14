@@ -84,6 +84,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fQA(kFALSE)
   , fqatask(kFALSE)
   , fMoreOutputs(kFALSE)
+  , fExtraMixed(kTRUE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -161,6 +162,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fQA(kFALSE)  
   , fqatask(kFALSE)
   , fMoreOutputs(kFALSE)
+  , fExtraMixed(kTRUE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -293,7 +295,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     workertracktrigger->SetAcceptanceCut(fAcceptancecut);
     workertracktrigger->SetBinningVersion(fBinVer);
     workertracktrigger->Init(triggerinit);
-    correlator->Add(workertracktrigger);
+    correlator->Add(workertracktrigger,fExtraMixed);
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));

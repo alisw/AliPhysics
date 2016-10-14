@@ -187,7 +187,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::UserCreateOutputObjects()
 void AliAnalysisTaskCorrelation3p_lightefficiency::UserExec(Option_t* /*option*/)
 {
   FillHistogram("Check",0.0);
-  // process the event
+//   process the event
   TObject* pInput=InputEvent();
   if (!pInput) {AliError("failed to get input");return;}
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
@@ -218,10 +218,11 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::UserExec(Option_t* /*option*/
   TObjArray allrelevantParticles;
 //   //Fill all the tracks
   FillHistogram("centVsNofTracks",fCentralityPercentile, GetTracks(&allrelevantParticles, pEvent));
-// //   FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
-// //   FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);  
-//   if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
-//   //If VZERO data, fill the Multiplicity histograms.
+//   FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
+//   FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);  
+  if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
+  //If VZERO data, fill the Multiplicity histograms.
+  if( (int)dynamic_cast<TH1*>(fOutput->FindObject("EventsperRun"))->GetEntries()%100000 == 0)AliWarning(Form("%i",(int)dynamic_cast<TH1*>(fOutput->FindObject("EventsperRun"))->GetEntries()));
   PostData(1, fOutput);  
 }
 
@@ -229,7 +230,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::FinishTaskOutput()
 {
   // end of the processing
     TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject("trackCount")) ;
-    if (hist) cout << "FinishTaskOutput: " << hist->GetEntries() << " events(s)" << endl;
+    if (hist) AliWarning(Form("FinishTaskOutput: %i events(s)",(int)hist->GetEntries()));
 }
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::Terminate(Option_t *)
@@ -247,11 +248,14 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
   for (int i=0; i<nofTracks; i++) {
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
+
     FillHistogram("TracksperRun",fRunFillValue);
     FillHistogram("trackUnselectedPt",t->Pt());
     FillHistogram("trackUnselectedPhi",t->Phi());
     FillHistogram("trackUnselectedTheta",t->Theta());
+
     if (!IsSelected(t)) continue;
+    
     if(!IsMCFilteredTrack(t)){
       if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){
 	FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());
@@ -269,6 +273,7 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
       FillHistogram("trackTheta",t->Theta());
     }
     else{
+      FillHistogram("gentrackPt",t->Pt());
       if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){FillHistogram("hnTracksinBinsMC",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
       if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb){FillHistogram("hnTracksinBinsMC",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
     }
@@ -344,7 +349,8 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelected(AliVParticle* p)
   if (p->IsA()==AliESDtrack::Class() && IsSelectedTrackESD(p)) return IsSelectedTrack(p);
   if (p->IsA()==AliAODTrack::Class() && IsSelectedTrackAOD(p)) return IsSelectedTrack(p);
   if (p->IsA()==AliAODMCParticle::Class() && dynamic_cast<AliAODMCParticle*>(p)->IsPhysicalPrimary()) return IsSelectedTrack(p);
-  if (p->IsA()==AliFilteredTrack::Class()&& IsSelectedTrackFiltered(p)){dynamic_cast<AliFilteredTrack*>(p)->Calculate();return IsSelectedTrack(p);}
+  if (p->IsA()==AliFilteredTrack::Class()&& IsSelectedTrackFiltered(p)){dynamic_cast<AliFilteredTrack*>(p)->Calculate();  
+    return IsSelectedTrack(p);}
   return kFALSE;
 }
 
@@ -401,6 +407,7 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackESD(AliVPart
 
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(AliVParticle* t)
 {
+  if(dynamic_cast<AliFilteredTrack*>(t)->IsMC())return kTRUE;//dont remove MC particles yet.
   if(dynamic_cast<AliFilteredTrack*>(t)->IsGlobalHybrid()&&(fCutMask==0||fCutMask>5))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT4()&&(fCutMask==1))return kTRUE;
   if(dynamic_cast<AliFilteredTrack*>(t)->IsBIT5()&&(fCutMask==2))return kTRUE;
@@ -413,10 +420,11 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackFiltered(Ali
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsMCFilteredTrack(AliVParticle* p)
 {
   if(dynamic_cast<AliFilteredTrack*>(p)){
-    if(dynamic_cast<AliFilteredTrack*>(p)->IsMC()) cout << "mc"<<endl;
     return dynamic_cast<AliFilteredTrack*>(p)->IsMC();    
   }
-  return kFALSE;
+  else{
+    return kFALSE;
+  }
 }
 
 
@@ -636,7 +644,7 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::SelectEvent()
 {//This function provides the event cuts for this class.
   if(fisTree){
     if(fCollisionType == pp){
-    FillHistogram("multiplicity",fMultiplicity,0.75);
+//     FillHistogram("multiplicity",fMultiplicity,0.75);
     }
     if(fCollisionType == PbPb){
 //       FillHistogram("centrality",fCentralityPercentile,0.75);
@@ -690,6 +698,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 4000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 100,  0, 20));
+  fOutput->Add(new TH1D("gentrackPt"   , "trackPt of generated tracks"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackUnselectedTheta", "trackTheta",  180, 0, TMath::Pi()));
@@ -734,6 +743,11 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
     fNruns=fNRunsP10h;
     fRunNumberList = new Int_t[fNruns];
     for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10h[i];
+  }
+  if(fperiod==AliAnalysisTaskCorrelation3p_lightefficiency::P10d){
+    fNruns=fNRunsP10d;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10d[i];
   }
   //QA per run histograms:
   TH1D * eventsperrun 		= new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
@@ -855,7 +869,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::SetMixingScheme(Int_t MaxNEve
 {
   fMaxNEventMix= MaxNEventMix;
   fMinNofTracksMix = MinNofTracksMix;
-  cout << MBinEdges.GetSize()<<endl;
+  AliWarning(Form("%i",MBinEdges.GetSize()));
   for(int i=0; i<MBinEdges.GetSize()-1; ++i)
     if(MBinEdges.At(i) > MBinEdges.At(i+1)) AliFatal("edges are not sorted");
   for(int i=0; i<ZBinEdges.GetSize()-1; ++i)
