@@ -9,6 +9,7 @@
 class AliEmcalCorrectionCellContainer;
 class AliEmcalCorrectionComponent;
 class AliEMCALGeometry;
+class AliVEvent;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliParticleContainer.h"
@@ -59,9 +60,10 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    * @brief Type of input object to be created
    */
   enum InputObject_t {
-    kCaloCells = 0,    //!< Calo cells
-    kCluster = 1,  //!< Cluster container
-    kTrack = 2,    //!< Track container
+    kNoDefinedInputObject = -1,    //!< Not initialied type
+    kCaloCells = 0,                //!< Calo cells
+    kCluster = 1,                  //!< Cluster container
+    kTrack = 2,                    //!< Track container
   };
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -130,7 +132,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
   const TString &             GetRunPeriod()                                  const { return fRunPeriod; }
 
-  void                        SetCreateNewObjectBranches(bool flag)                 { fCreateNewObjectBranches = flag; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
 
   const std::vector<AliEmcalCorrectionComponent *> & CorrectionComponents() { return fCorrectionComponents; }
@@ -139,6 +140,9 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   // Determine branch name using the "usedefault" pattern
   static std::string DetermineUseDefaultName(InputObject_t contType, bool esdMode, bool returnObjectType = false);
+
+  // Get the proper event based on whether embedding is enabled or not
+  static AliVEvent * GetEvent(AliVEvent * inputEvent, bool isEmbedding = false);
 
  private:
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
@@ -151,6 +155,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void InitializeComponents();
 
   void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
+  void CheckForContainerArray(AliEmcalContainer * cont, InputObject_t objectType);
 
   std::string GetInputFieldNameFromInputObjectType(InputObject_t inputObjectType);
   void CreateInputObjects(InputObject_t inputObjectType);
@@ -158,15 +163,12 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   void SetupContainersFromInputNodes(InputObject_t inputObjectType, YAML::Node & userInputObjectNode, YAML::Node & defaultInputObjectNode, std::set <std::string> & requestedContainers);
   void GetNodeForInputObjects(YAML::Node & inputNode, YAML::Node & nodeToRetrieveFrom, std::string & inputObjectName, bool requiredProperty);
+
   void SetupCellsInfo(std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
   void SetupContainer(InputObject_t inputObjectType, std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
+
   AliEmcalContainer * AddContainer(InputObject_t contType, std::string & containerName, YAML::Node & userNode, YAML::Node & defaultNode);
 #endif
-
-  void                        CreateNewObjectBranches();
-  void                        NewClusterOrTrackBranches(std::string objectTypeString, InputObject_t objectType, TObjArray & inputArray);
-  void                        CopyBranchesToNewObjects();
-  void                        CopyClusters(TClonesArray *orig, TClonesArray *dest);
 
   Bool_t                      RetrieveEventObjects();
   void                        ExecOnceComponents();
@@ -188,10 +190,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   bool fConfigurationInitialized;                         ///< True if the YAML files are initialized
 
   bool                        fIsEsd;                      ///< File type
-  bool                        fCreateNewObjectBranches;    ///< Create new branches for cells and clusters
-  std::string                 fCreatedCellBranchName;      ///< Name of created cell branch
-  std::string                 fCreatedClusterBranchName;   ///< Name of created cluster branch
-  std::string                 fCreatedTrackBranchName;     ///< Name of created track branch
   TString                     fRunPeriod;                  ///< Run period (passed by user)
   bool                        fEventInitialized;           ///< If the event is initialized properly
   Double_t                    fCent;                       //!<! Event centrality
@@ -210,7 +208,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   TObjArray                   fParticleCollArray;         ///< particle/track collection array
   TObjArray                   fClusterCollArray;          ///< cluster collection array
-  // TODO: This cannot be pointers!
   std::vector <AliEmcalCorrectionCellContainer *> fCellCollArray; ///< Cells collection array
   
   TList * fOutput;                                        //!<! Output for histograms
