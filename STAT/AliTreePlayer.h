@@ -36,10 +36,31 @@ public:
   //       -- are both implementation needed - in which order ... 
   
   //static TH1* DrawSorted(TTree * tree, const char* varexp, const TCut& selection, Bool_t nbins=20, Long64_t nentries = 1000000000, Long64_t firstentry = 0);
+  //
+  template <typename T> static Long64_t BinarySearchSmaller(Long64_t n, const T *array, T value);
+  enum TStatType {kUndef=-1,kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS, kMedianLeft,kMedianRight}; 
+  static Int_t GetStatType(const TString &stat);
+  static void AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TString refQuery, Double_t deltaT,
+		   const TString statString="median:medianLeft:medianRight:RMS:Mean:LTM0.60:LTMRMS0.60",
+		   Int_t maxEntries=100000000); 
 protected:
   
   ClassDef(AliTreePlayer,1)  // Extension of the TTreePlayer
 };
+
+
+//__________________________________________________________
+template <typename T> Long64_t AliTreePlayer::BinarySearchSmaller(Long64_t n, const T *array, T value)
+{
+  // Binary search in an array of n values to locate value.
+  //
+  // Array is supposed  to be sorted prior to this call.
+  // function gives nearest element smaller than value.
+  // See TMath::BinarySearch
+  const T* pind;
+  pind = std::lower_bound(array, array + n, value);
+  return ( pind - array - 1);
+}
 
 #endif
 
