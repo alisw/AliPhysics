@@ -89,8 +89,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTrkArray(0x0),
   fMC(kFALSE),
   fFillTree(kFALSE),
-  fRun1PbPb(kFALSE),
-  fRun2PbPb(kTRUE),
+  fRun1PbPb(kTRUE),
+  fRun2PbPb(kFALSE),
   fEvtSpecie(4),
   fEvtEmbedSelection(kFALSE),
   fCentrality(0x0),
@@ -682,7 +682,10 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
       fHistDecayLengthH3L->Fill(decayLengthH3L);
       fHistNormalizedDecayL->Fill(normalizedDecayL);
 
-      if(normalizedDecayL < fMinNormalizedDecL) continue;
+      if(normalizedDecayL < fMinNormalizedDecL) {
+        delete decayVtx;
+        continue;
+      }
 
       trackNPi->PropagateToDCA(decayVtx, bz, 10,dcapi);
       fHistDCAXYpionvtx->Fill(dcapi[0]);
@@ -714,6 +717,7 @@ for(Int_t j=0; j<arrD.GetSize(); j++){ // candidate deuteron loop cdeuteron.size
         continue;
       }
 
+      delete decayVtx;
 
 
       if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
