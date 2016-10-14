@@ -151,10 +151,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
     //change the configuration
     TString tNewParamString = tCutVariations.cutName + TString(" = ") + TString::Format("%f",tCutVariations.valuesToVary[iCutVal]) + TString(";");
 
-    TString tDirNameModifier = tCutVariations.cutName(1, tCutVariations.cutName.Length() - 1) + TString("|") + TString::Format("%0.2f",tCutVariations.valuesToVary[iCutVal]);
+    int tBeginDirNameModifier = 1;
+    if(tCutVariations.cutName[1] == TString("|")) tBeginDirNameModifier = 2;
+    TString tDirNameModifier = tCutVariations.cutName(tBeginDirNameModifier, tCutVariations.cutName.Length() - 1) + TString("|") + TString::Format("%0.2f",tCutVariations.valuesToVary[iCutVal]);
     tDirNameModifier.ReplaceAll("|","_");
-
-
 
     // loop over centrality ranges
     for(unsigned int iCent = 0; iCent+1 < tMacroConfig.centrality_ranges.size(); iCent += 2)

@@ -536,6 +536,7 @@ AliFemtoEventCutEstimators* AliFemtoAnalysisLambdaKaon::CreateEventCutEstimators
   AliFemtoEventCutEstimators* EvCutEst = new AliFemtoEventCutEstimators();
     EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
     EvCutEst->SetVertZPos(aEvCutParams.minVertexZ,aEvCutParams.maxVertexZ);
+    EvCutEst->SetVerboseMode(aEvCutParams.verboseMode);
   return EvCutEst;
 }
 
@@ -1311,6 +1312,8 @@ AliFemtoAnalysisLambdaKaon::DefaultEventCutParams()
 
   tReturnParams.minVertexZ = -8.;
   tReturnParams.maxVertexZ = 8.;
+
+  tReturnParams.verboseMode = false;
 
   return tReturnParams;
 }
