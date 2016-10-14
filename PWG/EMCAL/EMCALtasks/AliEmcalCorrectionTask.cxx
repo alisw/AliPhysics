@@ -20,13 +20,7 @@
 #include "AliVEventHandler.h"
 #include "AliEMCALGeometry.h"
 #include "AliVCaloCells.h"
-#include "AliAODCaloCells.h"
-#include "AliESDCaloCells.h"
 #include "AliVCluster.h"
-#include "AliAODCaloCluster.h"
-#include "AliESDCaloCluster.h"
-#include "AliAODTrack.h"
-#include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
@@ -59,9 +53,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fRunPeriod(""),
   fConfigurationInitialized(false),
 
-  fCreateNewObjectBranches(false),
-  fCreatedClusterBranchName(""),
-  fCreatedTrackBranchName(""),
   fEventInitialized(false),
   fCent(0),
   fCentBin(-1),
@@ -76,6 +67,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fGeom(0),
   fParticleCollArray(),
   fClusterCollArray(),
+  fCellCollArray(),
   fOutput(0)
 {
   // Default constructor
@@ -107,9 +99,6 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fRunPeriod(""),
   fConfigurationInitialized(false),
 
-  fCreateNewObjectBranches(false),
-  fCreatedClusterBranchName(""),
-  fCreatedTrackBranchName(""),
   fEventInitialized(false),
   fCent(0),
   fCentBin(-1),
@@ -124,6 +113,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fGeom(0),
   fParticleCollArray(),
   fClusterCollArray(),
+  fCellCollArray(),
   fOutput(0)
 {
   // Standard constructor
@@ -674,6 +664,7 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
       AliEmcalCorrectionComponent::GetProperty(inputObjectName + "Names", componentRequest, fUserConfiguration, fDefaultConfiguration, false, componentName);
       for ( auto & req : componentRequest )
       {
+        //std::cout << "Component " << componentName << " requested container name " << req << std::endl;
         requestedContainers.insert(req);
       }
     }
@@ -956,7 +947,7 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
   // Not required, because not all components need Clusters or Tracks
   AliEmcalCorrectionComponent::GetProperty(inputObjectName.c_str(), inputObjects, fUserConfiguration, fDefaultConfiguration, false, component->GetName());
 
-  std::cout << "inputObjects.size(): " << inputObjects.size() << std::endl;
+  //std::cout << "inputObjects.size(): " << inputObjects.size() << std::endl;
 
   // If it is not found, then there will be nothing to iterate over, so we don't need to check the return value
   for (auto const & str : inputObjects)
@@ -1008,17 +999,9 @@ void AliEmcalCorrectionTask::SetCellsObjectInCellContainerBasedOnProperties(AliE
 {
   AliDebugStream(2) << "Retrieving cells object " << cellContainer->GetName() << std::endl;
   // Check for embedding and return object
-  if (cellContainer->GetIsEmbedding()) {
-    // TODO: Enable embedded when that branch is committed!
-    /*const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-    if (!embedding) return 0;
+  AliVEvent * event = GetEvent(InputEvent(), cellContainer->GetIsEmbedding());
 
-    AliVEvent * event = embedding->GetExternalEvent();
-    cellContainer->SetCells(dynamic_cast<AliVCaloCells *>(embedding->FindListObject(cellContainer->GetBranchName().c_str())));*/
-  }
-  else {
-    cellContainer->SetCells(dynamic_cast<AliVCaloCells *>(InputEvent()->FindListObject(cellContainer->GetBranchName().c_str())));
-  }
+  cellContainer->SetCells(dynamic_cast<AliVCaloCells *>(event->FindListObject(cellContainer->GetBranchName().c_str())));
 }
 
 /**
@@ -1035,270 +1018,7 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
   }
 }
 
-/**
- *
- *
- */
-void AliEmcalCorrectionTask::CreateNewObjectBranches()
-{
-  // Create new cell branches
-  for (auto cellContainer : fCellCollArray)
-  {
-    // Only create new branches if we want to make a copy
-    // The "usedefault" name should already be resolved, so we don't need to check here
-    /*if (cellContainer->GetBranchToCopyName() == "") {
-      continue;
-    }*/
 
-    // Check to ensure that we are not trying to create a new branch on top of the old branch
-    AliVEvent * event = 0;
-    if (cellContainer->GetIsEmbedding()) {
-      // TODO: Enable embedded when that branch is committed!
-      /*const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-      if (!embedding) return 0;
-
-      event = embedding->GetExternalEvent();*/
-    }
-    else {
-      event = InputEvent();
-    }
-
-    // Check for name complict with existing objects
-    TObject * existingObject = event->FindListObject(cellContainer->GetBranchName().c_str());
-    if (existingObject) {
-      AliFatal(TString::Format("Attempted to create a new cell branch \"%s\" for cell container \"%s\" with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", cellContainer->GetBranchName().c_str(), cellContainer->GetName().c_str()));
-    }
-
-    // Create new branch and add it to the event
-    AliVCaloCells * newCells = 0;
-    if (fIsEsd) {
-      newCells = new AliESDCaloCells(cellContainer->GetBranchName().c_str(), cellContainer->GetName().c_str(), AliVCaloCells::kEMCALCell);
-    }
-    else {
-      newCells = new AliAODCaloCells(cellContainer->GetBranchName().c_str(), cellContainer->GetName().c_str(), AliVCaloCells::kEMCALCell);
-    }
-
-    // Add to event
-    event->AddObject(newCells);
-  }
-
-  // Create new cluster branches
-  NewClusterOrTrackBranches("cluster",  kCluster, fClusterCollArray);
-
-  // Create new tracks branches
-  NewClusterOrTrackBranches("track",  kTrack, fParticleCollArray);
-}
-
-/**
- * Importantly, classMemberToStoreBranchName must be a reference to the class member which is used to store
- * the branch name, such as fCreatedClusterBranchName!
- *
- */
-void AliEmcalCorrectionTask::NewClusterOrTrackBranches(std::string objectTypeString, InputObject_t objectType, TObjArray & inputArray)
-{
-  // Get the name of the branch, given by "trackBranchName" or "clusterBranchName"
-  /*AliEmcalCorrectionComponent::GetProperty(objectTypeString + "BranchName", classMemberToStoreBranchName, fUserConfiguration, fDefaultConfiguration, true, branchNameLocation);
-  // While it is wrong to use "usedefault" here, this will provide a more meaningful message error message when it fails below
-  if (classMemberToStoreBranchName == "usedefault") {
-    classMemberToStoreBranchName = DetermineUseDefaultName(objectType, fIsEsd);
-  }*/
-
-  AliEmcalContainer * cont = 0;
-  TIter nextColl(&inputArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextColl())))
-  {
-    // Check to ensure that we are not trying to create a new branch on top of the old branch
-    AliVEvent * event = 0;
-    event = InputEvent();
-    // TODO: Enable embedded when that branch is committed!
-    /*if (cont->GetIsEmbedding()) {
-      const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-      if (!embedding) return 0;
-
-      event = embedding->GetExternalEvent();
-    }
-    else {
-      event = InputEvent();
-    }*/
-    TObject * existingObject = dynamic_cast<TClonesArray *>(event->FindListObject(cont->GetArrayName()));
-    if (existingObject) {
-      AliFatal(TString::Format("Attempted to create a new %s branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", objectTypeString.c_str(), cont->GetArrayName().Data()));
-    }
-    TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
-
-    // Determine relevant values to able to properly create the branch
-    // Branch object type name (the type which is going to be created in the TClonesArray)
-    std::string newObjectTypeName = DetermineUseDefaultName(objectType, fIsEsd, true);
-
-    // Create new branch and add it to the event
-    TClonesArray * newArray = 0;
-    if (fIsEsd) {
-      newArray = new TClonesArray(newObjectTypeName.c_str());
-    }
-    else {
-      newArray = new TClonesArray(newObjectTypeName.c_str());
-    }
-    newArray->SetName(cont->GetArrayName());
-    event->AddObject(newArray);
-  }
-}
-
-/**
- *
- *
- */
-void AliEmcalCorrectionTask::CopyBranchesToNewObjects()
-{
-  // Cells
-  for (auto cellContainer : fCellCollArray)
-  {
-    // TODO: Remove string comparison...
-    /*if (cellContainer->GetBranchToCopyName() == "") {
-      continue;
-    }*/
-
-    //AliVCaloCells * cellsToCopy = GetCellsFromContainerArray(cellContainer->GetBranchToCopyName());
-    AliVCaloCells * cellsToCopy = 0;
-    AliDebug(3, Form("Number of old cells: %d", cellsToCopy->GetNumberOfCells()));
-    // Copies from cellsToCopy to cells in cellContainer!
-    cellsToCopy->Copy(*(cellContainer->GetCells()));
-    // The name was changed to the currentCells name, but we want it to be newCells, so we restore it
-    cellContainer->GetCells()->SetName(cellContainer->GetBranchName().c_str());
-    cellContainer->GetCells()->SetTitle(cellContainer->GetName().c_str());
-
-    AliDebug(3, Form("Number of old cells: %d \tNumber of new cells: %d", cellsToCopy->GetNumberOfCells(), cellContainer->GetCells()->GetNumberOfCells() ));
-    if (cellsToCopy->GetNumberOfCells() != cellContainer->GetCells()->GetNumberOfCells()) {
-      AliFatal(Form("Number of old cell: %d != number of new cells %d", cellsToCopy->GetNumberOfCells(), cellContainer->GetCells()->GetNumberOfCells()));
-    }
-  }
-
-  // Clusters
-  for (auto clusterCont : fClusterCollArray)
-  {
-
-  }
-  TClonesArray * newClusters = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedClusterBranchName.c_str()));
-  std::string currentClustersName = DetermineUseDefaultName(kCluster, fIsEsd);
-  TClonesArray * currentClusters = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(currentClustersName.c_str()));
-  AliDebug(3, Form("before copy:\t currentClusters->GetEntries(): %d \t newClusters->GetEntries(): %d", currentClusters->GetEntries(), newClusters->GetEntries()));
-  CopyClusters(currentClusters, newClusters);
-  AliDebug(3, Form("after  copy:\t currentClusters->GetEntries(): %d \t newClusters->GetEntries(): %d", currentClusters->GetEntries(), newClusters->GetEntries()));
-
-  // Tracks
-  TClonesArray * newTracks = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
-  std::string currentTracksName = DetermineUseDefaultName(kTrack, fIsEsd);
-  TClonesArray * currentTracks = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(currentTracksName.c_str()));
-  AliDebug(3, Form("before copy:\t currentTracks->GetEntries(): %d \t newTracks->GetEntries(): %d", currentTracks->GetEntries(), newTracks->GetEntries()));
-  for (Int_t i = 0; i < currentTracks->GetEntriesFast(); i++)
-  {
-    if (fIsEsd)
-    {
-      AliESDtrack *currentTrack = dynamic_cast<AliESDtrack *>(currentTracks->At(i));
-      // Calls copy constructor to create a new track at position i in newTracks
-      AliESDtrack *newTrack = dynamic_cast<AliESDtrack *>(new ((*newTracks)[i]) AliESDtrack(*currentTrack));
-
-      // Assign new process ID so that it is from the current process as opposed to the old one copied from the current track
-      //TProcessID::AssignID(newTrack);
-      // Reset properties of the track to fix TRefArray errors later.
-      // Particular combination is from AODTrackFilterTask
-      // Resetting the TProcessID of the track is not sufficient!
-      newTrack->SetUniqueID(0);
-      newTrack->ResetBit(TObject::kHasUUID);
-      newTrack->ResetBit(TObject::kIsReferenced);
-    }
-    else
-    {
-      AliAODTrack *currentTrack = dynamic_cast<AliAODTrack *>(currentTracks->At(i));
-      // Calls copy constructor to create a new track at position i in newTracks
-      AliAODTrack *newTrack = dynamic_cast<AliAODTrack *>(new ((*newTracks)[i]) AliAODTrack(*currentTrack));
-
-      // TEMP
-      /*if (i == 5 || i == 7)
-      {
-        std::cout << "Track properties:" << std::endl;
-        currentTrack->Print();
-        newTrack->Print();
-        std::cout << "ProcessID for current track: " << TProcessID::GetProcessWithUID(currentTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(currentTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(currentTrack) << std::endl;
-        std::cout << "ProcessID for new track: " << TProcessID::GetProcessWithUID(newTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(newTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(newTrack) << std::endl;
-      }*/
-
-      // Assign new process ID so that it is from the current process as opposed to the old one copied from the current track
-      //TProcessID::AssignID(newTrack);
-      // Reset properties of the track to fix TRefArray errors later.
-      // Particular combination is from AODTrackFilterTask
-      // Resetting the TProcessID of the track is not sufficient!
-      newTrack->SetUniqueID(0);
-      newTrack->ResetBit(TObject::kHasUUID);
-      newTrack->ResetBit(TObject::kIsReferenced);
-
-      /*if (i == 5 || i == 7)
-      {
-        std::cout << "ProcessID for new track after assign ID: " << TProcessID::GetProcessWithUID(newTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(newTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(newTrack) << std::endl;
-        std::cout << "ProcessID for newTracks: " << TProcessID::GetProcessWithUID(newTracks)->GetName() << "/" << TProcessID::GetProcessWithUID(newTracks)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(newTracks) << std::endl;
-      }*/
-    }
-  }
-  AliDebug(3, Form("after  copy:\t currentTracks->GetEntries(): %d \t newTracks->GetEntries(): %d", currentTracks->GetEntries(), newTracks->GetEntries()));
-}
-
-/**
- *
- *
- */
-void AliEmcalCorrectionTask::CopyClusters(TClonesArray *orig, TClonesArray *dest)
-{
-  const Int_t Ncls = orig->GetEntries();
-
-  for(Int_t i=0; i < Ncls; ++i) {
-    AliVCluster *oc = static_cast<AliVCluster*>(orig->At(i));
-
-    if (!oc)
-      continue;
-
-    // We likely want to include PHOS cells as well, so the copy we make should avoid this check
-    //if (!oc->IsEMCAL())
-    //    continue;
-
-    AliVCluster *dc = static_cast<AliVCluster*>(dest->New(i));
-    //dc->SetType(AliVCluster::kEMCALClusterv1);
-    dc->SetType(oc->GetType());
-    dc->SetE(oc->E());
-    Float_t pos[3] = {0};
-    oc->GetPosition(pos);
-    dc->SetPosition(pos);
-    dc->SetNCells(oc->GetNCells());
-    dc->SetCellsAbsId(oc->GetCellsAbsId());
-    dc->SetCellsAmplitudeFraction(oc->GetCellsAmplitudeFraction());
-    dc->SetID(oc->GetID());
-    dc->SetDispersion(oc->GetDispersion());
-    dc->SetEmcCpvDistance(-1);
-    dc->SetChi2(-1);
-    dc->SetTOF(oc->GetTOF());     //time-of-flight
-    dc->SetNExMax(oc->GetNExMax()); //number of local maxima
-    dc->SetM02(oc->GetM02());
-    dc->SetM20(oc->GetM20());
-    dc->SetDistanceToBadChannel(oc->GetDistanceToBadChannel()); 
-    dc->SetMCEnergyFraction(oc->GetMCEnergyFraction());
-
-    //MC
-    UInt_t nlabels = oc->GetNLabels();
-    Int_t *labels = oc->GetLabels();
-
-    if (nlabels == 0 || !labels)
-      continue;
-
-    AliESDCaloCluster *esdClus = dynamic_cast<AliESDCaloCluster*>(dc);
-    if (esdClus) {
-      TArrayI parents(nlabels, labels);
-      esdClus->AddLabels(parents); 
-    }
-    else {
-      AliAODCaloCluster *aodClus = dynamic_cast<AliAODCaloCluster*>(dc);
-      if (aodClus) 
-        aodClus->SetLabel(labels, nlabels);
-    }
-  }
-}
 
 /**
  * Retrieve objects from event.
@@ -1419,20 +1139,17 @@ void AliEmcalCorrectionTask::ExecOnce()
     }
   }
 
-  // Create the new object branch here.
-  // The cell pointer already exists. All we need to do is load it later.
-  if (fCreateNewObjectBranches)
-    CreateNewObjectBranches();
-
   // Load all requested track branches - each container knows name already
   for (Int_t i =0; i<fParticleCollArray.GetEntriesFast(); i++) {
     AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
+    CheckForContainerArray(cont, kTrack);
     cont->SetArray(InputEvent());
   }
 
   // Load all requested cluster branches - each container knows name already
   for (Int_t i =0; i<fClusterCollArray.GetEntriesFast(); i++) {
     AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
+    CheckForContainerArray(cont, kCluster);
     cont->SetArray(InputEvent());
   }
 
@@ -1446,6 +1163,46 @@ void AliEmcalCorrectionTask::ExecOnce()
   fEventInitialized = kTRUE;
 
   ExecOnceComponents();
+}
+
+/**
+ *
+ *
+ */
+AliVEvent * AliEmcalCorrectionTask::GetEvent(AliVEvent * inputEvent, bool isEmbedding)
+{
+  AliVEvent * event = 0;
+  if (isEmbedding) {
+    // TODO: Enable embedded when that branch is committed!
+    /*const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (!embedding) return 0;
+
+    event = embedding->GetExternalEvent();*/
+  }
+  else {
+    event = inputEvent;
+  }
+
+  return event;
+}
+
+/**
+ *
+ *
+ */
+void AliEmcalCorrectionTask::CheckForContainerArray(AliEmcalContainer * cont, InputObject_t objectType)
+{
+  // TODO: Enable embedded when that branch is committed!
+  //AliVEvent * event = GetEvent(InputEvent(), cont->GetIsEmbedding());
+  AliVEvent * event = GetEvent(InputEvent());
+
+  TClonesArray *  array = dynamic_cast<TClonesArray *>(event->FindListObject(cont->GetArrayName()));
+  if (!array) {
+    AliWarning(TString::Format("Container %s requested branch %s, but it does not exist! Creating it for you!", cont->GetName(), cont->GetArrayName().Data()));
+    array = new TClonesArray(DetermineUseDefaultName(objectType, fIsEsd, true).c_str());
+    array->SetName(cont->GetArrayName());
+    event->AddObject(array);
+  }
 }
 
 /**
@@ -1582,12 +1339,6 @@ void AliEmcalCorrectionTask::UserExec(Option_t *option)
   // Only continue if we are initialized successfully
   if (!fEventInitialized)
     return;
-
-  // Copy cells and cluster to new branches if desired
-  if (fCreateNewObjectBranches)
-  {
-    CopyBranchesToNewObjects();
-  }
 
   // Get the objects for each event
   if (!RetrieveEventObjects())
