@@ -85,7 +85,7 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
   fHistos = new THistManager(Form("Task%s", GetName()));
   for(const auto &pt : patchtypes){
     fHistos->CreateTH1(Form("hFracMaxFastorTotalAll%s", pt.Data()), Form("Contribution of max fastor to patch ADC for all %s patches", pt.Data()), 100, 0., 1.);
-    fHistos->CreateTH1(Form("hFracMaxFastorMeanAll%s", pt.Data()), Form("Ratio max ADC to the mean for all %s patches", pt.Data()), 100, 0., 1.);
+    fHistos->CreateTH1(Form("hFracMaxFastorMeanAll%s", pt.Data()), Form("Ratio max ADC to the mean for all %s patches", pt.Data()), 500, 0., 50.);
     fHistos->CreateTH2(Form("hPatchADCvsADCgoodAll%s", pt.Data()), Form("Patch ADC vs patch good ADC for all %s patches", pt.Data()), 500, 0., 2500., 500, 0., 2500.);
     fHistos->CreateTH1(Form("hFracMaxMaskedFastorAll%s", pt.Data()), Form("Contribution of the max masked fastor to the patch ADC for all %s patches", pt.Data()), 100, 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxGoodFastorAll%s", pt.Data()), Form("Contribution of the max good fastor to the patch ADC for all %s patches", pt.Data()), 100, 0., 1.);
@@ -93,7 +93,7 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
     fHistos->CreateTH1(Form("hFracMaskedADCAll%s", pt.Data()), Form("Contribution of the masked adc sum to the patch ADC for all %s patches", pt.Data()), 100, 0., 1.);
     fHistos->CreateTH2(Form("hFracMaxMaskedvsNmaskedcontribAll%s", pt.Data()), Form("Number of non-zero masked fastors vs. fraction of max. masked for all %s patches", pt.Data()), 1000, 0., 1000, 100., 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxFastorTotalBad%s", pt.Data()), Form("Contribution of max fastor to patch ADC for bad %s patches", pt.Data()), 100, 0., 1.);
-    fHistos->CreateTH1(Form("hFracMaxFastorMeanBad%s", pt.Data()), Form("Ratio max ADC to the mean for bad %s patches", pt.Data()), 100, 0., 1.);
+    fHistos->CreateTH1(Form("hFracMaxFastorMeanBad%s", pt.Data()), Form("Ratio max ADC to the mean for bad %s patches", pt.Data()), 500, 0., 50.);
     fHistos->CreateTH2(Form("hPatchADCvsADCgoodBad%s", pt.Data()), Form("Patch ADC vs patch good ADC for bad %s patches", pt.Data()), 500, 0., 2500., 500, 0., 2500.);
     fHistos->CreateTH1(Form("hFracMaxMaskedFastorBad%s", pt.Data()), Form("Contribution of the max masked fastor to the patch ADC for bad %s patches", pt.Data()), 100, 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxGoodFastorBad%s", pt.Data()), Form("Contribution of the max good fastor to the patch ADC for bad %s patches", pt.Data()), 100, 0., 1.);
@@ -102,13 +102,13 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hFracMaxMaskedvsNmaskedcontribBad%s", pt.Data()), Form("Number of non-zero masked fastors vs. fraction of max. masked for bad %s patches", pt.Data()), 1000, 0., 1000, 100., 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxMaskedSumMaskedBad%s", pt.Data()), Form("Contibution of the max. masked fastor to the ADC sum of masked fastors for bad %s patches", pt.Data()), 100, 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxFastorTotalGood%s", pt.Data()), Form("Contribution of max fastor to patch ADC for good %s patches", pt.Data()), 100, 0., 1.);
-    fHistos->CreateTH1(Form("hFracMaxFastorMeanGood%s", pt.Data()), Form("Ratio max ADC to the mean for good %s patches", pt.Data()), 100, 0., 1.);
+    fHistos->CreateTH1(Form("hFracMaxFastorMeanGood%s", pt.Data()), Form("Ratio max ADC to the mean for good %s patches", pt.Data()), 500, 0., 10.);
   }
 
   std::vector<TString> maxtypes = {"Online", "Recalc"};
   for(const auto &mt : maxtypes){
     fHistos->CreateTH1(Form("hFracMaxFastorTotalAllMax%s", mt.Data()), Form("Contribution of max fastor to patch ADC for all max %s patches", mt.Data()), 100, 0., 1.);
-    fHistos->CreateTH1(Form("hFracMaxFastorMeanAllMax%s", mt.Data()), Form("Ratio max ADC to the mean for all max %s patches", mt.Data()), 100, 0., 1.);
+    fHistos->CreateTH1(Form("hFracMaxFastorMeanAllMax%s", mt.Data()), Form("Ratio max ADC to the mean for all max %s patches", mt.Data()), 500, 0., 50.);
     fHistos->CreateTH2(Form("hPatchADCvsADCgoodAllMax%s", mt.Data()), Form("Patch ADC vs patch good ADC for all max %s patches", mt.Data()), 500, 0., 2500., 500, 0., 2500.);
     fHistos->CreateTH1(Form("hFracMaxMaskedFastorAllMax%s", mt.Data()), Form("Contribution of the max masked fastor to the patch ADC for all max %s patches", mt.Data()), 100, 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxGoodFastorAllMax%s", mt.Data()), Form("Contribution of the max good fastor to the patch ADC for all max %s patches", mt.Data()), 100, 0., 1.);
@@ -116,7 +116,7 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
     fHistos->CreateTH1(Form("hFracMaskedADCAllMax%s", mt.Data()), Form("Contribution of the masked adc sum to the patch ADC for all max %s patches", mt.Data()), 100, 0., 1.);
     fHistos->CreateTH2(Form("hFracMaxMaskedvsNmaskedcontribAllMax%s", mt.Data()), Form("Number of non-zero masked fastors vs. fraction of max. masked for all max %s patches", mt.Data()), 1000, 0., 1000, 100., 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxFastorTotalBadMax%s", mt.Data()), Form("Contribution of max fastor to patch ADC for bad max %s patches", mt.Data()), 100, 0., 1.);
-    fHistos->CreateTH1(Form("hFracMaxFastorMeanBadMax%s", mt.Data()), Form("Ratio max ADC to the mean for bad max %s patches", mt.Data()), 100, 0., 1.);
+    fHistos->CreateTH1(Form("hFracMaxFastorMeanBadMax%s", mt.Data()), Form("Ratio max ADC to the mean for bad max %s patches", mt.Data()), 500, 0., 50.);
     fHistos->CreateTH2(Form("hPatchADCvsADCgoodBadMax%s", mt.Data()), Form("Patch ADC vs patch good ADC for bad max %s patches", mt.Data()), 500, 0., 2500., 500, 0., 2500.);
     fHistos->CreateTH1(Form("hFracMaxMaskedFastorBadMax%s", mt.Data()), Form("Contribution of the max masked fastor to the patch ADC for bad max %s patches", mt.Data()), 100, 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxGoodFastorBadMax%s", mt.Data()), Form("Contribution of the max good fastor to the patch ADC for bad max %s patches", mt.Data()), 100, 0., 1.);
@@ -125,7 +125,7 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hFracMaxMaskedvsNmaskedcontribBadMax%s", mt.Data()), Form("Number of non-zero masked fastors vs. fraction of max. masked for bad max %s patches", mt.Data()), 1000, 0., 1000, 100., 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxMaskedSumMaskedBadMax%s", mt.Data()), Form("Contibution of the max. masked fastor to the ADC sum of masked fastors for bad max %s patches", mt.Data()), 100, 0., 1.);
     fHistos->CreateTH1(Form("hFracMaxFastorTotalGoodMax%s", mt.Data()), Form("Contribution of max fastor to patch ADC for good max %s patches", mt.Data()), 100, 0., 1.);
-    fHistos->CreateTH1(Form("hFracMaxFastorMeanGoodMax%s", mt.Data()), Form("Ratio max ADC to the mean for good max %s patches", mt.Data()), 100, 0., 1.);
+    fHistos->CreateTH1(Form("hFracMaxFastorMeanGoodMax%s", mt.Data()), Form("Ratio max ADC to the mean for good max %s patches", mt.Data()), 500, 0., 50.);
   }
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
@@ -135,7 +135,7 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
 
 bool AliAnalysisTaskEmcalPatchMasking::IsEventSelected(){
   if(fTriggerBits){
-    if(fInputHandler->IsEventSelected() & fTriggerBits) return false;
+    if(!fInputHandler->IsEventSelected() & fTriggerBits) return false;
   }
   if(fTriggerPattern.Length()){
     if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerPattern)) return false;
@@ -146,6 +146,8 @@ bool AliAnalysisTaskEmcalPatchMasking::IsEventSelected(){
     if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;
     if(fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent)) return false;
   }
+
+  AliDebugStream(1) << GetName() << ": Event is selected" << std::endl;
 
   return true;
 }
@@ -202,12 +204,37 @@ bool AliAnalysisTaskEmcalPatchMasking::Run(){
       if(recpatch->IsGammaLow() || recpatch->IsGammaHigh() || recpatch->IsGammaLowRecalc()) continue;
       if(fTriggerPattern.Contains("EJ1")){
         if(!(recpatch->IsJetHigh() || recpatch->GetADCAmp() > 260)) continue;
+        if(recpatch->IsJetHigh()){
+          if(!maxOnline) maxOnline = recpatch;
+          else {
+            if(recpatch->GetADCAmp() > maxOnline->GetADCAmp()) maxOnline = recpatch;
+          }
+        }
+        if(recpatch->IsJetLowRecalc()){
+          if(!maxRecalc) maxRecalc = recpatch;
+          else {
+            if(recpatch->GetADCAmp() > maxRecalc->GetADCAmp()) maxRecalc = recpatch;
+          }
+        }
       }
       if(fTriggerPattern.Contains("EJ2")){
         if(!(recpatch->IsJetLow() || recpatch->GetADCAmp() > 127)) continue;
+        if(recpatch->IsJetLow()){
+          if(!maxOnline) maxOnline = recpatch;
+          else {
+            if(recpatch->GetADCAmp() > maxOnline->GetADCAmp()) maxOnline = recpatch;
+          }
+        }
+        if(recpatch->IsJetLowRecalc()){
+          if(!maxRecalc) maxRecalc = recpatch;
+          else {
+            if(recpatch->GetADCAmp() > maxRecalc->GetADCAmp()) maxRecalc = recpatch;
+          }
+        }
       }
     }
 
+    AliDebugStream(2) << GetName() << ": Found firing patch" << std::endl;
     ProcessPatch(*recpatch);
   }
 
@@ -240,7 +267,7 @@ void AliAnalysisTaskEmcalPatchMasking::RunChanged(int newrun){
     if(!badchannelmap || !badchannelmap->GetEntries()) return;
     for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
       TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
-      AliDebugStream(1) << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
+      AliDebugStream(3) << GetName() << ": Found masked fastor channel " << channelID->GetVal() << std::endl;
       fListMaskedFastors.push_back(channelID->GetVal());
     }
   }
@@ -248,21 +275,23 @@ void AliAnalysisTaskEmcalPatchMasking::RunChanged(int newrun){
 
 void AliAnalysisTaskEmcalPatchMasking::PrepareL1FastorADC(){
   fL1ADC.Reset();
-  fCaloTriggers->Reset();
+  AliVCaloTrigger *emctrigger = fInputEvent->GetCaloTrigger("EMCAL");
+  emctrigger->Reset();
 
   Int_t globCol=-1, globRow=-1, adcAmp=-1;
-  while(fCaloTriggers->Next()){
+  while(emctrigger->Next()){
     // get position in global 2x2 tower coordinates
     // A0 left bottom (0,0)
-    fCaloTriggers->GetPosition(globCol, globRow);
-    fCaloTriggers->GetL1TimeSum(adcAmp);
+    emctrigger->GetPosition(globCol, globRow);
+    emctrigger->GetL1TimeSum(adcAmp);
+    AliDebugStream(1) << GetName() << "Fastor at (" << globCol << "," << globRow << ") with ADC " << adcAmp << std::endl;
     if (adcAmp < 0) adcAmp = 0;
 
     try {
       (fL1ADC)(globCol,globRow) = adcAmp;
     }
-    catch (AliEMCALTriggerDataGrid<UShort_t>::OutOfBoundsException &e) {
-      std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<UShort_t>::OutOfBoundsException::kColDir ? "Col" : "Row";
+    catch (AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException &e) {
+      std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException::kColDir ? "Col" : "Row";
       AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
     }
   }
@@ -272,13 +301,13 @@ AliEMCALTriggerPatchADCInfo *AliAnalysisTaskEmcalPatchMasking::MakeFastorADCValu
   AliEMCALTriggerPatchADCInfo *adcpatch = new AliEMCALTriggerPatchADCInfo(patch.GetPatchSize());
   for(unsigned char icol = 0; icol < patch.GetPatchSize(); icol++){
     for(unsigned char irow = 0; irow < patch.GetPatchSize(); irow++){
-      UShort_t adc = 0;
+      Int_t adc = 0;
       try{
         adc = fL1ADC(icol + patch.GetColStart(), irow + patch.GetRowStart());
-      } catch (AliEMCALTriggerDataGrid<UShort_t>::OutOfBoundsException &e){
+      } catch (AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException &e){
         adc = 0;
       }
-      adcpatch->SetADC(icol, irow, adc);
+      adcpatch->SetADC(adc, icol, irow);
     }
   }
   return adcpatch;
@@ -296,10 +325,10 @@ void AliAnalysisTaskEmcalPatchMasking::ProcessPatch(const AliEMCALTriggerPatchIn
   std::unique_ptr<AliEMCALTriggerPatchADCInfo> patchADC(MakeFastorADCValuesForPatch(patch));
 
   // Find the max fastor ADC in the patch
-  UShort_t maxFastorADC = 0, maxFastorADCmasked = 0, maxFastorADCgood = 0, tmp = 0;
-  UShort_t nFastorNonZero = 0, nfastorMasked = 0, nMaskedFastorsNonZero = 0;
+  Int_t maxFastorADC = 0, maxFastorADCmasked = 0, maxFastorADCgood = 0, tmp = 0;
+  Int_t nFastorNonZero = 0, nfastorMasked = 0, nMaskedFastorsNonZero = 0;
   Int_t sumADCgood = 0, sumADCbad = 0, absFastorIndex = 0;
-  std::vector<UShort_t> adcs;
+  std::vector<Int_t> adcs;
   for(UChar_t icol = 0; icol < patchADC->GetPatchSize(); icol++){
     for(UChar_t irow = 0; irow < patchADC->GetPatchSize(); irow++){
       tmp = patchADC->GetADC(icol, irow);
@@ -322,6 +351,10 @@ void AliAnalysisTaskEmcalPatchMasking::ProcessPatch(const AliEMCALTriggerPatchIn
       }
     }
   }
+  AliDebugStream(2) << GetName() << ": Max Fastor: " <<  maxFastorADC << ", Sum: " << patch.GetADCAmp() << std::endl;
+  AliDebugStream(2) << GetName() << ": Mean ADC: " << TMath::Mean(adcs.begin(), adcs.end()) << std::endl;
+  AliDebugStream(2) << GetName() << ": Sum good " << sumADCgood << ", bad " << sumADCbad << std::endl;
+
   Float_t fracMaxFastorPatchADC = static_cast<Float_t>(maxFastorADC)/static_cast<Float_t>(patch.GetADCAmp()),
           fracMaxFastorMaskedPatchADC = static_cast<Float_t>(maxFastorADCmasked)/static_cast<Float_t>(patch.GetADCAmp()),
           fracMaxFastorGoodPatchADC = static_cast<Float_t>(maxFastorADCgood)/static_cast<Float_t>(patch.GetADCAmp()),
@@ -481,18 +514,18 @@ void AliEMCALTriggerPatchADCInfo::SetPatchSize(UChar_t patchsize){
   fADCValues.Allocate(fPatchSize, fPatchSize);
 }
 
-void AliEMCALTriggerPatchADCInfo::SetADC(UShort_t adc, UChar_t col, UChar_t row){
+void AliEMCALTriggerPatchADCInfo::SetADC(Int_t adc, UChar_t col, UChar_t row){
   try{
     fADCValues.SetADC(col, row, adc);
-  } catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+  } catch (AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException &e) {
     // Don't do anything if we are out-of-bounds
   }
 }
 
-UShort_t AliEMCALTriggerPatchADCInfo::GetADC(UChar_t col, UChar_t row) const {
+Int_t AliEMCALTriggerPatchADCInfo::GetADC(UChar_t col, UChar_t row) const {
   try{
     return fADCValues(col, row);
-  } catch (AliEMCALTriggerDataGrid<UShort_t>::OutOfBoundsException &e){
+  } catch (AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException &e){
     return 0;
   }
 }
