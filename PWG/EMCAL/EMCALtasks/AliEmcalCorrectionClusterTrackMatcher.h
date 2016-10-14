@@ -29,9 +29,10 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
 
   // Sets up and runs the task
   Bool_t Initialize();
+  void UserCreateOutputObjects();
   Bool_t Run();
   
-protected:
+ protected:
   Int_t         GetMomBin(Double_t p) const;
   void          GenerateEmcalParticles();
   void          DoMatching();

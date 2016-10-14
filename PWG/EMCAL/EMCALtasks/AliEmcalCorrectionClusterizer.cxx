@@ -145,8 +145,6 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   GetProperty("removeMCGen2", removeMcGen2);
   TString removeMCGen2 = removeMcGen2.c_str();
 
-  //AddContainer(kCluster);
-  
   fRecParam->SetClusterizerFlag(clusterizerType);
   fRecParam->SetMinECut(cellE);
   fRecParam->SetClusteringThreshold(seedE);
@@ -180,6 +178,14 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   
   return kTRUE;
 }
+
+//________________________________________________________________________
+void AliEmcalCorrectionClusterizer::UserCreateOutputObjects()
+{   
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+}
+
 
 //________________________________________________________________________
 Bool_t AliEmcalCorrectionClusterizer::Run()
