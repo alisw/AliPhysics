@@ -16,6 +16,7 @@
 
 AliFemtoEventCutEstimators::AliFemtoEventCutEstimators() :
   AliFemtoEventCut(),
+  fVerbose(kTRUE),
   fEventMultEst1(),
   fEventMultEst2(),
   fEventMultEst3(),
@@ -52,6 +53,15 @@ AliFemtoEventCutEstimators::~AliFemtoEventCutEstimators(){
 AliFemtoEventCutEstimators& AliFemtoEventCutEstimators::operator=(AliFemtoEventCutEstimators& c)
 {
   if (this != &c) {
+    AliFemtoEventCut::operator=(c);
+
+    fVerbose = c.fVerbose;
+    fUseMultEst1 = c.fUseMultEst1; fUseMultEst2 = c.fUseMultEst2; fUseMultEst3 = c.fUseMultEst3; 
+    fUseCentEst1 = c.fUseCentEst1; fUseCentEst2 = c.fUseCentEst2; fUseCentEst3 = c.fUseCentEst3; fUseCentEst4 = c.fUseCentEst4;
+
+    fNEventsPassed = 0;
+    fNEventsFailed = 0;
+
     fEventMultEst1[0] = c.fEventMultEst1[0];  fEventMultEst1[1] = c.fEventMultEst1[1];
     fEventMultEst2[0] = c.fEventMultEst2[0];  fEventMultEst2[1] = c.fEventMultEst2[1];
     fEventMultEst3[0] = c.fEventMultEst3[0];  fEventMultEst3[1] = c.fEventMultEst3[1];
@@ -74,9 +84,12 @@ bool AliFemtoEventCutEstimators::Pass(const AliFemtoEvent* event){
   
   bool goodEvent = true;
 
-  printf("Cutting event with %i %i %i - %i %i %i %i\n", fUseMultEst1, fUseMultEst2, fUseMultEst3, fUseCentEst1, fUseCentEst2, fUseCentEst3, fUseCentEst4);
-  printf("  On %i %i %i - %f %f %f %f\n", event->MultiplicityEstimateTracklets(), event->MultiplicityEstimateITSTPC(), event->MultiplicityEstimateITSPure(),
-	 event->CentralityV0(), event->CentralityFMD(), event->CentralitySPD1(), event->CentralityTrk());
+  if(fVerbose)
+  {
+    printf("Cutting event with %i %i %i - %i %i %i %i\n", fUseMultEst1, fUseMultEst2, fUseMultEst3, fUseCentEst1, fUseCentEst2, fUseCentEst3, fUseCentEst4);
+    printf("  On %i %i %i - %f %f %f %f\n", event->MultiplicityEstimateTracklets(), event->MultiplicityEstimateITSTPC(), event->MultiplicityEstimateITSPure(),
+	   event->CentralityV0(), event->CentralityFMD(), event->CentralitySPD1(), event->CentralityTrk());
+  }
 
   if (fUseMultEst1) { goodEvent &= ((event->MultiplicityEstimateTracklets() >= fEventMultEst1[0]) &&
 				    (event->MultiplicityEstimateTracklets() <= fEventMultEst1[1])); }

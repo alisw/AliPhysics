@@ -105,6 +105,8 @@ struct EventCutParams
 
   double minVertexZ,
          maxVertexZ;
+
+  bool verboseMode;
 };
 
 struct V0CutParams
