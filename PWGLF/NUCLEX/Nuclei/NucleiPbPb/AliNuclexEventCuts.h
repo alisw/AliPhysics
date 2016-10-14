@@ -15,9 +15,16 @@ class AliNuclexEventCuts : public TNamed {
  
     bool   AcceptEvent (AliVEvent *ev, TList* qaList = 0x0);
     float  GetCentrality (unsigned int estimator = 0) { return fCentPercentiles[estimator]; }
-    static void AddQAplotsToList(TList *qaList);
+    void AddQAplotsToList(TList *qaList);
     
     void  SetupLHC15o();
+
+    /// While the general philosophy here is to avoid setters and getters (this is not an API we expose)
+    /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
+    /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
+    /// is convenient having special setters in this case.
+    void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
+    void          SetCentralityRange(float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
 
     bool          fRequireTrackVertex;
     float         fMinVtz;
@@ -25,6 +32,8 @@ class AliNuclexEventCuts : public TNamed {
     float         fMaxDeltaSpdTrackAbsolute;
     float         fMaxDeltaSpdTrackNsigmaSPD;
     float         fMaxDeltaSpdTrackNsigmaTrack;
+//    float         fMaxDispersionSPDvertex;
+//    float         fMaxResolutionSPDvertex;
 
     bool          fRejectDAQincomplete;           ///< Reject events that have incomplete information
 
