@@ -4602,7 +4602,10 @@ void AliTPCDcalibRes::WriteDistCorTestTree(int nx, int nphi2sect,int nzside)
 	  float xd = x + dist[kResX];
 	  float yd = y2x*x+dist[kResY];
 	  float zd = z2x*x+dist[kResZ];
-	  GetSmoothEstimate(is,xd,yd/xd,zd/xd,(0x1<<4)-1,corr); 
+	  
+	  int xSlice = GetXBin(xd);
+	  if (!GetXBinIgnored(is,xSlice)) GetSmoothEstimate(is,xd,yd/xd,zd/xd,(0x1<<4)-1,corr); 
+	  else for (int j=kResDim;j--;) corr[j] = 0;
 	  for (int v=kResDim;v--;) {
 	    dc.dxyz[v] = dist[v];
 	    dc.cxyz[v] = corr[v];
