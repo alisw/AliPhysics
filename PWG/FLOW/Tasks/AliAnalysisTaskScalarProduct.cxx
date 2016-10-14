@@ -56,6 +56,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fApplyCorrectionForNUA(kFALSE),
   fHarmonic(2),
   fNormalizationType(1),
+  fV0SanityCheck(0),
   fTotalQvector(NULL) 
 {
   // Constructor
@@ -87,6 +88,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fApplyCorrectionForNUA(kFALSE),
   fHarmonic(0),
   fNormalizationType(1),
+  fV0SanityCheck(0),
   fTotalQvector(NULL) 
   {
   // Constructor
@@ -130,6 +132,7 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
   // harmonic: 
   fSP->SetHarmonic(fHarmonic);
   fSP->SetNormalizationType( fNormalizationType );
+  fSP->SetV0SanityCheck(fV0SanityCheck);
   // total Q-vector:
   Int_t totalQ = 0;
   if( fTotalQvector->Contains("Qa") ) totalQ += 1;

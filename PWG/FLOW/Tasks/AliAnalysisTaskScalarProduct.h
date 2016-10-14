@@ -43,6 +43,7 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   Int_t GetHarmonic() const {return this->fHarmonic;};   
 
   void SetBehaveAsEP() { fNormalizationType = 0; }
+  void SetV0SanityCheck(Bool_t t){ fV0SanityCheck = t;}
   
   void SetTotalQvector(const char *tqv) {*this->fTotalQvector = tqv;}; 
 
@@ -67,10 +68,11 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   
   Int_t fHarmonic;               // harmonic
   Int_t fNormalizationType;      // 0: EP mode || 1: SP mode (default)
+  Bool_t fV0SanityCheck;          // 14102016 test flag
 
   TString   *fTotalQvector;      // total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb"  
   
-  ClassDef(AliAnalysisTaskScalarProduct, 2); // example of analysis
+  ClassDef(AliAnalysisTaskScalarProduct, 3); // example of analysis
 };
 
 //==================================================================

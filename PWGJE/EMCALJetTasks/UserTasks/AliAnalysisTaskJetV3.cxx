@@ -21,6 +21,7 @@
  */
 
 // root includes
+#include <TGrid.h>
 #include <TStyle.h>
 #include <TRandom3.h>
 #include <TChain.h>
@@ -3197,7 +3198,10 @@ void AliAnalysisTaskJetV3::ReadVZEROCalibration2015o() {
      #ifdef ALIANALYSISTASKJETV3_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    if(!fOADB || fOADB->IsZombie()) fOADB = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+    if(!fOADB || fOADB->IsZombie()) {
+        if (!gGrid) TGrid::Connect("alien");
+        fOADB = TFile::Open("alien:///alice/cern.ch/user/r/rbertens/calibV0HIR.root");
+    }
     if(fOADB->IsZombie()) {
 	printf("OADB file could not be opened CALIBRATION FAILED !");
 	return;
@@ -3548,6 +3552,6 @@ Float_t AliAnalysisTaskJetV3::GetCentrality(const char* estimator) const
     AliMultSelection *multSelection = 0x0; 
     if(!InputEvent()) return -1.;
     multSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-    if(multSelection) multSelection->GetMultiplicityPercentile(estimator);
+    if(multSelection) return multSelection->GetMultiplicityPercentile(estimator);
     return -1.;
 }
