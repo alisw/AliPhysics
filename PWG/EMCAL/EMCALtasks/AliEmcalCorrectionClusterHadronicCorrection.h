@@ -28,6 +28,7 @@ class AliEmcalCorrectionClusterHadronicCorrection : public AliEmcalCorrectionCom
 
   // Sets up and runs the task
   Bool_t Initialize();
+  void UserCreateOutputObjects();
   Bool_t Run();
   
 protected:

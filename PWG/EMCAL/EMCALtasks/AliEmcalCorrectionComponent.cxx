@@ -108,8 +108,8 @@ AliEmcalCorrectionComponent::~AliEmcalCorrectionComponent()
 }
 
 /**
- * Initialize basic variables in the correction component, including the input file type,
- * pass, and output list.
+ * Initialize basic variables in the correction component from the configuration file.
+ * 
  */
 Bool_t AliEmcalCorrectionComponent::Initialize()
 {
@@ -121,12 +121,21 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
   fFilepass = tempString.c_str();
   if(fFilepass != "")
     fGetPassFromFileName = kFALSE;
-  
-  // Output
-  fOutput = new AliEmcalList();
-  fOutput->SetOwner();
 
   return kTRUE;
+}
+
+/**
+ * Create output objects for the analysis. Similar to UserCreateOutputObjects() in
+ * AliAnalysisTaskSE
+ */
+void AliEmcalCorrectionComponent::UserCreateOutputObjects()
+{
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  
+  // Setup Output
+  fOutput = new AliEmcalList();
+  fOutput->SetOwner();
 }
 
 /**

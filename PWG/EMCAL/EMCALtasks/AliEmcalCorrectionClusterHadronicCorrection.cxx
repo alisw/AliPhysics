@@ -89,25 +89,19 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("hadCorr", fHadCorr);
   GetProperty("Eexcl", fEexclCell);
   GetProperty("doTrackClus", fDoTrackClus);
-  /*Double_t trackPtMin = 0.15;
-  GetProperty("trackPtMin", trackPtMin);
-  Double_t clusterNonLinCorrEnergyMin = 0.15;
-  GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyMin);
-  Double_t clusterECut = 0.0;
-  GetProperty("clusterEMin", clusterECut);
-  Double_t clusterPtCut = 0.0;
-  GetProperty("clusterPtMin", clusterPtCut);
+
+  return kTRUE;
+}
   
-  AddContainer(kTrack);
-  fPartCont->SetParticlePtCut(trackPtMin);
-  AddContainer(kCluster);
-  fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyMin);
-  fClusCont->SetClusECut(clusterECut);
-  fClusCont->SetClusPtCut(clusterPtCut);*/
-  
+//________________________________________________________________________
+void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
+{   
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+ 
   // Create my user objects.
   
-  if (!fCreateHisto) return kTRUE;
+  if (!fCreateHisto) return;
   
   fHistMatchEtaPhiAll = new TH2F("fHistMatchEtaPhiAll", "fHistMatchEtaPhiAll;#Delta#eta;#Delta#phi", fNbins, -0.1, 0.1, fNbins, -0.1, 0.1);
   fOutput->Add(fHistMatchEtaPhiAll);
@@ -232,8 +226,6 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
     }
   }
   fOutput->SetOwner(kTRUE);
-  
-  return kTRUE;
 }
 
 //________________________________________________________________________

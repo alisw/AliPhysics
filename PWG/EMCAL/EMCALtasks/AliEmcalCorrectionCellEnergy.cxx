@@ -48,23 +48,30 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   AliWarning("Init EMCAL cell recalibration");
   
   GetProperty("createHistos", fCreateHisto);
-  
-  if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
-    fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
-    fOutput->Add(fCellEnergyDistAfter);
-  }
 
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
   
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
     
-  // missalignment function -- TO DO: not sure if we need this or not
+  // missalignment function -- TODO: not sure if we need this or not
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
-  
+
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionCellEnergy::UserCreateOutputObjects()
+{   
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  AliEmcalCorrectionComponent::UserCreateOutputObjects();
+
+  if (fCreateHisto){
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
+    fOutput->Add(fCellEnergyDistBefore);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
+    fOutput->Add(fCellEnergyDistAfter);
+  }
 }
 
 //________________________________________________________________________

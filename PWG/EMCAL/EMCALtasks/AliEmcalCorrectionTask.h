@@ -105,7 +105,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
   void SetDefaultConfigurationFilename(std::string name) { fDefaultConfigurationFilename = name; }
 
-  void InitializeConfiguration();
+  void Initialize();
 
   // Containers and cells
   AliParticleContainer       *AddParticleContainer(const char *n);
@@ -126,7 +126,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   AliTrackContainer          *GetTrackContainer(const char* name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
   void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
-  AliVCaloCells              *GetCellsFromContainerArray(const std::string & cellsContainerName) const;
+  AliEmcalCorrectionCellContainer *GetCellContainer(const std::string & cellsContainerName) const;
 
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
@@ -151,6 +151,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   static inline bool DoesFileExist(const std::string & filename);
   void SetupConfigurationFilePath(std::string & filename, bool userFile = false);
 
+  void InitializeConfiguration();
   void RetrieveExecutionOrder(std::vector <std::string> & componentsToAdd);
   void InitializeComponents();
 
@@ -172,6 +173,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   Bool_t                      RetrieveEventObjects();
   void                        ExecOnceComponents();
+  void                        UserCreateOutputObjectsComponents();
 
   BeamType                    GetBeamType();
 
@@ -186,7 +188,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   std::string fUserConfigurationFilename;                 //!<! User YAML configruation filename
   std::string fDefaultConfigurationFilename;              //!<! Default YAML configuration filename
 
-  std::vector <AliEmcalCorrectionComponent *> fCorrectionComponents; //!<! Contains the correction components
+  std::vector <AliEmcalCorrectionComponent *> fCorrectionComponents; ///< Contains the correction components
   bool fConfigurationInitialized;                         ///< True if the YAML files are initialized
 
   bool                        fIsEsd;                      ///< File type

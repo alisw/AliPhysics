@@ -320,6 +320,64 @@ bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool u
   return returnValue;
 }
 
+/**
+ *
+ *
+ */
+void AliEmcalCorrectionTask::Initialize()
+{
+  // Determine file type
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (mgr) {
+    AliVEventHandler *evhand = mgr->GetInputEventHandler();
+    if (evhand) {
+      if (evhand->InheritsFrom("AliESDInputHandler")) {
+        fIsEsd = true;
+      }
+      else {
+        fIsEsd = false;
+      }
+    }
+    else {
+      AliError("Event handler not found!");
+    }
+  }
+  else {
+    AliError("Analysis manager not found!");
+  }
+  
+  // Initialize YAML configuration
+  InitializeConfiguration();
+  // Check that the configuration is initialized
+  if (fConfigurationInitialized != true)
+  {
+    AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
+  }
+
+  // Setup input objects
+  // Setup Cells
+  // Cannot do this entirely yet because we need input objects
+  CreateInputObjects(kCaloCells);
+  // TEMP PRINT
+  AliDebugStream(2) << "Cell info: " << std::endl;
+  for (auto cellInfo : fCellCollArray) {
+    AliDebugStream(2) << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding:" << cellInfo->GetIsEmbedding() << std::endl;
+  }
+  // END TEMP PRINT
+  // Create cluster input objects
+  CreateInputObjects(kCluster);
+  // TEMP PRINT
+  fClusterCollArray.Print();
+  // END TEMP PRINT
+  // Create track input objects
+  CreateInputObjects(kTrack);
+  // TEMP PRINT
+  fParticleCollArray.Print();
+  // END TEMP PRINT
+
+  // Initialize components
+  InitializeComponents();
+}
 
 /**
  *
@@ -346,11 +404,6 @@ void AliEmcalCorrectionTask::InitializeComponents()
   // Create a function to handle creation and configuration of the all of the created module
   std::vector<std::string> executionOrder;
   RetrieveExecutionOrder(executionOrder);
-
-  // Allow for output files
-  OpenFile(1);
-  fOutput = new TList();
-  fOutput->SetOwner();
 
   // Iterate over the list
   AliEmcalCorrectionComponent * component = 0;
@@ -381,24 +434,10 @@ void AliEmcalCorrectionTask::InitializeComponents()
     component->SetDefaultConfiguration(fDefaultConfiguration);
 
     // configure needed fields for components to properly initialize
-    component->SetNcentralityBins(fNcentBins);
     component->SetIsESD(fIsEsd);
 
-    // Attempt to retrieve any containers they may have created in initialization
-    /*AliClusterContainer * tempClusterContainer = component->GetClusterContainer();
-    if (tempClusterContainer)
-    {
-      AdoptClusterContainer(tempClusterContainer);
-    }
-
-    AliParticleContainer * tempParticleContainer = component->GetParticleContainer();
-    if (tempParticleContainer)
-    {
-      AdoptParticleContainer(tempParticleContainer);
-    }*/
-
     // Add the require containers to the component
-    // Cells are set during Run() because we need to add them as a pointer
+    // Cells must be set during UserExec() because we need to add them as a pointer
     AddContainersToComponent(component, kCluster);
     AddContainersToComponent(component, kTrack);
 
@@ -410,27 +449,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
       AliInfo(TString::Format("Successfully added correction task: %s", componentName.c_str()));
       fCorrectionComponents.push_back(component);
     }
-
-    if (component->GetOutputList() != 0)
-    {
-      // Adds a list to the list -- this doesn't work for some unknown reason
-      //fOutput->Add(component->GetOutputList());
-
-      // iterate through lists for each component, and fill in output
-      TList* t = new TList();
-      t->SetName(componentName.c_str());
-      fOutput->AddLast(t);
-      t = (TList*)fOutput->Last();
-      TIter next(component->GetOutputList());
-      while (TObject *obj = next()){
-        t->Add(obj);
-      }
-
-      AliDebug(1, TString::Format("Added output list from task %s to output.", componentName.c_str()));
-    }
   }
-
-  PostData(1, fOutput);
 }
 
 /**
@@ -441,29 +460,7 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
 {
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
 
-  // Determine file type
-  // TODO: Need to refactor when moving init to AddTask
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (mgr) {
-    AliVEventHandler *evhand = mgr->GetInputEventHandler();
-    if (evhand) {
-      if (evhand->InheritsFrom("AliESDInputHandler")) {
-        fIsEsd = true;
-      }
-      else {
-        fIsEsd = false;
-      }
-    }
-    else {
-      AliError("Event handler not found!");
-    }
-  }
-  else {
-    AliError("Analysis manager not found!");
-  }
-
-  // Initialize the components
-  //InitializeConfiguration();
+  // Check that the configuration is initialized
   if (fConfigurationInitialized != true)
   {
     AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
@@ -494,39 +491,54 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
   AliDebugStream(4) << "(Re)initialized default configuration: " << fDefaultConfigurationString << std::endl;
   AliDebugStream(4) << "(Re)initialized default configuration: " << fDefaultConfiguration << std::endl;
 
-  // Setup Cells
-  // Cannot do this entirely yet because we need input objects
-  CreateInputObjects(kCaloCells);
-  // TEMP PRINT
-  AliDebugStream(2) << "Cell info: " << std::endl;
-  for (auto cellInfo : fCellCollArray) {
-    AliDebugStream(2) << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding:" << cellInfo->GetIsEmbedding() << std::endl;
-  }
-  // END TEMP PRINT
-  // Create cluster input objects
-  CreateInputObjects(kCluster);
-  // TEMP PRINT
-  /*AliEmcalContainer * cont = 0;
-  TIter nextClusColl(&fClusterCollArray);
-  std::cout << "Cluster containers: " << std::endl;
-  while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {std::cout << "\t" << cont->GetName() << ": "; cont->Print(); std::cout << std::endl;}
-  std::cout << std::endl << "Finished creating cluster containers. Now creating track containers!" << std::endl;*/
-  fClusterCollArray.Print();
-  // END TEMP PRINT
-  // Create track input objects
-  CreateInputObjects(kTrack);
-  // TEMP PRINT
-  /*TIter nextPartColl(&fParticleCollArray);
-  std::cout << "Track containers: " << std::endl;
-  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) {std::cout << "\t" << cont->GetName() << ": "; cont->Print(); std::cout << std::endl;}
-  std::cout << std::endl << "Finished creating track containers!" << std::endl;*/
-  fParticleCollArray.Print();
-  // END TEMP PRINT
-
   if (fForceBeamType == kpp)
     fNcentBins = 1;
 
-  InitializeComponents();
+  // Allow for output files
+  OpenFile(1);
+  fOutput = new TList();
+  fOutput->SetOwner();
+
+  UserCreateOutputObjectsComponents();
+
+  PostData(1, fOutput);
+}
+
+/**
+ * Calls UserCreateOutputObjects() for each component.
+ *
+ */
+void AliEmcalCorrectionTask::UserCreateOutputObjectsComponents()
+{
+  // Run the initialization for all derived classes.
+  AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
+  for (auto component : fCorrectionComponents)
+  {
+    // Set cent bins (usually used for hist creation)
+    // It cannot be set until now because it can be changed after initialization
+    // For instance, by SetForceBeamType()
+    component->SetNcentralityBins(fNcentBins);
+
+    component->UserCreateOutputObjects();
+
+    if (component->GetOutputList() != 0)
+    {
+      // Adds a list to the list -- this doesn't work for some unknown reason
+      //fOutput->Add(component->GetOutputList());
+
+      // iterate through lists for each component, and fill in output
+      TList* t = new TList();
+      t->SetName(component->GetName());
+      fOutput->AddLast(t);
+      t = (TList*)fOutput->Last();
+      TIter next(component->GetOutputList());
+      while (TObject *obj = next()){
+        t->Add(obj);
+      }
+
+      AliDebug(1, TString::Format("Added output list from task %s to output.", component->GetName()));
+    }
+  }
 }
 
 /**
@@ -605,7 +617,7 @@ void AliEmcalCorrectionTask::SetupCellsInfo(std::string containerName, YAML::Nod
   // Define cell info
   AliEmcalCorrectionCellContainer * cellObj = new AliEmcalCorrectionCellContainer();
 
-  std::cout << "User: " << std::endl << userNode << std::endl << "default: " << std::endl << defaultNode << std::endl;
+  AliDebugStream(2) << "User: " << std::endl << userNode << std::endl << "default: " << std::endl << defaultNode << std::endl;
 
   // Set properties
   // Cells (object) name
@@ -670,9 +682,9 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
     }
   }
 
-  std::cout << inputObjectName << " Containers requested by components: " << std::endl;
+  AliInfoStream() << inputObjectName << " Containers requested by components: " << std::endl;
   for (auto & str : requestedContainers) {
-    std::cout << "\t" << str << std::endl;;
+    AliInfoStream() << "\t" << str << std::endl;;
   }
 
   // Create all requested containers
@@ -781,7 +793,7 @@ void AliEmcalCorrectionTask::SetupContainer(InputObject_t inputObjectType, std::
   if (trackContainer) {
     // Track selection
     // AOD Filter bits as a sequence
-    std::vector <int> filterBitsVector;
+    std::vector <UInt_t> filterBitsVector;
     result = AliEmcalCorrectionComponent::GetProperty("aodFilterBits", filterBitsVector, userNode, defaultNode, false, containerName);
     if (result){
       UInt_t filterBits = 0;
@@ -896,8 +908,8 @@ AliEmcalContainer * AliEmcalCorrectionTask::AddContainer(InputObject_t contType,
 
   // Retrieve branch name
   // YAML::Node() is just an empty node
-  std::cout << "User Node: " << userNode << std::endl;
-  std::cout << "Default Node: " << defaultNode << std::endl;
+  AliDebugStream(2) << "User Node: " << userNode << std::endl;
+  AliDebugStream(2) << "Default Node: " << defaultNode << std::endl;
   AliEmcalCorrectionComponent::GetProperty("branchName", containerBranch, userNode, defaultNode, true, containerName);
   // Should be unnecessary, since the user can only do this if done explicitly.
   /*if (containerBranch == "")
@@ -970,7 +982,9 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
         AliFatal(TString::Format("Component %s requested more than one cell branch, but this is not supported! Check the configuration!", component->GetName()));
       }
       // If we've made it here, this must be at least one entry
-      component->SetCaloCells(GetCellsFromContainerArray(str));
+      AliDebugStream(2) << "Adding calo cells " << GetCellContainer(str)->GetName() << " of branch name " << GetCellContainer(str)->GetBranchName() << "to component " << component->GetName() << std::endl;
+      component->SetCaloCells(GetCellContainer(str)->GetCells());
+      AliDebugStream(3) << "component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
     }
   }
 }
@@ -979,12 +993,12 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
  *
  *
  */
-AliVCaloCells * AliEmcalCorrectionTask::GetCellsFromContainerArray(const std::string & cellsContainerName) const
+AliEmcalCorrectionCellContainer * AliEmcalCorrectionTask::GetCellContainer(const std::string & cellsContainerName) const
 {
   for (auto cellContainer : fCellCollArray)
   {
     if (cellContainer->GetName() == cellsContainerName) {
-      return cellContainer->GetCells();
+      return cellContainer;
     }
   }
 
@@ -1014,6 +1028,15 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   for (auto component : fCorrectionComponents)
   {
+    // Setup geomertry
+    component->SetEMCALGeometry(fGeom);
+
+    // Add the requested cells to the component
+    AliDebugStream(3) << "Adding CaloCells" << std::endl;
+    AddContainersToComponent(component, kCaloCells);
+    AliDebugStream(3) << "Added CaloCells" << std::endl;
+
+    // Component ExecOnce()
     component->ExecOnce();
   }
 }
@@ -1198,7 +1221,7 @@ void AliEmcalCorrectionTask::CheckForContainerArray(AliEmcalContainer * cont, In
 
   TClonesArray *  array = dynamic_cast<TClonesArray *>(event->FindListObject(cont->GetArrayName()));
   if (!array) {
-    AliWarning(TString::Format("Container %s requested branch %s, but it does not exist! Creating it for you!", cont->GetName(), cont->GetArrayName().Data()));
+    AliWarning(TString::Format("Container %s requested branch %s, but it does not exist! Creating it for you! Please check that this the proper action!", cont->GetName(), cont->GetArrayName().Data()));
     array = new TClonesArray(DetermineUseDefaultName(objectType, fIsEsd, true).c_str());
     array->SetName(cont->GetArrayName());
     event->AddObject(array);
@@ -1363,15 +1386,8 @@ Bool_t AliEmcalCorrectionTask::Run()
   {
     component->SetEvent(InputEvent());
     component->SetMCEvent(MCEvent());
-    component->SetEMCALGeometry(fGeom);
     component->SetCentralityBin(fCentBin);
     component->SetCentrality(fCent);
-    component->SetNcentralityBins(fNcentBins);
-
-    // Add the requested cells to the component
-    //std::cout << "Adding CaloCells" << std::endl;
-    AddContainersToComponent(component, kCaloCells);
-    //std::cout << "Added CaloCells" << std::endl;
 
     component->Run();
   }
