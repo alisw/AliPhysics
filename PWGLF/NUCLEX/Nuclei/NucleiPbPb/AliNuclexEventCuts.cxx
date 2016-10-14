@@ -23,6 +23,8 @@ AliNuclexEventCuts::AliNuclexEventCuts() : TNamed("AliNuclexEventCuts","AliNucle
   fMaxDeltaSpdTrackAbsolute{0.2f},
   fMaxDeltaSpdTrackNsigmaSPD{10.f},
   fMaxDeltaSpdTrackNsigmaTrack{20.f},
+  //fMaxDispersionSPDvertex{0.03f},
+  //fMaxResolutionSPDvertex{0.25f},
   fRejectDAQincomplete{true},
   fRejectPileupSPD{5},
   fCentralityFramework{2},
@@ -42,6 +44,8 @@ void AliNuclexEventCuts::SetupLHC15o() {
   fMaxDeltaSpdTrackAbsolute = 0.2f;
   fMaxDeltaSpdTrackNsigmaSPD = 10.f;
   fMaxDeltaSpdTrackNsigmaTrack = 20.f;
+  //fMaxDispersionSPDvertex = 0.03f;
+  //fMaxResolutionSPDvertex = 0.25f;
 
   fRejectDAQincomplete = true;
 
@@ -103,9 +107,10 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev, TList *qaList) {
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = TMath::Sqrt(covTrc[5]);
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
-  if ((vtTrc->GetNContributors() < 2 || (vtSPD->GetNContributors() < 1 && fRequireTrackVertex)) || // Check if SPD vertex is there and (if required) check if Track vertex is present.
+  if (((vtTrc->GetNContributors() < 2 && fRequireTrackVertex) || vtSPD->GetNContributors() < 1) || // Check if SPD vertex is there and (if required) check if Track vertex is present.
       (TMath::Abs(dz) > fMaxDeltaSpdTrackAbsolute || nsigTot > fMaxDeltaSpdTrackNsigmaSPD || nsigTrc > fMaxDeltaSpdTrackNsigmaTrack) || // discrepancy track-SPD vertex
-      (vtx->GetZ() < fMinVtz || vtx->GetZ() > fMaxVtz)) // min-max limits of the vertex z
+      (vtx->GetZ() < fMinVtz || vtx->GetZ() > fMaxVtz))  // min-max limits of the vertex z
+     // (vtSPD->IsFromVertexerZ() && (vtSPD->GetDispersion()>fMaxDispersionSPDvertex || vtSPD->GetZRes()>fMaxResolutionSPDvertex))) // quality cut on vertexer SPD z
     pass = false;
   else if (fCutStats != nullptr) fCutStats->Fill(3);
 
@@ -167,8 +172,8 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList) {
     fVtz[iS] = new TH1D(Form("Vtz_%s",fgkLabels[iS].data()),Form("Vertex z %s; #it{v_{z}} (cm); Events",titles[iS].data()),400,-20.,20.);
     fDeltaTrackSPDvtz[iS] = new TH1D(Form("DeltaVtz_%s",fgkLabels[iS].data()),Form("Vertex tracks - Vertex SPD %s; #Delta#it{v_{z}} (cm); Events",titles[iS].data()),400,-2.,2.);
     fCentrality[iS] = new TH1D(Form("Centrality_%s",fgkLabels[iS].data()),Form("Centrality percentile %s; Centrality (%%); Events",titles[iS].data()),100,0.,100.);
-    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fgkLabels[iS].data()),Form("Correlation estimators %s",titles[iS].data()),100,0.,100.,100,0.,100.);
-    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fgkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Centrality (%%); Number of tracklets",titles[iS].data()),100,0.,100.,2000,0.,10000.);
+    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fgkLabels[iS].data()),Form("Correlation estimators %s;%s;%s",titles[iS].data(),fCentEstimators[0].data(),fCentEstimators[1].data()),100,0.,100.,100,0.,100.);
+    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fgkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Percentile of %s; Number of tracklets",titles[iS].data(),fCentEstimators[0].data()),100,0.,100.,2000,0.,10000.);
     
     qaList->Add(fVtz[iS]);
     qaList->Add(fDeltaTrackSPDvtz[iS]);

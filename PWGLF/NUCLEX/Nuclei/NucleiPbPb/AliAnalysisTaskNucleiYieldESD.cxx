@@ -253,7 +253,7 @@ void AliAnalysisTaskNucleiYieldESD::UserCreateOutputObjects() {
     }
   }
 
-  AliNuclexEventCuts::AddQAplotsToList(fList);
+  fEventCuts.AddQAplotsToList(fList);
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
 
