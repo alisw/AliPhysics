@@ -107,29 +107,29 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
       fParticlesMapName += "_Map";
 
       if (fEvent->FindListObject(fParticlesMapName)) {
-	AliError(Form("The output array map %s is already present in the event! Task will be disabled.", fParticlesMapName.Data()));
-	fDisabled = kTRUE;
-	return;
+        AliError(Form("The output array map %s is already present in the event! Task will be disabled.", fParticlesMapName.Data()));
+        fDisabled = kTRUE;
+        return;
       }
       else {
-	fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
-	fEvent->AddObject(fParticlesMap);
+        fParticlesMap = new AliNamedArrayI(fParticlesMapName, 99999);
+        fEvent->AddObject(fParticlesMap);
       }
 
       if (!fIsESD) {
-	fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
-	if (!fParticlesIn) {
-	  AliError("Could not retrieve AOD MC particles! Task will be disabled.");
-	  fDisabled = kTRUE;
-	  return;
-	}
-	TClass *cl = fParticlesIn->GetClass();
-	if (!cl->GetBaseClass("AliAODMCParticle")) {
-	  AliError(Form("%s: Collection %s does not contain AliAODMCParticle! Task will be disabled.", GetName(), AliAODMCParticle::StdBranchName())); 
-	  fDisabled = kTRUE;
-	  fParticlesIn = 0;
-	  return;
-	}
+        fParticlesIn = static_cast<TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (!fParticlesIn) {
+          AliError("Could not retrieve AOD MC particles! Task will be disabled.");
+          fDisabled = kTRUE;
+          return;
+        }
+        TClass *cl = fParticlesIn->GetClass();
+        if (!cl->GetBaseClass("AliAODMCParticle")) {
+          AliError(Form("%s: Collection %s does not contain AliAODMCParticle! Task will be disabled.", GetName(), AliAODMCParticle::StdBranchName()));
+          fDisabled = kTRUE;
+          fParticlesIn = 0;
+          return;
+        }
       }
     }
 
@@ -169,7 +169,7 @@ void AliEmcalMCTrackSelector::ConvertMCParticles()
     fParticlesMap->AddAt(-1, iPart);
 
     AliMCParticle* part = static_cast<AliMCParticle*>(fMC->GetTrack(iPart));
-    
+
     if (!part) continue;
 
     Bool_t isPhysPrim = fMC->IsPhysicalPrimary(iPart);
@@ -206,21 +206,21 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
   fParticlesMap->Clear();
 
   const Int_t Nparticles = fParticlesIn->GetEntriesFast();
-  
+
   if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
 
   AliDebug(2, Form("Total number of particles = %d", Nparticles));
 
   Int_t nacc = 0;
-  
+
   // loop over particles
   for (Int_t iPart = 0; iPart < Nparticles; iPart++) {
     fParticlesMap->AddAt(-1, iPart);
-    
+
     AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesIn->At(iPart));
-    
+
     if (!AcceptParticle(part)) continue;
-    
+
     fParticlesMap->AddAt(nacc, iPart);
 
     AliAODMCParticle *newPart = new ((*fParticlesOut)[nacc]) AliAODMCParticle(*part);
@@ -236,15 +236,15 @@ Bool_t AliEmcalMCTrackSelector::AcceptParticle(AliAODMCParticle* part) const
   // Determine whether the MC particle is accepted.
 
   if (!part) return kFALSE;
-    
+
   Int_t partPdgCode = TMath::Abs(part->PdgCode());
 
   if (fOnlyHIJING && (part->GetGeneratorIndex() != 0)) return kFALSE;
 
   if (fEtaMax > 0. && TMath::Abs(part->Eta()) > fEtaMax) return kFALSE;
-    
+
   if (fRejectNK && (partPdgCode == 130 || partPdgCode == 2112)) return kFALSE;
-    
+
   if (fChargedMC && part->Charge() == 0) return kFALSE;
 
   if (fOnlyPhysPrim && !part->IsPhysicalPrimary()) return kFALSE;
