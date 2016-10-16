@@ -2163,17 +2163,17 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
   fFastJetWrapper->SetGhostArea(1);
 
   if (!fAodEvent) {
-     AliError(Form("This task need an AOD event! Task '%s' will be disabled!", GetName()));
-     return;
+     AliError(Form("This task need an AOD event (Task '%s'). Expect troubles...", GetName()));
+     //return;
   }
 
   for (auto &params : fAnalysisEngines) {
 
     params.fAodEvent = fAodEvent;
     params.fFastJetWrapper = fFastJetWrapper;
-    params.Init(fGeom, fAodEvent->GetRunNumber());
+    if (fAodEvent) params.Init(fGeom, fAodEvent->GetRunNumber());
 
-    if (params.fMCMode != kMCTruth) {
+    if (params.fMCMode != kMCTruth && fAodEvent) {
       params.fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(params.fBranchName.Data()));
 
       if (params.fCandidateArray) {
@@ -2234,14 +2234,14 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
 /// \return kTRUE on success
 Bool_t AliAnalysisTaskDmesonJets::Run()
 {
-  if (!fAodEvent) return kFALSE;
+  //if (!fAodEvent) return kFALSE;
 
   TString hname;
 
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   // Now adding an entry in teh histogram so as to check that this is actually cutting anything out
-  if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) {
+  if (fAodEvent && (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001)) {
     for (auto &eng : fAnalysisEngines) {
         if (eng.fInhibit) continue;
         hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
@@ -2256,19 +2256,21 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 
     //Event selection
     hname = TString::Format("%s/fHistNEvents", eng.GetName());
-    Bool_t iseventselected = eng.fRDHFCuts->IsEventSelected(fAodEvent);
-    if (!iseventselected) {
-      fHistManager.FillTH1(hname, "Rejected");
-      hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
-      UInt_t bitmap = eng.fRDHFCuts->GetEventRejectionBitMap();
-      TString label;
-      do {
-        label = GetHFEventRejectionReasonLabel(bitmap);
-        if (label.IsNull()) break;
-        fHistManager.FillTH1(hname, label);
-      } while (true);
+    if (fAodEvent) {
+      Bool_t iseventselected = eng.fRDHFCuts->IsEventSelected(fAodEvent);
+      if (!iseventselected) {
+        fHistManager.FillTH1(hname, "Rejected");
+        hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
+        UInt_t bitmap = eng.fRDHFCuts->GetEventRejectionBitMap();
+        TString label;
+        do {
+          label = GetHFEventRejectionReasonLabel(bitmap);
+          if (label.IsNull()) break;
+          fHistManager.FillTH1(hname, label);
+        } while (true);
 
-      continue;
+        continue;
+      }
     }
 
     fHistManager.FillTH1(hname, "Accepted");
