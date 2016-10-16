@@ -88,7 +88,7 @@ namespace TStatToolkit
   // Graph tools
   //
   THashList *AddMetadata(TTree*, const char *vartagName,const char *varTagValue);
-  TNamed *GetMetadata(TTree* tree, const char *vartagName);
+  TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0);
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
   TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=10000000, Int_t firstEntry=0);
   TMultiGraph * MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend);
@@ -113,6 +113,7 @@ namespace TStatToolkit
   Int_t  SetStatusAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
   TMultiGraph*  MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr=0);  
   void  AddStatusPad(TCanvas* c1, Float_t padratio, Float_t bottommargin);
+  void  DrawMultiGraph(TMultiGraph *graph, Option_t * option); // 
   void  DrawStatusGraphs(TObjArray* oaMultGr);
   TTree*  WriteStatusToTree(TObject* oStatusGr);
   TMultiGraph*  MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias);

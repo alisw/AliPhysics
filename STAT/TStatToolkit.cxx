@@ -26,6 +26,7 @@
 #include "TStatToolkit.h"
 #include "TTreeFormula.h"
 #include "TLegend.h"
+#include "TPRegexp.h"
 
 using std::cout;
 using std::cerr;
@@ -1052,7 +1053,7 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
 
 THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const char *varTagValue){
   //
-  // Add metadata infromation as user info to the tree - see https://alice.its.cern.ch/jira/browse/ATO-290
+  // Add metadata information as user info to the tree - see https://alice.its.cern.ch/jira/browse/ATO-290
   // TTree metdata are used for the Drawing methods in the folling drawing functions
   /*
     Supported metadata:
@@ -1083,23 +1084,36 @@ THashList*  TStatToolkit::AddMetadata(TTree* tree, const char *varTagName,const 
   return metaData;
 }
 
-TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName){
+
+TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName, TString * prefix){
   //
   //  Get metadata description  // too much sting operations - to be speed up using cahr array arithmetic
-  //
+  //  in case metadata contains friend part - frined path os returend as prefix
   if (!tree) return 0;
   TTree * treeMeta=tree;
   TString metaName(vartagName);
   Int_t nDots= metaName.CountChar('.');
-  if (nDots>1){
-    TObjArray * dotArray = metaName.Tokenize(".");
-    for (Int_t iDot=0; iDot<nDots-1; iDot++){
-      if (treeMeta->GetListOfFriends()->FindObject(dotArray->At(iDot)->GetName())){
-	treeMeta=treeMeta->GetFriend((dotArray->At(iDot)->GetName()));
-	metaName.ReplaceAll(TString::Format("%s.",dotArray->At(0)->GetName()),"");
+  if (prefix!=NULL) *prefix="";
+  if (nDots>1){ //check if frien name exapansion needed
+    while (nDots>1){
+      TList *fList= treeMeta->GetListOfFriends();    
+      if (fList!=NULL){
+	Int_t nFriends= fList->GetEntries();
+	for (Int_t kf=0; kf<nFriends; kf++){
+	  TPRegexp regFriend(TString::Format("^%s.",fList->At(kf)->GetName()).Data());
+	  if (metaName.Contains(regFriend)){
+	    treeMeta=treeMeta->GetFriend(fList->At(kf)->GetName());
+	    regFriend.Substitute(metaName,"");
+	    if (prefix!=NULL){
+	      (*prefix)+=fList->At(kf)->GetName();
+	      (*prefix)+=" ";
+	    }
+	  }	    
+	}
       }
+      if (nDots = metaName.CountChar('.')) break;
+      nDots=metaName.CountChar('.');
     }
-    delete dotArray;    
   }
 
 
@@ -1112,9 +1126,9 @@ TNamed* TStatToolkit::GetMetadata(TTree* tree, const char *vartagName){
   } 
   TNamed * named = (TNamed*)metaData->FindObject(metaName.Data());
   return named;
+
 }
-
-
+ 
 
 TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut, Int_t mstyle, Int_t mcolor, Float_t msize, Float_t offset){
   //
@@ -1355,9 +1369,10 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
     gr->SetMinimum(minValue);
     gr->SetMaximum(maxValue);
     if (legend){
-      TNamed*named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Legend",exprVarArray->At(igr)->GetName()).Data());
+      TString prefix="";
+      TNamed*named = TStatToolkit::GetMetadata(tree,TString::Format("%s.Legend",exprVarArray->At(igr)->GetName()).Data(),&prefix);
       if (named){
-	legend->AddEntry(gr,named->GetTitle(),"p");
+	legend->AddEntry(gr,TString::Format("%s %s",prefix.Data(), named->GetTitle()).Data(),"p");
       }else{
 	legend->AddEntry(gr,gr->GetTitle(),"p");
       }
@@ -1370,6 +1385,29 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   delete exprColors;
   delete exprMarkers;
   return multiGraph;
+}
+
+
+void   TStatToolkit::DrawMultiGraph(TMultiGraph *graph, Option_t * option){
+  // 
+  // TMultiGraph::Draw does not handle properly custom binning of the subcomponents
+  // Using this function custom labels of the first graphs are used
+  //
+  static TPRegexp regAxis("^a");
+  if (!graph) return;
+  TList * grArray = graph->GetListOfGraphs();
+  if (grArray==NULL) return;
+  TGraph * gr0=(TGraph*)(grArray->At(0));
+  if (gr0==NULL) return;
+  gr0->Draw(option);   // defaults frame/axis defined by first graph
+  Int_t ngr=grArray->GetEntries();
+  TString option2(option);
+  regAxis.Substitute(option2,"");
+  for (Int_t igr=0; igr<ngr; igr++){
+    grArray->At(igr)->Draw(option2.Data());
+  }
+
+
 }
 
 
