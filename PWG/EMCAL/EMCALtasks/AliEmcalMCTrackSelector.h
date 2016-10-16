@@ -25,11 +25,11 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void SetRejectNK(Bool_t r = kTRUE)                    { fRejectNK         = r    ; }
   void SetOnlyHIJING(Bool_t s)                          { fOnlyHIJING       = s    ; }
   void SetParticlesOutName(const char *name)            { fParticlesOutName = name ; }
+
+  void                      ConvertMCParticles(AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap=0);    // for ESD analysis
+  void                      CopyMCParticles(TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap=0); // for AOD analysis
   
  protected:
-  void                      ConvertMCParticles();    // for ESD analysis
-  void                      CopyMCParticles();       // for AOD analysis
-
   virtual Bool_t            AcceptParticle(AliAODMCParticle* part) const;
   
   TString                   fParticlesOutName;     // name of output particle array
