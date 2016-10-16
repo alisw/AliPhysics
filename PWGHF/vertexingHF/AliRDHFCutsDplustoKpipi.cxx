@@ -51,6 +51,8 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) :
   fUseImpParProdCorrCut(kFALSE),
   fUsed0MeasMinusExpCut(kFALSE),
   fMaxd0MeasMinusExp(0x0),
+  fUsed0Cut(kFALSE),
+  fMaxd0(0x0),
   fScaleNormDLxyBypOverPt(kTRUE)
 {
   //
@@ -139,12 +141,15 @@ AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
   fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
   fMaxd0MeasMinusExp(0x0),
+  fUsed0Cut(source.fUsed0Cut),
+  fMaxd0(0x0),
   fScaleNormDLxyBypOverPt(source.fScaleNormDLxyBypOverPt)
 {
   //
   // Copy constructor
   //
   if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
+  if(source.fMaxd0) Setd0Cut(source.fnPtBins,source.fMaxd0);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDplustoKpipi &source)
@@ -162,11 +167,14 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
   fMaxPStrongPidpi=source.fMaxPStrongPidpi;
   fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
   fUsed0MeasMinusExpCut=source.fUsed0MeasMinusExpCut;
+  fUsed0Cut=source.fUsed0Cut;
   if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
+  if(source.fMaxd0) Setd0Cut(source.fnPtBins,source.fMaxd0);
   fScaleNormDLxyBypOverPt=source.fScaleNormDLxyBypOverPt;
 
   return *this;
 }
+
 //---------------------------------------------------------------------------
 void AliRDHFCutsDplustoKpipi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
   //
@@ -182,6 +190,20 @@ void AliRDHFCutsDplustoKpipi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutva
   return;
 }
 
+//---------------------------------------------------------------------------
+void AliRDHFCutsDplustoKpipi::Setd0Cut(Int_t nPtBins, Float_t *cutval) {
+  //
+  // store the cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
+    AliFatal("exiting");
+  }
+  if(!fMaxd0)  fMaxd0 = new Float_t[fnPtBins];
+  for(Int_t ib=0; ib<fnPtBins; ib++) fMaxd0[ib] = cutval[ib];
+  fUsed0Cut=kTRUE;
+  return;
+}
 
 //---------------------------------------------------------------------------
 void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod) {
@@ -517,6 +539,11 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       if(TMath::Abs(dd0max)>fMaxd0MeasMinusExp[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
     }
 
+    // d0
+    if(fUsed0Cut){
+      Double_t d0=d->ImpParXY()*10000.;
+      if(TMath::Abs(d0)>fMaxd0[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
 
     // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -979,6 +1006,15 @@ void AliRDHFCutsDplustoKpipi::PrintAll() const {
     printf("\n");
   }else{
     printf("No cut on d0meas-d0exp:\n");
+  }
+  if(fUsed0Cut){
+    printf("Cuts on d0:\n");
+    for(Int_t ib=0;ib<fnPtBins;ib++){
+      printf("%f   ",fMaxd0[ib]);
+    }
+    printf("\n");
+  }else{
+    printf("No cut on d0\n");
   }
   if(fScaleNormDLxyBypOverPt){
     printf("NormDLxy scaled by p/pt\n");
