@@ -24,9 +24,8 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   // Pile up, Physics Selection, Analysis Utils
   //-------------------------------------------
   //if(trainConfig=="pp") task->SetRejectPileup();
-  //task->UsePhysicsSelection(kTRUE);
   //task->UsePhysicsSelection(kFALSE); // No phys sel // is this necessary???
-  task->SetUseAnalysisUtils(kTRUE); // ??????
+  task->SetUseAnalysisUtils(kFALSE); // moved to false 16/10/2016 // ???
   
   // Toggle on/off information branches
   //----------------------------------------
@@ -81,24 +80,25 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fEventTag");
   task->SetTreeInactiveBranch("fNVtxContributors");
   task->SetTreeInactiveBranch("fCentQuality");
-  //task->SetTreeInactiveBranch("fNtracks[2]");
-  task->SetTreeInactiveBranch("fNV0candidates[2]");
+  task->SetTreeInactiveBranch("fNtracks*");
+  task->SetTreeInactiveBranch("fNV0candidates*");
   task->SetTreeInactiveBranch("fTracks.fUniqueID");
   task->SetTreeInactiveBranch("fTracks.fBits");
   task->SetTreeInactiveBranch("fTracks.fIsCartesian");
   task->SetTreeInactiveBranch("fTracks.fFlags");
   task->SetTreeInactiveBranch("fTracks.fQualityFlags");
   task->SetTreeInactiveBranch("fTracks.fTrackId");
-  //task->SetTreeInactiveBranch("fTracks.fStatus");
   task->SetTreeInactiveBranch("fTracks.fStatus");
   task->SetTreeInactiveBranch("fTracks.fTPCPhi");
   task->SetTreeInactiveBranch("fTracks.fTPCPt");
   task->SetTreeInactiveBranch("fTracks.fTPCEta");
   task->SetTreeInactiveBranch("fTracks.fMomentumInner");
-  task->SetTreeInactiveBranch("fTracks.fDCA[2]");
-  task->SetTreeInactiveBranch("fTracks.fTPCDCA[2]");
+  //task->SetTreeInactiveBranch("fTracks.fDCA*");
+  task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
   task->SetTreeInactiveBranch("fTracks.fTrackLength");
+  task->SetTreeInactiveBranch("fTracks.fMassForTracking");
   //task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
+  task->SetTreeInactiveBranch("fTracks.fITSSharedclusterMap");
   task->SetTreeInactiveBranch("fTracks.fITSsignal");
   task->SetTreeInactiveBranch("fTracks.fITSchi2");
   task->SetTreeInactiveBranch("fTracks.fTPCNcls");
@@ -109,29 +109,33 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTracks.fTPCsignal");
   task->SetTreeInactiveBranch("fTracks.fTPCsignalN");
   task->SetTreeInactiveBranch("fTracks.fTPCchi2");
+  task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
+  task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
   task->SetTreeInactiveBranch("fTracks.fTOFbeta");
   task->SetTreeInactiveBranch("fTracks.fTOFmismatchProbab");
-  task->SetTreeInactiveBranch("fTracks.fTRDntracklets[2]");
-  task->SetTreeInactiveBranch("fTracks.fMCMom[3]");
-  task->SetTreeInactiveBranch("fTracks.fMCFreezeout[3]");
-  task->SetTreeInactiveBranch("fTracks.fMCLabels[4]");
-  task->SetTreeInactiveBranch("fTracks.fMCPdg[4]");
+  task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
+  task->SetTreeInactiveBranch("fTracks.fMCMom*");
+  task->SetTreeInactiveBranch("fTracks.fMCFreezeout*");
+  task->SetTreeInactiveBranch("fTracks.fMCLabels*");
+  task->SetTreeInactiveBranch("fTracks.fMCPdg*");
   task->SetTreeInactiveBranch("fTracks.fMCGeneratorIndex");
   task->SetTreeInactiveBranch("fTracks.fTOFtime");
   task->SetTreeInactiveBranch("fTracks.fTOFdx");
   task->SetTreeInactiveBranch("fTracks.fTOFdz");
   task->SetTreeInactiveBranch("fTracks.fTOFchi2");
   task->SetTreeInactiveBranch("fTracks.fTOFdeltaBC");
-  task->SetTreeInactiveBranch("fTracks.fTRDpid[2]");
-  task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D[2]");
+  task->SetTreeInactiveBranch("fTracks.fTRDpid*");
+  task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
   task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
   task->SetTreeInactiveBranch("fCandidates.*");
   task->SetTreeInactiveBranch("fEventNumberInFile");
-  task->SetTreeInactiveBranch("fIsPhysicsSelection");
+  //task->SetTreeInactiveBranch("fIsPhysicsSelection");
+  task->SetTreeInactiveBranch("fVtxSPD*");
+  task->SetTreeInactiveBranch("fNVtxSPDContributors");
   task->SetTreeInactiveBranch("fIsSPDPileup");
   task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
   task->SetTreeInactiveBranch("fSPDntracklets");
-  task->SetTreeInactiveBranch("fITSClusters[6]");
+  task->SetTreeInactiveBranch("fITSClusters*");
   task->SetTreeInactiveBranch("fSPDnSingle");
   task->SetTreeInactiveBranch("fL0TriggerInputs");
   task->SetTreeInactiveBranch("fL1TriggerInputs");
@@ -140,27 +144,31 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTimeStamp");
   task->SetTreeInactiveBranch("fEventType");
   task->SetTreeInactiveBranch("fTriggerMask");
-  task->SetTreeInactiveBranch("fIRIntClosestIntMap[2]");
-  task->SetTreeInactiveBranch("fVtxTPC[3]");
+  task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
+  task->SetTreeInactiveBranch("fVtxTPC*");
   task->SetTreeInactiveBranch("fNVtxTPCContributors");
   task->SetTreeInactiveBranch("fNpileupSPD");
   task->SetTreeInactiveBranch("fNpileupTracks");
   task->SetTreeInactiveBranch("fNPMDtracks");
   task->SetTreeInactiveBranch("fNTRDtracks");
   task->SetTreeInactiveBranch("fNTRDtracklets");
-  task->SetTreeInactiveBranch("fSPDntrackletsEta[32]");
-  task->SetTreeInactiveBranch("fSPDFiredChips[2]");
-  task->SetTreeInactiveBranch("fNtracksPerTrackingFlag[32]");
-  task->SetTreeInactiveBranch("fVZEROMult[64]");
-  task->SetTreeInactiveBranch("fZDCnEnergy[10]");
-  task->SetTreeInactiveBranch("fZDCpEnergy[10]");
-  task->SetTreeInactiveBranch("fT0amplitude[26]");
-  task->SetTreeInactiveBranch("fT0TOF[3]");
-  task->SetTreeInactiveBranch("fT0TOFbest[3]");
+  task->SetTreeInactiveBranch("fSPDntrackletsEta*");
+  task->SetTreeInactiveBranch("fSPDFiredChips*");
+  task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
+  task->SetTreeInactiveBranch("fVZEROMult*");
+  task->SetTreeInactiveBranch("fVZEROTotalMult*");
+  task->SetTreeInactiveBranch("fZDCnTotalEnergy*");
+  task->SetTreeInactiveBranch("fZDCpTotalEnergy*");
+  task->SetTreeInactiveBranch("fZDCnEnergy*");
+  task->SetTreeInactiveBranch("fZDCpEnergy*");
+  task->SetTreeInactiveBranch("fT0amplitude*");
+  task->SetTreeInactiveBranch("fT0TOF*");
+  task->SetTreeInactiveBranch("fT0TOFbest*");
   task->SetTreeInactiveBranch("fT0zVertex");
   task->SetTreeInactiveBranch("fT0start");
   task->SetTreeInactiveBranch("fT0pileup");
   task->SetTreeInactiveBranch("fT0sattelite");
+  task->SetTreeInactiveBranch("fNCaloClusters");
   
   // Add task to the manager
   //------------------------
@@ -215,8 +223,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
 
   // -- Additional cuts:
   AliESDtrackCuts *esdTrackCuts2 = new AliESDtrackCuts;
-  //esdTrackCuts2->SetPtRange( 0.2 , 200.0);
-  esdTrackCuts2->SetPtRange( 0.4 , 200.0);
+  esdTrackCuts2->SetPtRange( 0.2 , 200.0);
   //esdTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
   esdTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   cuts->AddCut(esdTrackCuts2);
@@ -229,8 +236,9 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   //pass2_lowIR for production (TOF-IF) pT>0.2GeV:
   AliDielectronPID *ePID = new AliDielectronPID("noTOF","noTOF");
   ePID->AddCut(AliDielectronPID::kITS, AliPID::kElectron,     -3., 3.,     0.2, 1.5,    kFALSE );
-  ePID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron ,    -2., 2.,     0.2, 100.,   kFALSE );
-  ePID->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100., 6.,     0.2, 100.,   kTRUE  );
+  ePID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron ,    -2., 2.,     0.4, 100.,   kFALSE );
+  ePID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron ,    -3., 3.,     0.2,  0.4,   kFALSE );
+  ePID->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100., 4.,     0.2, 100.,   kTRUE  );
   ePID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3., 3.,     0.2,   5.,   kFALSE , AliDielectronPID::kIfAvailable );
 
   cuts->AddCut(ePID);
