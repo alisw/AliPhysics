@@ -811,72 +811,58 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
   Float_t ch2cm = 24.4*0.029979;     
   Int_t nhitsOrA=0;
   Int_t nhitsOrC=0;
-
-  for (Int_t iHt=0; iHt<5; iHt++) {
-    //orA-orC phys tvdc 1 
-    if((allData[kTZeroOrA][iHt]>0 && allData[kTZeroOrC][iHt]>0) && allData[kTZeroVertex][iHt]>0) {
-      AliDebug(10,Form("orA-orC phys tvdc 1  %i  data %s", 217,  GetRawsData(217)->GetName()));
-      
-      FillRawsData(217,(allData[kTZeroOrC][iHt] - allData[kTZeroOrA][iHt])*ch2cm);
-    }
-    //orA-orC phys tvdc 0 
-    if((allData[kTZeroOrA][iHt]>0 && allData[kTZeroOrC][iHt]>0) && allData[kTZeroVertex][iHt]<=0) {
-      AliDebug(10,Form("orA-orC phys tvdc 0  %i  data %s", 218,  GetRawsData(218)->GetName()));
-	
-      FillRawsData(218,(allData[kTZeroOrC][iHt] - allData[kTZeroOrA][iHt])*ch2cm);
-    }
-    if(allData[kTZeroOrA][iHt]>0 && allData[kTZeroOrC][iHt]>0) {
-      AliDebug(50,Form("orA-orC phys tvdc all  %i  data %s", 219,  GetRawsData(219)->GetName()));
-      FillRawsData(219,(allData[kTZeroOrC][iHt] - allData[kTZeroOrA][iHt])*ch2cm);
-    }
-    
-    
-    for (Int_t itr=0; itr<6; itr++) {//T0_MEAN,TO_VERTX,ORA,ORC,T0_mult,T0_mult
-      if (allData[trChannel[itr]][iHt] >0) {
-	//
-	// RS instead of incremented custom counters, fill directly the specie-specific histos
-	//  	FillRawsData(169+shift, 0.5+itr, 1.);  // RS: increment counters
-	// FillRawsData(169+shift, itr, 1.);  //hRawTrigger RS: increment counters
-        FillRawsData(241, itr, 1.); // fill trigger counter
-	AliDebug(50,Form(" triggers %i  data %s", 170+itr,  GetRawsData(170+itr)->GetName()));
-	
-	FillRawsData(170+itr,allData[trChannel[itr]][iHt]);
-	
-        if( trChannel[itr] == kTZeroVertex){ //T0_VERTEX minus mean from config files
-	  FillRawsData(230, allData[kTZeroVertex][iHt] - fMeanRawVertexParam );
-        }
-      }
-    }
-    Bool_t  tvdcon=kFALSE;
-    Bool_t orcon=kFALSE;
-    Bool_t oraon=kFALSE;
-    Float_t  diffORA=-999999,  diffORC=-999999;
-    
-    // ORC-mean   ORA -mean  //Alla 
-    if(allData[kTZeroOrA][iHt] > fMeanORAParam-400 && allData[kTZeroOrA][iHt] < fMeanORAParam+400 ) {
+  
+  for (Int_t iHt = 0; iHt < 5; iHt++) {
+     for (Int_t itr = 0; itr < 6; itr++) { //T0_MEAN,TO_VERTX,ORA,ORC,T0_mult,T0_mult
+       if (allData[trChannel[itr]][iHt] > 0) {
+	 // FillWeighedRawsData(169 + shift, itr, 1.); //hRawTrigger RS: increment counters
+	 FillRawsData(241, itr, 1.); // fill trigger counter
+	 // printf(" triggers %i  data %i\n", itr, iHt);
+	 FillRawsData(170 + itr, allData[trChannel[itr]][iHt]);
+	 
+	 if (trChannel[itr] == kTZeroVertex) //T0_VERTEX minus mean from config files
+	   FillRawsData(230, allData[kTZeroVertex][iHt] - fMeanRawVertexParam);
+       }
+     }
+  }
+  // ORC-mean   ORA -mean  //Alla 
+  Bool_t  tvdcon=kFALSE;
+  Bool_t orcon=kFALSE;
+  Bool_t oraon=kFALSE;
+  Int_t orAch, orCch; 
+  Float_t  diffORA=-999999,  diffORC=-999999;
+  for (Int_t iHt = 0; iHt < 5; iHt++) {
+    if (allData[kTZeroOrA][iHt] > fMeanORAParam-400 && 
+	allData[kTZeroOrA][iHt] < fMeanORAParam+400) {
       diffORA =  allData[kTZeroOrA][iHt] - fMeanORAParam;
+      orAch = allData[kTZeroOrA][iHt];
       oraon=kTRUE;
+      nhitsOrA++;
     }
-    if(  allData[kTZeroOrC][iHt] > fMeanORCParam-400 && allData[kTZeroOrC][iHt] < fMeanORCParam+400 ) { 
-      diffORC =  allData[kTZeroOrC][iHt] - fMeanORCParam;
-      orcon=kTRUE; 
+    if ( allData[kTZeroOrC][iHt] > fMeanORCParam-400 && 
+	 allData[kTZeroOrC][iHt] < fMeanORCParam+400 ) { 
+	diffORC =  allData[kTZeroOrC][iHt] - fMeanORCParam;
+	orCch = allData[kTZeroOrC][iHt];
+	orcon=kTRUE; 
+	nhitsOrC++;
     }
-    if (allData[kTZeroVertex][iHt]>fMeanRawVertexParam-400 && allData[kTZeroVertex][iHt]<fMeanRawVertexParam+400 ) tvdcon=kTRUE;
-    
-    if (oraon&&orcon) {
-      if(tvdcon)   //TVDC on
+    if (allData[kTZeroVertex][iHt]>fMeanRawVertexParam-400 &&
+	allData[kTZeroVertex][iHt]<fMeanRawVertexParam+400 ) tvdcon=kTRUE;
+  }
+  if (oraon&&orcon) {
+    FillRawsData(219, (orCch - orAch) * ch2cm);
+    if(tvdcon)   {//TVDC on
       FillRawsData(234, diffORA, diffORC);     
-      else //TVDC off
-	FillRawsData(235, diffORA, diffORC);
+      FillRawsData(217, (orCch - orAch) * ch2cm);
     }
-    
-    
-  /*   if(type == 7) */if(allData[kTZeroOrA][iHt] >0)    nhitsOrA++;
-    
-    /* if(type == 7) */if(allData[kTZeroOrC][iHt] >0)   nhitsOrC++;
-    
-    //mult trigger signals phys
-    //A side
+    else  {//TVDC off 
+      FillRawsData(235, diffORA, diffORC);
+      FillRawsData(218, (orCch - orAch) * ch2cm);
+    }
+  }
+  //mult trigger signals phys
+  //A side
+  for (Int_t iHt=0; iHt<5; iHt++) {
     if(allData[kT0multAQ0][iHt]>0 && allData[kT0multAQ1][iHt]>0) {
       AliDebug(50,Form(" mpdA %i  data %s", 201,  GetRawsData(201)->GetName()));
       
@@ -894,9 +880,9 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       if(allData[kTZeroMultCent][iHt]>0) FillRawsData(206,allData[kT0multCQ0][iHt]-allData[kT0multCQ1][iHt]);
     }
   }
-    
-  FillRawsData(215,nhitsOrA);
-  FillRawsData(216,nhitsOrC);
+  
+    FillRawsData(215,nhitsOrA);
+    FillRawsData(216,nhitsOrC);
 
   // new QTC 
   Float_t diff[4];
