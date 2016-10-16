@@ -725,11 +725,6 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
   //Parameterization of LHC10h period
   //_true if neutral_
   
-  Double_t meanX=0;
-  Double_t meanZ=0.;
-  Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
-              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
-  Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
   
   Double_t mf = 0.; //Positive for ++ and negative for --
   if(fTender){
@@ -751,24 +746,56 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
     }
   }
   
-  if(mf<0.){ //field --
-    meanZ = -0.468318 ;
-    if(charge>0)
-      meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
-    else
-      meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
-  }
-  else{ //Field ++
-    meanZ= -0.468318;
-    if(charge>0)
-      meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
-    else
-      meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
-  }
+   Double_t meanX=0;
+   Double_t meanZ=0.;
+   Double_t sx=0.; 
+   Double_t sz=0.; 
+  if(fRunNumber<209122){ //Run1
+    sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
+              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+    sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
+  
+    if(mf<0.){ //field --
+      meanZ = -0.468318 ;
+      if(charge>0)
+        meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
+      else
+        meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
+    }
+    else{ //Field ++
+      meanZ= -0.468318;
+      if(charge>0)
+        meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
+      else
+        meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
+    }
 
+  }
+  else{//Run2
+  
+    sx = TMath::Min(5.2, 1.111 + 0.56 * TMath::Exp(-0.031 * pt*pt) + 4.8 /TMath::Power(pt+0.61,3));
+    sz = TMath::Min(3.3, 1.12  + 0.35 * TMath::Exp(-0.032 * pt*pt) + 0.75/TMath::Power(pt+0.24,3));
+
+    if(mf<0.){ //field --
+      meanZ = 0.102;
+      if(charge>0)
+        meanX =  TMath::Min(5.8, 0.42 + 0.70 * TMath::Exp(-0.015 * pt*pt) + 35.8/TMath::Power(pt+1.41,3));
+      else
+        meanX = -TMath::Min(5.8, 0.17 + 0.64 * TMath::Exp(-0.019 * pt*pt) + 26.1/TMath::Power(pt+1.21,3));
+    }
+    else{ //Field ++
+      meanZ= 0.102;
+      if(charge>0)
+        meanX = -TMath::Min(5.8, 0.58 + 0.68 * TMath::Exp(-0.027 * pt*pt) + 28.0/TMath::Power(pt+1.28,3));
+      else
+        meanX =  TMath::Min(5.8, 0.11 + 0.67 * TMath::Exp(-0.015 * pt*pt) + 29.9/TMath::Power(pt+1.29,3));
+    }
+
+  }
   Double_t rz=(dz-meanZ)/sz ;
   Double_t rx=(dx-meanX)/sx ;
   return TMath::Sqrt(rx*rx+rz*rz) ;
+  
 }
 
 //________________________________________________________________________
@@ -1012,7 +1039,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   Float_t tMaxHG=0.; //HighGain only
   Float_t eMaxHG=0.; //High Gain only
   Bool_t isHGMax=kTRUE;
-  Int_t absIdMax,absIdMaxHG ;
+  Int_t absIdMax=-1,absIdMaxHG=-1 ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
     Bool_t isHG=cells->GetCellHighGain(absId) ;
@@ -1038,6 +1065,8 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     }
   }
   else{
+      if(absIdMaxHG==-1) // this is clusters without HG digits: definitely wrong
+        return 100.e-9 ;  
       tMax=CalibrateTOF(cells->GetCellTime(absIdMaxHG),absIdMaxHG,kTRUE) ;
     //Slewing correction
     if(eMaxHG>0 && fRunNumber>209122 ){ 
