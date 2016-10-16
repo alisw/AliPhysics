@@ -143,71 +143,74 @@ void AliEmcalMCTrackSelector::UserExec(Option_t *)
     fInit = kTRUE;
   }
 
-  if (fIsESD) ConvertMCParticles();
-  else CopyMCParticles();
+  if (fIsESD) ConvertMCParticles(fMC, fParticlesOut, fParticlesMap);
+  else CopyMCParticles(fParticlesIn, fParticlesOut, fParticlesMap);
 }
 
 //________________________________________________________________________
-void AliEmcalMCTrackSelector::ConvertMCParticles() 
+void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap)
 {
   // Convert MC particles in MC AOD articles.
 
   // clear container (normally a null operation as the event should clean it already)
-  fParticlesOut->Delete();
+  partOut->Delete();
 
-  // clear particles map
-  fParticlesMap->Clear();
+  const Int_t Nparticles = mcEvent->GetNumberOfTracks();
 
-  const Int_t Nparticles = fMC->GetNumberOfTracks();
-  const Int_t nprim = fMC->GetNumberOfPrimaries();
+  if (partMap) {
+    // clear particles map
+    partMap->Clear();
+    if (partMap->GetSize() <= Nparticles) partMap->Set(Nparticles*2);
+  }
 
-  if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
+  const Int_t nprim = mcEvent->GetNumberOfPrimaries();
 
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
-    fParticlesMap->AddAt(-1, iPart);
+    if (partMap) partMap->AddAt(-1, iPart);
 
-    AliMCParticle* part = static_cast<AliMCParticle*>(fMC->GetTrack(iPart));
+    AliMCParticle* part = static_cast<AliMCParticle*>(mcEvent->GetTrack(iPart));
 
     if (!part) continue;
 
-    Bool_t isPhysPrim = fMC->IsPhysicalPrimary(iPart);
+    Bool_t isPhysPrim = mcEvent->IsPhysicalPrimary(iPart);
 
     Int_t flag = 0;
     if (iPart < nprim) flag |= AliAODMCParticle::kPrimary;
     if (isPhysPrim) flag |= AliAODMCParticle::kPhysicalPrim;
-    if (fMC->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
-    if (fMC->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
+    if (mcEvent->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
+    if (mcEvent->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
 
-    AliAODMCParticle *aodPart = new ((*fParticlesOut)[nacc]) AliAODMCParticle(part, iPart, flag);
+    AliAODMCParticle *aodPart = new ((*partOut)[nacc]) AliAODMCParticle(part, iPart, flag);
     aodPart->SetGeneratorIndex(part->GetGeneratorIndex());    
     aodPart->SetStatus(part->Particle()->GetStatusCode());
     aodPart->SetMCProcessCode(part->Particle()->GetUniqueID());
 
     if (!AcceptParticle(aodPart)) continue;    
 
-    fParticlesMap->AddAt(nacc, iPart);
+    if (partMap) partMap->AddAt(nacc, iPart);
     nacc++;
   }
 }
 
 //________________________________________________________________________
-void AliEmcalMCTrackSelector::CopyMCParticles() 
+void AliEmcalMCTrackSelector::CopyMCParticles(TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap)
 {
   // Convert standard MC AOD particles in a new array, and filter if requested.
 
-  if (!fParticlesIn) return;
+  if (!partIn) return;
 
   // clear container (normally a null operation as the event should clean it already)
-  fParticlesOut->Delete();
+  partOut->Delete();
 
-  // clear particles map
-  fParticlesMap->Clear();
+  const Int_t Nparticles = partIn->GetEntriesFast();
 
-  const Int_t Nparticles = fParticlesIn->GetEntriesFast();
-
-  if (fParticlesMap->GetSize() <= Nparticles) fParticlesMap->Set(Nparticles*2);
+  if (partMap) {
+    // clear particles map
+    partMap->Clear();
+    if (partMap->GetSize() <= Nparticles) partMap->Set(Nparticles*2);
+  }
 
   AliDebug(2, Form("Total number of particles = %d", Nparticles));
 
@@ -215,15 +218,15 @@ void AliEmcalMCTrackSelector::CopyMCParticles()
 
   // loop over particles
   for (Int_t iPart = 0; iPart < Nparticles; iPart++) {
-    fParticlesMap->AddAt(-1, iPart);
+    if (partMap) partMap->AddAt(-1, iPart);
 
-    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fParticlesIn->At(iPart));
+    AliAODMCParticle* part = static_cast<AliAODMCParticle*>(partIn->At(iPart));
 
     if (!AcceptParticle(part)) continue;
 
-    fParticlesMap->AddAt(nacc, iPart);
+    if (partMap) partMap->AddAt(nacc, iPart);
 
-    AliAODMCParticle *newPart = new ((*fParticlesOut)[nacc]) AliAODMCParticle(*part);
+    AliAODMCParticle *newPart = new ((*partOut)[nacc]) AliAODMCParticle(*part);
     newPart->SetGeneratorIndex(part->GetGeneratorIndex());
 
     nacc++;
