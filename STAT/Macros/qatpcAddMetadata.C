@@ -1,5 +1,6 @@
 /*
-  Append QA TPC  metadata decribing tree structure,  and annotating branche variables
+  Append QA TPC  metadata decribing tree structure,  and annotating branche variables. 
+  Partialy inspired by CSS (https://de.wikipedia.org/wiki/Cascading_Style_Sheets) but not full functionality implemented
   
   Instead of the manual entering all metadatas, arrays of regular expressions defining  classes of variables
   --  kineVariablesClass
