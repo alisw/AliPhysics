@@ -823,8 +823,8 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
       if (fLeadingTrack.Pt() < it->first.Pt()) fLeadingTrack = it->first;
 
       if (fParticleLevel) {
-        histname = TString::Format("%s/fHistTrPhiEtaPt_%d", particles->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname, it->first.Eta(), it->first.Phi_0_2pi(),it->first.Pt());
+        histname = TString::Format("%s/fHistTrPhiEtaPt_%d_0", particles->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.Pt());
       }
       else {
         if (it->second->GetLabel() == 0) {
