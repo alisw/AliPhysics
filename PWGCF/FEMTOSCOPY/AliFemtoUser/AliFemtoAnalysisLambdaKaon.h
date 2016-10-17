@@ -93,6 +93,11 @@ struct AnalysisParams
   bool implementVertexCorrections;
   bool removeMisidentifiedMCParticles;
   bool setV0SharedDaughterCut;
+
+  bool monitorEvCutPassOnly;
+  bool monitorPart1CutPassOnly;
+  bool monitorPart2CutPassOnly;
+  bool monitorPairCutPassOnly;
 };
 
 struct EventCutParams
@@ -155,7 +160,6 @@ struct V0CutParams
   double maxDcaV0Daughters;
   double minPosDaughterToPrimVertex,
          minNegDaughterToPrimVertex;
-
 };
 
 struct ESDCutParams
@@ -239,7 +243,6 @@ struct XiCutParams
          maxPtNegV0Daughter;
 
   int minTPCnclsV0Daughters;
-
 };
 
 struct PairCutParams
