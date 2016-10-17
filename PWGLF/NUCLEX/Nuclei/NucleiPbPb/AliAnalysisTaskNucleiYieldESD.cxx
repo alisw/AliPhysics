@@ -85,7 +85,8 @@ AliAnalysisTaskNucleiYieldESD::AliAnalysisTaskNucleiYieldESD(TString taskname) :
   fTOFfunction(0x0),   
   fTOFtail(75.f),
   fList(0x0),  
-  fYregion(0.5f),  
+  fYregion(0.5f),
+  fTPCnSigmaCut(4.f),
   fParticle(AliPID::kDeuteron),   
   fPDG(AliPID::ParticleCode(AliPID::kDeuteron)),
   fPDGMass(AliPID::ParticleMass(AliPID::kDeuteron)),
@@ -117,6 +118,8 @@ AliAnalysisTaskNucleiYieldESD::AliAnalysisTaskNucleiYieldESD(TString taskname) :
   fTOFsignal(),
   fTPCcounts(),
   fTPCdEdx(),
+  fTPCdEdxTpcCut(),
+  fTPCdEdxTofCut(),
   fDCAxyTPC(),      
   fDCAzTPC(),     
   fDCAxyTOF(),      
@@ -235,6 +238,10 @@ void AliAnalysisTaskNucleiYieldESD::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
       fTPCdEdx[iS] = new TH2F(Form("f%cTPCdEdx",kLetters[iS]),";#it{p} (GeV/c);TPC dE/dx (a.u.);Entries",
           196 * 2,0.2,10.,2400,0,2400);
+      fTPCdEdxTpcCut[iS] = new TH2F(Form("f%cTPCdEdxTpcCut",kLetters[iS]),";#it{p} (GeV/c);TPC dE/dx (a.u.);Entries",
+          196 * 2,0.2,10.,2400,0,2400);
+      fTPCdEdxTofCut[iS] = new TH2F(Form("f%cTPCdEdxTofCut",kLetters[iS]),";#it{p} (GeV/c);TPC dE/dx (a.u.);Entries",
+          196 * 2,0.2,10.,2400,0,2400);
 
       fList->Add(fTOFsignal[iS]);
       fList->Add(fTPCcounts[iS]);
@@ -243,6 +250,8 @@ void AliAnalysisTaskNucleiYieldESD::UserCreateOutputObjects() {
       fList->Add(fDCAxyTOF[iS]);
       fList->Add(fDCAzTOF[iS]);
       fList->Add(fTPCdEdx[iS]);
+      fList->Add(fTPCdEdxTpcCut[iS]);
+      fList->Add(fTPCdEdxTofCut[iS]);
     }
 
     for (int iS = 0; iS < 5; ++iS) {
@@ -333,7 +342,6 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
     int iC = track->Charge() > 0 ? 1 : 0;
 
     if (!fTrackCuts.AcceptTrack(track)) continue;
-    fTPCdEdx[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
 
     const float energy = sqrt(track->P() * track->P() + fPDGMassOverZ * fPDGMassOverZ);
     const float pz = track->Pz();
@@ -374,10 +382,15 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
       fDCAxyTPC[iC]->Fill(centrality, pT, dca[0]);
       fDCAzTPC[iC]->Fill(centrality, pT, dca[1]);
       fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
-
       if (beta < 1.e-10) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
       const float m = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
+      fTPCdEdx[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      if (fabs(fPID->NumberOfSigmasTOF(track,fParticle)) < 3)
+        fTPCdEdxTofCut[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+      if (fabs(tpc_n_sigma) > fTPCnSigmaCut) continue;
+      fTPCdEdxTpcCut[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+        
       fDCAxyTOF[iC]->Fill(centrality, pT, dca[0]);
       fDCAzTOF[iC]->Fill(centrality, pT, dca[1]);
       fTOFsignal[iC]->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
