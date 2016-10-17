@@ -131,6 +131,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoPhotonPairPtconv(NULL),
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
+  fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
@@ -400,6 +401,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoPhotonPairPtconv(NULL),
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
+  fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
@@ -805,6 +807,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   
   fClusterOutputList                  = new TList*[fnCuts];
   fHistoClusGammaPt                   = new TH1F*[fnCuts];
+  fHistoClusGammaE                    = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
 
   if(doConvGammaShowerShapeTree){
@@ -1011,6 +1014,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoClusGammaPt[iCut]         = new TH1F("ClusGamma_Pt","ClusGamma_Pt",nBinsClusterPt, minClusterPt, maxClusterPt);
     fHistoClusGammaPt[iCut]->SetXTitle("p_{T,clus}(GeV/c)");
     fClusterOutputList[iCut]->Add(fHistoClusGammaPt[iCut]);
+    fHistoClusGammaE[iCut]          = new TH1F("ClusGamma_E","ClusGamma_E",nBinsClusterPt, minClusterPt, maxClusterPt);
+    fHistoClusGammaE[iCut]->SetXTitle("E_{clus}(GeV)");
+    fClusterOutputList[iCut]->Add(fHistoClusGammaE[iCut]);
     fHistoClusOverlapHeadersGammaPt[iCut]   = new TH1F("ClusGammaOverlapHeaders_Pt","ClusGammaOverlapHeaders_Pt",nBinsClusterPt, minClusterPt, maxClusterPt);
     fHistoClusOverlapHeadersGammaPt[iCut]->SetXTitle("p_{T,clus}(GeV/c), selected header w/ overlap");
     fClusterOutputList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
@@ -1036,6 +1042,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
     if (fIsMC > 1){
       fHistoClusGammaPt[iCut]->Sumw2();
+      fHistoClusGammaE[iCut]->Sumw2();
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
     }
     
@@ -2400,6 +2407,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     
     if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
       fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+      fHistoClusGammaE[fiCut]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
       if(fIsMC>0){
         if(fInputEvent->IsA()==AliESDEvent::Class()){
           ProcessTrueClusterCandidates(PhotonCandidate,clus->GetM02());

@@ -96,6 +96,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMotherPi0PtOpenAngle(NULL),
   fHistoMotherEtaPtOpenAngle(NULL),
   fHistoClusGammaPt(NULL),
+  fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
@@ -306,6 +307,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMotherPi0PtOpenAngle(NULL),
   fHistoMotherEtaPtOpenAngle(NULL),
   fHistoClusGammaPt(NULL),
+  fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
   fHistoMCHeaders(NULL),
   fHistoMCAllGammaPt(NULL),
@@ -650,6 +652,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   }
     
   fHistoClusGammaPt                 = new TH1F*[fnCuts];
+  fHistoClusGammaE                  = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt   = new TH1F*[fnCuts];
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -779,11 +782,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 
     fHistoClusGammaPt[iCut]               = new TH1F("ClusGamma_Pt","ClusGamma_Pt",nBinsClusterPt, minClusterPt, maxClusterPt);
     fESDList[iCut]->Add(fHistoClusGammaPt[iCut]);
+    fHistoClusGammaE[iCut]               = new TH1F("ClusGamma_E","ClusGamma_E",nBinsClusterPt, minClusterPt, maxClusterPt);
+    fESDList[iCut]->Add(fHistoClusGammaE[iCut]);
     fHistoClusOverlapHeadersGammaPt[iCut] = new TH1F("ClusGammaOverlapHeaders_Pt","ClusGammaOverlapHeaders_Pt",nBinsClusterPt, minClusterPt, maxClusterPt);
     fESDList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
     
     if (fIsMC > 1){
       fHistoClusGammaPt[iCut]->Sumw2();
+      fHistoClusGammaE[iCut]->Sumw2();
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
     }
     
@@ -1806,6 +1812,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     if (fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
     if (fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
       fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
+      fHistoClusGammaE[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
       if(fIsMC> 0){
         if(fInputEvent->IsA()==AliESDEvent::Class()){
           ProcessTrueClusterCandidates(PhotonCandidate);
