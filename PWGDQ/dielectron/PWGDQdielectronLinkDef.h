@@ -49,6 +49,7 @@
 #pragma link C++ class AliAnalysisTaskMLTreeMaker+;
 #pragma link C++ class AliAnalysisTaskSimpleTreeMaker+;
 #pragma link C++ class AliDielectronReducedTrack+;
+#pragma link C++ class AliDielectronTGReducedPair+;
 #pragma link C++ class AliDielectronTGReducedTrack+;
 #pragma link C++ class AliDielectronTGReducedInfo+;
 #pragma link C++ class AliAnalysisTaskTGReducedTree+;
