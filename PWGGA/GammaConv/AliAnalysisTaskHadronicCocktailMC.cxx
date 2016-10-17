@@ -830,174 +830,176 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
   }
   std::sort(PdgDaughter->begin(), PdgDaughter->end());
   
+  Double_t returnVal = -1.;
+  
   switch (part->GetPdgCode()) {
     case 221:
       if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 111)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
-        return 4.;
+        returnVal = 4.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 310:
       if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 111)
-        return 4.;
+        returnVal = 4.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
-        return 5.;
+        returnVal = 5.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 111)
-        return 6.;
+        returnVal = 6.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 130:
       if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 22 && PdgDaughter->at(2) == 111)
-        return 4.;
+        returnVal = 4.;
       else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11  && PdgDaughter->at(2) == 22 && PdgDaughter->at(3) == 111)
-        return 5.;
-      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -12  && PdgDaughter->at(2) == 11 && PdgDaughter->at(3) == 111)   // don't know how this is handled by phythia
-        return 6.;
+        returnVal = 5.;
+      else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == -12  && PdgDaughter->at(2) == 11 && PdgDaughter->at(3) == 111)
+        returnVal = 6.;
       else if (nDaughters == 4 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 12  && PdgDaughter->at(2) == 111 && PdgDaughter->at(3) == 211)
-        return 6.;
+        returnVal = 6.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 3122:
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2212)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2112)
-        return 2.;
+        returnVal = 2.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 113:
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 4.;
+        returnVal = 4.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
-        return 5.;
+        returnVal = 5.;
       else if (nDaughters == 4 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111 && PdgDaughter->at(3) == 211)
-        return 6.;
+        returnVal = 6.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
 
     case 331:
       if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 211 && PdgDaughter->at(2) == 221)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 221)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
-        return 4.;
+        returnVal = 4.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 223:
       if (nDaughters == 3 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 211)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
-        return 4.;
+        returnVal = 4.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -13 && PdgDaughter->at(1) == 13 && PdgDaughter->at(2) == 111)
-        return 5.;
+        returnVal = 5.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 6.;
+        returnVal = 6.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 213:
       if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 211)
-        return 1.;
+        returnVal = 1.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
 
     case -213:
       if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 111)
-        return 1.;
+        returnVal = 1.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 333:
       if (nDaughters == 2 && PdgDaughter->at(0) == -321 && PdgDaughter->at(1) == 321)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 130 && PdgDaughter->at(1) == 310)
-        return 2.;
+        returnVal = 2.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 221)
-        return 3.;
+        returnVal = 3.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111)
-        return 4.;
+        returnVal = 4.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 221)
-        return 5.;
+        returnVal = 5.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 223)
-        return 6.;
+        returnVal = 6.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 111)
-        return 7.;
+        returnVal = 7.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == -11 && PdgDaughter->at(1) == 11 && PdgDaughter->at(2) == 111)
-        return 8.;
+        returnVal = 8.;
       else if (nDaughters == 3 && PdgDaughter->at(0) == 22 && PdgDaughter->at(1) == 111 && PdgDaughter->at(2) == 221)
-        return 9.;
+        returnVal = 9.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 443:
       if (std::find(PdgDaughter->begin(), PdgDaughter->end(), 111) != PdgDaughter->end())
-        return 1.;
+        returnVal = 1.;
       else if (std::find(PdgDaughter->begin(), PdgDaughter->end(), 221) != PdgDaughter->end())
-        return 2.;
+        returnVal = 2.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 2114:
       if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2112)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == -211 && PdgDaughter->at(1) == 2212)
-        return 2.;
+        returnVal = 2.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     case 2214:
       if (nDaughters == 2 && PdgDaughter->at(0) == 211 && PdgDaughter->at(1) == 2112)
-        return 1.;
+        returnVal = 1.;
       else if (nDaughters == 2 && PdgDaughter->at(0) == 111 && PdgDaughter->at(1) == 2212)
-        return 2.;
+        returnVal = 2.;
       else
-        return 19.;
+        returnVal = 19.;
       break;
       
     default:
@@ -1006,6 +1008,7 @@ Float_t AliAnalysisTaskHadronicCocktailMC::GetDecayChannel(AliStack* stack, TPar
   }
   
   delete PdgDaughter;
+  return returnVal;
 }
 
 //_________________________________________________________________________________
