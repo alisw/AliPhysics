@@ -8,105 +8,11 @@
 #include <TString.h>
 #include <vector>
 
+class AliEMCALTriggerPatchADCInfoAP;
 class AliOADBContainer;
 class THistManager;
 
 namespace EMCalTriggerPtAnalysis {
-
-/**
- * @class AliEMCALTriggerPatchADCInfo
- * @brief Helper class containing all ADC infos for a given trigger patch
- * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
- * @since Oct 13, 2016
- *
- * This class is a simple helper class providing access to the single FastOR L1
- * ADC values within a trigger elementary patch. Single ADC values can be obtained
- * via the position in the patch using column and row.
- *
- * ~~~{.cxx}
- * AliEMCALTriggerPatchInfo recpatch;
- * AliEMCALTriggerPatchADCInfo patch
- * for(int icol = 0; icol < recpatch->GetPatchSize(); icol++){
- *   for(int irow = 0; irow < recpatch->GetPatchSize(); irow++){
- *     std::cout << "ADC[" << icol << "," << irow << "] = " << patch.GetADC(icol, irow) << std::endl;
- *   }
- * }
- * ~~~
- */
-class AliEMCALTriggerPatchADCInfo : public TObject {
-public:
-
-  /**
-   * Dummy constructor
-   */
-  AliEMCALTriggerPatchADCInfo();
-
-  /**
-   * Main constructor, initializing patch size and data container
-   * for the ADC values
-   * @param[in] patchsize Size of the trigger patch
-   */
-  AliEMCALTriggerPatchADCInfo(UChar_t patchsize);
-
-  /**
-   * Copy constructor
-   * @param [in]ref Reference for the copy
-   */
-  AliEMCALTriggerPatchADCInfo(const AliEMCALTriggerPatchADCInfo &ref);
-
-  /**
-   * Assignment operator
-   * @param[in] ref Reference for the assignment
-   * @return
-   */
-  AliEMCALTriggerPatchADCInfo &operator=(const AliEMCALTriggerPatchADCInfo &ref);
-
-  /**
-   * Destructor, deleting underlying data container
-   */
-  virtual ~AliEMCALTriggerPatchADCInfo() {}
-
-  /**
-   * Get the ADC value at the given position in the patch. The
-   * position (col, row) is supposed to be relative to the starting
-   * position of the trigger patch.
-   * @param[in] col Coloumn of the fastor postion relative to the patch starting position
-   * @param[in] row Row of the fastor position relative to the patch starting postition
-   * @return Fastor ADC value at the given position of the patch
-   */
-  Int_t GetADC(UChar_t col, UChar_t row) const;
-
-  /**
-   * Get the size of the patch
-   * @return Size of the patch
-   */
-  UChar_t GetPatchSize() const { return fPatchSize; }
-
-  /**
-   * Set the size of the patch. Attention: Allocates space for
-   * the ADC values
-   * @param[in] patchsize Size of the patch
-   */
-  void SetPatchSize(UChar_t patchsize);
-
-  /**
-   * Set ADC value for a given fastor position inside the trigger
-   * patch. The position (col, row) is supposed to be relative to
-   * the starting position of the trigger patch.
-   * @param ADC Fastor ADC value for the given fastor position
-   * @param col Coloumn of the fastor postion relative to the patch starting position
-   * @param row Row of the fastor position relative to the patch starting postition
-   */
-  void SetADC(Int_t adc, UChar_t col, UChar_t row);
-
-private:
-  UChar_t                               fPatchSize;       ///< Size of the patch
-  AliEMCALTriggerDataGrid<Int_t>        fADCValues;       ///< underlying container with ADC data
-
-  /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerPatchADCInfo, 1)
-  /// \endcond
-};
 
 /**
  * @class AliAnalysisTaskEmcalPatchMasking
@@ -181,7 +87,7 @@ protected:
    * @param[in] patch Trigger patch for which ADC values are checked
    * @return Table structure with ADC values
    */
-  AliEMCALTriggerPatchADCInfo *MakeFastorADCValuesForPatch(const AliEMCALTriggerPatchInfo &patch) const;
+  AliEMCALTriggerPatchADCInfoAP *MakeFastorADCValuesForPatch(const AliEMCALTriggerPatchInfo &patch) const;
 
   /**
    * Perform analysis for given trigger patch: Collect single fastor
