@@ -272,7 +272,8 @@ public:
     kPhiCS,                  // phi in mother's rest frame in Collins-Soper picture
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
-	kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+    kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+    kDeltaCotTheta,          // difference of cotangens of theta of daughters
 
     kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
     kPairPlaneAngle2A,         // angle between ee decay plane and (p1+p2) rot ez
@@ -1643,6 +1644,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   if(Req(kPsiPair))  values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
   if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]      = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  if(Req(kDeltaCotTheta)) values[kDeltaCotTheta] =  pair->DeltaCotTheta();
   if(Req(kTriangularConversionCut)) values[AliDielectronVarManager::kTriangularConversionCut] = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) - 21. * pair->M() : -999.;
   if(Req(kPseudoProperTime) || Req(kPseudoProperTimeErr)) {
     values[AliDielectronVarManager::kPseudoProperTime] =
