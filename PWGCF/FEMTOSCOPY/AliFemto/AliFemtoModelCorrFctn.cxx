@@ -204,7 +204,8 @@ AliFemtoString AliFemtoModelCorrFctn::Report()
 //_______________________
 void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 {
- 
+  if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;
  // cout<<" AliFemtoModelCorrFcn add real pair "<<endl;
   Double_t weight = fManager->GetWeight(aPair);
   //cout<<" wight "<< weight<<endl;
@@ -222,6 +223,8 @@ void AliFemtoModelCorrFctn::AddRealPair(AliFemtoPair* aPair)
 //_______________________
 void AliFemtoModelCorrFctn::AddMixedPair(AliFemtoPair* aPair)
 {
+   if (fPairCut)
+    if (!fPairCut->Pass(aPair)) return;
   Double_t weight = fManager->GetWeight(aPair);
   fNumeratorFake->Fill(aPair->QInv(), weight);
   fDenominator->Fill(aPair->QInv(), 1.0);

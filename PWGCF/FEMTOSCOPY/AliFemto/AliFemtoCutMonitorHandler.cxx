@@ -197,10 +197,10 @@ void AliFemtoCutMonitorHandler::AddCutMonitor(AliFemtoCutMonitor* cutMoni1,
 void AliFemtoCutMonitorHandler::AddCutMonitor(AliFemtoCutMonitor* cutMoni)
 {
   // make a copy of the cut monitor
-  cout << " make a copy of the cutmonitor and push both into the collections\n"
-          " not yet implemented" << endl;
+  // cout << " make a copy of the cutmonitor and push both into the collections\n"
+  //         " not yet implemented" << endl;
   fPassColl->push_back(cutMoni);
-  cout << " only pass collection pushed" << endl;
+  // cout << " only pass collection pushed" << endl;
   fCollectionsEmpty = false;
 }
 // ---------------------------------------------------------------------------
