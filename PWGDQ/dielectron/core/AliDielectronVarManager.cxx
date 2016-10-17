@@ -200,6 +200,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ThetaSqCS",              "cos^{2}(#theta_{CS})",                               ""},
   {"PsiPair",                "#Psi^{pair}",                                        "(rad.)"},
   {"PhivPair",               "#Phi_{v}^{pair}",                                    "(rad.)"},
+  {"DeltaCotTheta",          "#Delta cot(#Theta)",                                 ""},
   {"PairPlaneAngle1A",       "#Phi_{1A}",                                          "(rad.)"},
   {"PairPlaneAngle2A",       "#Phi_{2A}",                                          "(rad.)"},
   {"PairPlaneAngle3A",       "#Phi_{3A}",                                          "(rad.)"},
