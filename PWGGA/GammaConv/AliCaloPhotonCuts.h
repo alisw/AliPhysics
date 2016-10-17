@@ -189,7 +189,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC, Double_t weight);
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
-    void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1.);
+    void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t doPlot = kTRUE);
     Bool_t      CheckClusterForTrackMatch(AliVCluster* cluster);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -284,6 +284,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMinDistTrackToClusterPhi;                // minimum distance between track and cluster in phi
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
     Bool_t    fUseDistTrackToCluster;                   // flag for switching on distance between track and cluster cut
+    Bool_t    fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
+    TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
+    TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
     Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
@@ -402,7 +405,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,28)
+    ClassDef(AliCaloPhotonCuts,29)
 };
 
 #endif

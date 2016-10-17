@@ -122,6 +122,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fMinDistTrackToClusterPhi(0),
   fMaxDistTrackToClusterPhi(0),
   fUseDistTrackToCluster(0),
+  fUsePtDepTrackToCluster(0),
+  fFuncPtDepEta(0),
+  fFuncPtDepPhi(0),
   fExtendedMatchAndQA(0),
   fExoticEnergyFracCluster(0),
   fExoticMinEnergyCell(1),
@@ -269,6 +272,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMinDistTrackToClusterPhi(ref.fMinDistTrackToClusterPhi),
   fMaxDistTrackToClusterPhi(ref.fMaxDistTrackToClusterPhi),
   fUseDistTrackToCluster(ref.fUseDistTrackToCluster),
+  fUsePtDepTrackToCluster(ref.fUsePtDepTrackToCluster),
+  fFuncPtDepEta(ref.fFuncPtDepEta),
+  fFuncPtDepPhi(ref.fFuncPtDepPhi),
   fExtendedMatchAndQA(ref.fExtendedMatchAndQA),
   fExoticEnergyFracCluster(ref.fExoticEnergyFracCluster),
   fExoticMinEnergyCell(ref.fExoticMinEnergyCell),
@@ -390,6 +396,9 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
     delete[] fPHOSBadChannelsMap;
     fPHOSBadChannelsMap = NULL;
   }
+
+  if(fFuncPtDepEta) delete fFuncPtDepEta;
+  if(fFuncPtDepPhi) delete fFuncPtDepPhi;
 }
 
 //________________________________________________________________________
@@ -1088,7 +1097,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   }  
   cutIndex++;//2, next cut
 
-  if (fIsPureCalo>0 && fVectorMatchedClusterIDs.size()>0){
+  if (fVectorMatchedClusterIDs.size()>0){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       return kFALSE;
@@ -1347,7 +1356,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if (fUsePhiCut && (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut)){delete cluster; continue;}
     if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(cluster,event)){delete cluster; continue;}
     //cluster quality cuts
-    if (fIsPureCalo>0 && fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(cluster)){delete cluster; continue;}
+    if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(cluster)){delete cluster; continue;}
     if (fUseMinEnergy && (cluster->E() < fMinEnergy)){delete cluster; continue;}
     if (fUseNCells && (cluster->GetNCells() < fMinNCells)){delete cluster; continue;}
     if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){delete cluster; continue;}
@@ -1384,7 +1393,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if (fUsePhiCut && (phiclusterMatched < fMinPhiCut || phiclusterMatched > fMaxPhiCut)){delete clusterMatched; continue;}
       if (fUseDistanceToBadChannel>0 && CheckDistanceToBadChannel(clusterMatched,event)){delete clusterMatched; continue;}
       //cluster quality cuts
-      if (fIsPureCalo>0 && fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(clusterMatched)){delete clusterMatched; continue;}
+      if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(clusterMatched)){delete clusterMatched; continue;}
       if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){delete clusterMatched; continue;}
       if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){delete clusterMatched; continue;}
       if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){delete clusterMatched; continue;}
@@ -2195,6 +2204,14 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
+      if(fUsePtDepTrackToCluster){
+        if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+      }
+
       if(match_dEta && match_dPhi){
             //if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
         matched = kTRUE;
@@ -2217,9 +2234,9 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight){
+void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight, Bool_t doPlot){
 
-  if( fIsPureCalo == 0 || !fUseDistTrackToCluster ) return;
+  if( !fUseDistTrackToCluster ) return;
 
   // not yet fully implemented + tested for PHOS
   if( fClusterType != 1) return;
@@ -2348,12 +2365,12 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
 //      cout << "dEta/dPhi: " << dEta << ", " << dPhi << " - ";
 //      cout << dR2 << endl;
-      if(fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
-      if(fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
+      if(doPlot && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
+      if(doPlot && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
 
       Float_t clusM02 = (Float_t) cluster->GetM02();
       Float_t clusM20 = (Float_t) cluster->GetM20();
-      if(!fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
+      if(doPlot && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
         if(inTrack->Charge() > 0) {
           fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi, weight);
           fHistClusterdPhidPtPosTracksBeforeQA->Fill(dPhi, inTrack->Pt(), weight);
@@ -2377,11 +2394,19 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight)
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
+      if(fUsePtDepTrackToCluster){
+        if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+      }
+
       if(match_dEta && match_dPhi){
         fVectorMatchedClusterIDs.push_back(cluster->GetID());
 //        cout << "MATCHED!!!!!!!!!!!!!!!!!!!!!!!!! - " << cluster->GetID() << endl;
         break;
-      } else {
+      } else if(doPlot){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);
         if(fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR, weight);
@@ -2910,8 +2935,8 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 //___________________________________________________________________
 Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 {
-  // standard: cluster - V0-track matching
-  if(fIsPureCalo == 0){
+  // matching parameters for EMCal clusters
+  if(fClusterType == 1){
     switch(trackMatching){
     case 0:
       fUseDistTrackToCluster = kFALSE;
@@ -2955,23 +2980,34 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fMinDistTrackToClusterPhi = -0.15;//-0.02;
       fMaxDistTrackToClusterPhi = 0.10;//0.055;//0.2;
       break;
-    case 7: //PHOS
+    // pT dependent matching parameters
+    case 7:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.005;//0.015;
-      fMinDistTrackToClusterPhi = -0.03;//-0.025;
-      fMaxDistTrackToClusterPhi = 0.03;//0.06;//0.3;
+      fUsePtDepTrackToCluster = kTRUE;
+      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.016, 0.007, 3.);
+
+      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.06, 0.007, 3.);
       break;
-    case 8: //PHOS
+    case 8:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.01;//0.015;
-      fMinDistTrackToClusterPhi = -0.09;//-0.025;
-      fMaxDistTrackToClusterPhi = 0.07;//0.07;//0.4;
+      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = kTRUE;
+      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.025, 0.01, 3.);
+
+      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.08, 0.01, 3.);
       break;
-    case 9: //PHOS
+    case 9:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.015;//0.02;
-      fMinDistTrackToClusterPhi = -0.15;//-0.03;
-      fMaxDistTrackToClusterPhi = 0.11;//0.1;//0.5;
+      fUsePtDepTrackToCluster = kTRUE;
+      fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.012, 0.005, 3.);
+
+      fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.04, 0.005, 3.);
       break;
 
     default:
@@ -2979,8 +3015,8 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       return kFALSE;
     }
     return kTRUE;
-  // if merged cluster analysis running: use cut for general track - cluster matching
-  }else{
+  // matching parameters for PHOS clusters
+  }else if(fClusterType == 2) {
     switch(trackMatching){
     case 0:
       fUseDistTrackToCluster = kFALSE;
@@ -2990,53 +3026,17 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 1:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.008;//0.015;
-      fMinDistTrackToClusterPhi = -0.03;//-0.01;
-      fMaxDistTrackToClusterPhi = 0.03;//0.03;//0.04;
-      break;
-    case 2:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.012;//0.015;
-      fMinDistTrackToClusterPhi = -0.05;//-0.01;
-      fMaxDistTrackToClusterPhi = 0.04;//0.035;//0.05;
-      break;
-    case 3:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.016;//0.015;
-      fMinDistTrackToClusterPhi = -0.09;//-0.015;
-      fMaxDistTrackToClusterPhi = 0.06;//0.04;//0.1;
-      break;
-    case 4:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.018;//0.015;
-      fMinDistTrackToClusterPhi = -0.11;//-0.015;
-      fMaxDistTrackToClusterPhi = 0.07;//0.045;//0.13;
-      break;
-    case 5:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.02;//0.015;
-      fMinDistTrackToClusterPhi = -0.13;//-0.02;
-      fMaxDistTrackToClusterPhi = 0.08;//0.05;//0.15
-      break;
-    case 6:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.022;//0.015;
-      fMinDistTrackToClusterPhi = -0.15;//-0.02;
-      fMaxDistTrackToClusterPhi = 0.10;//0.055;//0.2;
-      break;
-    case 7: //PHOS
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fMaxDistTrackToClusterEta = 0.005;//0.015;
       fMinDistTrackToClusterPhi = -0.03;//-0.025;
       fMaxDistTrackToClusterPhi = 0.03;//0.06;//0.3;
       break;
-    case 8: //PHOS
+    case 2:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fMaxDistTrackToClusterEta = 0.01;//0.015;
       fMinDistTrackToClusterPhi = -0.09;//-0.025;
       fMaxDistTrackToClusterPhi = 0.07;//0.07;//0.4;
       break;
-    case 9: //PHOS
+    case 3:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fMaxDistTrackToClusterEta = 0.015;//0.02;
       fMinDistTrackToClusterPhi = -0.15;//-0.03;

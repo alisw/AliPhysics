@@ -2342,6 +2342,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
 
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
+
+  // match tracks to clusters
+  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
   
   // vertex
   Double_t vertex[3] = {0,0,0};
