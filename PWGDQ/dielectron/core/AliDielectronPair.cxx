@@ -884,4 +884,17 @@ void AliDielectronPair::SetBeamEnergy(AliVEvent *ev, Double_t beamEbyHand)
     fBeamEnergy = beamEbyHand;
 }
 
+Double_t AliDielectronPair::DeltaCotTheta() const
+{
+  Double_t px1 = fD1.GetPx();
+  Double_t py1 = fD1.GetPy();
+  Double_t pz1 = fD1.GetPz();
+  Double_t px2 = fD2.GetPx();
+  Double_t py2 = fD2.GetPy();
+  Double_t pz2 = fD2.GetPz();
 
+  Double_t cotTheta1 = (px1 != 0. || py1 !=0.) ? pz1 / TMath::Sqrt(px1*px1 + py1*py1) : 0.;
+  Double_t cotTheta2 = (px2 != 0. || py2 !=0.) ? pz2 / TMath::Sqrt(px2*px2 + py2*py2) : 0.;
+
+  return cotTheta2 - cotTheta1;
+}
