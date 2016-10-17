@@ -124,7 +124,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int minPlpContribSPD = atoi(parameter[3]); //3
 	int multbino = atoi(parameter[4]); //30
 	int zvertbino = atoi(parameter[5]); //10
-	Bool_t ifGlobalTracks=kFALSE; if(atoi(parameter[6]))ifGlobalTracks=kTRUE;//kTRUE 
+	int ifGlobalTracks = atoi(parameter[6]); //0 - off, 1 - on, 2 - PropagateToDCA 
 	double shareQuality = atof(parameter[7]); //0.00
 	double shareFraction = atof(parameter[8]); //0.05
 	bool ifElectronRejection = atoi(parameter[9]); //true
@@ -151,7 +151,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL" };
 	
-	
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
 	double ktrngPion[numOfkTbins+1] = {0.0, 0.8, 1.2, 1.4, 2.5, 100.0};
@@ -163,12 +162,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runtype = 0; // Types 0 - global, 1 - ITS only, 2 - TPC Inner	//global tracks ->mfit ITS+TPC
 	int owncuts = 0; 
-	int owndca = 0;
+	int owndca = 1;
 
 	int gammacut = 1;	// cut na ee z gamma 
 	
-	double shqmax = 1.0; 
-	int nbinssh = 150;
+	double shqmax = 1.0;
+	int nbinssh = 100;
 
 	//AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
 	//Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kGlobalCount);
@@ -407,12 +406,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//****** DCA ******
 
 					if(owndca){
-					  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  ///dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 					  dtc1etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  //dtc2etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
 					  dtc2etaphitpc[aniter]->SetMaxImpactZ(2);	//DCA Z
-					  if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  dtc2etaphitpc[aniter]->SetMaxImpactXY(0.1);
+					  //if (ichg == 9){dtc3etaphitpc[aniter]->SetMaxImpactXYPtDep(0.018, 0.035, -1.01); 	//	DCA xy
+					  if(ichg==9) {dtc3etaphitpc[aniter]->SetMaxImpactXY(0.1);
 					  dtc3etaphitpc[aniter]->SetMaxImpactZ(2);}	//DCA Z
 					}
 					//****** Track quality cuts ******
@@ -666,6 +668,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 
+
+
+
 					//**** Correlation functions *******	
 					//***without corrections*****
 					if(ichg >= 13)
@@ -693,9 +698,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult),150, 0.0,3.0); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
                                         }
+
+
+
+
 					
-
-
 						       							
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
