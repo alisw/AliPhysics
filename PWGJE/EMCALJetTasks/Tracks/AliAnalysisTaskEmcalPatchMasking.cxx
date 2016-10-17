@@ -29,6 +29,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerMapping.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerPatchADCInfoAP.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -36,7 +37,6 @@
 #include "AliVEvent.h"
 
 /// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCALTriggerPatchADCInfo)
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking)
 /// \endcond
 
@@ -297,8 +297,8 @@ void AliAnalysisTaskEmcalPatchMasking::PrepareL1FastorADC(){
   }
 }
 
-AliEMCALTriggerPatchADCInfo *AliAnalysisTaskEmcalPatchMasking::MakeFastorADCValuesForPatch(const AliEMCALTriggerPatchInfo &patch ) const {
-  AliEMCALTriggerPatchADCInfo *adcpatch = new AliEMCALTriggerPatchADCInfo(patch.GetPatchSize());
+AliEMCALTriggerPatchADCInfoAP *AliAnalysisTaskEmcalPatchMasking::MakeFastorADCValuesForPatch(const AliEMCALTriggerPatchInfo &patch ) const {
+  AliEMCALTriggerPatchADCInfoAP *adcpatch = new AliEMCALTriggerPatchADCInfoAP(patch.GetPatchSize());
   for(unsigned char icol = 0; icol < patch.GetPatchSize(); icol++){
     for(unsigned char irow = 0; irow < patch.GetPatchSize(); irow++){
       Int_t adc = 0;
@@ -322,7 +322,7 @@ void AliAnalysisTaskEmcalPatchMasking::ProcessPatch(const AliEMCALTriggerPatchIn
   if(patch.IsJetLow()) patchtypes.push_back("EJ2");
   if(patch.IsJetLowRecalc()) patchtypes.push_back("REJE");
 
-  std::unique_ptr<AliEMCALTriggerPatchADCInfo> patchADC(MakeFastorADCValuesForPatch(patch));
+  std::unique_ptr<AliEMCALTriggerPatchADCInfoAP> patchADC(MakeFastorADCValuesForPatch(patch));
 
   // Find the max fastor ADC in the patch
   Int_t maxFastorADC = 0, maxFastorADCmasked = 0, maxFastorADCgood = 0, tmp = 0;
@@ -394,7 +394,7 @@ void AliAnalysisTaskEmcalPatchMasking::ProcessPatch(const AliEMCALTriggerPatchIn
 }
 
 void AliAnalysisTaskEmcalPatchMasking::ProcessMaxPatch(const AliEMCALTriggerPatchInfo &patch, const TString &patchtype){
-  std::unique_ptr<AliEMCALTriggerPatchADCInfo> patchADC(MakeFastorADCValuesForPatch(patch));
+  std::unique_ptr<AliEMCALTriggerPatchADCInfoAP> patchADC(MakeFastorADCValuesForPatch(patch));
 
   // Find the max fastor ADC in the patch
   UShort_t maxFastorADC = 0, maxFastorADCmasked = 0, maxFastorADCgood = 0, tmp = 0;
@@ -457,77 +457,6 @@ void AliAnalysisTaskEmcalPatchMasking::ProcessMaxPatch(const AliEMCALTriggerPatc
     fHistos->FillTH1(Form("hFracMaxFastorMeanGoodMax%s", patchtype.Data()), fracMaxFastorMeanADC);
   }
 
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-/// Content of class AliEMCALTriggerPatchADCInfo                                    ///
-///////////////////////////////////////////////////////////////////////////////////////
-
-AliEMCALTriggerPatchADCInfo::AliEMCALTriggerPatchADCInfo():
-  TObject(),
-  fPatchSize(0),
-  fADCValues()
-{
-}
-
-AliEMCALTriggerPatchADCInfo::AliEMCALTriggerPatchADCInfo(UChar_t patchsize):
-  TObject(),
-  fPatchSize(patchsize),
-  fADCValues()
-{
-  fADCValues.Allocate(fPatchSize, fPatchSize);
-}
-
-AliEMCALTriggerPatchADCInfo::AliEMCALTriggerPatchADCInfo(const AliEMCALTriggerPatchADCInfo &ref):
-  TObject(ref),
-  fPatchSize(ref.fPatchSize),
-  fADCValues()
-{
-  if(fPatchSize){
-    fADCValues.Allocate(fPatchSize, fPatchSize);
-    for(UChar_t icol = 0; icol < fPatchSize; icol++){
-      for(UChar_t irow = 0; irow < fPatchSize; irow++){
-        fADCValues.SetADC(icol, irow, ref.fADCValues(icol, irow));
-      }
-    }
-  }
-}
-
-AliEMCALTriggerPatchADCInfo &AliEMCALTriggerPatchADCInfo::operator =(const AliEMCALTriggerPatchADCInfo &ref){
-  TObject::operator=(ref);
-  if(&ref != this){
-    if(ref.fPatchSize){
-      if(!fADCValues.IsAllocated()) fADCValues.Allocate(ref.fPatchSize, ref.fPatchSize);
-      for(UChar_t icol = 0; icol < ref.fPatchSize; icol++){
-        for(UChar_t irow = 0; irow < ref.fPatchSize; irow++){
-          fADCValues.SetADC(icol, irow, ref.fADCValues(icol, irow));
-        }
-      }
-    }
-    fPatchSize = ref.fPatchSize;
-  }
-  return *this;
-}
-
-void AliEMCALTriggerPatchADCInfo::SetPatchSize(UChar_t patchsize){
-  fPatchSize = patchsize;
-  fADCValues.Allocate(fPatchSize, fPatchSize);
-}
-
-void AliEMCALTriggerPatchADCInfo::SetADC(Int_t adc, UChar_t col, UChar_t row){
-  try{
-    fADCValues.SetADC(col, row, adc);
-  } catch (AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException &e) {
-    // Don't do anything if we are out-of-bounds
-  }
-}
-
-Int_t AliEMCALTriggerPatchADCInfo::GetADC(UChar_t col, UChar_t row) const {
-  try{
-    return fADCValues(col, row);
-  } catch (AliEMCALTriggerDataGrid<Int_t>::OutOfBoundsException &e){
-    return 0;
-  }
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
