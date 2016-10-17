@@ -296,7 +296,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
       line >> std::skipws >> cmd >> addr >> data >> extali;  // the lines read from config file can contain additional columns.
       // Therefore the detour via istringstream
 
-      if(cmd!=999 && addr != -1 && data!= -1 && extali!=-1) {
+      if(cmd!=999 && addr != -1 && extali!=-1) {
 
 	 if(cmd==fgkScsnCmdWrite) {
 	    for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
