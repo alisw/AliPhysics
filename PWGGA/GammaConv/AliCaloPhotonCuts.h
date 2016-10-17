@@ -347,7 +347,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistDispersionAfterQA;                   // dispersion after cluster quality cuts
     TH1F*     fHistNLMBeforeQA;                         // number of local maxima in cluster before acceptance cuts
     TH1F*     fHistNLMAfterQA;                          // number of local maxima in cluster after cluster quality cuts
-    TH2F*     fHistNLMAvsNLMBBeforeQA;                  // number of local maxima in cluster after cluster quality cuts
+//     TH2F*     fHistNLMAvsNLMBBeforeQA;                  // number of local maxima in cluster after cluster quality cuts
     TH2F*     fHistNLMVsNCellsAfterQA;                  // number of local maxima vs Ncells in cluster after cluster quality cuts
     TH2F*     fHistNLMVsEAfterQA;                       // number of local maxima vs E in cluster after cluster quality cuts
     //More histograms
