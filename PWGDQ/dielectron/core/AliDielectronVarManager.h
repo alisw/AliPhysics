@@ -1162,10 +1162,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
     // nsigma for various detectors
     if(Req(kTPCnSigmaEleRaw)) values[kTPCnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
-    if(Req(kTPCnSigmaEle))    values[kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)
-                                                        -AliDielectronPID::GetCorrVal()
-                                                        -AliDielectronPID::GetCntrdCorr(particle)
-                                                        ) / AliDielectronPID::GetWdthCorr(particle);
+    if(Req(kTPCnSigmaEle))    values[kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal()-AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
 
     if(Req(kTPCnSigmaPio)) values[kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
     if(Req(kTPCnSigmaMuo)) values[kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
@@ -1173,9 +1170,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     if(Req(kTPCnSigmaPro)) values[kTPCnSigmaPro]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton);
 
     if(Req(kITSnSigmaEleRaw)) values[kITSnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron);
-    if(Req(kITSnSigmaEle))    values[kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron)
-                                                        -AliDielectronPID::GetCntrdCorrITS(particle)
-                                                        ) / AliDielectronPID::GetWdthCorrITS(particle);
+    if(Req(kITSnSigmaEle))    values[kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(particle)) / AliDielectronPID::GetWdthCorrITS(particle);
 
     if(Req(kITSnSigmaPio)) values[kITSnSigmaPio]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion);
     if(Req(kITSnSigmaMuo)) values[kITSnSigmaMuo]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon);
@@ -3367,6 +3362,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnTPCxH2]  = qVecQnFrameworkTPC->Qx(2);
     values[AliDielectronVarManager::kQnTPCyH2]  = qVecQnFrameworkTPC->Qy(2);
   }
+  else values[AliDielectronVarManager::kQnTPCrpH2] = -999.;
 
   // VZEROA Eventplane q-Vector
   const AliQnCorrectionsQnVector *qVecQnFrameworkV0A = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROA","latest","raw");
@@ -3378,6 +3374,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnV0AxH2]  = qVecQnFrameworkV0A->Qx(2);
     values[AliDielectronVarManager::kQnV0AyH2]  = qVecQnFrameworkV0A->Qy(2);
   }
+  else values[AliDielectronVarManager::kQnV0ArpH2] = -999.;
 
   // VZEROC Eventplane q-Vector
   const AliQnCorrectionsQnVector *qVecQnFrameworkV0C = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROC","latest","raw");
@@ -3389,6 +3386,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnV0CxH2]  = qVecQnFrameworkV0C->Qx(2);
     values[AliDielectronVarManager::kQnV0CyH2]  = qVecQnFrameworkV0C->Qy(2);
   }
+  else values[AliDielectronVarManager::kQnV0CrpH2] = -999.;
 
   // SPD Eventplane q-Vector
   const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = AliDielectronVarManager::GetQnVectorFromList(qnlist,"SPD","latest","latest");
@@ -3400,6 +3398,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnSPDxH2]  = qVecQnFrameworkSPD->Qx(2);
     values[AliDielectronVarManager::kQnSPDyH2]  = qVecQnFrameworkSPD->Qy(2);
   }
+  else values[AliDielectronVarManager::kQnSPDrpH2] = -999.;
 
   // FMDA Eventplane q-Vector
   const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDA","latest","raw");
@@ -3411,6 +3410,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnFMDAxH2]  = qVecQnFrameworkFMDA->Qx(2);
     values[AliDielectronVarManager::kQnFMDAyH2]  = qVecQnFrameworkFMDA->Qy(2);
   }
+  else values[AliDielectronVarManager::kQnFMDArpH2] = -999.;
 
   // FMDC Eventplane q-Vector
   const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDC","latest","raw");
@@ -3422,8 +3422,14 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnFMDCxH2]  = qVecQnFrameworkFMDC->Qx(2);
     values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
   }
+  else values[AliDielectronVarManager::kQnFMDCrpH2] = -999.;
 
   // TPC Diff
+  values[AliDielectronVarManager::kQnDiffTPC_V0A] = -999.;
+  values[AliDielectronVarManager::kQnDiffTPC_V0C] = -999.;
+  values[AliDielectronVarManager::kQnDiffTPC_SPD] = -999.;
+  values[AliDielectronVarManager::kQnDiffTPC_FMDA] = -999.;
+  values[AliDielectronVarManager::kQnDiffTPC_FMDC] = -999.;
   if(bTPCqVector){
     if(bV0AqVector) values[AliDielectronVarManager::kQnDiffTPC_V0A] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0ArpH2]);
     if(bV0CqVector) values[AliDielectronVarManager::kQnDiffTPC_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
@@ -3432,6 +3438,10 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
   }
   // V0A Diff
+  values[AliDielectronVarManager::kQnDiffV0A_V0C] = -999.;
+  values[AliDielectronVarManager::kQnDiffV0A_SPD] = -999.;
+  values[AliDielectronVarManager::kQnDiffV0A_FMDA] = -999.;
+  values[AliDielectronVarManager::kQnDiffV0A_FMDC] = -999.;
   if(bV0AqVector){
     if(bV0CqVector) values[AliDielectronVarManager::kQnDiffV0A_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
     if(bSPDqVector) values[AliDielectronVarManager::kQnDiffV0A_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
@@ -3439,17 +3449,23 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffV0A_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
   }
   // V0C Diff
+  values[AliDielectronVarManager::kQnDiffV0C_SPD] = -999.;
+  values[AliDielectronVarManager::kQnDiffV0C_FMDA] = -999.;
+  values[AliDielectronVarManager::kQnDiffV0C_FMDC] = -999.;
   if(bV0CqVector){
     if(bSPDqVector) values[AliDielectronVarManager::kQnDiffV0C_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
     if(bFMDAqVector) values[AliDielectronVarManager::kQnDiffV0C_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
     if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffV0C_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
   }
   // SPD Diff
+  values[AliDielectronVarManager::kQnDiffSPD_FMDA] = -999.;
+  values[AliDielectronVarManager::kQnDiffSPD_FMDC] = -999.;
   if(bSPDqVector){
     if(bFMDAqVector) values[AliDielectronVarManager::kQnDiffSPD_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
     if(bFMDCqVector) values[AliDielectronVarManager::kQnDiffSPD_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
   }
   // FMDA Diff
+  values[AliDielectronVarManager::kQnDiffFMDA_FMDC] = -999.;
   if(bFMDAqVector && bFMDCqVector) values[AliDielectronVarManager::kQnDiffFMDA_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnFMDArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
 }
 
