@@ -36,7 +36,10 @@ class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
 class AliPIDResponse;
+class AliMultSelection;
 
+#include "AliAnalysisTaskFlowVectorCorrections.h"
+#include "AliQnCorrectionsQnVector.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -55,13 +58,17 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
 
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   AliHFEpid *GetPID() const { return fPID; }
+    
+  void SetEP(Bool_t UseNewEP) {fUseNewEP = UseNewEP;};
+  void SetPeriod (Double_t period) {fWhichPeriod = period;};
   void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
   void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
   void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma);
+  void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma);
   void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
-  
+  Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
+  Bool_t AssElecTrackCuts(AliAODTrack *aetrack);
   void InitParameters();
 
   
@@ -84,22 +91,26 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
-  Double_t              fAssPtCut;		// pt cut for associated electron
+  Int_t                 fWhichPeriod;       // period
+  Double_t              fAssPtCut;          // pt cut for associated electron
   Int_t                 fAssTPCnCut;		// TPC number of clusters for associated electron
   Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
+  Bool_t                fUseNewEP;          // Use new EP framework
   
-  AliESDEvent        	*fESD;	            	 //! ESD object
+ // AliESDEvent        	*fESD;	            	 //! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
   AliVEvent             *fVevent;               //! VEvent
   AliPIDResponse        *fpidResponse;          //! PID response
-
+  AliMultSelection      *fMultSelection;
+  AliCentrality         *fCentrality;
+    
   AliMCEvent            *fMC;                   //! MC object
   AliStack              *fStack;		//! stack
     
   TList              	*fOutputList;		 //! output list
   
-  AliESDtrackCuts     	*fTrackCuts;      	 //! ESD track cuts
-  AliESDtrackCuts     	*fAssTrackCuts;      	 //! ESD track cuts
+//  AliESDtrackCuts     	*fTrackCuts;      	 //! ESD track cuts
+//  AliESDtrackCuts     	*fAssTrackCuts;      	 //! ESD track cuts
   AliHFEcuts            *fCuts;                  //! Cut Collection
 
   Bool_t                fIdentifiedAsOutInz;    //! Out Of Range in z
@@ -113,6 +124,8 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   AliCFManager          *fCFM;                  //! Correction Framework Manager
   AliHFEpid             *fPID;                  //! PID
   AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
+  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask; //! new Qn vector framework
+  AliQnCorrectionsManager *fFlowQnVectorMgr; //! new ep
   Double_t              fOpeningAngleCut;	//! openingAngle cut for non-HFE selection
   Double_t              fInvmassCut;		//! invariant mass cut  for non-HFE selection
   Double_t              fChi2Cut;              //! Chi2 cut  for non-HFE selection
