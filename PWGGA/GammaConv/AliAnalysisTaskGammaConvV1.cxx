@@ -106,6 +106,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   tESDConvGammaPtDcazCat(NULL),
   sPtRDeltaROpenAngle(NULL),
   fHistoCaloGammaPt(NULL),
+  fHistoCaloGammaE(NULL),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
@@ -309,6 +310,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   tESDConvGammaPtDcazCat(NULL),
   sPtRDeltaROpenAngle(NULL),
   fHistoCaloGammaPt(NULL),
+  fHistoCaloGammaE(NULL),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaR(NULL),
   fHistoConvGammaEta(NULL),
@@ -667,6 +669,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   
   if (fEnableClusterCutsForTrigger){
     fHistoCaloGammaPt           = new TH1F*[fnCuts];
+    fHistoCaloGammaE            = new TH1F*[fnCuts];
   }  
   
 
@@ -854,6 +857,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoCaloGammaPt[iCut]->SetXTitle("p_{T,clus}(GeV/c)");
       fESDList[iCut]->Add(fHistoCaloGammaPt[iCut]);
       if (fIsMC > 1) fHistoCaloGammaPt[iCut]->Sumw2();
+      fHistoCaloGammaE[iCut]          = new TH1F("ClusGamma_E","ClusGamma_E",500,0,50);
+      fHistoCaloGammaE[iCut]->SetXTitle("E_{clus}(GeV)");
+      fESDList[iCut]->Add(fHistoCaloGammaE[iCut]);
+      if (fIsMC > 1) fHistoCaloGammaE[iCut]->Sumw2();
     }
 
     if (fDoPhotonQA == 2){
@@ -3635,6 +3642,7 @@ void AliAnalysisTaskGammaConvV1::ProcessClusters(){
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
     
     fHistoCaloGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+    fHistoCaloGammaE[fiCut]->Fill(PhotonCandidate->E(),fWeightJetJetMC);
     delete PhotonCandidate;
     delete clus;
     delete tmpvec;
