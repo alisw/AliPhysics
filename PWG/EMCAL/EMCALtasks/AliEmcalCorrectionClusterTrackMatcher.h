@@ -4,6 +4,7 @@
 #include "AliEmcalCorrectionComponent.h"
 
 class TH1;
+class TClonesArray;
 
 class AliVParticle;
 
