@@ -12,8 +12,9 @@ class AliAnalysisFilter;
 class AliDielectronPID;
 class TList;
 class AliV0ReaderV1;
-class AliDielectronTGReducedTrack;
-class AliDielectronTGReducedInfo;
+//class AliDielectronTGReducedPair;
+//class AliDielectronTGReducedTrack;
+//class AliDielectronTGReducedInfo;
 class AliESDv0KineCuts;
 
 #include "AliAnalysisTaskSE.h"
@@ -30,7 +31,7 @@ class AliDielectronTGReducedTrack : public TObject {
  public:
   AliDielectronTGReducedTrack();
   virtual ~AliDielectronTGReducedTrack();
-
+  
   //getters
   Double_t  Px() const {return  fPx; }
   Double_t  Py() const {return  fPy; }
@@ -95,6 +96,9 @@ class AliDielectronTGReducedTrack : public TObject {
   Double_t  ESDV0ArmAlpha() const {return  fESDV0ArmAlpha; }                         
   Double_t  ESDV0ArmPt() const {return  fESDV0ArmPt; }                              
   Double_t  ESDV0OA() const {return  fESDV0OA; }                              
+  Double_t  ESDV0cXv() const {return  fESDV0cXv; }                              
+  Double_t  ESDV0cYv() const {return  fESDV0cYv; }                              
+  Double_t  ESDV0cZv() const {return  fESDV0cZv; }                              
   Double_t  ESDV0Xv() const {return  fESDV0Xv; }                              
   Double_t  ESDV0Yv() const {return  fESDV0Yv; }                              
   Double_t  ESDV0Zv() const {return  fESDV0Zv; }                              
@@ -182,6 +186,9 @@ class AliDielectronTGReducedTrack : public TObject {
   void  ESDV0ArmAlpha(Double_t val){ fESDV0ArmAlpha=val;}
   void  ESDV0ArmPt(Double_t val){ fESDV0ArmPt=val;}
   void  ESDV0OA(Double_t val){ fESDV0OA=val;}
+  void  ESDV0cXv(Double_t val){ fESDV0cXv=val;}
+  void  ESDV0cYv(Double_t val){ fESDV0cYv=val;}
+  void  ESDV0cZv(Double_t val){ fESDV0cZv=val;}
   void  ESDV0Xv(Double_t val){ fESDV0Xv=val;}
   void  ESDV0Yv(Double_t val){ fESDV0Yv=val;}
   void  ESDV0Zv(Double_t val){ fESDV0Zv=val;}
@@ -203,6 +210,7 @@ class AliDielectronTGReducedTrack : public TObject {
   void  ID(Int_t val){ fID=val;}
   void  Label(Int_t val){ fLabel=val;}
   void  QualityFlags(Int_t val){ fQualityFlags=val;}
+
 
 
  protected:
@@ -269,7 +277,10 @@ class AliDielectronTGReducedTrack : public TObject {
   Double_t fESDV0ArmAlpha; // ArmAlpha
   Double_t fESDV0ArmPt; // ArmPt
   Double_t fESDV0OA; // Opening Angle
-  Double_t fESDV0Xv; // Xv
+  Double_t fESDV0cXv; // Xv from AliDielectronPair
+  Double_t fESDV0cYv; // Yv
+  Double_t fESDV0cZv; // Zv
+  Double_t fESDV0Xv; // Xv from AliESDv0
   Double_t fESDV0Yv; // Yv
   Double_t fESDV0Zv; // Zv
   Int_t fV0Conv; // this track in V0 and passed PCM task
@@ -293,13 +304,93 @@ class AliDielectronTGReducedTrack : public TObject {
     
 
   //Double_t fgData[kNMaxValues];        // data
-  
+
+
   AliDielectronTGReducedTrack(const AliDielectronTGReducedTrack &c);      
   AliDielectronTGReducedTrack& operator= (const AliDielectronTGReducedTrack &c);
 
-  ClassDef(AliDielectronTGReducedTrack, 1);
+  ClassDef(AliDielectronTGReducedTrack, 2);
 
 };
+
+
+//_____________________________________________________________________
+class AliDielectronTGReducedPair : public TObject {
+  
+  friend class AliAnalysisTaskTGReducedTree; 
+
+ public:
+  AliDielectronTGReducedPair();
+  virtual ~AliDielectronTGReducedPair();
+
+
+  //getters
+  Double_t  M() const {return  fM; }
+  Double_t  Px() const {return  fPx; }
+  Double_t  Py() const {return  fPy; }
+  Double_t  Pz() const {return  fPz; }
+  Double_t  Pt() const {return  fPt; }
+  Double_t  Xv() const {return  fXv; }
+  Double_t  Yv() const {return  fYv; }
+  Double_t  Zv() const {return  fZv; }
+  Double_t  Phiv() const {return  fPhiv; }
+  Double_t  OpeningAngle() const {return  fOpeningAngle; }
+  Double_t  LegDistXY() const {return  fLegDistXY; }
+  Int_t     Label1() const{ return fLabel1;}
+  Int_t     Label2() const{ return fLabel2;}
+  Int_t     Index1() const{ return fIndex1;}
+  Int_t     Index2() const{ return fIndex2;}
+  Int_t     C1() const {return fC1;}
+  Int_t     C2() const {return fC2;}
+
+  //setters 
+  void  M(Double_t val) { fM = val; }
+  void  Px(Double_t val) {  fPx = val; }
+  void  Py(Double_t val) {  fPy = val; }
+  void  Pz(Double_t val) {  fPz = val; }
+  void  Pt(Double_t val) {  fPt = val; }
+  void  Xv(Double_t val) {  fXv = val; }
+  void  Yv(Double_t val) {  fYv = val; }
+  void  Zv(Double_t val) {  fZv = val; }
+  void  Phiv(Double_t val) {  fPhiv = val; }
+  void  OpeningAngle(Double_t val) {  fOpeningAngle = val; }
+  void  LegDistXY(Double_t val) {  fLegDistXY = val; }
+  void  Label1(Int_t val) { fLabel1 = val;}
+  void  Label2(Int_t val) { fLabel2 = val;}
+  void  Index1(Int_t val) { fIndex1 = val;}
+  void  Index2(Int_t val) { fIndex2 = val;}
+  void  C1(Int_t val) { fC1 = val;}
+  void  C2(Int_t val) { fC2 = val;}
+
+  
+ private:
+  Double_t fM;              // mass
+  Double_t fPx;              // px
+  Double_t fPy;              // py
+  Double_t fPz;              // pz
+  Double_t fPt;                     // transverse momentum
+  Double_t fXv;                     // pair vertex position in x
+  Double_t fYv;                     // pair vertex position in y
+  Double_t fZv;                     // pair vertex position in z
+  Double_t fPhiv; // phiv 
+  Double_t fOpeningAngle ; // opening angle
+  Double_t fLegDistXY; // leg dist XY
+  Int_t fLabel1; // label1 in ESD
+  Int_t fLabel2; // label2 in ESD
+  Int_t fIndex1; // index1 in ReducedTrack
+  Int_t fIndex2; // index2 in ReducedTrack
+  Int_t fC1; // charge1
+  Int_t fC2; // charge2
+
+  AliDielectronTGReducedPair(const AliDielectronTGReducedPair &c) ;
+  AliDielectronTGReducedPair& operator= (const AliDielectronTGReducedPair &c) ;
+
+
+  ClassDef(AliDielectronTGReducedPair, 2)
+  
+};
+
+
 
 
 
@@ -316,6 +407,10 @@ class AliDielectronTGReducedInfo : public TObject {
   AliDielectronTGReducedTrack* GetTrack(Int_t i) const {
     return (AliDielectronTGReducedTrack*)fTracks->At(i) ;}
   TClonesArray* GetTracks() const {return fTracks;}
+
+  AliDielectronTGReducedPair* GetPair(Int_t i) const {
+    return (AliDielectronTGReducedPair*)fPairs->At(i) ;}
+  TClonesArray* GetPairs() const {return fPairs;}
 
   void ClearEvent();
 
@@ -339,13 +434,13 @@ class AliDielectronTGReducedInfo : public TObject {
   Int_t fNe; // number of electrons 
   Int_t fV0Cand; // number of vertex candidates
 
-  TClonesArray* fTracks;            // array containing particles
-  
+  TClonesArray* fTracks;                // array containing particles
+  TClonesArray* fPairs;                // array containing Pairs
   
   AliDielectronTGReducedInfo(const AliDielectronTGReducedInfo &c);      
   AliDielectronTGReducedInfo& operator= (const AliDielectronTGReducedInfo &c);
 
-  ClassDef(AliDielectronTGReducedInfo, 2);
+  ClassDef(AliDielectronTGReducedInfo, 3);
 
 };
 
@@ -358,20 +453,22 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
  public:
  AliAnalysisTaskTGReducedTree(): 
   AliAnalysisTaskSE(), fESD(0), fOutputList(0), fTree(0), 
-  fEventStat(0), fESDtrackCuts(0), fTrackFilter(0), fMCEvent(0), fPIDResponse(0),
+    fEventStat(0), fESDtrackCuts(0), fTrackFilter(0), fMCEvent(0), 
+    fPIDResponse(0),
     fPIDCuts(0), 
     fReducedInfo(0), fV0OpenCuts(0),
     fTriggerMask(0), fSelectPhysics(0),
     fFiredTrigger(""), fFiredExclude(kFALSE), fConvCut(117), 
     fCutArray(0), fMesonCutArray(0), fGammaCandidates(0),
-    fV0Reader(0), fInputEvent(0), fReaderGammas(0), hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE),
-    fEvalEfficiencyIndex(-1)
-  {
-    hPtRap[0] = NULL; hPtRap[1] = NULL; hPtRap[2]=NULL;
-    hPtRapConv[0] = NULL; hPtRapConv[1] = NULL; hPtRapConv[2]=NULL;
-    hRPtConv[0] = NULL; hRPtConv[1] = NULL; hRPtConv[2]=NULL;
-
-  }
+    fV0Reader(0), fInputEvent(0), fReaderGammas(0), hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE), 
+    fEvalEfficiencyIndex(-1), 
+    fEvalEfficiencyParticle(-1),
+    hGen(NULL), hMul(NULL)
+    {
+      hPtRap[0] = NULL; hPtRap[1] = NULL; hPtRap[2]=NULL;
+      hPtRapConv[0] = NULL; hPtRapConv[1] = NULL; hPtRapConv[2]=NULL;
+      hRPtConv[0] = NULL; hRPtConv[1] = NULL; hRPtConv[2]=NULL;
+    }
 
   AliAnalysisTaskTGReducedTree(const char *name);
   virtual ~AliAnalysisTaskTGReducedTree(); 
@@ -385,8 +482,12 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
   void SetESDTrackCuts(AliESDtrackCuts *fCuts){ fESDtrackCuts = fCuts;}
   void SetPIDCuts(AliDielectronPID *fCuts){ fPIDCuts = fCuts;}
   void SetV0OpenCuts(AliESDv0KineCuts* const cuts) {fV0OpenCuts = cuts;}
-  void SetEvalEfficiency(Bool_t flag, Int_t GeneratorIndex){fEvalEfficiencyFlag = flag;
-    fEvalEfficiencyIndex = GeneratorIndex;} 
+  void SetEvalEfficiency(Bool_t flag, Int_t GeneratorIndex, 
+			 Int_t ParticleIndex){
+    fEvalEfficiencyFlag = flag;
+    fEvalEfficiencyIndex = GeneratorIndex;
+    fEvalEfficiencyParticle = ParticleIndex;
+  } 
   void SetFiredTriggerName(const char* select, Bool_t exclude=kFALSE){fFiredTrigger=select; fFiredExclude=exclude;}
   
 
@@ -422,17 +523,20 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
 
   Bool_t hasMC;   //hasMC
   Bool_t fEvalEfficiencyFlag; // flag to look at pure MC
-  Int_t fEvalEfficiencyIndex; // flag to look at pure MC for this Generator index
+  Int_t fEvalEfficiencyIndex; // GeneratorIndex to look at pure MC for this Generator index
+  Int_t fEvalEfficiencyParticle; // Mother Particle to look at pure MC for this Generator index
 
   TH2F  *hPtRap[3]; //! All electrons/positrons generated/reco/accpeted
   TH2F  *hPtRapConv[3]; //! All conversion electrons/positrons generated/reco/accpeted
   TH2F  *hRPtConv[3]; //! All electrons/positrons from conversions generated/reco/accpeted (AliESDTrackCuts)
+  TH1F   *hGen ; //! generator index
+  TH2F   *hMul ; //! generator index vs. event activity
   
 
   AliAnalysisTaskTGReducedTree(const AliAnalysisTaskTGReducedTree&); // not implemented
   AliAnalysisTaskTGReducedTree& operator=(const AliAnalysisTaskTGReducedTree&); // not implemented
   
-  ClassDef(AliAnalysisTaskTGReducedTree, 1); // example of analysis
+  ClassDef(AliAnalysisTaskTGReducedTree, 2); // example of analysis
 };
 
 #endif

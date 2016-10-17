@@ -35,7 +35,9 @@
 // single electron tree to be used for dark photon analysis 
 // Authors: Taku Gunji (CNS-Tokyo, Taku.Gunji@cern.ch)
 
+
 ClassImp(AliDielectronTGReducedTrack)
+ClassImp(AliDielectronTGReducedPair)
 ClassImp(AliDielectronTGReducedInfo)
 ClassImp(AliAnalysisTaskTGReducedTree)
 
@@ -105,6 +107,9 @@ AliDielectronTGReducedTrack::AliDielectronTGReducedTrack() :
   fESDV0ArmAlpha(-999),
   fESDV0ArmPt(-999),
   fESDV0OA(-999),
+  fESDV0cXv(-999),
+  fESDV0cYv(-999),
+  fESDV0cZv(-999),
   fESDV0Xv(-999),
   fESDV0Yv(-999),
   fESDV0Zv(-999),
@@ -195,6 +200,9 @@ AliDielectronTGReducedTrack::AliDielectronTGReducedTrack(const AliDielectronTGRe
   fESDV0ArmAlpha(-999),
   fESDV0ArmPt(-999),
   fESDV0OA(-999),
+  fESDV0cXv(-999),
+  fESDV0cYv(-999),
+  fESDV0cZv(-999),
   fESDV0Xv(-999),
   fESDV0Yv(-999),
   fESDV0Zv(-999),
@@ -226,15 +234,73 @@ AliDielectronTGReducedTrack::~AliDielectronTGReducedTrack()
 }
 
 
+
+//_______________________________________________________________
+AliDielectronTGReducedPair::AliDielectronTGReducedPair() : 
+  fM(-999),
+  fPx(-999),
+  fPy(-999),
+  fPz(-999),
+  fPt(-999),
+  fXv(-999),
+  fYv(-999),
+  fZv(-999),
+  fPhiv(-999),
+  fOpeningAngle(-999),
+  fLegDistXY(-999),
+  fLabel1(-999),
+  fLabel2(-999),
+  fIndex1(-999),
+  fIndex2(-999),
+  fC1(-999),
+  fC2(-999)
+{
+
+}
+
+
+//_______________________________________________________________
+AliDielectronTGReducedPair::AliDielectronTGReducedPair(const AliDielectronTGReducedPair &c) :
+  TObject(c),
+  fM(-999),
+  fPx(-999),
+  fPy(-999),
+  fPz(-999),
+  fPt(-999),
+  fXv(-999),
+  fYv(-999),
+  fZv(-999),
+  fPhiv(-999),
+  fOpeningAngle(-999),
+  fLegDistXY(-999),
+  fLabel1(-999),
+  fLabel2(-999),
+  fIndex1(-999),
+  fIndex2(-999),
+  fC1(-999),
+  fC2(-999)
+{
+}
+
+
+//_______________________________________________________________                  
+AliDielectronTGReducedPair::~AliDielectronTGReducedPair()
+{
+  // Do nothing...
+}
+
+
+
 //_______________________________________________________________
 AliDielectronTGReducedInfo::AliDielectronTGReducedInfo() :
-  TObject(), fEventTag(-999), fRun(-1), fEvt(-1), fVtx(), fVtxCont(-1), fNe(-1), fV0Cand(-1), fTracks(0x0)
+  TObject(), fEventTag(-999), fRun(-1), fEvt(-1), fVtx(), fVtxCont(-1), fNe(-1), fV0Cand(-1), fTracks(0x0), fPairs(0x0)
 {
 
   fVtx[0] = -1;
   fVtx[1] = -1; 
   fVtx[2] = -1;
   fTracks = new TClonesArray("AliDielectronTGReducedTrack", 100000);
+  fPairs = new TClonesArray("AliDielectronTGReducedPair", 100000);
   
 }
 
@@ -247,13 +313,15 @@ AliDielectronTGReducedInfo::AliDielectronTGReducedInfo(const AliDielectronTGRedu
   fVtxCont(c.fVtxCont), 
   fNe(c.fNe), 
   fV0Cand(c.fV0Cand),
-  fTracks(c.fTracks)
+  fTracks(c.fTracks),
+  fPairs(c.fPairs)
 {
 
   fVtx[0] = c.fVtx[0];
   fVtx[1] = c.fVtx[1];
   fVtx[2] = c.fVtx[2];
   fTracks = new TClonesArray("AliDielectronTGReducedTrack", 100000);
+  fPairs = new TClonesArray("AliDielectronTGReducedPair", 100000);
 }
 
 
@@ -270,6 +338,7 @@ AliDielectronTGReducedInfo::~AliDielectronTGReducedInfo()
 void AliDielectronTGReducedInfo::ClearEvent()
 {
   if(fTracks) fTracks->Clear("C");
+  if(fPairs) fPairs->Clear("C");
   fRun = 0;
   fEvt = 0;
   fVtxCont = 0;
@@ -284,14 +353,17 @@ AliAnalysisTaskTGReducedTree::AliAnalysisTaskTGReducedTree(const char *name)
     fEventStat(0),
     fESDtrackCuts(0), 
     fTrackFilter(0), fMCEvent(0),
-    fPIDResponse(0), fPIDCuts(0), 
+    fPIDResponse(0), 
+    fPIDCuts(0), 
     fReducedInfo(0x0), fV0OpenCuts(0),
     fTriggerMask(AliVEvent::kMB),  
     fSelectPhysics(kFALSE), fFiredTrigger(""), fFiredExclude(kFALSE),
     fConvCut(117), 
     fCutArray(0), fMesonCutArray(0), fGammaCandidates(0),
     fV0Reader(NULL),fInputEvent(NULL),fReaderGammas(NULL),
-    hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE), fEvalEfficiencyIndex(0)
+    hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE), fEvalEfficiencyIndex(0),
+  fEvalEfficiencyParticle(0),
+  hGen(NULL), hMul(NULL)
 {
   // Constructor
 
@@ -307,7 +379,6 @@ AliAnalysisTaskTGReducedTree::AliAnalysisTaskTGReducedTree(const char *name)
   hPtRap[0] = NULL;  hPtRap[1] = NULL;  hPtRap[2] = NULL;
   hPtRapConv[0] = NULL;  hPtRapConv[1] = NULL;  hPtRapConv[2] = NULL;
   hRPtConv[0] = NULL;  hRPtConv[1] = NULL;  hRPtConv[2] = NULL;
-
 }
 
 
@@ -338,7 +409,7 @@ void AliAnalysisTaskTGReducedTree::UserCreateOutputObjects()
   fTree = new TTree("DstTree","Reduced ESD information");
 
   fTree->Branch("Event",&fReducedInfo,16000,99);
-
+  
   fEventStat=new TH1D("hEventStat", "Event statistics", 5, 0, 5);
   fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
   fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
@@ -441,6 +512,12 @@ void AliAnalysisTaskTGReducedTree::UserCreateOutputObjects()
     fOutputList->Add(hPtRapConv[0]); fOutputList->Add(hPtRapConv[1]); fOutputList->Add(hPtRapConv[2]);
     fOutputList->Add(hRPtConv[0]); fOutputList->Add(hRPtConv[1]); fOutputList->Add(hRPtConv[2]);
   }
+  if(hasMC){
+    hGen = new TH1F("hGen","hGen",10,0,10);
+    hMul = new TH2F("hMul","hMul",10,0,10, 200, 0, 1000);
+    fOutputList->Add(hGen);
+    fOutputList->Add(hMul);
+  }
 
 
   PostData(1, fOutputList);
@@ -481,6 +558,8 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
       return;
     }
     fMCEvent = mcEvent;
+    fMCEvent->InitEvent();
+    fMCEvent->PreReadAll();
   }
 
   if ( !(inputHandler->GetPIDResponse() )){
@@ -525,7 +604,6 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
   }
   
   printf("There are %d tracks in this event... Let's go\n", fESD->GetNumberOfTracks());
-
 
   const AliESDVertex* vtx = fESD->GetPrimaryVertex();
 
@@ -585,7 +663,7 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
     //rtrack = new AliDielectronTGReducedTrack();
 
 
-    rtrack->ID(track->GetID());
+    rtrack->ID(iTracks); //track->GetID());
     rtrack->Label(track->GetLabel());
     rtrack->Px(values[AliDielectronVarManager::kPx]);
     rtrack->Py(values[AliDielectronVarManager::kPy]);
@@ -687,8 +765,57 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
     }//has MC
     fNe++;
   }// end of track loop
+  
+
+  
+  ///process for pairs ///
+  TClonesArray& pairs = *(fReducedInfo->fPairs);
+  AliDielectronTGReducedPair *rpair = NULL;  
+  Int_t fNpair = 0;
+
+  for(Int_t ine=0; ine<fNe; ine++){
+    for(Int_t jne=ine+1; jne<fNe; jne++){
+      AliDielectronTGReducedTrack *trk1 = 
+	(AliDielectronTGReducedTrack*)fReducedInfo->GetTrack(ine);
+      AliDielectronTGReducedTrack *trk2 = 
+	(AliDielectronTGReducedTrack*)fReducedInfo->GetTrack(jne);
 
 
+      AliESDtrack *tr1 = fESD->GetTrack(trk1->ID());
+      AliESDtrack *tr2 = fESD->GetTrack(trk2->ID());
+
+      AliKFParticle fPair ;
+      fPair.Initialize();
+      AliKFParticle kf1(*tr1, 11*trk1->Charge());
+      AliKFParticle kf2(*tr2, 11*trk2->Charge());
+      fPair.AddDaughter(kf1);
+      fPair.AddDaughter(kf2);
+      
+      rpair = new(pairs[fNpair]) AliDielectronTGReducedPair();
+
+      rpair->M(fPair.GetMass());
+      rpair->Px(fPair.GetPx());
+      rpair->Py(fPair.GetPy());
+      rpair->Pz(fPair.GetPz());
+      rpair->Xv(fPair.GetX());
+      rpair->Yv(fPair.GetY());
+      rpair->Zv(fPair.GetZ());
+      rpair->Label1(trk1->ID());
+      rpair->Label2(trk2->ID());
+      rpair->Index1(ine);
+      rpair->Index2(jne);
+      rpair->C1(trk1->Charge());
+      rpair->C2(trk2->Charge());
+      rpair->OpeningAngle(kf1.GetAngleXY(kf2));
+      rpair->Phiv(kf1.GetAngle(kf2)); //temporary
+      rpair->LegDistXY(kf1.GetAngleRZ(kf2)); //temporary
+
+      fNpair++;
+      
+    }
+  }
+
+  ////////////////////////
   /// getting conversion information from on the fly ALICE V0 finder          
   /// by reading ESD            
   ///do debug for conversion    
@@ -783,9 +910,13 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
 	rtrack->ESDV0ArmAlpha(candidate.GetArmAlpha());
 	rtrack->ESDV0ArmPt(candidate.GetArmPt());
 	rtrack->ESDV0OA(candidate.OpeningAngle());
-	rtrack->ESDV0Xv(candidate.Xv());
-	rtrack->ESDV0Yv(candidate.Yv());
-	rtrack->ESDV0Zv(candidate.Zv());
+	rtrack->ESDV0cXv(candidate.Xv());
+	rtrack->ESDV0cYv(candidate.Yv());
+	rtrack->ESDV0cZv(candidate.Zv());
+
+	rtrack->ESDV0Xv(fCurrentV0->Xv());
+	rtrack->ESDV0Yv(fCurrentV0->Yv());
+	rtrack->ESDV0Zv(fCurrentV0->Zv());
 
 
       }
@@ -842,69 +973,135 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
   }
 
 
-  // look at pure MC for efficiency estimation
-  if(hasMC && fEvalEfficiencyFlag){ 
-    if(fMCEvent){
-      for(int iTrack=0; iTrack<fMCEvent->GetNumberOfTracks(); iTrack++){
-	AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iTrack);	
-	AliVParticle *mother = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(part->GetMother()));	
 
-	Int_t recoHF=-1;
-	Int_t recoConv=-1;
-	if(mother && TMath::Abs(part->PdgCode())==11){
 
-	  //select specific event generator for the efficiency evaluation
-	  if(fEvalEfficiencyIndex && part->GetGeneratorIndex()!=fEvalEfficiencyIndex) continue;
+
+  if(hasMC){
+    ////get generator header
+    TList *l = (TList*)fMCEvent->GetCocktailList();
+    //cout<<" GetCocktailList entries = "<<l->GetEntries()<<endl;
+    for (Int_t i = l->GetEntries()-1; i >= 0; i--){
+      AliGenEventHeader* gh=(AliGenEventHeader*)l->At(i);
+      TString genname=gh->GetName();
+
+      printf("Generator Index %d - %s\n", i, genname.Data());
+
+      if(genname.Contains("Pythia MB")){
+	hGen->Fill(0., 1.0); 
+	hMul->Fill(0., 1.0*gh->NProduced());
+      }else if(genname.Contains("Pythia CC")){
+	hGen->Fill(1., 1.0); 
+	hMul->Fill(1,  1.0*gh->NProduced());
+      }else if(genname.Contains("Pythia BB")){
+	hGen->Fill(2., 1.0); 
+	hMul->Fill(2., 1.0*gh->NProduced());
+      }else if(genname.Contains("Pythia B")){
+	hGen->Fill(3., 1.0); 
+	hMul->Fill(3., 1.0*gh->NProduced());
+      }else if(genname.Contains("Jpsi2ee")){
+	hGen->Fill(4., 1.0); 
+	hMul->Fill(4., 1.0*gh->NProduced());
+      }else if(genname.Contains("B2Jpsi2ee")){
+	hGen->Fill(5., 1.0);
+	hMul->Fill(5., 1.0*gh->NProduced());
+      }
+    }
+    
+    //AliStack *stack = (AliStack*)fMCEvent->Stack();
+    //cout<<"Primary summary "<<stack->GetNtrack()<<" "<<stack->GetNprimary()<<" "<<fMCEvent->GetNumberOfTracks()<<" "<<fMCEvent->GetNumberOfPrimaries()<<" "<<tot<<endl;
+
+    if(fEvalEfficiencyFlag){ 
+      if(fMCEvent){
+	for(int iTrack=0; iTrack<fMCEvent->GetNumberOfTracks(); iTrack++){
+	  AliMCParticle *part = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(iTrack));	
+	  AliMCParticle *mother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(part->GetMother())));	
 	  
-	  if(TMath::Abs(mother->PdgCode()) != 22){
-	    ///look for reconstructed pairs
-	    for (Int_t itr = 0; itr < fESD->GetNumberOfTracks(); itr++) {
-	      AliESDtrack* reco = fESD->GetTrack(itr);
-	      if(TMath::Abs(reco->GetLabel())==TMath::Abs(part->GetLabel())){
-		recoHF = fTrackFilter->IsSelected(reco);	     
-		break;
-	      }
+	  Int_t genOK = -1;
+	  Int_t recoHF=-1;
+	  Int_t recoConv=-1;
+
+	  if(mother && TMath::Abs(part->PdgCode())==11){
+
+	    //cout<<" Event "<<fESD->GetEventNumberInFile()<<" "<<iTrack<<" "<<part->PdgCode()<<" "<<part->GetGeneratorIndex()<<" mother PDG="<<mother->PdgCode()<<" "<<gh->GetName()<<" "<<part->Pt()<<" "<<part->Y()<<endl;
+
+	    //select specific event generator for the efficiency evaluation
+	    if(fEvalEfficiencyIndex && part->GetGeneratorIndex()!=fEvalEfficiencyIndex) continue;
+	  
+	    ///select mother particles
+	    if(fEvalEfficiencyParticle == 0){ 
+	      ///all electrons except conversions
+	      genOK = -1;
+	      if(TMath::Abs(mother->PdgCode()) != 22) genOK = 1;
+	    }else if(fEvalEfficiencyParticle == 4){ 
+	      /// all electrons from charm 
+	      genOK = -1;
+	      if(TMath::Abs(mother->PdgCode())/100 == 4 ||
+		 TMath::Abs(mother->PdgCode())/1000 == 4) genOK = 1;
+	    }else if(fEvalEfficiencyParticle == 5){
+	      /// all electrons from bottom 
+	      genOK = -1;
+	      if(TMath::Abs(mother->PdgCode())/100 == 5||
+                 TMath::Abs(mother->PdgCode())/1000 == 5) genOK = 1;
+	    }else if(fEvalEfficiencyParticle == 45){
+	      /// all electrons from heavy flavors
+	      genOK = -1;
+	      if(TMath::Abs(mother->PdgCode())/100 == 4 ||
+		 TMath::Abs(mother->PdgCode())/100 == 5 ||
+                 TMath::Abs(mother->PdgCode())/1000 == 4 || 
+                 TMath::Abs(mother->PdgCode())/1000 == 5 
+		 ) genOK = 1;
+	    }else{
+	      genOK = -1;
 	    }
+
+	    if(genOK==1){
+	      for (Int_t itr = 0; itr < fESD->GetNumberOfTracks(); itr++) {
+		AliESDtrack* reco = fESD->GetTrack(itr);
+		if(TMath::Abs(reco->GetLabel())==TMath::Abs(part->GetLabel())){
+		  recoHF = fTrackFilter->IsSelected(reco);	     
+		  break;
+		}
+	      }
 	    
-	    hPtRap[0]->Fill(part->Pt(), part->Y());
-	    if(recoHF>=0) hPtRap[1]->Fill(part->Pt(), part->Y());
-	    if(recoHF>0) hPtRap[2]->Fill(part->Pt(), part->Y());
-	  }// non-conversion electrons
+	      hPtRap[0]->Fill(part->Pt(), part->Y());
+	      if(recoHF>=0) hPtRap[1]->Fill(part->Pt(), part->Y());
+	      if(recoHF>0) hPtRap[2]->Fill(part->Pt(), part->Y());
+	    }
 
 	  ///select Conversions for efficiency calculations 
 	  ///Some rapidity cuts must be applied in order to get the conversions from BP, ITS, TPC...
 	  ///Reco conversions would come outside |Zv|<60 (TPC bessel). 
 	  ///But don't care since what I'd like to know is the 
 	  /// tagging efficiency for ITS.
-	  if(TMath::Abs(mother->PdgCode()) == 22){
-	    AliVParticle *grandmother = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(mother->GetMother()));	
-
-	    if(grandmother && TMath::Abs(grandmother->PdgCode()) == 111 &&
-	       TMath::Abs(grandmother->Y())<0.8){
-	    
-	      ///look for reconstructed pairs
-	      for (Int_t itr = 0; itr < fESD->GetNumberOfTracks(); itr++) {
-		AliESDtrack* reco = fESD->GetTrack(itr);
+	    if(TMath::Abs(mother->PdgCode()) == 22){
+	      AliVParticle *grandmother = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(mother->GetMother()));	
+	      
+	      if(grandmother && TMath::Abs(grandmother->PdgCode()) == 111 &&
+		 TMath::Abs(grandmother->Y())<0.8){
+		
+		///look for reconstructed pairs
+		for (Int_t itr = 0; itr < fESD->GetNumberOfTracks(); itr++) {
+		  AliESDtrack* reco = fESD->GetTrack(itr);
 		if(TMath::Abs(reco->GetLabel())==TMath::Abs(part->GetLabel())){
 		  recoConv = fTrackFilter->IsSelected(reco);	     
 		  break;
 		}
-	      }
-	    
-	      hPtRapConv[0]->Fill(part->Pt(), part->Y());
-	      if(recoConv>=0) hPtRapConv[1]->Fill(part->Pt(), part->Y());
-	      if(recoConv>0) hPtRapConv[2]->Fill(part->Pt(), part->Y());
-
-	      hRPtConv[0]->Fill(sqrt(pow(part->Xv(),2)+pow(part->Yv(),2)), part->Zv());
-	      if(recoConv>=0) hRPtConv[1]->Fill(sqrt(pow(part->Xv(),2)+pow(part->Yv(),2)), part->Zv());
-	      if(recoConv>0) hRPtConv[2]->Fill(sqrt(pow(part->Xv(),2)+pow(part->Yv(),2)), part->Zv());
-	    } //require that grandmother is pi0 and good acceptance
-	  } //conversion electrons
-	}
-      } //MC track look
-    }// fMCEvent
-  }//hasMC
-
+		}
+		
+		hPtRapConv[0]->Fill(part->Pt(), part->Y());
+		if(recoConv>=0) hPtRapConv[1]->Fill(part->Pt(), part->Y());
+		if(recoConv>0) hPtRapConv[2]->Fill(part->Pt(), part->Y());
+		
+		hRPtConv[0]->Fill(sqrt(pow(part->Xv(),2)+pow(part->Yv(),2)), part->Zv());
+		if(recoConv>=0) hRPtConv[1]->Fill(sqrt(pow(part->Xv(),2)+pow(part->Yv(),2)), part->Zv());
+		if(recoConv>0) hRPtConv[2]->Fill(sqrt(pow(part->Xv(),2)+pow(part->Yv(),2)), part->Zv());
+	      } //require that grandmother is pi0 and good acceptance
+	    } //conversion electrons
+	  }
+	} //MC track look
+      }// fMCEvent
+    }//hasMC
+  }
 
   fReducedInfo->fRun = fESD->GetRunNumber();
   fReducedInfo->fEvt = fESD->GetEventNumberInFile();
@@ -914,7 +1111,6 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
   fReducedInfo->fVtx[2] = vtx->GetZ();
   fReducedInfo->fVtxCont = vtx->GetNContributors();
   fReducedInfo->fV0Cand = fReaderGammas->GetEntriesFast();
-
 
   fTree->Fill();
   PostData(1, fOutputList);
