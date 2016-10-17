@@ -1,4 +1,4 @@
-AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut){
+AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut, Bool_t UseNewEP, Int_t period){
   //
   // HFE standard task configuration
   //
@@ -25,7 +25,8 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   task->SetAssPtCut(AssPtCut);
   task->SetAssTPCnCut(AssTPCnCut);
   task->SetAssITSrefitCut(AssITSrefitCut);
-  
+  task->SetPeriod(period);
+  task->SetEP(UseNewEP);
 
   // Define PID
   AliHFEpid *pid = task->GetPID();

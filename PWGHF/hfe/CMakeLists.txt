@@ -28,7 +28,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
-                    ${AliPhysics_SOURCE_DIR}/PWG/TRD)
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface)
 
 # Sources - alphabetical order
 set(SRCS
