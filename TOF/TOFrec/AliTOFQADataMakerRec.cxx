@@ -22,6 +22,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 /*
+Modified by fbellini on 17/11/2016
+- 
+
 Modified by fbellini on 01/11/2011
 - removed TLines as functions
 - changed shifters plots for 2012 DQM
@@ -295,7 +298,7 @@ void AliTOFQADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
 
   TH1I * h0 =  new TH1I("hTOFRawsMulti","TOF raw hit multiplicity; TOF raw hits number; Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  TPaveText * hitsMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
+  TPaveText * hitsMsg = new TPaveText(0.5,0.5,0.9,0.75,"NDC");
   h0->GetListOfFunctions()->Add(hitsMsg);
   hitsMsg->SetName("hitsMsg");
 
@@ -305,7 +308,7 @@ void AliTOFQADataMakerRec::InitRaws()
   TH1I * h4 =  new TH1I("hTOFRawsMultiOC","TOF raw hit multiplicity - O/C side; TOF raw hits number;Events ",fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
 
   TH1F * h5  = new TH1F("hTOFRawsTime", "TOF Raws - Hit time (ns);Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
-  TPaveText * timeMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
+  TPaveText * timeMsg = new TPaveText(0.5,0.5,0.9,0.75,"NDC");
   h5->GetListOfFunctions()->Add(timeMsg);
   timeMsg->SetName("timeMsg");
   TH1F * h6  = new TH1F("hTOFRawsTimeIA", "TOF Raws - Hit time (ns) - I/A side;Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
@@ -314,7 +317,7 @@ void AliTOFQADataMakerRec::InitRaws()
   TH1F * h9  = new TH1F("hTOFRawsTimeOC", "TOF Raws - Hit time (ns) - O/C side;Measured Hit time [ns];Hits", fgNbinsTime,fgRangeMinTime,fgRangeMaxTime); 
   
   TH1F * h10  = new TH1F("hTOFRawsToT", "TOF Raws - Hit ToT (ns);Measured Hit ToT (ns);Hits", 100, 0., 48.8); 
-  TPaveText * totMsg = new TPaveText(0.65,0.5,0.9,0.75,"NDC");
+  TPaveText * totMsg = new TPaveText(0.5,0.5,0.9,0.75,"NDC");
   h10->GetListOfFunctions()->Add(totMsg);
   totMsg->SetName("totMsg");
   TH1F * h11  = new TH1F("hTOFRawsToTIA", "TOF Raws - Hit ToT (ns) - I/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8); 
@@ -324,7 +327,7 @@ void AliTOFQADataMakerRec::InitRaws()
   
   TH1F * h15 = new TH1F("hTOFRawsLTMHits", "LTMs OR signals; Crate; Counts",  72, 0., 72.);
   TH2F * h16  = new TH2F("hTOFrefMap", "TOF enabled channel reference map;sector;strip",  72, 0., 18., 91, 0., 91.);
-  TH2F * h17  = new TH2F("hTOFRawHitMap","TOF raw hit map (1 bin = 1 FEA/24);sector;strip", 72, 0., 18., 91, 0., 91.);
+  TH2F * h17  = new TH2F("hTOFRawHitMap","TOF raw hit map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.);
  
   TH2I * h18 = new TH2I("hTOFDecodingErrors","Decoding error monitoring; DDL; Error ", 72, 0, 72, 13,1,14);
   
@@ -357,7 +360,7 @@ void AliTOFQADataMakerRec::InitRaws()
   h28->SetOption("colz");
   TH2F * h29 = new TH2F("hTimeVsCttmBit","TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime); 
   h29->SetOption("colz");
-  TH2F * h30 = new TH2F("hTOFRawHitMap24","TOF raw hit map (1 bin = 1 FEA/24);sector;strip", 72, 0., 18., 91, 0., 91.);
+  TH2F * h30 = new TH2F("hTOFRawHitMap24","TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.);
   h30->SetOption("colz");
   TH2I * h31 =  new TH2I("hHitMultiVsDDL","TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72., 500, 0, 500);
   h31->SetOption("colz");
@@ -431,17 +434,16 @@ void AliTOFQADataMakerRec::InitRaws()
   h10->GetListOfFunctions()->Add(fLineExpTotMin);
   h10->GetListOfFunctions()->Add(fLineExpTotMax);
 
-  TPaveText *phosHoleBox=new TPaveText(13,38,16,53,"b");	
+  TPaveText *phosHoleBox = new TPaveText(13,38,16,53,"b");	
   phosHoleBox->SetFillStyle(0);
   phosHoleBox->SetFillColor(kWhite);
   phosHoleBox->SetLineColor(kMagenta);
   phosHoleBox->SetLineWidth(2);
   phosHoleBox->AddText("PHOS");	
-  TPaveText *phosHoleBox2=dynamic_cast<TPaveText*>(phosHoleBox->Clone()); //new TPaveText(13,38,16,53,"b");
-  //TPaveText *phosHoleBox3=dynamic_cast<TPaveText*>(phosHoleBox->Clone()); //new TPaveText(13,38,16,53,"b");
+
+  TPaveText *phosHoleBox2 = dynamic_cast<TPaveText*>(phosHoleBox->Clone()); 
   h16->GetListOfFunctions()->Add(phosHoleBox);
   h17->GetListOfFunctions()->Add(phosHoleBox2);
-  //h30->GetListOfFunctions()->Add(phosHoleBox3);
 
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
   Add2RawsList(h1,   1,  expert, !image, !saveCorr) ;
@@ -1046,11 +1048,10 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	TObjArray& arrRW = *GetRawsDataOfTrigClass(itc);
 	
 	// Help make the raw qa histogram easier to interpret for the DQM shifter
-	if (!arrRW[ 0] || !arrRW[ 5] || !arrRW[10] || !arrRW[15] || !arrRW[16] || !arrRW[17]) continue;
+	if (!arrRW[0] || !arrRW[5] || !arrRW[10] || !arrRW[15] || !arrRW[16] || !arrRW[17]) continue;
 	
-	printf("=========>Processed %i physics raw of specie %s with TrigClass %d\n",
-	       GetEvCountCycleRaws(itc),AliRecoParam::GetEventSpecieName(specie), itc);
-	 
+	printf("=========> Processed %i physics raw of specie %s with TrigClass %d\n",
+	       GetEvCountCycleRaws(itc),AliRecoParam::GetEventSpecieName(specie), itc);	 
 	//Double_t monitorPeriodLength=fProcessedRawEventN*600*1E-9;//in s
       
 	if (fCalibData){
@@ -1061,8 +1062,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  fLineExpTimeMax->SetY2(yTimeMax);
 	  fLineExpTotMin->SetY2(yTotMax);
 	  fLineExpTotMax->SetY2(yTotMax);
-	  //
-	  for (Int_t j=0;j<18;j++){
+	  /*
+	    for (Int_t j=0;j<18;j++){
 	    if ((j==0)||(j==5)||(j==10)||(j==15)||(j==16)||(j==17)) {
 	      TH1* htmp = (TH1*)arrRW[j];
 	      htmp->GetXaxis()->SetLabelOffset(0.005);
@@ -1074,7 +1075,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	      htmp->GetYaxis()->SetTitleOffset(0.8);
 	      htmp->GetYaxis()->SetTitleSize(0.06);	  
 	    }
-	  }
+	  }*/
 	  //make up for all histos 
 	  for(Int_t j=0;j<5;j++) {
 	    TH1* htmp = (TH1*)arrRW[j];  
@@ -1096,7 +1097,7 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  htmp->SetLineWidth(1);
 	  htmp->SetMarkerStyle(8);
 	  htmp->SetMarkerSize(0.7);
-	  htmp->SetMarkerColor(kBlue);//Option("bar");
+	  htmp->SetMarkerColor(kBlue);
 	  //
 	  TString title25 = Form("Map of hit pads according to CTTM numbering (Max Fired Macropad = %i)",fgCutNmaxFiredMacropad);
 	  TString title26 = Form("Map of hit macropads according to CTTM numbering (Max Fired Macropad = %i)",fgCutNmaxFiredMacropad);
@@ -1220,9 +1221,8 @@ Int_t AliTOFQADataMakerRec::GetStripIndex(const Int_t * const in)
     stripOffset = nStripC+nStripB+nStripA+nStripB;
     break;
   default:
-    //AliDebug(2,Form("Wrong plate number in TOF (%d) !",iplate));
-      stripOffset=-1;
-      break;
+    stripOffset=-1;
+    break;
   };
   
   if (stripOffset<0 || stripOffset>92) return -1;
@@ -1238,7 +1238,6 @@ Bool_t  AliTOFQADataMakerRec::CheckVolumeID(const Int_t * const volumeID)
     //   
     for (Int_t j=0;j<5;j++){
 	if (volumeID[j]<0) {
-	  //AliDebug(2,Form("Invalid detector volume index for volumeID[%i]",j));
 	    return kFALSE;
 	}
     }
@@ -1252,7 +1251,6 @@ Bool_t  AliTOFQADataMakerRec::CheckEquipID(const Int_t * const equipmentID)
     //Checks equipment ID validity    
    for (Int_t j=0;j<5;j++){
 	if (equipmentID[j]<0) {
-	  // AliDebug(2,Form("Invalid equipment volume index for equipmentID[%i]",j));
 	  return kFALSE;
 	}
    }
@@ -1265,7 +1263,6 @@ Bool_t  AliTOFQADataMakerRec::FilterLTMData(const Int_t * const equipmentID) con
     It thus filters trigger-related signals  */
 
   Int_t ddl, trm, tdc;
-  //if (!CheckEquipID(equipmentID)) return kFALSE;
   ddl = equipmentID[0];
   trm = equipmentID[1];
   tdc = equipmentID[3];
@@ -1284,7 +1281,6 @@ Bool_t  AliTOFQADataMakerRec::FilterSpare(const Int_t * const equipmentID) const
     So far only check on TRM 3 crate left is implemented */
 
   Int_t ddl, trm, tdc;
-  //if (!CheckEquipID(equipmentID)) return kFALSE;
   ddl = equipmentID[0];
   trm = equipmentID[1];
   tdc = equipmentID[3];
