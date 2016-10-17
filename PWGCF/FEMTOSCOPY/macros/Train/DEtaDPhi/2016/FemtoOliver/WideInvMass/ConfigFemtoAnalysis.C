@@ -69,7 +69,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 34; //13
 	const int numOfkTbins = 5;
 
-	bool performSharedDaughterCut = true;
+	bool performSharedDaughterCut = false;
 	bool enablePairMonitors = true;
 
 	char *parameter[21];
@@ -148,9 +148,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
 	
-	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1};
+	int runch[numOfChTypes] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL" };
-	
 	
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
@@ -168,7 +167,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int gammacut = 1;	// cut na ee z gamma 
 	
 	double shqmax = 1.0; 
-	int nbinssh = 150;
+	int nbinssh = 100;
 
 	//AliFemtoEventReaderESDChain *Reader = new AliFemtoEventReaderESDChain();
 	//Reader->SetUseMultiplicity(AliFemtoEventReaderESDChain::kGlobalCount);
@@ -362,7 +361,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
 					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
 					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
-					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
+					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0044,LambdaMass+0.0044);
 					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 					dtc4etaphitpc[aniter]->SetRadiusV0Min(0.5);
 					dtc4etaphitpc[aniter]->SetNsigmaPosDaughter(5.0);
@@ -393,7 +392,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.06, 0.06); //0.05
 					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.99); //0.9993
 					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
-					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
+					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0044,LambdaMass+0.0044);
 					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 					dtc5etaphitpc[aniter]->SetRadiusV0Min(0.5);
 					dtc5etaphitpc[aniter]->SetNsigmaPosDaughter(5.0);
@@ -598,7 +597,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                         }
 					if(ichg == 17 || ichg == 24 || ichg == 31) //V0LL
 					  {
-					    anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 					    //anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetFirstParticleCut(dtc4etaphitpc[aniter]);
 					    anetaphitpc[aniter]->SetSecondParticleCut(dtc4etaphitpc[aniter]);
@@ -666,6 +664,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 
 
+	
+				
 					//**** Correlation functions *******	
 					//***without corrections*****
 					if(ichg >= 13)
@@ -694,9 +694,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
                                         }
 					
+				
 
-
-						       							
+					
+		
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
 			}
