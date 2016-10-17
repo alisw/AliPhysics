@@ -331,10 +331,12 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
       {
         // Here, it looks for a specific pass
         TString passM = pass;
-        if (pass=="calo_spc") passM ="pass1";
-        if (pass=="muon_calo_pass1") passM ="pass0";
-        if (pass=="muon_calo_pass2" || pass=="pass2" || pass=="pass3" || pass=="pass4") passM ="pass1";
+        if ( fRunNumber > 140000 ) 
+          passM = "pass1"; // year >= 2011, in 2010 first periods had a shift corrected later
         
+        if ( pass=="muon_calo_pass1" && fRunNumber > 209121 && fRunNumber < 244284 ) 
+          passM = "pass0";//period LHC15a-m
+
         TObjArray *trecalpass=(TObjArray*)trecal->FindObject(passM);
         if(!trecalpass) 
         {
