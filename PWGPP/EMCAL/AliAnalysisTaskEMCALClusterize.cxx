@@ -432,10 +432,12 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     {
       // Here, it looks for a specific pass
       TString pass2 = pass;
-      if (pass=="calo_spc") pass2 ="pass1";
-      if (pass=="muon_calo_pass1") pass2 ="pass0";
-      if (pass=="muon_calo_pass2" || pass=="pass2" || pass=="pass3" || pass=="pass4") pass2 ="pass1";
+      if ( runnumber > 140000 ) 
+        pass2 = "pass1"; // year >= 2011, in 2010 first periods had a shift corrected later
       
+      if ( pass=="muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
+        pass2 = "pass0"; // period LHC15a-m
+
       TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass2);
       if (!arrayBCpass)
       {
