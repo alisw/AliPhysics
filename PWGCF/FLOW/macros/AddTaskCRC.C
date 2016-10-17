@@ -159,7 +159,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: ZDCTowerEqList not found!" << endl;
       exit(1);
     }
-  } // end of if(bSetQAZDC)
+  } // end of if(sDataSet=="2010" && !bZDCMCCen)
   
   // add the task to the manager
  mgr->AddTask(taskFE);
@@ -387,7 +387,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
-  if(bSetQAZDC) {
+  if(bSetQAZDC && sDataSet != "2015") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     if(!ZDCESEFile) {
       cout << "ERROR: ZDCESEFile not found!" << endl;
