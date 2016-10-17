@@ -180,7 +180,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistDispersionAfterQA(NULL),
   fHistNLMBeforeQA(NULL),
   fHistNLMAfterQA(NULL),
-  fHistNLMAvsNLMBBeforeQA(NULL),
+//   fHistNLMAvsNLMBBeforeQA(NULL),
   fHistClusterEnergyvsMod(NULL),
   fHistNCellsBigger100MeVvsMod(NULL),
   fHistNCellsBigger1500MeVvsMod(NULL),
@@ -330,7 +330,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistDispersionAfterQA(NULL),
   fHistNLMBeforeQA(NULL),
   fHistNLMAfterQA(NULL),
-  fHistNLMAvsNLMBBeforeQA(NULL),
+//   fHistNLMAvsNLMBBeforeQA(NULL),
   fHistNLMVsNCellsAfterQA(NULL),
   fHistNLMVsEAfterQA(NULL),
   fHistClusterEnergyvsMod(NULL),
@@ -562,8 +562,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistograms->Add(fHistNLMBeforeQA);
     fHistNLMAfterQA                 = new TH1F(Form("NLM_afterClusterQA %s",GetCutNumber().Data()),"NLM_afterClusterQA",10,0,10);
     fHistograms->Add(fHistNLMAfterQA);
-    fHistNLMAvsNLMBBeforeQA         = new TH2F(Form("NLMAvsNLMB_beforeClusterQA %s",GetCutNumber().Data()),"NLMAvsNLMB_beforeClusterQA",10,0,10,10,0,10);
-    fHistograms->Add(fHistNLMAvsNLMBBeforeQA);
+//     fHistNLMAvsNLMBBeforeQA         = new TH2F(Form("NLMAvsNLMB_beforeClusterQA %s",GetCutNumber().Data()),"NLMAvsNLMB_beforeClusterQA",10,0,10,10,0,10);
+//     fHistograms->Add(fHistNLMAvsNLMBBeforeQA);
     fHistNLMVsNCellsAfterQA         = new TH2F(Form("NLM_NCells_afterClusterQA %s",GetCutNumber().Data()),"NLM_NCells_afterClusterQA",10,0,10,50,0,50);
     fHistograms->Add(fHistNLMVsNCellsAfterQA);
     fHistNLMVsEAfterQA              = new TH2F(Form("NLM_E_afterClusterQA %s",GetCutNumber().Data()),"NLM_E_afterClusterQA",10,0,10,500,0,50);
@@ -596,7 +596,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistDispersionAfterQA->Sumw2();
       fHistNLMBeforeQA->Sumw2();
       fHistNLMAfterQA->Sumw2();
-      fHistNLMAvsNLMBBeforeQA->Sumw2();
+//       fHistNLMAvsNLMBBeforeQA->Sumw2();
       fHistNLMVsNCellsAfterQA->Sumw2();
       fHistNLMVsEAfterQA->Sumw2();
       if(fExtendedMatchAndQA > 1 || fIsPureCalo > 0){
@@ -1068,7 +1068,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   
   Int_t nLM = GetNumberOfLocalMaxima(cluster, event);
-  Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
+//   Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
 //   cout << "mine: " << nLM << "\t Gustavo: " << nLMGustavo << endl;
   
   // Fill Histos before Cuts
@@ -1079,7 +1079,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistM20BeforeQA) fHistM20BeforeQA->Fill(cluster->GetM20(), weight);
   if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion(), weight);
   if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(nLM, weight);
-  if(fHistNLMAvsNLMBBeforeQA) fHistNLMAvsNLMBBeforeQA->Fill(nLM, nLMGustavo, weight);
+//   if(fHistNLMAvsNLMBBeforeQA) fHistNLMAvsNLMBBeforeQA->Fill(nLM, nLMGustavo, weight);
   if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02(), weight);
 
   AliVCaloCells* cells = NULL;
