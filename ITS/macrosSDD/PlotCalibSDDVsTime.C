@@ -1,6 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
 #include <TStyle.h>
@@ -21,7 +22,7 @@
 // created from PEDESTAL and PULSER runs vs. Time
 // Origin: F. Prino (prino@to.infn.it)
 
-void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000, 
+void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
 			Int_t lastRun=999999999,
 			Int_t selectedMod=-1){
 
@@ -45,6 +46,11 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   TH1F* hlowzsthr4=new TH1F("hlowzsthr4","",256,-0.5,255.5);
   TH1F* hhizsthr3=new TH1F("hhizsthr3","",256,-0.5,255.5);
   TH1F* hhizsthr4=new TH1F("hhizsthr4","",256,-0.5,255.5);
+
+  TH2F* hlowzsthr3VsRun=new TH2F("hlowzsthr3VsRun"," ; Run Number ; Low ZS Threshold",400,-0.5,399.5,256,-0.5,255.5);
+  TH2F* hlowzsthr4VsRun=new TH2F("hlowzsthr4VsRun"," ; Run Number ; Low ZS Threshold",400,-0.5,399.5,256,-0.5,255.5);
+  TH2F* hhizsthr3VsRun=new TH2F("hhizsthr3VsRun"," ; Run Number ; High ZS Threshold",400,-0.5,399.5,256,-0.5,255.5);
+  TH2F* hhizsthr4VsRun=new TH2F("hhizsthr4VsRun"," ; Run Number ; High ZS Threshold",400,-0.5,399.5,256,-0.5,255.5);
 
   TGraphErrors* gbasevstim=new TGraphErrors(0);
   TGraphErrors* gnoisevstim=new TGraphErrors(0);
@@ -86,6 +92,8 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   Char_t filnam[200],filnamalien[200];
   Int_t iPoint=0;
   Int_t nrun,nrun2,nv,ns;
+  Double_t minzs=256.;
+  Double_t maxzs=0.;
 
   while(!feof(listruns)){
 
@@ -125,26 +133,44 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
       if(selectedMod>=240 && (iMod+240)!=selectedMod) continue;
       cal=(AliITSCalibrationSDD*)calSDD->At(iMod);
       if(cal==0) continue;
+      Float_t zshi0=cal->GetZSHighThreshold(0);
+      Float_t zshi1=cal->GetZSHighThreshold(1);
+      Float_t zslo0=cal->GetZSLowThreshold(0);
+      Float_t zslo1=cal->GetZSLowThreshold(1);
+      if(zshi0>maxzs) maxzs=zshi0;
+      if(zshi1>maxzs) maxzs=zshi1;
+      if(zslo0<minzs) minzs=zslo0;
+      if(zslo1<minzs) minzs=zslo1;
+      if(!cal->IsBad()){
+	if(iMod<84){
+	  hlowzsthr3->Fill(zslo0);
+	  hlowzsthr3->Fill(zslo1);
+	  hhizsthr3->Fill(zshi0);
+	  hhizsthr3->Fill(zshi1);
+	  hlowzsthr3VsRun->Fill(iPoint,zslo0);
+	  hlowzsthr3VsRun->Fill(iPoint,zslo1);
+	  hhizsthr3VsRun->Fill(iPoint,zshi0);
+	  hhizsthr3VsRun->Fill(iPoint,zshi1);
+	}else{
+	  hlowzsthr4->Fill(zslo0);
+	  hlowzsthr4->Fill(zslo1);
+	  hhizsthr4->Fill(zshi0);
+	  hhizsthr4->Fill(cal->GetZSHighThreshold(1));
+	  hlowzsthr4VsRun->Fill(iPoint,zslo0);
+	  hlowzsthr4VsRun->Fill(iPoint,zslo1);
+	  hhizsthr4VsRun->Fill(iPoint,zshi0);
+	  hhizsthr4VsRun->Fill(iPoint,zshi1);
+	}
+      }
+      hlowzsthr3VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
+      hhizsthr3VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
+      hlowzsthr4VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
+      hhizsthr4VsRun->GetXaxis()->SetBinLabel(iPoint+1,Form("%d",nrun));
       for(Int_t iAn=0; iAn<512; iAn++){
 	Int_t ic=cal->GetChip(iAn);
 	Float_t base=cal->GetBaseline(iAn);
 	Float_t noise=cal->GetNoiseAfterElectronics(iAn);
 	Float_t gain=cal->GetChannelGain(iAn);
-	Float_t zshi0=cal->GetZSHighThreshold(0);
-	Float_t zshi1=cal->GetZSHighThreshold(1);
-	if(!cal->IsBad()){
-	  if(iMod<84){
-	    hlowzsthr3->Fill(cal->GetZSLowThreshold(0));
-	    hlowzsthr3->Fill(cal->GetZSLowThreshold(1));
-	    hhizsthr3->Fill(cal->GetZSHighThreshold(0));
-	    hhizsthr3->Fill(cal->GetZSHighThreshold(1));
-	  }else{
-	    hlowzsthr4->Fill(cal->GetZSLowThreshold(0));
-	    hlowzsthr4->Fill(cal->GetZSLowThreshold(1));
-	    hhizsthr4->Fill(cal->GetZSHighThreshold(0));
-	    hhizsthr4->Fill(cal->GetZSHighThreshold(1));
-	  }
-	}
 	if(cal->IsBadChannel(iAn)){
 	  hchstatus->Fill(0);
 	  if(iMod<84) hchstatus3->Fill(0);
@@ -185,6 +211,14 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
     iPoint++;
     f->Close();
   }
+  hlowzsthr3VsRun->GetXaxis()->SetRange(1,iPoint);
+  hlowzsthr4VsRun->GetXaxis()->SetRange(1,iPoint);
+  hhizsthr3VsRun->GetXaxis()->SetRange(1,iPoint);
+  hhizsthr4VsRun->GetXaxis()->SetRange(1,iPoint);
+  hlowzsthr3VsRun->GetYaxis()->SetRangeUser(minzs-5,maxzs+5);
+  hlowzsthr4VsRun->GetYaxis()->SetRangeUser(minzs-5,maxzs+5);
+  hhizsthr3VsRun->GetYaxis()->SetRangeUser(minzs-5,maxzs+5);
+  hhizsthr4VsRun->GetYaxis()->SetRangeUser(minzs-5,maxzs+5);
 
   TFile *ofil=new TFile(Form("Calib%dVsTime.root",year),"recreate");
   gbasevstim->Write();
@@ -194,6 +228,10 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   gfracvstim->Write();
   gfrac3vstim->Write();
   gfrac4vstim->Write();
+  hlowzsthr3VsRun->Write();
+  hlowzsthr4VsRun->Write();
+  hhizsthr3VsRun->Write();
+  hhizsthr4VsRun->Write();
   gzslow3vstim->Write();
   gzslow4vstim->Write();
   gzshi3vstim->Write();
@@ -201,6 +239,8 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   ofil->Close();
 
   TCanvas* cbase=new TCanvas("cbase","Baselines");
+  gPad->SetTickx();
+  gPad->SetTicky();
   gbasevstim->SetFillColor(kOrange-2);
   gbasevstim->SetMarkerStyle(20);
   gbasevstim->Draw("AP3");
@@ -212,6 +252,8 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   cbase->SaveAs(Form("BaseRun%d.gif",year));
 
   TCanvas* cnoise=new TCanvas("cnoise","Noise");
+  gPad->SetTickx();
+  gPad->SetTicky();
   gnoisevstim->SetFillColor(kOrange-2);
   gnoisevstim->SetMarkerStyle(20);
   gnoisevstim->Draw("AP3");
@@ -223,6 +265,8 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   cnoise->SaveAs(Form("NoiseRun%d.gif",year));
 
   TCanvas* cgain=new TCanvas("cgain","Gain");
+  gPad->SetTickx();
+  gPad->SetTicky();
   ggainvstim->SetFillColor(kOrange-2);
   ggainvstim->SetMarkerStyle(20);
   ggainvstim->Draw("AP3");
@@ -234,6 +278,8 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   cgain->SaveAs(Form("GainRun%d.gif",year));
 
   TCanvas* cstatus=new TCanvas("cstatus","Good channels");
+  gPad->SetTickx();
+  gPad->SetTicky();
   gstatvstim->SetFillColor(kOrange-2);
   gstatvstim->SetMarkerStyle(20);
   gstatvstim->Draw("AP3");
@@ -254,6 +300,8 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   cstatus->SaveAs(Form("GoodAnodesRun%d.gif",year));
 
   TCanvas* cfrac=new TCanvas("cfrac","Fraction of Good");
+  gPad->SetTickx();
+  gPad->SetTicky();
   gfracvstim->SetMarkerStyle(20);
   gfrac3vstim->SetMarkerStyle(22);
   gfrac3vstim->SetMarkerColor(2);
@@ -284,7 +332,37 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
   }
   cfrac->SaveAs(Form("FractionGoodRun%d.gif",year));
 
+  TCanvas* czsd=new TCanvas("czsd","Zero Supp Details",1500,800);
+  czsd->Divide(2,2);
+  czsd->cd(1);
+  gPad->SetLogz();
+  hlowzsthr3VsRun->Draw("colz");
+  TLatex* tlay3=new TLatex(0.18,0.82,"Layer 3");
+  tlay3->SetNDC();
+  tlay3->SetTextFont(63);
+  tlay3->SetTextSize(24);
+  tlay3->Draw();
+  czsd->cd(2);
+  gPad->SetLogz();
+  hlowzsthr4VsRun->Draw("colz");
+  TLatex* tlay4=new TLatex(0.18,0.82,"Layer 4");
+  tlay4->SetNDC();
+  tlay4->SetTextFont(63);
+  tlay4->SetTextSize(24);
+  tlay4->Draw();
+  czsd->cd(3);
+  gPad->SetLogz();
+  hhizsthr3VsRun->Draw("colz");
+  tlay3->Draw();
+  czsd->cd(4);
+  gPad->SetLogz();
+  hhizsthr4VsRun->Draw("colz");
+  tlay4->Draw();
+  czsd->SaveAs(Form("ZeroSuppDistThrRun%d.gif",year));
+
   TCanvas* czs=new TCanvas("czs","Zero Supp");
+  gPad->SetTickx();
+  gPad->SetTicky();
   gzslow3vstim->SetMarkerStyle(22);
   gzslow3vstim->SetMarkerColor(2);
   gzslow3vstim->SetLineColor(2);
@@ -315,5 +393,5 @@ void PlotCalibSDDVsTime(Int_t year=2016, Int_t firstRun=259000,
     legz->AddEntry(gzshi4vstim,"High Thr - Layer 4","P");
     legz->Draw();
   }
-  czs->SaveAs(Form("ZeroSuppThrRun%d.gif",year));
+  czs->SaveAs(Form("ZeroSuppMeanThrRun%d.gif",year));
 }
