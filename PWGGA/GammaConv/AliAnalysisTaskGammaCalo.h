@@ -140,6 +140,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
+    TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
     //histograms for pure MC quantities
     TH1I**                fHistoMCHeaders;                                      //! array of histos for header names
@@ -326,7 +327,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 24);
+    ClassDef(AliAnalysisTaskGammaCalo, 25);
 };
 
 #endif
