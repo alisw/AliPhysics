@@ -1124,8 +1124,9 @@ AliFemtoModelCorrFctnKStarFull* AliFemtoAnalysisLambdaKaon::CreateModelCorrFctnK
 //___________________________________________________________________
 void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut)
 {
-  aEventCut->AddCutMonitor(new AliFemtoCutMonitorEventMult("_EvPass"), new AliFemtoCutMonitorEventMult("_EvFail"));
-  aEventCut->AddCutMonitor(new AliFemtoCutMonitorEventPartCollSize("_Part1",100,0,100,"_Part2",100,0,100));
+  aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventMult("_EvPass"));
+  aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventPartCollSize("_Part1",100,0,100,"_Part2",100,0,100));
+  if(!fAnalysisParams.monitorEvCutPassOnly) aEventCut->AddCutMonitorFail(new AliFemtoCutMonitorEventMult("_EvFail"));
 
   TString tPartName1, tPartName2;
 
@@ -1203,22 +1204,37 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
 
   switch(fGeneralAnalysisType) {
   case AliFemtoAnalysisLambdaKaon::kV0V0:
-    aPartCut1->AddCutMonitor(new AliFemtoCutMonitorV0(tNamePass1),new AliFemtoCutMonitorV0(tNameFail1));
-    aPartCut2->AddCutMonitor(new AliFemtoCutMonitorV0(tNamePass2),new AliFemtoCutMonitorV0(tNameFail2));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass1));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail1));
+
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass2));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail2));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kV0Track:
-    aPartCut1->AddCutMonitor(new AliFemtoCutMonitorV0(tNamePass1),new AliFemtoCutMonitorV0(tNameFail1));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass1));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail1));
 
-    aPartCut2->AddCutMonitor(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2), new AliFemtoCutMonitorParticleYPt(tNameFail2,tPartMass2));
-    aPartCut2->AddCutMonitor(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2), new AliFemtoCutMonitorParticlePID(tNameFail2,tPartType2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2));
+    if(!fAnalysisParams.monitorPart2CutPassOnly)
+    {
+      aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorParticleYPt(tNameFail2,tPartMass2));
+      aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorParticlePID(tNameFail2,tPartType2));
+    }
     break;
 
   case AliFemtoAnalysisLambdaKaon::kXiTrack:
-    aPartCut1->AddCutMonitor(new AliFemtoCutMonitorXi(tNamePass1),new AliFemtoCutMonitorXi(tNamePass1));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorXi(tNamePass1));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorXi(tNameFail1));
 
-    aPartCut2->AddCutMonitor(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2), new AliFemtoCutMonitorParticleYPt(tNameFail2,tPartMass2));
-    aPartCut2->AddCutMonitor(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2), new AliFemtoCutMonitorParticlePID(tNameFail2,tPartType2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2));
+    if(!fAnalysisParams.monitorPart2CutPassOnly)
+    {
+      aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorParticleYPt(tNameFail2,tPartMass2));
+      aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorParticlePID(tNameFail2,tPartType2));
+    }
     break;
 
   default:
@@ -1294,6 +1310,11 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.implementVertexCorrections = true;
   tReturnParams.removeMisidentifiedMCParticles = false;
   tReturnParams.setV0SharedDaughterCut = true;
+
+  tReturnParams.monitorEvCutPassOnly = false;
+  tReturnParams.monitorPart1CutPassOnly = false;
+  tReturnParams.monitorPart2CutPassOnly = false;
+  tReturnParams.monitorPairCutPassOnly = false;
 
   return tReturnParams;
 }
