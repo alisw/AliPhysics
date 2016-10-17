@@ -988,7 +988,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
        
        AliESDEvent* esdEvent = static_cast<AliESDEvent*>(InputEvent());
        AliESDVertex* eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTracks());
-       trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
+       if(fReducedEvent->fRunNo>245000. && fReducedEvent->fRunNo<247000.)
+         trackInfo->fChi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(eventVtx);
        
       trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
@@ -1008,8 +1009,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         // helix information (Alex Chauvin)
         tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
         if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
-        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kNFclsTPCr]));
-        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kNFclsTPCr]));
+        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
+        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
       }
       
@@ -1072,9 +1073,24 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fITSSharedClusterMap = aodTrack->GetITSSharedClusterMap();
       
       const AliExternalTrackParam* tpcInner = aodTrack->GetInnerParam();
-      trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
-      trackInfo->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
-      trackInfo->fTPCEta        = (tpcInner ? tpcInner->Eta() : 0.0);
+      Float_t xyDCA,zDCA;
+      Double_t helixinfo[6];
+      if(tpcInner){
+        trackInfo->fTPCPhi        = (tpcInner ? tpcInner->Phi() : 0.0);
+        trackInfo->fTPCPt         = (tpcInner ? tpcInner->Pt() : 0.0);
+        trackInfo->fTPCEta        = (tpcInner ? tpcInner->Eta() : 0.0);
+      
+        aodTrack->GetImpactParametersTPC(xyDCA,zDCA);
+        trackInfo->fTPCDCA[0]     = xyDCA;
+        trackInfo->fTPCDCA[1]     = zDCA;
+      
+        // helix information (Alex Chauvin)
+        tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
+        if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
+        trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
+        trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
+        trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
+      }
       
       trackInfo->fTOFdz         = aodTrack->GetTOFsignalDz();
       trackInfo->fTOFdeltaBC = eventInfo->fBC - aodTrack->GetTOFBunchCrossing();
