@@ -73,6 +73,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fExtractionPercentage(0),
   fExtractionMinPt(0),
   fExtractionMaxPt(0),
+  fEventExtractionPercentage(0),
+  fEventExtractionMinJetPt(0),
+  fEventExtractionMaxJetPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -120,6 +123,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fExtractionPercentage(0),
   fExtractionMinPt(0),
   fExtractionMaxPt(0),
+  fEventExtractionPercentage(0),
+  fEventExtractionMinJetPt(0),
+  fEventExtractionMaxJetPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -317,6 +323,7 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
     fJetsTree->Branch("Jets", "AliBasicJet", &fJetsTreeBuffer, 1000);
     fOutput->Add(fJetsTree);
   }
+
 
 }
 
@@ -589,6 +596,28 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::AddEventToTree()
+{
+  // Check jet pT threshold
+  if(fLeadingJet && ( ((fLeadingJet->Pt() - fLeadingJet->Area()*fJetsCont->GetRhoVal()) < fEventExtractionMinJetPt) || ((fLeadingJet->Pt() - fLeadingJet->Area()*fJetsCont->GetRhoVal()) >= fEventExtractionMaxJetPt)))
+    return;
+
+  // Discard jets statistically
+  if(fRandom->Rndm() >= fEventExtractionPercentage)
+    return;
+
+  static Int_t numSavedEvents = 0;
+  numSavedEvents++;
+
+
+  AddHistogram2D<TH2D>(Form("Event%i", numSavedEvents), "Event display", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Tracks}/d#phi d#eta");
+  fTracksCont->ResetCurrentID();
+  while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+    FillHistogram(Form("Event%i", numSavedEvents), track->Phi(), track->Eta(), track->Pt());
+
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 {
   CalculateEventProperties();
@@ -657,6 +686,9 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     }
   }
 
+  // Add event to output tree
+  if(fEventExtractionPercentage)
+    AddEventToTree();
 
   // ####### Event properties
   FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);

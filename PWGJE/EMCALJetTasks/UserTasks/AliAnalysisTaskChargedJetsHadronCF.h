@@ -51,6 +51,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetEventCriteriumSelection(Int_t type);
 
   void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
+  void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
 
  protected:
   void                        ExecOnce();
@@ -59,6 +60,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // ######### META FUNCTIONS
   void                        BinLogAxis(const THn *h, Int_t axisNumber);
   void                        AddJetToTree(AliEmcalJet* jet);
+  void                        AddEventToTree();
   void                        AddJetToOutputArray(AliEmcalJet* jet);
   void                        AddTrackToOutputArray(AliVTrack* track);
   void                        FillHistogramsTracks(AliVTrack* track);
@@ -74,6 +76,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Double_t                    fExtractionPercentage;                    ///< percentage that is recorded
   Double_t                    fExtractionMinPt;                         ///< minimum pt of recorded jets
   Double_t                    fExtractionMaxPt;                         ///< maximum pt of recorded jets
+  Double_t                    fEventExtractionPercentage;               ///< percentage of events that is recorded
+  Double_t                    fEventExtractionMinJetPt;                 ///< minimum jet pt of recorded events
+  Double_t                    fEventExtractionMaxJetPt;                 ///< maximum jet pt of recorded events
+  
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
