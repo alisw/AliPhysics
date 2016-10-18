@@ -43,9 +43,11 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
- 
 
- /// Background simulation
+
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  
+  /// Background simulation
   void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
   void     WrongSignForDStar(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
     /// histos
@@ -57,7 +59,8 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   /// set analysis type
   void     SetAnalysisType(Int_t anaType) {fAnalysis = anaType;}
   void     PrintAnalysisType() {printf("Analysis type: %d\n(0: Heidelberg\t1: Utrecht)",fAnalysis);}
- /// set MC usage
+
+  /// set MC usage
   void     SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t   GetMC() const {return fUseMCInfo;}
  /// set rare mesons
@@ -92,6 +95,8 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   TH2F *fTrueDiff2;           //!<!
   TH1F *fDeltaMassD1;         //!<! 
   AliNormalizationCounter *fCounter;//!<!Counter for normalization slot 4
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID 
   Bool_t fDoImpParDstar;  /// imppar studies
   Int_t  fNImpParBins;   /// nunber of bins in impact parameter histos
   Float_t fLowerImpPar;  /// lower limit in impact parameter (um)
