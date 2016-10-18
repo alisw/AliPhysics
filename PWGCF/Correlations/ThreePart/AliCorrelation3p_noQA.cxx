@@ -269,9 +269,9 @@ int AliCorrelation3p_noQA::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  Ali
   }
   // eta difference
   Double_t DeltaEta12 = p1->Eta()-p2->Eta();
-  if(abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&abs(DeltaEta12)<1.0E-10)	return 0;//Track duplicate, reject.
-  if(abs(p1->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
-  if(abs(p2->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
+  if(TMath::Abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&TMath::Abs(DeltaEta12)<1.0E-10)	return 0;//Track duplicate, reject.
+  if(TMath::Abs(p1->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
+  if(TMath::Abs(p2->Eta()-ptrigger->Eta())<1.0E-10)			return 0;//Track duplicate, reject.
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
 //   fillweight *= dynamic_cast<AliFilteredTrack*>(p2)->GetEff();
@@ -780,9 +780,9 @@ TH2D* AliCorrelation3p_noQA::DeltaEtaCut(TH3F* hist, const char* option, const c
 	bissameside = o.CompareTo("sameside");
 	bissameside=bissameside&&(((dphi1axis->GetBinCenter(dPhi1) <TMath::Pi()/2.0)&&(dphi2axis->GetBinCenter(dPhi2) <TMath::Pi()/2.0))||((dphi1axis->GetBinCenter(dPhi1) >=TMath::Pi()/2.0)&&(dphi2axis->GetBinCenter(dPhi2) >=TMath::Pi()/2.0)));
 	bislesspi2 = o.CompareTo("lesspi2");
-	bislesspi2 = bislesspi2&&(abs(dphi1axis->GetBinCenter(dPhi1)-dphi2axis->GetBinCenter(dPhi2)) <TMath::Pi()/2.0);
+	bislesspi2 = bislesspi2&&(TMath::Abs(dphi1axis->GetBinCenter(dPhi1)-dphi2axis->GetBinCenter(dPhi2)) <TMath::Pi()/2.0);
 	bislesspi4 = o.CompareTo("lesspi4");
-	bislesspi4 = bislesspi4&&(abs(dphi1axis->GetBinCenter(dPhi1)-dphi2axis->GetBinCenter(dPhi2)) <TMath::Pi()/4.0);
+	bislesspi4 = bislesspi4&&(TMath::Abs(dphi1axis->GetBinCenter(dPhi1)-dphi2axis->GetBinCenter(dPhi2)) <TMath::Pi()/4.0);
 	if(bissameside||bislesspi2||bislesspi4){
 	  if(!baverage){
 	    Content += hist->GetBinContent(deta12,dPhi1,dPhi2);

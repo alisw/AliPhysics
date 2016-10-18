@@ -804,7 +804,7 @@ Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
     FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
-    if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
+    if(TMath::Abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
     if(fMultiplicity>fMaxNumberOfTracksInPPConsidered) return kFALSE;//Out of multiplicity bounds in pp, no histograms will be filled.
     if(InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.))return kFALSE;  //reject for pileup.
     FillHistogram("multiplicity",fMultiplicity,0.75);
@@ -816,7 +816,7 @@ Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
     FillHistogram("vertex",fVertex[2],0.25);    
     if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
-    if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
+    if(TMath::Abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
     if(!fCentrality){AliError("Centrality object not found.");return kFALSE;}//Centrality must be defined in the PbPb case.
     if(fCentrality->GetQuality()!=0)return kFALSE;//bad centrality.
     if(fCentralityPercentile<0) return kFALSE;//centrality is not defined
