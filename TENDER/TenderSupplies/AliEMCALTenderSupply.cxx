@@ -1407,13 +1407,11 @@ Int_t AliEMCALTenderSupply::InitTimeCalibrationL1Phase()
     return 2; 
   }
   
-  // Here, it looks for a specific pass
-  TString pass = fFilepass;
-  if ( fRun > 140000 ) 
-    pass = "pass1"; // year >= 2011, in 2010 first periods had a shift corrected later
+  // Only 1 L1 phase correction possible, except special cases
+  TString pass = "pass1";
   
   if ( fFilepass=="muon_calo_pass1" && fRun > 209121 && fRun < 244284 ) 
-    pass ="pass0";//period LHC15a-m
+    pass = "pass0";//period LHC15a-m
 
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
