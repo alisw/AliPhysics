@@ -59,7 +59,7 @@ protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
   AliPHOSTenderSupply& operator= (const AliPHOSTenderSupply&c);
   Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
-  Float_t CorrectNonlinearity(Float_t en) ;
+  Double_t CorrectNonlinearity(Double_t en) ;
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
   Double_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Double_t TestFullLambda(Double_t pt,Double_t l1,Double_t l2) ;

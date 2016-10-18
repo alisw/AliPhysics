@@ -658,7 +658,7 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
    return itr ;
 }
 //____________________________________________________________
-Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
+Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
 
   //For backward compatibility, if no RecoParameters found
   if(fNonlinearityVersion=="Default"){
