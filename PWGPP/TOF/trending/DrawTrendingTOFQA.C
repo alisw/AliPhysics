@@ -653,6 +653,15 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hT0T0CVsRun->Draw("same");
   gPad->SetGridy();
   gPad->SetTitle("Start Time by different methods");
+  TLegend * cLegSTS = new TLegend(0.6,0.75,0.9,0.9);
+  cLegSTS->SetNColumns(2);
+  cLegSTS->SetFillStyle(0);
+  cLegSTS->SetBorderSize(0);
+  cLegSTS->AddEntry(hT0TOFVsRun,"TOF_T0","lp");
+  cLegSTS->AddEntry(hT0T0ACVsRun,"T0AC_T0","lp");
+  cLegSTS->AddEntry(hT0T0AVsRun,"T0A_T0","lp");
+  cLegSTS->AddEntry(hT0T0CVsRun,"T0C_T0","lp");
+  cLegSTS->Draw();
   cStartTimeSummary->Print(Form("%s/cStartTimeSummary.png",plotDir.Data()));
 
   TCanvas* cStartTimeResolutionSummary = new TCanvas("cStartTimeResolutionSummary","cStartTimeResolutionSummary",50, 50,1050, 550);
@@ -662,6 +671,15 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   hT0T0ACVsRunRes->Draw("same");
   hT0T0AVsRunRes->Draw("same");
   hT0T0CVsRunRes->Draw("same");
+  TLegend * cLegSTRS = new TLegend(0.6,0.75,0.9,0.9);
+  cLegSTRS->SetFillStyle(0);
+  cLegSTRS->SetNColumns(2);
+  cLegSTRS->SetBorderSize(0);
+  cLegSTRS->AddEntry(hT0TOFVsRunRes,"TOF_T0 res.","lp");
+  cLegSTRS->AddEntry(hT0T0ACVsRunRes,"T0AC_T0 res.","lp");
+  cLegSTRS->AddEntry(hT0T0AVsRunRes,"T0A_T0 res.","lp");
+  cLegSTRS->AddEntry(hT0T0CVsRunRes,"T0C_T0 res.","lp");
+  cLegSTRS->Draw();
   cStartTimeResolutionSummary->Print(Form("%s/cStartTimeResolutionSummary.png",plotDir.Data()));
 
   TCanvas* cGoodCh = new TCanvas("cGoodCh","cGoodCh",50, 50,1050, 550);
