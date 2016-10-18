@@ -1009,6 +1009,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         // helix information (Alex Chauvin)
         tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
         if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
+        helixinfo[2] -= TMath::Pi()/2.;
         trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
@@ -1087,6 +1088,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
         // helix information (Alex Chauvin)
         tpcInner->GetHelixParameters(helixinfo,InputEvent()->GetMagneticField());
         if(helixinfo[2] < 0) helixinfo[2] = helixinfo[2] + 2*TMath::Pi();
+        helixinfo[2] -= TMath::Pi()/2.;
         trackInfo->fHelixCenter[0]= helixinfo[5]+(TMath::Cos(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixCenter[1]= helixinfo[0]+(TMath::Sin(helixinfo[2])*TMath::Abs(1./helixinfo[4])*copysignf(1.0, InputEvent()->GetMagneticField()*values[AliDielectronVarManager::kCharge]));
         trackInfo->fHelixRadius   = TMath::Abs(1./helixinfo[4]);
