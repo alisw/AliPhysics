@@ -92,7 +92,7 @@ public:
     
     //Setup Run if needed (depends on run number!)     
     Int_t SetupRun( const AliVEvent* const esd );
-
+    
     //removed to avoid accidental usage!
     //void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
     void SetAddInfo      ( Bool_t lVar ) { fkAddInfo     = lVar; } ;
@@ -105,6 +105,9 @@ public:
     void SetAlternateOADBforEstimators      ( TString lFile ){ fAlternateOADBForEstimators      = lFile.Data(); }
     void SetAlternateOADBFullManualBypass   ( TString lFile ){ fAlternateOADBFullManualBypass   = lFile.Data(); }
     void SetAlternateOADBFullManualBypassMC ( TString lFile ){ fAlternateOADBFullManualBypassMC = lFile.Data(); }
+    
+    //Customize AliMultSelection object name
+    void SetStoredObjectName ( TString lObjName ){ fStoredObjectName = lObjName.Data(); }
     
     //Default Setters
     void SetUseDefaultCalib   ( Bool_t lVar ){ fkUseDefaultCalib = lVar; }
@@ -148,6 +151,9 @@ private:
     TString fAlternateOADBForEstimators;
     TString fAlternateOADBFullManualBypass;
     TString fAlternateOADBFullManualBypassMC;
+    
+    //Object name for attaching to ESD/AOD
+    TString fStoredObjectName;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
