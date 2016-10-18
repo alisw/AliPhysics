@@ -555,17 +555,18 @@ void AliFemtoAnalysisLambdaKaon::AddCustomV0SelectionFilters(ParticlePDGType aV0
     aCut->AddProtonTPCNSigmaCut(0.8,1000.,3.);
 
     //--Pion(-) daughter selection filter
+/*
     //the standard cuts in AliFemtoV0TrackCut
     aCut->CreateCustomPionNSigmaFilter();
     aCut->AddPionTPCNSigmaCut(0.,1000.,3.);
+*/
 
-/*
     //RequireTOFPion
     aCut->CreateCustomPionNSigmaFilter();
     aCut->AddPionTPCNSigmaCut(0.,0.5,3.);
     aCut->AddPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
     aCut->AddPionTPCNSigmaCut(0.5,1000.,3.);
-*/
+
     break;
 
   case AliFemtoAnalysisLambdaKaon::kPDGALam:
@@ -577,32 +578,36 @@ void AliFemtoAnalysisLambdaKaon::AddCustomV0SelectionFilters(ParticlePDGType aV0
     aCut->AddProtonTPCAndTOFNSigmaCut(0.8,1000.,3.,3.);
     aCut->AddProtonTPCNSigmaCut(0.8,1000.,3.);
 
+/*
     //the standard cuts in AliFemtoV0TrackCut
     aCut->CreateCustomPionNSigmaFilter();
     aCut->AddPionTPCNSigmaCut(0.,1000.,3.);
+*/
 
-/*
+
     //RequireTOFPion
     aCut->CreateCustomPionNSigmaFilter();
     aCut->AddPionTPCNSigmaCut(0.,0.5,3.);
     aCut->AddPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
     aCut->AddPionTPCNSigmaCut(0.5,1000.,3.);
-*/
+
     break;
 
   case AliFemtoAnalysisLambdaKaon::kPDGK0:
     //--Pion(+) daughter selection filter
+/*
     //the standard cuts in AliFemtoV0TrackCut
     aCut->CreateCustomPionNSigmaFilter();
     aCut->AddPionTPCNSigmaCut(0.,1000.,3.);
+*/
 
-/*
+
     //RequireTOFPion
     aCut->CreateCustomPionNSigmaFilter();
     aCut->AddPionTPCNSigmaCut(0.,0.5,3.);
     aCut->AddPionTPCAndTOFNSigmaCut(0.5,1000.,3.,3.);
     aCut->AddPionTPCNSigmaCut(0.5,1000.,3.);
-*/
+
     break;
 
   default:
@@ -617,27 +622,27 @@ void AliFemtoAnalysisLambdaKaon::AddCustomV0RejectionFilters(ParticlePDGType aV0
   case AliFemtoAnalysisLambdaKaon::kPDGLam:
     aCut->CreateCustomV0Rejection(AliFemtoV0TrackCut::kK0s);
     aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
-                                         0.,0.8,3.,  //positive daughter
-                                         0.,0.8,3.); //negative daughter
+                                         0.,0.5,3.,  //positive daughter
+                                         0.,0.5,3.); //negative daughter
     aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
-                                               0.8,1000.,3.,3.,  //positive daughter
-                                               0.8,1000.,3.,3.); //negative daughter
+                                               0.5,1000.,3.,3.,  //positive daughter
+                                               0.5,1000.,3.,3.); //negative daughter
     aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
-                                         0.8,1000.,3.,  //positive daughter
-                                         0.8,1000.,3.); //negative daughter
+                                         0.5,1000.,3.,  //positive daughter
+                                         0.5,1000.,3.); //negative daughter
     break;
 
   case AliFemtoAnalysisLambdaKaon::kPDGALam:
     aCut->CreateCustomV0Rejection(AliFemtoV0TrackCut::kK0s);
     aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
-                                         0.,0.8,3.,  //positive daughter
-                                         0.,0.8,3.); //negative daughter
+                                         0.,0.5,3.,  //positive daughter
+                                         0.,0.5,3.); //negative daughter
     aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
-                                               0.8,1000.,3.,3.,  //positive daughter
-                                               0.8,1000.,3.,3.); //negative daughter
+                                               0.5,1000.,3.,3.,  //positive daughter
+                                               0.5,1000.,3.,3.); //negative daughter
     aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kK0s,
-                                         0.8,1000.,3.,  //positive daughter
-                                         0.8,1000.,3.); //negative daughter
+                                         0.5,1000.,3.,  //positive daughter
+                                         0.5,1000.,3.); //negative daughter
     break;
 
   case AliFemtoAnalysisLambdaKaon::kPDGK0:
@@ -645,18 +650,22 @@ void AliFemtoAnalysisLambdaKaon::AddCustomV0RejectionFilters(ParticlePDGType aV0
     aCut->CreateCustomV0Rejection(AliFemtoV0TrackCut::kLambda);
       //Positive daughter (Proton)
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kLambda,1,0.,0.8,3.);
+      aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kLambda,1,0.8,1000.,3.,3.);
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kLambda,1,0.8,1000.,3.);
       //Negative daughter (Pion)
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kLambda,-1,0.,0.5,3.);
+      aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kLambda,-1,0.5,1000.,3.,3.);
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kLambda,-1,0.5,1000.,3.);
 
     //AntiLambda rejection
     aCut->CreateCustomV0Rejection(AliFemtoV0TrackCut::kAntiLambda);
       //Positive daughter (Pion)
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kAntiLambda,1,0.,0.5,3.);
+      aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kAntiLambda,1,0.5,1000.,3.,3.);
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kAntiLambda,1,0.5,1000.,3.);
       //Negative daughter (AntiProton)
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kAntiLambda,-1,0.,0.8,3.);
+      aCut->AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kAntiLambda,-1,0.8,1000.,3.,3.);
       aCut->AddTPCNSigmaCutToV0Rejection(AliFemtoV0TrackCut::kAntiLambda,-1,0.8,1000.,3.);
     break;
 
@@ -752,21 +761,22 @@ void AliFemtoAnalysisLambdaKaon::AddCustomESDSelectionFilters(ParticlePDGType aE
   case AliFemtoAnalysisLambdaKaon::kPDGKchP:
   case AliFemtoAnalysisLambdaKaon::kPDGKchM:
     //Kaon filter
+/*
     aCut->CreateCustomNSigmaFilter(AliFemtoESDTrackCutNSigmaFilter::kKaon);
       aCut->AddTPCNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.0,0.5,2.0);
       aCut->AddTPCAndTOFNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.5,0.8,3.0,2.0);
       aCut->AddTPCAndTOFNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.8,1.0,3.0,1.5);
       aCut->AddTPCAndTOFNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,1.0,1.5,3.0,1.0);
+*/
 
     //New Kaon filter (Konstantin Mikhaylov)
-/*
     aCut->CreateCustomNSigmaFilter(AliFemtoESDTrackCutNSigmaFilter::kKaon);
       aCut->AddTPCNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.0,0.4,2.0);
       aCut->AddTPCNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.4,0.45,1.0);
       aCut->AddTPCAndTOFNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.45,0.8,3.0,2.0);
       aCut->AddTPCAndTOFNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,0.8,1.0,3.0,1.5);
       aCut->AddTPCAndTOFNSigmaCut(AliFemtoESDTrackCutNSigmaFilter::kKaon,1.0,99.,3.0,1.0);
-*/
+
     break;
 
   case AliFemtoAnalysisLambdaKaon::kPDGPiP:
