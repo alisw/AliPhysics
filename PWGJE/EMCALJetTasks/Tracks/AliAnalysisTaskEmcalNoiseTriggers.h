@@ -134,7 +134,7 @@ protected:
   void AnalyseTriggerPatch(const AliEMCALTriggerPatchInfo &recpatch, SelectPatchType_t pt);
 
   static const TString                             fgkPatchNames[2];  ///< Names of the trigger patch types (for histograms)
-  AliEMCALTriggerDataGrid<Int_t>                   fL1ADC;            ///< Level1 fastor ADCs
+  AliEMCALTriggerDataGrid<Int_t>                   fL1ADC;            //!<! Level1 fastor ADCs
   ULong_t                                          fTriggerBits;      ///< Trigger bits for the event selection
   TString                                          fTriggerString;    ///< Trigger string for event selection
 

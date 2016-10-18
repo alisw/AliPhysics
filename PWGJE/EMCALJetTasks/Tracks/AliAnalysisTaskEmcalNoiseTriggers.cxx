@@ -18,6 +18,9 @@
 #include "AliAnalysisTaskEmcalNoiseTriggers.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerMapping.h"
+#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerPatchADCInfoAP.h"
+#include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliVCaloTrigger.h"
 #include "AliVEvent.h"
@@ -77,8 +80,9 @@ bool AliAnalysisTaskEmcalNoiseTriggers::IsUserEventSelected(){
 
 bool AliAnalysisTaskEmcalNoiseTriggers::Run(){
   if(!fL1ADC.IsAllocated()){
-    int rows = 64;
+    int nrows = 64;
     if(fGeom->GetTriggerMappingVersion() == 2) nrows = 104;
+    fL1ADC.Allocate(48, nrows);
   }
   PrepareL1FastorADC();
 
@@ -167,7 +171,7 @@ void AliAnalysisTaskEmcalNoiseTriggers::AnalyseFastors(){
     emctrigger->GetL1TimeSum(adcAmp);
     if(adcAmp < 0) adcAmp = 0;
     fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(globCol, globRow, absFastor);
-    fHistos->FillTH1("hFastorL1TimeSums", absFastor);
+    fHistos->FillTH2("hFastorL1TimeSums", absFastor, adcAmp);
   }
 }
 
@@ -176,7 +180,9 @@ void AliAnalysisTaskEmcalNoiseTriggers::AnalyseTriggerPatch(const AliEMCALTrigge
 
   // cut patch according to ADC sum without masking (select also patches with noise)
   Int_t sumADC = adcvalues->GetSumADC();
-  if(pt == kRecalc) SelectFiredPatch(sumADC);
+  if(pt == kRecalc) {
+    if(!SelectFiredPatch(sumADC)) return;
+  }
 
   const TString &mypatchtype =  fgkPatchNames[pt];
   Int_t maxADC = adcvalues->GetMaxADC(), ncontrib = adcvalues->GetNFastorsContrib();
