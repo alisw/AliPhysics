@@ -29,7 +29,11 @@ Clusterizer:
     recalDistToBadChannels: false
     recalShowerShape: false
     remapMcAod: false                  # Switch for the remaping for the MC labels in AOD productions
-    enableFracEMCRecalc: false # Enables the recalculation of the MC labels including the fractional energy on cell level
+    enableFracEMCRecalc: false         # Enables the recalculation of the MC labels including the fractional energy on cell level
+    removeNMCGenerators: 0             # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
+    enableMCGenRemovTrack: true        # apply the MC generators rejection also for track matching
+    removeMCGen1: ""                   # name of generator input to be accepted
+    removeMCGen2: ""                   # name of generator input to be accepted
     diffEAggregation: 0.03             # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
 ClusterExotics:
     enabled: true

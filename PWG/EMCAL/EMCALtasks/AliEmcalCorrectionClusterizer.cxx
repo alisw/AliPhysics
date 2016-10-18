@@ -133,6 +133,17 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
   Float_t diffEAggregation = 0.;
   GetProperty("diffEAggregation", diffEAggregation);
+  
+  Int_t removeNMCGenerators = 0;
+  GetProperty("removeNMCGenerators", removeNMCGenerators);
+  Bool_t enableMCGenRemovTrack = 1;
+  GetProperty("enableMCGenRemovTrack", enableMCGenRemovTrack);
+  std::string removeMcGen1 = "";
+  GetProperty("removeMCGen1", removeMcGen1);
+  TString removeMCGen1 = removeMcGen1.c_str();
+  std::string removeMcGen2 = "";
+  GetProperty("removeMCGen2", removeMcGen2);
+  TString removeMCGen2 = removeMcGen2.c_str();
 
   AddContainer(kCluster);
   
@@ -151,6 +162,17 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   if(enableFracEMCRecalc){
     fSetCellMCLabelFromEdepFrac = kTRUE;
     fSetCellMCLabelFromCluster  = 0;
+    
+    printf("Enable frac MC recalc, remove generators %d \n",removeNMCGenerators);
+    if(removeNMCGenerators > 0)
+    {
+      printf("\t gen1 <%s>, gen2 <%s>, remove tracks %d\n",removeMCGen1.Data(),removeMCGen2.Data(),enableMCGenRemovTrack);
+      fRecoUtils->SetNumberOfMCGeneratorsToAccept(removeNMCGenerators) ;
+      fRecoUtils->SetNameOfMCGeneratorsToAccept(0,removeMCGen1);
+      fRecoUtils->SetNameOfMCGeneratorsToAccept(1,removeMCGen2);
+      
+      if(!enableMCGenRemovTrack) fRecoUtils->SwitchOffMCGeneratorToAcceptForTrackMatching();
+    }
   }
   
   fInputCellType = AliEmcalCorrectionClusterizer::kFEEData;
@@ -286,11 +308,14 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
       const Int_t ncells   = fCaloCells->GetNumberOfCells();
       for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell)
       {
-        Double_t cellAmplitude=0, cellTime=0, cellEFrac = 0;
+        Float_t cellAmplitude=0;
+        Double_t cellTime=0, amp = 0, cellEFrac = 0;
         Short_t  cellNumber=0;
         Int_t cellMCLabel=-1;
-        if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
+        if (fCaloCells->GetCell(icell, cellNumber, amp, cellTime, cellMCLabel, cellEFrac) != kTRUE)
           break;
+        
+        cellAmplitude = amp; // compilation problem
         
         //if (fSetCellMCLabelFromCluster) cellMCLabel = fCellLabels[cellNumber];
         if(!fSetCellMCLabelFromEdepFrac)
@@ -322,26 +347,19 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
           }
         }
         
-        AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
-                                                                        (Float_t)cellAmplitude, (Float_t)cellTime,
-                                                                        AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
-        
-        if (fSubBackground)
-        {
-          Float_t energy = cellAmplitude;
-          Float_t time   = cellTime;
-          fClusterizer->Calibrate(energy,time,cellNumber);
-          digit->SetAmplitude(energy);
-          avgE += energy;
-        }
-        
         // New way to set the cell MC labels,
         // valid only for MC productions with aliroot > v5-07-21
+        //
+        TArrayI labeArr(0);
+        TArrayF eDepArr(0);
+        Int_t nLabels = 0;
+        
         if(fSetCellMCLabelFromEdepFrac && fOrgClusterCellId[cellNumber] >= 0) // index can be negative if noisy cell that did not form cluster
         {
-          fCellLabels[cellNumber] = idigit;
+          cellMCLabel = -1;
           
-          AliVCluster *clus = 0;
+          fCellLabels[cellNumber] = idigit;
+
           Int_t iclus = fOrgClusterCellId[cellNumber];
           
           if(iclus < 0)
@@ -350,42 +368,35 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
             continue;
           }
           
-          clus = fEvent->GetCaloCluster(iclus);
+          AliVCluster* clus = fEvent->GetCaloCluster(iclus);
           
           for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
           {
             if(cellNumber != clus->GetCellAbsId(icluscell)) continue ;
             
-            // Get the energy deposition fraction.
-            Float_t eDepFrac[4];
-            clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
-            
             // Select the MC label contributing, only if enough energy deposition
-            TArrayI labeArr(0);
-            TArrayF eDepArr(0);
-            Int_t nLabels = 0;
-            for(Int_t imc = 0; imc < 4; imc++)
-            {
-              if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
-              {
-                nLabels++;
-                
-                labeArr.Set(nLabels);
-                labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
-                
-                eDepArr.Set(nLabels);
-                eDepArr.AddAt(eDepFrac[imc]*cellAmplitude, nLabels-1);
-                // use as deposited energy a fraction of the simulated energy (smeared and with noise)
-              }
-            }
-            
-            if(nLabels > 0)
-            {
-              digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
-            }
+            fRecoUtils->RecalculateCellLabelsRemoveAddedGenerator(cellNumber, clus, fMCEvent, cellAmplitude, labeArr, eDepArr);
+            nLabels = labeArr.GetSize();
           }
         }
         
+        AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
+                                                                    cellAmplitude, (Float_t)cellTime,
+                                                                    AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
+        
+        if(nLabels > 0)
+        {
+          digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
+        }
+
+        if (fSubBackground)
+        {
+          Float_t energy = cellAmplitude;
+          Float_t time   = cellTime;
+          fClusterizer->Calibrate(energy,time,cellNumber);
+          digit->SetAmplitude(energy);
+          avgE += energy;
+        }
         
         idigit++;
       }

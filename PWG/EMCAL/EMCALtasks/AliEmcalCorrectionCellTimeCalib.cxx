@@ -319,11 +319,12 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
     return 2;
   }
   
-  // Here, it looks for a specific pass
-  TString pass = fFilepass;
-  if (fFilepass=="calo_spc") pass ="pass1";
-  if (fFilepass=="muon_calo_pass1") pass ="pass0";
-  if (fFilepass=="muon_calo_pass2" || fFilepass=="pass2" || fFilepass=="pass3" || fFilepass=="pass4") pass ="pass1";
+  // Only 1 L1 phase correction possible, except special cases
+  TString pass = "pass1";
+
+  if ( fFilepass=="muon_calo_pass1" && fRun > 209121 && fRun < 244284 )
+    pass = "pass0";//period LHC15a-m
+  
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
   {
