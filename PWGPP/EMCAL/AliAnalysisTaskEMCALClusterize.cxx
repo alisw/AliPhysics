@@ -430,10 +430,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
     }
     else
     {
-      // Here, it looks for a specific pass
-      TString pass2 = pass;
-      if ( runnumber > 140000 ) 
-        pass2 = "pass1"; // year >= 2011, in 2010 first periods had a shift corrected later
+      // Only 1 L1 phase correction possible, except special cases
+      TString pass2 =  "pass1"; 
       
       if ( pass=="muon_calo_pass1" && runnumber > 209121 && runnumber < 244284 ) 
         pass2 = "pass0"; // period LHC15a-m
