@@ -2139,15 +2139,9 @@ AliTRDtrapConfig* AliTRDcalibDB::GetTrapConfig()
     // try to load the requested configuration
     this->LoadTrapConfig(fTrapConfigName, fTrapConfigVersion);
 
-    // if we still don't have a valid TRAPconfig, create a default one
-    if (!fTrapConfig) {
-      AliWarning("Falling back to default configuration");
-      static AliTRDtrapConfig trapConfigDefault("default", "default TRAP configuration");
-      fTrapConfig = &trapConfigDefault;
-      AliTRDtrapConfigHandler cfgHandler(fTrapConfig);
-      cfgHandler.Init();
-      cfgHandler.LoadConfig();
-    }
+    // if we still don't have a valid TRAPconfig, we give up
+    if (!fTrapConfig)
+      AliFatal("Requested TRAP configuration not found!");
 
     AliInfo(Form("using TRAPconfig \"%s\"", fTrapConfig->GetTitle()));
 
