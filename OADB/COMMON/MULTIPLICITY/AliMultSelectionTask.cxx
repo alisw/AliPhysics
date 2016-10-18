@@ -102,6 +102,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
       fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
       fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
+      //don't change the default, or we'll be in big trouble!
+      fStoredObjectName("MultSelection"),
       fZncEnergy(0),
       fZpcEnergy(0),
       fZnaEnergy(0),
@@ -217,6 +219,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
       fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
       fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
+      //don't change the default, or we'll be in big trouble!
+      fStoredObjectName("MultSelection"),
       fZncEnergy(0),
       fZpcEnergy(0),
       fZnaEnergy(0),
@@ -1409,7 +1413,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //=============================================================================
         
         //Add to AliVEvent
-        //if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
+        //if( (!(InputEvent()->FindListObject(fStoredObjectName.Data())) ) && !fkAttached ) {
         //    InputEvent()->AddObject(fSelection);
         //    fkAttached = kTRUE;
         //}
@@ -1427,11 +1431,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if ( lAodOutputHandler ) {
             //Add to output as well as input
             AliVEvent *lOutputEv = lAodOutputHandler->GetAOD();
-            TObject*          outaodO  = lOutputEv->FindListObject("MultSelection");
+            TObject*          outaodO  = lOutputEv->FindListObject(fStoredObjectName.Data());
             AliMultSelection* outaodS  = 0;
             if (!outaodO) {
                 outaodS = new AliMultSelection(*lSelection);
-                outaodS->SetName("MultSelection");
+                outaodS->SetName(fStoredObjectName.Data());
                 lAodOutputHandler->AddBranch("AliMultSelection",&outaodS);
             }
             else {
@@ -1441,11 +1445,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
         }
         //=============================================================================
 
-        TObject*          outO  = input->FindListObject("MultSelection");
+        TObject*          outO  = input->FindListObject(fStoredObjectName.Data());
         AliMultSelection* outS  = 0;
         if (!outO) {
             outS = new AliMultSelection(*lSelection);
-            outS->SetName("MultSelection");
+            outS->SetName(fStoredObjectName.Data());
             input->AddObject(outS);
         }
         else {
@@ -1580,21 +1584,17 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         fileName = Form("%s", fAlternateOADBFullManualBypass.Data() );
     }
 
-    AliOADBContainer *con = new AliOADBContainer("OADB");
-    Int_t lFoundFile = con->InitFromFile(fileName,"MultSel");
+    //Open File without calling InitFromFile, don't load it all!
+    TFile * foadb = TFile::Open(fileName);
+    if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileName.Data()));
 
-    //FIXME: Here one should open an empty file instead...
-    TString fileNameDef =(Form("%s/COMMON/MULTIPLICITY/data/OADB-LHC15f.root", AliAnalysisManager::GetOADBPath() ));
-    if ( lFoundFile == 1 ) {
-        lFoundFile = con->InitFromFile(fileNameDef,"MultSel");
-        if (lFoundFile == 1)
-            AliFatal("Check AliPhysics Installation: nothing found in LHC15f calibration!");
-    }
-
+    AliOADBContainer * MultContainer = (AliOADBContainer*) foadb->Get("MultSel");
+    if(!MultContainer) AliFatal(Form("OADB file %s does not contain OADBContainer named MultSel, stopping here", fileName.Data()));
+    
     //Get Object for this run!
     TObject *lObjAcquired = 0x0;
 
-    lObjAcquired = con->GetObject(fCurrentRun, "Default");
+    lObjAcquired = MultContainer->GetObject(fCurrentRun, "Default");
 
     if (!lObjAcquired) {
         if ( fkUseDefaultCalib ) {
@@ -1603,7 +1603,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             AliWarning(" This is only a 'good guess'! Use with Care! ");
             AliWarning(" To Switch off this good guess, use SetUseDefaultCalib(kFALSE)");
             AliWarning("======================================================================");
-            lObjAcquired  = con->GetDefaultObject("oadbDefault");
+            lObjAcquired  = MultContainer->GetDefaultObject("oadbDefault");
         } else {
             AliWarning("======================================================================");
             AliWarning(Form(" Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
@@ -1629,7 +1629,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     //Make sure naming convention is followed!
     AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
     if (sel) {
-        sel->SetName("MultSelection");
+        sel->SetName(fStoredObjectName.Data());
     }
 
     //=====================================================================
@@ -1647,16 +1647,17 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
             fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
         }
-
-        AliOADBContainer *conAlter = new AliOADBContainer("OADB-Alternate");
-        Int_t lFoundFileAlter = conAlter->InitFromFile(fileNameAlter,"MultSel");
-        if ( lFoundFileAlter == 1 ) {
-            AliFatal("Couldn't find requested alternate calibration! Quitting!");
-        }
+        
+        //Open fileNameAlter
+        TFile * foadbAlter = TFile::Open(fileNameAlter);
+        if(!foadbAlter->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileNameAlter.Data()));
+        
+        AliOADBContainer * MultContainerAlter = (AliOADBContainer*) foadbAlter->Get("MultSel");
+        if(!MultContainerAlter) AliFatal(Form("OADB file %s does not contain OADBContainer named MultSel, stopping here", fileNameAlter.Data()));
 
         //Get Object for this run
         TObject *lObjAcquiredAlter = 0x0;
-        lObjAcquiredAlter = conAlter->GetObject(fCurrentRun, "Default");
+        lObjAcquiredAlter = MultContainerAlter->GetObject(fCurrentRun, "Default");
         if (!lObjAcquiredAlter) {
             if ( fkUseDefaultMCCalib ) {
                 AliWarning("======================================================================");
@@ -1664,7 +1665,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                 AliWarning(" This is usually only approximately OK! Use with Care! ");
                 AliWarning(" To Switch off this good guess, use SetUseDefaultMCCalib(kFALSE)");
                 AliWarning("======================================================================");
-                lObjAcquiredAlter  = conAlter->GetDefaultObject("oadbDefault");
+                lObjAcquiredAlter  = MultContainerAlter->GetDefaultObject("oadbDefault");
             } else {
                 AliWarning("======================================================================");
                 AliWarning(Form(" MC Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
@@ -1695,12 +1696,14 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                 sel->GetEstimator(iEst)->SetDefinition ( lEstim->GetDefinition().Data() );
             }
         }
+        //Cleanup, please
+        
         //That should be it...
     }
     //=====================================================================
 
     if (sel) {
-        sel->SetName("MultSelection");
+        sel->SetName(fStoredObjectName.Data());
         //Optimize evaluation
         sel->Setup(fInput);
     }
