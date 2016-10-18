@@ -496,7 +496,7 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 
   fOutputStudy = new TList();
   fOutputStudy->SetOwner();
-  fOutputStudy->SetName("MCstudyplots");
+  fOutputStudy->SetName("controlplots");
 
   TString nameMass=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassWg=" ",nameSgnWg=" ", nameBkgWg=" ", nameRflWg=" ";
 
@@ -1623,19 +1623,26 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
      fOutputStudy->Add(hPtK);
 
      //Events multiplicity
-     Double_t yAxisMult[17] = {0, 4, 8, 12, 16, 20, 28, 36, 44, 52, 58, 66, 80, 100, 150, 200, 300}; 
      namePlot = "hMultiplEvt_Bin"; namePlot+=i;
-     TH1F *hMultEv = new TH1F(namePlot.Data(), "Event multiplicity",16,yAxisMult);
+     TH1F *hMultEv = new TH1F(namePlot.Data(), "Event multiplicity",1500,0.,6000.);
      hMultEv->SetMinimum(0);
      fOutputStudy->Add(hMultEv);
 
      //D* feeddown pions rejection histos
-     namePlot = "hDstarPions_Bin"; namePlot+=i;
-     TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut; # Tracks",2,0.,2.,150,1.5848,2.1848);
+     namePlot = "hDstarPionsVsDmass_Bin"; namePlot+=i;
+     TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs D inv mass; # Tracks",2,0.,2.,150,1.5848,2.1848);
      hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
      hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
-    hDstarPions->SetMinimum(0);
-    fOutputStudy->Add(hDstarPions); 
+     hDstarPions->SetMinimum(0);
+     fOutputStudy->Add(hDstarPions); 
+
+     namePlot = "hDstarPionsVsdeltaPhi_Bin"; namePlot+=i;
+     TH2F *hDstarPions2 = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs deltaPhi; # Tracks",2,0.,2.,64,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
+     hDstarPions2->GetXaxis()->SetBinLabel(1,"Not rejected");
+     hDstarPions2->GetXaxis()->SetBinLabel(2,"Rejected");
+     hDstarPions2->SetMinimum(0);
+     fOutputStudy->Add(hDstarPions2); 
+
  
     } //end of !fMixing
 
@@ -1693,15 +1700,15 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   }
 
   //out of bin loop
-  TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",300,0.,300.);
+  TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",6000,0.,6000.);
   hCountC->SetMinimum(0);
   fOutputStudy->Add(hCountC);
 
-  TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",20,0.,20.);
+  TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",100,0.,100.);
   hCountH->SetMinimum(0);
   fOutputStudy->Add(hCountH);
 
-  TH1F *hCountK = new TH1F("hist_Count_K0", "Kaons counter; # Tracks",20,0.,20.);
+  TH1F *hCountK = new TH1F("hist_Count_K0", "Kaons counter; # Tracks",100,0.,100.);
   hCountK->SetMinimum(0);
   fOutputStudy->Add(hCountK);
 
@@ -1983,12 +1990,14 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
 
       if(!fMixing) {      
 	if(fSoftPiCut && !track->CheckSoftPi()) { //removal of soft pions
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mD0bar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
           continue;
         } else { //not a soft pion
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mD0bar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
         }
         Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
         if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1]) continue; //discards daughters of candidate
@@ -2062,12 +2071,12 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
 
       if(!fMixing) {      
   	if(fSoftPiCut && !kCharg->CheckSoftPi()) { //removal of soft pions
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(1.,mD0bar);
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mD0bar);
           continue;
         } else {
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPions_Bin%d",ptbin)))->Fill(0.,mD0bar);
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mD0);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mD0bar);
         }
         Int_t idDaughs[2] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID()}; //IDs of daughters to be skipped
         if(kCharg->GetID() == idDaughs[0] || kCharg->GetID() == idDaughs[1]) continue; //discards daughters of candidate
