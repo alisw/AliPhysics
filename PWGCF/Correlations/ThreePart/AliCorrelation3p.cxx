@@ -829,10 +829,10 @@ TH2D* AliCorrelation3p::DeltaEtaCut(TH3F* hist, const char* option, const char* 
 	  bissameside= bissameside||((dphi1>=gkPii/2.0)&&(dphi2>=gkPii/2.0));
 	}
 	if(o.CompareTo("lesspi2")==0){
-	  bislesspi2 = (abs(dphi1-dphi2) <TMath::Pi()/2.0);
+	  bislesspi2 = (TMath::Abs(dphi1-dphi2) <TMath::Pi()/2.0);
 	}
 	if(o.CompareTo("lesspi4")==0){
-	  bislesspi4 = (abs(dphi1-dphi2) <TMath::Pi()/4.0);
+	  bislesspi4 = (TMath::Abs(dphi1-dphi2) <TMath::Pi()/4.0);
 	}
 	if(bissameside||bislesspi2||bislesspi4){
 	  if(!baverage){

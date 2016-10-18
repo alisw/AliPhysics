@@ -76,6 +76,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void SetQA(){fQA=kTRUE;}
   void SetQAtask(bool qatask){fqatask=qatask;}
   void SetBinVer(int binver){fBinVer=binver;}
+  void SetExtraMixed(bool extramixed){fExtraMixed=extramixed;}
   void SetWeights(const char* file){
     TFile* wfile = TFile::Open(file,"OLD");
     if(wfile){
