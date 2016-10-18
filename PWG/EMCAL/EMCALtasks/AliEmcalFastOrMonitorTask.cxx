@@ -13,14 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <algorithm>
+#include <vector>
 #include <THashList.h>
 #include <THistManager.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+#include <TVector3.h>
 
 #include "AliEmcalFastOrMonitorTask.h"
 #include "AliEMCALGeometry.h"
 #include "AliInputEventHandler.h"
 #include "AliVCaloTrigger.h"
 #include "AliVEvent.h"
+#include "AliVVertex.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalFastOrMonitorTask)
@@ -64,6 +69,7 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistos->CreateTH1("hFastOrFrequencyL1", "FastOr frequency at Level1", kMaxFastOr, -0.5, kMaxFastOr - 0.5);
   fHistos->CreateTH2("hFastOrAmplitude", "FastOr amplitudes", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 513, -0.5, 512.5);
   fHistos->CreateTH2("hFastOrTimeSum", "FastOr time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
+  fHistos->CreateTH2("hFastOrTransverseTimeSum", "FastOr transverse time sum", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 2049, -0.5, 2048.5);
   fHistos->CreateTH2("hFastOrNL0Times", "FastOr Number of L0 times", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 16, -0.5, 15.5);
   fHistos->CreateTH2("hFastOrColRowFrequencyL0", "FastOr Frequency (col-row) at Level1", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
   fHistos->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level0", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
@@ -97,6 +103,10 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
     if(!TString(InputEvent()->GetFiredTriggerClasses()).Contains(fTriggerPattern)) return;
   }
 
+  const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
+  Double_t vtxpos[3];
+  vtx->GetXYZ(vtxpos);
+
   fHistos->FillTH1("hEvents", 1);
 
   AliVCaloTrigger *triggerdata = InputEvent()->GetCaloTrigger("EMCAL");
@@ -121,9 +131,30 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
       fHistos->FillTH2("hFastOrAmplitude", fastOrID, amp);
       fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
       fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
+      fHistos->FillTH2("hFastOrTransverseTimeSum", fastOrID, GetTransverseTimeSum(fastOrID, l1timesum, vtxpos));
     }
   }
 
   PostData(1, fHistos->GetListOfHistograms());
 }
 
+Double_t AliEmcalFastOrMonitorTask::GetTransverseTimeSum(Int_t fastorAbsID, Double_t adc, const Double_t *vertex) const{
+  Int_t cellIDs[4];
+  fGeom->GetTriggerMapping()->GetCellIndexFromFastORIndex(fastorAbsID, cellIDs);
+  std::vector<double> eta, phi;
+  for(int i = 0l; i < 4; i++){
+    double etatmp, phitmp;
+    fGeom->EtaPhiFromIndex(cellIDs[4], etatmp, phitmp);
+    eta.push_back(etatmp);
+    phi.push_back(phitmp);
+  }
+
+  // Calculate FastOR position: for the approximation take mean eta and phi
+  // Radius is taken from the geometry
+  TVector3 fastorPos, vertexPos(vertex[0], vertex[1], vertex[2]);
+  fastorPos.SetPtEtaPhi(fGeom->GetIPDistance(), TMath::Mean(eta.begin(), eta.end()), TMath::Mean(phi.begin(), phi.end()));
+  fastorPos -= vertexPos;
+
+  TLorentzVector evec(fastorPos, adc);
+  return evec.Et();
+}
