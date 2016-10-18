@@ -251,7 +251,7 @@ private:
   Double_t CGausPol0(Double_t * x, Double_t * par){
     //Parameterization of signal, par[0] gives the integral of the gaussian.
     Double_t c=par[1];
-    Double_t s=abs(par[2]);
+    Double_t s=TMath::Abs(par[2]);
     Double_t dx=(x[0]-c);
     return par[0]*exp(-dx*dx/(2.*s*s))/TMath::Sqrt(TMath::Pi())/s+par[3];
   }
@@ -266,48 +266,48 @@ private:
   }
   Double_t CBKGPol0p(Double_t * x, Double_t * par){
     //Parameterization of background. Provide par[1]=c  for reference.
-    if(abs(x[0])>2.0)return 0.0;
+    if(TMath::Abs(x[0])>2.0)return 0.0;
     return par[0] ;
   }  
   Double_t CGausAPol1(Double_t * x, Double_t * par){
     //Parameterization of signal, par[0] gives the integral of the gaussian.
     Double_t c=par[1];
-    Double_t s=abs(par[2]);
+    Double_t s=TMath::Abs(par[2]);
     Double_t dx=(x[0]-c);
-    return par[0]*exp(-dx*dx/(2.*s*s))/TMath::Sqrt(TMath::Pi())/s+par[3]-abs(dx)*par[4];
+    return par[0]*exp(-dx*dx/(2.*s*s))/TMath::Sqrt(TMath::Pi())/s+par[3]-TMath::Abs(dx)*par[4];
   }
   Double_t CBKGAPol1(Double_t * x, Double_t * par){
     //Parameterization of background. Provide par[1]=c  for reference.
     Double_t c=par[1];
     Double_t dx=(x[0]-c);
     if(dx<gEtasigRange&&dx>-gEtasigRange){TF1::RejectPoint();return 0;}
-    return par[0]-abs(dx)*par[2];
+    return par[0]-TMath::Abs(dx)*par[2];
   }
   Double_t CBKGAPol1p(Double_t * x, Double_t * par){
     //Parameterization of background. Provide par[1]=c  for reference.
     Double_t c=par[1];
     Double_t dx=(x[0]-c);
-    return par[0]-abs(dx)*par[2];
+    return par[0]-TMath::Abs(dx)*par[2];
   }  
   Double_t CGausAPol2(Double_t * x, Double_t * par){
     //Parameterizatin of signal, par[0] gives the integral of the gaussian.
     Double_t c=par[1];
-    Double_t s=abs(par[2]);
+    Double_t s=TMath::Abs(par[2]);
     Double_t dx=(x[0]-c);
-    return par[0]*exp(-dx*dx/(2.*s*s))/TMath::Sqrt(TMath::Pi())/s+par[3]-abs(dx)*par[4] + dx*dx*par[5];
+    return par[0]*exp(-dx*dx/(2.*s*s))/TMath::Sqrt(TMath::Pi())/s+par[3]-TMath::Abs(dx)*par[4] + dx*dx*par[5];
   }
   Double_t CBKGAPol2(Double_t * x, Double_t * par){
     //Parameterization of background. Provide par[1]=c  for reference.
     Double_t c=par[1];
     Double_t dx=(x[0]-c);
     if(dx<gEtasigRange&&dx>-gEtasigRange){TF1::RejectPoint();return 0;}
-    return par[0]-abs(dx)*par[2] + dx*dx*par[3];
+    return par[0]-TMath::Abs(dx)*par[2] + dx*dx*par[3];
   }  
   Double_t CBKGAPol2p(Double_t * x, Double_t * par){
     //Parameterization of background. Provide par[1]=c  for reference.
     Double_t c=par[1];
     Double_t dx=(x[0]-c);
-    return par[0]-abs(dx)*par[2] + dx*dx*par[3];
+    return par[0]-TMath::Abs(dx)*par[2] + dx*dx*par[3];
   }    
   
 TH2D * GetHistFrom3d(TH3D* hist,const char* which,const char* name)
@@ -467,7 +467,7 @@ void RemovePlateau(Double_t plateauheight, TH2D * hist){
 
 void removeconstant(TH1D * hist, Double_t plateau, Double_t erroronit){
   for(int x =0;x<=hist->GetNbinsX();x++){
-    if(abs(hist->GetBinContent(x))>1.0E-10){
+    if(TMath::Abs(hist->GetBinContent(x))>1.0E-10){
       hist->SetBinContent(x,hist->GetBinContent(x) + plateau);
       hist->SetBinError(x,TMath::Sqrt(hist->GetBinError(x)*hist->GetBinError(x) + erroronit*erroronit));
     }
@@ -4071,7 +4071,7 @@ void Periods(){
 	  
 	Double_t loccont = hist->GetBinContent(x);
 	Double_t locerror = hist->GetBinError(x);
-	if(abs(locerror)>1.0E-12){
+	if(TMath::Abs(locerror)>1.0E-12){
 	  S += loccont/(locerror*locerror);
 	  error += 1.0/(locerror*locerror);
 	}
