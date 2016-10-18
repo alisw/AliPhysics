@@ -236,6 +236,7 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   // Random cone plots
   AddHistogram2D<TH2D>("hRandomConePt", "Random cone p_{T} distribution", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
   AddHistogram2D<TH2D>("hRandomConeRawPt", "Random cone p_{T} distribution (no bgrd. correction)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hRandomConeRawPtCut3GeV", "Random cone p_{T} distribution (no bgrd. correction), cut p_{T} > 3 GeV/c", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
 
   // Leading/subleading, background ...
 
@@ -648,6 +649,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
   Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
   Double_t tmpRandConePt  = 0; // to be determined
+  Double_t tmpRandConePt3GeV = 0; // to be determined
 
   fAcceptedTracks = 0;
   fTracksCont->ResetCurrentID();
@@ -658,7 +660,11 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     FillHistogramsTracks(track);
 
     if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, fJetsCont->GetJetRadius()))
+    {
       tmpRandConePt += track->Pt();
+      if (track->Pt() > 3.0)
+        tmpRandConePt3GeV += track->Pt();
+    }
 
     // Add track to output array
     trackcount++;
@@ -693,6 +699,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   // ####### Event properties
   FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
   FillHistogram("hRandomConeRawPt", tmpRandConePt, fCent); 
+  FillHistogram("hRandomConeRawPtCut3GeV", tmpRandConePt3GeV, fCent);
 
   FillHistogram("hBackgroundPt", fJetsCont->GetRhoVal(), fCent);
   FillHistogram("hJetCount", fAcceptedJets, fCent);
