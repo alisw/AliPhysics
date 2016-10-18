@@ -7,7 +7,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalNoiseTriggers *AddTaskEmcalNoiseTrig
   TString outputfile(mgr->GetCommonFileName());
   outputfile += TString::Format(":NoiseTriggerStudies%s", suffix);
 
-  mgr->ConnectInput(task, 1, mgr->GetCommonInputContainer());
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("NoiseTriggerHistograms%s", suffix), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
 
   return task;
