@@ -100,6 +100,15 @@ protected:
    */
   virtual void RunChanged();
 
+  /**
+   * Calculate transverse L1 time sum of a FastOR.
+   * @param fastorAbsID FastOR absolute ID (for position calculation)
+   * @param adc FastOR ADC
+   * @param vtx Position of the primary vertex
+   * @return Transverse L1 time sum
+   */
+  Double_t GetTransverseTimeSum(Int_t fastorAbsID, Double_t adc, const Double_t *vtx) const;
+
   THistManager                            *fHistos;           //!<! Histogram handler
   AliEMCALGeometry                        *fGeom;             //!<! EMCAL Geometry object
   Bool_t                                  fLocalInitialized;  ///< Switch whether task is initialized (for ExecOnce)
