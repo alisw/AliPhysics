@@ -1113,6 +1113,12 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
     for (Int_t i=1; i<19; i++)
       fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
   }
+  fMtFactorHisto->SetDirectory(0);
+  
+  fMtFactorFile->Close();
+  delete fMtFactorFile;
+
+  
 }
 
 

@@ -213,11 +213,11 @@ public:
   static Double_t V2K0star( const Double_t *px, const Double_t *dummy );
 
 private:
-  static TF1*     fPtParametrization[18];     //! pt paramtrizations
-  static TF1*     fPtParametrizationProton;   //! pt paramtrization
-  static TH1D*    fMtFactorHisto;             //! mt scaling factors
+  static TF1*     fPtParametrization[18];     // pt paramtrizations
+  static TF1*     fPtParametrizationProton;   // pt paramtrization
+  static TH1D*    fMtFactorHisto;             // mt scaling factors
 
-  ClassDef(AliGenEMlibV2,2);
+  ClassDef(AliGenEMlibV2,3);
   
 };
 

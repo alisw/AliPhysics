@@ -521,6 +521,8 @@ void AliGenEMCocktailV2::Init()
   if (fStack) {
     while((entry = (AliGenCocktailEntry*)next())) {
       entry->Generator()->SetStack(fStack);
+      ((AliGenParam*)entry->Generator())->SetDecayer(fDecayer);
+      ((AliGenParam*)entry->Generator())->SetParamsExplicitly(new AliGenEMlibV2(), ((AliGenParam*)entry->Generator())->GetParam(), "DUMMY");
     }
   }
 }

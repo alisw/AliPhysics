@@ -105,9 +105,9 @@ private:
   TString         fParametrizationFile;                 // parametrization file
   Int_t           fNPart;                               // multiplicity of each source per event
   Double_t        fYieldArray[kGENs];                   // array of dN/dy for each source
-  static TF1*     fPtParametrization[18];               //! pt paramtrizations
-  static TF1*     fParametrizationProton;               //!
-  static TH1D*    fMtScalingFactorHisto;                //! mt scaling factors
+  static TF1*     fPtParametrization[18];               // pt paramtrizations
+  static TF1*     fParametrizationProton;               //
+  static TH1D*    fMtScalingFactorHisto;                // mt scaling factors
   
   AliGenEMlibV2::CollisionSystem_t  fCollisionSystem;   // selected collision system
   AliGenEMlibV2::Centrality_t       fCentrality;        // selected centrality
@@ -116,7 +116,7 @@ private:
   Bool_t        fForceConv;                             // select whether you want to force all gammas to convert imidediately
   UInt_t        fSelectedParticles;                     // which particles to simulate, allows to switch on and off 32 different particles
   
-  ClassDef(AliGenEMCocktailV2,3)       // cocktail for EM physics
+  ClassDef(AliGenEMCocktailV2,4)       // cocktail for EM physics
 };
 
 #endif
