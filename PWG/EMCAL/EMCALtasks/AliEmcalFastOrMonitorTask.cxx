@@ -144,7 +144,7 @@ Double_t AliEmcalFastOrMonitorTask::GetTransverseTimeSum(Int_t fastorAbsID, Doub
   std::vector<double> eta, phi;
   for(int i = 0l; i < 4; i++){
     double etatmp, phitmp;
-    fGeom->EtaPhiFromIndex(cellIDs[4], etatmp, phitmp);
+    fGeom->EtaPhiFromIndex(cellIDs[i], etatmp, phitmp);
     eta.push_back(etatmp);
     phi.push_back(phitmp);
   }
