@@ -677,6 +677,9 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Henrik2010"){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
   }
+  if(fNonlinearityVersion=="Run2"){
+    return (0.0241+1.0504*en+0.000249*en*en)/(1-fNonlinearityParams[0]/(1+TMath::Power(en/fNonlinearityParams[1],2))) ;
+ }
 
   return en ;
 }
