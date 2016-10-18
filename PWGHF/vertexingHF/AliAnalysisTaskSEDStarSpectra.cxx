@@ -86,6 +86,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   fTrueDiff2(0),
   fDeltaMassD1(0),
   fCounter(0),
+  fAODProtection(1),
   fDoImpParDstar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -115,6 +116,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fTrueDiff2(0),
   fDeltaMassD1(0),
   fCounter(0),
+  fAODProtection(1),
   fDoImpParDstar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -174,6 +176,18 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   if (!fInputEvent) {
     Error("UserExec","NO EVENT FOUND!");
     return;
+  }
+  
+  
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fCEvents->Fill(11);
+      return;
+    }
   }
 
   fEvents++;
