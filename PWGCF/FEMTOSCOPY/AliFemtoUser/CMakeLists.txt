@@ -61,7 +61,6 @@ set(SRCS
   AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoNSigmaFilter.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
-  AliFemtoCutMonitorPairKT.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
   AliFemtoCutMonitorParticlePtPDG.cxx
   AliFemtoCutMonitorParticlePtPDGV0.cxx
@@ -123,6 +122,7 @@ set(SRCS
   AliFemtoModelWeightGeneratorBasicLednicky.cxx
   AliFemtoAnalysisLambdaKaon.cxx
   AliFemtoModelCorrFctnDEtaDPhiRM.cxx
+  AliFemtoCutMonitorPairKT.cxx
   AliFemtoPairCutMInv.cxx
   )
 
