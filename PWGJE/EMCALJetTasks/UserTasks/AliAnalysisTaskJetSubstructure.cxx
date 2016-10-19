@@ -30,6 +30,7 @@
 #include "AliClusterContainer.h"
 
 #include "AliAnalysisTaskJetSubstructure.h"
+#include "AliFJWrapper.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskJetSubstructure);
@@ -82,6 +83,13 @@ void AliAnalysisTaskJetSubstructure::UserCreateOutputObjects()
   while ((obj = next())) {
     fOutput->Add(obj);
   }
+
+  fAliFJWrapper = new AliFJWrapper(Form("%s_wrapper", GetName()), Form("%s_wrapper", GetName()));
+  fAliFJWrapper->SetAlgorithm(fastjet::kt_algorithm);
+  fAliFJWrapper->SetRecombScheme(fastjet::E_scheme);
+  fAliFJWrapper->SetR(0.3);
+  fAliFJWrapper->SetMaxRap(0.9);
+  fAliFJWrapper->Clear();
   
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -531,6 +539,15 @@ void AliAnalysisTaskJetSubstructure::ExecOnce()
 }
 
 /**
+ * Fill the fastjet wrapper with tracks 
+ *
+ */
+void AliAnalysisTaskJetSubstructure::AnalyzeJets()
+{
+
+}
+
+/**
  * Run analysis code here, if needed.
  * It will be executed before FillHistograms().
  * If this function return kFALSE, FillHistograms() will *not*
@@ -539,6 +556,9 @@ void AliAnalysisTaskJetSubstructure::ExecOnce()
  */
 Bool_t AliAnalysisTaskJetSubstructure::Run()
 {
+  // analyze the jets
+  AnalyzeJets();
+
   return kTRUE;
 }
 

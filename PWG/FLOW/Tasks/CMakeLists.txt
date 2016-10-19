@@ -39,6 +39,7 @@ set(SRCS
   AliFlowCandidateTrack.cxx 
   AliFlowTrackCuts.cxx 
   AliAnalysisTaskScalarProduct.cxx 
+  AliAnalysisTaskSimpleSP.cxx
   AliAnalysisTaskMCEventPlane.cxx 
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
