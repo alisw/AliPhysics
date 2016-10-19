@@ -32,6 +32,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksTree ()
   task->SetBinVer(binver);
   task->SetMaxTracksPerEvent(maxntracksmix);
   task->SetMoreOutputs(MoreOutput);
+  task->SetLeading(true);
 //   task->SetNEvents(NEventsProcessed);
 //   task->SetStartEvent(NFirstEvents);
   

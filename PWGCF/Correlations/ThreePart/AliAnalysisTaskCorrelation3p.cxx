@@ -85,6 +85,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fqatask(kFALSE)
   , fMoreOutputs(kFALSE)
   , fExtraMixed(kTRUE)
+  , fLeading(kTRUE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -163,6 +164,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fqatask(kFALSE)
   , fMoreOutputs(kFALSE)
   , fExtraMixed(kTRUE)
+  , fLeading(kTRUE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -247,7 +249,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 {
   // create result objects and add to output list
   MakeRunNumbers();//Needs to be done once in the beginning
-  
+
   TTimeStamp now;
   fRandom = new TRandom3();
   fRandom->SetSeed(now.GetNanoSec());
@@ -281,6 +283,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     poolMgr->SetTargetValues(MinNofTracks,1.0E-4,1.0);
     correlator->InitEventMixing(poolMgr);
     correlator->SetNMaxMixed(fMaxTracksperEvent);
+    correlator->SetLeading(fLeading);
     
     //initialize track worker and add to the output if appropriate
     TString tracksname;
@@ -480,6 +483,16 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
   }
   nofTracks=pEvent->GetNumberOfTracks();
   FillHistogram("trackCount",nofTracks);
+  //find the leading pT track of the event that passes the cuts, set triggerid to this:
+  int triggerid = -1;
+  Double_t maxpt = 0.0;
+  for(int j=0;j<nofTracks;j++){
+    AliVParticle* t=pEvent->GetTrack(j);
+    if(t->IsA()==AliESDtrack::Class())if(!IsSelectedTrackESD(t))continue;
+    if(t->IsA()==AliAODTrack::Class())if(!IsSelectedTrackAOD(t))continue;
+    if(t->IsA()==AliFilteredTrack::Class()){dynamic_cast<AliFilteredTrack*>(t)->Calculate();if(!IsSelectedTrackFiltered(t))continue;}
+    if(t->Pt()>maxpt)triggerid = j;
+  }
   for (int i=0; i<nofTracks; i++) {
     Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
@@ -491,6 +504,8 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedPhi",t->Phi(),1.0);
     FillHistogram("trackUnselectedTheta",t->Theta(),1.0);
     if (!IsSelected(t)) continue;
+    //In the case where we only want leading triggers, cut away all non associated that are not the leading:
+    if(fLeading&&!IsSelectedAssociated(t) &&i!=triggerid) continue;
     if(fWeights){
       Int_t etabin = fWeights->GetXaxis()->FindBin(t->Eta());
       if(t->Pt()<2.0){
@@ -527,7 +542,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     }
     FillHistogram("trackPhi",t->Phi(),Weight);
     FillHistogram("trackTheta",t->Theta(),Weight);
-    if(IsSelectedTrigger(t)){
+    if(IsSelectedTrigger(t)&&(i==triggerid||!fLeading)){
       fNTriggers+=1;
       FillHistogram("trackTriggerPt",t->Pt(),Weight);
       FillHistogram("trackTriggerPhi",t->Phi(),Weight);
@@ -859,9 +874,10 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
 //   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
   fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 15000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 20));
+  fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 200));
+  fOutput->Add(new TH1D("trackPt_leading"		, "trackPt_leading_track"		, 1000,  0, 200));
+  fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 200));
+  fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 200));
   fOutput->Add(new TH1D("trackAssociatedPt" , "Pt of associated Tracks", 1000, fMinAssociatedPt, fMaxAssociatedPt));
   fOutput->Add(new TH1D("trackTriggerPt" , "Pt of Trigger Tracks", 1000, fMinTriggerPt, fMaxTriggerPt));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
@@ -1090,7 +1106,7 @@ void AliAnalysisTaskCorrelation3p::MakeRunNumbers()
 }
 
 void AliAnalysisTaskCorrelation3p::SetMixingScheme(Int_t MaxNEventMix, Int_t MinNofTracksMix, TArrayD MBinEdges, TArrayD ZBinEdges)
-{
+    {
   fMaxNEventMix= MaxNEventMix;
   fMinNofTracksMix = MinNofTracksMix;
   for(int i=0; i<MBinEdges.GetSize()-1; ++i)
