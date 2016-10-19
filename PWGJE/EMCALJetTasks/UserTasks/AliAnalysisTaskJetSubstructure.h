@@ -17,6 +17,8 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
 
+class AliFJWrapper;
+
 class AliAnalysisTaskJetSubstructure : public AliAnalysisTaskEmcalJet {
  public:
 
@@ -44,7 +46,10 @@ class AliAnalysisTaskJetSubstructure : public AliAnalysisTaskEmcalJet {
   void                        DoClusterLoop()                                   ;
   void                        DoCellLoop()                                      ;
 
+  void                        AnalyzeJets()                                     ;
+
   THistManager                fHistManager                                      ;///< Histogram manager
+  AliFJWrapper                *fAliFJWrapper                                    ;// fastjet wrapper
 
  private:
   AliAnalysisTaskJetSubstructure(const AliAnalysisTaskJetSubstructure&)           ; // not implemented

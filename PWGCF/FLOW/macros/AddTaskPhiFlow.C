@@ -439,11 +439,10 @@ void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, dou
    mgr->ConnectInput(tskFilter, 0, flowEvent);
    mgr->ConnectOutput(tskFilter, 1, flowEvent2);
    AliAnalysisDataContainer *outSP = mgr->CreateContainer(myNameSP.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
-   AliAnalysisTaskScalarProduct *tskSP = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
+   AliAnalysisTaskSimpleSP *tskSP = new AliAnalysisTaskSimpleSP(Form("TaskScalarProduct_%s", myNameSP.Data()), kFALSE);
    tskSP->SetApplyCorrectionForNUA(kTRUE);
    tskSP->SetHarmonic(harmonic);
    tskSP->SetTotalQvector(Qvector);
-   tskSP->SetV0SanityCheck(kTRUE);
    tskSP->SetBehaveAsEP();
    if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
    mgr->AddTask(tskSP);
