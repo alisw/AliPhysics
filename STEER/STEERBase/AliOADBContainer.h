@@ -17,7 +17,7 @@
 
 class TObjArray;
 class TArrayI;
-
+class TFile;
 class AliOADBContainer : public TNamed {
 
  public :
@@ -40,7 +40,10 @@ class AliOADBContainer : public TNamed {
   Int_t GetNumberOfEntries()    const {return fEntries;}
   Int_t LowerLimit(Int_t idx)   const {return fLowerLimits[idx];}
   Int_t UpperLimit(Int_t idx)   const {return fUpperLimits[idx];}
+  TObjArray* GetObjArray() {return fArray;}
+  void SetToZeroObjArray() {fArray=0;}
   TObject* GetObject(Int_t run, const char* def = "", TString passName="") const;
+  TObject* GetObjectFromFile(TFile* file, Int_t run, const char* def = "", TString passName="") const;
   TObject* GetObjectByIndex(Int_t run) const;
   TObject* GetPassNameByIndex(Int_t idx) const;
   TObject* GetDefaultObject(const char* key) 
@@ -56,14 +59,12 @@ class AliOADBContainer : public TNamed {
  private:
   Int_t HasOverlap(Int_t lower, Int_t upper, TString passName) const;
  private :
-  TObjArray*               fArray;         // Array with objects corresponding to run ranges
+  TObjArray*               fArray;         //Array with objects corresponding to run ranges
   TList*                   fDefaultList;   // List with default arrays
   TObjArray*               fPassNames;     // Pass names
   TArrayI                  fLowerLimits;   // lower limit of run range
   TArrayI                  fUpperLimits;   // upper limit of run range
   Int_t                    fEntries;       // Number of entries
-//  TString                  fRelPath;       // Relative path to object
-  
   ClassDef(AliOADBContainer, 2);
 };
 

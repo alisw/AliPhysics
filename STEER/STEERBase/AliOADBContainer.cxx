@@ -255,7 +255,7 @@ TObject* AliOADBContainer::GetObject(Int_t run, const char* def, TString passNam
 {
   // Return object for given run or default if not found
   TObject* obj = 0;
-  Int_t idx = GetIndexForRun(run,passName);
+  Int_t idx = GetIndexForRun(run, passName);
   if (idx == -1) idx = GetIndexForRun(run); // try default pass for this run range
   if (idx == -1) {
     // no object found, try default
@@ -268,6 +268,29 @@ TObject* AliOADBContainer::GetObject(Int_t run, const char* def, TString passNam
     }
   } else {
     return (fArray->At(idx));
+  }
+}
+
+TObject* AliOADBContainer::GetObjectFromFile(TFile* file, Int_t run, const char* def, TString passName) const
+{
+  // Return object for given run or default if not found
+  TObject* obj = 0;
+  Int_t idx = GetIndexForRun(run, passName);
+  if (idx == -1) idx = GetIndexForRun(run); // try default pass for this run range
+  if (idx == -1) {
+    // no object found, try default
+    obj = fDefaultList->FindObject(def);
+    if (!obj) {
+      AliError(Form("Default Object (%s) not found !\n", GetName()));
+      return (0);
+    } else {
+      return (obj);
+    }
+  } else {
+    char keyst[20];
+    sprintf(keyst, "multSel;%d", idx);
+    obj = file->Get(keyst);
+    return obj;
   }
 }
 
