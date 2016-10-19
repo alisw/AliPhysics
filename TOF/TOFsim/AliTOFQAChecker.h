@@ -21,7 +21,7 @@
 class AliTOFQAChecker: public AliQACheckerBase {
 
 public:
- AliTOFQAChecker() : AliQACheckerBase("TOF","TOF Quality Assurance Data Maker"), fCheckGolden(1) {;}          // ctor
+ AliTOFQAChecker() : AliQACheckerBase("TOF","TOF Quality Assurance Data Maker"), fCheckGolden(kTRUE) {;}          // ctor
  AliTOFQAChecker(const AliTOFQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fCheckGolden(qac.fCheckGolden) {;} // cpy ctor
 
   AliTOFQAChecker& operator = (const AliTOFQAChecker& qac);

@@ -40,19 +40,20 @@
 ClassImp(AliTOFQAChecker)
 //____________________________________________________________________________
 void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
-				  TObjArray ** list,
-				  const AliDetectorRecoParam * /*recoParam*/) 
+			    TObjArray ** list,
+			    const AliDetectorRecoParam * /*recoParam*/) 
 {
   // Super-basic check on the QA histograms on the input list: 
   // look whether they are empty!
-  Float_t rvarr[2][4] = {1.0, 0.75, 0.5, 0.25,
-			 1.0, 0.5, 0.002, 0.0};
+  // INFO 0.5 - 1.0; WARNING 0.002 - 0.5; ERROR 0.0 - 0.002; FATAL -1.0 - 0.0 
+  Float_t rvarr[2][4] = {0.51, 0.0021, 0.0001, -1.0,
+			 0.51, 0.0021, 0.0001, -1.0};
   AliInfo(Form("Checking only golden plots? %s", (fCheckGolden? "YES":"NO")));
   Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie)))
       continue ;
-    test[specie] = 1.0 ;
+    test[specie] = 1.01;
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
       continue ;
     if (!list || (list[specie]->GetEntries() == 0)){
@@ -69,25 +70,31 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
 	  TString histname = hdata->GetName();
 	  Bool_t isGoldenHisto = (histname.Contains("TOFRawsMulti") || histname.Contains("TOFRawsTime") || histname.Contains("hTOFRawsToT"));
 	  if (fCheckGolden && !isGoldenHisto) continue;
-	  Double_t rv = 0.;
+	  Double_t rv = AliQAv1::kNULLBit;
 	  Int_t checkOutput = CheckRaws(hdata,specie);
 	  if (checkOutput>AliQAv1::kNULLBit && checkOutput<AliQAv1::kNBIT) rv = rvarr[fCheckGolden][checkOutput];
-	  else rv = AliQAv1::kNULLBit;
 	  AliDebug(AliQAv1::GetQADebugLevel(), Form("%s -> %f", hdata->GetName(), rv));
 	  count[specie]++;
-	  test[specie] += rv;
+	  //Strategy 1: sum the result of the checks on all plots and set the flag based on the average
+	  //test[specie] += rv;
+	  //Strategy 2: set the flag based on the "worst result" returned by the checks
+ 	  if (rv < test[specie]) test[specie] = rv;	
 	}   
       } //end while loop on the list
+     
       if (count[specie]<=0) {
 	//the only case in which this condition is verified at this stage is
 	//when the golden plots are missing from the list and were requested,
 	//therefore this generates a FATAL
 	AliError("Error: cannot find requested golden histograms");
-	test[specie] = -1.0;
-      } else {
-	test[specie] /= count[specie] ;
-	AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie]));
-      }
+	test[specie] = AliQAv1::kNULLBit;
+      } 
+      //Strategy 1: sum the result of the checks on all plots and set the flag based on the average
+      //else {
+      //test[specie] /= count[specie] ;
+      //AliDebug(AliQAv1::GetQADebugLevel(), Form("Test Result = %f", test[specie]));
+      //}
+      
     } //END ELSE: is there anything to check?
   }  //END FOR: cycle over all possible species
 }  
@@ -105,7 +112,7 @@ AliTOFQAChecker& AliTOFQAChecker::operator = (const AliTOFQAChecker& qac)
 Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
 {
   /*
-  checker for RAWS
+    checker for RAWS
   */
   Int_t nTrgCl=AliQADataMaker::GetNTrigClasses();
   Int_t nToDrawTrgCl;
@@ -129,11 +136,11 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
     minTOFrawTime=150.;//ns
     maxTOFrawTime=250.;//ns
   } else {
-    minTOFrawTime=150.;//ns
-    maxTOFrawTime=225.;//ns
+    minTOFrawTime=175.;//ns
+    maxTOFrawTime=250.;//ns
   } 
-  Float_t minTOFrawTot = 10.;
-  Double_t maxTOFrawTot = 15.;
+  Float_t minTOFrawTot = 10.;//ns
+  Double_t maxTOFrawTot = 15.;//ns
 
   Float_t minTOFrawINT7hits = 10;
   Float_t maxTOFrawINT7hits = 70;
@@ -149,16 +156,16 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       for(int i=0; i<nToDrawTrgCl; i++) {
         if(histname.EndsWith(ClToDraw[i]))
           histo->SetBit(AliQAv1::GetImageBit(), kTRUE);
-       }
+      }
     }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("hitsMsg");
     if (histo->GetEntries()==0) {
-        if (text){
-            text->Clear();
-            text->AddText("No entries. IF TOF IN RUN");
-            text->AddText("check the TOF TWiki");
-            text->SetFillColor(kYellow);
-        }
+      if (text){
+	text->Clear();
+	text->AddText("No entries. IF TOF IN RUN");
+	text->AddText("check the TOF TWiki");
+	text->SetFillColor(kYellow);
+      }
       flag = AliQAv1::kWARNING;
     } else {
       Float_t multiMean = histo->GetMean();
@@ -168,32 +175,32 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       
       if (totIntegral==0){ //if only "0 hits per event" bin is filled -> error
 	if (histo->GetBinContent(1)>0) {
-        if (text){
-	  text->Clear();
-	  text->AddText("No TOF hits for all events."); 
-	  text->AddText("Call TOF on-call."); 
-	  text->SetFillColor(kRed);
-        }
-        flag = AliQAv1::kERROR;
+	  if (text){
+	    text->Clear();
+	    text->AddText("No TOF hits for all events."); 
+	    text->AddText("Call TOF on-call."); 
+	    text->SetFillColor(kRed);
+	  }
+	  flag = AliQAv1::kERROR;
 	}
       } else { 
 	if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
 	  if (multiMean<10.){
-          if (text){
-	    text->Clear();
-	    text->AddText(Form("Multiplicity within limits"));
-	    text->AddText("for COSMICS: OK!!!");
-	    text->SetFillColor(kGreen);
-          }
-          flag = AliQAv1::kINFO;
+	    if (text){
+	      text->Clear();
+	      text->AddText(Form("Multiplicity within limits"));
+	      text->AddText("for COSMICS: OK!!!");
+	      text->SetFillColor(kGreen);
+	    }
+	    flag = AliQAv1::kINFO;
 	  } else {
-          if (text){
-	    text->Clear();
-	    text->AddText(Form("Multiplicity too high"));
-	    text->AddText("for COSMICS: email TOF on-call");
-	    text->SetFillColor(kYellow);
-          }
-          flag = AliQAv1::kWARNING;
+	    if (text){
+	      text->Clear();
+	      text->AddText(Form("Multiplicity too high"));
+	      text->AddText("for COSMICS: email TOF on-call");
+	      text->SetFillColor(kYellow);
+	    }
+	    flag = AliQAv1::kWARNING;
 	  }
 	} else {
 	  Bool_t isZeroBinContentHigh = kFALSE;
@@ -207,44 +214,47 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
 	  if (multiMean>maxTOFrawINT7hits) isINT7AverageHigh = kTRUE;
 	  
 	  if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult) {
-	      if (isZeroBinContentHigh && (multiMean>10.)) {
+	    if (isZeroBinContentHigh && (multiMean>10.)) {
+	      if (text){
+		text->Clear();
+		text->AddText(Form("Events with 0 hits = %5.2f%%", zeroBinIntegral*100./totIntegral));
+		text->AddText("OK for COSMICS and technical.");
+		text->AddText("For pp check trigger class and TWiki.");
+		text->SetFillColor(kYellow);
+	      }
+	    } else {
+	      if (!histname.Contains("INT7") && (multiMean>100.)){
 		if (text){
 		  text->Clear();
-		  text->AddText(Form("Events with 0 hits = %5.2f%%", zeroBinIntegral*100./totIntegral));
-		  text->AddText("OK for COSMICS and technical.");
-		  text->AddText("For pp check trigger class and TWiki.");
+		  text->AddText(Form("Unexpected mean value = %5.2f",multiMean));
+		  text->AddText("Check trigger class and TOF TWiki.");
 		  text->SetFillColor(kYellow);
 		}
+		flag = AliQAv1::kWARNING;
 	      } else {
-		if (!histname.Contains("INT7") && (multiMean>100.)){
+		if ( histname.Contains("INT7") && (isINT7AverageLow || isINT7AverageHigh)){
 		  if (text){
 		    text->Clear();
 		    text->AddText(Form("Unexpected mean value = %5.2f",multiMean));
+		    text->AddText(Form("Reference range: %5.2f-%5.2f",minTOFrawINT7hits,maxTOFrawINT7hits));
 		    text->AddText("Check trigger class and TOF TWiki.");
 		    text->SetFillColor(kYellow);
 		  }
 		  flag = AliQAv1::kWARNING;
 		} else {
-		  if ( histname.Contains("INT7") && (isINT7AverageLow || isINT7AverageHigh)){
-		    if (text){
-		      text->Clear();
-		      text->AddText(Form("Unexpected mean value = %5.2f",multiMean));
-		      text->AddText("Check trigger class and TOF TWiki.");
-		      text->SetFillColor(kYellow);
-		    }
-		    flag = AliQAv1::kWARNING;
-		  } else {
-		    if (text){
-		      text->Clear();
-		      text->AddText(Form("Mean value = %5.2f",multiMean));
-		      text->AddText(Form("Events with 0 hits = %5.2f%%",zeroBinIntegral*100./totIntegral));
-		      text->AddText("OK!");
-		      text->SetFillColor(kGreen);
-		    }
-		    flag = AliQAv1::kINFO;
+		  if (text){
+		    text->Clear();
+		    text->AddText(Form("Mean value = %5.2f",multiMean));
+		    if (histname.Contains("INT7"))
+		      text->AddText(Form("Reference range: %5.2f-%5.2f",minTOFrawINT7hits,maxTOFrawINT7hits));
+		    text->AddText(Form("Events with 0 hits = %5.2f%%",zeroBinIntegral*100./totIntegral));
+		    text->AddText("OK!");
+		    text->SetFillColor(kGreen);
 		  }
+		  flag = AliQAv1::kINFO;
 		}
 	      }
+	    }
 	  }
 	  else if ( (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult)
 		    &&(isLowMultContentHigh || (multiMean>500.))){
@@ -270,6 +280,7 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       }
     }
   }
+
   if ((histname.EndsWith("RawsTime")) || (histname.Contains("RawsTime") && suffixTrgCl)) {
     if (!suffixTrgCl) histo->SetBit(AliQAv1::GetImageBit(), drawRawsTimeSumImage);
     if (suffixTrgCl) {
@@ -277,17 +288,17 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       for(int i=0; i<nToDrawTrgCl; i++) {
         if(histname.EndsWith(ClToDraw[i]))
           histo->SetBit(AliQAv1::GetImageBit(), kTRUE);
-       }
+      }
     }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("timeMsg");
     if (histo->GetEntries()==0) {
-        if (text){
-      text->Clear();
-      text->AddText("No entries. If TOF in the run"); 
-      text->AddText("check TOF TWiki"); 
-      text->SetFillColor(kYellow);
-        }
-        flag = AliQAv1::kWARNING;
+      if (text){
+	text->Clear();
+	text->AddText("No entries. If TOF in the run"); 
+	text->AddText("check TOF TWiki"); 
+	text->SetFillColor(kYellow);
+      }
+      flag = AliQAv1::kWARNING;
     } else {
       Float_t timeMean = histo->GetMean();
       Int_t lowBinId = TMath::Nint(minTOFrawTime/binWidthTOFrawTime);
@@ -295,12 +306,13 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       Float_t peakIntegral = histo->Integral(lowBinId,highBinId);
       Float_t totIntegral = histo->Integral(1, histo->GetNbinsX());      
       if ( (timeMean > minTOFrawTime) && (timeMean < maxTOFrawTime)) {
-	flag = AliQAv1::kINFO;
 	if (text){
 	  text->Clear();
 	  text->AddText("Mean inside limits: OK!!!"); 
+	  text->AddText(Form("Allowed range: %3.0f-%3.0f ns",minTOFrawTime,maxTOFrawTime));
 	  text->SetFillColor(kGreen);
 	}
+	flag = AliQAv1::kINFO;	
       } else {
 	if (peakIntegral/totIntegral > 0.20) { 
 	  AliWarning(Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...",peakIntegral/totIntegral,timeMean));
@@ -308,8 +320,8 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
 	    text->Clear();
 	    text->AddText(Form("Raw time peak/total integral = %5.2f%%", peakIntegral*100./totIntegral));
 	    text->AddText(Form("Mean = %5.2f ns",timeMean));
-	    text->AddText("If multiple peaks,"); 
-	    text->AddText("check filling scheme."); 
+            text->AddText(Form("Allowed range: %3.0f-%3.0f ns",minTOFrawTime,maxTOFrawTime));
+	    text->AddText("If multiple peaks, check filling scheme"); 
 	    text->AddText("See TOF TWiki."); 
 	    text->SetFillColor(kYellow);
 	  }
@@ -319,10 +331,9 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
 	  if (text){
 	    text->Clear();
 	    text->AddText("Call TOF on-call."); 
-	    text->AddText("Signal mean outside limits."); 
+	    text->AddText(Form("Mean outside limits (%3.0f-%3.0f ns)",minTOFrawTime,maxTOFrawTime)); 
 	    text->AddText(Form("Raw time peak/total integral = %5.2f%%", peakIntegral*100./totIntegral));
-	    text->AddText(Form("Mean = %5.2f ns",timeMean));
-	    
+	    text->AddText(Form("Mean = %5.2f ns",timeMean)); 
 	    text->SetFillColor(kRed);
 	  }
 	  flag = AliQAv1::kERROR;
@@ -338,35 +349,36 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
       for(int i=0; i<nToDrawTrgCl; i++) {
         if(histname.EndsWith(ClToDraw[i]))
           histo->SetBit(AliQAv1::GetImageBit(), kTRUE);
-       }
+      }
     }
     text = (TPaveText *) histo->GetListOfFunctions()->FindObject("totMsg");
     if (histo->GetEntries()==0) {
       if (text){
-	  text->Clear();
-	  text->AddText("No entries. Check TOF TWiki"); 
-	  text->SetFillColor(kYellow);
+	text->Clear();
+	text->AddText("No entries. Check TOF TWiki"); 
+	text->SetFillColor(kYellow);
       }
       flag = AliQAv1::kWARNING;
     } else {
       Float_t timeMean = histo->GetMean();
       if ( (timeMean > minTOFrawTot) && (timeMean < maxTOFrawTot) ) {
-	flag = AliQAv1::kINFO;
 	if (text){
 	  text->Clear();
 	  text->AddText("Mean inside limits: OK!!!"); 
+  	  text->AddText(Form("Allowed range: %3.1f-%3.1f ns",minTOFrawTot,maxTOFrawTot));
 	  text->SetFillColor(kGreen);
 	}
+	flag = AliQAv1::kINFO;
       } else {
-	flag = AliQAv1::kERROR;
 	AliWarning(Form("ToT mean = %5.2f ns", timeMean));
-          if (text){
-	    text->Clear();
-	    text->AddText("Mean outside limits."); 
-	text->AddText("If NOT a technical run,"); 
-	text->AddText("call TOF on-call."); 
-	text->SetFillColor(kRed);
-          }
+	if (text){
+	  text->Clear();
+	  text->AddText(Form("Mean outside limits (%3.1f-%3.1f ns)",minTOFrawTot,maxTOFrawTot)); 
+	  text->AddText("If NOT a technical run,"); 
+	  text->AddText("call TOF on-call."); 
+	  text->SetFillColor(kRed);
+	}
+	flag = AliQAv1::kERROR;
       }
     }
   }
