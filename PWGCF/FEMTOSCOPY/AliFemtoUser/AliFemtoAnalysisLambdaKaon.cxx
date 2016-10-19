@@ -947,32 +947,35 @@ AliFemtoV0PairCut* AliFemtoAnalysisLambdaKaon::CreateV0PairCut(PairCutParams &aP
   v0pc1->SetTPCExitSepMinimum(aPairCutParams.tpcExitSepMinimum);  //Default is 0, but for some reason distExitPos(Neg) always end up as 0?
 
   double tPosPos=0., tPosNeg=0., tNegPos=0., tNegNeg=0.;
-  switch(fAnalysisType) {
-  case AliFemtoAnalysisLambdaKaon::kLamK0:
-  case AliFemtoAnalysisLambdaKaon::kLamLam:
-    tPosPos = aPairCutParams.minAvgSepPosPos;
-    tPosNeg = aPairCutParams.minAvgSepPosNeg;
-    tNegPos = aPairCutParams.minAvgSepNegPos;
-    tNegNeg = aPairCutParams.minAvgSepNegNeg;
-    break;
+  if(fImplementAvgSepCuts)
+  {
+    switch(fAnalysisType) {
+    case AliFemtoAnalysisLambdaKaon::kLamK0:
+    case AliFemtoAnalysisLambdaKaon::kLamLam:
+      tPosPos = aPairCutParams.minAvgSepPosPos;
+      tPosNeg = aPairCutParams.minAvgSepPosNeg;
+      tNegPos = aPairCutParams.minAvgSepNegPos;
+      tNegNeg = aPairCutParams.minAvgSepNegNeg;
+      break;
 
-  case AliFemtoAnalysisLambdaKaon::kALamK0:
-  case AliFemtoAnalysisLambdaKaon::kALamALam:
-    tPosPos = aPairCutParams.minAvgSepNegNeg;
-    tPosNeg = aPairCutParams.minAvgSepNegPos;
-    tNegPos = aPairCutParams.minAvgSepPosNeg;
-    tNegNeg = aPairCutParams.minAvgSepPosPos;
-    break;
+    case AliFemtoAnalysisLambdaKaon::kALamK0:
+    case AliFemtoAnalysisLambdaKaon::kALamALam:
+      tPosPos = aPairCutParams.minAvgSepNegNeg;
+      tPosNeg = aPairCutParams.minAvgSepNegPos;
+      tNegPos = aPairCutParams.minAvgSepPosNeg;
+      tNegNeg = aPairCutParams.minAvgSepPosPos;
+      break;
 
-  case AliFemtoAnalysisLambdaKaon::kLamALam:  //Jai (typically PosNeg=NegPos=0)
-    tPosPos = 0.5*(aPairCutParams.minAvgSepPosPos + aPairCutParams.minAvgSepNegNeg);
-    tPosNeg = 0.5*(aPairCutParams.minAvgSepPosNeg + aPairCutParams.minAvgSepNegPos);
-    tNegPos = 0.5*(aPairCutParams.minAvgSepPosNeg + aPairCutParams.minAvgSepNegPos);
-    tNegNeg = 0.5*(aPairCutParams.minAvgSepPosPos + aPairCutParams.minAvgSepNegNeg);
-    break;
+    case AliFemtoAnalysisLambdaKaon::kLamALam:  //Jai (typically PosNeg=NegPos=0)
+      tPosPos = 0.5*(aPairCutParams.minAvgSepPosPos + aPairCutParams.minAvgSepNegNeg);
+      tPosNeg = 0.5*(aPairCutParams.minAvgSepPosNeg + aPairCutParams.minAvgSepNegPos);
+      tNegPos = 0.5*(aPairCutParams.minAvgSepPosNeg + aPairCutParams.minAvgSepNegPos);
+      tNegNeg = 0.5*(aPairCutParams.minAvgSepPosPos + aPairCutParams.minAvgSepNegNeg);
+      break;
 
-  default:
-    break;
+    default:
+      break;
+    }
   }
 
   v0pc1->SetMinAvgSeparation(0,tPosPos);
@@ -1000,27 +1003,29 @@ AliFemtoV0TrackPairCut* AliFemtoAnalysisLambdaKaon::CreateV0TrackPairCut(PairCut
 
 
   double tTrackPos=0., tTrackNeg=0.;
-  switch(fAnalysisType) {
-  case AliFemtoAnalysisLambdaKaon::kLamKchP:
-  case AliFemtoAnalysisLambdaKaon::kALamKchP:
-  case AliFemtoAnalysisLambdaKaon::kLamPiP:
-  case AliFemtoAnalysisLambdaKaon::kALamPiP:
-    tTrackPos = aPairCutParams.minAvgSepTrackPos;
-    tTrackNeg = aPairCutParams.minAvgSepTrackNeg;
-    break;
+  if(fImplementAvgSepCuts)
+  {
+    switch(fAnalysisType) {
+    case AliFemtoAnalysisLambdaKaon::kLamKchP:
+    case AliFemtoAnalysisLambdaKaon::kALamKchP:
+    case AliFemtoAnalysisLambdaKaon::kLamPiP:
+    case AliFemtoAnalysisLambdaKaon::kALamPiP:
+      tTrackPos = aPairCutParams.minAvgSepTrackPos;
+      tTrackNeg = aPairCutParams.minAvgSepTrackNeg;
+      break;
 
-  case AliFemtoAnalysisLambdaKaon::kLamKchM:
-  case AliFemtoAnalysisLambdaKaon::kALamKchM:
-  case AliFemtoAnalysisLambdaKaon::kLamPiM:
-  case AliFemtoAnalysisLambdaKaon::kALamPiM:
-    tTrackPos = aPairCutParams.minAvgSepTrackNeg;
-    tTrackNeg = aPairCutParams.minAvgSepTrackPos;
-    break;
+    case AliFemtoAnalysisLambdaKaon::kLamKchM:
+    case AliFemtoAnalysisLambdaKaon::kALamKchM:
+    case AliFemtoAnalysisLambdaKaon::kLamPiM:
+    case AliFemtoAnalysisLambdaKaon::kALamPiM:
+      tTrackPos = aPairCutParams.minAvgSepTrackNeg;
+      tTrackNeg = aPairCutParams.minAvgSepTrackPos;
+      break;
 
-  default:
-    break;
+    default:
+      break;
+    }
   }
-
 
   v0TrackPairCut1->SetMinAvgSeparation(0,tTrackPos);
   v0TrackPairCut1->SetMinAvgSeparation(1,tTrackNeg);
