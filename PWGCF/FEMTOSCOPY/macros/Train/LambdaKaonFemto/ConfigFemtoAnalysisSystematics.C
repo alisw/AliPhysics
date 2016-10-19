@@ -86,7 +86,7 @@ BuildParticleConfiguration(
   AFALK::XiCutParams &aXiCutParams
 );
 
-
+TString GetParticleCuts(const TString &aText);
 
 AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="") 
 {
@@ -118,6 +118,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   // Read parameter string and update configurations
   //Initial call to BuildConfiguration
   BuildConfiguration(aParamString,tAnalysisConfig,tEventCutConfig,tPairCutConfig,tMacroConfig,tCutVariations);
+  TString tParticleCuts = GetParticleCuts(aParamString);
 
   // Begin to build the manager and analyses
   AliFemtoManager *tManager = new AliFemtoManager();
@@ -149,7 +150,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
   for(unsigned int iCutVal=0; iCutVal<tNCutVals; iCutVal++)
   {
     //change the configuration
-    TString tNewParamString = tCutVariations.cutName + TString(" = ") + TString::Format("%f",tCutVariations.valuesToVary[iCutVal]) + TString(";");
+    TString tNewParamString = tParticleCuts;
+    tNewParamString += tCutVariations.cutName + TString(" = ") + TString::Format("%f",tCutVariations.valuesToVary[iCutVal]) + TString(";");
 
     int tBeginDirNameModifier = 1;
     if(tCutVariations.cutName[1] == TString("|")) tBeginDirNameModifier = 2;
@@ -691,5 +693,28 @@ BuildParticleConfiguration(
     }
 
   }
+}
+
+
+TString GetParticleCuts(const TString &aText)
+{
+  TObjArray* tLines = aText.Tokenize("\n;");
+  TIter tNextLine(tLines);
+  TObject *tLineObj = NULL;
+
+  TString tReturnString("");
+
+  while(tLineObj = tNextLine())
+  {
+    const TString tLine = ((TObjString*)tLineObj)->String().Strip(TString::kBoth, ' ');
+    TString tCmd("");
+
+    if(tLine[0] == '$')
+    {
+      tReturnString += ((TObjString*)tLineObj)->String();
+      tReturnString += TString("; ");
+    }
+  }
+  return tReturnString;
 }
 
