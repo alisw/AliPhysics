@@ -51,7 +51,6 @@ fUsePhiWeights(0),
 fApplyCorrectionForNUA(0),
 fHarmonic(2),
 fNormalizationType(1),
-fV0SanityCheck(0),
 fTotalQvector(3),
 fWeightsList(NULL),
 fHistList(NULL),
@@ -359,11 +358,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
   Double_t dWq = fNormalizationType ? dNq: 1; // SP corresponds to true
   dNq = fNormalizationType ? dNq: vQm.Mod(); // SP corresponds to true
 
-  if(fV0SanityCheck) {
-      if(IsEqualRel(dQaQb/dNa/dNb,0.,1e-9) || dQaQb/dNa/dNb > 1e4 || IsEqualRel(dNa,0.,1e-9) || IsEqualRel(dNb,0.,1e-9) || IsEqualRel(dWa*dWb,0.,1e-9)) return;
-  }
-
-
+  //fill some EP control histograms
   fHistProQaQbNorm->Fill(1.,dQaQb/dNa/dNb,dWa*dWb);  //Fill (QaQb/NaNb) with weight (WaWb).
   //needed for the error calculation:
   fHistSumOfWeights -> Fill(1.,dWa*dWb);
@@ -458,18 +453,6 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
 
     Double_t dUQ = vU*vQm;
 
-    if(fV0SanityCheck) {
-      Double_t test = dUQ/dNq*dQaQb/dNa/dNb;
-      if(test > 1e9 || test < 1e-9) return;
-      test = dUQ/dNq*dQaQb/dNa/dNb;
-      if(test > 1e9 || test < 1e-9) return;
-      test = dNq*dWa*dWb;
-      if(test > 1e9 || test < 1e-9) return;
-    }
-
-
-
-
     //fill the profile histograms
     for(Int_t iPOI=0; iPOI!=2; ++iPOI) {
       if( (iPOI==0)&&(!pTrack->InRPSelection()) )
@@ -479,16 +462,13 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
       fHistProUQ[iPOI][0]->Fill(dPt ,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')
       fHistProUQ[iPOI][1]->Fill(dEta,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')
       //needed for the error calculation:
-      /////// very sensitive for NaN/inf for RPs with V0
       fHistProUQQaQb[iPOI][0]-> Fill(dPt ,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
       fHistProUQQaQb[iPOI][1]-> Fill(dEta,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
-      ///////end of sensitivity
       fHistSumOfWeightsu[iPOI][0][0]->Fill(dPt ,dWq);        // sum of Nq'     
       fHistSumOfWeightsu[iPOI][0][1]->Fill(dPt ,pow(dWq,2.));// sum of Nq'^2     
       fHistSumOfWeightsu[iPOI][0][2]->Fill(dPt ,dWq*dWa*dWb);// sum of Nq'*Na*Nb     
       fHistSumOfWeightsu[iPOI][1][0]->Fill(dEta,dWq);        // sum of Nq'     
       fHistSumOfWeightsu[iPOI][1][1]->Fill(dEta,pow(dWq,2.));// sum of Nq'^2     
-      ////// very sensitive for NaN/inf for RPs with V0
       fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta,dNq*dWa*dWb);// sum of Nq'*Na*Nb
       //NUA:
       fHistProNUAu[iPOI][0][0]->Fill(dPt,dUY,1.); //sin u
