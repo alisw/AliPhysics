@@ -460,7 +460,9 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
     fTriggerMask(0), fSelectPhysics(0),
     fFiredTrigger(""), fFiredExclude(kFALSE), fConvCut(117), 
     fCutArray(0), fMesonCutArray(0), fGammaCandidates(0),
-    fV0Reader(0), fInputEvent(0), fReaderGammas(0), hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE), 
+    fV0Reader(0), fInputEvent(0), fReaderGammas(0), hasMC(kFALSE), 
+    fEvalEfficiencyFlag(kFALSE), 
+    fEvalEfficiencyMCset(-1), 
     fEvalEfficiencyIndex(-1), 
     fEvalEfficiencyParticle(-1),
     hGen(NULL), hMul(NULL)
@@ -482,9 +484,12 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
   void SetESDTrackCuts(AliESDtrackCuts *fCuts){ fESDtrackCuts = fCuts;}
   void SetPIDCuts(AliDielectronPID *fCuts){ fPIDCuts = fCuts;}
   void SetV0OpenCuts(AliESDv0KineCuts* const cuts) {fV0OpenCuts = cuts;}
-  void SetEvalEfficiency(Bool_t flag, Int_t GeneratorIndex, 
+  void SetEvalEfficiency(Bool_t flag, 
+			 TString ProdName,
+			 Int_t GeneratorIndex, 
 			 Int_t ParticleIndex){
     fEvalEfficiencyFlag = flag;
+    fEvalEfficiencyMCset = ProdName;
     fEvalEfficiencyIndex = GeneratorIndex;
     fEvalEfficiencyParticle = ParticleIndex;
   } 
@@ -523,6 +528,7 @@ class AliAnalysisTaskTGReducedTree : public AliAnalysisTaskSE {
 
   Bool_t hasMC;   //hasMC
   Bool_t fEvalEfficiencyFlag; // flag to look at pure MC
+  TString fEvalEfficiencyMCset ; // MC name for the efficiency evaluation
   Int_t fEvalEfficiencyIndex; // GeneratorIndex to look at pure MC for this Generator index
   Int_t fEvalEfficiencyParticle; // Mother Particle to look at pure MC for this Generator index
 

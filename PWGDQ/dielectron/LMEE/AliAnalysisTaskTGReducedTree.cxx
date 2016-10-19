@@ -361,8 +361,10 @@ AliAnalysisTaskTGReducedTree::AliAnalysisTaskTGReducedTree(const char *name)
     fConvCut(117), 
     fCutArray(0), fMesonCutArray(0), fGammaCandidates(0),
     fV0Reader(NULL),fInputEvent(NULL),fReaderGammas(NULL),
-    hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE), fEvalEfficiencyIndex(0),
-  fEvalEfficiencyParticle(0),
+    hasMC(kFALSE), fEvalEfficiencyFlag(kFALSE), 
+    fEvalEfficiencyMCset(0),
+    fEvalEfficiencyIndex(0),
+    fEvalEfficiencyParticle(0),
   hGen(NULL), hMul(NULL)
 {
   // Constructor
@@ -974,7 +976,7 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
 
 
 
-
+  Int_t isThisMC = 0;
 
   if(hasMC){
     ////get generator header
@@ -1005,12 +1007,16 @@ void AliAnalysisTaskTGReducedTree::UserExec(Option_t *)
 	hGen->Fill(5., 1.0);
 	hMul->Fill(5., 1.0*gh->NProduced());
       }
+
+      if(genname.Contains(fEvalEfficiencyMCset)){
+	isThisMC = 1;
+      }
     }
     
     //AliStack *stack = (AliStack*)fMCEvent->Stack();
     //cout<<"Primary summary "<<stack->GetNtrack()<<" "<<stack->GetNprimary()<<" "<<fMCEvent->GetNumberOfTracks()<<" "<<fMCEvent->GetNumberOfPrimaries()<<" "<<tot<<endl;
 
-    if(fEvalEfficiencyFlag){ 
+    if(fEvalEfficiencyFlag && isThisMC){ 
       if(fMCEvent){
 	for(int iTrack=0; iTrack<fMCEvent->GetNumberOfTracks(); iTrack++){
 	  AliMCParticle *part = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(iTrack));	
