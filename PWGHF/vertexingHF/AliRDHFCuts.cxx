@@ -94,6 +94,7 @@ fMinDzPileup(0.6),
 fUseCentrality(0),
 fMinCentrality(0.),
 fMaxCentrality(100.),
+fMultSelectionObjectName("MultSelection"),
 fFixRefs(kFALSE),
 fIsSelectedCuts(0),
 fIsSelectedPID(0),
@@ -164,6 +165,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fUseCentrality(source.fUseCentrality),
   fMinCentrality(source.fMinCentrality),
   fMaxCentrality(source.fMaxCentrality),
+  fMultSelectionObjectName(source.fMultSelectionObjectName),
   fFixRefs(source.fFixRefs),
   fIsSelectedCuts(source.fIsSelectedCuts),
   fIsSelectedPID(source.fIsSelectedPID),
@@ -250,6 +252,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fUseCentrality=source.fUseCentrality;
   fMinCentrality=source.fMinCentrality;
   fMaxCentrality=source.fMaxCentrality;
+  fMultSelectionObjectName=source.fMultSelectionObjectName;
   fFixRefs=source.fFixRefs;
   fIsSelectedCuts=source.fIsSelectedCuts;
   fIsSelectedPID=source.fIsSelectedPID;
@@ -330,7 +333,9 @@ Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
   }else{    
     Float_t centvalue=GetCentrality((AliAODEvent*)event);          
     if (centvalue<-998.){//-999 if no centralityP
-      return 0;    
+      return 0;
+    }else if(fEvRejectionBits&(1<<kMismatchOldNewCentrality)){
+      return 0;
     }else{      
       if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
 	return 2;      
@@ -1257,11 +1262,26 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
   
   if(aodEvent->GetRunNumber()<244824)return GetCentralityOldFramework(aodEvent,estimator);
   Double_t cent=-999;
-  AliMultSelection *multSelection = (AliMultSelection * ) aodEvent->FindListObject("MultSelection");
+
+  AliMultSelection *multSelection = (AliMultSelection*)aodEvent->FindListObject(fMultSelectionObjectName);
   if(!multSelection){
-    AliWarning("AliMultSelection could not be found in the aod event list of objects");
-    return cent;
+      AliWarning("AliMultSelection could not be found in the aod event list of objects");
+      return cent;
   }
+
+  // Compare centrality with the centrality at AOD filtering and on-the-fly
+  if( fMultSelectionObjectName.CompareTo("MultSelection")!=0 ){
+      AliMultSelection *defaultmultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+      if(!defaultmultSelection){
+          AliWarning("AliMultSelection default method could not be found in the aod event list of objects");
+          return cent;
+      }
+      Float_t defaultCent = defaultmultSelection->GetMultiplicityPercentile("V0M");
+      Float_t newCent = multSelection->GetMultiplicityPercentile("V0M");
+      if( defaultCent<20. && newCent>20.) fEvRejectionBits+=1<<kMismatchOldNewCentrality;
+      else if (defaultCent>20. && newCent<20.) fEvRejectionBits+=1<<kMismatchOldNewCentrality;
+  }
+
   if(estimator==kCentV0M){
     cent=multSelection->GetMultiplicityPercentile("V0M"); 
     Int_t qual = multSelection->GetEvSelCode();
