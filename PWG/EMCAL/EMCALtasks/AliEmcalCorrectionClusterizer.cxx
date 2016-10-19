@@ -131,6 +131,7 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   GetProperty("remapMcAod", fRemapMCLabelForAODs);
   Bool_t enableFracEMCRecalc = kFALSE;
   GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
+  GetProperty("setCellMCLabelFromCluster", fSetCellMCLabelFromCluster);
   Float_t diffEAggregation = 0.;
   GetProperty("diffEAggregation", diffEAggregation);
   
@@ -595,7 +596,9 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    if(fSetCellMCLabelFromEdepFrac) {
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    }
     
     //
     // Set the cell energy deposition fraction map:
