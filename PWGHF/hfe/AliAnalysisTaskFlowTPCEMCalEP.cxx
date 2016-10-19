@@ -403,6 +403,22 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     fCent->Fill(cent);
     
     
+    Int_t nVertices = 1;
+    nVertices = fAOD->GetNumberOfVertices();
+    Double_t listofmotherkink[nVertices];
+    Int_t nMotherKink = 0;
+    for(Int_t ivertex=0; ivertex < nVertices; ivertex++) {
+        AliAODVertex *vertex = fAOD->GetVertex(ivertex);
+        if(!vertex) continue;
+        if(vertex->GetType()==AliAODVertex::kKink) {
+            AliAODTrack *mother = (AliAODTrack *) vertex->GetParent();
+            if(!mother) continue;
+            Int_t idmother = mother->GetID();
+            listofmotherkink[nMotherKink] = idmother;
+            nMotherKink++;
+        }
+    }
+    
     
     if (cent>=0  && cent<10) iCent=0;
     if (cent>=10 && cent<30) iCent=1;
@@ -667,21 +683,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         if (track->Pt()<0.5) continue;
         
         
-        Int_t nVertices = 1;
-        nVertices = fAOD->GetNumberOfVertices();
-        Double_t listofmotherkink[nVertices];
-        Int_t nMotherKink = 0;
-        for(Int_t ivertex=0; ivertex < nVertices; ivertex++) {
-            AliAODVertex *vertex = fAOD->GetVertex(ivertex);
-            if(!vertex) continue;
-            if(vertex->GetType()==AliAODVertex::kKink) {
-                AliAODTrack *mother = (AliAODTrack *) vertex->GetParent();
-                if(!mother) continue;
-                Int_t idmother = mother->GetID();
-                listofmotherkink[nMotherKink] = idmother;
-                nMotherKink++;
-            }
-        }
+
         
         Bool_t kinkmotherpass = kTRUE;
         for(Int_t kinkmother = 0; kinkmother < nMotherKink; kinkmother++) {
