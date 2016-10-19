@@ -62,6 +62,7 @@
 #include "AliRDHFCutsLctoV0.h"
 #include "AliVertexingHFUtils.h"
 #include "AliInputEventHandler.h"
+#include "AliMultSelection.h"
 
 #include "AliFlowEvent.h"
 #include "AliFlowTrackCuts.h"
@@ -222,6 +223,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHisStdEstimSignal(0)
   , fHisStdPercentileSecondPercentile(0)
   , fHisStdSignalSecondSignal(0)
+  , fHisStdPercentileOldFrwPercentile(0)
+  , fHisStdPercentileOldFrwPercentileDev(0)
   , fHisxvtx(0)
   , fHisyvtx(0)
   , fHiszvtx(0)
@@ -395,6 +398,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHisStdEstimSignal(0)
   , fHisStdPercentileSecondPercentile(0)
   , fHisStdSignalSecondSignal(0)
+  , fHisStdPercentileOldFrwPercentile(0)
+  , fHisStdPercentileOldFrwPercentileDev(0)
   , fHisxvtx(0)
   , fHisyvtx(0)
   , fHiszvtx(0)
@@ -571,22 +576,23 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
 
   TString hnameEntries="hNentries";
-  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 14,-0.5,13.5);
+  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 15,-0.5,14.5);
   fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fHisNentries->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
   fHisNentries->GetXaxis()->SetBinLabel(3,"Mismatched dAOD (Event numbers)");
   fHisNentries->GetXaxis()->SetBinLabel(4,"Mismatched dAOD (TProcessID)");
-  fHisNentries->GetXaxis()->SetBinLabel(5,"nEventsAnal");
-  fHisNentries->GetXaxis()->SetBinLabel(6,"Pile-up Rej");
-  fHisNentries->GetXaxis()->SetBinLabel(7,"No VertexingHF");
-  fHisNentries->GetXaxis()->SetBinLabel(8,"nCandidates(AnCuts)");
-  fHisNentries->GetXaxis()->SetBinLabel(9,"EventsWithGoodVtx");
-  fHisNentries->GetXaxis()->SetBinLabel(10,"N candidates");
+  fHisNentries->GetXaxis()->SetBinLabel(5,"Mismatched Old New Centrality");
+  fHisNentries->GetXaxis()->SetBinLabel(6,"nEventsAnal");
+  fHisNentries->GetXaxis()->SetBinLabel(7,"Pile-up Rej");
+  fHisNentries->GetXaxis()->SetBinLabel(8,"No VertexingHF");
+  fHisNentries->GetXaxis()->SetBinLabel(9,"nCandidates(AnCuts)");
+  fHisNentries->GetXaxis()->SetBinLabel(10,"EventsWithGoodVtx");
+  fHisNentries->GetXaxis()->SetBinLabel(11,"N candidates");
   if(fReadMC){
-    fHisNentries->GetXaxis()->SetBinLabel(11,"MC Cand from c");
-    fHisNentries->GetXaxis()->SetBinLabel(12,"MC Cand from b");
-    fHisNentries->GetXaxis()->SetBinLabel(13,"N fake Trks");
-    fHisNentries->GetXaxis()->SetBinLabel(14,"N true Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(12,"MC Cand from c");
+    fHisNentries->GetXaxis()->SetBinLabel(13,"MC Cand from b");
+    fHisNentries->GetXaxis()->SetBinLabel(14,"N fake Trks");
+    fHisNentries->GetXaxis()->SetBinLabel(15,"N true Trks");
   }
 
   fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
@@ -1159,6 +1165,18 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hStdSignalSecondSignal";
     fHisStdSignalSecondSignal = new TH2F(hname.Data(),"Std estimator signal Vs Second Estimator signal;Std estimator;Second estimator",1000,-0.5,9999.5,1000,-0.5,9999.5);
 
+    hname="hStdPercentileOldFrwPercentile";
+    fHisStdPercentileOldFrwPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs Old Framework estimator Percentile;Std estimator percentile;Old framework estimator percentile",120,-10.,110,120,-10.,110);
+
+    hname="hStdPercentileOldFrwPercentileDev";
+    fHisStdPercentileOldFrwPercentileDev = new TH1F(hname.Data(),"Std estimator Percentile Vs Old Framework estimator Percentile deviation",5,-0.5,4.5);
+    fHisStdPercentileOldFrwPercentileDev->GetXaxis()->SetBinLabel(1, "nEvts with >1% difference");
+    fHisStdPercentileOldFrwPercentileDev->GetXaxis()->SetBinLabel(2, "nEvts with >0.5% difference");
+    fHisStdPercentileOldFrwPercentileDev->GetXaxis()->SetBinLabel(3, "nEvts default <20, new >20");
+    fHisStdPercentileOldFrwPercentileDev->GetXaxis()->SetBinLabel(4, "nEvts default >20, new <20");
+    fHisStdPercentileOldFrwPercentileDev->GetXaxis()->SetBinLabel(5, "nEvts rejected due to centrality mismatch");
+
+
     fOutputCheckCentrality->Add(fHisNtrackletsIn);
     fOutputCheckCentrality->Add(fHisNtrackletsOut);
     fOutputCheckCentrality->Add(fHisMultIn);
@@ -1175,6 +1193,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(fHisStdEstimSignalNtrackletsIn);
     fOutputCheckCentrality->Add(fHisStdPercentileSecondPercentile);
     fOutputCheckCentrality->Add(fHisStdSignalSecondSignal);
+    fOutputCheckCentrality->Add(fHisStdPercentileOldFrwPercentile);
+    fOutputCheckCentrality->Add(fHisStdPercentileOldFrwPercentileDev);
 
     PostData(6,fOutputCheckCentrality);
 
@@ -1480,6 +1500,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     fHisNentries->Fill(1);
   }
 
+  if( fCuts->IsEventRejectedDueToMismatchOldNewCentrality() ) fHisNentries->Fill(4);
+
 
   TClonesArray *arrayProng =0;
 
@@ -1673,7 +1695,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only track related histograms\n");
     isSimpleMode=kTRUE;
-    fHisNentries->Fill(6);
+    fHisNentries->Fill(7);
   }
 
   TClonesArray *mcArray = 0;
@@ -1924,7 +1946,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
   // count event
-  fHisNentries->Fill(4);
+  fHisNentries->Fill(5);
   //count events with good vertex
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
@@ -1934,7 +1956,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   const AliESDVertex vESD(pos,cov,100.,100);
 
   TString primTitle = vtx1->GetTitle();
-  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(8);
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) fHisNentries->Fill(9);
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //TString trigclass=aod->GetFiredTriggerClasses();
@@ -2146,6 +2168,20 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisStdEstimSignalNtrackletsIn->Fill(stdSignal,aod->GetTracklets()->GetNumberOfTracklets());
       fHisStdPercentileSecondPercentile->Fill(stdCentf,secondCentf);
       fHisStdSignalSecondSignal->Fill(stdSignal,secondSignal);
+
+      if( (fCuts->GetMultSelectionObjectName()).CompareTo("MultSelection")!=0 ){
+          AliMultSelection *multSelectionOld = (AliMultSelection*) aod -> FindListObject("MultSelection");
+          Float_t oldFrmwCent = multSelectionOld ? multSelectionOld->GetMultiplicityPercentile("V0M") : -1;
+          Printf(" HFQA task: new centrality %3.3f vs old centrality %3.2f \n",stdCentf,oldFrmwCent);
+          fHisStdPercentileOldFrwPercentile->Fill(stdCentf,oldFrmwCent);
+          //
+          Double_t differenceCent = TMath::Abs( stdCentf - oldFrmwCent );
+          if(differenceCent>1) fHisStdPercentileOldFrwPercentileDev->Fill(0.);
+          if(differenceCent>0.5) fHisStdPercentileOldFrwPercentileDev->Fill(1.);
+          if( (stdCentf<20) && (oldFrmwCent>20) ) fHisStdPercentileOldFrwPercentileDev->Fill(2.);
+          if( (stdCentf>20) && (oldFrmwCent<20) ) fHisStdPercentileOldFrwPercentileDev->Fill(3.);
+          if( fCuts->IsEventRejectedDueToMismatchOldNewCentrality() ) fHisStdPercentileOldFrwPercentileDev->Fill(4.);
+      }
 
       PostData(6,fOutputCheckCentrality);
 
@@ -2524,8 +2560,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	Int_t label=0;
 	if(fReadMC){
 	  label=track->GetLabel();
-	  if (label<0) fHisNentries->Fill(12);
-	  else fHisNentries->Fill(13);
+	  if (label<0) fHisNentries->Fill(13);
+	  else fHisNentries->Fill(14);
 	}
 
 
@@ -2609,12 +2645,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if(mot){
 	      Int_t pdgMotCode = mot->GetPdgCode();
 
-	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(10); //from primary charm
-	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(11); //from beauty
+	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(11); //from primary charm
+	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(12); //from beauty
 	    }
 	  }
 	}//end MC
-	fHisNentries->Fill(9);//count the candidates (data and MC)
+	fHisNentries->Fill(10);//count the candidates (data and MC)
 
 	for(Int_t id=0;id<ndaugh;id++){
 	  //other histograms to be filled when the cut object is given
@@ -2753,7 +2789,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
-	       fHisNentries->Fill(7); //candidates passing analysis cuts
+	       fHisNentries->Fill(8); //candidates passing analysis cuts
 
 	    AliAODPid *pid = track->GetDetPid();
 	      if(pid){
