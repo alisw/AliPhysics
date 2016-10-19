@@ -151,6 +151,7 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 		TParticle *cu_pt = (TParticle*)stack->Particle(tr->GetID());
 		if (!cu_pt) return;
 		if (cu_pt->GetFirstMother() == -1) {
+			fMotherID = -1;
 			fMotherPDGCode = -1;
 			return;
 		}
@@ -218,6 +219,8 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMultDG_MS(0x0)
 	, fMassNG_ST_2t(0x0)
 	, fMassNG_MS_2t(0x0)
+	, fpTNG_MS_2t(0x0)
+	, fMasspTNG_MS_2t(0x0)
 	, fMassDG_ST_2t(0x0)
 	, fMassDG_MS_2t(0x0)
 	, fMassNG_ST_4t(0x0)
@@ -332,6 +335,8 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMultDG_MS(0x0)
 	, fMassNG_ST_2t(0x0)
 	, fMassNG_MS_2t(0x0)
+	, fpTNG_MS_2t(0x0)
+	, fMasspTNG_MS_2t(0x0)
 	, fMassDG_ST_2t(0x0)
 	, fMassDG_MS_2t(0x0)
 	, fMassNG_ST_4t(0x0)
@@ -420,6 +425,8 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMultDG_MS) delete fMultDG_MS;
 	if (fMassNG_ST_2t) delete fMassNG_ST_2t;
 	if (fMassNG_MS_2t) delete fMassNG_MS_2t;
+	if (fpTNG_MS_2t) delete fpTNG_MS_2t;
+	if (fMasspTNG_MS_2t) delete fMasspTNG_MS_2t;
 	if (fMassDG_ST_2t) delete fMassDG_ST_2t;
 	if (fMassDG_MS_2t) delete fMassDG_MS_2t;
 	if (fMassNG_ST_4t) delete fMassNG_ST_4t;
@@ -659,6 +666,14 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 	if (!fMassNG_MS_2t) {
 		fMassNG_MS_2t = new TH1D("fMassNG_MS_2t","",100,0,2);
 		fList->Add(fMassNG_MS_2t);
+	}
+	if (!fpTNG_MS_2t) {
+		fpTNG_MS_2t = new TH1D("fpTNG_MS_2t","",100,0,2);
+		fList->Add(fpTNG_MS_2t);
+	}
+	if (!fMasspTNG_MS_2t) {
+		fMasspTNG_MS_2t = new TH2D("fMasspTNG_MS_2t","",100,0,2,100,0,2);
+		fList->Add(fMasspTNG_MS_2t);
 	}
 	if (!fMassDG_ST_2t) {
 		fMassDG_ST_2t = new TH1D("fMassDG_ST_2t","",100,0,2);
@@ -1081,9 +1096,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fRunVsDG[i]->Fill(fRunNumber);
 			}
 		}
-		hMult_Ref[0]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC, 3));
-		hMult_Ref[1]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSSA, 3));
-		hMult_Ref[2]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTracklets, 3));
+		if (fDG_Det[7]) {
+			hMult_Ref[0]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC, 1.8));
+			hMult_Ref[1]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSSA, 1.8));
+			hMult_Ref[2]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTracklets, 1.8));
+		}
 	}
 	if (fIsMC) {
 		FillPassMCInfo(fDG_Det[0], fDG_Det[5]);
@@ -1179,7 +1196,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	if (normalCut && fDG_Det[7]) {//NG
 		fMultNG_MS->Fill(Nsel);
 		fTrackCutsInfo_NG->Fill(Nsel);
-		if (Nsel == 2 && trkCharge == 0) fMassNG_MS_2t->Fill(lv_sum_2t.M());
+		if (Nsel == 2 && trkCharge == 0) {
+			fMassNG_MS_2t->Fill(lv_sum_2t.M());
+			fpTNG_MS_2t->Fill(lv_sum_2t.Pt());
+			fMasspTNG_MS_2t->Fill(lv_sum_2t.M(),lv_sum_2t.Pt());
+		}
 		if (Nsel == 4 && trkCharge == 0) fMassNG_MS_4t->Fill(lv_sum_4t.M());
 	}
 	if (normalCut && fDG_Det[0]) {//DG_V0SPD
