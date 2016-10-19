@@ -106,7 +106,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     if(system==0) RDHFD0Corrs->SetStandardCutsPP2010();
     else {
       RDHFD0Corrs->SetStandardCutsPbPb2010();
-      if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+      if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
 	RDHFD0Corrs->SetMinCentrality(minC);
 	RDHFD0Corrs->SetMaxCentrality(maxC);
       }
@@ -121,7 +121,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       return;
     }
     if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
-    if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+    if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
       RDHFD0Corrs->SetMinCentrality(minC);
       RDHFD0Corrs->SetMaxCentrality(maxC);
     } 
@@ -176,7 +176,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   corrCuts->PrintAll();
 
   TString centr="";
-  if(minC!=0 && maxC!=0) centr = Form("%.0f%.0f",minC,maxC);
+  if(minC!=0 || maxC!=0) centr = Form("%.0f%.0f",minC,maxC);
   else centr = Form("%.0f%.0f",RDHFD0Corrs->GetMinCentrality(),RDHFD0Corrs->GetMaxCentrality());
   out1name+=centr;
   out2name+=centr;
