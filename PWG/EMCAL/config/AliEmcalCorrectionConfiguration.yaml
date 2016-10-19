@@ -74,6 +74,7 @@ Clusterizer:
     recalShowerShape: false
     remapMcAod: false                  # Switch for the remaping for the MC labels in AOD productions
     enableFracEMCRecalc: false         # Enables the recalculation of the MC labels including the fractional energy on cell level
+    setCellMCLabelFromCluster: 0       # Enables setting the cell MC label from the cluster. There are different modes depending on the value
     removeNMCGenerators: 0             # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
     enableMCGenRemovTrack: true        # apply the MC generators rejection also for track matching
     removeMCGen1: ""                   # name of generator input to be accepted
