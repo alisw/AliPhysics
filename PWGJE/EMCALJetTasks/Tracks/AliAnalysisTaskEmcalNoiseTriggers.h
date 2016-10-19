@@ -109,15 +109,6 @@ protected:
   AliEMCALTriggerPatchADCInfoAP *MakeFastorADCValuesForPatch(const AliEMCALTriggerPatchInfo &patch) const;
 
   /**
-   * Select trigger patch according to the sum of the fastor ADC values. Patches are
-   * selected without masking. Energy cuts are for the moment hard coded to the 2013
-   * pPb thresholds.
-   * @param[in] sumADC Sum of the fastor ADC values within a trigger patch
-   * @return True if the patch is selected as firing the trigger
-   */
-  Bool_t SelectFiredPatch(Int_t sumADC) const;
-
-  /**
    * Filling histograms on FastOR Level
    * - ADC spectrum of each FastOR
    */
@@ -130,8 +121,10 @@ protected:
    * - Number of contributing (non-zero) fastors vs. fractional ADC value of the highest FastOR
    * @param[in] recpatch Patch to be analysed
    * @param[in] pt Type of the trigger patch (online or recalc)
+   * @param[in] maxpatch If true the method is called for the highest energetic patch
+   * @return Patch selection status (true if patch fired the trigger, false otherwise)
    */
-  void AnalyseTriggerPatch(const AliEMCALTriggerPatchInfo &recpatch, SelectPatchType_t pt);
+  Bool_t AnalyseTriggerPatch(const AliEMCALTriggerPatchInfo &recpatch, SelectPatchType_t pt, Bool_t maxpatch);
 
   static const TString                             fgkPatchNames[2];  ///< Names of the trigger patch types (for histograms)
   AliEMCALTriggerDataGrid<Int_t>                   fL1ADC;            //!<! Level1 fastor ADCs

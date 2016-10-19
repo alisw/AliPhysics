@@ -39,7 +39,6 @@ AliAnalysisTaskEmcalNoiseTriggers::AliAnalysisTaskEmcalNoiseTriggers():
     fTriggerString("")
 {
   SetSelectNoiseEvents(true);
-  SetOnlineSelectionMethodV1(true);
 }
 
 AliAnalysisTaskEmcalNoiseTriggers::AliAnalysisTaskEmcalNoiseTriggers(const char *name):
@@ -48,11 +47,11 @@ AliAnalysisTaskEmcalNoiseTriggers::AliAnalysisTaskEmcalNoiseTriggers(const char 
     fTriggerString("")
 {
   SetSelectNoiseEvents(true);
-  SetOnlineSelectionMethodV1(true);
 }
 
 void AliAnalysisTaskEmcalNoiseTriggers::CreateUserHistos(){
   const int kMaxCol = 48, kMaxRow = 104, kMaxFastOr = kMaxRow * kMaxCol;
+  const TString kMaxTypes[2] = {"All", "Max"};
 
   // Event level histograms
   fHistos->CreateTH1("hEventCount", "EventCounter", 1, 0.5, 1.5);
@@ -64,9 +63,12 @@ void AliAnalysisTaskEmcalNoiseTriggers::CreateUserHistos(){
   // Histograms at trigger patch level
   for(int itype = 0; itype < 2; itype++){
     const TString &mypatchtype = fgkPatchNames[itype];
-    fHistos->CreateTH2(Form("hPatchMaxFastorADCvsSumADC%s", mypatchtype.Data()), Form("Max FastOR ADC vs. ADC sum for %s patches; Sum ADC; Max FastOR ADC", mypatchtype.Data()), 2048, 0., 2048, 2500, 0., 2500);
-    fHistos->CreateTH2(Form("hSumADCvsPatchADC%s", mypatchtype.Data()), Form("Sum all ADC vs. Patch ADC for %s patches; sum ADC; patch ADC", mypatchtype.Data()), 2048, 0., 2048, 2500, 0., 2500);
-    fHistos->CreateTH2(Form("hNfastorVsFracMaxFastor%s", mypatchtype.Data()), Form("Number of non-zero FastORs vs. ADC fraction of the highest FastOR for %s patches; Number of FastORs; Fraction ADC highest Fastor", mypatchtype.Data()), 257, -0.5, 256.5, 100, 0., 1);
+    fHistos->CreateTH1(Form("hEventSelPatch%s", mypatchtype.Data()), Form("Number of firing %s patches", mypatchtype.Data()), 1001, -0.5, 1000.5);
+    for(int imax = 0; imax < 2; imax++){
+      fHistos->CreateTH2(Form("hPatchMaxFastorADCvsSumADC%s%s", kMaxTypes[imax].Data(), mypatchtype.Data()), Form("Max FastOR ADC vs. ADC sum for %s %s patches; Sum ADC; Max FastOR ADC", kMaxTypes[imax].Data(), mypatchtype.Data()), 2048, 0., 2048, 2500, 0., 2500);
+      fHistos->CreateTH2(Form("hSumADCvsPatchADC%s%s", kMaxTypes[imax].Data(), mypatchtype.Data()), Form("Sum all ADC vs. Patch ADC for %s %s patches; sum ADC; patch ADC", kMaxTypes[imax].Data(), mypatchtype.Data()), 2048, 0., 2048, 2500, 0., 2500);
+      fHistos->CreateTH2(Form("hNfastorVsFracMaxFastor%s%s", kMaxTypes[imax].Data(), mypatchtype.Data()), Form("Number of non-zero FastORs vs. ADC fraction of the highest FastOR for %s %s patches; Number of FastORs; Fraction ADC highest Fastor", kMaxTypes[imax].Data(), mypatchtype.Data()), 257, -0.5, 256.5, 100, 0., 1);
+    }
   }
 }
 
@@ -90,28 +92,73 @@ bool AliAnalysisTaskEmcalNoiseTriggers::Run(){
   AnalyseFastors();
 
   // Loop patches
+  // In addition mark max patches for the case online and recalc - these
+  // patches will be processed later to investigate max patch distributions
+  AliEMCALTriggerPatchInfo *maxonline(nullptr), *maxrecalc(nullptr);
+  Int_t nselOnline(0), nselRecalc(0), ngoodOnline(0), ngoodRecalc(0);
   for(auto patchit : *(this->fTriggerPatchInfo)){
     AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(patchit);
     if(fTriggerBits & AliVEvent::kEMCEGA){
       if(fTriggerString.Contains("EG1")){
-        if(recpatch->IsGammaHigh()) AnalyseTriggerPatch(*recpatch, kOnline);
-        if(recpatch->IsGammaLowRecalc()) AnalyseTriggerPatch(*recpatch, kRecalc);
+        if(recpatch->IsGammaHigh()){
+          if(AnalyseTriggerPatch(*recpatch, kOnline, false)) nselOnline++;
+          if(SelectFiredPatch("EG1", recpatch->GetADCAmp())) ngoodOnline++;
+          if(!maxonline || recpatch->GetADCAmp() > maxonline->GetADCAmp()) maxonline = recpatch;
+        }
+        if(recpatch->IsGammaLowRecalc()){
+          if(AnalyseTriggerPatch(*recpatch, kRecalc, false)) nselRecalc++;
+          if(SelectFiredPatch("EG1", recpatch->GetADCAmp())) ngoodRecalc++;
+          if(!maxrecalc || recpatch->GetADCAmp() > maxrecalc->GetADCAmp()) maxrecalc = recpatch;
+        }
       }
       if(fTriggerString.Contains("EG2")){
-        if(recpatch->IsGammaLow()) AnalyseTriggerPatch(*recpatch, kOnline);
-        if(recpatch->IsGammaLowRecalc()) AnalyseTriggerPatch(*recpatch, kRecalc);
+        if(recpatch->IsGammaLow()){
+          if(AnalyseTriggerPatch(*recpatch, kOnline, false)) nselOnline++;
+          if(SelectFiredPatch("EG2", recpatch->GetADCAmp())) ngoodOnline++;
+          if(!maxonline || recpatch->GetADCAmp() > maxonline->GetADCAmp()) maxonline = recpatch;
+        }
+        if(recpatch->IsGammaLowRecalc()){
+          if(AnalyseTriggerPatch(*recpatch, kRecalc, false)) nselRecalc++;
+          if(SelectFiredPatch("EG2", recpatch->GetADCAmp())) ngoodRecalc++;
+          if(!maxrecalc || recpatch->GetADCAmp() > maxrecalc->GetADCAmp()) maxrecalc = recpatch;
+        }
       }
     } else if(fTriggerBits & AliVEvent::kEMCEJE){
       if(fTriggerString.Contains("EJ1")){
-        if(recpatch->IsJetHigh()) AnalyseTriggerPatch(*recpatch, kOnline);
-        if(recpatch->IsJetLowRecalc()) AnalyseTriggerPatch(*recpatch, kRecalc);
+        if(recpatch->IsJetHigh()){
+          if(AnalyseTriggerPatch(*recpatch, kOnline, false)) nselOnline++;
+          if(SelectFiredPatch("EJ1", recpatch->GetADCAmp())) ngoodOnline++;
+          if(!maxonline || recpatch->GetADCAmp() > maxonline->GetADCAmp()) maxonline = recpatch;
+        }
+        if(recpatch->IsJetLowRecalc()){
+          if(AnalyseTriggerPatch(*recpatch, kRecalc, false)) nselRecalc++;
+          if(SelectFiredPatch("EJ1", recpatch->GetADCAmp())) ngoodRecalc++;
+          if(!maxrecalc || recpatch->GetADCAmp() > maxrecalc->GetADCAmp()) maxrecalc = recpatch;
+        }
       }
       if(fTriggerString.Contains("EJ2")){
-        if(recpatch->IsJetLow()) AnalyseTriggerPatch(*recpatch, kOnline);
-        if(recpatch->IsJetLowRecalc()) AnalyseTriggerPatch(*recpatch, kRecalc);
+        if(recpatch->IsJetLow()){
+          if(AnalyseTriggerPatch(*recpatch, kOnline, false)) nselOnline++;
+          if(SelectFiredPatch("EJ2", recpatch->GetADCAmp())) ngoodOnline++;
+          if(!maxonline || recpatch->GetADCAmp() > maxonline->GetADCAmp()) maxonline = recpatch;
+        }
+        if(recpatch->IsJetLowRecalc()){
+          if(AnalyseTriggerPatch(*recpatch, kRecalc, false)) nselRecalc++;
+          if(SelectFiredPatch("EJ2", recpatch->GetADCAmp())) ngoodRecalc++;
+          if(!maxrecalc || recpatch->GetADCAmp() > maxrecalc->GetADCAmp()) maxrecalc = recpatch;
+        }
       }
     }
   }
+
+  // Fill event statistics
+  fHistos->FillTH1("hEventSelPatchOnline", nselOnline);
+  fHistos->FillTH1("hEventSelPatchRecalc", nselRecalc);
+  fHistos->FillTH1("hEventGoodPatchOnline", ngoodOnline);
+  fHistos->FillTH1("hEventGoodPatchRecalc", ngoodRecalc);
+
+  if(maxonline) AnalyseTriggerPatch(*maxonline, kOnline, true);
+  if(maxrecalc) AnalyseTriggerPatch(*maxrecalc, kRecalc, true);
 
   return true;
 }
@@ -175,27 +222,22 @@ void AliAnalysisTaskEmcalNoiseTriggers::AnalyseFastors(){
   }
 }
 
-void AliAnalysisTaskEmcalNoiseTriggers::AnalyseTriggerPatch(const AliEMCALTriggerPatchInfo &recpatch, SelectPatchType_t pt){
+Bool_t AliAnalysisTaskEmcalNoiseTriggers::AnalyseTriggerPatch(const AliEMCALTriggerPatchInfo &recpatch, SelectPatchType_t pt, Bool_t maxpatch){
   std::unique_ptr<AliEMCALTriggerPatchADCInfoAP> adcvalues(MakeFastorADCValuesForPatch(recpatch));
 
   // cut patch according to ADC sum without masking (select also patches with noise)
   Int_t sumADC = adcvalues->GetSumADC();
   if(pt == kRecalc) {
-    if(!SelectFiredPatch(sumADC)) return;
+    if(!SelectFiredPatch(fTriggerString, sumADC)) return kFALSE;
   }
 
-  const TString &mypatchtype =  fgkPatchNames[pt];
+  const TString &mypatchtype =  fgkPatchNames[pt], maxname = maxpatch ? "Max" : "All";
   Int_t maxADC = adcvalues->GetMaxADC(), ncontrib = adcvalues->GetNFastorsContrib();
   Float_t fracMaxFastor = static_cast<Float_t>(maxADC)/static_cast<Float_t>(sumADC);
-  fHistos->FillTH2(Form("hPatchMaxFastorADCvsSumADC%s", mypatchtype.Data()), sumADC, maxADC);
-  fHistos->FillTH2(Form("hSumADCvsPatchADC%s", mypatchtype.Data()), sumADC, recpatch.GetADCAmp());
-  fHistos->FillTH2(Form("hNfastorVsFracMaxFastor%s", mypatchtype.Data()), ncontrib, fracMaxFastor);
-}
-
-Bool_t AliAnalysisTaskEmcalNoiseTriggers::SelectFiredPatch(Int_t sumADC) const {
-  if((fTriggerString.Contains("EG1") && sumADC < 140) || (fTriggerString.Contains("EG1") && sumADC < 89) ||
-      (fTriggerString.Contains("EJ1") && sumADC < 260) || (fTriggerString.Contains("EJ2") && sumADC < 127)) return false;
-  return true;
+  fHistos->FillTH2(Form("hPatchMaxFastorADCvsSumADC%s%s", maxname.Data(), mypatchtype.Data()), sumADC, maxADC);
+  fHistos->FillTH2(Form("hSumADCvsPatchADC%s%s", maxname.Data(), mypatchtype.Data()), sumADC, recpatch.GetADCAmp());
+  fHistos->FillTH2(Form("hNfastorVsFracMaxFastor%s%s", maxname.Data(), mypatchtype.Data()), ncontrib, fracMaxFastor);
+  return kTRUE;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
