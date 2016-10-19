@@ -5,7 +5,7 @@
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
+ * documentation strictly for non-commercial purposes is hereby granted   * 
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -928,6 +928,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
         if(!fReadMC) {
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+	    if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
             if(!fMixing && !fAlreadyFilled) {
  	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
 	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
@@ -940,6 +941,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
             Int_t pdgDgD0toKpi[2]={321,211};
     	    Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
             if (labD0>-1) {
+  	      if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
               if(!fMixing && !fAlreadyFilled) {
 		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
@@ -1697,7 +1699,16 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
       
       } //end of Mult pools
     } //end of Mix
-  }
+ 
+    if(!fFillTrees) {
+      //ME filling control plots
+      namePlot="hEvtsPerPool_"; namePlot+=i;
+      TH1F *hEvPerPool = new TH1F(namePlot.Data(), "Events With selD0 in ME pools",nPoolForHistos,0.,nPoolForHistos);
+      hEvPerPool->SetMinimum(0);
+      fOutputStudy->Add(hEvPerPool);
+    }
+
+  } //end of bin loop
 
   //out of bin loop
   TH1F *hCountC = new TH1F("hist_Count_Charg", "Charged track counter; # Tracks",6000,0.,6000.);
