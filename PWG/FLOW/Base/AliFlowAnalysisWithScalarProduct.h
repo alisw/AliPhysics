@@ -45,11 +45,6 @@ class AliFlowAnalysisWithScalarProduct : public AliFlowAnalysis {
    void SetHarmonic(Int_t iHarmonic)          { fHarmonic = iHarmonic; }
    void SetApplyCorrectionForNUA(Bool_t iVal) { fApplyCorrectionForNUA = iVal?1:0; }
    void SetNormalizationType(Int_t iVal)      { fNormalizationType = iVal; }
-   void SetV0SanityCheck(Bool_t t)            { fV0SanityCheck = t;}
-   Bool_t IsEqualRel(double dX, double dY, double epsilon) {            
-          return TMath::Abs(dX - dY) <= epsilon; 
-   } 
-   
    void SetDebug(Bool_t bVal)                 { fDebug = bVal; }
    void SetBookOnlyBasicCCH(Bool_t bVal)           { fMinimalBook = bVal; }
    void SetTotalQvector(Int_t iVal)           { fTotalQvector = iVal; }
@@ -83,7 +78,6 @@ class AliFlowAnalysisWithScalarProduct : public AliFlowAnalysis {
    Int_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
    Int_t fHarmonic;              // harmonic 
    Int_t fNormalizationType;     // 0: EP mode || 1: SP mode
-   Bool_t fV0SanityCheck;        // test to suppress NaN/inf values
    Int_t fTotalQvector;          // 1:Qa 2:Qb 3:QaQb
 
    TList*     fWeightsList;      // list holding input histograms with phi weights
