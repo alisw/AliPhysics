@@ -49,7 +49,6 @@ set(SRCS
   AliEmcalPatchFromCellMaker.cxx
   AliEmcalPhysicsSelectionTask.cxx
   AliEmcalPicoTrackMaker.cxx
-  AliEmcalSetupTask.cxx
   AliEmcalTenderTask.cxx
   AliEmcalTrackingQATask.cxx
   AliEmcalTrackPropagatorTask.cxx
