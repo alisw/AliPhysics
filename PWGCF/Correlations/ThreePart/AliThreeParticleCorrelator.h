@@ -61,6 +61,7 @@ class AliThreeParticleCorrelator : public TNamed {
     , fMultiplicity(0)
     , fRandom()
     , fMaxMixedPerEvent(-1)
+    , fLeading(kTRUE)
 {  
     fRandom = new TRandom3();
     TTimeStamp now;
@@ -88,6 +89,7 @@ class AliThreeParticleCorrelator : public TNamed {
     , fMultiplicity(other.fMultiplicity)
     , fRandom(other.fRandom)
     , fMaxMixedPerEvent(other.fMaxMixedPerEvent)
+    , fLeading(kTRUE)
   {
     if(fRandom)delete fRandom;
     fRandom = new TRandom3();
@@ -204,8 +206,10 @@ class AliThreeParticleCorrelator : public TNamed {
     fMultiplicity = m;
   }
   
-  /// Set the maximum number of tracks kept in the mixed event pool
+  void SetLeading(bool isleading){fLeading = isleading;}
   
+  
+  /// Set the maximum number of tracks kept in the mixed event pool
   void SetNMaxMixed(Int_t i){fMaxMixedPerEvent = i;}
   
   /// get ME analysis object corresponding to parameter
@@ -224,7 +228,7 @@ class AliThreeParticleCorrelator : public TNamed {
   }
 
   //Process the Event
-  virtual void Execute(TMethod */*method*/, TObjArray *arrayParticles, Int_t *error=0) {
+  virtual void Execute(TMethod */*method*/, TObjArray *arrayParticles,Int_t *error=0) {
     int err=ProcessEvent(arrayParticles);
     if (error) *error=err;
   }
@@ -255,7 +259,7 @@ class AliThreeParticleCorrelator : public TNamed {
 //     TObjArray* associatedTracks=
     MakeAssociated(arrayParticles,Mixedparticles, fAssociated,true);
     //Fill the vector for all objects in fCorrelations.
-    MakeTriggers(arrayParticles, Mixedparticles);
+    MakeTriggers(arrayParticles, Mixedparticles,fLeading);
 
 
 //     if (!associatedTracks) return -1;//The function failed somehow.
@@ -288,7 +292,7 @@ class AliThreeParticleCorrelator : public TNamed {
 	  
 	  //Correlate associated from this event with triggers and associated from past events:
 	  for (int nEvent=0; nEvent<EventsInPool; nEvent++){
-	    MakeTriggers(pool->GetEvent(nEvent));
+	    MakeTriggers(pool->GetEvent(nEvent),fLeading);
 	    MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
 	    //Now factiveTriggers is the same event as fAssociatedmixed1.
 	    ProcessEvent(factiveTriggers,fAssociatedmixed1,fAssociated,fMETACorrelations.begin(),fMETACorrelations.end());
@@ -342,9 +346,11 @@ class AliThreeParticleCorrelator : public TNamed {
 	    (*o)->Fill(*trigger,*assoc2,*assoc,weightt*weighta1*weighta2);//Fill histogram for number of triggers.
 	  }
 	  if(trigger==activeTriggers.begin()){
-	    //once per event fill the a-a 2p correlation histogram
+	    //once per event fill the a-a 2p correlation histogram symmitrized
 	    for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {      
 		(*o)->Filla(*assoc,*assoc2,weighta1*weighta2);
+		(*o)->Filla(*assoc2,*assoc,weighta1*weighta2);
+	      
 	    }
 	  }
 	}//loop over second associated
@@ -396,6 +402,7 @@ class AliThreeParticleCorrelator : public TNamed {
 	    //once per event fill the a-a 2p correlation histogram
 	    for (typename vector<C*>::iterator o=firstAnalysisObject,e=endAnalysisObject;o!=e; o++) {      
 		(*o)->Filla(*assoc,*assoc2,weighta1*weighta2);
+		(*o)->Filla(*assoc2,*assoc,weighta1*weighta2);
 	    }
 	  }
 	}//loop over second associated
@@ -409,41 +416,84 @@ class AliThreeParticleCorrelator : public TNamed {
     return 0;
   }
   
-  void MakeTriggers(const TObjArray* arrayParticles) {
+  void MakeTriggers(const TObjArray* arrayParticles,bool fLeading) {
     /// create a particle array with reduced data objects
     /// for trigger particles containing only potential triggers.
+    //if fLeading is true, it returns only the leading track in pT
     if (!arrayParticles) return ;
     factiveTriggers.clear();
-    TIter nexttrigger(arrayParticles);
-    TObject* otrigger=NULL;
-    while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
-      AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-      if (!ptrigger) continue;
+    if(fLeading){
+      TIter nexttrigger(arrayParticles);
+      TObject* otrigger=NULL;
+      AliVParticle * nowtrigger = NULL;
+      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+	if (!ptrigger) continue;
+	if (nowtrigger)if(nowtrigger->Pt()>ptrigger->Pt()) continue;//only keep the highest pT one.
+	nowtrigger = ptrigger;
+      }//end while loop
       for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
-	if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
-	factiveTriggers.push_back(ptrigger);
+	if (!(*o)->CheckTrigger(nowtrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	factiveTriggers.push_back(nowtrigger);
       }
-    }//end while loop
+      return;
+    }
+    else{
+      TIter nexttrigger(arrayParticles);
+      TObject* otrigger=NULL;
+      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+	if (!ptrigger) continue;
+	for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
+	  if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	  factiveTriggers.push_back(ptrigger);
+	}
+      }//end while loop
     return ;
+    }
+
+    
+
   }
-  void MakeTriggers(const TObjArray* arrayParticles, TObjArray* outarrayParticles) {
+  void MakeTriggers(const TObjArray* arrayParticles, TObjArray* outarrayParticles,bool fLeading) {
     /// create a particle array with reduced data objects
     /// for trigger particles containing only potential triggers.
+    //if fLeading is true, it returns only the leading track in pT
     if (!arrayParticles||!outarrayParticles) return ;
     factiveTriggers.clear();
-    TIter nexttrigger(arrayParticles);
-    TObject* otrigger=NULL;
-    while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
-      AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-      if (!ptrigger) continue;
+    if(fLeading){
+      TIter nexttrigger(arrayParticles);
+      TObject* otrigger=NULL;
+      AliVParticle * nowtrigger = NULL;
+      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+	if (!ptrigger) continue;
+	if (nowtrigger)if(nowtrigger->Pt()>ptrigger->Pt()) continue;//only keep the highest pT one.
+	nowtrigger = ptrigger;
+      }//end while loop
       for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
-	if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
-	factiveTriggers.push_back(ptrigger);
-	AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(ptrigger));
+	if (!(*o)->CheckTrigger(nowtrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	factiveTriggers.push_back(nowtrigger);	  
+	AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(nowtrigger));
 	outarrayParticles->Add(outtrigger);
       }
-    }//end while loop
-    return ;
+      return;
+    }
+    else{
+      TIter nexttrigger(arrayParticles);
+      TObject* otrigger=NULL;
+      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+	if (!ptrigger) continue;
+	for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
+	  if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	  factiveTriggers.push_back(ptrigger);
+	  AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(ptrigger));
+	  outarrayParticles->Add(outtrigger);
+	}
+      }//end while loop
+      return ;
+    }
   }
   
   
@@ -542,6 +592,7 @@ class AliThreeParticleCorrelator : public TNamed {
   Double_t fMultiplicity;//Multiplicity in %
   TRandom3 * fRandom;//!to be able to pick mixed event tracks.
   Double_t fMaxMixedPerEvent;//limit on the size of each event in the pool
+  bool     fLeading;//if true only the leading pT trigger is kept.
   
   
   
