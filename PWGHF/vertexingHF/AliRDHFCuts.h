@@ -33,7 +33,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID,kLctoV0Cuts,kDplustoK0sCuts,kDstoK0sCuts};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileup,kOutsideCentrality,kPhysicsSelection,kBadSPDVertex,kZVtxSPDOutFid,kCentralityFlattening,kBadTrackV0Correl,kMismatchOldNewCentrality};
   enum EV0sel  {kAllV0s = 0, kOnlyOfflineV0s = 1, kOnlyOnTheFlyV0s = 2};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
@@ -49,7 +49,8 @@ class AliRDHFCuts : public AliAnalysisCuts
 
 
   void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;}
-  void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;} 
+  void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;}
+  void SetMultSelectionObjectName(TString str){fMultSelectionObjectName=str;}
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetUseEventsWithOnlySPDVertex(Bool_t flag=kTRUE){ 
     if(flag) fMinVtxType=1;
@@ -264,6 +265,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t GetUseCentrality() const {return fUseCentrality;}
   Float_t GetMinCentrality() const {return fMinCentrality;}
   Float_t GetMaxCentrality() const {return fMaxCentrality;}
+  TString GetMultSelectionObjectName() const {return fMultSelectionObjectName;}
   Double_t GetMinPtCandidate() const {return fMinPtCand;}
   Double_t GetMaxPtCandidate() const {return fMaxPtCand;}
   TH1F *GetHistoForCentralityFlattening(){return fHistCentrDistr;}
@@ -319,6 +321,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   }
   Bool_t IsEventRejectedDueToTRKV0CentralityCorrel() const {
     return fEvRejectionBits&(1<<kBadTrackV0Correl);
+  }
+  Bool_t IsEventRejectedDueToMismatchOldNewCentrality() const {
+    return fEvRejectionBits&(1<<kMismatchOldNewCentrality);
   }
   Bool_t IsEventRejectedDuePhysicsSelection() const {
     return fEvRejectionBits&(1<<kPhysicsSelection);
@@ -412,6 +417,7 @@ class AliRDHFCuts : public AliAnalysisCuts
                           /// 4 = SPD clusters outer 
   Float_t fMinCentrality; /// minimum centrality for selected events
   Float_t fMaxCentrality; /// maximum centrality for selected events
+  TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
   Bool_t  fFixRefs;       /// fix the daughter track references 
   Int_t  fIsSelectedCuts; /// outcome of cuts selection
   Int_t  fIsSelectedPID;  /// outcome of PID selection
@@ -443,7 +449,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,37);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,38);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 
