@@ -1160,6 +1160,7 @@ Int_t AliTRDrawStream::ReadStackHeader(Int_t stack)
   switch (fCurrStackHeaderVersion[stack]) {
   case 0xa:
   case 0xb:
+  case 0xc:
     if (fCurrStackHeaderSize[stack] < 8) {
       LinkError(kStackHeaderInvalid, "Stack header smaller than expected!");
       return -1;
