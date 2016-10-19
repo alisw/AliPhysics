@@ -1308,10 +1308,16 @@ TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xax
   return Hist;
 }
 
-int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,bool all)
+int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,bool fakecor)
 {//This function makes a new file that contains all the histograms in all versions possible.
+  //if fakecor is true, META1/2 and METrigger are "faked" by smearing out 2d histograms.
+  
   TFile * outfile;
   TString dir = TString(scalingmethod);
+
+  //fakecor takes only effect if we are in a mixed event type:
+  if(fakecor&&(!dir.Contains("META")||!dir.Contains("METrigger"))) return 0;
+
   TDirectory * mixeddir=NULL;
   if(recreate){ outfile = new TFile("results.root","RECREATE");outfile->cd();AliWarning("Recreate");}
   else{
@@ -1502,6 +1508,13 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDETA,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;
+	  
+	  TH2D* DPHIDETA2a = dynamic_cast<TH2D*>(fHistograms->At(GetNumberHist(khPhiEtaa,mb,zb))->Clone("DPhi_DEta2a"));
+	  PrepareHist(DPHIDETA2a,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","# Associated");
+	  DPHIDETA2a->Write();
+	  tempcanvas= Makecanvas(DPHIDETA2a,"DPHIDEta2a",kFALSE);
+	  tempcanvas->Write();
+	  delete tempcanvas;
       
 /////////mixed event histograms
 	dirmzbinmixed->cd();
@@ -1594,6 +1607,15 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas= Makecanvas(DPHIDETAm,"DPHIDEta",kFALSE);
 	  tempcanvas->Write();
 	  delete tempcanvas;	
+	  
+	  TH2D* DPHIDETA2am = dynamic_cast<TH2D*>(fMixedEvent->fHistograms->At(GetNumberHist(khPhiEtaa,mb,zb))->Clone("DPhi_DEta2a"));
+	  PrepareHist(DPHIDETA,"#Delta#Phi_{12} vs #Delta#eta_{12}","#Delta#eta_{12} []","#Delta#Phi_{12} [rad]","",true,scale);
+	  DPHIDETA2am->Write();
+	  scale->Write("DPhi_DEta2a_scale");
+	  scale->SetVal(0.0);	  
+	  tempcanvas= Makecanvas(DPHIDETA2am,"DPHIDEta2a",kFALSE);
+	  tempcanvas->Write();
+	  delete tempcanvas;
 	  delete scale;
 
       Double_t resultscalingfactor = 1.0;//Scale the result with 1/ntriggers
@@ -1724,7 +1746,16 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
 	  tempcanvas->Write();
 	  delete tempcanvas;
 	  delete DPHIDETAdiv;
-      
+	  //
+	  TH2D* DPHIDETA2adiv = (TH2D*)DPHIDETA2a->Clone("DPhi_DEta2a");
+	  DPHIDETA2adiv->Divide(DPHIDETA2am);
+	  DPHIDETA2adiv->Write();
+	  tempcanvas= Makecanvas(DPHIDETA2adiv,"DPHIDEta2a",kFALSE);
+	  tempcanvas->Write();
+	  delete tempcanvas;
+	  delete DPHIDETA2adiv;
+	  
+	  
       delete scalinghist;delete scalinghistm;
       delete DPHIDPHIDETA;delete DPHIDPHIDETAm;
       delete DPhi12DEta12;delete DPhi12DEta12m;
@@ -1736,6 +1767,7 @@ int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,b
       delete DPHIDETA12_3m;//delete DPHIDETA12DPHI12L2PI_3m;delete DPHIDETA12DPHI12L4PI_3m;
       delete DPHIDETA12SameSide_3m;
       delete DPHIDETA;delete DPHIDETAm;
+      delete DPHIDETA2a;delete DPHIDETA2am;
     }
   }
   {//Binstats

@@ -54,7 +54,7 @@ class AliCorrelation3p : public TNamed {
   int Fill( AliVParticle* trigger		, AliVParticle* p1				, const double weight=1.0);
   int Filla( AliVParticle* p1			, AliVParticle* p2				, const double weight=1.0);
   int FillTrigger( AliVParticle*ptrigger);
-  int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool all=false);
+  int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool fakecor=false);
   /// overloaded from TObject: cleanup
   virtual void Clear(Option_t * option ="");
   /// overloaded from TObject: print info
