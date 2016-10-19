@@ -474,7 +474,7 @@ void AliTPCDcalibRes::FitDrift()
   TObjArray arrH;
   arrH.SetOwner(kTRUE);
   fHVDTimeCorr->FitSlicesY(gs,0,-1,0,"QNR",&arrH);
-  TH1* hEnt = fHVDTimeCorr->ProjectionX("hEnt",1,ntbins);
+  TH1* hEnt = fHVDTimeCorr->ProjectionX("hEnt",1,kNTCorrBins);
   TH1* hmean = (TH1*)arrH[1];
   double tArr[ntbins],dArr[ntbins],deArr[ntbins];
   nAcc = 0;
@@ -503,7 +503,7 @@ void AliTPCDcalibRes::FitDrift()
   }
   else {
     for (int i=0;i<ntbins;i++) {
-      double tQuery = hEnt->GetBinCenter(i);
+      double tQuery = hEnt->GetBinCenter(i+1);
       if (!GetSmooth1D(tQuery,resve,nAcc,tArr,dArr,deArr,fSigmaTVD,kGaussianKernel,usePol2,kTRUE)) {
 	AliWarningF("Failed to smooth at point %d out of %d (T=%d)",i,ntbins,int(tQuery));
 	continue;
