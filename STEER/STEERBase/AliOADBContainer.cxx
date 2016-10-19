@@ -267,7 +267,11 @@ TObject* AliOADBContainer::GetObject(Int_t run, const char* def, TString passNam
       return (obj);
     }
   } else {
-    return (fArray->At(idx));
+    if (fArray!=0) {
+      return (fArray->At(idx));
+    } else {
+      return (GetObjectFromFile(gFile, run, def, passName));
+    }
   }
 }
 
