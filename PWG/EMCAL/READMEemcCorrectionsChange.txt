@@ -1,9 +1,9 @@
 /*! \page READMEemcCorrectionsChange Switch to the EMCal Correction Framework
 
-Swtiching to the EMCal correction framework is a straightforward process. It should be possible to configure with
+Switching to the EMCal correction framework is a straightforward process. It should be possible to configure with
 your desired settings in less than an hour.
 
-Before using the EMCal correction framework, it is exteremly important that you are updated enough to be using
+Before using the EMCal correction framework, it is extremely important that your code is updated enough that it is using
 EMCal containers with your analysis. See [here](\ref READMEchangefw) for instructions to update, if you need. 
 
 # Transition your correction settings to the EMCal Corrections Framework
@@ -14,7 +14,7 @@ If you plan to test and verify that everything works the same (which we strongly
 
 Follow the same procedure as described on \ref READMEemcCorrections.
 
-# Test and verifying the changes                     {#emcalCorrectionsVerifyChanges}
+# Test and verify the changes                     {#emcalCorrectionsVerifyChanges}
 
 To test and verify the changes, we have a general procedure, as well as tools to help verify automatically. **NOTE: This procedure only works for analyses already using EMCal Containers! Older tasks must first update to at least use EMCal containers to use this tool!**
 
