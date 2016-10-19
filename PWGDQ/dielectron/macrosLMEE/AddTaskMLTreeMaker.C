@@ -1,8 +1,8 @@
 AliAnalysisTaskMLTreeMaker *AddTaskMLTreeMaker(TString taskname = "ESDExample", 
                                              Double_t etaMin = -0.8,
                                              Double_t etaMax = 0.8,
-                                             Double_t ptMin = 0.4,
-                                             Double_t ptMax = 5.0
+                                             Double_t ptMin = 0.2,
+                                             Double_t ptMax = 10.0
 					     ) {				
 
 
@@ -34,6 +34,7 @@ AliAnalysisTaskMLTreeMaker *taskESD = new AliAnalysisTaskMLTreeMaker(taskname);
   taskESD->SetEtaRange(etaMin, etaMax);
   taskESD->SetPtRange(ptMin, ptMax);
   taskESD->SelectCollisionCandidates(AliVEvent::kMB);
+  taskESD->SetLoCuts(kTRUE);
   // ==========================================================================
 
   mgr->AddTask(taskESD);
