@@ -822,7 +822,9 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    
+    if(fSetCellMCLabelFromEdepFrac) 
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     
     //
     // Set the cell energy deposition fraction map:
