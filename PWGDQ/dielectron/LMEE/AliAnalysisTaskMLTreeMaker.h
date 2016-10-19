@@ -61,6 +61,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void SetFilterBit(Int_t filterBit){
     fFilterBit = filterBit;
   }
+  
+    void SetLoCuts(Bool_t x){       //use loose cuts?
+    loCuts = x;
+  }
 
   void SetESigRangeITS(Double_t min, Double_t max){
     fESigITSMin = min;
@@ -116,7 +120,17 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> pt;
   std::vector<Int_t> charge;
   
-  std::vector<Int_t> IsBG;
+
+//  std::vector<Int_t> NClustersITS;
+  std::vector<Float_t> NCrossedRowsTPC;
+  std::vector<Int_t> NClustersTPC;
+  std::vector<Bool_t> HasSPDfirstHit; 
+  std::vector<Double_t> RatioCrossedRowsFindableClusters;  
+  std::vector<Int_t> NTPCSignal; 
+  
+  Bool_t loCuts;        //loose cuts?
+  
+//  std::vector<Int_t> IsBG;
   std::vector<Int_t> runn;
   
   Int_t n;

@@ -118,13 +118,19 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   charge(0.),      
   runn(0),      
   IsHij(kFALSE),
-  IsBG(kFALSE),
   fPIDResponse(0),
   n(0),
   cent(0),
   vertx(0),
   verty(0),
-  vertz(0)
+  vertz(0),
+//  NClustersITS(0),
+  NCrossedRowsTPC(0),
+  NClustersTPC(0),
+  HasSPDfirstHit(0), 
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  loCuts(kTRUE)      
 {
 
 }
@@ -187,21 +193,31 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   charge(0.),      
   runn(0),      
   IsHij(kFALSE),
-  IsBG(kFALSE),
   fPIDResponse(0),
   n(0),
   cent(0),
   vertx(0),
   verty(0),
-  vertz(0)
+  vertz(0),
+//  NClustersITS(0),
+  NCrossedRowsTPC(0),
+  NClustersTPC(0),
+  HasSPDfirstHit(0), 
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  loCuts(kTRUE)          
 {
 
-
-  //Alberto Style ESD track cuts - according to analysis note v.6  
+  if(loCuts){
+  AliInfo(Form("Loose cuts!!"));
+  fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,0);
+  cutonTPCsignalN = kFALSE; 
+  }
+    else{  
+  //Alberto Style ESD track cuts - according to analysis note v.6   
+  AliInfo(Form("Alberto cuts!!"));
   fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
-  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					 AliESDtrackCuts::kFirst);
-  
+  fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
   fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.00515869+0.0101668/pt^1.34489");
   fESDTrackCuts->SetMaxDCAToVertexZ(0.1);
   fESDTrackCuts->SetMinNClustersITS(4);
@@ -209,6 +225,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   fESDTrackCuts->SetMinNClustersTPC(70);
   fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
   cutonTPCsignalN = kTRUE;
+  }
   
   DefineOutput(1, TList::Class());
 }
@@ -266,7 +283,14 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTPC", &EsigTPC);
   fTree->Branch("EsigITS", &EsigITS);
   fTree->Branch("EsigTOF", &EsigTOF);
-
+  
+//  fTree->Branch("NClustersITS", &NClustersITS);
+  fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
+  fTree->Branch("NClustersTPC", &NClustersTPC);
+  fTree->Branch("RatioCrossedRowsFindableClusters", &RatioCrossedRowsFindableClusters);
+  fTree->Branch("HasSPDfirstHit", &HasSPDfirstHit);   
+  fTree->Branch("NTPCSignal", &NTPCSignal); 
+  
   if(fPionSigmas){
     fTree->Branch("PsigTPC", &PsigTPC);
     fTree->Branch("PsigITS", &PsigITS);
@@ -401,7 +425,13 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
   eta.clear();
   phi.clear();
-  pt.clear();  
+  pt.clear(); 
+//  NClustersITS.clear();
+  NCrossedRowsTPC.clear();
+  NClustersTPC.clear();
+  HasSPDfirstHit.clear(); 
+  RatioCrossedRowsFindableClusters.clear(); 
+  NTPCSignal.clear(); 
   EsigTPC.clear();
   EsigTOF.clear();
   EsigITS.clear();
@@ -464,7 +494,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
             }
           }
           //Reject non-Hijing BG tracks    
-          if (IsHij && !(mcEvent->IsFromBGEvent(esdTrack->GetLabel()))){
+          if (IsHij && !(mcEvent->IsFromBGEvent(abs(esdTrack->GetLabel())))){
             AliError(Form("Reject non-Hijing BG tracks!!"));
             continue;
           }
@@ -476,7 +506,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
 
       
-      //Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
+//      Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
       if(cutonTPCsignalN && esdTrack->GetTPCsignalN()<50) continue; 
       
       
@@ -500,6 +530,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
       
       fQAHist->Fill("Selected tracks",1);  
+      
       //Fill Tree with MC data
       if(hasMC){ 
         AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
@@ -526,7 +557,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           hasmother.push_back(1);
           AliMCParticle* mcmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
 	        pdgmother.push_back( mcmother->PdgCode());
-          motherlabel.push_back(mcmother->GetLabel());
+          motherlabel.push_back(abs(mcmother->GetLabel()));
         }
         else{
           hasmother.push_back(0);  
@@ -558,8 +589,14 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       eta.push_back(etatemp);
       phi.push_back(esdTrack->Phi());
       pt.push_back(pttemp);
-      charge.push_back(esdTrack->Charge());         
+      charge.push_back(esdTrack->Charge());   
 
+      NCrossedRowsTPC.push_back(esdTrack->GetTPCCrossedRows());
+      NClustersTPC.push_back(esdTrack->GetNumberOfTPCClusters());
+      HasSPDfirstHit.push_back(esdTrack->HasPointOnITSLayer(0)); 
+      RatioCrossedRowsFindableClusters.push_back((Double_t) esdTrack->GetTPCCrossedRows()/ (Double_t) esdTrack->GetTPCNclsF());       
+      NTPCSignal.push_back(esdTrack->GetTPCsignalN());
+      
        //Get DCA position
       //cout<<num<<"  track:  "<<iTracks<<"  "<<" pt "<<pttemp;
       Float_t tempdca[2] = {0};
