@@ -76,6 +76,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():
   fLowmasslimit(1.765),
   fRDCuts(0),
   fNPtBins(0),
+  fAODProtection(1),
   fReadMC(kFALSE),
   fUseSelBit(kFALSE),
   fBFeedDown(kBoth),
@@ -115,6 +116,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
   fLowmasslimit(0),
   fRDCuts(rdCuts),
   fNPtBins(0),
+  fAODProtection(1),
   fReadMC(kFALSE),
   fUseSelBit(kFALSE),
   fBFeedDown(kBoth),
@@ -449,8 +451,17 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
-   
+  
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+  }
   if(fDebug>2) printf("Analysing decay %d\n",fDecChannel);
   // Post the data already here
   PostData(1,fOutput);
