@@ -350,6 +350,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMultDG_MS;//!
 		TH1D *fMassNG_ST_2t;//!
 		TH1D *fMassNG_MS_2t;//!
+		TH1D *fpTNG_MS_2t;//!
+		TH2D *fMasspTNG_MS_2t;//!
 		TH1D *fMassDG_ST_2t;//!
 		TH1D *fMassDG_MS_2t;//!
 		TH1D *fMassNG_ST_4t;//!
