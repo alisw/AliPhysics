@@ -71,11 +71,12 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   //           hovewer root (perl)  regular expression looks to be in some cases different - in some case double escape had to be used
   //           e.g to math c.  expression c\\. has to be used
   //   variables
-  const TString kineVariableClass[11]={"X", "Y","Z", "Phi", "Theta", "Pt", "QOverPt", "FitPhi","FitGX", "FitGY", "Constrain"};
-  const TString kineVariableAxisTitle[11]={"x(cm)", "y(cm)","z(cm)", "#phi", "#Theta", "p_{T}(Gev/c)", "q/p_{T}(c/GeV)", "#phi","x_{G}", "y_{G}", " "};
-  const TString kineVariableLegend[11]={"x", "y","z", "#phi", "#Theta", "p_{T}", "q/p_{T}", "#phi","x_{G}", "y_{G}", " "};
-  const TString kineVariableTitle[11]={"x", "y","z", "#phi", "#Theta", "p_{T}", "q/p_{T}", "#phi","x_{G}", "y_{G}", " "};
-  TPRegexp regKineVariables[11];
+  const Int_t nKine=11;
+  const TString kineVariableClass[nKine]={"X", "Y","Z", "Phi", "Theta", "Pt", "QOverPt", "FitPhi","FitGX", "FitGY",""};
+  const TString kineVariableAxisTitle[nKine]={"x(cm)", "y(cm)","z(cm)", "#phi", "#Theta", "p_{T}(Gev/c)", "q/p_{T}(c/GeV)", "#phi","x_{G}", "y_{G}", " "};
+  const TString kineVariableLegend[nKine]={"x", "y","z", "#phi", "#Theta", "p_{T}", "q/p_{T}", "#phi","x_{G}", "y_{G}", " "};
+  const TString kineVariableTitle[nKine]={"x", "y","z", "#phi", "#Theta", "p_{T}", "q/p_{T}", "#phi","x_{G}", "y_{G}", " "};
+  TPRegexp regKineVariables[nKine];
   regKineVariables[0]=TPRegexp("^x|x$");               // X - varaible begining on X
   regKineVariables[1]=TPRegexp("(^y|^infoy|y$)");      // Y - 
   regKineVariables[2]=TPRegexp("(^z|^infoz|z$)");      // Z
@@ -86,13 +87,15 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   regKineVariables[7]=TPRegexp("(_0^|_-_)");        // fit Phi
   regKineVariables[8]=TPRegexp("(_1^|_1_)");        // fit GlobalX      
   regKineVariables[9]=TPRegexp("(_2^|_2_)");        // fit GlobalY
+  regKineVariables[10]=TPRegexp("(dummy)");        // dummy
   //
   //   QA variables  
-  const TString qaVariableClass[11]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ","Attach","Electron"};
-  const TString qaVariableAxisTitle[11]={"Ncl(#)", "Eff(unit)","dEdx(MIP/50)", "DCAr(cm)", "DCAz(cm)", "Occupancy","Attach","Electron"};
-  const TString qaVariableLegend[11]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ.","Attach","e-"};
-  const TString qaVariableTitle[11]={"Ncl", "Eff","dEdx", "DCAr", "DCAz", "Occupancy","Attach","e-"};
-  TPRegexp regQAVariable[11];
+  const Int_t nQA=8;
+  const TString qaVariableClass[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ","Attach","Electron"};
+  const TString qaVariableAxisTitle[nQA]={"Ncl(#)", "Eff(unit)","dEdx(MIP/50)", "DCAr(cm)", "DCAz(cm)", "Occupancy","Attach","Electron"};
+  const TString qaVariableLegend[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz","Occ.","Attach","e-"};
+  const TString qaVariableTitle[nQA]={"Ncl", "Eff","dEdx", "DCAr", "DCAz", "Occupancy","Attach","e-"};
+  TPRegexp regQAVariable[nQA];
   regQAVariable[0]=TPRegexp("ncl");               // Ncl
   regQAVariable[1]=TPRegexp("tpcitsmatch");       // TPC->ITS eff
   regQAVariable[2]=TPRegexp("mip");               // dEdx
@@ -105,10 +108,11 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   //
   // statistic
   //
-  const TString statClass[10]={"Constrain", "Mean","Delta","Median", "RMS","Pull", "Err","Chi2", "StatInfo[]","FitInfo[]"};
-  const TString statAxisTitle[10]={"Constrain", "mean","#Delta","med.", "rms","pull", "#sigma"," #chi2","stat[]","fit[]"};
-  const TString statTitle[10]={"Constrain", "mean","#Delta","med.", "rms","pull", "#sigma"," #chi2","stat[]","fit[]" };
-  TPRegexp regStat[10];
+  const Int_t nStat=10;
+  const TString statClass[nStat]={"Constrain", "Mean","Delta","Median", "RMS","Pull", "Err","Chi2", "StatInfo[]","FitInfo[]"};
+  const TString statAxisTitle[nStat]={"Constrain", "mean","#Delta","med.", "rms","pull", "#sigma"," #chi2","stat[]","fit[]"};
+  const TString statTitle[nStat]={"Constrain", "mean","#Delta","med.", "rms","pull", "#sigma"," #chi2","stat[]","fit[]" };
+  TPRegexp regStat[nStat];
   regStat[0]=TPRegexp("constrain");        // constrain
   regStat[1]=TPRegexp("^mean");            // mean
   regStat[2]=TPRegexp("^delta");           // delta
@@ -121,11 +125,12 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   regStat[9]=TPRegexp("^fit");             // fit info  array
   //
   // 
-  const TString categoryClass[10]={"ASide","CSide","Pos", "Neg", "ROC", "IROC", "OROC", "Sector",  "HighPt"};
-  const TString categoryLegend[10]={"A side","C side","Q>0", "Q<0","ROC", "IROC", "OROC", "Sector", "high p_{T}"};
-  const TString categoryTitle[10]={"A side","C side","Q>0", "Q<0","ROC", "IROC", "OROC", "Sector", "high p_{T}"};
-  // TString categoryAxisTitle[10] - empty
-  TPRegexp regCategory[10];
+  const Int_t nCategory=9;
+  const TString categoryClass[nCategory]={"ASide","CSide","Pos", "Neg", "ROC", "IROC", "OROC", "Sector",  "HighPt"};
+  const TString categoryLegend[nCategory]={"A side","C side","Q>0", "Q<0","ROC", "IROC", "OROC", "Sector", "high p_{T}"};
+  const TString categoryTitle[nCategory]={"A side","C side","Q>0", "Q<0","ROC", "IROC", "OROC", "Sector", "high p_{T}"};
+  // TString categoryAxisTitle[nCategory] - empty
+  TPRegexp regCategory[nCategory];
   regCategory[0]=TPRegexp("(a$|a.?side|a\\.$|dcarap|a_(0|1|2))");   // is A side - options( a at the beigininng, a ... side, a. at the end)  
   regCategory[1]=TPRegexp("(c$|c.?side|c\\.$|dcarcp|c_(0|1|2))");   // is C side
   regCategory[2]=TPRegexp("(_pos|pos$)");           // QA for positive charge particle
@@ -152,26 +157,26 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
     brClass="TPC";
     brAxisTitle="";
     // stat
-    for (Int_t ivar=0; ivar<9; ivar++) if  (brNameCase.Contains( regStat[ivar])) { 
+    for (Int_t ivar=0; ivar<nStat; ivar++) if  (brNameCase.Contains( regStat[ivar])) { 
       brClass+=" "+statClass[ivar];
       brTitle+=statTitle[ivar];
     }
     // kine variables
-    for (Int_t ivar=0; ivar<10; ivar++) if  (brNameCase.Contains( regKineVariables[ivar])) {
+    for (Int_t ivar=0; ivar<nKine; ivar++) if  (brNameCase.Contains( regKineVariables[ivar])) {
       brClass+=" "+kineVariableClass[ivar];      
       brAxisTitle+=" "+kineVariableAxisTitle[ivar];
       brTitle+=" "+kineVariableTitle[ivar];
       brLegend+=" "+kineVariableLegend[ivar];
     }
     // QA variables
-    for (Int_t ivar=0; ivar<10; ivar++) if  (brNameCase.Contains( regQAVariable[ivar])) {
+    for (Int_t ivar=0; ivar<nQA; ivar++) if  (brNameCase.Contains( regQAVariable[ivar])) {
       brClass+=" "+qaVariableClass[ivar];
       brAxisTitle+=" "+qaVariableAxisTitle[ivar];
       brTitle+=" "+qaVariableTitle[ivar];
       brLegend+=" "+qaVariableLegend[ivar];
     }
     // category
-    for (Int_t ivar=0; ivar<9; ivar++) if  (brNameCase.Contains(regCategory[ivar])) {
+    for (Int_t ivar=0; ivar<nCategory; ivar++) if  (brNameCase.Contains(regCategory[ivar])) {
       brClass+=" "+categoryClass[ivar];
       brLegend+=" "+categoryLegend[ivar];
       brTitle+=" "+categoryTitle[ivar];
@@ -180,7 +185,12 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
       brClass+=" Class:";
       brClass+=branch->GetClassName();
     }
-    
+    TPRegexp emptyB("^\ *");
+    emptyB.Substitute(brClass,"");
+    emptyB.Substitute(brTitle,"");
+    emptyB.Substitute(brAxisTitle,"");
+    emptyB.Substitute(brLegend,"");
+
     //
     TStatToolkit::AddMetadata(tree,TString::Format("%s.Description",branches->At(ibr)->GetName()).Data(),
 			      TString::Format("TPC standard QA variables.  Class %s", brClass.Data()).Data());
