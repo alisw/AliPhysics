@@ -742,6 +742,7 @@ void TTreeSRedirector::FixLeafNameBug(TTree* tree){
   //   After the fix unit test code with pairs of sprse friend trees worked properly
   // Side effects of fix:
   //
+  if (tree==NULL) return;
   TObjArray *brArray = tree->GetListOfBranches();
   TObjArray *lArray = tree->GetListOfLeaves();
   for (Int_t i = 0; i < brArray->GetLast(); i++) {
