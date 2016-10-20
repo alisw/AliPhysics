@@ -200,53 +200,53 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrectionsNewDetConfig() {
   if (QnManager->GetShouldFillOutputHistograms()) {
     AliAnalysisDataContainer *cOutputHist =
       mgr->CreateContainer(QnManager->GetCalibrationHistogramsContainerName(),
-          TList::Class(),
-          AliAnalysisManager::kOutputContainer,
-          "CalibrationHistograms.root");
+			   TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   "CalibrationHistograms.root");
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotHistQn(), cOutputHist );
   }
 
   if (QnManager->GetShouldFillQnVectorTree()) {
     AliAnalysisDataContainer *cOutputQvec =
       mgr->CreateContainer("CalibratedQvector",
-          TTree::Class(),
-          AliAnalysisManager::kOutputContainer,
-          "QvectorsTree.root");
+			   TTree::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   "QvectorsTree.root");
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotTree(), cOutputQvec );
   }
 
   if (QnManager->GetShouldFillQAHistograms()) {
     AliAnalysisDataContainer *cOutputHistQA =
       mgr->CreateContainer(QnManager->GetCalibrationQAHistogramsContainerName(),
-          TList::Class(),
-          AliAnalysisManager::kOutputContainer,
-          "CalibrationQA.root");
+			   TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   "CalibrationQA.root");
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotHistQA(), cOutputHistQA );
   }
 
   if (QnManager->GetShouldFillNveQAHistograms()) {
     AliAnalysisDataContainer *cOutputHistNveQA =
       mgr->CreateContainer(QnManager->GetCalibrationNveQAHistogramsContainerName(),
-          TList::Class(),
-          AliAnalysisManager::kOutputContainer,
-          "CalibrationQA.root");
+			   TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   "CalibrationQA.root");
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotHistNveQA(), cOutputHistNveQA );
   }
 
   if (taskQnCorrections->GetFillEventQA()) {
     AliAnalysisDataContainer *cOutputQnEventQA =
       mgr->CreateContainer("QnEventQA",
-          TList::Class(),
-          AliAnalysisManager::kOutputContainer,
-          "QnEventQA.root");
+			   TList::Class(),
+			   AliAnalysisManager::kOutputContainer,
+			   "QnEventQA.root");
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotEventQA(), cOutputQnEventQA );
   }
 
   AliAnalysisDataContainer *cOutputQvecList =
     mgr->CreateContainer("CalibratedQvectorList",
-        TList::Class(),
-        AliAnalysisManager::kExchangeContainer,
-        "QvectorsList.root");
+			 TList::Class(),
+			 AliAnalysisManager::kExchangeContainer,
+			 "QvectorsList.root");
 
   if (taskQnCorrections->GetFillExchangeContainerWithQvectors())
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotGetListQnVectors(), cOutputQvecList );
@@ -276,9 +276,9 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-      task->VarName(VAR::kVtxZ), VtxZbinning));
+							       task->VarName(VAR::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the VZERO detector */
@@ -286,11 +286,11 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
 
   /* the VZEROA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *VZEROAconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "VZEROAQoverM",
-          CorrEventClasses,
-          64, /* number of channels */
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "VZEROAQoverM",
+						      CorrEventClasses,
+						      64, /* number of channels */
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   VZEROAconf->SetChannelsScheme(VZEROchannels[0], channelGroups);
   /* let's configure the Q vector calibration */
   VZEROAconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -307,7 +307,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   /* let's add the Q vector alignment correction step */
   AliQnCorrectionsQnVectorAlignment *alignA = new AliQnCorrectionsQnVectorAlignment();
   alignA->SetHarmonicNumberForAlignment(2);
-  alignA->SetReferenceConfigurationForAlignment("TPC");
+  alignA->SetReferenceConfigurationForAlignment("TPCQoverM");
   VZEROAconf->AddCorrectionOnQnVector(alignA);
   /* lets configrure the QA histograms */
   VZEROAconf->SetQACentralityVar(varForEventMultiplicity);
@@ -317,7 +317,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   twScaleA->SetApplyTwist(kTRUE);
   twScaleA->SetApplyRescale(kTRUE);
   twScaleA->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-  twScaleA->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROC");
+  twScaleA->SetReferenceConfigurationsForTwistAndRescale("TPCQoverM","VZEROCQoverM");
   /* now we add it to the detector configuration */
   VZEROAconf->AddCorrectionOnQnVector(twScaleA);
 
@@ -326,11 +326,11 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
 
   /* the VZEROC detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *VZEROCconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "VZEROCQoverM",
-          CorrEventClasses,
-          64, /* number of channels */
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "VZEROCQoverM",
+						      CorrEventClasses,
+						      64, /* number of channels */
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   VZEROCconf->SetChannelsScheme(VZEROchannels[1], channelGroups);
   /* let's configure the Q vector calibration */
   VZEROCconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -347,7 +347,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   /* let's add the Q vector alignment correction step */
   AliQnCorrectionsQnVectorAlignment *alignC = new AliQnCorrectionsQnVectorAlignment();
   alignC->SetHarmonicNumberForAlignment(2);
-  alignC->SetReferenceConfigurationForAlignment("TPC");
+  alignC->SetReferenceConfigurationForAlignment("TPCQoverM");
   VZEROCconf->AddCorrectionOnQnVector(alignC);
   /* lets configrure the QA histograms */
   VZEROCconf->SetQACentralityVar(varForEventMultiplicity);
@@ -357,7 +357,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   twScaleC->SetApplyTwist(kTRUE);
   twScaleC->SetApplyRescale(kTRUE);
   twScaleC->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-  twScaleC->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROA");
+  twScaleC->SetReferenceConfigurationsForTwistAndRescale("TPCQoverM","VZEROAQoverM");
   /* now we add it to the detector configuration */
   VZEROCconf->AddCorrectionOnQnVector(twScaleC);
 
@@ -387,7 +387,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   /* let's add the Q vector alignment correction step */
   AliQnCorrectionsQnVectorAlignment *align = new AliQnCorrectionsQnVectorAlignment();
   align->SetHarmonicNumberForAlignment(2);
-  align->SetReferenceConfigurationForAlignment("TPC");
+  align->SetReferenceConfigurationForAlignment("TPCQoverM");
   VZEROconf->AddCorrectionOnQnVector(align);
   /* lets configrure the QA histograms */
   VZEROconf->SetQACentralityVar(varForEventMultiplicity);
@@ -397,175 +397,175 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   twScale->SetApplyTwist(kTRUE);
   twScale->SetApplyRescale(kTRUE);
   twScale->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-  twScale->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROC");
+  twScale->SetReferenceConfigurationsForTwistAndRescale("TPCQoverM","VZEROCQoverM");
   /* now we add it to the detector configuration */
   VZEROconf->AddCorrectionOnQnVector(twScale);
   
   /* add the configuration to the detector */
   VZERO->AddDetectorConfiguration(VZEROconf);
   
-    /* the VZEROA detector configuration */
-    AliQnCorrectionsDetectorConfigurationChannels *VZEROAconfQoverQlength =
+  /* the VZEROA detector configuration */
+  AliQnCorrectionsDetectorConfigurationChannels *VZEROAconfQoverQlength =
     new AliQnCorrectionsDetectorConfigurationChannels(
                                                       "VZEROAQoverQlength",
                                                       CorrEventClasses,
                                                       64, /* number of channels */
                                                       4); /* number of harmonics: 1, 2, 3 and 4 */
-    VZEROAconfQoverQlength->SetChannelsScheme(VZEROchannels[0], channelGroups);
-    /* let's configure the Q vector calibration */
-    VZEROAconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
-    /* lets configure the equalization of input data */
-    AliQnCorrectionsInputGainEqualization *eqAQoverQlength = new AliQnCorrectionsInputGainEqualization();
-    eqAQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
-    eqAQoverQlength->SetShift(1.0);
-    eqAQoverQlength->SetScale(0.1);
-    eqAQoverQlength->SetUseChannelGroupsWeights(kTRUE);
-    VZEROAconfQoverQlength->AddCorrectionOnInputData(eqAQoverQlength);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    VZEROAconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector alignment correction step */
-    AliQnCorrectionsQnVectorAlignment *alignAQoverQlength = new AliQnCorrectionsQnVectorAlignment();
-    alignAQoverQlength->SetHarmonicNumberForAlignment(2);
-    alignAQoverQlength->SetReferenceConfigurationForAlignment("TPC");
-    VZEROAconfQoverQlength->AddCorrectionOnQnVector(alignAQoverQlength);
-    /* lets configrure the QA histograms */
-    VZEROAconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
-    VZEROAconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
-    /* let's configure the twist and rescale correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleAQoverQlength->SetApplyTwist(kTRUE);
-    twScaleAQoverQlength->SetApplyRescale(kTRUE);
-    twScaleAQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-    twScaleAQoverQlength->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROC");
-    /* now we add it to the detector configuration */
-    VZEROAconfQoverQlength->AddCorrectionOnQnVector(twScaleAQoverQlength);
+  VZEROAconfQoverQlength->SetChannelsScheme(VZEROchannels[0], channelGroups);
+  /* let's configure the Q vector calibration */
+  VZEROAconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
+  /* lets configure the equalization of input data */
+  AliQnCorrectionsInputGainEqualization *eqAQoverQlength = new AliQnCorrectionsInputGainEqualization();
+  eqAQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
+  eqAQoverQlength->SetShift(1.0);
+  eqAQoverQlength->SetScale(0.1);
+  eqAQoverQlength->SetUseChannelGroupsWeights(kTRUE);
+  VZEROAconfQoverQlength->AddCorrectionOnInputData(eqAQoverQlength);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  VZEROAconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector alignment correction step */
+  AliQnCorrectionsQnVectorAlignment *alignAQoverQlength = new AliQnCorrectionsQnVectorAlignment();
+  alignAQoverQlength->SetHarmonicNumberForAlignment(2);
+  alignAQoverQlength->SetReferenceConfigurationForAlignment("TPCQoverQlength");
+  VZEROAconfQoverQlength->AddCorrectionOnQnVector(alignAQoverQlength);
+  /* lets configrure the QA histograms */
+  VZEROAconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
+  VZEROAconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
+  /* let's configure the twist and rescale correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleAQoverQlength->SetApplyTwist(kTRUE);
+  twScaleAQoverQlength->SetApplyRescale(kTRUE);
+  twScaleAQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
+  twScaleAQoverQlength->SetReferenceConfigurationsForTwistAndRescale("TPCQoverQlength","VZEROCQoverQlength");
+  /* now we add it to the detector configuration */
+  VZEROAconfQoverQlength->AddCorrectionOnQnVector(twScaleAQoverQlength);
     
-    /* add the configuration to the detector */
-    VZERO->AddDetectorConfiguration(VZEROAconfQoverQlength);
+  /* add the configuration to the detector */
+  VZERO->AddDetectorConfiguration(VZEROAconfQoverQlength);
     
-    /* the VZEROC detector configuration */
-    AliQnCorrectionsDetectorConfigurationChannels *VZEROCconfQoverQlength =
+  /* the VZEROC detector configuration */
+  AliQnCorrectionsDetectorConfigurationChannels *VZEROCconfQoverQlength =
     new AliQnCorrectionsDetectorConfigurationChannels(
                                                       "VZEROCQoverQlength",
                                                       CorrEventClasses,
                                                       64, /* number of channels */
                                                       4); /* number of harmonics: 1, 2, 3 and 4 */
-    VZEROCconfQoverQlength->SetChannelsScheme(VZEROchannels[1], channelGroups);
-    /* let's configure the Q vector calibration */
-    VZEROCconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
-    /* lets configure the equalization of input data */
-    AliQnCorrectionsInputGainEqualization *eqAQoverQlength = new AliQnCorrectionsInputGainEqualization();
-    eqAQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
-    eqAQoverQlength->SetShift(1.0);
-    eqAQoverQlength->SetScale(0.1);
-    eqAQoverQlength->SetUseChannelGroupsWeights(kTRUE);
-    VZEROCconfQoverQlength->AddCorrectionOnInputData(eqAQoverQlength);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    VZEROCconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector alignment correction step */
-    AliQnCorrectionsQnVectorAlignment *alignAQoverQlength = new AliQnCorrectionsQnVectorAlignment();
-    alignAQoverQlength->SetHarmonicNumberForAlignment(2);
-    alignAQoverQlength->SetReferenceConfigurationForAlignment("TPC");
-    VZEROCconfQoverQlength->AddCorrectionOnQnVector(alignAQoverQlength);
-    /* lets configrure the QA histograms */
-    VZEROCconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
-    VZEROCconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
-    /* let's configure the twist and rescale correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleAQoverQlength->SetApplyTwist(kTRUE);
-    twScaleAQoverQlength->SetApplyRescale(kTRUE);
-    twScaleAQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-    twScaleAQoverQlength->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROA");
-    /* now we add it to the detector configuration */
-    VZEROCconfQoverQlength->AddCorrectionOnQnVector(twScaleAQoverQlength);
+  VZEROCconfQoverQlength->SetChannelsScheme(VZEROchannels[1], channelGroups);
+  /* let's configure the Q vector calibration */
+  VZEROCconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
+  /* lets configure the equalization of input data */
+  AliQnCorrectionsInputGainEqualization *eqAQoverQlength = new AliQnCorrectionsInputGainEqualization();
+  eqAQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
+  eqAQoverQlength->SetShift(1.0);
+  eqAQoverQlength->SetScale(0.1);
+  eqAQoverQlength->SetUseChannelGroupsWeights(kTRUE);
+  VZEROCconfQoverQlength->AddCorrectionOnInputData(eqAQoverQlength);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  VZEROCconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector alignment correction step */
+  AliQnCorrectionsQnVectorAlignment *alignAQoverQlength = new AliQnCorrectionsQnVectorAlignment();
+  alignAQoverQlength->SetHarmonicNumberForAlignment(2);
+  alignAQoverQlength->SetReferenceConfigurationForAlignment("TPCQoverQlength");
+  VZEROCconfQoverQlength->AddCorrectionOnQnVector(alignAQoverQlength);
+  /* lets configrure the QA histograms */
+  VZEROCconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
+  VZEROCconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
+  /* let's configure the twist and rescale correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleAQoverQlength->SetApplyTwist(kTRUE);
+  twScaleAQoverQlength->SetApplyRescale(kTRUE);
+  twScaleAQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
+  twScaleAQoverQlength->SetReferenceConfigurationsForTwistAndRescale("TPCQoverQlength","VZEROAQoverQlength");
+  /* now we add it to the detector configuration */
+  VZEROCconfQoverQlength->AddCorrectionOnQnVector(twScaleAQoverQlength);
     
-    /* add the configuration to the detector */
-    VZERO->AddDetectorConfiguration(VZEROCconfQoverQlength);
+  /* add the configuration to the detector */
+  VZERO->AddDetectorConfiguration(VZEROCconfQoverQlength);
     
 
-    /* the full VZERO detector configuration */
-    AliQnCorrectionsDetectorConfigurationChannels *VZEROconfQoverQlength =
+  /* the full VZERO detector configuration */
+  AliQnCorrectionsDetectorConfigurationChannels *VZEROconfQoverQlength =
     new AliQnCorrectionsDetectorConfigurationChannels(
                                                       "VZEROQoverQlength",
                                                       CorrEventClasses,
                                                       64, /* number of channels */
                                                       4); /* number of harmonics: 1, 2, 3 and 4 */
-    VZEROconfQoverQlength->SetChannelsScheme(VZEROchannels[2], channelGroups);
-    /* let's configure the Q vector calibration */
-    VZEROconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
-    /* lets configure the equalization of input data */
-    AliQnCorrectionsInputGainEqualization *eqQoverQlength = new AliQnCorrectionsInputGainEqualization();
-    eqQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
-    eqQoverQlength->SetShift(1.0);
-    eqQoverQlength->SetScale(0.1);
-    eqQoverQlength->SetUseChannelGroupsWeights(kTRUE);
-    VZEROconfQoverQlength->AddCorrectionOnInputData(eqQoverQlength);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    VZEROconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector alignment correction step */
-    AliQnCorrectionsQnVectorAlignment *alignQoverQlength = new AliQnCorrectionsQnVectorAlignment();
-    alignQoverQlength->SetHarmonicNumberForAlignment(2);
-    alignQoverQlength->SetReferenceConfigurationForAlignment("TPC");
-    VZEROconfQoverQlength->AddCorrectionOnQnVector(alignQoverQlength);
-    /* lets configrure the QA histograms */
-    VZEROconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
-    VZEROconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
-    /* let's configure the twist and rescale correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleQoverQlength->SetApplyTwist(kTRUE);
-    twScaleQoverQlength->SetApplyRescale(kTRUE);
-    twScaleQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-    twScaleQoverQlength->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROC");
-    /* now we add it to the detector configuration */
-    VZEROconfQoverQlength->AddCorrectionOnQnVector(twScaleQoverQlength);
+  VZEROconfQoverQlength->SetChannelsScheme(VZEROchannels[2], channelGroups);
+  /* let's configure the Q vector calibration */
+  VZEROconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
+  /* lets configure the equalization of input data */
+  AliQnCorrectionsInputGainEqualization *eqQoverQlength = new AliQnCorrectionsInputGainEqualization();
+  eqQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
+  eqQoverQlength->SetShift(1.0);
+  eqQoverQlength->SetScale(0.1);
+  eqQoverQlength->SetUseChannelGroupsWeights(kTRUE);
+  VZEROconfQoverQlength->AddCorrectionOnInputData(eqQoverQlength);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  VZEROconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector alignment correction step */
+  AliQnCorrectionsQnVectorAlignment *alignQoverQlength = new AliQnCorrectionsQnVectorAlignment();
+  alignQoverQlength->SetHarmonicNumberForAlignment(2);
+  alignQoverQlength->SetReferenceConfigurationForAlignment("TPCQoverQlength");
+  VZEROconfQoverQlength->AddCorrectionOnQnVector(alignQoverQlength);
+  /* lets configrure the QA histograms */
+  VZEROconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
+  VZEROconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
+  /* let's configure the twist and rescale correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleQoverQlength->SetApplyTwist(kTRUE);
+  twScaleQoverQlength->SetApplyRescale(kTRUE);
+  twScaleQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
+  twScaleQoverQlength->SetReferenceConfigurationsForTwistAndRescale("TPCQoverQlength","VZEROCQoverQlength");
+  /* now we add it to the detector configuration */
+  VZEROconfQoverQlength->AddCorrectionOnQnVector(twScaleQoverQlength);
     
-    /* add the configuration to the detector */
-    VZERO->AddDetectorConfiguration(VZEROconfQoverQlength);
+  /* add the configuration to the detector */
+  VZERO->AddDetectorConfiguration(VZEROconfQoverQlength);
     
 
     
-    /* the full VZERO detector configuration */
-    AliQnCorrectionsDetectorConfigurationChannels *VZEROconfQoverSqrtM =
+  /* the full VZERO detector configuration */
+  AliQnCorrectionsDetectorConfigurationChannels *VZEROconfQoverSqrtM =
     new AliQnCorrectionsDetectorConfigurationChannels(
                                                       "VZEROQoverSqrtM",
                                                       CorrEventClasses,
                                                       64, /* number of channels */
                                                       4); /* number of harmonics: 1, 2, 3 and 4 */
-    VZEROconfQoverSqrtM->SetChannelsScheme(VZEROchannels[2], channelGroups);
-    /* let's configure the Q vector calibration */
-    VZEROconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
-    /* lets configure the equalization of input data */
-    AliQnCorrectionsInputGainEqualization *eqQoverSqrtM = new AliQnCorrectionsInputGainEqualization();
-    eqQoverSqrtM->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
-    eqQoverSqrtM->SetShift(1.0);
-    eqQoverSqrtM->SetScale(0.1);
-    eqQoverSqrtM->SetUseChannelGroupsWeights(kTRUE);
-    VZEROconfQoverSqrtM->AddCorrectionOnInputData(eqQoverSqrtM);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    VZEROconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector alignment correction step */
-    AliQnCorrectionsQnVectorAlignment *alignQoverQoverSqrtM = new AliQnCorrectionsQnVectorAlignment();
-    alignQoverQoverSqrtM->SetHarmonicNumberForAlignment(2);
-    alignQoverQoverSqrtM->SetReferenceConfigurationForAlignment("TPC");
-    VZEROconfQoverSqrtM->AddCorrectionOnQnVector(alignQoverQoverSqrtM);
-    /* lets configrure the QA histograms */
-    VZEROconfQoverSqrtM->SetQACentralityVar(varForEventMultiplicity);
-    VZEROconfQoverSqrtM->SetQAMultiplicityAxis(100, 0.0, 500.0);
-    /* let's configure the twist and rescale correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleQoverSqrtM->SetApplyTwist(kTRUE);
-    twScaleQoverSqrtM->SetApplyRescale(kTRUE);
-    twScaleQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
-    twScaleQoverSqrtM->SetReferenceConfigurationsForTwistAndRescale("TPC","VZEROC");
-    /* now we add it to the detector configuration */
-    VZEROconfQoverSqrtM->AddCorrectionOnQnVector(twScaleQoverSqrtM);
+  VZEROconfQoverSqrtM->SetChannelsScheme(VZEROchannels[2], channelGroups);
+  /* let's configure the Q vector calibration */
+  VZEROconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
+  /* lets configure the equalization of input data */
+  AliQnCorrectionsInputGainEqualization *eqQoverSqrtM = new AliQnCorrectionsInputGainEqualization();
+  eqQoverSqrtM->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
+  eqQoverSqrtM->SetShift(1.0);
+  eqQoverSqrtM->SetScale(0.1);
+  eqQoverSqrtM->SetUseChannelGroupsWeights(kTRUE);
+  VZEROconfQoverSqrtM->AddCorrectionOnInputData(eqQoverSqrtM);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  VZEROconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector alignment correction step */
+  AliQnCorrectionsQnVectorAlignment *alignQoverQoverSqrtM = new AliQnCorrectionsQnVectorAlignment();
+  alignQoverQoverSqrtM->SetHarmonicNumberForAlignment(2);
+  alignQoverQoverSqrtM->SetReferenceConfigurationForAlignment("TPCQoverSqrtM");
+  VZEROconfQoverSqrtM->AddCorrectionOnQnVector(alignQoverQoverSqrtM);
+  /* lets configrure the QA histograms */
+  VZEROconfQoverSqrtM->SetQACentralityVar(varForEventMultiplicity);
+  VZEROconfQoverSqrtM->SetQAMultiplicityAxis(100, 0.0, 500.0);
+  /* let's configure the twist and rescale correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleQoverSqrtM->SetApplyTwist(kTRUE);
+  twScaleQoverSqrtM->SetApplyRescale(kTRUE);
+  twScaleQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
+  twScaleQoverSqrtM->SetReferenceConfigurationsForTwistAndRescale("TPCQoverSqrtM","VZEROCQoverM");
+  /* now we add it to the detector configuration */
+  VZEROconfQoverSqrtM->AddCorrectionOnQnVector(twScaleQoverSqrtM);
     
-    /* add the configuration to the detector */
-    VZERO->AddDetectorConfiguration(VZEROconfQoverSqrtM);
+  /* add the configuration to the detector */
+  VZERO->AddDetectorConfiguration(VZEROconfQoverSqrtM);
     
     
     
@@ -585,9 +585,9 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-      task->VarName(VAR::kVtxZ), VtxZbinning));
+							       task->VarName(VAR::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the TPC  detector */
@@ -595,10 +595,10 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 
   /* the TPC detector configuration */
   AliQnCorrectionsDetectorConfigurationTracks *TPCconf =
-      new AliQnCorrectionsDetectorConfigurationTracks(
-          "TPCQoverM",
-          CorrEventClasses,
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationTracks(
+						    "TPCQoverM",
+						    CorrEventClasses,
+						    4); /* number of harmonics: 1, 2, 3 and 4 */
   /* let's configure the Q vector calibration */
   TPCconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
   /* let's add the Q vector recentering correction step */
@@ -747,206 +747,207 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   /* add the configuration to the detector */
   TPC->AddDetectorConfiguration(TPCPosEtaconf);    
   
-    /* the TPC detector configuration */
-    AliQnCorrectionsDetectorConfigurationTracks *TPCconfQoverQlength =
+  /* the TPC detector configuration */
+  AliQnCorrectionsDetectorConfigurationTracks *TPCconfQoverQlength =
     new AliQnCorrectionsDetectorConfigurationTracks(
                                                     "TPCQoverQlength",
                                                     CorrEventClasses,
                                                     4); /* number of harmonics: 1, 2, 3 and 4 */
-    /* let's configure the Q vector calibration */
-    TPCconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    TPCconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector twist correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleQoverQlength->SetApplyTwist(kTRUE);
-    twScaleQoverQlength->SetApplyRescale(kFALSE);
-    twScaleQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
-    TPCconfQoverQlength->AddCorrectionOnQnVector(twScaleQoverQlength);
+  /* let's configure the Q vector calibration */
+  TPCconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  TPCconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector twist correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleQoverQlength->SetApplyTwist(kTRUE);
+  twScaleQoverQlength->SetApplyRescale(kFALSE);
+  twScaleQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
+  TPCconfQoverQlength->AddCorrectionOnQnVector(twScaleQoverQlength);
     
-    /* define the cuts to apply */
-    isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
-    AliQnCorrectionsCutsSet *cutsTPCQoverQlength = new AliQnCorrectionsCutsSet();
-    if(!isESD){
-        cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-        cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-        cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  /* define the cuts to apply */
+  isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+  AliQnCorrectionsCutsSet *cutsTPCQoverQlength = new AliQnCorrectionsCutsSet();
+  if(!isESD){
+    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
+    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
+    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  }
+  else {
+    Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+    task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
+    if(UseTPConlyTracks){
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
     }
-    else {
-        Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
-        task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
-        if(UseTPConlyTracks){
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
-        }
-        else{
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-            cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
-        }
+    else{
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
-    TPCconf->SetCuts(cutsTPCQoverQlength);
+  }
+  TPCconf->SetCuts(cutsTPCQoverQlength);
     
-    /* add the configuration to the detector */
-    TPC->AddDetectorConfiguration(TPCconfQoverQlength);
+  /* add the configuration to the detector */
+  TPC->AddDetectorConfiguration(TPCconfQoverQlength);
     
-    /* the TPC eta < 0 detector configuration */
-    AliQnCorrectionsDetectorConfigurationTracks *TPCNegEtaconfQoverQlength =
+  /* the TPC eta < 0 detector configuration */
+  AliQnCorrectionsDetectorConfigurationTracks *TPCNegEtaconfQoverQlength =
     new AliQnCorrectionsDetectorConfigurationTracks(
                                                     "TPCNegEtaQoverQlength",
                                                     CorrEventClasses,
                                                     4); /* number of harmonics: 1, 2, 3 and 4 */
-    /* let's configure the Q vector calibration */
-    TPCNegEtaconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    TPCNegEtaconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector twist correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleNegEtaQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleNegEtaQoverQlength->SetApplyTwist(kTRUE);
-    twScaleNegEtaQoverQlength->SetApplyRescale(kFALSE);
-    twScaleNegEtaQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
-    TPCNegEtaconfQoverQlength->AddCorrectionOnQnVector(twScaleNegEtaQoverQlength);
+  /* let's configure the Q vector calibration */
+  TPCNegEtaconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  TPCNegEtaconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector twist correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleNegEtaQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleNegEtaQoverQlength->SetApplyTwist(kTRUE);
+  twScaleNegEtaQoverQlength->SetApplyRescale(kFALSE);
+  twScaleNegEtaQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
+  TPCNegEtaconfQoverQlength->AddCorrectionOnQnVector(twScaleNegEtaQoverQlength);
     
-    /* define the cuts to apply */
-    isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
-    AliQnCorrectionsCutsSet *cutsTPCNegEtaQoverQlength = new AliQnCorrectionsCutsSet();
-    if(!isESD){
-        cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-        cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-        cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  /* define the cuts to apply */
+  isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+  AliQnCorrectionsCutsSet *cutsTPCNegEtaQoverQlength = new AliQnCorrectionsCutsSet();
+  if(!isESD){
+    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
+    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
+    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  }
+  else {
+    Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+    task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
+    if(UseTPConlyTracks){
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
     }
-    else {
-        Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
-        task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
-        if(UseTPConlyTracks){
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
-        }
-        else{
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-            cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
-        }
+    else{
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
-    TPCconf->SetCuts(cutsTPCNegEtaQoverQlength);
-    
-    /* the TPC eta > 0 detector configuration */
-    AliQnCorrectionsDetectorConfigurationTracks *TPCPosEtaconfQoverQlength =
+  }
+  TPCconf->SetCuts(cutsTPCNegEtaQoverQlength);
+  TPC->AddDetectorConfiguration(TPCNegEtaconfQoverQlength);
+
+  /* the TPC eta > 0 detector configuration */
+  AliQnCorrectionsDetectorConfigurationTracks *TPCPosEtaconfQoverQlength =
     new AliQnCorrectionsDetectorConfigurationTracks(
                                                     "TPCPosEtaQoverQlength",
                                                     CorrEventClasses,
                                                     4); /* number of harmonics: 1, 2, 3 and 4 */
-    /* let's configure the Q vector calibration */
-    TPCPosEtaconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    TPCPosEtaconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector twist correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScalePosEtaQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScalePosEtaQoverQlength->SetApplyTwist(kTRUE);
-    twScalePosEtaQoverQlength->SetApplyRescale(kFALSE);
-    twScalePosEtaQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
-    TPCPosEtaconfQoverQlength->AddCorrectionOnQnVector(twScalePosEtaQoverQlength);
+  /* let's configure the Q vector calibration */
+  TPCPosEtaconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  TPCPosEtaconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector twist correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScalePosEtaQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScalePosEtaQoverQlength->SetApplyTwist(kTRUE);
+  twScalePosEtaQoverQlength->SetApplyRescale(kFALSE);
+  twScalePosEtaQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
+  TPCPosEtaconfQoverQlength->AddCorrectionOnQnVector(twScalePosEtaQoverQlength);
     
-    /* define the cuts to apply */
-    isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
-    AliQnCorrectionsCutsSet *cutsTPCPosEtaQoverQlength = new AliQnCorrectionsCutsSet();
-    if(!isESD){
-        cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-        cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-        cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  /* define the cuts to apply */
+  isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+  AliQnCorrectionsCutsSet *cutsTPCPosEtaQoverQlength = new AliQnCorrectionsCutsSet();
+  if(!isESD){
+    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
+    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
+    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  }
+  else {
+    Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+    task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
+    if(UseTPConlyTracks){
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
     }
-    else {
-        Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
-        task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
-        if(UseTPConlyTracks){
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
-        }
-        else{
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-            cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
-        }
+    else{
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
-    TPCconf->SetCuts(cutsTPCPosEtaQoverQlength);
+  }
+  TPCconf->SetCuts(cutsTPCPosEtaQoverQlength);
     
-    /* add the configuration to the detector */
-    TPC->AddDetectorConfiguration(TPCPosEtaconfQoverQlength);
+  /* add the configuration to the detector */
+  TPC->AddDetectorConfiguration(TPCPosEtaconfQoverQlength);
     
-    /* the TPC detector configuration */
-    AliQnCorrectionsDetectorConfigurationTracks *TPCconfQoverSqrtM =
+  /* the TPC detector configuration */
+  AliQnCorrectionsDetectorConfigurationTracks *TPCconfQoverSqrtM =
     new AliQnCorrectionsDetectorConfigurationTracks(
                                                     "TPCQoverSqrtM",
                                                     CorrEventClasses,
                                                     4); /* number of harmonics: 1, 2, 3 and 4 */
-    /* let's configure the Q vector calibration */
-    TPCconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
-    /* let's add the Q vector recentering correction step */
-    /* we don't configure it, so we create it anonymous */
-    TPCconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
-    /* let's add the Q vector twist correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
-    twScaleQoverSqrtM->SetApplyTwist(kTRUE);
-    twScaleQoverSqrtM->SetApplyRescale(kFALSE);
-    twScaleQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
-    TPCconfQoverSqrtM->AddCorrectionOnQnVector(twScaleQoverSqrtM);
+  /* let's configure the Q vector calibration */
+  TPCconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
+  /* let's add the Q vector recentering correction step */
+  /* we don't configure it, so we create it anonymous */
+  TPCconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+  /* let's add the Q vector twist correction step */
+  AliQnCorrectionsQnVectorTwistAndRescale *twScaleQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleQoverSqrtM->SetApplyTwist(kTRUE);
+  twScaleQoverSqrtM->SetApplyRescale(kFALSE);
+  twScaleQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
+  TPCconfQoverSqrtM->AddCorrectionOnQnVector(twScaleQoverSqrtM);
     
-    /* define the cuts to apply */
-    isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
-    AliQnCorrectionsCutsSet *cutsTPCQoverSqrtM = new AliQnCorrectionsCutsSet();
-    if(!isESD){
-        cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-        cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-        cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  /* define the cuts to apply */
+  isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+  AliQnCorrectionsCutsSet *cutsTPCQoverSqrtM = new AliQnCorrectionsCutsSet();
+  if(!isESD){
+    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
+    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
+    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+  }
+  else {
+    Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+    task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
+    if(UseTPConlyTracks){
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
     }
-    else {
-        Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
-        task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
-        if(UseTPConlyTracks){
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
-        }
-        else{
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-            cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
-        }
+    else{
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
-    TPCconf->SetCuts(cutsTPCQoverSqrtM);
+  }
+  TPCconf->SetCuts(cutsTPCQoverSqrtM);
     
-    /* add the configuration to the detector */
-    TPC->AddDetectorConfiguration(TPCconfQoverSqrtM);
+  /* add the configuration to the detector */
+  TPC->AddDetectorConfiguration(TPCconfQoverSqrtM);
     
 
     
@@ -967,9 +968,9 @@ void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-      task->VarName(VAR::kVtxZ), VtxZbinning));
+							       task->VarName(VAR::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the SPD detector */
@@ -977,10 +978,10 @@ void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 
   /* the SPD detector configuration */
   AliQnCorrectionsDetectorConfigurationTracks *SPDconf =
-      new AliQnCorrectionsDetectorConfigurationTracks(
-          "SPD",
-          CorrEventClasses,
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationTracks(
+						    "SPD",
+						    CorrEventClasses,
+						    4); /* number of harmonics: 1, 2, 3 and 4 */
   /* let's configure the Q vector calibration */
   SPDconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
   /* let's add the Q vector recentering correction step */
@@ -1021,9 +1022,9 @@ void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-      task->VarName(VAR::kVtxZ), VtxZbinning));
+							       task->VarName(VAR::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the TZERO detector */
@@ -1031,11 +1032,11 @@ void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
 
   /* the TZEROA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *TZEROAconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "TZEROA",
-          CorrEventClasses,
-          24, /* number of channels */
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "TZEROA",
+						      CorrEventClasses,
+						      24, /* number of channels */
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   TZEROAconf->SetChannelsScheme(TZEROchannels[0], channelGroups);
   /* let's configure the Q vector calibration */
   TZEROAconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1071,11 +1072,11 @@ void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
 
   /* the TZEROC detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *TZEROCconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "TZEROC",
-          CorrEventClasses,
-          24, /* number of channels */
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "TZEROC",
+						      CorrEventClasses,
+						      24, /* number of channels */
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   TZEROCconf->SetChannelsScheme(TZEROchannels[1], channelGroups);
   /* let's configure the Q vector calibration */
   TZEROCconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1132,11 +1133,11 @@ void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   Double_t VtxYbinning[][2] = {{ -0.3, 2}, {0.3, 10 }};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxX,
-      task->VarName(VAR::kVtxX), VtxXbinning));
+							       task->VarName(VAR::kVtxX), VtxXbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxY,
-      task->VarName(VAR::kVtxY), VtxYbinning));
+							       task->VarName(VAR::kVtxY), VtxYbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the ZDC detector */
@@ -1144,11 +1145,11 @@ void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 
   /* the ZDCA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *ZDCAconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "ZDCA",
-          CorrEventClasses,
-          10, /* number of channels */
-          3); /* number of harmonics: 1, 2 and 3 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "ZDCA",
+						      CorrEventClasses,
+						      10, /* number of channels */
+						      3); /* number of harmonics: 1, 2 and 3 */
   ZDCAconf->SetChannelsScheme(ZDCchannels[0], NULL /* no groups */);
   /* let's configure the Q vector calibration */
   ZDCAconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1161,11 +1162,11 @@ void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 
   /* the ZDCC detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *ZDCCconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "ZDCC",
-          CorrEventClasses,
-          10, /* number of channels */
-          3); /* number of harmonics: 1, 2 and 3 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "ZDCC",
+						      CorrEventClasses,
+						      10, /* number of channels */
+						      3); /* number of harmonics: 1, 2 and 3 */
   ZDCCconf->SetChannelsScheme(ZDCchannels[1], NULL /* no groups */);
   /* let's configure the Q vector calibration */
   ZDCCconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1209,11 +1210,11 @@ void AddFMDTaskForESDanalysis(){
   // --- Make the output container and connect it --------------------
   AliAnalysisDataContainer* histOut =
     mgr->CreateContainer("Forward", TList::Class(),
-        AliAnalysisManager::kExchangeContainer);
+			 AliAnalysisManager::kExchangeContainer);
 
   AliAnalysisDataContainer *output =
     mgr->CreateContainer("ForwardResultsP", TList::Class(),
-        AliAnalysisManager::kExchangeContainer);
+			 AliAnalysisManager::kExchangeContainer);
 
   mgr->ConnectInput(taskFmd, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskFmd, 1, histOut);
@@ -1242,9 +1243,9 @@ void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-      task->VarName(VAR::kVtxZ), VtxZbinning));
+							       task->VarName(VAR::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the FMD detector */
@@ -1252,11 +1253,11 @@ void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 
   /* the FMDA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *FMDAconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "FMDA",
-          CorrEventClasses,
-          4000, /* number of channels */
-          4); /* number of harmonics: 1, 2 and 3 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "FMDA",
+						      CorrEventClasses,
+						      4000, /* number of channels */
+						      4); /* number of harmonics: 1, 2 and 3 */
   FMDAconf->SetChannelsScheme(FMDchannels[0], NULL /* no groups */);
   /* let's configure the Q vector calibration */
   FMDAconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1282,11 +1283,11 @@ void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 
   /* the FMDC detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *FMDCconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "FMDC",
-          CorrEventClasses,
-          4000, /* number of channels */
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "FMDC",
+						      CorrEventClasses,
+						      4000, /* number of channels */
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   FMDCconf->SetChannelsScheme(FMDchannels[1], NULL /* no groups */);
   /* let's configure the Q vector calibration */
   FMDCconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1354,9 +1355,9 @@ void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManag
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-      task->VarName(VAR::kVtxZ), VtxZbinning));
+							       task->VarName(VAR::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
-      Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
+							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   AliQnCorrectionsCutsSet *cutFMDA = new AliQnCorrectionsCutsSet();
@@ -1370,11 +1371,11 @@ void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManag
 
   /* the FMDAraw detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *FMDArawconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "FMDAraw",
-          CorrEventClasses,
-          nTotalNoOfChannels,
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "FMDAraw",
+						      CorrEventClasses,
+						      nTotalNoOfChannels,
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   FMDArawconf->SetChannelsScheme(FMDchannels[0], FMDchannelGroups);
   /* let's configure the Q vector calibration */
   FMDArawconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1401,11 +1402,11 @@ void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManag
 
   /* the FMDCraw detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *FMDCrawconf =
-      new AliQnCorrectionsDetectorConfigurationChannels(
-          "FMDCraw",
-          CorrEventClasses,
-          nTotalNoOfChannels,
-          4); /* number of harmonics: 1, 2, 3 and 4 */
+    new AliQnCorrectionsDetectorConfigurationChannels(
+						      "FMDCraw",
+						      CorrEventClasses,
+						      nTotalNoOfChannels,
+						      4); /* number of harmonics: 1, 2, 3 and 4 */
   FMDCrawconf->SetChannelsScheme(FMDchannels[1], FMDchannelGroups);
   /* let's configure the Q vector calibration */
   FMDCrawconf->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverM);
@@ -1462,7 +1463,7 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistogram(classStr.Data(),"RunNo","Run numbers;Run", kFALSE, kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo);
       histos->AddHistogram(classStr.Data(),"BC","Bunch crossing;BC", kFALSE,3000,0.,3000.,VAR::kBC);
       histos->AddHistogram(classStr.Data(),"IsPhysicsSelection","Physics selection flag;;", kFALSE,
-          2,-0.5,1.5,VAR::kIsPhysicsSelection, 0,0.0,0.0,VAR::kNothing, 0,0.0,0.0,VAR::kNothing, "off;on");
+			   2,-0.5,1.5,VAR::kIsPhysicsSelection, 0,0.0,0.0,VAR::kNothing, 0,0.0,0.0,VAR::kNothing, "off;on");
 
       histos->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-30.0,30.0,VAR::kVtxZ);
       //histos->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-15.,15.,VAR::kVtxZ);
@@ -1471,136 +1472,136 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
 
 
       histos->AddHistogram(classStr.Data(),"CentVZEROvsMultPVZERO","Multiplicity percentile (VZERO);multiplicity VZERO (percents);centrality VZERO (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kVZEROMultPercentile, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, VAR::kVZEROMultPercentile, 100, 0.0, 100.0, VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentVZEROvsCentSPD","Centrality(VZERO);centrality VZERO (percents);centrality SPD (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentVZERO, 100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, VAR::kCentVZERO, 100, 0.0, 100.0, VAR::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPCvsCentSPD","Centrality(TPC);centrality TPC (percents);centrality SPD (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPCvsCentVZERO","Centrality(TPC);centrality TPC (percents);centrality VZERO (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentTPCvsCentZDC","Centrality(TPC);centrality TPC (percents);centrality ZDC (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentZDC);
+			   100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentZDC);
       histos->AddHistogram(classStr.Data(),"CentZDCvsCentVZERO","Centrality(ZDC);centrality ZDC (percents);centrality VZERO (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentZDC, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, VAR::kCentZDC, 100, 0.0, 100.0, VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentZDCvsCentSPD","Centrality(ZDC);centrality ZDC (percents);centrality SPD (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentZDC, 100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, VAR::kCentZDC, 100, 0.0, 100.0, VAR::kCentSPD);
 
       histos->AddHistogram(classStr.Data(),"MultVZEROvsCentVZERO","Multiplicity;multiplicity VZERO;VZERO centrality", kFALSE,
-          100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100,0.,100., VAR::kCentVZERO);
+			   100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100,0.,100., VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"MultSPDvsCentPSD","Multiplicity;SPD tracklets;SPD centrality", kFALSE,
-          100, 0.0, 3000.0, VAR::kSPDntracklets, 100,0.,100., VAR::kCentSPD);
+			   100, 0.0, 3000.0, VAR::kSPDntracklets, 100,0.,100., VAR::kCentSPD);
       histos->AddHistogram(classStr.Data(),"MultTPCvsCentSPD","Multiplicity;TPC selected tracks;TPC centrality", kFALSE,
-          100, 0.0, 3500.0, VAR::kNtracksSelected, 100,0.,100., VAR::kCentTPC);
+			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100,0.,100., VAR::kCentTPC);
       histos->AddHistogram(classStr.Data(),"MultZDCvsCentZDC","Multiplicity;multiplicity ZDC;ZDC centrality", kFALSE,
-          100, 0.0, 300000.0, VAR::kZDCTotalEnergy, 100,0.,100., VAR::kCentZDC);
+			   100, 0.0, 300000.0, VAR::kZDCTotalEnergy, 100,0.,100., VAR::kCentZDC);
 
 
       histos->AddHistogram(classStr.Data(),"MultTPCvsMultVZERO","Multiplicity;tracks TPC;multiplicity VZERO", kFALSE,
-          100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 32000.0, VAR::kVZEROTotalMult);
+			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 32000.0, VAR::kVZEROTotalMult);
       histos->AddHistogram(classStr.Data(),"MultTPCvsMultSPD","Multiplicity;tracklets SPD;tracks TPC", kFALSE,
-          100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 3000.0, VAR::kSPDntracklets);
+			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 3000.0, VAR::kSPDntracklets);
       histos->AddHistogram(classStr.Data(),"MultSPDvsMultVZERO","Multiplicity;tracklets SPD;multiplicity VZERO", kFALSE,
-          100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100, 0.0, 3000.0, VAR::kSPDntracklets);
+			   100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100, 0.0, 3000.0, VAR::kSPDntracklets);
       histos->AddHistogram(classStr.Data(),"MultTPCvsMultZDC","Multiplicity;tracks TPC;energy ZDC", kFALSE,
-          100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultVZEROvsMultZDC","Multiplicity;multiplicity VZERO;energy ZDC", kFALSE,
-          100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultSPDvsMultZDC","Multiplicity;tracklets SPD;energy ZDC", kFALSE,
-          100, 0.0, 3000.0, VAR::kSPDntracklets, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   100, 0.0, 3000.0, VAR::kSPDntracklets, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
 
 
 
       histos->AddHistogram(classStr.Data(),"MultVZERO","Multiplicity;multiplicity VZERO", kFALSE,
-          320, 0.0, 25000.0, VAR::kVZEROTotalMult);
+			   320, 0.0, 25000.0, VAR::kVZEROTotalMult);
       histos->AddHistogram(classStr.Data(),"MultVZEROA","Multiplicity;multiplicity VZEROA", kFALSE,
-          250, 0.0, 9500.0, VAR::kVZEROATotalMult);//10000.0
+			   250, 0.0, 9500.0, VAR::kVZEROATotalMult);//10000.0
       histos->AddHistogram(classStr.Data(),"MultVZEROC","Multiplicity;multiplicity VZEROC", kFALSE,
-          250, 0.0, 16000.0, VAR::kVZEROCTotalMult);//15000.0
+			   250, 0.0, 16000.0, VAR::kVZEROCTotalMult);//15000.0
       histos->AddHistogram(classStr.Data(),"MultZDC","Multiplicity;multiplicity ZDC", kFALSE,
-          200, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   200, 0.0, 300000.0, VAR::kZDCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultZDCA","Multiplicity;multiplicity ZDCA", kFALSE,
-          200, 0.0, 150000.0, VAR::kZDCATotalEnergy);
+			   200, 0.0, 150000.0, VAR::kZDCATotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultZDCC","Multiplicity;multiplicity ZDCC", kFALSE,
-          200, 0.0, 150000.0, VAR::kZDCCTotalEnergy);
+			   200, 0.0, 150000.0, VAR::kZDCCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultFMD1","Multiplicity;multiplicity FMD1", kFALSE,
-          300, 0.0, 10000.0, VAR::kFMD1TotalMult);
+			   300, 0.0, 10000.0, VAR::kFMD1TotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD2I","Multiplicity;multiplicity FMD2I", kFALSE,
-          300, 0.0, 10000.0, VAR::kFMD2ITotalMult);
+			   300, 0.0, 10000.0, VAR::kFMD2ITotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD2O","Multiplicity;multiplicity FMD2O", kFALSE,
-          300, 0.0, 10000.0, VAR::kFMD2OTotalMult);
+			   300, 0.0, 10000.0, VAR::kFMD2OTotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD3I","Multiplicity;multiplicity FMD3I", kFALSE,
-          300, 0.0, 10000.0, VAR::kFMD3ITotalMult);
+			   300, 0.0, 10000.0, VAR::kFMD3ITotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD3O","Multiplicity;multiplicity FMD3O", kFALSE,
-          300, 0.0, 10000.0, VAR::kFMD3OTotalMult);
+			   300, 0.0, 10000.0, VAR::kFMD3OTotalMult);
       histos->AddHistogram(classStr.Data(),"MultTZEROA","Multiplicity;multiplicity TZEROA", kFALSE,
-          300, 0.0, 3000.0, VAR::kTZEROATotalMult);
+			   300, 0.0, 3000.0, VAR::kTZEROATotalMult);
       histos->AddHistogram(classStr.Data(),"MultTZEROC","Multiplicity;multiplicity TZEROC", kFALSE,
-          300, 0.0, 3000.0, VAR::kTZEROCTotalMult);
+			   300, 0.0, 3000.0, VAR::kTZEROCTotalMult);
 
 
 
 
       histos->AddHistogram(classStr.Data(),"MultPercentVZERO","Multiplicity percentile (VZERO);multiplicity VZERO (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kVZEROMultPercentile);
+			   100, 0.0, 100.0, VAR::kVZEROMultPercentile);
       histos->AddHistogram(classStr.Data(),"CentVZERO","Centrality(VZERO);centrality VZERO (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentSPD","Centrality(SPD);centrality SPD (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, VAR::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPC","Centrality(TPC);centrality TPC (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentTPC);
+			   100, 0.0, 100.0, VAR::kCentTPC);
       histos->AddHistogram(classStr.Data(),"CentZDC","Centrality(ZDC);centrality ZDC (percents)", kFALSE,
-          100, 0.0, 100.0, VAR::kCentZDC);
+			   100, 0.0, 100.0, VAR::kCentZDC);
 
       histos->AddHistogram(classStr.Data(),"CentQuality","Centrality quality;centrality quality", kFALSE,
-          100, -50.5, 49.5, VAR::kCentQuality);
+			   100, -50.5, 49.5, VAR::kCentQuality);
       histos->AddHistogram(classStr.Data(),"CentVZERO_Run_prof","<Centrality(VZERO)> vs run;Run; centrality VZERO (%)", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentSPD_Run_prof","<Centrality(SPD)> vs run;Run; centrality SPD (%)", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentSPD);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPC_Run_prof","<Centrality(TPC)> vs run;Run; centrality TPC (%)", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentTPC);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentTPC);
       histos->AddHistogram(classStr.Data(),"CentZDC_Run_prof","<Centrality(ZDC)> vs run;Run; centrality ZDC (%)", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentZDC);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentZDC);
 
 
       histos->AddHistogram(classStr.Data(),"NV0sTotal","Number of V0 candidates per event;# pairs", kFALSE,
-          1000,0.,30000.,VAR::kNV0total);
+			   1000,0.,30000.,VAR::kNV0total);
       histos->AddHistogram(classStr.Data(),"NV0sSelected","Number of selected V0 candidates per event;# pairs", kFALSE,
-          1000,0.,10000.,VAR::kNV0selected);
+			   1000,0.,10000.,VAR::kNV0selected);
       histos->AddHistogram(classStr.Data(),"NPairs","Number of candidates per event;# pairs", kFALSE,
-          5000,0.,5000.,VAR::kNdielectrons);
+			   5000,0.,5000.,VAR::kNdielectrons);
       histos->AddHistogram(classStr.Data(),"NPairsSelected", "Number of selected pairs per event; #pairs", kFALSE,
-          5000,0.,5000.,VAR::kNpairsSelected);
+			   5000,0.,5000.,VAR::kNpairsSelected);
       histos->AddHistogram(classStr.Data(),"NTracksTotal","Number of total tracks per event;# tracks", kFALSE,
-          1000,0.,30000.,VAR::kNtracksTotal);
+			   1000,0.,30000.,VAR::kNtracksTotal);
       histos->AddHistogram(classStr.Data(),"NTracksSelected","Number of selected tracks per event;# tracks", kFALSE,
-          1000,0.,30000.,VAR::kNtracksSelected);
+			   1000,0.,30000.,VAR::kNtracksSelected);
       histos->AddHistogram(classStr.Data(),"SPDntracklets", "SPD #tracklets; tracklets", kFALSE,
-          3000, -0.5, 2999.5, VAR::kSPDntracklets);
+			   3000, -0.5, 2999.5, VAR::kSPDntracklets);
       histos->AddHistogram(classStr.Data(),"SPDnSingleClusters", "SPD #single clusters; tracklets", kFALSE,
-          3000, -0.5, 2999.5, VAR::kSPDnSingleClusters);
+			   3000, -0.5, 2999.5, VAR::kSPDnSingleClusters);
 
       histos->AddHistogram(classStr.Data(),"NV0total_Run_prof", "<Number of total V0s> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNV0total);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNV0total);
       histos->AddHistogram(classStr.Data(),"NV0selected_Run_prof", "<Number of selected V0s> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNV0selected);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNV0selected);
       histos->AddHistogram(classStr.Data(),"Ndielectrons_Run_prof", "<Number of dielectrons> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNdielectrons);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNdielectrons);
       histos->AddHistogram(classStr.Data(),"NpairsSelected_Run_prof", "<Number of selected pairs> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNpairsSelected);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNpairsSelected);
       histos->AddHistogram(classStr.Data(),"NTracksTotal_Run_prof", "<Number of tracks> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNtracksTotal);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNtracksTotal);
       histos->AddHistogram(classStr.Data(),"NTracksSelected_Run_prof", "<Number of selected tracks> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNtracksSelected);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNtracksSelected);
       histos->AddHistogram(classStr.Data(),"SPDntracklets_Run_prof", "<SPD ntracklets> per run; Run; #tracks", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kSPDntracklets);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kSPDntracklets);
 
       histos->AddHistogram(classStr.Data(),"VtxZ_CentVZERO","Centrality(VZERO) vs vtx. Z;vtx Z (cm); centrality VZERO (%)", kFALSE,
-          300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"VtxZ_CentSPD","Centrality(SPD) vs vtx. Z;vtx Z (cm); centrality SPD (%)", kFALSE,
-          300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentSPD);
+			   300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentSPD);
       histos->AddHistogram(classStr.Data(),"VtxZ_CentTPC","Centrality(TPC) vs vtx. Z;vtx Z (cm); centrality TPC (%)", kFALSE,
-          300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentTPC);
+			   300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentTPC);
       continue;
     }  // end if className contains "Event"
 
@@ -1613,19 +1614,19 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       for(Int_t i=0; i<64; ++i) {triggerNames += Form("%s",VAR::fOfflineTriggerNames[i]); triggerNames+=";";}
 
       histos->AddHistogram(classStr.Data(), "Triggers", "Offline triggers fired; ; ;", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTrigger, 2, -0.5, 1.5, VAR::kOfflineTriggerFired, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data(), "off;on");
+			   64, -0.5, 63.5, VAR::kOfflineTrigger, 2, -0.5, 1.5, VAR::kOfflineTriggerFired, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data(), "off;on");
       histos->AddHistogram(classStr.Data(), "Triggers2", "Offline triggers fired; ; ;", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 0, 0.0, 0.0, VAR::kNothing, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 0, 0.0, 0.0, VAR::kNothing, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentVZERO_Triggers2", "Offline triggers fired vs centrality VZERO; ; centrality VZERO;", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentVZERO, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentVZERO, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentTPC_Triggers2", "Offline triggers fired vs centrality TPC; ; centrality TPC;", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentTPC, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentTPC, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentSPD_Triggers2", "Offline triggers fired vs centrality SPD; ; centrality SPD;", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentSPD, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentSPD, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentZDC_Triggers2", "Offline triggers fired vs centrality ZDC; ; centrality ZDC;", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentZDC, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentZDC, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "VtxZ_Triggers2", "Offline triggers fired vs vtxZ; ; vtx Z (cm.);", kFALSE,
-          64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 200, -20.0, 20.0, VAR::kVtxZ, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 200, -20.0, 20.0, VAR::kVtxZ, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
       continue;
     }
 
@@ -1634,9 +1635,9 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
       for(Int_t ih=0; ih<6; ++ih) {
         histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_CentVZERO",ih+1), Form("<cos%d #varphi> vs (CentVZERO); centrality VZERO; <cos%d #varphi>", ih+1, ih+1), kTRUE,
-            20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
+			     20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_CentVZERO",ih+1), Form("<sin%d #varphi> vs (CentVZERO); centrality VZERO; <sin%d #varphi>", ih+1, ih+1), kTRUE,
-            20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+			     20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
       }
     }
 
@@ -1646,55 +1647,55 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
 
       histos->AddHistogram(classStr.Data(), "Pt", "p_{T} distribution; p_{T} (GeV/c^{2});", kFALSE,
-          1000, 0.0, 50.0, VAR::kPt);
+			   1000, 0.0, 50.0, VAR::kPt);
       histos->AddHistogram(classStr.Data(), "Eta", "#eta illumination; #eta;", kFALSE,
-          1000, -1.5, 1.5, VAR::kEta);
+			   1000, -1.5, 1.5, VAR::kEta);
       histos->AddHistogram(classStr.Data(), "Phi", "#varphi illumination; #varphi;", kFALSE,
-          1000, 0.0, 6.3, VAR::kPhi);
+			   1000, 0.0, 6.3, VAR::kPhi);
       histos->AddHistogram(classStr.Data(), "DCAxy", "DCAxy; DCAxy (cm.)", kFALSE,
-          1000, -10.0, 10.0, VAR::kDcaXY);
+			   1000, -10.0, 10.0, VAR::kDcaXY);
       histos->AddHistogram(classStr.Data(), "DCAz", "DCAz; DCAz (cm.)", kFALSE,
-          1000, -10.0, 10.0, VAR::kDcaZ);
+			   1000, -10.0, 10.0, VAR::kDcaZ);
       histos->AddHistogram(classStr.Data(), "TPCncls", "TPCncls; TPCncls", kFALSE,
-          160, 0.0, 160.0, VAR::kTPCncls);
+			   160, 0.0, 160.0, VAR::kTPCncls);
       histos->AddHistogram(classStr.Data(), "TPCsa_TPCncls", "TPC standalone TPCncls; TPCncls", kFALSE,
-          160, 0.0, 160.0, VAR::kTPCnclsIter1);
+			   160, 0.0, 160.0, VAR::kTPCnclsIter1);
 
       // run dependence
       histos->AddHistogram(classStr.Data(), "Pt_Run", "<p_{T}> vs run; run;", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, 0.0, 50.0, VAR::kPt);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, 0.0, 50.0, VAR::kPt);
       histos->AddHistogram(classStr.Data(), "Eta_Run", "<#eta> vs run; run;", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -1.5, 1.5, VAR::kEta);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -1.5, 1.5, VAR::kEta);
       histos->AddHistogram(classStr.Data(), "Phi_Run", "<#varphi> vs run; run;", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, 0.0, 6.3, VAR::kPhi);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, 0.0, 6.3, VAR::kPhi);
       histos->AddHistogram(classStr.Data(), "DCAxy_Run", "<DCAxy> vs run; run;", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -10.0, 10.0, VAR::kDcaXY);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -10.0, 10.0, VAR::kDcaXY);
       histos->AddHistogram(classStr.Data(), "DCAz_Run", "<DCAz> vs run; run;", kTRUE,
-          kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -10.0, 10.0, VAR::kDcaZ);
+			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -10.0, 10.0, VAR::kDcaZ);
 
       // correlations between parameters
       histos->AddHistogram(classStr.Data(), "Eta_Pt_prof", "<p_{T}> vs #eta; #eta; p_{T} (GeV/c);", kTRUE,
-          300, -1.5, +1.5, VAR::kEta, 100, 0.0, 10.0, VAR::kPt);
+			   300, -1.5, +1.5, VAR::kEta, 100, 0.0, 10.0, VAR::kPt);
       histos->AddHistogram(classStr.Data(), "Phi_Pt", "p_{T} vs #varphi; #varphi (rad.); p_{T} (GeV/c)", kFALSE,
-          300, -0.01, 6.3, VAR::kPhi, 100, 0.0, 2.2, VAR::kPt);
+			   300, -0.01, 6.3, VAR::kPhi, 100, 0.0, 2.2, VAR::kPt);
       histos->AddHistogram(classStr.Data(), "Phi_Pt_prof", "<p_{T}> vs #varphi; #varphi (rad.); p_{T} (GeV/c)", kTRUE,
-          300, 0.0, 6.3, VAR::kPhi, 100, 0.0, 10.0, VAR::kPt);
+			   300, 0.0, 6.3, VAR::kPhi, 100, 0.0, 10.0, VAR::kPt);
       histos->AddHistogram(classStr.Data(), "Eta_Phi", "#varphi vs #eta; #eta; #varphi (rad.);", kFALSE,
-          200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi);
+			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi);
       histos->AddHistogram(classStr.Data(), "TPCncls_Eta_Phi_prof", "<TPC ncls> vs #varphi vs #eta; #eta; #varphi (rad.);TPC ncls", kTRUE,
-          200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kTPCncls);
+			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kTPCncls);
       histos->AddHistogram(classStr.Data(), "DCAxy_Eta_Phi_prof", "<DCAxy> vs #varphi vs #eta; #eta; #varphi (rad.);DCAxy (cm)", kTRUE,
-          200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kDcaXY);
+			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kDcaXY);
       histos->AddHistogram(classStr.Data(), "DCAz_Eta_Phi_prof", "<DCAz> vs #varphi vs #eta; #eta; #varphi (rad.);DCAz (cm)", kTRUE,
-          200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kDcaZ);
+			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kDcaZ);
       histos->AddHistogram(classStr.Data(), "Pt_DCAxy", "DCAxy vs p_{T}; p_{T} (GeV/c); DCA_{xy} (cm)", kFALSE,
-          100, 0.0, 10.0, VAR::kPt, 500, -2.0, 2.0, VAR::kDcaXY);
+			   100, 0.0, 10.0, VAR::kPt, 500, -2.0, 2.0, VAR::kDcaXY);
       histos->AddHistogram(classStr.Data(), "Pt_DCAz", "DCAz vs p_{T}; p_{T} (GeV/c); DCA_{z} (cm)", kFALSE,
-          100, 0.0, 10.0, VAR::kPt, 500, -2.0, 2.0, VAR::kDcaZ);
+			   100, 0.0, 10.0, VAR::kPt, 500, -2.0, 2.0, VAR::kDcaZ);
       histos->AddHistogram(classStr.Data(), "Eta_DCAxy", "DCAxy vs #eta; #eta; DCA_{xy} (cm)", kFALSE,
-          100, -1.0, 1.0, VAR::kEta, 500, -2.0, 2.0, VAR::kDcaXY);
+			   100, -1.0, 1.0, VAR::kEta, 500, -2.0, 2.0, VAR::kDcaXY);
       histos->AddHistogram(classStr.Data(), "Eta_DCAz", "DCAz vs #eta; #eta; DCA_{z} (cm)", kFALSE,
-          100, -1.0, 1.0, VAR::kEta, 500, -2.0, 2.0, VAR::kDcaZ);
+			   100, -1.0, 1.0, VAR::kEta, 500, -2.0, 2.0, VAR::kDcaZ);
 
       for(Int_t ih=0; ih<6; ++ih) {
         //histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_CentVZERO",ih+1), Form("<cos%d #varphi> vs (CentVZERO); centrality VZERO; <cos%d #varphi>", ih+1, ih+1), kTRUE,
@@ -1702,13 +1703,13 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
         //histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_CentVZERO",ih+1), Form("<sin%d #varphi> vs (CentVZERO); centrality VZERO; <sin%d #varphi>", ih+1, ih+1), kTRUE,
         //                   20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_Pt_Eta",ih+1), Form("<cos%d #varphi> vs (#eta,p_{T}); #eta; p_{T} (GeV/c); <cos%d #varphi>", ih+1, ih+1), kTRUE,
-            20, -1.0, 1.0, VAR::kEta, 30, 0.0, 3.0, VAR::kPt, 500, -1.0, 1.0, VAR::kCosNPhi+ih);
+			     20, -1.0, 1.0, VAR::kEta, 30, 0.0, 3.0, VAR::kPt, 500, -1.0, 1.0, VAR::kCosNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_Pt_Eta",ih+1), Form("<sin%d #varphi> vs (#eta,p_{T}); #eta; p_{T} (GeV/c); <sin%d #varphi>", ih+1, ih+1), kTRUE,
-            20, -1.0, 1.0, VAR::kEta, 30, 0.0, 3.0, VAR::kPt, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+			     20, -1.0, 1.0, VAR::kEta, 30, 0.0, 3.0, VAR::kPt, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_CentVZERO_VtxZ",ih+1), Form("<cos%d #varphi> vs (CentVZERO,VtxZ); Z (cm.); centrality VZERO; <cos%d #varphi>", ih+1, ih+1), kTRUE,
-            30, -15.0, 15.0, VAR::kVtxZ, 20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
+			     30, -15.0, 15.0, VAR::kVtxZ, 20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_CentVZERO_VtxZ",ih+1), Form("<sin%d #varphi> vs (CentVZERO,VtxZ); Z (cm.); centrality VZERO; <sin%d #varphi>", ih+1, ih+1), kTRUE,
-            30, -15.0, 15.0, VAR::kVtxZ, 20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+			     30, -15.0, 15.0, VAR::kVtxZ, 20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
       }
     }
 
@@ -1717,11 +1718,11 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
 
       histos->AddHistogram(classStr.Data(), "Eta", "#eta illumination; #eta;", kFALSE,
-          1000, -3.0, 3.0, VAR::kSPDtrackletEta);
+			   1000, -3.0, 3.0, VAR::kSPDtrackletEta);
       histos->AddHistogram(classStr.Data(), "Phi", "#varphi illumination; #varphi;", kFALSE,
-          300, -0.01, 6.3, VAR::kSPDtrackletPhi);
+			   300, -0.01, 6.3, VAR::kSPDtrackletPhi);
       histos->AddHistogram(classStr.Data(), "Eta_Phi", "#varphi vs #eta; #eta; #varphi (rad.);", kFALSE,
-          200, -3.0, +3.0, VAR::kSPDtrackletEta, 100, 0.0, 6.3, VAR::kSPDtrackletPhi);
+			   200, -3.0, +3.0, VAR::kSPDtrackletEta, 100, 0.0, 6.3, VAR::kSPDtrackletPhi);
     }
 
   }
