@@ -20,6 +20,7 @@
 #include "TMath.h"
 #include "TStatToolkit.h"
 #include "TLeaf.h"
+#include "TVirtualIndex.h"
 
 ClassImp(AliExternalInfo)
 
@@ -318,10 +319,11 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Bool
 TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TString friendList){
   //  
   /*
-    Example usage:
-     treerawTPC = info.GetTree("QA.rawTPC","LHC16f","cpass1_pass1","Logbook;Logbook.detector;QA.TPC;QA.TRD;QA.TOF;QA.ITS;MonALISA.RCT");
-     treerawTPC->Draw("QA.TPC.meanMIP:gainMIP","abs(QA.TPC.meanMIP-50)<2&&gainMIP>1","")
-     treerawTPC->Draw("QA.TPC.run!=run","QA.TPC.run==QA.TRD.run","");  //consistency check
+    Example usage: - loading QA.TPC together with logbook and QA.EVS - visualizing data volume as fuction of interaction rate
+    
+    TTree * treeTPC = info.GetTree("QA.TPC","LHC15o","pass1","QA.rawTPC;QA.ITS;QA.TPC;QA.TRD;QA.TOF;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""); 
+    treeTPC->Draw("Logbook.detector_TPC.bytesInjectedPhysics/Logbook.detector_TPC.eventCountPhysics/1000000:QA.EVS.interactionRate","","*")
+
    */
   TTree * tree = GetTree(type, period,pass);  
   if (tree==NULL) tree=  GetTree(type, period,"");
@@ -345,17 +347,35 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
   TObjArray * arrFriendList= friendList.Tokenize(";");
   for (Int_t ilist=0; ilist<arrFriendList->GetEntriesFast(); ilist++){
     TString fname=arrFriendList->At(ilist)->GetName();
+    TString conditionName="";   
+    TString condition="";
     Int_t nDots = fname.CountChar(':');
-    
-
-    TTree *ftree= GetTree(fname.Data(), period,pass);
-    if (ftree==NULL) ftree=  GetTree(fname.Data(), period,"");
-    if (ftree==NULL) ftree=  GetTree(fname.Data(), "","");
+    // in case there are more than one entry for primary index - secondary key has to be specified
+    // following syntax is used in this case <treeID>:conditionName:condition
+    //     e.g Logbook.detector:TPC:detector==\"TPC\"
+    if (nDots!=0 && nDots!=2) continue;
+    if (nDots==2){
+      TObjArray * tokenArray = fname.Tokenize(":");
+      fname=tokenArray->At(0)->GetName();
+      conditionName=tokenArray->At(1)->GetName();
+      condition=tokenArray->At(2)->GetName();
+      delete tokenArray;
+    }
+    //
+    TTree *ftree= GetTree(fname.Data(), period,pass,nDots==0);  // Standard build index if not custom selection
     if (ftree==NULL || ftree->GetEntries()<=0){
       ::Error("AliExternalInfo::GetTree","Friend tree %s not valid or empty",fname.Data()); 
       continue;
+    }    
+    if (nDots==2){
+      tree->SetAlias(conditionName.Data(),"(1+0)");    
+      ftree->SetAlias(conditionName.Data(),condition.Data());
+      ftree->BuildIndex(tree->GetTreeIndex()->GetMajorName(), conditionName.Data());    
+      tree->AddFriend(ftree, (fname+"_"+conditionName).Data());
+    }else{
+      tree->AddFriend(ftree, fname.Data());
     }
-    tree->AddFriend(ftree, fname.Data());
+    //
     ftree->SetTitle(TString::Format("%s.%s",fname.Data(),ftree->GetTitle()).Data());
     ftree->SetName(TString::Format("%s.%s",fname.Data(),ftree->GetName()).Data());
     //ftree->AddFriend(tree, type.Data());
