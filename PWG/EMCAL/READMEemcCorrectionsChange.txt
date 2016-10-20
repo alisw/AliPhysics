@@ -33,34 +33,28 @@ First, you must add some additional options to your run macro. In particular, we
 
 ### Configure the EMCal Correction Framework AddTask for side-by-side testing
 
-To enable side-by-side testing, simply add the following line after you setup the EMCal Correction Framework AddTask:
+To enable side-by-side testing, we will need to setup the copy of branches before setting up the EMCal Correction Framework AddTask. This is required to ensure that the two correction frameworks do not interfere with each other. To copy the proper input objects (we only need to copy cells and tracks - clusters will be created automatically), use something like the code below (assuming AOD branch naming):
 
 ~~~{.cxx}
-// Create a copy of cells, clusters, and tracks to compare against the current correction framework
-correctionTask->SetCreateNewObjectBranches(true);
+// Cells
+AliEmcalCorrectionTask::InputObject_t inputObject = AliEmcalCorrectionTask::kCaloCells;
+bool IsEsd = (iDataType == kEsd);
+TString inputObjectBranchName = AliEmcalCorrectionTask::DetermineUseDefaultName(inputObject, IsEsd);
+TString newBranchName = inputObjectBranchName;
+newBranchName += "New";
+AliEmcalCopyCollection * copyTaskCells = AddTaskEmcalCopyCollection(inputObject, inputObjectBranchName.Data(), newBranchName.Data());
+
+// Clusters
+// We don't need to copy clusters since we are reclusterizing
+// Tracks
+inputObject = AliEmcalCorrectionTask::kTrack;
+inputObjectBranchName = AliEmcalCorrectionTask::DetermineUseDefaultName(inputObject, IsEsd);
+newBranchName = inputObjectBranchName;
+newBranchName += "New";
+AliEmcalCopyCollection * copyTaskTracks = AddTaskEmcalCopyCollection(inputObject, inputObjectBranchName.Data(), newBranchName.Data());
 ~~~
 
-NOTE: It is imperative that you setup the EMCal Corrections Framework **before** the EMCal tender task!
-
-If you configured it properly, it should look something like:
-
-~~~{.cxx}
-AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
-correctionTask->SelectCollisionCandidates(kPhysSel);
-// Set the run period, same as the track container
-// If you derived from the file "runEMCalJetSampleTask.C", then it is likely stored under "sRunPeriod.Data()"
-correctionTask->SetRunPeriod("LHC11h");
-// Create a copy of cells, clusters, and tracks to compare against the current correction framework
-correctionTask->SetCreateNewObjectBranches(true);
-// Set the user configuration file, assuming that your file is called "userTestConfiguration.yaml" and is located in
-// the current directory. This also supports alien:// paths!
-correctionTask->SetUserConfigurationFilename("userTestConfiguration.yaml");
-// Initialize the configuration files in the correction task
-// It is EXTREMELY important to run this function in your run macro!
-correctionTask->InitializeConfiguration();
-
-// Configure the EMCal tender and other current corrections below here!
-~~~
+The names in ``newBranchName`` determine the name of the new branches. In principle, this could be anything, but we strongly recommend using the "usedefault" name and then adding "New" onto the end. So for AODs, it would be "emcalCellsNew" for cells, "caloClustersNew" for clusters, and "tracksNew" for tracks.
 
 ### Configure the corrections for side-by-side testing
 
@@ -87,6 +81,10 @@ Clusterizer:
 ~~~
 
 Any setting that you have in the user file will override the default file!
+
+### Configure the input objects for the corrections
+
+In addition to determining the proper correction settings, the input objects need to be changed slightly. In parituclar, we need to change the branch names to the names defined when copying objects (described above)!
 
 ## Configure your task to run twice
 
