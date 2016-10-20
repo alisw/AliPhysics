@@ -1501,9 +1501,9 @@ private:
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec
  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
-  TProfile2D *fCRCZDCResCenEn; //!
- TH3D *fCRCZDCEP[6]; //! EPs
- TProfile2D *fCRCZDCQ2[8]; //! Q2
+//  TProfile2D *fCRCZDCResCenEn; //!
+// TH3D *fCRCZDCEP[6]; //! EPs
+// TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
   Double_t fEvPlZDCAflat;
   Double_t fEvPlDPsiC;

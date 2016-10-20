@@ -151,7 +151,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: ZDCTowerEqFile not found!" << endl;
       exit(1);
     }
-    TList* ZDCTowerEqList = dynamic_cast<TList*>(ZDCTowerEqFile->FindObjectAny("ZDC"));
+    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("ZDC"));
     if(ZDCTowerEqList) {
       taskFE->SetTowerEqList(ZDCTowerEqList);
       cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
@@ -369,7 +369,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlowQC(bCalculateFlow);
- if(bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
+ if(ZDCCalibFileName != "" && bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
  if(bUseVZERO) taskQC->SetCalculateFlowVZ(bCalculateFlow);
  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetFlowQCDeltaEta(DeltaEta);
@@ -389,11 +389,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetMaxDevZN(MaxDevZN);
   if(bSetQAZDC && sDataSet != "2015") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
+    gROOT->cd();
     if(!ZDCESEFile) {
       cout << "ERROR: ZDCESEFile not found!" << endl;
       exit(1);
     }
-    TList* ZDCESEList = dynamic_cast<TList*>(ZDCESEFile->FindObjectAny("ZDCESE"));
+    TList* ZDCESEList = (TList*)(ZDCESEFile->FindObjectAny("ZDCESE"));
     if(ZDCESEList) {
       taskQC->SetZDCESEList(ZDCESEList);
       cout << "ZDCESE set (from " <<  ZDCESEFileName.Data() << ")" << endl;
@@ -402,6 +403,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: ZDCESEList not found!" << endl;
       exit(1);
     }
+    delete ZDCESEFile;
   } // end of if(bSetQAZDC)
  
  if(bCenFlattening) {
@@ -410,8 +412,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    cout << "ERROR: CenWeightsFile not found!" << endl;
    exit(1);
   }
-  TCanvas* cav = dynamic_cast<TCanvas*>(CenWeightsFile->Get("Canvas_1"));
-  TH1D* CenHist = dynamic_cast<TH1D*>(cav->GetPrimitive("Centrality"));
+  TCanvas* cav = (TCanvas*)(CenWeightsFile->Get("Canvas_1"));
+  TH1D* CenHist = (TH1D*)(cav->GetPrimitive("Centrality"));
   if(CenHist) {
    taskQC->SetCenWeightsHist(CenHist);
    cout << "Centrality weights set (from " <<  CenWeightsFileName.Data() << ")" << endl;
@@ -430,7 +432,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    exit(1);
   }
   for(Int_t c=0; c<10; c++) {
-   TH1D* PtWeightsHist = dynamic_cast<TH1D*>(PtWeightsFile->Get(Form("eff_unbiased_%d",c)));
+   TH1D* PtWeightsHist = (TH1D*)(PtWeightsFile->Get(Form("eff_unbiased_%d",c)));
    if(PtWeightsHist) {
     taskQC->SetPtWeightsHist(PtWeightsHist,c);
     cout << "Pt weights centr. "<<c<<" set (from " <<  PtWeightsFileName.Data() << ")" << endl;
@@ -443,6 +445,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  } // end of if(bUsePtWeights)
   
   if(MinMulZN==5 && ptMin==0.2 && ptMax==20.2) {
+    // set multiplicity weights
     taskQC->SetUseZDCESEMulWeights(kTRUE);
     TString MulWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2011") {
@@ -458,9 +461,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: ZDCESEMulWeightsFile not found!" << endl;
       exit(1);
     }
-    TList* ZDCESEList = dynamic_cast<TList*>(MulWeightsFile->FindObjectAny("ZDCESE"));
+    TList* ZDCESEList = (TList*)(MulWeightsFile->FindObjectAny("ZDCESE"));
     for(Int_t c=0; c<5; c++) {
-      TH2F* MulWeightsHist = dynamic_cast<TH2F*>(ZDCESEList->FindObject(Form("CenvsMulWeig[%d]",c)));
+      TH2F* MulWeightsHist = (TH2F*)(ZDCESEList->FindObject(Form("CenvsMulWeig[%d]",c)));
       if(MulWeightsHist) {
         taskQC->SetZDCESEMultWeightsHist(MulWeightsHist,c);
         cout << "ZDC-ESE Mult. Weights (class #"<<c<<") set (from " <<  MulWeightsFileName.Data() << ")" << endl;
@@ -470,6 +473,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
         exit(1);
       }
     }
+    
+    // set pt weights
     taskQC->SetUseZDCESESpecWeights(kTRUE);
     TString SpecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2011") {
@@ -485,9 +490,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: ZDCESESpecWeightsFile not found!" << endl;
       exit(1);
     }
-    TList* ZDCESEList = dynamic_cast<TList*>(SpecWeightsFile->FindObjectAny("ZDCESE"));
+    TList* ZDCESEList = (TList*)(SpecWeightsFile->FindObjectAny("ZDCESE"));
     for(Int_t c=0; c<5; c++) {
-      TH2F* SpecWeightsHist = dynamic_cast<TH2F*>(ZDCESEList->FindObject(Form("CenvsSpecWeig[%d]",c)));
+      TH2F* SpecWeightsHist = (TH2F*)(ZDCESEList->FindObject(Form("CenvsSpecWeig[%d]",c)));
       if(SpecWeightsHist) {
         taskQC->SetZDCESESpecWeightsHist(SpecWeightsHist,c);
         cout << "ZDC-ESE Spec. Weights (class #"<<c<<") set (from " <<  SpecWeightsFileName.Data() << ")" << endl;
@@ -510,7 +515,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: QVecWeightsFile not found!" << endl;
       exit(1);
     }
-    TList* QVecWeightsList = dynamic_cast<TList*>(QVecWeightsFile->FindObjectAny("Q Vectors"));
+    TList* QVecWeightsList = (TList*)(QVecWeightsFile->FindObjectAny("Q Vectors"));
     if(QVecWeightsList) {
       taskQC->SetQVecList(QVecWeightsList);
       cout << "Q Vector weights set (from " <<  QVecWeightsFileName.Data() << ")" << endl;
@@ -520,13 +525,15 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
   } // end of if(bUseCRCRecenter)
+  
  if(ZDCCalibFileName != "" && bUseZDC) {
   TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
   if(!ZDCCalibFile) {
    cout << "ERROR: ZDC calibration not found!" << endl;
    exit(1);
   }
-  TList* ZDCCalibList = dynamic_cast<TList*>(ZDCCalibFile->FindObjectAny("Q Vectors"));
+   gROOT->cd();
+  TList* ZDCCalibList = (TList*)(ZDCCalibFile->FindObjectAny("Q Vectors"));
   if(ZDCCalibList) {
    taskQC->SetCRCZDCCalibList(ZDCCalibList);
    cout << "ZDC calibration set (from " <<  ZDCCalibFileName.Data() << ")" << endl;
@@ -535,7 +542,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    cout << "ERROR: ZDCCalibList not found!" << endl;
    exit(1);
   }
+   delete ZDCCalibFile;
  } // end of if(bUseZDC)
+  
  taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
  if(bUsePhiEtaWeights) {
    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
@@ -549,7 +558,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    cout << "ERROR: PhiEtaWeightsFile not found!" << endl;
    exit(1);
   }
-  TList* PhiEtaWeightsList = dynamic_cast<TList*>(PhiEtaWeightsFile->FindObjectAny("PhiEtaPt Weights"));
+   gROOT->cd();
+  TList* PhiEtaWeightsList = (TList*)(PhiEtaWeightsFile->FindObjectAny("PhiEtaPt Weights"));
   if(PhiEtaWeightsList) {
    taskQC->SetWeightsList(PhiEtaWeightsList);
    cout << "PhiPtEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
@@ -558,6 +568,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    cout << "ERROR: PhiPtEtaWeightsList not found!" << endl;
    exit(1);
   }
+   delete PhiEtaWeightsFile;
  } // end of if(bUsePhiEtaWeights)
 
  // connect the task to the analysis manager
