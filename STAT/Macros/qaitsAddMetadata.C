@@ -157,19 +157,19 @@ void qaitsAddMetadata(TTree*tree, Int_t verbose){
     brClass="ITS";
     brAxisTitle="";
     // stat
-    for (Int_t ivar=0; ivar<9; ivar++) if  (brNameCase.Contains( regStat[ivar])) { 
+    for (Int_t ivar=0; ivar<11; ivar++) if  (brNameCase.Contains( regStat[ivar])) { 
       brClass+=" "+statClass[ivar];
       brTitle+=statTitle[ivar];
     }
     // kine variables
-    for (Int_t ivar=0; ivar<10; ivar++) if  (brNameCase.Contains( regKineVariables[ivar])) {
+    for (Int_t ivar=0; ivar<7; ivar++) if  (brNameCase.Contains( regKineVariables[ivar])) {
       brClass+=" "+kineVariableClass[ivar];      
       brAxisTitle+=" "+kineVariableAxisTitle[ivar];
       brTitle+=" "+kineVariableTitle[ivar];
       brLegend+=" "+kineVariableLegend[ivar];
     }
     // QA variables
-    for (Int_t ivar=0; ivar<10; ivar++) if  (brNameCase.Contains( regQAVariable[ivar])) {
+    for (Int_t ivar=0; ivar<5; ivar++) if  (brNameCase.Contains( regQAVariable[ivar])) {
       if ( qaVariableClass[ivar].Contains("$")==kFALSE){
 	brClass+=" "+ qaVariableClass[ivar];
 	brLegend+=" "+ qaVariableLegend[ivar];
@@ -185,7 +185,7 @@ void qaitsAddMetadata(TTree*tree, Int_t verbose){
       }
     }
     // category
-    for (Int_t ivar=0; ivar<9; ivar++) if  (brNameCase.Contains(regCategory[ivar])) {
+    for (Int_t ivar=0; ivar<3; ivar++) if  (brNameCase.Contains(regCategory[ivar])) {
       if (categoryClass[ivar].Contains("$")==kFALSE){
 	brClass+=" "+categoryClass[ivar];
 	brLegend+=" "+categoryLegend[ivar];
