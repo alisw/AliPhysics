@@ -70,7 +70,7 @@ public:
   Bool_t CacheCPass()                                                   {return Cache("MonALISA.ProductionCPass", "", "");}
   Bool_t CacheProdCycleByID(TString ID)                                 {return Cache("MonALISA.ProductionCycleID", ID, "");}
 
-  TTree* GetTree(TString type, TString period, TString pass);
+  TTree* GetTree(TString type, TString period, TString pass, Bool_t buildIndex=kTRUE);
   TTree* GetTree(TString type, TString period, TString pass, TString friendList);
   TTree* GetTreeMC()                                                    {return GetTree("MonALISA.MC", "", "");}
   // TTree* GetTreeMC(TString period = "", TString anchorYear = "", TString productionTag = "") {return GetTree("MonALISA.MC", "", "");} // deprecated; not supported anymore

@@ -102,7 +102,9 @@ void AliExternalInfo::PrintConfig(){
 void AliExternalInfo::SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
                                      TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass, TString & indexName){
   // Check if resource is a tree in a root file or not
-  pathStructure = CreatePath(type, period, pass);
+  TString lpass=pass;
+  if (fLocationTimeOutMap[type + ".nopass"].Contains("true")) lpass="";
+  pathStructure = CreatePath(type, period, lpass);
 
   // if (fLocationTimeOutMap.count(type + ".treename") > 0) resourceIsTree = kTRUE;
   // else resourceIsTree = kFALSE;
@@ -241,7 +243,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 /// \param pass E.g. 'pass2' or 'passMC'
 /// Returns the tree with the information from the corresponding resource
 /// \return TTree* with corresponding resource
-TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
+TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Bool_t buildIndex){
   TString internalFilename = ""; // Resulting path to the file
   TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
   TString externalLocation = "";
@@ -280,7 +282,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
   TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
     AliInfo("-- Successfully read in tree");
-    BuildIndex(tree, type);
+    if (buildIndex) BuildIndex(tree, type);
   } else {
     AliError("Error while reading tree");
   }
@@ -343,6 +345,9 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
   TObjArray * arrFriendList= friendList.Tokenize(";");
   for (Int_t ilist=0; ilist<arrFriendList->GetEntriesFast(); ilist++){
     TString fname=arrFriendList->At(ilist)->GetName();
+    Int_t nDots = fname.CountChar(':');
+    
+
     TTree *ftree= GetTree(fname.Data(), period,pass);
     if (ftree==NULL) ftree=  GetTree(fname.Data(), period,"");
     if (ftree==NULL) ftree=  GetTree(fname.Data(), "","");
