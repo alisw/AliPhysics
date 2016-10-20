@@ -3528,8 +3528,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineSingleTreeVariables()
   fCandidateVariableNames[21]="Vars5";//e: Golden chi2  L: Pos dca to PV
   fCandidateVariableNames[22]="Vars6";//e: nCls ITS  L: Neg dca to PV
   fCandidateVariableNames[23]="Vars7";//e: Chi2 ITS  L: V0 cosine of pointing angle
-  fCandidateVariableNames[24]="Vars8";//e: nCls shared ITS  L: Fraction of shared cluster TPC (POS)
-  fCandidateVariableNames[25]="Vars9";//e: Not used  L: Fraction of shared cluster TPC (POS)
+  fCandidateVariableNames[24]="Vars8";//e: nCls shared ITS  L: pT arm
+  fCandidateVariableNames[25]="Vars9";//e: Not used  L: Alpha arm
   fCandidateVariableNames[26]="Vars10";//e: Not used  L: nSigmaTPC proton
   fCandidateVariableNames[27]="Vars11";//e: Not used  L: nSigmaTPC pion
   fCandidateVariableNames[28]="Vars12";//e: Not used  L: nSigmaTOF proton
@@ -4201,13 +4201,16 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
   fCandidateSingleVariables[21] = v0->DcaPosToPrimVertex();
   fCandidateSingleVariables[22] = v0->DcaNegToPrimVertex();
   fCandidateSingleVariables[23] = v0->CosPointingAngle(posVtx);
-  Float_t fracsharedpostpc = -9999;
-  if(cptrack->GetTPCNcls()>0) fracsharedpostpc = (Float_t)cptrack->GetTPCnclsS()/(Float_t)cptrack->GetTPCncls();
-  Float_t fracsharednegtpc = -9999;
-  if(cntrack->GetTPCNcls()>0) fracsharednegtpc = (Float_t)cntrack->GetTPCnclsS()/(Float_t)cntrack->GetTPCncls();
+//  Float_t fracsharedpostpc = -9999;
+//  if(cptrack->GetTPCNcls()>0) fracsharedpostpc = (Float_t)cptrack->GetTPCnclsS()/(Float_t)cptrack->GetTPCncls();
+//  Float_t fracsharednegtpc = -9999;
+//  if(cntrack->GetTPCNcls()>0) fracsharednegtpc = (Float_t)cntrack->GetTPCnclsS()/(Float_t)cntrack->GetTPCncls();
+//  fCandidateSingleVariables[24] = fracsharedpostpc;
+//  fCandidateSingleVariables[25] = fracsharednegtpc;
 
-  fCandidateSingleVariables[24] = fracsharedpostpc;
-  fCandidateSingleVariables[25] = fracsharednegtpc;
+  fCandidateSingleVariables[24] = v0->PtArmV0();
+  fCandidateSingleVariables[25] = v0->AlphaV0();
+
   if(fAnalCuts->GetUseLambdaPID())
   {
     if(isparticle){
