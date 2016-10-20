@@ -929,22 +929,6 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     << fJetFinderBin << fJetTriggerBin
     <<"END";
 
-  fhJtWithPtCutWeightBinBin 
-    << TH1D("JtWithPtCutWeightBinBin","",NBINSJt, LogBinsJt ) 
-    << fJetFinderBin << fJetTriggerBin << fTrkPtBin
-    <<"END";
-  fhJetConeJtWithPtCutWeightBinBin 
-    << TH1D("JetConeJtWithPtCutWeightBinBin","",NBINSJt, LogBinsJt ) 
-    << fJetFinderBin << fJetTriggerBin << fTrkPtBin
-    <<"END";
-  fhLogJtWithPtCutWeightBinBin 
-    << TH1D("LogJtWithPtCutWeightBinBin","",NBINSJtW, LimLJtW, LimHJtW ) 
-    << fJetFinderBin << fJetTriggerBin << fTrkPtBin
-    <<"END";
-  fhLogJtWithPtCutWeight2BinBin 
-    << TH1D("LogJtWithPtCutWeight2BinBin","",NBINSJtW, LimLJtW, LimHJtW ) 
-    << fJetFinderBin << fJetTriggerBin << fTrkPtBin
-    <<"END";
   fhLogJtWeightBinLimBin 
     << TH1D("LogJtWeightBinLimBin","",NBINSJtW, LimLJtW, LimHJtW ) 
     << fJetFinderBin << fJetTriggerBin << fTrkLimPtBin
@@ -1495,6 +1479,12 @@ void AliJJetJtAnalysis::UserExec(){
   fptt = new TVector(fTracks->GetEntries());  //Store pTt bin of corresponding tracks
 
 
+  int nR = 0;
+  if(fDoMC){
+    nR = fJetListOfList.GetEntries()/4;
+  }else{
+    nR = fJetListOfList.GetEntries()/2;
+  }
   //Loop over jet finders (Full/charged jets R=0.4,0.5,0.6, Pythia/Reco)
   for( int i=0;i<fJetListOfList.GetEntries();i++ ){
     TObjArray * Jets = (TObjArray*) fJetListOfList[i];
@@ -1509,9 +1499,9 @@ void AliJJetJtAnalysis::UserExec(){
 
     if(fDoMC){
       //fTrackPt.clear();
-      if(i>5) continue;
+      if(i+1>nR*2) continue;
       TObjArray * Jets = (TObjArray*) fJetListOfList[i];
-      TObjArray * MCJets = (TObjArray*) fJetListOfList[i+6];
+      TObjArray * MCJets = (TObjArray*) fJetListOfList[i+nR*2];
       int doCor = 1;
       if(!MCJets) {
         doCor = 0;
@@ -1520,10 +1510,10 @@ void AliJJetJtAnalysis::UserExec(){
         doCor = 0;
       }
       if(doCor){
-        this->FillCorrelation(Jets,MCJets,i);  //Correlation histograms between reco and particle level
+        this->FillCorrelation(Jets,MCJets,i,i+nR*2);  //Correlation histograms between reco and particle level
       }
       if(i == 0){
-        this->FillPythia(Jets,i); //Fill histogram for jet jT using Pythia fragmentation information FIXME Jets Needed?
+        this->FillPythia(Jets,i); //Fill histogram for jet jT using Pythia fragmentation information
       }
     }
   }
@@ -1534,24 +1524,26 @@ void AliJJetJtAnalysis::UserExec(){
   //FillBgJtWithSmallerR(Bg jet finder array, old R, new R )
   //fJetBgListOfList[i] where {i=0-5;full0.4,full0.5,full0.6,Ch0.4,Ch0.5,Ch0.6}
   //Caution!! these array number should be changed WHEN jet finders change
-  this->FillBgJtWithSmallerR(fJetBgListOfList[1], 0.4,0);
+
+  /*this->FillBgJtWithSmallerR(fJetBgListOfList[1], 0.4,0);
   this->FillBgJtWithSmallerR(fJetBgListOfList[2], 0.4,1);
   this->FillBgJtWithSmallerR(fJetBgListOfList[2], 0.5,2);
   this->FillBgJtWithSmallerR(fJetBgListOfList[4], 0.4,3);
   this->FillBgJtWithSmallerR(fJetBgListOfList[5], 0.4,4);
-  this->FillBgJtWithSmallerR(fJetBgListOfList[5], 0.5,5);
+  this->FillBgJtWithSmallerR(fJetBgListOfList[5], 0.5,5);*/
 
   //Fill jt with diff cone axes (old axis iContainer, new axis, iHist) 
-  this->FillBgJtWithDiffAxes(1, 0,0);
+  /*this->FillBgJtWithDiffAxes(1, 0,0);
   this->FillBgJtWithDiffAxes(2, 0,1);
   this->FillBgJtWithDiffAxes(2, 1,2);
   this->FillBgJtWithDiffAxes(4, 3,0);
   this->FillBgJtWithDiffAxes(5, 3,1);
-  this->FillBgJtWithDiffAxes(5, 4,2);
+  this->FillBgJtWithDiffAxes(5, 4,2);*/
   //End.
 
+  
   int iS1 = 0; //full 0.4
-  int iS2 = 3; //Ch   0.4
+  int iS2 = nR; //Ch   0.4
   TObjArray * jetfinder1;
   TObjArray * jetfinder2;
   /*if(fDoMC){
@@ -1963,7 +1955,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
 
     }
     if(doRndmBg){
-      this->FillRandomBackground(jet->Pt(), jet->E(),  Jets, iContainer);
+      this->FillRandomBackground(jet->Pt(), jet->E(),  Jets, iContainer, mc);
     }
 
     for (int ii = fJetConstPtLowLimits->GetNoElements(); ii >= 1 ; ii--)   {     
@@ -2273,7 +2265,7 @@ int AliJJetJtAnalysis::FindPythiaJet(int iContainer, int itrack){
 
 
 //Fill correlatio histograms between particle and detector level
-void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int iContainer){
+void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int iContainer, int iContainerParticle){
 
   int iBin=0;
   int jBin=0;
@@ -2415,7 +2407,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
           cout << "Not primary " << endl;
           continue;
         }
-        fhJtWeightBinTest[iContainer+6][iBin]->Fill(jt,1.0/jt);
+        fhJtWeightBinTest[iContainerParticle][iBin]->Fill(jt,1.0/jt);
         //cout << endl << endl << "fhJtWeightBinTest Filled";
         //cout << " icon: " << icon << ", label: " << mcTrack->GetLabel() << " Eta: " << mcTrack->Eta() << " Phi: " << mcTrack->Phi() << ", pT: " << mcTrack->Pt() << ", jT: " << jt << " Charge: " << mcTrack->GetCharge()  << endl;
 
@@ -2437,7 +2429,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
             if((*fTrackJt)[icon2] < -0){ //Matching reco track was found but it has no jT value
               //cout << "Reconstructed track jT not measured, MC jT was " << jt << endl;
               found = -4;
-              fhJtWeightBinTest2[iContainer+6][iBin]->Fill(jt,1.0/jt);
+              fhJtWeightBinTest2[iContainerParticle][iBin]->Fill(jt,1.0/jt);
               //cout << "fhJtWeightBinTest2 Filled, match found, but no jt";
               //cout << " icon2: " << icon2 << ", label: " << track->GetLabel() << " Eta: " << track->Eta() << " Phi: " << track->Phi() << ", pT: " << track->Pt() << " Charge: " << track->GetCharge() <<endl;
 
@@ -2453,9 +2445,9 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
               fhTrackJtCorrBin[iContainer][iBin]->Fill(-1,jt);
               //fhTrackJtCorr2D[iContainer][iBin]->Fill(-1.0,jt,-1.0);
               fhTrackJtCorrBinTest[iContainer][iBin]->Fill(-1.0,jt);
-              fhJtWeightBinTest2[iContainer+6][iBin]->Fill(jt,1.0/jt);
+              fhJtWeightBinTest2[iContainerParticle][iBin]->Fill(jt,1.0/jt);
               cout << "fhJtWeightBinTest2 Filled, Impossible!!!!" << endl;
-              //fhJtWeightBinTest[iContainer+6][iBin]->Fill(jt);
+              //fhJtWeightBinTest[iContainerParticle][iBin]->Fill(jt);
             }else{
               fhTrackJtCorrBin[iContainer][iBinDet]->Fill((*fTrackJt)[icon2],jt);
               //fhTrackJtCorr2D[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt,(*fJetPt)[icon2]);
@@ -2464,7 +2456,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
               fhJtWeightBinTest[iContainer][iBinDet]->Fill((*fTrackJt)[icon2],1.0/(*fTrackJt)[icon2]);
               //fhJtWeightBinTest[iContainer+6][iBinDet]->Fill(jt,1.0/jt);
               fhJtWeightBinTest2[iContainer][iBinDet]->Fill((*fTrackJt)[icon2],1.0/(*fTrackJt)[icon2]);
-              fhJtWeightBinTest2[iContainer+6][iBinDet]->Fill(jt,1.0/jt);
+              fhJtWeightBinTest2[iContainerParticle][iBinDet]->Fill(jt,1.0/jt);
             }
             fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],mcTrack->Pt());
             fhJetPtCorr2[iContainer]->Fill((*fJetPt)[icon2],mcjet->Pt());
@@ -2475,7 +2467,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
           fhTrackJtCorrBin[iContainer][iBin]->Fill(-1.0,jt);
           //fhTrackJtCorr2D[iContainer][iBin]->Fill(-1.0,jt,-1.0);
           fhTrackJtCorrBinTest[iContainer][iBin]->Fill(-1.0,jt);
-          fhJtWeightBinTest2[iContainer+6][iBin]->Fill(jt,1.0/jt);
+          fhJtWeightBinTest2[iContainerParticle][iBin]->Fill(jt,1.0/jt);
           fhJetPtCorr2[iContainer]->Fill(-1.0,mcjet->Pt());
           fhTrackPtCorr[iContainer]->Fill(-1.0,mcTrack->Pt());
         }
@@ -2532,11 +2524,9 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
   }
 }
 
-void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer){
+void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer, int mc){
   TClonesArray *trackArray;
-  int MC = 0;
-  if(iContainer > 5){
-    MC = 1;
+  if(mc){
     trackArray = fMCTracks;
   }
   else 
@@ -2577,7 +2567,7 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
     countTrack = 1;
     AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(trackArray->At(icon));
     if (!track) continue;
-    if(!MC){
+    if(!mc){
       if (!track->IsTrue(1)) continue;
     }
     if (Jets->GetEntries()>0){
@@ -2595,7 +2585,7 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
     }
     if(!countTrack) continue;
     pta = track->Pt();
-    if(!MC){
+    if(!mc){
       track->SetTrackEff( fEfficiency->GetCorrection( pta, 5, fcent) );
       effCorrection = 1.0/track->GetTrackEff();
     }else{
