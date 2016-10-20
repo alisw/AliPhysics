@@ -70,6 +70,8 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
   //fhnDeltaMass(0),
+  fhnDeltaMassAndBkgInfo(0x0),
+  fhnResolution(0x0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -155,6 +157,8 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
   //fhnDeltaMass(0),
+  fhnDeltaMassAndBkgInfo(0x0),
+  fhnResolution(0x0),
   fhRjetTrvspTj(0x0),
   fhNJetsSelEv(0x0),
   fhJetEtaPhiOvl(0x0),
@@ -285,6 +289,19 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   Double_t minDpT = -50.;
   Double_t maxDpT = 50.;
 
+  Int_t    nBinsRpT  = 100;
+  Double_t minRpT = 0.;
+  Double_t maxRpT = 10.;
+  
+  Int_t    nBinsRM  = 50;
+  Double_t minRM = 0.;
+  Double_t maxRM = 5.;
+  if(fSmallSyst) {
+  	 nBinsRM  = 20;
+  	 minRM = 0.;
+  	 maxRM = 2.;
+  	  
+  }
   const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event
   const Double_t minDRToLJ = 0.;
   const Double_t maxDRToLJ = 1.;
@@ -325,7 +342,13 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
   const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
   const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
-
+  
+  const Int_t nBinsSparse3 = 6;
+  const Int_t nBins3[nBinsSparse3] = {nBinsRM, nBinsRpT, nBinsM, nBinsPt, nBinsRho, nBinsRhom};
+  const Double_t xmin3[nBinsSparse3]  = {minRM, minRpT, minM, minPt, minRho, minRhom};
+  const Double_t xmax3[nBinsSparse3]  = {maxRM, maxRpT, maxM, maxPt, maxRho, maxRhom};
+  
+  
   TString histName = "";
   TString histTitle = "";
   TString varName = "#it{M}_{jet}";
@@ -393,6 +416,13 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   	  
   	  fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
   	  fOutput->Add(fhnDeltaMassAndBkgInfo);
+  	  
+  	  histName = "fhnResolution";
+  	  histTitle = Form("%s; (#it{M}_{det} - #it{M}_{part})/#it{M}_{part}; (#it{p}_{T,det} - #it{p}_{T,part})/#it{p}_{T,part}; #it{M}_{part}; #it{p}_{T,part}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
+  	  
+  	  fhnResolution = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse3,nBins3,xmin3,xmax3);
+  	  fOutput->Add(fhnResolution);
+  	  
   }
   if(fOverlap){
      fhRjetTrvspTj = new TH2F("fhRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
