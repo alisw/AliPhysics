@@ -96,7 +96,6 @@
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
 #pragma link C++ class AliAnalysisTaskJetV3+;
-#pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
 #pragma link C++ class AliAnalysisTaskPID+;
 #pragma link C++ class AliAnalysisTaskPIDV0base+;
@@ -209,5 +208,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
+#pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #endif
 #endif
