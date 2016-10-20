@@ -18,8 +18,12 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                     TString uniqueID = "",
                                                     Float_t centrMin,
                                                     Float_t centrMax,
+                                                    Bool_t WeightsHF = kTRUE,
                                                     Bool_t Weights = kTRUE,
-                                                    Bool_t CocktailWeights = kTRUE,
+                                                    Bool_t CentralWeights = kTRUE,
+                                                    Bool_t SemicentralWeights = kFALSE,
+                                                    Bool_t UpWeights = kFALSE,
+                                                    Bool_t DwWeights = kFALSE,
                                                     Bool_t SetSTACK = kFALSE,
                                                     Int_t minTPCCluster,
                                                     AliHFEextraCuts::ITSPixel_t pixel,
@@ -82,8 +86,12 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     taskHFE->SetStackLoop(SetSTACK);
     taskHFE->SetMassCut(MassCut);
     taskHFE->SetWeights(Weights);
-    taskHFE->SetCocktailWeights(CocktailWeights);
+    taskHFE->SetWeightsHF(WeightsHF);
+    taskHFE->SetCentralWeights(CentralWeights);
+    taskHFE->SetSemicentralWeights(SemicentralWeights);
     
+    taskHFE->SetTiltUpWeights(UpWeights);
+    taskHFE->SetTiltDwWeights(DwWeights);
     
     //set RP cuts for flow package analysis
     // TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
