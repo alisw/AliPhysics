@@ -176,7 +176,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskJetV3.cxx
-    UserTasks/AliAnalysisTaskJetSubstructure.cxx
     UserTasks/AliAnalysisTaskPID.cxx
     UserTasks/AliAnalysisTaskPIDV0base.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
@@ -211,6 +210,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
+        UserTasks/AliAnalysisTaskJetSubstructure.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
