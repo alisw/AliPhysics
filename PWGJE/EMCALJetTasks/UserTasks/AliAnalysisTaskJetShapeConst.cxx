@@ -317,6 +317,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 	 
       	 	 Double_t varsp2[10] = {var-var2, ptjetS-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
       	 	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      	 	 
+      	 	 Double_t varsp3[6] = {(var-var2)/var2, (ptjetS-ptJetR)/ptJetR, var2, ptJetR, fRho, fRhoM};
+      	 	 fhnResolution->Fill(varsp3);
       	 }
       	 fhNconstit->Fill(jet1->GetNumberOfConstituents());
       	 fhAreaJet ->Fill(jet1->Area());
