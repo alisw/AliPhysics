@@ -1,6 +1,6 @@
-/*! \page READMEemcCorrections EMC Correction Framework
+/*! \page READMEemcCorrections EMCal Correction Framework
 
-# EMC Correction Framework
+# EMCal Correction Framework
 
 The new EMCal correction framework centralizes all of the analysis-level EMCal corrections into a single task:
 AliEmcalCorrectionTask. This task coordinates the running of a configurable list of individual "correction components", where a
@@ -43,7 +43,7 @@ corrections, and how to test your analysis results in the new vs. old correction
 
 There are two steps:
 - [Configure the Correction Add Task](\ref configureEMCalCorrectionRunMacro)
-- [Configure the corrections](\ref configureEMCalCorrections)
+- [Configure the Corrections](\ref configureEMCalCorrections)
 
 # Configure the Correction Add Task (or train wagon)            {#configureEMCalCorrectionRunMacro}
 
@@ -58,9 +58,9 @@ correctionTask->SetRunPeriod("LHC11h");
 // Set the user configuration file, assuming that your file is called "userConfiguration.yaml" and is located in
 // the current directory. This also supports alien:// paths!
 correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");
-// Initialize the configuration files in the correction task
+// Initialize the configuration and corrections in the correction task
 // It is EXTREMELY important to run this function in your run macro!
-correctionTask->InitializeConfiguration();
+correctionTask->Initialize();
 ~~~
 
 Don't forget to also load the macro with:
@@ -83,6 +83,7 @@ Note that any setting that you have in the user file will override the default f
 ## Introducing features of the configuration file
 
 We will discuss a number of features including:
+- Input objects
 - Comments
 - Shared parameters
 - Setting cells, clusters, and tracks
@@ -95,6 +96,44 @@ To discuss the configuration and introduce, consider the configuration excerpt b
 # The next line sets the cell branch name - note that we support the "usedefault" pattern of setting containers branch names.
 cellBranchName: "usedefault"   # Anything after a "hash" symbol is a comment.
 # This defines the "sharedParamters" section.
+inputObjects:
+    cells:
+        # The user can select the name of each container
+        # The names don't need to correspond to any particular scheme
+        defaultCells:
+            branchName: "usedefault"
+    clusterContainers:
+        # The user can select the name of each container
+        # The names don't need to correspond to any particular scheme
+        defaultClusterContainer:
+            # Sets the branch name
+            branchName: "usedefault"
+            # Takes all default cuts!
+        defaultClusterContainer_1:
+            # The branch name is inherited from defaultClusterContainer!
+            minE: 0.0                        # Formerly clusterEMin
+            minPt: 0.0                       # Formerly clusterPtMin
+        defaultClusterContainer_2:
+            # The branch name is inherited from defaultClusterContainer!
+            minE: 0.0                        # Formerly clusterEMin
+            minPt: 0.0                       # Formerly clusterPtMin
+            # Handled particularly for cluster containers
+            clusNonLinCorrEnergyCut: 0.15        # formerly "minPt" and then clusterNonLinCorrEnergyMin
+    trackContainers:
+        # The user can select the name of each container
+        # The names don't need to correspond to any particular scheme
+        defaultTrackContainer:
+            # Sets the branch name
+            branchName: "usedefault"
+            # Takes all default cuts!
+        defaultTrackContainer_1:
+            # The branch name is inherited from defaultClusterContainer!
+            minPt: 0.15                    # formerly "minPt"
+            # Can set AODFilterBits or track filters
+            trackFilterType: kHybridTracks
+            #aodFilterBits:
+            #    - 16
+            #    - 1
 sharedParameters:
     # These are parameters shared by multiple correction components.
     clusterBranchName: "usedefault"
@@ -131,6 +170,8 @@ Clusterizer:
     w0: 4.5
 ~~~
 
+### Input objects
+
 ### Comments
 
 Comments include anything after a hash ("#"). Of course, they are not required, but are highly recommended! You can add a
@@ -154,16 +195,58 @@ ClusterNonLinearity:
 
 This is just provided for your convenience!
 
+### Setting cells, clusters, and tracks (input objects)
+
+To properly configured the Correction Tasks, we need to indicate which cells, clusters, and tracks are needed (collectively referred to as input objects). These are configured in the ``inputObjects`` section. Within this section, we configure ``cells`` for input cells, ``clusterContainers`` for input cluster containers, and ``trackContainers`` for input tracks. Note that each subsection can contain multiple objects.
+
+Each input object follows the same pattern:
+
+~~~
+objectName:                         # Used to refer to this object in the YMAL configuration
+    branchName: "usedefault"        # The name of the branch that we want. The "usedefualt" pattern is supported here
+    option: value                   # We support a wide variety of options, listed below.
+~~~
+
+The available configuration options are listed below. Direct configuration through the YAML file is limited to a subset of all available configuration options. If you require additional options, please contact the developers - such additions are usually trivial. Alternatively, after calling ``Initialize()``, all containers are available for configuration as usual, so any additional options can be set by hand until implemented by the developers.
+
+Available configuration options for cells include:
+- branchName
+
+Available configuration options for EMCal Containers (ie cluster or track containers):
+- Container name (this is set by the object name)
+- branchName
+- minPt
+- minE
+- minEta, maxEta (must be set as a pair)
+- minPhi, maxPhi (must be set as a pair)
+
+Cluster container specific:
+- clusNonLinCorrEnergyCut
+- clusHadCorrEnergyCut
+
+Track container specific:
+- trackFilterType (Supports enumerations from AliEmcalTrackSelection - kNoTrackFilter, kCustomTrackFilter, kHybridTracks, kTPCOnlyTracks)
+- aodFilterBits (Sum the bits and set the value as a UInt. Be sure to set the trackFilterType to kCustomTrackFilter!)
+
+Additional advanced usage options are described 
+
 ### Enumerations
 
-Enumerations are supported as expected. Just set the value as you normally would. However, be sure that you don't include
-class where it is defined!
+Enumerations are supported as expected. Just set the value as you normally would. However, be sure that you don't
+include class where it is defined!
 
 ### Example configuration and further information
 
-For a survery of the available configuration options and information about the meaning of each, see the default configuration
-file located in ``$ALICE_PHYSICS/PWG/EMCAL/config/``. This also serves as an example configuration, as it contains all possible
-types of settings.
+For a survey of the available configuration options and information about the meaning of each, see the default
+configuration file located in ``$ALICE_PHYSICS/PWG/EMCAL/config/``. This also serves as an example configuration,
+Note that once the Correction Task is initialized using the ``Initialize()`` function, all corrections are
+configured and created. Consequently, any additional configuration can be done manually if desired. However,
+this approach is strongly discouraged. Instead, it is better to change the YAML configuration file so that
+there is a record of settings.
+
+#### Advanced usage options
+
+There are a number of useful advanced options to make the Corrections Framework simpler and more pleasant to use. This section is under construction!
 
 # Switching to the EMCal Corrections Framework
 
@@ -175,24 +258,26 @@ For the instructions, please see \subpage READMEemcCorrectionsChange.
 # Details on the framework and the corrections
 
 You can see the code at ``$ALICE_PHYSICS/PWG/EMCAL/EMCALtasks``. The steering class is ``AliEmcalCorrectionTask``. The
-individual corrections inherit from ``AliEmcalCorrectionComponent``, and are labeled ``AliEmcalCorrectionXXXX``. Note that
-neither ``AliEmcalCorrectionTask`` nor ``AliEmcalCorrectionComponent`` inherit from ``AliAnalysisTaskEmcal``. However, they
-provide similar functionality. The default configuration file is at ``$ALICE_PHYSICS/PWG/EMCAL/config/AliEmcalConfiguration.yaml``.
+individual corrections inherit from ``AliEmcalCorrectionComponent``, and are labeled ``AliEmcalCorrectionXXXX``. Note
+that neither ``AliEmcalCorrectionTask`` nor ``AliEmcalCorrectionComponent`` inherit from ``AliAnalysisTaskEmcal``.
+However, they provide similar functionality. The default configuration file is at ``$ALICE_PHYSICS/PWG/EMCAL/config/AliEmcalConfiguration.yaml``.
 
 NOTE: If you are interested in how a particular correction works, you only need to look at the particular correction and its configuration!
 There are many other details in the base and steering classes, but they are almost certainly not relevant!
 
 # Developing a correction
 
-If you are interested in developing a task that is shared by analyses using the EMCal, then the correction framework is a great place to deploy it!
-The general approach is very similar to the steering in ``AliAnalysisTaskEmcal``. Roughly, your task should derive from ``AliEmcalCorrectionComponent``
-and implement:
+If you are interested in developing a task that is shared by analyses using the EMCal, then the correction
+framework is a great place to deploy it! The general approach is very similar to the steering in
+``AliAnalysisTaskEmcal``. Roughly, your task should derive from ``AliEmcalCorrectionComponent`` and implement:
 
 ~~~{.cxx}
 // Run once to initialize the component. These are run independent initializations.
 virtual Bool_t Initialize();
 // Execute in the first event for run dependent initialization. Same as in AliAnalysisTaskEmcal
 virtual void ExecOnce();
+// Executed before the first event. Same as in AliAnalysisTaskSE
+virtual void UserCreateOutputObjects();
 // Called each event. Same as in AliAnalysisTaskEmcal
 virtual Bool_t Run();
 // UserNotify() from AliAnalysisTaskSE
