@@ -322,48 +322,52 @@ Bool_t AliITStrackV2::Invariant() const {
   // This function is for debugging purpose only
   //------------------------------------------------------------------
   if(!fCheckInvariant) return kTRUE;
-
-  Int_t n=GetNumberOfClusters();
-  static Float_t bz = GetBz();
-  // take into account the misalignment error
-  Float_t maxMisalErrY2=0,maxMisalErrZ2=0;
-  //RS
   const AliITSRecoParam* recopar = AliITSReconstructor::GetRecoParam();
   if (!recopar) recopar = AliITSRecoParam::GetHighFluxParam();
-
-  for (Int_t lay=0; lay<AliITSgeomTGeo::kNLayers; lay++) {
-    maxMisalErrY2 = TMath::Max(maxMisalErrY2,recopar->GetClusterMisalErrorY(lay,bz));
-    maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,recopar->GetClusterMisalErrorZ(lay,bz));
+  //
+  // take into account the misalignment error
+  static Double_t maxMisalErrY2=0,maxMisalErrZ2=0;
+  static Bool_t firstCall = kTRUE;
+  if (firstCall) {
+    firstCall = kFALSE;
+    Float_t bz = GetBz();
+    for (Int_t lay=0; lay<AliITSgeomTGeo::kNLayers; lay++) {
+      maxMisalErrY2 = TMath::Max(maxMisalErrY2,recopar->GetClusterMisalErrorY(lay,bz));
+      maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,recopar->GetClusterMisalErrorZ(lay,bz));
+    }
+    maxMisalErrY2 *= maxMisalErrY2;
+    maxMisalErrZ2 *= maxMisalErrZ2;
+    // this is because when we reset before refitting, we multiply the
+    // matrix by 10
+    maxMisalErrY2 *= 10.; 
+    maxMisalErrZ2 *= 10.;
   }
-  maxMisalErrY2 *= maxMisalErrY2;
-  maxMisalErrZ2 *= maxMisalErrZ2;
-  // this is because when we reset before refitting, we multiply the
-  // matrix by 10
-  maxMisalErrY2 *= 10.; 
-  maxMisalErrZ2 *= 10.;
-
+  //
+  Int_t n=GetNumberOfClusters();
+  //
   Double_t sP2=GetParameter()[2];
   if (TMath::Abs(sP2) >= kAlmost1){
     if (n>fgkWARN) AliDebug(1,Form("fP2=%f\n",sP2));
      return kFALSE;
   }
+  const double* toler = recopar->GetInvariantCuts();
   Double_t sC00=GetCovariance()[0];
-  if (sC00<=0 || sC00>(9.+maxMisalErrY2)) {
+  if (sC00<=0 || sC00>(toler[0]+maxMisalErrY2)) {
     if (n>fgkWARN) AliDebug(1,Form("fC00=%f\n",sC00)); 
      return kFALSE;
   }
   Double_t sC11=GetCovariance()[2];
-  if (sC11<=0 || sC11>(9.+maxMisalErrZ2)) {
+  if (sC11<=0 || sC11>(toler[1]+maxMisalErrZ2)) {
     if (n>fgkWARN) AliDebug(1,Form("fC11=%f\n",sC11)); 
      return kFALSE;
   }
   Double_t sC22=GetCovariance()[5];
-  if (sC22<=0 || sC22>1.) {
+  if (sC22<=0 || sC22>toler[2]) {
     if (n>fgkWARN) AliDebug(1,Form("fC22=%f\n",sC22)); 
      return kFALSE;
   }
   Double_t sC33=GetCovariance()[9];
-  if (sC33<=0 || sC33>1.) {
+  if (sC33<=0 || sC33>toler[3]) {
     if (n>fgkWARN) AliDebug(1,Form("fC33=%f\n",sC33)); 
      return kFALSE;
   }

@@ -319,6 +319,8 @@ AliITSRecoParam::AliITSRecoParam() : AliDetectorRecoParam(),
  fESDV0Params->SetStreamLevel(0);
  fESDV0Params->SetChi2KF(100);
  fESDV0Params->SetRobustChi2KF(100);
+
+ SetInvariantCuts();
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 
@@ -949,4 +951,14 @@ void AliITSRecoParam::PrintFastOrRecoParam() const {
  else recoParamMC="IS NOT required";
 
  AliInfo(Form("FastOr-Fired Chip <-> Fired Chip matching in RAW %s  -  in MC %s",recoParamRaw.Data(),recoParamMC.Data()));
+}
+
+//_____________________________________________________________________________
+void AliITSRecoParam::SetInvariantCuts(double c00,double c11, double c22, double c33)
+{
+  // assign tolerances for Invarian check
+  fInvariantCuts[0] = c00;
+  fInvariantCuts[1] = c11;
+  fInvariantCuts[2] = c22;
+  fInvariantCuts[3] = c33;
 }

@@ -507,6 +507,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   // Option for FastOr reco conditions
   Bool_t GetRemoveFastOrFromDeadRaw() const {return fRemoveFastOrFromDeadRaw;}
   Bool_t GetRemoveFastOrFromDeadMC()  const {return fRemoveFastOrFromDeadMC;}
+
+  void SetInvariantCuts(double c00=9.,double c11=9., double c22=1., double c33=1.);
+  const Double_t* GetInvariantCuts() const {return fInvariantCuts;}
   void PrintFastOrRecoParam() const;
 
   // RS Max number of clusters seen in PbPb2011 was 7000
@@ -809,13 +812,15 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fRemoveFastOrFromDeadRaw;       // flag to remove FO if the chip has no cluster in raw (kFALSE by default)
   Bool_t fRemoveFastOrFromDeadMC;        // flag to remove FO if the chip has no cluster in MC (kTRUE by default until the SPD will be simlated as ideal)
 
+  Double_t fInvariantCuts[4];            // cuts used for AliITStrackV2::Invariant()
+
  private:
   AliESDV0Params * fESDV0Params;  // declare the AliESDV0Params to be able to used in AliITSV0Finder
 
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,56) // ITS reco parameters
+  ClassDef(AliITSRecoParam,57) // ITS reco parameters
 };
 
 #endif
