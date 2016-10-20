@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, Int_t useAODProtection=1)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFv2::FlowMethod meth=AliAnalysisTaskSEHFv2::kEP/*kSP,kEvShape*/, Int_t useAODProtection=1)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -96,6 +96,16 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user
   }else if(flagep==3) {
     v2Task->SetVZEROCEP();
     suffix+="VZEROC";
+  }
+  v2Task->SetFlowMethod(meth);
+  if(meth==AliAnalysisTaskSEHFv2::kEP) {
+    suffix+="_EP";
+  } else if(meth==AliAnalysisTaskSEHFv2::kSP) {
+    suffix+="_SP";
+  } else if(meth==AliAnalysisTaskSEHFv2::kEvShape) {
+    suffix+="_EvShape";
+    Printf("method not yet implemented!");
+    return NULL;
   }
   v2Task->SetUseNewQnCorrFw(useNewQnFw);
   v2Task->SetAODMismatchProtection(useAODProtection);
