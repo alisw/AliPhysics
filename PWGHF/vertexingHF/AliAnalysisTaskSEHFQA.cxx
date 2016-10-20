@@ -2172,7 +2172,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if( (fCuts->GetMultSelectionObjectName()).CompareTo("MultSelection")!=0 ){
           AliMultSelection *multSelectionOld = (AliMultSelection*) aod -> FindListObject("MultSelection");
           Float_t oldFrmwCent = multSelectionOld ? multSelectionOld->GetMultiplicityPercentile("V0M") : -1;
-          Printf(" HFQA task: new centrality %3.3f vs old centrality %3.2f \n",stdCentf,oldFrmwCent);
+	  //          Printf(" HFQA task: new centrality %3.3f vs old centrality %3.2f \n",stdCentf,oldFrmwCent);
           fHisStdPercentileOldFrwPercentile->Fill(stdCentf,oldFrmwCent);
           //
           Double_t differenceCent = TMath::Abs( stdCentf - oldFrmwCent );
