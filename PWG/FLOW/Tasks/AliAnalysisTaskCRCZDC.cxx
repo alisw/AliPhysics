@@ -200,6 +200,7 @@ fCenDis(0x0),
 fMultSelection(0x0),
 fCentrality(0x0),
 fTowerEqList(NULL),
+fSpectraMCList(NULL),
 fCachedRunNum(0)
 {
  for(int i=0; i<5; i++){
@@ -227,11 +228,11 @@ fCachedRunNum(0)
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
   fRunList[r] = 0;
  }
-  for(Int_t c=0; c<fnCen; c++) {
-    for(Int_t k=0; k<8; k++) {
-      fTowerGainEq[c][k] =  NULL;
-    }
-  }
+//  for(Int_t c=0; c<fnCen; c++) {
+//    for(Int_t k=0; k<8; k++) {
+//      fTowerGainEq[c][k] =  NULL;
+//    }
+//  }
  this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
@@ -377,11 +378,11 @@ fCachedRunNum(0)
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
   fRunList[r] = 0;
  }
-  for(Int_t c=0; c<fnCen; c++) {
-    for(Int_t k=0; k<8; k++) {
-      fTowerGainEq[c][k] =  NULL;
-    }
-  }
+//  for(Int_t c=0; c<fnCen; c++) {
+//    for(Int_t k=0; k<8; k++) {
+//      fTowerGainEq[c][k] =  NULL;
+//    }
+//  }
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
@@ -413,6 +414,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  delete fFlowEvent;
  delete fFlowTrack;
  delete fCutsEvent;
+// delete fTowerEqList;
  if (fAnalysisUtil) delete fAnalysisUtil;
  if (fQAList) delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
@@ -423,9 +425,9 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
  for(Int_t r=0;r<fCRCMaxnRun;r++) {
   fCRCQVecListRun[r] = NULL;
-   for(Int_t i=0;i<fnCen;i++) {
-     fPtPhiEtaRbRFB128[r][i] = NULL;
-     fPtPhiEtaRbRFB768[r][i] = NULL;
+   for(Int_t i=0;i<5;i++) {
+     fZNCTower[r][i] = NULL;
+     fZNATower[r][i] = NULL;
    }
  }
 //  for(Int_t k=0;k<fCRCnTow;k++) {
@@ -490,25 +492,30 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
-  for(Int_t c=0; c<fnCen; c++) {
-    for(Int_t k=0; k<8; k++) {
-      fTowerGainEq[c][k] =  new TH3D();
-      fOutput->Add(fTowerGainEq[c][k]);
-    }
-  }
+//  for(Int_t c=0; c<fnCen; c++) {
+//    for(Int_t k=0; k<8; k++) {
+//      fTowerGainEq[c][k] =  new TH3D();
+//      fOutput->Add(fTowerGainEq[c][k]);
+//    }
+//  }
  
+  fSpectraMCList = new TList();
+  fSpectraMCList->SetOwner(kTRUE);
+  fSpectraMCList->SetName("Spectra");
+  fOutput->Add(fSpectraMCList);
+  
  Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
  for(Int_t c=0; c<10; c++) {
    fPtSpecGen[c] = new TH1F(Form("fPtSpecGen[%d]",c), Form("fPtSpecGen[%d]",c), 24, xmin);
-   fOutput->Add(fPtSpecGen[c]);
+   fSpectraMCList->Add(fPtSpecGen[c]);
    fPtSpecFB32[c] = new TH1F(Form("fPtSpecFB32[%d]",c), Form("fPtSpecFB32[%d]",c), 24, xmin);
-   fOutput->Add(fPtSpecFB32[c]);
+   fSpectraMCList->Add(fPtSpecFB32[c]);
    fPtSpecFB96[c] = new TH1F(Form("fPtSpecFB96[%d]",c), Form("fPtSpecFB96[%d]",c), 24, xmin);
-   fOutput->Add(fPtSpecFB96[c]);
+   fSpectraMCList->Add(fPtSpecFB96[c]);
    fPtSpecFB128[c] = new TH1F(Form("fPtSpecFB128[%d]",c), Form("fPtSpecFB128[%d]",c), 24, xmin);
-   fOutput->Add(fPtSpecFB128[c]);
+   fSpectraMCList->Add(fPtSpecFB128[c]);
    fPtSpecFB768[c] = new TH1F(Form("fPtSpecFB768[%d]",c), Form("fPtSpecFB768[%d]",c), 24, xmin);
-   fOutput->Add(fPtSpecFB768[c]);
+   fSpectraMCList->Add(fPtSpecFB768[c]);
  }
  
  fAnalysisUtil = new AliAnalysisUtils();
@@ -724,12 +731,13 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
   fCRCQVecListRun[r]->SetOwner(kTRUE);
   fOutput->Add(fCRCQVecListRun[r]);
-//   for(Int_t i=0;i<fnCen;i++) {
-//     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
-//     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
-//   }
+   
+   for(Int_t i=0;i<5;i++) {
+     fZNCTower[r][i] = new TProfile(Form("fZNCTower[%d][%d]",r,i),Form("fZNCTower[%d][%d]",r,i),100,0.,100.);
+     fCRCQVecListRun[r]->Add(fZNCTower[r][i]);
+     fZNATower[r][i] = new TProfile(Form("fZNATower[%d][%d]",r,i),Form("fZNATower[%d][%d]",r,i),100,0.,100.);
+     fCRCQVecListRun[r]->Add(fZNATower[r][i]);
+   }
  }
  
  PostData(2, fOutput);
@@ -1199,11 +1207,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       // Get centroid from ZDCs *******************************************************
       
+      Double_t Enucl = (RunNum < 209122 ? 1380. : 2510.);
       Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
       Float_t zncEnergy=0., znaEnergy=0.;
       for(Int_t i=0; i<5; i++){
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
+        if(fZNCTower[RunBin][i]) fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]/1000.);
+        if(fZNATower[RunBin][i]) fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]/1000.);
       }
       fFlowEvent->SetZNCEnergy(towZNC[0]);
       fFlowEvent->SetZNAEnergy(towZNA[0]);
@@ -1214,27 +1225,26 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->GetVertexPosition(zvtxpos);
       
       Int_t RunNum=fFlowEvent->GetRun();
-      if(fTowerEqList) {
-        if(RunNum!=fCachedRunNum) {
-          for(Int_t c=0; c<fnCen; c++) {
-            for(Int_t i=0; i<8; i++) {
-              fTowerGainEq[c][i] = (TH3D*)(fTowerEqList->FindObject(Form("fhnTowerGainEqFactor[%d][%d]",c,i)));
-            }
-          }
-        }
-      }
+//      if(fTowerEqList) {
+//        if(RunNum!=fCachedRunNum) {
+//          for(Int_t c=0; c<fnCen; c++) {
+//            for(Int_t i=0; i<8; i++) {
+//              fTowerGainEq[c][i] = (TH3D*)(fTowerEqList->FindObject(Form("fhnTowerGainEqFactor[%d][%d]",c,i)));
+//            }
+//          }
+//        }
+//      }
       Double_t AvTowerGain[8] = {1., 1., 1., 1., 1., 1., 1., 1.};
       
       if (fUseMCCen) {
-        if(RunNum < 209122) aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
-        else                aodZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
+        aodZDC->GetZNCentroidInPbPb(Enucl, xyZNC, xyZNA);
       } else {
         // set tower gain equalization, if available
-        if(fTowerEqList) {
-          for(Int_t i=0; i<8; i++) {
-            if(fTowerGainEq[CenBin][i]) AvTowerGain[i] = fTowerGainEq[CenBin][i]->GetBinContent(fTowerGainEq[CenBin][i]->FindBin(zvtxpos[0],zvtxpos[1],zvtxpos[2]));
-          }
-        }
+//        if(fTowerEqList) {
+//          for(Int_t i=0; i<8; i++) {
+//            if(fTowerGainEq[CenBin][i]) AvTowerGain[i] = fTowerGainEq[CenBin][i]->GetBinContent(fTowerGainEq[CenBin][i]->FindBin(zvtxpos[0],zvtxpos[1],zvtxpos[2]));
+//          }
+//        }
         const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
         const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
         Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
