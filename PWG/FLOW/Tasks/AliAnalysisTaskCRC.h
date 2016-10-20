@@ -89,7 +89,7 @@ public:
  Bool_t GetFillProfilesVsMUsingWeights() const {return this->fFillProfilesVsMUsingWeights;};
  void SetUseQvectorTerms(Bool_t const uqvt){this->fUseQvectorTerms = uqvt;if(uqvt){this->fStoreControlHistograms = kTRUE;}};
  Bool_t GetUseQvectorTerms() const {return this->fUseQvectorTerms;};
- void SetWeightsList(TList* const kList) {this->fWeightsList = kList;};
+ void SetWeightsList(TList* const kList) {this->fWeightsList = (TList*)kList->Clone();};
  TList* GetWeightsList() const {return this->fWeightsList;};
  
  // Multiparticle correlations vs multiplicity:
@@ -189,11 +189,11 @@ public:
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
  Bool_t GetUseCRCRecenter() const {return this->fUseCRCRecenter;};
  void SetCRCEtaRange(Double_t const etamin, Double_t const etamax) {this->fCRCEtaMin = etamin; this->fCRCEtaMax = etamax;};
- void SetQVecList(TList* const kList) {this->fQVecList = kList;};
+ void SetQVecList(TList* const kList) {this->fQVecList = (TList*)kList->Clone();};
  TList* GetQVecList() const {return this->fQVecList;};
-  void SetZDCESEList(TList* const kList) {this->fZDCESEList = kList;};
+  void SetZDCESEList(TList* const kList) {this->fZDCESEList = (TList*)kList->Clone();};
   TList* GetZDCESEList() const {return this->fZDCESEList;};
-  void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
+  void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = (TList*)wlist->Clone();}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
  void SetnCenBin(Int_t const n) {this->fnCenBin = n;};
  Int_t GetnCenBin() const {return this->fnCenBin;};
