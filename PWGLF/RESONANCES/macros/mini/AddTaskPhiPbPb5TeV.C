@@ -162,8 +162,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeV
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
-   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb5TeV.C");
-   gROOT->LoadMacro("ConfigPhiPbPb5TeV.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb5TeV.C");
+   //gROOT->LoadMacro("ConfigPhiPbPb5TeV.C");
    if (!ConfigPhiPbPb5TeV(task, isMC, isPP, "", cutsPair, Strcut, customQualityCutsID, cutKaCandidate, nsigmaK, enableMonitor)) return 0x0;
 
    //
