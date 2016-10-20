@@ -141,6 +141,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetDzBinning(DzBin);
   task->SetDecayBinning(DecayBin);
   task->SetSmearForClusters(bWhichToSmear);
+  task->SetNeedEmcalGeom(kTRUE);
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
